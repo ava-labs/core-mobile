@@ -1,6 +1,6 @@
 export type LoginAttempt = {
   count: number
-  timestamp: number
+  countdown: number
 }
 
 export type SecurityState = {

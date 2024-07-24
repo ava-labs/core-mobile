@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { FlatList, ListRenderItemInfo, View } from 'react-native'
+import { FlatList, ListRenderItemInfo } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
@@ -11,30 +11,31 @@ import {
   PortfolioScreenProps
 } from 'navigation/types'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import { LocalTokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getSelectedToken } from 'utils/getSelectedToken'
 import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
-import { Transaction } from 'store/transaction'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
-import { selectActiveNetwork } from 'store/network'
-import { useSelector } from 'react-redux'
 import TopRightBadge from 'components/TopRightBadge'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
+import { View } from '@avalabs/k2-mobile'
+import { XChainAssetList } from '../home/components/Cards/ActiveNetworkCard/XChainAssetList'
+import { PChainAssetList } from '../home/components/Cards/ActiveNetworkCard/PChainAssetList'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.NetworkTokens
 >
 
-const NetworkTokens = () => {
+const NetworkTokens = (): JSX.Element => {
   const { params } = useRoute<NavigationProp['route']>()
   const { navigate, getParent, setParams } =
     useNavigation<NavigationProp['navigation']>()
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
   const {
     isLoading,
     isRefetching,
@@ -44,8 +45,7 @@ const NetworkTokens = () => {
 
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const manageBtnColor = theme.colorPrimary1
-
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
 
   useEffect(() => {
@@ -58,42 +58,37 @@ const NetworkTokens = () => {
     }
   }, [getParent])
 
-  const goToReceive = () => navigate(AppNavigation.Wallet.ReceiveTokens)
+  const goToReceive = (): void => navigate(AppNavigation.Wallet.ReceiveTokens)
 
-  const selectToken = (token: LocalTokenWithBalance) => {
+  const selectToken = (token: LocalTokenWithBalance): void => {
     navigate(AppNavigation.Wallet.OwnedTokenDetail, {
+      chainId: activeNetwork.chainId,
       tokenId: token.localId
     })
 
-    capture('TokenListTokenSelected', {
+    AnalyticsService.capture('TokenListTokenSelected', {
       selectedToken: getSelectedToken(token)
     })
 
-    capture('PortfolioTokenSelected', {
+    AnalyticsService.capture('PortfolioTokenSelected', {
       selectedToken: getSelectedToken(token)
     })
   }
 
-  const manageTokens = () => {
+  const manageTokens = (): void => {
     navigate(AppNavigation.Wallet.TokenManagement)
-  }
-
-  const openTransactionDetails = (item: Transaction) => {
-    navigate(AppNavigation.Wallet.ActivityDetail, {
-      tx: item
-    })
   }
 
   const openTransactionStatus = (
     statusParams: BridgeTransactionStatusParams
-  ) => {
+  ): void => {
     navigate(AppNavigation.Bridge.BridgeTransactionStatus, statusParams)
   }
 
-  function capturePosthogEvents(tabIndex: number) {
+  function capturePosthogEvents(tabIndex: number): void {
     if (tabIndex === NetworkTokensTabs.Activity) {
       // capture event only for the activity tab with old event name, by request from product
-      capture('PortfolioActivityClicked')
+      AnalyticsService.capture('PortfolioActivityClicked')
     }
   }
 
@@ -101,7 +96,7 @@ const NetworkTokens = () => {
     title: string,
     selected: boolean,
     color: string
-  ) => {
+  ): JSX.Element => {
     return (
       <View>
         <AvaText.Heading3 textStyle={{ color }} ellipsizeMode="tail">
@@ -121,7 +116,9 @@ const NetworkTokens = () => {
     )
   }
 
-  const renderItem = (item: ListRenderItemInfo<LocalTokenWithBalance>) => {
+  const renderItem = (
+    item: ListRenderItemInfo<LocalTokenWithBalance>
+  ): JSX.Element => {
     const token = item.item
     return (
       <PortfolioListItem
@@ -136,7 +133,7 @@ const NetworkTokens = () => {
     )
   }
 
-  const renderManageButton = () => (
+  const renderManageButton = (): JSX.Element => (
     <View
       style={{
         flexDirection: 'row',
@@ -152,7 +149,7 @@ const NetworkTokens = () => {
     </View>
   )
 
-  const renderTokens = () => (
+  const renderTokens = (): JSX.Element => (
     <FlatList
       contentContainerStyle={{
         paddingHorizontal: 16,
@@ -169,7 +166,7 @@ const NetworkTokens = () => {
     />
   )
 
-  const renderZeroState = () => {
+  const renderZeroState = (): JSX.Element => {
     return (
       <View style={{ paddingHorizontal: 16, flex: 1, marginTop: -160 }}>
         <ZeroState.NetworkTokens goToReceive={goToReceive} />
@@ -177,19 +174,42 @@ const NetworkTokens = () => {
     )
   }
 
-  const renderTokenTab = () => {
+  const renderTokenTab = (): JSX.Element => {
     if (tokenList.length === 0) return renderZeroState()
+
+    if (isPvmNetwork(activeNetwork)) {
+      return (
+        <PChainAssetList
+          scrollEnabled
+          sx={{
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
+      )
+    }
+    if (isAvmNetwork(activeNetwork)) {
+      return (
+        <XChainAssetList
+          scrollEnabled
+          sx={{
+            marginBottom: 0,
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
+      )
+    }
 
     return renderTokens()
   }
 
-  const renderActivityTab = () => {
-    return (
-      <ActivityList
-        openTransactionDetails={openTransactionDetails}
-        openTransactionStatus={openTransactionStatus}
-      />
-    )
+  const renderActivityTab = (): JSX.Element => {
+    return <ActivityList openTransactionStatus={openTransactionStatus} />
   }
 
   return (

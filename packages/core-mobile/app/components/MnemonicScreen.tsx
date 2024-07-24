@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { Platform, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -7,27 +7,46 @@ import MnemonicAva from 'screens/onboarding/MnemonicAva'
 import AvaButton from 'components/AvaButton'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { Opacity30 } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { RootStackScreenProps } from 'navigation/types'
+import { Text, alpha, useTheme } from '@avalabs/k2-mobile'
+import { BlurBackground } from './BlurBackground'
+
+const EMPTY_MNEMONIC = [...Array(24).values()] as string[]
 
 type Props = {
-  mnemonic: string
+  mnemonic?: string
+  hideMnemonic?: boolean
   testID?: string
+  toggleRecoveryPhrase?: () => void
+  canToggleBlur?: boolean
 }
 
 type CreateWalletNavigationProp = RootStackScreenProps<
   typeof AppNavigation.Root.CopyPhraseWarning
 >['navigation']
 
-export default function MnemonicScreen({ mnemonic }: Props) {
-  const { theme, isDarkMode } = useApplicationContext()
+export default function MnemonicScreen({
+  mnemonic,
+  hideMnemonic = false,
+  canToggleBlur = false,
+  toggleRecoveryPhrase
+}: Props): JSX.Element {
+  const {
+    theme: { colors }
+  } = useTheme()
+  const { isDarkMode } = useApplicationContext()
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
 
-  const mnemonics = () => {
-    const mnemonicColumns: Element[][] = [[], [], []]
-    mnemonic?.split(' ').forEach((value, key) => {
+  const BLUR_BACKGROUND_COLOR =
+    Platform.OS === 'ios' ? '#BFBFBF70' : colors.$neutral900
+
+  const mnemonics = (): JSX.Element => {
+    const mnemonicColumns: JSX.Element[][] = [[], [], []]
+
+    const menomicArray = mnemonic ? mnemonic.split(' ') : EMPTY_MNEMONIC
+    menomicArray.forEach((value, key) => {
       const column = Math.floor(key / 8)
       const columnToPush = mnemonicColumns[column]
       if (columnToPush) {
@@ -46,7 +65,7 @@ export default function MnemonicScreen({ mnemonic }: Props) {
     )
   }
 
-  function handleCopyPhrase() {
+  function handleCopyPhrase(): void {
     navigate(AppNavigation.Root.CopyPhraseWarning, {
       copy: () => {
         copyToClipboard(mnemonic)
@@ -71,28 +90,54 @@ export default function MnemonicScreen({ mnemonic }: Props) {
             styles.mnemonics,
             {
               backgroundColor: isDarkMode
-                ? theme.colorBg3 + Opacity30
-                : theme.colorBg1
+                ? alpha(colors.$neutral800, 0.3)
+                : colors.$black
             }
           ]}>
           {mnemonics()}
+          {hideMnemonic && (
+            <BlurBackground
+              opacity={1}
+              iosBlurType="dark"
+              borderRadius={8}
+              backgroundColor={BLUR_BACKGROUND_COLOR}
+            />
+          )}
         </View>
       </ScrollView>
 
-      <View style={{ alignSelf: 'flex-end', marginTop: 16 }}>
-        <AvaButton.TextWithIcon
-          disabled={!mnemonic}
-          onPress={handleCopyPhrase}
-          icon={<CopySVG />}
-          testID="mnemonic_screen__copy_phrase_button"
-          text={
-            <AvaText.ButtonMedium
-              textStyle={{ color: theme.alternateBackground }}
-              testID="mnemonic_screen__copy_phrase_button">
-              Copy Phrase
-            </AvaText.ButtonMedium>
-          }
-        />
+      <View
+        style={{
+          justifyContent: 'space-between',
+          marginTop: 16,
+          flexDirection: 'row',
+          alignItems: 'center'
+        }}>
+        {canToggleBlur ? (
+          <Text
+            variant="buttonMedium"
+            sx={{ color: '$blueMain' }}
+            onPress={toggleRecoveryPhrase}>
+            {`${hideMnemonic ? 'Show' : 'Hide'} Recovery Phrase`}
+          </Text>
+        ) : (
+          <>
+            <View />
+            <AvaButton.TextWithIcon
+              disabled={!mnemonic}
+              onPress={handleCopyPhrase}
+              icon={<CopySVG />}
+              testID="mnemonic_screen__copy_phrase_button"
+              text={
+                <AvaText.ButtonMedium
+                  textStyle={{ color: colors.$white }}
+                  testID="mnemonic_screen__copy_phrase_button">
+                  Copy Phrase
+                </AvaText.ButtonMedium>
+              }
+            />
+          </>
+        )}
       </View>
     </View>
   )

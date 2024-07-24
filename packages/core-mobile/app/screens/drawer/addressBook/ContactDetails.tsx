@@ -1,5 +1,5 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import AvaText from 'components/AvaText'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
@@ -14,7 +14,7 @@ import { Row } from 'components/Row'
 import ShareSVG from 'components/svg/ShareSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { shareContact } from 'screens/drawer/addressBook/utils'
-import { Contact } from 'store/addressBook'
+import { Contact } from '@avalabs/types'
 
 const ContactDetails = ({
   contact,
@@ -28,13 +28,21 @@ const ContactDetails = ({
   onDelete: (contact: Contact) => void
   onShareDialog: (contact: Contact) => void
   editable?: boolean
-}) => {
+}): JSX.Element => {
   const theme = useApplicationContext().theme
+  const addresses = useMemo(() => {
+    const list = []
+    contact.address && list.push(contact.address)
+    contact.addressBTC && list.push(contact.addressBTC)
+    contact.addressXP && list.push(contact.addressXP)
+    return list
+  }, [contact.address, contact.addressBTC, contact.addressXP])
+
   const handleNameChange = useCallback(
     (name: string) => {
       onChange({
         ...contact,
-        title: name
+        name
       })
     },
     [contact, onChange]
@@ -50,23 +58,38 @@ const ContactDetails = ({
     [contact, onChange]
   )
 
-  const handleBtcAddressChange = useCallback(
-    (addressBtc: string) => {
+  const handleXPAddressChange = useCallback(
+    (addressXP: string) => {
       onChange({
         ...contact,
-        addressBtc
+        addressXP
+      })
+    },
+    [contact, onChange]
+  )
+
+  const handleBtcAddressChange = useCallback(
+    (addressBTC: string) => {
+      onChange({
+        ...contact,
+        addressBTC
       })
     },
     [contact, onChange]
   )
 
   const handleShare = useCallback(() => {
-    if (contact.address && contact.addressBtc) {
-      onShareDialog(contact)
+    if (addresses.length === 1) {
+      shareContact({
+        name: contact.name,
+        cChainAddress: contact.address,
+        xpChainAddress: contact.addressXP,
+        btcAddress: contact.addressBTC
+      })
     } else {
-      shareContact(contact.title, contact.address, contact.addressBtc)
+      onShareDialog(contact)
     }
-  }, [contact, onShareDialog])
+  }, [addresses.length, contact, onShareDialog])
 
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
@@ -75,24 +98,28 @@ const ContactDetails = ({
           <BlockchainCircle
             size={80}
             textSize={32}
-            chain={titleToInitials(contact.title)}
+            chain={titleToInitials(contact.name)}
           />
           <Space y={24} />
-          <AvaText.Heading2>{contact.title}</AvaText.Heading2>
+          <AvaText.Heading2>{contact.name}</AvaText.Heading2>
         </View>
         <Space y={40} />
         {editable ? (
           <>
             <ContactInput
-              name={contact.title}
+              name={contact.name}
               address={contact.address}
-              addressBtc={contact.addressBtc}
+              addressBtc={contact.addressBTC ?? ''}
+              addressXP={contact.addressXP ?? ''}
               onNameChange={handleNameChange}
               onAddressChange={handleAddressChange}
               onAddressBtcChange={handleBtcAddressChange}
+              onAddressXPChange={handleXPAddressChange}
             />
             <FlexSpacer />
-            <AvaButton.TextLarge onPress={() => onDelete(contact)}>
+            <AvaButton.TextLarge
+              onPress={() => onDelete(contact)}
+              testID="delete_contact">
               Delete Contact
             </AvaButton.TextLarge>
           </>
@@ -101,9 +128,17 @@ const ContactDetails = ({
             {!!contact.address && (
               <AddressView title={'Address'} address={contact.address} />
             )}
-            {!!contact.address && !!contact.addressBtc && <Space y={40} />}
-            {!!contact.addressBtc && (
-              <AddressView title={'Address BTC'} address={contact.addressBtc} />
+            {!!contact.address && !!contact.addressBTC && <Space y={40} />}
+            {!!contact.addressBTC && (
+              <AddressView title={'Address BTC'} address={contact.addressBTC} />
+            )}
+            {(!!contact.address || !!contact.addressBTC) &&
+              !!contact.addressXP && <Space y={40} />}
+            {!!contact.addressXP && (
+              <AddressView
+                title={'Address X/P-Chain'}
+                address={contact.addressXP}
+              />
             )}
             <Space y={34} />
             <Row style={{ alignItems: 'center' }}>
@@ -127,7 +162,7 @@ const AddressView = ({
 }: {
   title: string
   address: string
-}) => {
+}): JSX.Element => {
   return (
     <>
       <AvaText.Body1>{title}</AvaText.Body1>

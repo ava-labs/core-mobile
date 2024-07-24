@@ -67,6 +67,10 @@
 
 ## Storybook
 
+```
+yarn install && setup && podInstall
+```
+
 For iOS:
 ```
 yarn storybook-generate && yarn ios

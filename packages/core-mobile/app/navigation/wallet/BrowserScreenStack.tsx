@@ -1,11 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { noop } from '@avalabs/utils-sdk'
-import { View } from 'react-native'
-import AvaText from 'components/AvaText'
-import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import TabViewScreen from 'screens/browser/TabViewScreen'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
@@ -19,13 +16,13 @@ import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
 import { useTheme } from '@avalabs/k2-mobile'
+import { ClearAllHistoryModal } from 'screens/browser/ClearAllHistoryModal'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
   [AppNavigation.Browser.TabView]: undefined
-  [AppNavigation.Browser.TabsList]: undefined
   [AppNavigation.Browser.History]: undefined
-  [AppNavigation.Browser.AreYouSure]: undefined
   [AppNavigation.Browser.ClearAllHistory]: undefined
 }
 
@@ -40,11 +37,6 @@ function BrowserScreenStack(): JSX.Element {
         component={TabView}
       />
       <BrowserStack.Screen
-        name={AppNavigation.Browser.TabsList}
-        options={{ headerShown: false }}
-        component={TabsListStub}
-      />
-      <BrowserStack.Screen
         name={AppNavigation.Browser.History}
         options={{
           ...SubHeaderOptions('History')
@@ -52,9 +44,9 @@ function BrowserScreenStack(): JSX.Element {
         component={HistoryStub}
       />
       <BrowserStack.Screen
-        name={AppNavigation.Browser.AreYouSure}
+        name={AppNavigation.Browser.ClearAllHistory}
         options={{ presentation: 'transparentModal', headerShown: false }}
-        component={AreYouSureModal}
+        component={ClearAllHistoryModal}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
@@ -114,6 +106,10 @@ const BrowserIntroModal = (): JSX.Element => {
       viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
       buttonText="Get Started"
       descriptions={descriptions}
+      onConfirm={() =>
+        AnalyticsService.capture('BrowserWelcomeScreenButtonTapped')
+      }
+      testID="browser-intro-modal"
     />
   )
 }
@@ -128,18 +124,13 @@ function TabView(): JSX.Element {
   )
   const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
 
-  if (!hasBeenViewedBrowser) {
-    navigate(AppNavigation.Browser.Intro)
-  }
-  return <TabViewScreen />
-}
+  useEffect(() => {
+    if (!hasBeenViewedBrowser) {
+      navigate(AppNavigation.Browser.Intro)
+    }
+  }, [hasBeenViewedBrowser, navigate])
 
-function TabsListStub(): JSX.Element {
-  return (
-    <View>
-      <AvaText.LargeTitleBold>TabsListStub</AvaText.LargeTitleBold>
-    </View>
-  )
+  return <TabViewScreen />
 }
 
 function HistoryStub(): JSX.Element {

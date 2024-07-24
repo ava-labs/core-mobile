@@ -28,12 +28,11 @@ type RouteProp = NFTDetailsScreenProps<
   typeof AppNavigation.Nft.FullScreen
 >['route']
 
-export default function NftFullScreen() {
+export default function NftFullScreen(): JSX.Element {
   const { theme } = useApplicationContext()
-  const { url: imageUrl, isSvg } = useRoute<RouteProp>().params
+  const { image, isSvg, aspect } = useRoute<RouteProp>().params.imageData
   const [grabbedBgColor, setGrabbedBgColor] = useState('black')
   const windowWidth = useMemo(() => Dimensions.get('window').width - 32, [])
-  const [imageAspect, setImageAspect] = useState(0)
   const [shimmerSize, setShimmerSize] = useState({ w: 0, h: 0 })
 
   const [sensorData, setSensorData] = useState({
@@ -110,23 +109,18 @@ export default function NftFullScreen() {
 
   useEffect(() => {
     if (isSvg) return
-    getColorFromURL(imageUrl)
+    getColorFromURL(image)
       .then(colors => {
         setGrabbedBgColor(
           Platform.OS === 'ios' ? colors.secondary : colors.background
         )
       })
       .catch(e =>
-        Logger.error(`failed to grab dominant colors from url ${imageUrl}`, e)
+        Logger.error(`failed to grab dominant colors from url ${image}`, e)
       )
-  }, [isSvg, imageUrl])
+  }, [isSvg, image])
 
-  useEffect(() => {
-    if (isSvg) return
-    Image.getSize(imageUrl, (width, height) => setImageAspect(height / width))
-  }, [imageUrl, isSvg])
-
-  const calculateShimmerMaskSize = (event: LayoutChangeEvent) => {
+  const calculateShimmerMaskSize = (event: LayoutChangeEvent): void => {
     // we need separate view for shimmer because iOS removes shadow if parent view has overflow: 'hidden'
     setShimmerSize({
       w: event.nativeEvent.layout.width,
@@ -177,16 +171,16 @@ export default function NftFullScreen() {
             <View
               style={{ alignItems: 'center' }}
               onLayout={calculateShimmerMaskSize}>
-              <SvgXml xml={imageUrl} width={windowWidth} height={windowWidth} />
+              <SvgXml xml={image} width={windowWidth} height={windowWidth} />
             </View>
           ) : (
             <Image
               onLayout={calculateShimmerMaskSize}
               style={[
                 styles.imageStyle,
-                { width: windowWidth, height: windowWidth * imageAspect }
+                { width: windowWidth, height: windowWidth * aspect }
               ]}
-              source={{ uri: imageUrl }}
+              source={{ uri: image }}
             />
           )}
           <View

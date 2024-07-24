@@ -26,6 +26,10 @@ class ReviewAndSend {
     return by.text(ReviewAndSendLoc.sendSuccessful)
   }
 
+  get transactionSuccessfulToastMsg() {
+    return by.text(ReviewAndSendLoc.transactionSuccessful)
+  }
+
   async tapSendNow() {
     await Actions.tap(this.reviewAndSendNow)
   }

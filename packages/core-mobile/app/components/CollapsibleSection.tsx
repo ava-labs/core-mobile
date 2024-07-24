@@ -1,4 +1,10 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, {
+  FC,
+  useEffect,
+  useState,
+  PropsWithChildren,
+  ReactNode
+} from 'react'
 import { Animated, StyleProp, View, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -15,7 +21,7 @@ interface Props {
   renderChildrenCollapsed?: boolean
 }
 
-const CollapsibleSection: FC<Props> = ({
+const CollapsibleSection: FC<Props & PropsWithChildren> = ({
   startExpanded = false,
   title,
   children,
@@ -39,7 +45,7 @@ const CollapsibleSection: FC<Props> = ({
     onExpandedChange?.(expanded)
   }, [expanded, onExpandedChange])
 
-  const getTitle = () => {
+  const getTitle = (): ReactNode => {
     return typeof title === 'string' ? (
       <Animated.View
         style={[
@@ -64,7 +70,7 @@ const CollapsibleSection: FC<Props> = ({
     )
   }
 
-  function toggleExpanded() {
+  function toggleExpanded(): void {
     setExpanded(!expanded)
   }
   return (

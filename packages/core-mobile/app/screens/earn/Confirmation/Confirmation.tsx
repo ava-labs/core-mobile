@@ -21,13 +21,9 @@ import { format, getUnixTime } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useDispatch, useSelector } from 'react-redux'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
-import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
+import { showSimpleToast } from 'components/Snackbar'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
@@ -43,18 +39,18 @@ import {
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { showTransactionSuccessToast } from 'utils/toast'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
-
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
 
 export const Confirmation = (): JSX.Element | null => {
-  const { capture } = usePostCapture()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
@@ -70,8 +66,8 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const tokenSymbol = activeNetwork.networkToken.symbol
+  const network = useCChainNetwork()
+  const tokenSymbol = network?.networkToken?.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,
     onDelegationError,
@@ -131,7 +127,9 @@ export const Confirmation = (): JSX.Element | null => {
   }, [data?.estimatedTokenReward, validator?.delegationFee])
 
   const cancelStaking = (): void => {
-    capture('StakeCancelStaking', { from: 'ConfirmationScreen' })
+    AnalyticsService.capture('StakeCancelStaking', {
+      from: 'ConfirmationScreen'
+    })
     navigate(AppNavigation.StakeSetup.Cancel)
   }
 
@@ -145,7 +143,7 @@ export const Confirmation = (): JSX.Element | null => {
     if (!claimableBalance) {
       return
     }
-    capture('StakeIssueDelegation')
+    AnalyticsService.capture('StakeIssueDelegation')
     issueDelegationMutation.mutate({
       stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
@@ -155,16 +153,9 @@ export const Confirmation = (): JSX.Element | null => {
   }
 
   function onDelegationSuccess(txHash: string): void {
-    capture('StakeDelegationSuccess')
-    showSnackBarCustom({
-      component: (
-        <TransactionToast
-          message={'Staking successful!'}
-          type={TransactionToastType.SUCCESS}
-        />
-      ),
-      duration: 'long'
-    })
+    AnalyticsService.capture('StakeDelegationSuccess')
+    showTransactionSuccessToast({ message: 'Staking successful!' })
+
     getParent()?.goBack()
     dispatch(maybePromptEarnNotification)
     dispatch(
@@ -180,7 +171,7 @@ export const Confirmation = (): JSX.Element | null => {
   }
 
   function onDelegationError(error: Error): void {
-    capture('StakeDelegationFail')
+    AnalyticsService.capture('StakeDelegationFail')
     showSimpleToast(error.message)
   }
 

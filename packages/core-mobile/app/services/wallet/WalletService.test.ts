@@ -1,9 +1,23 @@
 import { AddDelegatorProps, WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
-import { Utxo } from '@avalabs/avalanchejs-v2'
+import { Utxo } from '@avalabs/avalanchejs'
 import { AVALANCHE_XP_TEST_NETWORK } from '@avalabs/chains-sdk'
 import { Avax } from 'types/Avax'
+import { PChainId } from '@avalabs/glacier-sdk'
+
+jest.mock('@avalabs/wallets-sdk', () => ({
+  ...jest.requireActual('@avalabs/wallets-sdk'),
+  getXpubFromMnemonic: () => {
+    return { mnemonic: '1' }
+  },
+  Avalanche: {
+    ...jest.requireActual('@avalabs/wallets-sdk').Avalanche,
+    getXpubFromMnemonic: () => {
+      return { mnemonic: '1' }
+    }
+  }
+}))
 
 describe('WalletService', () => {
   describe('getInstantBaseFee', () => {
@@ -26,19 +40,21 @@ describe('WalletService', () => {
 
     const mockUnsignedTx = { getTx: jest.fn() }
     const mockValidateFee = jest.fn()
-    const addDelegatorMock = jest.fn().mockImplementation(() => mockUnsignedTx)
+    const addPermissionlessDelegatorMock = jest
+      .fn()
+      .mockImplementation(() => mockUnsignedTx)
     const getUTXOsMockValue = [] as Utxo[]
     const getUTXOsMock = jest.fn().mockReturnValue(getUTXOsMockValue)
     const mockWallet = jest.fn().mockReturnValue({
       getUTXOs: getUTXOsMock,
-      addDelegator: addDelegatorMock
+      addPermissionlessDelegator: addPermissionlessDelegatorMock
     })
 
     beforeAll(() => {
       jest.mock('services/wallet/WalletService')
 
       jest // @ts-ignore
-        .spyOn(WalletService, 'getReadOnlyAvaWallet')
+        .spyOn(WalletService, 'getReadOnlyAvaSigner')
         // @ts-ignore
         .mockImplementation(() => mockWallet())
 
@@ -50,7 +66,11 @@ describe('WalletService', () => {
 
     beforeEach(() => {
       mockValidateFee.mockReset()
-      WalletService.init('test', WalletType.MNEMONIC)
+      WalletService.init({
+        mnemonic: 'test',
+        walletType: WalletType.MNEMONIC,
+        isLoggingIn: false
+      })
     })
 
     it('should throw if Node ID is invalid', async () => {
@@ -184,15 +204,15 @@ describe('WalletService', () => {
       } as AddDelegatorProps
       const unsignedTx = await WalletService.createAddDelegatorTx(params)
       expect(getUTXOsMock).toHaveBeenCalled()
-      expect(addDelegatorMock).toHaveBeenCalledWith(
+      expect(addPermissionlessDelegatorMock).toHaveBeenCalledWith(
         getUTXOsMockValue,
         validNodeId,
-        fujiValidStakeAmount,
         BigInt(validStartDate),
         BigInt(validEndDateFuji),
-        {
-          rewardAddress: validRewardAddress
-        }
+        fujiValidStakeAmount,
+        PChainId._11111111111111111111111111111111LPO_YY,
+        undefined,
+        [validRewardAddress]
       )
       expect(unsignedTx).toStrictEqual(mockUnsignedTx)
     })

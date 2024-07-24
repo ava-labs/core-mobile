@@ -1,5 +1,5 @@
 import { calculateCChainFee } from 'services/earn/calculateCrossChainFees'
-import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avax } from 'types/Avax'
 
 describe('earn/calculateCChainFee', () => {

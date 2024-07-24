@@ -1,25 +1,36 @@
 import React from 'react'
-import { BottomSheet } from 'components/BottomSheet'
 import EditFees from 'components/EditFees'
 import { Network } from '@avalabs/chains-sdk'
+import { TokenBaseUnit } from 'types/TokenBaseUnit'
+import { Sheet } from 'components/Sheet'
+import { noop } from '@avalabs/utils-sdk'
+import { Eip1559Fees } from 'utils/Utils'
+import { NetworkTokenUnit } from 'types'
 
-type Props = {
+type Props<T extends TokenBaseUnit<T>> = {
   onClose?: () => void
-  onSave: (newGasLimit: number) => void
-  gasLimit: number
-  gasPrice: bigint
+  onSave: (customFees: Eip1559Fees<T>) => void
   network: Network
-}
+  lowMaxFeePerGas: NetworkTokenUnit
+  isGasLimitEditable?: boolean
+  isBtcNetwork?: boolean
+  noGasLimitError?: string
+} & Eip1559Fees<T>
 
-const EditGasLimitBottomSheet: React.FC<Props> = ({
+const EditGasLimitBottomSheet = ({
   onClose,
   onSave,
   gasLimit,
-  gasPrice,
-  network
-}) => {
+  maxPriorityFeePerGas,
+  maxFeePerGas,
+  network,
+  lowMaxFeePerGas,
+  isGasLimitEditable,
+  isBtcNetwork,
+  noGasLimitError
+}: Props<NetworkTokenUnit>): JSX.Element => {
   return (
-    <BottomSheet onClose={onClose}>
+    <Sheet onClose={onClose || noop}>
       <EditFees
         network={network}
         onSave={newGasLimit => {
@@ -27,9 +38,14 @@ const EditGasLimitBottomSheet: React.FC<Props> = ({
           onClose?.()
         }}
         gasLimit={gasLimit}
-        gasPrice={gasPrice}
+        maxFeePerGas={maxFeePerGas}
+        maxPriorityFeePerGas={maxPriorityFeePerGas}
+        lowMaxFeePerGas={lowMaxFeePerGas}
+        isGasLimitEditable={isGasLimitEditable}
+        isBtcNetwork={isBtcNetwork}
+        noGasLimitError={noGasLimitError}
       />
-    </BottomSheet>
+    </Sheet>
   )
 }
 

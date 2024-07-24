@@ -7,7 +7,6 @@ import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
 import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import {
   BridgeScreenProps,
   BridgeTransactionStatusParams,
@@ -15,13 +14,15 @@ import {
 } from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector } from 'react-redux'
+import { selectIsBridgeBlocked } from 'store/posthog'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type BridgeStackParamList = {
-  [AppNavigation.Bridge.Bridge]: undefined
+  [AppNavigation.Bridge.Bridge]: { initialTokenSymbol: string } | undefined
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Modal.BridgeSelectToken]: {
-    onTokenSelected: (token: string) => void
+    onTokenSelected: (token: AssetBalance) => void
     bridgeTokenList: AssetBalance[] | undefined
   }
   [AppNavigation.Bridge.HideWarning]: undefined
@@ -33,8 +34,8 @@ type BridgeNavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Bridge
 >['navigation']
 
-function BridgeScreenStack() {
-  const { bridgeBlocked } = usePosthogContext()
+function BridgeScreenStack(): JSX.Element {
+  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
   const { goBack } = useNavigation<BridgeNavigationProp>()
 
   return (
@@ -67,7 +68,7 @@ function BridgeScreenStack() {
           />
         </BridgeStack.Group>
       </BridgeStack.Navigator>
-      {bridgeBlocked && (
+      {isBridgeBlocked && (
         <FeatureBlocked
           onOk={goBack}
           message={
@@ -83,18 +84,17 @@ type HideTransactionNavigationProp = BridgeScreenProps<
   typeof AppNavigation.Bridge.HideWarning
 >['navigation']
 
-const HideTransactionWarningModal = () => {
+const HideTransactionWarningModal = (): JSX.Element => {
   const navigation = useNavigation<HideTransactionNavigationProp>()
-  const { capture } = usePostCapture()
 
-  const onHide = () => {
+  const onHide = (): void => {
     navigation.getParent()?.goBack()
-    capture('BridgeTransactionHide')
+    AnalyticsService.capture('BridgeTransactionHide')
   }
 
-  const onBack = () => {
+  const onBack = (): void => {
     navigation.goBack()
-    capture('BridgeTransactionHideCancel')
+    AnalyticsService.capture('BridgeTransactionHideCancel')
   }
 
   return (
@@ -115,7 +115,7 @@ type BridgeTransactionStatusScreenProps = BridgeScreenProps<
   typeof AppNavigation.Bridge.BridgeTransactionStatus
 >
 
-const BridgeTransactionStatus = () => {
+const BridgeTransactionStatus = (): JSX.Element => {
   const { txHash } =
     useRoute<BridgeTransactionStatusScreenProps['route']>().params
 

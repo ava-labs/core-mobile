@@ -14,13 +14,19 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureGates.BUY_COINBASE_PAY]: true,
-  [FeatureGates.USE_COINGECKO_PRO]: true,
   [FeatureGates.DEFI]: true,
   [FeatureGates.BROWSER]: false,
   [FeatureGates.LEFT_FAB]: false,
   [FeatureGates.DARK_MODE]: false,
-  [FeatureGates.SEEDLESS_ONBOARDING]: false,
-  [FeatureGates.SEEDLESS_SIGNING]: false
+  [FeatureGates.SEEDLESS_ONBOARDING]: true,
+  [FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]: true,
+  [FeatureGates.SEEDLESS_ONBOARDING_APPLE]: true,
+  [FeatureGates.SEEDLESS_MFA_PASSKEY]: true,
+  [FeatureGates.SEEDLESS_MFA_AUTHENTICATOR]: true,
+  [FeatureGates.SEEDLESS_MFA_YUBIKEY]: true,
+  [FeatureGates.SEEDLESS_SIGNING]: true,
+  [FeatureGates.BLOCKAID_TRANSACTION_VALIDATION]: true,
+  [FeatureGates.BLOCKAID_DAPP_SCAN]: true
 }
 
 export const initialState = {
@@ -40,7 +46,14 @@ export type PosthogState = {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface JsonList extends Array<JsonValue> {}
 
-export type JsonValue = boolean | number | string | null | JsonList | JsonMap
+export type JsonValue =
+  | boolean
+  | number
+  | string
+  | null
+  | JsonList
+  | JsonMap
+  | undefined
 export interface JsonMap {
   [key: string]: JsonValue
   [index: number]: JsonValue
@@ -57,7 +70,6 @@ export type ProcessedFeatureFlags = {
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
   coinbasePayBlocked: boolean
-  useCoinGeckoPro: boolean
   defiBlocked: boolean
   leftFab: boolean
   darkMode: boolean

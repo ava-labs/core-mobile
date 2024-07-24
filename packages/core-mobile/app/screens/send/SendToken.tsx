@@ -14,26 +14,22 @@ import { Account } from 'store/account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
-import {
-  TokenType,
-  TokenWithBalance,
-  selectTokensWithBalanceByNetwork
-} from 'store/balance'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { TokenWithBalance } from 'store/balance/types'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
-import { getMaxValue } from 'utils/Utils'
-import { Amount } from 'screens/swap/SwapView'
-import { usePostCapture } from 'hooks/usePosthogCapture'
-import { BN } from 'bn.js'
-import { AddrBookItemType, Contact } from 'store/addressBook'
-import { FeePreset } from '../../components/NetworkFeeSelector'
+import { AddrBookItemType } from 'store/addressBook'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { Contact } from '@avalabs/types'
+import {
+  getAddressProperty,
+  getAddressXP
+} from 'store/utils/account&contactGetters'
+import { SendTokensScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
 
 type Props = {
-  onNext: () => void
   onOpenAddressBook: () => void
   onOpenSelectToken: (
     onTokenSelected: (token: TokenWithBalance) => void
@@ -43,55 +39,43 @@ type Props = {
   testID?: string
 }
 
-const SendToken: FC<Props> = ({
-  onNext,
-  onOpenAddressBook,
-  token,
-  contact
-}) => {
-  const { capture } = usePostCapture()
+type SendTokenNavigationProp = SendTokensScreenProps<
+  typeof AppNavigation.Send.Send
+>['navigation']
+
+const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
   const {
     setSendToken,
     sendToken,
     setSendAmount,
     sendAmount,
     toAccount,
-    fees: {
-      sendFeeNative,
-      gasLimit,
-      setCustomGasLimit,
-      setSelectedFeePreset,
-      setCustomGasPrice,
-      selectedFeePreset
-    },
     canSubmit,
-    sdkError
+    sendStatus,
+    sdkError,
+    maxAmount,
+    onSendNow
   } = useSendTokenContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const navigation = useNavigation<SendTokenNavigationProp>()
+  const { activeNetwork } = useNetworks()
   const [showQrCamera, setShowQrCamera] = useState(false)
   const [sendError, setSendError] = useState<string>()
   const placeholder =
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'
+      : activeNetwork.vmName === NetworkVMType.PVM
+      ? 'Enter Avax P address'
+      : activeNetwork.vmName === NetworkVMType.AVM
+      ? 'Enter Avax X address'
       : 'Enter Bitcoin Address'
 
-  const tokensWBalances = useSelector(
-    selectTokensWithBalanceByNetwork(activeNetwork)
-  )
-
-  const maxGasPrice =
-    token?.type === TokenType.NATIVE && sendAmount
-      ? token.balance.sub(sendAmount.bn).toString()
-      : tokensWBalances
-          .find(t => t.type === TokenType.NATIVE)
-          ?.balance.toString() || '0'
-
+  const sendInProcess = sendStatus === 'Sending'
   const sendDisabled = !canSubmit || !!(sdkError || sendError)
 
   const setAddress = useCallback(
-    ({ address, title }: { address: string; title: string }) => {
+    ({ address, name }: { address: string; name: string }) => {
       toAccount.setAddress?.(address)
-      toAccount.setTitle?.(title)
+      toAccount.setTitle?.(name)
     },
     [toAccount]
   )
@@ -122,54 +106,44 @@ const SendToken: FC<Props> = ({
     }
   }, [setShowAddressBook, toAccount.address])
 
+  useEffect(() => {
+    if (sendStatus === 'Success') {
+      navigation.goBack()
+    }
+  }, [navigation, sendStatus])
+
   const onContactSelected = (
     item: Contact | Account,
     type: AddrBookItemType,
     source: AddressBookSource
-  ) => {
+  ): void => {
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
-        setAddress({ address: item.address, title: item.title })
+        setAddress({ address: getAddressProperty(item), name: item.name })
+        break
+      case NetworkVMType.PVM:
+      case NetworkVMType.AVM:
+        setAddress({ address: getAddressXP(item) ?? '', name: item.name })
         break
       case NetworkVMType.BITCOIN:
         setAddress({
-          address: item.addressBtc,
-          title: item.title
+          address: item.addressBTC ?? '',
+          name: item.name
         })
         break
     }
     selectContact(item, type)
-    capture('SendContactSelected', { contactSource: source })
+    AnalyticsService.capture('SendContactSelected', { contactSource: source })
   }
 
-  const onNextPress = () => {
+  const onNextPress = (): void => {
     saveRecentContact()
-    onNext()
+    onSendNow()
   }
 
   const handleMax = useCallback(() => {
-    const maxBn = getMaxValue(sendToken, sendFeeNative)
-    if (maxBn) {
-      setSendAmount({
-        bn: maxBn,
-        amount: bnToLocaleString(maxBn, sendToken?.decimals)
-      } as Amount)
-    }
-  }, [sendFeeNative, sendToken, setSendAmount])
-
-  const handleGasPriceChange = useCallback(
-    (gasPrice1: bigint, feePreset: FeePreset) => {
-      if (feePreset !== selectedFeePreset) {
-        capture('SendFeeOptionChanged', {
-          modifier: feePreset
-        })
-      }
-      setCustomGasPrice(new BN(gasPrice1.toString()))
-      setSelectedFeePreset(feePreset)
-    },
-    [capture, selectedFeePreset, setCustomGasPrice, setSelectedFeePreset]
-  )
-
+    setSendAmount(maxAmount)
+  }, [maxAmount, setSendAmount])
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
@@ -247,25 +221,15 @@ const SendToken: FC<Props> = ({
             hideErrorMessage
             error={sendError ?? sdkError}
           />
-          <View style={{ paddingHorizontal: 16 }}>
-            <Space y={8} />
-            <NetworkFeeSelector
-              gasLimit={gasLimit ?? 0}
-              onGasPriceChange={handleGasPriceChange}
-              onGasLimitChange={setCustomGasLimit}
-              maxGasPrice={maxGasPrice}
-            />
-          </View>
           <FlexSpacer />
         </>
       )}
       <AvaButton.PrimaryLarge
-        disabled={sendDisabled}
+        disabled={sendDisabled || sendInProcess}
         onPress={onNextPress}
         style={{ margin: 16 }}>
         Next
       </AvaButton.PrimaryLarge>
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -273,7 +237,7 @@ const SendToken: FC<Props> = ({
         visible={showQrCamera}>
         <QrScannerAva
           onSuccess={data => {
-            setAddress({ address: data, title: '' })
+            setAddress({ address: data, name: '' })
             setShowQrCamera(false)
           }}
           onCancel={() => setShowQrCamera(false)}

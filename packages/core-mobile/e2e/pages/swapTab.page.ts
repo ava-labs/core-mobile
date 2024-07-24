@@ -30,12 +30,20 @@ class SwapTabPage {
     return by.id(swapTab.linkSvg)
   }
 
-  get submitButton() {
-    return by.id(swapTab.submitButton)
+  get reviewOrderBtn() {
+    return by.id(swapTab.reviewOrderBtn)
   }
 
-  get inputTextField() {
-    return by.id(swapTab.inputTextField)
+  get approveBtn() {
+    return by.id(swapTab.approveBtn)
+  }
+
+  get rejectBtn() {
+    return by.id(swapTab.rejectBtn)
+  }
+
+  get amountField() {
+    return by.id(swapTab.amountField)
   }
 
   async tapAvaxToken() {
@@ -50,8 +58,16 @@ class SwapTabPage {
     await Actions.tapElementAtIndex(this.selectTokenDropdown, 0)
   }
 
-  async tapSubmitButton() {
-    await Actions.tapElementAtIndex(this.submitButton, 0)
+  async reviewOrderButton() {
+    await Actions.tapElementAtIndex(this.reviewOrderBtn, 0)
+  }
+
+  async tapApproveButton() {
+    await Actions.tapElementAtIndex(this.approveBtn, 0)
+  }
+
+  async tapRejectButton() {
+    await Actions.tapElementAtIndex(this.rejectBtn, 0)
   }
 
   async tapLink() {
@@ -60,7 +76,7 @@ class SwapTabPage {
 
   async inputTokenAmmountAvax() {
     await Actions.setInputText(
-      this.inputTextField,
+      this.amountField,
       swapTab.tokenValueAvax,
       platformIndex
     )

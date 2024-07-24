@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 import { format } from 'date-fns'
 import { TextInput } from 'react-native'
+import SentryService from 'services/sentry/SentryService'
 import { assertNotNull } from 'utils/assertions'
 
 export enum LogLevel {
@@ -32,6 +33,7 @@ class Logger {
   private textRef: TextInput | null
   private textRefBuffer = ''
   private level: LogLevel = LogLevel.ERROR
+  private shouldLogErrorToSentry = false
 
   setLevel = (level: LogLevel): void => {
     this.level = level
@@ -69,6 +71,10 @@ class Logger {
       console.groupCollapsed(...formatMessage(message, 'red'))
       value && console.error(value)
       console.groupEnd()
+
+      if (this.shouldLogErrorToSentry) {
+        SentryService.captureException(message, value)
+      }
     }
   }
 
@@ -122,6 +128,10 @@ class Logger {
     this.textRef.setNativeProps({
       text: (this.textRef.props.value ?? '') + '\n' + message
     })
+  }
+
+  setShouldLogErrorToSentry = (shouldLogErrorToSentry: boolean): void => {
+    this.shouldLogErrorToSentry = shouldLogErrorToSentry
   }
 }
 

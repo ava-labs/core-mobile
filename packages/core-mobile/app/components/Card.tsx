@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, PropsWithChildren } from 'react'
 import { View, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity50 } from 'resources/Constants'
@@ -7,7 +7,7 @@ interface Props {
   style?: ViewStyle
 }
 
-const Card: FC<Props> = ({ style, children }) => {
+const Card: FC<Props & PropsWithChildren> = ({ style, children }) => {
   const { theme } = useApplicationContext()
   return (
     <View

@@ -5,7 +5,7 @@ import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx } from '@avalabs/avalanchejs'
 import { Avax } from 'types/Avax'
 import { FundsStuckError } from 'hooks/earn/errors'
 import {
@@ -39,24 +39,25 @@ export async function importC({
     baseFee: instantBaseFee,
     avaxXPNetwork,
     sourceChain: 'P',
-    destinationAddress: activeAccount.address
+    destinationAddress: activeAccount.addressC
   })
 
-  const signedTxJson = await WalletService.sign(
-    {
+  const signedTxJson = await WalletService.sign({
+    transaction: {
       tx: unsignedTx,
       externalIndices: [],
       internalIndices: []
     } as AvalancheTransactionRequest,
-    activeAccount.index,
-    avaxXPNetwork
-  )
+    accountIndex: activeAccount.index,
+    network: avaxXPNetwork
+  })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
   let txID: string
   try {
     txID = await retry({
-      operation: () => NetworkService.sendTransaction(signedTx, avaxXPNetwork),
+      operation: () =>
+        NetworkService.sendTransaction({ signedTx, network: avaxXPNetwork }),
       isSuccess: result => result !== '',
       maxRetries: maxTransactionCreationRetries
     })

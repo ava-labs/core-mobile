@@ -7,7 +7,6 @@ import TokenAddress from 'components/TokenAddress'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import type { ComponentStory, Meta } from '@storybook/react-native'
 
 const styles = StyleSheet.create({
   container: {
@@ -17,7 +16,7 @@ const styles = StyleSheet.create({
   }
 })
 
-const BaseDemo = () => {
+const BaseDemo = (): JSX.Element => {
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -200,13 +199,12 @@ const BaseDemo = () => {
 
 export default {
   title: 'AvaListItem'
-} as Meta
+}
 
 export const BaseExamples = BaseDemo
 
-export const CurrencyAmount: ComponentStory<
-  typeof AvaListItem.CurrencyAmount
-> = args => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const CurrencyAmount = (args: any): React.JSX.Element => {
   return <AvaListItem.CurrencyAmount {...args} />
 }
 

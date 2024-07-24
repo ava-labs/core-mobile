@@ -1,20 +1,15 @@
 import BN from 'bn.js'
-import { TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance/types'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
-
-export enum SendEvent {
-  TX_DETAILS = 'SendEvent: TX_DETAILS'
-}
+import { Network } from '@avalabs/chains-sdk'
+import { Account } from 'store/account/types'
+import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
+import { Request } from 'store/rpc/utils/createInAppRequest'
 
 export interface SendError {
   error: boolean
   message: string
-}
-
-export const DEFAULT_SEND_HOOK_ERROR: SendError = {
-  error: false,
-  message: ''
 }
 
 export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
@@ -23,44 +18,31 @@ export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
   address?: string
   error?: SendError
   sendFee?: BN
-  gasPrice?: bigint
+  defaultMaxFeePerGas?: bigint // should be the lowest network fee
   gasLimit?: number
   canSubmit?: boolean
   token?: T
   txId?: string
 }
 
-export type ValidSendState = SendState &
-  Required<Pick<SendState, 'amount' | 'address' | 'gasPrice'>> & {
-    canSubmit: true
-  }
-
-export function isValidSendState(
-  sendState: SendState
-): sendState is ValidSendState {
+export function isValidSendState(sendState: SendState): boolean {
   return sendState.canSubmit === true
-}
-
-export interface SendErrors {
-  amountError: SendError
-  addressError: SendError
-  formError: SendError
 }
 
 export enum SendErrorMessage {
   AMOUNT_REQUIRED = 'Amount required',
   ADDRESS_REQUIRED = 'Address required',
-  C_CHAIN_REQUIRED = 'Must be a C chain address',
   INVALID_ADDRESS = 'Address is invalid',
   INVALID_NETWORK_FEE = 'Network Fee is invalid',
   INSUFFICIENT_BALANCE = 'Insufficient balance.',
-  INSUFFICIENT_BALANCE_FOR_FEE = 'Insufficient balance for fee.'
+  INSUFFICIENT_BALANCE_FOR_FEE = 'Insufficient balance for fee.',
+  INVALID_GAS_LIMIT = 'Gas limit is invalid'
 }
 
 export interface SendServiceHelper {
   getTransactionRequest(
     params: GetTransactionRequestParams
-  ): Promise<SignTransactionRequest>
+  ): Promise<SignTransactionRequest | AvalancheTxParams>
   validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState>
@@ -70,6 +52,19 @@ export type GetTransactionRequestParams = SendServiceFuncParams
 
 export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
   nativeTokenBalance?: BN // in wei
+}
+
+export type GetPVMTransactionRequestParams = SendServiceFuncParams & {
+  accountIndex: number
+}
+
+export type SendParams = {
+  sendState: SendState
+  network: Network
+  account: Account
+  currency: string
+  request: Request
+  sentryTrx?: Transaction
 }
 
 type SendServiceFuncParams = {

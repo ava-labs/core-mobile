@@ -3,9 +3,9 @@ import Keychain, {
   Options,
   UserCredentials
 } from 'react-native-keychain'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import { Platform } from 'react-native'
+import { commonStorage } from 'utils/mmkv'
 import Logger from './Logger'
 
 const SERVICE_KEY = 'sec-storage-service'
@@ -47,23 +47,19 @@ export const KeystoreConfig: KeystoreConfigType = {
 class BiometricsSDK {
   /**
    * On some android devices loading keystore can take
-   * some time on firs run so we call this function
+   * some time on first run, so we call this function
    * early and mask it with splash for smoother UX
    */
   async warmup(): Promise<void> {
     await Keychain.getAllGenericPasswordServices()
   }
 
-  async getAccessType(): Promise<string | null> {
-    try {
-      return AsyncStorage.getItem(SECURE_ACCESS_SET)
-    } catch (e) {
-      return Promise.reject(null)
-    }
+  getAccessType(): string {
+    return commonStorage.getString(SECURE_ACCESS_SET) ?? 'PIN'
   }
 
   async storeWalletWithPin(
-    walletMnemonic: string,
+    encryptedMnemonic: string,
     isResetting = false
   ): Promise<false | Keychain.Result> {
     // if the user is not resetting the pin
@@ -73,11 +69,11 @@ class BiometricsSDK {
     // to change the type back to PIN the need to toggle the switch in
     // security & privacy
     if (!isResetting) {
-      await AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN')
+      commonStorage.set(SECURE_ACCESS_SET, 'PIN')
     }
     return Keychain.setGenericPassword(
       'wallet',
-      walletMnemonic,
+      encryptedMnemonic,
       KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
     )
   }
@@ -87,12 +83,12 @@ class BiometricsSDK {
   }
 
   /**
-   * Stores key under available biometry and prompts user for biometry to check if everytinih is ok.
-   * Emits boolean true if everything ok, or throws Error if something whent wrong.
+   * Stores key under available biometry and prompts user for biometry to check if everything is ok.
+   * Emits boolean true if everything ok, or throws Error if something went wrong.
    * @param key - mnemonic to store
    */
   async storeWalletWithBiometry(key: string): Promise<boolean> {
-    await AsyncStorage.setItem(SECURE_ACCESS_SET, 'BIO')
+    commonStorage.set(SECURE_ACCESS_SET, 'BIO')
     // try to store with biometry
     try {
       await Keychain.setGenericPassword(
@@ -104,7 +100,7 @@ class BiometricsSDK {
       return true
     } catch (e) {
       Logger.error('failed to store with biometry', e)
-      // case something goes wrong with biometrics, use use the fallback, which defaults to device code
+      // case something goes wrong with biometrics, use the fallback, which defaults to device code
       try {
         await Keychain.setGenericPassword(
           'wallet',
@@ -130,7 +126,7 @@ class BiometricsSDK {
       .then(() =>
         Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
       )
-      .then(() => AsyncStorage.removeItem(SECURE_ACCESS_SET))
+      .then(() => commonStorage.delete(SECURE_ACCESS_SET))
       .catch(Logger.error)
   }
 

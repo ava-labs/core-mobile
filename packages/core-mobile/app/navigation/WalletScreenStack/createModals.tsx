@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useLayoutEffect, useRef } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -10,20 +10,30 @@ import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import CreateRemoveContactV2 from 'screens/rpc/components/v2/CreateRemoveContact'
 import UpdateContactV2 from 'screens/rpc/components/v2/UpdateContact/UpdateContact'
 import SelectAccountV2 from 'screens/rpc/components/v2/SelectAccount'
-import SignTransactionV2 from 'screens/rpc/components/v2/SignTransaction'
 import BridgeAssetV2 from 'screens/rpc/components/v2/BridgeAsset'
-import SignMessageV2 from 'screens/rpc/components/v2/SignMessage'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
+import ApprovalPopup from 'screens/rpc/components/v2/ApprovalPopup'
 import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
 import AvalancheSendTransactionV2 from 'screens/rpc/components/v2/AvalancheSendTransaction'
 import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomSheet'
 import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
 import SearchIcon from 'assets/icons/search.svg'
-import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import Photo from 'assets/icons/photo_placeholder.svg'
 import Swap from 'assets/icons/swap_v2.svg'
+import HeaderAccountSelector from 'components/HeaderAccountSelector'
+import { View } from '@avalabs/k2-mobile'
+import { Animated, Platform } from 'react-native'
+import TabsListScreen from 'screens/browser/TabsListScreen'
+import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
+import AnalyticsConsentSheet from 'screens/mainView/AnalyticsConsentSheet'
+import { AvalancheSetDeveloperMode } from 'screens/rpc/components/v2/AvalancheSetDeveloperMode'
+import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
+import BitcoinSendTransaction from 'screens/rpc/components/v2/BitcoinSendTransaction'
+import { AvalancheSignMessage } from 'screens/rpc/components/v2/AvalancheSignMessage'
+import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
+import EditSpendLimit from 'components/EditSpendLimit'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -36,8 +46,8 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={SessionProposalV2}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.SignMessageV2}
-        component={SignMessageV2}
+        name={AppNavigation.Modal.AvalancheSignMessage}
+        component={AvalancheSignMessage}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.CreateRemoveContactV2}
@@ -64,8 +74,12 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={BridgeAssetV2}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.SignTransactionV2}
-        component={SignTransactionV2}
+        name={AppNavigation.Modal.ApprovalPopup}
+        component={ApprovalPopup}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.EditSpendLimit}
+        component={EditSpendLimit}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSendTransactionV2}
@@ -76,8 +90,61 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={AvalancheSendTransactionV2}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.CoreIntro}
-        component={CoreIntroModal}
+        name={AppNavigation.Modal.BitcoinSendTransaction}
+        component={BitcoinSendTransaction}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.AvalancheSetDeveloperMode}
+        component={AvalancheSetDeveloperMode}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.AlertScreen}
+        component={AlertScreen}
+      />
+      <WalletScreenS.Group
+        screenOptions={{
+          cardOverlayEnabled: true
+        }}>
+        <WalletScreenS.Screen
+          name={AppNavigation.Modal.CoreIntro}
+          component={CoreIntroModal}
+        />
+      </WalletScreenS.Group>
+    </WalletScreenS.Group>
+  )
+
+  const browserModals = (
+    <WalletScreenS.Group>
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.BrowserTabsList}
+        options={{
+          presentation: 'modal',
+          animationEnabled: true,
+          cardStyleInterpolator: ({ current: { progress } }) => {
+            return {
+              cardStyle: {
+                opacity: progress
+              }
+            }
+          }
+        }}
+        component={TabsListScreen}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.BrowserTabCloseAll}
+        options={{
+          presentation: 'transparentModal',
+          animationEnabled: true
+        }}
+        component={AreYouSureModal}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.UseWalletConnect}
+        options={{
+          presentation: 'transparentModal',
+          animationEnabled: true
+        }}
+        component={UseWalletConnectModal}
       />
     </WalletScreenS.Group>
   )
@@ -85,6 +152,7 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
   return (
     <WalletScreenS.Group screenOptions={{ presentation: 'transparentModal' }}>
       {walletConnectV2Modals}
+      {browserModals}
       <WalletScreenS.Screen
         options={{
           transitionSpec: {
@@ -119,6 +187,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         name={AppNavigation.Modal.BuyCarefully}
         component={BuyCarefully}
       />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.AnalyticsConsentSheet}
+        component={AnalyticsConsentSheet}
+      />
     </WalletScreenS.Group>
   )
 }
@@ -129,13 +201,57 @@ type AccountDropDownNavigationProp = WalletScreenProps<
 
 const AccountDropdownComp = (): JSX.Element => {
   const navigation = useNavigation<AccountDropDownNavigationProp>()
+  const backgroundColor = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.timing(backgroundColor, {
+      toValue: 1,
+      duration: 400,
+      delay: 200,
+      useNativeDriver: false
+    }).start()
+  }, [backgroundColor])
+
+  const backgroundColorInterpolate = backgroundColor.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['transparent', 'black']
+  })
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerBackgroundContainerStyle: {
+        opacity: 0.5
+      },
+      headerShown: true,
+      headerLeft: () => null,
+      headerTitleAlign: 'center',
+      // eslint-disable-next-line react/no-unstable-nested-components
+      headerTitle: () => (
+        <Animated.View
+          style={{
+            marginTop: Platform.OS === 'ios' ? 4 : -8,
+            backgroundColor: backgroundColorInterpolate
+          }}>
+          <HeaderAccountSelector
+            direction="up"
+            onPressed={() => {
+              navigation.goBack()
+            }}
+          />
+        </Animated.View>
+      )
+    })
+  }, [navigation, backgroundColorInterpolate])
+
   return (
-    <AccountDropdown
-      onAddEditAccounts={() => {
-        navigation.goBack()
-        navigation.navigate(AppNavigation.Modal.AccountBottomSheet)
-      }}
-    />
+    <View sx={{ marginTop: 4, flex: 1 }}>
+      <AccountDropdown
+        onAddEditAccounts={() => {
+          navigation.goBack()
+          navigation.navigate(AppNavigation.Modal.AccountBottomSheet)
+        }}
+      />
+    </View>
   )
 }
 type EditGasLimitScreenProps = WalletScreenProps<
@@ -146,15 +262,18 @@ const EditGasLimit = (): JSX.Element => {
   const { goBack } = useNavigation<EditGasLimitScreenProps['navigation']>()
   const { params } = useRoute<EditGasLimitScreenProps['route']>()
 
-  const onSave = (newGasLimit: number): void => params.onSave(newGasLimit)
-
   return (
     <EditGasLimitBottomSheet
-      onClose={goBack}
-      onSave={onSave}
       gasLimit={params.gasLimit}
-      gasPrice={params.gasPrice}
+      maxFeePerGas={params.maxFeePerGas}
+      maxPriorityFeePerGas={params.maxPriorityFeePerGas}
+      onClose={goBack}
+      onSave={params.onSave}
       network={params.network}
+      lowMaxFeePerGas={params.lowMaxFeePerGas}
+      isGasLimitEditable={params.isGasLimitEditable}
+      isBtcNetwork={params.isBtcNetwork}
+      noGasLimitError={params.noGasLimitError}
     />
   )
 }
@@ -171,25 +290,22 @@ const StakeDisclaimer = (): JSX.Element => {
 
 const CoreIntroModal = (): JSX.Element => {
   const descriptions = [
-    { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem!' },
+    { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem' },
     {
-      icon: <Swap />,
-      text: 'Send, Receive, Swap and Bridge assets across multiple chains!'
+      icon: <Swap color={'white'} style={{ marginTop: 5 }} />,
+      text: 'Interact with assets across multiple chains'
     },
     {
       icon: <Photo />,
-      text: 'Collect and share NFTs!'
-    },
-    {
-      icon: <RocketLaunch />,
-      text: 'Conquer the cryptoverse!'
+      text: 'Collect and share NFTs'
     }
   ]
+
   return (
     <IntroModal
       heading="Welcome to Core!"
       viewOnceKey={ViewOnceKey.CORE_INTRO}
-      buttonText="Get Started!"
+      buttonText="Get Started"
       descriptions={descriptions}
       styles={{ marginBottom: 74 }}
     />

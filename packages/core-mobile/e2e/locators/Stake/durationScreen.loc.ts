@@ -7,7 +7,7 @@ export default {
   tooltipTextLink: 'Learn more',
   durationTitle: 'Duration',
   durationDescription: 'How long would you like to stake?',
-  nextButton: 'btnPrimary',
+  nextButton: 'next_btn',
   oneDayText: '1 Day',
   twoWeeksText: '2 Weeks',
   oneMonthText: '1 Month',

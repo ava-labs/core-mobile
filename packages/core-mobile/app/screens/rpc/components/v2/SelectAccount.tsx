@@ -12,7 +12,7 @@ type SelectAccountScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SelectAccountV2
 >
 
-const SelectAccount = () => {
+const SelectAccount = (): JSX.Element => {
   const { goBack } = useNavigation<SelectAccountScreenProps['navigation']>()
 
   const { request, account } =
@@ -22,9 +22,9 @@ const SelectAccount = () => {
     useDappConnectionV2()
 
   const theme = useApplicationContext().theme
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
 
-  const header = `Switch to ${account.title}?`
+  const header = `Switch to ${account.name}?`
 
   const description =
     new URL(peerMeta.url).hostname +
@@ -40,11 +40,11 @@ const SelectAccount = () => {
     goBack()
   }, [account, goBack, onApprove, request])
 
-  const renderWalletIcon = () => (
+  const renderWalletIcon = (): JSX.Element => (
     <WalletSVG size={48} backgroundColor={theme.colorBg3} />
   )
 
-  const renderAccount = () => <AccountItem account={account} />
+  const renderAccount = (): JSX.Element => <AccountItem account={account} />
 
   return (
     <SimplePrompt

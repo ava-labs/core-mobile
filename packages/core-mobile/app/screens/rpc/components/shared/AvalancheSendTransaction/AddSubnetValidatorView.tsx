@@ -8,28 +8,22 @@ import Card from 'components/Card'
 import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { format } from 'date-fns'
-import TxFee from './components/TxFee'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
+import { TxFee } from './components/TxFee'
 
 const AddSubnetValidatorTxView = ({
   tx
 }: {
   tx: Avalanche.AddSubnetValidatorTx
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const { txFee, nodeID, start, end, subnetID } = tx
-  const startDate = format(
-    new Date(parseInt(start) * 1000),
-    'MMM dd, yyyy, HH:mm a'
-  )
-  const endDate = format(
-    new Date(parseInt(end) * 1000),
-    'MMM dd, yyyy, HH:mm a'
-  )
+  const startDate = getDateInMmmDdYyyyHhMmA(parseInt(start))
+  const endDate = getDateInMmmDdYyyyHhMmA(parseInt(end))
 
   return (
     <View>
-      <AvaText.Heading4>Approve Add Subnet Validator</AvaText.Heading4>
+      <AvaText.Heading4>Add Subnet Validator</AvaText.Heading4>
       <Space y={28} />
       <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
         Staking Details

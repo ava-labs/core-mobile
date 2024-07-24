@@ -1,104 +1,119 @@
-import React, { FC, memo } from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
-import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
 import {
+  selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
   selectIsLoadingBalances,
-  selectIsRefetchingBalances
-} from 'store/balance'
+  selectIsRefetchingBalances,
+  selectTokensWithBalanceForAccount
+} from 'store/balance/slice'
 import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
+import { Icons, Text, useTheme, View } from '@avalabs/k2-mobile'
+import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
+import { Tooltip } from 'components/Tooltip'
+import { Space } from 'components/Space'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
-function PortfolioHeaderContainer() {
+function PortfolioHeader(): JSX.Element {
+  const {
+    theme: { colors }
+  } = useTheme()
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
-  const isLoadingBalance = useSelector(selectIsLoadingBalances)
+  const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(activeAccount?.index ?? 0)
   )
-  const { selectedCurrency, currencyFormatter } = context.appHook
-  const currencyBalance = currencyFormatter(balanceTotalInCurrency)
-
-  return (
-    <PortfolioHeader
-      balanceTotalInCurrency={currencyBalance}
-      isBalanceLoading={isLoadingBalance}
-      isBalanceRefreshing={isRefetchingBalance}
-      currencyCode={selectedCurrency}
-    />
+  const balanceAccurate = useSelector(
+    selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
   )
-}
+  const { selectedCurrency, currencyFormatter } = context.appHook
+  const currencyBalance =
+    !balanceAccurate && balanceTotalInCurrency === 0
+      ? '-'
+      : currencyFormatter(balanceTotalInCurrency)
+  const tokens = useSelector(
+    selectTokensWithBalanceForAccount(activeAccount?.index)
+  )
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
+  const [contentHeight, setContentHeight] = useState(0)
 
-interface PortfolioHeaderProps {
-  balanceTotalInCurrency: string
-  isBalanceLoading: boolean
-  isBalanceRefreshing: boolean
-  currencyCode: string
-}
+  const renderContent = (): JSX.Element => {
+    if (isBalanceLoading || !activeAccount) return <PortfolioHeaderLoader />
 
-const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({
-    balanceTotalInCurrency = '0',
-    isBalanceLoading = false,
-    isBalanceRefreshing = false,
-    currencyCode
-  }) => {
-    const { theme } = useApplicationContext()
-
-    const renderContent = () => {
-      if (isBalanceLoading) return <PortfolioHeaderLoader />
-
-      if (isBalanceRefreshing)
-        return (
-          <ActivityIndicator style={{ alignSelf: 'center' }} size="small" />
-        )
-
+    if (isRefetchingBalance)
       return (
-        <>
-          <AvaText.LargeTitleBold>
-            {balanceTotalInCurrency.replace(currencyCode, '')}
-          </AvaText.LargeTitleBold>
-          <AvaText.Heading3
-            textStyle={{
-              paddingBottom: 4,
-              marginLeft: 4,
-              color: theme.colorText2
-            }}>
-            {currencyCode}
-          </AvaText.Heading3>
-        </>
+        <ActivityIndicator
+          style={{ alignSelf: 'center', height: contentHeight }}
+          size="small"
+        />
       )
-    }
 
     return (
-      <View pointerEvents="box-none">
-        <View style={styles.balanceContainer}>{renderContent()}</View>
-        <Space y={18} />
+      <View
+        sx={{ alignItems: 'center' }}
+        onLayout={event => {
+          setContentHeight(event.nativeEvent.layout.height)
+        }}>
+        <View
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            height: 44
+          }}>
+          {!balanceAccurate && (
+            <>
+              <Tooltip
+                content={
+                  'The prices of some tokens are missing. The balance might not be accurate currently.'
+                }
+                position={'top'}
+                style={{ width: 250 }}
+                isLabelPopable>
+                <Icons.Alert.IconWarningAmber
+                  color={colors.$warningLight}
+                  width={24}
+                  height={24}
+                  style={{ alignSelf: 'center' }}
+                />
+              </Tooltip>
+              <Space x={6} />
+            </>
+          )}
+          <Text variant="heading3">
+            {currencyBalance.replace(selectedCurrency, '')}
+          </Text>
+          <Text
+            variant="body1"
+            sx={{
+              paddingBottom: 4,
+              marginLeft: 4,
+              color: '$neutral400',
+              alignSelf: 'flex-end'
+            }}>
+            {selectedCurrency}
+          </Text>
+        </View>
+        {balanceAccurate && (
+          <PriceChangeIndicator
+            price={tokenPortfolioPriceChange}
+            textVariant="buttonSmall"
+          />
+        )}
       </View>
     )
   }
-)
 
-const styles = StyleSheet.create({
-  copyAddressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    width: 150,
-    alignSelf: 'center'
-  },
-  balanceContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    height: 44,
-    marginTop: 25
-  }
-})
+  return (
+    <View sx={{ paddingVertical: 8 }} pointerEvents="box-none">
+      {renderContent()}
+    </View>
+  )
+}
 
-export default PortfolioHeaderContainer
+export default PortfolioHeader

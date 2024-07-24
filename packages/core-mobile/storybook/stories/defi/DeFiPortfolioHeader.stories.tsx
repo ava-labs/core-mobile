@@ -1,5 +1,4 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
 import { DeFiPortfolioHeader } from 'screens/defi/components/DeFiPortfolioHeader'
 import { withCenterView } from '../../decorators/withCenterView'
 import { withCard } from '../../decorators/withCard'
@@ -7,7 +6,7 @@ import { withCard } from '../../decorators/withCard'
 export default {
   title: 'DeFi/DeFiPortfolioHeader',
   decorators: [withCard, withCenterView]
-} as Meta
+}
 
 export const Default = () => (
   <DeFiPortfolioHeader

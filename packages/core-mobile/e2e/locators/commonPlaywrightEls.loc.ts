@@ -1,6 +1,6 @@
 export default {
   connectWallet: 'Connect Wallet',
   walletConnectBtn: 'WalletConnect',
-  w3mUri: 'w3m-qrcode',
+  wuiQrCode: 'wui-qr-code',
   wcmUri: 'wcm-qrcode'
 }

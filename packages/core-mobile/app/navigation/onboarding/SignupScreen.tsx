@@ -1,18 +1,24 @@
 import { Button, View } from '@avalabs/k2-mobile'
-import { noop } from '@avalabs/utils-sdk'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
-import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC } from 'react'
-import { Alert } from 'react-native'
+import React, { FC, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
-import GoogleSigninService from 'seedless/services/GoogleSigninService'
-import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
-import Logger from 'utils/Logger'
+import {
+  selectIsSeedlessOnboardingAppleBlocked,
+  selectIsSeedlessOnboardingBlocked,
+  selectIsSeedlessOnboardingGoogleBlocked
+} from 'store/posthog'
+import { OidcProviders } from 'seedless/consts'
+import { MFA } from 'seedless/types'
+import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
+import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
+import { showSimpleToast } from 'components/Snackbar'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -22,55 +28,159 @@ const SignupScreen: FC = () => {
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
-  const navigation = useNavigation<NavigationProp>()
-  const { register, isRegistering } = useSeedlessRegister()
+  const { navigate } = useNavigation<NavigationProp>()
+  const { register, isRegistering, verify } = useSeedlessRegister()
 
-  const handleSigninWithMnemonic = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Welcome, {
-      screen: AppNavigation.Onboard.AnalyticsConsent,
-      params: {
-        nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
-      }
-    })
-  }
+  useEffect(() => {
+    isRegistering ? showOwl() : hideOwl()
+  }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Welcome, {
+    navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
         nextScreen: AppNavigation.Onboard.CreateWalletStack
       }
     })
+    AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
-  const handleSignin = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Signin)
+  const handleAccessExistingWallet = (): void => {
+    navigate(AppNavigation.Onboard.AccessMnemonicWallet)
+    AnalyticsService.capture('AccessExistingWalletClicked')
   }
 
-  const handleSignupWithGoogle = async (): Promise<void> => {
-    const oidcToken = await GoogleSigninService.signin()
-
-    try {
-      await register({
-        oidcToken,
-        onRegisterMfaMethods: mfaId => {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-            oidcToken,
-            mfaId
-          })
-        },
-        onVerifyMfaMethod: mfaId => {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.VerifyCode,
-            oidcToken,
-            mfaId
-          })
+  const handleAccountVerified = async (): Promise<void> => {
+    showOwl()
+    const walletName = await SeedlessService.getAccountName()
+    hideOwl()
+    if (walletName) {
+      navigate(AppNavigation.Root.Onboard, {
+        screen: AppNavigation.Onboard.Welcome,
+        params: {
+          screen: AppNavigation.Onboard.AnalyticsConsent,
+          params: {
+            nextScreen: AppNavigation.Onboard.CreatePin
+          }
         }
       })
-    } catch (e) {
-      Alert.alert('seedless user registration error')
+      return
     }
+    navigate(AppNavigation.Onboard.NameYourWallet)
+  }
+
+  const handleRegisterMfaMethods = (oidcAuth?: {
+    oidcToken: string
+    mfaId: string
+  }): void => {
+    navigate(AppNavigation.Root.RecoveryMethods, {
+      screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
+      params: {
+        oidcAuth,
+        onAccountVerified: handleAccountVerified,
+        allowsUserToAddLater: true
+      }
+    })
+  }
+
+  const handleVerifyMfaMethod = (
+    oidcAuth: {
+      oidcToken: string
+      mfaId: string
+    },
+    mfaMethods: MFA[]
+  ): void => {
+    navigate(AppNavigation.Root.SelectRecoveryMethods, {
+      mfaMethods,
+      onMFASelected: mfa => {
+        verify(mfa, oidcAuth, handleAccountVerified)
+      }
+    })
+  }
+
+  const renderMnemonicOnboarding = (): JSX.Element => {
+    return (
+      <View sx={{ gap: 16 }}>
+        <Button
+          testID="manually_create_new_wallet_button"
+          type="secondary"
+          size="large"
+          onPress={handleSignupWithMnemonic}>
+          Manually Create New Wallet
+        </Button>
+        <Button
+          testID="accessExistingWallet"
+          type="secondary"
+          size="large"
+          onPress={handleAccessExistingWallet}>
+          Access Existing Wallet
+        </Button>
+      </View>
+    )
+  }
+
+  const isSeedlessOnboardingAppleBlocked = useSelector(
+    selectIsSeedlessOnboardingAppleBlocked
+  )
+  const isSeedlessOnboardingGoogleBlocked = useSelector(
+    selectIsSeedlessOnboardingGoogleBlocked
+  )
+
+  const shouldShowGoogle = !isSeedlessOnboardingGoogleBlocked
+  const shouldShowApple =
+    !isSeedlessOnboardingAppleBlocked && AppleSignInService.isSupported()
+
+  const handleGoogleSignin = (): void => {
+    register({
+      getOidcToken: GoogleSigninService.signin,
+      oidcProvider: OidcProviders.GOOGLE,
+      onRegisterMfaMethods: handleRegisterMfaMethods,
+      onVerifyMfaMethod: handleVerifyMfaMethod,
+      onAccountVerified: handleAccountVerified
+    }).catch(() => {
+      showSimpleToast('Unable to sign up with Google')
+    })
+  }
+
+  const handleAppleSignin = (): void => {
+    register({
+      getOidcToken: AppleSignInService.signIn,
+      oidcProvider: OidcProviders.APPLE,
+      onRegisterMfaMethods: handleRegisterMfaMethods,
+      onVerifyMfaMethod: handleVerifyMfaMethod,
+      onAccountVerified: handleAccountVerified
+    }).catch(() => {
+      showSimpleToast('Unable to sign up with Apple')
+    })
+  }
+
+  const renderSeedlessOnboarding = (): JSX.Element => {
+    return (
+      <View sx={{ gap: 16 }}>
+        {shouldShowGoogle && (
+          <Button
+            testID="continueWithGoogle"
+            type="primary"
+            size="large"
+            disabled={isRegistering}
+            leftIcon="google"
+            onPress={handleGoogleSignin}>
+            Continue with Google
+          </Button>
+        )}
+        {shouldShowApple && (
+          <Button
+            testID="continueWithApple"
+            type="primary"
+            size="large"
+            disabled={isRegistering}
+            leftIcon="apple"
+            onPress={handleAppleSignin}>
+            Continue with Apple
+          </Button>
+        )}
+      </View>
+    )
   }
 
   return (
@@ -87,50 +197,10 @@ const SignupScreen: FC = () => {
         }}>
         <CoreXLogoAnimated size={180} />
       </View>
-      {!isRegistering && (
-        <View sx={{ padding: 16, marginBottom: 46 }}>
-          {isSeedlessOnboardingBlocked ? (
-            <>
-              <Button
-                type="primary"
-                size="xlarge"
-                onPress={handleSigninWithMnemonic}>
-                Forgot PIN?
-              </Button>
-              <Space y={16} />
-              <Button
-                type="secondary"
-                size="xlarge"
-                onPress={handleSignupWithMnemonic}>
-                Sign up with Recovery Phrase
-              </Button>
-            </>
-          ) : (
-            <>
-              <AuthButtons
-                title="Sign up with..."
-                disabled={isRegistering}
-                onGoogleAction={() => {
-                  handleSignupWithGoogle().catch(error => {
-                    Alert.alert('seedless user registration error')
-                    Logger.error('handleSignupWithGoogle', error)
-                  })
-                }}
-                onAppleAction={noop}
-                onMnemonicAction={handleSignupWithMnemonic}
-              />
-              <Space y={48} />
-              <Button
-                type="tertiary"
-                size="xlarge"
-                disabled={isRegistering}
-                onPress={handleSignin}>
-                Already Have a Wallet?
-              </Button>
-            </>
-          )}
-        </View>
-      )}
+      <View sx={{ padding: 16, marginBottom: 46, gap: 35 }}>
+        {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}
+        {renderMnemonicOnboarding()}
+      </View>
     </View>
   )
 }

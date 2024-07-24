@@ -2,7 +2,6 @@ import React from 'react'
 import { Dimensions } from 'react-native'
 import {
   Canvas,
-  Rect,
   LinearGradient,
   vec,
   Group,
@@ -11,7 +10,7 @@ import {
   rrect,
   rect,
   Box,
-  Mask
+  SkImage
 } from '@shopify/react-native-skia'
 import { Space } from 'components/Space'
 import { useDispatch } from 'react-redux'
@@ -19,48 +18,37 @@ import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
 import { useNavigation } from '@react-navigation/native'
 import { Row } from 'components/Row'
 import { Button, SxProp, Text, View } from '@avalabs/k2-mobile'
-
-const TO_COLOR = '#000000'
-const FROM_COLOR = '#007AFF'
+import Logger from 'utils/Logger'
 
 const { height, width } = Dimensions.get('screen')
+
+const linearGradientProps = {
+  colors: ['#0A84FF', '#0E64BA', '#124D85', '#134370', '#143E65', '#1A1A1C'],
+  positions: [0, 0.28, 0.32, 0.36, 0.4, 0.56],
+  start: vec(0, 0),
+  end: vec(0, height)
+}
 
 const BlueBackground = (): JSX.Element => {
   return (
     <Box box={rrect(rect(0, 0, width, height), 8, 8)}>
-      <LinearGradient
-        start={vec(width * 2.8, 0)}
-        end={vec(width + 200, height)}
-        colors={[FROM_COLOR, TO_COLOR]}
-      />
+      <LinearGradient {...linearGradientProps} />
     </Box>
   )
 }
 
-const TokenImageWithGradient = (): JSX.Element => {
-  const image = useImage(require('assets/icons/browser_intro_screen_logos.png'))
+const TokenImageWithGradient = ({ image }: { image: SkImage }): JSX.Element => {
   return (
-    <Mask
-      mask={
-        <Rect x={0} y={0} height={height} width={width}>
-          <LinearGradient
-            start={vec(0, height / 20)}
-            end={vec(0, height / 3.3)}
-            colors={['white', 'transparent']}
-          />
-        </Rect>
-      }>
-      {image && (
-        <Image
-          image={image}
-          x={-175}
-          y={-290}
-          width={width * 1.9}
-          height={height * 0.9}
-          fit="contain"
-        />
-      )}
-    </Mask>
+    image && (
+      <Image
+        image={image}
+        x={-300}
+        y={-310}
+        width={width * 1.9}
+        height={height * 0.9}
+        fit="contain"
+      />
+    )
   )
 }
 
@@ -70,6 +58,8 @@ interface Props {
   buttonText: string
   descriptions: { icon: JSX.Element; text: string }[]
   styles?: SxProp
+  onConfirm?: () => void
+  testID?: string
 }
 
 export default function IntroModal({
@@ -77,13 +67,24 @@ export default function IntroModal({
   heading,
   buttonText,
   descriptions,
-  styles
+  styles,
+  onConfirm,
+  testID
 }: Props): JSX.Element {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const onInstructionRead = (): void => {
     dispatch(setViewOnce(viewOnceKey))
     goBack()
+  }
+  const image = useImage(
+    require('assets/icons/core_welcome_modal_bg.png'),
+    error => Logger.error('Error loading IntroModal SKImage: ', error)
+  )
+
+  const handleOnPress = (): void => {
+    onConfirm?.()
+    onInstructionRead()
   }
 
   return (
@@ -103,7 +104,7 @@ export default function IntroModal({
         }}>
         <Group>
           <BlueBackground />
-          <TokenImageWithGradient />
+          {image && <TokenImageWithGradient image={image} />}
         </Group>
       </Canvas>
       <View
@@ -114,24 +115,29 @@ export default function IntroModal({
           paddingBottom: 72
         }}>
         <Text variant="heading3">{heading}</Text>
-        <Space y={24} />
+        <Space y={28} />
         {descriptions.map(({ icon, text }, index) => (
           <View key={index}>
             <Row>
-              {icon}
+              <View style={{ marginTop: 2 }}>{icon}</View>
               <Text
-                variant="heading6"
+                variant="subtitle1"
                 sx={{
-                  paddingHorizontal: 16
+                  marginLeft: 16,
+                  marginRight: 20
                 }}>
                 {text}
               </Text>
             </Row>
-            <Space y={16} />
+            <Space y={14} />
           </View>
         ))}
         <Space y={52} />
-        <Button type="primary" size="xlarge" onPress={onInstructionRead}>
+        <Button
+          type="primary"
+          size="xlarge"
+          onPress={handleOnPress}
+          testID={testID}>
           {buttonText}
         </Button>
       </View>

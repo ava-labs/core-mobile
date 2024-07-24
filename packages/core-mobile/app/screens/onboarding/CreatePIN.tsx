@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react'
-import { Animated, StyleSheet, View } from 'react-native'
+import { Animated, StyleSheet } from 'react-native'
+import { View, Text } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
-import AvaText from 'components/AvaText'
-import DotSVG from 'components/svg/DotSVG'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { PinDots } from 'screens/login/PinDots'
 import { useCreatePin } from './CreatePinViewModel'
 import PinKey, { PinKeys } from './PinKey'
 
@@ -40,10 +39,9 @@ export default function CreatePIN({
   isResettingPin,
   onResetPinFailed
 }: Props): JSX.Element {
-  const { theme } = useApplicationContext()
   const {
     title,
-    pinDots,
+    pinLength,
     onEnterChosenPin,
     onEnterConfirmedPin,
     chosenPinEntered,
@@ -55,29 +53,16 @@ export default function CreatePIN({
     if (validPin) {
       onPinSet(validPin)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validPin, title])
 
-  const generatePinDots = (): Element[] => {
-    const dots: Element[] = []
-
-    pinDots.forEach((value, key) => {
-      dots.push(
-        <DotSVG
-          fillColor={value.filled ? theme.alternateBackground : undefined}
-          key={key}
-        />
-      )
-    })
-    return dots
-  }
-
-  const keyboard = (isChosenPinEntered: boolean) => {
-    const keys: Element[] = []
+  const keyboard = (isChosenPinEntered: boolean): JSX.Element[] => {
+    const keys: JSX.Element[] = []
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>
           <PinKey
-            keyboardKey={keymap.get(value)!}
+            keyboardKey={keymap.get(value)}
             onPress={
               isChosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
             }
@@ -92,9 +77,9 @@ export default function CreatePIN({
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
+          <Text variant="heading3" style={{ marginHorizontal: 16 }}>
             {title}
-          </AvaText.LargeTitleBold>
+          </Text>
           <Space y={20} />
         </>
       )}
@@ -109,7 +94,9 @@ export default function CreatePIN({
             ]
           }
         ]}>
-        <View style={styles.dots}>{generatePinDots()}</View>
+        <View style={styles.dots}>
+          <PinDots pinLength={pinLength} />
+        </View>
       </Animated.View>
       <View style={styles.keyboard}>{keyboard(chosenPinEntered)}</View>
     </View>

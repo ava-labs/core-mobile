@@ -1,17 +1,30 @@
 {
   "0": {
+    "id": "0",
     "index": 0,
-    "title": "Account 1",
-    "addressBtc": "tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw",
-    "address": "0xcA0E993876152ccA6053eeDFC753092c8cE712D0",
+    "name": "Account 1",
+    "addressBTC": "tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw",
+    "addressC": "0xcA0E993876152ccA6053eeDFC753092c8cE712D0",
     "addressAVM": "X-fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n",
     "addressPVM": "P-fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n",
-    "addressCoreEth": "C-fuji1y76a8lk4ym3af4u45f7fghuqc6ftfh7l4jsrgz"
+    "addressCoreEth": "C-fuji1y76a8lk4ym3af4u45f7fghuqc6ftfh7l4jsrgz",
+    "active": true,
+    "type": "primary",
+    "walletId":"" ,
+    "walletType": "mnemonic"
   },
   "1": {
+    "id": "1",
     "index": 1,
-    "title": "Account 2",
-    "addressBtc": "tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49",
-    "address": "0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318"
+    "name": "Account 2",
+    "addressBTC": "tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49",
+    "addressC": "0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318",
+    "addressAVM": "",
+    "addressPVM": "",
+    "addressCoreEth": "",
+    "type": "primary",
+    "active": false,
+    "walletId": "",
+    "walletType": "mnemonic"
   }
 }

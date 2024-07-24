@@ -27,10 +27,10 @@ export function NetworkListItem({
   onPress,
   onFavorite,
   onInfo
-}: Props) {
+}: Props): JSX.Element {
   const { theme } = useApplicationContext()
 
-  function getButtons() {
+  function getButtons(): JSX.Element {
     return (
       <Row style={{ alignItems: 'center' }}>
         {!alwaysFavoriteNetworks.includes(networkChainId) && (

@@ -12,35 +12,34 @@ import ActivityListItem from 'screens/activity/ActivityListItem'
 import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
-import { useSelector } from 'react-redux'
 import { Transaction } from 'store/transaction'
 import ZeroState from 'components/ZeroState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import FlashList from 'components/FlashList'
 import { getDayString } from 'utils/date/getDayString'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
-import { selectActiveNetwork } from 'store/network'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
 
 type Section = {
   title: string
-  data: Transaction[] | BridgeTransaction[]
+  data: Transaction[] | Array<BridgeTransaction | BridgeTransfer>
 }
 
-type Item = string | Transaction | BridgeTransaction
+type Item = string | Transaction | BridgeTransaction | BridgeTransfer
 
 interface Props {
   isRefreshing: boolean
   onRefresh: () => void
   onEndReached?: () => void
   data: Transaction[]
-  openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
   testID?: string
 }
@@ -50,13 +49,11 @@ const Transactions: FC<Props> = ({
   onRefresh,
   onEndReached,
   data,
-  openTransactionDetails,
   openTransactionStatus
 }) => {
   const { openUrl } = useInAppBrowser()
-  const { capture } = usePostCapture()
+  const { activeNetwork } = useNetworks()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
   const combinedData = useMemo(() => {
     function isPendingBridge(tx: Transaction): boolean {
@@ -66,7 +63,7 @@ const Transactions: FC<Props> = ({
           bridge =>
             (bridge.sourceTxHash === tx.hash ||
               (!!bridge.targetTxHash && bridge.targetTxHash === tx.hash)) &&
-            bridge.complete === false
+            Boolean(bridge.completedAt) === false
         )
       )
     }
@@ -114,7 +111,7 @@ const Transactions: FC<Props> = ({
   }, [bridgeDisabled, data, pendingBridgeTxs])
 
   const renderPendingBridgeTransaction = (
-    tx: BridgeTransaction
+    tx: BridgeTransaction | BridgeTransfer
   ): JSX.Element => {
     return (
       <BridgeTransactionItem
@@ -140,13 +137,8 @@ const Transactions: FC<Props> = ({
       return renderPendingBridgeTransaction(item)
     } else {
       const onPress = (): void => {
-        if (item.isContractCall || item.isBridge) {
-          capture('ActivityCardLinkClicked')
-          openUrl(item.explorerLink)
-        } else {
-          capture('ActivityCardDetailShown')
-          openTransactionDetails(item)
-        }
+        AnalyticsService.capture('ActivityCardLinkClicked')
+        openUrl(item.explorerLink)
       }
 
       return (
@@ -170,7 +162,7 @@ const Transactions: FC<Props> = ({
   }
 
   const keyExtractor = (
-    item: string | Transaction | BridgeTransaction
+    item: string | Transaction | BridgeTransaction | BridgeTransfer
   ): string => {
     if (typeof item === 'string') return item
 

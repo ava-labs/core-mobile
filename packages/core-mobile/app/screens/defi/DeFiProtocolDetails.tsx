@@ -15,6 +15,7 @@ import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import Separator from 'components/Separator'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
@@ -25,7 +26,7 @@ type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.DeFiProtocolDetails
 >
 
-export const DeFiProtocolDetails = () => {
+export const DeFiProtocolDetails = (): JSX.Element => {
   const {
     theme,
     appHook: { currencyFormatter }
@@ -44,6 +45,7 @@ export const DeFiProtocolDetails = () => {
 
   const goToProtocolPage = useCallback(async () => {
     openURL(data?.siteUrl)
+    AnalyticsService.capture('DeFiDetailLaunchButtonClicked')
   }, [data?.siteUrl])
 
   const calculatedTotalValueOfProtocolItems = useMemo(() => {
@@ -63,7 +65,7 @@ export const DeFiProtocolDetails = () => {
     })
   }, [data?.portfolioItemList])
 
-  const renderCardContent = () => {
+  const renderCardContent = (): JSX.Element => {
     if (!data?.portfolioItemList || data.portfolioItemList.length === 0) {
       return (
         <>
@@ -113,7 +115,9 @@ export const DeFiProtocolDetails = () => {
         {renderCardContent()}
       </Card>
       <View style={{ marginBottom: 41 }}>
-        <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
+        <AvaButton.PrimaryLarge
+          onPress={goToProtocolPage}
+          testID="go_to_protocol_btn">
           <LinkSVG color={theme.logoColor} />
           <Space x={8} />
           {`Go to ${data?.name ?? protocolId}`}

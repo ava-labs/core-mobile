@@ -1,143 +1,127 @@
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { View } from 'react-native'
-import AvaButton from 'components/AvaButton'
 import React, { useState } from 'react'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
-import { TokenWithBalanceERC20 } from 'store/balance'
 import { Checkbox } from 'components/Checkbox'
 import { BNInput } from 'components/BNInput'
-import BN from 'bn.js'
-import { PeerMeta } from 'services/walletconnectv2/types'
+import { useRoute } from '@react-navigation/native'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
+import { View, Text, Button } from '@avalabs/k2-mobile'
+import { Limit, SpendLimit } from 'hooks/useSpendLimits'
+import { hexToBN } from '@avalabs/utils-sdk'
 
-export enum Limit {
-  DEFAULT = 'DEFAULT',
-  UNLIMITED = 'UNLIMITED',
-  CUSTOM = 'CUSTOM'
-}
-
-export interface SpendLimit {
-  limitType: Limit
-  value?: {
-    bn: BN
-    amount: string
-  }
-}
-
-interface Props {
-  token: TokenWithBalanceERC20
-  setSpendLimit(limitData: SpendLimit): void
-  onClose(): void
-  spendLimit: SpendLimit
-  requestedApprovalLimit?: BN
-  site: PeerMeta | null | undefined
-}
-
-const EditSpendLimit = ({
-  spendLimit,
-  token,
-  onClose,
-  setSpendLimit,
-  site,
-  requestedApprovalLimit
-}: Props) => {
-  const { theme } = useApplicationContext()
+const EditSpendLimit = (): JSX.Element | null => {
+  const { spendLimit, onClose, updateSpendLimit, dAppName, editingToken } =
+    useRoute<EditSpendLimitScreenProps['route']>().params
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
     ...spendLimit
   })
 
-  const handleOnSave = () => {
-    setSpendLimit(customSpendLimit)
+  const handleOnSave = (): void => {
+    updateSpendLimit(customSpendLimit)
     onClose()
   }
 
   return (
-    <View style={{ flex: 1, paddingBottom: 16, paddingHorizontal: 16 }}>
-      <AvaText.LargeTitleBold>Edit Spend Limit</AvaText.LargeTitleBold>
-      <Space y={24} />
-      <AvaText.Body2 color={theme.colorText1}>Spending Limit</AvaText.Body2>
-      <Space y={8} />
-      <AvaText.Body2 color={theme.colorText2}>
-        Set a limit that you will allow {site?.name} to withdraw and spend.
-      </AvaText.Body2>
-      <Space y={26} />
-      <Row style={{ alignItems: 'center' }}>
-        <Checkbox
-          selected={customSpendLimit.limitType === Limit.UNLIMITED}
-          onPress={() => {
-            setCustomSpendLimit({
-              ...customSpendLimit,
-              limitType: Limit.UNLIMITED
-            })
-          }}
-        />
-        <Space x={18} />
-        <AvaText.Heading2>Unlimited</AvaText.Heading2>
-      </Row>
-      <Space y={8} />
-      <Row style={{ alignItems: 'flex-start' }}>
-        <Checkbox
-          selected={customSpendLimit.limitType === Limit.DEFAULT}
-          onPress={() => {
-            setCustomSpendLimit({
-              ...customSpendLimit,
-              limitType: Limit.DEFAULT
-            })
-          }}
-        />
-        <Space x={18} />
-        <View>
-          <AvaText.Heading2 textStyle={{ marginTop: 14 }}>
-            Default
-          </AvaText.Heading2>
-
-          <BNInput
-            value={requestedApprovalLimit}
-            denomination={token.decimals}
-            editable={false}
-            selectTextOnFocus={false}
-            style={{ maxWidth: 300 }}
-          />
-        </View>
-      </Row>
-      <Space y={8} />
-      <Row style={{ justifyContent: 'flex-start' }}>
-        <Checkbox
-          selected={customSpendLimit.limitType === Limit.CUSTOM}
-          onPress={() => {
-            setCustomSpendLimit({
-              ...customSpendLimit,
-              limitType: Limit.CUSTOM
-            })
-          }}
-        />
-        <View style={{ alignItems: 'flex-start', paddingTop: 13 }}>
-          <AvaText.Heading2 textStyle={{ paddingStart: 16 }}>
-            Custom Spend Limit
-          </AvaText.Heading2>
-          <BNInput
-            value={customSpendLimit?.value?.bn}
-            placeholder={'Custom Limit'}
-            onChange={value => {
+    <RpcRequestBottomSheet onClose={onClose}>
+      <View
+        style={{
+          flex: 1,
+          paddingBottom: 16,
+          paddingHorizontal: 16
+        }}>
+        <Text variant="heading3">Edit Spend Limit</Text>
+        <Space y={24} />
+        <Text variant="body2">Spending Limit</Text>
+        <Space y={8} />
+        <Text variant="body2" sx={{ color: '$neutral400' }}>
+          Set a limit that you will allow {dAppName} to withdraw and spend.
+        </Text>
+        <Space y={26} />
+        <Row style={{ alignItems: 'center' }}>
+          <Checkbox
+            selected={customSpendLimit.limitType === Limit.UNLIMITED}
+            onPress={() => {
               setCustomSpendLimit({
                 ...customSpendLimit,
-                value,
+                limitType: Limit.UNLIMITED
+              })
+            }}
+          />
+          <Space x={18} />
+          <Text variant="buttonLarge">Unlimited</Text>
+        </Row>
+        <Space y={8} />
+        <Row style={{ alignItems: 'flex-start' }}>
+          <Checkbox
+            selected={customSpendLimit.limitType === Limit.DEFAULT}
+            onPress={() => {
+              setCustomSpendLimit({
+                ...customSpendLimit,
+                limitType: Limit.DEFAULT
+              })
+            }}
+          />
+          <Space x={18} />
+          <View>
+            <Text variant="buttonLarge" sx={{ marginTop: 14 }}>
+              Default
+            </Text>
+            <BNInput
+              value={hexToBN(editingToken.defaultValue)}
+              denomination={editingToken.decimals}
+              editable={false}
+              selectTextOnFocus={false}
+              style={{ maxWidth: 300 }}
+            />
+          </View>
+        </Row>
+        <Space y={8} />
+        <Row style={{ justifyContent: 'flex-start' }}>
+          <Checkbox
+            selected={customSpendLimit.limitType === Limit.CUSTOM}
+            onPress={() => {
+              setCustomSpendLimit({
+                ...customSpendLimit,
                 limitType: Limit.CUSTOM
               })
             }}
-            denomination={token.decimals}
           />
-        </View>
-      </Row>
-      <FlexSpacer />
-      <AvaButton.PrimaryLarge
-        style={{ marginHorizontal: 12 }}
-        onPress={handleOnSave}>
-        Save
-      </AvaButton.PrimaryLarge>
-    </View>
+          <View sx={{ alignItems: 'flex-start', paddingTop: 13 }}>
+            <Text variant="buttonLarge" sx={{ paddingStart: 16 }}>
+              Custom Spend Limit
+            </Text>
+            <BNInput
+              value={customSpendLimit?.value?.bn}
+              placeholder={'Custom Limit'}
+              onChange={value => {
+                setCustomSpendLimit({
+                  ...customSpendLimit,
+                  value,
+                  limitType: Limit.CUSTOM
+                })
+              }}
+              denomination={editingToken.decimals}
+            />
+          </View>
+        </Row>
+        <FlexSpacer />
+        <Button
+          type="primary"
+          size="xlarge"
+          style={{ marginHorizontal: 12 }}
+          onPress={handleOnSave}>
+          Save
+        </Button>
+      </View>
+    </RpcRequestBottomSheet>
   )
 }
+
+type EditSpendLimitScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.EditSpendLimit
+>
+
 export default EditSpendLimit

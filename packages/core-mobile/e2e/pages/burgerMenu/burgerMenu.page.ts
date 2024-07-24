@@ -34,7 +34,7 @@ class BurgerMenuPage {
     await Actions.swipeLeft(
       by.id(burgerMenu.carrotSvg),
       'slow',
-      0.75,
+      0.5,
       platformIndex2
     )
   }

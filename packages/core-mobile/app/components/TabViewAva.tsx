@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import {
   NavigationState,
   SceneRendererProps,
@@ -6,7 +13,7 @@ import {
   TabBarItemProps,
   TabView
 } from 'react-native-tab-view'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Platform, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 
@@ -25,17 +32,21 @@ type TabViewAvaItemProps = {
   testID?: string
 }
 
-type TabViewAvaFC = FC<{
-  renderCustomLabel?: (
-    title: string,
-    selected: boolean,
-    color: string
-  ) => React.ReactNode
-  currentTabIndex?: number
-  testID?: string
-  onTabIndexChange?: (tabIndex: number) => void
-  lazy?: boolean
-}> & { Item: FC<TabViewAvaItemProps> }
+type TabViewAvaFC = FC<
+  {
+    renderCustomLabel?: (
+      title: string,
+      selected: boolean,
+      color: string,
+      testID?: string
+    ) => React.ReactNode
+    currentTabIndex?: number
+    testID?: string
+    onTabIndexChange?: (tabIndex: number) => void
+    lazy?: boolean
+    hideSingleTab?: boolean
+  } & PropsWithChildren
+> & { Item: FC<TabViewAvaItemProps & PropsWithChildren> }
 
 /**
  * If there's only one route available TabBar won't be displayed
@@ -45,7 +56,9 @@ const TabViewAva: TabViewAvaFC = ({
   currentTabIndex = 0,
   onTabIndexChange,
   lazy = true,
-  children
+  hideSingleTab = true,
+  children,
+  testID
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
   const theme = useApplicationContext().theme
@@ -100,10 +113,12 @@ const TabViewAva: TabViewAvaFC = ({
     (
       props: TabBarItemProps<Route> & {
         key: string
+        testID?: string
       }
     ) => {
       return (
         <AvaButton.Base
+          testID={testID}
           key={props.key}
           style={{
             width: props.defaultTabWidth,
@@ -120,14 +135,17 @@ const TabViewAva: TabViewAvaFC = ({
         </AvaButton.Base>
       )
     },
-    [theme.alternateBackground]
+    [testID, theme.alternateBackground]
   )
 
   //tabBar is hidden if there's only one route
   const tabBar = useCallback(
     (tabBarProps: SceneRendererProps & { navigationState: State }) => {
       return (
-        <View style={{ display: routes.length === 1 ? 'none' : 'flex' }}>
+        <View
+          style={{
+            display: routes.length === 1 && hideSingleTab ? 'none' : 'flex'
+          }}>
           <TabBar
             {...tabBarProps}
             style={{
@@ -158,6 +176,7 @@ const TabViewAva: TabViewAvaFC = ({
       )
     },
     [
+      hideSingleTab,
       renderCustomLabel,
       routes.length,
       tabBarItem,
@@ -169,12 +188,17 @@ const TabViewAva: TabViewAvaFC = ({
 
   return (
     <TabView
+      // iOS: Disable animation when switching tabs by tapping on the tab
+      // to avoid the UI freeze issue on iOS
+      // related github issue: https://github.com/react-navigation/react-navigation/issues/11596
+      animationEnabled={Platform.OS !== 'ios'}
       onIndexChange={handleIndexChange}
       navigationState={navState}
       renderScene={scenes}
       renderTabBar={tabBar}
       lazy={lazy}
       initialLayout={initialLayout}
+      testID={testID}
     />
   )
 }

@@ -12,7 +12,7 @@ import CheckMnemonic from 'screens/onboarding/CheckMnemonic'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import { createStackNavigator } from '@react-navigation/stack'
-import { MainHeaderOptions } from 'navigation/NavUtils'
+import { getModalOptions, MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
@@ -21,19 +21,21 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
-import { onLogIn } from 'store/app'
+import { NameYourWallet } from 'seedless/screens/NameYourWallet'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { setWalletName } from 'store/account'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined
   [AppNavigation.CreateWallet.ProtectFunds]: undefined
   [AppNavigation.CreateWallet.CheckMnemonic]: undefined
+  [AppNavigation.CreateWallet.NameYourWallet]: undefined
   [AppNavigation.CreateWallet.CreatePin]: undefined
   [AppNavigation.CreateWallet.BiometricLogin]: undefined
   [AppNavigation.CreateWallet.TermsNConditions]: undefined
@@ -70,6 +72,11 @@ const CreateWalletStack: () => JSX.Element = () => {
         />
         <CreateWalletS.Screen
           options={MainHeaderOptions()}
+          name={AppNavigation.CreateWallet.NameYourWallet}
+          component={NameYourWalletScreen}
+        />
+        <CreateWalletS.Screen
+          options={MainHeaderOptions()}
           name={AppNavigation.CreateWallet.CreatePin}
           component={CreatePinScreen}
         />
@@ -79,7 +86,7 @@ const CreateWalletStack: () => JSX.Element = () => {
           component={BiometricLoginScreen}
         />
         <CreateWalletS.Screen
-          options={{ presentation: 'transparentModal' }}
+          options={{ ...getModalOptions() }}
           name={AppNavigation.CreateWallet.TermsNConditions}
           component={TermsNConditionsModalScreen}
         />
@@ -99,14 +106,13 @@ type CreateWalletNavigationProp = CreateWalletScreenProps<
 const CreateWalletScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
-  const { capture } = usePostCapture()
   const dispatch = useDispatch()
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('OnboardingCancelled')
+      AnalyticsService.capture('OnboardingCancelled')
       dispatch(setCoreAnalytics(undefined))
-    }, [capture, dispatch]),
+    }, [dispatch]),
     [RemoveEvents.GO_BACK]
   )
 
@@ -124,10 +130,9 @@ type ProtectFundsNavigationProp = CreateWalletScreenProps<
 
 const CreateWalletWarningModal = (): JSX.Element => {
   const { navigate, goBack } = useNavigation<ProtectFundsNavigationProp>()
-  const { capture } = usePostCapture()
 
   const onUnderstand = (): void => {
-    capture('OnboardingMnemonicCreated')
+    AnalyticsService.capture('OnboardingMnemonicCreated')
     goBack()
     navigate(AppNavigation.CreateWallet.CheckMnemonic)
   }
@@ -161,12 +166,28 @@ const CheckMnemonicScreen = (): JSX.Element => {
   return (
     <CheckMnemonic
       onSuccess={() => {
-        navigate(AppNavigation.CreateWallet.CreatePin)
+        navigate(AppNavigation.CreateWallet.NameYourWallet)
       }}
       onBack={() => goBack()}
       mnemonic={createWalletContext.mnemonic}
     />
   )
+}
+
+type NameYourWalletNavigationProp = CreateWalletScreenProps<
+  typeof AppNavigation.CreateWallet.NameYourWallet
+>['navigation']
+
+const NameYourWalletScreen = (): JSX.Element => {
+  const dispatch = useDispatch()
+  const { navigate } = useNavigation<NameYourWalletNavigationProp>()
+
+  const onSetWalletName = (name: string): void => {
+    AnalyticsService.capture('CreateWallet:WalletNameSet')
+    dispatch(setWalletName(name))
+    navigate(AppNavigation.CreateWallet.CreatePin)
+  }
+  return <NameYourWallet onSetWalletName={onSetWalletName} />
 }
 
 type CreatePinNavigationProp = CreateWalletScreenProps<
@@ -177,10 +198,9 @@ const CreatePinScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = usePostCapture()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet')
+    AnalyticsService.capture('OnboardingPasswordSet')
     onPinCreated(createWalletContext.mnemonic, pin, false)
       .then(value => {
         switch (value) {
@@ -218,10 +238,9 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
-  const { initWallet } = useWallet()
+  const { login } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
-  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
@@ -229,11 +248,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
           // creating a brand new mnemonic wallet
-          initWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
-            .then(() => {
-              dispatch(onLogIn())
-            })
-            .catch(Logger.error)
+          login(createWalletContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}
       onReject={() => signOut()}

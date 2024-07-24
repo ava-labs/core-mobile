@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { Animated, Platform, Vibration } from 'react-native'
 
 export function useJigglyPinIndicator(): {
@@ -23,9 +23,9 @@ export function useJigglyPinIndicator(): {
       ]),
       {}
     )
-  }, [])
+  }, [jiggleAnim])
 
-  function vibratePhone() {
+  function vibratePhone(): void {
     Vibration.vibrate(
       Platform.OS === 'android'
         ? [0, 150, 10, 150, 10, 150, 10, 150, 10, 150]
@@ -33,14 +33,14 @@ export function useJigglyPinIndicator(): {
     )
   }
 
-  function fireJiggleAnimation() {
+  const fireJiggleAnimation = useCallback(() => {
     wrongPinAnim.start()
     setTimeout(() => {
       wrongPinAnim.reset()
       jiggleAnim.setValue(0)
     }, 800)
     vibratePhone()
-  }
+  }, [jiggleAnim, wrongPinAnim])
 
   return {
     jiggleAnim,

@@ -11,7 +11,6 @@ import { EarnNotificationsModal } from 'screens/earn/EarnNotificationsModal'
 import * as Navigation from 'utils/Navigation'
 import { noop } from '@avalabs/utils-sdk'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
-import { WrongNetwork } from 'screens/earn/WrongNetwork'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
 } from './StakeSetupScreenStack'
@@ -30,12 +29,11 @@ export type EarnStackParamList = {
   [AppNavigation.Earn.FundsStuck]: {
     onTryAgain: () => void
   }
-  [AppNavigation.Earn.WrongNetwork]: undefined
 }
 
 const EarnStack = createStackNavigator<EarnStackParamList>()
 
-function EarnScreenStack() {
+function EarnScreenStack(): JSX.Element {
   return (
     <EarnStack.Navigator
       screenOptions={{
@@ -94,11 +92,6 @@ function EarnScreenStack() {
         name={AppNavigation.Earn.FundsStuck}
         component={FundsStuckModal}
       />
-      <EarnStack.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.Earn.WrongNetwork}
-        component={WrongNetwork}
-      />
     </EarnStack.Navigator>
   )
 }
@@ -109,7 +102,7 @@ const renderNavigationHeader = ({
 }: {
   showBackButton?: boolean
   onBack?: () => void
-}) => (
+}): JSX.Element => (
   <TopNavigationHeader
     showAccountSelector={false}
     showNetworkSelector={false}

@@ -1,7 +1,13 @@
 import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
+import advancedPage from './burgerMenu/advanced.page'
+import burgerMenuPage from './burgerMenu/burgerMenu.page'
 
 class CommonElsPage {
+  get retryBtn() {
+    return by.text(commonEls.retryBtn)
+  }
+
   get backButton() {
     return by.id(commonEls.backButton)
   }
@@ -22,8 +28,12 @@ class CommonElsPage {
     return by.id(commonEls.jailbrokenWarning)
   }
 
-  async tapBackButton() {
-    await Actions.tap(this.backButton)
+  get testnetBanner() {
+    return by.id(commonEls.testnetBanner)
+  }
+
+  async tapBackButton(index = 0) {
+    await Actions.tapElementAtIndex(this.backButton, index)
   }
 
   async tapGetStartedButton() {
@@ -35,11 +45,42 @@ class CommonElsPage {
   }
 
   async waitForToastMsgGone(index?: number) {
-    await Actions.waitForElementNotVisible(this.simpleToastMsg, 10, index)
+    try {
+      await Actions.waitForElementNotVisible(this.simpleToastMsg, index)
+    } catch (error) {
+      console.log('Toast message not found')
+    }
   }
 
   async waitForJailbrokenWarning() {
     await Actions.waitForElement(this.jailbrokenWarning)
+  }
+
+  async tapRetryBtn() {
+    await Actions.waitForElement(this.retryBtn, 1)
+    try {
+      await Actions.tap(this.retryBtn)
+    } catch (error) {
+      /* empty */
+    }
+  }
+
+  async tapDeviceBackButton() {
+    await device.pressBack()
+  }
+
+  async checkIfMainnet() {
+    if (process.env.SEEDLESS_TEST === 'true') {
+      try {
+        await Actions.waitForElement(this.testnetBanner, 10000, 0)
+        await advancedPage.switchToMainnet()
+        await this.tapBackButton()
+        await burgerMenuPage.swipeLeft()
+        await Actions.swipeLeft(burgerMenuPage.addressBook, 'slow', 1000, 0)
+      } catch (error) {
+        return
+      }
+    }
   }
 }
 

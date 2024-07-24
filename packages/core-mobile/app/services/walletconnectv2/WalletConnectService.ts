@@ -1,21 +1,26 @@
 import { Core } from '@walletconnect/core'
-import { SessionTypes } from '@walletconnect/types'
-import { Web3Wallet, IWeb3Wallet } from '@walletconnect/web3wallet'
-import { EngineTypes } from '@walletconnect/types'
+import { EngineTypes, SessionTypes } from '@walletconnect/types'
+import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
-import { RpcError } from 'store/walletConnectV2'
+import { RpcError } from '@avalabs/vm-module-types'
+import { EVM_IDENTIFIER } from 'store/rpc/types'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { CLIENT_METADATA, WalletConnectCallbacks } from './types'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import {
-  addNamespaceToChain,
+  CLIENT_METADATA,
+  WalletConnectCallbacks,
+  WalletConnectServiceInterface
+} from './types'
+import {
   addNamespaceToAddress,
-  chainAlreadyInSession,
-  addressAlreadyInSession
+  addNamespaceToChain,
+  addressAlreadyInSession,
+  chainAlreadyInSession
 } from './utils'
 
 const UPDATE_SESSION_TIMEOUT = 15000
@@ -23,12 +28,14 @@ const UPDATE_SESSION_TIMEOUT = 15000
 const LOG_LEVEL = __DEV__ ? 'error' : 'silent'
 
 if (!Config.WALLET_CONNECT_PROJECT_ID) {
-  throw Error(
-    'WALLET_CONNECT_PROJECT_ID is missing. Please check your env file.'
+  Logger.warn(
+    'WALLET_CONNECT_PROJECT_ID is missing in env file. Wallet connect is disabled.'
   )
 }
 
-class WalletConnectService {
+class WalletConnectService implements WalletConnectServiceInterface {
+  constructor(private walletConnectProjectId: string) {}
+
   #client: IWeb3Wallet | undefined
 
   private get client(): IWeb3Wallet {
@@ -48,7 +55,7 @@ class WalletConnectService {
     // after init, WC will auto restore sessions
     const core = new Core({
       logger: LOG_LEVEL,
-      projectId: Config.WALLET_CONNECT_PROJECT_ID
+      projectId: this.walletConnectProjectId
     })
 
     this.client = await Web3Wallet.init({
@@ -62,7 +69,8 @@ class WalletConnectService {
 
     this.client.on('session_request', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
-      requestSession && callbacks.onSessionRequest(requestEvent, requestSession)
+      requestSession &&
+        callbacks.onSessionRequest(requestEvent, requestSession.peer.metadata)
     })
 
     this.client.on('session_delete', requestEvent => {
@@ -82,6 +90,16 @@ class WalletConnectService {
         Logger.info(
           'pairing already exists, wc will reuse it automatically to prompt a new session'
         )
+        return
+      }
+
+      if (
+        error instanceof Error &&
+        error.message
+          .toLowerCase()
+          .includes('missing or invalid. pair() uri#relay-protocol')
+      ) {
+        Logger.info('ignore invalid link')
         return
       }
 
@@ -138,7 +156,10 @@ class WalletConnectService {
     const response = {
       id: requestId,
       jsonrpc: '2.0',
-      error
+      error: {
+        code: error.code,
+        message: error.message
+      }
     }
 
     await this.client.respondSessionRequest({ topic, response })
@@ -249,7 +270,7 @@ class WalletConnectService {
       this.updateSession({ session, chainId, address }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
-      Logger.error(
+      Logger.warn(
         `unable to update WC session '${session.peer.metadata.name}'`,
         e
       )
@@ -265,6 +286,10 @@ class WalletConnectService {
   }): Promise<void> => {
     if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC sessions for bitcoin network')
+      return
+    }
+    if (isXPChain(chainId)) {
+      Logger.info('skip updating WC sessions for X/P network')
       return
     }
 
@@ -283,4 +308,6 @@ class WalletConnectService {
   }
 }
 
-export default new WalletConnectService()
+export default Config.WALLET_CONNECT_PROJECT_ID
+  ? new WalletConnectService(Config.WALLET_CONNECT_PROJECT_ID)
+  : new WalletConnectServiceNoop()

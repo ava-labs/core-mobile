@@ -12,8 +12,8 @@ import {
   Charts,
   defaultChartData,
   defaultPrice,
+  fetchWatchlist,
   MarketToken,
-  onWatchlistRefresh,
   PriceData,
   Prices,
   reorderFavorites
@@ -27,7 +27,7 @@ import { WatchlistFilter } from '../types'
 const getDisplayValue = (
   price: PriceData,
   currencyFormatter: (num: number | string) => string
-) => {
+): string => {
   const priceInCurrency = price.priceInCurrency
   return currencyFormatter(priceInCurrency)
 }
@@ -60,9 +60,9 @@ const WatchList: React.FC<Props> = ({
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const dispatch = useDispatch()
 
-  const keyExtractor = (item: MarketToken) => item.id
+  const keyExtractor = (item: MarketToken): string => item.id
 
-  function renderItem(token: MarketToken, index: number) {
+  function renderItem(token: MarketToken, index: number): React.JSX.Element {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
     const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
@@ -121,7 +121,7 @@ const WatchList: React.FC<Props> = ({
         renderItem={item => renderItem(item.item, item.index)}
         ListEmptyComponent={EmptyComponent}
         refreshing={false}
-        onRefresh={() => dispatch(onWatchlistRefresh)}
+        onRefresh={() => dispatch(fetchWatchlist)}
         keyExtractor={keyExtractor}
         estimatedItemSize={64}
       />
@@ -134,14 +134,14 @@ const WatchList: React.FC<Props> = ({
       renderItem={item => renderItem(item.item, item.index)}
       ListEmptyComponent={EmptyComponent}
       refreshing={false}
-      onRefresh={() => dispatch(onWatchlistRefresh)}
+      onRefresh={() => dispatch(fetchWatchlist)}
       keyExtractor={keyExtractor}
       estimatedItemSize={64}
     />
   )
 }
 
-const SeparatorComponent = () => (
+const SeparatorComponent = (): React.JSX.Element => (
   <Separator style={styles.separator} inset={8} />
 )
 

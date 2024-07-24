@@ -1,9 +1,10 @@
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
+import { View } from '@avalabs/k2-mobile'
 
 interface Props {
   rightComponent?: React.ReactNode
@@ -39,8 +40,9 @@ function BaseListItem({
   onPress,
   embedInCard,
   background,
-  paddingVertical = 4
-}: Props) {
+  paddingVertical = 4,
+  testID = 'baseListItem'
+}: Props): JSX.Element {
   const context = useApplicationContext()
 
   return (
@@ -63,15 +65,15 @@ function BaseListItem({
           backgroundColor: background
         }
       ]}
-      testID="baseListItem">
-      <View style={styles.baseRowContainer}>
+      testID={testID}>
+      <View sx={styles.baseRowContainer}>
         <View style={[styles.baseRow, disabled && { opacity: 0.5 }]}>
           {leftComponent && (
-            <View style={{ marginLeft: 16, flexDirection: 'row' }}>
+            <View sx={{ marginLeft: 16, flexDirection: 'row' }}>
               {leftComponent}
             </View>
           )}
-          <View style={styles.baseMainContent}>
+          <View sx={styles.baseMainContent}>
             {typeof title === 'string' ? (
               <AvaText.Heading3 ellipsizeMode="tail">{title}</AvaText.Heading3>
             ) : (
@@ -102,7 +104,7 @@ function BaseListItem({
            */}
           {(rightComponent || showNavigationArrow) && (
             <View
-              style={{
+              sx={{
                 marginRight: 16,
                 flexDirection: 'row',
                 maxWidth: rightComponentMaxWidth,
@@ -119,7 +121,7 @@ function BaseListItem({
   )
 }
 
-function BaseItem(props: Props) {
+function BaseItem(props: Props): JSX.Element {
   return <BaseListItem {...props} />
 }
 
@@ -141,7 +143,7 @@ function CurrencyAmountHelper({
 }): JSX.Element {
   return (
     <View
-      style={{
+      sx={{
         flexDirection: 'row',
         justifyContent: justifyContent || 'flex-start',
         flexShrink: 1,
@@ -167,8 +169,7 @@ const styles = StyleSheet.create({
   baseRowContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    testID: 'baseRowContainer'
+    alignItems: 'center'
   },
   baseRow: {
     justifyContent: 'center',

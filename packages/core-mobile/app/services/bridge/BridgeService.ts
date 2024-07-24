@@ -1,54 +1,88 @@
 import {
   AppConfig,
   Asset,
+  BitcoinConfigAsset,
   Blockchain,
+  BridgeConfig,
+  btcToSatoshi,
   Environment,
-  EthereumConfigAsset,
+  estimateGas,
   fetchConfig,
-  NativeAsset,
+  getBtcTransactionDetails,
   setBridgeEnvironment,
-  transferAsset as transferAssetSDK
+  transferAssetBTC,
+  TransferAssetBTCParams,
+  transferAssetEVM,
+  TransferAssetEVMParams,
+  WrapStatus
 } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
-import { Account } from 'store/account'
-import WalletService from 'services/wallet/WalletService'
-import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
+import { Account } from 'store/account/types'
 import { Network } from '@avalabs/chains-sdk'
 import {
   getAvalancheProvider,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
-import { noop } from '@avalabs/utils-sdk'
-import { Networks } from 'store/network'
-import { TransactionResponse } from 'ethers'
+import { Networks } from 'store/network/types'
+import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
+import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
+import { Request } from 'store/rpc/utils/createInAppRequest'
+import { RpcMethod } from 'store/rpc/types'
+import { bnToBig, noop, stringToBN } from '@avalabs/utils-sdk'
+import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 
-type TransferAssetParams = {
-  currentBlockchain: Blockchain
-  amount: Big
+type TransferBTCParams = {
+  amount: string
+  feeRate: number
+  config: AppConfig
+  onStatusChange?: (status: WrapStatus) => void
+  onTxHashChange?: (txHash: string) => void
+  request: Request
+}
+
+type TransferEVMParams = {
+  currentBlockchain: Blockchain.AVALANCHE | Blockchain.ETHEREUM
+  amount: string
   asset: Asset
-  config: AppConfig | undefined
-  activeAccount: Account | undefined
+  config: AppConfig
+  activeAccount: Account
   allNetworks: Networks
   isTestnet: boolean
+  onStatusChange?: (status: WrapStatus) => void
+  onTxHashChange?: (txHash: string) => void
+  request: Request
 }
 
 export class BridgeService {
-  async getConfig(activeNetwork: Network) {
-    setBridgeEnvironment(
-      activeNetwork.isTestnet ? Environment.TEST : Environment.PROD
-    )
+  setBridgeEnvironment(isTestnet: boolean): void {
+    setBridgeEnvironment(isTestnet ? Environment.TEST : Environment.PROD)
+  }
+
+  async getConfig(): Promise<BridgeConfig> {
     return fetchConfig()
   }
 
-  async transferAsset({
+  async estimateGas({
     currentBlockchain,
     amount,
     asset,
-    config,
-    activeAccount,
     allNetworks,
-    isTestnet
-  }: TransferAssetParams): Promise<TransactionResponse | undefined> {
+    isTestnet,
+    config,
+    activeNetwork,
+    activeAccount,
+    currency
+  }: {
+    currentBlockchain: Blockchain
+    amount: Big
+    asset: Asset
+    allNetworks: Networks
+    isTestnet: boolean
+    activeNetwork: Network
+    activeAccount?: Account
+    config?: AppConfig
+    currency: string
+  }): Promise<bigint | undefined> {
     if (!config) {
       throw new Error('missing bridge config')
     }
@@ -56,6 +90,90 @@ export class BridgeService {
       throw new Error('no active account found')
     }
 
+    if (currentBlockchain === Blockchain.BITCOIN) {
+      if (btcToSatoshi(amount) === 0) {
+        throw new Error(`Amount can't be 0`)
+      }
+      const token = await getBtcBalance(
+        !activeNetwork.isTestnet,
+        activeAccount?.addressBTC,
+        currency
+      )
+
+      // Bitcoin's formula for fee is `transactionByteLength * feeRate`.
+      // By setting the feeRate here to 1, we'll receive the transaction's byte length,
+      // which is what we need to have the dynamic fee calculations in the UI.
+      // Think of the byteLength as gasLimit for EVM transactions.
+      const feeRate = 1
+      const { fee: byteLength } = getBtcTransactionDetails(
+        config,
+        activeAccount.addressBTC,
+        token?.utxos ?? [],
+        btcToSatoshi(amount),
+        feeRate
+      )
+
+      return BigInt(byteLength)
+    } else {
+      const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
+      const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
+
+      if (!avalancheProvider || !ethereumProvider) {
+        throw new Error('no providers available')
+      }
+
+      return estimateGas(
+        amount,
+        activeAccount.addressC,
+        asset as Exclude<Asset, BitcoinConfigAsset>,
+        {
+          ethereum: ethereumProvider,
+          avalanche: avalancheProvider
+        },
+        config,
+        currentBlockchain
+      )
+    }
+  }
+
+  async transferBTC({
+    amount,
+    config,
+    feeRate,
+    onStatusChange,
+    onTxHashChange,
+    request
+  }: TransferBTCParams): Promise<string> {
+    const signAndSendBTC: TransferAssetBTCParams['signAndSendBTC'] =
+      async txData => {
+        return request({
+          method: RpcMethod.BITCOIN_SEND_TRANSACTION,
+          params: txData
+        })
+      }
+
+    return transferAssetBTC({
+      amount,
+      feeRate,
+      config,
+      onStatusChange: onStatusChange ?? noop,
+      onTxHashChange: onTxHashChange ?? noop,
+      signAndSendBTC
+    })
+  }
+
+  async transferEVM({
+    currentBlockchain,
+    amount,
+    asset,
+    config,
+    activeAccount,
+    allNetworks,
+    isTestnet,
+    onStatusChange,
+    onTxHashChange,
+    request
+  }: TransferEVMParams): Promise<string> {
     const blockchainNetwork = blockchainToNetwork(
       currentBlockchain,
       allNetworks,
@@ -63,30 +181,44 @@ export class BridgeService {
     )
 
     if (!blockchainNetwork) {
-      throw new Error('no network found')
+      throw new Error('Invalid blockchain')
     }
 
-    const avalancheProvider = await getAvalancheProvider(allNetworks, isTestnet)
+    const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
 
-    const ethereumProvider = await getEthereumProvider(allNetworks, isTestnet)
+    const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
 
     if (!avalancheProvider || !ethereumProvider) {
-      throw new Error('no providers available')
+      throw new Error('No providers available')
     }
 
-    return await transferAssetSDK(
+    const signAndSendEVM: TransferAssetEVMParams['signAndSendEVM'] =
+      async txRequest => {
+        const txParams = transactionRequestToTransactionParams(txRequest)
+
+        return request({
+          method: RpcMethod.ETH_SEND_TRANSACTION,
+          params: [txParams],
+          chainId: blockchainNetwork.chainId.toString()
+        })
+      }
+
+    const denomination = asset.denomination
+
+    const amountBig = bnToBig(stringToBN(amount, denomination), denomination)
+
+    return transferAssetEVM({
       currentBlockchain,
-      amount,
-      activeAccount.address,
-      asset as EthereumConfigAsset | NativeAsset, // TODO fix in sdk (should be Asset),
+      amount: amountBig,
+      account: activeAccount.addressC,
+      asset: asset as Asset,
       avalancheProvider,
       ethereumProvider,
       config,
-      noop,
-      noop,
-      txData =>
-        WalletService.sign(txData, activeAccount.index, blockchainNetwork)
-    )
+      onStatusChange: onStatusChange ?? noop,
+      onTxHashChange: onTxHashChange ?? noop,
+      signAndSendEVM
+    })
   }
 }
 

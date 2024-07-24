@@ -12,20 +12,16 @@ import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import React from 'react'
 import { Alert, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  removeCustomNetwork,
-  selectFavoriteNetworks,
-  selectIsCustomNetwork,
-  selectNetworks,
-  toggleFavorite
-} from 'store/network'
+import { useDispatch } from 'react-redux'
+import { removeCustomNetwork, toggleFavorite } from 'store/network'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
-export function NetworkDetailsAction() {
+export function NetworkDetailsAction(): JSX.Element {
   const { chainId } = useRoute<NetworkDetailsScreenProps['route']>().params
-  const isCustomNetwork = useSelector(selectIsCustomNetwork(chainId))
+  const { getIsCustomNetwork } = useNetworks()
+  const isCustomNetwork = getIsCustomNetwork(chainId)
 
   return (
     <Row style={{ alignItems: 'center', marginRight: 8 }}>
@@ -47,8 +43,8 @@ type NetworkDetailsScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkDetails
 >
 
-function ToggleFavoriteNetwork({ chainId }: { chainId: number }) {
-  const favoriteNetworks = useSelector(selectFavoriteNetworks)
+function ToggleFavoriteNetwork({ chainId }: { chainId: number }): JSX.Element {
+  const { favoriteNetworks } = useNetworks()
   const dispatch = useDispatch()
   const isFavorite = favoriteNetworks.some(
     network => network.chainId === chainId
@@ -61,21 +57,22 @@ function ToggleFavoriteNetwork({ chainId }: { chainId: number }) {
   )
 }
 
-function CustomNetworkDropdown() {
+function CustomNetworkDropdown(): JSX.Element {
   const dispatch = useDispatch()
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
-  const networks = useSelector(selectNetworks)
-  const network = networks[params.chainId]
+  const { getFromPopulatedNetwork } = useNetworks()
 
-  function handleEdit() {
+  const network = getFromPopulatedNetwork(params.chainId)
+
+  function handleEdit(): void {
     navigate(AppNavigation.Wallet.NetworkAddEdit, {
       mode: 'edit',
       network
     })
   }
 
-  function handleDelete() {
+  function handleDelete(): void {
     if (!network) {
       showSnackBarCustom({
         component: (
@@ -106,7 +103,7 @@ function CustomNetworkDropdown() {
     )
   }
 
-  function renderOption({ item }: { item: DropdownItem }) {
+  function renderOption({ item }: { item: DropdownItem }): JSX.Element {
     return <Option item={item} />
   }
 
@@ -144,12 +141,12 @@ function CustomNetworkDropdown() {
 
 type DropdownItem = {
   name: string
-  icon: Element
+  icon: JSX.Element
   action: () => void
   color?: string
 }
 
-function Option({ item }: { item: DropdownItem }) {
+function Option({ item }: { item: DropdownItem }): JSX.Element {
   return (
     <Row
       style={{

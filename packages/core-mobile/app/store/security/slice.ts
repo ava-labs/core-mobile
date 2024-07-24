@@ -7,7 +7,7 @@ const reducerName = 'security'
 const initialState: SecurityState = {
   loginAttempt: {
     count: 0,
-    timestamp: 0
+    countdown: 0
   }
 }
 
@@ -21,17 +21,27 @@ export const securitySlice = createSlice({
     resetLoginAttempt: state => {
       state.loginAttempt = {
         count: 0,
-        timestamp: 0
+        countdown: 0
+      }
+    },
+    decreaseCountdown: state => {
+      state.loginAttempt = {
+        count: state.loginAttempt.count,
+        countdown:
+          state.loginAttempt.countdown <= 0
+            ? 0
+            : state.loginAttempt.countdown - 1
       }
     }
   }
 })
 
 // selectors
-export const selectLoginAttempt = (state: RootState) =>
+export const selectLoginAttempt = (state: RootState): LoginAttempt =>
   state.security.loginAttempt
 
 // actions
-export const { setLoginAttempt, resetLoginAttempt } = securitySlice.actions
+export const { setLoginAttempt, resetLoginAttempt, decreaseCountdown } =
+  securitySlice.actions
 
 export const securityReducer = securitySlice.reducer

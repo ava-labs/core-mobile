@@ -1,44 +1,33 @@
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
 import Actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
 import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
-import { Platform } from '../../helpers/constants'
+import approveTransactionPage from '../../pages/approveTransaction.page'
+import assertions from '../../helpers/assertions'
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
     await warmup()
   })
 
-  it('Should verify NFT Details items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
-    await AccountManagePage.tapAccountMenu()
-    await AccountManagePage.tapAccountMenu()
+  it('Should verify NFT Details items and send NFT', async () => {
     await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapCollectiblesTab()
-    await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
-    await CollectiblesPage.tapGridItem()
+    const accountNumber =
+      await CollectiblesPage.tapParadiseTycoonFurnituresNFT()
     await CollectiblesPage.verifyNftDetailsItems()
-  })
-
-  it('Should send NFT to second account', async () => {
-    //Skipping test due to hidden FF on iOS
-    if (Actions.platform() === Platform.iOS) {
-      return
-    }
-
-    const nftTokenId = await CollectiblesPage.sendNft('second')
-    await Actions.waitForElement(CollectiblesPage.sendSuccessfulToastMsg, 5000)
-    await Actions.waitForElementNotVisible(
-      CollectiblesPage.sendSuccessfulToastMsg,
-      5000
+    await CollectiblesPage.sendNft(accountNumber)
+    await Actions.waitForElement(
+      approveTransactionPage.successfulToastMsg,
+      120000
     )
-
-    await AccountManagePage.tapAccountMenu()
-    await AccountManagePage.tapSecondAccount()
-    await CollectiblesPage.refreshCollectiblesPage()
-    await CollectiblesPage.tapGridItem()
-    await CollectiblesPage.sendNft('first', nftTokenId)
-  })
+    await Actions.waitForElementNotVisible(
+      approveTransactionPage.successfulToastMsg,
+      30000
+    )
+    await AccountManagePage.tapAccountDropdownTitle()
+    await AccountManagePage.switchToReceivedAccount(accountNumber)
+    await assertions.isVisible(CollectiblesPage.paradiseTycoonFurnituresNFT)
+  }, 300000)
 })

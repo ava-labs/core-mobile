@@ -1,5 +1,6 @@
-import React, { FC } from 'react'
+import React, { FC, PropsWithChildren } from 'react'
 import {
+  Platform,
   PressableStateCallbackType,
   StyleProp,
   StyleSheet,
@@ -19,13 +20,13 @@ interface BaseButtonProps {
   testID?: string
 }
 
-const BaseButton: FC<BaseButtonProps> = ({
+const BaseButton: FC<BaseButtonProps & PropsWithChildren> = ({
   onPress,
   style,
   disabled,
   children,
   testID
-}) => {
+}): JSX.Element => {
   return (
     <Pressable
       accessible={false}
@@ -46,7 +47,13 @@ export type ButtonType =
   | 'tertiaryDanger'
 export type ButtonSize = 'small' | 'medium' | 'large' | 'xlarge'
 
-type ButtonIconType = 'check' | 'expandMore'
+type ButtonIconType =
+  | 'check'
+  | 'expandMore'
+  | 'copy'
+  | 'add'
+  | 'google'
+  | 'apple'
 
 interface ButtonProps extends BaseButtonProps {
   type: ButtonType
@@ -54,9 +61,10 @@ interface ButtonProps extends BaseButtonProps {
   leftIcon?: ButtonIconType
   rightIcon?: ButtonIconType
   style?: ViewStyle
+  testID?: string
 }
 
-export const Button: FC<ButtonProps> = ({
+export const Button: FC<ButtonProps & PropsWithChildren> = ({
   type,
   size,
   leftIcon,
@@ -64,6 +72,7 @@ export const Button: FC<ButtonProps> = ({
   disabled,
   style,
   children,
+  testID,
   ...rest
 }) => {
   const {
@@ -126,6 +135,7 @@ export const Button: FC<ButtonProps> = ({
 
   return (
     <BaseButton
+      testID={testID}
       style={({ pressed }) => {
         return {
           borderRadius: 1000,
@@ -137,6 +147,7 @@ export const Button: FC<ButtonProps> = ({
       }}
       disabled={disabled}
       {...rest}>
+      {/* @ts-ignore */}
       {({ pressed }: { pressed: boolean }) => {
         const color = tintColor(pressed)
         return (
@@ -144,16 +155,23 @@ export const Button: FC<ButtonProps> = ({
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              marginHorizontal: 8
+              marginHorizontal: 8,
+              minHeight: iconWidth
             }}>
             {leftIcon ? (
-              getIcon(leftIcon, color, { marginRight: 8 })
+              getIcon(leftIcon, {
+                width: iconWidth,
+                height: iconWidth,
+                color,
+                style: { marginRight: 8 }
+              })
             ) : rightIcon ? (
               <View style={{ width: iconWidth, marginRight: 8 }} />
             ) : null}
             <Text
               numberOfLines={1}
               variant={textVariant}
+              adjustsFontSizeToFit={Platform.OS === 'ios'}
               style={{
                 color: color,
                 flexShrink: 1
@@ -161,7 +179,12 @@ export const Button: FC<ButtonProps> = ({
               {children}
             </Text>
             {rightIcon ? (
-              getIcon(rightIcon, color, { marginLeft: 8 })
+              getIcon(rightIcon, {
+                width: iconWidth,
+                height: iconWidth,
+                color,
+                style: { marginLeft: 8 }
+              })
             ) : leftIcon ? (
               <View style={{ width: iconWidth, marginLeft: 8 }} />
             ) : null}
@@ -190,15 +213,24 @@ const sizeStyles = StyleSheet.create({
   }
 })
 
+const iconComponents = {
+  check: Icons.Navigation.Check,
+  expandMore: Icons.Navigation.ExpandMore,
+  copy: Icons.Content.ContentCopy,
+  add: Icons.Content.Add,
+  google: Icons.Logos.Google,
+  apple: Icons.Logos.Apple
+}
+
 const getIcon = (
   type: ButtonIconType,
-  color: string,
-  style?: ViewStyle
-): JSX.Element => {
-  switch (type) {
-    case 'check':
-      return <Icons.Navigation.Check color={color} style={style} />
-    case 'expandMore':
-      return <Icons.Navigation.ExpandMore color={color} style={style} />
+  iconProps: {
+    width: number
+    height: number
+    color: string
+    style?: ViewStyle
   }
+): JSX.Element => {
+  const IconComponent = iconComponents[type]
+  return <IconComponent {...iconProps} />
 }

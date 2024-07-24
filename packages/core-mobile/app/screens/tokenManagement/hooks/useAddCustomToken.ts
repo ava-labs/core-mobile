@@ -1,15 +1,14 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { isAddress } from 'ethers'
-import {
-  selectActiveNetwork,
-  selectActiveNetworkContractTokens
-} from 'store/network'
-import { getInstance } from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
-import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import TokenService from 'services/token/TokenService'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
+import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 
 enum AddressValidationStatus {
   Valid,
@@ -41,8 +40,7 @@ const fetchTokenData = async (
   network: Network,
   tokenAddress: string
 ): Promise<NetworkContractToken> => {
-  const tokenService = getInstance()
-  const networkContractToken = await tokenService.getTokenData(
+  const networkContractToken = await TokenService.getTokenData(
     tokenAddress,
     network
   )
@@ -63,14 +61,13 @@ type CustomToken = {
 }
 
 const useAddCustomToken = (callback: () => void): CustomToken => {
+  const { activeNetwork } = useNetworks()
+  const tokens = useNetworkContractTokens(activeNetwork)
   const [tokenAddress, setTokenAddress] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [token, setToken] = useState<NetworkContractToken>()
-  const network = useSelector(selectActiveNetwork)
-  const tokens = useSelector(selectActiveNetworkContractTokens)
   const dispatch = useDispatch()
-  const chainId = network.chainId
-  const { capture } = usePostCapture()
+  const chainId = activeNetwork.chainId
 
   useEffect(() => {
     setErrorMessage('')
@@ -87,7 +84,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
           setErrorMessage('Token already exists in the wallet.')
         }
 
-        fetchTokenData(network, tokenAddress)
+        fetchTokenData(activeNetwork, tokenAddress)
           .then(setToken)
           .catch(err => {
             setErrorMessage('Not a valid ERC-20 token address.')
@@ -98,14 +95,14 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         // do not show error message for too short addresses
         break
     }
-  }, [network, tokenAddress, tokens])
+  }, [activeNetwork, tokenAddress, tokens])
 
   const addCustomToken = (): void => {
     if (token) {
       dispatch(addCustomTokenAction({ chainId, token }))
       setTokenAddress('')
       callback()
-      capture('ManageTokensAddCustomToken', {
+      AnalyticsService.capture('ManageTokensAddCustomToken', {
         status: 'success',
         address: token.address
       })

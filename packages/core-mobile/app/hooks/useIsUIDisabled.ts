@@ -1,7 +1,6 @@
 import { ChainId } from '@avalabs/chains-sdk'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { Platform } from 'react-native'
+import { absoluteChain } from 'utils/network/isAvalancheNetwork'
+import { useNetworks } from './networks/useNetworks'
 
 export enum UI {
   Collectibles = 'Collectibles',
@@ -19,7 +18,8 @@ const enabledUIs: Partial<Record<UI, number[]>> = {
     ChainId.AVALANCHE_TESTNET_ID,
     ChainId.ETHEREUM_HOMESTEAD,
     ChainId.ETHEREUM_TEST_GOERLY,
-    ChainId.ETHEREUM_TEST_RINKEBY
+    ChainId.ETHEREUM_TEST_RINKEBY,
+    ChainId.ETHEREUM_TEST_SEPOLIA
   ],
   [UI.Swap]: [ChainId.AVALANCHE_MAINNET_ID],
   [UI.Buy]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID]
@@ -27,7 +27,12 @@ const enabledUIs: Partial<Record<UI, number[]>> = {
 
 // The list of features we want to disable on certain networks (blacklist)
 const disabledUIs: Partial<Record<UI, number[]>> = {
-  [UI.ManageTokens]: [ChainId.BITCOIN, ChainId.BITCOIN_TESTNET],
+  [UI.ManageTokens]: [
+    ChainId.BITCOIN,
+    ChainId.BITCOIN_TESTNET,
+    ChainId.AVALANCHE_XP,
+    ChainId.AVALANCHE_TEST_XP
+  ],
   [UI.Bridge]: [
     ChainId.DFK,
     ChainId.DFK_TESTNET,
@@ -38,17 +43,18 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
 }
 
 export const useIsUIDisabled = (ui: UI): boolean => {
-  const { chainId } = useSelector(selectActiveNetwork)
-
-  //keep this on top of this list
-  if (Platform.OS === 'ios' && ui === UI.Buy) {
-    return true
-  }
+  const {
+    activeNetwork: { chainId }
+  } = useNetworks()
 
   if (enabledUIs[ui]?.includes(chainId)) {
     return false
   }
 
   const disabled = disabledUIs[ui]
-  return !(disabled && !disabled.includes(chainId))
+
+  // Currently, the P-Chain and X-Chain have chain IDs (ChainId.AVALANCHE_XP)
+  // that are the same value but with opposite signs. Therefore,
+  // we convert them using the absoluteChain function for comparison.
+  return !(disabled && !disabled.includes(absoluteChain(chainId)))
 }

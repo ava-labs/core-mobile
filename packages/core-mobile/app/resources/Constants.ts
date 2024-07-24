@@ -133,3 +133,6 @@ export const DOCS_HOW_TO_DELEGATE =
 
 export const DOCS_BTC_TO_BTCB_FAQ =
   'https://support.avax.network/en/articles/6325230-avalanche-bridge-faq-for-converting-btc-to-btc-b'
+
+export const DOCS_BRIDGE_FAQS =
+  'https://support.avax.network/en/articles/6092559-avalanche-bridge-faq'

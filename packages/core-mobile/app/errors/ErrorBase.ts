@@ -31,7 +31,7 @@
  */
 export class ErrorBase<T extends string> extends Error {
   name: string
-  cause: unknown
+  cause?: unknown
 
   constructor({
     name,

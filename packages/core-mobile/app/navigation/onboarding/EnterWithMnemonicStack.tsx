@@ -12,25 +12,27 @@ import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import HdWalletLogin from 'screens/login/HdWalletLogin'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { MainHeaderOptions } from 'navigation/NavUtils'
+import { getModalOptions, MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onLogIn, selectWalletState, WalletState } from 'store/app'
+import { selectWalletState, WalletState } from 'store/app'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
-import { resetNavToRoot } from 'utils/Navigation'
+import { NameYourWallet } from 'seedless/screens/NameYourWallet'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { setWalletName } from 'store/account'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined
+  [AppNavigation.LoginWithMnemonic.NameYourWallet]: undefined
   [AppNavigation.LoginWithMnemonic.CreatePin]: undefined
   [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined
   [AppNavigation.LoginWithMnemonic.TermsNConditions]: undefined
@@ -61,6 +63,11 @@ const EnterWithMnemonicStack = (): JSX.Element => {
         />
         <EnterWithMnemonicS.Screen
           options={MainHeaderOptions()}
+          name={AppNavigation.LoginWithMnemonic.NameYourWallet}
+          component={NameYourWalletScreen}
+        />
+        <EnterWithMnemonicS.Screen
+          options={MainHeaderOptions()}
           name={AppNavigation.LoginWithMnemonic.CreatePin}
           component={CreatePinScreen}
         />
@@ -69,7 +76,9 @@ const EnterWithMnemonicStack = (): JSX.Element => {
           component={BiometricLoginScreen}
         />
         <EnterWithMnemonicS.Screen
-          options={{ presentation: 'transparentModal' }}
+          options={{
+            ...getModalOptions()
+          }}
           name={AppNavigation.LoginWithMnemonic.TermsNConditions}
           component={TermsNConditionsModalScreen}
         />
@@ -89,7 +98,6 @@ type LoginNavigationProp = EnterWithMnemonicScreenProps<
 const LoginWithMnemonicScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate, goBack, canGoBack } = useNavigation<LoginNavigationProp>()
-  const { capture } = usePostCapture()
   const dispatch = useDispatch()
   const { deleteWallet } = useApplicationContext().appHook
   const walletState = useSelector(selectWalletState)
@@ -97,14 +105,14 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('OnboardingCancelled')
+      AnalyticsService.capture('OnboardingCancelled')
       dispatch(setCoreAnalytics(undefined))
-    }, [capture, dispatch]),
+    }, [dispatch]),
     [RemoveEvents.GO_BACK]
   )
 
   const onEnterWallet = useCallback(
-    m => {
+    (m: string) => {
       // if a wallet already existed, we want to clear out
       // existing data first before entering with this new wallet
       if (isWalletExisted) {
@@ -112,7 +120,7 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
       }
 
       enterWithMnemonicContext.setMnemonic(m)
-      navigate(AppNavigation.LoginWithMnemonic.CreatePin)
+      navigate(AppNavigation.LoginWithMnemonic.NameYourWallet)
     },
     [isWalletExisted, enterWithMnemonicContext, navigate, deleteWallet]
   )
@@ -120,12 +128,26 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
   const handleBack = (): void => {
     if (canGoBack()) {
       goBack()
-    } else {
-      resetNavToRoot()
     }
   }
 
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={handleBack} />
+}
+
+type NameYourWalletNavigationProp = EnterWithMnemonicScreenProps<
+  typeof AppNavigation.LoginWithMnemonic.NameYourWallet
+>['navigation']
+
+const NameYourWalletScreen = (): JSX.Element => {
+  const dispatch = useDispatch()
+  const { navigate } = useNavigation<NameYourWalletNavigationProp>()
+
+  const onSetWalletName = (name: string): void => {
+    AnalyticsService.capture('LoginWithMnemonic:WalletNameSet')
+    dispatch(setWalletName(name))
+    navigate(AppNavigation.LoginWithMnemonic.CreatePin)
+  }
+  return <NameYourWallet onSetWalletName={onSetWalletName} />
 }
 
 type CreatePinNavigationProp = EnterWithMnemonicScreenProps<
@@ -136,20 +158,21 @@ const CreatePinScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = usePostCapture()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet')
+    AnalyticsService.capture('OnboardingPasswordSet')
     if (enterWithMnemonicContext.mnemonic) {
       onPinCreated(enterWithMnemonicContext.mnemonic, pin, false)
         .then(value => {
           switch (value) {
-            case 'useBiometry':
+            case 'useBiometry': {
               navigate(AppNavigation.LoginWithMnemonic.BiometricLogin)
               break
-            case 'enterWallet':
+            }
+            case 'enterWallet': {
               navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
               break
+            }
           }
         })
         .catch(Logger.error)
@@ -172,17 +195,18 @@ const BiometricLoginScreen = (): JSX.Element => {
       onBiometrySet={() => {
         navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
       }}
-      onSkip={() => navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)}
+      onSkip={() => {
+        navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
+      }}
     />
   )
 }
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const { initWallet } = useWallet()
+  const { login } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
-  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
@@ -190,11 +214,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.LoginWithMnemonic.Loader)
         setTimeout(() => {
           // recovering a mnemonic wallet
-          initWallet(enterWithMnemonicContext.mnemonic, WalletType.MNEMONIC)
-            .then(() => {
-              dispatch(onLogIn())
-            })
-            .catch(Logger.error)
+          login(enterWithMnemonicContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}
       onReject={() => signOut()}

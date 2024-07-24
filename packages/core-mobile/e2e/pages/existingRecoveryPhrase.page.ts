@@ -6,8 +6,14 @@ import CreatePinPage from './createPin.page'
 import PortfolioPage from './portfolio.page'
 import BottomTabsPage from './bottomTabs.page'
 import commonElsPage from './commonEls.page'
+import nameWalletPage from './nameWallet.page'
+import accountManagePage from './accountManage.page'
 
 class ExistingRecoveryPhrasePage {
+  get continueBtn() {
+    return by.text(recoveryPhraseLoc.continueButton)
+  }
+
   get recoveryPhraseTextInput() {
     return by.id(recoveryPhraseLoc.recoveryPhraseInput)
   }
@@ -40,8 +46,36 @@ class ExistingRecoveryPhrasePage {
     return by.text(recoveryPhraseLoc.alreadyHaveAWalletBtn)
   }
 
+  get accessExistingWalletBtn() {
+    return by.text(recoveryPhraseLoc.accessExistingWalletBtn)
+  }
+
   get recoveryPhrase() {
     return by.text(recoveryPhraseLoc.recoveryPhrase)
+  }
+
+  get chooseWalletTitle() {
+    return by.text(recoveryPhraseLoc.chooseWalletTitle)
+  }
+
+  get typeRecoveryPhraseBtn() {
+    return by.text(recoveryPhraseLoc.typeRecoverPhaseBtn)
+  }
+
+  get createNewWalletBtn() {
+    return by.text(recoveryPhraseLoc.createNewWalletBtn)
+  }
+
+  get manuallyCreateNewWalletBtn() {
+    return by.id(recoveryPhraseLoc.manuallyCreateNewWalletBtn)
+  }
+
+  async tapManuallyCreateNewWallet() {
+    await Action.tap(this.manuallyCreateNewWalletBtn)
+  }
+
+  async tapContinueBtn() {
+    await Action.tap(this.continueBtn)
   }
 
   async tapForgotPinBtn() {
@@ -54,6 +88,10 @@ class ExistingRecoveryPhrasePage {
 
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
+  }
+
+  async tapAccessExistingWallet() {
+    await Action.tap(this.accessExistingWalletBtn)
   }
 
   async tapSignInWithRecoveryPhraseBtn() {
@@ -75,25 +113,53 @@ class ExistingRecoveryPhrasePage {
     await Action.tap(this.signInBtn)
   }
 
-  async recoverWallet(recoveryPhrase: string) {
-    // await this.tapForgotPinBtn()
-    //await this.tapSignInWithRecoveryPhraseBtn()
-    await this.tapAlreadyHaveAWalletBtn()
+  async recoverMnemonicWallet(recoveryPhrase: string) {
+    await this.tapAccessExistingWallet()
     await this.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await Action.waitForElement(this.recoveryPhraseTextInput)
-    await this.verifyExistingRecoveryPhrasePage()
     await this.enterRecoveryPhrase(recoveryPhrase)
     await this.tapSignInBtn()
+    await nameWalletPage.enterWalletName('testWallet1\n')
     await Action.waitForElement(CreatePinPage.numpadOne)
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapEmptyCheckbox()
-    await CreatePinPage.tapNextBtn()
+    await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
     await Action.waitForElement(PortfolioPage.colectiblesTab)
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
+  }
+
+  async recoverManualWallet() {
+    await CreatePinPage.tapNumpadZero()
+    await Action.waitForElement(PortfolioPage.colectiblesTab)
+    await PortfolioPage.verifyPorfolioScreen()
+    await BottomTabsPage.verifyBottomTabs()
+    await commonElsPage.checkIfMainnet()
+    await accountManagePage.checkAccountNameIsCorrect()
+  }
+
+  async recoverWallet(recoveryPhrase: string) {
+    if (await Action.expectToBeVisible(this.forgotPinBtn)) {
+      await this.recoverManualWallet()
+    } else {
+      await this.recoverMnemonicWallet(recoveryPhrase)
+    }
+  }
+
+  async verifyChooseYourExistingWalletPage() {
+    await Assert.isVisible(this.chooseWalletTitle)
+    await Assert.isVisible(this.typeRecoveryPhraseBtn)
+    await Assert.isVisible(this.createNewWalletBtn)
+  }
+
+  async tapTypeInRecoveryPhaseBtn() {
+    await Action.tap(this.typeRecoveryPhraseBtn)
+  }
+
+  async tapCreateNewWalletBtn() {
+    await Action.tap(this.createNewWalletBtn)
   }
 }
 

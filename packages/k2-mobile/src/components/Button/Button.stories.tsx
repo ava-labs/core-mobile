@@ -1,5 +1,4 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
 import { StyleSheet } from 'react-native'
 import { withCenterView } from '../../../storybook/decorators/withCenterView'
 import { ScrollView, View } from '../Primitives'
@@ -9,7 +8,7 @@ import { Button, ButtonSize, ButtonType } from './Button'
 export default {
   title: 'Button',
   decorators: [withCenterView]
-} as Meta
+}
 
 export const All = (): JSX.Element => {
   const types: ButtonType[] = [

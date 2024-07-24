@@ -1,4 +1,5 @@
 import React from 'react'
+import { Platform } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 
 interface Props {
@@ -10,13 +11,15 @@ interface Props {
 function ClearSVG({ color, backgroundColor, size = 24 }: Props): JSX.Element {
   const svgColor = color
   const bgColor = backgroundColor
+
   return (
     <Svg
       fill="none"
       height={size}
       viewBox="0 0 24 24"
       width={size}
-      testID="clear_svg">
+      testID="clear_svg"
+      pointerEvents={Platform.OS === 'android' ? 'none' : undefined}>
       <Path
         clip-rule="evenodd"
         d="M0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12Z"

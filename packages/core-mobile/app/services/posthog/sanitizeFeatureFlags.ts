@@ -1,3 +1,4 @@
+import { coerce, satisfies, validRange } from 'semver'
 import {
   FeatureGates,
   FeatureVars,
@@ -11,6 +12,10 @@ const allowedKeys: (FeatureGates | FeatureVars)[] = [
 ]
 const featureVars = Object.values(FeatureVars) as string[]
 const featureGates = Object.values(FeatureGates) as string[]
+
+function isFeatureGate(key: string): key is FeatureGates {
+  return featureGates.includes(key)
+}
 
 type AssertResponseFn = (
   value: unknown
@@ -27,10 +32,13 @@ const assertResponse: AssertResponseFn = value => {
   }
 }
 
-export const sanitizeFeatureFlags = (value: unknown): FeatureFlags => {
+export const sanitizeFeatureFlags = (
+  value: unknown,
+  appVersion?: string
+): FeatureFlags => {
   assertResponse(value)
 
-  return allowedKeys.reduce((acc, k) => {
+  const rawFlags = allowedKeys.reduce((acc, k) => {
     if (
       (featureVars.includes(k) && typeof value.featureFlags[k] === 'string') ||
       (featureGates.includes(k) && typeof value.featureFlags[k] === 'boolean')
@@ -40,4 +48,40 @@ export const sanitizeFeatureFlags = (value: unknown): FeatureFlags => {
 
     return acc
   }, {} as FeatureFlags)
+
+  if (value.featureFlagPayloads) {
+    const version = coerce(appVersion)
+
+    // If we don't know the current Core version, default to whatever was returned by the API
+    if (!version) {
+      return rawFlags
+    }
+
+    const evaluatedFlags = Object.fromEntries(
+      Object.entries(value.featureFlagPayloads)
+        .filter(([flagName]) => isFeatureGate(flagName) && rawFlags[flagName]) // Only evaluate flags that are enabled
+        .map(([_flagName, payload]) => {
+          const flagName = _flagName as FeatureGates
+
+          try {
+            const range = JSON.parse(payload)
+
+            const versionRange = validRange(range)
+
+            // Default to disabled state if the payload string is not a valid semver range.
+            if (!versionRange) {
+              return [flagName, false]
+            }
+
+            return [flagName, satisfies(version, versionRange)]
+          } catch {
+            return [flagName, false]
+          }
+        })
+    )
+
+    return { ...rawFlags, ...evaluatedFlags }
+  }
+
+  return rawFlags
 }

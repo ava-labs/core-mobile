@@ -1,9 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import { bridgeReducer as bridge } from 'store/bridge'
-import { nftsApi } from 'store/nft/api'
+import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
@@ -22,25 +21,19 @@ import { nftReducer as nft } from './nft'
 import { addressBookReducer as addressBook } from './addressBook'
 import { viewOnceReducer as viewOnce } from './viewOnce'
 import settings from './settings'
-import swap from './swap'
 import { transactionApi } from './transaction'
-import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
+import { rpcReducer as rpc } from './rpc'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
-import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
+import { snapshotsReducer as snapshots } from './snapshots/slice'
+import { reduxStorage } from './reduxStorage'
 
-const VERSION = 9
+const VERSION = 15
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
-const blacklist = [
-  'balance',
-  'swap',
-  'walletConnectV2',
-  transactionApi.reducerPath,
-  nftsApi.reducerPath
-]
+const blacklist = ['balance', 'swap', 'rpc', transactionApi.reducerPath]
 
 const combinedReducer = combineReducers({
   app,
@@ -50,14 +43,15 @@ const combinedReducer = combineReducers({
   notifications,
   addressBook,
   bridge,
+  unifiedBridge,
   customToken,
   posthog,
-  swap,
   nft,
   security,
-  walletConnectV2,
+  rpc,
   viewOnce,
   browser,
+  snapshots,
 
   // user preferences
   settings,
@@ -65,8 +59,7 @@ const combinedReducer = combineReducers({
   portfolio,
 
   // apis
-  [transactionApi.reducerPath]: transactionApi.reducer,
-  [nftsApi.reducerPath]: nftsApi.reducer
+  [transactionApi.reducerPath]: transactionApi.reducer
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type
@@ -87,13 +80,12 @@ const rootReducer = (state: any, action: AnyAction) => {
 export function configureEncryptedStore(secretKey: string, macSecret: string) {
   const persistConfig = {
     key: 'root',
-    storage: AsyncStorage,
+    storage: reduxStorage,
     blacklist,
     rootReducer,
     transforms: [
       AppBlacklistTransform,
       BridgeBlacklistTransform,
-      WatchlistBlacklistTransform,
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
@@ -111,20 +103,11 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
         immutableCheck: false
       })
 
-      const middlewares = [
-        ...defaultMiddleWare,
-        transactionApi.middleware,
-        nftsApi.middleware
-      ]
+      const middlewares = [...defaultMiddleWare, transactionApi.middleware]
 
       // when storybook is enabled, no need to set up listeners
       if (!DevDebuggingConfig.STORYBOOK_ENABLED) {
         middlewares.unshift(listener.middleware)
-      }
-
-      if (__DEV__) {
-        const createDebugger = require('redux-flipper').default
-        middlewares.push(createDebugger())
       }
 
       return middlewares
@@ -144,3 +127,7 @@ export type RawRootState = ReturnType<typeof rootReducer>
 export type RootState = ReturnType<ConfiguredStore['getState']>
 export type AppDispatch = ConfiguredStore['dispatch']
 export type AppListenerEffectAPI = ListenerEffectAPI<RootState, AppDispatch>
+export type ThunkApi = {
+  state: RootState
+  dispatch: AppDispatch
+}

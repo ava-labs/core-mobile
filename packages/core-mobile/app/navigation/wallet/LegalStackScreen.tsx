@@ -6,7 +6,7 @@ import { View } from 'react-native'
 import AvaListItem from 'components/AvaListItem'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from 'resources/Constants'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type LegalStackParamList = {
   [AppNavigation.Legal.Legal]: undefined
@@ -29,23 +29,22 @@ function LegalStackScreen(): JSX.Element {
   )
 }
 
-const LegalScreen = () => {
+const LegalScreen = (): JSX.Element => {
   const { openUrl } = useInAppBrowser()
-  const { capture } = usePostCapture()
 
   return (
     <View>
       <AvaListItem.Base
         title={'Terms of Use'}
         onPress={() => {
-          capture('TermsOfUseClicked')
+          AnalyticsService.capture('TermsOfUseClicked')
           openUrl(TERMS_OF_USE_URL)
         }}
       />
       <AvaListItem.Base
         title={'Privacy Policy'}
         onPress={() => {
-          capture('PrivacyPolicyClicked')
+          AnalyticsService.capture('PrivacyPolicyClicked')
           openUrl(PRIVACY_POLICY_URL)
         }}
       />

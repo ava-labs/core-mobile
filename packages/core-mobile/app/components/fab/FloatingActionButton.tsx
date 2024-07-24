@@ -7,9 +7,9 @@ import Animated, {
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { Pressable, StyleSheet, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { FABProps } from 'components/fab/types'
 import ActionItems from 'components/fab/ActionItems'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const springConfig = { damping: 11.5, stiffness: 95 }
 
@@ -21,10 +21,9 @@ const FloatingActionButton = ({
   setExpanded,
   resetOnItemPress = true,
   isLeftHanded
-}: FABProps) => {
+}: FABProps): JSX.Element => {
   const progress = useSharedValue(0)
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
 
   useEffect(() => {
     if (!expanded) {
@@ -32,7 +31,7 @@ const FloatingActionButton = ({
     }
   }, [expanded, progress])
 
-  function collapse() {
+  function collapse(): void {
     setExpanded(false)
   }
 
@@ -62,13 +61,13 @@ const FloatingActionButton = ({
     // if fab is active (expanded) then we collapse.
     if (expanded) {
       setExpanded(false)
-      capture('FABClosed')
+      AnalyticsService.capture('FABClosed')
       return
     }
     progress.value = withSpring(1, springConfig)
     setExpanded(true)
-    capture('FABOpened')
-  }, [capture, expanded, progress, setExpanded])
+    AnalyticsService.capture('FABOpened')
+  }, [expanded, progress, setExpanded])
 
   const wrapperStyle = useMemo(() => {
     return {

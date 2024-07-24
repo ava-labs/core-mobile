@@ -1,22 +1,29 @@
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useInfiniteScroll } from 'store/utils/useInfiniteScroll'
 import { ActivityResponse } from 'services/activity/types'
 import { selectBridgeCriticalConfig } from 'store/bridge'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { GetTransactionsArgs, Transaction } from '../types'
 import { useGetTransactionsQuery } from '../api'
 
 // a hook to get transactions with pagination support for the current active network & account
-export const useGetTransactions = () => {
-  const network = useSelector(selectActiveNetwork)
+export const useGetTransactions = (): {
+  transactions: Transaction[]
+  isLoading: boolean
+  isRefreshing: boolean
+  isFirstPage: boolean
+  fetchNext: () => void
+  refresh: () => void
+} => {
+  const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
   const { data, fetchNext, refresh, isLoading, isRefreshing, isFirstPage } =
     useInfiniteScroll<GetTransactionsArgs, ActivityResponse, Transaction>({
       useQuery: useGetTransactionsQuery,
-      queryParams: { network, account, criticalConfig },
+      queryParams: { network: activeNetwork, account, criticalConfig },
       dataKey: 'transactions'
     })
 

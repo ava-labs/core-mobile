@@ -6,17 +6,18 @@ import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React, { useCallback, useEffect, useState } from 'react'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { useCallback, useEffect, useState, JSX } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { Account } from 'store/account'
 import {
   fetchBalanceForAccount,
-  QueryStatus,
   selectBalanceStatus,
   selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAddress
-} from 'store/balance'
+} from 'store/balance/slice'
+import { QueryStatus } from 'store/balance/types'
 import { truncateAddress } from 'utils/Utils'
 
 type Props = {
@@ -25,13 +26,15 @@ type Props = {
   selected: boolean
 }
 
-const AccountItem = ({ account, onSelect, selected }: Props) => {
+const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
   const { theme } = useApplicationContext()
+  const { activeNetwork } = useNetworks()
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index)
   )
+
   const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAddress(account.index)
+    selectIsBalanceLoadedForAddress(account.index, activeNetwork.chainId)
   )
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
@@ -51,7 +54,7 @@ const AccountItem = ({ account, onSelect, selected }: Props) => {
     }
   }, [isBalanceLoading, showLoader])
 
-  const address = truncateAddress(account.address, 5)
+  const address = truncateAddress(account.addressC, 5)
 
   return (
     <Row
@@ -67,7 +70,7 @@ const AccountItem = ({ account, onSelect, selected }: Props) => {
       ]}>
       <View style={styles.accountTitleContainer}>
         <AvaText.ButtonLarge textStyle={{ color: theme.colorText1 }}>
-          {account.title}
+          {account.name}
           <AvaText.ButtonLarge
             textStyle={{ color: theme.colorText1, fontWeight: 'normal' }}>
             {' (' + address + ')'}
@@ -98,9 +101,10 @@ const AccountItem = ({ account, onSelect, selected }: Props) => {
         )}
       </View>
       <Checkbox
+        testID="account_check_box"
         selected={selected}
         onPress={() => {
-          onSelect(account.address)
+          onSelect(account.addressC)
         }}
       />
     </Row>

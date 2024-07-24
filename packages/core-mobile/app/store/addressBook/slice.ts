@@ -2,10 +2,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import {
   AddressBookState,
-  Contact,
+  ContactCollection,
   RecentContact,
   UID
 } from 'store/addressBook/types'
+import { Contact } from '@avalabs/types'
 
 const reducerName = 'addressBook'
 
@@ -46,13 +47,14 @@ const addressBookSlice = createSlice({
 })
 
 // selectors
-export const selectContacts = (state: RootState) => state.addressBook.contacts
+export const selectContacts = (state: RootState): ContactCollection =>
+  state.addressBook.contacts
 export const selectContact = (uid: UID) => (state: RootState) => {
   return state.addressBook.contacts[uid]
 }
-export const selectRecentContacts = (state: RootState) =>
+export const selectRecentContacts = (state: RootState): RecentContact[] =>
   state.addressBook.recentContacts
-export const selectEditingContact = (state: RootState) =>
+export const selectEditingContact = (state: RootState): Contact | undefined =>
   state.addressBook.editingContact
 
 // actions

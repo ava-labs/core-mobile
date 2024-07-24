@@ -6,9 +6,9 @@ import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
-import { format } from 'date-fns'
 import { Space } from 'components/Space'
 import { Tooltip } from 'components/Tooltip'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 
 interface Props {
   items: DeFiInsuranceBuyerItem[]
@@ -31,7 +31,7 @@ export const DeFiPortfolioInsuranceBuyer: FC<Props> = ({ items }) => {
       {items.map((item, index) => {
         const description = item.description
         const expiredAt = item.expiredAt
-          ? format(new Date(item.expiredAt * 1000), 'MMM dd, yyyy, HH:mm a')
+          ? getDateInMmmDdYyyyHhMmA(item.expiredAt)
           : undefined
 
         return (

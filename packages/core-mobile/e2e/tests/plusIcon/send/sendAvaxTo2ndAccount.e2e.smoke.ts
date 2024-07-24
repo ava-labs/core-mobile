@@ -1,11 +1,12 @@
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
-import ActivityTabLoc from '../../../locators/activityTab.loc'
 import PortfolioPage from '../../../pages/portfolio.page'
+import ReviewAndSendPage from '../../../pages/reviewAndSend.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
+import bottomTabsPage from '../../../pages/bottomTabs.page'
+import Actions from '../../../helpers/actions'
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
@@ -13,25 +14,33 @@ describe('Send Avax to another account', () => {
   })
 
   it('Should send AVAX to second account', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    // Send token to 2nd account
+    await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
     )
-    await PortfolioPage.tapAvaxNetwork()
-    await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(
-      5000,
-      secondAccountAddress,
-      ActivityTabLoc.avaxOutgoingTransactionDetail
-    )
+
+    // Go to activity tap
+    await PortfolioPage.goToActivityTab()
+
+    // verify send event
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Send')
   })
 
   it('Should receive AVAX on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.avaxIncomingTransactionDetail
+    // Change default account to the 2nd.
+    await Actions.waitForElementNotVisible(
+      ReviewAndSendPage.transactionSuccessfulToastMsg
     )
+    await bottomTabsPage.tapPortfolioTab()
+    await AccountManagePage.tapAccountDropdownTitle(0)
+    await AccountManagePage.tapSecondAccount()
+
+    // verify receive event
+    await PortfolioPage.goToActivityTab()
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
   })
 })

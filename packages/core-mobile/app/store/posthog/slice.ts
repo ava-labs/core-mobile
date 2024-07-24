@@ -1,8 +1,9 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
-import { initialState, JsonMap, ProcessedFeatureFlags } from './types'
+import { WalletType } from 'services/wallet/types'
+import { initialState, ProcessedFeatureFlags } from './types'
 
 const reducerName = 'posthog'
 
@@ -41,7 +42,6 @@ export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
   const eventsBlocked = selectIsEventsBlocked(state)
   const sentrySampleRate = selectSentrySampleRate(state)
   const coinbasePayBlocked = selectIsCoinbasePayBlocked(state)
-  const useCoinGeckoPro = selectUseCoinGeckoPro(state)
   const defiBlocked = selectIsDeFiBlocked(state)
   const leftFab = selectUseLeftFab(state)
   const darkMode = selectUseDarkMode(state)
@@ -57,15 +57,38 @@ export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
     eventsBlocked,
     sentrySampleRate,
     coinbasePayBlocked,
-    useCoinGeckoPro,
     defiBlocked,
     leftFab,
     darkMode
   }
 }
 
+const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_SIGNING] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (!isSeedlessWallet) {
+    return false
+  }
+
+  return isSeedlessSigningBlocked(state.posthog.featureFlags)
+}
+
 export const selectIsSwapBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (isSeedlessWallet) {
+    return isSeedlessSigningBlocked(featureFlags)
+  }
+
   return (
     !featureFlags[FeatureGates.SWAP] || !featureFlags[FeatureGates.EVERYTHING]
   )
@@ -73,6 +96,13 @@ export const selectIsSwapBlocked = (state: RootState): boolean => {
 
 export const selectIsBridgeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (isSeedlessWallet) {
+    return isSeedlessSigningBlocked(featureFlags)
+  }
+
   return (
     !featureFlags[FeatureGates.BRIDGE] || !featureFlags[FeatureGates.EVERYTHING]
   )
@@ -96,6 +126,13 @@ export const selectIsBridgeEthBlocked = (state: RootState): boolean => {
 
 export const selectIsSendBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (isSeedlessWallet) {
+    return isSeedlessSigningBlocked(featureFlags)
+  }
+
   return (
     !featureFlags[FeatureGates.SEND] || !featureFlags[FeatureGates.EVERYTHING]
   )
@@ -152,14 +189,6 @@ export const selectIsBrowserBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectUseCoinGeckoPro = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    Boolean(featureFlags[FeatureGates.USE_COINGECKO_PRO]) ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectIsDeFiBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
@@ -196,15 +225,95 @@ export const selectIsSeedlessOnboardingBlocked = (
 ): boolean => {
   const { featureFlags } = state.posthog
   return (
+    (!featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] &&
+      !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]) ||
     !featureFlags[FeatureGates.SEEDLESS_ONBOARDING] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
-export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
+export const selectIsSeedlessOnboardingAppleBlocked = (
+  state: RootState
+): boolean => {
   const { featureFlags } = state.posthog
   return (
-    !featureFlags[FeatureGates.SEEDLESS_SIGNING] ||
+    !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessOnboardingGoogleBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessMfaPasskeyBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_MFA_PASSKEY] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessMfaAuthenticatorBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_MFA_AUTHENTICATOR] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessMfaYubikeyBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_MFA_YUBIKEY] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsUnifiedBridgeCCTPBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.UNIFIED_BRIDGE_CCTP] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsLogErrorsWithSentryBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.LOG_ERRORS_TO_SENTRY] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsBlockaidTransactionValidationBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.BLOCKAID_TRANSACTION_VALIDATION] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsBlockaidDappScanBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.BLOCKAID_DAPP_SCAN] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
@@ -212,8 +321,5 @@ export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
-export const capture = createAction<{ event: string; properties?: JsonMap }>(
-  `${reducerName}/capture`
-)
 
 export const posthogReducer = posthogSlice.reducer

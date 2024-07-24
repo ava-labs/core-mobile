@@ -11,14 +11,16 @@ import { Account, setAccountTitle as setAccountTitleStore } from 'store/account'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchBalanceForAccount,
-  QueryStatus,
   selectBalanceStatus,
   selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAddress
-} from 'store/balance'
+} from 'store/balance/slice'
+import { QueryStatus } from 'store/balance/types'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectWalletType } from 'store/app'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type Props = {
   account: Account
@@ -35,20 +37,21 @@ function AccountItem({
   selected,
   blurred
 }: Props): JSX.Element {
+  const { activeNetwork } = useNetworks()
+  const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index)
   )
   const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAddress(account.index)
+    selectIsBalanceLoadedForAddress(account.index, activeNetwork.chainId)
   )
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
 
   const [editAccount, setEditAccount] = useState(false)
-  const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
+  const [editedAccountTitle, setEditedAccountTitle] = useState(account.name)
   const [showLoader, setShowLoader] = useState(false)
-  const { capture } = usePostCapture()
   const dispatch = useDispatch()
 
   const bgColor = useMemo(() => {
@@ -72,16 +75,13 @@ function AccountItem({
       dispatch(
         setAccountTitleStore({
           title: newAccountName,
-          accountIndex: account.index
+          accountIndex: account.index,
+          walletType
         })
       )
     },
-    [account.index, dispatch]
+    [account.index, dispatch, walletType]
   )
-
-  const handleOnCopyAddressAnalytics = (eventName: string) => {
-    capture(eventName)
-  }
 
   const handleLoadBalance = useCallback(() => {
     dispatch(fetchBalanceForAccount({ accountIndex: account.index }))
@@ -113,7 +113,7 @@ function AccountItem({
                 onSubmit={() => saveAccountTitle(editedAccountTitle)}
               />
             ) : (
-              <Title title={account.title} />
+              <Title title={account.name} />
             )}
             <Space y={4} />
             {showLoader && (
@@ -158,18 +158,18 @@ function AccountItem({
           </View>
           <View>
             <TokenAddress
-              address={account.address}
+              address={account.addressC}
               showIcon
               onCopyAddress={() =>
-                handleOnCopyAddressAnalytics('AccountSelectorEthAddressCopied')
+                AnalyticsService.capture('AccountSelectorEthAddressCopied')
               }
             />
             <Space y={6} />
             <TokenAddress
-              address={account.addressBtc}
+              address={account.addressBTC}
               showIcon
               onCopyAddress={() =>
-                handleOnCopyAddressAnalytics('AccountSelectorBtcAddressCopied')
+                AnalyticsService.capture('AccountSelectorBtcAddressCopied')
               }
             />
           </View>
@@ -195,7 +195,7 @@ const Save = ({
 }: {
   disabled: boolean
   onPress: () => void
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <AvaButton.Base
@@ -210,7 +210,7 @@ const Save = ({
   )
 }
 
-const Edit = ({ onPress }: { onPress: () => void }) => {
+const Edit = ({ onPress }: { onPress: () => void }): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <AvaButton.Base
@@ -232,7 +232,7 @@ const EditTitle = ({
   title: string
   onChangeText: (text: string) => void
   onSubmit: () => void
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <Row>
@@ -253,7 +253,7 @@ const EditTitle = ({
   )
 }
 
-const Title = ({ title }: { title: string }) => {
+const Title = ({ title }: { title: string }): JSX.Element => {
   return <AvaText.Heading2 ellipsizeMode={'tail'}>{title}</AvaText.Heading2>
 }
 export default AccountItem

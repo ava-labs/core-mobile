@@ -1,24 +1,28 @@
-import React, { FC, useEffect, useRef } from 'react'
+import React, { FC, useEffect } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import { NavigatorScreenParams, useNavigation } from '@react-navigation/native'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
-import { WalletState, selectIsLocked, selectWalletState } from 'store/app'
-import { useSelector } from 'react-redux'
+import { selectIsLocked, selectWalletState, WalletState } from 'store/app'
+import { useDispatch, useSelector } from 'react-redux'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { NameYourWallet } from 'seedless/screens/NameYourWallet'
+import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
+import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { setAccountTitle } from 'store/account'
+import { WalletType } from 'services/wallet/types'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
-import SigninScreen from './onboarding/SigninScreen'
-import RecoveryMethodsStack, {
-  RecoveryMethodsStackParamList
-} from './onboarding/RecoveryMethodsStack'
+import { MainHeaderOptions } from './NavUtils'
+import AccessMnemonicWalletScreen from './onboarding/AccessMnemonicWalletScreen'
 
 type NavigationProp = OnboardScreenProps<
-  typeof AppNavigation.Onboard.Signup
+  typeof AppNavigation.Onboard.RecoverWithMnemonicStack
 >['navigation']
 
 const OnboardScreenStack: FC = () => {
@@ -27,7 +31,6 @@ const OnboardScreenStack: FC = () => {
   const walletState = useSelector(selectWalletState)
   const isLocked = useSelector(selectIsLocked)
   const navigation = useNavigation<NavigationProp>()
-  const welcomeScreenStackTransitionAnimationEnabled = useRef(true)
 
   useEffect(() => {
     if (pendingDeepLink && walletState === WalletState.NONEXISTENT) {
@@ -43,13 +46,11 @@ const OnboardScreenStack: FC = () => {
   }, [isLocked, pendingDeepLink, walletState])
 
   useEffect(() => {
-    if (isLocked && walletState !== WalletState.NONEXISTENT) {
-      welcomeScreenStackTransitionAnimationEnabled.current = false
-      navigation.replace(AppNavigation.Onboard.Welcome, {
-        screen: AppNavigation.Onboard.Login
-      })
+    if (isPinRecovery()) {
+      setPinRecovery(false)
+      navigation.navigate(AppNavigation.Onboard.RecoverWithMnemonicStack)
     }
-  }, [navigation, isLocked, walletState])
+  }, [navigation])
 
   return (
     <OnboardingScreenS.Navigator
@@ -62,19 +63,21 @@ const OnboardScreenStack: FC = () => {
         component={SignupScreen}
       />
       <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.Signin}
-        component={SigninScreen}
+        name={AppNavigation.Onboard.AccessMnemonicWallet}
+        component={AccessMnemonicWalletScreen}
       />
       <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Welcome}
         component={WelcomeScreenStack}
-        options={{
-          animationEnabled: welcomeScreenStackTransitionAnimationEnabled.current
-        }}
       />
       <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.RecoveryMethods}
-        component={RecoveryMethodsStack}
+        options={MainHeaderOptions()}
+        name={AppNavigation.Onboard.NameYourWallet}
+        component={NameYourWalletScreen}
+      />
+      <OnboardingScreenS.Screen
+        name={AppNavigation.Onboard.RecoverWithMnemonicStack}
+        component={EnterWithMnemonicStack}
       />
     </OnboardingScreenS.Navigator>
   )
@@ -82,16 +85,43 @@ const OnboardScreenStack: FC = () => {
 
 export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signup]: undefined
-  [AppNavigation.Onboard.Signin]: undefined
+  [AppNavigation.Onboard.AccessMnemonicWallet]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
-  [AppNavigation.Onboard
-    .RecoveryMethods]: NavigatorScreenParams<RecoveryMethodsStackParamList> & {
-    oidcToken: string
-    mfaId: string
-  }
+  [AppNavigation.Onboard.NameYourWallet]: undefined
+  [AppNavigation.Onboard.RecoverWithMnemonicStack]: undefined
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()
+
+type NameYourWalletNavigationProp = OnboardScreenProps<
+  typeof AppNavigation.Onboard.NameYourWallet
+>['navigation']
+
+const NameYourWalletScreen = (): JSX.Element => {
+  const dispatch = useDispatch()
+  const { navigate } = useNavigation<NameYourWalletNavigationProp>()
+
+  const onSetWalletName = (name: string): void => {
+    AnalyticsService.capture('Onboard:WalletNameSet')
+    dispatch(
+      setAccountTitle({
+        title: name,
+        walletType: WalletType.SEEDLESS,
+        accountIndex: 0
+      })
+    )
+    navigate(AppNavigation.Root.Onboard, {
+      screen: AppNavigation.Onboard.Welcome,
+      params: {
+        screen: AppNavigation.Onboard.AnalyticsConsent,
+        params: {
+          nextScreen: AppNavigation.Onboard.CreatePin
+        }
+      }
+    })
+  }
+  return <NameYourWallet onSetWalletName={onSetWalletName} />
+}
 
 export default OnboardScreenStack

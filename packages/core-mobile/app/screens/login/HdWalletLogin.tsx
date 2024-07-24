@@ -5,33 +5,32 @@ import TextArea from 'components/TextArea'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import * as bip39 from 'bip39'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void
   onBack: () => void
 }
 
-export default function HdWalletLogin(props: Props) {
-  const { capture } = usePostCapture()
+export default function HdWalletLogin(props: Props): JSX.Element {
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
   )
 
-  const onEnterTestWallet = () => {
+  const onEnterTestWallet = (): void => {
     onEnterWallet(WalletSDK.testMnemonic())
   }
 
-  const onBack = () => {
+  const onBack = (): void => {
     props.onBack()
   }
 
-  const onEnterWallet = (mnemonic: string) => {
-    const trimmed = mnemonic.trim()
+  const onEnterWallet = (mnemonic: string): void => {
+    const trimmed = mnemonic.toLowerCase().trim()
     const isValid = bip39.validateMnemonic(trimmed)
     try {
       if (isValid) {
-        capture('OnboardingMnemonicImported')
+        AnalyticsService.capture('OnboardingMnemonicImported')
         props.onEnterWallet(trimmed)
       } else {
         throw new Error()
@@ -42,7 +41,7 @@ export default function HdWalletLogin(props: Props) {
   }
 
   // eslint-disable-next-line react/no-unstable-nested-components
-  const EnterTestWalletButton = () => {
+  const EnterTestWalletButton = (): JSX.Element | null => {
     return __DEV__ ? (
       <AvaButton.TextLarge
         onPress={onEnterTestWallet}

@@ -43,6 +43,10 @@ class WatchListPage {
     return by.id(watchlist.enterWalletBtn)
   }
 
+  get searchBar() {
+    return by.id(watchlist.searchBar)
+  }
+
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
   }
@@ -79,13 +83,35 @@ class WatchListPage {
     await Action.tapElementAtIndex(this.walletSVG, 1)
   }
 
-  async tapWatchListToken(tokenSymbol: string) {
-    await element(by.id(`watchlist_item__${tokenSymbol}`)).tap()
+  async tapWatchListToken(tokenSymbol: string, index = 0) {
+    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`))
+    await Action.tapElementAtIndex(
+      by.id(`watchlist_item__${tokenSymbol}`),
+      index
+    )
   }
 
   async verifyWatchlistElements() {
     await device.captureViewHierarchy()
     await Assert.isVisible(this.recoverWalletBtn)
+  }
+
+  async verifyFavorites(tokens: string[]) {
+    for (const token of tokens) {
+      await Action.waitForElement(
+        by.id(`watchlist_item__${token.toLowerCase()}`)
+      )
+      await Assert.isVisible(by.id(`watchlist_item__${token.toLowerCase()}`))
+    }
+  }
+
+  async setWatchListToken(tokenSymbol: string) {
+    await Action.setInputText(this.searchBar, tokenSymbol)
+  }
+
+  async clearSearchBar() {
+    await Action.tap(this.searchBar)
+    await Action.tap(by.text('Cancel'))
   }
 }
 

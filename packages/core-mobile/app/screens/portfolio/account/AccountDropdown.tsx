@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 import { Animated, Easing, FlatList, Pressable, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { Account } from 'store/account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import AvaText from 'components/AvaText'
@@ -14,7 +13,7 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const Y_START = -400
 
@@ -28,10 +27,9 @@ function AccountDropdown({
   const { goBack } = useNavigation()
   const animTranslateY = useRef(new Animated.Value(Y_START)).current
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
 
   useEffect(() => {
-    capture('AccountSelectorOpened')
+    AnalyticsService.capture('AccountSelectorOpened')
   }, [])
 
   useEffect(() => {
@@ -55,7 +53,8 @@ function AccountDropdown({
     compositeAnimation1.start(() => goBack())
   }, [animTranslateY, goBack])
 
-  function onSelectAccount(accountIndex: number) {
+  function onSelectAccount(accountIndex: number): void {
+    AnalyticsService.capture('AccountSelectorAccountSwitched', { accountIndex })
     dispatch(setActiveAccountIndex(accountIndex))
     animatedDismiss()
   }
@@ -63,22 +62,12 @@ function AccountDropdown({
   return (
     <Pressable style={{ flex: 1 }} onPress={goBack}>
       <View
+        testID="accounts_dropdown"
         style={{
           backgroundColor: theme.overlay,
           flex: 1,
           paddingHorizontal: 16
         }}>
-        <View
-          style={{
-            alignSelf: 'center',
-            width: 200,
-            marginTop: 2,
-            marginLeft: 0.5,
-            backgroundColor: theme.colorBg1
-          }}>
-          <HeaderAccountSelector direction={'up'} onPressed={() => goBack()} />
-        </View>
-
         <Animated.View
           key="some key"
           style={{
@@ -124,11 +113,11 @@ function AccountItemRenderer({
 }: {
   account: Account
   onSelectAccount: (accountIndex: number) => void
-}) {
+}): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   return (
     <AccountItem
-      key={account.title}
+      key={account.name}
       account={account}
       selected={account.index === activeAccount?.index}
       onSelectAccount={onSelectAccount}

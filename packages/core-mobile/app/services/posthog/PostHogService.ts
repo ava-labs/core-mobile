@@ -1,34 +1,54 @@
 import Config from 'react-native-config'
-import { JsonMap } from 'store/posthog/types'
 import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
-import { getPosthogDeviceInfo } from './utils'
+import { JsonMap } from 'store/posthog'
+import { applyTempChainIdConversion } from 'temp/caip2ChainIds'
+import { PostHogServiceNoop } from 'services/posthog/PostHogServiceNoop'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
+import {
+  FeatureGates,
+  FeatureVars,
+  PostHogDecideResponse,
+  PostHogServiceInterface
+} from './types'
+import { getPosthogDeviceInfo } from './utils'
 
-const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
+class PostHogService implements PostHogServiceInterface {
+  constructor(
+    private posthogAnalyticsKey: string,
+    private posthogUrl: string,
+    private posthogFeatureFlagsKey: string
+  ) {}
 
-const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
-const generatePostHogDecideFetchOptions = (distinctId: string) => {
-  return {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
-      distinct_id: distinctId,
-      app_version: DeviceInfoService.getAppVersion()
-    })
+  #posthogCaptureUrl = `${this.posthogUrl}/capture/`
+
+  distinctId: string | undefined
+  userId: string | undefined
+
+  configure({
+    distinctId,
+    userId
+  }: {
+    distinctId: string
+    userId: string
+  }): void {
+    this.distinctId = distinctId
+    this.userId = userId
   }
-}
 
-class PostHogService {
-  async capture(
-    eventName: string,
-    distinctId: string,
-    userId: string,
-    properties?: JsonMap
-  ) {
+  get isConfigured(): boolean {
+    return this.distinctId !== undefined && this.userId !== undefined
+  }
+
+  async capture(eventName: string, properties?: JsonMap): Promise<void> {
+    if (!this.isConfigured) {
+      throw new Error(
+        'PostHogService not configured. please call configure() first'
+      )
+    }
+
+    applyTempChainIdConversion(properties)
+
     const deviceInfo = await getPosthogDeviceInfo()
     const PostHogCaptureFetchOptions = {
       method: 'POST',
@@ -36,19 +56,19 @@ class PostHogService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_ANALYTICS_KEY,
+        api_key: this.posthogAnalyticsKey,
         event: eventName,
         timestamp: Date.now().toString(),
         ip: '',
-        distinct_id: distinctId,
+        distinct_id: this.distinctId,
         properties: {
           ...deviceInfo,
           ...properties,
-          $user_id: userId
+          $user_id: this.userId
         }
       })
     }
-    fetch(PostHogCaptureUrl, PostHogCaptureFetchOptions)
+    fetch(this.#posthogCaptureUrl, PostHogCaptureFetchOptions)
       .then(response => {
         if (response.ok) {
           return response.json()
@@ -60,14 +80,14 @@ class PostHogService {
       })
   }
 
-  async identifyUser(distinctId: string) {
+  async identifyUser(distinctId: string): Promise<void> {
     const PostHogIdentifyFetchOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+        api_key: this.posthogFeatureFlagsKey,
         event: '$identify',
         timestamp: Date.now().toString(),
         ip: '',
@@ -77,7 +97,7 @@ class PostHogService {
         }
       })
     }
-    fetch(PostHogCaptureUrl, PostHogIdentifyFetchOptions)
+    fetch(this.#posthogCaptureUrl, PostHogIdentifyFetchOptions)
       .then(response => {
         if (response.ok) {
           return response.json()
@@ -89,28 +109,75 @@ class PostHogService {
       })
   }
 
-  async fetchFeatureFlags(distinctId: string) {
-    try {
-      Logger.info('fetching feature flags')
-      const response = await fetch(
-        PostHogDecideUrl,
-        generatePostHogDecideFetchOptions(distinctId)
-      )
+  async fetchFeatureFlags(
+    distinctId: string
+  ): Promise<
+    Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
+  > {
+    const appVersion = DeviceInfoService.getAppVersion()
 
-      if (!response.ok) {
-        throw new Error('Something went wrong')
+    const fetchWithPosthogFallback =
+      async (): Promise<PostHogDecideResponse> => {
+        const fetcher = async (url: string): Promise<PostHogDecideResponse> => {
+          const params = new URLSearchParams({
+            ip: '',
+            _: Date.now().toString(),
+            v: '3',
+            ver: appVersion
+          })
+
+          const data = Buffer.from(
+            JSON.stringify({
+              token: this.posthogFeatureFlagsKey,
+              distinct_id: distinctId,
+              groups: {}
+            })
+          ).toString('base64')
+
+          const response = await fetch(`${url}/decide?${params}`, {
+            method: 'POST',
+            body: 'data=' + encodeURIComponent(data),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          })
+
+          return await response.json()
+        }
+
+        try {
+          const response = await fetcher(
+            `${process.env.PROXY_URL}/proxy/posthog`
+          )
+
+          if (!response.featureFlags) {
+            throw new Error('No feature flags found in cached response')
+          }
+
+          return response
+        } catch (e) {
+          if (!this.posthogUrl) {
+            throw new Error('Invalid Posthog URL')
+          }
+
+          return await fetcher(this.posthogUrl)
+        }
       }
 
-      const responseJson = await response.json()
-      const featureFlags = sanitizeFeatureFlags(responseJson)
+    try {
+      const responseJson = await fetchWithPosthogFallback()
 
-      Logger.info('fetched feature flags', featureFlags)
-
-      return featureFlags
+      return sanitizeFeatureFlags(responseJson, appVersion)
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
     }
   }
 }
 
-export default new PostHogService()
+export default Config.POSTHOG_ANALYTICS_KEY &&
+Config.POSTHOG_URL &&
+Config.POSTHOG_FEATURE_FLAGS_KEY
+  ? new PostHogService(
+      Config.POSTHOG_ANALYTICS_KEY,
+      Config.POSTHOG_URL,
+      Config.POSTHOG_FEATURE_FLAGS_KEY
+    )
+  : new PostHogServiceNoop()

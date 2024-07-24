@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { ComponentStory, Meta } from '@storybook/react-native'
 import { RadioButton } from 'components/RadioButton'
 import AvaText from 'components/AvaText'
 import { View } from 'react-native'
@@ -8,14 +7,15 @@ import { withCenterView } from '../decorators/withCenterView'
 export default {
   title: 'RadioButton',
   decorators: [withCenterView]
-} as Meta
+}
 
-export const Basic: ComponentStory<typeof RadioButton> = ({
+export const Basic = ({
   selected,
   children,
   unselectedColor,
   selectedColor
-}) => {
+}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+any): React.JSX.Element => {
   const [toggle, setToggle] = useState(false)
 
   return (

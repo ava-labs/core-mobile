@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
+
 import { ScrollView, Text } from '../../components/Primitives'
 import Link from '../../utils/Link'
 import { text } from './text'
@@ -9,7 +9,7 @@ const FIGMA_LINK =
 
 export default {
   title: 'Text'
-} as Meta
+}
 
 export const All = (): JSX.Element => {
   return (

@@ -1,52 +1,45 @@
-/* eslint-env detox/detox, jest */
-/**
- * @jest-environment ./environment.ts
- */
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import { warmup } from '../../../helpers/warmup'
-import BottomTabsPage from '../../../pages/bottomTabs.page'
-import PlusMenuPage from '../../../pages/plusMenu.page'
-import ScanQrCodePage from '../../../pages/scanQrCode.page'
-import ConnectToSitePage from '../../../pages/connectToSite.page'
-import BurgerMenuPage from '../../../pages/burgerMenu/burgerMenu.page'
-import SecurityAndPrivacyPage from '../../../pages/securityAndPrivacy.page'
-import Assert from '../../../helpers/assertions'
-import ConnectedSitesPage from '../../../pages/connectedSites.page'
-import actions from '../../../helpers/actions'
-import CommonElsPage from '../../../pages/commonEls.page'
-import delay from '../../../helpers/waits'
+import browserPage from '../../../pages/browser.page'
+import plusMenuPage from '../../../pages/plusMenu.page'
+import connectToSitePage from '../../../pages/connectToSite.page'
+import securityAndPrivacyPage from '../../../pages/burgerMenu/securityAndPrivacy.page'
+import connectedSitesPage from '../../../pages/connectedSites.page'
 
 describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
     await warmup()
   })
 
-  it('should navigate to wallet connect screen', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
-    await actions.waitForElement(BottomTabsPage.plusIcon, 10, 1)
-    await ConnectToSitePage.tapPlusIcon()
-    await PlusMenuPage.tapWalletConnectButton()
+  it('should connect Aave', async () => {
+    const aave = 'Aave - Open Source Liquidity Protocol'
+    await browserPage.connectTo('https://app.aave.com/')
+    const qrUri = await browserPage.getQrUri()
+    await plusMenuPage.connectWallet(qrUri)
+    await connectToSitePage.selectAccountAndconnect(aave)
+    await securityAndPrivacyPage.goToConnectedSites()
+    await connectedSitesPage.verifyDapp(aave)
+    await connectedSitesPage.goBackToPortfolio()
   })
 
-  it('should connect to dApp', async () => {
-    await ScanQrCodePage.enterQrCode()
-    await delay(1000)
-    await ConnectToSitePage.tapSelectAccountsDropdown()
-    await ConnectedSitesPage.tapSelectAllChkBox()
-    await ConnectToSitePage.tapApproveBtn()
-    await BurgerMenuPage.tapBurgerMenuButton()
-    await BurgerMenuPage.tapSecurityAndPrivacy()
-    delay(2000)
-    await CommonElsPage.waitForToastMsgGone(1)
-    await SecurityAndPrivacyPage.tapConnectedSites()
-    await CommonElsPage.waitForToastMsgGone(1)
-    await ConnectedSitesPage.tapManageBtn()
-    await ConnectedSitesPage.tapSelectAllChkBox()
-    await ConnectedSitesPage.tapDeleteBtn()
-    await Assert.isVisible(ConnectedSitesPage.noConnectedSitesText)
+  it('should connect TraderJoe', async () => {
+    const traderjoe = 'Trader Joe'
+    await browserPage.connectTo('https://traderjoexyz.com/avalanche')
+    const qrUri = await browserPage.getQrUri()
+    await plusMenuPage.connectWallet(qrUri)
+    await connectToSitePage.selectAccountAndconnect(traderjoe)
+    await securityAndPrivacyPage.goToConnectedSites()
+    await connectedSitesPage.verifyDapp(traderjoe)
+    await connectedSitesPage.goBackToPortfolio()
   })
 
-  afterAll(async () => {
-    actions.writeQrCodeToFile('')
+  it('should connect OpenSea', async () => {
+    const openSea = 'OpenSea, the largest NFT marketplace'
+    await browserPage.connectTo('https://opensea.io/', true)
+    const qrUri = await browserPage.getQrUri()
+    await plusMenuPage.connectWallet(qrUri)
+    await connectToSitePage.selectAccountAndconnect(openSea)
+    await connectToSitePage.approveSignMessage(openSea)
+    await securityAndPrivacyPage.goToConnectedSites()
+    await connectedSitesPage.verifyDapp(openSea)
   })
 })

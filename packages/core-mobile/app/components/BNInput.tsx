@@ -18,7 +18,7 @@ interface BNInputProps extends Omit<InputTextProps, 'text'> {
   testID?: string
 }
 
-export function splitBN(val: string) {
+export function splitBN(val: string): (string | null)[] {
   return val.includes('.') ? val.split('.') : [val, null]
 }
 
@@ -35,16 +35,19 @@ export function BNInput({
   isValueLoading,
   hideErrorMessage,
   ..._props
-}: BNInputProps) {
-  const sanitizedValue = value?.isZero() ? undefined : value
+}: BNInputProps): JSX.Element {
   const [valueAsString, setValueAsString] = useState('')
-  const valueBig = sanitizedValue
-    ? bnToBig(sanitizedValue, denomination)
-    : undefined
+  const valueBig = value ? bnToBig(value, denomination) : undefined
 
-  useEffect(updateValueStrFx, [valueBig, valueAsString])
+  useEffect(() => {
+    // When deleting zeros after decimal, all zeros delete without this check.
+    // This also preserves zeros in the input ui.
+    if (valueBig && (!valueAsString || !new Big(valueAsString).eq(valueBig))) {
+      setValueAsString(valueBig.toString())
+    }
+  }, [valueBig, valueAsString, value])
 
-  const onValueChanged = (rawValue: string) => {
+  const onValueChanged = (rawValue: string): void => {
     if (!rawValue) {
       onChange?.({ bn: new BN(0), amount: '0' })
       setValueAsString('')
@@ -63,17 +66,6 @@ export function BNInput({
         amount: changedValue ? new Big(changedValue).toString() : '0', // used to removing leading & trailing zeros
         bn: valueToBn
       })
-    }
-  }
-
-  function updateValueStrFx() {
-    // When deleting zeros after decimal, all zeros delete without this check.
-    // This also preserves zeros in the input ui.
-    if (
-      (valueBig && !valueAsString) ||
-      (valueBig && valueAsString && !new Big(valueAsString).eq(valueBig))
-    ) {
-      setValueAsString(valueBig.toString())
     }
   }
 

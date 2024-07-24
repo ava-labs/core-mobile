@@ -1,8 +1,10 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Account, AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
+import { WalletType } from 'services/wallet/types'
+import { mergeAccounts } from './utils'
 
-const reducerName = 'account'
+export const reducerName = 'account'
 
 const initialState = {
   accounts: {},
@@ -14,7 +16,9 @@ const accountsSlice = createSlice({
   initialState,
   reducers: {
     setAccounts: (state, action: PayloadAction<AccountCollection>) => {
-      state.accounts = action.payload
+      // setAccounts does the same thing as setNonActiveAccounts
+      // but there are listeners that should only listen and react to setAccounts
+      state.accounts = mergeAccounts(state.accounts, action.payload)
     },
     setAccount: (state, action: PayloadAction<Account>) => {
       const newAccount = action.payload
@@ -22,38 +26,63 @@ const accountsSlice = createSlice({
     },
     setAccountTitle: (
       state,
-      action: PayloadAction<{ accountIndex: number; title: string }>
+      action: PayloadAction<{
+        accountIndex: number
+        title: string
+        walletType: WalletType
+      }>
     ) => {
       const { accountIndex, title } = action.payload
-      const acc = state.accounts[accountIndex] as Account
+      const acc = state.accounts[accountIndex]
       if (acc) {
-        acc.title = title
+        acc.name = title
       }
     },
     setActiveAccountIndex: (state, action: PayloadAction<number>) => {
       state.activeAccountIndex = action.payload
+
+      // loop through each account and adjust active flag
+      Object.values(state.accounts).forEach(acc => {
+        acc.active = acc.index === action.payload
+      })
+    },
+    setWalletName: (state, action: PayloadAction<string>) => {
+      state.walletName = action.payload
+    },
+    setNonActiveAccounts: (state, action: PayloadAction<AccountCollection>) => {
+      state.accounts = mergeAccounts(state.accounts, action.payload)
     }
   }
 })
 
 // selectors
-export const selectAccounts = (state: RootState) => state.account.accounts
+export const selectAccounts = (state: RootState): AccountCollection =>
+  state.account.accounts
 
 export const selectAccountByAddress =
-  (address?: string) => (state: RootState) =>
-    Object.values(state.account.accounts).find(
-      acc => acc.address.toLowerCase() === address?.toLowerCase()
+  (address?: string) =>
+  (state: RootState): Account | undefined => {
+    const accounts: Account[] = Object.values(state.account.accounts)
+
+    return accounts.find(
+      acc => acc.addressC.toLowerCase() === address?.toLowerCase()
     )
-export const selectActiveAccount = (state: RootState) =>
+  }
+
+export const selectActiveAccount = (state: RootState): Account | undefined =>
   state.account.accounts[state.account.activeAccountIndex]
 
+export const selectWalletName = (state: RootState): string | undefined =>
+  state.account.walletName
+
 // actions
-export const addAccount = createAction(`${reducerName}/addAccount`)
 export const {
   setAccountTitle,
   setActiveAccountIndex,
   setAccount,
-  setAccounts
+  setAccounts,
+  setWalletName,
+  setNonActiveAccounts
 } = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer

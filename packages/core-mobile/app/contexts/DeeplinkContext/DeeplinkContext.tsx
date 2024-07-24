@@ -19,6 +19,7 @@ import Logger from 'utils/Logger'
 import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
 import { setActive } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
+import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
   DeepLink,
@@ -119,6 +120,11 @@ export const DeeplinkContextProvider = ({
   useEffect(() => {
     // triggered if app is running
     const listener = Linking.addEventListener('url', ({ url }) => {
+      if (url.startsWith(FIDO_CALLBACK_URL)) {
+        // no need to handle fido callback url since that is already handled by the passkey service
+        return
+      }
+
       setPendingDeepLink({
         url,
         origin: DeepLinkOrigin.ORIGIN_DEEPLINK

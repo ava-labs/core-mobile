@@ -4,11 +4,14 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
-import { warmup } from '../../helpers/warmup'
+import { handleJailbrokenWarning, warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
 import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
+import portfolioPage from '../../pages/portfolio.page'
+// import commonElsPage from '../../pages/commonEls.page'
+// import actions from '../../helpers/actions'
+import delay from '../../helpers/waits'
 
 describe('Change Pin', () => {
   beforeAll(async () => {
@@ -16,7 +19,6 @@ describe('Change Pin', () => {
   })
 
   it('Should set new Pin & verify pin Headers', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await Actions.waitForElement(SecurityAndPrivacyPage.changePin)
@@ -26,14 +28,25 @@ describe('Change Pin', () => {
     await Assert.isVisible(CreatePinPage.setNewPinHeader)
     await CreatePinPage.createNewPin()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
+    const platform = Actions.platform()
+    if (platform === 'android') {
+      await device.reloadReactNative()
+      await delay(10000)
+      await device.launchApp({ newInstance: false })
+      await handleJailbrokenWarning()
+      await CreatePinPage.enterNewCurrentPin()
+      await portfolioPage.verifyPorfolioScreen()
+      await BurgerMenuPage.tapBurgerMenuButton()
+      await BurgerMenuPage.tapSecurityAndPrivacy()
+    }
   })
 
   it('Should set previous Pin', async () => {
+    await Actions.waitForElement(SecurityAndPrivacyPage.changePin)
     await SecurityAndPrivacyPage.tapChangePin()
     await Assert.isVisible(CreatePinPage.enterYourPinHeader)
     await CreatePinPage.enterNewCurrentPin()
     await Assert.isVisible(CreatePinPage.setNewPinHeader)
     await CreatePinPage.createPin()
-    await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
   })
 })

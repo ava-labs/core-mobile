@@ -1,7 +1,7 @@
 import { resolve } from '@avalabs/utils-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
-import { TransactionRequest, isAddress } from 'ethers'
+import { isAddress, TransactionRequest } from 'ethers'
 import {
   GetTransactionRequestParams,
   SendErrorMessage,
@@ -9,13 +9,8 @@ import {
   SendState,
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
-import networkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/chains-sdk'
-import {
-  TokenType,
-  TokenWithBalanceERC20,
-  NftTokenWithBalance
-} from 'store/balance'
+import { NftTokenWithBalance } from 'store/balance'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import {
@@ -23,95 +18,104 @@ import {
   ERC20__factory,
   ERC721__factory
 } from 'contracts/openzeppelin'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
+import { TokenType, TokenWithBalanceERC20 } from '@avalabs/vm-module-types'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
 
   constructor(private activeNetwork: Network, private fromAddress: string) {
-    const provider = networkService.getProviderForNetwork(activeNetwork)
-    if (!(provider instanceof JsonRpcBatchInternal))
-      throw new Error('Not EVM provider')
-    this.networkProvider = provider
+    this.networkProvider = getEvmProvider(activeNetwork)
   }
 
   async validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState> {
     const { sendState, nativeTokenBalance, sentryTrx } = params
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.send.evm.validate_and_calc_fees')
-      .executeAsync(async () => {
-        const { amount, address, gasPrice, token } = sendState
+    return (
+      SentryWrapper.createSpanFor(sentryTrx)
+        .setContext('svc.send.evm.validate_and_calc_fees')
+        // eslint-disable-next-line sonarjs/cognitive-complexity
+        .executeAsync(async () => {
+          const { amount, address, defaultMaxFeePerGas, token } = sendState
 
-        // This *should* always be defined and set by the UI
-        if (!token)
-          return SendServiceEVM.getErrorState(sendState, 'Invalid token')
+          // Set canSubmit to false if token is not set
+          if (!token) return SendServiceEVM.getErrorState(sendState, '')
 
-        const gasLimit = await this.getGasLimit(sendState)
-        const sendFee = gasPrice
-          ? new BN(gasLimit).mul(new BN(gasPrice.toString()))
-          : undefined
-        const maxAmount =
-          token.type === TokenType.NATIVE
-            ? token.balance.sub(sendFee || new BN(0))
-            : token.balance
+          const gasLimit = await this.getGasLimit(sendState)
+          const sendFee = defaultMaxFeePerGas
+            ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
+            : undefined
+          let maxAmount =
+            token.type === TokenType.NATIVE
+              ? token.balance.sub(sendFee || new BN(0))
+              : token.balance
 
-        const newState: SendState = {
-          ...sendState,
-          canSubmit: true,
-          error: undefined,
-          gasLimit,
-          gasPrice,
-          maxAmount,
-          sendFee
-        }
+          maxAmount = BN.max(maxAmount, new BN(0))
 
-        if (!address)
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.ADDRESS_REQUIRED
+          const newState: SendState = {
+            ...sendState,
+            canSubmit: true,
+            error: undefined,
+            gasLimit,
+            maxAmount,
+            sendFee
+          }
+
+          if (!address)
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.ADDRESS_REQUIRED
+            )
+
+          if (!isAddress(address))
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_ADDRESS
+            )
+
+          if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_NETWORK_FEE
+            )
+
+          if (
+            token.type !== TokenType.ERC721 &&
+            token.type !== TokenType.ERC1155 &&
+            (!amount || amount.isZero())
           )
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.AMOUNT_REQUIRED
+            )
 
-        if (!isAddress(address))
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INVALID_ADDRESS
+          if (amount?.gt(maxAmount))
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE
+            )
+
+          if (
+            sendFee &&
+            ((token.type !== TokenType.NATIVE &&
+              nativeTokenBalance?.lt(sendFee)) ||
+              (token.type === TokenType.NATIVE && token.balance.lt(sendFee)))
           )
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+            )
 
-        if (!gasPrice || gasPrice === 0n)
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INVALID_NETWORK_FEE
-          )
+          if (gasLimit === 0)
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_GAS_LIMIT
+            )
 
-        if (
-          token.type !== TokenType.ERC721 &&
-          token.type !== TokenType.ERC1155 &&
-          (!amount || amount.isZero())
-        )
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.AMOUNT_REQUIRED
-          )
-
-        if (amount?.gt(maxAmount))
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INSUFFICIENT_BALANCE
-          )
-
-        if (
-          token.type !== TokenType.NATIVE &&
-          sendFee &&
-          nativeTokenBalance?.lt(sendFee)
-        )
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
-          )
-
-        return newState
-      })
+          return newState
+        })
+    )
   }
 
   async getTransactionRequest(
@@ -122,18 +126,13 @@ export class SendServiceEVM implements SendServiceHelper {
       .setContext('svc.send.evm.get_trx_request')
       .executeAsync(async () => {
         const unsignedTx = await this.getUnsignedTx(sendState)
-        const chainId = this.activeNetwork.chainId
-        const nonce = await this.networkProvider.getTransactionCount(
-          this.fromAddress
-        )
+        const chainId = this.activeNetwork.chainId.toString()
         const gasLimit = await this.getGasLimit(sendState)
 
         return {
           ...unsignedTx,
           chainId,
-          gasLimit,
-          gasPrice: sendState.gasPrice,
-          nonce
+          gasLimit
         }
       })
   }
@@ -146,6 +145,7 @@ export class SendServiceEVM implements SendServiceHelper {
     const [gasLimit, error] = await resolve(
       this.networkProvider.estimateGas(unsignedTx)
     )
+
     if (
       error &&
       !(error as Error).toString().includes('insufficient funds for gas')
@@ -173,7 +173,6 @@ export class SendServiceEVM implements SendServiceHelper {
     if (!sendState.token) throw new Error('Missing token')
 
     if (sendState.token.type === TokenType.NATIVE) {
-      //fixme - check what is real value here
       return this.getUnsignedTxNative(sendState)
     } else if (sendState.token.type === TokenType.ERC20) {
       return this.getUnsignedTxERC20(
@@ -215,9 +214,11 @@ export class SendServiceEVM implements SendServiceHelper {
       sendState.address,
       sendState.amount ? BigInt(sendState.amount.toString()) : 0n
     )
+
     return {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
   }
 
@@ -235,9 +236,11 @@ export class SendServiceEVM implements SendServiceHelper {
       sendState.address || '',
       sendState.token?.tokenId || ''
     )
+
     return {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
   }
 
@@ -259,8 +262,9 @@ export class SendServiceEVM implements SendServiceHelper {
       )
 
     const unsignedTx: TransactionRequest = {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
 
     return unsignedTx

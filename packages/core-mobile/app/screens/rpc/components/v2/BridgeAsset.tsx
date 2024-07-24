@@ -1,5 +1,4 @@
-import React, { useCallback, useContext } from 'react'
-import { View } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -10,24 +9,43 @@ import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
+import { useSelector } from 'react-redux'
+import { selectIsSeedlessSigningBlocked } from 'store/posthog'
+import FeatureBlocked from 'screens/posthog/FeatureBlocked'
+import { NetworkTokenUnit } from 'types'
+import { View } from '@avalabs/k2-mobile'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BridgeAssetV2
 >
 
-const BridgeAsset = () => {
+const BridgeAsset = (): JSX.Element => {
+  const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<BridgeAssetScreenProps['navigation']>()
-
   const { request, asset, amountStr, currentBlockchain } =
     useRoute<BridgeAssetScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
+  const { activeNetwork } = useNetworks()
 
   const theme = useContext(ApplicationContext).theme
-  const peerMeta = request.session.peer.metadata
 
+  const { data: networkFee } = useNetworkFee(activeNetwork)
+
+  const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
+    NetworkTokenUnit.fromNetwork(activeNetwork)
+  )
+
+  useEffect(() => {
+    if (!networkFee) return
+    setMaxFeePerGas(networkFee.low.maxFeePerGas)
+  }, [networkFee])
+
+  const peerMeta = request.peerMeta
   const symbol = asset.symbol
 
   const header = 'Approve Action'
@@ -42,11 +60,24 @@ const BridgeAsset = () => {
   }, [goBack, onReject, request])
 
   const approveAndClose = useCallback(() => {
-    onApprove(request, { currentBlockchain, amountStr, asset })
+    onApprove(request, {
+      currentBlockchain,
+      amountStr,
+      asset,
+      maxFeePerGas: maxFeePerGas.toSubUnit()
+    })
     goBack()
-  }, [amountStr, asset, currentBlockchain, goBack, onApprove, request])
+  }, [
+    amountStr,
+    asset,
+    currentBlockchain,
+    goBack,
+    maxFeePerGas,
+    onApprove,
+    request
+  ])
 
-  const renderIcon = () => (
+  const renderIcon = (): JSX.Element => (
     <Avatar.Custom
       name={peerMeta?.name ?? ''}
       size={48}
@@ -54,9 +85,9 @@ const BridgeAsset = () => {
     />
   )
 
-  const renderContent = () => {
+  const renderContent = (): JSX.Element => {
     return (
-      <View style={{ flexShrink: 1 }}>
+      <ScrollView>
         <AvaText.Body1
           color={theme.colorPrimary1}
           textStyle={{ alignSelf: 'center' }}>
@@ -65,7 +96,7 @@ const BridgeAsset = () => {
         <Space y={8} />
         <AvaText.Heading3>Message:</AvaText.Heading3>
         <Space y={8} />
-        <ScrollView
+        <View
           style={{
             flexGrow: 1,
             backgroundColor: theme.colorBg3,
@@ -75,20 +106,31 @@ const BridgeAsset = () => {
           <AvaText.Body1>{`You are about to bridge ${amountStr} ${symbol} on ${humanize(
             currentBlockchain
           )} Network`}</AvaText.Body1>
-        </ScrollView>
-      </View>
+        </View>
+        <Space y={12} />
+      </ScrollView>
     )
   }
 
   return (
-    <SimplePrompt
-      onApprove={approveAndClose}
-      onReject={rejectAndClose}
-      header={header}
-      description={description}
-      renderIcon={renderIcon}
-      renderContent={renderContent}
-    />
+    <>
+      <SimplePrompt
+        onApprove={approveAndClose}
+        onReject={rejectAndClose}
+        header={header}
+        description={description}
+        renderIcon={renderIcon}
+        renderContent={renderContent}
+      />
+      {isSeedlessSigningBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Signing is currently under maintenance. Service will resume shortly.'
+          }
+        />
+      )}
+    </>
   )
 }
 

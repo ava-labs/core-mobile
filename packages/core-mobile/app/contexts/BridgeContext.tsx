@@ -7,19 +7,13 @@ import React, {
   useRef
 } from 'react'
 import {
-  Asset,
   BridgeSDKProvider,
   BridgeTransaction,
   getMinimumConfirmations,
   trackBridgeTransaction,
   TrackerSubscription,
-  useBridgeSDK,
-  WrapStatus
+  useBridgeSDK
 } from '@avalabs/bridge-sdk'
-import Big from 'big.js'
-import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
-import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
-import { BridgeState } from 'store/bridge/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -32,36 +26,33 @@ import {
   useAvalancheProvider,
   useBitcoinProvider,
   useEthereumProvider
-} from 'hooks/networkProviderHooks'
+} from 'hooks/networks/networkProviderHooks'
 import { isEqual } from 'lodash'
 import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
-import { TransactionResponse } from 'ethers'
 import { showSnackBarCustom } from 'components/Snackbar'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import BridgeService from 'services/bridge/BridgeService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
-export enum TransferEventType {
-  WRAP_STATUS = 'wrap_status',
-  TX_HASH = 'tx_hash',
-  UPDATED = 'tx_updated'
-}
+export type PartialBridgeTransaction = Pick<
+  BridgeTransaction,
+  | 'sourceChain'
+  | 'sourceTxHash'
+  | 'sourceStartedAt'
+  | 'targetChain'
+  | 'amount'
+  | 'symbol'
+>
 
 interface BridgeContext {
   createBridgeTransaction(
     tx: PartialBridgeTransaction,
     network: Network
   ): Promise<void | { error: string }>
-
-  bridgeTransactions: BridgeState['bridgeTransactions']
-  transferAsset: (
-    amount: Big,
-    asset: Asset,
-    onStatusChange: (status: WrapStatus) => void,
-    onTxHashChange: (txHash: string) => void
-  ) => Promise<TransactionResponse | undefined>
 }
 
 const bridgeContext = createContext<BridgeContext>({} as BridgeContext)
@@ -94,18 +85,22 @@ function LocalBridgeProvider({
   const config = bridgeConfig?.config
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
-  const { transferHandler, events } = useTransferAsset()
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()
   const avalancheProvider = useAvalancheProvider()
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
-  const { capture } = usePostCapture()
   const isToastVisible = useRef<boolean>()
+
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
+  useEffect(() => {
+    BridgeService.setBridgeEnvironment(isDeveloperMode)
+  }, [isDeveloperMode])
 
   const removeBridgeTransaction = useCallback(
     (tx: BridgeTransaction) => {
       dispatch(popBridgeTransaction(tx.sourceTxHash))
-      capture('BridgeTransferRequestSucceeded')
+      AnalyticsService.capture('BridgeTransferRequestSucceeded')
 
       if (!isToastVisible.current) {
         isToastVisible.current = true
@@ -125,7 +120,7 @@ function LocalBridgeProvider({
         })
       }
     },
-    [capture, dispatch]
+    [dispatch]
   )
 
   useEffect(() => {
@@ -187,25 +182,6 @@ function LocalBridgeProvider({
     ]
   )
 
-  const transferAsset = useCallback(
-    async (
-      amount: Big,
-      asset: Asset,
-      onStatusChange: (status: WrapStatus) => void,
-      onTxHashChange: (txHash: string) => void
-    ) => {
-      events.on(TransferEventType.WRAP_STATUS, status => {
-        onStatusChange(status)
-      })
-      events.on(TransferEventType.TX_HASH, txHash => {
-        onTxHashChange(txHash)
-      })
-
-      return transferHandler(amount, asset)
-    },
-    [events, transferHandler]
-  )
-
   /**
    * Add a new pending bridge transaction to the background state and start the
    * transaction tracking process.
@@ -228,8 +204,8 @@ function LocalBridgeProvider({
         symbol
       } = partialBridgeTransaction
 
-      const addressC = activeAccount.address
-      const addressBTC = activeAccount.addressBtc
+      const addressC = activeAccount.addressC
+      const addressBTC = activeAccount.addressBTC
 
       if (!addressBTC) return { error: 'missing addressBTC' }
       if (!addressC) return { error: 'missing addressC' }
@@ -292,9 +268,7 @@ function LocalBridgeProvider({
   return (
     <bridgeContext.Provider
       value={{
-        bridgeTransactions,
-        createBridgeTransaction,
-        transferAsset
+        createBridgeTransaction
       }}>
       {children}
     </bridgeContext.Provider>

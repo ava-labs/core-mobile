@@ -1,142 +1,248 @@
-import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { PTokenWithBalance, XTokenWithBalance } from 'store/balance/types'
+import { ChainId, Network, NetworkVMType } from '@avalabs/chains-sdk'
 import {
   BlockchainId,
   CurrencyCode,
   ListPChainBalancesResponse,
+  ListXChainBalancesResponse,
   NativeTokenBalance,
-  Network as NetworkName,
-  PChainBalance
+  Network as NetworkName
 } from '@avalabs/glacier-sdk'
-import { glacierSdk } from 'utils/network/glacier'
-import { BalanceServiceProvider } from 'services/balance/types'
-import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
-import { convertErc20ToTokenWithBalance } from 'services/balance/erc20TokenConverter'
+import {
+  BalanceServiceProvider,
+  GetBalancesParams
+} from 'services/balance/types'
 import Logger from 'utils/Logger'
 import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import TokenService from 'services/token/TokenService'
+import { Avax } from 'types'
+import BN from 'bn.js'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { absoluteChain, isXPChain } from 'utils/network/isAvalancheNetwork'
+import GlacierService from 'services/GlacierService'
+import { TokenType } from '@avalabs/vm-module-types'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {
-    const isHealthy = await this.isHealthy()
-    if (!isHealthy) {
-      return false
-    }
-    const supportedChainsResp = await glacierSdk.evmChains.supportedChains({})
-
-    const chainInfos = supportedChainsResp.chains
-    const chains = chainInfos.map(chain => chain.chainId)
-
-    return chains.some(value => value === network.chainId.toString())
+    return await GlacierService.isNetworkSupported(
+      absoluteChain(network.chainId)
+    )
   }
 
-  async getBalances(
-    network: Network,
-    userAddress: string,
-    currency: string,
-    sentryTrx?: Transaction
-  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
+  isChainUnavailableError(err: unknown): boolean {
+    const message = err instanceof Error ? err.message : String(err)
+
+    return message.includes('Internal Server Error')
+  }
+
+  async getBalances({
+    network,
+    accountAddress,
+    currency,
+    sentryTrx
+  }: GetBalancesParams): Promise<(PTokenWithBalance | XTokenWithBalance)[]> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.glacier.get')
       .executeAsync(async () => {
         return await Promise.allSettled([
-          this.getNativeTokenBalanceForNetwork(network, userAddress, currency),
-          this.getErc20BalanceForNetwork(network, userAddress, currency)
+          ...this.getXpChainsBalancesForNetwork({
+            network,
+            address: accountAddress,
+            currency,
+            sentryTrx
+          })
         ])
-          .then(([nativeBalance, erc20Balances]) => {
-            let results: (NetworkTokenWithBalance | TokenWithBalanceERC20)[] =
-              nativeBalance.status === 'fulfilled' ? [nativeBalance.value] : []
-
-            if (erc20Balances.status === 'fulfilled') {
-              results = [...results, ...erc20Balances.value]
+          .then(([pChainBalance, xChainBalance]) => {
+            let results: (PTokenWithBalance | XTokenWithBalance)[] = []
+            if (pChainBalance.status === 'fulfilled') {
+              results = [...results, pChainBalance.value]
+            } else if (this.isChainUnavailableError(pChainBalance.reason)) {
+              GlacierService.setGlacierToUnhealthy()
+            }
+            if (xChainBalance.status === 'fulfilled') {
+              results = [...results, xChainBalance.value]
+            } else if (this.isChainUnavailableError(xChainBalance.reason)) {
+              GlacierService.setGlacierToUnhealthy()
             }
             return results
           })
           .catch(reason => {
+            if (this.isChainUnavailableError(reason)) {
+              GlacierService.setGlacierToUnhealthy()
+            }
             Logger.error(reason)
             return []
           })
       })
   }
 
-  private async isHealthy() {
-    try {
-      const healthStatus = await glacierSdk.healthCheck.healthCheck()
-      const status = healthStatus?.status?.toString()
-      return status === 'ok'
-    } catch (e) {
-      Logger.error('Failed to check glacier health', e)
-      return false
-    }
-  }
-
   private getNativeBalance(
     chainId: string,
     address: string,
-    selectedCurrency: string
-  ) {
-    return glacierSdk.evmBalances
-      .getNativeBalance({
-        chainId,
-        address,
-        currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode
-      })
-      .then(res => res.nativeTokenBalance)
-  }
-
-  private getNativeTokenBalanceForNetwork(
-    network: Network,
-    address: string,
-    selectedCurrency: string
-  ): Promise<NetworkTokenWithBalance> {
-    return this.getNativeBalance(
-      network.chainId.toString(),
-      address,
-      selectedCurrency
-    ).then(balance => convertNativeToTokenWithBalance(balance))
-  }
-
-  private async getErc20BalanceForNetwork(
-    network: Network,
-    address: string,
-    selectedCurrency: string
-  ): Promise<TokenWithBalanceERC20[]> {
-    const tokensWithBalance: TokenWithBalanceERC20[] = []
-    /**
-     *  Load all pages to make sure we have all the tokens with balances
-     */
-    let nextPageToken: string | undefined
-    do {
-      const response = await glacierSdk.evmBalances.listErc20Balances({
-        chainId: network.chainId.toString(),
-        address,
-        currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode,
-        // glacier has a cap on page size of 100
-        pageSize: 100,
-        pageToken: nextPageToken
-      })
-
-      tokensWithBalance.push(
-        ...convertErc20ToTokenWithBalance(response.erc20TokenBalances, network)
+    currency: string
+  ): Promise<NativeTokenBalance> {
+    if (
+      isBitcoinChainId(Number.parseInt(chainId)) ||
+      isXPChain(Number.parseInt(chainId))
+    ) {
+      return Promise.reject(
+        'Chain id not compatible, skipping getNativeBalance'
       )
-      nextPageToken = response.nextPageToken
-    } while (nextPageToken)
-
-    return tokensWithBalance
+    }
+    return GlacierService.getNativeBalance({
+      chainId,
+      address,
+      currency: currency.toLocaleLowerCase() as CurrencyCode
+    }).then(res => res.nativeTokenBalance)
   }
 
-  async getPChainBalance(
-    isDeveloperMode: boolean,
-    addresses: string[],
-    _sentryTrx?: Transaction
-  ): Promise<PChainBalance> {
-    return glacierSdk.primaryNetworkBalances
-      .getBalancesByAddresses({
-        blockchainId: BlockchainId.P_CHAIN,
-        network: isDeveloperMode ? NetworkName.FUJI : NetworkName.MAINNET,
-        addresses: addresses.join(',')
+  private getXpChainsBalancesForNetwork({
+    network,
+    address,
+    currency,
+    sentryTrx
+  }: {
+    network: Network
+    address: string
+    currency: string
+    sentryTrx?: Transaction
+  }): [Promise<PTokenWithBalance>, Promise<XTokenWithBalance>] {
+    return [
+      this.getPChainBalance({
+        network,
+        addresses: [address],
+        currency,
+        sentryTrx
+      }),
+      this.getXChainBalance({
+        network,
+        addresses: [address],
+        currency,
+        sentryTrx
       })
-      .then(value => (value as ListPChainBalancesResponse).balances)
+    ]
+  }
+
+  async getPChainBalance({
+    network,
+    addresses,
+    currency
+  }: {
+    network: Network
+    addresses: string[]
+    currency: string
+    sentryTrx?: Transaction
+  }): Promise<PTokenWithBalance> {
+    if (network.vmName !== NetworkVMType.PVM) {
+      return Promise.reject('network not compatible, skipping getPChainBalance')
+    }
+
+    const { networkToken } = network
+    const nativeTokenId =
+      network.pricingProviders?.coingecko?.nativeTokenId ?? ''
+
+    const pChainBalance = await GlacierService.getChainBalance({
+      blockchainId: BlockchainId.P_CHAIN,
+      network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+      addresses: addresses.join(',')
+    }).then(value => (value as ListPChainBalancesResponse).balances)
+
+    const {
+      price: priceInCurrency,
+      marketCap,
+      vol24,
+      change24
+    } = await TokenService.getPriceWithMarketDataByCoinId(
+      nativeTokenId,
+      currency.toLocaleLowerCase() as VsCurrencyType
+    )
+
+    const balance = Avax.fromNanoAvax(
+      pChainBalance.unlockedUnstaked[0]?.amount ?? 0
+    )
+    const balanceDisplayValue = balance.toDisplay()
+    const balanceInCurrency = Number.parseFloat(
+      balance.mul(priceInCurrency).toString()
+    )
+    const balanceCurrencyDisplayValue = balance.mul(priceInCurrency).toFixed(2)
+
+    const balanceBN = new BN(balance.toSubUnit(true).toString())
+    return {
+      balance: balanceBN,
+      balanceDisplayValue,
+      balanceInCurrency,
+      balanceCurrencyDisplayValue,
+      priceInCurrency,
+      marketCap,
+      vol24,
+      change24,
+      coingeckoId: nativeTokenId,
+      type: TokenType.NATIVE,
+      ...networkToken,
+      ...pChainBalance
+    } as PTokenWithBalance
+  }
+
+  async getXChainBalance({
+    network,
+    addresses,
+    currency
+  }: {
+    network: Network
+    addresses: string[]
+    currency: string
+    sentryTrx?: Transaction
+  }): Promise<XTokenWithBalance> {
+    if (network.vmName !== NetworkVMType.AVM) {
+      return Promise.reject('network not compatible, skipping getXChainBalance')
+    }
+
+    const { networkToken } = network
+    const nativeTokenId =
+      network.pricingProviders?.coingecko?.nativeTokenId ?? ''
+
+    const xChainBalance = await GlacierService.getChainBalance({
+      blockchainId: BlockchainId.X_CHAIN,
+      network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+      addresses: addresses.join(',')
+    }).then(value => (value as ListXChainBalancesResponse).balances)
+
+    const {
+      price: priceInCurrency,
+      marketCap,
+      vol24,
+      change24
+    } = await TokenService.getPriceWithMarketDataByCoinId(
+      nativeTokenId,
+      currency.toLocaleLowerCase() as VsCurrencyType
+    )
+
+    const balance = Avax.fromNanoAvax(
+      BigInt(xChainBalance.unlocked[0]?.amount ?? 0)
+    )
+    const balanceDisplayValue = balance.toDisplay()
+    const balanceInCurrency = Number.parseFloat(
+      balance.mul(priceInCurrency).toString()
+    )
+    const balanceCurrencyDisplayValue = balance.mul(priceInCurrency).toFixed(2)
+
+    const balanceBN = new BN(balance.toSubUnit(true).toString())
+    return {
+      balance: balanceBN,
+      balanceDisplayValue,
+      balanceInCurrency,
+      balanceCurrencyDisplayValue,
+      priceInCurrency,
+      marketCap,
+      vol24,
+      change24,
+      coingeckoId: nativeTokenId,
+      type: TokenType.NATIVE,
+      ...networkToken,
+      ...xChainBalance
+    } as XTokenWithBalance
   }
 
   async getCChainBalance(

@@ -1,13 +1,13 @@
-import { expect as jestExpect } from 'expect'
+import assert from 'assert'
 import Action from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import Assert from '../helpers/assertions'
 import activityTab from '../locators/activityTab.loc'
-import delay from '../helpers/waits'
 import { Platform } from '../helpers/constants'
 import ReviewAndSend from '../pages/reviewAndSend.page'
 import PortfolioPage from '../pages/portfolio.page'
-import TransactionDetailsPage from '../pages/transactionDetails.page'
+import loginRecoverWallet from '../helpers/loginRecoverWallet'
+import BottomsTabsPage from '../pages/bottomTabs.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
@@ -17,19 +17,23 @@ class ActivityTabPage {
   }
 
   get arrowSVG() {
-    return by.id(activityTab.arrowSVG)
+    return by.id(activityTab.arrowUpSVG)
+  }
+
+  get networkIcon() {
+    return by.id(activityTab.networkIcon)
   }
 
   get transaction() {
     return by.text(activityTab.transaction)
   }
 
-  get activityDetail() {
-    return by.id(activityTab.activityDetail)
-  }
-
   get activityListHeader() {
     return by.id(activityTab.activityHeader)
+  }
+
+  get activityListItem() {
+    return by.id(activityTab.activityListItem)
   }
 
   get selectFilterDropdown() {
@@ -72,8 +76,12 @@ class ActivityTabPage {
     await Action.tapElementAtIndex(this.arrowSVG, index)
   }
 
+  async tapNetworkIcon(index: number) {
+    await Action.tapElementAtIndex(this.networkIcon, index)
+  }
+
   async refreshActivityPage() {
-    await Action.swipeDown(by.id('arrow_svg'), 'slow', 0.75, 0)
+    await Action.swipeDown(by.id('activity_tab'), 'slow', 0.25, 0)
   }
 
   async tapTransaction() {
@@ -85,7 +93,7 @@ class ActivityTabPage {
   }
 
   async tapHeaderBack() {
-    await Action.tapElementAtIndex(this.headerBack, 0)
+    await device.pressBack()
   }
 
   async tapBridgeFilterOption() {
@@ -112,33 +120,52 @@ class ActivityTabPage {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
   }
 
-  async verifyIncomingTransaction(transactionValue: string) {
-    await AccountManagePage.tapAccountMenu()
-    const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
-    await AccountManagePage.tapSecondAccount()
-    await PortfolioPage.tapActivityTab()
-    await this.tapArrowIcon(0)
-    const isTransactionSuccessful =
-      await TransactionDetailsPage.isDateTextOlderThan(300)
-    console.log(isTransactionSuccessful)
-    await Assert.hasText(this.address, firstAccountAddress)
-    await Assert.hasText(this.activityDetail, transactionValue)
+  async verifyActivityRow(
+    newRow:
+      | Detox.IosElementAttributes
+      | Detox.AndroidElementAttributes
+      | undefined,
+    activity_type: string
+  ) {
+    if (newRow === undefined) {
+      fail('The new row is not added to activity tab')
+    } else {
+      assert(newRow.label?.includes(activity_type))
+    }
   }
 
-  async verifyOutgoingTransaction(
-    waitTime: number,
-    secondAccountAddress: string,
-    transactionValue: string
-  ) {
-    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
-    await delay(waitTime)
-    await this.refreshActivityPage()
-    await this.tapArrowIcon(0)
-    const isTransactionSuccessful =
-      await TransactionDetailsPage.isDateTextOlderThan(300)
-    await Assert.hasText(this.address, secondAccountAddress)
-    await Assert.hasText(this.activityDetail, transactionValue)
-    jestExpect(isTransactionSuccessful).toBe(true)
+  async verifyTransactionDetailWebBrowser(transactionType: string) {
+    await this.tapNetworkIcon(0)
+    await Assert.isNotVisible(by.text(transactionType))
+    await Assert.isNotVisible(AccountManagePage.accountsDropdown)
+    await Assert.isNotVisible(BottomsTabsPage.plusIcon)
+    if (transactionType === 'Send') {
+      await Action.waitForElementNotVisible(
+        ReviewAndSend.sendSuccessfulToastMsg
+      )
+    }
+  }
+
+  async exitTransactionDetailWebBrowser(transactionType: string) {
+    if (device.getPlatform() === 'android') {
+      await device.disableSynchronization()
+      await device.pressBack()
+      await device.enableSynchronization()
+      await Assert.isVisible(AccountManagePage.accountsDropdown)
+      await Assert.isVisible(by.text(transactionType))
+    } else {
+      await device.launchApp({ newInstance: true })
+      await loginRecoverWallet.recoverWalletLogin()
+      await Assert.isVisible(PortfolioPage.colectiblesTab)
+      await Assert.isVisible(PortfolioPage.assetsTab)
+      await Assert.isVisible(PortfolioPage.defiTab)
+    }
+    await Assert.isVisible(BottomsTabsPage.plusIcon)
+  }
+
+  async getLatestActivityRow() {
+    const newRow = await Action.getAttributes(this.activityListItem)
+    return 'elements' in newRow ? newRow.elements[0] : newRow
   }
 }
 

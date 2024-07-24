@@ -23,7 +23,7 @@ test('check wallet connect button', async ({ page, context }) => {
     return navigator.clipboard.readText()
   })
 
-  actions.writeQrCodeToFile(clipboardValue)
+  await actions.writeQrCodeToFile(clipboardValue)
 
   console.log('URI: ', clipboardValue)
 })

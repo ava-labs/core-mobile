@@ -1,73 +1,77 @@
 import AppNavigation from 'navigation/AppNavigation'
-import React, { createContext, useState } from 'react'
+import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
-import { AuthenticatorSetup } from 'seedless/screens/AuthenticatorSetup'
-import { ScanQrCode } from 'seedless/screens/ScanQrCode'
-import { LearnMore } from 'seedless/screens/LearnMore'
-import { VerifyCode } from 'seedless/screens/VerifyCode'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { AddRecoveryMethods } from 'seedless/screens/AddRecoveryMethods'
-import { useRoute } from '@react-navigation/native'
-import { OnboardScreenProps } from 'navigation/types'
+import { MFA } from 'seedless/types'
+import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
+import { TotpChallenge } from '@cubist-labs/cubesigner-sdk'
+import { AuthenticatorSetupScreen } from 'seedless/screens/AuthenticatorSetupScreen'
+import { ScanQrCodeScreen } from 'seedless/screens/ScanQrCodeScreen'
+import { LearnMoreScreen } from 'seedless/screens/LearnMoreScreen'
 
 export type RecoveryMethodsStackParamList = {
-  [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
-  [AppNavigation.RecoveryMethods.AuthenticatorSetup]: undefined
-  [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
-  [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
-  [AppNavigation.RecoveryMethods.VerifyCode]: undefined
+  [AppNavigation.RecoveryMethods.AddRecoveryMethods]: {
+    oidcAuth?: { oidcToken: string; mfaId: string }
+    mfas?: MFA[]
+    onAccountVerified: (withMfa: boolean) => void
+    allowsUserToAddLater?: boolean
+  }
+  [AppNavigation.RecoveryMethods.AuthenticatorSetup]: {
+    oidcAuth?: { oidcToken: string; mfaId: string }
+    onAccountVerified: (withMfa: boolean) => void
+  }
+  [AppNavigation.RecoveryMethods.ScanQrCode]: {
+    oidcAuth?: { oidcToken: string; mfaId: string }
+    totpChallenge: TotpChallenge
+    onAccountVerified: (withMfa: boolean) => void
+  }
+  [AppNavigation.RecoveryMethods.LearnMore]: { totpKey: string }
+  [AppNavigation.RecoveryMethods.FIDONameInput]: {
+    title: string
+    description: string
+    inputFieldLabel: string
+    inputFieldPlaceholder: string
+    onClose: (name?: string) => Promise<void>
+  }
 }
 
 const RecoveryMethodsS = createStackNavigator<RecoveryMethodsStackParamList>()
 
-type RecoveryMethodsContextState = {
-  oidcToken: string
-  mfaId: string
-}
-
-export const RecoveryMethodsContext = createContext(
-  {} as RecoveryMethodsContextState
-)
-
-type RecoveryMethodsStackProps = OnboardScreenProps<
-  typeof AppNavigation.Onboard.RecoveryMethods
->
-
 const RecoveryMethodsStack = (): JSX.Element => {
-  const { params } = useRoute<RecoveryMethodsStackProps['route']>()
-  const [oidcToken] = useState(params.oidcToken)
-  const [mfaId] = useState(params.mfaId)
-
   return (
-    <RecoveryMethodsContext.Provider value={{ oidcToken, mfaId }}>
-      <RecoveryMethodsS.Navigator screenOptions={{ headerShown: false }}>
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
-          component={AddRecoveryMethods}
-        />
+    <RecoveryMethodsS.Navigator>
+      <RecoveryMethodsS.Screen
+        options={MainHeaderOptions()}
+        name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
+        component={AddRecoveryMethods}
+      />
+      <RecoveryMethodsS.Group>
+        {/* Screens for authenticator setup */}
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
           name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
-          component={AuthenticatorSetup}
+          component={AuthenticatorSetupScreen}
         />
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
           name={AppNavigation.RecoveryMethods.ScanQrCode}
-          component={ScanQrCode}
+          component={ScanQrCodeScreen}
         />
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
           name={AppNavigation.RecoveryMethods.LearnMore}
-          component={LearnMore}
+          component={LearnMoreScreen}
         />
+      </RecoveryMethodsS.Group>
+      <RecoveryMethodsS.Group>
         <RecoveryMethodsS.Screen
-          options={{ presentation: 'transparentModal' }}
-          name={AppNavigation.RecoveryMethods.VerifyCode}
-          component={VerifyCode}
+          options={{ presentation: 'modal' }}
+          name={AppNavigation.RecoveryMethods.FIDONameInput}
+          component={FIDONameInputScreen}
         />
-      </RecoveryMethodsS.Navigator>
-    </RecoveryMethodsContext.Provider>
+      </RecoveryMethodsS.Group>
+    </RecoveryMethodsS.Navigator>
   )
 }
 

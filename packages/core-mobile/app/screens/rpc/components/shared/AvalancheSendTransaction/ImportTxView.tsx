@@ -13,20 +13,22 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
+import { AvalancheChainStrings } from 'store/rpc/handlers/types'
+import { selectAvaxPrice } from 'store/balance/slice'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { AvalancheChainStrings } from 'store/walletConnectV2/handlers/types'
-import { selectAvaxPrice } from 'store/balance'
-import TxFee from './components/TxFee'
+import { TxFee } from './components/TxFee'
+
+type ImportTx = {
+  tx: Avalanche.ImportTx
+  hexData: string
+  toggleActionButtons: (value: boolean) => void
+}
 
 const ImportTxView = ({
   tx,
   hexData,
   toggleActionButtons
-}: {
-  tx: Avalanche.ImportTx
-  hexData: string
-  toggleActionButtons: (value: boolean) => void
-}) => {
+}: ImportTx): JSX.Element => {
   const { theme } = useApplicationContext()
   const [showData, setShowData] = useState(false)
   const avaxPrice = useSelector(selectAvaxPrice)
@@ -35,7 +37,7 @@ const ImportTxView = ({
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const toggleShowRawData = (value: boolean) => {
+  const toggleShowRawData = (value: boolean): void => {
     toggleActionButtons(value)
     setShowData(value)
   }

@@ -1,68 +1,40 @@
+import { AppListenerEffectAPI } from 'store'
+import { onLogIn } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
-import { AppListenerEffectAPI } from 'store/index'
-import { selectNetworks } from 'store/network'
+import { AnyAction } from '@reduxjs/toolkit'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
-  selectSelectedCurrency,
-  setSelectedCurrency
-} from 'store/settings/currency'
-import {
-  fetchWatchlist,
-  onWatchlistRefresh,
-  selectWatchlistFavoriteIds,
-  setCharts,
-  setPrices,
-  setTokens
-} from 'store/watchlist/slice'
-import { Action, isAnyOf } from '@reduxjs/toolkit'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { toggleDeveloperMode } from 'store/settings/advanced'
-import WatchlistService from 'services/watchlist/WatchlistService'
+  ViewOnceKey,
+  selectHasBeenViewedOnce,
+  setViewOnce
+} from 'store/viewOnce'
+import Logger from 'utils/Logger'
+import { addDefaultWatchlistFavorites } from './slice'
 
-async function getTokens(
-  action: Action,
+const addDefaultFavorites = (
+  action: AnyAction,
   listenerApi: AppListenerEffectAPI
-): Promise<void> {
-  const dispatch = listenerApi.dispatch
-  const state = listenerApi.getState()
-  const currency = selectSelectedCurrency(state)
-  const allNetworks = Object.values(selectNetworks(state))
-  const cachedFavoriteTokenIds = selectWatchlistFavoriteIds(state)
-  const { tokens, charts } = await WatchlistService.getTokens(
-    currency,
-    allNetworks,
-    cachedFavoriteTokenIds
-  )
-  dispatch(setTokens(tokens))
-  dispatch(setCharts(charts))
-}
-
-async function getPrices(
-  action: Action,
-  listenerApi: AppListenerEffectAPI
-): Promise<void> {
-  const dispatch = listenerApi.dispatch
-  const state = listenerApi.getState()
-  const currency = selectSelectedCurrency(state).toLowerCase()
-  const tokenIds = Object.values(state.watchlist.tokens).map(token => token.id)
-
-  const prices = await WatchlistService.getPrices(
-    tokenIds,
-    currency as VsCurrencyType
-  )
-
-  dispatch(setPrices(prices))
+): void => {
+  const { dispatch, getState } = listenerApi
+  const state = getState()
+  //check if we've added P chain before
+  const hadAddedDefaultFavorites = selectHasBeenViewedOnce(
+    ViewOnceKey.DEFAULT_WATCHLIST_FAVORITES
+  )(state)
+  if (hadAddedDefaultFavorites) {
+    Logger.trace('Already added default watchlist favorites')
+    return
+  }
+  dispatch(addDefaultWatchlistFavorites())
+  AnalyticsService.capture('DefaultWatchlistFavoritesAdded')
+  dispatch(setViewOnce(ViewOnceKey.DEFAULT_WATCHLIST_FAVORITES))
 }
 
 export const addWatchlistListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    matcher: isAnyOf(fetchWatchlist, toggleDeveloperMode, onWatchlistRefresh),
-    effect: getTokens
-  })
-
-  startListening({
-    matcher: isAnyOf(setTokens, setSelectedCurrency),
-    effect: getPrices
+    actionCreator: onLogIn,
+    effect: addDefaultFavorites
   })
 }

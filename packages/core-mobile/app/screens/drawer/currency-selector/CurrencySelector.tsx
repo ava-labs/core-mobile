@@ -9,37 +9,35 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  selectCurrencies,
+  currencies,
   selectSelectedCurrency,
   setSelectedCurrency
 } from 'store/settings/currency'
 import { useNavigation } from '@react-navigation/native'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
-const CurrencySelector = () => {
+const CurrencySelector = (): JSX.Element => {
   const navigation = useNavigation()
-  const currencies = useSelector(selectCurrencies)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
 
   const renderItem = (
     item: ListRenderItemInfo<{ name: string; symbol: string }>
-  ) => {
+  ): JSX.Element => {
     const currency = item.item
 
-    const handleOnCurrencyChanged = () => {
+    const handleOnCurrencyChanged = (): void => {
       if (
         currency.symbol.toLocaleUpperCase() !==
         selectedCurrency.toLocaleUpperCase()
       ) {
-        capture('CurrencySettingChanged', {
+        AnalyticsService.capture('CurrencySettingChanged', {
           currency: currency.symbol.toLocaleUpperCase()
         })
       }
     }
 
-    const onPress = () => {
+    const onPress = (): void => {
       handleOnCurrencyChanged()
       dispatch(setSelectedCurrency(currency.symbol))
       InteractionManager.runAfterInteractions(() => {

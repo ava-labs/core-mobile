@@ -5,25 +5,24 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { WalletScreenProps } from 'navigation/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import MoneySVG from 'components/svg/MoneySVG'
 import { View } from 'react-native'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
 >['navigation']
 
-const CurrencyItem = () => {
+const CurrencyItem = (): JSX.Element => {
   const { selectedCurrency } = useApplicationContext().appHook
-  const { capture } = usePostCapture()
   const navigation = useNavigation<NavigationProp>()
-  const currency = () => (
+  const currency = (): JSX.Element => (
     <AvaText.Body2 textStyle={{ paddingRight: 12 }}>
       {selectedCurrency}
     </AvaText.Body2>
   )
 
-  const icon = () => {
+  const icon = (): JSX.Element => {
     return (
       <View style={{ marginRight: -8 }}>
         <MoneySVG />
@@ -41,7 +40,7 @@ const CurrencyItem = () => {
         leftComponent={icon()}
         showNavigationArrow
         onPress={() => {
-          capture('CurrencySettingClicked')
+          AnalyticsService.capture('CurrencySettingClicked')
           navigation.navigate(AppNavigation.Wallet.CurrencySelector)
         }}
       />

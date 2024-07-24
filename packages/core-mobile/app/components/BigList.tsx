@@ -36,7 +36,7 @@ const BigList = <T,>({
   onEndReached,
   onEndReachedThreshold,
   estimatedItemSize = 0
-}: BigListProps<T>) => {
+}: BigListProps<T>): JSX.Element => {
   const hasRefreshProps =
     typeof onRefresh === 'function' && typeof refreshing === 'boolean'
 
@@ -56,6 +56,8 @@ const BigList = <T,>({
           <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
         ) : undefined
       }
+      renderFooter={() => null}
+      renderHeader={() => null}
     />
   )
 }

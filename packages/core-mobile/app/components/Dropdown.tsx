@@ -35,6 +35,7 @@ interface Props<ItemT> {
   caretStyle?: StyleProp<ViewStyle>
   onDropDownToggle?: (isOpen: boolean) => void
   testID?: string
+  prompt?: React.ReactNode
 }
 
 export interface OptionsItemInfo<ItemT> {
@@ -70,7 +71,8 @@ function DropDown<ItemT>({
   disabled,
   caretIcon,
   caretStyle,
-  onDropDownToggle
+  onDropDownToggle,
+  prompt
 }: Props<ItemT>): JSX.Element {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
@@ -137,7 +139,7 @@ function DropDown<ItemT>({
             paddingHorizontal: 16
           }}>
           <AvaText.Body1 textStyle={{ paddingVertical: 8 }}>
-            {item}
+            {item as JSX.Element}
           </AvaText.Body1>
           {selectedItem === item && <CheckmarkSVG color={'white'} />}
         </Row>
@@ -224,7 +226,7 @@ function DropDown<ItemT>({
             {selectionItem}
           </AvaText.ButtonSmall>
         ) : (
-          <>{selectionItem}</>
+          <>{selectionItem ?? prompt}</>
         )}
         {!disabled && (
           <View style={[{ marginLeft: 8 }, caretStyle]}>

@@ -149,7 +149,7 @@ export async function createNewTestSectionsAndCases(casesArray: any) {
   const newTCTitlesToAdd = await newTCTitles()
   const allTestrailSections = await getAllSectionsFromTestrail()
 
-  createTestCases(newTCTitlesToAdd, allTestrailSections)
+  await createTestCases(newTCTitlesToAdd, allTestrailSections)
   return theTestrailSections
 }
 
@@ -391,10 +391,10 @@ async function createTestCases(
     index === -1
       ? myNewTestCases.push({ myTestCaseTitle, sectionID })
       : undefined
-    myNewTestCases.forEach(function (newTestCase) {
+    myNewTestCases.forEach(async function (newTestCase) {
       const testCaseName = newTestCase.myTestCaseTitle
       const testCaseSection = newTestCase.sectionID
-      createTestCase(testCaseSection, testCaseName)
+      await createTestCase(testCaseSection, testCaseName)
     })
   })
 }
@@ -529,7 +529,7 @@ export const currentRunID = async (platform: any) => {
         `${platform} smoke test run ${timestamp}`,
         `This is a smoke test run on ${platform}`
       )
-      writeRunIdToTextFile(`${runID}`)
+      await writeRunIdToTextFile(`${runID}`)
       return { runID, emptyTestRun: false }
     } else {
       return { runID: smokeTestRunExists, emptyTestRun: true }
@@ -571,7 +571,9 @@ export async function getTestCasesFromRun(runId: number): Promise<object[]> {
     titleArray.push({
       case_id: caseId,
       title: testCaseName,
-      status_id: testResult
+      status_id: testResult,
+      // This is so we don't try to attach a screenshot that doesn't exist
+      already_posted: true
     })
   }
   return titleArray

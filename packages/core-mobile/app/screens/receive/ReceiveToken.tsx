@@ -6,10 +6,10 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaxQACode from 'components/AvaxQRCode'
 import TokenAddress from 'components/TokenAddress'
-import { selectActiveNetwork } from 'store/network'
-import { ChainId } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type Props = {
   embedded: boolean
@@ -17,27 +17,30 @@ type Props = {
 
 const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
-  const { capture } = usePostCapture()
+  const { activeNetwork } = useNetworks()
   const embedded = !!props?.embedded
-  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
-  const { chainId, networkToken, chainName } = activeNetwork
-  const addressC = activeAccount?.address
-  const btcAddress = activeAccount?.addressBtc
+  const { networkToken, chainName, vmName } = activeNetwork
+  const addressC = activeAccount?.addressC ?? ''
+  const addressBTC = activeAccount?.addressBTC ?? ''
+  const addressAVM = activeAccount?.addressAVM ?? ''
+  const addressPVM = activeAccount?.addressPVM ?? ''
 
   useEffect(() => {
-    capture('ReceivePageVisited')
-  }, [capture])
+    AnalyticsService.capture('ReceivePageVisited')
+  }, [])
 
   const receiveAddress = (): string => {
-    switch (chainId) {
-      case ChainId.BITCOIN:
-      case ChainId.BITCOIN_TESTNET:
-        return btcAddress ?? ''
-      case ChainId.AVALANCHE_MAINNET_ID:
-      case ChainId.AVALANCHE_TESTNET_ID:
+    switch (vmName) {
+      case NetworkVMType.BITCOIN:
+        return addressBTC
+      case NetworkVMType.AVM:
+        return addressAVM
+      case NetworkVMType.PVM:
+        return addressPVM
+      case NetworkVMType.EVM:
       default:
-        return addressC ?? ''
+        return addressC
     }
   }
 

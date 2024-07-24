@@ -6,9 +6,13 @@ import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import TxFee from './components/TxFee'
+import { TxFee } from './components/TxFee'
 
-const CreateSubnetTxView = ({ tx }: { tx: Avalanche.CreateSubnetTx }) => {
+const CreateSubnetTxView = ({
+  tx
+}: {
+  tx: Avalanche.CreateSubnetTx
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const { txFee, threshold, controlKeys } = tx
 

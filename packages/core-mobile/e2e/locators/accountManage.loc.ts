@@ -1,12 +1,16 @@
 export default {
-  account: 'Account 1',
+  account: 'testWallet1',
+  editedAccount: 'AvaxWallet',
   addAccountButton: 'Add Account',
   addEditAccounts: 'Add/Edit Accounts',
   avaxAddress: 'account_address',
+  carrotSVG: 'carrot_svg',
   doneButton: 'Done',
   editAccount: 'Edit',
-  newAccountName: 'AvaxAccount',
   saveNewAccountName: 'Save',
+  accountOne: 'Account 1',
   secondAccount: 'Account 2',
-  fourthaccount: 'Account 4'
+  fourthaccount: 'Account 4',
+  accountDropdownTitle: 'account_dropdown_title',
+  accountsDropdown: 'accounts_dropdown'
 }

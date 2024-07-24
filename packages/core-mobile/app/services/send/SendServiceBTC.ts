@@ -1,4 +1,3 @@
-import { isBech32AddressInNetwork } from '@avalabs/bridge-sdk'
 import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
 import {
   BitcoinInputUTXO,
@@ -11,8 +10,7 @@ import {
   SendErrorMessage,
   SendServiceHelper,
   SendState,
-  ValidateStateAndCalculateFeesParams,
-  ValidSendState
+  ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 
 // singleton services
@@ -20,6 +18,11 @@ import balanceService from 'services/balance/BalanceService'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import { isBtcAddress } from 'utils/isBtcAddress'
+import type {
+  NetworkTokenWithBalance,
+  TokenWithBalanceBTC
+} from '@avalabs/vm-module-types'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
@@ -33,7 +36,7 @@ class SendServiceBTC implements SendServiceHelper {
       .setContext('svc.send.btc.get_trx_request')
       .executeAsync(async () => {
         const { address: toAddress, amount } = sendState
-        const feeRate = Number(sendState.gasPrice)
+        const feeRate = Number(sendState.defaultMaxFeePerGas)
         const provider = getBitcoinProvider(!isMainnet)
         const { utxos } = await this.getBalance(
           isMainnet,
@@ -61,13 +64,13 @@ class SendServiceBTC implements SendServiceHelper {
 
   async validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
-  ): Promise<SendState | ValidSendState> {
+  ): Promise<SendState> {
     const { sendState, isMainnet, fromAddress, currency, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.btc.validate_and_calc_fees')
       .executeAsync(async () => {
-        const { amount, address: toAddress } = sendState
-        const feeRate = Number(sendState.gasPrice)
+        const { amount, address: toAddress, defaultMaxFeePerGas } = sendState
+        const feeRate = Number(defaultMaxFeePerGas)
         const amountInSatoshis = amount?.toNumber() || 0
         const { utxos } = await this.getBalance(
           isMainnet,
@@ -77,7 +80,7 @@ class SendServiceBTC implements SendServiceHelper {
         )
         const provider = getBitcoinProvider(!isMainnet)
 
-        if (!feeRate)
+        if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
           return this.getErrorState(
             {
               ...sendState
@@ -104,7 +107,7 @@ class SendServiceBTC implements SendServiceHelper {
           )
 
         // Validate the destination address
-        const isAddressValid = isBech32AddressInNetwork(toAddress, isMainnet)
+        const isAddressValid = isBtcAddress(toAddress, isMainnet)
 
         if (!isAddressValid)
           return this.getErrorState(
@@ -126,7 +129,12 @@ class SendServiceBTC implements SendServiceHelper {
           canSubmit: !!psbt,
           error: undefined,
           maxAmount,
-          sendFee: new BN(fee)
+          sendFee: new BN(fee),
+          // The transaction's byte size is for BTC as gasLimit is for EVM.
+          // Bitcoin's formula for fee is `transactionByteLength * feeRate`.
+          // Since we know the `fee` and the `feeRate`, we can get the transaction's
+          // byte length by division.
+          gasLimit: fee / feeRate
         }
 
         if (!amountInSatoshis)
@@ -142,6 +150,7 @@ class SendServiceBTC implements SendServiceHelper {
       })
   }
 
+  // eslint-disable-next-line max-params
   private async getBalance(
     isMainnet: boolean,
     address: string,
@@ -151,16 +160,20 @@ class SendServiceBTC implements SendServiceHelper {
     balance: number
     utxos: BitcoinInputUTXO[]
   }> {
-    const token = await balanceService.getBalancesForAddress(
-      isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
+    const provider = getBitcoinProvider(!isMainnet)
+    const tokens = (await balanceService.getBalancesForAddress({
+      network: isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
       address,
       currency,
       sentryTrx
-    )
+    })) as NetworkTokenWithBalance[]
+
+    const utxos = (tokens?.[0] as TokenWithBalanceBTC)?.utxos || []
+    const utxosWithScripts = await provider.getScriptsForUtxos(utxos)
 
     return {
-      balance: token?.[0]?.balance.toNumber() || 0,
-      utxos: token?.[0]?.utxos || []
+      balance: tokens?.[0]?.balance.toNumber() || 0,
+      utxos: utxosWithScripts
     }
   }
 

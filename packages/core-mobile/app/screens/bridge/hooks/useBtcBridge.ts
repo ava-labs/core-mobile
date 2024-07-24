@@ -6,7 +6,6 @@ import {
   Blockchain,
   btcToSatoshi,
   getBtcAsset,
-  getBtcTransaction,
   satoshiToBtc,
   useBridgeSDK
 } from '@avalabs/bridge-sdk'
@@ -14,91 +13,82 @@ import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { BitcoinInputUTXO, getMaxTransferAmount } from '@avalabs/wallets-sdk'
-import { NetworkFee } from 'services/networkFee/types'
-import networkFeeService from 'services/networkFee/NetworkFeeService'
-import walletService from 'services/wallet/WalletService'
-import { resolve } from '@avalabs/utils-sdk'
-import networkService from 'services/network/NetworkService'
+import {
+  BitcoinInputUTXOWithOptionalScript,
+  getMaxTransferAmount
+} from '@avalabs/wallets-sdk'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalanceByNetwork } from 'store/balance'
+import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { selectActiveNetwork, selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
-import {
-  getAvalancheNetwork,
-  getBitcoinNetwork
-} from 'services/network/utils/providerUtils'
+import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useTransferAssetBTC } from './useTransferAssetBTC'
 
-export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
-  const activeNetwork = useSelector(selectActiveNetwork)
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export function useBtcBridge({
+  amount,
+  bridgeFee,
+  minimum
+}: {
+  amount: Big
+  bridgeFee: Big
+  minimum: Big
+}): BridgeAdapter {
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
   const bridgeConfig = useSelector(selectBridgeAppConfig)
   const { createBridgeTransaction } = useBridgeContext()
-  const {
-    currentAsset,
-    setTransactionDetails,
-    currentBlockchain,
-    targetBlockchain
-  } = useBridgeSDK()
-  const btcAddress = activeAccount?.addressBtc
-  const allNetworks = useSelector(selectNetworks)
-  const avalancheNetwork = getAvalancheNetwork(
-    allNetworks,
-    activeNetwork.isTestnet
-  )
+  const { transfer: transferBTC } = useTransferAssetBTC()
+  const { currentAsset, currentBlockchain, targetBlockchain } = useBridgeSDK()
+  const btcAddress = activeAccount?.addressBTC
+  const avalancheNetwork = useCChainNetwork()
   const avalancheTokens = useSelector(
     selectTokensWithBalanceByNetwork(avalancheNetwork)
   )
-
   const isBitcoinBridge = getIsBitcoinBridge(
     currentBlockchain,
     targetBlockchain
   )
-
   const [btcBalance, setBtcBalance] = useState<AssetBalance>()
   const [btcBalanceAvalanche, setBtcBalanceAvalanche] = useState<AssetBalance>()
-  const [utxos, setUtxos] = useState<BitcoinInputUTXO[]>()
-  const [feeRates, setFeeRates] = useState<NetworkFee | null>()
-  const [networkFee, setNetworkFee] = useState<Big>(BIG_ZERO)
-  const [receiveAmount, setReceiveAmount] = useState<Big>(BIG_ZERO)
+  const [utxos, setUtxos] = useState<BitcoinInputUTXOWithOptionalScript[]>()
+  const loading = !btcBalance || !btcBalanceAvalanche
 
-  const loading = !btcBalance || !btcBalanceAvalanche || !networkFee
+  const { data: networkFee } = useNetworkFee(activeNetwork)
 
-  const feeRate = useMemo(() => {
-    return Number(feeRates?.high || 0)
-  }, [feeRates])
+  const [feeRate, setFeeRate] = useState<number>(0)
+
+  const amountInSatoshis = btcToSatoshi(amount)
+  const btcAsset = bridgeConfig && getBtcAsset(bridgeConfig)
+  const assetsWithBalances = getBtcAssetWithBalances(btcAsset, btcBalance)
 
   const maximum = useMemo(() => {
     if (!bridgeConfig || !activeAccount) return Big(0)
     const maxAmt = getMaxTransferAmount(
       utxos ?? [],
       bridgeConfig.criticalBitcoin.walletAddresses.btc,
-      activeAccount.addressBtc,
+      activeAccount.addressBTC,
       feeRate
     )
     return satoshiToBtc(maxAmt)
   }, [utxos, bridgeConfig, feeRate, activeAccount])
 
-  const amountInSatoshis = btcToSatoshi(amountInBtc)
-  const btcAsset = bridgeConfig && getBtcAsset(bridgeConfig)
-  const assetsWithBalances = getBtcAssetWithBalances(btcAsset, btcBalance)
+  const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
+  // setting feeRate to lowest network fee to calculate max amount
   useEffect(() => {
-    async function loadRateFees(): Promise<void> {
-      if (isBitcoinBridge) {
-        const bitcoinNetwork = getBitcoinNetwork(activeNetwork.isTestnet)
-        const rates = await networkFeeService.getNetworkFee(bitcoinNetwork)
-        setFeeRates(rates)
-      }
-    }
+    if (!networkFee) return
 
-    loadRateFees()
-  }, [activeNetwork.isTestnet, isBitcoinBridge])
+    setFeeRate(Number(networkFee.low.maxFeePerGas.toSubUnit()))
+  }, [networkFee])
 
   useEffect(() => {
     async function loadBalances(): Promise<void> {
@@ -134,7 +124,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       }
     }
 
-    loadBalances()
+    loadBalances().catch(Logger.error)
   }, [
     btcAddress,
     isBitcoinBridge,
@@ -144,113 +134,62 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     currency
   ])
 
-  useEffect(() => {
-    if (!isBitcoinBridge || !bridgeConfig || !btcAddress || !utxos) {
-      return
-    }
-
-    try {
-      const transaction = getBtcTransaction(
-        bridgeConfig,
-        btcAddress,
-        utxos,
-        amountInSatoshis,
-        feeRate
-      )
-
-      setNetworkFee(satoshiToBtc(transaction.fee))
-      setReceiveAmount(satoshiToBtc(transaction.receiveAmount))
-    } catch (e) {
-      // getBtcTransaction throws an error when the amount is too low
-      // so set these to 0
-      Logger.error('failed to get btc transaction', e)
-
-      setNetworkFee(BIG_ZERO)
-      setReceiveAmount(BIG_ZERO)
-    }
-  }, [
-    amountInSatoshis,
-    btcAddress,
-    bridgeConfig,
-    isBitcoinBridge,
-    utxos,
-    activeNetwork,
-    feeRate
-  ])
-
   const transfer = useCallback(async () => {
-    if (
-      !isBitcoinBridge ||
-      !bridgeConfig ||
-      !btcAddress ||
-      !utxos ||
-      !activeAccount ||
-      !bridgeConfig ||
-      !activeNetwork ||
-      !amountInSatoshis ||
-      !feeRate
-    ) {
-      return Promise.reject()
-    }
+    if (!btcAddress) return Promise.reject('Invalid address')
+
+    if (!activeNetwork) return Promise.reject('Network not found')
+
+    if (!bridgeConfig) return Promise.reject('Bridge config not found')
+
+    if (!isBitcoinBridge) return Promise.reject('Invalid bridge')
+
+    if (!amountInSatoshis || amountInSatoshis === 0)
+      return Promise.reject('Invalid amount')
+
+    if (!feeRate || feeRate === 0) return Promise.reject('Invalid fee rate')
+
     const bitcoinNetwork = getBitcoinNetwork(activeNetwork.isTestnet)
 
     const timestamp = Date.now()
     const symbol = currentAsset || ''
-    const { inputs, outputs } = getBtcTransaction(
-      bridgeConfig,
-      btcAddress,
-      utxos,
-      amountInSatoshis,
+
+    const transactionHash = await transferBTC({
+      amount: amountInSatoshis.toString(),
       feeRate
-    )
+    })
 
-    const [signedTx, error] = await resolve(
-      walletService.sign(
-        { inputs, outputs },
-        activeAccount.index,
-        bitcoinNetwork
-      )
-    )
+    if (!transactionHash) return Promise.reject('Failed to transfer')
 
-    if (error || !signedTx) {
-      const errMsg = getErrorMessage(error)
-      Logger.error('failed to transfer', errMsg)
-      return Promise.reject(errMsg)
-    }
-
-    const hash = await networkService.sendTransaction(signedTx, bitcoinNetwork)
-
-    setTransactionDetails({
-      tokenSymbol: symbol,
-      amount: amountInBtc
+    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+      chainId: bitcoinNetwork.chainId,
+      sourceTxHash: transactionHash,
+      fromAddress: btcAddress
     })
 
     createBridgeTransaction(
       {
         sourceChain: Blockchain.BITCOIN,
-        sourceTxHash: hash,
+        sourceTxHash: transactionHash,
         sourceStartedAt: timestamp,
         targetChain: Blockchain.AVALANCHE,
-        amount: amountInBtc,
+        amount,
         symbol
       },
       activeNetwork
-    )
+    ).catch(Logger.error)
 
-    return hash
+    return transactionHash
   }, [
-    isBitcoinBridge,
-    bridgeConfig,
     btcAddress,
-    utxos,
-    activeAccount,
     activeNetwork,
+    bridgeConfig,
+    isBitcoinBridge,
     amountInSatoshis,
     feeRate,
     currentAsset,
-    setTransactionDetails,
-    amountInBtc,
-    createBridgeTransaction
+    transferBTC,
+    createBridgeTransaction,
+    amount
   ])
 
   return {
@@ -258,19 +197,11 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     sourceBalance: btcBalance,
     targetBalance: btcBalanceAvalanche,
     assetsWithBalances,
-    hasEnoughForNetworkFee: true, // minimum calc covers this
     loading,
-    networkFee,
     receiveAmount,
     maximum,
     transfer
   }
-}
-
-const getErrorMessage = (error: unknown): string => {
-  return typeof error === 'object' && error !== null
-    ? error.toString()
-    : 'Unexpected error'
 }
 
 const getIsBitcoinBridge = (

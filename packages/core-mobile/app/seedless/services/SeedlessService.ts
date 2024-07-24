@@ -1,203 +1,110 @@
-import Config from 'react-native-config'
-import {
-  CubeSigner,
-  IdentityProof,
-  MfaReceipt,
-  SignerSessionManager,
-  TotpChallenge,
-  UserInfo,
-  envs,
-  Environment,
-  SignResponse
-} from '@cubist-labs/cubesigner-sdk'
-import { TotpErrors } from 'seedless/errors'
-import { Result } from 'types/result'
-import { SeedlessSessionStorage } from './SeedlessSessionStorage'
+import { KeyInfoApi, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
+import Logger from 'utils/Logger'
+import { ACCOUNT_NAME } from '../consts'
+import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
+import SeedlessSessionManager from './SeedlessSessionManager'
 
-if (!Config.SEEDLESS_ORG_ID) {
-  throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
-}
-
-if (!Config.SEEDLESS_ENVIRONMENT) {
-  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
-}
-
-const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID
-
-const SEEDLESS_ENVIRONMENT = Config.SEEDLESS_ENVIRONMENT
-
-const envInterface = envs[SEEDLESS_ENVIRONMENT as Environment]
-
-if (!envInterface) {
-  throw Error('SEEDLESS_ENVIRONMENT is incorrect. Please check your env file.')
-}
-
+// AVAX_ACCOUNT_EXT_PUB_KEY_DERIV_PATH
 /**
  * Service for cubesigner-sdk
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
-  private totpChallenge?: TotpChallenge
+  // According to Cubist, CubeSigner creates a temporary session with the scopes manage:mfa:vote:fido and manage:mfa:vote:totp,
+  // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
+  // to proceed with signing up or signing in through MFA verification.
+  sessionManager = new SeedlessSessionManager({
+    scopes: [
+      'sign:*',
+      'manage:mfa',
+      'manage:key:update:metadata',
+      'manage:key:get'
+    ],
+    sessionStorage: new SeedlessSessionStorage()
+  })
+
   /**
-   * Returns a CubeSigner instance
+   * Returns the list of keys that this session has access to.
    */
-  private async getCubeSigner(): Promise<CubeSigner> {
-    const storage = new SeedlessSessionStorage()
-    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
-    return new CubeSigner({ sessionMgr })
+  async getSessionKeysList(type?: KeyType): Promise<KeyInfoApi[]> {
+    const signerSession = await this.sessionManager.getSignerSession()
+    const keysList = await signerSession.sessionKeysList()
+    return type !== undefined
+      ? keysList.filter(k => k.key_type === type)
+      : keysList
   }
 
   /**
-   * Returns a session manager that can be used to retrieve session data.
+   * Returns Mnemonic keys that this session has access to.
    */
-  // @ts-expect-error
-  private async getSessionManager(): Promise<SignerSessionManager> {
-    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
+  async getMnemonicKeysList(): Promise<KeyInfoApi | undefined> {
+    const keysList = await this.getSessionKeysList('Mnemonic')
+    return keysList.find(k => k.key_type === 'Mnemonic')
   }
 
   /**
-   * Exchange an OIDC token for a CubeSigner session with token, mfa session info, etc.
+   * Returns the account name for the primary signing key (Secp256k1.Ava).
+   * @param accountIndex - The account index to get the account name for
+   * @returns The acount name of the key
    */
-  async login(
-    oidcToken: string,
-    mfaReceipt?: MfaReceipt | undefined
-  ): Promise<SignResponse<unknown>> {
-    const signResponse = await new CubeSigner().oidcLogin(
-      oidcToken,
-      SEEDLESS_ORG_ID,
-      ['sign:*', 'manage:*'],
-      {
-        // How long singing with a particular token works from the token creation
-        auth_lifetime: 5 * 60, // 5 minutes
-        // How long a refresh token is valid, the user has to unlock Core in this timeframe otherwise they will have to re-login
-        // Sessions expire either if the session lifetime expires or if a refresh token expires before a new one is generated
-        refresh_lifetime: 90 * 24 * 60 * 60, // 90 days
-        // How long till the user absolutely must sign in again
-        session_lifetime: 1 * 365 * 24 * 60 * 60 // 1 year
-      },
-      mfaReceipt
-    )
-
-    const sessionResponse = signResponse.requiresMfa()
-      ? signResponse.mfaSessionInfo()
-      : signResponse.data()
-
-    if (sessionResponse) {
-      await SignerSessionManager.createFromSessionInfo(
-        envInterface,
-        SEEDLESS_ORG_ID,
-        sessionResponse,
-        new SeedlessSessionStorage()
-      )
-    }
-
-    return signResponse
-  }
-
-  /**
-   * Retrieves information about the current user.
-   */
-  async aboutMe(): Promise<UserInfo> {
-    return (await this.getCubeSigner()).aboutMe()
-  }
-
-  /**
-   * Retrieves information about the current user's mfa.
-   */
-  async userMfa(): Promise<UserInfo['mfa']> {
-    return (await this.aboutMe()).mfa
-  }
-
-  /**
-   * setTotp is used to initiate registration of Authenticator app to Cubist.
-   * it creates a request to change user's TOTP. This request returns a new TOTP challenge
-   * that must be answered by calling resetTotpComplete
-   */
-  async setTotp(): Promise<Result<string, TotpErrors>> {
-    const cubeSigner = await this.getCubeSigner()
-    const response = await cubeSigner.resetTotpStart()
-    if (response.requiresMfa()) {
-      return {
-        success: false,
-        error: new TotpErrors({
-          name: 'RequiresMfa',
-          message: 'Registering Authenticator failed, please try again.'
-        })
-      }
-    }
-    const challenge = response.data()
-    if (!challenge.totpUrl) {
-      return {
-        success: false,
-        error: new TotpErrors({
-          name: 'UnexpectedError',
-          message: 'Registering Authenticator failed, please try again.'
-        })
-      }
-    }
-    this.totpChallenge = challenge
-    return { success: true, value: challenge.totpUrl }
-  }
-
-  /**
-   * verifyCode is used to verify the code from Authenticator app.
-   * and calls resetTotpComplete from totpChallenge.answer() if it is part of the registration flow.
-   * registration would fail if totpChallenge.answer() is not called.
-   */
-  verifyCode = async (
-    oidcToken: string,
-    mfaId: string,
-    code: string
-  ): Promise<Result<void, TotpErrors>> => {
+  async getAccountName(accountIndex = 0): Promise<string | undefined> {
     try {
-      await this.totpChallenge?.answer(code)
-      this.totpChallenge = undefined
-
-      const mfaSession = await CubeSigner.loadSignerSession(
-        new SeedlessSessionStorage()
-      )
-      const status = await mfaSession.totpApprove(mfaId, code)
-
-      if (!status.receipt?.confirmation) {
-        return {
-          success: false,
-          error: new TotpErrors({
-            name: 'WrongMfaCode',
-            message: 'WrongMfaCode'
-          })
-        }
-      }
-
-      await this.login(oidcToken, {
-        mfaOrgId: SEEDLESS_ORG_ID,
-        mfaId: mfaId,
-        mfaConf: status.receipt.confirmation
-      })
-
-      return { success: true }
-    } catch {
-      return {
-        success: false,
-        error: new TotpErrors({
-          name: 'WrongMfaCode',
-          message: 'WrongMfaCode'
-        })
-      }
+      const keys = await this.getSessionKeysList(Secp256k1.Ava)
+      const metadata = this.getKeyInfo(keys, accountIndex)?.metadata
+      return this.getAccountNameInMetadata(metadata)
+    } catch (error) {
+      Logger.warn('Failed to get name for the account index', error)
     }
   }
 
   /**
-   * Exchange an OIDC token for a proof of authentication.
-   * @param oidcToken — The OIDC token
-   * @param orgId — The id of the organization that the user is in
-   * @return — Proof of authentication
+   * Sets the name for the primary signing key (avax).
+   * @param name - The name to set for the key.
+   * @param accountIndex - The account index to set the name for
    */
-  async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
-    const cubeSigner = new CubeSigner({
-      env: envs.gamma,
-      orgId: SEEDLESS_ORG_ID
-    })
-    return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
+  async setAcountName(name: string, accountIndex: number): Promise<void> {
+    try {
+      const keys = await this.getSessionKeysList(Secp256k1.Ava)
+      const keyInfo = this.getKeyInfo(keys, accountIndex)
+      if (keyInfo === undefined) {
+        throw Error()
+      }
+      const key = await this.sessionManager.getKey(keyInfo)
+      // we don't await this because we don't want to block the user from using the app,
+      // this request can take a bit of time
+      // and in the case of metadata is updated concurrently in extension,
+      // this request will retry a couple of times
+      key.setMetadataProperty(ACCOUNT_NAME, name)
+    } catch (error) {
+      // if this throws, we shouldn't block the user from using the app
+      Logger.warn(`Failed to set metadata`, error)
+    }
+  }
+
+  private getKeyInfo = (
+    keys: KeyInfoApi[],
+    accountIndex: number
+  ): KeyInfoApi | undefined => {
+    return keys.find(
+      k =>
+        Number(k.derivation_info?.derivation_path.split('/').pop()) ===
+        accountIndex
+    )
+  }
+
+  private getAccountNameInMetadata = (
+    metadata: unknown
+  ): string | undefined => {
+    if (
+      metadata !== null &&
+      metadata !== undefined &&
+      typeof metadata === 'object' &&
+      ACCOUNT_NAME in metadata &&
+      typeof metadata.account_name === 'string'
+    ) {
+      return metadata.account_name
+    }
+    return undefined
   }
 }
 

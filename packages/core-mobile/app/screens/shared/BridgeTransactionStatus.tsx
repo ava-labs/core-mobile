@@ -2,30 +2,34 @@ import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import {
-  Blockchain,
-  BridgeTransaction,
-  getNativeSymbol,
-  usePrice,
-  usePriceForChain
-} from '@avalabs/bridge-sdk'
+import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
 import DotSVG from 'components/svg/DotSVG'
 import Avatar from 'components/Avatar'
 import AvaListItem from 'components/AvaListItem'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import Separator from 'components/Separator'
+import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
-import { useBridgeContext } from 'contexts/BridgeContext'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
+import {
+  getBlockchainDisplayName,
+  getNativeTokenSymbol,
+  isUnifiedBridgeTransfer
+} from 'screens/bridge/utils/bridgeUtils'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { useTokenForBridgeTransaction } from 'screens/bridge/hooks/useTokenForBridgeTransaction'
+import { useBridgeTransferStatus } from 'screens/bridge/hooks/useBridgeTransferStatus'
+import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { humanize } from 'utils/string/humanize'
+import { useBridgeAmounts } from 'screens/bridge/hooks/useBridgeAmounts'
+import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPrice'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useSimplePrice } from 'hooks/useSimplePrice'
 
 type Props = {
   txHash: string
@@ -33,53 +37,58 @@ type Props = {
 }
 
 const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
-  const { bridgeTransactions } = useBridgeContext()
-  const [bridgeTransaction, setBridgeTransaction] =
-    useState<BridgeTransaction>()
-
-  const network = useSelector(selectActiveNetwork)
+  const [bridgeTransaction, setBridgeTransaction] = useState<
+    BridgeTransaction | BridgeTransfer
+  >()
+  const { activeNetwork } = useNetworks()
   const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
-    network.isTestnet === true
+    activeNetwork.isTestnet === true
   )
+
+  const bridgeTransactions = usePendingBridgeTransactions(activeNetwork)
 
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
-  const assetPrice = usePrice(
-    bridgeTransaction?.symbol,
+  const coingeckoId = useCoinGeckoId(bridgeTransaction?.symbol)
+
+  const assetPrice = useSimplePrice(
+    coingeckoId,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const networkPrice = usePriceForChain(bridgeTransaction?.sourceChain)
 
-  const formattedNetworkPrice =
-    networkPrice && bridgeTransaction?.sourceNetworkFee
-      ? currencyFormatter(
-          networkPrice.mul(bridgeTransaction.sourceNetworkFee).toNumber()
-        )
-      : '-'
+  const networkPrice = useBridgeNetworkPrice(bridgeTransaction?.sourceChain)
+
+  const { amount, sourceNetworkFee } = useBridgeAmounts(bridgeTransaction)
+
+  const {
+    isComplete,
+    sourceCurrentConfirmations,
+    sourceRequiredConfirmations,
+    targetCurrentConfirmations,
+    targetRequiredConfirmations
+  } = useBridgeTransferStatus(bridgeTransaction)
 
   useLayoutEffect(
     function updateHeader() {
-      const renderHeaderRight = () =>
+      const renderHeaderRight = (): JSX.Element | undefined =>
         showHideButton ? (
           <AvaButton.TextLarge
             onPress={() => {
-              bridgeTransaction?.complete
+              isComplete
                 ? getParent()?.goBack()
                 : navigate(AppNavigation.Root.Wallet, {
                     screen: AppNavigation.Wallet.Bridge,
                     params: { screen: AppNavigation.Bridge.HideWarning }
                   })
             }}>
-            {bridgeTransaction?.complete ? 'Close' : 'Hide'}
+            {isComplete ? 'Close' : 'Hide'}
           </AvaButton.TextLarge>
         ) : undefined
       setOptions({
-        headerTitle: `Transaction ${
-          bridgeTransaction?.complete ? 'Details' : 'Status'
-        }`,
+        headerTitle: `Transaction ${isComplete ? 'Details' : 'Status'}`,
         headerRight: renderHeaderRight
       })
     },
@@ -87,6 +96,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
       bridgeTransaction,
       dispatch,
       getParent,
+      isComplete,
       navigate,
       setOptions,
       showHideButton
@@ -95,10 +105,13 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
 
   useEffect(
     function cacheBridgeTransaction() {
-      if (bridgeTransactions[txHash])
-        // Cache locally because it's removed from the context on complete but
+      const transaction = bridgeTransactions.find(
+        tx => tx.sourceTxHash === txHash
+      )
+      if (transaction)
+        // Cache locally because it's removed from redux store on complete but
         // the tx should still be shown after completion.
-        setBridgeTransaction(bridgeTransactions[txHash])
+        setBridgeTransaction(transaction)
     },
     [bridgeTransactions, txHash]
   )
@@ -106,14 +119,14 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   useEffect(
     function logTxStatus() {
       Logger.info(
-        `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
-          bridgeTransaction?.confirmationCount
-        } completed: ${bridgeTransaction?.complete} completedAt: ${
+        `updated tx: ${
+          bridgeTransaction?.sourceTxHash
+        } count: ${sourceCurrentConfirmations} completed: ${isComplete} completedAt: ${
           bridgeTransaction?.completedAt
         } logStamp: ${Date.now()}`
       )
     },
-    [bridgeTransaction]
+    [bridgeTransaction, isComplete, sourceCurrentConfirmations]
   )
 
   const tokenLogo = (
@@ -129,6 +142,28 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
     </View>
   )
 
+  const renderNetworkFeeRightComponent = (): React.JSX.Element => {
+    if (sourceNetworkFee === undefined) {
+      return <AvaText.Heading3>Pending</AvaText.Heading3>
+    }
+
+    return (
+      <View style={{ alignItems: 'flex-end' }}>
+        <Row>
+          <AvaText.Heading3>
+            {sourceNetworkFee?.toNumber().toFixed(6)}{' '}
+            {getNativeTokenSymbol(
+              bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN
+            )}
+          </AvaText.Heading3>
+        </Row>
+        <AvaText.Body3 color={theme.colorText1}>
+          {currencyFormatter(networkPrice.mul(sourceNetworkFee).toNumber())}
+        </AvaText.Body3>
+      </View>
+    )
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <View style={[styles.infoContainer, { backgroundColor: theme.colorBg2 }]}>
@@ -143,14 +178,16 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
                 <View style={{ alignItems: 'flex-end' }}>
                   <Row>
                     <AvaText.Heading3>
-                      {bridgeTransaction?.amount?.toNumber()}
+                      {isUnifiedBridgeTransfer(bridgeTransaction)
+                        ? amount?.toNumber().toFixed(6)
+                        : bridgeTransaction.amount.toNumber().toFixed(6)}
                     </AvaText.Heading3>
                     <AvaText.Heading3 color={theme.colorText3}>
-                      {bridgeTransaction?.symbol}
+                      {' ' + bridgeTransaction.symbol}
                     </AvaText.Heading3>
                   </Row>
                   <AvaText.Body3 currency color={theme.colorText1}>
-                    {assetPrice.mul(bridgeTransaction?.amount ?? 0).toNumber()}
+                    {amount && assetPrice.mul(amount).toNumber()}
                   </AvaText.Body3>
                 </View>
               }
@@ -165,7 +202,9 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           titleAlignment="flex-start"
           rightComponent={
             <AvaText.Heading3>
-              {getBlockchainDisplayName(bridgeTransaction?.sourceChain)}
+              {isUnifiedBridgeTransfer(bridgeTransaction)
+                ? humanize(bridgeTransaction.sourceChain.chainName)
+                : getBlockchainDisplayName(bridgeTransaction?.sourceChain)}
             </AvaText.Heading3>
           }
         />
@@ -173,32 +212,16 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
         <AvaListItem.Base
           title={<AvaText.Body2>Network Fee</AvaText.Body2>}
           titleAlignment="flex-start"
-          rightComponent={
-            <View style={{ alignItems: 'flex-end' }}>
-              <Row>
-                <AvaText.Heading3>
-                  {bridgeTransaction?.sourceNetworkFee?.toNumber().toFixed(6)}{' '}
-                  {getNativeSymbol(
-                    bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN
-                  )}
-                </AvaText.Heading3>
-              </Row>
-              <AvaText.Body3 currency color={theme.colorText1}>
-                ~{formattedNetworkPrice}
-              </AvaText.Body3>
-            </View>
-          }
+          rightComponent={renderNetworkFeeRightComponent()}
         />
         <Separator color={theme.colorBg3} inset={16} />
         {bridgeTransaction && (
           <BridgeConfirmations
             started={true}
-            requiredConfirmationCount={
-              bridgeTransaction.requiredConfirmationCount
-            }
+            requiredConfirmationCount={sourceRequiredConfirmations}
             startTime={bridgeTransaction.sourceStartedAt}
             endTime={bridgeTransaction.targetStartedAt}
-            confirmationCount={bridgeTransaction.confirmationCount}
+            currentConfirmationCount={sourceCurrentConfirmations}
           />
         )}
       </View>
@@ -209,7 +232,9 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           titleAlignment="flex-start"
           rightComponent={
             <AvaText.Heading3>
-              {getBlockchainDisplayName(bridgeTransaction?.targetChain)}
+              {isUnifiedBridgeTransfer(bridgeTransaction)
+                ? humanize(bridgeTransaction.targetChain.chainName)
+                : getBlockchainDisplayName(bridgeTransaction?.targetChain)}
             </AvaText.Heading3>
           }
         />
@@ -219,10 +244,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
             started={!!bridgeTransaction.targetStartedAt}
             startTime={bridgeTransaction.targetStartedAt}
             endTime={bridgeTransaction.completedAt}
-            requiredConfirmationCount={
-              1 // On avalanche, we just need 1 confirmation
-            }
-            confirmationCount={bridgeTransaction.complete ? 1 : 0}
+            requiredConfirmationCount={targetRequiredConfirmations}
+            currentConfirmationCount={targetCurrentConfirmations}
             sourceChain={bridgeTransaction.sourceChain}
             targetChain={bridgeTransaction.targetChain}
           />

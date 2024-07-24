@@ -4,7 +4,6 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 import { Platform } from '../../helpers/constants'
@@ -18,7 +17,6 @@ describe('Change Currency', () => {
   })
 
   it('Should verify changing currency to EUR', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapCurrency()
     await Actions.waitForElement(CurrencyPage.euroCurrency)

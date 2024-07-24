@@ -1,7 +1,10 @@
 import { NativeTokenBalance } from '@avalabs/glacier-sdk'
-import { NetworkTokenWithBalance, TokenType } from 'store/balance'
 import { BN } from 'bn.js'
 import { balanceToDisplayValue, bnToBig } from '@avalabs/utils-sdk'
+import {
+  TokenType,
+  type NetworkTokenWithBalance
+} from '@avalabs/vm-module-types'
 
 export function convertNativeToTokenWithBalance(
   native: NativeTokenBalance
@@ -18,9 +21,7 @@ export function convertNativeToTokenWithBalance(
   return {
     name: native.name,
     symbol: native.symbol,
-    description: '',
     decimals: native.decimals,
-    logoUri: native.logoUri ?? '',
     type: TokenType.NATIVE,
     balance,
     balanceDisplayValue,

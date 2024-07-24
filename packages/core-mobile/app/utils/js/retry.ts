@@ -36,15 +36,15 @@ export const retry = async <T>({
   maxRetries = DEFAULT_MAX_RETRIES,
   backoffPolicy = RetryBackoffPolicy.exponential()
 }: RetryParams<T>): Promise<T> => {
-  let backoffPeriodSeconds = 0
+  let backoffPeriodMillis = 0
   let retries = 0
   let lastError: unknown
 
   while (retries < maxRetries) {
     if (retries > 0) {
-      Logger.info(`retry in ${backoffPeriodSeconds} seconds`)
+      Logger.info(`retry in ${backoffPeriodMillis} millis`)
       Logger.info(`retry count: ${retries}`)
-      await delay(backoffPeriodSeconds * 1000)
+      await delay(backoffPeriodMillis)
     }
 
     try {
@@ -59,7 +59,7 @@ export const retry = async <T>({
       Logger.error('operation failed', err)
     }
 
-    backoffPeriodSeconds = backoffPolicy(retries)
+    backoffPeriodMillis = backoffPolicy(retries)
     retries++
   }
 
@@ -75,12 +75,19 @@ type RetryBackoffPolicyInterface = (retryIndex: number) => number
 export class RetryBackoffPolicy {
   static exponential(): RetryBackoffPolicyInterface {
     return (retryIndex: number): number => {
-      return Math.pow(2, retryIndex)
+      return Math.pow(2, retryIndex) * 1000
     }
   }
+
   static constant(secondsToDelay: number): RetryBackoffPolicyInterface {
     return (_: number): number => {
-      return secondsToDelay
+      return secondsToDelay * 1000
+    }
+  }
+
+  static constantMs(msToDelay: number): RetryBackoffPolicyInterface {
+    return (_: number): number => {
+      return msToDelay
     }
   }
 }

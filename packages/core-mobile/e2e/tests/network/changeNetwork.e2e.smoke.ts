@@ -4,9 +4,9 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
+import commonElsPage from '../../pages/commonEls.page'
 import { warmup } from '../../helpers/warmup'
 
 describe('Change Network', () => {
@@ -14,8 +14,16 @@ describe('Change Network', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapManageNetworks()
+    await NetworksManagePage.tapNetworksTab()
+    await NetworksManagePage.tapStarSvgByIndex(1)
+    await commonElsPage.tapBackButton()
+    await NetworksManagePage.switchToAvalancheNetwork()
+  })
+
   it('should verify changing Active network to ETH', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await Actions.waitForElement(PortfolioPage.ethNetwork)
@@ -32,7 +40,6 @@ describe('Change Network', () => {
   it('should verify changing Active network to AVAX', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownAVAX() ////?????
-    await Assert.isVisible(PortfolioPage.avaxNetwork)
     await Assert.isVisible(PortfolioPage.avaxNetwork)
   })
 

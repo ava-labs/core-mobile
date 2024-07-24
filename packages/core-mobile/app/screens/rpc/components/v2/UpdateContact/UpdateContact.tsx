@@ -21,7 +21,7 @@ const UpdateContact = () => {
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
 
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
 
   const existingContact = useSelector(selectContact(contact.id))
 

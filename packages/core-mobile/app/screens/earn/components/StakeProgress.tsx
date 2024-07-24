@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import { DimensionValue, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
@@ -9,9 +9,9 @@ type Props = {
   progress: number // in percentage
 }
 
-export const StakeProgress = ({ progress }: Props) => {
+export const StakeProgress = ({ progress }: Props): JSX.Element => {
   const { theme } = useApplicationContext()
-  const percentage = `${progress}%`
+  const percentage: DimensionValue = `${progress}%`
   const label = progress < 100 ? percentage + ' complete' : percentage
   const color = theme.blueLight
 

@@ -1,9 +1,9 @@
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EarnService from 'services/earn/EarnService'
-import { selectAvaxPrice } from 'store/balance'
+import { selectAvaxPrice } from 'store/balance/slice'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
-import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/vms/pvm'
+import { pvm } from '@avalabs/avalanchejs'
 import { Seconds } from 'types/siUnits'
 import { Avax } from 'types/Avax'
 
@@ -37,7 +37,7 @@ export const useEarnCalcEstimatedRewards = ({
   return useQuery({
     queryKey: ['currentSupply', isDeveloperMode],
     queryFn: async () => EarnService.getCurrentSupply(isDeveloperMode),
-    select: ({ supply: currentSupply }: GetCurrentSupplyResponse) => {
+    select: ({ supply: currentSupply }: pvm.GetCurrentSupplyResponse) => {
       const reward = EarnService.calcReward(
         amount,
         duration,

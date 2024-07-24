@@ -1,5 +1,5 @@
 module.exports = {
-  presets: ['module:metro-react-native-babel-preset'],
+  presets: ['module:@react-native/babel-preset'],
   plugins: [
     [
       'module-resolver',
@@ -22,13 +22,13 @@ module.exports = {
     ],
     'react-require',
     'inline-dotenv',
-    'react-native-reanimated/plugin',
     '@babel/plugin-transform-class-static-block',
-    '@babel/plugin-transform-export-namespace-from'
+    '@babel/plugin-transform-export-namespace-from',
+    'react-native-reanimated/plugin'
   ],
   overrides: [
     {
-      include: /node_modules\/(@tanstack|ethers)/,
+      include: /node_modules\/(@tanstack|ethers|@avalabs\/wallets-sdk)/,
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]]
     }
   ]

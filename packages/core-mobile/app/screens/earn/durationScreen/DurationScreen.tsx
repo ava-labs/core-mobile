@@ -23,9 +23,9 @@ import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useNow } from 'hooks/time/useNow'
 import { BackButton } from 'components/BackButton'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -34,7 +34,6 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const StakingDuration = (): JSX.Element => {
-  const { capture } = usePostCapture()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currentDate = useNow()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
@@ -105,7 +104,7 @@ export const StakingDuration = (): JSX.Element => {
 
   const navigateToNodeSearch = (): void => {
     if (stakeEndTime) {
-      capture('StakeStartNodeSearch', {
+      AnalyticsService.capture('StakeStartNodeSearch', {
         duration: selectedDuration.title,
         from: 'DurationScreen'
       })
@@ -118,7 +117,7 @@ export const StakingDuration = (): JSX.Element => {
 
   const navigateToAdvancedStaking = (): void => {
     if (stakeEndTime) {
-      capture('StakeSelectAdvancedStaking')
+      AnalyticsService.capture('StakeSelectAdvancedStaking')
       navigate(AppNavigation.StakeSetup.AdvancedStaking, {
         stakingAmount,
         stakingEndTime: stakeEndTime,
@@ -128,7 +127,7 @@ export const StakingDuration = (): JSX.Element => {
   }
 
   const handleReadMore = (): void => {
-    capture('StakeOpenStakingDocs', { from: 'DurationScreen' })
+    AnalyticsService.capture('StakeOpenStakingDocs', { from: 'DurationScreen' })
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })
@@ -163,24 +162,27 @@ export const StakingDuration = (): JSX.Element => {
 
   const renderFooter = (): JSX.Element => (
     <View>
-      <Tooltip
-        content={renderPopoverInfoText()}
-        style={{ width: 246 }}
-        isLabelPopable>
-        <AvaText.Caption
-          textStyle={{
-            color: theme.neutral400,
-            textAlign: 'center',
-            lineHeight: 20,
-            marginHorizontal: 40
-          }}>
-          Estimates are provided for informational purposes only...
-          <Space x={8} />
-          <InfoSVG size={13.33} />
-        </AvaText.Caption>
-      </Tooltip>
+      <View style={{ alignItems: 'center' }}>
+        <Tooltip
+          content={renderPopoverInfoText()}
+          style={{ width: 246 }}
+          isLabelPopable>
+          <AvaText.Caption
+            textStyle={{
+              color: theme.neutral400,
+              textAlign: 'center',
+              lineHeight: 20,
+              marginHorizontal: 40
+            }}>
+            Estimates are provided for informational purposes only...
+            <Space x={8} />
+            <InfoSVG size={13.33} />
+          </AvaText.Caption>
+        </Tooltip>
+      </View>
       <Space y={12} />
       <AvaButton.PrimaryLarge
+        testID="next_btn"
         disabled={isNextDisabled}
         onPress={() => navigateToNodeSearch()}>
         Next

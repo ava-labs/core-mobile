@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import { View } from 'react-native'
@@ -11,14 +11,11 @@ import FlexSpacer from 'components/FlexSpacer'
 import AppNavigation from 'navigation/AppNavigation'
 import { DrawerScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import {
-  selectActiveNetwork,
-  selectFavoriteNetworks,
-  setActive
-} from 'store/network'
+import { setActive } from 'store/network'
 import { arrayHash } from 'utils/Utils'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -27,12 +24,10 @@ type NetworkDropdownNavigationProp = DrawerScreenProps<
   typeof AppNavigation.Wallet.Tabs
 >['navigation']
 
-export default function NetworkDropdown() {
-  const favoriteNetworks = useSelector(selectFavoriteNetworks)
-  const activeNetwork = useSelector(selectActiveNetwork)
+export default function NetworkDropdown(): JSX.Element {
+  const { favoriteNetworks, activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
 
   const data = useMemo(
@@ -63,11 +58,13 @@ export default function NetworkDropdown() {
     item => item.chainId === activeNetwork.chainId
   )
 
-  const renderSelection = (selectedItem: typeof data[0]) => (
+  // eslint-disable-next-line prettier/prettier
+  const renderSelection = (selectedItem: (typeof data)[0]): JSX.Element => (
     <Selection logoUri={selectedItem.logoUri} />
   )
 
-  const renderOption = ({ item }: { item: typeof data[0] }) => (
+  // eslint-disable-next-line prettier/prettier
+  const renderOption = ({ item }: { item: (typeof data)[0] }): JSX.Element => (
     <Option
       networkName={item.name}
       networkLogo={item.logoUri}
@@ -75,9 +72,9 @@ export default function NetworkDropdown() {
     />
   )
 
-  const handleOnDropDownToggle = (isOpen: boolean) => {
+  const handleOnDropDownToggle = (isOpen: boolean): void => {
     if (isOpen) {
-      capture('NetworkSwitcherOpened')
+      AnalyticsService.capture('NetworkSwitcherOpened')
     }
   }
 
@@ -106,7 +103,7 @@ export default function NetworkDropdown() {
         selectedIndex={selectedNetworkIndex === -1 ? 0 : selectedNetworkIndex}
         onItemSelected={selectedItem => {
           if (selectedItem.name === ManageNetworks) {
-            capture('ManageNetworksClicked')
+            AnalyticsService.capture('ManageNetworksClicked')
             navigation.navigate(AppNavigation.Wallet.NetworkSelector)
           } else {
             dispatch(setActive(selectedItem.chainId))
@@ -122,7 +119,7 @@ export default function NetworkDropdown() {
   )
 }
 
-function Selection({ logoUri }: { logoUri: string }) {
+function Selection({ logoUri }: { logoUri: string }): JSX.Element {
   return (
     <View style={{ marginRight: 2 }}>
       <NetworkLogo
@@ -142,7 +139,7 @@ function Option({
   networkLogo: string
   networkName: string
   isSelected: boolean
-}) {
+}): JSX.Element {
   return (
     <Row
       style={{

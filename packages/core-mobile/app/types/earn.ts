@@ -1,4 +1,4 @@
-import type { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs-v2/dist/vms/pvm'
+import type { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs/dist/vms/pvm'
 
 export type NodeValidator = GetCurrentValidatorsResponse['validators'][0] & {
   delegatorCount?: string

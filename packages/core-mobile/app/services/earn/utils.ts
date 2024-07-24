@@ -15,7 +15,7 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { valid, compare } from 'semver'
-import { Peer } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { Peer } from '@avalabs/avalanchejs/dist/info/model'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
 import EarnService from './EarnService'
 
@@ -224,7 +224,7 @@ export const getSimpleSortedValidators = (
   return [...validators].sort(
     (a, b): number =>
       Number(b.uptime) - Number(a.uptime) ||
-      Number(b.delegationFee) - Number(a.delegationFee) ||
+      Number(a.delegationFee) - Number(b.delegationFee) ||
       (peers === undefined
         ? 0
         : comparePeerVersion(

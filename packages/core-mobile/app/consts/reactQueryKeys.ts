@@ -6,5 +6,13 @@ export enum ReactQueryKeys {
   DEFI_CHAIN_LIST = 'deFiChainList',
   DEFI_PROTOCOL_INFORMATION_LIST = 'deFiProtocolInformationList',
 
-  NETWORK_FEE = 'networkFee'
+  NETWORK_FEE = 'networkFee',
+  NFTS = 'nfts',
+  NFT = 'nft',
+
+  NETWORKS = 'networks',
+  NETWORK_CONTRACT_TOKENS = 'networkContractTokens',
+  WATCHLIST_TOKENS_AND_CHARTS = 'watchlistTokensAndCharts',
+  WATCHLIST_PRICES = 'watchlistPrices',
+  WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch'
 }

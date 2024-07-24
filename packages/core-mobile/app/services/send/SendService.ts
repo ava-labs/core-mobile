@@ -1,38 +1,49 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import networkService from 'services/network/NetworkService'
-import walletService from 'services/wallet/WalletService'
+import { resolve } from '@avalabs/utils-sdk'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import { TokenType, NftTokenWithBalance } from 'store/balance'
+import type { NftTokenWithBalance } from 'store/balance/types'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
 import { isErc721 } from 'services/nft/utils'
-import { isValidSendState, SendServiceHelper, SendState } from './types'
+import { SendServicePVM } from 'services/send/SendServicePVM'
+import { RpcMethod } from 'store/rpc'
+import { getAddressByNetwork } from 'store/account/utils'
+import { TransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bitcoin_sendTransaction/utils'
+import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
+import { SendServiceAVM } from 'services/send/SendServiceAVM'
+import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
+import { TokenType } from '@avalabs/vm-module-types'
 import sendServiceBTC from './SendServiceBTC'
+import {
+  isValidSendState,
+  SendParams,
+  SendServiceHelper,
+  SendState
+} from './types'
 
 class SendService {
-  async send(
-    sendState: SendState,
-    activeNetwork: Network,
-    account: Account,
-    currency: string,
-    onTxSigned?: () => void,
-    sentryTrx?: Transaction
-  ): Promise<string> {
+  async send({
+    sendState,
+    network,
+    account,
+    currency,
+    sentryTrx,
+    request
+  }: SendParams): Promise<string> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.send')
       .executeAsync(async () => {
-        const fromAddress =
-          activeNetwork.vmName === NetworkVMType.BITCOIN
-            ? account.addressBtc
-            : account.address
+        const fromAddress = getAddressByNetwork(account, network)
+        if (!fromAddress) {
+          throw new Error('Source address not set')
+        }
+        const service = this.getService(network, fromAddress)
 
-        const service = await this.getService(activeNetwork, fromAddress)
         sendState = await service.validateStateAndCalculateFees({
           sendState,
-          isMainnet: !activeNetwork.isTestnet,
+          isMainnet: !network.isTestnet,
           fromAddress,
           currency,
           sentryTrx
@@ -46,29 +57,98 @@ class SendService {
           throw new Error('Unknown error, unable to submit')
         }
 
-        const txRequest = await service.getTransactionRequest({
-          sendState,
-          isMainnet: !activeNetwork.isTestnet,
-          fromAddress,
-          currency,
-          sentryTrx
-        })
-        const signedTx = await walletService.sign(
-          txRequest,
-          account.index,
-          activeNetwork,
-          sentryTrx
-        )
-        onTxSigned?.()
-        return await networkService.sendTransaction(
-          signedTx,
-          activeNetwork,
-          false,
-          sentryTrx
-        )
+        let txHash, txError
+
+        if (network.vmName === NetworkVMType.BITCOIN) {
+          const params: BtcTransactionParams = [
+            sendState.address ?? '',
+            sendState.amount?.toString() ?? '',
+            Number(sendState.defaultMaxFeePerGas ?? 0)
+          ]
+
+          ;[txHash, txError] = await resolve(
+            request({
+              method: RpcMethod.BITCOIN_SEND_TRANSACTION,
+              params
+            })
+          )
+        }
+
+        if (network.vmName === NetworkVMType.PVM) {
+          const txRequest = await (
+            service as SendServicePVM
+          ).getTransactionRequest({
+            sendState,
+            isMainnet: !network.isTestnet,
+            fromAddress,
+            currency,
+            sentryTrx,
+            accountIndex: account.index
+          })
+
+          ;[txHash, txError] = await resolve(
+            request({
+              method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+              params: txRequest as AvalancheTransactionParams
+            })
+          )
+        }
+
+        if (network.vmName === NetworkVMType.AVM) {
+          const txRequest = await (
+            service as SendServiceAVM
+          ).getTransactionRequest({
+            sendState,
+            isMainnet: !network.isTestnet,
+            fromAddress,
+            currency,
+            sentryTrx,
+            accountIndex: account.index
+          })
+
+          ;[txHash, txError] = await resolve(
+            request({
+              method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+              params: txRequest as AvalancheTransactionParams
+            })
+          )
+        }
+
+        if (network.vmName === NetworkVMType.EVM) {
+          const txRequest = await (
+            service as SendServiceEVM
+          ).getTransactionRequest({
+            sendState,
+            isMainnet: !network.isTestnet,
+            fromAddress,
+            currency,
+            sentryTrx
+          })
+
+          const txParams = transactionRequestToTransactionParams(txRequest)
+
+          ;[txHash, txError] = await resolve(
+            request({
+              method: RpcMethod.ETH_SEND_TRANSACTION,
+              params: [txParams],
+              chainId: network.chainId.toString()
+            })
+          )
+        }
+
+        if (txError) {
+          throw txError
+        }
+
+        if (!txHash || typeof txHash !== 'string') {
+          throw new Error('invalid transaction hash')
+        }
+
+        return txHash
       })
   }
 
+  // eslint-disable-next-line max-params
   async validateStateAndCalculateFees(
     sendState: SendState,
     activeNetwork: Network,
@@ -76,19 +156,21 @@ class SendService {
     currency: string,
     nativeTokenBalance?: BN
   ): Promise<SendState> {
-    const fromAddress =
-      activeNetwork.vmName === NetworkVMType.BITCOIN
-        ? account.addressBtc
-        : account.address
+    const fromAddress = getAddressByNetwork(account, activeNetwork)
 
+    if (!fromAddress) {
+      throw new Error('Source address not set')
+    }
     const service = this.getService(activeNetwork, fromAddress)
-    return service.validateStateAndCalculateFees({
+    const params = {
       sendState,
       isMainnet: !activeNetwork.isTestnet,
       fromAddress,
       currency,
+      accountIndex: account.index,
       nativeTokenBalance
-    })
+    }
+    return service.validateStateAndCalculateFees(params)
   }
 
   mapTokenFromNFT(nft: NFTItemData): NftTokenWithBalance {
@@ -122,6 +204,10 @@ class SendService {
         return sendServiceBTC
       case NetworkVMType.EVM: // we might be able to change this to be a singleton too
         return new SendServiceEVM(activeNetwork, fromAddress)
+      case NetworkVMType.PVM:
+        return new SendServicePVM(activeNetwork)
+      case NetworkVMType.AVM:
+        return new SendServiceAVM(activeNetwork)
       default:
         throw new Error('unhandled send helper')
     }

@@ -3,7 +3,7 @@ import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
+import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { AVALANCHE_XP_NETWORK, Network } from '@avalabs/chains-sdk'
 import { Avax } from 'types/Avax'
@@ -82,7 +82,7 @@ describe('earn/exportC', () => {
     })
 
     it('should call walletService.createExportCTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportC({
           cChainBalance: Avax.fromBase(1),
           requiredAmount: Avax.fromBase(0.1),
@@ -101,7 +101,7 @@ describe('earn/exportC', () => {
     })
 
     it('should call walletService.signAvaxTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportC({
           cChainBalance: Avax.fromBase(1),
           requiredAmount: Avax.fromBase(0.1),
@@ -113,7 +113,7 @@ describe('earn/exportC', () => {
     })
 
     it('should call networkService.sendTransaction', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportC({
           cChainBalance: Avax.fromBase(1),
           requiredAmount: Avax.fromBase(0.1),

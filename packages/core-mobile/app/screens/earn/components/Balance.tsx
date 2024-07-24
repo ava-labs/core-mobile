@@ -16,8 +16,8 @@ import { BalanceItem } from 'screens/earn/components/BalanceItem'
 import { Row } from 'components/Row'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
 import { Avax } from 'types/Avax'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -25,7 +25,6 @@ import { CircularProgress } from './CircularProgress'
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
 export const Balance = (): JSX.Element | null => {
-  const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
@@ -84,7 +83,7 @@ export const Balance = (): JSX.Element | null => {
   ]
 
   const goToGetStarted = (): void => {
-    capture('StakeBegin', { from: 'BalanceScreen' })
+    AnalyticsService.capture('StakeBegin', { from: 'BalanceScreen' })
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.StakeSetup,
       params: {
@@ -94,14 +93,14 @@ export const Balance = (): JSX.Element | null => {
   }
 
   const goToClaimRewards = (): void => {
-    capture('StakeClaim')
+    AnalyticsService.capture('StakeClaim')
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.ClaimRewards
     })
   }
 
   const renderStakeButton = (): JSX.Element => (
-    <AvaButton.PrimaryLarge onPress={goToGetStarted}>
+    <AvaButton.PrimaryLarge testID="stake_btn" onPress={goToGetStarted}>
       Stake
     </AvaButton.PrimaryLarge>
   )
@@ -112,7 +111,10 @@ export const Balance = (): JSX.Element | null => {
         flexDirection: 'row',
         justifyContent: 'space-between'
       }}>
-      <AvaButton.SecondaryLarge style={{ flex: 1 }} onPress={goToGetStarted}>
+      <AvaButton.SecondaryLarge
+        testID="stake_btn_secondary"
+        style={{ flex: 1 }}
+        onPress={goToGetStarted}>
         Stake
       </AvaButton.SecondaryLarge>
       <Space x={16} />

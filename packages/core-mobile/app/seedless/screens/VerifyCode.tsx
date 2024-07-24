@@ -1,42 +1,33 @@
-import {
-  Pressable,
-  Text,
-  TextInput,
-  View,
-  alpha,
-  useTheme
-} from '@avalabs/k2-mobile'
-import React, { useContext, useState } from 'react'
-import { BottomSheet } from 'components/BottomSheet'
-import ClearSVG from 'components/svg/ClearSVG'
+import { alpha, Text, TextInput, useTheme, View } from '@avalabs/k2-mobile'
+import React, { useState } from 'react'
 import { Space } from 'components/Space'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
-import { RecoveryMethodsScreenProps } from 'navigation/types'
 import Logger from 'utils/Logger'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
+import Loader from 'components/Loader'
+import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Sheet } from 'components/Sheet'
+import { CubeSignerResponse } from '@cubist-labs/cubesigner-sdk'
 
-type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
-  typeof AppNavigation.RecoveryMethods.VerifyCode
->
+export type VerifyCodeParams = {
+  onVerifyCode: <T>(
+    code: string
+  ) => Promise<Result<CubeSignerResponse<T> | undefined, TotpErrors>>
+  onVerifySuccess: <T>(cubeSignerResponse?: T) => void
+  onBack: () => void
+}
 
-export const VerifyCode = (): JSX.Element => {
+export const VerifyCode = ({
+  onVerifyCode,
+  onVerifySuccess,
+  onBack
+}: VerifyCodeParams): JSX.Element => {
   const {
     theme: { colors, text }
   } = useTheme()
-  const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
+  const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
-
   const [showError, setShowError] = useState(false)
-  const { canGoBack, goBack, navigate } =
-    useNavigation<VerifyCodeScreenProps['navigation']>()
-
-  const onGoBack = (): void => {
-    if (canGoBack()) {
-      goBack()
-    }
-  }
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
@@ -44,25 +35,24 @@ export const VerifyCode = (): JSX.Element => {
       setShowError(false)
       return
     }
-    const result = await SeedlessService.verifyCode(
-      oidcToken,
-      mfaId,
-      changedText
-    )
-    if (result.success === false) {
-      setShowError(true)
-      return
-    }
 
-    navigate(AppNavigation.Root.Onboard, {
-      screen: AppNavigation.Onboard.Welcome,
-      params: {
-        screen: AppNavigation.Onboard.AnalyticsConsent,
-        params: {
-          nextScreen: AppNavigation.Onboard.CreatePin
-        }
+    setIsVerifying(true)
+
+    try {
+      const result = await onVerifyCode(changedText)
+      if (result.success === false) {
+        throw new Error(result.error.message)
       }
-    })
+      setIsVerifying(false)
+      onVerifySuccess(result.value?.data())
+      AnalyticsService.capture('TotpValidationSuccess')
+    } catch (error) {
+      setShowError(true)
+      setIsVerifying(false)
+      AnalyticsService.capture('TotpValidationFailed', {
+        error: error as string
+      })
+    }
   }
 
   const textInputStyle = showError
@@ -73,31 +63,28 @@ export const VerifyCode = (): JSX.Element => {
     : undefined
 
   return (
-    <BottomSheet snapPoints={['99%']}>
+    <Sheet onClose={onBack} title="Verify Code">
       <View
         sx={{ marginHorizontal: 16, justifyContent: 'space-between', flex: 1 }}>
-        <View>
+        {isVerifying && (
           <View
             sx={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center'
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0
             }}>
-            <Text variant="heading4">VerifyCode</Text>
-            <Pressable onPress={onGoBack}>
-              <ClearSVG
-                backgroundColor={alpha(colors.$neutral700, 0.5)}
-                color={colors.$neutral500}
-                size={30}
-              />
-            </Pressable>
+            <Loader transparent />
           </View>
-          <Space y={24} />
+        )}
+        <View>
           <Text variant="body1">
             Enter the code generated from your authenticator app.
           </Text>
           <Space y={24} />
           <TextInput
+            editable={!isVerifying}
             onChangeText={changedText => {
               handleVerifyCode(changedText).catch(error =>
                 Logger.error('handleVerifyCode', error)
@@ -127,6 +114,6 @@ export const VerifyCode = (): JSX.Element => {
           )}
         </View>
       </View>
-    </BottomSheet>
+    </Sheet>
   )
 }

@@ -1,5 +1,5 @@
 import { getPvmApi } from 'utils/network/pvm'
-import { Account, AccountCollection } from 'store/account'
+import { Account, AccountCollection } from 'store/account/types'
 import { exportC } from 'services/earn/exportC'
 import { importP, importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
@@ -12,7 +12,7 @@ import {
   AvalancheTransactionRequest
 } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
@@ -26,7 +26,7 @@ import { getUnixTime } from 'date-fns'
 import {
   GetCurrentSupplyResponse,
   GetCurrentValidatorsResponse
-} from '@avalabs/avalanchejs-v2/dist/vms/pvm'
+} from '@avalabs/avalanchejs/dist/vms/pvm'
 import { Seconds } from 'types/siUnits'
 import {
   BlockchainId,
@@ -37,9 +37,10 @@ import {
 } from '@avalabs/glacier-sdk'
 import { Avax } from 'types/Avax'
 import { getInfoApi } from 'utils/network/info'
-import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -67,10 +68,12 @@ class EarnService {
   async importAnyStuckFunds({
     activeAccount,
     isDevMode,
+    selectedCurrency,
     progressEvents
   }: {
     activeAccount: Account
     isDevMode: boolean
+    selectedCurrency: string
     progressEvents?: (events: RecoveryEvents) => void
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
@@ -93,7 +96,11 @@ class EarnService {
     progressEvents?.(RecoveryEvents.Idle)
     if (pChainUtxo.getUTXOs().length !== 0) {
       progressEvents?.(RecoveryEvents.ImportPStart)
-      await importPWithBalanceCheck({ activeAccount, isDevMode })
+      await importPWithBalanceCheck({
+        activeAccount,
+        isDevMode,
+        selectedCurrency
+      })
       progressEvents?.(RecoveryEvents.ImportPFinish)
     }
 
@@ -115,7 +122,8 @@ class EarnService {
     cChainBalance,
     requiredAmount,
     activeAccount,
-    isDevMode
+    isDevMode,
+    selectedCurrency
   }: CollectTokensForStakingParams): Promise<void> {
     if (requiredAmount.isZero()) {
       Logger.info('no need to cross chain')
@@ -129,7 +137,8 @@ class EarnService {
     })
     await importP({
       activeAccount,
-      isDevMode
+      isDevMode,
+      selectedCurrency
     })
   }
 
@@ -141,6 +150,7 @@ class EarnService {
    * @param activeAccount
    * @param isDevMode
    */
+  // eslint-disable-next-line max-params
   async claimRewards(
     pChainBalance: Avax,
     requiredAmount: Avax,
@@ -167,6 +177,7 @@ class EarnService {
    * @param delegationFee in percent
    * @param isDeveloperMode
    */
+  // eslint-disable-next-line max-params
   calcReward(
     amount: Avax,
     duration: Seconds,
@@ -225,14 +236,22 @@ class EarnService {
       isDevMode
     } as AddDelegatorProps)
 
-    const signedTxJson = await WalletService.sign(
-      { tx: unsignedTx } as AvalancheTransactionRequest,
-      activeAccount.index,
-      avaxXPNetwork
-    )
+    const signedTxJson = await WalletService.sign({
+      transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
+      accountIndex: activeAccount.index,
+      network: avaxXPNetwork
+    })
     const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-    const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
+    const txID = await NetworkService.sendTransaction({
+      signedTx,
+      network: avaxXPNetwork
+    })
+
+    AnalyticsService.captureWithEncryption('StakeTransactionStarted', {
+      txHash: txID,
+      chainId: avaxXPNetwork.chainId
+    })
     Logger.trace('txID', txID)
 
     const avaxProvider = NetworkService.getProviderForNetwork(
@@ -293,6 +312,8 @@ class EarnService {
 
     return transactions.filter(
       transaction =>
+        transaction.txType ===
+          PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX ||
         transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
     )
   }
@@ -313,39 +334,32 @@ class EarnService {
       }[]
     | undefined
   > => {
-    const oppositeIsDeveloperMode = !isDeveloperMode
     const accountsArray = Object.values(accounts)
 
     try {
-      const firstQueryParams = accountsArray.reduce((result, account) => {
-        if (account.addressPVM) {
-          result.push(account.addressPVM)
-        }
-        return result
-      }, [] as string[])
-
-      const firstTransactions = await getTransformedTransactions(
-        firstQueryParams,
+      const currentNetworkAddresses = accountsArray
+        .map(account => account.addressPVM)
+        .filter((address): address is string => address !== undefined)
+      const currentNetworkTransactions = await getTransformedTransactions(
+        currentNetworkAddresses,
         isDeveloperMode
       )
 
-      const indices = accountsArray.map(acc => acc.index)
-      // TODO: get addresses normally, not by indices
-      const secondQueryParams = await WalletService.getAddressesByIndices({
-        indices,
-        chainAlias: 'P',
-        isChange: false,
-        isTestnet: oppositeIsDeveloperMode
-      })
-
-      const secondTransactions = await getTransformedTransactions(
-        secondQueryParams,
-        oppositeIsDeveloperMode
+      const oppositeNetworkAddresses = (
+        await Promise.all(
+          accountsArray.map(account =>
+            WalletService.getAddresses(account.index, !isDeveloperMode)
+          )
+        )
+      ).map(address => address.PVM)
+      const oppositeNetworkTransactions = await getTransformedTransactions(
+        oppositeNetworkAddresses,
+        !isDeveloperMode
       )
 
       const now = new Date()
-      return (firstTransactions ?? [])
-        .concat(secondTransactions ?? [])
+      return currentNetworkTransactions
+        .concat(oppositeNetworkTransactions)
         .map(transaction => {
           return {
             txHash: transaction.txHash,

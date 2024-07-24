@@ -7,7 +7,7 @@ interface Prop {
   size?: number
 }
 
-function SettingsCogSVG({ color, size = 24 }: Prop) {
+function SettingsCogSVG({ color, size = 24 }: Prop): JSX.Element {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1

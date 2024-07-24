@@ -1,23 +1,40 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  UseMutationResult
+} from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { assertNotUndefined } from 'utils/assertions'
+import NetworkService from 'services/network/NetworkService'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void
-) => {
+): {
+  issueDelegationMutation: UseMutationResult<
+    string,
+    Error,
+    {
+      nodeId: string
+      stakingAmount: Avax
+      startDate: Date
+      endDate: Date
+    },
+    unknown
+  >
+} => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -26,7 +43,7 @@ export const useIssueDelegation = (
   const cChainBalance = Avax.fromWei(cChainBalanceRes?.balance ?? 0)
 
   const pAddress = activeAccount?.addressPVM ?? ''
-  const cAddress = activeAccount?.address ?? ''
+  const cAddress = activeAccount?.addressC ?? ''
 
   const issueDelegationMutation = useMutation({
     mutationFn: async (data: {
@@ -42,16 +59,17 @@ export const useIssueDelegation = (
       Logger.trace('importAnyStuckFunds...')
       await EarnService.importAnyStuckFunds({
         activeAccount,
-        isDevMode: isDeveloperMode
+        isDevMode: isDeveloperMode,
+        selectedCurrency
       })
       Logger.trace('getPChainBalance...')
-      const addressPVM = activeAccount.addressPVM
-      assertNotUndefined(addressPVM)
+      assertNotUndefined(pAddress)
 
-      const pChainBalance = await GlacierBalanceService.getPChainBalance(
-        isDeveloperMode,
-        [addressPVM]
-      )
+      const pChainBalance = await GlacierBalanceService.getPChainBalance({
+        network: NetworkService.getAvalancheNetworkP(isDeveloperMode),
+        addresses: [pAddress],
+        currency: selectedCurrency
+      })
       const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
       const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
       Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
@@ -65,7 +83,8 @@ export const useIssueDelegation = (
         activeAccount,
         cChainBalance: cChainBalance,
         isDevMode: isDeveloperMode,
-        requiredAmount: cChainRequiredAmount
+        requiredAmount: cChainRequiredAmount,
+        selectedCurrency
       })
       return EarnService.issueAddDelegatorTransaction({
         activeAccount,
@@ -124,7 +143,7 @@ export const refetchQueries = ({
   pAddress: string
   cAddress: string
   selectedCurrency: string
-}) => {
+}): void => {
   setTimeout(() => {
     queryClient.invalidateQueries({
       queryKey: ['stakes', isDeveloperMode, pAddress]

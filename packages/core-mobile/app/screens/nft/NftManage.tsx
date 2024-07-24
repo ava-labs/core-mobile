@@ -1,55 +1,64 @@
 import React, { useMemo, useState } from 'react'
-import { FlatList, StyleSheet, View } from 'react-native'
+import { FlatList } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
 import ZeroState from 'components/ZeroState'
-import { COLORS_DAY, COLORS_NIGHT, Opacity85 } from 'resources/Constants'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import Switch from 'components/Switch'
-import { NFTItemData, selectHiddenNftUIDs, setHidden } from 'store/nft'
+import { selectHiddenNftUIDs, setHidden, NFTItem } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
-import { useGetNfts } from 'store/nft/hooks'
 import { RefreshControl } from 'components/RefreshControl'
+import { View } from '@avalabs/k2-mobile'
+import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { FetchingNextIndicator } from './components/FetchingNextIndicator'
 
-const NftManage = () => {
-  const { theme } = useApplicationContext()
+const NftManage = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const dispatch = useDispatch()
   const hiddenNftUIDs = useSelector(selectHiddenNftUIDs)
-  const { nfts, fetchNext, isFetchingNext, refresh, isRefreshing } =
-    useGetNfts()
-
+  const {
+    nftItems: nfts,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetchNfts,
+    isNftsRefetching
+  } = useNftItemsContext()
   const filteredData = useMemo(() => {
+    const keyword = searchText.toLowerCase()
+
     return nfts.filter(nft => {
       return (
         searchText.length === 0 ||
-        nft.tokenId.toLowerCase().includes(searchText.toLowerCase()) ||
-        nft.metadata.name?.toLowerCase().includes(searchText.toLowerCase())
+        nft.tokenId.toLowerCase().includes(keyword) ||
+        nft.metadata.name?.toLowerCase().includes(keyword) ||
+        nft.processedMetadata.name?.toLowerCase().includes(keyword)
       )
     })
   }, [nfts, searchText])
 
-  const updateSearch = (searchVal: string) => {
+  const updateSearch = (searchVal: string): void => {
     setSearchText(searchVal)
   }
 
-  const onItemToggled = (item: NFTItemData) => {
+  const handleItemHidden = (item: NFTItem): void => {
     dispatch(setHidden({ tokenUid: item.uid }))
   }
 
-  const onEndReached = ({ distanceFromEnd }: { distanceFromEnd: number }) => {
-    if (distanceFromEnd > 0) fetchNext()
+  const onEndReached = ({
+    distanceFromEnd
+  }: {
+    distanceFromEnd: number
+  }): void => {
+    if (distanceFromEnd > 0 && hasNextPage) fetchNextPage()
   }
 
   return (
-    <View style={styles.container}>
+    <View sx={{ paddingHorizontal: 16, flex: 1 }}>
       <AvaText.LargeTitleBold>Manage List</AvaText.LargeTitleBold>
       <SearchBar onTextChanged={updateSearch} searchText={searchText} />
       <FlatList
-        style={styles.list}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
         onEndReached={onEndReached}
@@ -57,65 +66,60 @@ const NftManage = () => {
         keyExtractor={item => item.uid}
         ItemSeparatorComponent={Separator}
         renderItem={info =>
-          renderItemList(
-            info.item,
-            hiddenNftUIDs[info.item.uid] ?? false,
-            onItemToggled,
-            theme
-          )
+          renderItemList({
+            item: info.item,
+            isHidden: hiddenNftUIDs[info.item.uid] ?? false,
+            onHiddenToggle: handleItemHidden
+          })
         }
         indicatorStyle="white"
         refreshControl={
-          <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
+          <RefreshControl
+            onRefresh={refetchNfts}
+            refreshing={isNftsRefetching}
+          />
         }
         ListFooterComponent={
-          <FetchingNextIndicator isVisible={isFetchingNext} />
+          <FetchingNextIndicator isVisible={isFetchingNextPage} />
         }
       />
     </View>
   )
 }
 
-const Separator = () => <View style={{ margin: 4 }} />
+const Separator = (): JSX.Element => <View style={{ margin: 4 }} />
 
-const renderItemList = (
-  item: NFTItemData,
-  isHidden: boolean,
-  onItemToggled: (item: NFTItemData) => void,
-  theme: typeof COLORS_DAY | typeof COLORS_NIGHT
-) => {
+const renderItemList = ({
+  item,
+  isHidden,
+  onHiddenToggle
+}: {
+  item: NFTItem
+  isHidden: boolean
+  onHiddenToggle: (item: NFTItem) => void
+}): JSX.Element => {
   return (
     <View
-      style={{
+      sx={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.colorBg2 + Opacity85
+        backgroundColor: '$neutral900'
       }}>
       <AvaListItem.Base
         title={item.tokenId}
-        subtitle={item.metadata.name}
+        subtitle={item.processedMetadata.name}
         leftComponent={
           <Avatar.Custom
-            name={item.metadata.name ?? ''}
-            logoUri={item.metadata.imageUri}
+            name={item.processedMetadata.name ?? ''}
+            logoUri={item.imageData?.image}
           />
         }
         rightComponent={
-          <Switch value={!isHidden} onValueChange={_ => onItemToggled(item)} />
+          <Switch value={!isHidden} onValueChange={_ => onHiddenToggle(item)} />
         }
       />
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 16,
-    flex: 1
-  },
-  list: {
-    flex: 1
-  }
-})
 
 export default NftManage

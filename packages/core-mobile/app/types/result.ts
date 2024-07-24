@@ -1,7 +1,7 @@
 export type Result<Value, E extends Error = Error> =
   | {
       success: true
-      value?: Value
+      value: Value
     }
   | {
       success: false

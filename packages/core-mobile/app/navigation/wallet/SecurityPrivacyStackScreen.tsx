@@ -3,7 +3,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import {
+  NavigatorScreenParams,
+  useNavigation,
+  useRoute
+} from '@react-navigation/native'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -11,19 +15,28 @@ import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
 import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import Logger from 'utils/Logger'
 import { useWallet } from 'hooks/useWallet'
+import { WalletType } from 'services/wallet/types'
+import walletService from 'services/wallet/WalletService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import SeedlessExportStack, {
+  SeedlessExportStackParamList
+} from './SeedlessExportStack'
+import SettingRecoveryMethodsStack from './SettingRecoveryMethodsStack'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
   [AppNavigation.SecurityPrivacy.PinChange]: undefined
   [AppNavigation.SecurityPrivacy.CreatePin]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.ShowRecoveryPhrase]: undefined
+  [AppNavigation.SecurityPrivacy.SettingRecoveryMethods]: undefined
   [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
   [AppNavigation.SecurityPrivacy.QRCode]: QRCodeParams
+  [AppNavigation.SecurityPrivacy
+    .SeedlessExport]: NavigatorScreenParams<SeedlessExportStackParamList>
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()
@@ -36,7 +49,10 @@ function SecurityPrivacyStackScreen(): JSX.Element {
       }}>
       <SecurityStack.Group>
         <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Security & Privacy' })}
+          options={MainHeaderOptions({
+            title: 'Security & Privacy',
+            headerBackTestID: 'header_back'
+          })}
           name={AppNavigation.SecurityPrivacy.SecurityPrivacy}
           component={SecurityPrivacyScreen}
         />
@@ -46,9 +62,19 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={DappConnectionsList}
         />
         <SecurityStack.Screen
+          options={{ headerShown: false }}
+          name={AppNavigation.SecurityPrivacy.SettingRecoveryMethods}
+          component={SettingRecoveryMethodsStack}
+        />
+        <SecurityStack.Screen
           options={MainHeaderOptions()}
           name={AppNavigation.SecurityPrivacy.QRCode}
           component={CaptureDappQR}
+        />
+        <SecurityStack.Screen
+          options={{ headerShown: false }}
+          name={AppNavigation.SecurityPrivacy.SeedlessExport}
+          component={SeedlessExportStack}
         />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
@@ -75,7 +101,7 @@ function SecurityPrivacyStackScreen(): JSX.Element {
         <SecurityStack.Screen
           options={MainHeaderOptions({ title: 'Recovery Phrase' })}
           name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
-          component={RevealMnemonic}
+          component={RecoveryPhraseNavigation}
         />
       </SecurityStack.Group>
     </SecurityStack.Navigator>
@@ -87,22 +113,32 @@ type SecurityPrivacyNavigationProp = SecurityPrivacyScreenProps<
 >['navigation']
 
 const SecurityPrivacyScreen = (): JSX.Element => {
-  const { capture } = usePostCapture()
   const nav = useNavigation<SecurityPrivacyNavigationProp>()
+  const walletType = walletService.walletType
+
   return (
     <SecurityPrivacy
       onChangePin={() => {
-        capture('ChangePasswordClicked')
+        AnalyticsService.capture('ChangePasswordClicked')
         nav.navigate(AppNavigation.SecurityPrivacy.PinChange)
       }}
-      onShowRecoveryPhrase={() =>
+      onShowRecoveryPhrase={() => {
+        if (walletType === WalletType.SEEDLESS) {
+          nav.navigate(AppNavigation.SecurityPrivacy.SeedlessExport, {
+            screen: AppNavigation.SeedlessExport.InitialScreen
+          })
+          return
+        }
         nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)
-      }
+      }}
+      onRecoveryMethods={() => {
+        nav.navigate(AppNavigation.SecurityPrivacy.SettingRecoveryMethods)
+      }}
       onTurnOnBiometrics={() =>
         nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)
       }
       onShowConnectedDapps={() => {
-        capture('ConnectedSitesClicked')
+        AnalyticsService.capture('ConnectedSitesClicked')
         nav.navigate(AppNavigation.SecurityPrivacy.DappList)
       }}
     />
@@ -137,7 +173,6 @@ const PinOrBiometryLoginForPassChange = memo(() => {
       onLoginSuccess={mnemonic => {
         nav.replace(AppNavigation.SecurityPrivacy.CreatePin, { mnemonic })
       }}
-      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
     />
   )
@@ -155,7 +190,6 @@ const PinOrBiometryLoginForRecoveryReveal = memo(() => {
       onLoginSuccess={mnemonic => {
         nav.replace(AppNavigation.SecurityPrivacy.RecoveryPhrase, { mnemonic })
       }}
-      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       hideLoginWithMnemonic
       isResettingPin
     />
@@ -178,7 +212,6 @@ const PinForBiometryEnable = memo(() => {
           )
           .catch(Logger.error)
       }}
-      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
     />
   )
@@ -192,10 +225,9 @@ const CreatePinScreen = memo(() => {
   const { onPinCreated } = useWallet()
   const { mnemonic } = useRoute<CreatePinScreenProps['route']>().params
   const nav = useNavigation<CreatePinScreenProps['navigation']>()
-  const { capture } = usePostCapture()
 
   const handleOnResetPinFailed = (): void => {
-    capture('ChangePasswordFailed')
+    AnalyticsService.capture('ChangePasswordFailed')
   }
 
   return (
@@ -203,13 +235,29 @@ const CreatePinScreen = memo(() => {
       onPinSet={pin => {
         onPinCreated(mnemonic, pin, true)
           .then(() => {
-            capture('ChangePasswordSucceeded')
+            AnalyticsService.capture('ChangePasswordSucceeded')
             nav.goBack()
           })
           .catch(Logger.error)
       }}
       isResettingPin
       onResetPinFailed={handleOnResetPinFailed}
+    />
+  )
+})
+
+type RecoveryPhraseNavigationProp = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.RecoveryPhrase
+>
+const RecoveryPhraseNavigation = memo(() => {
+  const { goBack } = useNavigation<RecoveryPhraseNavigationProp['navigation']>()
+  const { mnemonic } = useRoute<RecoveryPhraseNavigationProp['route']>().params
+
+  return (
+    <RevealMnemonic
+      mnemonic={mnemonic}
+      buttonText="I wrote it down"
+      onGoBack={goBack}
     />
   )
 })

@@ -1,14 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { FlatList, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  ChainID,
-  selectCustomNetworks,
-  selectFavoriteNetworks,
-  selectNetworks,
-  setActive,
-  toggleFavorite
-} from 'store/network'
+import { useDispatch } from 'react-redux'
+import { ChainID, setActive, toggleFavorite } from 'store/network'
 import SearchBar from 'components/SearchBar'
 import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
@@ -16,20 +9,18 @@ import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type Props = {
   onShowInfo: (chainId: ChainID) => void
 }
 
-export default function NetworkManager({ onShowInfo }: Props) {
+export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   const { goBack } = useNavigation()
-  const networks = useSelector(selectNetworks)
-  const customNetworks = useSelector(selectCustomNetworks)
-  const favoriteNetworks = useSelector(selectFavoriteNetworks)
+  const { networks, favoriteNetworks, customNetworks } = useNetworks()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
-  const { capture } = usePostCapture()
   const title = 'Networks'
 
   const customNetworkChainIds = useMemo(
@@ -42,14 +33,13 @@ export default function NetworkManager({ onShowInfo }: Props) {
     [searchText]
   )
 
-  const filteredNetworks = useMemo(
-    () =>
-      Object.values(networks)
-        .filter(network => !customNetworkChainIds.includes(network.chainId))
-        .filter(filterBySearchText)
-        .sort(sortNetworks),
-    [customNetworkChainIds, filterBySearchText, networks]
-  )
+  const filteredNetworks = useMemo(() => {
+    return Object.values(networks)
+      .filter(network => !customNetworkChainIds.includes(network.chainId))
+      .filter(filterBySearchText)
+      .sort(sortNetworks)
+  }, [customNetworkChainIds, filterBySearchText, networks])
+
   const filteredCustomNetworks = useMemo(
     () =>
       Object.values(customNetworks)
@@ -66,7 +56,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
     label: string,
     selected: boolean,
     color: string
-  ) => {
+  ): JSX.Element => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
@@ -82,17 +72,17 @@ export default function NetworkManager({ onShowInfo }: Props) {
     )
   }
 
-  function showInfo(chainId: number) {
-    capture('NetworkDetailsClicked', { chainId })
+  function showInfo(chainId: number): void {
+    AnalyticsService.capture('NetworkDetailsClicked', { chainId })
     onShowInfo(chainId)
   }
 
-  function connect(chainId: number) {
+  function connect(chainId: number): void {
     dispatch(setActive(chainId))
     goBack()
   }
 
-  const renderNetwork = ({ item }: { item: Network }) => {
+  const renderNetwork = ({ item }: { item: Network }): JSX.Element => {
     const isFavorite = favoriteNetworks.some(
       network => network.chainId === item.chainId
     )
@@ -142,7 +132,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
             }
           />
         </TabViewAva.Item>
-        <TabViewAva.Item title={title}>
+        <TabViewAva.Item title={title} testID="networks_tab">
           <FlatList
             data={filteredNetworks}
             renderItem={renderNetwork}
@@ -176,6 +166,6 @@ export default function NetworkManager({ onShowInfo }: Props) {
   )
 }
 
-function sortNetworks(a: Network, b: Network) {
+function sortNetworks(a: Network, b: Network): number {
   return a.chainName.localeCompare(b.chainName)
 }

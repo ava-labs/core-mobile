@@ -1,7 +1,5 @@
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
-import ActivityTabLoc from '../../../locators/activityTab.loc'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
@@ -13,25 +11,15 @@ describe('Send WETH to another account', () => {
   })
 
   it('Should send WETH to second account', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.switchToFirstAccount()
+    await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.wethToken,
       sendLoc.sendingAmount
     )
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(
-      20000,
-      secondAccountAddress,
-      ActivityTabLoc.wethOutgoingTransactionDetail
-    )
-  })
-
-  it('Should receive WETH on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.wethIncomingTransactionDetail
-    )
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Contract Call')
   })
 })

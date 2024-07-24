@@ -1,4 +1,10 @@
-import { CoreTypes, SignClientTypes, SessionTypes } from '@walletconnect/types'
+import {
+  SignClientTypes,
+  SessionTypes,
+  EngineTypes
+} from '@walletconnect/types'
+import { PeerMeta } from 'store/rpc/types'
+import { RpcError } from '@avalabs/vm-module-types'
 
 export const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
@@ -14,8 +20,6 @@ export const CLIENT_METADATA = {
 
 export type Session = SessionTypes.Struct
 
-export type PeerMeta = CoreTypes.Metadata
-
 export type SessionProposalData =
   SignClientTypes.EventArguments['session_proposal']
 
@@ -24,6 +28,73 @@ export type SessionRequestData =
 
 export type WalletConnectCallbacks = {
   onSessionProposal: (data: SessionProposalData) => void
-  onSessionRequest: (data: SessionRequestData, session: Session) => void
+  onSessionRequest: (data: SessionRequestData, peerMeta: PeerMeta) => void
   onDisconnect: (data: PeerMeta) => void
+}
+
+export interface WalletConnectServiceInterface {
+  init(callbacks: WalletConnectCallbacks): Promise<void>
+
+  pair(uri: string): Promise<void>
+
+  getSessions(): SessionTypes.Struct[]
+
+  getSession(topic: string): SessionTypes.Struct | undefined
+
+  approveSession({
+    id,
+    relayProtocol,
+    namespaces
+  }: Pick<
+    EngineTypes.ApproveParams,
+    'id' | 'relayProtocol' | 'namespaces'
+  >): Promise<SessionTypes.Struct>
+
+  rejectSession(id: number): Promise<void>
+
+  approveRequest(
+    topic: string,
+    requestId: number,
+    result: unknown
+  ): Promise<void>
+
+  rejectRequest(
+    topic: string,
+    requestId: number,
+    error: RpcError
+  ): Promise<void>
+
+  killSession(topic: string): Promise<void>
+
+  killAllSessions(): Promise<void>
+
+  killSessions(topics: string[]): void
+
+  updateSession({
+    session,
+    chainId,
+    address
+  }: {
+    session: SessionTypes.Struct
+    chainId: number
+    address: string
+  }): Promise<void>
+
+  updateSessionWithTimeout({
+    session,
+    chainId,
+    address
+  }: {
+    session: SessionTypes.Struct
+    chainId: number
+    address: string
+  }): Promise<void>
+
+  updateSessions({
+    chainId,
+    address
+  }: {
+    chainId: number
+    address: string
+  }): Promise<void>
 }

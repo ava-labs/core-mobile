@@ -2,44 +2,87 @@ import Config from 'react-native-config'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
+import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import { Event } from '@sentry/types/types/event'
 
-const isAvailable = Config.SENTRY_DSN !== undefined && !__DEV__
+if (!Config.SENTRY_DSN)
+  // (require cycle)
+  // eslint-disable-next-line no-console
+  console.warn('SENTRY_DSN is not defined. Sentry is disabled.')
 
-const init = () => {
+// if development then only enable if spotlight is enabled
+// otherwise enable if not development
+const isAvailable =
+  ((__DEV__ && DevDebuggingConfig.SENTRY_SPOTLIGHT) ||
+    (!__DEV__ && process.env.E2E !== 'true')) &&
+  !!Config.SENTRY_DSN
+
+const routingInstrumentation = new Sentry.ReactNavigationInstrumentation({
+  enableTimeToInitialDisplay: true
+})
+
+function scrubSentryData(event: Event): Event {
+  /**
+   * eliminating breadcrumbs. This should eliminate
+   * a massive amount of the data leaks into sentry. If we find that console
+   * is leaking data, suspected that it might, than we can review the leak and
+   * see if we can modify the data before it is recorded. This can be
+   * done in the sentry options beforeBreadcrumbs function.
+   */
+  delete event?.user?.email
+  delete event?.user?.ip_address
+  delete event.contexts?.device?.name
+
+  try {
+    const eventStr = JSON.stringify(event)
+    const scrubbedEventStr = scrub(eventStr)
+    return JSON.parse(scrubbedEventStr)
+  } catch (error) {
+    return event
+  }
+}
+
+const init = (): void => {
   if (isAvailable) {
     Sentry.init({
+      // disabling promise patching since it is affecting app performance
+      // instead, we are patching promise ourselves with es6-promise
+      // TODO: re-enable patchGlobalPromise here https://ava-labs.atlassian.net/browse/CP-8616
+      patchGlobalPromise: false,
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
       debug: false,
+      enableSpotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
+      beforeSendTransaction: event => {
+        return scrubSentryData(event)
+      },
       beforeSend: event => {
-        /**
-         * eliminating breadcrumbs. This should eliminate
-         * a massive amount of the data leaks into sentry. If we find that console
-         * is leaking data, suspected that it might, than we can review the leak and
-         * see if we can modify the data before it is recorded. This can be
-         * done in the sentry options beforeBreadcrumbs function.
-         */
-        delete event?.user?.email
-        delete event?.user?.ip_address
-        delete event.contexts?.device?.name
-
-        try {
-          const eventStr = JSON.stringify(event)
-          const scrubbedEventStr = scrub(eventStr)
-          return JSON.parse(scrubbedEventStr)
-        } catch (error) {
-          return event
-        }
+        return scrubSentryData(event)
       },
       beforeBreadcrumb: () => {
         return null
       },
       tracesSampler: samplingContext => {
-        return samplingContext.sampleRate ?? DefaultSampleRate
+        return __DEV__ ? 1 : samplingContext.sampleRate ?? DefaultSampleRate
       },
-      integrations: []
+      integrations: [new Sentry.ReactNativeTracing({ routingInstrumentation })]
     })
   }
 }
 
-export default { init, isAvailable }
+const captureException = (message: string, value?: unknown): void => {
+  if (!isAvailable) {
+    return
+  }
+
+  if (value instanceof Error) {
+    Sentry.captureException(value, { extra: { message } })
+  } else {
+    Sentry.captureException(
+      new Error(message),
+      value !== undefined ? { extra: { value } } : undefined
+    )
+  }
+}
+
+export default { init, isAvailable, captureException, routingInstrumentation }

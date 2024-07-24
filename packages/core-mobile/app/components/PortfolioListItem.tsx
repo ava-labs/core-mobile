@@ -1,18 +1,19 @@
 import React, { FC } from 'react'
-import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
-import AvaText from 'components/AvaText'
 import Avatar from 'components/Avatar'
-import { Opacity85 } from 'resources/Constants'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { Text, View } from '@avalabs/k2-mobile'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { Space } from './Space'
 
 interface Props {
   tokenName: string
   tokenPrice: string
   tokenPriceInCurrency?: number
   image?: string
-  symbol?: string
+  symbol: string
   onPress?: () => void
   showLoading?: boolean
   testID?: string
@@ -28,7 +29,6 @@ const PortfolioListItem: FC<Props> = ({
   showLoading
 }) => {
   const {
-    theme,
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const title = tokenName
@@ -36,39 +36,73 @@ const PortfolioListItem: FC<Props> = ({
   const subTitle = (
     <AvaListItem.CurrencyAmount
       value={
-        <AvaText.Body2 ellipsizeMode={'tail'}>{`${tokenPrice} `}</AvaText.Body2>
+        <Text
+          variant="body2"
+          sx={{ color: '$neutral50' }}
+          ellipsizeMode={'tail'}>{`${tokenPrice} `}</Text>
       }
-      currency={<AvaText.Body2>{`${symbol}`}</AvaText.Body2>}
+      currency={
+        <Text
+          variant="body2"
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          sx={{
+            color: '$neutral400',
+            flexShrink: 1
+          }}>{`${symbol}`}</Text>
+      }
     />
   )
 
+  const { getMarketToken } = useWatchlist()
+  const marketToken = getMarketToken(symbol)
+  const percentChange = marketToken?.priceChangePercentage24h ?? undefined
+  const priceChange = percentChange
+    ? (tokenPriceInCurrency * percentChange) / 100
+    : undefined
+
   return (
     <View
-      style={{
+      sx={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.colorBg2 + Opacity85
+        backgroundColor: '$neutral900'
       }}>
       <AvaListItem.Base
-        title={<AvaText.Heading2>{title}</AvaText.Heading2>}
+        title={
+          <Text numberOfLines={1} variant="heading6">
+            {title}
+          </Text>
+        }
         titleAlignment={'flex-start'}
         subtitle={subTitle}
         leftComponent={
-          <Avatar.Custom
+          <Avatar.Token
             name={tokenName}
             symbol={symbol}
             logoUri={image}
             size={40}
           />
         }
-        rightComponentVerticalAlignment={'center'}
         rightComponent={
           showLoading ? (
             <ActivityIndicator size="small" />
           ) : (
-            <AvaText.Heading3 ellipsizeMode={'tail'}>
-              {currencyFormatter(tokenPriceInCurrency)}
-            </AvaText.Heading3>
+            <View
+              sx={{
+                alignItems: 'flex-end',
+                marginLeft: 8
+              }}>
+              <Text variant="heading6" ellipsizeMode={'tail'}>
+                {currencyFormatter(tokenPriceInCurrency)}
+              </Text>
+              {priceChange !== undefined && (
+                <>
+                  <Space y={4} />
+                  <PriceChangeIndicator price={priceChange} />
+                </>
+              )}
+            </View>
           )
         }
         onPress={onPress}

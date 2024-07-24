@@ -2,7 +2,7 @@ import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
+import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { AVALANCHE_XP_NETWORK, Network } from '@avalabs/chains-sdk'
 import { exportP } from 'services/earn/exportP'
@@ -70,7 +70,7 @@ describe('earn/exportP', () => {
     })
 
     it('should call walletService.createExportPTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportP({
           pChainBalance: Avax.fromBase(12),
           requiredAmount: Avax.fromBase(10),
@@ -88,7 +88,7 @@ describe('earn/exportP', () => {
     })
 
     it('should call walletService.signAvaxTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportP({
           pChainBalance: Avax.fromBase(12),
           requiredAmount: Avax.fromBase(10),
@@ -100,7 +100,7 @@ describe('earn/exportP', () => {
     })
 
     it('should call networkService.sendTransaction', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportP({
           pChainBalance: Avax.fromBase(12),
           requiredAmount: Avax.fromBase(10),

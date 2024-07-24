@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
-import type { Meta } from '@storybook/react-native'
 import AvaText from 'components/AvaText'
 import { withCenterView } from '../decorators/withCenterView'
 
@@ -91,7 +90,7 @@ const SingleContainer: FC = () => {
 export default {
   title: 'ConfirmationTracker',
   decorators: [withCenterView]
-} as Meta
+}
 
 export const Single = () => <SingleContainer />
 

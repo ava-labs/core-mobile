@@ -5,11 +5,10 @@ import AvaText from 'components/AvaText'
 import LinkSVG from 'components/svg/LinkSVG'
 import AvaButton from 'components/AvaButton'
 import ClearSVG from 'components/svg/ClearSVG'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { navigate } from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { NetworkTokensTabs } from 'screens/portfolio/network/NetworkTokens'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
@@ -47,7 +46,7 @@ const ToastWithViewActivity = ({
   color: string
 }): JSX.Element => {
   const theme = useApplicationContext().theme
-  const network = useSelector(selectActiveNetwork)
+  const { activeNetwork: network } = useNetworks()
 
   const openActivityTab = (): void => {
     navigate({

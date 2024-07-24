@@ -1,5 +1,6 @@
 import createPinLoc from '../locators/createPin.loc'
 import Action from '../helpers/actions'
+import delay from '../helpers/waits'
 
 class CreatePinPage {
   get numpadZero() {
@@ -10,8 +11,8 @@ class CreatePinPage {
     return by.id(createPinLoc.numpadOne)
   }
 
-  get emptyCheckBox() {
-    return by.id(createPinLoc.emptyCheckBox)
+  get agreeAndContinueBtn() {
+    return by.text(createPinLoc.agreeAndContinueBtn)
   }
 
   get nextBtn() {
@@ -30,12 +31,24 @@ class CreatePinPage {
     return by.id(createPinLoc.signInWithRecoveryPhraseBtn)
   }
 
+  get fingerprint() {
+    return by.text(createPinLoc.fingerprint)
+  }
+
+  get skipBtn() {
+    return by.text(createPinLoc.skipBtn)
+  }
+
   async tapSignInWithRecoveryPhraseBtn() {
     await Action.tap(this.signInWithRecoveryPhraseBtn)
   }
 
   async tapNumpadZero() {
-    await element(this.numpadZero).multiTap(6)
+    await Action.multiTap(this.numpadZero, 6, 0)
+  }
+
+  async tapNumpadZero5Times() {
+    await element(this.numpadZero).multiTap(5)
   }
 
   async tapNumpadOne() {
@@ -46,9 +59,15 @@ class CreatePinPage {
     await Action.tap(this.nextBtn)
   }
 
-  async tapEmptyCheckbox() {
-    await Action.tapElementAtIndex(this.emptyCheckBox, 0)
-    await Action.tapElementAtIndex(this.emptyCheckBox, 0)
+  async tapSkipBtn() {
+    await Action.tap(this.skipBtn)
+  }
+
+  async tapAgreeAndContinueBtn() {
+    if (await Action.isVisible(this.fingerprint, 0)) {
+      await this.tapSkipBtn()
+    }
+    await Action.tapElementAtIndex(this.agreeAndContinueBtn, 0)
   }
 
   async tapNumpadZero6Times() {
@@ -57,6 +76,7 @@ class CreatePinPage {
 
   async createPin() {
     for (let i = 0; i < 2; i++) {
+      await delay(1000)
       await this.tapNumpadZero6Times()
     }
   }

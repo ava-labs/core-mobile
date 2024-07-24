@@ -1,4 +1,10 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
@@ -8,7 +14,7 @@ export type RadioGroupProps = {
   onSelected: (selectedKey: string) => void
   preselectedKey?: string
 }
-const RadioGroup: FC<RadioGroupProps> = ({
+const RadioGroup: FC<RadioGroupProps & PropsWithChildren> = ({
   onSelected,
   preselectedKey = '',
   children
@@ -29,6 +35,7 @@ const RadioGroup: FC<RadioGroupProps> = ({
       }
 
       const clone = React.cloneElement(child, {
+        // @ts-expect-error color is a valid prop
         color: selected === child.key ? theme.colorBg2 : theme.colorIcon2
       })
 

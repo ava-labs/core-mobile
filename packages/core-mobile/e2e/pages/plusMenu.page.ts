@@ -1,5 +1,8 @@
 import Actions from '../helpers/actions'
+import delay from '../helpers/waits'
 import PlusMenuLoc from '../locators/plusMenu.loc'
+import bottomTabsPage from './bottomTabs.page'
+import scanQrCodePage from './scanQrCode.page'
 
 class PlusMenuPage {
   get bridgeButton() {
@@ -42,9 +45,12 @@ class PlusMenuPage {
     await Actions.tap(this.receiveButton)
   }
 
-  async connectWallet(clipboardValue: string) {
-    await Actions.setInputText(this.inputTextField, clipboardValue, 0)
-    await Actions.tap(this.connectionURI)
+  async connectWallet(qrUri: string) {
+    await bottomTabsPage.tapPortfolioTab()
+    await bottomTabsPage.tapPlusIcon()
+    await this.tapWalletConnectButton()
+    await scanQrCodePage.setQrCode(qrUri.toString())
+    await delay(5000)
   }
 
   async tapBridgeButton() {

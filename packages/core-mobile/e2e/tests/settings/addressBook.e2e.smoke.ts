@@ -4,7 +4,6 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 import AddressBookPage from '../../pages/burgerMenu/addressBook.page'
@@ -15,8 +14,6 @@ describe('Address Book', () => {
   })
 
   it('Should verify empty contacts', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
-
     await BurgerMenuPage.tapBurgerMenuButton()
     await Actions.waitForElement(BurgerMenuPage.addressBook)
     await BurgerMenuPage.tapAddressBook()
@@ -32,7 +29,6 @@ describe('Address Book', () => {
     await AddressBookPage.inputContactName()
     await AddressBookPage.inputAvaxAddress()
     await AddressBookPage.inputBtcAddress()
-    await AddressBookPage.tapSave()
     await Assert.isVisible(AddressBookPage.contactName)
     await Assert.isNotVisible(AddressBookPage.emptyContacts)
     await Assert.isNotVisible(AddressBookPage.emptyContactsText)
@@ -49,6 +45,9 @@ describe('Address Book', () => {
 
   it('Should delete contact', async () => {
     await AddressBookPage.tapEdit()
+    if (device.getPlatform() === 'android') {
+      await Actions.swipeUp(AddressBookPage.addressField, 'fast', 0.25, 0)
+    }
     await AddressBookPage.tapDeleteContact()
     await AddressBookPage.tapDelete()
     await Assert.isNotVisible(AddressBookPage.newContactName)

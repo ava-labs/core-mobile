@@ -2,56 +2,69 @@
 /**
  * @jest-environment ./environment.ts
  */
-import PortfolioPage from '../../pages/portfolio.page'
-import Assert from '../../helpers/assertions'
-import Actions from '../../helpers/actions'
-import NewRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
-import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
-import VerifyPhrasePage from '../../pages/verifyPhrase.page'
-import CreatePinPage from '../../pages/createPin.page'
-import BottomTabsPage from '../../pages/bottomTabs.page'
-import { warmup } from '../../helpers/warmup'
+import portfolioPage from '../../pages/portfolio.page'
+import newRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
+import analyticsConsentPage from '../../pages/analyticsConsent.page'
+import verifyPhrasePage from '../../pages/verifyPhrase.page'
+import createPinPage from '../../pages/createPin.page'
+import bottomTabsPage from '../../pages/bottomTabs.page'
+import { handleJailbrokenWarning } from '../../helpers/warmup'
 import existingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import commonElsPage from '../../pages/commonEls.page'
+import nameWalletPage from '../../pages/nameWallet.page'
+import onboardingPage from '../../pages/onboarding.page'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
-    await warmup()
+    await device.launchApp()
+    await handleJailbrokenWarning()
+  })
+
+  it('should view create new wallet via Access Existing Wallet', async () => {
+    // Start with `Access Existing Wallet` flow
+    await onboardingPage.verifyOnboardingPage()
+    await onboardingPage.tapAccessExistingWallet()
+    // Verify `choose your existing wallet` page
+    await existingRecoveryPhrasePage.verifyChooseYourExistingWalletPage()
+    await existingRecoveryPhrasePage.tapTypeInRecoveryPhaseBtn()
+    // Verify `choose your existing wallet` page navigation
+    await analyticsConsentPage.verifyAnalysticsContentPage()
+    await commonElsPage.tapBackButton()
+    await existingRecoveryPhrasePage.tapCreateNewWalletBtn()
+    await analyticsConsentPage.verifyAnalysticsContentPage()
+    await analyticsConsentPage.tapNoThanksBtn()
+    await newRecoveryPhrasePage.verifyNewRecoveryPhrasePage()
   })
 
   it('should view proper page title and action icons', async () => {
-    // await existingRecoveryPhrasePage.tapSignInWithRecoveryPhraseBtn()
-    await existingRecoveryPhrasePage.tapRecoveryPhraseBtn()
-    await Actions.waitForElement(AnalyticsConsentPage.noThanksBtn)
-    await AnalyticsConsentPage.tapNoThanksBtn()
-    await Actions.waitForElement(NewRecoveryPhrasePage.iWroteItDownBtn)
-    await Assert.isVisible(NewRecoveryPhrasePage.mnemonicWord)
+    // Start with `Manually Create New Wallet` flow
+    await device.launchApp({ newInstance: true })
+    await handleJailbrokenWarning()
+    await onboardingPage.verifyOnboardingPage()
+    await onboardingPage.tapManuallyCreateNewWallet()
+    await analyticsConsentPage.verifyAnalysticsContentPage()
+    await analyticsConsentPage.tapNoThanksBtn()
   })
 
   it('should verify recovery phrase flow', async () => {
-    const wordsObject: object =
-      await NewRecoveryPhrasePage.mnemonicWordsObject()
-    await NewRecoveryPhrasePage.tapIWroteItDownBtn()
-    await Actions.waitForElement(NewRecoveryPhrasePage.iUnderstandBtn)
-    await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalBackBtn)
-    await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalMsg)
-    await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalTitle)
-    await NewRecoveryPhrasePage.tapIUnderstandBtn()
-    await Actions.waitForElement(VerifyPhrasePage.verifyPhraseBtn)
-    const confirmWordsArray = await VerifyPhrasePage.selectWordNumbers(
-      wordsObject
-    )
-    await VerifyPhrasePage.tapWordsToConfirm(confirmWordsArray)
-    await Assert.isVisible(VerifyPhrasePage.selectWord)
-    await VerifyPhrasePage.tapVerifyPhraseBtn()
+    await newRecoveryPhrasePage.verifyNewRecoveryPhrasePage()
+    await newRecoveryPhrasePage.verifyCopyPhraseModal()
+    const wordsObj: object = await newRecoveryPhrasePage.mnemonicWordsObject()
+    await newRecoveryPhrasePage.tapIWroteItDownBtn()
+    await newRecoveryPhrasePage.verifyProtectYourFundsModal()
+    await verifyPhrasePage.verifySelectPhrasePage()
+    const wordsArr = await verifyPhrasePage.selectWordNumbers(wordsObj)
+    await verifyPhrasePage.tapWordsToConfirm(wordsArr)
+    await verifyPhrasePage.tapVerifyPhraseBtn()
   })
 
   it('should successfully create a new wallet', async () => {
-    await CreatePinPage.createPin()
-    await CreatePinPage.tapEmptyCheckbox()
-    await CreatePinPage.tapNextBtn()
+    await nameWalletPage.verifyNameWalletPage()
+    await nameWalletPage.enterWalletName('tester1\n')
+    await createPinPage.createPin()
+    await createPinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
-    await PortfolioPage.verifyPorfolioScreen()
-    await BottomTabsPage.verifyBottomTabs()
+    await portfolioPage.verifyPorfolioScreen()
+    await bottomTabsPage.verifyBottomTabs()
   })
 })

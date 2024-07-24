@@ -2,10 +2,25 @@ import { encrypt } from 'utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
-import { onAppUnlocked, selectWalletType, setWalletType } from 'store/app'
+import {
+  onAppUnlocked,
+  onLogIn,
+  selectWalletType,
+  setWalletType
+} from 'store/app'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
-import { resetNavToUnlockedWallet } from 'utils/Navigation'
+import { Dispatch } from '@reduxjs/toolkit'
+import Logger from 'utils/Logger'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useCallback } from 'react'
+
+type InitWalletServiceAndUnlockProps = {
+  mnemonic: string
+  isLoggingIn: boolean
+  walletType: WalletType
+  dispatch: Dispatch
+}
 
 export interface UseWallet {
   onPinCreated: (
@@ -13,8 +28,19 @@ export interface UseWallet {
     pin: string,
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
-  initWallet: (mnemonic: string, walletType?: WalletType) => Promise<void>
+  unlock: ({ mnemonic }: { mnemonic: string }) => Promise<void>
+  login: (mnemonic: string, walletType: WalletType) => Promise<void>
   destroyWallet: () => void
+}
+
+export async function initWalletServiceAndUnlock({
+  dispatch,
+  mnemonic,
+  walletType,
+  isLoggingIn
+}: InitWalletServiceAndUnlockProps): Promise<void> {
+  await WalletService.init({ mnemonic, walletType, isLoggingIn })
+  dispatch(onAppUnlocked())
 }
 
 /**
@@ -32,30 +58,56 @@ export function useWallet(): UseWallet {
    * Initializes wallet with the specified mnemonic and wallet type
    * and navigates to the unlocked wallet screen
    */
-  const initWallet = async (
+  const unlock = useCallback(
+    async ({ mnemonic }: { mnemonic: string }): Promise<void> => {
+      await initWalletServiceAndUnlock({
+        dispatch,
+        mnemonic,
+        walletType: cachedWalletType,
+        isLoggingIn: false
+      })
+    },
+    [dispatch, cachedWalletType]
+  )
+
+  const login = async (
     mnemonic: string,
-    walletType?: WalletType
+    walletType: WalletType
   ): Promise<void> => {
-    if (walletType) {
+    try {
       dispatch(setWalletType(walletType))
+      await initWalletServiceAndUnlock({
+        dispatch,
+        mnemonic,
+        walletType,
+        isLoggingIn: true
+      })
+
+      dispatch(onLogIn())
+
+      AnalyticsService.capture('OnboardingSubmitSucceeded', {
+        walletType: walletType
+      })
+    } catch (e) {
+      Logger.error('Unable to create wallet', e)
+
+      AnalyticsService.capture('OnboardingSubmitFailed', {
+        walletType: walletType
+      })
     }
-
-    await WalletService.init(mnemonic, walletType || cachedWalletType)
-
-    dispatch(onAppUnlocked())
-    resetNavToUnlockedWallet()
   }
 
   /**
    * Destroys the wallet instance
    */
   async function destroyWallet(): Promise<void> {
-    walletService.destroy()
+    await walletService.destroy()
   }
 
   return {
     onPinCreated,
-    initWallet,
+    unlock,
+    login,
     destroyWallet
   }
 }

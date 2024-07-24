@@ -7,7 +7,7 @@ import WordSelection from 'screens/onboarding/WordSelection'
 import { ShowSnackBar } from 'components/Snackbar'
 import { useCheckMnemonic } from 'screens/onboarding/useCheckMnemonic'
 import FlexSpacer from 'components/FlexSpacer'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Props = {
   onSuccess: () => void
@@ -25,7 +25,6 @@ export default function CheckMnemonic(
     thirdWordSelection,
     verify
   } = useCheckMnemonic(props.mnemonic)
-  const { capture } = usePostCapture()
 
   const onVerify = (): void => {
     if (
@@ -37,7 +36,7 @@ export default function CheckMnemonic(
     }
 
     if (verify(selectedWord1, selectedWord2, selectedWord3)) {
-      capture('OnboardingMnemonicVerified')
+      AnalyticsService.capture('OnboardingMnemonicVerified')
       props.onSuccess()
     } else {
       ShowSnackBar('Incorrect! Try again, please.')
@@ -82,7 +81,7 @@ export default function CheckMnemonic(
       />
       <FlexSpacer minHeight={20} />
       <View style={{ flex: 1 }} />
-      <View testID="check_mnemonic__verify_phrase_btn">
+      <View>
         <AvaButton.PrimaryLarge
           onPress={onVerify}
           testID="check_mnemonic__verify_phrase_btn">

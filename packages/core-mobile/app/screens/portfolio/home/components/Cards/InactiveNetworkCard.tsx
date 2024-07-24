@@ -1,48 +1,41 @@
 import React, { FC } from 'react'
 import { Network } from '@avalabs/chains-sdk'
-import {
-  Dimensions,
-  Platform,
-  StyleSheet,
-  TouchableHighlight,
-  View
-} from 'react-native'
-import AvaText from 'components/AvaText'
+import { Dimensions, LayoutChangeEvent } from 'react-native'
+import { View, alpha, useTheme, TouchableHighlight } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Opacity85 } from 'resources/Constants'
 import { Space } from 'components/Space'
-import { PortfolioScreenProps } from 'navigation/types'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
-import { useDispatch, useSelector } from 'react-redux'
-import { setActive } from 'store/network'
-import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
+import { useSelector } from 'react-redux'
+import {
+  selectBalanceTotalInCurrencyForNetworkAndAccount,
+  selectTokensWithBalanceByNetwork
+} from 'store/balance/slice'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'
-import { usePostCapture } from 'hooks/usePosthogCapture'
-import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
+import { Text } from '@avalabs/k2-mobile'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
+import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 
 const windowWidth = Dimensions.get('window').width
 
 type Props = {
   network: Network
+  onPress: (network: Network) => void
+  onContentLayout?: (event: LayoutChangeEvent) => void
+  height?: number
 }
 
-type NavigationProp = PortfolioScreenProps<
-  typeof AppNavigation.Portfolio.Portfolio
->['navigation']
-
-const InactiveNetworkCard: FC<Props> = ({ network }) => {
-  const dispatch = useDispatch()
-  const { capture } = usePostCapture()
-
+const InactiveNetworkCard: FC<Props> = ({
+  network,
+  onPress,
+  onContentLayout,
+  height
+}) => {
   const {
-    appHook: { currencyFormatter },
-    theme
+    appHook: { currencyFormatter }
   } = useApplicationContext()
-  const { navigate } = useNavigation<NavigationProp>()
+  const { theme } = useTheme()
   const account = useSelector(selectActiveAccount)
   const totalBalance = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
@@ -51,59 +44,58 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
     )
   )
 
-  const cardBgColor = theme.colorBg2 + Opacity85
-  const highlighColor = getCardHighLightColor(theme)
+  const backgroundColor = theme.colors.$neutral900
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
 
-  const navigateToNetworkTokens = () => {
-    capture('PortfolioSecondaryNetworkClicked', {
-      chainId: network.chainId
-    })
-    dispatch(setActive(network.chainId))
-    setTimeout(
-      () => {
-        navigate(AppNavigation.Portfolio.NetworkTokens)
-      },
-      Platform.OS === 'ios' ? 700 : 0
-    )
-  }
-
-  const renderContent = () => {
-    const textColor = theme.colorText3
+  const tokens = useSelector(selectTokensWithBalanceByNetwork(network))
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
+  const renderContent = (): JSX.Element => {
     const balance = currencyFormatter(totalBalance)
-
     return (
-      <View style={styles.headerContainer}>
-        <View>
-          <NetworkLogo
-            logoUri={network.logoUri}
-            size={40}
-            style={styles.icon}
-          />
-          {pendingBridgeTxs.length > 0 && (
-            <TopRightBadge
-              text={pendingBridgeTxs.length.toString()}
-              style={{
-                borderColor: theme.colorBg2,
-                borderWidth: 2
-              }}
-              offset={{ x: 3, y: 3 }}
+      <View
+        sx={{
+          padding: 16
+        }}
+        onLayout={onContentLayout}>
+        <View
+          sx={{
+            flexDirection: 'row'
+          }}>
+          <View>
+            <NetworkLogo
+              logoUri={network.logoUri}
+              size={32}
+              style={{ alignSelf: 'flex-start' }}
             />
-          )}
+            {pendingBridgeTxs.length > 0 && (
+              <TopRightBadge
+                text={pendingBridgeTxs.length.toString()}
+                style={{
+                  borderColor: theme.colors.$neutral900,
+                  borderWidth: 2
+                }}
+                offset={{ x: 3, y: 3 }}
+              />
+            )}
+          </View>
         </View>
-        <View style={styles.headerTextContainer}>
-          <AvaText.TextLink
+        <Space y={8} />
+        <View>
+          <Text
+            variant="buttonLarge"
             ellipsizeMode={'tail'}
             numberOfLines={2}
-            textStyle={{ color: textColor }}>
+            sx={{ color: '$neutral400', marginBottom: -2 }}>
             {network.chainName}
-          </AvaText.TextLink>
-          <Space y={4} />
-          <AvaText.Caption
-            ellipsizeMode={'tail'}
-            textStyle={{ color: textColor }}>
+          </Text>
+          <Text variant="buttonLarge" ellipsizeMode={'tail'}>
             {balance}
-          </AvaText.Caption>
+          </Text>
+          <Space y={4} />
+          <PriceChangeIndicator
+            price={tokenPortfolioPriceChange}
+            textVariant="buttonMedium"
+          />
         </View>
       </View>
     )
@@ -111,32 +103,18 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
   return (
     <TouchableHighlight
-      style={[styles.container, { backgroundColor: cardBgColor }]}
+      sx={{
+        backgroundColor,
+        width: (windowWidth - 16 * 2) / 2 - 8.5,
+        borderRadius: 10,
+        height
+      }}
       activeOpacity={1}
-      underlayColor={highlighColor}
-      onPress={navigateToNetworkTokens}>
+      underlayColor={alpha(backgroundColor, 0.7)}
+      onPress={() => onPress(network)}>
       {renderContent()}
     </TouchableHighlight>
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: (windowWidth - 16 * 2) / 2 - 8.5,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 10
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  headerTextContainer: {
-    flex: 1,
-    marginLeft: 8
-  },
-  icon: {
-    alignSelf: 'flex-start'
-  }
-})
 export default InactiveNetworkCard

@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
+
 import tinycolor from 'tinycolor2'
 import { View, Text, ScrollView } from '../../components/Primitives'
 import Link from '../../utils/Link'
@@ -10,7 +10,7 @@ const FIGMA_LINK =
 
 export default {
   title: 'Colors'
-} as Meta
+}
 
 const Color = ({
   name,

@@ -1,4 +1,3 @@
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
@@ -12,7 +11,6 @@ describe('Send Avax to another account', () => {
   })
 
   it('Should verify Address Required warning', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
     await CollectiblesPage.tapGridItem()

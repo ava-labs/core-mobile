@@ -8,7 +8,7 @@ import { selectActiveAccount } from 'store/account'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useDeFiProtocolList = () => {
-  const addressC = useSelector(selectActiveAccount)?.address ?? ''
+  const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
 
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.defi,

@@ -1,7 +1,6 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native'
+import { Alert, Dimensions, Linking, Pressable, StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
-import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import BridgeToggleIcon from 'assets/icons/BridgeToggleIcon.svg'
 import AvaListItem from 'components/AvaListItem'
@@ -22,17 +21,12 @@ import {
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import useBridge from 'screens/bridge/hooks/useBridge'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import {
-  selectActiveNetwork,
-  selectNetworks,
-  setActive,
-  TokenSymbol
-} from 'store/network'
+import { setActive, TokenSymbol } from 'store/network'
 import {
   bigToBN,
   bigToLocaleString,
@@ -46,16 +40,27 @@ import Logger from 'utils/Logger'
 import {
   blockchainToNetwork,
   getBlockchainDisplayName,
-  networkToBlockchain
+  isUnifiedBridgeAsset
 } from 'screens/bridge/utils/bridgeUtils'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectBridgeCriticalConfig } from 'store/bridge'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
+import CircleLogo from 'assets/icons/circle_logo.svg'
+import { Tooltip } from 'components/Tooltip'
+import { DOCS_BRIDGE_FAQS } from 'resources/Constants'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
+import { RootState } from 'store'
+import { selectActiveAccount } from 'store/account/slice'
+import { Audios, audioFeedback } from 'utils/AudioFeedback'
+import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
-const dropdownWith = Dimensions.get('window').width * 0.6
+const dropdownWidth = Dimensions.get('window').width * 0.6
 
 const sourceBlockchains = [
   Blockchain.AVALANCHE,
@@ -65,27 +70,28 @@ const sourceBlockchains = [
 
 const TRANSFER_ERROR = 'There was a problem with the transfer.'
 
-const formatBalance = (balance: Big | undefined) => {
+const NO_AMOUNT = '-'
+
+const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)
 }
 
-type NavigationProp = BridgeScreenProps<
-  typeof AppNavigation.Bridge.Bridge
->['navigation']
+type NavigationProps = BridgeScreenProps<typeof AppNavigation.Bridge.Bridge>
 
 const Bridge: FC = () => {
-  const navigation = useNavigation<NavigationProp>()
-  const theme = useApplicationContext().theme
-  const { capture } = usePostCapture()
+  const navigation = useNavigation<NavigationProps['navigation']>()
+  const { params } = useRoute<NavigationProps['route']>()
+  const { theme } = useTheme()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
-
+  const [selectedAsset, setSelectedAsset] = useState<AssetBalance>()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
     sourceBalance,
     amount,
     setAmount,
     assetsWithBalances,
-    hasEnoughForNetworkFee,
+    networkFee,
     loading,
     price,
     maximum,
@@ -93,65 +99,140 @@ const Bridge: FC = () => {
     receiveAmount,
     wrapStatus,
     transfer,
-    bridgeFee
-  } = useBridge()
+    bridgeFee,
+    provider,
+    denomination,
+    amountBN
+  } = useBridge(selectedAsset)
 
   const {
-    currentAsset,
-    setCurrentAsset,
+    setCurrentAsset: setCurrentAssetSymbol,
     currentBlockchain,
-    setCurrentBlockchain: setCurrentBlockchainSDK,
     targetBlockchain
   } = useBridgeSDK()
+  const { activeNetwork, networks } = useNetworks()
+  const activeAccount = useSelector(selectActiveAccount)
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const networks = useSelector(selectNetworks)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const [bridgeError, setBridgeError] = useState<string>('')
-  const [isPending, setIsPending] = useState<boolean>(false)
+  const [bridgeError, setBridgeError] = useState('')
+  const [isPending, setIsPending] = useState(false)
   const tokenInfoData = useTokenInfoContext()
-  const denomination = sourceBalance?.asset.denomination || 0
-  const blockchainTokenSymbol = getTokenSymbolOnNetwork(
-    currentAsset ?? '',
-    currentBlockchain
+  const nativeTokenBalance = useSelector((state: RootState) =>
+    selectNativeTokenBalanceForNetworkAndAccount(
+      state,
+      activeNetwork.chainId,
+      activeAccount?.index
+    )
   )
+  const selectedAssetSymbol = useMemo(
+    () =>
+      isUnifiedBridgeAsset(selectedAsset?.asset)
+        ? selectedAsset?.asset.symbol
+        : getTokenSymbolOnNetwork(
+            selectedAsset?.asset.symbol ?? '',
+            currentBlockchain
+          ),
+    [currentBlockchain, getTokenSymbolOnNetwork, selectedAsset?.asset]
+  )
+
   const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
   const { currencyFormatter } = useApplicationContext().appHook
-  const amountBN = useMemo(
-    () => bigToBN(amount, denomination),
-    [amount, denomination]
+  const isAmountTooLow =
+    amount && !amount.eq(BIG_ZERO) && minimum && amount.lt(minimum)
+
+  const isAmountTooLarge =
+    amount && !amount.eq(BIG_ZERO) && maximum && amount.gt(maximum)
+
+  const isNativeBalanceNotEnoughForNetworkFee = Boolean(
+    amount &&
+      !amount.eq(BIG_ZERO) &&
+      networkFee &&
+      bnToBig(nativeTokenBalance, activeNetwork.networkToken.decimals).lt(
+        networkFee
+      )
   )
 
-  const isAmountTooLow =
-    amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
+  const hasInvalidReceiveAmount =
+    hasValidAmount && !!receiveAmount && receiveAmount.eq(BIG_ZERO)
+
   const formattedAmountCurrency = hasValidAmount
-    ? `${currencyFormatter(price.mul(amount).toNumber())}`
-    : '-'
+    ? currencyFormatter(price.mul(amount).toNumber())
+    : NO_AMOUNT
+
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount
-      ? `~${receiveAmount.toFixed(9)} ${currentAsset}`
-      : '-'
+      ? bigToLocaleString(receiveAmount)
+      : NO_AMOUNT
   const formattedReceiveAmountCurrency =
     hasValidAmount && price && receiveAmount
-      ? `~${currencyFormatter(price.mul(receiveAmount).toNumber())}`
-      : '-'
+      ? currencyFormatter(price.mul(receiveAmount).toNumber())
+      : NO_AMOUNT
 
   const transferDisabled =
-    bridgeError.length > 0 ||
     loading ||
     isPending ||
     isAmountTooLow ||
+    isAmountTooLarge ||
+    isNativeBalanceNotEnoughForNetworkFee ||
     BIG_ZERO.eq(amount) ||
-    !hasEnoughForNetworkFee
+    hasInvalidReceiveAmount
 
-  // Derive bridge Blockchain from active network
+  // Update selected asset for unified bridge whenever currentBlockchain changes
   useEffect(() => {
-    const networkBlockchain = networkToBlockchain(activeNetwork)
-    if (currentBlockchain !== networkBlockchain) {
-      setCurrentBlockchainSDK(networkBlockchain)
+    if (!selectedAsset) return
+
+    const correspondingAsset = assetsWithBalances?.find(asset => {
+      // when selected asset is USDC.e and we are switching to Ethereum
+      // we want to automatically select USDC
+      // to do that, we need to compare by symbol (USDC) instead of symbolOnNetwork (USDC.e)
+      if (
+        currentBlockchain === Blockchain.ETHEREUM &&
+        selectedAsset.symbolOnNetwork === 'USDC.e'
+      ) {
+        return asset.symbol === selectedAsset.symbol
+      }
+
+      // for all other cases we just simply compare the real symbol on network
+      return asset.symbolOnNetwork === selectedAsset.symbolOnNetwork
+    })
+
+    // if the found asset is not in the list of new assets with balances, clear the selection
+    if (!correspondingAsset) {
+      setSelectedAsset(undefined)
+      return
     }
-  }, [activeNetwork, currentBlockchain, setCurrentBlockchainSDK])
+
+    // if the found asset is a unified bridge asset and its value is different, set it as the current asset
+    if (
+      isUnifiedBridgeAsset(correspondingAsset.asset) &&
+      JSON.stringify(correspondingAsset.asset) !==
+        JSON.stringify(selectedAsset.asset)
+    ) {
+      setSelectedAsset(correspondingAsset)
+    }
+  }, [assetsWithBalances, currentBlockchain, selectedAsset])
+
+  const handleSelect = useCallback(
+    (token: AssetBalance): void => {
+      const symbol = token.symbol
+
+      setCurrentAssetSymbol(symbol)
+      setSelectedAsset(token)
+    },
+    [setCurrentAssetSymbol]
+  )
+
+  useEffect(() => {
+    if (params?.initialTokenSymbol && !selectedAsset) {
+      const token = assetsWithBalances?.find(
+        tk => (tk.symbolOnNetwork ?? tk.symbol) === params.initialTokenSymbol
+      )
+      if (token) {
+        handleSelect(token)
+      }
+    }
+  }, [params, assetsWithBalances, handleSelect, selectedAsset])
 
   // Remove chains turned off by the feature flags
   const filterChains = useCallback(
@@ -180,7 +261,7 @@ const Bridge: FC = () => {
   /**
    * Opens token selection modal
    */
-  const navigateToTokenSelector = () => {
+  const navigateToTokenSelector = (): void => {
     navigation.navigate(AppNavigation.Modal.BridgeSelectToken, {
       onTokenSelected: handleSelect,
       bridgeTokenList: assetsWithBalances ?? []
@@ -202,7 +283,7 @@ const Bridge: FC = () => {
     [bridgeError, denomination, setAmount]
   )
 
-  const setCurrentBlockchain = (blockchain: Blockchain) => {
+  const setCurrentBlockchain = (blockchain: Blockchain): void => {
     // update network
     const blockChainNetwork = blockchainToNetwork(
       blockchain,
@@ -214,25 +295,21 @@ const Bridge: FC = () => {
     setAmount(BIG_ZERO)
   }
 
-  const handleBlockchainToggle = () => {
+  const handleBlockchainToggle = (): void => {
     if (targetBlockchain) {
       setCurrentBlockchain(targetBlockchain)
     }
   }
 
-  const handleSelect = (symbol: string) => {
-    setCurrentAsset(symbol)
-  }
-
   /**
    * Handles transfer transaction
    */
-  const handleTransfer = async () => {
+  const handleTransfer = async (): Promise<void> => {
     if (BIG_ZERO.eq(amount)) {
       return
     }
 
-    capture('BridgeTransferStarted', {
+    AnalyticsService.capture('BridgeTransferStarted', {
       sourceBlockchain: currentBlockchain,
       targetBlockchain
     })
@@ -246,21 +323,23 @@ const Bridge: FC = () => {
         // do not show the error when the user denied the transfer
         if (error === 'User declined the transaction') {
           Logger.error(error)
-          capture('BridgeTransferRequestUserRejectedError', {
+          AnalyticsService.capture('BridgeTransferRequestUserRejectedError', {
             sourceBlockchain: currentBlockchain,
             targetBlockchain,
-            fee: bridgeFee?.toNumber()
+            fee: bridgeFee.toNumber()
           })
           return
         }
         setBridgeError(TRANSFER_ERROR)
-        Logger.error(TRANSFER_ERROR)
-        capture('BridgeTransferRequestError', {
+        Logger.error(TRANSFER_ERROR, error)
+        AnalyticsService.capture('BridgeTransferRequestError', {
           sourceBlockchain: currentBlockchain,
           targetBlockchain
         })
         return
       }
+
+      audioFeedback(Audios.Send)
 
       // Navigate to transaction status page
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
@@ -274,7 +353,7 @@ const Bridge: FC = () => {
           : e?.message ??
             'An unknown error has occurred. Bridging was halted. Please try again later'
       Alert.alert('Error Bridging', errorMessage)
-      capture('BridgeTokenSelectError', {
+      AnalyticsService.capture('BridgeTokenSelectError', {
         errorMessage
       })
       return
@@ -285,12 +364,9 @@ const Bridge: FC = () => {
 
   const renderBlockchain = (
     blockchain: Blockchain,
-    textSize: 'large' | 'medium'
-  ) => {
+    textVariant: 'buttonLarge' | 'buttonMedium'
+  ): JSX.Element => {
     const blockchainTitle = getBlockchainDisplayName(blockchain)
-
-    const Text =
-      textSize === 'large' ? AvaText.ButtonLarge : AvaText.ButtonMedium
 
     const symbol =
       blockchain === Blockchain.AVALANCHE
@@ -306,10 +382,11 @@ const Bridge: FC = () => {
         <Avatar.Custom name={blockchain ?? ''} symbol={symbol} />
         <Space x={8} />
         <Text
-          textStyle={{
+          variant={textVariant}
+          sx={{
             maxWidth: blockchainTitleMaxWidth,
             textAlign: 'right',
-            color: theme.colorText1
+            color: theme.colors.$neutral50
           }}
           ellipsizeMode="tail">
           {blockchainTitle}
@@ -318,7 +395,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderToBlockchain = (blockchain: Blockchain) => {
+  const renderToBlockchain = (blockchain: Blockchain): JSX.Element => {
     return (
       <Row
         style={{
@@ -328,21 +405,22 @@ const Bridge: FC = () => {
           justifyContent: 'flex-end',
           flex: 0
         }}>
-        {renderBlockchain(blockchain, 'large')}
+        {renderBlockchain(blockchain, 'buttonLarge')}
       </Row>
     )
   }
 
-  const renderFromBlockchain = (blockchain: Blockchain) => {
+  const renderFromBlockchain = (blockchain: Blockchain): JSX.Element => {
     return (
       <Row
         style={{
           paddingVertical: 8,
           paddingLeft: 16,
+          flex: 1,
           alignItems: 'center',
           justifyContent: 'flex-end'
         }}>
-        {renderBlockchain(blockchain, 'large')}
+        {renderBlockchain(blockchain, 'buttonLarge')}
       </Row>
     )
   }
@@ -350,7 +428,7 @@ const Bridge: FC = () => {
   const renderDropdownItem = (
     blockchain: Blockchain,
     selectedBlockchain?: Blockchain
-  ) => {
+  ): JSX.Element => {
     const isSelected = blockchain === selectedBlockchain
 
     return (
@@ -366,7 +444,7 @@ const Bridge: FC = () => {
             alignItems: 'center',
             flex: 1
           }}>
-          {renderBlockchain(blockchain, 'medium')}
+          {renderBlockchain(blockchain, 'buttonMedium')}
         </Row>
         {isSelected && (
           <View
@@ -384,68 +462,72 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderFromSection = () => {
+  const renderFromSection = (): JSX.Element => {
     return (
-      <>
-        <AvaListItem.Base
-          title={'From'}
-          rightComponentMaxWidth="auto"
-          rightComponent={
-            <View>
-              <DropDown
-                width={dropdownWith}
-                data={availableBlockchains}
-                selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
-                onItemSelected={setCurrentBlockchain}
-                optionsRenderItem={item =>
-                  renderDropdownItem(item.item, currentBlockchain)
-                }
-                selectionRenderItem={() =>
-                  renderFromBlockchain(currentBlockchain)
-                }
-                style={{
-                  top: 22
-                }}
-              />
-            </View>
-          }
-        />
-      </>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: 16
+        }}>
+        <Text variant={'heading6'}>From</Text>
+        <View>
+          <DropDown
+            width={dropdownWidth}
+            data={availableBlockchains}
+            selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
+            onItemSelected={setCurrentBlockchain}
+            optionsRenderItem={item =>
+              renderDropdownItem(item.item, currentBlockchain)
+            }
+            selectionRenderItem={() => renderFromBlockchain(currentBlockchain)}
+            style={{
+              top: 22
+            }}
+            prompt={
+              <Text variant="buttonMedium" style={styles.tokenSelectorText}>
+                Select Network
+              </Text>
+            }
+          />
+        </View>
+      </Row>
     )
   }
 
-  const renderBalance = () => {
+  const renderBalance = (): JSX.Element => {
+    const shouldRenderBalance = selectedAsset && sourceBalance?.balance
+
     return (
-      <AvaText.Body3
-        color={theme.colorText2}
-        textStyle={{
-          alignSelf: 'flex-end',
-          paddingEnd: 16
-        }}>
-        Balance:
-        {sourceBalance?.balance
-          ? ` ${formatBalance(sourceBalance?.balance)}`
-          : !!currentAsset && <ActivityIndicator size={'small'} />}{' '}
-        {blockchainTokenSymbol}
-      </AvaText.Body3>
+      <Text
+        variant="caption"
+        sx={{ color: '$neutral300', alignSelf: 'flex-end', paddingEnd: 16 }}>
+        {`Balance: `}
+        {shouldRenderBalance
+          ? `${formatBalance(sourceBalance?.balance)}  ${selectedAssetSymbol}`
+          : selectedAsset && <ActivityIndicator size={'small'} />}
+      </Text>
     )
   }
-  const renderTokenSelectInput = () => (
+  const renderTokenSelectInput = (): JSX.Element => (
     <Pressable disabled={loading} onPress={() => navigateToTokenSelector()}>
       <Row style={styles.tokenRow}>
-        {!!currentAsset && (
+        {selectedAsset && (
           <>
             <Avatar.Custom
-              name={blockchainTokenSymbol}
-              symbol={blockchainTokenSymbol}
-              logoUri={tokenInfoData?.[blockchainTokenSymbol]?.logo}
+              name={selectedAssetSymbol ?? ''}
+              symbol={selectedAssetSymbol}
+              logoUri={
+                selectedAssetSymbol &&
+                tokenInfoData?.[selectedAssetSymbol]?.logo
+              }
             />
             <Space x={8} />
           </>
         )}
-        <AvaText.Heading3 textStyle={styles.tokenSelectorText}>
-          {currentAsset ? blockchainTokenSymbol : 'Select Token'}
-        </AvaText.Heading3>
+        <Text variant="buttonMedium" style={styles.tokenSelectorText}>
+          {selectedAsset ? selectedAssetSymbol : 'Select Token'}
+        </Text>
         <CarrotSVG direction={'down'} size={12} />
       </Row>
     </Pressable>
@@ -461,7 +543,7 @@ const Bridge: FC = () => {
     })
   }, [denomination, handleAmountChanged, maximum])
 
-  const renderAmountInput = () => (
+  const renderAmountInput = (): JSX.Element => (
     <View>
       <>
         <BNInput
@@ -470,8 +552,11 @@ const Bridge: FC = () => {
           onMax={handleMax}
           placeholder={'0.0'}
           onChange={handleAmountChanged}
-          style={{
-            minWidth: 160
+          textStyle={{ borderWidth: 0 }}
+          inputTextContainerStyle={{
+            minWidth: 160,
+            maxWidth: 200,
+            paddingRight: 8
           }}
         />
         {loading && (
@@ -486,7 +571,7 @@ const Bridge: FC = () => {
           />
         )}
       </>
-      {!currentAsset && (
+      {!selectedAsset && (
         <Pressable
           disabled={loading}
           style={StyleSheet.absoluteFill}
@@ -496,35 +581,72 @@ const Bridge: FC = () => {
     </View>
   )
 
-  const renderError = () => {
-    return (
-      (!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
-        <>
-          {!hasEnoughForNetworkFee && (
-            <AvaText.Body3 color={theme.colorError}>
-              {`Insufficient balance to cover gas costs.\nPlease add ${
-                currentBlockchain === Blockchain.AVALANCHE
-                  ? TokenSymbol.AVAX
-                  : TokenSymbol.ETH
-              }.`}
-            </AvaText.Body3>
-          )}
-          {isAmountTooLow && (
-            <AvaText.Body3 color={theme.colorError}>
-              {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
-            </AvaText.Body3>
-          )}
-          {!!bridgeError && (
-            <AvaText.Body3 color={theme.colorError}>
-              {bridgeError}
-            </AvaText.Body3>
-          )}
-        </>
+  const renderError = (): JSX.Element | null => {
+    if (amount.eq(BIG_ZERO)) return null
+
+    if (isAmountTooLow)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
+        </Text>
       )
-    )
+
+    if (isAmountTooLarge)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          Insufficient balance
+        </Text>
+      )
+
+    if (bridgeError)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          {bridgeError}
+        </Text>
+      )
+
+    if (hasInvalidReceiveAmount)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          {`Receive amount can't be 0`}
+        </Text>
+      )
+
+    if (isNativeBalanceNotEnoughForNetworkFee)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>{`Insufficient balance to cover gas costs.\nPlease add ${
+          currentBlockchain === Blockchain.AVALANCHE
+            ? TokenSymbol.AVAX
+            : currentBlockchain === Blockchain.ETHEREUM
+            ? TokenSymbol.ETH
+            : TokenSymbol.BTC
+        }.`}</Text>
+      )
+
+    return null
   }
 
-  const renderSelectSection = () => {
+  const renderSelectSection = (): JSX.Element => {
     return (
       <View style={styles.fromContainer}>
         {renderBalance()}
@@ -534,39 +656,45 @@ const Bridge: FC = () => {
         </Row>
 
         <Row style={styles.errorAndPriceRow}>
-          <View style={styles.errorContainer}>
-            {renderError()}
-
-            {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
-              <AvaText.Body3 color={theme.colorError}>
-                Waiting for deposit confirmation
-              </AvaText.Body3>
-            )}
-          </View>
+          <View style={styles.errorContainer}>{renderError()}</View>
 
           {/* Amount in currency */}
-          <AvaText.Body3 color={theme.colorText2}>
-            {formattedAmountCurrency}
-          </AvaText.Body3>
+          <View
+            style={{
+              alignItems: 'flex-end',
+              width: '50%',
+              marginLeft: 16
+            }}>
+            <Row>
+              <Text
+                variant="caption"
+                sx={{ color: '$neutral300', marginRight: 4 }}
+                numberOfLines={1}>
+                {formattedAmountCurrency}
+              </Text>
+              {formattedAmountCurrency !== NO_AMOUNT && (
+                <Text variant="caption" sx={{ color: '$neutral300' }}>
+                  {selectedCurrency}
+                </Text>
+              )}
+            </Row>
+          </View>
         </Row>
       </View>
     )
   }
 
-  const renderToggleBtn = () => {
+  const renderToggleBtn = (): JSX.Element => {
     return (
       <AvaButton.Base
         onPress={handleBlockchainToggle}
-        style={[
-          styles.toggleButton,
-          { backgroundColor: theme.alternateBackground }
-        ]}>
-        <BridgeToggleIcon color={theme.background} />
+        style={[styles.toggleButton, { backgroundColor: theme.colors.$white }]}>
+        <BridgeToggleIcon color={theme.colors.$black} />
       </AvaButton.Base>
     )
   }
 
-  const renderToSection = () => {
+  const renderToSection = (): JSX.Element => {
     return (
       <View>
         <AvaListItem.Base
@@ -574,73 +702,159 @@ const Bridge: FC = () => {
           rightComponentMaxWidth={'auto'}
           rightComponent={renderToBlockchain(targetBlockchain)}
         />
-        <Separator inset={16} color="#666666" />
+        <Separator inset={16} color={theme.colors.$neutral800} />
         <Row style={styles.receiveRow}>
           <View>
-            <AvaText.ButtonLarge textStyle={{ color: theme.colorText1 }}>
-              Receive
-            </AvaText.ButtonLarge>
-            <AvaText.Body3
-              color={theme.colorText2}
-              textStyle={{ marginTop: 8 }}>
+            <Text variant="buttonLarge">Receive</Text>
+            <Text variant="caption" sx={{ marginTop: 4, color: '$neutral400' }}>
               Estimated (minus transfer fees)
-            </AvaText.Body3>
+            </Text>
           </View>
-          <View style={{ alignItems: 'flex-end' }}>
+          <View
+            style={{
+              alignItems: 'flex-end',
+              width: '40%'
+            }}>
             {/* receive amount */}
-            <AvaText.Body1>{formattedReceiveAmount}</AvaText.Body1>
+            <Row>
+              <Text variant="body1" numberOfLines={1} sx={{ marginRight: 4 }}>
+                {formattedReceiveAmount}
+              </Text>
+              {formattedReceiveAmount !== NO_AMOUNT && (
+                <Text variant="body1">{selectedAssetSymbol}</Text>
+              )}
+            </Row>
             {/* estimate amount */}
-            <AvaText.Body3
-              textStyle={{ marginTop: 8 }}
-              color={theme.colorText2}>
-              {formattedReceiveAmountCurrency}
-            </AvaText.Body3>
+            <Row>
+              <Text
+                variant="caption"
+                numberOfLines={1}
+                sx={{ marginTop: 4, color: '$neutral400', marginRight: 4 }}>
+                {formattedReceiveAmountCurrency}
+              </Text>
+              {formattedReceiveAmountCurrency !== NO_AMOUNT && (
+                <Text
+                  variant="caption"
+                  numberOfLines={1}
+                  sx={{ marginTop: 4, color: '$neutral400' }}>
+                  {selectedCurrency}
+                </Text>
+              )}
+            </Row>
           </View>
         </Row>
       </View>
     )
   }
 
-  const renderTransferBtn = () => {
+  const renderTransferBtn = (): JSX.Element => {
     return (
-      <AvaButton.Base
-        style={[
-          styles.transferButton,
-          { backgroundColor: transferDisabled ? '#FFFFFF80' : theme.white }
-        ]}
+      <Button
+        type="primary"
+        size="xlarge"
+        style={{ marginHorizontal: 16, marginBottom: 10, marginTop: 16 }}
+        disabled={transferDisabled}
         onPress={() => {
           handleTransfer()
-        }}
-        disabled={transferDisabled}>
-        <Row>
-          {isPending && <ActivityIndicator />}
-          <AvaText.ButtonLarge
-            textStyle={{ color: theme.background, marginStart: 4 }}>
-            Transfer
-          </AvaText.ButtonLarge>
-        </Row>
-      </AvaButton.Base>
+        }}>
+        {isPending ? (
+          <>
+            <ActivityIndicator /> Bridging...
+          </>
+        ) : (
+          'Bridge'
+        )}
+      </Button>
+    )
+  }
+
+  const handleBridgeFaqs = (): void => {
+    Linking.openURL(DOCS_BRIDGE_FAQS).catch(e => {
+      Logger.error(DOCS_BRIDGE_FAQS, e)
+    })
+  }
+
+  const renderCCTPPopoverInfoText = (): JSX.Element => (
+    <View
+      sx={{
+        backgroundColor: '$neutral100',
+        marginHorizontal: 8,
+        marginVertical: 4
+      }}>
+      <Text
+        variant="buttonSmall"
+        sx={{ color: '$neutral900', fontWeight: '400' }}>
+        USDC is routed through Circle's Cross-Chain Transfer Protocol.
+      </Text>
+      <Text
+        variant="buttonSmall"
+        onPress={handleBridgeFaqs}
+        sx={{ color: '$blueDark' }}>
+        Bridge FAQs
+      </Text>
+    </View>
+  )
+
+  const renderCircleBadge = (): JSX.Element => {
+    return (
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row',
+          marginBottom: 10
+        }}>
+        <Text variant="caption">Powered by </Text>
+        <CircleLogo width={50} height={'100%'} style={{ marginTop: 1 }} />
+        <Tooltip
+          iconColor={theme.colors.$neutral50}
+          content={renderCCTPPopoverInfoText()}
+          position="top"
+          style={{
+            width: 200
+          }}
+        />
+      </View>
     )
   }
 
   return (
     <SafeAreaProvider>
       <ScrollViewList style={styles.container}>
-        <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 8 }}>
+        <Text variant="heading3" style={{ marginHorizontal: 8 }}>
           Bridge
-        </AvaText.LargeTitleBold>
-        <Space y={20} />
-        <View style={{ backgroundColor: '#333333', borderRadius: 10 }}>
-          <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
+        </Text>
+        <Space y={40} />
+        <View
+          style={{
+            backgroundColor: theme.colors.$neutral850,
+            borderRadius: 10
+          }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.$neutral900,
+              borderRadius: 10
+            }}>
             {renderFromSection()}
-            <Separator inset={16} />
+            <Separator inset={16} color={theme.colors.$neutral800} />
             {renderSelectSection()}
           </View>
           {renderToggleBtn()}
           {renderToSection()}
         </View>
       </ScrollViewList>
+      {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
+        <Text
+          variant="body2"
+          sx={{
+            alignSelf: 'center',
+            color: '$neutral300'
+          }}>
+          Waiting for deposit confirmation
+        </Text>
+      )}
       {renderTransferBtn()}
+      {provider === BridgeProvider.UNIFIED && renderCircleBadge()}
     </SafeAreaProvider>
   )
 }
@@ -676,7 +890,8 @@ const styles = StyleSheet.create({
   tokenSelectorText: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8
+    marginRight: 8,
+    fontWeight: '600'
   },
   toggleButton: {
     alignSelf: 'center',
@@ -691,14 +906,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     justifyContent: 'space-between'
-  },
-  transferButton: {
-    margin: 16,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    paddingVertical: 12
   }
 })
 

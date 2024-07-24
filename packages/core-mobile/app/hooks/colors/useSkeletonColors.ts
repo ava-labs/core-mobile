@@ -1,9 +1,14 @@
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useTheme } from '@avalabs/k2-mobile'
 
-export const useSkeletonColors = () => {
-  const { theme } = useApplicationContext()
-  const backgroundColor = theme.colorBg2
-  const foregroundColor = '#2A2A2D'
+export const useSkeletonColors = (): {
+  backgroundColor: string
+  foregroundColor: string
+} => {
+  const {
+    theme: { colors }
+  } = useTheme()
+  const backgroundColor = colors.$neutral900
+  const foregroundColor = colors.$neutral850
 
   return { backgroundColor, foregroundColor }
 }

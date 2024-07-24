@@ -1,6 +1,11 @@
-import walletService from 'services/wallet/WalletService'
+import WalletService from 'services/wallet/WalletService'
 import { Account, AccountCollection } from 'store/account'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import SeedlessService from 'seedless/services/SeedlessService'
+import { CoreAccountType, WalletType as CoreWalletType } from '@avalabs/types'
+import { uuid } from 'utils/uuid'
+import { WalletType } from 'services/wallet/types'
+import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 
 class AccountsService {
   async reloadAccounts(
@@ -11,14 +16,21 @@ class AccountsService {
 
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
-      const addresses = await walletService.getAddresses(key, isTestnet)
+      const addresses = await WalletService.getAddresses(key, isTestnet)
+      const title = await SeedlessService.getAccountName(key)
 
       const account = accounts[key]
       if (account) {
         reloadedAccounts[key] = {
-          ...account,
-          addressBtc: addresses[NetworkVMType.BITCOIN],
-          address: addresses[NetworkVMType.EVM],
+          id: account.id,
+          name: title ?? account.name,
+          type: account.type,
+          active: account.active,
+          walletId: account.walletId,
+          index: account.index,
+          walletType: account.walletType,
+          addressBTC: addresses[NetworkVMType.BITCOIN],
+          addressC: addresses[NetworkVMType.EVM],
           addressAVM: addresses[NetworkVMType.AVM],
           addressPVM: addresses[NetworkVMType.PVM],
           addressCoreEth: addresses[NetworkVMType.CoreEth]
@@ -29,34 +41,38 @@ class AccountsService {
     return reloadedAccounts
   }
 
-  async createNextAccount(
-    isTestnet: boolean,
-    accounts: AccountCollection
-  ): Promise<Account> {
-    const newIndex = Object.keys(accounts).length
-    const addresses = await walletService.getAddresses(newIndex, isTestnet)
+  async createNextAccount({
+    isTestnet,
+    index,
+    activeAccountIndex,
+    walletType
+  }: {
+    isTestnet: boolean
+    index: number
+    activeAccountIndex: number
+    walletType: WalletType
+  }): Promise<Account> {
+    if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
+
+    const addresses = await WalletService.addAddress(index, isTestnet)
 
     return {
-      index: newIndex,
-      title: `Account ${newIndex + 1}`,
-      addressBtc: addresses[NetworkVMType.BITCOIN],
-      address: addresses[NetworkVMType.EVM],
+      index,
+      id: uuid(),
+      walletId: CORE_MOBILE_WALLET_ID,
+      name: `Account ${index + 1}`,
+      type: CoreAccountType.PRIMARY,
+      active: index === activeAccountIndex,
+      walletType:
+        walletType === WalletType.MNEMONIC
+          ? CoreWalletType.Mnemonic
+          : CoreWalletType.Seedless,
+      addressBTC: addresses[NetworkVMType.BITCOIN],
+      addressC: addresses[NetworkVMType.EVM],
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth]
-    } as Account
-  }
-
-  getAddressForNetwork(account: Account, network: Network): string {
-    if (network.vmName === NetworkVMType.BITCOIN) {
-      return account.addressBtc
     }
-
-    if (network.vmName === NetworkVMType.EVM) {
-      return account.address
-    }
-
-    throw new Error('unsupported network')
   }
 }
 

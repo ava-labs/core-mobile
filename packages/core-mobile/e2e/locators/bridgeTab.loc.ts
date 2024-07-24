@@ -9,7 +9,7 @@ export default {
   bridgeSuccessfulToastMsg: 'Bridge Successful',
   closebutton: 'Close',
   ethereumNetwork: 'Ethereum',
-  ethereumTestNetwork: 'Ethereum Goerli',
+  ethereumTestNetwork: 'Ethereum Sepolia',
   ethBridgeTransaction: '0.055 WETH',
   hide: 'Hide',
   headerBack: 'header_back',

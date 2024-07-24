@@ -1,21 +1,30 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Session } from 'services/walletconnectv2/types'
-import {
-  onRequestApproved,
-  onRequestRejected,
-  killSessions as killSessionsAction,
-  Request
-} from 'store/walletConnectV2'
-import { usePostCapture } from './usePosthogCapture'
+import { onRequestApproved, onRequestRejected } from 'store/rpc/slice'
+import { Request, RpcMethod } from 'store/rpc/types'
+import { killSessions as killSessionsAction } from 'store/walletConnectV2/slice'
 
-export const useDappConnectionV2 = () => {
+export const useDappConnectionV2 = (): {
+  onUserApproved: (request: Request, data?: unknown) => void
+  onUserRejected: (request: Request, message?: string) => void
+  killSessions: (sessionsToKill: Session[]) => Promise<void>
+} => {
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
 
   const onUserApproved = useCallback(
     (request: Request, data?: unknown) => {
+      if (request.method === RpcMethod.WC_SESSION_REQUEST) {
+        AnalyticsService.capture('WalletConnectedToDapp', {
+          // @ts-ignore
+          dAppUrl: request.data?.verifyContext?.verified?.origin ?? ''
+        })
+      } else {
+        AnalyticsService.capture('TxSubmittedToDapp')
+      }
+
       dispatch(
         onRequestApproved({
           request,
@@ -32,8 +41,8 @@ export const useDappConnectionV2 = () => {
         onRequestRejected({
           request,
           error: message
-            ? ethErrors.rpc.internal(message)
-            : ethErrors.provider.userRejectedRequest()
+            ? rpcErrors.internal(message)
+            : providerErrors.userRejectedRequest()
         })
       )
     },
@@ -43,7 +52,7 @@ export const useDappConnectionV2 = () => {
   const killSessions = useCallback(
     async (sessionsToKill: Session[]) => {
       sessionsToKill.forEach(sessionToKill => {
-        capture('ConnectedSiteRemoved', {
+        AnalyticsService.capture('ConnectedSiteRemoved', {
           walletConnectVersion: 'v2',
           url: sessionToKill.peer.metadata.url,
           name: sessionToKill.peer.metadata.name
@@ -51,7 +60,7 @@ export const useDappConnectionV2 = () => {
       })
       dispatch(killSessionsAction(sessionsToKill))
     },
-    [capture, dispatch]
+    [dispatch]
   )
 
   return { onUserApproved, onUserRejected, killSessions }

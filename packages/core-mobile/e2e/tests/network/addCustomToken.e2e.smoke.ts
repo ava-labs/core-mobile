@@ -1,6 +1,5 @@
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import ManageTokensPage from '../../pages/manageTokens.page'
 import { warmup } from '../../helpers/warmup'
@@ -11,8 +10,9 @@ describe('Add custom token', () => {
   })
 
   it('should add custom token', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
-    await PortfolioPage.tapAvaxNetwork()
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapEthNetwork()
+    await PortfolioPage.tapEthNetwork()
     await Actions.waitForElement(PortfolioPage.manageTokens)
     await PortfolioPage.tapManageTokens()
     await Actions.waitForElement(ManageTokensPage.addcustomToken)

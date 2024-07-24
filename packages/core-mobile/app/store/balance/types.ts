@@ -1,15 +1,15 @@
-import { NetworkContractToken, NetworkToken } from '@avalabs/chains-sdk'
-import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
+import { NetworkToken } from '@avalabs/chains-sdk'
+import { BitcoinInputUTXOWithOptionalScript } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
+import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
+import { Avax } from 'types'
+import {
+  NetworkTokenWithBalance,
+  TokenType,
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
 
 export type LocalTokenId = string
-
-export enum TokenType {
-  NATIVE = 'NATIVE',
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ERC1155 = 'ERC1155'
-}
 
 type TokenBalanceData = {
   type: TokenType
@@ -18,7 +18,7 @@ type TokenBalanceData = {
   balanceDisplayValue: string
   balanceCurrencyDisplayValue: string
   priceInCurrency: number
-  utxos?: BitcoinInputUTXO[]
+  utxos?: BitcoinInputUTXOWithOptionalScript[]
 }
 
 type TokenMarketData = {
@@ -27,17 +27,24 @@ type TokenMarketData = {
   vol24: number
 }
 
-export type NetworkTokenWithBalance = TokenBalanceData &
+export type PTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
   TokenMarketData &
-  NetworkToken & {
+  NetworkToken &
+  PChainBalance & {
     coingeckoId: string
     type: TokenType.NATIVE
+    utxos: PChainBalance
+    utxoBalances: XPChainUtxoBalances
   }
 
-export type TokenWithBalanceERC20 = TokenBalanceData &
+export type XTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
   TokenMarketData &
-  NetworkContractToken & {
-    type: TokenType.ERC20
+  NetworkToken &
+  XChainBalances & {
+    coingeckoId: string
+    type: TokenType.NATIVE
+    utxos: XChainBalances
+    utxoBalances: XPChainUtxoBalances
   }
 
 export type NftTokenWithBalance = TokenBalanceData &
@@ -60,8 +67,11 @@ export type TokenWithBalance =
   | NetworkTokenWithBalance
   | TokenWithBalanceERC20
   | NftTokenWithBalance
+  | PTokenWithBalance
+  | XTokenWithBalance
 
 export type Balance = {
+  dataAccurate: boolean
   accountIndex: number
   chainId: number
   tokens: LocalTokenWithBalance[]
@@ -99,4 +109,42 @@ export enum QueryStatus {
 export type BalanceState = {
   status: QueryStatus
   balances: Balances
+}
+
+export interface PChainUtxoBalances {
+  lockedStaked?: Avax
+  lockedStakeable?: Avax
+  lockedPlatform?: Avax
+  atomicMemoryLocked?: Avax
+  atomicMemoryUnlocked?: Avax
+  unlockedUnstaked?: Avax
+  unlockedStaked?: Avax
+  pendingStaked?: Avax
+}
+
+export interface XChainUtxoBalances {
+  unlocked?: Avax
+  locked?: Avax
+  atomicMemoryUnlocked?: Avax
+  atomicMemoryLocked?: Avax
+}
+
+export type XPChainUtxoBalances = Record<string, string | undefined>
+
+export const assetPDisplayNames: Record<string, string> = {
+  lockedStaked: 'Locked Staked',
+  lockedStakeable: 'Locked Stakeable',
+  lockedPlatform: 'Locked Platform',
+  atomicMemoryLocked: 'Atomic Memory Locked',
+  atomicMemoryUnlocked: 'Atomic Memory Unlocked',
+  unlockedUnstaked: 'Unlocked Unstaked',
+  unlockedStaked: 'Unlocked Staked',
+  pendingStaked: 'Pending Staked'
+}
+
+export const assetXDisplayNames: Record<string, string> = {
+  locked: 'Locked',
+  unlocked: 'Unlocked',
+  atomicMemoryLocked: 'Atomic Memory Locked',
+  atomicMemoryUnlocked: 'Atomic Memory Unlocked'
 }

@@ -1,10 +1,9 @@
 import React from 'react'
 import { View } from 'react-native'
-import type { ComponentStory, Meta } from '@storybook/react-native'
 import AvaText from 'components/AvaText'
 import { withCenterView } from '../decorators/withCenterView'
 
-const AllTexts = () => {
+const AllTexts = (): React.JSX.Element => {
   return (
     <View>
       <AvaText.Heading1>Heading 1</AvaText.Heading1>
@@ -38,11 +37,12 @@ const AllTexts = () => {
 export default {
   title: 'AvaText',
   decorators: [withCenterView]
-} as Meta
+}
 
 export const All = AllTexts
 
-export const Heading1: ComponentStory<typeof AvaText.Heading1> = args => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Heading1 = (args: any): React.JSX.Element => {
   return <AvaText.Heading1 {...args}>{args.children}</AvaText.Heading1>
 }
 

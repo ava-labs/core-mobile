@@ -1,4 +1,5 @@
 import { Blockchain } from '@avalabs/bridge-sdk'
+import { TokenType, TransactionType } from '@avalabs/vm-module-types'
 import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
 import { isBridgeTransactionBTC } from 'screens/bridge/utils/bridgeUtils'
@@ -46,22 +47,27 @@ export const convertTransaction = ({
     isIncoming: !item.isSender,
     isOutgoing: item.isSender,
     isContractCall: false,
-    timestamp: new Date(item.receivedTime).getTime(),
+    timestamp: new Date(item.receivedTime * 1000).getTime(),
     hash: item.hash,
-    amount: bitcoinAmount(item.amount, denomination),
     isSender: item.isSender,
     from: item.isSender ? address : txAddress,
     to,
-    token: {
-      decimal: denomination.toString(),
-      name: BITCOIN_NETWORK.networkToken.name,
-      symbol: BITCOIN_NETWORK.networkToken.symbol
-    },
+    tokens: [
+      {
+        decimal: denomination.toString(),
+        name: BITCOIN_NETWORK.networkToken.name,
+        symbol: BITCOIN_NETWORK.networkToken.symbol,
+        amount: bitcoinAmount(item.amount, denomination),
+        type: TokenType.NATIVE
+      }
+    ],
     explorerLink: getExplorerAddress(
       Blockchain.BITCOIN,
       item.hash,
       network.chainId === BITCOIN_NETWORK.chainId
     ),
-    fee: item.fee.toString()
+    chainId: network.chainId.toString(),
+    gasUsed: item.fee.toString(),
+    txType: item.isSender ? TransactionType.SEND : TransactionType.RECEIVE
   }
 }

@@ -5,8 +5,7 @@ import {
   addDecorator,
   addParameters,
   addArgsEnhancer,
-  clearDecorators,
-} from "@storybook/react-native";
+} from "@storybook/react-native/V6";
 
 global.STORIES = [
   {
@@ -29,19 +28,11 @@ import "@storybook/addon-ondevice-controls/register";
 import "@storybook/addon-ondevice-actions/register";
 import "@storybook/addon-ondevice-backgrounds/register";
 
-import { argsEnhancers } from "@storybook/addon-actions/dist/modern/preset/addArgs";
+import { argsEnhancers } from "@storybook/addon-actions/dist/preview";
 
 import { decorators, parameters } from "./preview";
 
 if (decorators) {
-  if (__DEV__) {
-    // stops the warning from showing on every HMR
-    require("react-native").LogBox.ignoreLogs([
-      "`clearDecorators` is deprecated and will be removed in Storybook 7.0",
-    ]);
-  }
-  // workaround for global decorators getting infinitely applied on HMR, see https://github.com/storybookjs/react-native/issues/185
-  clearDecorators();
   decorators.forEach((decorator) => addDecorator(decorator));
 }
 
@@ -56,6 +47,8 @@ try {
 const getStories = () => {
   return {
     "./src/components/Button/Button.stories.tsx": require("../src/components/Button/Button.stories.tsx"),
+    "./src/components/DividerLine/DividerLine.stories.tsx": require("../src/components/DividerLine/DividerLine.stories.tsx"),
+    "./src/components/TextField/TextField.stories.tsx": require("../src/components/TextField/TextField.stories.tsx"),
     "./src/theme/tokens/Colors.stories.tsx": require("../src/theme/tokens/Colors.stories.tsx"),
     "./src/theme/tokens/Icons.stories.tsx": require("../src/theme/tokens/Icons.stories.tsx"),
     "./src/theme/tokens/Text.stories.tsx": require("../src/theme/tokens/Text.stories.tsx"),

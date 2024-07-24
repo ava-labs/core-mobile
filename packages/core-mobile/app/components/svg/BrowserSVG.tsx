@@ -1,6 +1,6 @@
 import React from 'react'
 import Svg, { Path } from 'react-native-svg'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useTheme } from '@avalabs/k2-mobile'
 
 interface Prop {
   selected: boolean
@@ -8,11 +8,9 @@ interface Prop {
 }
 
 function BrowserSVG({ selected, size = 32 }: Prop): JSX.Element {
-  const context = useApplicationContext()
+  const { theme } = useTheme()
+  const svgColor = selected ? theme.colors.$blueDark : theme.colors.$neutral600
 
-  const svgColor = selected
-    ? context.theme.alternateBackground
-    : context.theme.colorIcon4
   return (
     <Svg
       width={size}

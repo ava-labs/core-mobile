@@ -3,30 +3,22 @@ import {
   ListErc1155BalancesResponse,
   ListErc721BalancesResponse
 } from '@avalabs/glacier-sdk'
-import { NftResponse } from 'store/nft'
+import { NFTItemData, NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { glacierSdk } from 'utils/network/glacier'
-import { addMissingFields, convertIPFSResolver } from './utils'
+import GlacierService from 'services/GlacierService'
+import { addMissingFields } from './utils'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
 export class GlacierNftProvider implements NftProvider {
   async isProviderFor(chainId: number): Promise<boolean> {
-    const isHealthy = await this.isHealthy()
-    if (!isHealthy) {
-      return false
-    }
-    const supportedChainsResp = await glacierSdk.evmChains.supportedChains({})
-    const chainInfos = supportedChainsResp.chains
-    const chains = chainInfos.map(chain => chain.chainId)
-    return chains.some(value => value === chainId.toString())
+    return await GlacierService.isNetworkSupported(chainId)
   }
 
   async fetchNfts(
     chainId: number,
     address: string,
-    selectedCurrency?: string,
     pageToken?: {
       erc1155?: string
       erc721?: string
@@ -36,7 +28,7 @@ export class GlacierNftProvider implements NftProvider {
 
     let erc721BalancesRequest: Promise<ListErc721BalancesResponse> | undefined
     if (pageToken?.erc721 !== '') {
-      erc721BalancesRequest = glacierSdk.evmBalances.listErc721Balances({
+      erc721BalancesRequest = GlacierService.listErc721Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100
@@ -47,7 +39,7 @@ export class GlacierNftProvider implements NftProvider {
 
     let erc1155BalancesRequest: Promise<ListErc1155BalancesResponse> | undefined
     if (pageToken?.erc1155 !== '') {
-      erc1155BalancesRequest = glacierSdk.evmBalances.listErc1155Balances({
+      erc1155BalancesRequest = GlacierService.listErc1155Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100
@@ -75,19 +67,8 @@ export class GlacierNftProvider implements NftProvider {
     ]
 
     const fullNftData = nftBalances.map(nft => {
-      const imageUri = nft.metadata.imageUri
-
       return {
-        ...addMissingFields(nft, address),
-        // also try to resolve ipfs image uri if there is one
-        // this allows the app to display the image right away
-        // instead of waiting for all the background processing (fetch metadata, image aspect,...) to finish
-        ...(imageUri && {
-          metadata: {
-            ...nft.metadata,
-            imageUri: convertIPFSResolver(imageUri)
-          }
-        })
+        ...addMissingFields(nft, address)
       }
     })
 
@@ -116,10 +97,32 @@ export class GlacierNftProvider implements NftProvider {
     }
   }
 
-  private async isHealthy() {
-    const healthStatus = await glacierSdk.healthCheck.healthCheck()
-    const status = healthStatus?.status?.toString()
-    return status === 'ok'
+  async fetchNft(
+    chainId: number,
+    address: string,
+    tokenId: string
+  ): Promise<NFTItemData> {
+    const response = await GlacierService.getTokenDetails({
+      chainId: chainId.toString(),
+      address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
+      tokenId: tokenId
+    })
+
+    return {
+      ...addMissingFields(response, address)
+    }
+  }
+
+  async reindexNft(
+    address: string,
+    chainId: number,
+    tokenId: string
+  ): Promise<void> {
+    await GlacierService.reindexNft({
+      address,
+      chainId: chainId.toString(),
+      tokenId
+    })
   }
 }
 

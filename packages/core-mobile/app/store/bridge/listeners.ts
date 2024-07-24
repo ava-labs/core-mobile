@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { AppListenerEffectAPI } from 'store'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
-import { selectActiveNetwork } from 'store/network'
 import { toggleDeveloperMode } from 'store/settings/advanced'
 import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
@@ -15,9 +14,8 @@ const fetchConfigPeriodically = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   listenerApi: AppListenerEffectAPI
-) => {
-  const { fork, dispatch, getState, cancelActiveListeners, condition } =
-    listenerApi
+): Promise<void> => {
+  const { fork, dispatch, cancelActiveListeners, condition } = listenerApi
 
   // cancel any in-progress instances of this listener
   cancelActiveListeners()
@@ -30,26 +28,19 @@ const fetchConfigPeriodically = async (
     try {
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        const state = getState()
-
-        const activeNetwork = selectActiveNetwork(state)
-
         // cancellation-aware wait for the fetch to be done
-        const config = await forkApi.pause(
-          BridgeService.getConfig(activeNetwork)
-        )
-
+        const config = await forkApi.pause(BridgeService.getConfig())
         dispatch(setConfig(config))
 
         // cancellation-aware delay
         await forkApi.delay(CONFIG_FETCH_INTERVAL)
       }
     } catch (err) {
-      Logger.error('failed to fetch bridge config', err)
-
       if (err instanceof TaskAbortError) {
         // task got cancelled or the listener got cancelled
         Logger.info(`stopped task ${taskId}`)
+      } else {
+        Logger.error('failed to fetch bridge config', err)
       }
     }
   })
@@ -58,7 +49,7 @@ const fetchConfigPeriodically = async (
   pollingTask.cancel()
 }
 
-export const addBridgeListeners = (startListening: AppStartListening) => {
+export const addBridgeListeners = (startListening: AppStartListening): void => {
   startListening({
     matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode),
     effect: fetchConfigPeriodically

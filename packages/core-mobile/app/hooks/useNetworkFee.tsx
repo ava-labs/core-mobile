@@ -1,53 +1,48 @@
 import { Network } from '@avalabs/chains-sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
-import { useSelector } from 'react-redux'
 import NetworkFeeService from 'services/networkFee/NetworkFeeService'
-import { selectActiveNetwork } from 'store/network'
 import Logger from 'utils/Logger'
-
-const defaultData = {
-  low: 0n,
-  medium: 0n,
-  high: 0n,
-  displayDecimals: 0,
-  nativeTokenDecimals: 0,
-  unit: '',
-  isFixedFee: false,
-  nativeTokenSymbol: ''
-}
+import { NetworkFee } from 'services/networkFee/types'
+import { NetworkTokenUnit } from 'types'
+import { useNetworks } from './networks/useNetworks'
 
 const REFETCH_INTERVAL = 30000 // 30 seconds
 
-export const getQueryKey = (network: Network) => [
+export const getQueryKey = (network: Network): [ReactQueryKeys, number] => [
   ReactQueryKeys.NETWORK_FEE,
   network.chainId
 ]
 
 const getQueryFn = (network: Network) => () =>
-  NetworkFeeService.getNetworkFee(network)
+  NetworkFeeService.getNetworkFee(
+    network,
+    NetworkTokenUnit.getConstructor(network)
+  ).catch(Logger.error)
 
-export const prefetchNetworkFee = (network: Network | undefined) => {
+export const prefetchNetworkFee = (network: Network | undefined): void => {
   if (network) {
     Logger.info('prefetching network fee', network.chainId)
 
-    queryClient.prefetchQuery({
-      queryKey: getQueryKey(network),
-      queryFn: getQueryFn(network)
-    })
+    queryClient
+      .prefetchQuery({
+        queryKey: getQueryKey(network),
+        queryFn: getQueryFn(network)
+      })
+      .catch(Logger.error)
   }
 }
 
-export const useNetworkFee = (network?: Network) => {
-  const activeNetwork = useSelector(selectActiveNetwork)
+export const useNetworkFee = (
+  network?: Network
+): UseQueryResult<NetworkFee<NetworkTokenUnit> | undefined> => {
+  const { activeNetwork } = useNetworks()
   const networkToRequest = network || activeNetwork
 
-  const query = useQuery({
+  return useQuery({
     queryKey: getQueryKey(networkToRequest),
     queryFn: getQueryFn(networkToRequest),
     refetchInterval: REFETCH_INTERVAL
   })
-
-  return { ...query, data: query.data || defaultData }
 }

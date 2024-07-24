@@ -15,11 +15,11 @@ const ActionItems = ({
   items: Record<string, ActionProp>
   resetOnItemPress: boolean
   reset: () => void
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
 
-  const renderItems = () => {
-    const rItems = [] as Element[]
+  const renderItems = (): JSX.Element[] => {
+    const rItems = [] as JSX.Element[]
     Object.keys(items).forEach(key => {
       const value = items[key]
       try {

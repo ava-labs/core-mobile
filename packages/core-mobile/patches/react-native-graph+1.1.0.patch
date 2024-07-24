@@ -1,0 +1,165 @@
+diff --git a/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts b/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts
+index 24e96f2..9163c3d 100644
+--- a/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts
++++ b/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts
+@@ -46,6 +46,7 @@ interface BaseLineGraphProps extends ViewProps {
+ }
+ export declare type StaticLineGraphProps = BaseLineGraphProps & {};
+ export declare type AnimatedLineGraphProps = BaseLineGraphProps & {
++    shadowColor?: string;
+     /**
+      * Whether to enable Graph scrubbing/pan gesture.
+      */
+diff --git a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
+index bee225a..c8dd381 100644
+--- a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
++++ b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
+@@ -53,6 +53,7 @@ const INDICATOR_PULSE_BLUR_RADIUS_BIG =
+ export function AnimatedLineGraph({
+   points: allPoints,
+   color,
++  shadowColor,
+   gradientFillColors,
+   lineThickness = 3,
+   range,
+@@ -341,7 +342,7 @@ export function AnimatedLineGraph({
+         (fingerXInRange /
+           getXInRange(
+             drawingWidth,
+-            pointsInRange[pointsInRange.length - 1]!.date,
++            pointsInRange[pointsInRange.length - 1].date,
+             pathRange.x
+           )) *
+           (pointsInRange.length - 1)
+@@ -369,19 +370,14 @@ export function AnimatedLineGraph({
+   const setFingerX = useCallback(
+     (fingerX: number) => {
+       'worklet'
+-
+-      const y = getYForX(commands.value, fingerX)
+-
+-      if (y != null) {
++      if (!pointsInRange?.[pointsInRange.length - 1]?.date) return 
+         circleX.value = fingerX
+-        circleY.value = y
+-      }
+ 
+       if (isActive.value) pathEnd.value = fingerX / width
+     },
+     // pathRange.x must be extra included in deps otherwise onPointSelected doesn't work, IDK why
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+-    [circleX, circleY, isActive, pathEnd, pathRange.x, width, commands]
++    [circleX, isActive, pathEnd, pathRange.x, width, commands]
+   )
+ 
+   const setIsActive = useCallback(
+@@ -481,6 +477,7 @@ export function AnimatedLineGraph({
+                     colors={gradientColors}
+                     positions={positions}
+                   />
++                  {shadowColor && <Shadow dx={-1} dy={-1} color={shadowColor}  blur={3} />}
+                 </Path>
+ 
+                 {shouldFillGradient && (
+diff --git a/node_modules/react-native-graph/src/CreateGraphPath.ts b/node_modules/react-native-graph/src/CreateGraphPath.ts
+index 67e9a2e..e4a9c39 100644
+--- a/node_modules/react-native-graph/src/CreateGraphPath.ts
++++ b/node_modules/react-native-graph/src/CreateGraphPath.ts
+@@ -193,7 +193,7 @@ function createGraphPathBase({
+           return pixel + additionalPixel === exactPointX
+         })
+ 
+-      if (!isExactPointInsidePixelRatio) continue
++      // if (!isExactPointInsidePixelRatio) continue
+     }
+ 
+     const value = graphData[index]!.value
+diff --git a/node_modules/react-native-graph/src/LineGraphProps.ts b/node_modules/react-native-graph/src/LineGraphProps.ts
+index 21e147f..4a618db 100644
+--- a/node_modules/react-native-graph/src/LineGraphProps.ts
++++ b/node_modules/react-native-graph/src/LineGraphProps.ts
+@@ -53,6 +53,7 @@ export type StaticLineGraphProps = BaseLineGraphProps & {
+   /* any static-only line graph props? */
+ }
+ export type AnimatedLineGraphProps = BaseLineGraphProps & {
++  shadowColor?: string
+   /**
+    * Whether to enable Graph scrubbing/pan gesture.
+    */
+diff --git a/node_modules/react-native-graph/src/StaticLineGraph.tsx b/node_modules/react-native-graph/src/StaticLineGraph.tsx
+index 5790400..a24ece4 100644
+--- a/node_modules/react-native-graph/src/StaticLineGraph.tsx
++++ b/node_modules/react-native-graph/src/StaticLineGraph.tsx
+@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useState } from 'react'
+ import { View, StyleSheet, LayoutChangeEvent } from 'react-native'
+ import {
+   createGraphPath,
++  createGraphPathWithGradient,
+   getGraphPathRange,
+   getPointsInRange,
+   GraphPathRange,
+@@ -17,11 +18,14 @@ export function StaticLineGraph({
+   lineThickness = 3,
+   enableFadeInMask,
+   style,
++  gradientFillColors,
+   ...props
+ }: StaticLineGraphProps): React.ReactElement {
+   const [width, setWidth] = useState(0)
+   const [height, setHeight] = useState(0)
+ 
++  const shouldFillGradient = gradientFillColors != null
++
+   const onLayout = useCallback(
+     ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
+       setWidth(Math.round(layout.width))
+@@ -40,17 +44,26 @@ export function StaticLineGraph({
+     [allPoints, pathRange]
+   )
+ 
+-  const path = useMemo(
+-    () =>
+-      createGraphPath({
++  const [path, gradientPath] = useMemo(
++    () => {
++      const createGraphPathProps = {
+         pointsInRange: pointsInRange,
+         range: pathRange,
+         canvasHeight: height,
+         canvasWidth: width,
+         horizontalPadding: lineThickness,
+         verticalPadding: lineThickness,
+-      }),
+-    [height, lineThickness, pathRange, pointsInRange, width]
++      }
++
++      if (shouldFillGradient) {
++        const { path, gradientPath } = createGraphPathWithGradient(createGraphPathProps)
++        return [path, gradientPath]
++      } else {
++        const path = createGraphPath(createGraphPathProps)
++        return [path, undefined]
++      }
++    },
++    [shouldFillGradient, height, lineThickness, pathRange, pointsInRange, width]
+   )
+ 
+   const gradientColors = useMemo(
+@@ -80,6 +93,17 @@ export function StaticLineGraph({
+             />
+           )}
+         </Path>
++        {shouldFillGradient && (
++          <Path 
++           // @ts-ignore
++           path={gradientPath}>
++            <LinearGradient
++              start={vec(0, 0)}
++              end={vec(0, height)}
++              colors={gradientFillColors}
++            />
++           </Path>
++        )}
+       </Canvas>
+     </View>
+   )

@@ -6,29 +6,24 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   selectIsAnalyticsEnabled,
-  selectIsBridgeBlocked,
   selectIsBridgeBtcBlocked,
   selectIsBridgeEthBlocked,
   selectIsBrowserBlocked,
   selectIsCoinbasePayBlocked,
   selectIsEarnBlocked,
   selectIsEventsBlocked,
-  selectIsSendBlocked,
   selectIsSendNftBlockedAndroid,
   selectIsSendNftBlockediOS,
-  selectIsSwapBlocked,
   selectSentrySampleRate,
-  selectUseCoinGeckoPro,
   toggleAnalytics
-} from 'store/posthog'
-import { createInstance } from 'services/token/TokenService'
+} from 'store/posthog/slice'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { commonStorage } from 'utils/mmkv'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -36,18 +31,14 @@ export const PosthogContext = createContext<PosthogContextState>(
 
 export interface PosthogContextState {
   setAnalyticsConsent: Dispatch<boolean | undefined>
-  swapBlocked: boolean
-  bridgeBlocked: boolean
   bridgeBtcBlocked: boolean
   bridgeEthBlocked: boolean
   earnBlocked: boolean
   browserBlocked: boolean
-  sendBlocked: boolean
   sendNftBlockediOS: boolean
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
   coinbasePayBlocked: boolean
-  useCoinGeckoPro: boolean
 }
 
 export const PosthogContextProvider = ({
@@ -56,28 +47,23 @@ export const PosthogContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
   const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
 
   // TODO: in react components, use flags directly from redux
-  const swapBlocked = useSelector(selectIsSwapBlocked)
-  const bridgeBlocked = useSelector(selectIsBridgeBlocked)
   const bridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
   const bridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
   const earnBlocked = useSelector(selectIsEarnBlocked)
-  const sendBlocked = useSelector(selectIsSendBlocked)
   const sendNftBlockediOS = useSelector(selectIsSendNftBlockediOS)
   const sendNftBlockedAndroid = useSelector(selectIsSendNftBlockedAndroid)
   const eventsBlocked = useSelector(selectIsEventsBlocked)
   const sentrySampleRate = useSelector(selectSentrySampleRate)
   const coinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
-  const useCoinGeckoPro = useSelector(selectUseCoinGeckoPro)
   const browserBlocked = useSelector(selectIsBrowserBlocked)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
-    getTime: async () => AsyncStorage.getItem('POSTHOG_SUSPENDED'),
-    setTime: async time => AsyncStorage.setItem('POSTHOG_SUSPENDED', time)
+    getTime: () => commonStorage.getString('POSTHOG_SUSPENDED'),
+    setTime: time => commonStorage.set('POSTHOG_SUSPENDED', time)
   })
 
   const [analyticsConsent, setAnalyticsConsent] = useState<
@@ -89,23 +75,18 @@ export const PosthogContextProvider = ({
     [sentrySampleRate]
   )
 
-  useEffect(() => {
-    createInstance(useCoinGeckoPro)
-  }, [useCoinGeckoPro])
-
   useEffect(setEventsLogging, [
     analyticsConsent,
     eventsBlocked,
-    capture,
     dispatch,
     isAnalyticsEnabled
   ])
 
-  useEffect(checkRestartSession, [capture, timeoutPassed])
+  useEffect(checkRestartSession, [timeoutPassed])
 
   function checkRestartSession(): void {
     if (timeoutPassed) {
-      capture('AnalyticsEnabled')
+      AnalyticsService.capture('AnalyticsEnabled')
     }
   }
   /**
@@ -122,10 +103,10 @@ export const PosthogContextProvider = ({
     if (analyticsConsent || analyticsConsent === undefined) {
       if (!isAnalyticsEnabled) {
         dispatch(toggleAnalytics(true))
-        capture('AnalyticsEnabled')
+        AnalyticsService.capture('AnalyticsEnabled')
       }
     } else {
-      capture('AnalyticsDisabled')
+      AnalyticsService.capture('AnalyticsDisabled')
       dispatch(toggleAnalytics(false))
     }
   }
@@ -134,17 +115,13 @@ export const PosthogContextProvider = ({
     <PosthogContext.Provider
       value={{
         setAnalyticsConsent,
-        swapBlocked,
-        bridgeBlocked,
         bridgeBtcBlocked,
         bridgeEthBlocked,
         earnBlocked,
-        sendBlocked,
         sendNftBlockediOS,
         sendNftBlockedAndroid,
         sentrySampleRate,
         coinbasePayBlocked,
-        useCoinGeckoPro,
         browserBlocked
       }}>
       {children}

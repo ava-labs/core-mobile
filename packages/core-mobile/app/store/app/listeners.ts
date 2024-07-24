@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
 import { AppState, AppStateStatus, Platform } from 'react-native'
@@ -15,10 +14,14 @@ import {
 import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
-import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import SecureStorageService from 'security/SecureStorageService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { commonStorage } from 'utils/mmkv'
+import { reduxStorage } from 'store/reduxStorage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import BootSplash from 'react-native-bootsplash'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -44,13 +47,8 @@ const init = async (
   isWalletActive && dispatch(setWalletState(WalletState.INACTIVE))
 
   const fontScale = await DeviceInfo.getFontScale()
-  dispatch(
-    capture({
-      event: 'ApplicationLaunched',
-      properties: { FontScale: fontScale }
-    })
-  )
-  dispatch(capture({ event: 'ApplicationOpened' }))
+  AnalyticsService.capture('ApplicationLaunched', { FontScale: fontScale })
+  AnalyticsService.capture('ApplicationOpened')
   listenToAppState(listenerApi)
 
   if (Platform.OS === 'android') {
@@ -78,7 +76,7 @@ const listenToAppState = async (
         nextAppState === 'active'
       ) {
         Logger.info('app comes back to foreground')
-        dispatch(capture({ event: 'ApplicationOpened' }))
+        AnalyticsService.capture('ApplicationOpened')
         dispatch(onForeground())
       } else if (nextAppState === 'background') {
         Logger.info('app goes to background')
@@ -95,7 +93,7 @@ const listenToAppState = async (
 }
 
 const lockApp = async (
-  _: Action,
+  action: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch, condition } = listenerApi
@@ -121,7 +119,8 @@ const lockApp = async (
   )
 
   // when app goes to background, lock the app after [TIME_TO_LOCK_IN_SECONDS] seconds
-  if (secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
+  const isTimeManipulated = secondsPassed < 0
+  if (isTimeManipulated || secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
     if (walletState === WalletState.ACTIVE) {
@@ -152,9 +151,17 @@ const clearData = async (
   await SecureStorageService.clearAll().catch(e =>
     Logger.error('failed to clear secure store', e)
   )
+  await reduxStorage
+    .clear()
+    .catch(e => Logger.error('failed to clear reduxStorage', e))
   await AsyncStorage.clear().catch(e =>
     Logger.error('failed to clear async store', e)
   )
+  try {
+    commonStorage.clearAll()
+  } catch (e) {
+    Logger.error('failed to clear common storage', e)
+  }
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {
@@ -176,5 +183,12 @@ export const addAppListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onLogOut,
     effect: clearData
+  })
+
+  startListening({
+    actionCreator: setIsReady,
+    effect: () => {
+      BootSplash.hide()
+    }
   })
 }

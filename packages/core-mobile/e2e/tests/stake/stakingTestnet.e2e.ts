@@ -1,8 +1,8 @@
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
+import AccountManagePage from '../../pages/accountManage.page'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import DurationPage from '../../pages/Stake/duration.page'
 import { warmup } from '../../helpers/warmup'
@@ -14,14 +14,20 @@ describe('Stake: testnet flow', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    if (process.env.SEEDLESS_TEST === 'true') {
+      await AdvancedPage.switchToMainnet()
+    }
+  })
+
   it('should verify staking amount screen items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
+    await GetStartedScreenPage.verifyGetStartedScreenItems()
     await GetStartedScreenPage.tapNextButton()
     await StakePage.verifyStakingAmountScreenItems()
-    await StakePage.inputStakingAmount('2')
+    await StakePage.inputStakingAmount('1')
     await StakePage.tapNextButton()
   })
 
@@ -49,5 +55,12 @@ describe('Stake: testnet flow', () => {
 
   it('should verify active staking items', async () => {
     await StakePage.verifyActiveTabItems()
+  })
+
+  it('should verify no active stakes screen', async () => {
+    await BottomTabsPage.tapPortfolioTab()
+    await AccountManagePage.createNthAccountAndSwitchToNth(3)
+    await BottomTabsPage.tapStakeTab()
+    await StakePage.verifyNoActiveStakesScreenItems()
   })
 })

@@ -1,125 +1,103 @@
-import React from 'react'
-import FlexSpacer from 'components/FlexSpacer'
-import AvaButton from 'components/AvaButton'
-import AvaText from 'components/AvaText'
+import React, { useEffect } from 'react'
 import { Space } from 'components/Space'
-import { Linking, ScrollView } from 'react-native'
-import AppNavigation from 'navigation/AppNavigation'
-import { Row } from 'components/Row'
-import CheckmarkSVG from 'components/svg/CheckmarkSVG'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { PRIVACY_POLICY_URL } from 'resources/Constants'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useDispatch } from 'react-redux'
-import { setCoreAnalytics } from 'store/settings/securityPrivacy'
+import {
+  Button,
+  Icons,
+  ScrollView,
+  Text,
+  View,
+  useTheme
+} from '@avalabs/k2-mobile'
+import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
+import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
 
 type Props = {
-  nextScreen:
-    | typeof AppNavigation.Onboard.CreateWalletStack
-    | typeof AppNavigation.Onboard.EnterWithMnemonicStack
-    | typeof AppNavigation.Onboard.CreatePin
-  onNextScreen: (
-    screen:
-      | typeof AppNavigation.Onboard.CreateWalletStack
-      | typeof AppNavigation.Onboard.EnterWithMnemonicStack
-      | typeof AppNavigation.Onboard.CreatePin
-  ) => void
+  title?: string
+  onDone: () => void
 }
 
-const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props): JSX.Element => {
+const AnalyticsConsent = ({ title, onDone }: Props): JSX.Element => {
   const dispatch = useDispatch()
-  const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
-
-  function openPrivacyPolicy(): void {
-    Linking.openURL(PRIVACY_POLICY_URL)
-  }
+  const { accept, reject } = useAnalyticsConsent()
+  const {
+    theme: { colors }
+  } = useTheme()
 
   function acceptAnalytics(): void {
-    capture('OnboardingAnalyticsAccepted')
-    dispatch(setCoreAnalytics(true))
-    onNextScreen(nextScreen)
+    accept()
+    onDone()
   }
 
   function rejectAnalytics(): void {
-    capture('OnboardingAnalyticsRejected')
-    dispatch(setCoreAnalytics(false))
-    onNextScreen(nextScreen)
+    reject()
+    onDone()
   }
 
+  useEffect(() => {
+    return () => {
+      dispatch(setViewOnce(ViewOnceKey.ANALYTICS_CONSENT))
+    }
+  }, [dispatch])
+
   return (
-    <ScrollView
-      contentContainerStyle={{
-        minHeight: '100%',
-        paddingHorizontal: 16,
-        paddingBottom: 32
-      }}>
-      <AvaText.LargeTitleBold>Help Us Improve</AvaText.LargeTitleBold>
-      <Space y={23} />
-      <AvaText.Body1>
-        Core would like to gather data to understand how users interact with the
-        app.
-      </AvaText.Body1>
-      <Space y={16} />
-      <AvaText.Body1>
-        {
-          'This enables us to develop improvements. To learn more please read our '
-        }
-        <AvaText.Body1
-          textStyle={{ color: theme.colorPrimary1 }}
-          onPress={openPrivacyPolicy}>
-          Privacy Policy
-        </AvaText.Body1>
-        . You can always opt out by visiting the settings page.
-      </AvaText.Body1>
-      <Space y={24} />
-      <FlexSpacer />
-      <AvaText.Heading2 textStyle={{ alignSelf: 'center' }}>
-        Core will...
-      </AvaText.Heading2>
-      <Space y={24} />
-      <Row style={{ alignItems: 'center', paddingHorizontal: 8 }}>
-        <CheckmarkSVG color={theme.colorSuccess} />
-        <Space x={20} />
-        <AvaText.Body1 textStyle={{ flex: 1 }}>
-          <AvaText.Body1 textStyle={{ fontWeight: 'bold' }}>
-            Never{' '}
-          </AvaText.Body1>
-          collect keys, public addresses, balances, or hashes
-        </AvaText.Body1>
-      </Row>
-      <Space y={24} />
-      <Row style={{ alignItems: 'center', paddingHorizontal: 8 }}>
-        <CheckmarkSVG color={theme.colorSuccess} />
-        <Space x={20} />
-        <AvaText.Body1 textStyle={{ flex: 1 }}>
-          <AvaText.Body1 textStyle={{ fontWeight: 'bold' }}>
-            Never{' '}
-          </AvaText.Body1>
-          collect full IP addresses
-        </AvaText.Body1>
-      </Row>
-      <Space y={24} />
-      <Row style={{ alignItems: 'center', paddingHorizontal: 8 }}>
-        <CheckmarkSVG color={theme.colorSuccess} />
-        <Space x={20} />
-        <AvaText.Body1 textStyle={{ flex: 1 }}>
-          <AvaText.Body1 textStyle={{ fontWeight: 'bold' }}>
-            Never{' '}
-          </AvaText.Body1>
-          sell or share data. Ever!
-        </AvaText.Body1>
-      </Row>
-      <FlexSpacer />
-      <Space y={24} />
-      <AvaButton.SecondaryLarge onPress={acceptAnalytics} testID="iAgreeBtn">
-        I Agree
-      </AvaButton.SecondaryLarge>
-      <Space y={16} />
-      <AvaButton.SecondaryLarge onPress={rejectAnalytics} testID="noThanksBtn">
-        No Thanks
-      </AvaButton.SecondaryLarge>
-    </ScrollView>
+    <>
+      <ScrollView
+        sx={{ zIndex: 100 }}
+        contentContainerStyle={{
+          minHeight: '100%',
+          paddingHorizontal: 16,
+          paddingBottom: 32
+        }}>
+        {(title ?? '').length > 0 && (
+          <>
+            <Text variant="heading3">{title}</Text>
+          </>
+        )}
+        <Space y={24} />
+        <Text testID="anlaysticsContent" variant="body1">
+          As a Core user, you have the option to opt-in for{' '}
+          <Text variant="body1" sx={{ fontWeight: '700' }}>
+            airdrop rewards
+          </Text>{' '}
+          based on your activity and engagement. Core will collect anonymous
+          interaction data to power this feature.
+        </Text>
+        <Space y={16} />
+        <Text testID="anlaysticsContent" variant="body1">
+          Core is committed to protecting your privacy. We will{' '}
+          <Text variant="body1" sx={{ fontWeight: '700' }}>
+            never
+          </Text>{' '}
+          sell or share your data. If you wish, you can disable this at any time
+          in the settings menu.
+        </Text>
+      </ScrollView>
+      <View sx={{ padding: 16 }}>
+        <View sx={{ position: 'absolute', top: -250, right: -95 }}>
+          <Icons.Custom.Airdrop
+            width={320}
+            height={320}
+            color={colors.$neutral800}
+          />
+        </View>
+        <Button
+          size="xlarge"
+          type="primary"
+          onPress={acceptAnalytics}
+          testID="iAgreeBtn">
+          Unlock
+        </Button>
+        <Space y={16} />
+        <Button
+          size="xlarge"
+          type="secondary"
+          onPress={rejectAnalytics}
+          testID="noThanksBtn">
+          No Thanks
+        </Button>
+      </View>
+    </>
   )
 }
 

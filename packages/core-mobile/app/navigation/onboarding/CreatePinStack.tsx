@@ -4,17 +4,15 @@ import { useNavigation } from '@react-navigation/native'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import { createStackNavigator } from '@react-navigation/stack'
-import { MainHeaderOptions } from 'navigation/NavUtils'
+import { MainHeaderOptions, getModalOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { useWallet } from 'hooks/useWallet'
-import { useDispatch } from 'react-redux'
-import { onLogIn } from 'store/app'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { CreateWalletScreenProps } from '../types'
 
 // This stack is for Seedless
@@ -40,7 +38,9 @@ const CreatePinStack: () => JSX.Element = () => {
         component={BiometricLoginScreen}
       />
       <CreatePinS.Screen
-        options={{ presentation: 'transparentModal' }}
+        options={{
+          ...getModalOptions()
+        }}
         name={AppNavigation.CreateWallet.TermsNConditions}
         component={TermsNConditionsModalScreen}
       />
@@ -59,10 +59,9 @@ type CreatePinNavigationProp = CreateWalletScreenProps<
 const CreatePinScreen = (): JSX.Element => {
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = usePostCapture()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet')
+    AnalyticsService.capture('OnboardingPasswordSet')
 
     /**
      * we are using a dummy mnemonic here
@@ -96,7 +95,7 @@ const BiometricLoginScreen = (): JSX.Element => {
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
   return (
     <BiometricLogin
-      mnemonic={''}
+      mnemonic={SEEDLESS_MNEMONIC_STUB}
       onBiometrySet={() => {
         navigate(AppNavigation.CreateWallet.TermsNConditions)
       }}
@@ -106,10 +105,9 @@ const BiometricLoginScreen = (): JSX.Element => {
 }
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
-  const { initWallet } = useWallet()
+  const { login } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
-  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
@@ -117,11 +115,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
           // creating/recovering a seedless wallet
-          initWallet(SEEDLESS_MNEMONIC_STUB, WalletType.SEEDLESS)
-            .then(() => {
-              dispatch(onLogIn())
-            })
-            .catch(Logger.error)
+          login(SEEDLESS_MNEMONIC_STUB, WalletType.SEEDLESS).catch(Logger.error)
         }, 300)
       }}
       onReject={() => signOut()}

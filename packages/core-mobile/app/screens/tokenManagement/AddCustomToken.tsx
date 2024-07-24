@@ -43,6 +43,7 @@ const AddCustomToken: FC = () => {
       <View style={styles.horizontalLayout}>
         <View style={[{ flex: 1, paddingStart: 4, paddingEnd: 4 }]}>
           <InputText
+            testID="tokenAddress"
             minHeight={72}
             label={'Token contract address'}
             placeholder="Token contract address"
@@ -69,9 +70,13 @@ const AddCustomToken: FC = () => {
       {!!token && (
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           {/* placeholder for image or initials if there's no image available*/}
-          <Avatar.Custom name={token?.name} symbol={token?.symbol} size={88} />
+          <Avatar.Custom
+            name={token.name ?? ''}
+            symbol={token.symbol}
+            size={88}
+          />
           <Space y={16} />
-          <AvaText.Heading2>{token?.name}</AvaText.Heading2>
+          <AvaText.Heading2>{token.name}</AvaText.Heading2>
         </View>
       )}
 

@@ -3,21 +3,28 @@ import {
   ActivityIndicator,
   Appearance,
   Keyboard,
+  TextInput,
   NativeSyntheticEvent,
   StyleProp,
-  TextInput,
   TextInputFocusEventData,
   TextStyle,
-  View,
-  ViewStyle
+  ViewStyle,
+  LayoutChangeEvent
 } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Opacity50 } from 'resources/Constants'
 import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { Row } from 'components/Row'
-import AvaText from './AvaText'
+import {
+  alpha,
+  useTheme,
+  View,
+  Text,
+  Button,
+  SxProp,
+  Pressable,
+  Icons
+} from '@avalabs/k2-mobile'
 import AvaButton from './AvaButton'
 import { Tooltip } from './Tooltip'
 import InfoSVG from './svg/InfoSVG'
@@ -29,9 +36,11 @@ type Mode =
   | 'confirmEntry'
   | 'percentage'
   | 'currency'
+  | 'url'
 
 export type InputTextProps = {
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
+  onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onChangeText?: (text: string) => void
   editable?: boolean
   multiline?: boolean
@@ -39,6 +48,7 @@ export type InputTextProps = {
   maxLength?: number
   onSubmit?: () => void
   onMax?: () => void
+  onRefresh?: () => void
   onConfirm?: (text: string) => void
   placeholder?: string
   // Shows label above input
@@ -67,6 +77,11 @@ export type InputTextProps = {
   keyboardWillShow?: () => void
   keyboardDidHide?: () => void
   testID?: string
+  autoCorrect?: boolean
+  inputTextContainerStyle?: SxProp
+  onLayout?: (event: LayoutChangeEvent) => void
+  clearBtnContainerSx?: SxProp
+  borderColor?: string
 }
 
 const InputText = forwardRef<TextInput, InputTextProps>(
@@ -76,6 +91,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       helperText,
       errorText,
       onBlur,
+      onFocus,
       onChangeText,
       currency,
       style,
@@ -88,6 +104,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       popOverPosition,
       mode = 'default',
       onMax,
+      onRefresh,
       width,
       minHeight,
       maxLength,
@@ -100,17 +117,19 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       selectTextOnFocus,
       paddingVertical = 12,
       keyboardWillShow,
-      keyboardDidHide
+      keyboardDidHide,
+      autoCorrect,
+      inputTextContainerStyle,
+      onLayout,
+      clearBtnContainerSx,
+      borderColor = 'transparent',
+      testID
     },
     ref
   ) => {
-    const context = useApplicationContext()
     const [showInput, setShowInput] = useState(false)
     const [toggleShowText, setToggleShowText] = useState('Show')
-
-    const [selection, setSelection] = useState<{ start: number } | undefined>({
-      start: 0
-    })
+    const [isFocused, setIsFocused] = useState(false)
 
     useEffect(() => {
       const sub1 = Keyboard.addListener('keyboardWillShow', _ => {
@@ -140,22 +159,24 @@ const InputText = forwardRef<TextInput, InputTextProps>(
     }
 
     const handleBlur = useCallback(
-      args => {
-        setSelection({ start: 0 })
+      (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
         onBlur?.(args)
+        setIsFocused(false)
       },
       [onBlur]
     )
 
-    const handleFocus = (): void => {
-      // set cursor at end of text
-      setSelection({ start: text.length })
+    const handleFocus = useCallback(
+      (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        setIsFocused(true)
 
-      // disable selection so that user can position cursor on its own
-      setTimeout(() => setSelection(undefined), 100)
-    }
-
-    const theme = context.theme
+        onFocus?.(args)
+      },
+      [onFocus]
+    )
+    const {
+      theme: { colors }
+    } = useTheme()
 
     const onTextChanged = (txt: string): void => {
       if (keyboardType === 'numeric') {
@@ -183,22 +204,26 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             popOverInfoText={popOverInfoText}
             popOverPosition={popOverPosition}
             label={label}
-            backgroundColor={context.theme.neutral100}
+            backgroundColor={colors.$neutral100}
           />
         )}
         <View
-          style={{
-            justifyContent: 'center'
+          sx={{
+            justifyContent: 'center',
+            ...inputTextContainerStyle
           }}>
           <TextInput
+            onLayout={onLayout}
+            selectionColor={colors.$neutral50}
             maxLength={maxLength}
-            testID="input_text"
+            testID={testID}
             keyboardAppearance={Appearance.getColorScheme() || 'default'}
             ref={ref}
+            autoCorrect={autoCorrect}
             autoFocus={autoFocus}
             autoCapitalize="none"
             placeholder={placeholder}
-            placeholderTextColor={theme.colorText2}
+            placeholderTextColor={colors.$neutral400}
             blurOnSubmit={true}
             secureTextEntry={mode === 'private' && !showInput}
             onSubmitEditing={submit}
@@ -212,12 +237,14 @@ const InputText = forwardRef<TextInput, InputTextProps>(
               {
                 minHeight: minHeight,
                 flexGrow: 0,
-                color: theme.colorText1,
+                color: colors.$neutral50,
                 fontSize: 16,
                 borderWidth: 1,
                 borderRadius: 8,
+                borderColor,
                 textAlignVertical: multiline ? 'top' : 'center',
-                backgroundColor: backgroundColor || theme.colorBg3 + Opacity50,
+                backgroundColor:
+                  backgroundColor || alpha(colors.$neutral800, 0.5),
                 paddingStart: 16,
                 paddingEnd: paddingEnd(loading, mode, onMax),
                 paddingTop: paddingVertical,
@@ -229,12 +256,19 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             ]}
             onBlur={handleBlur}
             onFocus={handleFocus}
-            selection={selection}
             onChangeText={onTextChanged}
             value={text}
           />
-          {mode === 'default' && text.length > 0 && (
-            <ClearBtn color={theme.colorText2} onClear={onClear} />
+          {((mode === 'default' && text.length > 0) ||
+            (mode === 'url' && isFocused && text.length > 0)) && (
+            <View
+              sx={{
+                position: 'absolute',
+                right: 8,
+                ...clearBtnContainerSx
+              }}>
+              <ClearBtn color={colors.$neutral400} onClear={onClear} />
+            </View>
           )}
           {mode === 'private' && text.length > 0 && (
             <ShowPassBtn
@@ -254,12 +288,24 @@ const InputText = forwardRef<TextInput, InputTextProps>(
               size={'small'}
             />
           )}
+          {mode === 'url' && !isFocused && (
+            <View
+              sx={{
+                position: 'absolute',
+                right: 8,
+                ...clearBtnContainerSx
+              }}>
+              <Pressable onPress={onRefresh}>
+                <Icons.Navigation.Refresh color={colors.$neutral50} />
+              </Pressable>
+            </View>
+          )}
         </View>
 
         {helperText && <HelperText helperText={helperText} />}
 
         {errorText && (
-          <ErrorText color={theme.colorError} errorText={errorText} />
+          <ErrorText color={colors.$dangerMain} errorText={errorText} />
         )}
       </View>
     )
@@ -289,15 +335,17 @@ const paddingEnd = (
 function MaxBtn({ onPress }: { onPress?: () => void }): JSX.Element {
   return (
     <View
-      style={[
-        {
-          position: 'absolute',
-          end: 0
-        }
-      ]}>
-      <AvaButton.TextMedium onPress={onPress} testID="input_text__max_button">
+      sx={{
+        position: 'absolute',
+        end: 0
+      }}>
+      <Button
+        type="tertiary"
+        size="small"
+        onPress={onPress}
+        testID="input_text__max_button">
         Max
-      </AvaButton.TextMedium>
+      </Button>
     </View>
   )
 }
@@ -305,12 +353,10 @@ function MaxBtn({ onPress }: { onPress?: () => void }): JSX.Element {
 function ConfirmBtn({ onPress }: { onPress?: () => void }): JSX.Element {
   return (
     <View
-      style={[
-        {
-          position: 'absolute',
-          end: 16
-        }
-      ]}>
+      sx={{
+        position: 'absolute',
+        end: 16
+      }}>
       <AvaButton.Icon onPress={onPress} testID="input_text__confirm_button">
         <CheckmarkSVG />
       </AvaButton.Icon>
@@ -330,7 +376,7 @@ const Label = ({
   backgroundColor: string
 }): JSX.Element => {
   return (
-    <View style={{ alignSelf: 'baseline' }}>
+    <View sx={{ alignSelf: 'baseline' }}>
       {popOverInfoText ? (
         <Tooltip
           content={popOverInfoText}
@@ -339,15 +385,15 @@ const Label = ({
           backgroundColor={backgroundColor}
           isLabelPopable>
           <Row style={{ alignItems: 'center' }}>
-            <AvaText.Body2>{label ?? ''}</AvaText.Body2>
+            <Text variant="body2">{label ?? ''}</Text>
             <Space x={6} />
             <InfoSVG size={14} />
           </Row>
         </Tooltip>
       ) : (
-        <AvaText.Body2>{label ?? ''}</AvaText.Body2>
+        <Text variant="body2">{label ?? ''}</Text>
       )}
-      <View style={{ height: 8 }} />
+      <View sx={{ height: 8 }} />
     </View>
   )
 }
@@ -360,31 +406,21 @@ const ClearBtn = ({
   color: string
 }): JSX.Element => {
   return (
-    <View
-      style={[
-        {
-          position: 'absolute',
-          right: 8
-        }
-      ]}>
-      <AvaButton.Icon onPress={onClear} testID="input_text__clear_button">
-        <ClearInputSVG color={color} size={14} />
-      </AvaButton.Icon>
-    </View>
+    <AvaButton.Icon onPress={onClear} testID="input_text__clear_button">
+      <ClearInputSVG color={color} size={14} />
+    </AvaButton.Icon>
   )
 }
 
 const Percent = (): JSX.Element => {
   return (
     <View
-      style={[
-        {
-          position: 'absolute',
-          justifyContent: 'center',
-          end: 16
-        }
-      ]}>
-      <AvaText.Heading3>%</AvaText.Heading3>
+      sx={{
+        position: 'absolute',
+        justifyContent: 'center',
+        end: 16
+      }}>
+      <Text variant="body1">%</Text>
     </View>
   )
 }
@@ -392,14 +428,12 @@ const Percent = (): JSX.Element => {
 const Currency = ({ currency }: { currency?: string }): JSX.Element => {
   return (
     <View
-      style={[
-        {
-          position: 'absolute',
-          justifyContent: 'center',
-          end: 16
-        }
-      ]}>
-      <AvaText.Heading3>{currency}</AvaText.Heading3>
+      sx={{
+        position: 'absolute',
+        justifyContent: 'center',
+        end: 16
+      }}>
+      <Text variant="heading3">{currency}</Text>
     </View>
   )
 }
@@ -413,15 +447,13 @@ const ShowPassBtn = ({
 }): JSX.Element => {
   return (
     <View
-      style={[
-        {
-          position: 'absolute',
-          end: 0
-        }
-      ]}>
-      <AvaButton.TextMedium onPress={onToggleShowInput}>
+      sx={{
+        position: 'absolute',
+        end: 0
+      }}>
+      <Button type="primary" size="xlarge" onPress={onToggleShowInput}>
         {toggleShowText}
-      </AvaButton.TextMedium>
+      </Button>
     </View>
   )
 }
@@ -435,11 +467,12 @@ const HelperText = ({
     <>
       <Space y={5} />
       {!!helperText && typeof helperText === 'string' ? (
-        <AvaText.Body2
-          textStyle={{ textAlign: 'left' }}
+        <Text
+          variant="body2"
+          sx={{ textAlign: 'left' }}
           testID="input_text__helper_text">
           {helperText}
-        </AvaText.Body2>
+        </Text>
       ) : (
         <View>{helperText}</View>
       )}
@@ -456,13 +489,13 @@ const ErrorText = ({
 }): JSX.Element => {
   return (
     <>
-      <View style={{ height: 4 }} />
-      <AvaText.Body3
-        textStyle={{ textAlign: 'left' }}
-        color={color}
+      <View sx={{ height: 4 }} />
+      <Text
+        variant="caption"
+        sx={{ textAlign: 'left', color }}
         testID="input_text__error_text">
         {errorText || ''}
-      </AvaText.Body3>
+      </Text>
     </>
   )
 }

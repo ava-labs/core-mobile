@@ -1,33 +1,21 @@
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from 'store/middleware/listener'
-import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
+import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app/slice'
 import {
-  capture,
   regenerateUserId,
   selectDistinctID,
   selectIsAnalyticsEnabled,
+  selectIsLogErrorsWithSentryBlocked,
   selectUserID,
-  setFeatureFlags
+  setFeatureFlags,
+  toggleAnalytics
 } from 'store/posthog/slice'
 import PostHogService from 'services/posthog/PostHogService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppListenerEffectAPI } from 'store'
-import { JsonMap } from './types'
+import Logger from 'utils/Logger'
 
-const FEATURE_FLAGS_FETCH_INTERVAL = 60000 // 1 minute
-
-export const posthogCapture = ({
-  distinctId,
-  posthogUserId,
-  event,
-  properties
-}: {
-  distinctId: string
-  posthogUserId: string
-  event: string
-  properties?: JsonMap
-}): Promise<void> => {
-  return PostHogService.capture(event, distinctId, posthogUserId, properties)
-}
+const FEATURE_FLAGS_FETCH_INTERVAL = 30000 // 30 seconds
 
 const fetchFeatureFlagsPeriodically = async (
   _: Action,
@@ -61,28 +49,47 @@ const posthogIdentifyUser = async (
   await PostHogService.identifyUser(distinctId)
 }
 
+const configure = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const userId = selectUserID(state)
+  const distinctId = selectDistinctID(state)
+  const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
+
+  PostHogService.configure({ distinctId, userId })
+
+  AnalyticsService.setEnabled(isAnalyticsEnabled)
+}
+
+const onSetFeatureFlags = async (
+  action: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+
+  const isLogErrorsWithSentryBlocked = selectIsLogErrorsWithSentryBlocked(state)
+  Logger.setShouldLogErrorToSentry(!isLogErrorsWithSentryBlocked)
+}
+
 export const addPosthogListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    actionCreator: onLogOut,
-    effect: async (action, api) => {
-      api.dispatch(regenerateUserId())
-    }
+    matcher: isAnyOf(
+      toggleAnalytics,
+      onLogIn,
+      regenerateUserId,
+      onRehydrationComplete
+    ),
+    effect: configure
   })
 
   startListening({
-    actionCreator: capture,
+    actionCreator: onLogOut,
     effect: async (action, api) => {
-      const state = api.getState()
-      const posthogUserId = selectUserID(state)
-      const distinctId = selectDistinctID(state)
-      const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
-      const { event, properties } = action.payload
-
-      if (isAnalyticsEnabled) {
-        posthogCapture({ distinctId, posthogUserId, event, properties })
-      }
+      api.dispatch(regenerateUserId())
     }
   })
 
@@ -94,5 +101,10 @@ export const addPosthogListeners = (
   startListening({
     actionCreator: onRehydrationComplete,
     effect: posthogIdentifyUser
+  })
+
+  startListening({
+    actionCreator: setFeatureFlags,
+    effect: onSetFeatureFlags
   })
 }

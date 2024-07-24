@@ -60,7 +60,8 @@ const recommended = {
         ]
       }
     ],
-    'sonarjs/no-duplicate-string': 0
+    'sonarjs/no-duplicate-string': 0,
+    'max-params': ['warn', 3]
   },
   overrides: [
     {

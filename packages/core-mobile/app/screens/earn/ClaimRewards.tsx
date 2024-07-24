@@ -8,8 +8,6 @@ import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
 import Separator from 'components/Separator'
 import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
@@ -19,19 +17,17 @@ import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
 const ClaimRewards = (): JSX.Element | null => {
-  const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
-  const activeNetwork = useSelector(selectActiveNetwork)
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
   const nAvaxFormatter = useNAvaxFormatter()
@@ -62,8 +58,6 @@ const ClaimRewards = (): JSX.Element | null => {
     return <EmptyClaimRewards />
   }
 
-  const tokenSymbol = activeNetwork.networkToken.symbol
-
   const [claimableAmountInAvax, claimableAmountInCurrency] = nAvaxFormatter(
     data.unlockedUnstaked[0]?.amount,
     true
@@ -72,7 +66,7 @@ const ClaimRewards = (): JSX.Element | null => {
   const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees, true)
 
   const cancelClaim = (): void => {
-    capture('StakeCancelClaim')
+    AnalyticsService.capture('StakeCancelClaim')
     if (onBack) {
       onBack()
     } else {
@@ -109,17 +103,17 @@ const ClaimRewards = (): JSX.Element | null => {
   }
 
   const issueClaimRewards = (): void => {
-    capture('StakeIssueClaim')
+    AnalyticsService.capture('StakeIssueClaim')
     claimRewardsMutation.mutate()
   }
 
   function onClaimSuccess(): void {
-    capture('StakeClaimSuccess')
+    AnalyticsService.capture('StakeClaimSuccess')
     goBack()
   }
 
   function onClaimError(error: Error): void {
-    capture('StakeClaimFail')
+    AnalyticsService.capture('StakeClaimFail')
     showSimpleToast(error.message)
   }
 
@@ -138,7 +132,7 @@ const ClaimRewards = (): JSX.Element | null => {
           <AvaText.Heading1
             textStyle={{ marginTop: -2 }}
             testID="claimable_balance">
-            {claimableAmountInAvax + ' ' + tokenSymbol}
+            {claimableAmountInAvax + ' AVAX'}
           </AvaText.Heading1>
         </Row>
         <Space y={4} />

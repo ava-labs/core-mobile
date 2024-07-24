@@ -1,65 +1,137 @@
+import { showSimpleToast } from 'components/Snackbar'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
+import { OidcProviders } from 'seedless/consts'
 import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { MFA, OidcPayload } from 'seedless/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import {
+  selectIsSeedlessMfaAuthenticatorBlocked,
+  selectIsSeedlessMfaPasskeyBlocked,
+  selectIsSeedlessMfaYubikeyBlocked
+} from 'store/posthog'
 import Logger from 'utils/Logger'
+import PasskeyService from 'services/passkey/PasskeyService'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import useVerifyMFA from './useVerifyMFA'
 
 type RegisterProps = {
-  oidcToken: string
-  onRegisterMfaMethods: (mfaId: string) => void
-  onVerifyMfaMethod: (mfaId: string) => void
+  getOidcToken: () => Promise<OidcPayload>
+  oidcProvider: OidcProviders
+  onRegisterMfaMethods: (oidcAuth?: {
+    oidcToken: string
+    mfaId: string
+  }) => void
+  onVerifyMfaMethod: (
+    oidcAuth: { oidcToken: string; mfaId: string },
+    mfaMethods: MFA[]
+  ) => void
+  onAccountVerified: () => void
 }
 
 type ReturnType = {
   isRegistering: boolean
   register: ({
-    oidcToken,
+    getOidcToken,
+    oidcProvider,
     onRegisterMfaMethods,
-    onVerifyMfaMethod
+    onVerifyMfaMethod,
+    onAccountVerified
   }: RegisterProps) => Promise<void>
+  verify: (
+    mfa: MFA,
+    oidcAuth: {
+      oidcToken: string
+      mfaId: string
+    },
+    onAccountVerified: () => void
+  ) => Promise<void>
 }
 
 export const useSeedlessRegister = (): ReturnType => {
   const [isRegistering, setIsRegistering] = useState(false)
 
+  const isSeedlessMfaAuthenticatorBlocked = useSelector(
+    selectIsSeedlessMfaAuthenticatorBlocked
+  )
+  const isSeedlessMfaPasskeyBlocked = useSelector(
+    selectIsSeedlessMfaPasskeyBlocked
+  )
+  const isSeedlessMfaYubikeyBlocked = useSelector(
+    selectIsSeedlessMfaYubikeyBlocked
+  )
+  const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
+
   const register = async ({
-    oidcToken,
+    getOidcToken,
+    oidcProvider,
     onRegisterMfaMethods,
-    onVerifyMfaMethod
+    onVerifyMfaMethod,
+    onAccountVerified
   }: RegisterProps): Promise<void> => {
     setIsRegistering(true)
 
     try {
-      const identity = await SeedlessService.oidcProveIdentity(oidcToken)
+      const { oidcToken } = await getOidcToken()
+      const identity = await SeedlessService.sessionManager.oidcProveIdentity(
+        oidcToken
+      )
       const result = await CoreSeedlessAPIService.register(identity)
-      const signResponse = await SeedlessService.login(oidcToken)
+      const signResponse = await SeedlessService.sessionManager.requestOidcAuth(
+        oidcToken
+      )
       const isMfaRequired = signResponse.requiresMfa()
+
+      // persist email and provider for later use with refresh token flow
+      // email is always the same on the cubist's side
+      // even if user changes it in the provider, it doesn't change
+      await SecureStorageService.store(KeySlot.OidcUserId, identity.email)
+      await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
 
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
         if (isMfaRequired) {
           const mfaId = signResponse.mfaId()
-          const mfa = await SeedlessService.userMfa()
+          const mfaMethods = identity.user_info?.configured_mfa
 
-          if (mfa && mfa.length > 0) {
-            onVerifyMfaMethod(mfaId)
+          if (mfaMethods && mfaMethods.length > 0) {
+            onVerifyMfaMethod({ oidcToken, mfaId }, mfaMethods)
+            AnalyticsService.capture('SeedlessSignIn', {
+              oidcProvider: oidcProvider
+            })
           } else {
-            onRegisterMfaMethods(mfaId)
+            onRegisterMfaMethods({ oidcToken, mfaId })
+            AnalyticsService.capture('SeedlessSignUp', {
+              oidcProvider: oidcProvider
+            })
           }
         } else {
-          // TODO: handle ALREADY_REGISTERED without mfa
+          onAccountVerified()
+          AnalyticsService.capture('SeedlessSignIn', {
+            oidcProvider: oidcProvider
+          })
         }
       } else if (result === SeedlessUserRegistrationResult.APPROVED) {
         if (isMfaRequired) {
           const mfaId = signResponse.mfaId()
-          onRegisterMfaMethods(mfaId)
+          onRegisterMfaMethods({ oidcToken, mfaId })
+          AnalyticsService.capture('SeedlessSignUp', {
+            oidcProvider: oidcProvider
+          })
         } else {
-          // TODO: handle APPROVED without mfa
+          onRegisterMfaMethods()
+          AnalyticsService.capture('SeedlessSignUp', {
+            oidcProvider: oidcProvider
+          })
         }
       } else {
         throw new Error(SeedlessUserRegistrationResult.ERROR)
       }
     } catch (error) {
+      AnalyticsService.capture('SeedlessLoginFailed')
       Logger.error('useSeedlessRegister error', error)
       throw new Error(SeedlessUserRegistrationResult.ERROR)
     } finally {
@@ -67,8 +139,66 @@ export const useSeedlessRegister = (): ReturnType => {
     }
   }
 
+  const verify = async (
+    mfa: MFA,
+    oidcAuth: {
+      oidcToken: string
+      mfaId: string
+    },
+    onAccountVerified: () => void
+  ): Promise<void> => {
+    if (mfa.type === 'totp') {
+      if (isSeedlessMfaAuthenticatorBlocked) {
+        showSimpleToast('Authenticator is not available at the moment')
+      } else {
+        verifyTotp({
+          onVerifyCode: code =>
+            SeedlessService.sessionManager.verifyCode(
+              oidcAuth.oidcToken,
+              oidcAuth.mfaId,
+              code
+            ),
+          onVerifySuccess: () => {
+            onAccountVerified()
+            AnalyticsService.capture('SeedlessMfaVerified', {
+              type: 'Authenticator'
+            })
+          }
+        })
+      }
+    } else if (mfa.type === 'fido') {
+      if (PasskeyService.isSupported === false) {
+        showSimpleToast('Passkey/Yubikey is not supported on this device')
+        return
+      }
+
+      if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
+        showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
+      }
+
+      showOwl()
+
+      try {
+        await SeedlessService.sessionManager.approveFido(
+          oidcAuth.oidcToken,
+          oidcAuth.mfaId,
+          false
+        )
+
+        AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
+        hideOwl()
+        onAccountVerified()
+      } catch (e) {
+        hideOwl()
+        Logger.error('passkey authentication failed', e)
+        showSimpleToast('Unable to authenticate')
+      }
+    }
+  }
+
   return {
     isRegistering,
-    register
+    register,
+    verify
   }
 }

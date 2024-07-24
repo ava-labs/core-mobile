@@ -19,19 +19,19 @@ export const defaultPrice = {
   change24: 0
 }
 
-export const initialState: WatchListState = {
-  tokens: {},
-  favorites: [],
-  prices: {},
-  charts: {}
+export const initialState: WatchListFavoriteState = {
+  favorites: []
 }
 
 export type MarketToken = {
   id: string // coingeckoId
   symbol: string
   name: string
-  logoUri: string
+  logoUri?: string
   testID?: string
+  currentPrice?: number
+  priceChange24h?: number
+  priceChangePercentage24h?: number
 }
 
 export type PriceData = {
@@ -45,9 +45,11 @@ export type Charts = { [coingeckoID: string]: ChartData }
 
 export type Prices = { [coingeckoID: string]: PriceData }
 
-export type WatchListState = {
-  tokens: { [coingeckoID: string]: MarketToken }
-  favorites: string[]
-  prices: Prices
+export type TokensAndCharts = {
+  tokens: Record<string, MarketToken>
   charts: Charts
+}
+
+export type WatchListFavoriteState = {
+  favorites: string[]
 }

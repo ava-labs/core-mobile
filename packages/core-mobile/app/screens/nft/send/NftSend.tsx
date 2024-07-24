@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
-import AvaText from 'components/AvaText'
+import { Text, Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
 import AvaButton from 'components/AvaButton'
@@ -14,45 +14,42 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { Account } from 'store/account'
-import { NFTItemData } from 'store/nft'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { NFTItem } from 'store/nft'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SvgXml } from 'react-native-svg'
-import { usePostCapture } from 'hooks/usePosthogCapture'
-import { BN } from 'bn.js'
-import { AddrBookItemType, Contact } from 'store/addressBook'
+import { AddrBookItemType } from 'store/addressBook'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { Contact } from '@avalabs/types'
+import { getAddressProperty } from 'store/utils/account&contactGetters'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
+import { NFTDetailsSendScreenProps } from 'navigation/types'
 
-export type NftSendScreenProps = {
-  onNext: () => void
+type NftSendScreenProps = {
   onOpenAddressBook: () => void
 }
 
+type NftSendNavigationProp = NFTDetailsSendScreenProps<
+  typeof AppNavigation.NftSend.AddressPick
+>['navigation']
+
 export default function NftSend({
-  onNext,
   onOpenAddressBook
-}: NftSendScreenProps) {
-  const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+}: NftSendScreenProps): JSX.Element {
+  const navigation = useNavigation<NftSendNavigationProp>()
   const {
     sendToken: nft,
     toAccount,
     canSubmit,
-    sdkError,
-    fees: {
-      setCustomGasPrice,
-      setSelectedFeePreset,
-      setCustomGasLimit,
-      gasLimit,
-      selectedFeePreset
-    }
+    onSendNow,
+    sendStatus,
+    sdkError
   } = useSendNFTContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const placeholder =
-    activeNetwork.vmName === NetworkVMType.EVM
-      ? 'Enter 0x Address'
-      : 'Enter Bitcoin Address'
+  const { activeNetwork } = useNetworks()
+
+  const sendInProcess = sendStatus === 'Sending'
+  const sendDisabled = !canSubmit || !toAccount.address || !!sdkError
 
   const {
     saveRecentContact,
@@ -62,9 +59,9 @@ export default function NftSend({
     showAddressBook
   } = useAddressBookLists()
 
-  const onNextPress = () => {
+  const onNextPress = (): void => {
     saveRecentContact()
-    onNext()
+    onSendNow()
   }
 
   useEffect(() => {
@@ -73,7 +70,26 @@ export default function NftSend({
     }
   }, [setShowAddressBook, toAccount.address])
 
-  function setAddress({ address, title }: { address: string; title: string }) {
+  useEffect(() => {
+    if (sendStatus === 'Success') {
+      // go back to Portfolio - Collectibles screen
+      navigation.navigate(AppNavigation.Wallet.Drawer, {
+        screen: AppNavigation.Wallet.Tabs,
+        params: {
+          screen: AppNavigation.Tabs.Portfolio,
+          params: {}
+        }
+      })
+    }
+  }, [navigation, sendStatus])
+
+  function setAddress({
+    address,
+    title
+  }: {
+    address: string
+    title: string
+  }): void {
     toAccount.setAddress?.(address)
     toAccount.setTitle?.(title)
   }
@@ -82,52 +98,32 @@ export default function NftSend({
     item: Contact | Account,
     type: AddrBookItemType,
     source: AddressBookSource
-  ) => {
+  ): void => {
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
-        setAddress({ address: item.address, title: item.title })
+        setAddress({ address: getAddressProperty(item), title: item.name })
         break
       case NetworkVMType.BITCOIN:
         setAddress({
-          address: item.addressBtc,
-          title: item.title
+          address: item.addressBTC ?? '',
+          title: item.name
         })
         break
     }
     selectContact(item, type)
-    capture('NftSendContactSelected', {
+    AnalyticsService.capture('NftSendContactSelected', {
       contactSource: source
     })
   }
 
-  const handleGasPriceChange = useCallback(
-    (gasPrice1, feePreset) => {
-      if (feePreset !== selectedFeePreset) {
-        capture('NftSendFeeOptionChanged', {
-          modifier: feePreset
-        })
-      }
-      setCustomGasPrice(new BN(gasPrice1.toString()))
-      setSelectedFeePreset(feePreset)
-    },
-    [setCustomGasPrice, setSelectedFeePreset, selectedFeePreset, capture]
-  )
-
-  const handleGasLimitChange = useCallback(
-    customGasLimit => {
-      setCustomGasLimit(customGasLimit)
-    },
-    [setCustomGasLimit]
-  )
-
   return (
     <ScrollView contentContainerStyle={[styles.container]}>
-      <AvaText.LargeTitleBold>Send</AvaText.LargeTitleBold>
+      <Text variant="heading3">Send</Text>
       <Space y={20} />
-      <AvaText.Heading3>Send To</AvaText.Heading3>
+      <Text variant="heading6">Send To</Text>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
-          placeholder={placeholder}
+          placeholder={'Enter 0x Address'}
           multiline={true}
           onChangeText={text => {
             toAccount.setAddress?.(text)
@@ -159,32 +155,28 @@ export default function NftSend({
         </View>
       ) : (
         <>
-          <AvaText.Heading3>Collectible</AvaText.Heading3>
+          <Text variant="heading6">Collectible</Text>
           <CollectibleItem nft={nft} />
-          <NetworkFeeSelector
-            gasLimit={gasLimit ?? 0}
-            onGasPriceChange={handleGasPriceChange}
-            onGasLimitChange={handleGasLimitChange}
-          />
-          <Space y={8} />
-          <AvaText.Body3 textStyle={{ color: theme.colorError }}>
+          <Text variant="body1" sx={{ color: '$dangerMain' }}>
             {sdkError ?? ''}
-          </AvaText.Body3>
-          <Space y={8} />
+          </Text>
           <FlexSpacer />
         </>
       )}
-      <AvaButton.PrimaryLarge
-        disabled={!toAccount.address || !canSubmit}
+      <Button
+        testID="next_btn"
+        type="primary"
+        size="xlarge"
         onPress={onNextPress}
+        disabled={sendInProcess || sendDisabled}
         style={{ marginBottom: 16 }}>
         Next
-      </AvaButton.PrimaryLarge>
+      </Button>
     </ScrollView>
   )
 }
 
-const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
+const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
@@ -197,18 +189,18 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
       ]}>
       <Row>
         <View style={{ borderRadius: 8 }}>
-          {nft.isSvg ? (
+          {nft.imageData?.isSvg ? (
             <View style={{ alignItems: 'center' }}>
               <SvgXml
-                xml={nft.metadata.imageUri ?? null}
+                xml={nft.imageData.image ?? null}
                 width={80}
-                height={80 * nft.aspect}
+                height={80 * nft.imageData.aspect ?? 1}
               />
             </View>
           ) : (
             <Image
               style={styles.nftImage}
-              source={{ uri: nft.metadata.imageUri }}
+              source={{ uri: nft.imageData?.image }}
               width={80}
               height={80}
             />
@@ -216,18 +208,20 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
         </View>
         <Space x={16} />
         <View style={{ flex: 1 }}>
-          <AvaText.Heading5
+          <Text
+            variant="heading5"
             testID="NftTokenID"
             numberOfLines={1}
             ellipsizeMode="tail">
             #{nft.tokenId}
-          </AvaText.Heading5>
-          <AvaText.Heading6
+          </Text>
+          <Text
+            variant="heading6"
             testID="NftTokenName"
             numberOfLines={1}
             ellipsizeMode="tail">
-            {nft.metadata.name}
-          </AvaText.Heading6>
+            {nft.processedMetadata.name}
+          </Text>
         </View>
       </Row>
     </View>

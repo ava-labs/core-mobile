@@ -123,10 +123,12 @@ const StakeDetails = (): JSX.Element | null => {
   const renderCompletedDetails = (): JSX.Element => {
     const endDateStr = format(endDate, 'MM/dd/yyyy')
     const rewardUtxo = stake.emittedUtxos.find(
-      utxo => utxo.rewardType === RewardType.DELEGATOR
+      utxo =>
+        utxo.rewardType === RewardType.DELEGATOR ||
+        utxo.rewardType === RewardType.VALIDATOR
     )
     const rewardUtxoTxHash = rewardUtxo?.txHash
-    const rewardAmount = rewardUtxo?.amount
+    const rewardAmount = rewardUtxo?.asset.amount
     const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxFormatter(
       rewardAmount,
       true

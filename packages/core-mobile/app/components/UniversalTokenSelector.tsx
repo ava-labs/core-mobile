@@ -1,10 +1,9 @@
 import React, { FC, useCallback, useMemo } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
-import { TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance/types'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import BN from 'bn.js'
 import { bnToBig } from '@avalabs/utils-sdk'
-import { Amount } from 'screens/swap/SwapView'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
@@ -18,6 +17,8 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { formatLargeCurrency } from 'utils/Utils'
+import { Amount } from 'types'
+import { Text } from '@avalabs/k2-mobile'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -25,7 +26,7 @@ interface Props {
   onMax?: () => void
   hideInput?: boolean
   inputAmount?: BN
-  onAmountChange: (amount: { amount: string; bn: BN }) => void
+  onAmountChange: (amount: Amount) => void
   error?: string
   label?: string
   isValueLoading?: boolean
@@ -49,14 +50,15 @@ const UniversalTokenSelector: FC<Props> = ({
   label,
   isValueLoading,
   hideErrorMessage,
-  hideZeroBalanceTokens = false
+  hideZeroBalanceTokens = false,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   const { currencyFormatter } = useApplicationContext().appHook
   const navigation = useNavigation<NavigationProp>()
   const hasError = !!error
 
-  const openTokenSelectorBottomSheet = () => {
+  const openTokenSelectorBottomSheet = (): void => {
     navigation.navigate(AppNavigation.Modal.SelectToken, {
       hideZeroBalance: hideZeroBalanceTokens,
       onTokenSelected: onTokenChange
@@ -123,7 +125,7 @@ const UniversalTokenSelector: FC<Props> = ({
               <AvaText.Heading2>{selectedToken.symbol}</AvaText.Heading2>
             </>
           ) : (
-            <AvaText.Heading2>Select</AvaText.Heading2>
+            <AvaText.Heading2 testID={testID}>Select</AvaText.Heading2>
           )}
           <Space x={8} />
           <CarrotSVG direction={'down'} size={12} color={theme.colorText1} />
@@ -157,7 +159,9 @@ const UniversalTokenSelector: FC<Props> = ({
       <Space y={8} />
       <Row>
         {hasError && (
-          <AvaText.Body3 color={theme.colorError}>{error}</AvaText.Body3>
+          <Text variant="body2" sx={{ color: '$dangerMain' }}>
+            {error}
+          </Text>
         )}
         <FlexSpacer />
         <AvaText.Body2>

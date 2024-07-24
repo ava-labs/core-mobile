@@ -29,5 +29,9 @@ describe('DevDebuggingConfig', () => {
     it('should not mock network request', () => {
       expect(config.API_MOCKING).toBe(false)
     })
+
+    it('should not enable Sentry Spotlight', () => {
+      expect(config.SENTRY_SPOTLIGHT).toBe(false)
+    })
   })
 })

@@ -1,5 +1,4 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
 import { useTheme } from '@avalabs/k2-mobile'
 import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
@@ -7,12 +6,10 @@ import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
-import { withProviders } from '../decorators/withProviders'
 
 export default {
-  title: 'Browser/IntroScreen',
-  decorators: [withProviders]
-} as Meta
+  title: 'Browser/IntroScreen'
+}
 
 export const Basic = (): JSX.Element => {
   const {

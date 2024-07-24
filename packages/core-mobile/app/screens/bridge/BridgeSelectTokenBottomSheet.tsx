@@ -7,6 +7,7 @@ import BridgeTokenSelector, {
 } from 'screens/bridge/BridgeTokenSelector'
 import AppNavigation from 'navigation/AppNavigation'
 import { BridgeScreenProps } from 'navigation/types'
+import { AssetBalance } from './utils/types'
 
 type RouteProp = BridgeScreenProps<
   typeof AppNavigation.Modal.BridgeSelectToken
@@ -16,9 +17,9 @@ function BridgeSelectTokenBottomSheet(): JSX.Element {
   const { goBack } = useNavigation()
   const { params } = useRoute<RouteProp>()
 
-  function onTokenSelected(symbol: string) {
+  function onTokenSelected(token: AssetBalance): void {
     goBack()
-    params.onTokenSelected(symbol)
+    params.onTokenSelected(token)
   }
 
   return (

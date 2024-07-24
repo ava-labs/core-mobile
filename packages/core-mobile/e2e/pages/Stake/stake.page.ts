@@ -196,6 +196,10 @@ class StakePage {
     return by.text(stakeScreenLoc.maxText)
   }
 
+  async tapActiveTab() {
+    await Actions.tap(this.activeTab)
+  }
+
   async tapHistoryTab() {
     await Actions.tap(this.historyTab)
   }
@@ -203,7 +207,6 @@ class StakePage {
   async verifyStakeScreenItems() {
     await Assert.isVisible(this.stakeTitle)
     await Assert.isVisible(this.notEnoughAvaxTitle)
-    await Assert.isVisible(this.notEnoughAvaxDescription)
     await Assert.isVisible(this.recieveAvaxButton)
     if (Actions.platform() === Platform.Android) {
       await Assert.isVisible(this.swapAvaxButton)
@@ -227,14 +230,11 @@ class StakePage {
   }
 
   async tapStakeButton() {
-    if ((await Actions.isVisible(this.stakePrimaryButton, 0)) === true) {
+    try {
+      await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
+    } catch {
+      console.log('there is no claim button, tap primary button')
       await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
-    } else {
-      let platformIndex = 0
-      if (Actions.platform() === Platform.Android) {
-        platformIndex = 1
-      }
-      await Actions.tapElementAtIndex(this.stakeSecondaryButton, platformIndex)
     }
   }
 

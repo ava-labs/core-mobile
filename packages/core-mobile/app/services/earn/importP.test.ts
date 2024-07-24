@@ -2,8 +2,9 @@ import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
+import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importP } from 'services/earn/importP'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 
 describe('earn/importP', () => {
   describe('importP', () => {
@@ -53,7 +54,8 @@ describe('earn/importP', () => {
     it('should call walletService.createImportPTx', async () => {
       await importP({
         activeAccount: {} as Account,
-        isDevMode: false
+        isDevMode: false,
+        selectedCurrency: VsCurrencyType.USD
       })
       expect(WalletService.createImportPTx).toHaveBeenCalled()
     })
@@ -61,7 +63,8 @@ describe('earn/importP', () => {
     it('should call walletService.signAvaxTx', async () => {
       await importP({
         activeAccount: {} as Account,
-        isDevMode: false
+        isDevMode: false,
+        selectedCurrency: VsCurrencyType.USD
       })
       expect(WalletService.sign).toHaveBeenCalled()
     })
@@ -69,7 +72,8 @@ describe('earn/importP', () => {
     it('should call networkService.sendTransaction', async () => {
       await importP({
         activeAccount: {} as Account,
-        isDevMode: false
+        isDevMode: false,
+        selectedCurrency: VsCurrencyType.USD
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
     })

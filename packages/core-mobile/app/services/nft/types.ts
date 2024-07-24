@@ -1,4 +1,4 @@
-import { NftResponse } from 'store/nft'
+import { NFTItemData, NftResponse } from 'store/nft'
 
 export type NftUID = string
 
@@ -8,7 +8,6 @@ export interface NftProvider {
   fetchNfts(
     chainId: number,
     address: string,
-    selectedCurrency?: string,
     pageToken?:
       | {
           erc1155?: string
@@ -16,4 +15,12 @@ export interface NftProvider {
         }
       | string
   ): Promise<NftResponse>
+
+  fetchNft(
+    chainId: number,
+    address: string,
+    tokenId: string
+  ): Promise<NFTItemData>
+
+  reindexNft(address: string, chainId: number, tokenId: string): Promise<void>
 }

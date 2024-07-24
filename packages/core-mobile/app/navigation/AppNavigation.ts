@@ -1,24 +1,36 @@
 enum Root {
-  Wallet = 'Stacks.Wallet',
-  Onboard = 'Stacks.Onboard',
-  CopyPhraseWarning = 'Stacks.CopyPhraseWarning'
+  Wallet = 'Root.Wallet',
+  Onboard = 'Root.Onboard',
+  RefreshToken = 'Root.RefreshToken',
+  CopyPhraseWarning = 'Root.CopyPhraseWarning',
+  ForgotPin = 'Root.ForgotPin',
+  VerifyTotpCode = 'Root.VerifyTotpCode',
+  RecoveryMethods = 'Root.RecoveryMethods',
+  SelectRecoveryMethods = 'Root.SelectRecoveryMethods'
 }
 
 enum OnboardScreens {
   Signup = 'OnboardScreens.Signup',
-  Signin = 'OnboardScreens.Signin',
+  AccessMnemonicWallet = 'AccessMnemonicWallet',
   Welcome = 'OnboardScreens.Welcome',
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
-  Login = 'OnboardScreens.Login',
-  RecoveryMethods = 'OnboardScreens.RecoveryMethods',
-  CreatePin = 'OnboardScreens.CreatePin'
+  RecoverWithMnemonicStack = 'OnboardScreens.RecoverWithMnemonicStack',
+  CreatePin = 'OnboardScreens.CreatePin',
+  NameYourWallet = 'OnboardScreens.NameYourWallet'
+}
+
+enum RefreshTokenScreens {
+  OwlLoader = 'RefreshTokenScreens.OwlLoader',
+  SessionTimeout = 'RefreshTokenScreens.SessionTimeout',
+  WrongSocialAccount = 'RefreshTokenScreens.WrongSocialAccount'
 }
 
 enum CreateWalletNavigationScreens {
   CreateWallet = 'CreateWalletNavigationScreens.CreateWallet',
   CheckMnemonic = 'CreateWalletNavigationScreens.CheckMnemonic',
+  NameYourWallet = 'CreateWalletNavigationScreens.NameYourWallet',
   CreatePin = 'CreateWalletNavigationScreens.CreatePin',
   BiometricLogin = 'CreateWalletNavigationScreens.BiometricLogin',
   TermsNConditions = 'CreateWalletNavigationScreens.TermsNConditions',
@@ -28,6 +40,7 @@ enum CreateWalletNavigationScreens {
 
 enum LoginWithMnemonicStackScreens {
   LoginWithMnemonic = 'LoginWithMnemonicStackScreens.LoginWithMnemonic',
+  NameYourWallet = 'LoginWithMnemonicStackScreens.NameYourWallet',
   CreatePin = 'LoginWithMnemonicStackScreens.CreatePin',
   BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin',
   TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions',
@@ -55,7 +68,6 @@ enum WalletScreens {
   NFTManage = 'WalletScreens.NFTManage',
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
-  ActivityDetail = 'WalletScreens.ActivityDetail',
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
   Earn = 'WalletScreens.Earn',
@@ -79,16 +91,13 @@ enum EarnScreens {
   ClaimRewards = 'EarnScreens.ClaimRewards',
   FeeUnavailable = 'EarnScreens.FeeUnavailable',
   EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt',
-  FundsStuck = 'EarnScreens.FundsStuck',
-  WrongNetwork = 'EarnScrens.WrongNetwork'
+  FundsStuck = 'EarnScreens.FundsStuck'
 }
 
 enum BrowserScreens {
   Intro = 'BrowserScreens.Intro',
   TabView = 'BrowserScreens.TabView',
-  TabsList = 'BrowserScreens.TabsList',
   History = 'BrowserScreens.History',
-  AreYouSure = 'BrowserScreens.AreYouSure',
   ClearAllHistory = 'BrowserScreens.ClearAllHistory'
 }
 
@@ -109,8 +118,7 @@ enum NotificationsScreens {
 }
 
 enum SwapScreens {
-  Swap = 'SwapScreens.Swap',
-  Review = 'SwapScreens.Review'
+  Swap = 'SwapScreens.Swap'
 }
 
 enum NftScreens {
@@ -120,9 +128,7 @@ enum NftScreens {
 }
 
 enum NftSendScreens {
-  AddressPick = 'NftSendScreens.AddressPick',
-  Review = 'NftSendScreens.Review',
-  Success = 'NftSendScreens.Success'
+  AddressPick = 'NftSendScreens.AddressPick'
 }
 
 enum SecurityPrivacyScreens {
@@ -134,7 +140,9 @@ enum SecurityPrivacyScreens {
   RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
   DappList = 'SecurityPrivacyScreens.DappList',
   DappConnectModal = 'SecurityPrivacyScreens.DappConnectModal',
-  QRCode = 'SecurityPrivacyScreens.QRCode'
+  QRCode = 'SecurityPrivacyScreens.QRCode',
+  SeedlessExport = 'SecurityPrivacyScreens.SeedlessExport',
+  SettingRecoveryMethods = 'SecurityPrivacyScreens.SettingRecoveryMethods'
 }
 
 enum LegalScreens {
@@ -182,15 +190,24 @@ enum ModalScreens {
   SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
+  ApprovalPopup = 'ModalScreens.ApprovalPopup',
+  EditSpendLimit = 'ModalScreens.EditSpendLimit',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
+  BitcoinSendTransaction = 'ModalScreens.BitcoinSendTransaction',
+  AvalancheSetDeveloperMode = 'ModalScreens.AvalancheSetDeveloperMode',
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
-  CoreIntro = 'ModalScreens.CoreIntro'
+  CoreIntro = 'ModalScreens.CoreIntro',
+  BrowserTabsList = 'ModalScreens.BrowserTabsList',
+  BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
+  AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
+  UseWalletConnect = 'ModalScreens.UseWalletConnect',
+  AvalancheSignMessage = 'ModalScreens.AvalancheSignMessage',
+  AlertScreen = 'ModalScreens.AlertScreen'
 }
 
 enum SendScreens {
-  Send = 'SendScreens.Send',
-  Review = 'SendScreens.Review'
+  Send = 'SendScreens.Send'
 }
 
 enum AddressBookScreens {
@@ -214,15 +231,39 @@ enum PortfolioScreens {
 
 enum RecoveryMethodsScreens {
   AddRecoveryMethods = 'RecoveryMethodsScreens.AddRecoveryMethods',
+  SelectRecoveryMethods = 'RecoveryMethodsScreens.SelectRecoveryMethods',
   AuthenticatorSetup = 'RecoveryMethodsScreens.AuthenticatorSetup',
   ScanQrCode = 'RecoveryMethodsScreens.ScanQrCode',
   LearnMore = 'RecoveryMethodsScreens.LearnMore',
-  VerifyCode = 'RecoveryMethodsScreens.VerifyCode'
+  PasskeySetup = 'RecoveryMethodsScreens.PasskeySetup',
+  FIDONameInput = 'RecoveryMethodsScreens.FIDONameInput'
+}
+
+enum SeedlessExportScreens {
+  InitialScreen = 'SeedlessExportScreens.InitialScreen',
+  Instructions = 'SeedlessExportScreens.Instructions',
+  WaitingPeriodModal = 'SeedlessExportScreens.WaitingPeriodModal',
+  RecoveryPhrasePending = 'SeedlessExportScreens.RecoveryPhrasePending',
+  RecoveryPhrase = 'SeedlessExportScreens.RecoveryPhrase',
+  ConfirmCancelModal = 'SeedlessExportScreens.ConfirmCancelModal',
+  ConfirmCloseModal = 'SeedlessExportScreens.ConfirmCloseModal',
+  OwlLoader = 'SeedlessExportScreens.OwlLoader'
+}
+
+enum SettingRecoveryMethodsScreens {
+  SettingRecoveryMethods = 'SettingRecoveryMethodsScreens.SettingRecoveryMethods',
+  SettingMFA = 'SettingRecoveryMethodsScreens.SettingMFA',
+  SettingAuthenticatorSetup = 'SettingRecoveryMethodsScreens.SettingAuthenticatorSetup',
+  SettingScanQrCode = 'SettingRecoveryMethodsScreens.SettingScanQrCode',
+  SettingLearnMore = 'SettingRecoveryMethodsScreens.SettingLearnMore',
+  ChangeTotpConfirmation = 'SettingRecoveryMethodsScreens.ChangeTotpConfirmation',
+  RemovePasskeyConfirmation = 'SettingRecoveryMethodsScreens.RemovePasskeyConfirmation'
 }
 
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
+  RefreshToken: RefreshTokenScreens,
   CreateWallet: CreateWalletNavigationScreens,
   LoginWithMnemonic: LoginWithMnemonicStackScreens,
   Wallet: WalletScreens,
@@ -245,7 +286,9 @@ const AppNavigation = {
   StakeSetup: StakeSetupScreens,
   Notifications: NotificationsScreens,
   SendFeedback: SendFeedbackScreens,
-  RecoveryMethods: RecoveryMethodsScreens
+  RecoveryMethods: RecoveryMethodsScreens,
+  SeedlessExport: SeedlessExportScreens,
+  SettingRecoveryMethods: SettingRecoveryMethodsScreens
 }
 
 export default AppNavigation

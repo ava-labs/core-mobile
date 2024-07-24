@@ -40,6 +40,7 @@ export const EarnNotificationsModal = () => {
 
   return (
     <WarningModal
+      testID="turn_on_notifications_modal"
       title={'Turn on Notifications?'}
       message={
         'You will be notified when staking is complete. You can change your preference in settings.'

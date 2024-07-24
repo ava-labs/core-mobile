@@ -9,9 +9,13 @@ import Separator from 'components/Separator'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import TxFee from './components/TxFee'
+import { TxFee } from './components/TxFee'
 
-const CreateChainTxView = ({ tx }: { tx: Avalanche.CreateChainTx }) => {
+const CreateChainTxView = ({
+  tx
+}: {
+  tx: Avalanche.CreateChainTx
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const { txFee, chainID, chainName, vmID, genesisData } = tx
   const [showGenesis, setShowGenesis] = useState<boolean>(false)

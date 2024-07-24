@@ -8,314 +8,225 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import { Image, InteractionManager } from 'react-native'
-import { mustNumber } from 'utils/JsTools'
-import { TokenWithBalance } from 'store/balance'
-import { selectActiveNetwork, TokenSymbol } from 'store/network'
+import { InteractionManager } from 'react-native'
+import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
+import { TokenWithBalance } from 'store/balance/types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
-import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { FeePreset } from 'components/NetworkFeeSelector'
-import { Amount } from 'screens/swap/SwapView'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { usePostCapture } from 'hooks/usePosthogCapture'
-import { formatUriImageToPng } from 'utils/Contentful'
-import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import Logger from 'utils/Logger'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { NetworkTokenUnit, Amount } from 'types'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import { useInAppRequest } from 'hooks/useInAppRequest'
+import { RootState } from 'store'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
+
+export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
   setSendToken: Dispatch<TokenWithBalance | undefined>
   sendAmount: Amount
   setSendAmount: Dispatch<Amount>
-  sendAmountInCurrency: number
-  fromAccount: Account
   toAccount: Account
-  tokenLogo: () => JSX.Element
-  fees: Fees
   canSubmit: boolean
   sendStatus: SendStatus
-  sendStatusMsg: string
   onSendNow: () => void
   sdkError: string | undefined
-  maxAmount: string
+  maxAmount: Amount
 }
-
-export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
 
 export const SendTokenContext = createContext<SendTokenContextState>(
   {} as SendTokenContextState
 )
 
+const ZERO_AMOUNT = {
+  bn: new BN(0),
+  amount: '0'
+}
+
 export const SendTokenContextProvider = ({
   children
 }: {
   children: ReactNode
-}) => {
-  const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+}): JSX.Element => {
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { nativeTokenPrice } = useNativeTokenPrice(
-    selectedCurrency.toLowerCase() as VsCurrencyType
+  const nativeTokenBalance = useSelector((state: RootState) =>
+    selectNativeTokenBalanceForNetworkAndAccount(
+      state,
+      activeNetwork.chainId,
+      activeAccount?.index
+    )
   )
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
-  const [maxAmount, setMaxAmount] = useState('')
-  const [sendAmount, setSendAmount] = useState<Amount>({
-    bn: new BN(0),
-    amount: '0'
-  })
+  const [maxAmount, setMaxAmount] = useState<Amount>(ZERO_AMOUNT)
+  const [sendAmount, setSendAmount] = useState<Amount>(ZERO_AMOUNT)
 
-  const tokenPriceInSelectedCurrency = sendToken?.priceInCurrency ?? 0
-  const sendAmountInCurrency =
-    tokenPriceInSelectedCurrency * Number(sendAmount.amount)
+  const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
 
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')
-  const sendFromAddress = activeAccount?.address ?? ''
-  const sendFromTitle = activeAccount?.title ?? '-'
 
   const [gasLimit, setGasLimit] = useState(0)
-  const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
-    undefined
-  )
-  const trueGasLimit = customGasLimit || gasLimit
 
-  const [sendFeeBN, setSendFeeBN] = useState(new BN(0))
-  const sendFeeNative = useMemo(
-    () => bnToLocaleString(sendFeeBN, activeNetwork.networkToken.decimals),
-    [activeNetwork.networkToken.decimals, sendFeeBN]
-  )
-  const sendFeeInCurrency = useMemo(
-    () => (Number.parseFloat(sendFeeNative) * nativeTokenPrice).toFixed(2),
-    [nativeTokenPrice, sendFeeNative]
-  )
-  const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
-    FeePreset.Normal
-  )
-  const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
-  const customGasPriceBig = useMemo(
-    () => bnToBigint(customGasPrice),
-    [customGasPrice]
-  )
+  const { data: networkFee } = useNetworkFee(activeNetwork)
 
-  const balanceAfterTrx = useMemo(() => {
-    //since fee is paid in native token only, for non-native tokens we should not subtract
-    //fee
+  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
+    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
 
-    const balanceAfterTxnBn = sendToken?.balance.sub(sendAmount.bn)
-    if (
-      sendToken?.symbol?.toLowerCase() ===
-      activeNetwork.networkToken.symbol.toLowerCase()
-    ) {
-      balanceAfterTxnBn?.sub(sendFeeBN)
-    }
+  // setting maxFeePerGas to lowest network fee to calculate max amount in Send screen
+  useEffect(() => {
+    if (!networkFee) return
+    setDefaultMaxFeePerGas(networkFee.low.maxFeePerGas)
+  }, [networkFee])
 
-    return bnToBig(balanceAfterTxnBn ?? new BN(0), sendToken?.decimals).toFixed(
-      4
-    )
-  }, [
-    activeNetwork.networkToken.symbol,
-    sendAmount.bn,
-    sendFeeBN,
-    sendToken?.balance,
-    sendToken?.decimals,
-    sendToken?.symbol
-  ])
-  const balanceAfterTrxInCurrency = useMemo(
-    () =>
-      (
-        nativeTokenPrice * mustNumber(() => parseFloat(balanceAfterTrx), 0)
-      ).toFixed(2),
-    [balanceAfterTrx, nativeTokenPrice]
-  )
-
-  const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
-  const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
+
+  const { request } = useInAppRequest()
 
   useEffect(validateStateFx, [
     activeAccount,
     activeNetwork,
-    customGasPriceBig,
     gasLimit,
     selectedCurrency,
     sendAmount,
     sendToAddress,
     sendToken,
-    trueGasLimit
+    defaultMaxFeePerGas,
+    nativeTokenBalance
   ])
 
-  function onSendNow() {
+  const setSendTokenAndResetAmount = useCallback(
+    (token: TokenWithBalance | undefined) => {
+      setSendToken(token)
+      setSendAmount(ZERO_AMOUNT)
+      setMaxAmount(ZERO_AMOUNT)
+    },
+    []
+  )
+
+  const onSendNow = (): void => {
+    if (!sendAmount) {
+      setSendStatus('Fail')
+      return
+    }
+
     if (!activeAccount) {
       setSendStatus('Fail')
-      setSendStatusMsg('No active account')
-      capture('SendFailed', {
+      AnalyticsService.capture('SendTransactionFailed', {
         errorMessage: 'No active account',
         chainId: activeNetwork.chainId
       })
       return
     }
 
-    capture('SendApproved', {
-      selectedGasFee: selectedFeePreset.toUpperCase(),
-      chainId: activeNetwork.chainId
-    })
-
-    const sendState = {
+    const sendState: SendState = {
       address: sendToAddress,
       amount: sendAmount.bn,
-      gasPrice: customGasPriceBig,
-      gasLimit: trueGasLimit,
+      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      gasLimit,
       token: sendToken
-    } as SendState
-
-    setSendStatus('Preparing')
-
-    setSendStatus('Sending')
-
-    showSnackBarCustom({
-      component: (
-        <TransactionToast
-          testID="send_token_context__send_pending_toast"
-          message={'Send Pending...'}
-          type={TransactionToastType.PENDING}
-        />
-      ),
-      duration: 'short'
-    })
+    }
 
     InteractionManager.runAfterInteractions(() => {
-      const sentryTrx = SentryWrapper.startTransaction('send-erc20')
+      const sentryTrx = SentryWrapper.startTransaction('send-token')
+      setSendStatus('Sending')
       sendService
-        .send(
+        .send({
           sendState,
-          activeNetwork,
-          activeAccount,
-          selectedCurrency.toLowerCase(),
-          undefined,
-          sentryTrx
-        )
-        .then(txId => {
-          setSendStatus('Success')
-          capture('SendSucceeded', { chainId: activeNetwork.chainId })
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                testID="send_token_context__send_successful_toast"
-                message={'Send Successful'}
-                type={TransactionToastType.SUCCESS}
-                txHash={txId}
-              />
-            ),
-            duration: 'short'
-          })
+          network: activeNetwork,
+          account: activeAccount,
+          currency: selectedCurrency.toLowerCase(),
+          sentryTrx,
+          request
         })
-        .catch(reason => {
-          const transactionHash =
-            reason?.transactionHash ?? reason?.error?.transactionHash
-          capture('SendFailed', {
-            errorMessage: reason?.error?.message,
-            chainId: activeNetwork.chainId
+        .then(txHash => {
+          setSendStatus('Success')
+
+          AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
+            chainId: activeNetwork.chainId,
+            txHash
           })
 
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                testID="send_token_context__send_failed_toast"
-                message={'Send Failed'}
-                type={TransactionToastType.ERROR}
-                txHash={transactionHash}
-              />
-            ),
-            duration: 'short'
+          audioFeedback(Audios.Send)
+        })
+        .catch(reason => {
+          setSendStatus('Fail')
+          setError(reason.message)
+          AnalyticsService.capture('SendTransactionFailed', {
+            errorMessage: reason.message,
+            chainId: activeNetwork.chainId
           })
         })
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
+          setSendStatus('Idle')
         })
     })
   }
 
-  const tokenLogo = useCallback(() => {
-    if (sendToken?.symbol === TokenSymbol.AVAX) {
-      return (
-        <AvaLogoSVG
-          backgroundColor={theme.tokenLogoBg}
-          logoColor={theme.tokenLogoColor}
-          size={57}
-        />
-      )
-    } else {
-      return (
-        <Image
-          style={{ width: 57, height: 57 }}
-          source={{ uri: formatUriImageToPng(sendToken?.logoUri ?? '', 57) }}
-        />
-      )
+  function validateStateFx(): void {
+    if (!sendAmount) {
+      setError('Amount not set')
+      setCanSubmit(false)
+      return
     }
-  }, [sendToken, theme])
 
-  function validateStateFx() {
     if (!activeAccount) {
       setError('Account not set')
       setCanSubmit(false)
       return
     }
+
+    const sendState: SendState = {
+      token: sendToken,
+      amount: sendAmount.bn,
+      address: sendToAddress,
+      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      gasLimit
+    }
+
     sendService
       .validateStateAndCalculateFees(
-        {
-          token: sendToken,
-          amount: sendAmount.bn,
-          address: sendToAddress,
-          gasPrice: customGasPriceBig,
-          gasLimit: trueGasLimit
-        } as SendState,
+        sendState,
         activeNetwork,
         activeAccount,
-        selectedCurrency
+        selectedCurrency,
+        nativeTokenBalance
       )
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
-        setMaxAmount(
-          state.maxAmount
+        setMaxAmount({
+          bn: state.maxAmount ?? new BN(0),
+          amount: state.maxAmount
             ? bnToLocaleString(state.maxAmount, sendToken?.decimals)
             : ''
-        )
-        setSendFeeBN(state.sendFee ?? new BN(0))
+        })
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
-      .catch(Logger.error)
+      .catch(e => {
+        setError(e.message)
+        Logger.error(e)
+      })
   }
 
   const state: SendTokenContextState = {
     sendToken,
-    setSendToken,
+    setSendToken: setSendTokenAndResetAmount,
     sendAmount,
     setSendAmount,
-    sendAmountInCurrency,
-    fromAccount: {
-      address: sendFromAddress,
-      title: sendFromTitle,
-      balanceAfterTrx,
-      balanceAfterTrxInCurrency
-    },
     toAccount: useMemo(() => {
       return {
         title: sendToTitle,
@@ -324,20 +235,8 @@ export const SendTokenContextProvider = ({
         setAddress: setSendToAddress
       }
     }, [sendToAddress, sendToTitle]),
-    fees: {
-      sendFeeNative,
-      sendFeeInCurrency,
-      customGasPrice,
-      setCustomGasPrice,
-      gasLimit: trueGasLimit,
-      setCustomGasLimit,
-      setSelectedFeePreset,
-      selectedFeePreset
-    },
-    tokenLogo,
     canSubmit,
     sendStatus,
-    sendStatusMsg,
     onSendNow,
     sdkError: error,
     maxAmount
@@ -349,7 +248,7 @@ export const SendTokenContextProvider = ({
   )
 }
 
-export function useSendTokenContext() {
+export function useSendTokenContext(): SendTokenContextState {
   return useContext(SendTokenContext)
 }
 
@@ -358,17 +257,4 @@ export interface Account {
   setTitle?: Dispatch<string>
   address: string
   setAddress?: Dispatch<string>
-  balanceAfterTrx?: string
-  balanceAfterTrxInCurrency?: string
-}
-
-export interface Fees {
-  sendFeeNative: string | undefined
-  sendFeeInCurrency: string | undefined
-  customGasPrice: BN
-  setCustomGasPrice: Dispatch<BN>
-  gasLimit: number | undefined
-  setCustomGasLimit: Dispatch<number>
-  setSelectedFeePreset: Dispatch<FeePreset>
-  selectedFeePreset: FeePreset
 }

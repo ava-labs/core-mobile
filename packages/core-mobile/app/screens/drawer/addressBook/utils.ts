@@ -1,50 +1,66 @@
 import { isAddress } from 'ethers'
 import { isBech32Address } from '@avalabs/bridge-sdk'
+import { Avalanche } from '@avalabs/wallets-sdk'
 import { Share, ShareContent, ShareOptions } from 'react-native'
+import Logger from 'utils/Logger'
+import { NameAndAddresses } from 'screens/drawer/addressBook/types'
 
-export function getContactValidationError(
-  name?: string,
-  address?: string,
-  addressBtc?: string
-) {
+export function getContactValidationError({
+  name,
+  cChainAddress,
+  xpChainAddress,
+  btcAddress
+}: NameAndAddresses): string | undefined {
   if (!name) {
     return 'Name required'
   }
-  if (!address && !addressBtc) {
+  if (!cChainAddress && !btcAddress && !xpChainAddress) {
     return 'Address required'
   }
-  if (address && !isAddress(address)) {
+  if (cChainAddress && !isAddress(cChainAddress)) {
     return 'Not valid EVM address'
   }
-  if (addressBtc && !isBech32Address(addressBtc)) {
-    return 'invalid BTC address'
+  if (xpChainAddress && !Avalanche.isBech32Address(xpChainAddress, true)) {
+    return 'Not valid P-chain address, must start with P- '
+  }
+  if (btcAddress && !isBech32Address(btcAddress)) {
+    return 'Invalid BTC address'
   }
   return undefined
 }
 
-export function shareContact(
-  contactName: string,
-  cChainAddress?: string,
-  btcAddress?: string
-) {
+export function shareContact({
+  name,
+  cChainAddress,
+  xpChainAddress,
+  btcAddress
+}: NameAndAddresses): void {
   Share.share(
     {
       title: 'Share contact',
-      message: getFormattedShareText(contactName, cChainAddress, btcAddress)
+      message: getFormattedShareText({
+        name,
+        cChainAddress,
+        btcAddress,
+        xpChainAddress
+      })
     } as ShareContent,
     {
       subject: 'subject',
       dialogTitle: 'dialogTitle'
     } as ShareOptions
-  )
+  ).catch(Logger.error)
 }
 
-function getFormattedShareText(
-  contactName: string,
-  cChainAddress?: string,
-  btcAddress?: string
-) {
-  return `Contact name: ${contactName} ${
+function getFormattedShareText({
+  name,
+  cChainAddress,
+  xpChainAddress,
+  btcAddress
+}: NameAndAddresses): string {
+  return `Contact name: ${name} ${
     cChainAddress ? '\nC-Chain: ' + cChainAddress : ''
-  } ${btcAddress ? '\nBTC: ' + btcAddress : ''}`
+  } ${btcAddress ? '\nBTC: ' + btcAddress : ''} ${
+    xpChainAddress ? '\nP-Chain: ' + xpChainAddress : ''
+  }`
 }

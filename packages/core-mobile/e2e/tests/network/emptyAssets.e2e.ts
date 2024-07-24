@@ -1,9 +1,7 @@
 import Assert from '../../helpers/assertions'
 import actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
-import NetworksManageLoc from '../../locators/networksManage.loc'
 import { warmup } from '../../helpers/warmup'
 
 describe('Empty Assets', () => {
@@ -11,34 +9,15 @@ describe('Empty Assets', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await NetworksManagePage.switchToAvalancheNetwork()
+  })
+
   it('should check empty assets on custom Network', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.tapAddNetwork()
-    await NetworksManagePage.inputNetworkRpcUrl(
-      NetworksManageLoc.polygonCustomRpcUrl
-    )
-    await NetworksManagePage.inputNetworkName(
-      NetworksManageLoc.polygonCustomNetworkName
-    )
-    await NetworksManagePage.inputChainId(
-      NetworksManageLoc.polygonCustomChainID
-    )
-    await NetworksManagePage.inputNativeTokenSymbol(
-      NetworksManageLoc.polygonCustomNativeTokenSymbol
-    )
-    if (
-      (await actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
-    ) {
-      await NetworksManagePage.swipeUp()
-    }
-    await NetworksManagePage.inputExplorerUrl(
-      NetworksManageLoc.polygonCustomExplorerUrl
-    )
-    await NetworksManagePage.swipeUp()
-    await NetworksManagePage.tapSaveButton()
-    await NetworksManagePage.tapCustomTab()
+    await NetworksManagePage.tapNetworksTab()
+    await NetworksManagePage.searchNetworks('Polygon')
     await NetworksManagePage.tapPolygonCustomNetwork()
 
     await PortfolioPage.tapPolygonNetwork()

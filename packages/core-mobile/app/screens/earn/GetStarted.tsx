@@ -1,7 +1,6 @@
 import React from 'react'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -16,26 +15,34 @@ import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/core'
 import { ScrollView } from 'react-native-gesture-handler'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import Avatar from 'components/Avatar'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.GetStarted
 >['navigation']
 
-export default function GetStarted({ onNext }: { onNext: () => void }) {
+export default function GetStarted({
+  onNext
+}: {
+  onNext: () => void
+}): JSX.Element {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps>()
-  const { capture } = usePostCapture()
+  const network = useCChainNetwork()
 
-  function goToStakingDocs() {
-    capture('StakeOpenStakingDocs', { from: 'GetStartedScreen' })
+  function goToStakingDocs(): void {
+    AnalyticsService.capture('StakeOpenStakingDocs', {
+      from: 'GetStartedScreen'
+    })
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })
   }
 
-  const goToDisclaimer = () => {
-    capture('StakeOpenStakingDisclaimer')
+  const goToDisclaimer = (): void => {
+    AnalyticsService.capture('StakeOpenStakingDisclaimer')
     navigate(AppNavigation.Modal.StakeDisclaimer)
   }
 
@@ -47,11 +54,14 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
       <AvaText.LargeTitleBold>Get Started</AvaText.LargeTitleBold>
       <Space y={31} />
       <View style={{ alignItems: 'center' }}>
-        <AvaLogoSVG
-          size={56}
-          backgroundColor={theme.tokenLogoBg}
-          logoColor={theme.tokenLogoColor}
-        />
+        {network?.networkToken !== undefined && (
+          <Avatar.Token
+            size={56}
+            name={network.networkToken.name}
+            symbol={network.networkToken.symbol}
+            logoUri={network.networkToken.logoUri}
+          />
+        )}
         <Space y={16} />
         <View style={{ paddingHorizontal: 23, alignItems: 'center' }}>
           <AvaText.Heading5>Stake your AVAX, get rewards</AvaText.Heading5>
@@ -111,7 +121,9 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
         </View>
       </Row>
       <Space y={40} />
-      <AvaButton.PrimaryLarge onPress={onNext}>Next</AvaButton.PrimaryLarge>
+      <AvaButton.PrimaryLarge testID="next_btn" onPress={onNext}>
+        Next
+      </AvaButton.PrimaryLarge>
       <Space y={16} />
       <Pressable
         style={{ marginHorizontal: 16, marginBottom: 32 }}

@@ -9,12 +9,16 @@ import { Account, selectAccounts } from 'store/account'
 import {
   AccountId,
   AddrBookItemType,
-  Contact,
   selectContacts,
   selectRecentContacts
 } from 'store/addressBook'
-import { selectActiveNetwork } from 'store/network'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { Contact } from '@avalabs/types'
+import {
+  getAddressProperty,
+  getAddressXP
+} from 'store/utils/account&contactGetters'
 
 export type AddressBookSource = 'recents' | 'addressBook' | 'accounts'
 
@@ -31,16 +35,16 @@ export default function AddressBookLists({
   onContactSelected,
   navigateToAddressBook,
   onlyBtc = false
-}: AddressBookListsProps) {
+}: AddressBookListsProps): JSX.Element {
+  const { activeNetwork } = useNetworks()
   const contacts = useSelector(selectContacts)
   const recentContacts = useSelector(selectRecentContacts)
   const accounts = useSelector(selectAccounts)
-  const activeNetwork = useSelector(selectActiveNetwork)
 
   const addressBookContacts = useMemo(
     () =>
       Object.values(contacts).filter(
-        value => (onlyBtc && value.addressBtc) || !onlyBtc
+        value => (onlyBtc && value.addressBTC) || !onlyBtc
       ),
     [contacts, onlyBtc]
   )
@@ -82,7 +86,7 @@ export default function AddressBookLists({
         )
         .filter(
           value =>
-            (onlyBtc && value.type === 'contact' && value.item.addressBtc) ||
+            (onlyBtc && value.type === 'contact' && value.item.addressBTC) ||
             (onlyBtc && value.type === 'account') ||
             !onlyBtc
         ),
@@ -93,7 +97,7 @@ export default function AddressBookLists({
     title: string,
     selected: boolean,
     color: string
-  ) => {
+  ): JSX.Element => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
@@ -119,7 +123,7 @@ export default function AddressBookLists({
               onContactSelected(item, type, 'recents')
             )
           }
-          keyExtractor={item => item.item.title + item.item.address}
+          keyExtractor={item => item.item.name + getAddressProperty(item.item)}
           contentContainerStyle={{ paddingHorizontal: 16 }}
           ListEmptyComponent={
             <View style={{ marginVertical: 40 }}>
@@ -171,20 +175,25 @@ const renderItem = (
   activeNetwork: Network,
   item: { item: Contact | Account; type: AddrBookItemType },
   onPress: (item: Contact | Account, type: AddrBookItemType) => void
-) => {
+): JSX.Element => {
+  let address
+  let addressBtc
+  switch (activeNetwork.vmName) {
+    case NetworkVMType.BITCOIN:
+      addressBtc = item.item.addressBTC
+      break
+    case NetworkVMType.PVM:
+    case NetworkVMType.AVM:
+      address = getAddressXP(item.item)
+      break
+    default:
+      address = getAddressProperty(item.item)
+  }
   return (
     <AddressBookItem
-      title={item.item.title}
-      address={
-        activeNetwork.vmName !== NetworkVMType.BITCOIN
-          ? item.item.address
-          : undefined
-      }
-      addressBtc={
-        activeNetwork.vmName === NetworkVMType.BITCOIN
-          ? item.item.addressBtc
-          : undefined
-      }
+      title={item.item.name}
+      address={address}
+      addressBtc={addressBtc}
       onPress={() => {
         onPress(item.item, item.type)
       }}

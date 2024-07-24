@@ -4,7 +4,6 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
@@ -16,7 +15,6 @@ describe('Show Recovery Phrase', () => {
   })
 
   it('Should verify first and last word of mnemonic presented', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await SecurityAndPrivacyPage.tapShowRecoveryPhrase()

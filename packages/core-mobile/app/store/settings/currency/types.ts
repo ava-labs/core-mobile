@@ -9,17 +9,15 @@ export const currencies = [
   { name: 'Danish Krone', symbol: 'DKK' },
   { name: 'British Pound Sterling', symbol: 'GBP' },
   { name: 'Hong Kong Dollar', symbol: 'HKD' },
-  { name: 'Hungarian Forint', symbol: 'HUF' },
-  { name: 'Israeli New Shekel', symbol: 'ILS' },
-  { name: 'Indian Rupee', symbol: 'INR' }
+  { name: 'Hungarian Forint', symbol: 'HUF' }
 ]
 
+export const DEFAULT_CURRENCY = 'USD'
+
 export const initialState = {
-  currencies,
-  selected: 'USD'
+  selected: DEFAULT_CURRENCY
 }
 
 export type CurrencyState = {
-  currencies: { name: string; symbol: string }[]
   selected: string
 }

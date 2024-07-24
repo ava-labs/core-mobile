@@ -4,45 +4,54 @@ import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import BN from 'bn.js'
 import glacierTokenList from 'tests/fixtures/glacierTokenList.json'
-import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
-import { TokenType } from 'store/balance'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { TokenType } from '@avalabs/vm-module-types'
+import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
 import { SendErrorMessage, SendState } from './types'
 
+const mockEstimateGas = jest.fn()
 jest
   .spyOn(JsonRpcBatchInternal.prototype, 'estimateGas')
-  .mockImplementation(_ => {
-    return new Promise(resolve => {
-      resolve(10n)
-    })
-  })
+  .mockImplementation(mockEstimateGas)
 
 describe('validateStateAndCalculateFees', () => {
   const mockActiveAccount = mockAccounts[0]
   const mockNetwork = { ...mockNetworks[1], vmName: NetworkVMType.EVM }
   const serviceToTest = new SendServiceEVM(
     mockNetwork,
-    mockActiveAccount.address
+    mockActiveAccount.addressC
   )
+
+  afterEach(() => {
+    mockEstimateGas.mockClear()
+  })
+
+  beforeEach(() => {
+    mockEstimateGas.mockImplementation(_ => {
+      return new Promise(resolve => {
+        resolve(10n)
+      })
+    })
+  })
 
   describe('when sending NFT', () => {
     const token = {
       ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
       type: TokenType.ERC721,
-      address: mockActiveAccount.address,
+      address: mockActiveAccount.addressC,
       tokenId: 1
     }
     const sendState = {
       token: token,
-      address: mockActiveAccount.address,
-      gasPrice: 1n,
+      address: mockActiveAccount.addressC,
+      defaultMaxFeePerGas: 1n,
       gasLimit: 1
     } as SendState
 
     const params = {
       sendState,
       isMainnet: false,
-      fromAddress: mockActiveAccount.address
+      fromAddress: mockActiveAccount.addressC
     }
 
     it('should succeed when all requirements met', async () => {
@@ -64,11 +73,27 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...sendState, gasPrice: 0n }
+        sendState: { ...sendState, defaultMaxFeePerGas: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_NETWORK_FEE)
+    })
+
+    it('should fail for missing gas limit', async () => {
+      mockEstimateGas.mockImplementationOnce(_ => {
+        return new Promise(resolve => {
+          resolve(0n)
+        })
+      })
+
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...sendState }
+      })
+
+      expect(newState.canSubmit).toBe(false)
+      expect(newState.error?.message).toBe(SendErrorMessage.INVALID_GAS_LIMIT)
     })
 
     it('should fail for insufficent balance for network fee', async () => {
@@ -88,14 +113,14 @@ describe('validateStateAndCalculateFees', () => {
     const token = {
       ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
       type: TokenType.NATIVE,
-      address: mockActiveAccount.address,
+      address: mockActiveAccount.addressC,
       tokenId: 1,
       balance: new BN(1000)
     }
     const sendState = {
       token: token,
-      address: mockActiveAccount.address,
-      gasPrice: 1n,
+      address: mockActiveAccount.addressC,
+      defaultMaxFeePerGas: 1n,
       gasLimit: 1,
       amount: new BN(10)
     } as SendState
@@ -103,7 +128,7 @@ describe('validateStateAndCalculateFees', () => {
     const params = {
       sendState,
       isMainnet: false,
-      fromAddress: mockActiveAccount.address
+      fromAddress: mockActiveAccount.addressC
     }
 
     it('should succeed when all requirements met', async () => {
@@ -125,11 +150,27 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...params.sendState, gasPrice: 0n }
+        sendState: { ...params.sendState, defaultMaxFeePerGas: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_NETWORK_FEE)
+    })
+
+    it('should fail for missing gas limit', async () => {
+      mockEstimateGas.mockImplementationOnce(_ => {
+        return new Promise(resolve => {
+          resolve(0n)
+        })
+      })
+
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...sendState }
+      })
+
+      expect(newState.canSubmit).toBe(false)
+      expect(newState.error?.message).toBe(SendErrorMessage.INVALID_GAS_LIMIT)
     })
 
     it('should fail for missing amount', async () => {

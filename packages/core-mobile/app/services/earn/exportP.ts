@@ -4,7 +4,7 @@ import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { Avax } from 'types/Avax'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -38,14 +38,17 @@ export async function exportP({
     destinationAddress: activeAccount.addressCoreEth
   })
 
-  const signedTxJson = await WalletService.sign(
-    { tx: unsignedTx } as AvalancheTransactionRequest,
-    activeAccount.index,
-    avaxXPNetwork
-  )
+  const signedTxJson = await WalletService.sign({
+    transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
+    accountIndex: activeAccount.index,
+    network: avaxXPNetwork
+  })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-  const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
+  const txID = await NetworkService.sendTransaction({
+    signedTx,
+    network: avaxXPNetwork
+  })
   Logger.trace('txID', txID)
 
   const avaxProvider = NetworkService.getProviderForNetwork(

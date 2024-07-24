@@ -1,111 +1,99 @@
-import {
-  BIG_ZERO,
-  Blockchain,
-  useBridgeSDK,
-  useHasEnoughForGas
-} from '@avalabs/bridge-sdk'
+import { BIG_ZERO, Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { useCallback, useState } from 'react'
-import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
+import { useCallback, useMemo } from 'react'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
-import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork } from 'store/network'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import Logger from 'utils/Logger'
+import { noop } from '@avalabs/utils-sdk'
+import { useTransferAssetEVM } from './useTransferAssetEVM'
 
 /**
- * Hook for when the source is Avalanche
+ * Hook for transferring assets from Avalanche to Ethereum (unwrapping)
  */
-export function useAvalancheBridge(
-  amount: Big,
-  bridgeFee: Big,
+export function useAvalancheBridge({
+  amount,
+  bridgeFee,
+  minimum
+}: {
+  amount: Big
+  bridgeFee: Big
   minimum: Big
-): BridgeAdapter {
-  const {
-    targetBlockchain,
-    currentBlockchain,
-    setTransactionDetails,
-    currentAssetData
-  } = useBridgeSDK()
-
-  const { createBridgeTransaction, transferAsset } = useBridgeContext()
-
-  const isAvalancheBridge = currentBlockchain === Blockchain.AVALANCHE
-  const [txHash, setTxHash] = useState<string>()
-
-  const sourceBalance = useSingularAssetBalanceEVM(
-    isAvalancheBridge ? currentAssetData : undefined,
-    Blockchain.AVALANCHE
-  )
+}): BridgeAdapter {
+  const { activeNetwork } = useNetworks()
+  const { targetBlockchain, currentAssetData } = useBridgeSDK()
+  const { createBridgeTransaction } = useBridgeContext()
+  const { transfer: transferEVM } = useTransferAssetEVM()
+  const activeAccount = useSelector(selectActiveAccount)
 
   const { assetsWithBalances, loading } = useAssetBalancesEVM(
     Blockchain.AVALANCHE
   )
 
-  const activeAccount = useSelector(selectActiveAccount)
-  const network = useSelector(selectActiveNetwork)
-  const avalancheProvider = useAvalancheProvider()
-  const hasEnoughForNetworkFee = useHasEnoughForGas(
-    isAvalancheBridge ? activeAccount?.address : undefined,
-    avalancheProvider
+  const sourceBalance = useMemo(
+    () =>
+      assetsWithBalances.find(
+        ({ asset }) => asset.symbol === currentAssetData?.symbol
+      ),
+    [assetsWithBalances, currentAssetData?.symbol]
   )
 
   const maximum = sourceBalance?.balance || BIG_ZERO
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
-    if (!currentAssetData) {
-      return Promise.reject()
-    }
+    if (!currentAssetData) return Promise.reject('Asset not found')
 
     const timestamp = Date.now()
-    const result = await transferAsset(
-      amount,
-      currentAssetData,
-      () => {
-        //not used
-      },
-      setTxHash
-    )
 
-    setTransactionDetails({
-      tokenSymbol: currentAssetData.symbol,
-      amount
+    const transactionHash = await transferEVM({
+      amount,
+      asset: currentAssetData,
+      onStatusChange: noop,
+      onTxHashChange: noop
+    })
+
+    if (!transactionHash) return Promise.reject('Failed to transfer')
+
+    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+      chainId: activeNetwork.chainId,
+      sourceTxHash: transactionHash,
+      fromAddress: activeAccount?.addressC
     })
 
     createBridgeTransaction(
       {
         sourceChain: Blockchain.AVALANCHE,
-        sourceTxHash: result?.hash ?? '',
+        sourceTxHash: transactionHash,
         sourceStartedAt: timestamp,
         targetChain: targetBlockchain,
         amount,
         symbol: currentAssetData.symbol
       },
-      network
-    )
+      activeNetwork
+    ).catch(Logger.error)
 
-    return result?.hash
+    return transactionHash
   }, [
-    amount,
-    createBridgeTransaction,
     currentAssetData,
-    setTransactionDetails,
-    targetBlockchain,
-    transferAsset,
-    network
+    transferEVM,
+    amount,
+    activeNetwork,
+    activeAccount?.addressC,
+    createBridgeTransaction,
+    targetBlockchain
   ])
 
   return {
     sourceBalance,
     assetsWithBalances,
-    hasEnoughForNetworkFee,
     loading,
     receiveAmount,
     maximum,
-    txHash,
     transfer
   }
 }
