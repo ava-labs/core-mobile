@@ -29,18 +29,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240723180655":
-  version: 0.0.0-CP-8870-20240723180655
-  resolution: "@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240723180655"
+"@avalabs/avalanche-module@npm:0.0.17":
+  version: 0.0.17
+  resolution: "@avalabs/avalanche-module@npm:0.0.17"
   dependencies:
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": v2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240723180655
+    "@avalabs/vm-module-types": 0.0.17
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
-  checksum: b7a4abef94a15947a5e8fae6bb50f51c3b08746733436f0695a09fe89fda499d00f284eee7f540fec0a825f99e89ea7aae5de3f8837965552ed5b7c1b70494a1
+  checksum: ef1d15cfba96420b65940c7c4ab55cc082d1ad28431df603b3ce0262d82965d942d0776d28c238d117785b773bba4e6eb97a1ac40132bcf9f6b0951a58c094eb
   languageName: node
   linkType: hard
 
@@ -125,7 +125,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.0.0-CP-8870-20240723180655
+    "@avalabs/avalanche-module": 0.0.17
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bridge-sdk": v2.8.0-alpha.187
     "@avalabs/bridge-unified": 2.1.1
@@ -133,7 +133,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.0-CP-8870-20240723180655
+    "@avalabs/evm-module": 0.0.17
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -142,7 +142,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240723180655
+    "@avalabs/vm-module-types": 0.0.17
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -376,15 +376,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.0-CP-8870-20240723180655":
-  version: 0.0.0-CP-8870-20240723180655
-  resolution: "@avalabs/evm-module@npm:0.0.0-CP-8870-20240723180655"
+"@avalabs/evm-module@npm:0.0.17":
+  version: 0.0.17
+  resolution: "@avalabs/evm-module@npm:0.0.17"
   dependencies:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.193
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": 2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240723180655
+    "@avalabs/vm-module-types": 0.0.17
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@blockaid/client": 0.11.0
     "@metamask/rpc-errors": 6.3.0
@@ -394,7 +394,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 2e0c1cb2f4aed7be40796df8aaea2378ee71fc06ef3d66be2caaaf8ddcd4d8da1df0fde0872a1028b293cfbd57389ae124f4b34c541ef1d098bc246a17cbda03
+  checksum: 58a690f6810694f5e7fa837c87d4c875d19efa11fcfe42cc6126f768337c54f0ff496be5fe504adeea96c5746b0fe0e584c6fde8a718621b4ff817fe31493558
   languageName: node
   linkType: hard
 
@@ -565,16 +565,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240723180655":
-  version: 0.0.0-CP-8870-20240723180655
-  resolution: "@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240723180655"
+"@avalabs/vm-module-types@npm:0.0.17":
+  version: 0.0.17
+  resolution: "@avalabs/vm-module-types@npm:0.0.17"
   dependencies:
     "@metamask/rpc-errors": 6.3.0
     ethers: 6.8.1
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: f1cf9700a35affef2e06813fedc09c2c6c613b16bc095a8ce15f452836c6b09be5ada4dd253a850361fa5431affa5d457072baed910ffe66bdaee9c9a876476a
+  checksum: 73f4ea109a9c5c932edacc09dabef285d8ec500e113264da15c6e9151fda7c81ba5faaf2b4234527f5688d198904f94f267bba2cf6865228dda5ebdac02eef76
   languageName: node
   linkType: hard
 
