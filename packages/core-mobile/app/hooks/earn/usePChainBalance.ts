@@ -17,6 +17,7 @@ export const usePChainBalance = (): UseQueryResult<
   const addressPVM = useSelector(selectActiveAccount)?.addressPVM
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useQuery({
     refetchInterval: refetchIntervals.balance,
@@ -27,7 +28,6 @@ export const usePChainBalance = (): UseQueryResult<
       if (addressPVM === undefined) {
         return
       }
-      const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
       const module = await ModuleManager.loadModuleByNetwork(network)
       const balancesResponse = await module.getBalances({
         addresses: [addressPVM],

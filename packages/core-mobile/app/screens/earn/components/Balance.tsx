@@ -48,7 +48,10 @@ export const Balance = (): JSX.Element | null => {
 
   if (shouldShowError) return null
 
-  const [availableInAvax] = weiAvaxFormatter(cChainBalance.data.balance, true)
+  const [availableInAvax] = weiAvaxFormatter(
+    cChainBalance.data?.balance.toString(),
+    true
+  )
 
   const [claimableInAvax] = avaxFormatter(
     Avax.fromBase(pChainBalance.data?.balancePerType.unlockedUnstaked ?? 0),
