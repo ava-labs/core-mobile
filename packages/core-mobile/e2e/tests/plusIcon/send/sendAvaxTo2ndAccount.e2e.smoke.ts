@@ -39,7 +39,9 @@ describe('Send Avax to another account', () => {
     await AccountManagePage.tapSecondAccount()
 
     // verify receive event
-    await PortfolioPage.goToActivityTab()
+    if (Actions.platform() === 'ios') {
+      await PortfolioPage.goToActivityTab()
+    }
     const newRow = await ActivityTabPage.getLatestActivityRow()
     await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
   })

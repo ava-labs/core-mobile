@@ -130,10 +130,14 @@ class PortfolioPage {
   }
 
   async goToActivityTab() {
-    await actions.waitForElement(this.avaxNetwork)
+    await actions.waitForElement(this.avaxNetwork, 10000, 0)
     await delay(1000)
     await this.tapAvaxNetwork()
-    await actions.waitForElement(this.activityTab)
+    if (Action.platform() === 'ios') {
+      await actions.waitForElement(this.activityTab, 10000, 0)
+    } else {
+      await actions.waitForElement(this.activityTab, 10000, 1)
+    }
     await this.tapActivityTab()
     await delay(3000)
     await ActivityTabPage.refreshActivityPage()

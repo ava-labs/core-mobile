@@ -3,6 +3,7 @@ import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
 import Assert from '../helpers/assertions'
 import actions from '../helpers/actions'
+import delay from '../helpers/waits'
 
 class AccountManagePage {
   get account() {
@@ -89,8 +90,16 @@ class AccountManagePage {
     await actions.waitForElement(this.accountDropdownTitle)
     await this.tapAccountDropdownTitle()
     await actions.waitForElement(this.addEditAccount)
+    if (Action.platform() === 'android') {
+      await delay(1000)
+    }
     await this.tapAddEditAccounts()
-    await actions.waitForElement(this.addAccountButton)
+    await delay(1000)
+    await actions.waitForElement(
+      this.addAccountButton,
+      10000,
+      actions.platform() === 'android' ? 1 : 0
+    )
     await this.tapAddAccountButton()
     await actions.waitForElement(this.doneButton)
     const result = await this.getSecondAvaxAddress()
