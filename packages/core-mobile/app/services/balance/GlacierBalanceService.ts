@@ -31,6 +31,12 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     )
   }
 
+  isChainUnavailableError(err: unknown): boolean {
+    const message = err instanceof Error ? err.message : String(err)
+
+    return message.includes('Internal Server Error')
+  }
+
   async getBalances({
     network,
     accountAddress,
@@ -52,15 +58,20 @@ export class GlacierBalanceService implements BalanceServiceProvider {
             let results: (PTokenWithBalance | XTokenWithBalance)[] = []
             if (pChainBalance.status === 'fulfilled') {
               results = [...results, pChainBalance.value]
+            } else if (this.isChainUnavailableError(pChainBalance.reason)) {
               GlacierService.setGlacierToUnhealthy()
             }
             if (xChainBalance.status === 'fulfilled') {
               results = [...results, xChainBalance.value]
+            } else if (this.isChainUnavailableError(xChainBalance.reason)) {
               GlacierService.setGlacierToUnhealthy()
             }
             return results
           })
           .catch(reason => {
+            if (this.isChainUnavailableError(reason)) {
+              GlacierService.setGlacierToUnhealthy()
+            }
             Logger.error(reason)
             return []
           })

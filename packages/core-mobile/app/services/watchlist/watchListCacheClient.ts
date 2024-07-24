@@ -1,9 +1,11 @@
 import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
 import { array, boolean, string } from 'zod'
+import Logger from 'utils/Logger'
 import { CoinMarketSchema, SimplePriceResponseSchema } from '../token/types'
 
-if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
+if (!Config.PROXY_URL)
+  Logger.warn('PROXY_URL is missing in env file. Watchlist is disabled.')
 
 const baseUrl = Config.PROXY_URL + '/watchlist'
 

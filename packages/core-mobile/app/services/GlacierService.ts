@@ -21,8 +21,12 @@ import {
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import { ChainId } from '@avalabs/chains-sdk'
+import Logger from 'utils/Logger'
 
-if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
+if (!Config.GLACIER_URL)
+  Logger.warn(
+    'GLACIER_URL ENV is missing in env file. Glacier service disabled.'
+  )
 
 export const GLACIER_URL = Config.GLACIER_URL
 
