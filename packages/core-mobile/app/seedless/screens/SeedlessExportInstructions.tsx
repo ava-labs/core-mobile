@@ -6,7 +6,8 @@ import {
   getDelayWarningDescription,
   getDelayWarningTitle
 } from 'seedless/hooks/useSeedlessMnemonicExport'
-import { Banner } from 'components/Banner'
+import AlertBanner from 'screens/rpc/components/v2/AlertBanner'
+import { AlertType } from '@avalabs/vm-module-types'
 
 interface Props {
   onNext: () => void
@@ -53,9 +54,14 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
         <View
           sx={{ marginVertical: 32, height: 1, backgroundColor: '$neutral800' }}
         />
-        <Banner
-          title={getDelayWarningTitle()}
-          description={getDelayWarningDescription()}
+        <AlertBanner
+          alert={{
+            type: AlertType.WARNING,
+            details: {
+              title: getDelayWarningTitle(),
+              description: getDelayWarningDescription()
+            }
+          }}
         />
       </View>
       <Button
