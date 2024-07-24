@@ -1,6 +1,7 @@
 {
   "name": "@avalabs/core-mobile",
   "private": true,
+  "license": "Limited Ecosystem License",
   "scripts": {
     "setup": "yarn allow-scripts",
     "envs": "./scripts/getEnvs.sh",
