@@ -15,6 +15,10 @@ class ReviewAndSend {
     const qrCode = this.getQrCode().toString()
     await Actions.setInputText(this.uriInputField, qrCode, 0)
   }
+
+  async setQrCode(qrCode: string) {
+    await Actions.setInputText(this.uriInputField, qrCode, 0)
+  }
 }
 
 export default new ReviewAndSend()
