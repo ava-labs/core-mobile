@@ -1,0 +1,24 @@
+Copyright (C) 2021, Ava Labs, Inc. All rights reserved.
+
+Limited Ecosystem License
+Version 1.0
+
+Subject to the limited license below (**”License””**), you may not, and you may not permit anyone else to, copy, modify, create derivative works based on, combine with another program or redistribute any software, source code, document or other copyrightable work in this repository (collectively, **“Software”**) or any part thereof, except that you may contribute to this repository. This License applies to all copies, modifications, derivative works, and any other form or usage of the Software. You will include and display this License, without modification, with all uses of the Software or any Modified Software, regardless of form.
+
+Ava Labs, Inc. (**“Ava Labs”**) hereby grants you a limited, royalty-free, worldwide, non-sublicensable, non-transferable, non-exclusive license to use, copy, modify, create derivative works based on, combine with another program and redistribute the Software, in source code, binary, or any other form, including any modifications or derivative works of the Software (any resulting software, **“Modified Software”**) solely (i) for use in connection with the Avalanche Public Blockchain platform, having a NetworkID of 1 (Mainnet) or 5 (Fuji), and associated blockchains, comprised exclusively of the Avalanche X-Chain, C-Chain, P-Chain and any subnets linked to the P-Chain (**“Avalanche Authorized Platform”**) or (ii) for non-production, testing or research purposes without any commercial application within the Avalanche ecosystem (**“Non-Commercial Use”**); provided that, in each case, you may not use the Software or any Modified Software (a) in connection with any forks of the Avalanche Authorized Platform, (b) in any manner not operationally connected to the Avalanche Authorized Platform other than for Non-Commercial Use, and (c) to the extent the number of monthly active users or the number of total installs of the Modified Software across all versions thereof exceeds 10,000 at any time.
+
+Ava Labs may publicly announce changes or additions to the Avalanche Authorized Platform, which may expand or modify usage of the Software. Upon such announcement, the Avalanche Authorized Platform will be deemed to be the then-current iteration of such platform.
+
+You hereby acknowledge and agree to the terms set forth at www.avalabs.org/important-notice.
+
+If you use the Software or any Modified Software in violation of this License, this License will automatically terminate and Ava Labs reserves all rights to seek any remedy for such violation.
+
+Except for uses explicitly permitted in this License, Ava Labs retains all rights in the Software, including without limitation the ability to modify it.
+
+Except as required or explicitly permitted by this License, you will not use any Ava Labs names, logos, or trademarks without Ava Labs’ prior written consent.
+
+You may use this License for software other than the “Software” specified above, as long as the only change to this License is the definition of the term “Software.”
+
+The Software may reference third party components. You acknowledge and agree that these third party components may be governed by a separate license or terms and that you will comply with them.
+
+**TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED ON AN “AS IS” BASIS, AND AVA LABS EXPRESSLY DISCLAIMS AND EXCLUDES ALL REPRESENTATIONS, WARRANTIES AND OTHER TERMS AND CONDITIONS, WHETHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION BY OPERATION OF LAW OR BY CUSTOM, STATUTE OR OTHERWISE, AND INCLUDING, BUT NOT LIMITED TO, ANY IMPLIED WARRANTY, TERM, OR CONDITION OF NON-INFRINGEMENT, MERCHANTABILITY, TITLE, OR FITNESS FOR PARTICULAR PURPOSE. YOU USE THE SOFTWARE AT YOUR OWN RISK. AVA LABS EXPRESSLY DISCLAIMS ALL LIABILITY (INCLUDING FOR ALL DIRECT, CONSEQUENTIAL OR OTHER DAMAGES OR LOSSES) RELATED TO ANY USE OF THE SOFTWARE.**
