@@ -5,7 +5,6 @@ import {
   CubeSignerResponse,
   Empty,
   Environment,
-  envs,
   IdentityProof,
   Key,
   KeyInfoApi,
@@ -17,7 +16,8 @@ import {
   SignerSessionData,
   SignerSessionManager,
   TotpChallenge,
-  UserInfo
+  UserInfo,
+  envs
 } from '@cubist-labs/cubesigner-sdk'
 import { hoursToSeconds, minutesToSeconds } from 'date-fns'
 import Config from 'react-native-config'
@@ -26,20 +26,14 @@ import PasskeyService from 'services/passkey/PasskeyService'
 import { Result } from 'types/result'
 import { MFA } from 'seedless/types'
 import Logger from 'utils/Logger'
-import { retry, RetryBackoffPolicy } from 'utils/js/retry'
+import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 
 if (!Config.SEEDLESS_ORG_ID) {
-  Logger.warnOrThrow(
-    !__DEV__,
-    'SEEDLESS_ORG_ID is missing in env file. Seedless is disabled.'
-  )
+  Logger.warn('SEEDLESS_ORG_ID is missing. Seedless is disabled.')
 }
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
-  Logger.warnOrThrow(
-    !__DEV__,
-    'SEEDLESS_ENVIRONMENT is missing in env file. Seedless is disabled.'
-  )
+  Logger.warn('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
 }
 
 const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID ?? ''

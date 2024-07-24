@@ -9,10 +9,7 @@ import {
 } from './types'
 
 if (!Config.PROXY_URL)
-  Logger.warnOrThrow(
-    !__DEV__,
-    'PROXY_URL is missing in env file. Blockaid service disabled.'
-  )
+  Logger.warn('PROXY_URL is missing in env file. Blockaid service disabled.')
 
 const baseURL = Config.PROXY_URL + '/proxy/blockaid/'
 

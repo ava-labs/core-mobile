@@ -22,10 +22,7 @@ import Logger from 'utils/Logger'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
 if (!Config.PROXY_URL)
-  Logger.warnOrThrow(
-    !__DEV__,
-    'PROXY_URL is missing in env file. Network service is disabled.'
-  )
+  Logger.warn('PROXY_URL is missing in env file. Network service is disabled.')
 
 class NetworkService {
   async getNetworks(): Promise<Networks> {
@@ -176,7 +173,6 @@ class NetworkService {
     } as Network
     return isDeveloperMode ? xChainTest : xChain
   }
-
   /**
    * Returns the provider used by Avalanche X/P/CoreEth chains.
    * Using either X or P Network will result in same provider.

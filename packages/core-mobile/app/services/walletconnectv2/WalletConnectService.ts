@@ -28,8 +28,7 @@ const UPDATE_SESSION_TIMEOUT = 15000
 const LOG_LEVEL = __DEV__ ? 'error' : 'silent'
 
 if (!Config.WALLET_CONNECT_PROJECT_ID) {
-  Logger.warnOrThrow(
-    !__DEV__,
+  Logger.warn(
     'WALLET_CONNECT_PROJECT_ID is missing in env file. Wallet connect is disabled.'
   )
 }

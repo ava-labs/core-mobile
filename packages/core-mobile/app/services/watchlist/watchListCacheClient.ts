@@ -5,10 +5,7 @@ import Logger from 'utils/Logger'
 import { CoinMarketSchema, SimplePriceResponseSchema } from '../token/types'
 
 if (!Config.PROXY_URL)
-  Logger.warnOrThrow(
-    !__DEV__,
-    'PROXY_URL is missing in env file. Watchlist is disabled.'
-  )
+  Logger.warn('PROXY_URL is missing in env file. Watchlist is disabled.')
 
 const baseUrl = Config.PROXY_URL + '/watchlist'
 
