@@ -3,7 +3,7 @@ name: Mobile PR
 on:
   pull_request:
     branches:
-      - 'development'
+      - 'main'
 
 permissions:
   contents: read
@@ -39,5 +39,5 @@ jobs:
 
       - name: Test
         env:
-          NODE_OPTIONS: "--max_old_space_size=4096"
+          NODE_OPTIONS: '--max_old_space_size=4096'
         run: yarn test --ci --silent
