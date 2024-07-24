@@ -17,8 +17,8 @@ import { assertNotUndefined } from 'utils/assertions'
 import NetworkService from 'services/network/NetworkService'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import * as inMemoryCache from 'utils/InMemoryCache'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
+import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -74,10 +74,7 @@ export const useIssueDelegation = (
         addresses: [pAddress],
         currency: selectedCurrency,
         network: mapToVmNetwork(network),
-        storage: {
-          get: inMemoryCache.getCache,
-          set: inMemoryCache.setCache
-        }
+        storage: coingeckoInMemoryCache
       })
 
       const pChainBalance = balancesResponse[pAddress]?.[
