@@ -5,7 +5,7 @@ export default {
   addAssetsMessage: 'Add assets by clicking the button below.',
   addcustomToken: 'Add custom token',
   arbitrumNetwork: 'Arbitrum One',
-  avaxNetwork: 'Avalanche (C-Chain)',
+  avaxNetwork: 'active-network-Avalanche (C-Chain)',
   avaxFujiToken: 'Avalanche (FUJI)',
   assetsTab: 'Assets',
   btcTokenItem: 'BTC',

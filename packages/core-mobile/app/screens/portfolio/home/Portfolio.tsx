@@ -156,6 +156,7 @@ const TokensTab = (): JSX.Element => {
         exiting={FadeOutUp.duration(300)}
         entering={FadeInDown.delay(300).duration(300)}>
         <InactiveNetworkCard
+          testID="inactive-network-card"
           network={item.item}
           height={getInactiveNetworkCardHeight(item.index)}
           onPress={handlePressInactiveNetwork}

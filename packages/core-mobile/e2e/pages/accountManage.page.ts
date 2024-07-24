@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
-import { Platform } from '../helpers/constants'
 import Assert from '../helpers/assertions'
+import actions from '../helpers/actions'
+import delay from '../helpers/waits'
 
 class AccountManagePage {
   get account() {
@@ -85,12 +86,26 @@ class AccountManagePage {
   }
 
   async createSecondAccount() {
+    await device.disableSynchronization()
+    await actions.waitForElement(this.accountDropdownTitle)
     await this.tapAccountDropdownTitle()
+    await actions.waitForElement(this.addEditAccount)
+    if (Action.platform() === 'android') {
+      await delay(1000)
+    }
     await this.tapAddEditAccounts()
+    await delay(1000)
+    await actions.waitForElement(
+      this.addAccountButton,
+      10000,
+      actions.platform() === 'android' ? 1 : 0
+    )
     await this.tapAddAccountButton()
+    await actions.waitForElement(this.doneButton)
     const result = await this.getSecondAvaxAddress()
     await this.tapFirstAccount()
     await this.tapDoneButton()
+    await device.enableSynchronization()
     return result
   }
 
@@ -144,10 +159,11 @@ class AccountManagePage {
   }
 
   async getSecondAvaxAddress() {
+    await actions.waitForElement(this.avaxAddress, 10000, 2)
     const result: any = await Action.getAttributes(this.avaxAddress, 2)
-    return Action.platform() === Platform.Android
+    return Action.platform() === 'android'
       ? result.text.toLowerCase()
-      : result.elements[3].text.toLowerCase()
+      : result.elements[2].text.toLowerCase()
   }
 
   async setNewAccountName() {
@@ -208,6 +224,7 @@ class AccountManagePage {
   }
 
   async tapSecondAccount() {
+    await device.disableSynchronization()
     await Action.waitForElement(this.secondAccount, 10000, 0)
     await Action.tapElementAtIndex(this.secondAccount, 0)
   }
