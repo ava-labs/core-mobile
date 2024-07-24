@@ -6,6 +6,6 @@ export default {
   noConnectedSites: 'No Connected Sites',
   noConnectedSitesContent: 'Tap the button below to scan QR code and connect.',
   addNewConnection: 'Add New Connection',
-  coreDapp: 'Core',
-  title: 'Connected Sites'
+  title: 'Connected Sites',
+  backBtn: 'back_btn'
 }

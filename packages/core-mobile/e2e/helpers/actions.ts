@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/*eslint max-params: ["error", 4]*/
 
 import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
