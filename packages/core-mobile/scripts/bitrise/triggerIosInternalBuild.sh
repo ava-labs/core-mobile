@@ -6,7 +6,7 @@ PIPELINE=$(
   -H 'Content-Type: application/json' \
   -d '{
   "build_params": {
-    "branch": "development",
+    "branch": "main",
     "pipeline_id": "build-ios-apps-internal-triggered-e2e"
   },
   "hook_info": {
