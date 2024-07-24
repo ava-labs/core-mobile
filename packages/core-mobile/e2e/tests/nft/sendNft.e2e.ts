@@ -14,8 +14,7 @@ describe('Send Avax to another account', () => {
   it('Should verify NFT Details items and send NFT', async () => {
     await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapCollectiblesTab()
-    const accountNumber =
-      await CollectiblesPage.tapParadiseTycoonFurnituresNFT()
+    const accountNumber = await CollectiblesPage.tapFirstAvailableNFT()
     await CollectiblesPage.verifyNftDetailsItems()
     await CollectiblesPage.sendNft(accountNumber)
     await Actions.waitForElement(

@@ -34,7 +34,7 @@ class NameWalletPage {
   }
 
   async verifyNameWalletPage() {
-    await assertions.isVisible(this.title)
+    await actions.waitForElement(this.title)
     await assertions.isVisible(this.content)
   }
 }

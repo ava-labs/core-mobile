@@ -73,7 +73,9 @@ const renderItem = ({
   item: NFTItem
   onItemSelected: (item: NFTItem) => void
 }): JSX.Element => {
-  return <ListItem item={item} onItemSelected={onItemSelected} />
+  return (
+    <ListItem testID="nft_item" item={item} onItemSelected={onItemSelected} />
+  )
 }
 
 const Separator = (): JSX.Element => <View style={{ margin: 4 }} />

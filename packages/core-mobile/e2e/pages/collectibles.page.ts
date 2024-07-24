@@ -106,6 +106,10 @@ class CollectiblesPage {
     return by.id(Collectibles.paradiseTycoonFurnituresNFT)
   }
 
+  get nftItem() {
+    return by.id(Collectibles.nftItem)
+  }
+
   async getTextValue(pageElement: string) {
     const atr =
       pageElement === 'nftTokenId'
@@ -121,15 +125,15 @@ class CollectiblesPage {
     return result.text.toLowerCase()
   }
 
-  async tapParadiseTycoonFurnituresNFT() {
+  async tapFirstAvailableNFT() {
     try {
-      await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
+      await Action.tapElementAtIndex(this.nftItem, 0)
       return 'first'
     } catch (error) {
       console.log('NFT not found, switching to account 2...')
       await AccountManagePage.tapAccountMenu()
       await AccountManagePage.tapSecondAccount()
-      await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
+      await Action.tapElementAtIndex(this.nftItem, 0)
       return 'second'
     }
   }
