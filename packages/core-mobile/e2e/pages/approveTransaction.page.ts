@@ -46,6 +46,18 @@ class ApproveTransactionPage {
     return by.text(approveTransactionLoc.successfulToastMsg)
   }
 
+  get network() {
+    return by.text(approveTransactionLoc.network)
+  }
+
+  get transactionDetail() {
+    return by.text(approveTransactionLoc.transactionDetails)
+  }
+
+  get feeAmount() {
+    return by.text(approveTransactionLoc.feeAmount)
+  }
+
   async tapApproveBtn() {
     await actions.tap(this.approveBtn)
   }

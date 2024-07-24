@@ -41,6 +41,7 @@ export const NftList = ({ onItemSelected }: Props): JSX.Element => {
 
   return (
     <FlatList
+      testID="nft_list_view"
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       onEndReached={onEndReached}

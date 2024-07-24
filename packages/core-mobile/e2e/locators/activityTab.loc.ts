@@ -4,6 +4,7 @@ export default {
   activityHeader: 'activity_list__header',
   activityDetail: 'activity_detail__amount',
   activityListItem: 'activityListItem',
+  activityListItemAmount: 'acitivty_item_amount',
   avaxOutgoingTransactionDetail: '-0.0001 AVAX',
   avaxIncomingTransactionDetail: '+0.0001 AVAX',
   ethOutgoingTransactionDetail: '-0.0001 ETH',
