@@ -1,13 +1,15 @@
 import Blockaid from '@blockaid/client'
 import Config from 'react-native-config'
 import { TransactionParams } from '@avalabs/evm-module'
+import Logger from 'utils/Logger'
 import {
   JsonRpcRequestData,
   SiteScanResponse,
   TransactionScanResponse
 } from './types'
 
-if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
+if (!Config.PROXY_URL)
+  Logger.warn('PROXY_URL is missing in env file. Blockaid service disabled.')
 
 const baseURL = Config.PROXY_URL + '/proxy/blockaid/'
 
