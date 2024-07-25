@@ -5,16 +5,19 @@ import { TouchableOpacity, useTheme } from '@avalabs/k2-mobile'
 const NavButton = ({
   Icon,
   onPress,
-  disabled = false
+  disabled = false,
+  testID
 }: {
   Icon: React.FC<SvgProps>
   onPress: () => void
   disabled?: boolean
+  testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
 
   return (
     <TouchableOpacity
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       hitSlop={{ left: 15, right: 15, top: 15, bottom: 15 }}>

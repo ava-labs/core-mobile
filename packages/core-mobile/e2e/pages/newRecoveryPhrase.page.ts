@@ -130,7 +130,7 @@ class NewRecoveryPhrasePage {
   }
 
   async verifyNewRecoveryPhrasePage() {
-    await Assert.isVisible(this.newRecoveryPhraseTitle)
+    await Action.waitForElement(this.newRecoveryPhraseTitle)
     await Assert.isVisible(this.newRecoveryPhraseContent)
     await Assert.isVisible(this.iWroteItDownBtn)
   }

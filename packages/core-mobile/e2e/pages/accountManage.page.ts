@@ -66,10 +66,20 @@ class AccountManagePage {
   }
 
   async switchToReceivedAccount(accountNumber: string) {
+    await this.tapAccountDropdownTitle()
     if (accountNumber === 'second') {
       await this.tapFirstAccount()
     } else {
       await this.tapSecondAccount()
+    }
+  }
+
+  async switchToSentAccount(accountNumber: string) {
+    await this.tapAccountDropdownTitle()
+    if (accountNumber === 'second') {
+      await this.tapSecondAccount()
+    } else {
+      await this.tapFirstAccount()
     }
   }
 

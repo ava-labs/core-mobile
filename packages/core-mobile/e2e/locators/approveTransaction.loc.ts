@@ -9,5 +9,8 @@ export default {
   maximumNetworkFee: 'Maximum Network Fee',
   balanceChange: 'Balance Change',
   accountNumber: 'Account',
-  successfulToastMsg: 'Transaction Successful'
+  successfulToastMsg: 'Transaction Successful',
+  network: 'Network:',
+  transactionDetails: 'Transaction Details',
+  feeAmount: 'Fee Amount'
 }

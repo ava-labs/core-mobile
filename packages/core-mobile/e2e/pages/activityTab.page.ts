@@ -12,10 +12,6 @@ import BottomsTabsPage from '../pages/bottomTabs.page'
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
 class ActivityTabPage {
-  get address() {
-    return by.id(activityTab.address)
-  }
-
   get arrowSVG() {
     return by.id(activityTab.arrowUpSVG)
   }
@@ -28,12 +24,12 @@ class ActivityTabPage {
     return by.text(activityTab.transaction)
   }
 
-  get activityListHeader() {
-    return by.id(activityTab.activityHeader)
-  }
-
   get activityListItem() {
     return by.id(activityTab.activityListItem)
+  }
+
+  get activityListItemAmount() {
+    return by.id(activityTab.activityListItemAmount)
   }
 
   get selectFilterDropdown() {
@@ -125,12 +121,12 @@ class ActivityTabPage {
       | Detox.IosElementAttributes
       | Detox.AndroidElementAttributes
       | undefined,
-    activity_type: string
+    text: string
   ) {
     if (newRow === undefined) {
       fail('The new row is not added to activity tab')
     } else {
-      assert(newRow.label?.includes(activity_type))
+      assert(newRow.label?.includes(text))
     }
   }
 
@@ -166,6 +162,18 @@ class ActivityTabPage {
   async getLatestActivityRow() {
     const newRow = await Action.getAttributes(this.activityListItem)
     return 'elements' in newRow ? newRow.elements[0] : newRow
+  }
+
+  async getLatestActivityRowAmount() {
+    const newRow = await Action.getAttributes(this.activityListItemAmount)
+    return 'elements' in newRow ? newRow.elements[0] : newRow
+  }
+
+  async verifyRow(type: string, amount: string) {
+    const typeEle = await this.getLatestActivityRow()
+    const amountEle = await this.getLatestActivityRowAmount()
+    await this.verifyActivityRow(typeEle, type)
+    await this.verifyActivityRow(amountEle, amount)
   }
 }
 

@@ -118,6 +118,7 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
   const rightComponent = (
     <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
       <AvaText.ActivityTotal
+        testID="acitivty_item_amount"
         ellipsizeMode={'tail'}
         numberOfLines={2}
         textStyle={{

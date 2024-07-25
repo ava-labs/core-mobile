@@ -21,5 +21,8 @@ export default {
   nftlogo: 'avatar__logo_avatar',
   warningAddressRequired: 'Address required',
   warningInsufficientFee: 'Insufficient balance for fee.',
-  paradiseTycoonFurnituresNFT: 'token_id_4491'
+  nftItem: 'nft_item',
+  listSvg: 'list_svg',
+  nftListView: 'nft_list_view',
+  testingNft: 'mint' // Eunji added a lot of NFTs named `mint` on mnemonic wallet for testing purpose.
 }
