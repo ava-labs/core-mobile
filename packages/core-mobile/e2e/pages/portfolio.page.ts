@@ -157,6 +157,10 @@ class PortfolioPage {
     )
   }
 
+  async tapAssetsTab() {
+    await Action.tapElementAtIndex(this.assetsTab, 0)
+  }
+
   async tapCollectiblesTab() {
     await Action.tapElementAtIndex(this.collectiblesTab, 0)
   }

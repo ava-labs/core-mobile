@@ -82,6 +82,22 @@ class CollectiblesPage {
     return by.text(Collectibles.warningInsufficientFee)
   }
 
+  get listSvg() {
+    return by.id(Collectibles.listSvg)
+  }
+
+  get nftItem() {
+    return by.id(Collectibles.nftItem)
+  }
+
+  get testingNft() {
+    return by.text(Collectibles.testingNft)
+  }
+
+  get nftListView() {
+    return by.id(Collectibles.nftListView)
+  }
+
   async tapSaveButton() {
     await Action.tapElementAtIndex(this.saveBtn, 0)
   }
@@ -102,8 +118,8 @@ class CollectiblesPage {
     await Action.tapElementAtIndex(this.sendButton, 0)
   }
 
-  get paradiseTycoonFurnituresNFT() {
-    return by.id(Collectibles.paradiseTycoonFurnituresNFT)
+  async tapListSvg() {
+    await Action.tapElementAtIndex(this.listSvg, 0)
   }
 
   async getTextValue(pageElement: string) {
@@ -121,17 +137,12 @@ class CollectiblesPage {
     return result.text.toLowerCase()
   }
 
-  async tapParadiseTycoonFurnituresNFT() {
-    try {
-      await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
-      return 'first'
-    } catch (error) {
-      console.log('NFT not found, switching to account 2...')
-      await AccountManagePage.tapAccountMenu()
-      await AccountManagePage.tapSecondAccount()
-      await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
-      return 'second'
-    }
+  async scrollToMintNFT() {
+    await Action.scrollListUntil(this.testingNft, this.nftListView, 300)
+  }
+
+  async tapMintNFT() {
+    await Action.tap(this.nftItem.withDescendant(by.text('mint')))
   }
 
   async tapMyAccounts() {
@@ -158,29 +169,25 @@ class CollectiblesPage {
   }
 
   async verifySendNftItems() {
-    await Assert.isVisible(approveTransactionPage.accountNumberText)
-    await Assert.isVisible(approveTransactionPage.typeText)
+    await Action.waitForElement(approveTransactionPage.approveTransactionTitle)
+    await Assert.isVisible(approveTransactionPage.network)
+    await Assert.isVisible(approveTransactionPage.transactionDetail)
     await Assert.isVisible(approveTransactionPage.maximumNetworkFeeText)
-    await Assert.isVisible(approveTransactionPage.accountText)
-    await Assert.isVisible(approveTransactionPage.balanceChangeText)
-    await Assert.isVisible(this.nftlogo)
+    await Assert.isVisible(approveTransactionPage.feeAmount)
     await Assert.isVisible(approveTransactionPage.approveBtn)
     await Assert.isVisible(approveTransactionPage.rejectBtn)
   }
 
   async sendNft(account: string) {
-    let result
     await this.tapSendButton()
     await this.tapAddressBook()
     await this.tapMyAccounts()
     account === 'second'
       ? await AccountManagePage.tapFirstAccount()
-      : (await AccountManagePage.tapSecondAccount(),
-        (result = await this.getTextValue('nftTokenId')))
+      : await AccountManagePage.tapSecondAccount()
     await this.tapNextButton()
     await this.verifySendNftItems()
     await approveTransactionPage.tapApproveBtn()
-    return result
   }
 
   async inputCustomFee() {

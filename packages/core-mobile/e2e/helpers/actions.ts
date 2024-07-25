@@ -212,6 +212,17 @@ const getCurrentDateTime = () => {
   return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
 }
 
+const scrollListUntil = async (
+  scrollToItem: Detox.NativeMatcher,
+  scrollList: Detox.NativeMatcher,
+  scrollPixel: number
+) => {
+  await waitFor(element(scrollToItem))
+    .toBeVisible()
+    .whileElement(scrollList)
+    .scroll(scrollPixel, 'down')
+}
+
 async function writeQrCodeToFile(clipboardValue: string) {
   fs.writeFile(
     './e2e/tests/playwright/qr_codes.txt',
@@ -244,5 +255,6 @@ export default {
   isVisible,
   getCurrentDateTime,
   writeQrCodeToFile,
-  expectToBeVisible
+  expectToBeVisible,
+  scrollListUntil
 }

@@ -7,13 +7,18 @@ interface Prop {
   size?: number
 }
 
-function GridSVG({ color, size = 24 }: Prop) {
+function GridSVG({ color, size = 24 }: Prop): JSX.Element {
   const context = useApplicationContext()
 
   const svgColor = color ? color : context.theme.colorPrimary1
 
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      testID="grid_svg">
       <Rect
         x="3.75"
         y="3.75"
