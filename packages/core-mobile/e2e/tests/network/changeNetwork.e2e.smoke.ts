@@ -15,11 +15,6 @@ describe('Change Network', () => {
   })
 
   afterAll(async () => {
-    await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.tapNetworksTab()
-    await NetworksManagePage.tapStarSvgByIndex(1)
-    await commonElsPage.tapBackButton()
     await NetworksManagePage.switchToAvalancheNetwork()
   })
 
@@ -50,6 +45,7 @@ describe('Change Network', () => {
   it('should verify changing Active network to AVAX', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownAVAX()
+    await Actions.waitForElement(PortfolioPage.avaxNetwork)
     await PortfolioPage.verifyActiveNetwork(portfolio.avaxNetwork)
   })
 
@@ -59,5 +55,15 @@ describe('Change Network', () => {
     await NetworksManagePage.addBtcNetwork()
     await NetworksManagePage.tapHeaderBack()
     await PortfolioPage.verifyNetworkRemoved(portfolio.btcNetwork)
+  })
+
+  it('should add BTC network to favorites', async () => {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapManageNetworks()
+    await NetworksManagePage.tapNetworksTab()
+    await NetworksManagePage.searchNetworks('Bitcoin')
+    await NetworksManagePage.tapStarSvgByIndex(0)
+    await commonElsPage.tapBackButton()
+    await PortfolioPage.verifyInactiveNetworks([portfolio.btcNetwork])
   })
 })

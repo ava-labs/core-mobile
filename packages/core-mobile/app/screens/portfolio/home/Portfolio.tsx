@@ -153,7 +153,6 @@ const TokensTab = (): JSX.Element => {
             ? 'inactive-network-card' + item.index
             : undefined
         }
-        testID={'inactive_network_scroll_view'}
         exiting={FadeOutUp.duration(300)}
         entering={FadeInDown.delay(300).duration(300)}>
         <InactiveNetworkCard
@@ -179,6 +178,7 @@ const TokensTab = (): JSX.Element => {
   return (
     <>
       <Animated.FlatList
+        testID={'tokens_tab_list_view'}
         columnWrapperStyle={{
           justifyContent: 'space-between'
         }}
