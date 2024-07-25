@@ -1,13 +1,10 @@
-import { expect as jestExpect } from 'expect'
 import Actions from '../../helpers/actions'
 import activityTabPage from '../../pages/activityTab.page'
 import delay from '../../helpers/waits'
 import BottomTabsPage from '../../pages/bottomTabs.page'
-import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import { warmup } from '../../helpers/warmup'
 import PlusMenuPage from '../../pages/plusMenu.page'
 import SwapTabPage from '../../pages/swapTab.page'
-import Assert from '../../helpers/assertions'
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
@@ -32,10 +29,6 @@ describe('Send Avax to another account', () => {
     await SwapTabPage.tapLink()
     await delay(5000)
     await activityTabPage.refreshActivityPage()
-    await Assert.isVisible(SwapTabPage.usdcToken)
-    await SwapTabPage.tapUsdcToken()
-    const isTransactionSuccessful =
-      await TransactionDetailsPage.isDateTextOlderThan(300)
-    jestExpect(isTransactionSuccessful).toBe(true)
+    await activityTabPage.verifyNewRow('Contract Call', '-0.01 AVAX')
   })
 })
