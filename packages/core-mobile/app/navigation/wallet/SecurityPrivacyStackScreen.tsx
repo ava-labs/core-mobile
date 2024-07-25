@@ -49,7 +49,10 @@ function SecurityPrivacyStackScreen(): JSX.Element {
       }}>
       <SecurityStack.Group>
         <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Security & Privacy' })}
+          options={MainHeaderOptions({
+            title: 'Security & Privacy',
+            headerBackTestID: 'header_back'
+          })}
           name={AppNavigation.SecurityPrivacy.SecurityPrivacy}
           component={SecurityPrivacyScreen}
         />

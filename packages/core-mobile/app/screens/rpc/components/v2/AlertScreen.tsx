@@ -5,10 +5,9 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 
-const MaliciousActivityWarningScreen = (): JSX.Element => {
-  const { params } = useRoute<MaliciousActivityWarningScreenProps['route']>()
-  const navigation =
-    useNavigation<MaliciousActivityWarningScreenProps['navigation']>()
+const AlertScreen = (): JSX.Element => {
+  const { params } = useRoute<AlertScreenProps['route']>()
+  const navigation = useNavigation<AlertScreenProps['navigation']>()
   const {
     theme: { colors }
   } = useTheme()
@@ -48,26 +47,28 @@ const MaliciousActivityWarningScreen = (): JSX.Element => {
             fontWeight: '600',
             textAlign: 'center'
           }}>
-          {params.title}
+          {params.alert.details.title}
         </Text>
         <Text variant="body2" sx={{ textAlign: 'center' }}>
-          {params.subTitle}
+          {params.alert.details.description}
         </Text>
       </View>
       <View sx={{ gap: 16, padding: 16 }}>
         <Button type="primary" size="xlarge" onPress={handleReject}>
-          {params.rejectButtonTitle}
+          {params.alert.details.actionTitles?.reject}
         </Button>
         <Button type="tertiary" size="xlarge" onPress={handleProceed}>
-          <Text variant="buttonLarge">Proceed Anyway</Text>
+          <Text variant="buttonLarge">
+            {params.alert.details.actionTitles?.proceed}
+          </Text>
         </Button>
       </View>
     </Sheet>
   )
 }
 
-type MaliciousActivityWarningScreenProps = WalletScreenProps<
-  typeof AppNavigation.Modal.MaliciousActivityWarning
+type AlertScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.AlertScreen
 >
 
-export default MaliciousActivityWarningScreen
+export default AlertScreen

@@ -220,6 +220,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
             Icon={Icons.Navigation.ArrowBack}
             onPress={goBack}
             disabled={!canGoBack}
+            testID="browser_back_btn"
           />
           <NavButton
             Icon={Icons.Navigation.ArrowForward}

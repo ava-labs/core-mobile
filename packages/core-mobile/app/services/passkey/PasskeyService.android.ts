@@ -1,23 +1,18 @@
-import Config from 'react-native-config'
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 import {
   PasskeyAuthenticationRequest,
   PasskeyRegistrationRequest
 } from 'react-native-passkey/lib/typescript/Passkey'
 import {
-  FIDOAuthenticationResult,
   FIDOAuthenticationRequest,
-  FIDORegistrationResult,
+  FIDOAuthenticationResult,
   FIDORegistrationRequest,
+  FIDORegistrationResult,
   FidoType,
   PasskeyServiceInterface
 } from 'services/passkey/types'
 import { base64UrlToBuffer, bufferToBase64Url } from 'utils/data/base64'
 import { FIDO_CALLBACK_URL, RP_ID } from './consts'
-
-if (!Config.SEEDLESS_ENVIRONMENT) {
-  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
-}
 
 const BROWSER_OPTIONS = {
   showTitle: false,

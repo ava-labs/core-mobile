@@ -4,14 +4,14 @@ import Logger from 'utils/Logger'
 import { OidcPayload } from 'seedless/types'
 
 if (!Config.GOOGLE_OAUTH_CLIENT_WEB_ID) {
-  throw Error(
-    'GOOGLE_OAUTH_CLIENT_WEB_ID is missing. Please check your env file.'
+  Logger.warn(
+    'GOOGLE_OAUTH_CLIENT_WEB_ID is missing in env file. GoogleSignInService is disabled.'
   )
 }
 
 if (!Config.GOOGLE_OAUTH_CLIENT_IOS_ID) {
-  throw Error(
-    'GOOGLE_OAUTH_CLIENT_IOS_ID is missing. Please check your env file.'
+  Logger.warn(
+    'GOOGLE_OAUTH_CLIENT_IOS_ID is missing in env file. GoogleSignInService is disabled.'
   )
 }
 

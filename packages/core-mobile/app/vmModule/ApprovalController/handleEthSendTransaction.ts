@@ -11,6 +11,7 @@ export const handleEthSendTransaction = async ({
   account,
   maxFeePerGas,
   maxPriorityFeePerGas,
+  overrideData,
   resolve
 }: {
   transactionRequest: TransactionRequest
@@ -18,6 +19,7 @@ export const handleEthSendTransaction = async ({
   account: Account
   maxFeePerGas: bigint | undefined
   maxPriorityFeePerGas: bigint | undefined
+  overrideData: string | undefined
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
   const { gasLimit, type, nonce, data, from, to, value } = transactionRequest
@@ -29,7 +31,7 @@ export const handleEthSendTransaction = async ({
     maxFeePerGas,
     maxPriorityFeePerGas,
     gasLimit,
-    data,
+    data: overrideData ?? data,
     from,
     to,
     value
