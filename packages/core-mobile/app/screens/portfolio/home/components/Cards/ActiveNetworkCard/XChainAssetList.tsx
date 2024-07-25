@@ -1,6 +1,6 @@
+import { isTokenWithBalanceAVM } from '@avalabs/avalanche-module'
 import { XChainBalances } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
-import { TokenWithBalanceAVM } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useMemo } from 'react'
@@ -24,33 +24,40 @@ export const XChainAssetList = ({
   } = useApplicationContext()
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
-  const token = tokens.find(
-    t => 'unlocked' in (t as TokenWithBalanceAVM).balancePerType
-  ) as TokenWithBalanceAVM
+  const token = tokens.find(t => isTokenWithBalanceAVM(t))
 
   const assetTypes = useMemo(() => {
-    return Object.keys(token.balancePerType)
-      .sort((a, b) =>
-        Number(
-          Avax.fromBase(
-            token.balancePerType[b as ChainBalanceType] ?? '0'
-          )?.sub(
-            Avax.fromBase(token.balancePerType[a as ChainBalanceType] ?? '0')
+    return token && isTokenWithBalanceAVM(token)
+      ? Object.keys(token.balancePerType)
+          .sort((a, b) =>
+            Number(
+              Avax.fromBase(
+                token.balancePerType[b as ChainBalanceType] ?? '0'
+              )?.sub(
+                Avax.fromBase(
+                  token.balancePerType[a as ChainBalanceType] ?? '0'
+                )
+              )
+            )
           )
-        )
-      )
-      .filter(k =>
-        Avax.fromBase(token.balancePerType[k as ChainBalanceType] ?? '0')?.gt(0)
-      )
+          .filter(k =>
+            Avax.fromBase(
+              token.balancePerType[k as ChainBalanceType] ?? '0'
+            )?.gt(0)
+          )
+      : []
   }, [token])
 
   const renderItem = (assetType: string): JSX.Element => {
-    const balance = token.balancePerType[assetType as ChainBalanceType] ?? 0
+    const balance =
+      token && isTokenWithBalanceAVM(token)
+        ? token.balancePerType[assetType as ChainBalanceType]
+        : 0
     const balanceInAvax = Avax.fromBase(balance.toString()).toDisplay()
 
     const formattedBalance = currencyFormatter(
       Avax.fromBase(balance.toString())
-        .mul(token.priceInCurrency ?? 0)
+        .mul(token?.priceInCurrency ?? 0)
         .toDisplay(2)
     )
 
@@ -89,7 +96,7 @@ export const XChainAssetList = ({
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">
-                {token.symbol}
+                {token?.symbol ?? ''}
               </Text>
             </View>
           </View>
