@@ -9,6 +9,7 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 
 export const usePChainBalance = (): UseQueryResult<
   TokenWithBalancePVM | undefined,
@@ -28,14 +29,21 @@ export const usePChainBalance = (): UseQueryResult<
       if (addressPVM === undefined) {
         return
       }
-      const module = await ModuleManager.loadModuleByNetwork(network)
-      const balancesResponse = await module.getBalances({
+      const balancesResponse = await ModuleManager.avalancheModule.getBalances({
         addresses: [addressPVM],
         currency: selectedCurrency,
         network: mapToVmNetwork(network),
         storage: coingeckoInMemoryCache
       })
-      return balancesResponse[addressPVM]?.[network.networkToken.symbol]
+      const pChainBalance =
+        balancesResponse[addressPVM]?.[network.networkToken.symbol]
+      if (
+        pChainBalance === undefined ||
+        !isTokenWithBalancePVM(pChainBalance)
+      ) {
+        return
+      }
+      return pChainBalance.balancePerType.unlockedUnstaked
     }
   })
 }

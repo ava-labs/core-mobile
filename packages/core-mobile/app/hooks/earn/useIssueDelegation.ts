@@ -17,8 +17,8 @@ import { assertNotUndefined } from 'utils/assertions'
 import NetworkService from 'services/network/NetworkService'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -69,19 +69,23 @@ export const useIssueDelegation = (
       assertNotUndefined(pAddress)
 
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-      const module = await ModuleManager.loadModuleByNetwork(network)
-      const balancesResponse = await module.getBalances({
+      const balancesResponse = await ModuleManager.avalancheModule.getBalances({
         addresses: [pAddress],
         currency: selectedCurrency,
         network: mapToVmNetwork(network),
         storage: coingeckoInMemoryCache
       })
 
-      const pChainBalance = balancesResponse[pAddress]?.[
-        network.networkToken.symbol
-      ] as TokenWithBalancePVM
+      const pChainBalance =
+        balancesResponse[pAddress]?.[network.networkToken.symbol]
+      if (
+        pChainBalance === undefined ||
+        !isTokenWithBalancePVM(pChainBalance)
+      ) {
+        return Promise.reject('invalid balance type.')
+      }
       const claimableBalance = Avax.fromBase(
-        pChainBalance.balancePerType?.unlockedUnstaked
+        pChainBalance.balancePerType.unlockedUnstaked
       )
       Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
       const cChainRequiredAmount = calculateAmountForCrossChainTransfer(

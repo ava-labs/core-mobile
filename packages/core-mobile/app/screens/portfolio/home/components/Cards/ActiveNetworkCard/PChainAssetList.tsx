@@ -48,16 +48,16 @@ export const PChainAssetList = ({
 
   const shouldLimitAssets = limit && assetTypes.length > limit
 
-  const tokenPrice = token.priceInCurrency
-
   const renderItem = (assetType: string): JSX.Element => {
     const balance = token.balancePerType[assetType as ChainBalanceType] ?? 0
     const balanceInAvax = Avax.fromBase(balance.toString()).toDisplay()
-    const balanceInCurrency = tokenPrice
-      ? Avax.fromBase(balance.toString()).mul(tokenPrice).toDisplay(2)
-      : '-'
 
-    const formattedBalance = currencyFormatter(balanceInCurrency)
+    const formattedBalance = currencyFormatter(
+      Avax.fromBase(balance.toString())
+        .mul(token.priceInCurrency ?? 0)
+        .toDisplay(2)
+    )
+
     const assetName = assetPDisplayNames[assetType]
 
     return (

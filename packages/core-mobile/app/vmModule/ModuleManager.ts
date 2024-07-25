@@ -19,6 +19,12 @@ const isDev = typeof __DEV__ === 'boolean' && __DEV__
 class ModuleManager {
   #modules: Module[] | undefined
 
+  get avalancheModule(): AvalancheModule {
+    return this.#modules?.find(module =>
+      module.getManifest()?.network.namespaces.includes('avax')
+    ) as AvalancheModule
+  }
+
   constructor() {
     this.init()
   }
