@@ -11,13 +11,19 @@ import { isErc1155 } from 'services/nft/utils'
 type Props = {
   item: NFTItem
   onItemSelected: (item: NFTItem) => void
+  testID?: string
 }
 
-export const ListItem = ({ item, onItemSelected }: Props): JSX.Element => {
+export const ListItem = ({
+  item,
+  onItemSelected,
+  testID
+}: Props): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
     <View
+      testID={testID}
       style={{
         marginVertical: 4,
         borderRadius: 8,
