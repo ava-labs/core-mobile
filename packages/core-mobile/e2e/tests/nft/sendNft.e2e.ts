@@ -4,20 +4,35 @@ import PortfolioPage from '../../pages/portfolio.page'
 import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
 import approveTransactionPage from '../../pages/approveTransaction.page'
-import assertions from '../../helpers/assertions'
+import activityTabPage from '../../pages/activityTab.page'
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
     await warmup()
   })
 
-  it('Should verify NFT Details items and send NFT', async () => {
+  let account = 'first'
+
+  it('Should send NFT', async () => {
     await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapCollectiblesTab()
-    const accountNumber =
-      await CollectiblesPage.tapParadiseTycoonFurnituresNFT()
+    await CollectiblesPage.tapListSvg()
+    try {
+      await CollectiblesPage.scrollToMintNFT()
+    } catch (e) {
+      console.log(
+        'Unable to find `mint` NFT on first account, switching to 2nd account'
+      )
+      await AccountManagePage.switchToSecondAccount()
+      await CollectiblesPage.scrollToMintNFT()
+      account = 'second'
+    }
+    await CollectiblesPage.tapMintNFT()
     await CollectiblesPage.verifyNftDetailsItems()
-    await CollectiblesPage.sendNft(accountNumber)
+    await CollectiblesPage.sendNft(account)
+  })
+
+  it('Should verify NFT transaction toast', async () => {
     await Actions.waitForElement(
       approveTransactionPage.successfulToastMsg,
       120000
@@ -26,8 +41,22 @@ describe('Send Avax to another account', () => {
       approveTransactionPage.successfulToastMsg,
       30000
     )
-    await AccountManagePage.tapAccountDropdownTitle()
-    await AccountManagePage.switchToReceivedAccount(accountNumber)
-    await assertions.isVisible(CollectiblesPage.paradiseTycoonFurnituresNFT)
-  }, 300000)
+  }, 200000)
+
+  it('Should receive NFT', async () => {
+    await AccountManagePage.switchToReceivedAccount(account)
+    await CollectiblesPage.scrollToMintNFT()
+  })
+
+  it('should verify NFT transactions on activity tab', async () => {
+    // receiver activity tab:
+    await PortfolioPage.tapAssetsTab()
+    await PortfolioPage.tapAvaxNetwork()
+    await PortfolioPage.tapActivityTab()
+    await activityTabPage.verifyRow('Contract Call', '+1')
+
+    // sender activity tab:
+    await AccountManagePage.switchToSentAccount(account)
+    await activityTabPage.verifyRow('Send', '-1')
+  })
 })
