@@ -156,7 +156,12 @@ function Option({
         {networkName}
       </AvaText.Body1>
       <FlexSpacer />
-      {isSelected && <CheckmarkSVG color={'white'} />}
+      {isSelected && (
+        <CheckmarkSVG
+          color={'white'}
+          testID={`network_dropdown_check_mark__${networkName}`}
+        />
+      )}
     </Row>
   )
 }

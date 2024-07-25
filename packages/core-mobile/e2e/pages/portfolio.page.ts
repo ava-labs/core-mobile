@@ -222,6 +222,30 @@ class PortfolioPage {
       )
     }
   }
+
+  async verifyActiveNetwork(network: string) {
+    await Action.waitForElement(by.id(portfolio.activeNetwork + network))
+    await this.tapNetworksDropdown()
+    await Action.waitForElement(
+      by.id(portfolio.networkDropdownCheckMark + network)
+    )
+  }
+
+  async verifyInactiveNetworks(networks: string[]) {
+    for (const network of networks) {
+      await Action.waitForElement(by.id(portfolio.inactiveNetwork + network))
+    }
+  }
+
+  async verifyNetworkRemoved(network: string) {
+    await Action.waitForElementNotVisible(
+      by.id(portfolio.inactiveNetwork + network)
+    )
+    await this.tapNetworksDropdown()
+    await Action.waitForElementNotVisible(
+      by.id(portfolio.networksDropdownItem + network)
+    )
+  }
 }
 
 export default new PortfolioPage()

@@ -82,6 +82,7 @@ const InactiveNetworkCard: FC<Props> = ({
         <Space y={8} />
         <View>
           <Text
+            testID={`inactive_network__${network.chainName}`}
             variant="buttonLarge"
             ellipsizeMode={'tail'}
             numberOfLines={2}
