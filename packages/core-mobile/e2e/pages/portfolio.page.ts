@@ -226,6 +226,40 @@ class PortfolioPage {
       )
     }
   }
+
+  async verifyActiveNetwork(network: string) {
+    await Action.waitForElement(by.id(portfolio.activeNetwork + network))
+    await this.tapNetworksDropdown()
+    await Action.waitForElement(
+      by.id(portfolio.networkDropdownCheckMark + network)
+    )
+    await Action.tapElementAtIndex(by.text(network), platformIndex)
+  }
+
+  async verifyInactiveNetworks(networks: string[]) {
+    await Action.scrollListUntil(
+      by.id(portfolio.inactiveNetwork + networks[networks.length - 1]),
+      by.id('tokens_tab_list_view'),
+      200
+    )
+    for (const network of networks) {
+      await Action.waitForElement(by.id(portfolio.inactiveNetwork + network))
+    }
+    await Action.scrollListUntil(
+      by.id(portfolio.activeNetwork + portfolio.avaxNetwork),
+      by.id('tokens_tab_list_view'),
+      200,
+      'up'
+    )
+  }
+
+  async verifyNetworkRemoved(network: string) {
+    await this.tapNetworksDropdown()
+    await Action.waitForElementNotVisible(
+      by.id(portfolio.networksDropdownItem + network)
+    )
+    await this.tapNetworksDropdownAVAX()
+  }
 }
 
 export default new PortfolioPage()

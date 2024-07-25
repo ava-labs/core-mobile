@@ -108,7 +108,10 @@ const ActiveNetworkCard = (): JSX.Element => {
             justifyContent: 'space-between'
           }}>
           <View>
-            <Text variant="heading5" ellipsizeMode="tail">
+            <Text
+              variant="heading5"
+              ellipsizeMode="tail"
+              testID={`active_network__${activeNetwork.chainName}`}>
               {activeNetwork.chainName}
             </Text>
           </View>

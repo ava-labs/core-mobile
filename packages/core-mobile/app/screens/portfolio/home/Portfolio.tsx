@@ -178,6 +178,7 @@ const TokensTab = (): JSX.Element => {
   return (
     <>
       <Animated.FlatList
+        testID={'tokens_tab_list_view'}
         columnWrapperStyle={{
           justifyContent: 'space-between'
         }}

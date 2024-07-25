@@ -215,12 +215,13 @@ const getCurrentDateTime = () => {
 const scrollListUntil = async (
   scrollToItem: Detox.NativeMatcher,
   scrollList: Detox.NativeMatcher,
-  scrollPixel: number
+  scrollPixel: number,
+  direction: Detox.Direction = 'down'
 ) => {
   await waitFor(element(scrollToItem))
     .toBeVisible()
     .whileElement(scrollList)
-    .scroll(scrollPixel, 'down')
+    .scroll(scrollPixel, direction)
 }
 
 async function writeQrCodeToFile(clipboardValue: string) {

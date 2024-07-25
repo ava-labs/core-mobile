@@ -6,6 +6,8 @@ export default {
   addcustomToken: 'Add custom token',
   arbitrumNetwork: 'Arbitrum One',
   avaxNetwork: 'Avalanche (C-Chain)',
+  avaxPNetwork: 'Avalanche (P-Chain)',
+  avaxXNetwork: 'Avalanche (X-Chain)',
   avaxFujiToken: 'Avalanche (FUJI)',
   assetsTab: 'Assets',
   btcTokenItem: 'BTC',
@@ -18,6 +20,7 @@ export default {
   manageNetworks: 'Manage networks',
   manageTokens: 'Manage',
   networksHeader: 'Networks',
+  networksDropdownItem: 'network_dropdown__',
   networksDropdownBTC: 'network_dropdown__Bitcoin',
   networksDropdownAVAX: 'network_dropdown__Avalanche (C-Chain)',
   networksDropdownETH: 'network_dropdown__Ethereum',
@@ -27,5 +30,8 @@ export default {
   polygonNetwork: 'Polygon Mainnet',
   viewAll: 'View All',
   sendPendingToast: 'send_token_context__send_pending_toast',
-  sendSuccessToast: 'send_token_context__send_successful_toast'
+  sendSuccessToast: 'send_token_context__send_successful_toast',
+  activeNetwork: 'active_network__',
+  inactiveNetwork: 'inactive_network__',
+  networkDropdownCheckMark: 'network_dropdown_check_mark__'
 }
