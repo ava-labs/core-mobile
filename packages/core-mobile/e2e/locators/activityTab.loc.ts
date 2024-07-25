@@ -1,7 +1,5 @@
 export default {
-  address: 'address',
   transaction: 'activity_list__Contract Call',
-  activityHeader: 'activity_list__header',
   activityDetail: 'activity_detail__amount',
   activityListItem: 'activityListItem',
   activityListItemAmount: 'acitivty_item_amount',

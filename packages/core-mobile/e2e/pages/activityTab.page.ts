@@ -12,10 +12,6 @@ import BottomsTabsPage from '../pages/bottomTabs.page'
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
 class ActivityTabPage {
-  get address() {
-    return by.id(activityTab.address)
-  }
-
   get arrowSVG() {
     return by.id(activityTab.arrowUpSVG)
   }
@@ -26,10 +22,6 @@ class ActivityTabPage {
 
   get transaction() {
     return by.text(activityTab.transaction)
-  }
-
-  get activityListHeader() {
-    return by.id(activityTab.activityHeader)
   }
 
   get activityListItem() {

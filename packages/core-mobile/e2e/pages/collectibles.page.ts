@@ -86,6 +86,18 @@ class CollectiblesPage {
     return by.id(Collectibles.listSvg)
   }
 
+  get nftItem() {
+    return by.id(Collectibles.nftItem)
+  }
+
+  get testingNft() {
+    return by.text(Collectibles.testingNft)
+  }
+
+  get nftListView() {
+    return by.id(Collectibles.nftListView)
+  }
+
   async tapSaveButton() {
     await Action.tapElementAtIndex(this.saveBtn, 0)
   }
@@ -108,22 +120,6 @@ class CollectiblesPage {
 
   async tapListSvg() {
     await Action.tapElementAtIndex(this.listSvg, 0)
-  }
-
-  get paradiseTycoonFurnituresNFT() {
-    return by.id(Collectibles.paradiseTycoonFurnituresNFT)
-  }
-
-  get nftItem() {
-    return by.id(Collectibles.nftItem)
-  }
-
-  get testingNft() {
-    return by.text(Collectibles.testingNft)
-  }
-
-  get nftListView() {
-    return by.id(Collectibles.nftListView)
   }
 
   async getTextValue(pageElement: string) {
