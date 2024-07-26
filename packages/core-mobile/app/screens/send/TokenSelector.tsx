@@ -12,7 +12,8 @@ import PortfolioListItem from 'components/PortfolioListItem'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import { LocalTokenWithBalance, TokenWithBalance } from 'store/balance/types'
+import { LocalTokenWithBalance } from 'store/balance/types'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 

@@ -8,7 +8,6 @@ import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
 import Separator from 'components/Separator'
 import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
-import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { showSimpleToast } from 'components/Snackbar'
@@ -19,6 +18,7 @@ import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Avax } from 'types'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 
@@ -30,7 +30,6 @@ const ClaimRewards = (): JSX.Element | null => {
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
-  const nAvaxFormatter = useNAvaxFormatter()
   const avaxFormatter = useAvaxFormatter()
   const claimRewardsMutation = useClaimRewards(
     onClaimSuccess,
@@ -54,12 +53,12 @@ const ClaimRewards = (): JSX.Element | null => {
     return null
   }
 
-  if (data.unlockedUnstaked[0]?.amount === undefined) {
+  if (data.balancePerType.unlockedUnstaked === undefined) {
     return <EmptyClaimRewards />
   }
 
-  const [claimableAmountInAvax, claimableAmountInCurrency] = nAvaxFormatter(
-    data.unlockedUnstaked[0]?.amount,
+  const [claimableAmountInAvax, claimableAmountInCurrency] = avaxFormatter(
+    Avax.fromBase(data.balancePerType.unlockedUnstaked),
     true
   )
 

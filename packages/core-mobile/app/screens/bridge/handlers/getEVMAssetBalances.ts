@@ -1,9 +1,8 @@
 import { Asset, BIG_ZERO, isBtcAsset, isNativeAsset } from '@avalabs/bridge-sdk'
 import { BridgeAsset } from '@avalabs/bridge-unified'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { TokenWithBalance } from 'store/balance/types'
 import { bnToBig } from '@avalabs/utils-sdk'
-import { TokenType, type TokenWithBalanceERC20 } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 
 /**
@@ -16,7 +15,7 @@ export function getEVMAssetBalances(
   tokens: TokenWithBalance[]
 ): AssetBalance[] {
   const erc20TokensByAddress = tokens.reduce<{
-    [address: string]: TokenWithBalanceERC20 | TokenWithBalance | undefined
+    [address: string]: TokenWithBalance | undefined
   }>((tokensWithBalance, token) => {
     if (token.type !== TokenType.ERC20) {
       tokensWithBalance[token.symbol.toLowerCase()] = token

@@ -1,10 +1,9 @@
 import Big from 'big.js'
 import { bigToBN, bnToBig, stringToBN } from '@avalabs/utils-sdk'
-import { TokenWithBalance } from 'store/balance/types'
 import { APIError } from 'paraswap'
 import BN from 'bn.js'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
-import { TokenType } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)

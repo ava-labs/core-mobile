@@ -4,11 +4,11 @@ import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
-import { setActiveAccountIndex } from 'store/account'
+import { setActiveAccountIndex } from 'store/account/slice'
 import { avalancheSelectAccountHandler as handler } from './avalanche_selectAccount'
 
-jest.mock('store/account', () => {
-  const actual = jest.requireActual('store/account')
+jest.mock('store/account/slice', () => {
+  const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
     selectAccounts: () => mockAccounts,

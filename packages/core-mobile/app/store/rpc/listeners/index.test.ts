@@ -1,5 +1,5 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
-import { Module, Network } from '@avalabs/vm-module-types'
+import { Module, Network, NetworkVMType } from '@avalabs/vm-module-types'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/middleware/listener'
@@ -572,7 +572,14 @@ describe('rpc - listeners', () => {
             logoUri: mockNetworks[43114].logoUri,
             explorerUrl: mockNetworks[43114].explorerUrl,
             utilityAddresses: mockNetworks[43114].utilityAddresses,
-            networkToken: mockNetworks[43114].networkToken
+            networkToken: mockNetworks[43114].networkToken,
+            vmName: NetworkVMType.EVM,
+            pricingProviders: {
+              coingecko: {
+                assetPlatformId: 'avalanche',
+                nativeTokenId: 'avalanche-2'
+              }
+            }
           }
 
           const request = {

@@ -429,8 +429,8 @@ const ApprovalPopup = (): JSX.Element => {
               onFeesChange={handleFeesChange}
             />
           )}
+          {renderDisclaimer()}
         </ScrollView>
-        {renderDisclaimer()}
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (

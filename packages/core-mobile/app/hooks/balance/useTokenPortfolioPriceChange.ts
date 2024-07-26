@@ -21,7 +21,8 @@ export const useTokenPortfolioPriceChange = (
 
   const tokenPortfolioPriceChange = tokensWithPrices.reduce((acc, token) => {
     const priceDiff =
-      (token.balanceInCurrency * (token.priceChangePercentage24h ?? 0)) / 100
+      (token.balanceInCurrency ?? 0 * (token.priceChangePercentage24h ?? 0)) /
+      100
     return acc + priceDiff
   }, 0)
 

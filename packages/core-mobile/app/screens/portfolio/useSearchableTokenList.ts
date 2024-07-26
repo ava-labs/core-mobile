@@ -109,7 +109,9 @@ export function useSearchableTokenList(
     () =>
       tokensFiltered
         .slice()
-        .sort((a, b) => b.balanceInCurrency - a.balanceInCurrency),
+        .sort(
+          (a, b) => (b.balanceInCurrency ?? 0) - (a.balanceInCurrency ?? 0)
+        ),
     [tokensFiltered]
   )
 

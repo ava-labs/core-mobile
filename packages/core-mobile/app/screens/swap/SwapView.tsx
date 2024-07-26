@@ -5,7 +5,6 @@ import { Space } from 'components/Space'
 import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
 import AvaButton from 'components/AvaButton'
 import { useSwapContext } from 'contexts/SwapContext/SwapContext'
-import { TokenWithBalance } from 'store/balance/types'
 import { selectTokensWithZeroBalance } from 'store/balance/slice'
 import { useSelector } from 'react-redux'
 import { SwapSide } from 'paraswap-core'
@@ -22,7 +21,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { TokenType } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 
 type NavigationProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
 
