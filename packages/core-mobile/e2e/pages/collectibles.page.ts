@@ -82,6 +82,10 @@ class CollectiblesPage {
     return by.text(Collectibles.warningInsufficientFee)
   }
 
+  get warningGasLimitIsInvalid() {
+    return by.text(Collectibles.warningGasLimitIsInvalid)
+  }
+
   get listSvg() {
     return by.id(Collectibles.listSvg)
   }
