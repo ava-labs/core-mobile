@@ -53,10 +53,10 @@ describe('Send Avax to another account', () => {
     await PortfolioPage.tapAssetsTab()
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
-    await activityTabPage.verifyRow('Contract Call', '+1')
+    await activityTabPage.verifyNewRow('Contract Call', '+1')
 
     // sender activity tab:
     await AccountManagePage.switchToSentAccount(account)
-    await activityTabPage.verifyRow('Send', '-1')
+    await activityTabPage.verifyNewRow('Send', '-1')
   })
 })

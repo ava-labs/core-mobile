@@ -1,5 +1,5 @@
 export default {
-  gridItem: 'baseGridItem',
+  gridItem: 'nft_grid_item',
   sendButton: 'send_btn',
   saveBtn: 'Save',
   addressInput: 'input_text',
@@ -21,6 +21,7 @@ export default {
   nftlogo: 'avatar__logo_avatar',
   warningAddressRequired: 'Address required',
   warningInsufficientFee: 'Insufficient balance for fee.',
+  warningGasLimitIsInvalid: 'Gas limit is invalid',
   nftItem: 'nft_item',
   listSvg: 'list_svg',
   nftListView: 'nft_list_view',
