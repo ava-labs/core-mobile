@@ -6,12 +6,12 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { SendTokenContextProvider } from 'contexts/SendTokenContext'
 import { SendTokensScreenProps } from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import { TokenWithBalance } from 'store/balance/types'
 import { SubHeaderOptions } from 'navigation/NavUtils'
 import { useSelector } from 'react-redux'
 import { selectIsSendBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Contact } from '@avalabs/types'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:

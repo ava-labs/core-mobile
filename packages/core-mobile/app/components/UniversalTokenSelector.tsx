@@ -1,6 +1,5 @@
 import React, { FC, useCallback, useMemo } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
-import { TokenWithBalance } from 'store/balance/types'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import BN from 'bn.js'
 import { bnToBig } from '@avalabs/utils-sdk'
@@ -19,6 +18,7 @@ import { WalletScreenProps } from 'navigation/types'
 import { formatLargeCurrency } from 'utils/Utils'
 import { Amount } from 'types'
 import { Text } from '@avalabs/k2-mobile'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -70,10 +70,12 @@ const UniversalTokenSelector: FC<Props> = ({
       return ''
     }
     const bnNumber = bnToBig(inputAmount, selectedToken?.decimals).toNumber()
-    return formatLargeCurrency(
-      currencyFormatter(bnNumber * selectedToken.priceInCurrency),
-      4
-    )
+    return selectedToken.priceInCurrency
+      ? formatLargeCurrency(
+          currencyFormatter(bnNumber * selectedToken.priceInCurrency),
+          4
+        )
+      : undefined
   }, [
     currencyFormatter,
     inputAmount,

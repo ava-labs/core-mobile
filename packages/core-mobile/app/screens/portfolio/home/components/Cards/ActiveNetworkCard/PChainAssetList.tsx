@@ -1,10 +1,14 @@
+import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
+import { PChainBalance } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { PTokenWithBalance, assetPDisplayNames } from 'store/balance/types'
+import { assetPDisplayNames } from 'store/balance/types'
 import { Avax } from 'types'
+
+type ChainBalanceType = keyof PChainBalance
 
 export const PChainAssetList = ({
   limit,
@@ -22,34 +26,45 @@ export const PChainAssetList = ({
   } = useApplicationContext()
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
-  const token = tokens.find(
-    t => 'unlockedUnstaked' in (t as PTokenWithBalance).utxos
-  ) as PTokenWithBalance
+  const token = tokens.find(t => isTokenWithBalancePVM(t))
 
   const assetTypes = useMemo(() => {
-    return Object.keys(token.utxoBalances)
-      .sort((a, b) =>
-        Number(
-          Avax.fromNanoAvax(token.utxoBalances[b] ?? '0')?.sub(
-            Avax.fromNanoAvax(token.utxoBalances[a] ?? '0')
+    return token && isTokenWithBalancePVM(token)
+      ? Object.keys(token.balancePerType)
+          .sort((a, b) => {
+            return Number(
+              Avax.fromBase(
+                token.balancePerType[b as ChainBalanceType] ?? '0'
+              )?.sub(
+                Avax.fromBase(
+                  token.balancePerType[a as ChainBalanceType] ?? '0'
+                )
+              )
+            )
+          })
+          .filter(k =>
+            Avax.fromBase(
+              token.balancePerType[k as ChainBalanceType] ?? '0'
+            )?.gt(0)
           )
-        )
-      )
-      .filter(k => Avax.fromNanoAvax(token.utxoBalances[k] ?? '0')?.gt(0))
+      : []
   }, [token])
 
   const shouldLimitAssets = limit && assetTypes.length > limit
 
-  const tokenPrice = token.priceInCurrency
+  const renderItem = (assetType: string): JSX.Element => {
+    const balance =
+      token && isTokenWithBalancePVM(token)
+        ? token.balancePerType[assetType as ChainBalanceType]
+        : 0
+    const balanceInAvax = Avax.fromBase(balance.toString()).toDisplay()
 
-  const rednerItem = (assetType: string): JSX.Element => {
-    const balance = token.utxoBalances[assetType] ?? 0
-    const balanceInAvax = Avax.fromNanoAvax(balance.toString()).toDisplay()
-    const balanceInCurrency = Avax.fromNanoAvax(balance.toString())
-      .mul(tokenPrice)
-      .toDisplay(2)
+    const formattedBalance = currencyFormatter(
+      Avax.fromBase(balance.toString())
+        .mul(token?.priceInCurrency ?? 0)
+        .toDisplay(2)
+    )
 
-    const formattedBalance = currencyFormatter(balanceInCurrency)
     const assetName = assetPDisplayNames[assetType]
 
     return (
@@ -83,7 +98,7 @@ export const PChainAssetList = ({
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">
-                {token.symbol}
+                {token?.symbol ?? ''}
               </Text>
             </View>
           </View>
@@ -120,7 +135,7 @@ export const PChainAssetList = ({
         scrollEnabled={scrollEnabled}
         data={shouldLimitAssets ? assetTypes.slice(0, limit) : assetTypes}
         keyExtractor={(_, index) => index.toString()}
-        renderItem={item => rednerItem(item.item as string)}
+        renderItem={item => renderItem(item.item as string)}
         ItemSeparatorComponent={ItemSeparator}
       />
       {renderMoreText()}

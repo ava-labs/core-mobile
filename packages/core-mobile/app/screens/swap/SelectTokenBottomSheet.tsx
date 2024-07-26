@@ -5,7 +5,7 @@ import TokenSelector from 'screens/send/TokenSelector'
 import AvaText from 'components/AvaText'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { TokenWithBalance } from 'store/balance/types'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Modal.SelectToken
