@@ -39,6 +39,7 @@ export const NftGrid = ({ onItemSelected }: Props): JSX.Element => {
 
   return (
     <FlatList
+      testID="nft_grid_view"
       data={filteredNftItems}
       contentContainerStyle={styles.contentContainer}
       onEndReached={onEndReached}
@@ -77,7 +78,7 @@ const renderItem = ({
     <GridItem
       item={item}
       onItemSelected={onItemSelected}
-      testID={`token_id_${item.tokenId}`}
+      testID="nft_grid_item"
     />
   )
 }

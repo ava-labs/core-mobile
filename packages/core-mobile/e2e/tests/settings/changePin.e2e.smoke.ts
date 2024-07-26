@@ -9,8 +9,6 @@ import { handleJailbrokenWarning, warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
 import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
 import portfolioPage from '../../pages/portfolio.page'
-// import commonElsPage from '../../pages/commonEls.page'
-// import actions from '../../helpers/actions'
 import delay from '../../helpers/waits'
 
 describe('Change Pin', () => {
