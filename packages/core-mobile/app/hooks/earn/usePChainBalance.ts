@@ -43,7 +43,7 @@ export const usePChainBalance = (): UseQueryResult<
       ) {
         return
       }
-      return pChainBalance.balancePerType.unlockedUnstaked
+      return pChainBalance
     }
   })
 }
