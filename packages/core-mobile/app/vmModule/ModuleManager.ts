@@ -6,6 +6,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
+import { BitcoinCaipId } from 'utils/caip2Ids'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -84,15 +85,14 @@ class ModuleManager {
   convertChainIdToCaip2 = (network: Network): string => {
     switch (network.vmName) {
       case NetworkVMType.BITCOIN:
-        return `bip122:${network.chainId}`
+        return this.getBitcoinBlockchainId(network.vmName, network.isTestnet)
       case NetworkVMType.PVM:
       case NetworkVMType.AVM: {
-        const blockchainId = this.getBlockchainId(
-          network.vmName,
-          network.isTestnet
-        )
         return AvalancheModule.getHashedBlockchainId({
-          blockchainId,
+          blockchainId: this.getAvalancheBlockchainId(
+            network.vmName,
+            network.isTestnet
+          ),
           isTestnet: network.isTestnet
         })
       }
@@ -105,7 +105,7 @@ class ModuleManager {
   }
 
   // todo: remove this function once we have blockchainId in Network
-  private getBlockchainId = (
+  private getAvalancheBlockchainId = (
     vmName: NetworkVMType,
     isTestnet?: boolean
   ): string => {
@@ -115,6 +115,19 @@ class ModuleManager {
         : BlockchainId._2O_YMBNV4E_NHYQK2FJJ_V5N_VQLDBTM_NJZQ5S3QS3LO6FTN_C6FBY_M
     }
     return BlockchainId._11111111111111111111111111111111LPO_YY
+  }
+
+  // todo: remove this function once we have blockchainId in Network
+  private getBitcoinBlockchainId = (
+    vmName: NetworkVMType,
+    isTestnet?: boolean
+  ): string => {
+    if (vmName !== NetworkVMType.BITCOIN) {
+      throw new Error('Unsupported network')
+    }
+    return isTestnet
+      ? BitcoinCaipId[4503599627370474]
+      : BitcoinCaipId[4503599627370475]
   }
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {
