@@ -1,8 +1,7 @@
 import { getAddressByNetwork } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { TransactionHistoryResponse } from '@avalabs/vm-module-types'
-import { GetActivitiesForAccountParams } from './types'
+import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/evmTransactionConverter'
 
 export class ActivityService {
@@ -11,7 +10,7 @@ export class ActivityService {
     account,
     nextPageToken,
     pageSize = 30
-  }: GetActivitiesForAccountParams): Promise<TransactionHistoryResponse> {
+  }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
     const module = await ModuleManager.loadModuleByNetwork(network)
     const rawTxHistory = await module.getTransactionHistory({
