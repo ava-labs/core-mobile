@@ -218,7 +218,6 @@ async function generatePlatformResults(
     if (resultArray[i].status_id === 5) {
       const logPath = resultArray[i].failed_log
       await attachLogToRun(runId, logPath, platform)
-
       break
     }
   }
