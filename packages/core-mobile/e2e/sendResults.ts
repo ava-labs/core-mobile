@@ -26,6 +26,7 @@ async function parseResultsFile() {
     const testCaseId = await getTestCaseId(result.testCase)
     const platform = result.platform
     const screenshot = result.screen_shot
+    const failedLogPath = result.failed_log
 
     if (testCaseId !== null) {
       testIdArrayForTestrail.push(testCaseId)
@@ -34,7 +35,8 @@ async function parseResultsFile() {
         status_id: statusId,
         test_name: testName,
         platform: platform,
-        screen_shot: screenshot
+        screen_shot: screenshot,
+        failed_log: failedLogPath
       })
     }
   }
@@ -76,6 +78,7 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
     var platform = testCaseResultObject.platform
     var testCaseName = testCaseResultObject.test_name
     var screenshot = testCaseResultObject.screen_shot
+    var failedLogPath = testCaseResultObject.failed_log
 
     // Sends a passed test to testrail with no comment
     resultsToSendToTestrail.push({
@@ -83,7 +86,8 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
       status_id: testRunCaseStatusId,
       platform: platform,
       test_name: testCaseName,
-      screenshot: screenshot
+      screenshot: screenshot,
+      failed_log: failedLogPath
     })
   })
   // } else {
@@ -210,4 +214,25 @@ async function generatePlatformResults(
       console.log(TestRailException + ' this is the error')
     }
   }
+  for (let i = 0; i < resultArray.length; i++) {
+    if (resultArray[i].status_id === 5) {
+      const logPath = resultArray[i].failed_log
+      await attachLogToRun(runId, logPath, platform)
+
+      break
+    }
+  }
+}
+
+async function attachLogToRun(
+  runId: number,
+  logPath: string,
+  platform: string
+) {
+  failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
+  const logPayload = {
+    name: 'failed_log.txt',
+    value: fs.createReadStream
+  }
+  api.addAttachmentToRun(runId, logPayload)
 }
