@@ -1,6 +1,4 @@
-import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { BigNumberish } from 'ethers'
-import { getEvmProvider } from 'services/network/utils/providerUtils'
+import { Network } from '@avalabs/chains-sdk'
 import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 import ModuleManager from 'vmModule/ModuleManager'
 import { NetworkFee } from 'services/networkFee/types'
@@ -35,35 +33,6 @@ class NetworkFeeService {
       },
       isFixedFee: networkFees.isFixedFee
     }
-  }
-
-  async estimateGasLimit({
-    from,
-    to,
-    data,
-    value,
-    network
-  }: {
-    from: string
-    to: string
-    data?: string
-    value?: BigNumberish
-    network: Network
-  }): Promise<number | null> {
-    if (network.vmName !== NetworkVMType.EVM) return null
-
-    const provider = getEvmProvider(network)
-    const nonce = await provider.getTransactionCount(from)
-
-    return Number(
-      await provider.estimateGas({
-        from,
-        to,
-        nonce,
-        data,
-        value
-      })
-    )
   }
 }
 

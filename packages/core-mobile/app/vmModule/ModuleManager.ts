@@ -25,6 +25,12 @@ class ModuleManager {
     ) as AvalancheModule
   }
 
+  get bitcoinModule(): BitcoinModule {
+    return this.#modules?.find(module =>
+      module.getManifest()?.network.namespaces.includes('bip122')
+    ) as BitcoinModule
+  }
+
   constructor() {
     this.init()
   }

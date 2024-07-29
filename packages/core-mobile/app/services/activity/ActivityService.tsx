@@ -2,7 +2,7 @@ import { getAddressByNetwork } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
-import { convertTransaction } from './utils/evmTransactionConverter'
+import { convertTransaction } from './utils/convertTransaction'
 
 export class ActivityService {
   async getActivities({

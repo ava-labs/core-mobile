@@ -9,8 +9,7 @@ export async function getBtcBalance(
   currency: string
 ): Promise<TokenWithBalanceBTC> {
   const network = isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK
-  const module = await ModuleManager.loadModuleByNetwork(network)
-  const balancesResponse = await module.getBalances({
+  const balancesResponse = await ModuleManager.bitcoinModule.getBalances({
     addresses: [address],
     currency,
     network: mapToVmNetwork(network)
