@@ -42,10 +42,6 @@ const SEEDLESS_ENVIRONMENT = Config.SEEDLESS_ENVIRONMENT
 
 const envInterface = envs[SEEDLESS_ENVIRONMENT as Environment]
 
-if (!envInterface) {
-  throw Error('SEEDLESS_ENVIRONMENT is incorrect. Please check your env file.')
-}
-
 class SeedlessSessionManager {
   private scopes: string[]
   private sessionStorage: SessionStorage<SignerSessionData>

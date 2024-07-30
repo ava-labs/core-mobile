@@ -14,7 +14,6 @@ import { Account } from 'store/account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
-import { TokenWithBalance } from 'store/balance/types'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { AddrBookItemType } from 'store/addressBook'
@@ -28,6 +27,7 @@ import {
 import { SendTokensScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 
 type Props = {
   onOpenAddressBook: () => void

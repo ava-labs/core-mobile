@@ -13,9 +13,12 @@ import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { assertNotUndefined } from 'utils/assertions'
 import NetworkService from 'services/network/NetworkService'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -65,13 +68,25 @@ export const useIssueDelegation = (
       Logger.trace('getPChainBalance...')
       assertNotUndefined(pAddress)
 
-      const pChainBalance = await GlacierBalanceService.getPChainBalance({
-        network: NetworkService.getAvalancheNetworkP(isDeveloperMode),
+      const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+      const balancesResponse = await ModuleManager.avalancheModule.getBalances({
         addresses: [pAddress],
-        currency: selectedCurrency
+        currency: selectedCurrency,
+        network: mapToVmNetwork(network),
+        storage: coingeckoInMemoryCache
       })
-      const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
-      const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
+
+      const pChainBalance =
+        balancesResponse[pAddress]?.[network.networkToken.symbol]
+      if (
+        pChainBalance === undefined ||
+        !isTokenWithBalancePVM(pChainBalance)
+      ) {
+        return Promise.reject('invalid balance type.')
+      }
+      const claimableBalance = Avax.fromBase(
+        pChainBalance.balancePerType.unlockedUnstaked
+      )
       Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
       const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
         data.stakingAmount,

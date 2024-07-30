@@ -10,7 +10,6 @@ import React, {
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
-import { TokenWithBalance } from 'store/balance/types'
 import Logger from 'utils/Logger'
 import { resolve } from '@avalabs/utils-sdk'
 import { Amount } from 'types'
@@ -26,6 +25,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { showTransactionErrorToast } from 'utils/toast'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { performSwap } from './performSwap/performSwap'
 
 // success here just means the transaction was sent, not that it was successful/confirmed

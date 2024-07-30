@@ -11,7 +11,6 @@ import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
-import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { BalanceItem } from 'screens/earn/components/BalanceItem'
 import { Row } from 'components/Row'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
@@ -31,7 +30,6 @@ export const Balance = (): JSX.Element | null => {
   const cChainBalance = useCChainBalance()
   const avaxFormatter = useAvaxFormatter()
   const weiAvaxFormatter = useWeiAvaxFormatter()
-  const nAvaxFormatter = useNAvaxFormatter()
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
 
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
@@ -50,18 +48,21 @@ export const Balance = (): JSX.Element | null => {
 
   if (shouldShowError) return null
 
-  const [availableInAvax] = weiAvaxFormatter(cChainBalance.data.balance, true)
-
-  const [claimableInAvax] = nAvaxFormatter(
-    pChainBalance.data.unlockedUnstaked[0]?.amount,
+  const [availableInAvax] = weiAvaxFormatter(
+    cChainBalance.data?.balance.toString(),
     true
   )
 
-  const stakedAvax = Avax.fromNanoAvax(
-    pChainBalance.data.unlockedStaked[0]?.amount ?? '0'
+  const [claimableInAvax] = avaxFormatter(
+    Avax.fromBase(pChainBalance.data?.balancePerType.unlockedUnstaked ?? 0),
+    true
   )
-  const pendingStakedAvax = Avax.fromNanoAvax(
-    pChainBalance.data.pendingStaked[0]?.amount ?? '0'
+
+  const stakedAvax = Avax.fromBase(
+    pChainBalance.data?.balancePerType.unlockedStaked ?? '0'
+  )
+  const pendingStakedAvax = Avax.fromBase(
+    pChainBalance.data?.balancePerType.pendingStaked ?? '0'
   )
   const totalStakedAvax = stakedAvax.add(pendingStakedAvax)
 

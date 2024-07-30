@@ -19,6 +19,12 @@ const isDev = typeof __DEV__ === 'boolean' && __DEV__
 class ModuleManager {
   #modules: Module[] | undefined
 
+  get avalancheModule(): AvalancheModule {
+    return this.#modules?.find(module =>
+      module.getManifest()?.network.namespaces.includes('avax')
+    ) as AvalancheModule
+  }
+
   constructor() {
     this.init()
   }
@@ -82,11 +88,16 @@ class ModuleManager {
       case NetworkVMType.BITCOIN:
         return `bip122:${network.chainId}`
       case NetworkVMType.PVM:
-      case NetworkVMType.AVM:
+      case NetworkVMType.AVM: {
+        const blockchainId = this.getBlockchainId(
+          network.vmName,
+          network.isTestnet
+        )
         return AvalancheModule.getHashedBlockchainId({
-          blockchainId: this.getBlockchainId(network.vmName, network.isTestnet),
+          blockchainId,
           isTestnet: network.isTestnet
         })
+      }
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
         return `eip155:${network.chainId}`

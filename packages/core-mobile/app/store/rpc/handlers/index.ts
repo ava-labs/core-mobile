@@ -38,6 +38,8 @@ const handlerMap = [
   bitcoinSendTransactionHandler,
   avalancheSignMessageHandler
 ].reduce((acc, current) => {
+  if (current?.methods === undefined) return acc
+
   current.methods.forEach(method => {
     acc.set(method, current)
   })
