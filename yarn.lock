@@ -336,7 +336,7 @@ __metadata:
     react-native-sound: 0.11.2
     react-native-svg: 15.1.0
     react-native-svg-transformer: 1.3.0
-    react-native-tab-view: 3.5.1
+    react-native-tab-view: 3.5.2
     react-native-toast-notifications: 3.3.0
     react-native-url-polyfill: 1.3.0
     react-native-view-shot: 3.8.0
@@ -21243,16 +21243,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-tab-view@npm:3.5.1":
-  version: 3.5.1
-  resolution: "react-native-tab-view@npm:3.5.1"
+"react-native-tab-view@npm:3.5.2":
+  version: 3.5.2
+  resolution: "react-native-tab-view@npm:3.5.2"
   dependencies:
     use-latest-callback: ^0.1.5
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-pager-view: "*"
-  checksum: 22213e8bde3b0e16631d290a3da146789dcad461dbdc424cf6448c683a2d75c12abbae5aa329c83788123f6dd0865b451ba57848856483607327fb5fdad2fe12
+  checksum: bd287e5543881aa662ee55418a3bd5dacb25033425a9fcb0fff21c3a3b96f956af1a77cd9bab4e7a8e94590080a5d8e3cb99cfa8613b19bf6da24bfc9b4942d4
   languageName: node
   linkType: hard
 
