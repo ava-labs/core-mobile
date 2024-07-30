@@ -28,8 +28,6 @@ async function parseResultsFile() {
     const screenshot = result.screen_shot
     const failedLogPath = result.failedLog
 
-    console.log('failed log path is ' + failedLogPath)
-
     if (testCaseId !== null) {
       testIdArrayForTestrail.push(testCaseId)
       casesToAddToRun.push({
@@ -154,7 +152,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 }
 
 // Updates the results for an existing test run or an empty test run
-// eslint-disable-next-line max-params, sonarjs/cognitive-complexity
+// eslint-disable-next-line max-params
 async function generatePlatformResults(
   testCasesToSend: [],
   resultsToSendToTestrail: [],
@@ -188,47 +186,43 @@ async function generatePlatformResults(
     const logPath = resultArray[i].failed_log
     console.log('The log path is ' + logPath)
     if (resultArray[i].status_id === 5 && logPath) {
-      try {
-        await attachLogToRun(runId, logPath, platform)
-        break
-      } catch (error) {
-        console.log('Failed to attach log to run ' + error)
-      }
+      await attachLogToRun(runId, logPath, platform)
+      break
     } else {
       console.log(failedLog + ' is undefined')
     }
+  }
 
-    for (let i = 0; i < resultArray.length; i++) {
-      const resultObject = resultArray[i]
-      const statusId = Number(resultObject?.status_id)
-      const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-      const screenshot = resultObject?.screenshot
-      const alreadyposted = resultObject.alreadyposted
+  for (let i = 0; i < resultArray.length; i++) {
+    const resultObject = resultArray[i]
+    const statusId = Number(resultObject?.status_id)
+    const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
+    const screenshot = resultObject?.screenshot
+    const alreadyposted = resultObject.alreadyposted
 
-      try {
-        const resultResp = await api.addResultForCase(
-          runId,
-          resultObject.case_id,
-          {
-            status_id: statusId,
-            comment: comment
-          }
-        )
-        const resultID = resultResp.id
-        if (statusId === 5 && !alreadyposted) {
-          const failedScreenshot = path.resolve(
-            `./e2e/artifacts/${platform}/${screenshot}`
-          )
-          const failedPayload = {
-            name: 'failed.png',
-            value: fs.createReadStream(failedScreenshot)
-          }
-          // Attaches the screenshot to the corressponding case in the test run
-          await api.addAttachmentToResult(resultID, failedPayload)
+    try {
+      const resultResp = await api.addResultForCase(
+        runId,
+        resultObject.case_id,
+        {
+          status_id: statusId,
+          comment: comment
         }
-      } catch (TestRailException) {
-        console.log(TestRailException + ' this is the error')
+      )
+      const resultID = resultResp.id
+      if (statusId === 5 && !alreadyposted) {
+        const failedScreenshot = path.resolve(
+          `./e2e/artifacts/${platform}/${screenshot}`
+        )
+        const failedPayload = {
+          name: 'failed.png',
+          value: fs.createReadStream(failedScreenshot)
+        }
+        // Attaches the screenshot to the corressponding case in the test run
+        await api.addAttachmentToResult(resultID, failedPayload)
       }
+    } catch (TestRailException) {
+      console.log(TestRailException + ' this is the error')
     }
   }
 }
