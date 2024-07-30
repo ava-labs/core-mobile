@@ -153,7 +153,7 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
       case 'number':
         return Big(value)
       case 'object':
-        if (value instanceof BN) {
+        if (BN.isBN(value)) {
           return Big(value.toString())
         }
         if (value instanceof Big) {
