@@ -110,11 +110,6 @@ class PopUpModalPage {
     await actions.tap(this.proceedAnyway)
   }
 
-  async tapSuccessfulToastMsg() {
-    // await actions.waitForElement(this.successfulToastMsg, 120000)
-    // await actions.tap(this.successfulToastMsg)
-  }
-
   async verifyCreateContactModal() {
     await actions.waitForElement(this.createContact, 8000)
     await asserts.isVisible(this.approveBtn)

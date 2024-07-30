@@ -255,7 +255,6 @@ class BrowserPage {
     await delay(2000)
     await this.goToRpcCallPage()
     await this.enterRpcCall(rpcCall)
-
     await this.tapSend()
     await delay(2000)
   }
