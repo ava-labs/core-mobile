@@ -83,7 +83,7 @@
     "@walletconnect/react-native-compat": "2.11.0",
     "@walletconnect/types": "2.11.0",
     "@walletconnect/utils": "2.11.0",
-    "@walletconnect/web3wallet": "1.10.0",
+    "@walletconnect/web3wallet": "1.13.0",
     "@zodios/core": "10.9.6",
     "assert": "1.1.1",
     "asyncstorage-down": "4.2.0",
