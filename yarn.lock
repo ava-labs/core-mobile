@@ -289,7 +289,7 @@ __metadata:
     postinstall-postinstall: 2.1.0
     qrcode-reader: 1.0.4
     react: 18.2.0
-    react-content-loader: 6.2.0
+    react-content-loader: 7.0.2
     react-dom: 18.2.0
     react-hook-form: 7.45.1
     react-native: 0.73.7
@@ -20563,12 +20563,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-content-loader@npm:6.2.0":
-  version: 6.2.0
-  resolution: "react-content-loader@npm:6.2.0"
+"react-content-loader@npm:7.0.2":
+  version: 7.0.2
+  resolution: "react-content-loader@npm:7.0.2"
   peerDependencies:
     react: ">=16.0.0"
-  checksum: a6c33ae62c3e2907a4f7f05fb1f14518927eb06608120db32064b9b32993535bb46cee92766fef4dd920658eb27662aa7bd593b1fa5ab4606c2bddd6124bfb58
+  checksum: 8f2f97cfb9a831cf487b8295fc60e05b153340a7bbaa2aa117c4af4c694ce0759313d8f538677ed231d3eb11d626e0561c416bc94f4ed158426bab5e8fa2ff67
   languageName: node
   linkType: hard
 
