@@ -76,6 +76,7 @@ yarn link
 ## Env Workflows
 
 [Documentation](https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2500493313/Env+Workflows)
+[Features requiring env variables](docs/features.md)
 
 ## Navigation System
 
