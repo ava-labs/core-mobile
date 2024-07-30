@@ -22,7 +22,7 @@ describe('Send Avax to another account', () => {
     )
 
     // Go to activity tap
-    await PortfolioPage.goToActivityTab()
+    // await PortfolioPage.goToActivityTab()
 
     // verify send event
     const newRow = await ActivityTabPage.getLatestActivityRow()

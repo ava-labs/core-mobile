@@ -24,6 +24,7 @@ async function readdirChronoSorted(dirpath: any, order: any): Promise<any[]> {
     .map(stat => stat.filename)
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default async function getTestLogs(): Promise<
   {
     sectionName?: string
@@ -62,7 +63,8 @@ export default async function getTestLogs(): Promise<
     for (const result of attachmentFolders) {
       const splitTestFolder = await splitTestResult(result)
       const testResult = result?.includes('✓') ? 1 : 5
-      const failedLogPath = `${parsedResultFolder}/detox.log`
+      const failedLogPath =
+        testResult === 5 ? `${parsedResultFolder}/detox.log` : undefined
       const failedScreenshot =
         testResult === 5
           ? `${parsedResultFolder}/${result}/testDone.png`
