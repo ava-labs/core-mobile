@@ -185,9 +185,9 @@ async function generatePlatformResults(
   }
 
   for (let i = 0; i < resultArray.length; i++) {
-    if (resultArray[i].status_id === 5) {
+    const logPath = resultArray[i].failed_log
+    if (resultArray[i].status_id === 5 && logPath !== undefined) {
       try {
-        const logPath = resultArray[i].failed_log
         await attachLogToRun(runId, logPath, platform)
         break
       } catch (error) {
