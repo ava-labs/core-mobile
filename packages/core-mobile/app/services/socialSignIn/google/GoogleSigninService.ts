@@ -30,7 +30,7 @@ if (GOOGLE_SIGN_IN_ENABLED) {
  */
 class GoogleSigninService {
   async signin(): Promise<OidcPayload> {
-    if (!GOOGLE_SIGN_IN_ENABLED) throw new Error('Google sing in disabled')
+    if (!GOOGLE_SIGN_IN_ENABLED) throw new Error('Google sign in disabled')
     try {
       const userInfo = await GoogleSignin.signIn()
 
