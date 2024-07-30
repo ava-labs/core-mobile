@@ -185,14 +185,23 @@ async function generatePlatformResults(
   }
 
   for (let i = 0; i < resultArray.length; i++) {
+    if (resultArray[i].status_id === 5) {
+      try {
+        const logPath = resultArray[i].failed_log
+        await attachLogToRun(runId, logPath, platform)
+        break
+      } catch (error) {
+        console.log('Failed to attach log to run ' + error)
+      }
+    }
+  }
+
+  for (let i = 0; i < resultArray.length; i++) {
     const resultObject = resultArray[i]
     const statusId = Number(resultObject?.status_id)
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
     const screenshot = resultObject?.screenshot
     const alreadyposted = resultObject.alreadyposted
-    const failedLogPath = resultObject?.failed_log
-
-    console.log('failed log path is ' + failedLogPath)
 
     try {
       const resultResp = await api.addResultForCase(
@@ -205,9 +214,6 @@ async function generatePlatformResults(
       )
       const resultID = resultResp.id
       if (statusId === 5 && !alreadyposted) {
-        const failedLog = path.resolve(
-          `./e2e/artifacts/${platform}/${failedLogPath}`
-        )
         const failedScreenshot = path.resolve(
           `./e2e/artifacts/${platform}/${screenshot}`
         )
@@ -215,17 +221,26 @@ async function generatePlatformResults(
           name: 'failed.png',
           value: fs.createReadStream(failedScreenshot)
         }
-        const failedLogPayload = {
-          name: 'detox.log',
-          value: fs.createReadStream(failedLog)
-        }
         // Attaches the screenshot to the corressponding case in the test run
         await api.addAttachmentToResult(resultID, failedPayload)
-        // Attaches the log file to the corressponding case in the test run
-        await api.addAttachmentToResult(resultID, failedLogPayload)
       }
     } catch (TestRailException) {
       console.log(TestRailException + ' this is the error')
     }
   }
+}
+
+async function attachLogToRun(
+  runId: number,
+  logPath: string,
+  platform: string
+) {
+  failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
+  console.log('The failed log is ' + failedLog)
+  const logPayload = {
+    name: 'failed_log.txt',
+    value: fs.createReadStream(failedLog)
+  }
+  console.log('The log payload is ' + logPayload)
+  api.addAttachmentToRun(runId, logPayload)
 }
