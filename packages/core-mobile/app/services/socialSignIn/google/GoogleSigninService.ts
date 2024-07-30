@@ -15,10 +15,14 @@ if (!Config.GOOGLE_OAUTH_CLIENT_IOS_ID) {
   )
 }
 
-GoogleSignin.configure({
-  webClientId: Config.GOOGLE_OAUTH_CLIENT_WEB_ID,
-  iosClientId: Config.GOOGLE_OAUTH_CLIENT_IOS_ID
-})
+const GOOGLE_SIGN_IN_ENABLED =
+  Config.GOOGLE_OAUTH_CLIENT_WEB_ID && Config.GOOGLE_OAUTH_CLIENT_IOS_ID
+if (GOOGLE_SIGN_IN_ENABLED) {
+  GoogleSignin.configure({
+    webClientId: Config.GOOGLE_OAUTH_CLIENT_WEB_ID,
+    iosClientId: Config.GOOGLE_OAUTH_CLIENT_IOS_ID
+  })
+}
 
 /**
  * Service for Google Signin
@@ -26,6 +30,7 @@ GoogleSignin.configure({
  */
 class GoogleSigninService {
   async signin(): Promise<OidcPayload> {
+    if (!GOOGLE_SIGN_IN_ENABLED) throw new Error('Google sing in disabled')
     try {
       const userInfo = await GoogleSignin.signIn()
 
