@@ -186,61 +186,66 @@ async function generatePlatformResults(
 
   for (let i = 0; i < resultArray.length; i++) {
     const logPath = resultArray[i].failed_log
-    if (resultArray[i].status_id === 5 && logPath !== undefined) {
+    if (resultArray[i].status_id === 5 && logPath) {
       try {
         await attachLogToRun(runId, logPath, platform)
         break
       } catch (error) {
         console.log('Failed to attach log to run ' + error)
       }
+    } else {
+      console.log(failedLog + ' is undefined')
     }
-  }
 
-  for (let i = 0; i < resultArray.length; i++) {
-    const resultObject = resultArray[i]
-    const statusId = Number(resultObject?.status_id)
-    const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-    const screenshot = resultObject?.screenshot
-    const alreadyposted = resultObject.alreadyposted
+    for (let i = 0; i < resultArray.length; i++) {
+      const resultObject = resultArray[i]
+      const statusId = Number(resultObject?.status_id)
+      const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
+      const screenshot = resultObject?.screenshot
+      const alreadyposted = resultObject.alreadyposted
 
-    try {
-      const resultResp = await api.addResultForCase(
-        runId,
-        resultObject.case_id,
-        {
-          status_id: statusId,
-          comment: comment
-        }
-      )
-      const resultID = resultResp.id
-      if (statusId === 5 && !alreadyposted) {
-        const failedScreenshot = path.resolve(
-          `./e2e/artifacts/${platform}/${screenshot}`
+      try {
+        const resultResp = await api.addResultForCase(
+          runId,
+          resultObject.case_id,
+          {
+            status_id: statusId,
+            comment: comment
+          }
         )
-        const failedPayload = {
-          name: 'failed.png',
-          value: fs.createReadStream(failedScreenshot)
+        const resultID = resultResp.id
+        if (statusId === 5 && !alreadyposted) {
+          const failedScreenshot = path.resolve(
+            `./e2e/artifacts/${platform}/${screenshot}`
+          )
+          const failedPayload = {
+            name: 'failed.png',
+            value: fs.createReadStream(failedScreenshot)
+          }
+          // Attaches the screenshot to the corressponding case in the test run
+          await api.addAttachmentToResult(resultID, failedPayload)
         }
-        // Attaches the screenshot to the corressponding case in the test run
-        await api.addAttachmentToResult(resultID, failedPayload)
+      } catch (TestRailException) {
+        console.log(TestRailException + ' this is the error')
       }
-    } catch (TestRailException) {
-      console.log(TestRailException + ' this is the error')
     }
   }
 }
-
 async function attachLogToRun(
   runId: number,
   logPath: string,
   platform: string
 ) {
   failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
-  console.log('The failed log is ' + failedLog)
-  const logPayload = {
-    name: 'failed_log.txt',
-    value: fs.createReadStream(failedLog)
+  if (failedLog !== undefined) {
+    console.log('The failed log is ' + failedLog)
+    const logPayload = {
+      name: 'failed_log.txt',
+      value: fs.createReadStream(failedLog)
+    }
+    console.log('The log payload is ' + logPayload)
+    api.addAttachmentToRun(runId, logPayload)
+  } else {
+    console.log(failedLog + ' is undefined')
   }
-  console.log('The log payload is ' + logPayload)
-  api.addAttachmentToRun(runId, logPayload)
 }
