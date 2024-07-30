@@ -154,7 +154,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 }
 
 // Updates the results for an existing test run or an empty test run
-// eslint-disable-next-line max-params
+// eslint-disable-next-line max-params, sonarjs/cognitive-complexity
 async function generatePlatformResults(
   testCasesToSend: [],
   resultsToSendToTestrail: [],
@@ -186,6 +186,7 @@ async function generatePlatformResults(
 
   for (let i = 0; i < resultArray.length; i++) {
     const logPath = resultArray[i].failed_log
+    console.log('The log path is ' + logPath)
     if (resultArray[i].status_id === 5 && logPath) {
       try {
         await attachLogToRun(runId, logPath, platform)
@@ -231,13 +232,14 @@ async function generatePlatformResults(
     }
   }
 }
+
 async function attachLogToRun(
   runId: number,
   logPath: string,
   platform: string
 ) {
   failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
-  if (failedLog !== undefined) {
+  if (failedLog) {
     console.log('The failed log is ' + failedLog)
     const logPayload = {
       name: 'failed_log.txt',
