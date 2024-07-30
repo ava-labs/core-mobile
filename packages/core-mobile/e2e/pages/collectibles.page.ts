@@ -172,16 +172,6 @@ class CollectiblesPage {
     await Assert.isVisible(this.floorPriceTitle)
   }
 
-  async verifySendNftItems() {
-    await Action.waitForElement(approveTransactionPage.approveTransactionTitle)
-    await Assert.isVisible(approveTransactionPage.network)
-    await Assert.isVisible(approveTransactionPage.transactionDetail)
-    await Assert.isVisible(approveTransactionPage.maximumNetworkFeeText)
-    await Assert.isVisible(approveTransactionPage.feeAmount)
-    await Assert.isVisible(approveTransactionPage.approveBtn)
-    await Assert.isVisible(approveTransactionPage.rejectBtn)
-  }
-
   async sendNft(account: string) {
     await this.tapSendButton()
     await this.tapAddressBook()
@@ -190,7 +180,7 @@ class CollectiblesPage {
       ? await AccountManagePage.tapFirstAccount()
       : await AccountManagePage.tapSecondAccount()
     await this.tapNextButton()
-    await this.verifySendNftItems()
+    await approveTransactionPage.verifyApproveTransactionItems()
     await approveTransactionPage.tapApproveBtn()
   }
 

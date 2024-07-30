@@ -82,6 +82,9 @@ class BrowserPage {
       case 'https://opensea.io/': // OpenSea
         xpath = '//button[@data-id="UnstyledButton"]//div[text()="Login"]'
         break
+      case 'https://ava-labs.github.io/extension-avalanche-playground/': // Core Playground
+        xpath = '//button[text()="Connect via Wallet Connect - Wagmi"]'
+        break
       default: // core app
         xpath =
           '//*[@data-testid="connect-wallet-connect-button"]//p[text()="WalletConnect"]'
@@ -99,6 +102,44 @@ class BrowserPage {
 
   async tapBrowserBackBtn() {
     await Actions.tap(this.browserBackBtn)
+  }
+
+  async getQrUriViaAllWallets() {
+    await delay(1000)
+    await this.wb
+      .element(by.web.tag('w3m-modal'))
+      .runScript(function (element) {
+        element.shadowRoot
+          .querySelector('w3m-router')
+          .shadowRoot.querySelector('w3m-connect-view')
+          .shadowRoot.querySelector('wui-list-wallet[name="All Wallets"]')
+          .click()
+      })
+
+    await delay(1000)
+    await this.wb
+      .element(by.web.tag('w3m-modal'))
+      .runScript(function (element) {
+        element.shadowRoot
+          .querySelector('w3m-router')
+          .shadowRoot.querySelector('w3m-all-wallets-view')
+          .shadowRoot.querySelector('wui-icon-box')
+          .click()
+      })
+
+    await delay(1000)
+    const output = await this.wb
+      .element(by.web.tag('w3m-modal'))
+      .runScript(function (element) {
+        return element.shadowRoot
+          .querySelector('w3m-router')
+          .shadowRoot.querySelector('w3m-connecting-wc-view')
+          .shadowRoot.querySelector('w3m-connecting-wc-qrcode')
+          .shadowRoot.querySelector('wui-qr-code')
+          .getAttribute('uri')
+      })
+    console.log(`QR URI - ${output}`)
+    return output
   }
 
   async getQrUri() {
@@ -154,7 +195,11 @@ class BrowserPage {
     await delay(2000)
   }
 
-  async connectTo(dapp: string, showModal = false) {
+  async connectTo(
+    dapp: string,
+    showModal = false,
+    visibleWalletConnectButton = true
+  ) {
     await Actions.waitForElement(bottomTabsPage.plusIcon)
     await bottomTabsPage.tapBrowserTab()
     try {
@@ -173,7 +218,77 @@ class BrowserPage {
       await this.dismissConnectWalletModal()
     }
     await this.tapConnectWallet(dapp)
-    await this.tapWalletConnect()
+    if (visibleWalletConnectButton) {
+      await this.tapWalletConnect()
+    }
+  }
+
+  async tapSend() {
+    await this.wb.element(by.web.xpath('//button[text()="Send"]')).tap()
+  }
+
+  async enterRpcCall(rpcCall: string) {
+    await delay(1000)
+    await this.wb
+      .element(by.web.xpath('//input[@placeholder="Select a method..."]'))
+      .tap()
+    const currDropdown = `//li[contains(@id, "option")]/span[contains(., "${rpcCall}")]`
+    await this.wb.element(by.web.xpath(currDropdown)).scrollToView()
+    await this.wb.element(by.web.xpath(currDropdown)).tap()
+    try {
+      await element(by.text('Done')).tap()
+    } catch (e) {
+      console.log('The done button is not displayed')
+    }
+  }
+
+  async goToRpcCallPage() {
+    await this.wb
+      .element(by.web.xpath('//*[text()="RPC Calls"]'))
+      .scrollToView()
+    await this.wb.element(by.web.xpath('//*[text()="Home"]')).tap()
+    await this.wb.element(by.web.xpath('//*[text()="RPC Calls"]')).tap()
+  }
+
+  async sendRpcCall(rpcCall: string) {
+    await bottomTabsPage.tapBrowserTab()
+    await delay(2000)
+    await this.goToRpcCallPage()
+    await this.enterRpcCall(rpcCall)
+
+    await this.tapSend()
+    await delay(2000)
+  }
+
+  async verifyResponseReceived(additionalText?: string) {
+    try {
+      await detox
+        .expect(this.wb.element(by.web.xpath('//*[contains(., "Error:")]')))
+        .toExist()
+      console.log('Error received on WebView, not mobile side error')
+    } catch (e) {
+      await detox
+        .expect(this.wb.element(by.web.xpath('//*[contains(., "Response:")]')))
+        .toExist()
+      if (additionalText) {
+        await detox
+          .expect(
+            this.wb.element(
+              by.web.xpath(`//*[contains(., "${additionalText}")]`)
+            )
+          )
+          .toExist()
+      }
+      console.log('Successful response received!')
+    }
+  }
+
+  async verifyErrorReceived(errorMessage = 'Error:') {
+    await detox
+      .expect(
+        this.wb.element(by.web.xpath(`//*[contains(., "${errorMessage}")]`))
+      )
+      .toExist()
   }
 }
 

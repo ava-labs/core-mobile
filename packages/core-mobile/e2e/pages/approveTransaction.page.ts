@@ -1,4 +1,5 @@
 import actions from '../helpers/actions'
+import asserts from '../helpers/assertions'
 import approveTransactionLoc from '../locators/approveTransaction.loc'
 
 class ApproveTransactionPage {
@@ -64,6 +65,16 @@ class ApproveTransactionPage {
 
   async tapRejectBtn() {
     await actions.tap(this.rejectBtn)
+  }
+
+  async verifyApproveTransactionItems() {
+    await actions.waitForElement(this.approveTransactionTitle)
+    await asserts.isVisible(this.network)
+    await asserts.isVisible(this.transactionDetail)
+    await asserts.isVisible(this.maximumNetworkFeeText)
+    await asserts.isVisible(this.feeAmount)
+    await asserts.isVisible(this.approveBtn)
+    await asserts.isVisible(this.rejectBtn)
   }
 }
 

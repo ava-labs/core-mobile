@@ -1,5 +1,6 @@
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
+import delay from '../helpers/waits'
 import connectToSiteLoc from '../locators/connectToSite.loc'
 
 class ConnectToSite {
@@ -65,6 +66,7 @@ class ConnectToSite {
     await this.tapAccountCheckBox()
     await this.tapApproveBtn()
     await Action.waitForElementNoSync(by.text(`Connected to ${toastMessage}`))
+    await delay(3000)
   }
 
   async approveSignMessage(dapp: string) {

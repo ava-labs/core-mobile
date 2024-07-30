@@ -63,6 +63,15 @@ class BurgerMenuPage {
   async tapBackbutton() {
     await Actions.tapElementAtIndex(this.backbutton, 0)
   }
+
+  async dismissBurgerMenu() {
+    await this.swipeLeft()
+  }
+
+  async exitBurgerMenu() {
+    await this.tapBackbutton()
+    await this.dismissBurgerMenu()
+  }
 }
 
 export default new BurgerMenuPage()

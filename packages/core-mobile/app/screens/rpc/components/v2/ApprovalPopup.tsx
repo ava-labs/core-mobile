@@ -277,7 +277,9 @@ const ApprovalPopup = (): JSX.Element => {
       <View>
         <Text variant="buttonMedium">Message:</Text>
         <View sx={styles.details}>
-          <Text variant="body1">{displayData.messageDetails}</Text>
+          <Text testID="message_detail" variant="body1">
+            {displayData.messageDetails}
+          </Text>
         </View>
       </View>
     )
@@ -339,9 +341,8 @@ const ApprovalPopup = (): JSX.Element => {
 
   const renderDisclaimer = (): JSX.Element | null => {
     if (!displayData.disclaimer) return null
-
     return (
-      <View sx={{ marginHorizontal: 16 }}>
+      <View sx={{ marginHorizontal: 16 }} testID="popup_disclaimer">
         <Text
           sx={{ color: '$warningMain', textAlign: 'center' }}
           variant="body2">

@@ -59,6 +59,7 @@ const SimplePrompt: FC<Props> = ({
               paddingVertical: 16
             }}>
             <Button
+              testID="approve_button"
               type="primary"
               size="xlarge"
               onPress={onApprove}
@@ -66,7 +67,11 @@ const SimplePrompt: FC<Props> = ({
               {isApproving && <ActivityIndicator />} Approve
             </Button>
             <Space y={16} />
-            <Button type="secondary" size="xlarge" onPress={onReject}>
+            <Button
+              testID="reject_button"
+              type="secondary"
+              size="xlarge"
+              onPress={onReject}>
               Reject
             </Button>
           </View>
