@@ -183,6 +183,14 @@ async function generatePlatformResults(
   }
 
   for (let i = 0; i < resultArray.length; i++) {
+    if (resultArray[i].status_id === 5) {
+      const logPath = resultArray[i].failed_log
+      await attachLogToRun(runId, logPath, platform)
+      break
+    }
+  }
+
+  for (let i = 0; i < resultArray.length; i++) {
     const resultObject = resultArray[i]
     const statusId = Number(resultObject?.status_id)
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
@@ -212,13 +220,6 @@ async function generatePlatformResults(
       }
     } catch (TestRailException) {
       console.log(TestRailException + ' this is the error')
-    }
-  }
-  for (let i = 0; i < resultArray.length; i++) {
-    if (resultArray[i].status_id === 5) {
-      const logPath = resultArray[i].failed_log
-      await attachLogToRun(runId, logPath, platform)
-      break
     }
   }
 }
