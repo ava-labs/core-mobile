@@ -64,6 +64,14 @@ const validRequiredNamespaces = {
   }
 }
 
+const testNamespacesToApprove = {
+  eip155: {
+    chains: ['eip155:43114', 'eip155:1'],
+    events: ['chainChanged', 'accountsChanged'],
+    methods: ['eth_sendTransaction', 'personal_sign']
+  }
+}
+
 const createRequest = (
   requiredNamespaces: ProposalTypes.RequiredNamespaces,
   dappUrl = 'https://core.app'
@@ -294,7 +302,10 @@ describe('session_request handler', () => {
         name: AppNavigation.Root.Wallet,
         params: {
           screen: AppNavigation.Modal.SessionProposalV2,
-          params: { request: testRequest, chainIds: [43114, 1] }
+          params: {
+            request: testRequest,
+            namespaces: testNamespacesToApprove
+          }
         }
       })
 
@@ -350,7 +361,11 @@ describe('session_request handler', () => {
         name: AppNavigation.Root.Wallet,
         params: {
           screen: AppNavigation.Modal.SessionProposalV2,
-          params: { request: testRequest, chainIds: [43114, 1], scanResponse }
+          params: {
+            request: testRequest,
+            namespaces: testNamespacesToApprove,
+            scanResponse
+          }
         }
       })
     })
@@ -372,11 +387,21 @@ describe('session_request handler', () => {
 
     it('should return success with correct namespaces for a non-Core dApp', async () => {
       const testSelectedAccounts = [
-        '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
-        '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+        {
+          addressC: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+          addressBTC: 'btcAddress1',
+          addressAVM: 'avmAddress1',
+          addressPVM: 'pvmAddress1',
+          addressCoreEth: 'coreEthAddress1'
+        },
+        {
+          addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+          addressBTC: 'btcAddress2',
+          addressAVM: 'avmAddress2',
+          addressPVM: 'pvmAddress2',
+          addressCoreEth: 'coreEthAddress2'
+        }
       ]
-
-      const testApprovedChainIds = [43114, 1]
 
       const testRequest = createRequest(
         validRequiredNamespaces,
@@ -387,7 +412,7 @@ describe('session_request handler', () => {
         request: testRequest,
         data: {
           selectedAccounts: testSelectedAccounts,
-          approvedChainIds: testApprovedChainIds
+          namespaces: testNamespacesToApprove
         }
       })
 
@@ -424,11 +449,21 @@ describe('session_request handler', () => {
 
     it('should return success with correct namespaces for a Core dApp', async () => {
       const testSelectedAccounts = [
-        '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
-        '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+        {
+          addressC: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+          addressBTC: 'btcAddress1',
+          addressAVM: 'avmAddress1',
+          addressPVM: 'pvmAddress1',
+          addressCoreEth: 'coreEthAddress1'
+        },
+        {
+          addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+          addressBTC: 'btcAddress2',
+          addressAVM: 'avmAddress2',
+          addressPVM: 'pvmAddress2',
+          addressCoreEth: 'coreEthAddress2'
+        }
       ]
-
-      const testApprovedChainIds = [43114, 1]
 
       const testRequest = createRequest(validRequiredNamespaces)
 
@@ -436,7 +471,7 @@ describe('session_request handler', () => {
         request: testRequest,
         data: {
           selectedAccounts: testSelectedAccounts,
-          approvedChainIds: testApprovedChainIds
+          namespaces: testNamespacesToApprove
         }
       })
 

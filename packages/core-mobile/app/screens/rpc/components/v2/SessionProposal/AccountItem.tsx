@@ -1,3 +1,4 @@
+import { CorePrimaryAccount } from '@avalabs/types'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
@@ -22,7 +23,7 @@ import { truncateAddress } from 'utils/Utils'
 
 type Props = {
   account: Account
-  onSelect: (accountIndex: string) => void
+  onSelect: (account: CorePrimaryAccount) => void
   selected: boolean
 }
 
@@ -104,7 +105,7 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
         testID="account_check_box"
         selected={selected}
         onPress={() => {
-          onSelect(account.addressC)
+          onSelect(account)
         }}
       />
     </Row>

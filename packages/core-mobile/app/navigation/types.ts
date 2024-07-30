@@ -40,15 +40,14 @@ import {
   AvalancheSetDeveloperModeApproveData,
   AvalancheSetDeveloperModeRpcRequest
 } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
-import { AvalancheSignMessageApproveData } from 'store/rpc/handlers/avalanche_signMessage/avalanche_signMessage'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import {
   BitcoinSendTransactionApproveData,
   BitcoinSendTransactionRpcRequest
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
-import { AvalancheSignMessageRpcRequest } from 'store/rpc/handlers/avalanche_signMessage/types'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
+import { ProposalTypes } from '@walletconnect/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -104,7 +103,7 @@ export type EditSpendLimitParams = {
 
 export type SessionProposalV2Params = {
   request: WCSessionProposal
-  chainIds: number[]
+  namespaces: Record<string, ProposalTypes.RequiredNamespace>
   scanResponse?: SiteScanResponse
 }
 
@@ -166,11 +165,6 @@ export type AvalancheSetDeveloperModeParams = {
 export type BitcoinSendTransactionParams = {
   request: BitcoinSendTransactionRpcRequest
   data: BitcoinSendTransactionApproveData
-}
-
-export type AvalancheSignMessageParams = {
-  request: AvalancheSignMessageRpcRequest
-  data: AvalancheSignMessageApproveData
 }
 
 export type BridgeAssetV2Params = {
