@@ -232,7 +232,7 @@ async function attachLogToRun(
   failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
   const logPayload = {
     name: 'failed_log.txt',
-    value: fs.createReadStream
+    value: fs.createReadStream(failedLog)
   }
   api.addAttachmentToRun(runId, logPayload)
 }
