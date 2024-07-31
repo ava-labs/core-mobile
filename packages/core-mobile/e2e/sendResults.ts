@@ -232,6 +232,7 @@ async function attachLogToRun(
   logPath: string,
   platform: string
 ) {
+  console.log(logPath + ' is the log path')
   failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
   if (failedLog) {
     console.log('The failed log is ' + failedLog)
