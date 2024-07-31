@@ -4,7 +4,7 @@ import { ipfsResolver } from '@avalabs/utils-sdk'
 import Logger from 'utils/Logger'
 import { NftUID } from './types'
 
-const CLOUDFLARE_IPFS_URL = 'https://cloudflare-ipfs.com'
+const CLOUDFLARE_IPFS_URL = 'https://ipfs.io'
 
 export const convertIPFSResolver = (url: string): string => {
   try {
