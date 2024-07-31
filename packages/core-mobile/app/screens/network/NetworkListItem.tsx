@@ -47,6 +47,7 @@ export function NetworkListItem({
 
   return (
     <AvaListItem.Base
+      testID={`network_list_item__${networkName}`}
       onPress={() => onPress(networkChainId)}
       leftComponent={<NetworkLogo logoUri={logoUri} size={40} />}
       title={networkName}
