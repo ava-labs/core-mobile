@@ -7,7 +7,7 @@ npm rebuild detox
 
 ./node_modules/.bin/detox test --maxWorkers 3 --configuration ios.internal.release.smoke.ci.reuse_state --retries 1; test_result=$?
 
-npx ts-node ./e2e/attachLogsToTestrailResults.ts
+npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
 
 if ((test_result != 0)); then
   exit 1
