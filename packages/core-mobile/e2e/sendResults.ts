@@ -5,7 +5,8 @@ import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  getTestCasesFromRun
+  getTestCasesFromRun,
+  generateUtcTimestamp
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
@@ -163,7 +164,6 @@ async function generatePlatformResults(
   for (let i = 0; i < resultArray.length; i++) {
     const logPath = resultArray[i].failed_log
     if (resultArray[i].status_id === 5 && logPath !== undefined) {
-      console.log('The log path is ' + logPath)
       await attachLogToRun(runId, logPath, platform)
       break
     } else {
@@ -233,15 +233,17 @@ async function attachLogToRun(
   logPath: string,
   platform: string
 ) {
-  console.log(logPath + ' is the log path')
   const failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
+
+  const workflowId = process.env.BITRISE_TRIGGERED_WORKFLOW_ID
+    ? process.env.BITRISE_TRIGGERED_WORKFLOW_ID
+    : generateUtcTimestamp()
+
   if (failedLog) {
-    console.log('The failed log is ' + failedLog)
     const logPayload = {
-      name: 'failed_log.txt',
+      name: `failed_log_${workflowId}.txt`,
       value: fs.createReadStream(failedLog)
     }
-    console.log('The log payload is ' + logPayload)
     api.addAttachmentToRun(runId, logPayload)
   } else {
     console.log('Log is undefined')
