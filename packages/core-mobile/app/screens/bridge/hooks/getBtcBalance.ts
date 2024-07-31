@@ -15,9 +15,8 @@ export async function getBtcBalance(
     network: mapToVmNetwork(network)
   })
   const balances = Object.values(balancesResponse[address] ?? [])
-  if (balances.length === 0) {
+  if (balances[0] === undefined) {
     return Promise.reject('No balances for address')
   }
-
-  return balances[0] as TokenWithBalanceBTC
+  return balances[0]
 }

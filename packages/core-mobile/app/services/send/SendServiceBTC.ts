@@ -17,7 +17,6 @@ import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { isBtcAddress } from 'utils/isBtcAddress'
-import type { TokenWithBalanceBTC } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
@@ -173,7 +172,7 @@ class SendServiceBTC implements SendServiceHelper {
         })
         const balances = Object.values(balancesResponse[address] ?? [])
 
-        const utxos = (balances?.[0] as TokenWithBalanceBTC)?.utxos || []
+        const utxos = balances?.[0]?.utxos || []
         const utxosWithScripts = await provider.getScriptsForUtxos(utxos)
 
     return {

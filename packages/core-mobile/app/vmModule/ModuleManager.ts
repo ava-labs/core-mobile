@@ -1,7 +1,7 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
-import { Environment, Module } from '@avalabs/vm-module-types'
-import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
+import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
+import { NetworkVMType, Network } from '@avalabs/chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
@@ -31,6 +31,12 @@ class ModuleManager {
     ) as BitcoinModule
   }
 
+  get evmModule(): EvmModule {
+    return this.#modules?.find(module =>
+      module.getManifest()?.network.namespaces.includes('eip155')
+    ) as EvmModule
+  }
+
   constructor() {
     this.init()
   }
@@ -57,6 +63,42 @@ class ModuleManager {
       new BitcoinModule({ environment }),
       new AvalancheModule({ environment })
     ]
+  }
+
+  /**
+   * @param param0 walletType
+   * @param param1 accountIndex
+   * @param param2 xpub
+   * @param param3 xpubXP
+   * @param param4 isTestnet
+   * @returns EVM, AVM, PVM and Bitcoin addresses
+   */
+  getAddresses = async ({
+    walletType,
+    accountIndex,
+    xpub,
+    xpubXP,
+    isTestnet
+  }: GetAddressParams): Promise<Record<string, string>> => {
+    return Promise.allSettled(
+      this.modules.map(async module =>
+        module.getAddress({
+          walletType,
+          accountIndex,
+          xpub,
+          xpubXP,
+          isTestnet
+        })
+      )
+    ).then(results => {
+      let addresses = {}
+      results.forEach(result => {
+        if (result.status === 'fulfilled') {
+          addresses = { ...addresses, ...result.value }
+        }
+      })
+      return addresses
+    })
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
