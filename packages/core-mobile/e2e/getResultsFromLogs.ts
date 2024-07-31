@@ -24,6 +24,7 @@ async function readdirChronoSorted(dirpath: any, order: any): Promise<any[]> {
     .map(stat => stat.filename)
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default async function getTestLogs(): Promise<
   {
     sectionName?: string
@@ -62,6 +63,8 @@ export default async function getTestLogs(): Promise<
     for (const result of attachmentFolders) {
       const splitTestFolder = await splitTestResult(result)
       const testResult = result?.includes('✓') ? 1 : 5
+      const failedLogPath =
+        testResult === 5 ? `${parsedResultFolder}/detox.log` : undefined
       const failedScreenshot =
         testResult === 5
           ? `${parsedResultFolder}/${result}/testDone.png`
@@ -70,29 +73,14 @@ export default async function getTestLogs(): Promise<
         Object.assign(splitTestFolder, {
           testResult: testResult,
           platform: platform,
-          screen_shot: failedScreenshot
+          screen_shot: failedScreenshot,
+          failedLog: failedLogPath
         })
         testResults.push(splitTestFolder)
       }
     }
   }
   return testResults
-}
-
-export const getScreenshotOnFailure = async (
-  imagePath: string
-): Promise<string | undefined> => {
-  const failedTestFolders = await getDirectories(imagePath)
-  const testFolder = failedTestFolders[0]
-  const firstFailedTestFolder = await getDirectories(
-    `${imagePath}/${testFolder}`
-  )
-  for (let i = 0; i < firstFailedTestFolder.length; i++) {
-    if (firstFailedTestFolder[i]?.includes('✗')) {
-      const filePath = `./e2e/artifacts/${testFolder}/${firstFailedTestFolder[i]}`
-      return `${filePath}/testDone.png`
-    }
-  }
 }
 
 async function splitTestResult(testItem: string | undefined): Promise<
