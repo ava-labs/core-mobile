@@ -224,6 +224,10 @@ class NetworksPage {
     await this.tapEthereumSepoliaNetwork(1)
   }
 
+  async verifyNetworkRow(network: string) {
+    await Action.waitForElement(by.id(`network_list_item__${network}`))
+  }
+
   async switchToAvalancheNetwork() {
     try {
       await PortfolioPage.tapNetworksDropdown()

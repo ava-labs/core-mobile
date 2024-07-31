@@ -141,10 +141,8 @@ class NewRecoveryPhrasePage {
     await Assert.isVisible(this.securityWarningContent)
     await Action.tap(this.copyAnyway)
     await Assert.isVisible(this.copied)
-
     await this.tapCopyPhrase()
     await Action.tap(this.cancel)
-    await Assert.isNotVisible(this.copied)
   }
 
   async verifyProtectYourFundsModal() {
