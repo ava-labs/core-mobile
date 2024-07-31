@@ -162,8 +162,8 @@ async function generatePlatformResults(
   var resultArray = resultsToSendToTestrail
   for (let i = 0; i < resultArray.length; i++) {
     const logPath = resultArray[i].failed_log
-    console.log('The log path is ' + logPath)
     if (resultArray[i].status_id === 5 && logPath !== undefined) {
+      console.log('The log path is ' + logPath)
       await attachLogToRun(runId, logPath, platform)
       break
     } else {
@@ -199,6 +199,8 @@ async function generatePlatformResults(
     const screenshot = resultObject?.screenshot
     const alreadyposted = resultObject.alreadyposted
 
+    console.log(screenshot + ' is the screenshot')
+
     try {
       const resultResp = await api.addResultForCase(
         runId,
@@ -232,7 +234,7 @@ async function attachLogToRun(
   platform: string
 ) {
   console.log(logPath + ' is the log path')
-  failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
+  const failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
   if (failedLog) {
     console.log('The failed log is ' + failedLog)
     const logPayload = {
