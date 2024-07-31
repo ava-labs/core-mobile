@@ -167,7 +167,7 @@ async function generatePlatformResults(
       await attachLogToRun(runId, logPath, platform)
       break
     } else {
-      console.log(failedLog + ' is undefined')
+      console.log('log path is undefined, moving on to the next test result...')
     }
   }
   try {
