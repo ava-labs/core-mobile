@@ -159,8 +159,18 @@ async function generatePlatformResults(
   platform: string,
   runId?: number
 ) {
+  var resultArray = resultsToSendToTestrail
+  for (let i = 0; i < resultArray.length; i++) {
+    const logPath = resultArray[i].failed_log
+    console.log('The log path is ' + logPath)
+    if (resultArray[i].status_id === 5 && logPath !== undefined) {
+      await attachLogToRun(runId, logPath, platform)
+      break
+    } else {
+      console.log(failedLog + ' is undefined')
+    }
+  }
   try {
-    var resultArray = resultsToSendToTestrail
     if (platform === 'android') {
       // Gets the existing test cases in the test run
       const existingTestCases = await getTestCasesFromRun(runId)
@@ -180,17 +190,6 @@ async function generatePlatformResults(
         Number(runId) +
         TestRailException
     )
-  }
-
-  for (let i = 0; i < resultArray.length; i++) {
-    const logPath = resultArray[i].failed_log
-    console.log('The log path is ' + logPath)
-    if (resultArray[i].status_id === 5 && logPath) {
-      await attachLogToRun(runId, logPath, platform)
-      break
-    } else {
-      console.log(failedLog + ' is undefined')
-    }
   }
 
   for (let i = 0; i < resultArray.length; i++) {
@@ -243,6 +242,6 @@ async function attachLogToRun(
     console.log('The log payload is ' + logPayload)
     api.addAttachmentToRun(runId, logPayload)
   } else {
-    console.log(failedLog + ' is undefined')
+    console.log('Log is undefined')
   }
 }
