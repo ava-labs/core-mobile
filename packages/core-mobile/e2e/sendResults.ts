@@ -166,8 +166,6 @@ async function generatePlatformResults(
     if (resultArray[i].status_id === 5 && logPath !== undefined) {
       await attachLogToRun(runId, logPath, platform)
       break
-    } else {
-      console.log('log path is undefined, moving on to the next test result...')
     }
   }
   try {
@@ -198,8 +196,6 @@ async function generatePlatformResults(
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
     const screenshot = resultObject?.screenshot
     const alreadyposted = resultObject.alreadyposted
-
-    console.log(screenshot + ' is the screenshot')
 
     try {
       const resultResp = await api.addResultForCase(
@@ -245,7 +241,5 @@ async function attachLogToRun(
       value: fs.createReadStream(failedLog)
     }
     api.addAttachmentToRun(runId, logPayload)
-  } else {
-    console.log('Log is undefined')
   }
 }
