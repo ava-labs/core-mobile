@@ -13,8 +13,7 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import { calculateRate } from 'swap/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Amount } from 'types'
-import BN from 'bn.js'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
+import { bigIntToString } from '@avalabs/utils-sdk'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { SwapScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -47,7 +46,7 @@ export default function SwapView(): JSX.Element {
     isFetchingOptimalRate,
     swapStatus
   } = useSwapContext()
-  const [maxFromValue, setMaxFromValue] = useState<BN | undefined>()
+  const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<Amount>()
   const [toTokenValue, setToTokenValue] = useState<Amount>()
 
@@ -79,12 +78,12 @@ export default function SwapView(): JSX.Element {
   }, [params, filteredTokenList, setFromToken])
 
   function validateInputsFx(): void {
-    if (fromTokenValue && fromTokenValue.bn.isZero()) {
+    if (fromTokenValue && fromTokenValue.bn === 0n) {
       setLocalError('Please enter an amount')
     } else if (
       maxFromValue &&
       fromTokenValue &&
-      fromTokenValue.bn.gt(maxFromValue)
+      fromTokenValue.bn > maxFromValue
     ) {
       setLocalError('Insufficient balance.')
     } else {
@@ -96,12 +95,12 @@ export default function SwapView(): JSX.Element {
     if (optimalRate) {
       if (optimalRate.side === SwapSide.SELL) {
         setToTokenValue({
-          bn: new BN(optimalRate.destAmount),
+          bn: BigInt(optimalRate.destAmount),
           amount: optimalRate.destAmount
         })
       } else {
         setFromTokenValue({
-          bn: new BN(optimalRate.srcAmount),
+          bn: BigInt(optimalRate.srcAmount),
           amount: optimalRate.srcAmount
         })
       }
@@ -162,7 +161,7 @@ export default function SwapView(): JSX.Element {
 
     const totalBalance = {
       bn: fromToken.balance,
-      amount: bnToLocaleString(fromToken.balance, fromToken?.decimals)
+      amount: bigIntToString(fromToken.balance, fromToken?.decimals)
     } as Amount
 
     // no calculations needed for non-native tokens

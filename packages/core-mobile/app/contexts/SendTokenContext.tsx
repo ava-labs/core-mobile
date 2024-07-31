@@ -14,9 +14,8 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
+import { bigIntToString } from '@avalabs/utils-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -48,7 +47,7 @@ export const SendTokenContext = createContext<SendTokenContextState>(
 )
 
 const ZERO_AMOUNT = {
-  bn: new BN(0),
+  bn: 0n,
   amount: '0'
 }
 
@@ -208,10 +207,11 @@ export const SendTokenContextProvider = ({
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
         setMaxAmount({
-          bn: state.maxAmount ?? new BN(0),
-          amount: state.maxAmount
-            ? bnToLocaleString(state.maxAmount, sendToken?.decimals)
-            : ''
+          bn: state.maxAmount ?? 0n,
+          amount:
+            state.maxAmount && sendToken
+              ? bigIntToString(state.maxAmount, sendToken.decimals)
+              : ''
         })
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)

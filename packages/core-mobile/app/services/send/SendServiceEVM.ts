@@ -1,6 +1,5 @@
 import { resolve } from '@avalabs/utils-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import BN from 'bn.js'
 import { isAddress, TransactionRequest } from 'ethers'
 import {
   GetTransactionRequestParams,
@@ -47,14 +46,14 @@ export class SendServiceEVM implements SendServiceHelper {
 
           const gasLimit = await this.getGasLimit(sendState)
           const sendFee = defaultMaxFeePerGas
-            ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
+            ? BigInt(gasLimit) * defaultMaxFeePerGas
             : undefined
           let maxAmount =
             token.type === TokenType.NATIVE
-              ? token.balance.sub(sendFee || new BN(0))
+              ? token.balance - (sendFee || 0n)
               : token.balance
 
-          maxAmount = BN.max(maxAmount, new BN(0))
+          maxAmount = maxAmount > 0n ? maxAmount : 0n
 
           const newState: SendState = {
             ...sendState,
@@ -86,14 +85,14 @@ export class SendServiceEVM implements SendServiceHelper {
           if (
             token.type !== TokenType.ERC721 &&
             token.type !== TokenType.ERC1155 &&
-            (!amount || amount.isZero())
+            (!amount || amount === 0n)
           )
             return SendServiceEVM.getErrorState(
               newState,
               SendErrorMessage.AMOUNT_REQUIRED
             )
 
-          if (amount?.gt(maxAmount))
+          if (amount && amount > maxAmount)
             return SendServiceEVM.getErrorState(
               newState,
               SendErrorMessage.INSUFFICIENT_BALANCE
@@ -102,8 +101,9 @@ export class SendServiceEVM implements SendServiceHelper {
           if (
             sendFee &&
             ((token.type !== TokenType.NATIVE &&
-              nativeTokenBalance?.lt(sendFee)) ||
-              (token.type === TokenType.NATIVE && token.balance.lt(sendFee)))
+              nativeTokenBalance &&
+              nativeTokenBalance < sendFee) ||
+              (token.type === TokenType.NATIVE && token.balance < sendFee))
           )
             return SendServiceEVM.getErrorState(
               newState,

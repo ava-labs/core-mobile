@@ -15,9 +15,8 @@ import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectActiveAccount } from 'store/account'
-import { BIG_ZERO, bigToBN } from '@avalabs/utils-sdk'
+import { BIG_ZERO, bigToBigInt } from '@avalabs/utils-sdk'
 import Logger from 'utils/Logger'
-import BN from 'bn.js'
 import BridgeService from 'services/bridge/BridgeService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectBridgeAppConfig } from 'store/bridge'
@@ -60,7 +59,7 @@ interface Bridge extends BridgeAdapter {
   provider: BridgeProvider
   bridgeFee: Big
   denomination: number
-  amountBN: BN
+  amountBN: bigint
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -130,7 +129,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   }, [sourceBalance])
 
   const amountBN = useMemo(
-    () => bigToBN(amount, denomination),
+    () => bigToBigInt(amount, denomination),
     [amount, denomination]
   )
 

@@ -5,7 +5,6 @@ import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Big from 'big.js'
-import { BN } from 'bn.js'
 import { APIError, ETHER_ADDRESS, Transaction } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/utils-sdk'
@@ -182,9 +181,7 @@ export async function performSwap({
       // @ts-ignore
       gas: bigIntToHex(txBuildData.gas), //gas property is not defined in Transaction@paraswap type but api does return this prop
       data: txBuildData.data,
-      value: isSrcTokenNative
-        ? `0x${new BN(sourceAmount).toString('hex')}`
-        : undefined // AVAX value needs to be sent with the transaction
+      value: isSrcTokenNative ? bigIntToHex(BigInt(sourceAmount)) : undefined // AVAX value needs to be sent with the transaction
     }
   ]
 

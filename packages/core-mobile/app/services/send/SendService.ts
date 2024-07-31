@@ -3,7 +3,6 @@ import { resolve } from '@avalabs/utils-sdk'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { isErc721 } from 'services/nft/utils'
 import { SendServicePVM } from 'services/send/SendServicePVM'
@@ -153,7 +152,7 @@ class SendService {
     activeNetwork: Network,
     account: Account,
     currency: string,
-    nativeTokenBalance?: BN
+    nativeTokenBalance?: bigint
   ): Promise<SendState> {
     const fromAddress = getAddressByNetwork(account, activeNetwork)
 
@@ -190,7 +189,7 @@ class SendService {
       marketCap: 0,
       change24: 0,
       vol24: 0,
-      balance: new BN(0),
+      balance: 0n,
       logoSmall: '',
       attributes: [],
       collectionName: isErc721(nft) ? nft.name : nft.metadata.name ?? 'Unknown',

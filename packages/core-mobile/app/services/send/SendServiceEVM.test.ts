@@ -2,7 +2,6 @@ import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
-import BN from 'bn.js'
 import glacierTokenList from 'tests/fixtures/glacierTokenList.json'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
@@ -99,7 +98,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for insufficent balance for network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        nativeTokenBalance: new BN(0)
+        nativeTokenBalance: 0n
       })
 
       expect(newState.canSubmit).toBe(false)
@@ -115,14 +114,14 @@ describe('validateStateAndCalculateFees', () => {
       type: TokenType.NATIVE,
       address: mockActiveAccount.addressC,
       tokenId: 1,
-      balance: new BN(1000)
+      balance: 1000n
     }
     const sendState = {
       token: token,
       address: mockActiveAccount.addressC,
       defaultMaxFeePerGas: 1n,
       gasLimit: 1,
-      amount: new BN(10)
+      amount: 10n
     } as SendState
 
     const params = {
@@ -186,7 +185,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for insufficent balance', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...params.sendState, amount: new BN(100000) }
+        sendState: { ...params.sendState, amount: 100000n }
       })
 
       expect(newState.canSubmit).toBe(false)

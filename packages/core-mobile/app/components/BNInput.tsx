@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
 import Big from 'big.js'
-import BN from 'bn.js'
-import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
+import { bigintToBig, bigToBigInt } from '@avalabs/utils-sdk'
 
 interface BNInputProps extends Omit<InputTextProps, 'text'> {
-  value?: BN
+  value?: bigint
   denomination: number
 
-  onChange?(val: { bn: BN; amount: string }): void
+  onChange?(val: { bn: bigint; amount: string }): void
 
   onMax?(): void
 
@@ -37,7 +36,7 @@ export function BNInput({
   ..._props
 }: BNInputProps): JSX.Element {
   const [valueAsString, setValueAsString] = useState('')
-  const valueBig = value ? bnToBig(value, denomination) : undefined
+  const valueBig = value ? bigintToBig(value, denomination) : undefined
 
   useEffect(() => {
     // When deleting zeros after decimal, all zeros delete without this check.
@@ -49,7 +48,7 @@ export function BNInput({
 
   const onValueChanged = (rawValue: string): void => {
     if (!rawValue) {
-      onChange?.({ bn: new BN(0), amount: '0' })
+      onChange?.({ bn: 0n, amount: '0' })
       setValueAsString('')
       return
     }
@@ -60,7 +59,7 @@ export function BNInput({
      */
     const [, endValue] = splitBN(changedValue)
     if (!endValue || endValue.length <= denomination) {
-      const valueToBn = bigToBN(new Big(changedValue), denomination)
+      const valueToBn = bigToBigInt(new Big(changedValue), denomination)
       setValueAsString(changedValue)
       onChange?.({
         amount: changedValue ? new Big(changedValue).toString() : '0', // used to removing leading & trailing zeros

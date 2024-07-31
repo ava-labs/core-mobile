@@ -1,4 +1,3 @@
-import BN from 'bn.js'
 import {
   GetPVMTransactionRequestParams,
   SendErrorMessage,
@@ -36,10 +35,10 @@ export class SendServicePVM {
 
           const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
           const sendFee = defaultMaxFeePerGas
-            ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
+            ? BigInt(gasLimit) * defaultMaxFeePerGas
             : undefined
-          let maxAmount = token.balance.sub(sendFee || new BN(0))
-          maxAmount = BN.max(maxAmount, new BN(0))
+          let maxAmount = token.balance - (sendFee || 0n)
+          maxAmount = maxAmount > 0n ? maxAmount : 0n
 
           const newState: SendState = {
             ...sendState,
@@ -71,19 +70,19 @@ export class SendServicePVM {
               SendErrorMessage.INVALID_NETWORK_FEE
             )
 
-          if (maxAmount.isZero())
+          if (maxAmount === 0n)
             return SendServicePVM.getErrorState(
               newState,
               SendErrorMessage.INSUFFICIENT_BALANCE
             )
 
-          if (!amount || amount.isZero())
+          if (!amount || amount === 0n)
             return SendServicePVM.getErrorState(
               newState,
               SendErrorMessage.AMOUNT_REQUIRED
             )
 
-          if (amount?.gt(maxAmount))
+          if (amount && amount > maxAmount)
             return SendServicePVM.getErrorState(
               newState,
               SendErrorMessage.INSUFFICIENT_BALANCE
@@ -92,8 +91,9 @@ export class SendServicePVM {
           if (
             sendFee &&
             ((token.type !== TokenType.NATIVE &&
-              nativeTokenBalance?.lt(sendFee)) ||
-              (token.type === TokenType.NATIVE && token.balance.lt(sendFee)))
+              nativeTokenBalance &&
+              nativeTokenBalance < sendFee) ||
+              (token.type === TokenType.NATIVE && token.balance < sendFee))
           )
             return SendServicePVM.getErrorState(
               newState,

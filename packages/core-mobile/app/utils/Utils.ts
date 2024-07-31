@@ -1,9 +1,6 @@
 import Big from 'big.js'
-import { bigToBN, bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import { APIError } from 'paraswap'
-import BN from 'bn.js'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
-import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -150,20 +147,6 @@ export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
   }
 }
 
-export const getMaxAvailableBalance = (
-  token?: TokenWithBalance,
-  fee?: string
-): BN | undefined => {
-  if (!token || !fee) {
-    return
-  }
-
-  if (token.type === TokenType.NATIVE) {
-    return token.balance.sub(stringToBN(fee, token.decimals))
-  }
-  return token.balance
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isAPIError(rate: any): rate is APIError {
   return typeof rate?.message === 'string'
@@ -177,18 +160,4 @@ export async function findAsyncSequential<T>(
     if (await predicate(t)) return t
   }
   return undefined
-}
-
-export function truncateBN(
-  value: BN,
-  denomination: number,
-  roundDecimals: number
-): BN {
-  const big = bnToBig(value, denomination)
-  const truncated = big.round(roundDecimals, Big.roundDown)
-  return bigToBN(truncated, denomination)
-}
-
-export function isZeroBig(value: Big): boolean {
-  return value.eq(new Big(0))
 }

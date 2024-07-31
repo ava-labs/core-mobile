@@ -1,6 +1,5 @@
 import { NativeTokenBalance } from '@avalabs/glacier-sdk'
-import { BN } from 'bn.js'
-import { balanceToDisplayValue, bnToBig } from '@avalabs/utils-sdk'
+import { TokenUnit } from '@avalabs/utils-sdk'
 import {
   TokenType,
   type NetworkTokenWithBalance
@@ -9,12 +8,10 @@ import {
 export function convertNativeToTokenWithBalance(
   native: NativeTokenBalance
 ): NetworkTokenWithBalance {
-  const balance = new BN(native.balance)
-  const balanceDisplayValue = balanceToDisplayValue(balance, native.decimals)
+  const balance = new TokenUnit(native.balance, native.decimals, native.symbol)
+  const balanceDisplayValue = balance.toDisplay()
   const priceInCurrency = native.price?.value ?? 0
-  const balanceInCurrency = bnToBig(balance, native.decimals)
-    .mul(priceInCurrency)
-    .toNumber()
+  const balanceInCurrency = Number(balance.mul(priceInCurrency).toDisplay(2))
   const balanceCurrencyDisplayValue =
     native.balanceValue?.value.toString() ?? '0'
 
@@ -23,7 +20,7 @@ export function convertNativeToTokenWithBalance(
     symbol: native.symbol,
     decimals: native.decimals,
     type: TokenType.NATIVE,
-    balance,
+    balance: balance.toSubUnit(),
     balanceDisplayValue,
     balanceInCurrency,
     balanceCurrencyDisplayValue,
