@@ -5,7 +5,8 @@ import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  getTestCasesFromRun
+  getTestCasesFromRun,
+  generateUtcTimestamp
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
@@ -26,6 +27,7 @@ async function parseResultsFile() {
     const testCaseId = await getTestCaseId(result.testCase)
     const platform = result.platform
     const screenshot = result.screen_shot
+    const failedLogPath = result.failedLog
 
     if (testCaseId !== null) {
       testIdArrayForTestrail.push(testCaseId)
@@ -34,7 +36,8 @@ async function parseResultsFile() {
         status_id: statusId,
         test_name: testName,
         platform: platform,
-        screen_shot: screenshot
+        screen_shot: screenshot,
+        failed_log: failedLogPath
       })
     }
   }
@@ -76,6 +79,7 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
     var platform = testCaseResultObject.platform
     var testCaseName = testCaseResultObject.test_name
     var screenshot = testCaseResultObject.screen_shot
+    var failedLogPath = testCaseResultObject.failed_log
 
     // Sends a passed test to testrail with no comment
     resultsToSendToTestrail.push({
@@ -83,7 +87,8 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
       status_id: testRunCaseStatusId,
       platform: platform,
       test_name: testCaseName,
-      screenshot: screenshot
+      screenshot: screenshot,
+      failed_log: failedLogPath
     })
   })
   // } else {
@@ -155,8 +160,15 @@ async function generatePlatformResults(
   platform: string,
   runId?: number
 ) {
+  var resultArray = resultsToSendToTestrail
+  for (let i = 0; i < resultArray.length; i++) {
+    const logPath = resultArray[i].failed_log
+    if (resultArray[i].status_id === 5 && logPath !== undefined) {
+      await attachLogToRun(runId, logPath, platform)
+      break
+    }
+  }
   try {
-    var resultArray = resultsToSendToTestrail
     if (platform === 'android') {
       // Gets the existing test cases in the test run
       const existingTestCases = await getTestCasesFromRun(runId)
@@ -209,5 +221,25 @@ async function generatePlatformResults(
     } catch (TestRailException) {
       console.log(TestRailException + ' this is the error')
     }
+  }
+}
+
+async function attachLogToRun(
+  runId: number,
+  logPath: string,
+  platform: string
+) {
+  const failedLog = path.resolve(`./e2e/artifacts/${platform}/${logPath}`)
+
+  const workflowId = process.env.BITRISE_TRIGGERED_WORKFLOW_ID
+    ? process.env.BITRISE_TRIGGERED_WORKFLOW_ID
+    : generateUtcTimestamp()
+
+  if (failedLog) {
+    const logPayload = {
+      name: `failed_log_${workflowId}.txt`,
+      value: fs.createReadStream(failedLog)
+    }
+    api.addAttachmentToRun(runId, logPayload)
   }
 }
