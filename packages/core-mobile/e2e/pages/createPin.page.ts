@@ -82,7 +82,7 @@ class CreatePinPage {
   }
 
   async createNewPin() {
-    for (let i = 0; i < 2; i++) {
+    while (await Action.isVisible(this.setNewPinHeader, 0)) {
       await element(this.numpadOne).multiTap(6)
     }
   }
