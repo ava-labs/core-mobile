@@ -1,6 +1,6 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
 import { Account, AccountCollection } from 'store/account/types'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 
 export function getAddressByVM(
   vm: VM,

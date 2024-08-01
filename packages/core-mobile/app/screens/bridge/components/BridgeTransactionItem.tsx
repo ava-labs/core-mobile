@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import BridgeSVG from 'components/svg/BridgeSVG'
@@ -16,7 +16,7 @@ import {
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { bigintToBig } from '@avalabs/utils-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 
 interface BridgeTransactionItemProps {
   item: Transaction | BridgeTransaction | BridgeTransfer

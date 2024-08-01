@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { Dimensions, LayoutChangeEvent } from 'react-native'
 import { View, alpha, useTheme, TouchableHighlight } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'

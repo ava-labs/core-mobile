@@ -1,5 +1,5 @@
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { resolve } from '@avalabs/utils-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { resolve } from '@avalabs/core-utils-sdk'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'

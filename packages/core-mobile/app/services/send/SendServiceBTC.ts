@@ -1,10 +1,10 @@
-import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/core-chains-sdk'
 import {
   BitcoinInputUTXO,
   BitcoinOutputUTXO,
   createTransferTx,
   getMaxTransferAmount
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import BN from 'bn.js'
 import {
   SendErrorMessage,

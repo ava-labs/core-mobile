@@ -6,7 +6,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as networkUtils from 'services/network/utils/isValidRpcUrl'
 import * as Navigation from 'utils/Navigation'
 import { setActive, addCustomNetwork, selectActiveNetwork } from 'store/network'
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode

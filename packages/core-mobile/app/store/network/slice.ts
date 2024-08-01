@@ -3,7 +3,7 @@ import {
   BITCOIN_NETWORK,
   ChainId as ChainsSDKChainId,
   Network
-} from '@avalabs/chains-sdk'
+} from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { RootState } from '../index'

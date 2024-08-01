@@ -7,7 +7,7 @@ import {
   NativeAsset,
   useBridgeSDK,
   useGetTokenSymbolOnNetwork
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance/slice'

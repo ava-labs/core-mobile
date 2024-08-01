@@ -1,4 +1,4 @@
-import { AssetType, Blockchain, BridgeConfig } from '@avalabs/bridge-sdk'
+import { AssetType, Blockchain, BridgeConfig } from '@avalabs/core-bridge-sdk'
 
 const testnetDynamicFeesConfig: BridgeConfig = {
   config: {

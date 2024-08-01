@@ -1,4 +1,4 @@
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { BigNumberish } from 'ethers'
 import {
   getBitcoinProvider,

@@ -13,7 +13,7 @@ import {
   trackBridgeTransaction,
   TrackerSubscription,
   useBridgeSDK
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -28,7 +28,7 @@ import {
   useEthereumProvider
 } from 'hooks/networks/networkProviderHooks'
 import { isEqual } from 'lodash'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {

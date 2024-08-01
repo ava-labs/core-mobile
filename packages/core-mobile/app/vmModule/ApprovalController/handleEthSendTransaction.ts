@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { Hex, ApprovalResponse } from '@avalabs/vm-module-types'
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'

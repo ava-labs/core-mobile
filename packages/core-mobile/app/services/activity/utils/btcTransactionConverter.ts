@@ -1,7 +1,7 @@
-import { Blockchain } from '@avalabs/bridge-sdk'
+import { Blockchain } from '@avalabs/core-bridge-sdk'
 import { TokenType, TransactionType } from '@avalabs/vm-module-types'
-import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
-import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
+import { BITCOIN_NETWORK, Network } from '@avalabs/core-chains-sdk'
+import { BitcoinHistoryTx } from '@avalabs/core-wallets-sdk'
 import { isBridgeTransactionBTC } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 import { getExplorerAddress } from 'utils/ExplorerUtils'
@@ -35,7 +35,7 @@ export const convertTransaction = ({
 
   const denomination = BITCOIN_NETWORK.networkToken.decimals
 
-  // if sent to self, the addresses array will be empty (from @avalabs/wallets-sdk's source code)
+  // if sent to self, the addresses array will be empty (from @avalabs/core-wallets-sdk's source code)
   const to = item.isSender
     ? item.addresses.length === 0
       ? address

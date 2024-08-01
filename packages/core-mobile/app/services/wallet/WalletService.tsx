@@ -2,7 +2,7 @@ import {
   Avalanche,
   BitcoinProvider,
   JsonRpcBatchInternal
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -15,7 +15,7 @@ import {
   WalletType
 } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'

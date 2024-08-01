@@ -1,4 +1,4 @@
-import { ChainId, Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 
 export function isPvmNetwork(network?: Network): boolean {
   return network?.vmName === NetworkVMType.PVM

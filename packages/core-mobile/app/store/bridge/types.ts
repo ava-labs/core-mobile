@@ -1,4 +1,4 @@
-import { BridgeConfig, BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeConfig, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 
 export interface BridgeState {
   bridgeTransactions: {

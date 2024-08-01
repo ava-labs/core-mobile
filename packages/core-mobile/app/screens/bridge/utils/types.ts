@@ -1,4 +1,4 @@
-import { Asset } from '@avalabs/bridge-sdk'
+import { Asset } from '@avalabs/core-bridge-sdk'
 import { BridgeAsset } from '@avalabs/bridge-unified'
 import Big from 'big.js'
 
