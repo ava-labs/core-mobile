@@ -80,14 +80,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bridge-unified@npm:2.1.2":
-  version: 2.1.2
-  resolution: "@avalabs/bridge-unified@npm:2.1.2"
+"@avalabs/bridge-unified@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@avalabs/bridge-unified@npm:2.1.0"
   dependencies:
     abitype: 0.9.3
     lodash: 4.17.21
-    viem: 2.11.1
-  checksum: c612e2e189b5121274e11d47e06ecbaa282c7f720478277c00c6bb0703ef6a56febee5874d8e1f82bda1ca2a6bc282023e87265d843bd4107300040ed277fe48
+    viem: 1.19.8
+  checksum: b876836d0ba8ef79fff27a82f17c4ad14c54a6c14774ed90dd3084b1b69f8b894093d90f6fe67fed8e6d37bd87d49b88f4ed650428c7abb1e5407f3c6780ef0f
   languageName: node
   linkType: hard
 
@@ -142,7 +142,7 @@ __metadata:
     "@avalabs/avalanche-module": 0.1.3
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bitcoin-module": 0.1.3
-    "@avalabs/bridge-unified": 2.1.2
+    "@avalabs/bridge-unified": 2.1.0
     "@avalabs/core-bridge-sdk": 3.0.1-alpha.1
     "@avalabs/core-chains-sdk": 3.0.1-alpha.1
     "@avalabs/core-coingecko-sdk": 3.0.1-alpha.1
@@ -9116,18 +9116,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abitype@npm:1.0.0":
-  version: 1.0.0
-  resolution: "abitype@npm:1.0.0"
+"abitype@npm:0.9.8":
+  version: 0.9.8
+  resolution: "abitype@npm:0.9.8"
   peerDependencies:
     typescript: ">=5.0.4"
-    zod: ^3 >=3.22.0
+    zod: ^3 >=3.19.1
   peerDependenciesMeta:
     typescript:
       optional: true
     zod:
       optional: true
-  checksum: ea2c0548c3ba58c37a6de7483d63389074da498e63d803b742bbe94eb4eaa1f51a35d000c424058b2583aef56698cf07c696eb3bc4dd0303bc20c6f0826a241a
+  checksum: d7d887f29d6821e3f7a400de9620511b80ead3f85c5c87308aaec97965d3493e6687ed816e88722b4f512249bd66dee9e69231b49af0e1db8f69400a62c87cf6
   languageName: node
   linkType: hard
 
@@ -15982,6 +15982,15 @@ __metadata:
     node-fetch: ^2.6.1
     unfetch: ^4.2.0
   checksum: 82b92fe4ec2823a81ab0fc0d11bd94d710e6f9a940d56b3cba31896d4345ec9ffc7949f4ff31ebcae84f6b95f7ebf3474c4c7452b834eb4078ea3f2c37e459c5
+  languageName: node
+  linkType: hard
+
+"isows@npm:1.0.3":
+  version: 1.0.3
+  resolution: "isows@npm:1.0.3"
+  peerDependencies:
+    ws: "*"
+  checksum: 9cacd5cf59f67deb51e825580cd445ab1725ecb05a67c704050383fb772856f3cd5e7da8ad08f5a3bd2823680d77d099459d0c6a7037972a74d6429af61af440
   languageName: node
   linkType: hard
 
@@ -24400,24 +24409,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.11.1":
-  version: 2.11.1
-  resolution: "viem@npm:2.11.1"
+"viem@npm:1.19.8":
+  version: 1.19.8
+  resolution: "viem@npm:1.19.8"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
     "@noble/hashes": 1.3.2
     "@scure/bip32": 1.3.2
     "@scure/bip39": 1.2.1
-    abitype: 1.0.0
-    isows: 1.0.4
+    abitype: 0.9.8
+    isows: 1.0.3
     ws: 8.13.0
   peerDependencies:
     typescript: ">=5.0.4"
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 860c23a004e43cacdfb755fc453ddf0fa5027223cbeb344b93e2d7a7910d5fa1bd8c54cf52c433207d6c0daefe54a5d432af158bda44db45ae33a1e76365a2b0
+  checksum: 0a1c6037c76ce43f170def42eff7d0a76cf3934700ac5e6e673d1661805fed83f86d2ea0741fd73becfc9c37206929fe8250e345e477d8fcae4d889aaf25203d
   languageName: node
   linkType: hard
 

@@ -6,7 +6,7 @@ import {
 } from '@avalabs/core-bridge-sdk'
 import { BridgeAsset } from '@avalabs/bridge-unified'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { bnToBig } from '@avalabs/core-utils-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 
@@ -43,7 +43,7 @@ export function getEVMAssetBalances(
         erc20TokensByAddress[asset.nativeContractAddress?.toLowerCase()]
 
     const balance =
-      (token && bnToBig(token.balance, token.decimals)) || BIG_ZERO
+      (token && bigintToBig(token.balance, token.decimals)) || BIG_ZERO
     return { symbol, asset, balance }
   })
 }
