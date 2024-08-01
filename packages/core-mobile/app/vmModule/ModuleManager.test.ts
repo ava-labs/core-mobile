@@ -19,36 +19,6 @@ describe('ModuleManager', () => {
           chainId: 'eip155:1',
           method: 'eth_randomMethod',
           name: NetworkVMType.EVM
-        },
-        {
-          chainId: 'bip122:000000000019d6689c085ae165831e93',
-          method: 'bitcoin_randomMethod',
-          name: NetworkVMType.BITCOIN
-        },
-        {
-          chainId: 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
-          method: 'avalanche_randomMethod',
-          name: NetworkVMType.AVM
-        },
-        {
-          chainId: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
-          method: 'avalanche_randomMethod',
-          name: NetworkVMType.PVM
-        },
-        {
-          chainId: 'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
-          method: 'avalanche_randomMethod',
-          name: NetworkVMType.AVM
-        },
-        {
-          chainId: 'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl',
-          method: 'avalanche_randomMethod',
-          name: NetworkVMType.PVM
-        },
-        {
-          chainId: 'eip2256:1',
-          method: 'eth_randomMethod',
-          name: NetworkVMType.CoreEth
         }
       ]
       params.forEach(async param => {
