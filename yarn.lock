@@ -126,15 +126,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/core-covalent-sdk@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@avalabs/core-covalent-sdk@npm:3.0.0"
-  dependencies:
-    "@avalabs/core-utils-sdk": ^3.0.0
-  checksum: 95c519eeb69aadf7bb132b6714674999cc58a7c58d514b49e0020eaef7b008dc1cfb48b28cdba612e4d2317c036548d295bb01bb23e49669e21a68302a6bc1ac
-  languageName: node
-  linkType: hard
-
 "@avalabs/core-etherscan-sdk@npm:3.0.0":
   version: 3.0.0
   resolution: "@avalabs/core-etherscan-sdk@npm:3.0.0"
@@ -155,11 +146,6 @@ __metadata:
     "@avalabs/core-bridge-sdk": 3.0.0
     "@avalabs/core-chains-sdk": 3.0.0
     "@avalabs/core-coingecko-sdk": 3.0.0
-    "@avalabs/core-covalent-sdk": 3.0.0
-    "@avalabs/core-etherscan-sdk": 3.0.0
-    "@avalabs/core-paraswap-sdk": 3.0.0
-    "@avalabs/core-snowtrace-sdk": 3.0.0
-    "@avalabs/core-token-prices-sdk": 3.0.0
     "@avalabs/core-utils-sdk": 3.0.0
     "@avalabs/core-wallets-sdk": 3.0.0
     "@avalabs/evm-module": 0.1.2
@@ -372,42 +358,6 @@ __metadata:
     zod: 3.20.2
   languageName: unknown
   linkType: soft
-
-"@avalabs/core-paraswap-sdk@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@avalabs/core-paraswap-sdk@npm:3.0.0"
-  dependencies:
-    "@avalabs/core-utils-sdk": ^3.0.0
-    "@avalabs/core-wallets-sdk": ^3.0.0
-  peerDependencies:
-    big.js: ^6.2.1
-    bitcoinjs-lib: ^5.2.0
-    coinselect: ^3.1.12
-    ethers: ^6.7.1
-    paraswap: 5.2.0
-    react: ^17.0.2
-  checksum: 954cc7afe524fdc1c164c81cfcd82ef54c24fbf17e6976ac6aec6c25737a5375b0bceeaf66deaad0210cd9ffd4b3c12bb743acd25331575d3b814cfa9eb36b31
-  languageName: node
-  linkType: hard
-
-"@avalabs/core-snowtrace-sdk@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@avalabs/core-snowtrace-sdk@npm:3.0.0"
-  dependencies:
-    "@avalabs/core-utils-sdk": ^3.0.0
-  checksum: 0a13d15a93e3cf14a24f985f02fc5b706dca0c296b7bc9bc3536a753fe8e480504c1b2fc6b5b48e45395b18932319641f1440b463e3b49743c5272211e3476b4
-  languageName: node
-  linkType: hard
-
-"@avalabs/core-token-prices-sdk@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@avalabs/core-token-prices-sdk@npm:3.0.0"
-  dependencies:
-    "@avalabs/core-coingecko-sdk": ^3.0.0
-    "@avalabs/core-utils-sdk": ^3.0.0
-  checksum: bd32c7fed548fba3be696ba9a48f2aad25bafeb37b318c03f497aba0fe994b94f373de6bdd4e252edecd9c78809ae636bcef805bb5647b716281c706b227eae5
-  languageName: node
-  linkType: hard
 
 "@avalabs/core-utils-sdk@npm:3.0.0, @avalabs/core-utils-sdk@npm:^3.0.0":
   version: 3.0.0
