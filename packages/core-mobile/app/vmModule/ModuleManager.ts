@@ -1,4 +1,3 @@
-import { BitcoinModule } from 'vmModule/mock_modules/bitcoin'
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import { Environment, Module } from '@avalabs/vm-module-types'
@@ -6,8 +5,8 @@ import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
+import { BitcoinModule } from '@avalabs/bitcoin-module'
 import { ModuleErrors, VmModuleErrors } from './errors'
-import { CoreEthModule } from './mock_modules/coreEth'
 import { approvalController } from './ApprovalController/ApprovalController'
 
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
@@ -48,9 +47,8 @@ class ModuleManager {
         environment,
         approvalController
       }),
-      new BitcoinModule(),
-      new AvalancheModule({ environment }),
-      new CoreEthModule()
+      new BitcoinModule({ environment }),
+      new AvalancheModule({ environment })
     ]
   }
 

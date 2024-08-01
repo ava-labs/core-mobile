@@ -20,7 +20,6 @@ import { NetworkTokenUnit } from 'types'
 import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
-import { BN } from 'bn.js'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { mustNumber } from 'utils/JsTools'
 import { BitcoinSendTransactionApproveData } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
@@ -67,8 +66,8 @@ const BitcoinSendTransaction = (): JSX.Element => {
 
   const balanceAfterTrx = useMemo(() => {
     let balanceBN = btcToken?.balance
-    if (activeAccount?.addressBTC !== sendState.address) {
-      balanceBN = balanceBN?.sub(sendState.amount ?? new BN(0))
+    if (activeAccount?.addressBTC !== sendState.address && balanceBN) {
+      balanceBN -= sendState.amount ?? 0n
     }
     return NetworkTokenUnit.fromNetwork(btcNetwork, balanceBN)
       .sub(maxFeePerGas.mul(sendState.gasLimit ?? 0))

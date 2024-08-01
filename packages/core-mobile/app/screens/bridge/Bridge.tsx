@@ -28,9 +28,9 @@ import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { setActive, TokenSymbol } from 'store/network'
 import {
-  bigToBN,
+  bigintToBig,
+  bigToBigInt,
   bigToLocaleString,
-  bnToBig,
   resolve
 } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
@@ -43,7 +43,6 @@ import {
   isUnifiedBridgeAsset
 } from 'screens/bridge/utils/bridgeUtils'
 import { BNInput } from 'components/BNInput'
-import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectBridgeCriticalConfig } from 'store/bridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -146,7 +145,7 @@ const Bridge: FC = () => {
     amount &&
       !amount.eq(BIG_ZERO) &&
       networkFee &&
-      bnToBig(nativeTokenBalance, activeNetwork.networkToken.decimals).lt(
+      bigintToBig(nativeTokenBalance, activeNetwork.networkToken.decimals).lt(
         networkFee
       )
   )
@@ -269,8 +268,8 @@ const Bridge: FC = () => {
   }
 
   const handleAmountChanged = useCallback(
-    (value: { bn: BN; amount: string }) => {
-      const bigValue = bnToBig(value.bn, denomination)
+    (value: { bn: bigint; amount: string }) => {
+      const bigValue = bigintToBig(value.bn, denomination)
       if (bridgeError) {
         setBridgeError('')
       }
@@ -538,7 +537,7 @@ const Bridge: FC = () => {
       return
     }
     handleAmountChanged({
-      bn: bigToBN(maximum, denomination),
+      bn: bigToBigInt(maximum, denomination),
       amount: bigToLocaleString(maximum, 4)
     })
   }, [denomination, handleAmountChanged, maximum])

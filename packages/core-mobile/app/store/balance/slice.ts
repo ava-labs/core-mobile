@@ -6,7 +6,6 @@ import {
 } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
-import BN from 'bn.js'
 import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -18,8 +17,6 @@ import {
   LocalTokenWithBalance,
   QueryStatus
 } from './types'
-
-const BN_ZERO = new BN(0)
 
 const reducerName = 'balance'
 
@@ -124,7 +121,7 @@ export const selectTokensWithZeroBalance = (
   state: RootState
 ): LocalTokenWithBalance[] => {
   const allTokens = selectTokensWithBalance(state)
-  return allTokens.filter(t => t.balance.eq(BN_ZERO))
+  return allTokens.filter(t => t.balance === 0n)
 }
 
 export const selectAvaxPrice = (state: RootState): number => {
@@ -229,8 +226,8 @@ const _selectBalanceKeyForNetworkAndAccount = (
 
 export const selectNativeTokenBalanceForNetworkAndAccount = createSelector(
   [_selectAllBalances, _selectBalanceKeyForNetworkAndAccount],
-  (allBalances, key) => {
-    if (key === undefined) return BN_ZERO
+  (allBalances, key): bigint => {
+    if (key === undefined) return 0n
 
     const balanceForNetworkAndAccount = allBalances[key]
 
@@ -238,7 +235,7 @@ export const selectNativeTokenBalanceForNetworkAndAccount = createSelector(
       balanceForNetworkAndAccount?.tokens ?? []
     )?.find(token => token.type === TokenType.NATIVE)
 
-    return nativeToken?.balance ?? BN_ZERO
+    return nativeToken?.balance ?? 0n
   }
 )
 

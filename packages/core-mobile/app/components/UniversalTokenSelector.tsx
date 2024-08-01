@@ -1,8 +1,7 @@
 import React, { FC, useCallback, useMemo } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import BN from 'bn.js'
-import { bnToBig } from '@avalabs/core-utils-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
@@ -25,7 +24,7 @@ interface Props {
   onTokenChange: (token: TokenWithBalance | AssetBalance) => void
   onMax?: () => void
   hideInput?: boolean
-  inputAmount?: BN
+  inputAmount?: bigint
   onAmountChange: (amount: Amount) => void
   error?: string
   label?: string
@@ -69,7 +68,10 @@ const UniversalTokenSelector: FC<Props> = ({
     if (!inputAmount || !selectedToken?.decimals) {
       return ''
     }
-    const bnNumber = bnToBig(inputAmount, selectedToken?.decimals).toNumber()
+    const bnNumber = bigintToBig(
+      inputAmount,
+      selectedToken?.decimals
+    ).toNumber()
     return selectedToken.priceInCurrency
       ? formatLargeCurrency(
           currencyFormatter(bnNumber * selectedToken.priceInCurrency),

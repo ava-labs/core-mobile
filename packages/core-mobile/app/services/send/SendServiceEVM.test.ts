@@ -2,11 +2,11 @@ import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
-import BN from 'bn.js'
 import glacierTokenList from 'tests/fixtures/glacierTokenList.json'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
+import { NativeTokenBalance } from '@avalabs/glacier-sdk'
 import { SendErrorMessage, SendState } from './types'
 
 const mockEstimateGas = jest.fn()
@@ -34,9 +34,13 @@ describe('validateStateAndCalculateFees', () => {
     })
   })
 
+  const tokenWithBalance: NativeTokenBalance = {
+    ...glacierTokenList[1].tokens[0],
+    balance: 0
+  }
   describe('when sending NFT', () => {
     const token = {
-      ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
+      ...convertNativeToTokenWithBalance(tokenWithBalance),
       type: TokenType.ERC721,
       address: mockActiveAccount.addressC,
       tokenId: 1
@@ -96,10 +100,10 @@ describe('validateStateAndCalculateFees', () => {
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_GAS_LIMIT)
     })
 
-    it('should fail for insufficent balance for network fee', async () => {
+    it('should fail for insufficient balance for network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        nativeTokenBalance: new BN(0)
+        nativeTokenBalance: 0n
       })
 
       expect(newState.canSubmit).toBe(false)
@@ -111,18 +115,18 @@ describe('validateStateAndCalculateFees', () => {
 
   describe('when sending native token', () => {
     const token = {
-      ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
+      ...convertNativeToTokenWithBalance(tokenWithBalance),
       type: TokenType.NATIVE,
       address: mockActiveAccount.addressC,
       tokenId: 1,
-      balance: new BN(1000)
+      balance: 1000n
     }
     const sendState = {
       token: token,
       address: mockActiveAccount.addressC,
       defaultMaxFeePerGas: 1n,
       gasLimit: 1,
-      amount: new BN(10)
+      amount: 10n
     } as SendState
 
     const params = {
@@ -186,7 +190,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for insufficent balance', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...params.sendState, amount: new BN(100000) }
+        sendState: { ...params.sendState, amount: 100000n }
       })
 
       expect(newState.canSubmit).toBe(false)

@@ -5,6 +5,7 @@ import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/draw
 import {
   Alert,
   DisplayData,
+  Hex,
   SigningData,
   TokenWithBalance
 } from '@avalabs/vm-module-types'
@@ -95,7 +96,7 @@ export type EditSpendLimitParams = {
   onClose(): void
   spendLimit: SpendLimit
   editingToken: {
-    defaultValue: string
+    defaultValue: Hex
     decimals: number
   }
   dAppName?: string

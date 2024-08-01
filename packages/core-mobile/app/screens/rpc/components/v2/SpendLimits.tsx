@@ -1,5 +1,5 @@
 import { Text, View } from '@avalabs/k2-mobile'
-import { balanceToDisplayValue } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import AvaButton from 'components/AvaButton'
 import Avatar from 'components/Avatar'
@@ -44,10 +44,11 @@ export const SpendLimits = ({
           if (token.type === TokenType.ERC20) {
             let limitValueAmount = '0'
             if (spendLimit?.value?.bn) {
-              limitValueAmount = balanceToDisplayValue(
-                spendLimit.value?.bn,
-                token.decimals
-              )
+              limitValueAmount = new TokenUnit(
+                spendLimit.value.bn,
+                token.decimals,
+                token.symbol
+              ).toDisplay()
             }
 
             const isUnlimited = spendLimit.limitType === Limit.UNLIMITED
