@@ -16,7 +16,7 @@ import AvaButton from 'components/AvaButton'
 import { copyToClipboard } from 'utils/DeviceTools'
 import CopySVG from 'components/svg/CopySVG'
 import { isPrimarySubnet } from 'utils/network/isPrimarySubnet'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TxFee } from './components/TxFee'
 
 type AddPermissionlessValidatorTx = Pick<

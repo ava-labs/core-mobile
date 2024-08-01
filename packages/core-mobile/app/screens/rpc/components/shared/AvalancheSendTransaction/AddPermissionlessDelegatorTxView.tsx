@@ -16,7 +16,7 @@ import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import AvaButton from 'components/AvaButton'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TxFee } from './components/TxFee'
 
 type AddPermissionlessDelegatorTx = Pick<

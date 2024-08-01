@@ -1,4 +1,4 @@
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'

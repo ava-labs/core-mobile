@@ -15,7 +15,7 @@ import {
   transferAssetEVM,
   TransferAssetEVMParams,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import Big from 'big.js'
 import { Account } from 'store/account/types'
 import { Network } from '@avalabs/chains-sdk'

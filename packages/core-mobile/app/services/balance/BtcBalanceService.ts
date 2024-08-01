@@ -1,4 +1,4 @@
-import { satoshiToBtc } from '@avalabs/bridge-sdk'
+import { satoshiToBtc } from '@avalabs/core-bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
@@ -7,7 +7,10 @@ import {
   GetBalancesParams
 } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
-import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import {
+  BitcoinProvider,
+  JsonRpcBatchInternal
+} from '@avalabs/core-wallets-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import TokenService from 'services/token/TokenService'
 import {

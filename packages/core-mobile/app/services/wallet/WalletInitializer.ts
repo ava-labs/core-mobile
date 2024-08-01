@@ -1,7 +1,7 @@
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
-import { Avalanche, getXpubFromMnemonic } from '@avalabs/wallets-sdk'
+import { Avalanche, getXpubFromMnemonic } from '@avalabs/core-wallets-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'

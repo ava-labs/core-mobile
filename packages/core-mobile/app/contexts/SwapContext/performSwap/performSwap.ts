@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { Contract } from 'ethers'
 import { Network } from '@avalabs/chains-sdk'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Big from 'big.js'

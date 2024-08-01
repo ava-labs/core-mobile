@@ -3,7 +3,7 @@ import {
   Blockchain,
   useBridgeSDK,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'

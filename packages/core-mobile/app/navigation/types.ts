@@ -17,7 +17,7 @@ import { AvalancheUpdateContactRequest as AvalancheUpdateContactRequestV2 } from
 import { AvalancheSelectAccountRequest as AvalancheSelectAccountRequestV2 } from 'store/rpc/handlers/account/avalanche_selectAccount/avalanche_selectAccount'
 import { Account } from 'store/account'
 import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/rpc/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
-import { Asset, Blockchain } from '@avalabs/bridge-sdk'
+import { Asset, Blockchain } from '@avalabs/core-bridge-sdk'
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'

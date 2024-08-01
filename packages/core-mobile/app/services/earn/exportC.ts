@@ -1,6 +1,6 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { calculatePChainFee } from 'services/earn/calculateCrossChainFees'

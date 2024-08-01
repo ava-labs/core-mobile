@@ -17,7 +17,7 @@ import {
   useGetTokenSymbolOnNetwork,
   useTokenInfoContext,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import useBridge from 'screens/bridge/hooks/useBridge'

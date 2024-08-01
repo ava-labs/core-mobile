@@ -1,9 +1,9 @@
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { Network } from 'ethers'
 import { isValidRPCUrl } from './isValidRpcUrl'
 
 const mockGetNetwork = jest.fn()
-jest.mock('@avalabs/wallets-sdk', () => ({
+jest.mock('@avalabs/core-wallets-sdk', () => ({
   JsonRpcBatchInternal: jest
     .fn()
     .mockImplementation(() => ({ getNetwork: mockGetNetwork }))

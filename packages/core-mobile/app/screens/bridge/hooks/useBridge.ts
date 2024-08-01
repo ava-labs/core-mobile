@@ -4,7 +4,7 @@ import {
   useBridgeSDK,
   useMinimumTransferAmount,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { useEffect, useMemo, useState } from 'react'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useBtcBridge } from 'screens/bridge/hooks/useBtcBridge'

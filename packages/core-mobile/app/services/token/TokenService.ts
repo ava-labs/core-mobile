@@ -10,7 +10,7 @@ import {
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import { ethers } from 'ethers'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'

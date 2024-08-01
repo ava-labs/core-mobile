@@ -7,7 +7,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import { TxFee } from './components/TxFee'
 

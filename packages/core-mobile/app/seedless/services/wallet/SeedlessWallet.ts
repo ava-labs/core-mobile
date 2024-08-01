@@ -17,7 +17,7 @@ import {
   createPsbt,
   getBtcAddressFromPubKey,
   getEvmAddressFromPubKey
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, utils } from '@avalabs/avalanchejs'
 import {

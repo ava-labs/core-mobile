@@ -17,7 +17,7 @@ import walletService from 'services/wallet/WalletService'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import {
   ApproveResponse,

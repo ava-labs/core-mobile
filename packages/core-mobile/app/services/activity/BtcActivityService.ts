@@ -1,4 +1,4 @@
-import { BitcoinProvider } from '@avalabs/wallets-sdk'
+import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { Transaction } from 'store/transaction'
 import { GetActivitiesForAddressParams, NetworkActivityService } from './types'

@@ -1,5 +1,5 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 
 export function getChainAliasFromNetwork(
   network: Network

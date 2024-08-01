@@ -13,7 +13,7 @@ import {
   trackBridgeTransaction,
   TrackerSubscription,
   useBridgeSDK
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {

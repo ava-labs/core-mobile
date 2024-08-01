@@ -5,7 +5,10 @@ import {
   Network,
   NetworkVMType
 } from '@avalabs/chains-sdk'
-import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import {
+  BitcoinProvider,
+  JsonRpcBatchInternal
+} from '@avalabs/core-wallets-sdk'
 import { Network as EthersNetwork } from 'ethers'
 import Config from 'react-native-config'
 import { Networks } from 'store/network/types'

@@ -4,7 +4,7 @@ import {
   BitcoinOutputUTXO,
   createTransferTx,
   getMaxTransferAmount
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import BN from 'bn.js'
 import {
   SendErrorMessage,

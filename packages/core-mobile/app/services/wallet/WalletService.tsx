@@ -2,7 +2,7 @@ import {
   Avalanche,
   BitcoinProvider,
   JsonRpcBatchInternal
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,

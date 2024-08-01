@@ -1,4 +1,4 @@
-import { Blockchain } from '@avalabs/bridge-sdk'
+import { Blockchain } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 
 function getAvalancheTxLink(hash: string, isMainnet = true): string {

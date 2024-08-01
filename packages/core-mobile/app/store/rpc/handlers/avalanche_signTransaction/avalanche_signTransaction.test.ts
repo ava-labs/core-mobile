@@ -6,7 +6,7 @@ import {
   Credential,
   avaxSerial
 } from '@avalabs/avalanchejs'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { selectActiveAccount } from 'store/account/slice'
@@ -24,7 +24,7 @@ import {
 } from './avalanche_signTransaction'
 
 jest.mock('@avalabs/avalanchejs')
-jest.mock('@avalabs/wallets-sdk')
+jest.mock('@avalabs/core-wallets-sdk')
 jest.mock('store/account/slice', () => {
   const actual = jest.requireActual('store/account/slice')
   return {

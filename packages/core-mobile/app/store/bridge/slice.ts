@@ -5,7 +5,7 @@ import {
   BridgeConfig,
   BridgeTransaction,
   CriticalConfig
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { BridgeState, initialState } from 'store/bridge/types'
 import { selectActiveNetwork } from 'store/network'
 

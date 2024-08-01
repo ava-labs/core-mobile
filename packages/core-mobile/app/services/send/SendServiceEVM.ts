@@ -1,5 +1,5 @@
 import { resolve } from '@avalabs/utils-sdk'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import BN from 'bn.js'
 import { isAddress, TransactionRequest } from 'ethers'
 import {

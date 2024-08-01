@@ -1,4 +1,4 @@
-import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/chains-sdk'
 import { useMemo } from 'react'

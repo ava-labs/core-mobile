@@ -1,4 +1,4 @@
-import { BIG_ZERO, Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
+import { BIG_ZERO, Blockchain, useBridgeSDK } from '@avalabs/core-bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useMemo } from 'react'

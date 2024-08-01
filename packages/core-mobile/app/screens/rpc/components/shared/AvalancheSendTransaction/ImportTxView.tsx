@@ -15,7 +15,7 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { AvalancheChainStrings } from 'store/rpc/handlers/types'
 import { selectAvaxPrice } from 'store/balance/slice'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TxFee } from './components/TxFee'
 
 type ImportTx = {

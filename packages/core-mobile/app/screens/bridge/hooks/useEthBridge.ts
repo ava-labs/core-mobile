@@ -6,7 +6,7 @@ import {
   useBridgeSDK,
   useMaxTransferAmount,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
