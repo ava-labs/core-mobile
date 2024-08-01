@@ -8,7 +8,7 @@ import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import BN from 'bn.js'
 import { selectActiveNetwork, selectIsTestnet } from 'store/network'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {

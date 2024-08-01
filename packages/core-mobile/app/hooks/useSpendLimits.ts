@@ -1,4 +1,4 @@
-import { bnToLocaleString, hexToBN } from '@avalabs/utils-sdk'
+import { bnToLocaleString, hexToBN } from '@avalabs/core-utils-sdk'
 import { useCallback, useEffect, useState } from 'react'
 import Web3 from 'web3'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { bigintToBig } from '@avalabs/utils-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
 

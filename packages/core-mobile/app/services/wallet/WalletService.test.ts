@@ -2,17 +2,17 @@ import { AddDelegatorProps, WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
 import { Utxo } from '@avalabs/avalanchejs'
-import { AVALANCHE_XP_TEST_NETWORK } from '@avalabs/chains-sdk'
+import { AVALANCHE_XP_TEST_NETWORK } from '@avalabs/core-chains-sdk'
 import { Avax } from 'types/Avax'
 import { PChainId } from '@avalabs/glacier-sdk'
 
-jest.mock('@avalabs/wallets-sdk', () => ({
-  ...jest.requireActual('@avalabs/wallets-sdk'),
+jest.mock('@avalabs/core-wallets-sdk', () => ({
+  ...jest.requireActual('@avalabs/core-wallets-sdk'),
   getXpubFromMnemonic: () => {
     return { mnemonic: '1' }
   },
   Avalanche: {
-    ...jest.requireActual('@avalabs/wallets-sdk').Avalanche,
+    ...jest.requireActual('@avalabs/core-wallets-sdk').Avalanche,
     getXpubFromMnemonic: () => {
       return { mnemonic: '1' }
     }

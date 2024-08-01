@@ -1,6 +1,6 @@
 import { Erc1155TokenBalance, Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { NFTItem, NFTItemData, NftTokenTypes } from 'store/nft'
-import { ipfsResolver } from '@avalabs/utils-sdk'
+import { ipfsResolver } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { NftUID } from './types'
 

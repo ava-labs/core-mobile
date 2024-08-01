@@ -17,7 +17,7 @@ import {
   useGetTokenSymbolOnNetwork,
   useTokenInfoContext,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import useBridge from 'screens/bridge/hooks/useBridge'
@@ -32,7 +32,7 @@ import {
   bigToLocaleString,
   bnToBig,
   resolve
-} from '@avalabs/utils-sdk'
+} from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'

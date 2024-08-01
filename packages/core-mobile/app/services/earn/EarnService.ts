@@ -14,7 +14,7 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,

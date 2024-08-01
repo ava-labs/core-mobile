@@ -15,7 +15,7 @@ import { NFTItemData, NftState } from 'store/nft'
 import { PortfolioState } from 'store/portfolio'
 import { RawRootState, RootState } from 'store/index'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { CoreAccountType, WalletType } from '@avalabs/types'
 
 const secretKey =

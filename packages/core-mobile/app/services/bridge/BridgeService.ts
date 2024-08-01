@@ -15,10 +15,10 @@ import {
   transferAssetEVM,
   TransferAssetEVMParams,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import Big from 'big.js'
 import { Account } from 'store/account/types'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   getAvalancheProvider,
   getEthereumProvider
@@ -28,7 +28,7 @@ import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from 'store/rpc/types'
-import { bnToBig, noop, stringToBN } from '@avalabs/utils-sdk'
+import { bnToBig, noop, stringToBN } from '@avalabs/core-utils-sdk'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 
 type TransferBTCParams = {

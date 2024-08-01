@@ -1,6 +1,6 @@
 import { isAddress } from 'ethers'
-import { isBech32Address } from '@avalabs/bridge-sdk'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { isBech32Address } from '@avalabs/core-bridge-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Share, ShareContent, ShareOptions } from 'react-native'
 import Logger from 'utils/Logger'
 import { NameAndAddresses } from 'screens/drawer/addressBook/types'

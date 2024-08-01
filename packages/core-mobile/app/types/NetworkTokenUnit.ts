@@ -1,6 +1,6 @@
 import Big from 'big.js'
 import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import BN from 'bn.js'
 
 /**

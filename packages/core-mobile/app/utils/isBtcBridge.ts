@@ -1,4 +1,4 @@
-import { CriticalConfig } from '@avalabs/bridge-sdk'
+import { CriticalConfig } from '@avalabs/core-bridge-sdk'
 
 export const isBtcBridge = (
   address: string,

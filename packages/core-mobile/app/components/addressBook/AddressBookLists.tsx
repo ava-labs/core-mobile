@@ -12,7 +12,7 @@ import {
   selectContacts,
   selectRecentContacts
 } from 'store/addressBook'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Contact } from '@avalabs/types'
 import {

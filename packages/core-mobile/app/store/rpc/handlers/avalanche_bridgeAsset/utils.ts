@@ -1,4 +1,4 @@
-import { AssetType, Blockchain } from '@avalabs/bridge-sdk'
+import { AssetType, Blockchain } from '@avalabs/core-bridge-sdk'
 import { z } from 'zod'
 
 const assetTypeSchema = z.nativeEnum(AssetType)

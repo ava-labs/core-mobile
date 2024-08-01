@@ -1,4 +1,4 @@
-import { Network, ChainId } from '@avalabs/chains-sdk'
+import { Network, ChainId } from '@avalabs/core-chains-sdk'
 import { absoluteChain } from 'utils/network/isAvalancheNetwork'
 
 export function isAvalancheNetwork(network: Network): boolean {

@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import StorageTools from 'repository/StorageTools'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import {

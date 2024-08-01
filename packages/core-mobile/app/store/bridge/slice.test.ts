@@ -1,6 +1,6 @@
 import testConfig from 'tests/fixtures/bridgeConfig'
 import Big from 'big.js'
-import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
+import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import {
   addBridgeTransaction,

@@ -1,8 +1,8 @@
 import TokenService from 'services/token/TokenService'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { useQuery } from '@tanstack/react-query'
 
 const REFETCH_INTERVAL = 10000 // 10 seconds

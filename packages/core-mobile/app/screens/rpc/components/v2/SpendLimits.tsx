@@ -1,5 +1,5 @@
 import { Text, View } from '@avalabs/k2-mobile'
-import { balanceToDisplayValue } from '@avalabs/utils-sdk'
+import { balanceToDisplayValue } from '@avalabs/core-utils-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import AvaButton from 'components/AvaButton'
 import Avatar from 'components/Avatar'

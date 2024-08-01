@@ -8,7 +8,7 @@ import {
   getBtcAsset,
   satoshiToBtc,
   useBridgeSDK
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
@@ -16,11 +16,11 @@ import { AssetBalance } from 'screens/bridge/utils/types'
 import {
   BitcoinInputUTXOWithOptionalScript,
   getMaxTransferAmount
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
