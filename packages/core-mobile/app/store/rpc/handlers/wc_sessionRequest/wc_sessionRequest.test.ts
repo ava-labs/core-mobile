@@ -173,7 +173,9 @@ describe('session_request handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: rpcErrors.invalidParams('Only eip155 namespace is supported')
+        error: rpcErrors.invalidParams(
+          'Requested network cosmos:cosmoshub-1 is not supported'
+        )
       })
     })
 

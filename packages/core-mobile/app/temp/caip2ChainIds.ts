@@ -1,6 +1,6 @@
 import { JsonMap } from 'store/posthog'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { AVM_PVM_IDENTIFIER } from 'store/rpc'
+import { AVM_PVM_IDENTIFIER } from 'store/rpc/types'
 
 /**
  * In the process of switching to CAIP2 naming convention for blockchain ids we are temporarily modifying Posthog

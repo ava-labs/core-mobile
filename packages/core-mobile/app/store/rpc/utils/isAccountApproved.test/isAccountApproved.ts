@@ -18,7 +18,7 @@ export const isAccountApproved = (
 
   return Boolean(
     namespaces[namespace]?.accounts.some(
-      acc => acc.toLowerCase() === address.toLowerCase()
+      acc => acc.split(':')[2]?.toLowerCase() === address.toLowerCase()
     )
   )
 }

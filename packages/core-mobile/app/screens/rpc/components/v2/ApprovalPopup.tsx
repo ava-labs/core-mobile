@@ -23,7 +23,7 @@ import {
   selectAccountByAddress,
   selectAccountByIndex,
   selectActiveAccount
-} from 'store/account'
+} from 'store/account/slice'
 import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
 import { humanize } from 'utils/string/humanize'
