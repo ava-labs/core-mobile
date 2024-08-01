@@ -93,7 +93,7 @@ describe('earn/exportC', () => {
           amount: Avax.fromBase('0.101'),
           baseFee: Avax.fromNanoAvax(30),
           accountIndex: undefined,
-          avaxXPNetwork: AVALANCHE_XP_NETWORK,
+          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'P',
           destinationAddress: undefined
         })

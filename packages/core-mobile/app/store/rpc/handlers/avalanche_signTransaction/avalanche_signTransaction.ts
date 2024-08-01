@@ -229,7 +229,7 @@ class AvalancheSignTransactionHandler
           tx: unsignedTx
         },
         accountIndex: activeAccount.index,
-        network: networkService.getAvalancheNetworkXP(isDevMode)
+        network: networkService.getAvalancheNetworkP(isDevMode)
       })
 
       const signedTransaction = UnsignedTx.fromJSON(signedTransactionJson)
