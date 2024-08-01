@@ -1,4 +1,3 @@
-import { satoshiToBtc } from '@avalabs/core-bridge-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
@@ -49,22 +48,21 @@ export class BtcBalanceService implements BalanceServiceProvider {
           nativeTokenId,
           currency as VsCurrencyType
         )
-        const denomination = networkToken.decimals
         const { balance: balanceSatoshis, utxos } =
           await provider.getUtxoBalance(accountAddress, false)
-        const balanceBig = satoshiToBtc(balanceSatoshis)
-        const balanceNum = balanceBig.toNumber()
         const balance = new TokenUnit(
-          balanceBig,
-          denomination,
+          balanceSatoshis,
+          networkToken.decimals,
           networkToken.symbol
         )
         const balanceDisplayValue = balance.toDisplay()
         const balanceCurrencyDisplayValue = priceInCurrency
-          ? balanceBig.mul(priceInCurrency).toFixed(2)
+          ? balance.mul(priceInCurrency).toDisplay(2)
           : ''
         const balanceInCurrency =
-          priceInCurrency && balanceNum ? priceInCurrency * balanceNum : 0
+          balanceCurrencyDisplayValue === undefined
+            ? undefined
+            : Number(balanceCurrencyDisplayValue.replaceAll(',', ''))
 
         return [
           {
