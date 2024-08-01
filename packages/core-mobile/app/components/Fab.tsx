@@ -42,7 +42,6 @@ export const Fab: FC = () => {
     selectTokensWithBalanceByNetwork(activeNetwork)
   )
 
-  // console.log('Fab.tsx activeNetwork:', activeNetwork)
   const {
     theme: { colors }
   } = useTheme()
