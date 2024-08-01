@@ -6,6 +6,7 @@ import glacierTokenList from 'tests/fixtures/glacierTokenList.json'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
+import { NativeTokenBalance } from '@avalabs/glacier-sdk'
 import { SendErrorMessage, SendState } from './types'
 
 const mockEstimateGas = jest.fn()
@@ -33,9 +34,13 @@ describe('validateStateAndCalculateFees', () => {
     })
   })
 
+  const tokenWithBalance: NativeTokenBalance = {
+    ...glacierTokenList[1].tokens[0],
+    balance: 0
+  }
   describe('when sending NFT', () => {
     const token = {
-      ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
+      ...convertNativeToTokenWithBalance(tokenWithBalance),
       type: TokenType.ERC721,
       address: mockActiveAccount.addressC,
       tokenId: 1
@@ -95,7 +100,7 @@ describe('validateStateAndCalculateFees', () => {
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_GAS_LIMIT)
     })
 
-    it('should fail for insufficent balance for network fee', async () => {
+    it('should fail for insufficient balance for network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
         nativeTokenBalance: 0n
@@ -110,7 +115,7 @@ describe('validateStateAndCalculateFees', () => {
 
   describe('when sending native token', () => {
     const token = {
-      ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
+      ...convertNativeToTokenWithBalance(tokenWithBalance),
       type: TokenType.NATIVE,
       address: mockActiveAccount.addressC,
       tokenId: 1,

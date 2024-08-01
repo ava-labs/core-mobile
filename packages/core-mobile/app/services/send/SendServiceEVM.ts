@@ -101,7 +101,7 @@ export class SendServiceEVM implements SendServiceHelper {
           if (
             sendFee &&
             ((token.type !== TokenType.NATIVE &&
-              nativeTokenBalance &&
+              nativeTokenBalance !== undefined &&
               nativeTokenBalance < sendFee) ||
               (token.type === TokenType.NATIVE && token.balance < sendFee))
           )
