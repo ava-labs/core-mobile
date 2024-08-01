@@ -1,62 +1,106 @@
 import actions from '../helpers/actions'
 import asserts from '../helpers/assertions'
-import popupModalLoc from '../locators/popupModal.loc'
+import popUpModalLoc from '../locators/popupModal.loc'
 
 class PopUpModalPage {
-  get signMessage() {
-    return by.text(popupModalLoc.signMessage)
+  get toastMessage() {
+    return by.text(popUpModalLoc.toastMessage)
   }
 
-  get network() {
-    return by.text(popupModalLoc.network)
+  get linkSvg() {
+    return by.id(popUpModalLoc.linkSvg)
   }
 
   get approveBtn() {
-    return by.id(popupModalLoc.approveBtn)
+    return by.id(popUpModalLoc.approveBtn)
   }
 
   get rejectBtn() {
-    return by.id(popupModalLoc.rejectBtn)
+    return by.id(popUpModalLoc.rejectBtn)
+  }
+
+  get typeText() {
+    return by.text(popUpModalLoc.type)
+  }
+
+  get accountText() {
+    return by.text(popUpModalLoc.account)
+  }
+
+  get approveTransactionTitle() {
+    return by.text(popUpModalLoc.approveTransactionTitle)
+  }
+
+  get maximumNetworkFeeText() {
+    return by.text(popUpModalLoc.maximumNetworkFee)
+  }
+
+  get balanceChangeText() {
+    return by.text(popUpModalLoc.balanceChange)
+  }
+
+  get accountNumberText() {
+    return by.text(popUpModalLoc.accountNumber)
+  }
+
+  get successfulToastMsg() {
+    return by.text(popUpModalLoc.successfulToastMsg)
+  }
+
+  get network() {
+    return by.text(popUpModalLoc.network)
+  }
+
+  get transactionDetail() {
+    return by.text(popUpModalLoc.transactionDetails)
+  }
+
+  get feeAmount() {
+    return by.text(popUpModalLoc.feeAmount)
+  }
+  
+  get signMessage() {
+    return by.text(popUpModalLoc.signMessage)
   }
 
   get account() {
-    return by.text(popupModalLoc.account)
+    return by.text(popUpModalLoc.account)
   }
 
   get messageTitle() {
-    return by.text(popupModalLoc.messageTitle)
+    return by.text(popUpModalLoc.messageTitle)
   }
 
   get scamTransaction() {
-    return by.text(popupModalLoc.scamTransaction)
+    return by.text(popUpModalLoc.scamTransaction)
   }
 
   get scamTransactionContent() {
-    return by.text(popupModalLoc.scamTransactionContent)
+    return by.text(popUpModalLoc.scamTransactionContent)
   }
 
   get rejectTransaction() {
-    return by.text(popupModalLoc.rejectTransaction)
+    return by.text(popUpModalLoc.rejectTransaction)
   }
 
   get proceedAnyway() {
-    return by.text(popupModalLoc.proceedAnyway)
+    return by.text(popUpModalLoc.proceedAnyway)
   }
 
   get switchToSepoliaNetwork() {
-    return by.text(popupModalLoc.switchToSepoliaNetwork)
+    return by.text(popUpModalLoc.switchToSepoliaNetwork)
   }
 
   get switchToFujiNetwork() {
-    return by.text(popupModalLoc.switchToFujiNetwork)
+    return by.text(popUpModalLoc.switchToFujiNetwork)
   }
 
   get createContact() {
-    return by.text(popupModalLoc.createContact)
+    return by.text(popUpModalLoc.createContact)
   }
 
   get messageDetail() {
-    return by.id(popupModalLoc.messageDetail)
+    return by.id(popUpModalLoc.messageDetail)
   }
 
   async tapApproveBtn() {
@@ -110,6 +154,16 @@ class PopUpModalPage {
     await asserts.isVisible(this.approveBtn)
     await asserts.isVisible(this.rejectBtn)
     await asserts.isVisible(by.text('Bob'))
+  }
+
+  async verifyApproveTransactionItems() {
+    await actions.waitForElement(this.approveTransactionTitle, 5000)
+    await asserts.isVisible(this.network)
+    await asserts.isVisible(this.transactionDetail)
+    await asserts.isVisible(this.maximumNetworkFeeText)
+    await asserts.isVisible(this.feeAmount)
+    await asserts.isVisible(this.approveBtn)
+    await asserts.isVisible(this.rejectBtn)
   }
 }
 

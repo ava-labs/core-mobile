@@ -3,8 +3,8 @@ import Actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
 import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
-import approveTransactionPage from '../../pages/approveTransaction.page'
 import activityTabPage from '../../pages/activityTab.page'
+import popUpModalPage from '../../pages/popUpModal.page'
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
@@ -34,11 +34,11 @@ describe('Send Avax to another account', () => {
 
   it('Should verify NFT transaction toast', async () => {
     await Actions.waitForElement(
-      approveTransactionPage.successfulToastMsg,
+      popUpModalPage.successfulToastMsg,
       120000
     )
     await Actions.waitForElementNotVisible(
-      approveTransactionPage.successfulToastMsg,
+      popUpModalPage.successfulToastMsg,
       30000
     )
   }, 200000)

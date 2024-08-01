@@ -66,14 +66,6 @@ class AddressBook {
     return by.id(addressBookLoc.pChainAddressField)
   }
 
-  get back() {
-    return by.id(addressBookLoc.back)
-  }
-
-  async tapBack() {
-    await Actions.tapElementAtIndex(this.back, 0)
-  }
-
   async tapDelete() {
     await Actions.tapElementAtIndex(this.delete, 0)
   }

@@ -3,7 +3,7 @@ import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import Collectibles from '../locators/collectibles.loc'
 import AccountManagePage from './accountManage.page'
-import approveTransactionPage from './approveTransaction.page'
+import popUpModalPage from './popUpModal.page'
 
 class CollectiblesPage {
   get sendButton() {
@@ -180,15 +180,15 @@ class CollectiblesPage {
       ? await AccountManagePage.tapFirstAccount()
       : await AccountManagePage.tapSecondAccount()
     await this.tapNextButton()
-    await approveTransactionPage.verifyApproveTransactionItems()
-    await approveTransactionPage.tapApproveBtn()
+    await popUpModalPage.verifyApproveTransactionItems()
+    await popUpModalPage.tapApproveBtn()
   }
 
   async inputCustomFee() {
     await Action.setInputText(this.customFeeInput, '25000000', 1)
     await Action.setInputText(this.customFeeInput, '1000', 3)
     await this.tapSaveButton()
-    await approveTransactionPage.tapApproveBtn()
+    await popUpModalPage.tapApproveBtn()
   }
 }
 

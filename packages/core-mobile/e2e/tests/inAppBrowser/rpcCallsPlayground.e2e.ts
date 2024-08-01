@@ -5,7 +5,7 @@
 import actions from '../../helpers/actions'
 import assertions from '../../helpers/assertions'
 import { warmup } from '../../helpers/warmup'
-import approveTransactionPage from '../../pages/approveTransaction.page'
+import popUpModalPage from '../../pages/popUpModal.page'
 import bottomTabsPage from '../../pages/bottomTabs.page'
 import browserPage from '../../pages/browser.page'
 import advancedPage from '../../pages/burgerMenu/advanced.page'
@@ -13,7 +13,6 @@ import burgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import commonElsPage from '../../pages/commonEls.page'
 import connectToSitePage from '../../pages/connectToSite.page'
 import plusMenuPage from '../../pages/plusMenu.page'
-import popUpModalPage from '../../pages/popUpModal.page'
 import portfolioPage from '../../pages/portfolio.page'
 
 describe('Connect to dApp using WalletConnect', () => {
@@ -35,16 +34,16 @@ describe('Connect to dApp using WalletConnect', () => {
 
   it('should handle eth_sendTransaction', async () => {
     await browserPage.sendRpcCall('eth_sendTransaction')
-    await approveTransactionPage.verifyApproveTransactionItems()
-    await approveTransactionPage.tapApproveBtn()
+    await popUpModalPage.verifyApproveTransactionItems()
+    await popUpModalPage.tapApproveBtn()
     await browserPage.verifyResponseReceived()
     await bottomTabsPage.tapPortfolioTab()
     await actions.waitForElement(
-      approveTransactionPage.successfulToastMsg,
+      popUpModalPage.successfulToastMsg,
       10000
     )
     await actions.waitForElementNotVisible(
-      approveTransactionPage.successfulToastMsg,
+      popUpModalPage.successfulToastMsg,
       10000
     )
   })

@@ -15,6 +15,5 @@ export default {
   nameField: 'contact_input__name',
   addressField: 'contact_input__address',
   btcAddressField: 'contact_input__btc_address',
-  pChainAddressField: 'contact_input__p_chain_address',
-  back: 'header_back'
+  pChainAddressField: 'contact_input__p_chain_address'
 }

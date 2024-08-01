@@ -1,14 +1,11 @@
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import connectToSiteLoc from '../locators/connectToSite.loc'
+import popUpModalPage from './popUpModal.page'
 
 class ConnectToSite {
   get approveBtn() {
     return by.text(connectToSiteLoc.approveBtn)
-  }
-
-  get approveBtnId() {
-    return by.id(connectToSiteLoc.approveBtnId)
   }
 
   get rejectBtn() {
@@ -47,7 +44,7 @@ class ConnectToSite {
     try {
       await Action.tap(this.approveBtn)
     } catch (e) {
-      await Action.tap(this.approveBtnId)
+      await Action.tap(popUpModalPage.approveBtn)
     }
   }
 
