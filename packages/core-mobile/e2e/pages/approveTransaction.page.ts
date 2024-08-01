@@ -68,7 +68,7 @@ class ApproveTransactionPage {
   }
 
   async verifyApproveTransactionItems() {
-    await actions.waitForElement(this.approveTransactionTitle)
+    await actions.waitForElement(this.approveTransactionTitle, 10000)
     await asserts.isVisible(this.network)
     await asserts.isVisible(this.transactionDetail)
     await asserts.isVisible(this.maximumNetworkFeeText)

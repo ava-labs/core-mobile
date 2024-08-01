@@ -12,6 +12,5 @@ export default {
   switchToSepoliaNetwork: 'Switch to Sepolia Network?',
   switchToFujiNetwork: 'Switch to Avalanche (C-Chain) Network?',
   createContact: 'Create Contact?',
-  messageDetail: 'message_detail',
-  popupDisclaimer: 'popup_disclaimer'
+  messageDetail: 'message_detail'
 }

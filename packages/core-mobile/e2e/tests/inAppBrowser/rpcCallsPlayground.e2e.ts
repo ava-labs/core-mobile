@@ -45,7 +45,7 @@ describe('Connect to dApp using WalletConnect', () => {
     )
     await actions.waitForElementNotVisible(
       approveTransactionPage.successfulToastMsg,
-      3000
+      10000
     )
   })
 

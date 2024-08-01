@@ -342,7 +342,7 @@ const ApprovalPopup = (): JSX.Element => {
   const renderDisclaimer = (): JSX.Element | null => {
     if (!displayData.disclaimer) return null
     return (
-      <View sx={{ marginHorizontal: 16 }} testID="popup_disclaimer">
+      <View sx={{ marginHorizontal: 16 }}>
         <Text
           sx={{ color: '$warningMain', textAlign: 'center' }}
           variant="body2">

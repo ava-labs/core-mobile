@@ -1,21 +1,21 @@
 import assert from 'assert'
 import Actions from '../helpers/actions'
 import BrowserLoc from '../locators/browser.loc'
-import delay from '../helpers/waits'
+import Wbs, { WebScripts } from '../helpers/web'
 import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
-class BrowserPage {
-  wb =
-    device.getPlatform() === 'ios'
-      ? web(by.id('myWebview'))
-      : web(by.type('android.webkit.WebView').withAncestor(by.id('myWebview')))
 
+class BrowserPage {
   get searchBar() {
     return by.id(BrowserLoc.searchBar)
   }
 
   get browserBackBtn() {
     return by.id(BrowserLoc.browserBackBtn)
+  }
+
+  get iUnderstandBtn() {
+    return by.id(BrowserLoc.iUnderstandBtn)
   }
 
   async tapSearchBar() {
@@ -28,41 +28,23 @@ class BrowserPage {
   }
 
   async tapAccept() {
-    await this.wb.element(by.web.xpath('//*[text()="Accept"]')).tap()
+    await Wbs.tapByText('Accept')
   }
 
   async tapCoreConnectWallet() {
-    await this.wb
-      .element(by.web.xpath('//*[@data-testid="connect-wallet-button"]'))
-      .tap()
+    await Wbs.tapByDataTestId('connect-wallet-button')
   }
 
   async connectTermAndContinue() {
-    await this.wb
-      .element(by.web.xpath('//*[@data-testid="connect-terms-checkbox"]'))
-      .tap()
-    await this.wb
-      .element(by.web.xpath('//*[@data-testid="connect-terms-continue-btn"]'))
-      .tap()
-  }
-
-  async connectCore() {
-    await this.wb
-      .element(by.web.tag('w3m-modal'))
-      .runScript(function (element) {
-        element.shadowRoot
-          .querySelector('wui-flex > wui-card > w3m-router')
-          .shadowRoot.querySelector('w3m-connect-view')
-          .shadowRoot.querySelector('wui-list-wallet[name="Core"]')
-          .click()
-      })
+    await Wbs.tapByDataTestId('connect-terms-checkbox')
+    await Wbs.tapByDataTestId('connect-terms-continue-btn')
   }
 
   async verifyInAppBrowserLoaded(url: string, timeout = 8000) {
     let isLoaded = false
     const start = Date.now()
     while (Date.now() - start < timeout) {
-      const currUrl = await this.wb.element(by.web.tag('body')).getCurrentUrl()
+      const currUrl = await Wbs.getUrl()
       isLoaded = currUrl === url
       if (isLoaded) break
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -89,110 +71,62 @@ class BrowserPage {
         xpath =
           '//*[@data-testid="connect-wallet-connect-button"]//p[text()="WalletConnect"]'
     }
-    await this.wb.element(by.web.xpath(xpath)).tap()
+    await Wbs.tapByXpath(xpath)
   }
 
   async tapWalletConnect() {
-    await this.wb.element(by.web.xpath(`//*[text()="WalletConnect"]`)).tap()
+    await Wbs.waitForEleByTextToBeVisible('WalletConnect')
+    await Wbs.tapByText('WalletConnect')
   }
 
   async tapCopyQrCode() {
-    await this.wb.element(by.web.xpath(`//*[@class='wcm-action-btn']`)).tap()
+    await Wbs.tapByXpath('//*[@class="wcm-action-btn"]')
   }
 
   async tapBrowserBackBtn() {
     await Actions.tap(this.browserBackBtn)
   }
 
+  async connectCore() {
+    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
+  }
+
   async getQrUriViaAllWallets() {
-    await delay(1000)
-    await this.wb
-      .element(by.web.tag('w3m-modal'))
-      .runScript(function (element) {
-        element.shadowRoot
-          .querySelector('w3m-router')
-          .shadowRoot.querySelector('w3m-connect-view')
-          .shadowRoot.querySelector('wui-list-wallet[name="All Wallets"]')
-          .click()
-      })
-
-    await delay(1000)
-    await this.wb
-      .element(by.web.tag('w3m-modal'))
-      .runScript(function (element) {
-        element.shadowRoot
-          .querySelector('w3m-router')
-          .shadowRoot.querySelector('w3m-all-wallets-view')
-          .shadowRoot.querySelector('wui-icon-box')
-          .click()
-      })
-
-    await delay(1000)
-    const output = await this.wb
-      .element(by.web.tag('w3m-modal'))
-      .runScript(function (element) {
-        return element.shadowRoot
-          .querySelector('w3m-router')
-          .shadowRoot.querySelector('w3m-connecting-wc-view')
-          .shadowRoot.querySelector('w3m-connecting-wc-qrcode')
-          .shadowRoot.querySelector('wui-qr-code')
-          .getAttribute('uri')
-      })
+    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_ALL_WALLETS)
+    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_QR_BUTTON)
+    const output = await Wbs.waitAndRunScript(
+      'w3m-modal',
+      WebScripts.GET_WC_URI
+    )
     console.log(`QR URI - ${output}`)
     return output
   }
 
   async getQrUri() {
-    await delay(2000)
-    if (device.getPlatform() === 'android') {
-      await this.wb
-        .element(by.web.tag('wcm-modal'))
-        .runScript(function (element) {
-          element.shadowRoot
-            .querySelector('wcm-modal-router')
-            .shadowRoot.querySelector('wcm-connect-wallet-view')
-            .shadowRoot.querySelector('wcm-android-wallet-selection')
-            .shadowRoot.querySelector('wcm-modal-header')
-            .shadowRoot.querySelector('button')
-            .click()
-        })
+    if (Actions.platform() === 'ios') {
+      await Wbs.waitAndRunScript('wcm-modal', WebScripts.CLICK_WCM_IOS_MODAL)
     } else {
-      await this.wb
-        .element(by.web.tag('wcm-modal'))
-        .runScript(function (element) {
-          element.shadowRoot
-            .querySelector('wcm-modal-router')
-            .shadowRoot.querySelector('wcm-connect-wallet-view')
-            .shadowRoot.querySelector('wcm-mobile-wallet-selection')
-            .shadowRoot.querySelector('wcm-modal-header')
-            .shadowRoot.querySelector('button')
-            .click()
-        })
+      await Wbs.waitAndRunScript(
+        'wcm-modal',
+        WebScripts.CLICK_WCM_ANDROID_MODAL
+      )
     }
-    await delay(2000)
-    const output = await this.wb
-      .element(by.web.tag('wcm-modal'))
-      .runScript(function (element) {
-        return element.shadowRoot
-          .querySelector('wcm-modal-router')
-          .shadowRoot.querySelector('wcm-qrcode-view')
-          .shadowRoot.querySelector('wcm-walletconnect-qr')
-          .shadowRoot.querySelector('wcm-qrcode')
-          .getAttribute('uri')
-      })
+    const output = await Wbs.waitAndRunScript(
+      'wcm-modal',
+      WebScripts.GET_WCM_URI
+    )
     console.log(`QR URI - ${output}`)
     return output
   }
 
   async dismissConnectWalletModal() {
-    await delay(5000)
-    if (device.getPlatform() === 'android') {
+    await Actions.waitForElementNoSync(this.iUnderstandBtn, 8000)
+    if (Actions.platform() === 'android') {
       await device.pressBack()
     } else {
-      await Actions.waitForElement(by.id('warning_modal__i_understand_button'))
-      await Actions.tap(by.id('warning_modal__i_understand_button'))
+      await Actions.tap(this.iUnderstandBtn)
     }
-    await delay(2000)
+    await Actions.waitForElementNotVisible(this.iUnderstandBtn, 5000)
   }
 
   async connectTo(
@@ -224,70 +158,53 @@ class BrowserPage {
   }
 
   async tapSend() {
-    await this.wb.element(by.web.xpath('//button[text()="Send"]')).tap()
+    await Wbs.tapByText('Send')
   }
 
   async enterRpcCall(rpcCall: string) {
-    await delay(1000)
-    await this.wb
-      .element(by.web.xpath('//input[@placeholder="Select a method..."]'))
-      .tap()
-    const currDropdown = `//li[contains(@id, "option")]/span[contains(., "${rpcCall}")]`
-    await this.wb.element(by.web.xpath(currDropdown)).scrollToView()
-    await this.wb.element(by.web.xpath(currDropdown)).tap()
-    try {
-      await element(by.text('Done')).tap()
-    } catch (e) {
-      console.log('The done button is not displayed')
+    await Wbs.waitForEleByXpathToBeVisible(
+      '//input[@placeholder="Select a method..."]'
+    )
+    await Wbs.tapByXpath('//input[@placeholder="Select a method..."]')
+    const dropdownOption = `//li[contains(@id, "option")]/span[contains(., "${rpcCall}")]`
+    await Wbs.scrollToXpath(dropdownOption)
+    await Wbs.tapByXpath(dropdownOption)
+    await this.dismissiOSKeyboard()
+  }
+
+  async dismissiOSKeyboard() {
+    if (Actions.platform() === 'ios') {
+      try {
+        await element(by.text('Done')).tap()
+      } catch (e) {
+        console.log('The done button is not displayed')
+      }
     }
   }
 
   async goToRpcCallPage() {
-    await this.wb
-      .element(by.web.xpath('//*[text()="RPC Calls"]'))
-      .scrollToView()
-    await this.wb.element(by.web.xpath('//*[text()="Home"]')).tap()
-    await this.wb.element(by.web.xpath('//*[text()="RPC Calls"]')).tap()
+    await Wbs.scrollToText('RPC Calls')
+    await Wbs.tapByText('Home')
+    await Wbs.tapByText('RPC Calls')
   }
 
   async sendRpcCall(rpcCall: string) {
     await bottomTabsPage.tapBrowserTab()
-    await delay(2000)
     await this.goToRpcCallPage()
     await this.enterRpcCall(rpcCall)
     await this.tapSend()
-    await delay(2000)
   }
 
   async verifyResponseReceived(additionalText?: string) {
-    try {
-      await detox
-        .expect(this.wb.element(by.web.xpath('//*[contains(., "Error:")]')))
-        .toExist()
-      console.log('Error received on WebView, not mobile side error')
-    } catch (e) {
-      await detox
-        .expect(this.wb.element(by.web.xpath('//*[contains(., "Response:")]')))
-        .toExist()
-      if (additionalText) {
-        await detox
-          .expect(
-            this.wb.element(
-              by.web.xpath(`//*[contains(., "${additionalText}")]`)
-            )
-          )
-          .toExist()
-      }
-      console.log('Successful response received!')
+    await Wbs.waitForEleByTextToBeVisible('Response: ')
+    if (additionalText) {
+      await Wbs.waitForEleByTextToBeVisible(additionalText)
     }
+    console.log('Successful response received!')
   }
 
   async verifyErrorReceived(errorMessage = 'Error:') {
-    await detox
-      .expect(
-        this.wb.element(by.web.xpath(`//*[contains(., "${errorMessage}")]`))
-      )
-      .toExist()
+    await Wbs.isTextVisible(errorMessage)
   }
 }
 

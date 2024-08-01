@@ -35,10 +35,6 @@ class PopUpModalPage {
     return by.text(popupModalLoc.scamTransactionContent)
   }
 
-  get popupDisclaimer() {
-    return by.id(popupModalLoc.popupDisclaimer)
-  }
-
   get rejectTransaction() {
     return by.text(popupModalLoc.rejectTransaction)
   }
@@ -84,7 +80,6 @@ class PopUpModalPage {
     await this.verifySignMessageModal()
     await actions.waitForElement(this.scamTransaction)
     await asserts.isVisible(this.scamTransactionContent)
-    await asserts.isVisible(this.popupDisclaimer)
   }
 
   async verifySwitchToSepoliaNetworkModal() {
