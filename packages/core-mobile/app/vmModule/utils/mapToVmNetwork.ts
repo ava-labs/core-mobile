@@ -1,4 +1,4 @@
-import { Network as ChainsSDKNetwork } from '@avalabs/chains-sdk'
+import { Network as ChainsSDKNetwork } from '@avalabs/core-chains-sdk'
 import { Network as VmModuleNetwork } from '@avalabs/vm-module-types'
 
 export const mapToVmNetwork = (network: ChainsSDKNetwork): VmModuleNetwork => ({

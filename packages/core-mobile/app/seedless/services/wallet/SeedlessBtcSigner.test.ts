@@ -11,7 +11,7 @@ const MOCK_BUFFER = [
   156, 139, 78, 31, 61, 125, 123, 110, 42, 156, 139, 78
 ]
 
-jest.mock('@avalabs/wallets-sdk', () => ({
+jest.mock('@avalabs/core-wallets-sdk', () => ({
   getBtcAddressFromPubKey: jest.fn(() => 'testAddress')
 }))
 

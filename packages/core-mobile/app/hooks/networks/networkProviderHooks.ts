@@ -1,4 +1,7 @@
-import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import {
+  BitcoinProvider,
+  JsonRpcBatchInternal
+} from '@avalabs/core-wallets-sdk'
 import { useMemo } from 'react'
 import {
   getAvalancheProvider,

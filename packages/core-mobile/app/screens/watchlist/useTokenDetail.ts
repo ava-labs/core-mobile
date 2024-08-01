@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   selectIsWatchlistFavorite,

@@ -10,7 +10,7 @@ import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { WalletType } from 'services/wallet/types'
 import WalletSDK from 'utils/WalletSDK'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { DEFERRED_RESULT } from '../types'
 
 jest.mock('react-native-quick-crypto', () => {

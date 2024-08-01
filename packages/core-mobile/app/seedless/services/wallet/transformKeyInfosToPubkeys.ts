@@ -1,5 +1,5 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
-import { strip0x } from '@avalabs/utils-sdk'
+import { strip0x } from '@avalabs/core-utils-sdk'
 import { PubKeyType } from 'services/wallet/types'
 
 export const transformKeyInfosToPubKeys = (

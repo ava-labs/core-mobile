@@ -1,9 +1,9 @@
 import React from 'react'
 import EditFees from 'components/EditFees'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { Sheet } from 'components/Sheet'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
 

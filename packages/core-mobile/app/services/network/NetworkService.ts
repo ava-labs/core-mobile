@@ -2,7 +2,7 @@ import {
   Avalanche,
   BitcoinProvider,
   JsonRpcBatchInternal
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import {
   AVALANCHE_XP_NETWORK,
   AVALANCHE_XP_TEST_NETWORK,
@@ -11,7 +11,7 @@ import {
   ChainId,
   Network,
   NetworkVMType
-} from '@avalabs/chains-sdk'
+} from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'

@@ -1,4 +1,4 @@
-import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/core-chains-sdk'
 import { isBitcoinChainId } from './isBitcoinNetwork'
 
 it('should return true for Bitcoin main network', () => {

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 
 const networkVMTypeSchema = z.nativeEnum(NetworkVMType)
 

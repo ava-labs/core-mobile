@@ -22,14 +22,12 @@ This repository is a monorepo that we manage using [Yarn workspaces](https://yar
 
 1. Clone the repo
 2. Install yarn globally (if you don't have yarn yet)
+
    ```
    brew install yarn
    ```
-3. Set up `$NPM_TOKEN`
 
-   To install all dependencies, you will need to generate an `NPM token` from your NPM.js account and add that as an environment variable named `NPM_TOKEN` on your machine (for example, `.zshenv` if using zsh or `.bash_profile` if not).
-
-4. Install dependencies for all packages
+3. Install dependencies for all packages
 
    In the root directory, run:
 
@@ -37,7 +35,7 @@ This repository is a monorepo that we manage using [Yarn workspaces](https://yar
    yarn install && yarn setup
    ```
 
-5. Follow the specific instructions in each package to build/run it
+4. Follow the specific instructions in each package to build/run it
 
 ## 📖 Tips
 

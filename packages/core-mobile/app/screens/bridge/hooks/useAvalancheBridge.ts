@@ -1,4 +1,4 @@
-import { BIG_ZERO, Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
+import { BIG_ZERO, Blockchain, useBridgeSDK } from '@avalabs/core-bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useMemo } from 'react'
@@ -9,7 +9,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { useTransferAssetEVM } from './useTransferAssetEVM'
 
 /**

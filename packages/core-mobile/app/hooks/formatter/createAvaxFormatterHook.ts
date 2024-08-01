@@ -1,5 +1,5 @@
-import { ChainId } from '@avalabs/chains-sdk'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'

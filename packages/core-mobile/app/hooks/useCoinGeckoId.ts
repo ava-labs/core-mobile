@@ -1,4 +1,4 @@
-import { useTokenInfoContext } from '@avalabs/bridge-sdk'
+import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 
 const KNOWN_IDS: { [key: string]: string } = {
   BTC: 'bitcoin',

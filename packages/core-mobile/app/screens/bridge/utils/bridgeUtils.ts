@@ -3,10 +3,10 @@ import {
   BridgeTransaction,
   CriticalConfig,
   getNativeSymbol
-} from '@avalabs/bridge-sdk'
-import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
+} from '@avalabs/core-bridge-sdk'
+import { BitcoinHistoryTx } from '@avalabs/core-wallets-sdk'
 import { Transaction } from 'store/transaction'
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { Networks } from 'store/network'
 import { BridgeAsset, BridgeTransfer, Chain } from '@avalabs/bridge-unified'

@@ -1,5 +1,5 @@
-import { resolve } from '@avalabs/utils-sdk'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { resolve } from '@avalabs/core-utils-sdk'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import BN from 'bn.js'
 import { isAddress, TransactionRequest } from 'ethers'
 import {
@@ -9,7 +9,7 @@ import {
   SendState,
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import {

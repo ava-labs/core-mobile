@@ -1,4 +1,4 @@
-import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { createTransform } from 'redux-persist'
 import Big from 'big.js'
 import { RawRootState } from 'store'

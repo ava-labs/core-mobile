@@ -1,9 +1,11 @@
 import React from 'react'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 
 export default {
   title: 'JailbrokenWarning'
 }
 
-export const Default = () => <JailbrokenWarning onOK={noop} />
+export const Default = (): React.JSX.Element => (
+  <JailbrokenWarning onOK={noop} />
+)

@@ -1,4 +1,4 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { Networks } from 'store/network/types'
 import { CORE_ONLY_METHODS, RpcMethod } from 'store/rpc/types'

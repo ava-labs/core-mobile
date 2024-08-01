@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
 import Big from 'big.js'
 import BN from 'bn.js'
-import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
+import { bigToBN, bnToBig } from '@avalabs/core-utils-sdk'
 
 interface BNInputProps extends Omit<InputTextProps, 'text'> {
   value?: BN

@@ -1,4 +1,4 @@
-import { Network, ChainId } from '@avalabs/chains-sdk'
+import { Network, ChainId } from '@avalabs/core-chains-sdk'
 
 export function isEthereumNetwork(network: Network): boolean {
   return isEthereumChainId(network.chainId)

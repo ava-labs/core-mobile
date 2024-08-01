@@ -10,7 +10,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 import { View, Text, Button } from '@avalabs/k2-mobile'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
-import { hexToBN } from '@avalabs/utils-sdk'
+import { hexToBN } from '@avalabs/core-utils-sdk'
 
 const EditSpendLimit = (): JSX.Element | null => {
   const { spendLimit, onClose, updateSpendLimit, dAppName, editingToken } =

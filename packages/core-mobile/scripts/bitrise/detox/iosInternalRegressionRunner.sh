@@ -7,7 +7,10 @@ yarn start &
 
 npm rebuild detox
 
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.regression.ci --headless --detectOpenHandles --loglevel trace; test_result=$?
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.regression.ci --headless --detectOpenHandles; test_result=$?
+
+npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
+
 
 if ((test_result != 0)); then
   exit 1

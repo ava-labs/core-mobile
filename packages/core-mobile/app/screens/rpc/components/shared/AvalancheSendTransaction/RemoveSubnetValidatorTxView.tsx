@@ -8,7 +8,7 @@ import { Text } from '@avalabs/k2-mobile'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import AvaButton from 'components/AvaButton'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TxFee } from './components/TxFee'
 
 type RemoveSubnetValidatorTx = Pick<

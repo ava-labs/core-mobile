@@ -44,7 +44,7 @@ supports promise out of the box
 
 ### "@hpke/core": "1.2.7"
 
-@avalabs/utils-sdk depends on @hpke/core 1.2.5 while core mobile depends on 1.2.7. we need to force it to 1.2.7 so that we can apply the same patch to @hpke/core.
+@avalabs/core-utils-sdk depends on @hpke/core 1.2.5 while core mobile depends on 1.2.7. we need to force it to 1.2.7 so that we can apply the same patch to @hpke/core.
 
 ### "@noble/secp256k1": "2.0.0"
 

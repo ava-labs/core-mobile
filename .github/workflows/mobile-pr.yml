@@ -15,8 +15,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Check out repo

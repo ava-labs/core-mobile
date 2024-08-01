@@ -1,5 +1,5 @@
 import Big from 'big.js'
-import { bigToBN, bnToBig, stringToBN } from '@avalabs/utils-sdk'
+import { bigToBN, bnToBig, stringToBN } from '@avalabs/core-utils-sdk'
 import { APIError } from 'paraswap'
 import BN from 'bn.js'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'

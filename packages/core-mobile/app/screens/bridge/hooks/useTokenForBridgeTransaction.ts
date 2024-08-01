@@ -1,6 +1,10 @@
-import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
+import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BITCOIN_NETWORK, ChainId, NetworkToken } from '@avalabs/chains-sdk'
+import {
+  BITCOIN_NETWORK,
+  ChainId,
+  NetworkToken
+} from '@avalabs/core-chains-sdk'
 import { NetworkContractToken } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'

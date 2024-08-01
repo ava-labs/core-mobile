@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { Transaction } from '@sentry/types'
 import {
   NetworkContractToken,
