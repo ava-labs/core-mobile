@@ -1,4 +1,4 @@
-import { strip0x } from '@avalabs/utils-sdk'
+import { strip0x } from '@avalabs/core-utils-sdk'
 import {
   BitcoinInputUTXO,
   getBtcAddressFromPubKey

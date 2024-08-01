@@ -9,7 +9,7 @@ import ClaimRewards from 'screens/earn/ClaimRewards'
 import { FeeUnavailableModal } from 'screens/earn/FeeUnavailableModal'
 import { EarnNotificationsModal } from 'screens/earn/EarnNotificationsModal'
 import * as Navigation from 'utils/Navigation'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList

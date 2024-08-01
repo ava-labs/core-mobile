@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
 import { getAvalancheNetwork } from 'services/network/utils/providerUtils'

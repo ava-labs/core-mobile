@@ -11,7 +11,7 @@ import {
   ChainId,
   Network,
   NetworkVMType
-} from '@avalabs/chains-sdk'
+} from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'

@@ -1,4 +1,4 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { VmModuleErrors } from './errors'
 

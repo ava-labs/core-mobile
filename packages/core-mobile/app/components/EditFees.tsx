@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import {
   Button,

@@ -4,7 +4,7 @@ import {
   ChainId,
   Network,
   NetworkVMType
-} from '@avalabs/chains-sdk'
+} from '@avalabs/core-chains-sdk'
 import {
   BitcoinProvider,
   JsonRpcBatchInternal

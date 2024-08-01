@@ -32,7 +32,7 @@ import {
   bigToLocaleString,
   bnToBig,
   resolve
-} from '@avalabs/utils-sdk'
+} from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'

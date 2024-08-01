@@ -1,5 +1,5 @@
 import Big from 'big.js'
-import { BIG_ZERO, bigToBigInt, bigintToBig } from '@avalabs/utils-sdk'
+import { BIG_ZERO, bigToBigInt, bigintToBig } from '@avalabs/core-utils-sdk'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
 import { useDispatch, useSelector } from 'react-redux'

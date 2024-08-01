@@ -8,13 +8,13 @@ import {
   SimplePriceParams,
   simpleTokenPrice,
   VsCurrencyType
-} from '@avalabs/coingecko-sdk'
+} from '@avalabs/core-coingecko-sdk'
 import { ethers } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist/types'
 import xss from 'xss'

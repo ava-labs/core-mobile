@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { AddEthereumChainParameter } from '@avalabs/bridge-sdk'
 import { intToHex } from 'ethereumjs-util'
 

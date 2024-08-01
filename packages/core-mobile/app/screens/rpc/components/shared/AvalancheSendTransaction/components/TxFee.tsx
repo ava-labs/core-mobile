@@ -1,5 +1,5 @@
 import React from 'react'
-import { bigIntToString } from '@avalabs/utils-sdk'
+import { bigIntToString } from '@avalabs/core-utils-sdk'
 import Card from 'components/Card'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'

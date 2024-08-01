@@ -4,7 +4,7 @@ import WalletService from 'services/wallet/WalletService'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importC } from 'services/earn/importC'
-import { AVALANCHE_XP_NETWORK } from '@avalabs/chains-sdk'
+import { AVALANCHE_XP_NETWORK } from '@avalabs/core-chains-sdk'
 import { Avax } from 'types/Avax'
 
 describe('earn/importC', () => {

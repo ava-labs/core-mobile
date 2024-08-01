@@ -10,7 +10,7 @@ import React, {
   useState
 } from 'react'
 import { useSelector } from 'react-redux'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'

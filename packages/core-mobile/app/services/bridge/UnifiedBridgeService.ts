@@ -9,14 +9,14 @@ import {
   TokenType,
   Signer
 } from '@avalabs/bridge-unified'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { chainIdToCaip } from 'utils/data/caip'
 import { Account } from 'store/account/types'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { bigToBigInt, noop } from '@avalabs/utils-sdk'
+import { bigToBigInt, noop } from '@avalabs/core-utils-sdk'
 import { isUnifiedBridgeAsset } from 'screens/bridge/utils/bridgeUtils'
 import { Asset } from '@avalabs/core-bridge-sdk'
 import Big from 'big.js'

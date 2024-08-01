@@ -1,4 +1,4 @@
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {
@@ -7,7 +7,7 @@ import {
   PubKeyType,
   Wallet
 } from 'services/wallet/types'
-import { strip0x } from '@avalabs/utils-sdk'
+import { strip0x } from '@avalabs/core-utils-sdk'
 import { BytesLike, TransactionRequest, getBytes, hashMessage } from 'ethers'
 import { networks } from 'bitcoinjs-lib'
 import {

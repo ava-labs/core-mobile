@@ -7,7 +7,7 @@ import React, {
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
@@ -18,7 +18,7 @@ import { setActiveAccountIndex } from 'store/account'
 import Logger from 'utils/Logger'
 import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
 import { setActive } from 'store/network'
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {

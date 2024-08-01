@@ -1,7 +1,7 @@
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Linking } from 'react-native'
-import { resolve } from '@avalabs/utils-sdk'
+import { resolve } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import Config from 'react-native-config'

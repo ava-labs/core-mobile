@@ -1,4 +1,4 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'

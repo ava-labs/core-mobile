@@ -18,8 +18,8 @@ import {
 import { avalancheBridgeAssetHandler as handler } from './avalanche_bridgeAsset'
 
 const mockNoop = jest.fn()
-jest.mock('@avalabs/utils-sdk', () => {
-  const actual = jest.requireActual('@avalabs/utils-sdk')
+jest.mock('@avalabs/core-utils-sdk', () => {
+  const actual = jest.requireActual('@avalabs/core-utils-sdk')
   return {
     ...actual,
     noop: mockNoop

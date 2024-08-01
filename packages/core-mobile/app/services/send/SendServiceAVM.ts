@@ -5,7 +5,7 @@ import {
   SendState,
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'

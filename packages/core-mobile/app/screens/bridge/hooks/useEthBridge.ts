@@ -17,7 +17,7 @@ import { useEthereumProvider } from 'hooks/networks/networkProviderHooks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { useTransferAssetEVM } from './useTransferAssetEVM'
 
 /**

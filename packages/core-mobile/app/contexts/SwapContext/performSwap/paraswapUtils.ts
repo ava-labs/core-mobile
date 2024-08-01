@@ -6,7 +6,7 @@ import {
   PriceString,
   Transaction
 } from 'paraswap'
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import Web3 from 'web3'
 import { OptimalRate } from 'paraswap-core'
 
@@ -55,6 +55,7 @@ export async function buildTx({
 }: BuildTxParams): Promise<APIError | Transaction> {
   const query = new URLSearchParams(options as Record<string, string>)
   const txURL = `${
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (paraSwap as any).apiURL
   }/transactions/${network}/?${query.toString()}`
   const txConfig = {
@@ -86,6 +87,7 @@ export async function buildTx({
 
 export async function getParaswapSpender(): Promise<string> {
   const response = await fetch(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     `${(paraSwap as any).apiURL}/adapters/contracts?network=${
       ChainId.AVALANCHE_MAINNET_ID
     }`

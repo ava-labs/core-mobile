@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { ZeroState } from 'screens/defi/components/ZeroState'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { withCenterView } from '../../decorators/withCenterView'
 
 export default {
@@ -9,13 +9,13 @@ export default {
   decorators: [withCenterView]
 }
 
-export const ProtocolList = () => (
+export const ProtocolList = (): React.JSX.Element => (
   <ZeroState
     bodyText="Discover top dApps on Avalanche now."
     onExploreEcosystem={noop}
   />
 )
-export const ProtocolDetails = () => (
+export const ProtocolDetails = (): React.JSX.Element => (
   <ZeroState
     bodyText="No data has been found. Go back to 
 DeFi portfolio."

@@ -16,7 +16,7 @@ import {
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { bigintToBig } from '@avalabs/utils-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 
 interface BridgeTransactionItemProps {
   item: Transaction | BridgeTransaction | BridgeTransfer

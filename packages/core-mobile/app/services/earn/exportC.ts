@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry } from 'utils/js/retry'
