@@ -8,7 +8,6 @@ import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
 import { isBtcAddress } from 'utils/isBtcAddress'
-import { BN } from 'bn.js'
 import SendServiceBTC from 'services/send/SendServiceBTC'
 import { SendState } from 'services/send/types'
 import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
@@ -90,7 +89,7 @@ class BitcoinSendTransactionHandler
 
     const sendState: SendState = {
       address,
-      amount: new BN(amountSatoshi),
+      amount: BigInt(amountSatoshi),
       defaultMaxFeePerGas: BigInt(feeRate)
     }
 

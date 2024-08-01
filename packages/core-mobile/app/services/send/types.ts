@@ -1,4 +1,3 @@
-import BN from 'bn.js'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -13,11 +12,11 @@ export interface SendError {
 }
 
 export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
-  maxAmount?: BN
-  amount?: BN
+  maxAmount?: bigint
+  amount?: bigint
   address?: string
   error?: SendError
-  sendFee?: BN
+  sendFee?: bigint
   defaultMaxFeePerGas?: bigint // should be the lowest network fee
   gasLimit?: number
   canSubmit?: boolean
@@ -51,7 +50,7 @@ export interface SendServiceHelper {
 export type GetTransactionRequestParams = SendServiceFuncParams
 
 export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
-  nativeTokenBalance?: BN // in wei
+  nativeTokenBalance?: bigint // in wei
 }
 
 export type GetPVMTransactionRequestParams = SendServiceFuncParams & {

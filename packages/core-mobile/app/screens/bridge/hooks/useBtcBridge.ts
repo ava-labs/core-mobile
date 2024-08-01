@@ -104,7 +104,7 @@ export function useBtcBridge({
           setBtcBalance({
             symbol: btcAsset.symbol,
             asset: btcAsset,
-            balance: satoshiToBtc(token.balance.toNumber()),
+            balance: satoshiToBtc(Number(token.balance)),
             logoUri: token.logoUri,
             priceInCurrency: token.priceInCurrency
           })
@@ -117,7 +117,7 @@ export function useBtcBridge({
         setBtcBalanceAvalanche({
           symbol: btcAsset.symbol,
           asset: btcAsset,
-          balance: satoshiToBtc(btcAvalancheBalance?.balance?.toNumber() ?? 0),
+          balance: satoshiToBtc(Number(btcAvalancheBalance?.balance ?? 0)),
           logoUri: btcAvalancheBalance?.logoUri,
           priceInCurrency: btcAvalancheBalance?.priceInCurrency
         })

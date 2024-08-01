@@ -126,7 +126,8 @@ const initialState = {
         type: CoreAccountType.PRIMARY,
         walletId: 'walletId0',
         walletType: WalletType.Mnemonic,
-        id: 'id0'
+        id: 'id0',
+        walletName: 'Wallet 1'
       }
     },
     activeAccountIndex: 0

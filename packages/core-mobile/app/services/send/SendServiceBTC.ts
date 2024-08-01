@@ -5,7 +5,6 @@ import {
   createTransferTx,
   getMaxTransferAmount
 } from '@avalabs/core-wallets-sdk'
-import BN from 'bn.js'
 import {
   SendErrorMessage,
   SendServiceHelper,
@@ -48,7 +47,7 @@ class SendServiceBTC implements SendServiceHelper {
         const { inputs, outputs } = createTransferTx(
           toAddress || '',
           fromAddress,
-          amount?.toNumber() || 0,
+          Number(amount ?? 0),
           feeRate || 0,
           utxos,
           provider.getNetwork()
@@ -71,7 +70,7 @@ class SendServiceBTC implements SendServiceHelper {
       .executeAsync(async () => {
         const { amount, address: toAddress, defaultMaxFeePerGas } = sendState
         const feeRate = Number(defaultMaxFeePerGas)
-        const amountInSatoshis = amount?.toNumber() || 0
+        const amountInSatoshis = amount ?? 0n
         const { utxos } = await this.getBalance(
           isMainnet,
           fromAddress,
@@ -90,7 +89,7 @@ class SendServiceBTC implements SendServiceHelper {
 
         // Estimate max send amount based on UTXOs and fee rate
         // Since we are only using bech32 addresses we can use this.address to estimate
-        const maxAmount = new BN(
+        const maxAmount = BigInt(
           Math.max(
             getMaxTransferAmount(utxos, fromAddress, fromAddress, feeRate),
             0
@@ -118,7 +117,7 @@ class SendServiceBTC implements SendServiceHelper {
         const { fee, psbt } = createTransferTx(
           toAddress,
           fromAddress,
-          amountInSatoshis,
+          Number(amountInSatoshis),
           feeRate,
           utxos,
           provider.getNetwork()
@@ -129,7 +128,7 @@ class SendServiceBTC implements SendServiceHelper {
           canSubmit: !!psbt,
           error: undefined,
           maxAmount,
-          sendFee: new BN(fee),
+          sendFee: BigInt(fee),
           // The transaction's byte size is for BTC as gasLimit is for EVM.
           // Bitcoin's formula for fee is `transactionByteLength * feeRate`.
           // Since we know the `fee` and the `feeRate`, we can get the transaction's
@@ -157,7 +156,7 @@ class SendServiceBTC implements SendServiceHelper {
     currency: string,
     sentryTrx?: Transaction
   ): Promise<{
-    balance: number
+    balance: bigint
     utxos: BitcoinInputUTXO[]
   }> {
     const provider = getBitcoinProvider(!isMainnet)
@@ -172,7 +171,7 @@ class SendServiceBTC implements SendServiceHelper {
     const utxosWithScripts = await provider.getScriptsForUtxos(utxos)
 
     return {
-      balance: tokens?.[0]?.balance.toNumber() || 0,
+      balance: tokens?.[0]?.balance || 0n,
       utxos: utxosWithScripts
     }
   }

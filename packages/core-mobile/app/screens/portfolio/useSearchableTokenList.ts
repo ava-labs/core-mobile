@@ -8,15 +8,12 @@ import {
 import { LocalTokenId, LocalTokenWithBalance } from 'store/balance/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenBlacklist } from 'store/portfolio'
-import BN from 'bn.js'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getLocalTokenId } from 'store/balance/utils'
 
-const bnZero = new BN(0)
-
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
-  token.balance?.gt(bnZero)
+  token.balance > 0n
 
 const isNotBlacklisted =
   (tokenBlacklist: string[]) => (token: LocalTokenWithBalance) =>
@@ -50,7 +47,7 @@ export function useSearchableTokenList(
         return {
           ...token,
           localId: getLocalTokenId(token),
-          balance: new BN(0),
+          balance: 0n,
           balanceInCurrency: 0,
           balanceDisplayValue: '0',
           balanceCurrencyDisplayValue: '0',

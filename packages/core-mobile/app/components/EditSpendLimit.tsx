@@ -10,7 +10,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 import { View, Text, Button } from '@avalabs/k2-mobile'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
-import { hexToBN } from '@avalabs/core-utils-sdk'
+import { hexToBigInt } from 'viem'
 
 const EditSpendLimit = (): JSX.Element | null => {
   const { spendLimit, onClose, updateSpendLimit, dAppName, editingToken } =
@@ -70,7 +70,7 @@ const EditSpendLimit = (): JSX.Element | null => {
               Default
             </Text>
             <BNInput
-              value={hexToBN(editingToken.defaultValue)}
+              value={hexToBigInt(editingToken.defaultValue)}
               denomination={editingToken.decimals}
               editable={false}
               selectTextOnFocus={false}

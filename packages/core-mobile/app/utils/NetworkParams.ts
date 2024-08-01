@@ -1,20 +1,10 @@
-import BN from 'bn.js'
-
-//TODO: convert to bigint
-const NanoAvax = new BN(1)
-const MicroAvax = NanoAvax.muln(1000)
-// const Schmeckle = MicroAvax.muln(49).add(NanoAvax.muln(463))
-const MilliAvax = MicroAvax.muln(1000)
-export const Avax = MilliAvax.muln(1000)
-const KiloAvax = Avax.muln(1000)
-export const MegaAvax = KiloAvax.muln(1000)
-
-export const NANO_AVAX_DENOMINATION = 9
-export const MICRO_AVAX_DENOMINATION = 12
-export const MILLI_AVAX_DENOMINATION = 15
-export const AVAX_DENOMINATION = 18
-export const KILO_AVAX_DENOMINATION = 21
-export const MEGA_AVAX_DENOMINATION = 24
+const NanoAvax = 1n
+const MicroAvax = NanoAvax * 1000n
+// const Schmeckle = MicroAvax * 49n + NanoAvax * 463n
+const MilliAvax = MicroAvax * 1000n
+export const Avax = MilliAvax * 1000n
+const KiloAvax = Avax * 1000n
+export const MegaAvax = KiloAvax * 1000n
 
 export const Hour = 3600
 
@@ -24,50 +14,50 @@ type RewardConfig = {
   //MintingPeriod in seconds
   MintingPeriod: number
   //SupplyCap in nAVAX
-  SupplyCap: BN
+  SupplyCap: bigint
 }
 export type StakingConfig = {
   // Staking uptime requirements
   UptimeRequirement: number
   // Minimum stake, in nAVAX, required to validate the primary network
-  MinValidatorStake: BN
+  MinValidatorStake: bigint
   // Maximum stake, in nAVAX, allowed to be placed on a single validator in
   // the primary network
-  MaxValidatorStake: BN
+  MaxValidatorStake: bigint
   // Minimum stake, in nAVAX, that can be delegated on the primary network
-  MinDelegatorStake: BN
+  MinDelegatorStake: bigint
   // Minimum delegation fee, in the range [0, 1000000], that can be charged
   // for delegation on the primary network.
-  MinDelegationFee: BN
+  MinDelegationFee: bigint
   // MinStakeDuration is the minimum amount of time a validator can validate
   // for in a single period.
   MinStakeDuration: number
   // MaxStakeDuration is the maximum amount of time a validator can validate
   // for in a single period.
-  MaxStakeDuration: BN
+  MaxStakeDuration: bigint
   // RewardConfig is the config for the reward function.
   RewardConfig: RewardConfig
 }
 
 type TxFeeConfig = {
   // Transaction fee
-  TxFee: BN
+  TxFee: bigint
   // Transaction fee for create asset transactions
-  CreateAssetTxFee: BN
+  CreateAssetTxFee: bigint
   // Transaction fee for create subnet transactions
-  CreateSubnetTxFee: BN
+  CreateSubnetTxFee: bigint
   // Transaction fee for transform subnet transactions
-  TransformSubnetTxFee: BN
+  TransformSubnetTxFee: bigint
   // Transaction fee for create blockchain transactions
-  CreateBlockchainTxFee: BN
+  CreateBlockchainTxFee: bigint
   // Transaction fee for adding a primary network validator
-  AddPrimaryNetworkValidatorFee: BN
+  AddPrimaryNetworkValidatorFee: bigint
   // Transaction fee for adding a primary network delegator
-  AddPrimaryNetworkDelegatorFee: BN
+  AddPrimaryNetworkDelegatorFee: bigint
   // Transaction fee for adding a subnet validator
-  AddSubnetValidatorFee: BN
+  AddSubnetValidatorFee: bigint
   // Transaction fee for adding a subnet delegator
-  AddSubnetDelegatorFee: BN
+  AddSubnetDelegatorFee: bigint
 }
 
 type Params = {
@@ -78,28 +68,28 @@ type Params = {
 export const MainnetParams = {
   txFeeConfig: {
     TxFee: MilliAvax,
-    CreateAssetTxFee: MilliAvax.muln(10),
-    CreateSubnetTxFee: Avax.muln(1),
-    TransformSubnetTxFee: Avax.muln(10),
+    CreateAssetTxFee: MilliAvax * 10n,
+    CreateSubnetTxFee: Avax,
+    TransformSubnetTxFee: Avax * 10n,
     CreateBlockchainTxFee: Avax,
-    AddPrimaryNetworkValidatorFee: new BN(0),
-    AddPrimaryNetworkDelegatorFee: new BN(0),
+    AddPrimaryNetworkValidatorFee: 0n,
+    AddPrimaryNetworkDelegatorFee: 0n,
     AddSubnetValidatorFee: MilliAvax,
     AddSubnetDelegatorFee: MilliAvax
   } as TxFeeConfig,
   stakingConfig: {
     UptimeRequirement: 0.8, // 80%
-    MinValidatorStake: KiloAvax.muln(2),
-    MaxValidatorStake: MegaAvax.muln(3),
-    MinDelegatorStake: Avax.muln(25),
-    MinDelegationFee: new BN(20000), // 2%
+    MinValidatorStake: KiloAvax * 2n,
+    MaxValidatorStake: MegaAvax * 3n,
+    MinDelegatorStake: Avax * 25n,
+    MinDelegationFee: 20000n, // 2%
     MinStakeDuration: 2 * 7 * 24 * Hour,
-    MaxStakeDuration: new BN(31536000),
+    MaxStakeDuration: 31536000n,
     RewardConfig: {
       MaxConsumptionRate: 0.12,
       MinConsumptionRate: 0.1,
       MintingPeriod: 365 * 24 * Hour,
-      SupplyCap: MegaAvax.muln(720)
+      SupplyCap: MegaAvax * 720n
     } as RewardConfig
   } as StakingConfig
 } as Params
@@ -108,28 +98,28 @@ export const MainnetParams = {
 export const FujiParams = {
   txFeeConfig: {
     TxFee: MilliAvax,
-    CreateAssetTxFee: MilliAvax.muln(10),
-    CreateSubnetTxFee: MilliAvax.muln(100),
+    CreateAssetTxFee: MilliAvax * 10n,
+    CreateSubnetTxFee: MilliAvax * 100n,
     TransformSubnetTxFee: Avax,
-    CreateBlockchainTxFee: MilliAvax.muln(100),
-    AddPrimaryNetworkValidatorFee: new BN(0),
-    AddPrimaryNetworkDelegatorFee: new BN(0),
+    CreateBlockchainTxFee: MilliAvax * 100n,
+    AddPrimaryNetworkValidatorFee: 0n,
+    AddPrimaryNetworkDelegatorFee: 0n,
     AddSubnetValidatorFee: MilliAvax,
     AddSubnetDelegatorFee: MilliAvax
   } as TxFeeConfig,
   stakingConfig: {
     UptimeRequirement: 0.8, // 80%
     MinValidatorStake: Avax,
-    MaxValidatorStake: MegaAvax.muln(3),
+    MaxValidatorStake: MegaAvax * 3n,
     MinDelegatorStake: Avax,
-    MinDelegationFee: new BN(20000), // 2%
+    MinDelegationFee: 20000n, // 2%
     MinStakeDuration: 24 * Hour,
-    MaxStakeDuration: new BN(31536000),
+    MaxStakeDuration: 31536000n,
     RewardConfig: {
       MaxConsumptionRate: 0.12,
       MinConsumptionRate: 0.1,
       MintingPeriod: 365 * 24 * Hour,
-      SupplyCap: MegaAvax.muln(720)
+      SupplyCap: MegaAvax * 720n
     } as RewardConfig
   } as StakingConfig
 } as Params
