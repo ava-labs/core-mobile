@@ -38,10 +38,7 @@ describe('Connect to dApp using WalletConnect', () => {
     await popUpModalPage.tapApproveBtn()
     await browserPage.verifyResponseReceived()
     await bottomTabsPage.tapPortfolioTab()
-    await actions.waitForElement(
-      popUpModalPage.successfulToastMsg,
-      10000
-    )
+    await actions.waitForElement(popUpModalPage.successfulToastMsg, 10000)
     await actions.waitForElementNotVisible(
       popUpModalPage.successfulToastMsg,
       10000

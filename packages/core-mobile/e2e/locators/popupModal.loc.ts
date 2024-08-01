@@ -12,7 +12,7 @@ export default {
   successfulToastMsg: 'Transaction Successful',
   network: 'Network:',
   transactionDetails: 'Transaction Details',
-  feeAmount: 'Fee Amount', 
+  feeAmount: 'Fee Amount',
   signMessage: 'Sign Message',
   messageTitle: 'Message:',
   scamTransaction: 'Scam Transaction',

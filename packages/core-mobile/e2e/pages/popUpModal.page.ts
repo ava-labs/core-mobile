@@ -58,7 +58,7 @@ class PopUpModalPage {
   get feeAmount() {
     return by.text(popUpModalLoc.feeAmount)
   }
-  
+
   get signMessage() {
     return by.text(popUpModalLoc.signMessage)
   }

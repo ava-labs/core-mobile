@@ -33,10 +33,7 @@ describe('Send Avax to another account', () => {
   })
 
   it('Should verify NFT transaction toast', async () => {
-    await Actions.waitForElement(
-      popUpModalPage.successfulToastMsg,
-      120000
-    )
+    await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
     await Actions.waitForElementNotVisible(
       popUpModalPage.successfulToastMsg,
       30000
