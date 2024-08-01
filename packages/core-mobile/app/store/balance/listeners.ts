@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService, {
   BalancesForAccount

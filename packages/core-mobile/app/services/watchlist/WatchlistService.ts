@@ -1,4 +1,4 @@
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 import {
   SimplePriceResponse,

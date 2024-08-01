@@ -1,5 +1,5 @@
-import { CriticalConfig } from '@avalabs/bridge-sdk'
-import { Network } from '@avalabs/chains-sdk'
+import { CriticalConfig } from '@avalabs/core-bridge-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   PChainTransactionType,
   XChainTransactionType

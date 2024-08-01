@@ -8,7 +8,7 @@ import { truncateAddress } from 'utils/Utils'
 import AvaButton from 'components/AvaButton'
 import { noop } from 'rxjs'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
-import { isBech32Address } from '@avalabs/bridge-sdk'
+import { isBech32Address } from '@avalabs/core-bridge-sdk'
 import { isAddress } from 'ethers'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 

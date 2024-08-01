@@ -1,5 +1,5 @@
 import { NativeTokenBalance } from '@avalabs/glacier-sdk'
-import { TokenUnit } from '@avalabs/utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   TokenType,
   type NetworkTokenWithBalance

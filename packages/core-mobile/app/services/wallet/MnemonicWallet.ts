@@ -9,7 +9,7 @@ import {
   getBech32AddressFromXPub,
   getWalletFromMnemonic,
   getAddressDerivationPath
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
@@ -18,7 +18,7 @@ import {
   Wallet
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { networks } from 'bitcoinjs-lib'
 import {
   personalSign,

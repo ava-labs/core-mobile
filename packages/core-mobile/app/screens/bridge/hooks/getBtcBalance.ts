@@ -1,5 +1,5 @@
 import balanceService from 'services/balance/BalanceService'
-import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/core-chains-sdk'
 import type { TokenWithBalanceBTC } from '@avalabs/vm-module-types'
 
 export async function getBtcBalance(

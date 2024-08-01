@@ -1,6 +1,6 @@
 import { defaultChartData } from 'store/watchlist'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
 import {
   ChartData,

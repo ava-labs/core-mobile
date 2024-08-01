@@ -8,7 +8,7 @@ import {
 } from 'store/network'
 import { useCallback, useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { type Network } from '@avalabs/chains-sdk'
+import { type Network } from '@avalabs/core-chains-sdk'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { useGetNetworks } from './useGetNetworks'
 

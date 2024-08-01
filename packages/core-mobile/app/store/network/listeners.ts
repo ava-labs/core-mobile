@@ -1,4 +1,4 @@
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { AppListenerEffectAPI } from 'store'
 import { onAppUnlocked } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'

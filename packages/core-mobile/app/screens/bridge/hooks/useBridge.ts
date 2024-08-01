@@ -4,9 +4,9 @@ import {
   useBridgeSDK,
   useMinimumTransferAmount,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { useEffect, useMemo, useState } from 'react'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useBtcBridge } from 'screens/bridge/hooks/useBtcBridge'
 import { useEthBridge } from 'screens/bridge/hooks/useEthBridge'
 import { useAvalancheBridge } from 'screens/bridge/hooks/useAvalancheBridge'
@@ -15,7 +15,7 @@ import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectActiveAccount } from 'store/account'
-import { BIG_ZERO, bigToBigInt } from '@avalabs/utils-sdk'
+import { BIG_ZERO, bigToBigInt } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import BridgeService from 'services/bridge/BridgeService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'

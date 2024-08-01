@@ -13,7 +13,7 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import { calculateRate } from 'swap/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Amount } from 'types'
-import { bigIntToString } from '@avalabs/utils-sdk'
+import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { SwapScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'

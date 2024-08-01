@@ -1,6 +1,6 @@
 import { Image } from 'react-native'
 import { NFTItemExternalData, NFTImageData } from 'store/nft'
-import { HttpClient } from '@avalabs/utils-sdk'
+import { HttpClient } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { convertIPFSResolver } from './utils'
 

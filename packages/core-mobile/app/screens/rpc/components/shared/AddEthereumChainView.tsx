@@ -12,7 +12,7 @@ import {
 } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import RpcRequestBottomSheet from './RpcRequestBottomSheet'
 
 type Props = {

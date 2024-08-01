@@ -5,9 +5,9 @@ import {
   BitcoinOutputUTXO,
   BitcoinProvider,
   JsonRpcBatchInternal
-} from '@avalabs/wallets-sdk'
+} from '@avalabs/core-wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Avax } from 'types/Avax'
 import { RpcMethod } from 'store/rpc/types'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'

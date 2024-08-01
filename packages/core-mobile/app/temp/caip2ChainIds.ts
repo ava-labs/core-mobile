@@ -1,5 +1,5 @@
 import { JsonMap } from 'store/posthog'
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 
 /**
  * In the process of switching to CAIP2 naming convention for blockchain ids we are temporarily modifying Posthog

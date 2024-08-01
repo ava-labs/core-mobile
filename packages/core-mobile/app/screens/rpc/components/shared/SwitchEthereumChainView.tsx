@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 import Avatar from 'components/Avatar'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import SimplePrompt from '../shared/SimplePrompt'
 
 interface Props {
@@ -26,7 +26,7 @@ export const SwitchEthereumChainView: FC<Props> = ({
     new URL(dappUrl).hostname
   } is requesting to switch your active network to ${network.chainName}`
 
-  const renderIcon = () => (
+  const renderIcon = (): React.JSX.Element => (
     <Avatar.Custom name={dappName} size={48} logoUri={dappLogo} />
   )
 

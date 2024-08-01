@@ -4,11 +4,11 @@ import {
   SendState,
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { utils } from '@avalabs/avalanchejs'
 import { getInternalExternalAddrs } from 'services/send/utils'
 import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'

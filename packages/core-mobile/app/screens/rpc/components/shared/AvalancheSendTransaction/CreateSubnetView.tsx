@@ -5,7 +5,7 @@ import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
-import { Avalanche } from '@avalabs/wallets-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TxFee } from './components/TxFee'
 
 const CreateSubnetTxView = ({

@@ -1,4 +1,4 @@
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   Address,
   APIError,

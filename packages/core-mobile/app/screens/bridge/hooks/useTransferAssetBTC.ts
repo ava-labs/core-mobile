@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux'
 import { useCallback } from 'react'
-import { Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
+import { Blockchain, useBridgeSDK } from '@avalabs/core-bridge-sdk'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import BridgeService from 'services/bridge/BridgeService'

@@ -6,7 +6,7 @@ import {
   useBridgeSDK,
   useMaxTransferAmount,
   WrapStatus
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
@@ -17,7 +17,7 @@ import { useEthereumProvider } from 'hooks/networks/networkProviderHooks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
-import { noop } from '@avalabs/utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { useTransferAssetEVM } from './useTransferAssetEVM'
 
 /**

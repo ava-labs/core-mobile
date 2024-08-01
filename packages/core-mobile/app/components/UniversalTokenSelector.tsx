@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useMemo } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { bigintToBig } from '@avalabs/utils-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'

@@ -1,5 +1,5 @@
-import { Avalanche } from '@avalabs/wallets-sdk'
-import { useQuery } from '@tanstack/react-query'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -12,7 +12,7 @@ const REFETCH_INTERVAL = 10000 // 10 seconds
  * more info about base fee here:
  * https://docs.avax.network/quickstart/transaction-fees#c-chain-fees
  */
-export const useCChainBaseFee = () => {
+export const useCChainBaseFee = (): UseQueryResult<bigint, Error> => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDeveloperMode)
   const avaxProvider = NetworkService.getProviderForNetwork(

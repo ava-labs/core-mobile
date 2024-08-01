@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
 import { BalanceServiceProvider } from 'services/balance/types'
