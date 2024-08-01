@@ -20,22 +20,13 @@ export function applyTempChainIdConversion(properties?: JsonMap): void {
 }
 
 function updateChainIdIfNeeded(original: number): string {
-  if (original === -ChainId.AVALANCHE_XP || original === ChainId.AVALANCHE_P) {
+  if (original === ChainId.AVALANCHE_P) {
     return BlockchainId.P_CHAIN
-  } else if (
-    original === -ChainId.AVALANCHE_TEST_XP ||
-    original === ChainId.AVALANCHE_TEST_P
-  ) {
+  } else if (original === ChainId.AVALANCHE_TEST_P) {
     return BlockchainId.P_CHAIN_TESTNET
-  } else if (
-    original === ChainId.AVALANCHE_XP ||
-    original === ChainId.AVALANCHE_X
-  ) {
+  } else if (original === ChainId.AVALANCHE_X) {
     return BlockchainId.X_CHAIN
-  } else if (
-    original === ChainId.AVALANCHE_TEST_XP ||
-    original === ChainId.AVALANCHE_TEST_X
-  ) {
+  } else if (original === ChainId.AVALANCHE_TEST_X) {
     return BlockchainId.X_CHAIN_TESTNET
   }
   return original.toString()

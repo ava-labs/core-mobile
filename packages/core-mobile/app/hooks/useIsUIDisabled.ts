@@ -29,8 +29,6 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
   [UI.ManageTokens]: [
     ChainId.BITCOIN,
     ChainId.BITCOIN_TESTNET,
-    ChainId.AVALANCHE_XP,
-    ChainId.AVALANCHE_TEST_XP,
     ChainId.AVALANCHE_X,
     ChainId.AVALANCHE_TEST_X,
     ChainId.AVALANCHE_P,
