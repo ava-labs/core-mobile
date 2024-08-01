@@ -1,4 +1,4 @@
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { useNetworks } from './networks/useNetworks'
 

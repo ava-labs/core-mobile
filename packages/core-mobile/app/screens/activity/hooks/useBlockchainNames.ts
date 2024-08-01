@@ -2,7 +2,7 @@ import {
   Blockchain,
   BridgeTransaction,
   useBridgeSDK
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import {
   getBlockchainDisplayName,
   isPendingBridgeTransaction

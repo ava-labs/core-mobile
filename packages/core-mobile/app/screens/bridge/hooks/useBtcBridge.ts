@@ -20,7 +20,7 @@ import {
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'

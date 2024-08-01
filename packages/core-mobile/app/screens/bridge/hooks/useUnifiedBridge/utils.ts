@@ -1,4 +1,4 @@
-import { Blockchain } from '@avalabs/bridge-sdk'
+import { Blockchain } from '@avalabs/core-bridge-sdk'
 import { chainIdToCaip } from 'utils/data/caip'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { BridgeAsset } from '@avalabs/bridge-unified'

@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import BridgeSVG from 'components/svg/BridgeSVG'

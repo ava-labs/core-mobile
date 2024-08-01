@@ -20,7 +20,7 @@ import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { NetworkTokenUnit } from 'types'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 type EditFeesProps<T extends TokenBaseUnit<T>> = {

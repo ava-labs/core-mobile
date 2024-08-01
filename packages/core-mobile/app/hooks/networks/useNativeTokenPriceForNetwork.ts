@@ -1,5 +1,5 @@
 import TokenService from 'services/token/TokenService'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Network } from '@avalabs/core-chains-sdk'

@@ -1,5 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { AddEthereumChainParameter } from '@avalabs/bridge-sdk'
+import { AddEthereumChainParameter } from '@avalabs/core-bridge-sdk'
 import { intToHex } from 'ethereumjs-util'
 
 export const networkToGetEthChainResponse = (

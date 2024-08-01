@@ -11,7 +11,7 @@ import { Space } from 'components/Space'
 import Separator from 'components/Separator'
 import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import {

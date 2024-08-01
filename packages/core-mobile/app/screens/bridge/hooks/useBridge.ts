@@ -6,7 +6,7 @@ import {
   WrapStatus
 } from '@avalabs/core-bridge-sdk'
 import { useEffect, useMemo, useState } from 'react'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useBtcBridge } from 'screens/bridge/hooks/useBtcBridge'
 import { useEthBridge } from 'screens/bridge/hooks/useEthBridge'
 import { useAvalancheBridge } from 'screens/bridge/hooks/useAvalancheBridge'

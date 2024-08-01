@@ -14,7 +14,7 @@ import {
   Blockchain,
   EthereumDynamicFeeAssetConfig,
   EthereumStaticFeeAssetConfig
-} from '@avalabs/bridge-sdk'
+} from '@avalabs/core-bridge-sdk'
 import { avalancheBridgeAssetHandler as handler } from './avalanche_bridgeAsset'
 
 const mockNoop = jest.fn()
