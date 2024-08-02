@@ -29,6 +29,7 @@ import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
+import { isHex } from 'viem'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
@@ -250,7 +251,9 @@ const ApprovalPopup = (): JSX.Element => {
       updateSpendLimit,
       dAppName: request.dappInfo.name,
       editingToken: {
-        defaultValue: spendLimit.tokenApproval.value,
+        defaultValue: isHex(spendLimit.tokenApproval.value)
+          ? spendLimit.tokenApproval.value
+          : '0x',
         decimals: spendLimit.tokenApproval.token.decimals
       }
     })

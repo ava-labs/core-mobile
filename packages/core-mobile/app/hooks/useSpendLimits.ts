@@ -1,14 +1,14 @@
-import { bnToLocaleString, hexToBN } from '@avalabs/core-utils-sdk'
+import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { useCallback, useEffect, useState } from 'react'
 import Web3 from 'web3'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { MaxUint256 } from 'ethers'
 import {
   TokenApproval,
-  TokenType,
-  TokenApprovals
+  TokenApprovals,
+  TokenType
 } from '@avalabs/vm-module-types'
-import type BN from 'bn.js'
+import { hexToBigInt, isHex } from 'viem'
 
 export const useSpendLimits = (
   tokenApprovals: TokenApprovals | undefined
@@ -32,12 +32,14 @@ export const useSpendLimits = (
     for (const tokenApproval of tokenApprovals.approvals) {
       const token = tokenApproval.token
       if (token.type === TokenType.ERC20 && tokenApproval.value) {
-        const defaultLimitBN = hexToBN(tokenApproval.value)
+        const defaultLimitBN = isHex(tokenApproval.value)
+          ? hexToBigInt(tokenApproval.value)
+          : 0n
         _spendLimits.push({
           limitType: Limit.DEFAULT,
           value: {
             bn: defaultLimitBN,
-            amount: bnToLocaleString(defaultLimitBN, token.decimals)
+            amount: bigIntToString(defaultLimitBN, token.decimals)
           },
           tokenApproval
         })
@@ -76,14 +78,16 @@ export const useSpendLimits = (
         ])
         limitAmount = `0x${MaxUint256.toString(16)}`
       } else if (newSpendData.limitType === Limit.DEFAULT) {
-        const bn = hexToBN(spendLimit.tokenApproval.value)
+        const bn = isHex(spendLimit.tokenApproval.value)
+          ? hexToBigInt(spendLimit.tokenApproval.value)
+          : 0n
         setSpendLimits([
           {
             ...spendLimit,
             limitType: Limit.DEFAULT,
             value: {
               bn,
-              amount: bnToLocaleString(
+              amount: bigIntToString(
                 bn,
                 spendLimit.tokenApproval.token.decimals
               )
@@ -132,7 +136,7 @@ export enum Limit {
 export interface SpendLimit {
   limitType: Limit
   value?: {
-    bn: BN
+    bn: bigint
     amount: string
   }
   tokenApproval: TokenApproval

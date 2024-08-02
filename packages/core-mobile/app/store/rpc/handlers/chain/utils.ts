@@ -60,7 +60,7 @@ export const networkSchema = z
         })
       })
       .optional(),
-    explorerUrl: z.string().optional(),
+    explorerUrl: z.string(),
     subnetExplorerUriId: z.string().optional()
   })
   .passthrough()
