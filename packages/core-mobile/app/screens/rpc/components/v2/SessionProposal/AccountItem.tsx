@@ -19,7 +19,6 @@ import {
   selectIsBalanceLoadedForAddress
 } from 'store/balance/slice'
 import { QueryStatus } from 'store/balance/types'
-import { truncateAddress } from 'utils/Utils'
 
 type Props = {
   account: Account
@@ -55,8 +54,6 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
     }
   }, [isBalanceLoading, showLoader])
 
-  const address = truncateAddress(account.addressC, 5)
-
   return (
     <Row
       style={[
@@ -72,10 +69,6 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
       <View style={styles.accountTitleContainer}>
         <AvaText.ButtonLarge textStyle={{ color: theme.colorText1 }}>
           {account.name}
-          <AvaText.ButtonLarge
-            textStyle={{ color: theme.colorText1, fontWeight: 'normal' }}>
-            {' (' + address + ')'}
-          </AvaText.ButtonLarge>
         </AvaText.ButtonLarge>
         <Space y={4} />
         {showLoader && <ActivityIndicator style={styles.loader} />}
