@@ -57,6 +57,7 @@ const AddressBookStack = (): JSX.Element => {
           headerShown: true,
           ...(MainHeaderOptions({
             title: 'Address Book',
+            headerBackTestID: 'header_back',
             hideHeaderLeft: false,
             actionComponent: <AddAddressBookContact />
           }) as Partial<StackNavigationOptions>)
