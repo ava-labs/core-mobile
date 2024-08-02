@@ -112,7 +112,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
     ;(UnsignedTx.fromJSON as jest.Mock).mockReturnValue(unsignedTxMock)
     ;(EVMUnsignedTx.fromJSON as jest.Mock).mockReturnValue(unsignedTxMock)
     ;(walletService.sign as jest.Mock).mockReturnValue({ biz: 'baz' })
-    ;(networkService.getAvalancheNetworkXP as jest.Mock).mockReturnValue(
+    ;(networkService.getAvalancheNetworkP as jest.Mock).mockReturnValue(
       'network'
     )
     ;(walletService.getAddressesByIndices as jest.Mock).mockResolvedValue([])

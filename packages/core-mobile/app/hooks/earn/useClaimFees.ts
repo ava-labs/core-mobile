@@ -41,7 +41,7 @@ export const useClaimFees = (): {
 
       const baseFee = Avax.fromWei(baseFeeRaw)
 
-      const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+      const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 

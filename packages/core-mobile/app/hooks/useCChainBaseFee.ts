@@ -14,7 +14,7 @@ const REFETCH_INTERVAL = 10000 // 10 seconds
  */
 export const useCChainBaseFee = (): UseQueryResult<bigint, Error> => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDeveloperMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const avaxProvider = NetworkService.getProviderForNetwork(
     avaxXPNetwork
   ) as Avalanche.JsonRpcProvider
