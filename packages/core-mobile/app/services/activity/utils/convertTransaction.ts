@@ -1,5 +1,5 @@
 import {
-  Transaction as EvmTransaction,
+  Transaction as InternalTransaction,
   TransactionType,
   TokenType
 } from '@avalabs/vm-module-types'
@@ -8,7 +8,7 @@ import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import { Transaction } from 'store/transaction'
 
 export const convertTransaction = (
-  transaction: EvmTransaction
+  transaction: InternalTransaction
 ): Transaction => {
   const bridgeAddresses = UnifiedBridgeService.getBridgeAddresses()
   const isBridge =

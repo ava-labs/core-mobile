@@ -1,8 +1,6 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
-import { BalanceServiceProvider } from 'services/balance/types'
-import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import type {
@@ -12,9 +10,6 @@ import type {
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
-import BtcBalanceService from './BtcBalanceService'
-
-const balanceProviders: BalanceServiceProvider[] = [BtcBalanceService]
 
 export type BalancesForAccount = {
   accountIndex: number
@@ -41,86 +36,21 @@ export class BalanceService {
       .setContext('svc.balance.get_for_account')
       .executeAsync(async () => {
         const accountAddress = getAddressByNetwork(account, network)
-
-        if (
-          network.vmName === 'EVM' ||
-          network.vmName === 'AVM' ||
-          network.vmName === 'PVM'
-        ) {
-          const module = await ModuleManager.loadModuleByNetwork(network)
-          const balancesResponse = await module.getBalances({
-            customTokens,
-            addresses: [accountAddress],
-            currency,
-            network: mapToVmNetwork(network),
-            storage: coingeckoInMemoryCache
-          })
-          const balances = balancesResponse[accountAddress] ?? {}
-
-          return {
-            accountIndex: account.index,
-            chainId: network.chainId,
-            tokens: Object.values(balances),
-            accountAddress
-          }
-        }
-
-        const balanceProvider = await findAsyncSequential(
-          balanceProviders,
-          value => value.isProviderFor(network)
-        )
-        if (!balanceProvider) {
-          throw new Error(
-            `no balance provider found for network ${network.chainId}`
-          )
-        }
-
-        const tokens = await balanceProvider.getBalances({
-          network,
-          accountAddress,
+        const module = await ModuleManager.loadModuleByNetwork(network)
+        const balancesResponse = await module.getBalances({
+          customTokens,
+          addresses: [accountAddress],
           currency,
-          sentryTrx,
-          customTokens
+          network: mapToVmNetwork(network),
+          storage: coingeckoInMemoryCache
         })
-
+        const balances = Object.values(balancesResponse[accountAddress] ?? [])
         return {
           accountIndex: account.index,
           chainId: network.chainId,
-          tokens,
+          tokens: balances,
           accountAddress
         }
-      })
-  }
-
-  async getBalancesForAddress({
-    network,
-    address,
-    currency,
-    sentryTrx
-  }: {
-    network: Network
-    address: string
-    currency: string
-    sentryTrx?: Transaction
-  }): Promise<TokenWithBalance[]> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.balance.get_for_address')
-      .executeAsync(async () => {
-        const balanceProvider = await findAsyncSequential(
-          balanceProviders,
-          value => value.isProviderFor(network)
-        )
-        if (!balanceProvider) {
-          throw new Error(
-            `no balance provider found for network ${network.chainId}`
-          )
-        }
-
-        return balanceProvider.getBalances({
-          network,
-          accountAddress: address,
-          currency
-        })
       })
   }
 }

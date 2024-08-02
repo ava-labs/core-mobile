@@ -9,13 +9,11 @@ import {
 } from 'services/wallet/types'
 import { strip0x } from '@avalabs/core-utils-sdk'
 import { BytesLike, TransactionRequest, getBytes, hashMessage } from 'ethers'
-import { networks } from 'bitcoinjs-lib'
 import {
   Avalanche,
   BitcoinProvider,
   JsonRpcBatchInternal,
   createPsbt,
-  getBtcAddressFromPubKey,
   getEvmAddressFromPubKey
 } from '@avalabs/core-wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
@@ -28,9 +26,15 @@ import {
 import { RpcMethod } from 'store/rpc/types'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
-import { TypedData, TypedDataV1, MessageTypes } from '@avalabs/vm-module-types'
+import {
+  TypedData,
+  TypedDataV1,
+  MessageTypes,
+  WalletType
+} from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
+import ModuleManager from 'vmModule/ModuleManager'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
@@ -293,28 +297,23 @@ export default class SeedlessWallet implements Wallet {
     return this.#addressPublicKey
   }
 
-  public getAddresses({
+  public async getAddresses({
     isTestnet,
     provXP
   }: {
     isTestnet: boolean
     provXP: Avalanche.JsonRpcProvider
-  }): Record<NetworkVMType, string> {
+  }): Promise<Record<NetworkVMType, string>> {
+    const addresses = await ModuleManager.getAddresses({
+      walletType: WalletType.Seedless,
+      accountIndex: 0,
+      xpub: this.#addressPublicKey.evm,
+      xpubXP: this.#addressPublicKey.xp,
+      isTestnet
+    })
     const pubKeyBufferC = this.getPubKeyBufferC()
-
-    // X/P addresses use a different public key because derivation path is different
-    const pubKeyBufferXP = this.getPubKeyBufferXP()
-    const addrX = provXP.getAddress(pubKeyBufferXP, 'X')
-    const addrP = provXP.getAddress(pubKeyBufferXP, 'P')
-
     return {
-      [NetworkVMType.EVM]: getEvmAddressFromPubKey(pubKeyBufferC).toLowerCase(),
-      [NetworkVMType.BITCOIN]: getBtcAddressFromPubKey(
-        pubKeyBufferC,
-        isTestnet ? networks.testnet : networks.bitcoin
-      ),
-      [NetworkVMType.AVM]: addrX,
-      [NetworkVMType.PVM]: addrP,
+      ...(addresses as Record<NetworkVMType, string>),
       [NetworkVMType.CoreEth]: provXP.getAddress(pubKeyBufferC, 'C')
     }
   }
@@ -345,7 +344,7 @@ export default class SeedlessWallet implements Wallet {
     chainAlias: Avalanche.ChainIDAlias
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> => {
-    const addresses = this.getAddresses({ isTestnet, provXP: provider })
+    const addresses = await this.getAddresses({ isTestnet, provXP: provider })
     const address = addresses[Avalanche.getVmByChainAlias(chainAlias)]
     const buffer = Buffer.from(
       strip0x(

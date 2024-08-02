@@ -4,9 +4,7 @@ import {
   BitcoinProvider,
   DerivationPath,
   JsonRpcBatchInternal,
-  getAddressFromXPub,
   getAddressPublicKeyFromXPub,
-  getBech32AddressFromXPub,
   getWalletFromMnemonic,
   getAddressDerivationPath
 } from '@avalabs/core-wallets-sdk'
@@ -19,7 +17,6 @@ import {
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { networks } from 'bitcoinjs-lib'
 import {
   personalSign,
   signTypedData,
@@ -31,8 +28,14 @@ import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
-import { TypedDataV1, TypedData, MessageTypes } from '@avalabs/vm-module-types'
+import {
+  TypedDataV1,
+  TypedData,
+  MessageTypes,
+  WalletType
+} from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
+import ModuleManager from 'vmModule/ModuleManager'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -353,7 +356,7 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  public getAddresses({
+  public async getAddresses({
     accountIndex,
     isTestnet,
     provXP
@@ -361,28 +364,21 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     isTestnet: boolean
     provXP: Avalanche.JsonRpcProvider
-  }): Record<NetworkVMType, string> {
+  }): Promise<Record<NetworkVMType, string>> {
+    const addresses = await ModuleManager.getAddresses({
+      walletType: WalletType.Mnemonic,
+      accountIndex,
+      xpub: this.xpub,
+      xpubXP: this.xpubXP,
+      isTestnet
+    })
+
     // C-avax... this address uses the same public key as EVM
     const cPubKey = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
     const cAddr = provXP.getAddress(cPubKey, 'C')
 
-    // X and P addresses different derivation path m/44'/9000'/0'...
-    const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-      this.xpubXP,
-      accountIndex
-    )
-    const xAddr = provXP.getAddress(xpPub, 'X')
-    const pAddr = provXP.getAddress(xpPub, 'P')
-
     return {
-      [NetworkVMType.EVM]: getAddressFromXPub(this.xpub, accountIndex),
-      [NetworkVMType.BITCOIN]: getBech32AddressFromXPub(
-        this.xpub,
-        accountIndex,
-        isTestnet ? networks.testnet : networks.bitcoin
-      ),
-      [NetworkVMType.AVM]: xAddr,
-      [NetworkVMType.PVM]: pAddr,
+      ...(addresses as Record<NetworkVMType, string>),
       [NetworkVMType.CoreEth]: cAddr
     }
   }
