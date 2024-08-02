@@ -1,5 +1,4 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { absoluteChain } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from './networks/useNetworks'
 
 export enum UI {
@@ -30,8 +29,10 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
   [UI.ManageTokens]: [
     ChainId.BITCOIN,
     ChainId.BITCOIN_TESTNET,
-    ChainId.AVALANCHE_XP,
-    ChainId.AVALANCHE_TEST_XP
+    ChainId.AVALANCHE_X,
+    ChainId.AVALANCHE_TEST_X,
+    ChainId.AVALANCHE_P,
+    ChainId.AVALANCHE_TEST_P
   ],
   [UI.Bridge]: [
     ChainId.DFK,
@@ -53,8 +54,5 @@ export const useIsUIDisabled = (ui: UI): boolean => {
 
   const disabled = disabledUIs[ui]
 
-  // Currently, the P-Chain and X-Chain have chain IDs (ChainId.AVALANCHE_XP)
-  // that are the same value but with opposite signs. Therefore,
-  // we convert them using the absoluteChain function for comparison.
-  return !(disabled && !disabled.includes(absoluteChain(chainId)))
+  return !(disabled && !disabled.includes(chainId))
 }

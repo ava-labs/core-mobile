@@ -77,7 +77,7 @@ class EarnService {
     progressEvents?: (events: RecoveryEvents) => void
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
     const { pChainUtxo, cChainUtxo } = await retry({
       operation: retryIndex => {
@@ -223,7 +223,7 @@ class EarnService {
   }: AddDelegatorTransactionProps): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
     const rewardAddress = activeAccount.addressPVM
     const unsignedTx = await WalletService.createAddDelegatorTx({
       accountIndex: activeAccount.index,

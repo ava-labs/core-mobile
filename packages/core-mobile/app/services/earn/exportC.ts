@@ -28,7 +28,7 @@ export async function exportC({
 }: ExportCParams): Promise<void> {
   Logger.info('exporting C started')
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const chains = await NetworkService.getNetworks()
   const cChainNetwork =
     chains[

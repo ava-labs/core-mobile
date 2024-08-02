@@ -109,7 +109,13 @@ export const AvalancheSignMessage = (): JSX.Element | null => {
   )
 }
 
-const PersonalSign = ({ message }: { message: string }): JSX.Element => {
+const PersonalSign = ({
+  message,
+  testID
+}: {
+  message: string
+  testID?: string
+}): JSX.Element => {
   const theme = useContext(ApplicationContext).theme
 
   return (
@@ -123,7 +129,7 @@ const PersonalSign = ({ message }: { message: string }): JSX.Element => {
           borderRadius: 8,
           padding: 8
         }}>
-        <AvaText.Body1>{toUtf8(message)}</AvaText.Body1>
+        <AvaText.Body1 testID={testID}>{toUtf8(message)}</AvaText.Body1>
       </ScrollView>
     </View>
   )

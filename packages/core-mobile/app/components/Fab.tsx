@@ -41,6 +41,7 @@ export const Fab: FC = () => {
   const tokensWithBalance = useSelector(
     selectTokensWithBalanceByNetwork(activeNetwork)
   )
+
   const {
     theme: { colors }
   } = useTheme()
