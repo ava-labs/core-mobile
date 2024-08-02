@@ -37,7 +37,7 @@ describe('ModuleManager', () => {
         },
         {
           chainId: 'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
-          method: 'avalanche_sendTransactiond',
+          method: 'avalanche_sendTransaction',
           name: NetworkVMType.AVM
         },
         {

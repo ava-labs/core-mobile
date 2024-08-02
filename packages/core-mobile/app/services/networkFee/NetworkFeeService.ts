@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 import ModuleManager from 'vmModule/ModuleManager'
 import { NetworkFee } from 'services/networkFee/types'

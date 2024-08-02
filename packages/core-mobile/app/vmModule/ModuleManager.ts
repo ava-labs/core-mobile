@@ -1,7 +1,7 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
-import { NetworkVMType, Network } from '@avalabs/chains-sdk'
+import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
@@ -132,8 +132,16 @@ class ModuleManager {
 
   convertChainIdToCaip2 = (network: Network): string => {
     switch (network.vmName) {
-      case NetworkVMType.BITCOIN:
-        return this.getBitcoinBlockchainId(network.vmName, network.isTestnet)
+      case NetworkVMType.BITCOIN: {
+        const bitcoinBlockchainId = this.getBitcoinBlockchainId(
+          network.vmName,
+          network.isTestnet
+        )
+        if (bitcoinBlockchainId === undefined) {
+          throw new Error('bitcoinBlockchainId is undefined')
+        }
+        return bitcoinBlockchainId
+      }
       case NetworkVMType.PVM:
       case NetworkVMType.AVM: {
         return AvalancheModule.getHashedBlockchainId({
@@ -169,10 +177,11 @@ class ModuleManager {
   private getBitcoinBlockchainId = (
     vmName: NetworkVMType,
     isTestnet?: boolean
-  ): string => {
+  ): string | undefined => {
     if (vmName !== NetworkVMType.BITCOIN) {
       throw new Error('Unsupported network')
     }
+
     return isTestnet
       ? BitcoinCaipId[4503599627370474]
       : BitcoinCaipId[4503599627370475]

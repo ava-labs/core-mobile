@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 
 enum CaipNamespace {
   AVAX = 'avax',

@@ -175,10 +175,11 @@ class SendServiceBTC implements SendServiceHelper {
         const utxos = balances?.[0]?.utxos || []
         const utxosWithScripts = await provider.getScriptsForUtxos(utxos)
 
-    return {
-      balance: balances?.[0]?.balance || 0n,
-      utxos: utxosWithScripts
-    }})
+        return {
+          balance: balances?.[0]?.balance || 0n,
+          utxos: utxosWithScripts
+        }
+      })
   }
 
   private getErrorState(sendState: SendState, errorMessage: string): SendState {
