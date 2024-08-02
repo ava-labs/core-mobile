@@ -66,13 +66,13 @@ export const isAVMChainId = (caip2ChainId: string): boolean => {
 export const getAvalancheCaip2ChainId = (
   chainId: number
 ): string | undefined => {
-  if (chainId === -ChainId.AVALANCHE_XP) {
+  if (chainId === ChainId.AVALANCHE_P) {
     return AvalancheChainId.P_CHAIN
-  } else if (chainId === -ChainId.AVALANCHE_TEST_XP) {
+  } else if (chainId === ChainId.AVALANCHE_TEST_P) {
     return AvalancheChainId.P_CHAIN_TESTNET
-  } else if (chainId === ChainId.AVALANCHE_XP) {
+  } else if (chainId === ChainId.AVALANCHE_X) {
     return AvalancheChainId.X_CHAIN
-  } else if (chainId === ChainId.AVALANCHE_TEST_XP) {
+  } else if (chainId === ChainId.AVALANCHE_TEST_X) {
     return AvalancheChainId.X_CHAIN_TESTNET
   }
   return undefined
@@ -82,13 +82,13 @@ export const getAvalancheChainId = (
   caip2ChainId: string
 ): number | undefined => {
   if (caip2ChainId === AvalancheChainId.P_CHAIN) {
-    return -ChainId.AVALANCHE_XP
+    return ChainId.AVALANCHE_P
   } else if (caip2ChainId === AvalancheChainId.P_CHAIN_TESTNET) {
-    return -ChainId.AVALANCHE_TEST_XP
+    return ChainId.AVALANCHE_TEST_P
   } else if (caip2ChainId === AvalancheChainId.X_CHAIN) {
-    return ChainId.AVALANCHE_XP
+    return ChainId.AVALANCHE_X
   } else if (caip2ChainId === AvalancheChainId.X_CHAIN_TESTNET) {
-    return ChainId.AVALANCHE_TEST_XP
+    return ChainId.AVALANCHE_TEST_X
   }
 
   return undefined
