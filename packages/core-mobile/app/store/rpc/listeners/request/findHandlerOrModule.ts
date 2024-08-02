@@ -3,8 +3,8 @@ import Logger from 'utils/Logger'
 import ModuleManager from 'vmModule/ModuleManager'
 import { RpcRequestHandler } from 'store/rpc/handlers/types'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'
-import handlerMap from '../../handlers'
 import { Request } from '../../types'
+import handlerMap from '../../handlers'
 
 export const findHandlerOrModule = async (
   request: Request,
@@ -21,6 +21,7 @@ export const findHandlerOrModule = async (
   // if no handler is found, try to find a module
   try {
     const caip2ChainId = request.data.params.chainId
+
     return await ModuleManager.loadModule(caip2ChainId, request.method)
   } catch (e) {
     Logger.error('Failed to load module', e)

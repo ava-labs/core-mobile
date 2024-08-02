@@ -9,7 +9,6 @@ import { isErc721 } from 'services/nft/utils'
 import { SendServicePVM } from 'services/send/SendServicePVM'
 import { RpcMethod } from 'store/rpc'
 import { getAddressByNetwork } from 'store/account/utils'
-import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
 import { SendServiceAVM } from 'services/send/SendServiceAVM'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 import { type NftTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
@@ -18,6 +17,7 @@ import {
   getBitcoinCaip2ChainId,
   getEvmCaip2ChainId
 } from 'temp/caip2ChainIds'
+import { AvalancheTxParams } from '@avalabs/avalanche-module'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -94,7 +94,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTransactionParams,
+              params: txRequest as AvalancheTxParams,
               chainId: getAvalancheCaip2ChainId(network.chainId)
             })
           )
@@ -115,7 +115,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTransactionParams,
+              params: txRequest as AvalancheTxParams,
               chainId: getAvalancheCaip2ChainId(network.chainId)
             })
           )

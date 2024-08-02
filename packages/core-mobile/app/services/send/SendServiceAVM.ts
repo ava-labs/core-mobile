@@ -11,11 +11,11 @@ import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { utils } from '@avalabs/avalanchejs'
-import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { getInternalExternalAddrs } from 'services/send/utils'
 import { stripChainAddress } from 'store/account/utils'
 import {
+  AvalancheTxParams,
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'

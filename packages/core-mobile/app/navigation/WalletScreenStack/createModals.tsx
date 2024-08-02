@@ -15,7 +15,6 @@ import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
 import ApprovalPopup from 'screens/rpc/components/v2/ApprovalPopup'
 import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
-import AvalancheSendTransactionV2 from 'screens/rpc/components/v2/AvalancheSendTransaction'
 import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomSheet'
 import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
@@ -32,6 +31,7 @@ import { AvalancheSetDeveloperMode } from 'screens/rpc/components/v2/AvalancheSe
 import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
 import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
 import EditSpendLimit from 'components/EditSpendLimit'
+import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScreen'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -76,8 +76,8 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={EditSpendLimit}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.AvalancheSendTransactionV2}
-        component={AvalancheSendTransactionV2}
+        name={AppNavigation.Modal.TransactionData}
+        component={TransactionDataScreen}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSetDeveloperMode}
