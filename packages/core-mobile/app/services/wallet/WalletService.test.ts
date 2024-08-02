@@ -2,9 +2,9 @@ import { AddDelegatorProps, WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
 import { Utxo } from '@avalabs/avalanchejs'
-import { AVALANCHE_XP_TEST_NETWORK } from '@avalabs/core-chains-sdk'
 import { Avax } from 'types/Avax'
 import { PChainId } from '@avalabs/glacier-sdk'
+import NetworkService from 'services/network/NetworkService'
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
   ...jest.requireActual('@avalabs/core-wallets-sdk'),
@@ -29,7 +29,7 @@ describe('WalletService', () => {
   })
 
   describe('createAddDelegatorTx', () => {
-    const network = AVALANCHE_XP_TEST_NETWORK
+    const network = NetworkService.getAvalancheNetworkP(false)
     const validNodeId = 'NodeID-23420390293d9j09v'
     const invalidNodeId = 'InvalidNodeID-23420390293d9j09v'
     const fujiValidStakeAmount = BigInt(2e9)

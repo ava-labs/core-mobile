@@ -28,7 +28,7 @@ export async function exportP({
   if (pChainBalance.lt(requiredAmount)) {
     throw Error('Not enough balance on P chain')
   }
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const unsignedTx = await WalletService.createExportPTx({
     amount: requiredAmount.toSubUnit(),

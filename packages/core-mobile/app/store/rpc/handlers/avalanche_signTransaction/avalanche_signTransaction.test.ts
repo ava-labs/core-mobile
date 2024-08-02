@@ -122,7 +122,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
     ;(networkService.getAvalancheProviderXP as jest.Mock).mockReturnValue(
       providerMock
     )
-    ;(networkService.getAvalancheNetworkXP as jest.Mock).mockReturnValue(
+    ;(networkService.getAvalancheNetworkP as jest.Mock).mockReturnValue(
       'network'
     )
     ;(Avalanche.getUtxosByTxFromGlacier as jest.Mock).mockReturnValue(utxosMock)

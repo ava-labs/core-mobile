@@ -25,7 +25,7 @@ export const useEstimateStakingFees = (
   stakingAmount: Avax
 ): Avax | undefined => {
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const activeAccount = useSelector(selectActiveAccount)
   const amountForCrossChainTransfer =
     useGetAmountForCrossChainTransfer(stakingAmount)
