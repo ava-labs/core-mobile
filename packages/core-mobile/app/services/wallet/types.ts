@@ -200,7 +200,7 @@ export interface Wallet {
     accountIndex: number
     isTestnet: boolean
     provXP: Avalanche.JsonRpcProvider
-  }): Record<NetworkVMType, string>
+  }): Promise<Record<NetworkVMType, string>>
 
   /**
    * Retrieves a read-only Avalanche signer that can be used to

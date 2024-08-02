@@ -13,15 +13,12 @@ import {
 } from 'services/send/types'
 
 // singleton services
-import balanceService from 'services/balance/BalanceService'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { isBtcAddress } from 'utils/isBtcAddress'
-import type {
-  NetworkTokenWithBalance,
-  TokenWithBalanceBTC
-} from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
@@ -37,12 +34,12 @@ class SendServiceBTC implements SendServiceHelper {
         const { address: toAddress, amount } = sendState
         const feeRate = Number(sendState.defaultMaxFeePerGas)
         const provider = getBitcoinProvider(!isMainnet)
-        const { utxos } = await this.getBalance(
+        const { utxos } = await this.getBalance({
           isMainnet,
-          fromAddress,
-          currency || '',
+          address: fromAddress,
+          currency: currency || '',
           sentryTrx
-        )
+        })
 
         const { inputs, outputs } = createTransferTx(
           toAddress || '',
@@ -71,12 +68,12 @@ class SendServiceBTC implements SendServiceHelper {
         const { amount, address: toAddress, defaultMaxFeePerGas } = sendState
         const feeRate = Number(defaultMaxFeePerGas)
         const amountInSatoshis = amount ?? 0n
-        const { utxos } = await this.getBalance(
+        const { utxos } = await this.getBalance({
           isMainnet,
-          fromAddress,
-          currency || '',
+          address: fromAddress,
+          currency: currency || '',
           sentryTrx
-        )
+        })
         const provider = getBitcoinProvider(!isMainnet)
 
         if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
@@ -149,31 +146,40 @@ class SendServiceBTC implements SendServiceHelper {
       })
   }
 
-  // eslint-disable-next-line max-params
-  private async getBalance(
-    isMainnet: boolean,
-    address: string,
-    currency: string,
+  private async getBalance({
+    isMainnet,
+    address,
+    currency,
+    sentryTrx
+  }: {
+    isMainnet: boolean
+    address: string
+    currency: string
     sentryTrx?: Transaction
-  ): Promise<{
+  }): Promise<{
     balance: bigint
     utxos: BitcoinInputUTXO[]
   }> {
-    const provider = getBitcoinProvider(!isMainnet)
-    const tokens = (await balanceService.getBalancesForAddress({
-      network: isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
-      address,
-      currency,
-      sentryTrx
-    })) as NetworkTokenWithBalance[]
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.balance.btc.get')
+      .executeAsync(async () => {
+        const provider = getBitcoinProvider(!isMainnet)
+        const network = isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK
+        const balancesResponse = await ModuleManager.bitcoinModule.getBalances({
+          addresses: [address],
+          currency,
+          network: mapToVmNetwork(network)
+        })
+        const balances = Object.values(balancesResponse[address] ?? [])
 
-    const utxos = (tokens?.[0] as TokenWithBalanceBTC)?.utxos || []
-    const utxosWithScripts = await provider.getScriptsForUtxos(utxos)
+        const utxos = balances?.[0]?.utxos || []
+        const utxosWithScripts = await provider.getScriptsForUtxos(utxos)
 
-    return {
-      balance: tokens?.[0]?.balance || 0n,
-      utxos: utxosWithScripts
-    }
+        return {
+          balance: balances?.[0]?.balance || 0n,
+          utxos: utxosWithScripts
+        }
+      })
   }
 
   private getErrorState(sendState: SendState, errorMessage: string): SendState {

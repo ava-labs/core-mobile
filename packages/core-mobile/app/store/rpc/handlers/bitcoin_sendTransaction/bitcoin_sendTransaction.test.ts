@@ -11,9 +11,9 @@ import { selectNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import * as utils from 'utils/isBtcAddress'
 import * as accountStore from 'store/account/slice'
-import BtcBalanceService from 'services/balance/BtcBalanceService'
 import SendServiceBTC from 'services/send/SendServiceBTC'
 import * as Toast from 'utils/toast'
+import BalanceService from 'services/balance/BalanceService'
 import { DEFERRED_RESULT } from '../types'
 import { bitcoinSendTransactionHandler as handler } from './bitcoin_sendTransaction'
 
@@ -36,7 +36,9 @@ jest.mock('store/settings/advanced', () => {
 })
 
 const mockGetBalances = jest.fn()
-jest.spyOn(BtcBalanceService, 'getBalances').mockImplementation(mockGetBalances)
+jest
+  .spyOn(BalanceService, 'getBalancesForAccount')
+  .mockImplementation(mockGetBalances)
 
 const mockValidateStateAndCalculateFees = jest.fn()
 jest
