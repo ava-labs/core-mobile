@@ -32,7 +32,7 @@ describe('Connect to dApp using WalletConnect', () => {
     await browserPage.connectTermAndContinue()
     await browserPage.connectCore()
     await connectToSitePage.selectAccountAndconnect('Core')
-  }, 30000)
+  })
 
   it('should show up Core dApp connected ', async () => {
     await securityAndPrivacyPage.goToConnectedSites()
