@@ -33,7 +33,7 @@
     "@babel/runtime": "7.24.0",
     "@lavamoat/allow-scripts": "2.0.3",
     "@react-native/babel-preset": "0.73.21",
-    "@react-native/metro-config": "0.73.5",
+    "@react-native/metro-config": "0.74.86",
     "@rushstack/eslint-patch": "1.5.1",
     "@storybook/addon-ondevice-actions": "7.6.17",
     "@storybook/addon-ondevice-backgrounds": "7.6.17",
