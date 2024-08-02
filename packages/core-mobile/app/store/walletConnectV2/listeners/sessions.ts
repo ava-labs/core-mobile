@@ -14,6 +14,7 @@ import { selectActiveNetwork, setActive } from 'store/network'
 import { selectActiveAccount, setActiveAccountIndex } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import { onRequest } from 'store/rpc/slice'
+import { CorePrimaryAccount } from '@avalabs/types'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import { RpcMethod, RpcProvider } from '../../rpc/types'
 
@@ -75,8 +76,8 @@ export const initWalletConnect = async (
      * notes: the delay is to allow dapps to settle down after the session is established. wallet connect se sdk also does the same.
      */
     const { chainId } = selectActiveNetwork(state)
-    const address = selectActiveAccount(state)?.addressC
-    setTimeout(() => updateSessions(chainId, address), UPDATE_SESSION_DELAY)
+    const account = selectActiveAccount(state)
+    setTimeout(() => updateSessions(chainId, account), UPDATE_SESSION_DELAY)
   } catch (e) {
     Logger.error('Unable to init wallet connect v2', e)
   }
@@ -84,14 +85,14 @@ export const initWalletConnect = async (
 
 export const updateSessions = async (
   chainId: number,
-  address: string | undefined
+  account: CorePrimaryAccount | undefined
 ): Promise<void> => {
   try {
-    if (!address) return
+    if (!account) return
 
     await WalletConnectService.updateSessions({
       chainId,
-      address
+      account
     })
   } catch (e) {
     Logger.error('Unable to update WC sessions', e)
@@ -138,10 +139,10 @@ export const handleNetworkChange = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const address = selectActiveAccount(state)?.addressC
+  const account = selectActiveAccount(state)
   const chainId = action.payload
 
-  updateSessions(chainId, address)
+  updateSessions(chainId, account)
 }
 
 export const handleAccountChange = async (
@@ -150,7 +151,7 @@ export const handleAccountChange = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const { chainId } = selectActiveNetwork(state)
-  const address = selectActiveAccount(state)?.addressC
+  const account = selectActiveAccount(state)
 
-  updateSessions(chainId, address)
+  updateSessions(chainId, account)
 }

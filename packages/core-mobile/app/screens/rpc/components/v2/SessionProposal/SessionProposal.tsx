@@ -17,6 +17,7 @@ import { selectAccounts, selectActiveAccount } from 'store/account'
 import { Button, Text } from '@avalabs/k2-mobile'
 import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AlertType } from '@avalabs/vm-module-types'
+import { CorePrimaryAccount } from '@avalabs/types'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
 import AlertBanner from '../AlertBanner'
 import SelectAccounts from './SelectAccounts'
@@ -32,7 +33,7 @@ type SessionProposalScreenProps = WalletScreenProps<
 
 const SessionProposal = (): JSX.Element => {
   const { goBack } = useNavigation<SessionProposalScreenProps['navigation']>()
-  const { request, chainIds, scanResponse } =
+  const { request, namespaces, scanResponse } =
     useRoute<SessionProposalScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
@@ -41,10 +42,15 @@ const SessionProposal = (): JSX.Element => {
   const theme = useApplicationContext().theme
   const activeAccount = useSelector(selectActiveAccount)
   const allAccounts = useSelector(selectAccounts)
-  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
+  const [selectedAccounts, setSelectedAccounts] = useState<
+    CorePrimaryAccount[]
+  >([])
   const peerMeta = request.data.params.proposer.metadata
   const siteName = peerMeta.name
   const approveDisabled = selectedAccounts.length === 0
+  const chainIds = Object.values(namespaces)
+    .flatMap(namespace => namespace.chains ?? [])
+    .map(chain => Number(chain.split(':')[1]))
 
   useEffect(() => {
     if (!activeAccount) {
@@ -59,15 +65,17 @@ const SessionProposal = (): JSX.Element => {
   }, [goBack, onReject, request])
 
   const approveAndClose = useCallback(() => {
-    onApprove(request, { selectedAccounts, approvedChainIds: chainIds })
+    onApprove(request, { selectedAccounts, namespaces })
     goBack()
-  }, [goBack, onApprove, request, selectedAccounts, chainIds])
+  }, [goBack, onApprove, request, selectedAccounts, namespaces])
 
-  const onSelect = (address: string): void => {
-    if (!selectedAccounts.includes(address))
-      setSelectedAccounts(current => [...current, address])
+  const onSelect = (account: CorePrimaryAccount): void => {
+    if (!selectedAccounts.find(item => item.addressC === account.addressC))
+      setSelectedAccounts(current => [...current, account])
     else
-      setSelectedAccounts(current => current.filter(item => item !== address))
+      setSelectedAccounts(current =>
+        current.filter(item => item.addressC !== account.addressC)
+      )
   }
 
   return (

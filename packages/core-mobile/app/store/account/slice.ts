@@ -69,6 +69,11 @@ export const selectAccountByAddress =
     )
   }
 
+export const selectAccountByIndex =
+  (index: number) =>
+  (state: RootState): Account | undefined =>
+    state.account.accounts[index]
+
 export const selectActiveAccount = (state: RootState): Account | undefined =>
   state.account.accounts[state.account.activeAccountIndex]
 
