@@ -47,6 +47,10 @@ class PortfolioPage {
     return by.text(portfolio.activityTab)
   }
 
+  get tokensTab() {
+    return by.text(portfolio.tokensTab)
+  }
+
   get btcNetwork() {
     return by.text(portfolio.btcNetwork)
   }
@@ -136,6 +140,10 @@ class PortfolioPage {
   async tapActivityTab() {
     await Action.waitForElementNotVisible(this.sendSuccessToast, 10000)
     await Action.tapElementAtIndex(this.activityTab, 0)
+  }
+
+  async tapTokensTab() {
+    await Action.tapElementAtIndex(this.tokensTab, 0)
   }
 
   async tapArbitrumNetwork() {
@@ -259,6 +267,16 @@ class PortfolioPage {
       by.id(portfolio.networksDropdownItem + network)
     )
     await this.tapNetworksDropdownAVAX()
+  }
+
+  async getAllAvailableTokens() {
+    let output: string[] = []
+    await this.tapAvaxNetwork()
+    await this.tapTokensTab()
+    output = await Action.getElementsTextByTestId('portfolio_list_item')
+    console.log(output)
+    console.log('nothing?')
+    return output
   }
 }
 

@@ -135,6 +135,32 @@ const getAttributes = async (item: any, index = 0) => {
   return await element(item).atIndex(index).getAttributes()
 }
 
+const getElementsTextByTestId = async (testID: string): Promise<string[]> => {
+  const output: string[] = []
+  const elements = await getElementsByTestId(testID)
+  elements.forEach(async ele => {
+    const curr = await ele.getAttributes()
+    if (!('elements' in curr) && curr.text) output.push(curr.text)
+  })
+  return output
+}
+
+const getElementsByTestId = async (testID: string) => {
+  // Query for the first element with the given testID
+  const elements: Detox.NativeElement[] = []
+  let elementFound = await isVisible(by.id(testID), 0)
+  // Continue looping until no more elements are found
+  while (elementFound) {
+    // Add the found element to the array
+    elements.push(element(by.id(testID)).atIndex(elements.length))
+    console.log(elements.length)
+    // Try to find the next element with the same testID
+    elementFound = await isVisible(by.id(testID), elements.length)
+    // await element(by.id(testID)).atIndex(elements.length).scrollTo('top')
+  }
+  return elements
+}
+
 // Not working for some reason, need to fix
 const getAndroidAttributesArray = async (
   locator: Detox.NativeMatcher,
@@ -257,5 +283,7 @@ export default {
   getCurrentDateTime,
   writeQrCodeToFile,
   expectToBeVisible,
-  scrollListUntil
+  scrollListUntil,
+  getElementsByTestId,
+  getElementsTextByTestId
 }

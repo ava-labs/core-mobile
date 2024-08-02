@@ -33,5 +33,6 @@ export default {
   sendSuccessToast: 'send_token_context__send_successful_toast',
   activeNetwork: 'active_network__',
   inactiveNetwork: 'inactive_network__',
-  networkDropdownCheckMark: 'network_dropdown_check_mark__'
+  networkDropdownCheckMark: 'network_dropdown_check_mark__',
+  tokensTab: 'Tokens'
 }
