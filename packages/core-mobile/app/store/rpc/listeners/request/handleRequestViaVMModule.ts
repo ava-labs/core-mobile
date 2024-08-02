@@ -9,6 +9,11 @@ import { selectNetwork } from 'store/network/slice'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { getAddressByVM } from 'store/account/utils'
+import { CorePrimaryAccount } from '@avalabs/types'
+import { selectActiveAccount } from 'store/account'
+import MnemonicWalletInstance from 'services/wallet/MnemonicWallet'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -60,6 +65,12 @@ export const handleRequestViaVMModule = async ({
     return
   }
 
+  const { getState } = listenerApi
+  const activeAccount = selectActiveAccount(getState())
+
+  const params = request.data.params.request.params
+  const method = request.method as VmModuleRpcMethod
+
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),
@@ -70,8 +81,9 @@ export const handleRequestViaVMModule = async ({
         icon: request.peerMeta.icons[0] ?? '',
         url: request.peerMeta.url
       },
-      method: request.method as VmModuleRpcMethod,
-      params: request.data.params.request.params
+      method,
+      params,
+      context: getContext(method, params, activeAccount)
     },
     mapToVmNetwork(network)
   )
@@ -89,4 +101,34 @@ export const handleRequestViaVMModule = async ({
       listenerApi
     })
   }
+}
+
+const getContext = (
+  method: VmModuleRpcMethod,
+  params: unknown,
+  activeAccount: CorePrimaryAccount | undefined
+): Record<string, string> | undefined => {
+  if (method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION) {
+    if (
+      !params ||
+      typeof params !== 'object' ||
+      'chainAlias' in params === false
+    ) {
+      return undefined
+    }
+
+    const vm = Avalanche.getVmByChainAlias(params.chainAlias as string)
+    const currentAddress = getAddressByVM(vm, activeAccount)
+
+    if (!currentAddress) {
+      return undefined
+    }
+
+    return {
+      currentAddress,
+      xpubXP: MnemonicWalletInstance.xpubXP
+    }
+  }
+
+  return undefined
 }
