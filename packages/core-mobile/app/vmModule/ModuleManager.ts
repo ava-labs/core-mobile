@@ -48,7 +48,7 @@ class ModuleManager {
         approvalController
       }),
       new BitcoinModule({ environment }),
-      new AvalancheModule({ environment })
+      new AvalancheModule({ environment, approvalController })
     ]
   }
 

@@ -11,7 +11,7 @@ import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 
-export const handleEthSign = async ({
+export const handleSignMessage = async ({
   method,
   data,
   account,
@@ -37,7 +37,7 @@ export const handleEthSign = async ({
     })
   } catch (error) {
     resolve({
-      error: rpcErrors.internal('failed to sign evm message')
+      error: rpcErrors.internal(`failed to sign ${network.vmName} message`)
     })
   }
 }

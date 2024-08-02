@@ -34,10 +34,10 @@ class NetworkService {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-      [-ChainId.AVALANCHE_XP]: this.getAvalancheNetworkP(false),
-      [-ChainId.AVALANCHE_TEST_XP]: this.getAvalancheNetworkP(true),
-      [ChainId.AVALANCHE_XP]: this.getAvalancheNetworkX(false),
-      [ChainId.AVALANCHE_TEST_XP]: this.getAvalancheNetworkX(true)
+      [ChainId.AVALANCHE_P]: this.getAvalancheNetworkP(false),
+      [ChainId.AVALANCHE_TEST_P]: this.getAvalancheNetworkP(true),
+      [ChainId.AVALANCHE_X]: this.getAvalancheNetworkX(false),
+      [ChainId.AVALANCHE_TEST_X]: this.getAvalancheNetworkX(true)
     }
   }
 
@@ -109,20 +109,12 @@ class NetworkService {
   }
 
   /**
-   * Returns the network object for Avalanche X/P Chain
-   * @deprecated - Please use {@link getAvalancheNetworkX} or {@link getAvalancheNetworkP}
-   */
-  getAvalancheNetworkXP(isDeveloperMode: boolean): Network {
-    return isDeveloperMode ? AVALANCHE_XP_TEST_NETWORK : AVALANCHE_XP_NETWORK
-  }
-
-  /**
    * Returns the network object for Avalanche P Chain
    */
   getAvalancheNetworkP(isDeveloperMode: boolean): Network {
     const pChain = {
       ...AVALANCHE_XP_NETWORK,
-      chainId: -AVALANCHE_XP_NETWORK.chainId,
+      chainId: ChainId.AVALANCHE_P,
       isTestnet: false,
       vmName: NetworkVMType.PVM,
       chainName: 'Avalanche (P-Chain)',
@@ -137,7 +129,7 @@ class NetworkService {
     } as Network
     const pChainTest = {
       ...AVALANCHE_XP_TEST_NETWORK,
-      chainId: -AVALANCHE_XP_TEST_NETWORK.chainId,
+      chainId: ChainId.AVALANCHE_TEST_P,
       isTestnet: true,
       vmName: NetworkVMType.PVM,
       chainName: 'Avalanche (P-Chain)',
@@ -159,6 +151,8 @@ class NetworkService {
   getAvalancheNetworkX(isDeveloperMode: boolean): Network {
     const xChain = {
       ...AVALANCHE_XP_NETWORK,
+      isTestnet: false,
+      chainId: ChainId.AVALANCHE_X,
       chainName: 'Avalanche (X-Chain)',
       logoUri:
         'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
@@ -166,6 +160,8 @@ class NetworkService {
     } as Network
     const xChainTest = {
       ...AVALANCHE_XP_TEST_NETWORK,
+      isTestnet: true,
+      chainId: ChainId.AVALANCHE_TEST_X,
       chainName: 'Avalanche (X-Chain)',
       logoUri:
         'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
@@ -178,7 +174,7 @@ class NetworkService {
    * Using either X or P Network will result in same provider.
    */
   getAvalancheProviderXP(isDeveloperMode: boolean): Avalanche.JsonRpcProvider {
-    const network = this.getAvalancheNetworkX(isDeveloperMode)
+    const network = this.getAvalancheNetworkP(isDeveloperMode)
     return this.getProviderForNetwork(network) as Avalanche.JsonRpcProvider
   }
 

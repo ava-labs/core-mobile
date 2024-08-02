@@ -202,7 +202,6 @@ enum ModalScreens {
   BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
-  AvalancheSignMessage = 'ModalScreens.AvalancheSignMessage',
   AlertScreen = 'ModalScreens.AlertScreen'
 }
 

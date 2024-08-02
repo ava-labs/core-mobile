@@ -1,3 +1,4 @@
+import { CorePrimaryAccount } from '@avalabs/types'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
@@ -18,11 +19,10 @@ import {
   selectIsBalanceLoadedForAddress
 } from 'store/balance/slice'
 import { QueryStatus } from 'store/balance/types'
-import { truncateAddress } from 'utils/Utils'
 
 type Props = {
   account: Account
-  onSelect: (accountIndex: string) => void
+  onSelect: (account: CorePrimaryAccount) => void
   selected: boolean
 }
 
@@ -54,8 +54,6 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
     }
   }, [isBalanceLoading, showLoader])
 
-  const address = truncateAddress(account.addressC, 5)
-
   return (
     <Row
       style={[
@@ -71,10 +69,6 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
       <View style={styles.accountTitleContainer}>
         <AvaText.ButtonLarge textStyle={{ color: theme.colorText1 }}>
           {account.name}
-          <AvaText.ButtonLarge
-            textStyle={{ color: theme.colorText1, fontWeight: 'normal' }}>
-            {' (' + address + ')'}
-          </AvaText.ButtonLarge>
         </AvaText.ButtonLarge>
         <Space y={4} />
         {showLoader && <ActivityIndicator style={styles.loader} />}
@@ -104,7 +98,7 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
         testID="account_check_box"
         selected={selected}
         onPress={() => {
-          onSelect(account.addressC)
+          onSelect(account)
         }}
       />
     </Row>

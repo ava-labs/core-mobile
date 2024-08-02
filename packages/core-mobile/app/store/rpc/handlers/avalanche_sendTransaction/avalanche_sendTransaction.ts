@@ -237,7 +237,7 @@ class AvalancheSendTransactionHandler
       }
       const signedTransactionJson = await walletService.sign({
         // Must tell it is avalanche network
-        network: networkService.getAvalancheNetworkXP(isDevMode),
+        network: networkService.getAvalancheNetworkP(isDevMode),
         transaction: {
           tx: unsignedTx,
           externalIndices,

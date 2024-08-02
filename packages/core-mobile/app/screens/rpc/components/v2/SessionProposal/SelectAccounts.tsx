@@ -7,12 +7,13 @@ import { Row } from 'components/Row'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { Account, AccountCollection } from 'store/account'
 import Separator from 'components/Separator'
+import { CorePrimaryAccount } from '@avalabs/types'
 import AccountItem from './AccountItem'
 
 type Props = {
   accounts: AccountCollection
-  selectedAccounts: string[]
-  onSelect: (accountIndex: string) => void
+  selectedAccounts: CorePrimaryAccount[]
+  onSelect: (account: CorePrimaryAccount) => void
 }
 
 const AccountSeparator = (): JSX.Element => {
@@ -40,7 +41,11 @@ const SelectAccounts = ({
   const renderItem: ListRenderItem<Account> = ({ item }) => (
     <AccountItem
       account={item}
-      selected={selectedAccounts.includes(item.addressC)}
+      selected={
+        selectedAccounts.findIndex(
+          account => account.addressC === item.addressC
+        ) !== -1
+      }
       onSelect={onSelect}
     />
   )
