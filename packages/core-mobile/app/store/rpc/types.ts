@@ -135,3 +135,4 @@ export const CORE_MOBILE_META: PeerMeta = {
 }
 
 export const EVM_IDENTIFIER = 'eip155'
+export const AVM_PVM_IDENTIFIER = 'avax'
