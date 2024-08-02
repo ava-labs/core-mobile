@@ -1,9 +1,14 @@
-import { SessionTypes } from '@walletconnect/types'
 import { EVM_IDENTIFIER } from 'store/rpc/types'
+import { getAvalancheCaip2ChainId } from 'temp/caip2ChainIds'
 
 // prefix eip155 namespace to a chainId
 // '1' -> 'eip155:1'
 export const addNamespaceToChain = (chainId: number): string => {
+  const caip2ChainId = getAvalancheCaip2ChainId(chainId)
+  if (caip2ChainId) {
+    return caip2ChainId
+  }
+
   return `${EVM_IDENTIFIER}:${chainId}`
 }
 
@@ -13,27 +18,10 @@ export const addNamespaceToAddress = (
   address: string,
   chainId: number
 ): string => {
+  const caip2ChainId = getAvalancheCaip2ChainId(chainId)
+  if (caip2ChainId) {
+    return `${caip2ChainId}:${address}`
+  }
+
   return `${EVM_IDENTIFIER}:${chainId}:${address}`
-}
-
-// check if chain id is already included in the session's chains
-export const chainAlreadyInSession = (
-  session: SessionTypes.Struct,
-  chainId: number
-): boolean => {
-  return Boolean(
-    session.namespaces?.[EVM_IDENTIFIER]?.chains?.includes(
-      addNamespaceToChain(chainId)
-    )
-  )
-}
-
-// check if address is already included in the session's accounts
-export const addressAlreadyInSession = (
-  session: SessionTypes.Struct,
-  account: string
-): boolean => {
-  return Boolean(
-    session.namespaces?.[EVM_IDENTIFIER]?.accounts?.includes(account)
-  )
 }

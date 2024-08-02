@@ -16,7 +16,6 @@ import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode/a
 import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange/avalanche_getAddressesInRange'
 import { bitcoinSendTransactionHandler } from './bitcoin_sendTransaction/bitcoin_sendTransaction'
-import { avalancheSignMessageHandler } from './avalanche_signMessage/avalanche_signMessage'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -35,8 +34,7 @@ const handlerMap = [
   avalancheGetAccountPubKeyHandler,
   avalancheSetDeveloperModeHandler,
   avalancheGetAddressesInRangeHandler,
-  bitcoinSendTransactionHandler,
-  avalancheSignMessageHandler
+  bitcoinSendTransactionHandler
 ].reduce((acc, current) => {
   if (current?.methods === undefined) return acc
 

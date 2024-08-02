@@ -8,6 +8,7 @@ import Logger from 'utils/Logger'
 import { selectNetwork } from 'store/network/slice'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -33,7 +34,19 @@ export const handleRequestViaVMModule = async ({
   }
 
   const caip2ChainId = request.data.params.chainId
-  const chainId = Number(caip2ChainId.split(':')[1])
+  const chainId = getChainIdFromCaip2(caip2ChainId)
+
+  if (!chainId) {
+    Logger.error(`ChainId ${caip2ChainId} not supported`)
+    rpcProvider.onError({
+      request,
+      error: rpcErrors.resourceNotFound('Chain Id not supported'),
+      listenerApi
+    })
+
+    return
+  }
+
   const network = selectNetwork(chainId)(listenerApi.getState())
 
   if (!network) {

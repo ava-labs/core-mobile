@@ -82,7 +82,6 @@ import {
   ApprovalPopupParams,
   AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
-  AvalancheSignMessageParams,
   AvalancheSignTransactionV2Params,
   BitcoinSendTransactionParams,
   BridgeAssetV2Params,
@@ -163,7 +162,6 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.EditSpendLimit]: EditSpendLimitParams
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   // rpc prompts for wallet connect v2
-  [AppNavigation.Modal.AvalancheSignMessage]: AvalancheSignMessageParams
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
   [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
   [AppNavigation.Modal.UpdateContactV2]: UpdateContactV2Params

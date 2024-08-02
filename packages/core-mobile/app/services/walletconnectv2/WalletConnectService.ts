@@ -4,24 +4,19 @@ import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from '@avalabs/vm-module-types'
-import { EVM_IDENTIFIER } from 'store/rpc/types'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
+import { CorePrimaryAccount } from '@avalabs/types'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import {
   CLIENT_METADATA,
   WalletConnectCallbacks,
   WalletConnectServiceInterface
 } from './types'
-import {
-  addNamespaceToAddress,
-  addNamespaceToChain,
-  addressAlreadyInSession,
-  chainAlreadyInSession
-} from './utils'
+import { addNamespaceToAddress, addNamespaceToChain } from './utils'
 
 const UPDATE_SESSION_TIMEOUT = 15000
 
@@ -195,11 +190,11 @@ class WalletConnectService implements WalletConnectServiceInterface {
   updateSession = async ({
     session,
     chainId,
-    address
+    account
   }: {
     session: SessionTypes.Struct
     chainId: number
-    address: string
+    account: CorePrimaryAccount
   }): Promise<void> => {
     if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC session for bitcoin network')
@@ -207,22 +202,39 @@ class WalletConnectService implements WalletConnectServiceInterface {
     }
 
     Logger.info(
-      `updating WC session '${session.peer.metadata.name}' with chainId ${chainId} and address ${address}`
+      `updating WC session '${session.peer.metadata.name}' with chainId ${chainId} and address ${account.addressC}`
     )
     const topic = session.topic
     const formattedChain = addNamespaceToChain(chainId)
+    let address = account.addressC
+    if (isXChain(chainId)) {
+      address = account.addressAVM
+    } else if (isPChain(chainId)) {
+      address = account.addressPVM
+    }
     const formattedAddress = addNamespaceToAddress(address, chainId)
 
-    const namespaces = session.namespaces[EVM_IDENTIFIER]
+    const namespaces: SessionTypes.Namespaces = {}
 
-    if (namespaces === undefined) return
+    for (const key of Object.keys(session.namespaces)) {
+      const namespace = session.namespaces[key]
+      if (namespace) {
+        const chains = namespace.chains || []
+        if (!chains.includes(formattedChain)) {
+          chains.push(formattedChain)
+        }
 
-    if (!chainAlreadyInSession(session, chainId)) {
-      namespaces.chains?.push(formattedChain)
-    }
+        const accounts = namespace.accounts
+        if (!accounts.includes(formattedAddress)) {
+          accounts.push(formattedAddress)
+        }
 
-    if (!addressAlreadyInSession(session, formattedAddress)) {
-      namespaces.accounts.push(formattedAddress)
+        namespaces[key] = {
+          ...namespace,
+          chains,
+          accounts
+        }
+      }
     }
 
     // check if dapp is online first
@@ -230,9 +242,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
     await this.client.updateSession({
       topic,
-      namespaces: {
-        [EVM_IDENTIFIER]: namespaces
-      }
+      namespaces
     })
 
     // emitting events
@@ -240,7 +250,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
       topic,
       event: {
         name: 'chainChanged',
-        data: chainId
+        data: formattedChain
       },
       chainId: formattedChain
     })
@@ -258,16 +268,16 @@ class WalletConnectService implements WalletConnectServiceInterface {
   updateSessionWithTimeout = async ({
     session,
     chainId,
-    address
+    account
   }: {
     session: SessionTypes.Struct
     chainId: number
-    address: string
+    account: CorePrimaryAccount
   }): Promise<void> => {
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
     return promiseWithTimeout(
-      this.updateSession({ session, chainId, address }),
+      this.updateSession({ session, chainId, account }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
       Logger.warn(
@@ -279,17 +289,13 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
   updateSessions = async ({
     chainId,
-    address
+    account
   }: {
     chainId: number
-    address: string
+    account: CorePrimaryAccount
   }): Promise<void> => {
     if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC sessions for bitcoin network')
-      return
-    }
-    if (isXPChain(chainId)) {
-      Logger.info('skip updating WC sessions for X/P network')
       return
     }
 
@@ -299,7 +305,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
       const promise = this.updateSessionWithTimeout({
         session,
         chainId,
-        address
+        account
       })
       promises.push(promise)
     })
