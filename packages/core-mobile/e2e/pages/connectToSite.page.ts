@@ -1,6 +1,7 @@
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import connectToSiteLoc from '../locators/connectToSite.loc'
+import popUpModalPage from './popUpModal.page'
 
 class ConnectToSite {
   get approveBtn() {
@@ -40,7 +41,11 @@ class ConnectToSite {
   }
 
   async tapApproveBtn() {
-    await Action.tap(this.approveBtn)
+    try {
+      await Action.tap(this.approveBtn)
+    } catch (e) {
+      await Action.tap(popUpModalPage.approveBtn)
+    }
   }
 
   async tapRejectBtn() {
@@ -60,11 +65,15 @@ class ConnectToSite {
   }
 
   async selectAccountAndconnect(toastMessage: string) {
-    await Action.waitForElement(this.selectAccounts, 8000)
+    await Action.waitForElement(this.selectAccounts, 18000)
     await this.tapSelectAccounts()
     await this.tapAccountCheckBox()
     await this.tapApproveBtn()
-    await Action.waitForElementNoSync(by.text(`Connected to ${toastMessage}`))
+    await Action.waitForElement(by.text(`Connected to ${toastMessage}`), 5000)
+    await Action.waitForElementNotVisible(
+      by.text(`Connected to ${toastMessage}`),
+      5000
+    )
   }
 
   async approveSignMessage(dapp: string) {

@@ -1,5 +1,4 @@
 import Actions from '../helpers/actions'
-import delay from '../helpers/waits'
 import PlusMenuLoc from '../locators/plusMenu.loc'
 import bottomTabsPage from './bottomTabs.page'
 import scanQrCodePage from './scanQrCode.page'
@@ -50,7 +49,6 @@ class PlusMenuPage {
     await bottomTabsPage.tapPlusIcon()
     await this.tapWalletConnectButton()
     await scanQrCodePage.setQrCode(qrUri.toString())
-    await delay(5000)
   }
 
   async tapBridgeButton() {
