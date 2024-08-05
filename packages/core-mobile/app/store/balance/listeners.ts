@@ -42,7 +42,7 @@ import {
   setBalances,
   setStatus
 } from './slice'
-import { Balances, QueryStatus } from './types'
+import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 
 /**
  * In production:
@@ -281,26 +281,34 @@ const fetchBalanceForAccounts = async (
     }
 
     const { accountIndex, chainId, tokens } = result.value
-
-    const tokensWithBalance = tokens.map(token => {
-      if (isPChain(chainId)) {
-        return { ...token, localId: AVAX_P_ID }
-      }
-      if (isXChain(chainId)) {
-        return { ...token, localId: AVAX_X_ID }
-      }
-      return {
-        ...token,
-        localId: getLocalTokenId(token)
-      }
-    })
-
-    acc[getKey(chainId, accountIndex)] = {
+    const balances = {
       dataAccurate: true,
       accountIndex,
       chainId,
-      tokens: tokensWithBalance
+      tokens: [] as LocalTokenWithBalance[]
     }
+
+    balances.tokens = tokens.reduce((tokenBalance, token) => {
+      if ('error' in token) {
+        balances.dataAccurate = false
+        return tokenBalance
+      }
+      if (isPChain(chainId)) {
+        return [...tokenBalance, { ...token, localId: AVAX_P_ID }]
+      }
+      if (isXChain(chainId)) {
+        return [...tokenBalance, { ...token, localId: AVAX_X_ID }]
+      }
+      return [
+        ...tokenBalance,
+        {
+          ...token,
+          localId: getLocalTokenId(token)
+        }
+      ]
+    }, [] as LocalTokenWithBalance[])
+
+    acc[getKey(chainId, accountIndex)] = balances
     return acc
   }, {})
 }

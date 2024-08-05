@@ -6,6 +6,7 @@ import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import type {
+  GetBalancesResponse,
   NetworkContractToken,
   TokenWithBalance
 } from '@avalabs/vm-module-types'
@@ -20,7 +21,8 @@ export type BalancesForAccount = {
   accountIndex: number
   chainId: number
   accountAddress: string
-  tokens: TokenWithBalance[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokens: (TokenWithBalance | { error: any })[]
 }
 
 export class BalanceService {
@@ -48,14 +50,23 @@ export class BalanceService {
           network.vmName === 'PVM'
         ) {
           const module = await ModuleManager.loadModuleByNetwork(network)
-          const balancesResponse = await module.getBalances({
-            customTokens,
-            addresses: [accountAddress],
-            currency,
-            network: mapToVmNetwork(network),
-            storage: coingeckoInMemoryCache
-          })
+          const balancesResponse: GetBalancesResponse =
+            await module.getBalances({
+              customTokens,
+              addresses: [accountAddress],
+              currency,
+              network: mapToVmNetwork(network),
+              storage: coingeckoInMemoryCache
+            })
           const balances = balancesResponse[accountAddress] ?? {}
+          if ('error' in balances) {
+            return {
+              accountIndex: account.index,
+              chainId: network.chainId,
+              tokens: [],
+              accountAddress
+            }
+          }
 
           return {
             accountIndex: account.index,

@@ -30,7 +30,7 @@
     "@avalabs/core-coingecko-sdk": "3.0.1-alpha.1",
     "@avalabs/core-utils-sdk": "3.0.1-alpha.1",
     "@avalabs/core-wallets-sdk": "3.0.1-alpha.1",
-    "@avalabs/evm-module": "0.1.3",
+    "@avalabs/evm-module": "0.1.7",
     "@avalabs/glacier-sdk": "3.0.1-alpha.1",
     "@avalabs/k2-mobile": "workspace:*",
     "@avalabs/types": "3.0.1-alpha.1",

@@ -13,6 +13,7 @@ export type TransactionName =
  * Keeps track of all possible op names
  */
 export type OpName =
+  | 'svc.balance.debank.get'
   | 'svc.balance.get_for_account'
   | 'svc.balance.get_for_address'
   | 'svc.balance.btc.get'
