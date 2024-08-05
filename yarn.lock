@@ -164,7 +164,7 @@ __metadata:
     "@babel/preset-typescript": 7.22.11
     "@babel/runtime": 7.24.0
     "@blockaid/client": 0.10.0
-    "@coinbase/cbpay-js": 1.6.0
+    "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.3.28
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.23
     "@datadog/mobile-react-native": 2.2.0
@@ -2687,15 +2687,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@coinbase/cbpay-js@npm:1.6.0":
-  version: 1.6.0
-  resolution: "@coinbase/cbpay-js@npm:1.6.0"
+"@coinbase/cbpay-js@npm:2.2.1":
+  version: 2.2.1
+  resolution: "@coinbase/cbpay-js@npm:2.2.1"
   peerDependencies:
     regenerator-runtime: ^0.13.9
   peerDependenciesMeta:
     regenerator-runtime:
       optional: true
-  checksum: 8a9fcd316a1ee9b9807e05e4bf9c11073e4feb490401911c281690381a468cf35d5f64d53fed6b45649473a419f82b176be51bce8430240d62e03dd77a687382
+  checksum: 644a05b361fddeb19324d95ac0ef326c7bd714cfe3148d53ed8d9b7e3bec96b2abce66086647160a0089fab23cf2712d7c8e24f7e57e3eb9b26729571190bfb8
   languageName: node
   linkType: hard
 
