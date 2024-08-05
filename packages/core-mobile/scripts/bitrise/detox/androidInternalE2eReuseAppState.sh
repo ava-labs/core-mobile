@@ -10,13 +10,13 @@ npm rebuild detox
 adb install -r $BITRISE_TEST_APK_PATH
 adb install -r $BITRISE_APK_PATH
 
-./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
-
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 
 if (($IS_REGRESSION_RUN=='true')); then
+  ./node_modules/.bin/detox test --listTests --configuration android.internal.release.regression.ci
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless --reuse; test_result=$?
 else
+  ./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --headless --reuse; test_result=$?
 fi
 
