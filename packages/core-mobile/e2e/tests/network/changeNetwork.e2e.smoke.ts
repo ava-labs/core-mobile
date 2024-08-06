@@ -63,7 +63,7 @@ describe('Change Network', () => {
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.searchNetworks(portfolio.btcNetwork)
     await NetworksManagePage.verifyNetworkRow(portfolio.btcNetwork)
-    await NetworksManagePage.tapStarSvgByIndex(0)
+    await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork)
     await commonElsPage.tapBackButton()
     await PortfolioPage.verifyInactiveNetworks([portfolio.btcNetwork])
   })
