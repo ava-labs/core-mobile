@@ -212,6 +212,22 @@ module.exports = {
         }
       }
     },
+    'ios.internal.release.regression.ci.no.parallel': {
+      device: 'simulator',
+      app: 'ios.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/regressionNoParallelConfig.json'
+        }
+      }
+    },
     'ios.internal.release.dapp.ci': {
       device: 'simulator',
       app: 'ios.internal.release.ci',
