@@ -21,9 +21,9 @@ describe('Send parameterized tokens', () => {
       }
       await loginRecoverWallet.enterPin()
       await sendPage.sendTokenTo2ndAccount(symbol, '0.00001')
+      await actions.waitForElementNotVisible(sendPage.sendTitle)
+      await actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
+      console.log(`${symbol}: Transaction Successful`)
     })
-    await actions.waitForElementNotVisible(sendPage.sendTitle)
-    await actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
-    console.log(`${symbol}: Transaction Successful`)
   })
 })
