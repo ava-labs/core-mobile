@@ -81,14 +81,10 @@ class CreatePinPage {
     }
   }
 
-  async createNewPin() {
+  async enterNewCurrentPin() {
     while (await Action.isVisible(this.setNewPinHeader, 0)) {
       await element(this.numpadOne).multiTap(6)
     }
-  }
-
-  async enterNewCurrentPin() {
-    await element(this.numpadOne).multiTap(6)
   }
 
   async enterCurrentPin() {

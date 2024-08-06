@@ -38,6 +38,10 @@ class NetworksPage {
     return by.text(networksManage.ethTokenOnCustomNetwork)
   }
 
+  get arbCustomNativeTokenSymbol() {
+    return by.text(networksManage.arbCustomNativeTokenSymbol)
+  }
+
   get explorerUrl() {
     return by.id(networksManage.explorerUrl)
   }
@@ -74,8 +78,12 @@ class NetworksPage {
     return by.id(networksManage.networkInfo)
   }
 
-  get arbWrongCustomNetworkName() {
-    return by.text(networksManage.arbWrongCustomNetworkName)
+  get celoWrongNetworkName() {
+    return by.text(networksManage.celoWrongNetworkName)
+  }
+
+  get celoNetworkName() {
+    return by.text(networksManage.celoNetworkName)
   }
 
   get customTab() {
@@ -122,6 +130,11 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.starSvg, index)
   }
 
+  async tapStartSvgByNetwork(network: string) {
+    await Action.waitForElement(by.id(`star_svg__${network}`))
+    await Action.tap(by.id(`star_svg__${network}`))
+  }
+
   async tapBitcoin() {
     await Action.tapElementAtIndex(this.bitcoin, 0)
   }
@@ -140,6 +153,10 @@ class NetworksPage {
 
   async tapCustomTab() {
     await Action.tapElementAtIndex(this.customTab, 0)
+  }
+
+  async tapCeloMainnet() {
+    await Action.tapElementAtIndex(this.celoNetworkName, 0)
   }
 
   async tapDropdown() {
@@ -171,8 +188,14 @@ class NetworksPage {
   }
 
   async tapSaveButton() {
-    await Action.tapElementAtIndex(this.saveButton, 0)
-    await Action.tapElementAtIndex(this.saveButton, 0)
+    await Action.scrollListUntil(
+      this.saveButton,
+      by.id('addEditNetwork_scroll_view'),
+      100
+    )
+    while (await Action.isVisible(this.saveButton, 0)) {
+      await Action.tapElementAtIndex(this.saveButton, 0)
+    }
   }
 
   async tapArbCustomNetwork() {
