@@ -197,13 +197,12 @@ class BrowserPage {
 
   async verifyResponseReceived(additionalText?: string) {
     try {
-      await Wbs.waitForEleByTextToBeVisible('Error: ')
-    } catch (e) {
       await Wbs.waitForEleByTextToBeVisible('Response: ')
-    }
-
-    if (additionalText) {
-      await Wbs.waitForEleByTextToBeVisible(additionalText)
+      if (additionalText) {
+        await Wbs.waitForEleByTextToBeVisible(additionalText)
+      }
+    } catch (e) {
+      await Wbs.waitForEleByTextToBeVisible('Error: ')
     }
     console.log('Successful response received!')
   }

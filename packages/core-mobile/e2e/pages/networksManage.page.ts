@@ -130,7 +130,7 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.starSvg, index)
   }
 
-  async tapStartSvgByNetwork(network: string) {
+  async tapStarSvgByNetwork(network: string) {
     await Action.waitForElement(by.id(`star_svg__${network}`))
     await Action.tap(by.id(`star_svg__${network}`))
   }
