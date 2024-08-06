@@ -34,7 +34,9 @@ export function NetworkListItem({
     return (
       <Row style={{ alignItems: 'center' }}>
         {!alwaysFavoriteNetworks.includes(networkChainId) && (
-          <AvaButton.Icon onPress={() => onFavorite(networkChainId)}>
+          <AvaButton.Icon
+            testID={`star_svg__${networkName}`}
+            onPress={() => onFavorite(networkChainId)}>
             <StarSVG selected={isFavorite} testID="star_svg" />
           </AvaButton.Icon>
         )}
