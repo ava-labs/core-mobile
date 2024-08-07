@@ -1,7 +1,13 @@
 /* eslint-disable sonarjs/cognitive-complexity */
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
+import {
+  DisplayData,
+  ExportImportTxDetails,
+  RpcMethod,
+  TokenType,
+  TransactionDetails
+} from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -27,7 +33,6 @@ import {
 } from 'store/account/slice'
 import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
-import { humanize } from 'utils/string/humanize'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
 import OvalTagBg from 'components/OvalTagBg'
@@ -36,7 +41,17 @@ import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
+import { isExportImportTxDetails } from '@avalabs/avalanche-module'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
+import { MessageDetails } from '../shared/MessageDetails'
+import { TransactionDetailsView } from '../shared/TransactionDetailsView'
+import { StakingDetailsView } from '../shared/AvalancheSendTransaction/components/StakingDetailsView'
+import { TxFee } from '../shared/AvalancheSendTransaction/components/TxFee'
+import { ExportImportTxDetailsView } from '../shared/AvalancheSendTransaction/components/ExportImportTxDetailsView'
+import { BaseTxView } from '../shared/AvalancheSendTransaction/components/BaseTxView'
+import { CreateChainTxView } from '../shared/AvalancheSendTransaction/components/CreateChainTxView'
+import { CreateSubnetTxView } from '../shared/AvalancheSendTransaction/components/CreateSubnetTxView'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
 import AlertBanner from './AlertBanner'
@@ -63,6 +78,7 @@ const ApprovalPopup = (): JSX.Element => {
       : selectActiveAccount
 
   const account = useSelector(accountSelector)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const {
     theme: { colors }
@@ -171,7 +187,8 @@ const ApprovalPopup = (): JSX.Element => {
       account,
       maxFeePerGas,
       maxPriorityFeePerGas,
-      overrideData: hashedCustomSpend
+      overrideData: hashedCustomSpend,
+      isTestnet: isDeveloperMode
     })
       .catch(Logger.error)
       .finally(() => {
@@ -291,75 +308,6 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
-  const renderMessageDetails = (): JSX.Element | null => {
-    if (!displayData.messageDetails) return null
-
-    return (
-      <View>
-        <Text variant="buttonMedium">Message:</Text>
-        <View sx={styles.details}>
-          <Text testID="message_detail" variant="body1">
-            {displayData.messageDetails}
-          </Text>
-        </View>
-      </View>
-    )
-  }
-  const renderTransactionDetails = (): JSX.Element | null => {
-    if (!displayData.transactionDetails) return null
-
-    const isInternalRequest = isInAppRequest(request)
-
-    const detailsToDisplay = []
-
-    // loop through the transaction details
-    // if the value is a string, display it
-    // if the value is an address, display it as a token address
-    for (const [key, value] of Object.entries(displayData.transactionDetails)) {
-      if (
-        key === 'data' || // skip data since we display it separately
-        (key === 'website' && isInternalRequest) // skip website for internal requests
-      )
-        continue
-
-      if (typeof value === 'string') {
-        const isAddress = value.substring(0, 2) === '0x'
-
-        detailsToDisplay.push(
-          <Row style={{ justifyContent: 'space-between' }} key={key}>
-            <Text variant="caption">{humanize(key)}</Text>
-            {isAddress ? (
-              <TokenAddress address={value} />
-            ) : (
-              <Text variant="buttonSmall">{value}</Text>
-            )}
-          </Row>
-        )
-      }
-    }
-
-    return (
-      <>
-        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text variant="buttonMedium">Transaction Details</Text>
-          {transactionDetailsData && (
-            <AvaButton.Base onPress={() => setShowData(true)}>
-              <Row>
-                <CarrotSVG
-                  color={colors.$neutral50}
-                  direction={'left'}
-                  size={12}
-                />
-                <CarrotSVG color={colors.$neutral50} size={12} />
-              </Row>
-            </AvaButton.Base>
-          )}
-        </Row>
-        <View sx={styles.details}>{detailsToDisplay}</View>
-      </>
-    )
-  }
-
   const renderDisclaimer = (): JSX.Element | null => {
     if (!displayData.disclaimer) return null
     return (
@@ -420,6 +368,71 @@ const ApprovalPopup = (): JSX.Element => {
     return <BalanceChange balanceChange={balanceChange} />
   }
 
+  const renderNetworkFee = (): JSX.Element | null => {
+    if (showNetworkFeeSelector && chainId) {
+      return (
+        <NetworkFeeSelector
+          chainId={chainId}
+          gasLimit={
+            signingData.data.gasLimit ? Number(signingData.data.gasLimit) : 0
+          }
+          onFeesChange={handleFeesChange}
+        />
+      )
+    }
+
+    let txFee =
+      displayData.stakingDetails?.txFee ??
+      displayData.chainDetails?.txFee ??
+      displayData.blockchainDetails?.txFee ??
+      displayData.subnetDetails?.txFee
+    if (
+      displayData.transactionDetails &&
+      'txFee' in displayData.transactionDetails &&
+      displayData.transactionDetails.txFee !== undefined
+    ) {
+      txFee = displayData.transactionDetails.txFee
+    }
+    if (!showNetworkFeeSelector && txFee) {
+      return <TxFee txFee={txFee} backgroundColor={colors.$neutral800} />
+    }
+    return null
+  }
+
+  const renderTransactionDetails = (
+    details: TransactionDetails | ExportImportTxDetails
+  ): JSX.Element => {
+    if (isExportImportTxDetails(details)) {
+      return <ExportImportTxDetailsView details={details} />
+    }
+    return (
+      <TransactionDetailsView
+        details={details}
+        request={request}
+        setShowData={setShowData}
+      />
+    )
+  }
+
+  const renderDetails = (data: DisplayData): JSX.Element | null => {
+    if (data.transactionDetails) {
+      return renderTransactionDetails(data.transactionDetails)
+    }
+    if (data.stakingDetails) {
+      return <StakingDetailsView details={data.stakingDetails} />
+    }
+    if (data.chainDetails) {
+      return <BaseTxView tx={data.chainDetails} />
+    }
+    if (data.blockchainDetails) {
+      return <CreateChainTxView tx={data.blockchainDetails} />
+    }
+    if (data.subnetDetails) {
+      return <CreateSubnetTxView tx={data.subnetDetails} />
+    }
+    return null
+  }
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -435,22 +448,14 @@ const ApprovalPopup = (): JSX.Element => {
             {renderDappInfo()}
             {renderNetwork()}
             {renderAccount()}
-            {renderMessageDetails()}
-            {renderTransactionDetails()}
+            {displayData.messageDetails && (
+              <MessageDetails details={displayData.messageDetails} />
+            )}
+            {renderDetails(displayData)}
             {renderSpendLimits()}
             {renderBalanceChange()}
           </View>
-          {showNetworkFeeSelector && chainId && (
-            <NetworkFeeSelector
-              chainId={chainId}
-              gasLimit={
-                signingData.data.gasLimit
-                  ? Number(signingData.data.gasLimit)
-                  : 0
-              }
-              onFeesChange={handleFeesChange}
-            />
-          )}
+          {renderNetworkFee()}
           {renderDisclaimer()}
         </ScrollView>
         {renderApproveRejectButtons()}
@@ -476,14 +481,6 @@ export const styles = StyleSheet.create({
   },
   fullWidthContainer: {
     width: '100%'
-  },
-  details: {
-    justifyContent: 'space-between',
-    marginTop: 16,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    backgroundColor: '$neutral800'
   }
 })
 

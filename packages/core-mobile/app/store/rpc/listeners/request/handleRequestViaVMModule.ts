@@ -109,11 +109,7 @@ const getContext = (
   activeAccount: CorePrimaryAccount | undefined
 ): Record<string, string> | undefined => {
   if (method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION) {
-    if (
-      !params ||
-      typeof params !== 'object' ||
-      'chainAlias' in params === false
-    ) {
+    if (!params || typeof params !== 'object' || !('chainAlias' in params)) {
       return undefined
     }
 

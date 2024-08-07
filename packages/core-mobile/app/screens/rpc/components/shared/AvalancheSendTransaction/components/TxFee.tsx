@@ -10,7 +10,13 @@ import { selectAvaxPrice } from 'store/balance/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Text } from '@avalabs/k2-mobile'
 
-export const TxFee = ({ txFee }: { txFee: bigint }): JSX.Element => {
+export const TxFee = ({
+  txFee,
+  backgroundColor
+}: {
+  txFee: bigint
+  backgroundColor?: string
+}): JSX.Element => {
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
@@ -21,7 +27,7 @@ export const TxFee = ({ txFee }: { txFee: bigint }): JSX.Element => {
         Network Fee
       </Text>
       <Space y={8} />
-      <Card style={styles.cardContainer}>
+      <Card style={{ ...styles.cardContainer, backgroundColor }}>
         <Row style={styles.rowContainer}>
           <Text variant="caption" sx={{ color: '$neutral400' }}>
             Fee Amount
