@@ -3,7 +3,6 @@ import AccountManagePage from '../pages/accountManage.page'
 import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from '../pages/plusMenu.page'
 import Send from '../locators/send.loc'
-import delay from '../helpers/waits'
 
 class SendPage {
   get addressBook() {
@@ -50,6 +49,14 @@ class SendPage {
     return by.id(Send.addressField)
   }
 
+  get searchBarOnSelectToken() {
+    return by.id(Send.searchBarOnSelectToken)
+  }
+
+  get selectTokenTitle() {
+    return by.text(Send.selectTokenTitle)
+  }
+
   async tapAddressBook() {
     await Actions.tap(this.addressBook)
   }
@@ -90,11 +97,16 @@ class SendPage {
     await Actions.setInputText(this.addressField, address, 0)
   }
 
-  async selectToken(tokenName: string, index = 0) {
-    await delay(2000)
-    await element(by.text(`${tokenName}`))
-      .atIndex(index)
-      .tap()
+  async selectToken(tokenName: string) {
+    await Actions.waitForElement(this.searchBarOnSelectToken)
+    await Actions.setInputText(this.searchBarOnSelectToken, tokenName)
+    await Actions.scrollListUntil(
+      by.id(`token_selector__${tokenName}`),
+      by.id('token_selector_list'),
+      100,
+      'down'
+    )
+    await Actions.tap(by.id(`token_selector__${tokenName}`))
   }
 
   async enterAmount(amount: string) {
