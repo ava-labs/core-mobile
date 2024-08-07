@@ -11,7 +11,7 @@ import securityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.pa
 import connectedSitesPage from '../../pages/connectedSites.page'
 import connectToSitePage from '../../pages/connectToSite.page'
 
-describe('Connect to dApp using WalletConnect', () => {
+describe('Dapp Testing: Core.app', () => {
   beforeAll(async () => {
     await warmup()
   })
@@ -34,7 +34,7 @@ describe('Connect to dApp using WalletConnect', () => {
     await connectToSitePage.selectAccountAndconnect('Core')
   })
 
-  it('should show up Core dApp connected ', async () => {
+  it('should show up Core dApp connected', async () => {
     await securityAndPrivacyPage.goToConnectedSites()
     await connectedSitesPage.verifyDapp('Core')
   })
