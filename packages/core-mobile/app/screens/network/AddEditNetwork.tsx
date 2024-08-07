@@ -152,7 +152,9 @@ export default function AddEditNetwork({
   }
 
   return (
-    <ScrollView style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
+    <ScrollView
+      testID="addEditNetwork_scroll_view"
+      style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
       <AvaText.LargeTitleBold>
         {mode === 'edit' ? 'Edit Network' : 'Add Network'}
       </AvaText.LargeTitleBold>
