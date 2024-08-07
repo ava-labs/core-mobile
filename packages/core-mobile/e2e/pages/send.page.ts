@@ -2,6 +2,7 @@ import Actions from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from '../pages/plusMenu.page'
+import popUpModalPage from '../pages/popUpModal.page'
 import Send from '../locators/send.loc'
 
 class SendPage {
@@ -126,6 +127,10 @@ class SendPage {
     await this.tapSendTitle()
     await this.tapNextButton()
     await this.tapApproveButton()
+  }
+
+  async verifySendToast() {
+    await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
   }
 }
 

@@ -23,7 +23,6 @@
   "testPathIgnorePatterns": [
     "./e2e/tests/bridge",
     "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
-    "./e2e/tests/plusIcon/walletConnect/dappIntegrations.e2e.ts",
     "./e2e/tests/plusIcon/walletConnect/dappEthIntegrations.e2e.ts",
     "./e2e/tests/login/recoverWallet.e2e.smoke.ts",
     "./e2e/tests/network/emptyAsssets.e2e.ts",
