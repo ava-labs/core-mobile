@@ -184,6 +184,7 @@ class NetworksPage {
   }
 
   async tapPolygonCustomNetwork() {
+    await Action.waitForElement(this.polygonCustomNetwork)
     await Action.tapElementAtIndex(this.polygonCustomNetwork, 0)
   }
 

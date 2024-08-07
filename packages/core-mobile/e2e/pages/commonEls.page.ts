@@ -1,5 +1,6 @@
 import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
+import loginRecoverWallet from '../helpers/loginRecoverWallet'
 import advancedPage from './burgerMenu/advanced.page'
 import burgerMenuPage from './burgerMenu/burgerMenu.page'
 
@@ -81,6 +82,15 @@ class CommonElsPage {
         return
       }
     }
+  }
+
+  async refreshApp() {
+    if (Actions.platform() === 'ios') {
+      await device.reloadReactNative()
+    } else {
+      await device.launchApp({ newInstance: true })
+    }
+    loginRecoverWallet.enterPin()
   }
 }
 
