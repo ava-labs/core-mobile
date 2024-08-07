@@ -17,6 +17,7 @@ import {
 } from 'utils/toast'
 import { handleEthSendTransaction } from './handleEthSendTransaction'
 import { handleSignMessage } from './handleSignMessage'
+import { handleAvalancheSendTransaction } from './handleAvalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
   onTransactionConfirmed(txHash: Hex): void {
@@ -41,13 +42,15 @@ class ApprovalController implements VmModuleApprovalController {
         account,
         maxFeePerGas,
         maxPriorityFeePerGas,
-        overrideData
+        overrideData,
+        isTestnet
       }: {
         network: Network
         account: CorePrimaryAccount
         maxFeePerGas?: bigint
         maxPriorityFeePerGas?: bigint
         overrideData?: string
+        isTestnet?: boolean
       }): Promise<void> => {
         switch (signingData.type) {
           case RpcMethod.ETH_SEND_TRANSACTION: {
@@ -60,7 +63,6 @@ class ApprovalController implements VmModuleApprovalController {
               overrideData,
               resolve
             })
-
             break
           }
           case RpcMethod.PERSONAL_SIGN:
@@ -77,7 +79,17 @@ class ApprovalController implements VmModuleApprovalController {
               network,
               resolve
             })
-
+            break
+          }
+          case RpcMethod.AVALANCHE_SEND_TRANSACTION: {
+            handleAvalancheSendTransaction({
+              request,
+              unsignedTxJson: signingData.unsignedTxJson,
+              vm: signingData.vm,
+              account,
+              isTestnet,
+              resolve
+            })
             break
           }
           default:
