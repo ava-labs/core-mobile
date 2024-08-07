@@ -61,8 +61,11 @@ describe('Change Network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
-    await NetworksManagePage.searchNetworks(portfolio.btcNetwork)
-    await NetworksManagePage.verifyNetworkRow(portfolio.btcNetwork)
+    await Actions.scrollListUntil(
+      by.id(`star_svg__${portfolio.btcNetwork}`),
+      by.id('networks_tab'),
+      50
+    )
     await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork)
     await commonElsPage.tapBackButton()
     await PortfolioPage.verifyInactiveNetworks([portfolio.btcNetwork])
