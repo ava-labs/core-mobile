@@ -28,7 +28,7 @@ describe('Send Sepolia Eth to another account', () => {
       sendLoc.ethToken,
       sendLoc.sendingAmount
     )
-    await SendPage.verifySendToast()
+    await SendPage.verifySuccessToast()
   })
 
   it('Should have the send row in activity tab', async () => {

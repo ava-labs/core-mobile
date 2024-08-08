@@ -2,6 +2,8 @@ import Actions from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import { Platform } from '../helpers/constants'
 import swapTab from '../locators/swapTab.loc'
+import bottomTabsPage from './bottomTabs.page'
+import plusMenuPage from './plusMenu.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 
@@ -83,9 +85,30 @@ class SwapTabPage {
     await Actions.tap(this.fromText)
   }
 
+  async inputTokenAmount(amount: string) {
+    await Actions.setInputText(this.amountField, amount, 0)
+    await Actions.tap(this.fromText)
+  }
+
   async verifyToastMessageItems() {
     await Assert.isVisible(this.toastMessage)
     await Assert.isVisible(this.linkSvg)
+  }
+
+  async tapToken(token: string) {
+    await Actions.tap(by.text(token))
+  }
+
+  async swap(from: string, to: string, amount = '0.00001') {
+    await bottomTabsPage.tapPlusIcon()
+    await plusMenuPage.tapSwapButton()
+    await this.tapSelectTokenDropdown()
+    await this.tapToken(from)
+    await this.inputTokenAmount(amount)
+    await this.tapSelectTokenDropdown()
+    await this.tapToken(to)
+    await this.reviewOrderButton()
+    await this.tapApproveButton()
   }
 }
 

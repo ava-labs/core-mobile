@@ -5,7 +5,7 @@ import PortfolioPage from '../../pages/portfolio.page'
 import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
 
-describe('Send Avax to another account', () => {
+describe('Send: Error Message', () => {
   beforeAll(async () => {
     await warmup()
   })

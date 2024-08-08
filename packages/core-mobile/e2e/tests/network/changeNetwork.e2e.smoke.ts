@@ -63,7 +63,7 @@ describe('Change Network', () => {
     await NetworksManagePage.tapNetworksTab()
     await Actions.scrollListUntil(
       by.id(`star_svg__${portfolio.btcNetwork}`),
-      by.id('networks_tab'),
+      by.id('networks_tab_scroll_view'),
       50
     )
     await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork)

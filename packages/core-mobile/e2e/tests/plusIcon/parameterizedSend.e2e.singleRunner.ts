@@ -16,7 +16,7 @@ describe('Send parameterized tokens', () => {
       await commonElsPage.refreshApp()
       await sendPage.sendTokenTo2ndAccount(symbol, '0.00001')
       await actions.waitForElementNotVisible(sendPage.sendTitle)
-      await sendPage.verifySendToast()
+      await sendPage.verifySuccessToast()
       console.log(`${symbol}: Transaction Successful`)
     })
   })

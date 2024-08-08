@@ -129,7 +129,7 @@ class SendPage {
     await this.tapApproveButton()
   }
 
-  async verifySendToast() {
+  async verifySuccessToast() {
     await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
   }
 }
