@@ -95,18 +95,14 @@ class SwapTabPage {
     await Assert.isVisible(this.linkSvg)
   }
 
-  async tapToken(token: string) {
-    await Actions.tap(by.text(token))
-  }
-
   async swap(from: string, to: string, amount = '0.00001') {
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapSwapButton()
     await this.tapSelectTokenDropdown()
-    await this.tapToken(from)
+    await Actions.tap(by.text(from))
     await this.inputTokenAmount(amount)
     await this.tapSelectTokenDropdown()
-    await this.tapToken(to)
+    await Actions.tap(by.text(to))
     await this.reviewOrderButton()
     await this.tapApproveButton()
   }

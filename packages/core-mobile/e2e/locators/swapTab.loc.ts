@@ -1,7 +1,7 @@
 export default {
   avaxToken: 'Avalanche',
   usdcToken: 'USD Coin',
-  tokenValueAvax: '0.0001',
+  tokenValueAvax: '0.01',
   selectTokenDropdown: 'Select',
   amountField: 'universal_token_selector__amount_field',
   from: 'From',
