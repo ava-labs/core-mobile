@@ -197,7 +197,7 @@
     "@lavamoat/allow-scripts": "2.0.3",
     "@playwright/test": "1.42.1",
     "@react-native/babel-preset": "0.73.21",
-    "@react-native/metro-config": "0.73.5",
+    "@react-native/metro-config": "0.74.87",
     "@rushstack/eslint-patch": "1.5.1",
     "@spotlightjs/spotlight": "2.0.0",
     "@storybook/addon-ondevice-actions": "7.6.17",
