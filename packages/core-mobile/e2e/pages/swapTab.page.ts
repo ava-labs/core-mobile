@@ -64,13 +64,11 @@ class SwapTabPage {
     await Actions.tapElementAtIndex(this.reviewOrderBtn, 0)
   }
 
-  async waitReviewOrderBtnEnabled() {
+  async waitForReviewOrderBtnEnabled() {
     await Actions.waitForCondition(
       async () => {
         const attr = await Actions.getAttributes(this.amountField, 1)
         if ('elements' in attr) {
-          console.log('yo')
-          console.log(attr.elements)
           return attr.elements[1]?.text
         } else {
           return attr.text
@@ -120,7 +118,7 @@ class SwapTabPage {
     await this.inputTokenAmount(amount)
     await this.tapSelectTokenDropdown()
     await Actions.tap(by.text(to))
-    await this.waitReviewOrderBtnEnabled()
+    await this.waitForReviewOrderBtnEnabled()
     await this.reviewOrderButton()
     await this.tapApproveButton()
   }
