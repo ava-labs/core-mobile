@@ -122,9 +122,13 @@ const ApprovalPopup = (): JSX.Element => {
     []
   )
 
-  if (showData && displayData.transactionDetails?.data) {
-    const data = displayData.transactionDetails.data
+  const transactionDetailsData =
+    displayData.transactionDetails && 'data' in displayData.transactionDetails
+      ? displayData.transactionDetails.data
+      : undefined
 
+  if (showData && transactionDetailsData) {
+    const data = transactionDetailsData
     return (
       <RpcRequestBottomSheet onClose={() => rejectAndClose()}>
         <View style={{ padding: 16 }}>
@@ -337,7 +341,7 @@ const ApprovalPopup = (): JSX.Element => {
       <>
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Text variant="buttonMedium">Transaction Details</Text>
-          {displayData.transactionDetails.data && (
+          {transactionDetailsData && (
             <AvaButton.Base onPress={() => setShowData(true)}>
               <Row>
                 <CarrotSVG
