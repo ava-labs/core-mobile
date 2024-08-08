@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
 import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
