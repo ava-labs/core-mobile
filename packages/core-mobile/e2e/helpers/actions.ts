@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /*eslint max-params: ["error", 4]*/
 
+import assert from 'assert'
 import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
 import { Platform } from './constants'
@@ -260,6 +261,20 @@ async function writeQrCodeToFile(clipboardValue: string) {
   )
 }
 
+async function waitForCondition(func: any, condition: any, timeout = 5000) {
+  let isFulfilled = false
+
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    if (condition(await func())) {
+      isFulfilled = true
+      break
+    }
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+  assert(isFulfilled)
+}
+
 export default {
   balanceToNumber,
   tap,
@@ -268,6 +283,7 @@ export default {
   waitForElement,
   waitForElementNoSync,
   waitForElementNotVisible,
+  waitForCondition,
   tapElementAtIndex,
   tapElementAtIndexNoSync,
   getAttributes,

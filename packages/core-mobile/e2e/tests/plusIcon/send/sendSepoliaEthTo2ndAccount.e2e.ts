@@ -1,12 +1,12 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import NetworksManagePage from '../../../pages/networksManage.page'
-import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
 import AdvancedPage from '../../../pages/burgerMenu/advanced.page'
 import Actions from '../../../helpers/actions'
+import PortfolioPage from '../../../pages/portfolio.page'
 
 describe('Send Sepolia Eth to another account', () => {
   beforeAll(async () => {
@@ -32,7 +32,8 @@ describe('Send Sepolia Eth to another account', () => {
   })
 
   it('Should have the send row in activity tab', async () => {
-    await PortfolioPage.goToActivityTab()
+    await NetworksManagePage.tapEthereumSepoliaNetwork(1)
+    await PortfolioPage.tapActivityTab()
     const newRow = await ActivityTabPage.getLatestActivityRow()
     await ActivityTabPage.verifyActivityRow(newRow, 'Send')
   })

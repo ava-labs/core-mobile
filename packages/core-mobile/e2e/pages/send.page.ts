@@ -70,6 +70,16 @@ class SendPage {
     await Actions.tapElementAtIndex(this.nextButton, 0)
   }
 
+  async waitForNextBtnEnabled() {
+    await Actions.waitForCondition(
+      async () => {
+        const attr = await Actions.getAttributes(this.amountToSendInput, 0)
+        if (!('elements' in attr)) return attr.text
+      },
+      (text: string | undefined) => text && text.length > 0
+    )
+  }
+
   async tapCarrotSVG() {
     await Actions.tap(this.carrotSVG)
   }
@@ -87,6 +97,7 @@ class SendPage {
   }
 
   async tapApproveButton() {
+    await Actions.waitForElement(this.approveButton, 5000)
     await Actions.tapElementAtIndex(this.approveButton, 0)
   }
 
@@ -125,12 +136,17 @@ class SendPage {
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
     await this.tapSendTitle()
+    await this.waitForNextBtnEnabled()
     await this.tapNextButton()
     await this.tapApproveButton()
   }
 
   async verifySuccessToast() {
     await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
+    await Actions.waitForElementNotVisible(
+      popUpModalPage.successfulToastMsg,
+      120000
+    )
   }
 }
 

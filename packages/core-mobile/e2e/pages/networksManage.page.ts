@@ -245,6 +245,7 @@ class NetworksPage {
     await PortfolioPage.tapManageNetworks()
     await this.tapNetworksTab()
     await this.searchNetworks(networksManage.ethereumSepoliaNetwork)
+    await this.tapStarSvgByNetwork(networksManage.ethereumSepoliaNetwork)
     await this.tapEthereumSepoliaNetwork(1)
   }
 

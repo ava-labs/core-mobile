@@ -40,20 +40,14 @@ describe('Send - NFT', () => {
     )
   }, 200000)
 
-  it('Should receive NFT', async () => {
-    await AccountManagePage.switchToReceivedAccount(account)
-    await CollectiblesPage.scrollToMintNFT()
-  })
-
   it('should verify NFT transactions on activity tab', async () => {
-    // receiver activity tab:
-    await PortfolioPage.tapAssetsTab()
-    await PortfolioPage.tapAvaxNetwork()
-    await PortfolioPage.tapActivityTab()
-    await activityTabPage.verifyNewRow('Contract Call', '+1')
-
     // sender activity tab:
-    await AccountManagePage.switchToSentAccount(account)
+    await PortfolioPage.tapAssetsTab()
+    await PortfolioPage.goToActivityTab()
     await activityTabPage.verifyNewRow('Send', '-1')
+    // receiver activity tab:
+    await AccountManagePage.switchToReceivedAccount(account)
+    await activityTabPage.refreshActivityPage()
+    await activityTabPage.verifyNewRow('Contract Call', '+1')
   })
 })
