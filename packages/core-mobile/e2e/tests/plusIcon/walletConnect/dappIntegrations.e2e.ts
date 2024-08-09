@@ -5,7 +5,7 @@ import connectToSitePage from '../../../pages/connectToSite.page'
 import connectedSitesPage from '../../../pages/connectedSites.page'
 import securityAndPrivacyPage from '../../../pages/burgerMenu/securityAndPrivacy.page'
 
-describe('Dapp Testing: Wallet Connect', () => {
+describe('Dapp - Wallet Connect', () => {
   beforeAll(async () => {
     await warmup()
   })

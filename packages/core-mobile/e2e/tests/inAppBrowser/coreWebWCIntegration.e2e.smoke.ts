@@ -11,7 +11,7 @@ import securityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.pa
 import connectedSitesPage from '../../pages/connectedSites.page'
 import connectToSitePage from '../../pages/connectToSite.page'
 
-describe('Dapp Testing: Core.app', () => {
+describe('Dapp - Core', () => {
   beforeAll(async () => {
     await warmup()
   })

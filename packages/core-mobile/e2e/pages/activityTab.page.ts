@@ -170,6 +170,7 @@ class ActivityTabPage {
   }
 
   async verifyNewRow(type: string, amount: string) {
+    await Action.waitForElement(this.activityListItem)
     const typeEle = await this.getLatestActivityRow()
     const amountEle = await this.getLatestActivityRowAmount()
     await this.verifyActivityRow(typeEle, type)
