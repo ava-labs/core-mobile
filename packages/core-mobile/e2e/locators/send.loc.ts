@@ -4,7 +4,7 @@ export default {
   avaxToken: 'AVAX',
   carrotSVG: 'carrot_svg',
   ethToken: 'ETH',
-  sendingAmount: '0.0001',
+  sendingAmount: '0.000001',
   myAccounts: 'My Accounts',
   nextBtn: 'Next',
   sendTitle: 'Send',
@@ -14,5 +14,7 @@ export default {
   wethToken: 'WETH.e',
   approveBtn: 'approve_button',
   rejectBtn: 'Reject',
-  addressField: 'end_token__send_field'
+  addressField: 'end_token__send_field',
+  searchBarOnSelectToken: 'search_bar__select_token',
+  selectTokenTitle: 'Select Token'
 }

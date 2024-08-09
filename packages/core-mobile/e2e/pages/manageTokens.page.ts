@@ -10,12 +10,20 @@ class ManageTokensPage {
     return by.text(manageTokens.addcustomToken)
   }
 
-  get addedMessage() {
-    return by.text(manageTokens.addedMessage)
+  get added() {
+    return by.text(manageTokens.added)
   }
 
   get inputContractAddress() {
     return by.id(manageTokens.inputContractAddress)
+  }
+
+  get manageTokenList() {
+    return by.text(manageTokens.manageTokenList)
+  }
+
+  get customCChainTokenName() {
+    return by.text(manageTokens.customCChainTokenName)
   }
 
   async tapAddcustomToken() {
@@ -26,12 +34,8 @@ class ManageTokensPage {
     await Action.tapElementAtIndex(this.addButton, 0)
   }
 
-  async inputCustomToken() {
-    await Action.setInputText(
-      this.inputContractAddress,
-      manageTokens.customTokenContract,
-      0
-    )
+  async inputCustomToken(address: string) {
+    await Action.setInputText(this.inputContractAddress, address, 0)
   }
 }
 

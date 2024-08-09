@@ -26,7 +26,8 @@ const PortfolioListItem: FC<Props> = ({
   image,
   symbol,
   onPress,
-  showLoading
+  showLoading,
+  testID
 }) => {
   const {
     appHook: { currencyFormatter }
@@ -63,6 +64,7 @@ const PortfolioListItem: FC<Props> = ({
 
   return (
     <View
+      testID={testID}
       sx={{
         marginVertical: 4,
         borderRadius: 8,

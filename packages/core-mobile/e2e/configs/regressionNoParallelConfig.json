@@ -4,7 +4,9 @@
   "testRunner": "jest-circus/runner",
   "testTimeout": 180000,
   "rootDir": "..",
-  "testMatch": ["<rootDir>/tests/**/*.e2e.smoke.ts"],
+  "testMatch": [
+    "<rootDir>/tests/**/*.e2e.singleRunner.ts"
+  ],
   "reporters": ["detox/runners/jest/reporter"],
   "verbose": true,
   "globalTeardown": "<rootDir>/sendResultsTeardown.ts",
@@ -20,9 +22,5 @@
       }
     ]
   },
-  "testPathIgnorePatterns": [
-    "./e2e/tests/plusIcon/send/sendSepoliaEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/plusIcon/send/sendEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/stake/claimTestnet.e2e.smoke.ts"
-  ]
+  "testPathIgnorePatterns": []
 }

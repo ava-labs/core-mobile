@@ -10,25 +10,15 @@ describe('Send AVAX', () => {
     await warmup()
   })
 
-  it('should successfully navigate to send and review screen', async () => {
-    // create second account to send AVAX
+  it('should send AVAX and verify the transaction', async () => {
     await AccountManagePage.createSecondAccount()
-
-    // Get the existing transactions rows
-    await PortfolioPage.tapAvaxNetwork()
-    await PortfolioPage.tapActivityTab()
-
-    // Send token to the 2nd account
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
     )
-
-    // Verify the new Send row is added on activity tab
+    await SendPage.verifySuccessToast()
+    await PortfolioPage.goToActivityTab()
     const newRow = await ActivityTabPage.getLatestActivityRow()
     await ActivityTabPage.verifyActivityRow(newRow, 'Send')
-
-    // Verify you left app but in web browser
-    await ActivityTabPage.verifyTransactionDetailWebBrowser('Send')
   })
 })

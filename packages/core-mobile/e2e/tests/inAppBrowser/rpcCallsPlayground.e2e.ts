@@ -15,7 +15,7 @@ import connectToSitePage from '../../pages/connectToSite.page'
 import plusMenuPage from '../../pages/plusMenu.page'
 import portfolioPage from '../../pages/portfolio.page'
 
-describe('Connect to dApp using WalletConnect', () => {
+describe('Dapp - Core Playground', () => {
   beforeAll(async () => {
     await warmup()
   })

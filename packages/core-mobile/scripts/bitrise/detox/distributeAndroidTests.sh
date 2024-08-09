@@ -2,24 +2,31 @@
 
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
 if (($IS_REGRESSION_RUN=='true')); then
+  echo "This is a regression run"
   TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --listTests)
 else
+  echo "This is a smoke test run"
   TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --listTests)
 fi
 
-echo "Tests to be run: $TESTS_TO_BE_RUN"
 
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
 
 # Returns the number of elements in the array
 testCnt="${#array[@]}"
+echo "Test count: $testCnt"
 
 # Split the tests into 3 groups and uses awk in case the number of tests is not divisible by 3
 firstThird=$(awk "BEGIN { print ($testCnt / 3) }")
 roundedFirstThird=$(awk "BEGIN {print int($firstThird)}")
 roundedUpFirstThird=$(awk "BEGIN {print int($firstThird+0.5)}")
 secondThird=$(awk "BEGIN {print $roundedUpFirstThird * 2}")
+
+echo "First third: $firstThird"
+echo "Rounded first third: $roundedFirstThird"
+echo "Rounded up first third: $roundedUpFirstThird"
+echo "Second third: $secondThird"
 
 # These are the 3 different arrays of tests that will be passed to the 3 different emulators
 testCnt1="${array[@]:0:$roundedUpFirstThird}"

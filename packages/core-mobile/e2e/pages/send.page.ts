@@ -2,8 +2,8 @@ import Actions from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from '../pages/plusMenu.page'
+import popUpModalPage from '../pages/popUpModal.page'
 import Send from '../locators/send.loc'
-import delay from '../helpers/waits'
 
 class SendPage {
   get addressBook() {
@@ -50,6 +50,14 @@ class SendPage {
     return by.id(Send.addressField)
   }
 
+  get searchBarOnSelectToken() {
+    return by.id(Send.searchBarOnSelectToken)
+  }
+
+  get selectTokenTitle() {
+    return by.text(Send.selectTokenTitle)
+  }
+
   async tapAddressBook() {
     await Actions.tap(this.addressBook)
   }
@@ -60,6 +68,16 @@ class SendPage {
 
   async tapNextButton() {
     await Actions.tapElementAtIndex(this.nextButton, 0)
+  }
+
+  async waitForNextBtnEnabled() {
+    await Actions.waitForCondition(
+      async () => {
+        const attr = await Actions.getAttributes(this.amountToSendInput, 0)
+        if (!('elements' in attr)) return attr.text
+      },
+      (text: string | undefined) => text && text.length > 0
+    )
   }
 
   async tapCarrotSVG() {
@@ -79,6 +97,7 @@ class SendPage {
   }
 
   async tapApproveButton() {
+    await Actions.waitForElement(this.approveButton, 5000)
     await Actions.tapElementAtIndex(this.approveButton, 0)
   }
 
@@ -90,11 +109,16 @@ class SendPage {
     await Actions.setInputText(this.addressField, address, 0)
   }
 
-  async selectToken(tokenName: string, index = 0) {
-    await delay(2000)
-    await element(by.text(`${tokenName}`))
-      .atIndex(index)
-      .tap()
+  async selectToken(tokenName: string) {
+    await Actions.waitForElement(this.searchBarOnSelectToken)
+    await Actions.setInputText(this.searchBarOnSelectToken, tokenName)
+    await Actions.scrollListUntil(
+      by.id(`token_selector__${tokenName}`),
+      by.id('token_selector_list'),
+      100,
+      'down'
+    )
+    await Actions.tap(by.id(`token_selector__${tokenName}`))
   }
 
   async enterAmount(amount: string) {
@@ -112,8 +136,17 @@ class SendPage {
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
     await this.tapSendTitle()
+    await this.waitForNextBtnEnabled()
     await this.tapNextButton()
     await this.tapApproveButton()
+  }
+
+  async verifySuccessToast() {
+    await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
+    await Actions.waitForElementNotVisible(
+      popUpModalPage.successfulToastMsg,
+      120000
+    )
   }
 }
 

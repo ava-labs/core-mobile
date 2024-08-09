@@ -16,7 +16,7 @@ describe('Favorites Token', () => {
   })
 
   let favorites = ['AVAX', 'BTC', 'ETH']
-  const newToken = 'USDC'
+  const newToken = 'XRP'
 
   it('should have default favorites on watchlist', async () => {
     // Display default favorites on WatchList Carousel

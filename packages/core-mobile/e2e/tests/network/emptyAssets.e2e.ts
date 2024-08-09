@@ -19,9 +19,9 @@ describe('Empty Assets', () => {
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.searchNetworks('Polygon')
     await NetworksManagePage.tapPolygonCustomNetwork()
-
+    await actions.waitForElement(NetworksManagePage.polygonCustomNetwork, 60000)
     await PortfolioPage.tapPolygonNetwork()
-    await actions.waitForElement(PortfolioPage.noAssetsHeader)
+    await Assert.isVisible(PortfolioPage.noAssetsHeader)
     await Assert.isVisible(PortfolioPage.noAssetsHeader)
     await Assert.isVisible(PortfolioPage.addAssetsMessage)
     await Assert.isVisible(PortfolioPage.addAssetsButton)

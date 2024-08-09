@@ -2,7 +2,7 @@
 /**
  * @jest-environment ./jestCustomEnv
  */
-import { warmup } from '../../helpers/warmup'
+import { handleJailbrokenWarning, warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import PortfolioPage from '../../pages/portfolio.page'
@@ -15,6 +15,7 @@ import analyticsConsentPage from '../../pages/analyticsConsent.page'
 describe('Unlock app with recovery phrase', () => {
   beforeAll(async () => {
     await warmup()
+    await handleJailbrokenWarning()
   })
 
   it('should successfully unlock app with recovery phrase', async () => {

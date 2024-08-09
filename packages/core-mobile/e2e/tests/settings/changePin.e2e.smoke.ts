@@ -18,7 +18,7 @@ describe('Change Pin', () => {
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await SecurityAndPrivacyPage.tapChangePin()
     await CreatePinPage.enterCurrentPin()
-    await CreatePinPage.createNewPin()
+    await CreatePinPage.enterNewCurrentPin()
   })
 
   it('Should set previous Pin', async () => {
