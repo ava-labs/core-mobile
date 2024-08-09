@@ -48,14 +48,11 @@ const useInAppBrowser = (): {
     }
     const coinbaseUrl = generateOnRampURL({
       appId,
-      destinationWallets: [
-        {
-          address,
-          assets: ['AVAX', 'ETH']
-        }
-      ]
+      addresses: { [address]: ['avacchain'] },
+      assets: ['AVAX'],
+      defaultExperience: 'buy'
     })
-    return openUrl(coinbaseUrl)
+    openUrl(coinbaseUrl).catch(Logger.error)
   }
 
   async function openUrl(url: string): Promise<void> {
