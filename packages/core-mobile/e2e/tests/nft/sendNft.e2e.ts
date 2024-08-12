@@ -5,10 +5,15 @@ import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
 import activityTabPage from '../../pages/activityTab.page'
 import popUpModalPage from '../../pages/popUpModal.page'
+import { cleanup } from '../../helpers/cleanup'
 
-describe('Send - NFT', () => {
+describe('Send NFT', () => {
   beforeAll(async () => {
     await warmup()
+  })
+
+  afterAll(async () => {
+    await cleanup()
   })
 
   let account = 'first'

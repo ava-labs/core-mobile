@@ -112,7 +112,7 @@ describe('Dapp - Core Playground', () => {
     await browserPage.verifyResponseReceived('testWallet1')
   })
 
-  it('should handle wallet_addEthereumChain: switch to Sepolia Ethereum network', async () => {
+  it('should handle wallet_addEthereumChain', async () => {
     await browserPage.sendRpcCall('wallet_addEthereumChain')
     await popUpModalPage.verifySwitchToSepoliaNetworkModal()
     await popUpModalPage.tapApproveBtn()
