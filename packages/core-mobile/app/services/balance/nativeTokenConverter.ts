@@ -11,7 +11,9 @@ export function convertNativeToTokenWithBalance(
   const balance = new TokenUnit(native.balance, native.decimals, native.symbol)
   const balanceDisplayValue = balance.toDisplay()
   const priceInCurrency = native.price?.value ?? 0
-  const balanceInCurrency = Number(balance.mul(priceInCurrency).toDisplay(2))
+  const balanceInCurrency = balance
+    .mul(priceInCurrency)
+    .toDisplay({ fixedDp: 2, asNumber: true })
   const balanceCurrencyDisplayValue =
     native.balanceValue?.value.toString() ?? '0'
 
