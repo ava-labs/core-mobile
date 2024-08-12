@@ -33,7 +33,7 @@ describe('Favorites Token', () => {
     await BottomTabsPage.tapWatchlistTab()
     await WatchListPage.setWatchListToken(newToken)
     await device.disableSynchronization()
-    await WatchListPage.tapWatchListToken(newToken.toLowerCase())
+    await WatchListPage.tapWatchListToken(newToken.toLowerCase(), 1)
     await Actions.waitForElement(TokenDetailPage.favorite)
     await TokenDetailPage.tapFavorite()
     await TokenDetailPage.tapBackButton()
