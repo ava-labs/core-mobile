@@ -9,6 +9,10 @@ class Advanced {
     return by.id(advancedLoc.switchButton)
   }
 
+  get testnet() {
+    return by.text(advancedLoc.testnet)
+  }
+
   async tapSwitchToTestnetButton() {
     await Actions.tapElementAtIndex(this.switchButton, 0)
   }
@@ -27,10 +31,12 @@ class Advanced {
   }
 
   async switchToMainnet() {
-    await BurgerMenuPage.tapBurgerMenuButton()
-    await BurgerMenuPage.tapAdvanced()
-    await Actions.waitForElement(this.switchButton)
-    await this.tapSwitchToTestnetButton()
+    if (await Actions.isVisible(this.testnet, 0)) {
+      await BurgerMenuPage.tapBurgerMenuButton()
+      await BurgerMenuPage.tapAdvanced()
+      await Actions.waitForElement(this.switchButton)
+      await this.tapSwitchToTestnetButton()
+    }
   }
 }
 

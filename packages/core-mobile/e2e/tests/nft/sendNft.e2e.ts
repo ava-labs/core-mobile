@@ -6,7 +6,7 @@ import { warmup } from '../../helpers/warmup'
 import activityTabPage from '../../pages/activityTab.page'
 import popUpModalPage from '../../pages/popUpModal.page'
 
-describe('Send - NFT', () => {
+describe('Send NFT', () => {
   beforeAll(async () => {
     await warmup()
   })

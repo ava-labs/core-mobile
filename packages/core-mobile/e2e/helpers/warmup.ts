@@ -34,7 +34,11 @@ export const warmup = async () => {
     )
     console.log('Jailbroken warning handled!!!')
   }
-  await loginRecoverWallet.recoverWalletLogin()
+  try {
+    await loginRecoverWallet.recoverWalletLogin()
+  } catch (e) {
+    console.log('Skipped login process...')
+  }
 }
 
 export const handleJailbrokenWarning = async () => {

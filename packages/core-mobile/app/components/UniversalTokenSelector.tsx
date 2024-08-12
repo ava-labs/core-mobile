@@ -126,7 +126,9 @@ const UniversalTokenSelector: FC<Props> = ({
                 logoUri={selectedToken.logoUri}
               />
               <Space x={8} />
-              <AvaText.Heading2>{selectedToken.symbol}</AvaText.Heading2>
+              <AvaText.Heading2 testID={testID}>
+                {selectedToken.symbol}
+              </AvaText.Heading2>
             </>
           ) : (
             <AvaText.Heading2 testID={testID}>Select</AvaText.Heading2>

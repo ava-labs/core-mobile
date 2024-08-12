@@ -135,8 +135,8 @@ class SendPage {
     await this.tapTokenDropdown()
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
-    await this.tapSendTitle()
     await this.waitForNextBtnEnabled()
+    await this.tapSendTitle()
     await this.tapNextButton()
     await this.tapApproveButton()
   }
