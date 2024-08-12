@@ -10,10 +10,6 @@ class NetworksPage {
     return by.id(networksManage.addNetwork)
   }
 
-  get bitcoinTestnet() {
-    return by.text(networksManage.bitcoinTestnet)
-  }
-
   get chainID() {
     return by.id(networksManage.chainID)
   }
@@ -32,6 +28,10 @@ class NetworksPage {
 
   get ethereumSepoliaNetwork() {
     return by.text(networksManage.ethereumSepoliaNetwork)
+  }
+
+  get bitcoinTestnetNetwork() {
+    return by.text(networksManage.bitcoinTestnetNetwork)
   }
 
   get ethTokenOnCustomNetwork() {
@@ -151,6 +151,10 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.ethereumSepoliaNetwork, index)
   }
 
+  async tapBitcoinTestNetwork(index = 0) {
+    await Action.tapElementAtIndex(this.bitcoinTestnetNetwork, index)
+  }
+
   async tapCustomTab() {
     await Action.tapElementAtIndex(this.customTab, 0)
   }
@@ -247,6 +251,11 @@ class NetworksPage {
     await this.searchNetworks(networksManage.ethereumSepoliaNetwork)
     await this.tapStarSvgByNetwork(networksManage.ethereumSepoliaNetwork)
     await this.tapEthereumSepoliaNetwork(1)
+  }
+
+  async switchToBitcoinTestNet() {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapNetworksDropdownBTCTestNet()
   }
 
   async verifyNetworkRow(network: string) {

@@ -30,6 +30,6 @@ describe('Enable Testnet', () => {
     await NetworksManagePage.searchNetworks('Ethereum Sepolia')
     await Assert.count(NetworksManagePage.ethereumSepoliaNetwork, 2)
     await NetworksManagePage.searchNetworks('Bitcoin Testnet')
-    await Assert.count(NetworksManagePage.bitcoinTestnet, 2)
+    await Assert.count(NetworksManagePage.bitcoinTestnetNetwork, 2)
   })
 })

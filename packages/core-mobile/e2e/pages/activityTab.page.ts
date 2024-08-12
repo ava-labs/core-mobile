@@ -160,6 +160,7 @@ class ActivityTabPage {
   }
 
   async getLatestActivityRow() {
+    await Action.waitForElement(this.activityListItem)
     const newRow = await Action.getAttributes(this.activityListItem)
     return 'elements' in newRow ? newRow.elements[0] : newRow
   }

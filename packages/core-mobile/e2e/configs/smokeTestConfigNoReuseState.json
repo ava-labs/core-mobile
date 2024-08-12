@@ -21,8 +21,6 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "./e2e/tests/plusIcon/send/sendSepoliaEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/plusIcon/send/sendEthTo2ndAccount.e2e.ts",
     "./e2e/tests/stake/claimTestnet.e2e.smoke.ts"
   ]
 }

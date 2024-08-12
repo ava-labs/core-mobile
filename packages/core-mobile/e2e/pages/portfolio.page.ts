@@ -11,6 +11,14 @@ class PortfolioPage {
     return by.text(portfolio.avaxNetwork)
   }
 
+  get avaxPNetwork() {
+    return by.text(portfolio.avaxPNetwork)
+  }
+
+  get avaxXNetwork() {
+    return by.text(portfolio.avaxXNetwork)
+  }
+
   get arbitrumNetwork() {
     return by.text(portfolio.arbitrumNetwork)
   }
@@ -95,12 +103,24 @@ class PortfolioPage {
     return by.id(portfolio.networksDropdownBTC)
   }
 
+  get networksDropdownBTCTestNet() {
+    return by.id(portfolio.networksDropdownBTCTestNet)
+  }
+
   get networksDropdownETH() {
     return by.id(portfolio.networksDropdownETH)
   }
 
   get networksDropdownAVAX() {
     return by.id(portfolio.networksDropdownAVAX)
+  }
+
+  get networksDropdownPChain() {
+    return by.id(portfolio.networksDropdownPChain)
+  }
+
+  get networksDropdownXChain() {
+    return by.id(portfolio.networksDropdownXChain)
   }
 
   get networksDropdownManage() {
@@ -204,15 +224,22 @@ class PortfolioPage {
     }
   }
 
+  async tapNetworksDropdownBTCTestNet() {
+    await Action.tapElementAtIndex(
+      this.networksDropdownBTCTestNet,
+      platformIndex
+    )
+  }
+
   async tapNetworksDropdownETH() {
     await Action.tapElementAtIndex(this.networksDropdownETH, platformIndex)
   }
 
-  async tapNetworksDropdownAVAX() {
+  async tapNetworksDropdownAVAX(network = this.networksDropdownAVAX) {
     if (Action.platform() === 'ios') {
-      await Action.tapElementAtIndex(this.networksDropdownAVAX, 1)
+      await Action.tapElementAtIndex(network, 1)
     } else {
-      await Action.tapElementAtIndex(this.networksDropdownAVAX, 0)
+      await Action.tapElementAtIndex(network, 0)
     }
   }
 

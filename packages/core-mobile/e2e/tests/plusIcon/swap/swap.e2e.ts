@@ -1,8 +1,8 @@
-import activityTabPage from '../../pages/activityTab.page'
-import { warmup } from '../../helpers/warmup'
-import SwapTabPage from '../../pages/swapTab.page'
-import SendPage from '../../pages/send.page'
-import portfolioPage from '../../pages/portfolio.page'
+import activityTabPage from '../../../pages/activityTab.page'
+import { warmup } from '../../../helpers/warmup'
+import SwapTabPage from '../../../pages/swapTab.page'
+import SendPage from '../../../pages/send.page'
+import portfolioPage from '../../../pages/portfolio.page'
 
 describe('Swap', () => {
   beforeAll(async () => {

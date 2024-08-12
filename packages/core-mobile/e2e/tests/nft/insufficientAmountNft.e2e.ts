@@ -5,7 +5,7 @@ import PortfolioPage from '../../pages/portfolio.page'
 import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
 
-describe('Send - Error Message', () => {
+describe('Send NFT', () => {
   beforeAll(async () => {
     await warmup()
   })

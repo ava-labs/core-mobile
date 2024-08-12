@@ -27,10 +27,15 @@ class Advanced {
   }
 
   async switchToMainnet() {
-    await BurgerMenuPage.tapBurgerMenuButton()
-    await BurgerMenuPage.tapAdvanced()
-    await Actions.waitForElement(this.switchButton)
-    await this.tapSwitchToTestnetButton()
+    try {
+      await Assert.isVisible(commonElsPage.testnetBanner)
+      await BurgerMenuPage.tapBurgerMenuButton()
+      await BurgerMenuPage.tapAdvanced()
+      await Actions.waitForElement(this.switchButton)
+      await this.tapSwitchToTestnetButton()
+    } catch (e) {
+      console.log('You are on mainnet')
+    }
   }
 }
 

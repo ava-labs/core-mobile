@@ -1,6 +1,5 @@
 export default {
   addNetwork: 'add_svg',
-  bitcoinTestnet: 'Bitcoin Testnet',
   chainID: 'chainId',
   arbCustomNetworkName: 'Arbitrum One',
   arbCustomNativeTokenSymbol: 'ETH',
@@ -20,6 +19,7 @@ export default {
   deleteNetwork: 'Delete',
   editNetwork: 'Edit',
   ethereumSepoliaNetwork: 'Ethereum Sepolia',
+  bitcoinTestnetNetwork: 'Bitcoin Testnet',
   ethTokenOnCustomNetwork: 'Ether',
   explorerUrl: 'explorerUrl',
   favoriteNetwork: 'star_svg',

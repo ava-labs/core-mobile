@@ -4,6 +4,7 @@ export default {
   avaxToken: 'AVAX',
   carrotSVG: 'carrot_svg',
   ethToken: 'ETH',
+  btcToken: 'BTC',
   sendingAmount: '0.000001',
   myAccounts: 'My Accounts',
   nextBtn: 'Next',

@@ -2,6 +2,7 @@ import assert from 'assert'
 import Actions from '../helpers/actions'
 import BrowserLoc from '../locators/browser.loc'
 import Wbs, { WebScripts } from '../helpers/web'
+import delay from '../helpers/waits'
 import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
 
@@ -103,6 +104,7 @@ class BrowserPage {
   }
 
   async getQrUri() {
+    await delay(2000)
     if (Actions.platform() === 'ios') {
       await Wbs.waitAndRunScript('wcm-modal', WebScripts.CLICK_WCM_IOS_MODAL)
     } else {

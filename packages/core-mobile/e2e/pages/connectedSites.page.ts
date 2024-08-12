@@ -58,7 +58,7 @@ class ConnectedSites {
   }
 
   async disconnectDapp(dApp: string) {
-    await Actions.waitForElementNoSync(by.id(`x_btn__${dApp}`))
+    await Actions.waitForElementNoSync(by.id(`x_btn__${dApp}`), 4000)
     await Actions.tapElementAtIndex(by.id(`x_btn__${dApp}`), 0)
   }
 
