@@ -8,6 +8,7 @@ import sendPage from '../../../pages/send.page'
 describe('Send AVAX', () => {
   beforeAll(async () => {
     await warmup()
+    await accountManagePage.createSecondAccount()
   })
 
   afterAll(async () => {
@@ -15,7 +16,6 @@ describe('Send AVAX', () => {
   })
 
   it('should send AVAX on C-Chain', async () => {
-    await accountManagePage.createSecondAccount()
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
@@ -27,7 +27,6 @@ describe('Send AVAX', () => {
     await portfolioPage.goToActivityTab()
     const sendRow = await activityTabPage.getLatestActivityRow()
     await activityTabPage.verifyActivityRow(sendRow, 'Send')
-
     await accountManagePage.switchToSecondAccount()
     const receiveRow = await activityTabPage.getLatestActivityRow()
     await activityTabPage.verifyActivityRow(receiveRow, 'Receive')

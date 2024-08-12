@@ -9,10 +9,6 @@ class Advanced {
     return by.id(advancedLoc.switchButton)
   }
 
-  get testnet() {
-    return by.text(advancedLoc.testnet)
-  }
-
   async tapSwitchToTestnetButton() {
     await Actions.tapElementAtIndex(this.switchButton, 0)
   }
@@ -31,11 +27,14 @@ class Advanced {
   }
 
   async switchToMainnet() {
-    if (await Actions.isVisible(this.testnet, 0)) {
+    try {
+      await Assert.isVisible(commonElsPage.testnetBanner)
       await BurgerMenuPage.tapBurgerMenuButton()
       await BurgerMenuPage.tapAdvanced()
       await Actions.waitForElement(this.switchButton)
       await this.tapSwitchToTestnetButton()
+    } catch (e) {
+      console.log('You are on mainnet')
     }
   }
 }

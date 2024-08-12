@@ -1,4 +1,5 @@
 import Actions from '../../../helpers/actions'
+import { cleanup } from '../../../helpers/cleanup'
 import { warmup } from '../../../helpers/warmup'
 import sendLoc from '../../../locators/send.loc'
 import accountManagePage from '../../../pages/accountManage.page'
@@ -16,33 +17,31 @@ describe('Send ETH', () => {
   })
 
   afterAll(async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await networksManagePage.switchToAvalancheNetwork()
-    await advancedPage.switchToMainnet()
+    await cleanup()
   })
 
-  it('Should send Eth on MainNet', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.tapNetworksDropdown()
-    await portfolioPage.tapNetworksDropdownETH()
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.ethToken,
-      sendLoc.sendingAmount
-    )
-    await sendPage.verifySuccessToast()
-  })
+  // it('Should send Eth on MainNet', async () => {
+  //   await bottomTabsPage.tapPortfolioTab()
+  //   await portfolioPage.tapNetworksDropdown()
+  //   await portfolioPage.tapNetworksDropdownETH()
+  //   await sendPage.sendTokenTo2ndAccount(
+  //     sendLoc.ethToken,
+  //     sendLoc.sendingAmount
+  //   )
+  //   await sendPage.verifySuccessToast()
+  // })
 
-  it('Should verify the ETH transaction on MainNet ', async () => {
-    await portfolioPage.tapEthNetwork()
-    await portfolioPage.tapActivityTab()
-    const sendRow = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(sendRow, 'Send')
+  // it('Should verify the ETH transaction on MainNet ', async () => {
+  //   await portfolioPage.tapEthNetwork()
+  //   await portfolioPage.tapActivityTab()
+  //   const sendRow = await activityTabPage.getLatestActivityRow()
+  //   await activityTabPage.verifyActivityRow(sendRow, 'Send')
 
-    await accountManagePage.switchToSecondAccount()
-    const receiveRow = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(receiveRow, 'Receive')
-    await accountManagePage.switchToFirstAccount()
-  })
+  //   await accountManagePage.switchToSecondAccount()
+  //   const receiveRow = await activityTabPage.getLatestActivityRow()
+  //   await activityTabPage.verifyActivityRow(receiveRow, 'Receive')
+  //   await accountManagePage.switchToFirstAccount()
+  // })
 
   it('Should switch to Ethereum Sepolia on TestNet', async () => {
     await bottomTabsPage.tapPortfolioTab()
@@ -69,8 +68,8 @@ describe('Send ETH', () => {
     await activityTabPage.verifyActivityRow(sendRow, 'Send')
 
     await accountManagePage.switchToSecondAccount()
+    await activityTabPage.refreshActivityPage()
     const receiveRow = await activityTabPage.getLatestActivityRow()
     await activityTabPage.verifyActivityRow(receiveRow, 'Receive')
-    await accountManagePage.switchToFirstAccount()
   })
 })

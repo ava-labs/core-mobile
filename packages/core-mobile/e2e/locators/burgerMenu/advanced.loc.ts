@@ -1,4 +1,3 @@
 export default {
-  switchButton: 'switch',
-  testnet: 'Testnet'
+  switchButton: 'switch'
 }

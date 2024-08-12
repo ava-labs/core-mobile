@@ -6,16 +6,15 @@ import portfolioPage from '../../../pages/portfolio.page'
 import { warmup } from '../../../helpers/warmup'
 import actions from '../../../helpers/actions'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
-import networksManagePage from '../../../pages/networksManage.page'
+import { cleanup } from '../../../helpers/cleanup'
 
 describe('Send AVAX', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await warmup()
   })
 
   afterAll(async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await networksManagePage.switchToAvalancheNetwork()
+    await cleanup()
   })
 
   it('should send AVAX on C-Chain', async () => {

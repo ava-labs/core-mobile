@@ -1,4 +1,5 @@
 import actions from '../../../helpers/actions'
+import { cleanup } from '../../../helpers/cleanup'
 import { warmup } from '../../../helpers/warmup'
 import sendLoc from '../../../locators/send.loc'
 import accountManagePage from '../../../pages/accountManage.page'
@@ -15,10 +16,7 @@ describe('Send BTC', () => {
   })
 
   afterAll(async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await advancedPage.switchToMainnet()
-    await networksManagePage.switchToAvalancheNetwork()
-    await accountManagePage.switchToFirstAccount()
+    await cleanup()
   })
 
   it('Should switch to Bitcoin TestNet', async () => {
@@ -33,7 +31,7 @@ describe('Send BTC', () => {
 
   it('Should send Bitcoin Testnet', async () => {
     await accountManagePage.createSecondAccount()
-    await sendPage.sendTokenTo2ndAccount(sendLoc.btcToken, '0.01')
+    await sendPage.sendTokenTo2ndAccount(sendLoc.btcToken, '0.0001')
     await sendPage.verifySuccessToast()
   })
 
