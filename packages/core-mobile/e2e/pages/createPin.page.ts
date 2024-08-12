@@ -74,18 +74,19 @@ class CreatePinPage {
   }
 
   async createPin() {
-    while (
-      !(
+    while (await Action.isVisible(this.numpadZero, 0)) {
+      if (
         (await Action.isVisible(this.agreeAndContinueBtn, 0)) ||
         (await Action.isVisible(this.fingerprint, 0))
-      )
-    ) {
+      ) {
+        break
+      }
       await this.tapNumpadZero6Times()
     }
   }
 
   async enterNewCurrentPin() {
-    while (await Action.isVisible(this.setNewPinHeader, 0)) {
+    while (await Action.isVisible(this.numpadOne, 0)) {
       await element(this.numpadOne).multiTap(6)
     }
   }
