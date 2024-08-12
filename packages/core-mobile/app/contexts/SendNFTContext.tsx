@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { NFTItem } from 'store/nft'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
+import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
 import { SendState } from 'services/send/types'
 import sendService from 'services/send/SendService'
 import { InteractionManager } from 'react-native'
@@ -50,7 +50,7 @@ export const SendNFTContextProvider = ({
   const activeAccount = useSelector(selectActiveAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const nativeTokenBalance = useSelector((state: RootState) =>
-    selectNativeTokenBalanceForNetworkAndAccount(
+    selectAvailableNativeTokenBalanceForNetworkAndAccount(
       state,
       activeNetwork.chainId,
       activeAccount?.index

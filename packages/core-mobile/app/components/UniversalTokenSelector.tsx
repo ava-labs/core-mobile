@@ -18,6 +18,10 @@ import { formatLargeCurrency } from 'utils/Utils'
 import { Amount } from 'types'
 import { Text } from '@avalabs/k2-mobile'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -92,17 +96,31 @@ const UniversalTokenSelector: FC<Props> = ({
     [onAmountChange]
   )
 
+  const getAvailableBalance = useCallback(() => {
+    if (selectedToken === undefined) {
+      return
+    }
+
+    if (
+      isTokenWithBalancePVM(selectedToken) ||
+      isTokenWithBalanceAVM(selectedToken)
+    ) {
+      return `Balance ${selectedToken.availableDisplayValue || '0'} ${
+        selectedToken.symbol
+      }`
+    }
+    return `Balance ${selectedToken?.balanceDisplayValue || '0'} ${
+      selectedToken.symbol
+    }`
+  }, [selectedToken])
+
   return (
     <View style={{ marginHorizontal: 16 }}>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <AvaText.Heading3 textStyle={{ marginBottom: 4 }}>
           {label ?? 'Token'}
         </AvaText.Heading3>
-        <AvaText.Body2>
-          {selectedToken &&
-            selectedToken?.balanceDisplayValue &&
-            `Balance ${selectedToken.balanceDisplayValue} ${selectedToken.symbol}`}
-        </AvaText.Body2>
+        <AvaText.Body2>{getAvailableBalance()}</AvaText.Body2>
       </Row>
       <Row
         style={{
