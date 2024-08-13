@@ -9,7 +9,7 @@ import React, {
   useState
 } from 'react'
 import { InteractionManager } from 'react-native'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
+import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
@@ -60,7 +60,7 @@ export const SendTokenContextProvider = ({
   const activeAccount = useSelector(selectActiveAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const nativeTokenBalance = useSelector((state: RootState) =>
-    selectNativeTokenBalanceForNetworkAndAccount(
+    selectAvailableNativeTokenBalanceForNetworkAndAccount(
       state,
       activeNetwork.chainId,
       activeAccount?.index

@@ -1,7 +1,11 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { Networks } from 'store/network/types'
-import { CORE_ONLY_METHODS, RpcMethod } from 'store/rpc/types'
+import {
+  CORE_EVM_METHODS,
+  CORE_NONEVM_METHODS,
+  RpcMethod
+} from 'store/rpc/types'
 import { SafeParseError, SafeParseSuccess, z, ZodArray } from 'zod'
 import * as Navigation from 'utils/Navigation'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
@@ -42,7 +46,7 @@ const CORE_WEB_URLS_REGEX = [
 ]
 
 export const isCoreMethod = (method: string): boolean =>
-  CORE_ONLY_METHODS.includes(method as RpcMethod)
+  [...CORE_EVM_METHODS, ...CORE_NONEVM_METHODS].includes(method as RpcMethod)
 
 export const isCoreDomain = (url: string): boolean => {
   let hostname = ''

@@ -15,6 +15,10 @@ import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { stripChainAddress } from 'store/account/utils'
 import { TokenType } from '@avalabs/vm-module-types'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 
 export class SendServicePVM {
   constructor(private activeNetwork: Network) {}
@@ -37,8 +41,12 @@ export class SendServicePVM {
           const sendFee = defaultMaxFeePerGas
             ? BigInt(gasLimit) * defaultMaxFeePerGas
             : undefined
-          let maxAmount = token.balance - (sendFee || 0n)
-          maxAmount = maxAmount > 0n ? maxAmount : 0n
+          const availableBalance =
+            isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token)
+              ? token.available
+              : token.balance
+          let maxAmount = availableBalance && availableBalance - (sendFee || 0n)
+          maxAmount = maxAmount && maxAmount > 0n ? maxAmount : 0n
 
           const newState: SendState = {
             ...sendState,
