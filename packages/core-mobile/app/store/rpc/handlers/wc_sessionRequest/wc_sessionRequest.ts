@@ -223,6 +223,14 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
         throw new Error('Requested method is not authorized')
       }
 
+      if (
+        Object.values(normalizedRequired).flatMap(
+          namespace => namespace.chains ?? []
+        ).length === 0
+      ) {
+        throw new Error('Networks not specified')
+      }
+
       const namespaces = this.getNamespacesToApprove(
         normalizedRequired,
         normalizedOptional,
@@ -232,9 +240,6 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       const chainsToApprove = Object.values(namespaces).flatMap(
         namespace => namespace.chains ?? []
       )
-      if (chainsToApprove.length === 0) {
-        throw new Error('Networks not specified')
-      }
 
       await this.switchToSupportedNetwork(chainsToApprove, listenerApi)
 
