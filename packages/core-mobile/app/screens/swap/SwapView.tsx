@@ -246,7 +246,11 @@ export default function SwapView(): JSX.Element {
         </>
       </ScrollView>
       <AvaButton.PrimaryLarge
-        testID="review_order_button"
+        testID={
+          !canSwap || swapInProcess
+            ? 'disabled_review_order_button'
+            : 'review_order_button'
+        }
         style={{ margin: 16 }}
         onPress={reviewOrder}
         disabled={!canSwap || swapInProcess}>

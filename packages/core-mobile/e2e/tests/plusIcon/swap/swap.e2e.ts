@@ -1,22 +1,28 @@
-import activityTabPage from '../../../pages/activityTab.page'
+import actions from '../../../helpers/actions'
+import { SwapTokens } from '../../../helpers/tokens'
 import { warmup } from '../../../helpers/warmup'
-import SwapTabPage from '../../../pages/swapTab.page'
-import SendPage from '../../../pages/send.page'
+import swapTabLoc from '../../../locators/swapTab.loc'
+import activityTabPage from '../../../pages/activityTab.page'
 import portfolioPage from '../../../pages/portfolio.page'
+import SendPage from '../../../pages/send.page'
+import SwapTabPage from '../../../pages/swapTab.page'
 
-describe('Swap', () => {
-  beforeAll(async () => {
-    await warmup()
+describe('Swap AVAX', () => {
+  beforeEach(async () => {
+    const newInstance = actions.platform() === 'android' ? true : false
+    await warmup(newInstance)
   })
 
-  it('Should swap AVAX to USDC', async () => {
-    await SwapTabPage.swap('AVAX', 'USDC')
-    await SendPage.verifySuccessToast()
-  })
+  SwapTokens.forEach(({ symbol, amount }) => {
+    test(`should swap AVAX <> ${symbol}`, async () => {
+      await SwapTabPage.swap(swapTabLoc.avaxSymbol, symbol, amount)
+      await SendPage.verifySuccessToast()
+      console.log(`${symbol}: Swap Transaction Successful`)
+    })
+  }, 120000)
 
   it('Should verify swap transaction in Activity', async () => {
     await portfolioPage.goToActivityTab()
-    await activityTabPage.refreshActivityPage()
-    await activityTabPage.verifyNewRow('Contract Call', '-0.00001 AVAX')
+    await activityTabPage.verifyNewRow('Contract Call', '-0.000000000001 AVAX')
   })
 })
