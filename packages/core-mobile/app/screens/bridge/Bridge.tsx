@@ -52,7 +52,7 @@ import { Tooltip } from 'components/Tooltip'
 import { DOCS_BRIDGE_FAQS } from 'resources/Constants'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
+import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account/slice'
 import { Audios, audioFeedback } from 'utils/AudioFeedback'
@@ -116,7 +116,7 @@ const Bridge: FC = () => {
   const [isPending, setIsPending] = useState(false)
   const tokenInfoData = useTokenInfoContext()
   const nativeTokenBalance = useSelector((state: RootState) =>
-    selectNativeTokenBalanceForNetworkAndAccount(
+    selectAvailableNativeTokenBalanceForNetworkAndAccount(
       state,
       activeNetwork.chainId,
       activeAccount?.index
@@ -483,6 +483,7 @@ const Bridge: FC = () => {
             style={{
               top: 22
             }}
+            alignment="flex-end"
             prompt={
               <Text variant="buttonMedium" style={styles.tokenSelectorText}>
                 Select Network
