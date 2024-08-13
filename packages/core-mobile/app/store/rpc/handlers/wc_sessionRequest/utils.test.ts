@@ -3,18 +3,10 @@ import { isCoreMethod, isCoreDomain } from './utils'
 describe('isCoreMethod', () => {
   it('should return true if method is a Core method', () => {
     const methods = [
-      'avalanche_bridgeAsset',
-      'avalanche_createContact',
-      'avalanche_getAccounts',
-      'avalanche_getAccountPubKey',
-      'avalanche_getBridgeState',
-      'avalanche_getContacts',
-      'avalanche_removeContact',
-      'avalanche_selectAccount',
-      'avalanche_setDeveloperMode',
-      'avalanche_updateContact',
       'avalanche_sendTransaction',
-      'avalanche_signTransaction'
+      'avalanche_signTransaction',
+      'avalanche_signMessage',
+      'bitcoin_sendTransaction'
     ]
 
     for (const method of methods) {

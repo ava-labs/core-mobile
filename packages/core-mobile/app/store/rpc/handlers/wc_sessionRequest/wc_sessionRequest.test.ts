@@ -9,6 +9,7 @@ import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import BlockaidService from 'services/blockaid/BlockaidService'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { AlertType } from '@avalabs/vm-module-types'
+import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
 jest.mock('store/network/slice', () => {
@@ -69,6 +70,30 @@ const testNamespacesToApprove = {
     chains: ['eip155:43114', 'eip155:1'],
     events: ['chainChanged', 'accountsChanged'],
     methods: ['eth_sendTransaction', 'personal_sign']
+  }
+}
+
+const testNonEVMNamespacesToApprove = {
+  avax: {
+    chains: [
+      AvalancheCaip2ChainId.P,
+      AvalancheCaip2ChainId.P_TESTNET,
+      AvalancheCaip2ChainId.X,
+      AvalancheCaip2ChainId.X_TESTNET
+    ],
+    methods: [
+      RpcMethod.AVALANCHE_SEND_TRANSACTION,
+      RpcMethod.AVALANCHE_SIGN_TRANSACTION,
+      RpcMethod.BITCOIN_SEND_TRANSACTION,
+      RpcMethod.AVALANCHE_SIGN_MESSAGE
+    ],
+    events: [
+      'chainChanged',
+      'accountsChanged',
+      'message',
+      'disconnect',
+      'connect'
+    ]
   }
 }
 
@@ -187,7 +212,11 @@ describe('session_request handler', () => {
           events: ['chainChanged', 'accountsChanged']
         }
       }
-      const testRequest = createRequest(testRequiredNamespaces)
+
+      const testRequest = createRequest(
+        testRequiredNamespaces,
+        'https://traderjoe.xyz'
+      )
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -306,7 +335,10 @@ describe('session_request handler', () => {
           screen: AppNavigation.Modal.SessionProposalV2,
           params: {
             request: testRequest,
-            namespaces: testNamespacesToApprove
+            namespaces: {
+              ...testNamespacesToApprove,
+              ...testNonEVMNamespacesToApprove
+            }
           }
         }
       })
@@ -365,7 +397,10 @@ describe('session_request handler', () => {
           screen: AppNavigation.Modal.SessionProposalV2,
           params: {
             request: testRequest,
-            namespaces: testNamespacesToApprove,
+            namespaces: {
+              ...testNamespacesToApprove,
+              ...testNonEVMNamespacesToApprove
+            },
             scanResponse
           }
         }
@@ -473,7 +508,10 @@ describe('session_request handler', () => {
         request: testRequest,
         data: {
           selectedAccounts: testSelectedAccounts,
-          namespaces: testNamespacesToApprove
+          namespaces: {
+            ...testNamespacesToApprove,
+            ...testNonEVMNamespacesToApprove
+          }
         }
       })
 
@@ -509,14 +547,35 @@ describe('session_request handler', () => {
             'avalanche_selectAccount',
             'avalanche_setDeveloperMode',
             'avalanche_updateContact',
-            'avalanche_sendTransaction',
-            'avalanche_signTransaction',
-            'avalanche_getAddressesInRange',
-            'bitcoin_sendTransaction',
-            'avalanche_signMessage'
+            'avalanche_getAddressesInRange'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
+        },
+        avax: {
+          accounts: [
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress1',
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress2',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:avmAddress1',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:avmAddress2',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress1',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress2',
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:pvmAddress1',
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:pvmAddress2'
+          ],
+          chains: [
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+          ],
+          events: ['chainChanged', 'accountsChanged'],
+          methods: [
+            'avalanche_sendTransaction',
+            'avalanche_signTransaction',
+            'bitcoin_sendTransaction',
+            'avalanche_signMessage'
+          ]
         }
       }
 
