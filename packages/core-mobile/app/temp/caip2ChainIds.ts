@@ -42,24 +42,26 @@ enum BlockchainId {
 }
 
 // Based on CAIP-2, hashed
-enum AvalancheChainId {
-  P_CHAIN = 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
-  P_CHAIN_TESTNET = 'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl',
-  X_CHAIN = 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
-  X_CHAIN_TESTNET = 'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+export enum AvalancheCaip2ChainId {
+  C = 'eip155:43114',
+  C_TESTNET = 'eip155:43113',
+  P = 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+  P_TESTNET = 'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl',
+  X = 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
+  X_TESTNET = 'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
 }
 
 export const isPVMChainId = (caip2ChainId: string): boolean => {
   return (
-    caip2ChainId === AvalancheChainId.P_CHAIN ||
-    caip2ChainId === AvalancheChainId.P_CHAIN_TESTNET
+    caip2ChainId === AvalancheCaip2ChainId.P ||
+    caip2ChainId === AvalancheCaip2ChainId.P_TESTNET
   )
 }
 
 export const isAVMChainId = (caip2ChainId: string): boolean => {
   return (
-    caip2ChainId === AvalancheChainId.X_CHAIN ||
-    caip2ChainId === AvalancheChainId.X_CHAIN_TESTNET
+    caip2ChainId === AvalancheCaip2ChainId.X ||
+    caip2ChainId === AvalancheCaip2ChainId.X_TESTNET
   )
 }
 
@@ -67,13 +69,13 @@ export const getAvalancheCaip2ChainId = (
   chainId: number
 ): string | undefined => {
   if (chainId === ChainId.AVALANCHE_P) {
-    return AvalancheChainId.P_CHAIN
+    return AvalancheCaip2ChainId.P
   } else if (chainId === ChainId.AVALANCHE_TEST_P) {
-    return AvalancheChainId.P_CHAIN_TESTNET
+    return AvalancheCaip2ChainId.P_TESTNET
   } else if (chainId === ChainId.AVALANCHE_X) {
-    return AvalancheChainId.X_CHAIN
+    return AvalancheCaip2ChainId.X
   } else if (chainId === ChainId.AVALANCHE_TEST_X) {
-    return AvalancheChainId.X_CHAIN_TESTNET
+    return AvalancheCaip2ChainId.X_TESTNET
   }
   return undefined
 }
@@ -81,13 +83,13 @@ export const getAvalancheCaip2ChainId = (
 export const getAvalancheChainId = (
   caip2ChainId: string
 ): number | undefined => {
-  if (caip2ChainId === AvalancheChainId.P_CHAIN) {
+  if (caip2ChainId === AvalancheCaip2ChainId.P) {
     return ChainId.AVALANCHE_P
-  } else if (caip2ChainId === AvalancheChainId.P_CHAIN_TESTNET) {
+  } else if (caip2ChainId === AvalancheCaip2ChainId.P_TESTNET) {
     return ChainId.AVALANCHE_TEST_P
-  } else if (caip2ChainId === AvalancheChainId.X_CHAIN) {
+  } else if (caip2ChainId === AvalancheCaip2ChainId.X) {
     return ChainId.AVALANCHE_X
-  } else if (caip2ChainId === AvalancheChainId.X_CHAIN_TESTNET) {
+  } else if (caip2ChainId === AvalancheCaip2ChainId.X_TESTNET) {
     return ChainId.AVALANCHE_TEST_X
   }
 
