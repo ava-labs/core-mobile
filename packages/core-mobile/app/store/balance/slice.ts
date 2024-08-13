@@ -11,6 +11,10 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
+import {
   Balance,
   Balances,
   BalanceState,
@@ -224,20 +228,30 @@ const _selectBalanceKeyForNetworkAndAccount = (
   return getKey(chainId, accountIndex)
 }
 
-export const selectNativeTokenBalanceForNetworkAndAccount = createSelector(
-  [_selectAllBalances, _selectBalanceKeyForNetworkAndAccount],
-  (allBalances, key): bigint => {
-    if (key === undefined) return 0n
+export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
+  createSelector(
+    [_selectAllBalances, _selectBalanceKeyForNetworkAndAccount],
+    (allBalances, key): bigint => {
+      if (key === undefined) return 0n
 
-    const balanceForNetworkAndAccount = allBalances[key]
+      const balanceForNetworkAndAccount = allBalances[key]
 
-    const nativeToken = Object.values(
-      balanceForNetworkAndAccount?.tokens ?? []
-    )?.find(token => token.type === TokenType.NATIVE)
+      const nativeToken = Object.values(
+        balanceForNetworkAndAccount?.tokens ?? []
+      )?.find(token => {
+        return token.type === TokenType.NATIVE
+      })
 
-    return nativeToken?.balance ?? 0n
-  }
-)
+      if (
+        nativeToken &&
+        (isTokenWithBalancePVM(nativeToken) ||
+          isTokenWithBalanceAVM(nativeToken))
+      ) {
+        return nativeToken.available ?? 0n
+      }
+      return nativeToken?.balance ?? 0n
+    }
+  )
 
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions
