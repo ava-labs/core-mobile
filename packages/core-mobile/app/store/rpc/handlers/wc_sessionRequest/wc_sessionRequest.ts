@@ -33,6 +33,7 @@ import {
   parseApproveData,
   scanAndSessionProposal
 } from './utils'
+import { NONEVM_OPTIONAL_NAMESPACES } from './namespaces'
 
 const DEFAULT_EVENTS = ['chainChanged', 'accountsChanged']
 
@@ -200,7 +201,14 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const { proposer, requiredNamespaces, optionalNamespaces } = params
 
     const normalizedRequired = normalizeNamespaces(requiredNamespaces)
-    const normalizedOptional = normalizeNamespaces(optionalNamespaces)
+    const normalizedOptional = normalizeNamespaces({
+      ...optionalNamespaces,
+      // add optional namespaces for non-evm chains support
+      // since core web integrated wagmi and it only supports EVM for now,
+      // it throws an error when we add these non-EVM namespaces in the dapp.
+      // This is a temporary fix until core web supports these namespaces
+      ...NONEVM_OPTIONAL_NAMESPACES
+    })
 
     try {
       // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
