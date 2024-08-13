@@ -199,24 +199,27 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const state = listenerApi.getState()
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
+    const dappUrl = proposer.metadata.url
+    const coreDomain = isCoreDomain(dappUrl)
 
     const normalizedRequired = normalizeNamespaces(requiredNamespaces)
-    const normalizedOptional = normalizeNamespaces({
-      ...optionalNamespaces,
+    const normalizedOptional = normalizeNamespaces(
       // add optional namespaces for non-evm chains support
       // since core web integrated wagmi and it only supports EVM for now,
       // it throws an error when we add these non-EVM namespaces in the dapp.
       // This is a temporary fix until core web supports these namespaces
-      ...NONEVM_OPTIONAL_NAMESPACES
-    })
+      coreDomain
+        ? { ...optionalNamespaces, ...NONEVM_OPTIONAL_NAMESPACES }
+        : optionalNamespaces
+    )
 
     try {
       // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
-      const dappUrl = proposer.metadata.url
+
       const hasCoreMethod =
         normalizedRequired[EVM_IDENTIFIER]?.methods.some(isCoreMethod) ?? false
 
-      if (hasCoreMethod && !isCoreDomain(dappUrl)) {
+      if (hasCoreMethod && !coreDomain) {
         throw new Error('Requested method is not authorized')
       }
 
