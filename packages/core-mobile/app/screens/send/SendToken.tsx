@@ -225,6 +225,9 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
         </>
       )}
       <AvaButton.PrimaryLarge
+        testID={
+          sendDisabled || sendInProcess ? 'disabled_next_btn' : 'next_btn'
+        }
         disabled={sendDisabled || sendInProcess}
         onPress={onNextPress}
         style={{ margin: 16 }}>

@@ -31,7 +31,7 @@ class SendPage {
   }
 
   get nextButton() {
-    return by.text(Send.nextBtn)
+    return by.id(Send.nextBtn)
   }
 
   get sendTitle() {
@@ -71,13 +71,7 @@ class SendPage {
   }
 
   async waitForNextBtnEnabled() {
-    await Actions.waitForCondition(
-      async () => {
-        const attr = await Actions.getAttributes(this.amountToSendInput, 0)
-        if (!('elements' in attr)) return attr.text
-      },
-      (text: string | undefined) => text && text.length > 0
-    )
+    await Actions.waitForElement(this.nextButton, 5000)
   }
 
   async tapCarrotSVG() {
@@ -118,7 +112,7 @@ class SendPage {
       100,
       'down'
     )
-    await Actions.tap(by.id(`token_selector__${tokenName}`))
+    await Actions.tapElementAtIndex(by.id(`token_selector__${tokenName}`), 0)
   }
 
   async enterAmount(amount: string) {

@@ -11,7 +11,8 @@ describe('Send ERC20', () => {
   })
 
   beforeEach(async () => {
-    await warmup()
+    const newInstance = actions.platform() === 'android' ? true : false
+    await warmup(newInstance)
   })
 
   Tokens.forEach(({ symbol }) => {
