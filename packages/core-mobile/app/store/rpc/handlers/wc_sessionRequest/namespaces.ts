@@ -15,7 +15,6 @@ export const NONEVM_OPTIONAL_NAMESPACES: ProposalTypes.OptionalNamespaces = {
     methods: [
       RpcMethod.AVALANCHE_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-      RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
       RpcMethod.BITCOIN_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_MESSAGE
     ],

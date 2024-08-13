@@ -84,7 +84,6 @@ const testNonEVMNamespacesToApprove = {
     methods: [
       RpcMethod.AVALANCHE_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-      RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
       RpcMethod.BITCOIN_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_MESSAGE
     ],
@@ -213,7 +212,11 @@ describe('session_request handler', () => {
           events: ['chainChanged', 'accountsChanged']
         }
       }
-      const testRequest = createRequest(testRequiredNamespaces)
+
+      const testRequest = createRequest(
+        testRequiredNamespaces,
+        'https://traderjoe.xyz'
+      )
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -572,29 +575,8 @@ describe('session_request handler', () => {
           ],
           events: ['chainChanged', 'accountsChanged'],
           methods: [
-            'eth_sendTransaction',
-            'eth_signTypedData_v3',
-            'eth_signTypedData_v4',
-            'eth_signTypedData_v1',
-            'eth_signTypedData',
-            'personal_sign',
-            'eth_sign',
-            'wallet_addEthereumChain',
-            'wallet_switchEthereumChain',
-            'wallet_getEthereumChain',
-            'avalanche_bridgeAsset',
-            'avalanche_createContact',
-            'avalanche_getAccountPubKey',
-            'avalanche_getAccounts',
-            'avalanche_getBridgeState',
-            'avalanche_getContacts',
-            'avalanche_removeContact',
-            'avalanche_selectAccount',
-            'avalanche_setDeveloperMode',
-            'avalanche_updateContact',
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
-            'avalanche_getAddressesInRange',
             'bitcoin_sendTransaction',
             'avalanche_signMessage'
           ]

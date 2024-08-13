@@ -200,7 +200,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
     const dappUrl = proposer.metadata.url
-    const coreDomain = isCoreDomain(dappUrl)
+    const isCoreApp = isCoreDomain(dappUrl)
 
     const normalizedRequired = normalizeNamespaces(requiredNamespaces)
     const normalizedOptional = normalizeNamespaces(
@@ -208,7 +208,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       // since core web integrated wagmi and it only supports EVM for now,
       // it throws an error when we add these non-EVM namespaces in the dapp.
       // This is a temporary fix until core web supports these namespaces
-      coreDomain
+      isCoreApp
         ? { ...optionalNamespaces, ...NONEVM_OPTIONAL_NAMESPACES }
         : optionalNamespaces
     )
@@ -219,16 +219,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       const hasCoreMethod =
         normalizedRequired[EVM_IDENTIFIER]?.methods.some(isCoreMethod) ?? false
 
-      if (hasCoreMethod && !coreDomain) {
+      if (hasCoreMethod && !isCoreApp) {
         throw new Error('Requested method is not authorized')
-      }
-
-      if (
-        Object.values(normalizedRequired).flatMap(
-          namespace => namespace.chains ?? []
-        ).length === 0
-      ) {
-        throw new Error('Networks not specified')
       }
 
       const namespaces = this.getNamespacesToApprove(
@@ -240,6 +232,9 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       const chainsToApprove = Object.values(namespaces).flatMap(
         namespace => namespace.chains ?? []
       )
+      if (chainsToApprove.length === 0) {
+        throw new Error('Networks not specified')
+      }
 
       await this.switchToSupportedNetwork(chainsToApprove, listenerApi)
 
@@ -281,7 +276,6 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const requiredNamespaces = payload.request.data.params.requiredNamespaces
 
     const dappUrl = payload.request.data.params.proposer.metadata.url
-    const methods = this.getApprovedMethods(dappUrl)
 
     const events = this.getApprovedEvents(requiredNamespaces)
 
@@ -297,6 +291,11 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           selectedAccounts,
           namespaceToApprove
         )
+
+        const methods =
+          namespace === EVM_IDENTIFIER
+            ? this.getApprovedMethods(dappUrl)
+            : namespaceToApprove.methods
 
         namespaces[namespace] = {
           chains: namespaceToApprove.chains,
