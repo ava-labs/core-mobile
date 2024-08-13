@@ -52,9 +52,6 @@ class WalletSwitchEthereumChainHandler
 
     const supportedNetwork = networks[Number(targetChainID)]
     const currentActiveNetwork = selectActiveNetwork(store)
-
-    // if the targetChainID is not a number, then it is not a supported chain on ethereum network
-    // in this case, we just need to return early to prevent an unnecessary UX
     const isNotSupportedChain = isNaN(Number(targetChainID))
 
     // 1. Verify if the wallet is currently on the requested network.
