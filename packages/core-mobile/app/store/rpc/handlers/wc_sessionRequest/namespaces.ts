@@ -1,6 +1,6 @@
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import { ProposalTypes } from '@walletconnect/types'
-import { RpcMethod } from 'store/rpc/types'
+import { CORE_NONEVM_METHODS } from 'store/rpc/types'
 
 export const NONEVM_OPTIONAL_NAMESPACES: ProposalTypes.OptionalNamespaces = {
   avax: {
@@ -12,12 +12,7 @@ export const NONEVM_OPTIONAL_NAMESPACES: ProposalTypes.OptionalNamespaces = {
       AvalancheCaip2ChainId.X,
       AvalancheCaip2ChainId.X_TESTNET
     ],
-    methods: [
-      RpcMethod.AVALANCHE_SEND_TRANSACTION,
-      RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-      RpcMethod.BITCOIN_SEND_TRANSACTION,
-      RpcMethod.AVALANCHE_SIGN_MESSAGE
-    ],
+    methods: CORE_NONEVM_METHODS,
     events: [
       'chainChanged',
       'accountsChanged',

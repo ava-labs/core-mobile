@@ -14,7 +14,7 @@ import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
-import { RpcMethod, CORE_ONLY_METHODS } from '../../types'
+import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import { EVM_IDENTIFIER } from '../../types'
 import {
   RpcRequestHandler,
@@ -60,7 +60,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
     return isCoreApp
-      ? [...supportedMethods, ...CORE_ONLY_METHODS]
+      ? [...supportedMethods, ...CORE_EVM_METHODS]
       : supportedMethods
   }
 
