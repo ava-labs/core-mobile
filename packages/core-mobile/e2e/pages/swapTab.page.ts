@@ -4,6 +4,7 @@ import { Platform } from '../helpers/constants'
 import swapTab from '../locators/swapTab.loc'
 import bottomTabsPage from './bottomTabs.page'
 import plusMenuPage from './plusMenu.page'
+import sendPage from './send.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 
@@ -65,21 +66,11 @@ class SwapTabPage {
   }
 
   async waitForReviewOrderBtnEnabled() {
-    await Actions.waitForCondition(
-      async () => {
-        const attr = await Actions.getAttributes(this.amountField, 1)
-        if ('elements' in attr) {
-          return attr.elements[1]?.text
-        } else {
-          return attr.text
-        }
-      },
-      (text: string | undefined) => text && text.length > 0
-    )
+    await Actions.waitForElement(this.reviewOrderBtn, 5000)
   }
 
   async tapApproveButton() {
-    await Actions.waitForElement(this.approveBtn)
+    await Actions.waitForElement(this.approveBtn, 5000)
     await Actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
@@ -117,7 +108,7 @@ class SwapTabPage {
     await Actions.tap(by.text(from))
     await this.inputTokenAmount(amount)
     await this.tapSelectTokenDropdown()
-    await Actions.tap(by.text(to))
+    await sendPage.selectToken(to)
     await this.waitForReviewOrderBtnEnabled()
     await this.reviewOrderButton()
     await this.tapApproveButton()

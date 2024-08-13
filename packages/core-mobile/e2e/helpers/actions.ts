@@ -245,7 +245,7 @@ const scrollListUntil = async (
   scrollPixel: number,
   direction: Detox.Direction = 'down'
 ) => {
-  await waitFor(element(scrollToItem))
+  await waitFor(element(scrollToItem).atIndex(0))
     .toBeVisible()
     .whileElement(scrollList)
     .scroll(scrollPixel, direction)
