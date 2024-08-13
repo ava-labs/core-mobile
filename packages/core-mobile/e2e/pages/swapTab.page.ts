@@ -37,10 +37,6 @@ class SwapTabPage {
     return by.id(swapTab.reviewOrderBtn)
   }
 
-  get disabledReviewOrderBtn() {
-    return by.id(swapTab.reviewOrderBtn)
-  }
-
   get approveBtn() {
     return by.id(swapTab.approveBtn)
   }
@@ -70,7 +66,7 @@ class SwapTabPage {
   }
 
   async waitForReviewOrderBtnEnabled() {
-    await Actions.waitForElement(this.disabledReviewOrderBtn, 5000)
+    await Actions.waitForElement(this.reviewOrderBtn, 5000)
   }
 
   async tapApproveButton() {
