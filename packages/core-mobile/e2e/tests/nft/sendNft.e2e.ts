@@ -1,15 +1,15 @@
 import AccountManagePage from '../../pages/accountManage.page'
-import Actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
 import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
 import activityTabPage from '../../pages/activityTab.page'
-import popUpModalPage from '../../pages/popUpModal.page'
 import { cleanup } from '../../helpers/cleanup'
+import sendPage from '../../pages/send.page'
 
 describe('Send NFT', () => {
   beforeAll(async () => {
     await warmup()
+    await AccountManagePage.createSecondAccount()
   })
 
   afterAll(async () => {
@@ -18,8 +18,7 @@ describe('Send NFT', () => {
 
   let account = 'first'
 
-  it('Should send NFT', async () => {
-    await AccountManagePage.createSecondAccount()
+  it('should send NFT', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await CollectiblesPage.tapListSvg()
     try {
@@ -35,17 +34,10 @@ describe('Send NFT', () => {
     await CollectiblesPage.tapMintNFT()
     await CollectiblesPage.verifyNftDetailsItems()
     await CollectiblesPage.sendNft(account)
-  })
-
-  it('Should verify NFT transaction toast', async () => {
-    await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
-    await Actions.waitForElementNotVisible(
-      popUpModalPage.successfulToastMsg,
-      30000
-    )
+    await sendPage.verifySuccessToast()
   }, 200000)
 
-  it('should verify NFT transactions on activity tab', async () => {
+  it('should verify NFT transaction on activity tab', async () => {
     // sender activity tab:
     await PortfolioPage.tapAssetsTab()
     await PortfolioPage.goToActivityTab()

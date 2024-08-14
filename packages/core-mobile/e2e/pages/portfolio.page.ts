@@ -277,9 +277,11 @@ class PortfolioPage {
       by.id('tokens_tab_list_view'),
       200
     )
+
     for (const network of networks) {
       await Action.waitForElement(by.id(portfolio.inactiveNetwork + network))
     }
+
     await Action.scrollListUntil(
       by.id(portfolio.activeNetwork + portfolio.avaxNetwork),
       by.id('tokens_tab_list_view'),

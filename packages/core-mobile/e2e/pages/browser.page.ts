@@ -33,7 +33,7 @@ class BrowserPage {
   }
 
   async tapCoreConnectWallet() {
-    await Wbs.tapByDataTestId('connect-wallet-button')
+    await Wbs.tapByText('Connect Wallet')
   }
 
   async connectTermAndContinue() {
@@ -190,8 +190,21 @@ class BrowserPage {
     await Wbs.tapByText('RPC Calls')
   }
 
+  async reconnectRpc() {
+    await this.tapConnectWallet(
+      'https://ava-labs.github.io/extension-avalanche-playground/'
+    )
+    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_ALL_WALLETS)
+    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_QR_BUTTON)
+  }
+
   async sendRpcCall(rpcCall: string) {
     await bottomTabsPage.tapBrowserTab()
+    try {
+      await this.reconnectRpc()
+    } catch (e) {
+      console.log('No need to reconnect RPC Playground')
+    }
     await this.goToRpcCallPage()
     await this.enterRpcCall(rpcCall)
     await this.tapSend()
@@ -203,10 +216,11 @@ class BrowserPage {
       if (additionalText) {
         await Wbs.waitForEleByTextToBeVisible(additionalText)
       }
+      console.log('Successful response received!')
     } catch (e) {
       await Wbs.waitForEleByTextToBeVisible('Error: ')
+      console.log('Not successful response received on the other end')
     }
-    console.log('Successful response received!')
   }
 
   async verifyErrorReceived(errorMessage = 'Error:') {

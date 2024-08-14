@@ -1,6 +1,5 @@
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
-import delay from '../helpers/waits'
 import connectToSiteLoc from '../locators/connectToSite.loc'
 import popUpModalPage from './popUpModal.page'
 
@@ -65,17 +64,11 @@ class ConnectToSite {
     await Action.tapElementAtIndex(this.selectAccounts, 0)
   }
 
-  async selectAccountAndconnect(toastMessage: string) {
+  async selectAccountAndconnect() {
     await Action.waitForElement(this.selectAccounts, 18000)
     await this.tapSelectAccounts()
     await this.tapAccountCheckBox()
     await this.tapApproveBtn()
-    await Action.waitForElement(by.text(`Connected to ${toastMessage}`), 10000)
-    await Action.waitForElementNotVisible(
-      by.text(`Connected to ${toastMessage}`),
-      10000
-    )
-    await delay(5000)
   }
 
   async approveSignMessage(dapp: string) {

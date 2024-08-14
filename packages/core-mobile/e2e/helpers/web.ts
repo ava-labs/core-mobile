@@ -24,6 +24,7 @@ const tap = async (item: Detox.WebMatcher) => {
 }
 
 const tapByXpath = async (xpath: string) => {
+  await waitForEleByXpathToBeVisible(xpath)
   await wb.element(by.web.xpath(xpath)).tap()
 }
 
@@ -32,6 +33,7 @@ const tapByDataTestId = async (dataTestId: string) => {
 }
 
 const tapByText = async (text: string) => {
+  await waitForEleByTextToBeVisible(text)
   await wb.element(by.web.xpath(`//*[text()="${text}"]`)).tap()
 }
 

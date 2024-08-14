@@ -4,7 +4,7 @@ export const Tokens = [
   { symbol: 'WETH.e', name: 'Wrapped ETH' },
   { symbol: 'USDC', name: 'USD Coin' },
   { symbol: 'ALPHA.e', name: 'AlphaToken' },
-  { symbol: 'SUSHI.e', name: 'Avalanche' },
+  { symbol: 'SUSHI.e', name: 'SushiToken' },
   { symbol: 'JOE', name: 'JoeToken' },
   { symbol: 'APE', name: 'ApeCoin' },
   { symbol: 'AAVE', name: 'Aave Token' }
@@ -23,7 +23,7 @@ export const SwapTokens = [
   { symbol: 'ALPHA.e', name: 'AlphaToken', amount: '0.000000000001' },
   { symbol: 'SUSHI', name: 'SushiToken', amount: '0.000000000001' },
   { symbol: 'UNI', name: 'Uniswap', amount: '0.01' },
-  { symbol: 'JOE', name: 'JoeToken', amount: '0.0001' },
+  { symbol: 'JOE', name: 'JoeToken', amount: '0.00015' },
   { symbol: 'APE', name: 'ApeCoin', amount: '0.000000000001' },
   { symbol: 'FRAX', name: 'Frax', amount: '0.000000000001' },
   { symbol: 'TUSD', name: 'TrueUSD', amount: '0.000000000001' },

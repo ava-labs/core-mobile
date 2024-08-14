@@ -21,6 +21,7 @@ export const warmup = async (newInstance = false) => {
   if (newInstance) {
     initialArgs.newInstance = true
   }
+  console.log(initialArgs)
   await device.launchApp(initialArgs)
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
