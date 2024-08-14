@@ -16,7 +16,7 @@ describe('Dapp - Core', () => {
     await warmup()
   })
 
-  it('should navigate core.app page', async () => {
+  it('should navigate core.app', async () => {
     await actions.waitForElement(BottomTabsPage.plusIcon)
     await BottomTabsPage.tapBrowserTab()
     await commonElsPage.tapGetStartedButton()
@@ -25,21 +25,21 @@ describe('Dapp - Core', () => {
     await browserPage.verifyInAppBrowserLoaded('https://core.app/')
   })
 
-  it('should connect Core dApp in InAppBrowser', async () => {
+  it('should connect core.app', async () => {
     await browserPage.tapAccept()
     await browserPage.tapCoreConnectWallet()
     await browserPage.tapConnectWallet()
     await browserPage.connectTermAndContinue()
     await browserPage.connectCore()
-    await connectToSitePage.selectAccountAndconnect('Core')
+    await connectToSitePage.selectAccountAndconnect()
   })
 
-  it('should show up Core dApp connected', async () => {
+  it('should verify core.app connected', async () => {
     await securityAndPrivacyPage.goToConnectedSites()
     await connectedSitesPage.verifyDapp('Core')
   })
 
-  it('should disconnect Core dApp', async () => {
+  it('should verify core.app disconnected', async () => {
     await connectedSitesPage.disconnectDapp('Core')
     await connectedSitesPage.verifyEmtpyConnectedSites()
   })
