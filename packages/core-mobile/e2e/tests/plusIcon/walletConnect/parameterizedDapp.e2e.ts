@@ -20,21 +20,21 @@ describe('Dapp Wallet Connect', () => {
     await browserPage.connectTo('https://app.aave.com/')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
-    await connectToSitePage.selectAccountAndconnect(Dapps.aave)
+    await connectToSitePage.selectAccountAndconnect()
   })
 
   it('should connect TraderJoe', async () => {
     await browserPage.connectTo('https://traderjoexyz.com/avalanche')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
-    await connectToSitePage.selectAccountAndconnect(Dapps.traderjoe)
+    await connectToSitePage.selectAccountAndconnect()
   })
 
   it('should connect OpenSea', async () => {
     await browserPage.connectTo('https://opensea.io/', true)
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
-    await connectToSitePage.selectAccountAndconnect(Dapps.openSea)
+    await connectToSitePage.selectAccountAndconnect()
     await connectToSitePage.approveSignMessage(Dapps.openSea)
   })
 

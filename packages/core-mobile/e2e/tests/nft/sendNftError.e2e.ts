@@ -1,16 +1,16 @@
-import AccountManagePage from '../../pages/accountManage.page'
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
-import PortfolioPage from '../../pages/portfolio.page'
-import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
+import AccountManagePage from '../../pages/accountManage.page'
+import CollectiblesPage from '../../pages/collectibles.page'
+import PortfolioPage from '../../pages/portfolio.page'
 
-describe('Send NFT', () => {
+describe('NFT Error Messages', () => {
   beforeAll(async () => {
     await warmup()
   })
 
-  it('Should verify Address Required warning', async () => {
+  it('should verify Address Required warning', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
     await CollectiblesPage.tapGridItem()
@@ -18,7 +18,7 @@ describe('Send NFT', () => {
     await Assert.isVisible(CollectiblesPage.warningAddressRequired)
   })
 
-  it('Should verify Insufficient balance for fee warning', async () => {
+  it('should verify Insufficient balance warning', async () => {
     await CollectiblesPage.tapAddressBook()
     await CollectiblesPage.tapMyAccounts()
     await AccountManagePage.tapFirstAccount()
