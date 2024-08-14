@@ -9,7 +9,7 @@ import { warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
 import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
 
-describe('Show Recovery Phrase', () => {
+describe('Setting - Show Recovery Phrase', () => {
   beforeAll(async () => {
     await warmup()
   })

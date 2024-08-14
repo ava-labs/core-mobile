@@ -5,13 +5,13 @@
 import { handleJailbrokenWarning } from '../../helpers/warmup'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 
-describe('Add existing metamask wallet', () => {
+describe('Login with metamask wallet', () => {
   beforeAll(async () => {
-    await device.launchApp()
+    await device.launchApp({ newInstance: true })
     await handleJailbrokenWarning()
   })
 
-  it('should successfully add an existing metamask wallet', async () => {
+  it('Should login with a metamask wallet', async () => {
     const recoveryPhrase: string = process.env.E2E_METAMASK_MNEMONIC as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
   })

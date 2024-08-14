@@ -6,7 +6,7 @@ import SwapTabPage from '../../../pages/swapTab.page'
 
 describe('Swap AVAX', () => {
   beforeAll(async () => {
-    await warmup()
+    await warmup(true)
   })
 
   it('Should swap AVAX <> USDC', async () => {
