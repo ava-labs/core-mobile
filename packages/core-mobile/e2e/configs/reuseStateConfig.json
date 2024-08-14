@@ -29,12 +29,11 @@
     "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
     "./e2e/tests/network/addCustomToken.smoke.e2e.ts",
     "./e2e/tests/plusIcon/walletConnect/dappEthIntegrations.e2e.ts",
-    
     "./e2e/tests/network/emptyAsssets.e2e.ts",
     "./e2e/tests/performance/performanceHelpUsImproveScreen.e2e.ts",
-    
-  
-    
+    "./e2e/tests/settings/showRecoveryPhrase.e2e.smoke.ts",
+    "./e2e/tests/login/unlockWithRecoveryPhrase.e2e.ts",
+    "./e2e/tests/login/createNewWallet.e2e.smoke.ts",
     "./e2e/tests/performance/performanceLaunchApp.e2e.ts",
     "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts", 
     "./e2e/tests/plusIcon/send/sendBitcoin.e2e.ts"
