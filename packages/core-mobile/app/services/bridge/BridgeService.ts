@@ -30,6 +30,7 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from 'store/rpc/types'
 import { bnToBig, noop, stringToBN } from '@avalabs/core-utils-sdk'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
+import { getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 
 type TransferBTCParams = {
   amount: string
@@ -199,7 +200,7 @@ export class BridgeService {
         return request({
           method: RpcMethod.ETH_SEND_TRANSACTION,
           params: [txParams],
-          chainId: blockchainNetwork.chainId.toString()
+          chainId: getEvmCaip2ChainId(blockchainNetwork.chainId)
         })
       }
 
