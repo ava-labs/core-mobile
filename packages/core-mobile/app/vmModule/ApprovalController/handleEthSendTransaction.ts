@@ -45,7 +45,7 @@ export const handleEthSendTransaction = async ({
     })
 
     resolve({
-      result: signedTx as Hex
+      signedData: signedTx as Hex
     })
   } catch (error) {
     resolve({

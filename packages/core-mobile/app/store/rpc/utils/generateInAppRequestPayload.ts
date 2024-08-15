@@ -4,8 +4,7 @@ import {
   RpcProvider,
   RpcRequest,
   CORE_MOBILE_META,
-  CORE_MOBILE_TOPIC,
-  EVM_IDENTIFIER
+  CORE_MOBILE_TOPIC
 } from '../types'
 
 export const generateInAppRequestPayload = ({
@@ -27,7 +26,7 @@ export const generateInAppRequestPayload = ({
         method,
         params
       },
-      chainId: `${EVM_IDENTIFIER}:${chainId}`
+      chainId: chainId ?? ''
     }
   },
   peerMeta: CORE_MOBILE_META
