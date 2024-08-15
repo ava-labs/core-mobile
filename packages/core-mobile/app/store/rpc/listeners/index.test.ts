@@ -93,16 +93,18 @@ jest.mock('store/network/slice', () => {
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
 
-const mockShowSimpleToast = jest.fn()
+const mockShowDappConnectionSuccessToast = jest.fn()
 const mockShowDappToastError = jest.fn()
 jest
   .spyOn(Snackbar, 'showDappToastError')
   .mockImplementation(mockShowDappToastError)
-jest.spyOn(Snackbar, 'showSimpleToast').mockImplementation(mockShowSimpleToast)
 
 jest.spyOn(Toast, 'showTransactionPendingToast').mockImplementation(jest.fn())
 jest.spyOn(Toast, 'showTransactionSuccessToast').mockImplementation(jest.fn())
 jest.spyOn(Toast, 'showTransactionErrorToast').mockImplementation(jest.fn())
+jest
+  .spyOn(Toast, 'showDappConnectionSuccessToast')
+  .mockImplementation(mockShowDappConnectionSuccessToast)
 
 jest.mock('services/walletconnectv2/WalletConnectService')
 
@@ -753,9 +755,9 @@ describe('rpc - listeners', () => {
           namespaces: { a: 1, b: 2 }
         })
 
-        expect(mockShowSimpleToast).toHaveBeenCalledWith(
-          'Connected to Playground'
-        )
+        expect(mockShowDappConnectionSuccessToast).toHaveBeenCalledWith({
+          dappName: 'Playground'
+        })
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'WalletConnectSessionApprovedV2',
@@ -800,10 +802,6 @@ describe('rpc - listeners', () => {
           relayProtocol: 'irn',
           namespaces: { a: 1, b: 2 }
         })
-
-        expect(mockShowSimpleToast).not.toHaveBeenCalledWith(
-          'Connected to Playground'
-        )
 
         expect(AnalyticsService.capture).not.toHaveBeenCalledWith(
           'WalletConnectSessionApprovedV2',
