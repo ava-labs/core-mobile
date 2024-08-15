@@ -3,11 +3,11 @@
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
 if (($IS_REGRESSION_RUN=='true')); then
   echo "This is a regression run"
-  TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration "android.internal.release.regression.ci" --listTests 2>&1)
+  TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration "android.internal.release.ci" --listTests)
   echo $TESTS_TO_BE_RUN
 else
   echo "This is a smoke test run"
-  TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration "android.internal.release.smoke.ci" --listTests 2>&1)
+  TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration "android.internal.release.smoke.ci" --listTests)
 fi
 # TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.debug --listTests;)
 

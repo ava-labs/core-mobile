@@ -287,6 +287,13 @@ workflows:
         no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2eReuseAppState.sh
+  _run_android_full_regression:
+    steps:
+    - script-runner@0:
+        title: Detox
+        no_output_timeout: 300
+        inputs:
+        - file_path: scripts/bitrise/detox/androidInternalRegressionRunner.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -547,6 +554,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
+    - _run_android_full_regression
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
@@ -593,6 +601,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
+    - _run_android_full_regression
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
@@ -639,6 +648,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
+    - _run_android_full_regression
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
@@ -685,6 +695,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
+    - _run_android_full_regression
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
