@@ -4,15 +4,15 @@ import { selectNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { SessionTypes } from '@walletconnect/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { showSimpleToast, showDappToastError } from 'components/Snackbar'
+import { showDappToastError } from 'components/Snackbar'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromRequest } from 'store/rpc/utils/getChainIdFromRequest/getChainIdFromRequest'
+import { showDappConnectionSuccessToast } from 'utils/toast'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
-import { showDappConnectionSuccessToast } from 'utils/toast'
 
 const chainAgnosticMethods = [
   RpcMethod.AVALANCHE_CREATE_CONTACT,
