@@ -39,7 +39,7 @@ for ((i=1; i<=groups; i++)); do
     # Create the grouped string for the current groups
     group_string=$(printf "%s " "${array[@]:$start:$((end - start + 1))}")
     eval "TEST_GROUP_$i=\"$group_string\""
-
+    envman add --key TESTS_$i --value "$group_string"
     # Print the indices and the grouped string
     echo "TEST_GROUP_$i indices: ${start} to ${end}"
     echo "TEST_GROUP_$i contents: ${group_string}"
@@ -48,8 +48,8 @@ for ((i=1; i<=groups; i++)); do
     start=$((end + 1))
 done
 
-# These env vars are passed to the test emulators via the detox config TESTS_ONE to ui_test_pixel_4_one, TESTS_TWO to ui_test_pixel_4_two, and TESTS_THREE to ui_test_pixel_4_three
-envman add --key TESTS_ONE --value "$TEST_GROUP_1"
-envman add --key TESTS_TWO --value "$TEST_GROUP_2"
-envman add --key TESTS_THREE --value "$TEST_GROUP_3"
-envman add --key TESTS_FOUR --value "$TEST_GROUP_4"
+# # These env vars are passed to the test emulators via the detox config TESTS_ONE to ui_test_pixel_4_one, TESTS_TWO to ui_test_pixel_4_two, and TESTS_THREE to ui_test_pixel_4_three
+# envman add --key TESTS_ONE --value "$TEST_GROUP_1"
+# envman add --key TESTS_TWO --value "$TEST_GROUP_2"
+# envman add --key TESTS_THREE --value "$TEST_GROUP_3"
+# envman add --key TESTS_FOUR --value "$TEST_GROUP_4"

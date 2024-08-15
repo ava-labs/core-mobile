@@ -118,10 +118,10 @@ workflows:
         - variables: |-
             TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            TESTS_TO_RUN_GROUP_1=$TESTS_ONE
-            TESTS_TO_RUN_GROUP_2=$TESTS_TWO
-            TESTS_TO_RUN_GROUP_3=$TESTS_THREE
-            TESTS_TO_RUN_GROUP_4=$TESTS_FOUR
+            TESTS_TO_RUN_GROUP_1=$TESTS_1
+            TESTS_TO_RUN_GROUP_2=$TESTS_2
+            TESTS_TO_RUN_GROUP_3=$TESTS_3
+            TESTS_TO_RUN_GROUP_4=$TESTS_4
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"

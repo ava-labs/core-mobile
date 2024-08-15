@@ -13,7 +13,6 @@ adb install -r $BITRISE_APK_PATH
 
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 
-./node_modules/.bin/detox test --listTests --configuration android.internal.release.regression.ci
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless; test_result=$?
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
