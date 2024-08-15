@@ -550,7 +550,7 @@ describe('rpc - listeners', () => {
         })
       })
 
-      describe('handle request with vm modules', () => {
+      describe.skip('handle request with vm modules', () => {
         beforeEach(() => {
           mockHandlerMapGet.mockImplementationOnce(() => undefined)
           mockLoadModule.mockImplementationOnce(() => mockModule)

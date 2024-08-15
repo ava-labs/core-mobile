@@ -26,10 +26,6 @@ import {
   SendTransactionApproveData,
   AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2
 } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
-import {
-  AvalancheSignTransactionApproveData as AvalancheSignTransactionApproveDataV2,
-  AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
-} from 'store/rpc/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
@@ -150,11 +146,6 @@ export type ApprovalPopupParams = {
 export type AvalancheSendTransactionV2Params = {
   request: AvalancheSendTransactionRpcRequestV2
   data: SendTransactionApproveData
-}
-
-export type AvalancheSignTransactionV2Params = {
-  request: AvalancheSignTransactionRpcRequestV2
-  data: AvalancheSignTransactionApproveDataV2
 }
 
 export type AvalancheSetDeveloperModeParams = {
