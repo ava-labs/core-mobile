@@ -42,15 +42,13 @@ class ApprovalController implements VmModuleApprovalController {
         account,
         maxFeePerGas,
         maxPriorityFeePerGas,
-        overrideData,
-        isTestnet
+        overrideData
       }: {
         network: Network
         account: CorePrimaryAccount
         maxFeePerGas?: bigint
         maxPriorityFeePerGas?: bigint
         overrideData?: string
-        isTestnet?: boolean
       }): Promise<void> => {
         switch (signingData.type) {
           case RpcMethod.ETH_SEND_TRANSACTION: {
@@ -88,7 +86,7 @@ class ApprovalController implements VmModuleApprovalController {
               unsignedTxJson: signingData.unsignedTxJson,
               ownSignatureIndices: signingData.ownSignatureIndices,
               account,
-              isTestnet,
+              network,
               resolve
             })
             break

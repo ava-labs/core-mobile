@@ -3,21 +3,21 @@ import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { avaxSerial, Credential, UnsignedTx, utils } from '@avalabs/avalanchejs'
-import NetworkService from 'services/network/NetworkService'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import Logger from 'utils/Logger'
+import { Network } from '@avalabs/core-chains-sdk'
 
 export const handleAvalancheSignTransaction = async ({
   unsignedTxJson,
   account,
-  isTestnet,
   ownSignatureIndices,
+  network,
   resolve
 }: {
   unsignedTxJson: string
+  network: Network
   account: Account
   ownSignatureIndices: [number, number][]
-  isTestnet?: boolean
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
   if (!account) {
@@ -31,7 +31,7 @@ export const handleAvalancheSignTransaction = async ({
         tx: unsignedTx
       },
       accountIndex: account.index,
-      network: NetworkService.getAvalancheNetworkP(isTestnet ?? false)
+      network
     })
 
     const signedTransaction = UnsignedTx.fromJSON(signedTransactionJson)
@@ -86,12 +86,10 @@ export const handleAvalancheSignTransaction = async ({
     )
 
     resolve({
-      result: {
-        signedData: JSON.stringify({
-          signedTransactionHex: Avalanche.signedTxToHex(correctedSignexTx),
-          signatures: details.ownSignatures
-        })
-      }
+      signedData: JSON.stringify({
+        signedTransactionHex: Avalanche.signedTxToHex(correctedSignexTx),
+        signatures: details.ownSignatures
+      })
     })
   } catch (error) {
     Logger.error(
