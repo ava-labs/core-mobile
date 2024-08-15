@@ -7,7 +7,7 @@ yarn start &
 
 npm rebuild detox
 
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c android.internal.release.ci --headless --retries 1 --reuse; test_result=$?
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c android.internal.release.regression.ci --headless --retries 1; test_result=$?
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
 
