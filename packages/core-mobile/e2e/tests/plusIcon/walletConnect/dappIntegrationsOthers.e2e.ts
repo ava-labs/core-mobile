@@ -5,9 +5,9 @@ import connectToSitePage from '../../../pages/connectToSite.page'
 import connectedSitesPage from '../../../pages/connectedSites.page'
 import securityAndPrivacyPage from '../../../pages/burgerMenu/securityAndPrivacy.page'
 
-describe('Dapp Wallet Connect', () => {
-  beforeAll(async () => {
-    await warmup()
+describe('Dapp Wallet Connect - Others', () => {
+  beforeEach(async () => {
+    await warmup(true)
   })
 
   enum Dapps {
@@ -16,21 +16,21 @@ describe('Dapp Wallet Connect', () => {
     openSea = 'OpenSea, the largest NFT marketplace'
   }
 
-  it('should connect Aave', async () => {
+  it('should connect Aave via Wallet Connect', async () => {
     await browserPage.connectTo('https://app.aave.com/')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
   })
 
-  it('should connect TraderJoe', async () => {
+  it('should connect TraderJoe via Wallet Connect', async () => {
     await browserPage.connectTo('https://traderjoexyz.com/avalanche')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
   })
 
-  it('should connect OpenSea', async () => {
+  it('should connect OpenSea via Wallet Connect', async () => {
     await browserPage.connectTo('https://opensea.io/', true)
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
@@ -38,7 +38,7 @@ describe('Dapp Wallet Connect', () => {
     await connectToSitePage.approveSignMessage(Dapps.openSea)
   })
 
-  it('should show connected dApps', async () => {
+  it('should verify Dapps connected', async () => {
     await securityAndPrivacyPage.goToConnectedSites()
     for (const key in Dapps) {
       const value = Dapps[key as keyof typeof Dapps]

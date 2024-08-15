@@ -144,7 +144,9 @@ class BrowserPage {
       console.log('The Get Started Button is not displayed')
     }
     try {
-      await this.tapBrowserBackBtn()
+      while (await Actions.isVisible(this.browserBackBtn, 0)) {
+        await this.tapBrowserBackBtn()
+      }
     } catch (e) {
       console.log('There is no web browser history to go back')
     }
