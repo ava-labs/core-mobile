@@ -12,6 +12,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromRequest } from 'store/rpc/utils/getChainIdFromRequest/getChainIdFromRequest'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
+import { showDappConnectionSuccessToast } from 'utils/toast'
 
 const chainAgnosticMethods = [
   RpcMethod.AVALANCHE_CREATE_CONTACT,
@@ -89,9 +90,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         const requiredNamespaces = JSON.stringify(session.requiredNamespaces)
         const optionalNamespaces = JSON.stringify(session.optionalNamespaces)
 
-        const message = `Connected to ${name}`
-
-        showSimpleToast(message)
+        showDappConnectionSuccessToast({ dappName: name })
 
         AnalyticsService.capture('WalletConnectSessionApprovedV2', {
           namespaces,
