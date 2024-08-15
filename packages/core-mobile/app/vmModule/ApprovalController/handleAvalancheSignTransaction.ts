@@ -86,10 +86,12 @@ export const handleAvalancheSignTransaction = async ({
     )
 
     resolve({
-      result: `0x${JSON.stringify({
-        signedTransactionHex: Avalanche.signedTxToHex(correctedSignexTx),
-        signatures: details.ownSignatures
-      })}`
+      result: {
+        signedData: JSON.stringify({
+          signedTransactionHex: Avalanche.signedTxToHex(correctedSignexTx),
+          signatures: details.ownSignatures
+        })
+      }
     })
   } catch (error) {
     Logger.error(
