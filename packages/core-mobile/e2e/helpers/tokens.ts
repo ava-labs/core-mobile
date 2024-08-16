@@ -7,7 +7,7 @@ export const Tokens = [
   { symbol: 'SUSHI.e', name: 'SushiToken' },
   { symbol: 'JOE', name: 'JoeToken' },
   { symbol: 'APE', name: 'ApeCoin' },
-  { symbol: 'AAVE', name: 'Aave Token' }
+  { symbol: 'AAVE.e', name: 'Aave Token' }
 ]
 
 export const SwapTokens = [
@@ -25,7 +25,6 @@ export const SwapTokens = [
   { symbol: 'UNI', name: 'Uniswap', amount: '0.01' },
   { symbol: 'JOE', name: 'JoeToken', amount: '0.00015' },
   { symbol: 'APE', name: 'ApeCoin', amount: '0.000000000001' },
-  { symbol: 'FRAX', name: 'Frax', amount: '0.000000000001' },
   { symbol: 'TUSD', name: 'TrueUSD', amount: '0.000000000001' },
   { symbol: '1INCH', name: '1INCH Token', amount: '0.000000000001' },
   { symbol: 'WOO.e', name: 'Wootrade Network', amount: '0.000000000001' },
@@ -36,6 +35,7 @@ export const SwapTokens = [
   { symbol: 'COQ', name: 'Coq Inu', amount: '0.000000000001' },
   { symbol: 'MEOW', name: 'MeowCat', amount: '0.000000000001' },
   { symbol: 'NOCHILL', name: 'AVAX HAS NO CHILL', amount: '0.000000000001' }
+  // { symbol: 'FRAX', name: 'Frax', amount: '0.000000000001' },
   // { symbol: 'MKR.e', name: 'Maker', amount: '0.000000000001' },
   // { symbol: 'SNX', name: 'Synthetix Network Token', amount: '0.000000000001' },
   // { symbol: 'BAT', name: 'Basic Attention Token', amount: '0.000000000001' },

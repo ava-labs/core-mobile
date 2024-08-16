@@ -14,6 +14,7 @@ fi
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
 
+# This replaces the test path prefix `/Users/vagrant/git` with `bitrise/src` which we need for the actual testing
 for i in "${!array[@]}"; do
   array[$i]="${array[$i]//\/Users\/vagrant\/git\//\/bitrise\/src\/}"
 done
@@ -22,10 +23,12 @@ done
 testCnt="${#array[@]}"
 echo "Test count: $testCnt"
 
-# Split the tests into 3 groups and uses awk in case the number of tests is not divisible by 3
+# Set the group number. we can increase the group number here in the future if needed
 groups=4
+
 # Calculate the number of items per groups
 items_per_group=$((testCnt / groups))
+# Get a remainder 
 remainder=$((testCnt % groups))
 
 # Variables to keep track of indices
@@ -44,6 +47,7 @@ for ((i=1; i<=groups; i++)); do
     group_string=$(printf "%s " "${array[@]:$start:$((end - start + 1))}")
     eval "TEST_GROUP_$i=\"$group_string\""
     envman add --key TESTS_$i --value "$group_string"
+    
     # Print the indices and the grouped string
     echo "TEST_GROUP_$i indices: ${start} to ${end}"
     echo "TEST_GROUP_$i contents: ${group_string}"
