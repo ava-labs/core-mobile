@@ -1,4 +1,4 @@
-import { EVM_IDENTIFIER } from 'store/rpc/types'
+import { BlockchainNamespace } from 'store/rpc/types'
 import { getAvalancheCaip2ChainId } from 'temp/caip2ChainIds'
 
 // prefix eip155 namespace to a chainId
@@ -9,7 +9,7 @@ export const addNamespaceToChain = (chainId: number): string => {
     return caip2ChainId
   }
 
-  return `${EVM_IDENTIFIER}:${chainId}`
+  return `${BlockchainNamespace.EIP155}:${chainId}`
 }
 
 // prefix eip155 namespace and chainId to an address
@@ -23,5 +23,5 @@ export const addNamespaceToAddress = (
     return `${caip2ChainId}:${address}`
   }
 
-  return `${EVM_IDENTIFIER}:${chainId}:${address}`
+  return `${BlockchainNamespace.EIP155}:${chainId}:${address}`
 }

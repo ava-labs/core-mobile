@@ -33,7 +33,7 @@ export const handleSignMessage = async ({
     })
 
     resolve({
-      result: signedMessage as Hex
+      signedData: signedMessage as Hex
     })
   } catch (error) {
     resolve({

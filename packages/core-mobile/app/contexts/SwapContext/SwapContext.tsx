@@ -22,6 +22,7 @@ import { selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { RpcMethod } from 'store/rpc/types'
 import { useInAppRequest } from 'hooks/useInAppRequest'
+import { getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { showTransactionErrorToast } from 'utils/toast'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
@@ -159,7 +160,7 @@ export const SwapContextProvider = ({
             request({
               method: RpcMethod.ETH_SEND_TRANSACTION,
               params: txParams,
-              chainId: activeNetwork.chainId.toString()
+              chainId: getEvmCaip2ChainId(activeNetwork.chainId)
             }),
           userAddress: activeAccount.addressC
         })

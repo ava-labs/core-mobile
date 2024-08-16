@@ -14,8 +14,7 @@ import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
-import { RpcMethod, CORE_EVM_METHODS } from '../../types'
-import { EVM_IDENTIFIER } from '../../types'
+import { RpcMethod, CORE_EVM_METHODS, BlockchainNamespace } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,
@@ -70,7 +69,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     return [
       ...new Set([
         ...DEFAULT_EVENTS,
-        ...(requiredNamespaces[EVM_IDENTIFIER]?.events ?? [])
+        ...(requiredNamespaces[BlockchainNamespace.EIP155]?.events ?? [])
       ])
     ]
   }
@@ -127,14 +126,17 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     }
 
     try {
+      const chainId = chainIdtoSwitch.toString()
+
       const request = createInAppRequest(listenerApi.dispatch)
       await request({
         method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
         params: [
           {
-            chainId: chainIdtoSwitch.toString()
+            chainId
           }
-        ]
+        ],
+        chainId: `${BlockchainNamespace.EIP155}:${chainId}`
       })
     } catch (error) {
       throw new Error(`Failed to switch to network ${chainIdtoSwitch}`)
@@ -217,7 +219,9 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
 
       const hasCoreMethod =
-        normalizedRequired[EVM_IDENTIFIER]?.methods.some(isCoreMethod) ?? false
+        normalizedRequired[BlockchainNamespace.EIP155]?.methods.some(
+          isCoreMethod
+        ) ?? false
 
       if (hasCoreMethod && !isCoreApp) {
         throw new Error('Requested method is not authorized')
@@ -293,7 +297,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
         )
 
         const methods =
-          namespace === EVM_IDENTIFIER
+          namespace === BlockchainNamespace.EIP155
             ? this.getApprovedMethods(dappUrl)
             : namespaceToApprove.methods
 

@@ -23,6 +23,7 @@ import Big from 'big.js'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from 'store/rpc/types'
 import { TransactionParams } from '@avalabs/evm-module'
+import { getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -147,7 +148,7 @@ export class UnifiedBridgeService {
       return request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: txParams,
-        chainId: activeNetwork.chainId.toString()
+        chainId: getEvmCaip2ChainId(activeNetwork.chainId)
       }) as Promise<`0x${string}`>
     }
 
