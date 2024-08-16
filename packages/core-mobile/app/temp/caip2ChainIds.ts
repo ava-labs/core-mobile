@@ -1,6 +1,6 @@
 import { JsonMap } from 'store/posthog'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { AVM_PVM_IDENTIFIER } from 'store/rpc/types'
+import { BlockchainNamespace } from 'store/rpc/types'
 
 /**
  * In the process of switching to CAIP2 naming convention for blockchain ids we are temporarily modifying Posthog
@@ -33,20 +33,25 @@ function updateChainIdIfNeeded(original: number): string {
   return original.toString()
 }
 
-//Based on CAIP-2
+// Based on CAIP-2
 enum BlockchainId {
-  P_CHAIN = 'avax:11111111111111111111111111111111LpoYY',
-  P_CHAIN_TESTNET = 'avax:fuji-11111111111111111111111111111111LpoYY',
-  X_CHAIN = 'avax:2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
-  X_CHAIN_TESTNET = 'avax:2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm'
+  P_CHAIN = `${BlockchainNamespace.AVAX}:11111111111111111111111111111111LpoYY`,
+  P_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:fuji-11111111111111111111111111111111LpoYY`,
+  X_CHAIN = `${BlockchainNamespace.AVAX}:2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM`,
+  X_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm`
 }
 
 // Based on CAIP-2, hashed
 enum AvalancheChainId {
-  P_CHAIN = 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
-  P_CHAIN_TESTNET = 'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl',
-  X_CHAIN = 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
-  X_CHAIN_TESTNET = 'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+  P_CHAIN = '${BlockchainNamespace.AVAX}Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+  P_CHAIN_TESTNET = '${BlockchainNamespace.AVAX}8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl',
+  X_CHAIN = '${BlockchainNamespace.AVAX}imji8papUf2EhV3le337w1vgFauqkJg-',
+  X_CHAIN_TESTNET = '${BlockchainNamespace.AVAX}Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+}
+
+enum BitcoinChainId {
+  MAINNET = `${BlockchainNamespace.BIP122}:000000000019d6689c085ae165831e93`,
+  TESTNET = `${BlockchainNamespace.BIP122}:000000000933ea01ad0ee984209779ba`
 }
 
 export const isPVMChainId = (caip2ChainId: string): boolean => {
@@ -94,10 +99,31 @@ export const getAvalancheChainId = (
   return undefined
 }
 
+export const getBitcoinChainId = (caip2ChainId: string): number | undefined => {
+  if (caip2ChainId === BitcoinChainId.MAINNET) {
+    return ChainId.BITCOIN
+  } else if (caip2ChainId === BitcoinChainId.TESTNET) {
+    return ChainId.BITCOIN_TESTNET
+  }
+
+  return undefined
+}
+
+export const getBitcoinCaip2ChainId = (isMainnet: boolean): string => {
+  return isMainnet ? BitcoinChainId.MAINNET : BitcoinChainId.TESTNET
+}
+
+export const getEvmCaip2ChainId = (chainId: number): string => {
+  return `${BlockchainNamespace.EIP155}:${chainId.toString()}`
+}
+
 export const getChainIdFromCaip2 = (
   caip2ChainId: string
 ): number | undefined => {
-  return caip2ChainId.split(':')[0] === AVM_PVM_IDENTIFIER
+  const namespace = caip2ChainId.split(':')[0]
+  return namespace === BlockchainNamespace.AVAX
     ? getAvalancheChainId(caip2ChainId)
+    : namespace === BlockchainNamespace.BIP122
+    ? getBitcoinChainId(caip2ChainId)
     : Number(caip2ChainId.split(':')[1])
 }

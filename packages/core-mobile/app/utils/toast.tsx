@@ -3,6 +3,7 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import DappToast, { DappToastTypes } from 'components/toast/DappToast'
 
 export const showTransactionPendingToast = (): void => {
   showSnackBarCustom({
@@ -48,5 +49,22 @@ export const showTransactionErrorToast = ({
       <TransactionToast message={message} type={TransactionToastType.ERROR} />
     ),
     duration: 'long'
+  })
+}
+
+export const showDappConnectionSuccessToast = ({
+  dappName
+}: {
+  dappName: string
+}): void => {
+  showSnackBarCustom({
+    component: (
+      <DappToast
+        message={`Connected to ${dappName}`}
+        dappName={'Connection Successful'}
+        type={DappToastTypes.SUCCESS}
+      />
+    ),
+    duration: 'short'
   })
 }

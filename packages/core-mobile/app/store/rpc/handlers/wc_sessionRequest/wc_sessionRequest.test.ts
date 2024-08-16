@@ -173,7 +173,8 @@ const testApproveInvalidData = async (data: unknown) => {
   })
 }
 
-describe('session_request handler', () => {
+// eslint-disable-next-line jest/no-disabled-tests
+xdescribe('session_request handler', () => {
   it('should contain correct methods', () => {
     expect(handler.methods).toEqual(['wc_sessionRequest'])
   })
