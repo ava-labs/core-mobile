@@ -10,7 +10,7 @@ npm rebuild detox
 
 adb install -r $BITRISE_TEST_APK_PATH
 adb install -r $BITRISE_APK_PATH
-
+echo $TESTS_TO_RUN_GROUP_3
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless; test_result=$?
@@ -20,3 +20,7 @@ npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
 if ((test_result != 0)); then
   exit 1
 fi
+
+
+# /bitrise/src/packages/core-mobile/e2e/tests/inAppBrowser/rpcCallsIntegration.e2e.ts
+# /Users/vagrant/git/packages/core-mobile/e2e/tests/inAppBrowser/rpcCallsIntegration.e2e.ts

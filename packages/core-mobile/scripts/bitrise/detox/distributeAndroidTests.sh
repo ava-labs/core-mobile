@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
 if (($IS_REGRESSION_RUN=='true')); then
