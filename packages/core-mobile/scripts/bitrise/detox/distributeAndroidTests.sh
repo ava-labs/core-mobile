@@ -15,7 +15,7 @@ fi
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
 
 for i in "${!array[@]}"; do
-  paths[$i]="${paths[$i]//\/Users\/vagrant\/git\//\/bitrise\/src\/}"
+  array[$i]="${array[$i]//\/Users\/vagrant\/git\//\/bitrise\/src\/}"
 done
 
 # Returns the number of elements in the array
