@@ -14,6 +14,10 @@ fi
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
 
+for i in "${!array[@]}"; do
+  paths[$i]="${paths[$i]//\/Users\/vagrant\/git\//\/bitrise\/src\/}"
+done
+
 # Returns the number of elements in the array
 testCnt="${#array[@]}"
 echo "Test count: $testCnt"
@@ -47,9 +51,3 @@ for ((i=1; i<=groups; i++)); do
     # Move to the next chunk
     start=$((end + 1))
 done
-
-# # These env vars are passed to the test emulators via the detox config TESTS_ONE to ui_test_pixel_4_one, TESTS_TWO to ui_test_pixel_4_two, and TESTS_THREE to ui_test_pixel_4_three
-# envman add --key TESTS_ONE --value "$TEST_GROUP_1"
-# envman add --key TESTS_TWO --value "$TEST_GROUP_2"
-# envman add --key TESTS_THREE --value "$TEST_GROUP_3"
-# envman add --key TESTS_FOUR --value "$TEST_GROUP_4"
