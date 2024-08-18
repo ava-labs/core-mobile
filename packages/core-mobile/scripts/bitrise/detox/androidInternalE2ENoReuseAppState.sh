@@ -18,10 +18,10 @@ QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.inte
 
 if (($IS_REGRESSION_RUN=='true')); then
   ./node_modules/.bin/detox test --listTests --configuration android.internal.release.regression.ci
-  _QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless --retries 1; test_result=$?
+  _QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless; test_result=$?
 else
   ./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.ci
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless; test_result=$?
 fi
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
