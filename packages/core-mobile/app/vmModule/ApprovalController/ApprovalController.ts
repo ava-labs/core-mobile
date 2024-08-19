@@ -17,6 +17,7 @@ import {
 } from 'utils/toast'
 import { handleEthSendTransaction } from './handleEthSendTransaction'
 import { handleSignMessage } from './handleSignMessage'
+import { handleAvalancheSignTransaction } from './handleAvalancheSignTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
   onTransactionConfirmed(txHash: Hex): void {
@@ -78,6 +79,16 @@ class ApprovalController implements VmModuleApprovalController {
               resolve
             })
 
+            break
+          }
+          case RpcMethod.AVALANCHE_SIGN_TRANSACTION: {
+            handleAvalancheSignTransaction({
+              unsignedTxJson: signingData.unsignedTxJson,
+              ownSignatureIndices: signingData.ownSignatureIndices,
+              account,
+              network,
+              resolve
+            })
             break
           }
           default:

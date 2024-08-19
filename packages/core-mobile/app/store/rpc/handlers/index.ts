@@ -11,7 +11,6 @@ import { avalancheSelectAccountHandler } from './account/avalanche_selectAccount
 import { RpcRequestHandler } from './types'
 import { avalancheSendTransactionHandler } from './avalanche_sendTransaction/avalanche_sendTransaction'
 import { avalancheGetAccountPubKeyHandler } from './avalanche_getAccountPubKey/avalanche_getAccountPubKey'
-import { avalancheSignTransactionHandler } from './avalanche_signTransaction/avalanche_signTransaction'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode/avalanche_setDeveloperMode'
 import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange/avalanche_getAddressesInRange'
@@ -30,7 +29,6 @@ const handlerMap = [
   walletSwitchEthereumChainHandler,
   walletGetEthereumChainHandler,
   avalancheSendTransactionHandler,
-  avalancheSignTransactionHandler,
   avalancheGetAccountPubKeyHandler,
   avalancheSetDeveloperModeHandler,
   avalancheGetAddressesInRangeHandler,
