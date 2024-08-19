@@ -43,10 +43,10 @@ enum BlockchainId {
 
 // Based on CAIP-2, hashed
 enum AvalancheChainId {
-  P_CHAIN = '${BlockchainNamespace.AVAX}Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
-  P_CHAIN_TESTNET = '${BlockchainNamespace.AVAX}8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl',
-  X_CHAIN = '${BlockchainNamespace.AVAX}imji8papUf2EhV3le337w1vgFauqkJg-',
-  X_CHAIN_TESTNET = '${BlockchainNamespace.AVAX}Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+  P_CHAIN = `${BlockchainNamespace.AVAX}:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo`,
+  P_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl`,
+  X_CHAIN = `${BlockchainNamespace.AVAX}:imji8papUf2EhV3le337w1vgFauqkJg-`,
+  X_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG`
 }
 
 enum BitcoinChainId {
