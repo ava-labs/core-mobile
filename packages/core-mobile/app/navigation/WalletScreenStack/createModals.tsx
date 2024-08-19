@@ -81,10 +81,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={AvalancheSendTransactionV2}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.AvalancheSignTransactionV2}
-        component={AvalancheSendTransactionV2}
-      />
-      <WalletScreenS.Screen
         name={AppNavigation.Modal.BitcoinSendTransaction}
         component={BitcoinSendTransaction}
       />

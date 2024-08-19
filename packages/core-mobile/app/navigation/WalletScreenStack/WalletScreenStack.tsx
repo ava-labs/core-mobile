@@ -82,7 +82,6 @@ import {
   ApprovalPopupParams,
   AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
-  AvalancheSignTransactionV2Params,
   BitcoinSendTransactionParams,
   BridgeAssetV2Params,
   BridgeTransactionStatusParams,
@@ -172,8 +171,6 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.ApprovalPopup]: ApprovalPopupParams
   [AppNavigation.Modal
     .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
-  [AppNavigation.Modal
-    .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
   [AppNavigation.Modal
     .AvalancheSetDeveloperMode]: AvalancheSetDeveloperModeParams
   [AppNavigation.Modal.StakeDisclaimer]: undefined
