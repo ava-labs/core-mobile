@@ -2,6 +2,7 @@ import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { normalizeNamespaces } from '@walletconnect/utils'
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import {
   selectActiveNetwork,
@@ -14,7 +15,7 @@ import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
-import { RpcMethod, CORE_EVM_METHODS, BlockchainNamespace } from '../../types'
+import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,

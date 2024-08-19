@@ -1,4 +1,4 @@
-import { BlockchainNamespace } from 'store/rpc/types'
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 import { getAvalancheCaip2ChainId } from 'temp/caip2ChainIds'
 
 // prefix eip155 namespace to a chainId
