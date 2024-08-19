@@ -6,12 +6,13 @@ import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
-import { Text, useTheme, View } from '@avalabs/k2-mobile'
+import { Image, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
+import { ImageRequireSource } from 'react-native'
 
 interface AvatarBaseProps {
   title: string
-  logoUri?: string
+  logoUri?: string | ImageRequireSource
   showBorder?: boolean
   size?: number
   testID?: string
@@ -56,7 +57,9 @@ const AvatarBase: FC<AvatarBaseProps> = ({
 
   const hasValidLogoUri =
     !!logoUri &&
-    (logoUri.startsWith('http') || logoUri.startsWith('https')) &&
+    (typeof logoUri === 'number' ||
+      logoUri.startsWith('http') ||
+      logoUri.startsWith('https')) &&
     !failedToLoad
 
   if (!hasValidLogoUri) {
@@ -66,6 +69,21 @@ const AvatarBase: FC<AvatarBaseProps> = ({
         size={size}
         showBorder={showBorder}
         fallbackBackgroundColor={fallbackBackgroundColor ?? backgroundColor}
+      />
+    )
+  }
+
+  if (typeof logoUri === 'number') {
+    return (
+      <Image
+        source={logoUri}
+        sx={{
+          width: size,
+          height: size,
+          borderRadius: size,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
       />
     )
   }
