@@ -1,0 +1,13 @@
+{
+  "extends": "@avalabs/tsconfig-mobile/base.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "*.d.ts",
+    "./.storybook/*.js",
+    ".eslintrc.js",
+    ".prettierrc.js"
+  ],
+  "exclude": ["node_modules"]
+}
