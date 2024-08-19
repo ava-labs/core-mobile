@@ -23,14 +23,14 @@ const importFee = calculatePChainFee()
  */
 export const useEstimateStakingFees = (
   stakingAmount: Avax
-): Avax | undefined => {
+): bigint | undefined => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const activeAccount = useSelector(selectActiveAccount)
   const amountForCrossChainTransfer =
     useGetAmountForCrossChainTransfer(stakingAmount)
   const [estimatedStakingFee, setEstimatedStakingFee] = useState<
-    Avax | undefined
+    bigint | undefined
   >(undefined)
   const cChainBaseFeeWei = useCChainBaseFee()
   const baseFee = useMemo(
@@ -42,13 +42,13 @@ export const useEstimateStakingFees = (
   )
 
   useEffect(() => {
-    const calculateEstimatedStakingFee = async () => {
+    const calculateEstimatedStakingFee = async (): Promise<void> => {
       if (amountForCrossChainTransfer === undefined) {
         setEstimatedStakingFee(undefined)
         return
       }
       if (amountForCrossChainTransfer.isZero()) {
-        setEstimatedStakingFee(Avax.fromBase(0))
+        setEstimatedStakingFee(0n)
         return
       }
       if (
@@ -76,7 +76,7 @@ export const useEstimateStakingFees = (
       })
 
       const exportFee = calculateCChainFee(instantBaseFee, unsignedTx)
-      setEstimatedStakingFee(exportFee.add(importFee))
+      setEstimatedStakingFee(exportFee.add(importFee).toSubUnit())
     }
     calculateEstimatedStakingFee().catch(Logger.error)
   }, [activeAccount, amountForCrossChainTransfer, avaxXPNetwork, baseFee])
