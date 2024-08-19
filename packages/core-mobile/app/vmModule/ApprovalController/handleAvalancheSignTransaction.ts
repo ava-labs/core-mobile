@@ -92,17 +92,12 @@ export const handleAvalancheSignTransaction = async ({
       })
     })
   } catch (error) {
-    Logger.error(
-      'Unable to approve sign transaction request',
-      JSON.stringify(error)
-    )
-
-    const message =
-      'message' in (error as Error)
-        ? (error as Error).message
-        : 'Sign transaction error'
+    Logger.error('Failed to sign avalanche transaction', JSON.stringify(error))
     resolve({
-      error: rpcErrors.internal(message)
+      error: rpcErrors.internal({
+        message: 'Failed to sign avalanche transaction',
+        data: { cause: error }
+      })
     })
   }
 }
