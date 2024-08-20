@@ -59,6 +59,13 @@ export const isAVMChainId = (caip2ChainId: string): boolean => {
   )
 }
 
+export const isBtcChainId = (caip2ChainId: string): boolean => {
+  return (
+    caip2ChainId === BitcoinCaip2ChainId.MAINNET ||
+    caip2ChainId === BitcoinCaip2ChainId.TESTNET
+  )
+}
+
 export const getAvalancheCaip2ChainId = (
   chainId: number
 ): string | undefined => {
@@ -102,6 +109,17 @@ export const getBitcoinChainId = (caip2ChainId: string): number | undefined => {
 
 export const getBitcoinCaip2ChainId = (isMainnet: boolean): string => {
   return isMainnet ? BitcoinCaip2ChainId.MAINNET : BitcoinCaip2ChainId.TESTNET
+}
+
+export const getBitcoinCaip2ChainIdByChainId = (
+  chainId: number
+): string | undefined => {
+  if (chainId === ChainId.BITCOIN) {
+    return BitcoinCaip2ChainId.MAINNET
+  } else if (chainId === ChainId.BITCOIN_TESTNET) {
+    return BitcoinCaip2ChainId.TESTNET
+  }
+  return undefined
 }
 
 export const getEvmCaip2ChainId = (chainId: number): string => {

@@ -81,12 +81,13 @@ export const CORE_EVM_METHODS = [
   RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
 ]
 
-export const CORE_NONEVM_METHODS = [
+export const CORE_AVAX_METHODS = [
   RpcMethod.AVALANCHE_SEND_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-  RpcMethod.BITCOIN_SEND_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_MESSAGE
 ]
+
+export const CORE_BTC_METHODS = [RpcMethod.BITCOIN_SEND_TRANSACTION]
 
 export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
 

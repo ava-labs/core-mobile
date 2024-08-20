@@ -20,6 +20,14 @@ import { isBtcAddress } from 'utils/isBtcAddress'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
+// The transaction's byte size is for BTC as gasLimit is for EVM.
+// Bitcoin's formula for fee is `transactionByteLength * feeRate`.
+// Since we know the `fee` and the `feeRate`, we can get the transaction's
+// byte length by division.
+export const getGasLimit = (fee: number, feeRate: number): number => {
+  return fee / feeRate
+}
+
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
     params: ValidateStateAndCalculateFeesParams
@@ -126,11 +134,7 @@ class SendServiceBTC implements SendServiceHelper {
           error: undefined,
           maxAmount,
           sendFee: BigInt(fee),
-          // The transaction's byte size is for BTC as gasLimit is for EVM.
-          // Bitcoin's formula for fee is `transactionByteLength * feeRate`.
-          // Since we know the `fee` and the `feeRate`, we can get the transaction's
-          // byte length by division.
-          gasLimit: fee / feeRate
+          gasLimit: getGasLimit(fee, feeRate)
         }
 
         if (!amountInSatoshis)
