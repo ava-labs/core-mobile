@@ -7,11 +7,11 @@ import {
 } from 'services/earn/calculateCrossChainFees'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
+import { NETWORK_P, NETWORK_P_TEST } from 'services/network/consts'
 
 const importFee = calculatePChainFee()
 
@@ -25,10 +25,7 @@ export const useEstimateStakingFees = (
   stakingAmount: Avax
 ): Avax | undefined => {
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const avaxXPNetwork = useMemo(
-    () => NetworkService.getAvalancheNetworkP(isDevMode),
-    [isDevMode]
-  )
+  const avaxXPNetwork = isDevMode ? NETWORK_P_TEST : NETWORK_P
   const activeAccount = useSelector(selectActiveAccount)
   const amountForCrossChainTransfer =
     useGetAmountForCrossChainTransfer(stakingAmount)
