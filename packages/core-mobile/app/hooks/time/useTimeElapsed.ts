@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 
-export const useTimeElapsed = (enabled: boolean, targetTime: number) => {
+export const useTimeElapsed = (
+  enabled: boolean,
+  targetTime: number
+): boolean => {
   const [targetTimeReached, setTargetTimeReached] = useState(false)
 
   useEffect(() => {

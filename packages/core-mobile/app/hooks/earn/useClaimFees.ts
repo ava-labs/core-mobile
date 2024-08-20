@@ -24,12 +24,12 @@ const exportPFee = calculatePChainFee()
  * https://docs.avax.network/quickstart/transaction-fees
  */
 export const useClaimFees = (): {
-  totalFees: Avax | undefined
-  exportPFee: Avax
+  totalFees: bigint | undefined
+  exportPFee: bigint
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
-  const [totalFees, setTotalFees] = useState<Avax | undefined>(undefined)
+  const [totalFees, setTotalFees] = useState<bigint | undefined>(undefined)
   const cChainBaseFee = useCChainBaseFee()
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export const useClaimFees = (): {
 
       Logger.info('importCFee', importCFee.toDisplay())
       Logger.info('exportPFee', exportPFee.toDisplay())
-      setTotalFees(importCFee.add(exportPFee))
+      setTotalFees(importCFee.add(exportPFee).toSubUnit())
     }
 
     calculateFees().catch(err => {
@@ -68,5 +68,5 @@ export const useClaimFees = (): {
     })
   }, [activeAccount, isDevMode, cChainBaseFee?.data])
 
-  return { totalFees, exportPFee }
+  return { totalFees, exportPFee: exportPFee.toSubUnit() }
 }

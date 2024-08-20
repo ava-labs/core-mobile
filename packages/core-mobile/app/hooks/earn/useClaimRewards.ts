@@ -50,7 +50,7 @@ export const useClaimRewards = (
         pChainBalance?.data?.balancePerType.unlockedUnstaked ?? 0
       )
 
-      if (totalFees.gt(totalClaimable)) {
+      if (totalClaimable.lt(exportPFee)) {
         throw Error('not enough balance to cover fee')
       }
 
