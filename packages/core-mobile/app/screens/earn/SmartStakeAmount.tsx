@@ -22,7 +22,7 @@ enum BalanceStates {
   SUFFICIENT = 'sufficient' // // enough to cover minimum stake amount + fees
 }
 
-const SmartStakeAmount = () => {
+const SmartStakeAmount = (): React.JSX.Element => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
@@ -31,7 +31,7 @@ const SmartStakeAmount = () => {
   const networkFees = useEstimateStakingFees(minStakeAmount)
 
   useEffect(() => {
-    if (cChainBalance.data?.balance) {
+    if (cChainBalance.data?.balance !== undefined) {
       const availableAvax = Avax.fromWei(cChainBalance.data.balance)
         .add(claimableBalance ?? 0)
         .sub(networkFees ?? 0)
@@ -50,14 +50,14 @@ const SmartStakeAmount = () => {
     networkFees
   ])
 
-  const renderNotEnoughAvax = () => {
-    const navToBuy = () => {
+  const renderNotEnoughAvax = (): React.JSX.Element => {
+    const navToBuy = (): void => {
       navigate(AppNavigation.Wallet.Buy)
     }
-    const navToReceive = () => {
+    const navToReceive = (): void => {
       navigate(AppNavigation.Wallet.ReceiveTokens)
     }
-    const navToSwap = () => {
+    const navToSwap = (): void => {
       navigate(AppNavigation.Wallet.Swap)
     }
 
