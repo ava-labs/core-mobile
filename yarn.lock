@@ -29,9 +29,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.1.8":
-  version: 0.1.8
-  resolution: "@avalabs/avalanche-module@npm:0.1.8"
+"@avalabs/avalanche-module@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717":
+  version: 0.0.0-feat-bitcoin-sign-tx-20240819165717
+  resolution: "@avalabs/avalanche-module@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717"
   dependencies:
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/core-chains-sdk": 3.1.0-alpha.1
@@ -41,13 +41,13 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.1
     "@avalabs/glacier-sdk": 3.1.0-alpha.1
     "@avalabs/types": 3.1.0-alpha.1
-    "@avalabs/vm-module-types": 0.1.8
+    "@avalabs/vm-module-types": 0.0.0-feat-bitcoin-sign-tx-20240819165717
     "@metamask/rpc-errors": 6.3.0
     "@zodios/core": 10.9.6
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: d8d579cda780bea2fb5f60cb2a622f9ab2de37a6727d99939077f81c920de242e89834c847a275cfa882a4d3afe84105463fadd86dc5adc25a76aa5189cc05ac
+  checksum: e893df875f73ec6763588d7b5fbbd4e564d904bcd5b8850cc4f2d5677e8b616999d24135c6c22cb04ccf77551b57a87941d100e5637fefe9c27f2eb0bb351e34
   languageName: node
   linkType: hard
 
@@ -64,21 +64,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:0.1.8":
-  version: 0.1.8
-  resolution: "@avalabs/bitcoin-module@npm:0.1.8"
+"@avalabs/bitcoin-module@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717":
+  version: 0.0.0-feat-bitcoin-sign-tx-20240819165717
+  resolution: "@avalabs/bitcoin-module@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.1
     "@avalabs/core-utils-sdk": 3.1.0-alpha.1
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.1
-    "@avalabs/vm-module-types": 0.1.8
+    "@avalabs/vm-module-types": 0.0.0-feat-bitcoin-sign-tx-20240819165717
     "@metamask/rpc-errors": 6.3.0
     "@zodios/core": 10.9.6
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: e7fcbdbf8652a61560a759238118485ca7bda81eb6872181252587cc396e9be4c927226783e202b2d69aca825961cffb53c84e0b908c14f653a868c79a06d4f0
+  checksum: 284eda70b098dd5d7163f286b89ad32de4e7033536d0453683b5e1cef553e91615540ebd6509aad10da8cc990b858a19fd021010989a1cea0dbd6e87df13d636
   languageName: node
   linkType: hard
 
@@ -159,21 +159,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.1.8
+    "@avalabs/avalanche-module": 0.0.0-feat-bitcoin-sign-tx-20240819165717
     "@avalabs/avalanchejs": 4.0.5
-    "@avalabs/bitcoin-module": 0.1.8
+    "@avalabs/bitcoin-module": 0.0.0-feat-bitcoin-sign-tx-20240819165717
     "@avalabs/bridge-unified": 2.1.0
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.2
     "@avalabs/core-chains-sdk": 3.1.0-alpha.2
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.2
     "@avalabs/core-utils-sdk": 3.1.0-alpha.2
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.2
-    "@avalabs/evm-module": 0.1.9
+    "@avalabs/evm-module": 0.0.0-feat-bitcoin-sign-tx-20240819165717
     "@avalabs/glacier-sdk": 3.1.0-alpha.2
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.2
-    "@avalabs/vm-module-types": 0.1.9
+    "@avalabs/vm-module-types": 0.0.0-feat-bitcoin-sign-tx-20240819165717
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -465,9 +465,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.1.9":
-  version: 0.1.9
-  resolution: "@avalabs/evm-module@npm:0.1.9"
+"@avalabs/evm-module@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717":
+  version: 0.0.0-feat-bitcoin-sign-tx-20240819165717
+  resolution: "@avalabs/evm-module@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.1
     "@avalabs/core-etherscan-sdk": 3.1.0-alpha.1
@@ -475,7 +475,7 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.1
     "@avalabs/glacier-sdk": 3.1.0-alpha.1
     "@avalabs/types": 3.1.0-alpha.1
-    "@avalabs/vm-module-types": 0.1.9
+    "@avalabs/vm-module-types": 0.0.0-feat-bitcoin-sign-tx-20240819165717
     "@blockaid/client": 0.11.0
     "@metamask/rpc-errors": 6.3.0
     "@zodios/core": 10.9.6
@@ -484,7 +484,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: a0668c4de543807a8ddc62f8dae4cae0c6894ef1d2b5a4c54790261df84fbbfa12dd0f66d909b0be6a7560fb7dd9001adec9eef5da160e36f4e69747777a5e8e
+  checksum: b20bc5a2b560e9382c8aeec10cd6397ad01f5cd22e3a4b23f7f8e90e0e1663d7250c7311d90b7aab74677b5a8360211b9a08b6a118cb39046707dae16b87b679
   languageName: node
   linkType: hard
 
@@ -583,9 +583,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.1.8":
-  version: 0.1.8
-  resolution: "@avalabs/vm-module-types@npm:0.1.8"
+"@avalabs/vm-module-types@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717":
+  version: 0.0.0-feat-bitcoin-sign-tx-20240819165717
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-feat-bitcoin-sign-tx-20240819165717"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.1
     "@metamask/rpc-errors": 6.3.0
@@ -594,22 +594,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 8fa1d346ab8617e4940c0f23984f334086facad08e4554e43ac7d15f11a626a6d2e79974ec385b1452801110cd143cedc917487ea4db7c79b523e7a4c34062a9
-  languageName: node
-  linkType: hard
-
-"@avalabs/vm-module-types@npm:0.1.9":
-  version: 0.1.9
-  resolution: "@avalabs/vm-module-types@npm:0.1.9"
-  dependencies:
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.1
-    "@metamask/rpc-errors": 6.3.0
-    bitcoinjs-lib: 5.2.0
-    ethers: 6.8.1
-    zod: 3.23.8
-  peerDependencies:
-    ethers: ^6.8.1
-  checksum: 5c310af40888f927f8f54457b7fe972aef4109d614983365858b62f42a8f7688e2fa26ddc71c6ff274c63b90ef140e251eaebb25c8c5062723bbba74371489b1
+  checksum: 3b817d9bcbf33ed9c3f41d3e8d88ae539970b343822023a4252d778f52840226b90bf1df68e62f7193745b729ed2aed4bb5a8cf6d04638272107344382fecfd0
   languageName: node
   linkType: hard
 
