@@ -68,9 +68,9 @@ class Logger {
 
   error = (message: string, value?: any): void => {
     if (this.shouldLog(LogLevel.ERROR)) {
-      //console.groupCollapsed(...formatMessage(message, 'red'))
+      console.groupCollapsed(...formatMessage(message, 'red'))
       value && console.error(value)
-      //console.groupEnd()
+      console.groupEnd()
 
       if (this.shouldLogErrorToSentry) {
         SentryService.captureException(message, value)
