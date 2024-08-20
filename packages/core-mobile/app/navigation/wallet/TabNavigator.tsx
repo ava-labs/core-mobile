@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import AppNavigation from 'navigation/AppNavigation'
+import AppNavigation, { Tabs } from 'navigation/AppNavigation'
 import HomeSVG from 'components/svg/HomeSVG'
 import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -15,8 +15,8 @@ import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
 import BrowserSVG from 'components/svg/BrowserSVG'
 import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
 import { Fab } from 'components/Fab'
-import { selectAllTabs } from 'store/browser'
-import { useSelector } from 'react-redux'
+import { addTab, selectActiveTab, selectAllTabs } from 'store/browser'
+import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
@@ -32,11 +32,14 @@ const Tab = createBottomTabNavigator<TabNavigatorParamList>()
 const TAB_ICON_SIZE = 28
 
 const TabNavigator: () => JSX.Element = () => {
+  const dispatch = useDispatch()
   const theme = useApplicationContext().theme
   const { earnBlocked, browserBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const [showFab, setShowFab] = useState(true)
   const allTabs = useSelector(selectAllTabs)
+  const activeTab = useSelector(selectActiveTab)
+  const [currentTab, setCurrentTab] = useState<Tabs | null>(null)
 
   const renderEarnTab: () => null | JSX.Element = () => {
     if (earnBlocked) return null
@@ -59,6 +62,7 @@ const TabNavigator: () => JSX.Element = () => {
             setShowFab(true)
           },
           tabPress: e => {
+            setCurrentTab(AppNavigation.Tabs.Stake)
             AnalyticsService.capture('StakeOpened')
             if (!isEarnDashboardEnabled) {
               e.preventDefault()
@@ -94,6 +98,15 @@ const TabNavigator: () => JSX.Element = () => {
             setShowFab(false)
           },
           tabPress: () => {
+            if (
+              activeTab?.activeHistoryIndex !== -1 &&
+              currentTab === AppNavigation.Tabs.Browser
+            ) {
+              // if activeHistoryIndex is -1, it means the tab is empty
+              // and we should not add a new tab
+              dispatch(addTab())
+            }
+            setCurrentTab(AppNavigation.Tabs.Browser)
             AnalyticsService.capture('BrowserOpened', {
               openTabs: allTabs.length
             })
@@ -134,7 +147,8 @@ const TabNavigator: () => JSX.Element = () => {
           listeners={() => ({
             focus: () => {
               setShowFab(true)
-            }
+            },
+            tabPress: () => setCurrentTab(AppNavigation.Tabs.Portfolio)
           })}
         />
         <Tab.Screen
@@ -159,7 +173,8 @@ const TabNavigator: () => JSX.Element = () => {
           listeners={() => ({
             focus: () => {
               setShowFab(true)
-            }
+            },
+            tabPress: () => setCurrentTab(AppNavigation.Tabs.Watchlist)
           })}
           component={WatchlistTab}
         />

@@ -158,7 +158,7 @@ enum SendFeedbackScreens {
   SendFeedback = 'SendFeedbackScreens.SendFeedback'
 }
 
-enum Tabs {
+export enum Tabs {
   Portfolio = 'Portfolio',
   Activity = 'Activity',
   Swap = 'Swap',
