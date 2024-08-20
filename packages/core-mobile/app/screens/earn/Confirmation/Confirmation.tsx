@@ -142,7 +142,7 @@ export const Confirmation = (): JSX.Element | null => {
     })
   }
 
-  const issueDelegation = useCallback((): void => {
+  const issueDelegation = (): void => {
     if (!claimableBalance) {
       return
     }
@@ -153,14 +153,7 @@ export const Confirmation = (): JSX.Element | null => {
       endDate: validatedStakingEndTime,
       nodeId
     })
-  }, [
-    claimableBalance,
-    deductedStakingAmount,
-    issueDelegationMutation,
-    minStartTime,
-    nodeId,
-    validatedStakingEndTime
-  ])
+  }
 
   function onDelegationSuccess(txHash: string): void {
     AnalyticsService.capture('StakeDelegationSuccess')
