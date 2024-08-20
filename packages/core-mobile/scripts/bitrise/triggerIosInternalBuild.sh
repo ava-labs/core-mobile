@@ -6,7 +6,7 @@ PIPELINE=$(
   -H 'Content-Type: application/json' \
   -d '{
   "build_params": {
-    "branch": "main",
+    "branch": $BITRISE_GIT_BRANCH,
     "pipeline_id": "build-ios-apps-internal-triggered-e2e"
   },
   "hook_info": {
