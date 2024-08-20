@@ -26,6 +26,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RootState } from 'store'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { showTransactionErrorToast } from 'utils/toast'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
@@ -162,7 +163,11 @@ export const SendTokenContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
-          setError(reason.message)
+          showTransactionErrorToast({
+            message: `${reason.message}${
+              reason.data.cause ? '.\n' + reason.data.cause : ''
+            }`
+          })
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: reason.message,
             chainId: activeNetwork.chainId
