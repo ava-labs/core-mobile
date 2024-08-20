@@ -82,7 +82,7 @@ import {
   ApprovalPopupParams,
   AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
-  BitcoinSendTransactionParams,
+  AvalancheSignTransactionV2Params,
   BridgeAssetV2Params,
   BridgeTransactionStatusParams,
   BuyCarefullyParams,
@@ -180,7 +180,6 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.BrowserTabCloseAll]: { onConfirm: () => void }
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
   [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
-  [AppNavigation.Modal.BitcoinSendTransaction]: BitcoinSendTransactionParams
   [AppNavigation.Modal.AlertScreen]: AlertScreenParams
 }
 

@@ -616,10 +616,10 @@ describe('session_request handler', () => {
         },
         bip122: {
           accounts: [
-            'bip122:000000000019d6689c085ae165831e93:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
-            'bip122:000000000019d6689c085ae165831e93:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
-            'bip122:000000000933ea01ad0ee984209779ba:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
-            'bip122:000000000933ea01ad0ee984209779ba:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+            'bip122:000000000019d6689c085ae165831e93:btcAddress1',
+            'bip122:000000000019d6689c085ae165831e93:btcAddress2',
+            'bip122:000000000933ea01ad0ee984209779ba:btcAddress1',
+            'bip122:000000000933ea01ad0ee984209779ba:btcAddress2'
           ],
           chains: [
             'bip122:000000000019d6689c085ae165831e93',
