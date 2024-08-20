@@ -82,7 +82,6 @@ import {
   ApprovalPopupParams,
   AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
-  AvalancheSignTransactionV2Params,
   BridgeAssetV2Params,
   BridgeTransactionStatusParams,
   BuyCarefullyParams,
