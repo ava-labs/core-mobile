@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
@@ -21,6 +21,7 @@ import { useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 type NavigationProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
 
@@ -171,7 +172,7 @@ export default function SwapView(): JSX.Element {
   }, [fromToken, setAmount, setDestination])
 
   return (
-    <View style={styles.container}>
+    <SafeLowerAreaView>
       <ScrollView style={styles.container}>
         <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
           Swap
@@ -256,7 +257,7 @@ export default function SwapView(): JSX.Element {
         disabled={!canSwap || swapInProcess}>
         {!swapInProcess ? 'Review Order' : 'Swapping...'}
       </AvaButton.PrimaryLarge>
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

@@ -7,6 +7,7 @@ import {
 import AppNavigation from 'navigation/AppNavigation'
 import ReceiveToken from 'screens/receive/ReceiveToken'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type ReceiveStackParamList = {
   [AppNavigation.ReceiveTokens.ReceiveCChain]: undefined
@@ -18,26 +19,28 @@ const ReceiveScreenStack = () => {
   const { theme } = useApplicationContext()
 
   return (
-    <ReceiveStack.Navigator
-      screenOptions={{
-        presentation: 'card',
-        headerBackTitleVisible: false,
-        headerTitleAlign: 'center',
-        headerStyle: {
-          elevation: 0,
-          shadowOpacity: 0,
-          backgroundColor: theme.background
-        },
-        ...TransitionPresets.SlideFromRightIOS
-      }}>
-      <ReceiveStack.Screen
-        name={AppNavigation.ReceiveTokens.ReceiveCChain}
-        options={{
-          header: TopNavigation
-        }}
-        component={ReceiveTokenScreen}
-      />
-    </ReceiveStack.Navigator>
+    <SafeLowerAreaView>
+      <ReceiveStack.Navigator
+        screenOptions={{
+          presentation: 'card',
+          headerBackTitleVisible: false,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            elevation: 0,
+            shadowOpacity: 0,
+            backgroundColor: theme.background
+          },
+          ...TransitionPresets.SlideFromRightIOS
+        }}>
+        <ReceiveStack.Screen
+          name={AppNavigation.ReceiveTokens.ReceiveCChain}
+          options={{
+            header: TopNavigation
+          }}
+          component={ReceiveTokenScreen}
+        />
+      </ReceiveStack.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

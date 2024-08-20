@@ -9,6 +9,7 @@ import { TotpChallenge } from '@cubist-labs/cubesigner-sdk'
 import { AuthenticatorSetupScreen } from 'seedless/screens/AuthenticatorSetupScreen'
 import { ScanQrCodeScreen } from 'seedless/screens/ScanQrCodeScreen'
 import { LearnMoreScreen } from 'seedless/screens/LearnMoreScreen'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: {
@@ -40,38 +41,40 @@ const RecoveryMethodsS = createStackNavigator<RecoveryMethodsStackParamList>()
 
 const RecoveryMethodsStack = (): JSX.Element => {
   return (
-    <RecoveryMethodsS.Navigator>
-      <RecoveryMethodsS.Screen
-        options={MainHeaderOptions()}
-        name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
-        component={AddRecoveryMethods}
-      />
-      <RecoveryMethodsS.Group>
-        {/* Screens for authenticator setup */}
+    <SafeLowerAreaView>
+      <RecoveryMethodsS.Navigator>
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
-          component={AuthenticatorSetupScreen}
+          name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
+          component={AddRecoveryMethods}
         />
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.ScanQrCode}
-          component={ScanQrCodeScreen}
-        />
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.LearnMore}
-          component={LearnMoreScreen}
-        />
-      </RecoveryMethodsS.Group>
-      <RecoveryMethodsS.Group>
-        <RecoveryMethodsS.Screen
-          options={{ presentation: 'modal' }}
-          name={AppNavigation.RecoveryMethods.FIDONameInput}
-          component={FIDONameInputScreen}
-        />
-      </RecoveryMethodsS.Group>
-    </RecoveryMethodsS.Navigator>
+        <RecoveryMethodsS.Group>
+          {/* Screens for authenticator setup */}
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
+            component={AuthenticatorSetupScreen}
+          />
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.ScanQrCode}
+            component={ScanQrCodeScreen}
+          />
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.LearnMore}
+            component={LearnMoreScreen}
+          />
+        </RecoveryMethodsS.Group>
+        <RecoveryMethodsS.Group>
+          <RecoveryMethodsS.Screen
+            options={{ presentation: 'modal' }}
+            name={AppNavigation.RecoveryMethods.FIDONameInput}
+            component={FIDONameInputScreen}
+          />
+        </RecoveryMethodsS.Group>
+      </RecoveryMethodsS.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

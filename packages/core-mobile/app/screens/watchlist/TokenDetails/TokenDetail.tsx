@@ -28,6 +28,7 @@ import { styles as AvaTextStyles } from 'components/AvaText'
 import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { useDispatch, useSelector } from 'react-redux'
 import { GraphPoint } from 'react-native-graph'
 import { DataItem } from './DataItem'
@@ -165,168 +166,173 @@ const TokenDetail: FC = () => {
   )
 
   return (
-    <ScrollView style={styles.container}>
-      <View>
-        <AvaListItem.Base
-          title={<AvaText.Heading5>{name}</AvaText.Heading5>}
-          titleAlignment={'flex-start'}
-          subtitle={symbol}
-          leftComponent={
-            name &&
-            symbol &&
-            logoUri && (
-              <Avatar.Token
-                name={name}
-                symbol={symbol}
-                logoUri={logoUri}
-                size={48}
-              />
-            )
-          }
-          rightComponent={
-            <StarButton onPress={handleFavorite} selected={isFavorite} />
-          }
-        />
-
-        <AvaListItem.Base
-          title={AnimatedDate}
-          titleAlignment={'flex-start'}
-          testID="token_detail__price_title"
-          subtitle={AnimatedPrice}
-        />
-        <View style={styles.marketMovement}>
-          <MarketMovement
-            hideCurrencyCode
-            priceChange={ranges.diffValue}
-            percentChange={ranges.percentChange}
-            testID="token_detail__price_movement"
+    <SafeLowerAreaView>
+      <ScrollView style={styles.container}>
+        <View>
+          <AvaListItem.Base
+            title={<AvaText.Heading5>{name}</AvaText.Heading5>}
+            titleAlignment={'flex-start'}
+            subtitle={symbol}
+            leftComponent={
+              name &&
+              symbol &&
+              logoUri && (
+                <Avatar.Token
+                  name={name}
+                  symbol={symbol}
+                  logoUri={logoUri}
+                  size={48}
+                />
+              )
+            }
+            rightComponent={
+              <StarButton onPress={handleFavorite} selected={isFavorite} />
+            }
           />
-        </View>
 
-        <View style={styles.chartContainer}>
-          <View>
-            <SparklineChart
-              interactive
-              data={chartData ?? []}
-              yRange={yRange}
-              negative={ranges.diffValue < 0}
-              width={CHART_WIDTH}
-              height={CHART_HEIGHT}
-              lineThickness={CHART_THICKNESS}
-              onPointSelected={updatePriceAndDate}
-              onInteractionEnded={resetPriceAndDate}
+          <AvaListItem.Base
+            title={AnimatedDate}
+            titleAlignment={'flex-start'}
+            testID="token_detail__price_title"
+            subtitle={AnimatedPrice}
+          />
+          <View style={styles.marketMovement}>
+            <MarketMovement
+              hideCurrencyCode
+              priceChange={ranges.diffValue}
+              percentChange={ranges.percentChange}
+              testID="token_detail__price_movement"
             />
           </View>
-          <Overlay
-            chartData={chartData}
-            shouldShowInstruction={!hasBeenViewedChart}
-            onInstructionRead={onInstructionRead}
-          />
-        </View>
-        {/* this will change once data component purpose and interaction is defined */}
-        <TabViewAva
-          renderCustomLabel={(title, selected, color) => (
-            <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
-          )}
-          onTabIndexChange={onTabChanged}>
-          <TabViewAva.Item title={'24H'} testID="token_detail__24H" />
-          <TabViewAva.Item title={'1W'} testID="token_detail__1W" />
-          <TabViewAva.Item title={'1M'} testID="token_detail__1M" />
-          <TabViewAva.Item title={'3M'} testID="token_detail__3M" />
-          <TabViewAva.Item title={'1Y'} testID="token_detail__1Y" />
-        </TabViewAva>
 
-        {/* Market Data & Rank */}
-        <AvaListItem.Base
-          title={
-            <AvaText.Heading2 testID="token_detail__market_data_title">
-              Market Data
-            </AvaText.Heading2>
-          }
-          titleAlignment={'flex-start'}
-          rightComponent={
-            <OvalTagBg
-              testID="token_detail__rank_icon"
-              color={theme.neutral850}
-              style={styles.rank}>
-              <AvaText.Body2
-                testID="token_detail__rank"
-                textStyle={{
-                  color: theme.colorText3
-                }}>{`Rank: ${marketCapRank}`}</AvaText.Body2>
-            </OvalTagBg>
-          }
-        />
-        <Row style={styles.marketCap}>
-          <DataItem
-            title={'MarketCap'}
-            value={formatMarketNumbers(marketCap)}
-            testID={'token_detail__market_cap'}
+          <View style={styles.chartContainer}>
+            <View>
+              <SparklineChart
+                interactive
+                data={chartData ?? []}
+                yRange={yRange}
+                negative={ranges.diffValue < 0}
+                width={CHART_WIDTH}
+                height={CHART_HEIGHT}
+                lineThickness={CHART_THICKNESS}
+                onPointSelected={updatePriceAndDate}
+                onInteractionEnded={resetPriceAndDate}
+              />
+            </View>
+            <Overlay
+              chartData={chartData}
+              shouldShowInstruction={!hasBeenViewedChart}
+              onInstructionRead={onInstructionRead}
+            />
+          </View>
+          {/* this will change once data component purpose and interaction is defined */}
+          <TabViewAva
+            renderCustomLabel={(title, selected, color) => (
+              <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
+            )}
+            onTabIndexChange={onTabChanged}>
+            <TabViewAva.Item title={'24H'} testID="token_detail__24H" />
+            <TabViewAva.Item title={'1W'} testID="token_detail__1W" />
+            <TabViewAva.Item title={'1M'} testID="token_detail__1M" />
+            <TabViewAva.Item title={'3M'} testID="token_detail__3M" />
+            <TabViewAva.Item title={'1Y'} testID="token_detail__1Y" />
+          </TabViewAva>
+
+          {/* Market Data & Rank */}
+          <AvaListItem.Base
+            title={
+              <AvaText.Heading2 testID="token_detail__market_data_title">
+                Market Data
+              </AvaText.Heading2>
+            }
+            titleAlignment={'flex-start'}
+            rightComponent={
+              <OvalTagBg
+                testID="token_detail__rank_icon"
+                color={theme.neutral850}
+                style={styles.rank}>
+                <AvaText.Body2
+                  testID="token_detail__rank"
+                  textStyle={{
+                    color: theme.colorText3
+                  }}>{`Rank: ${marketCapRank}`}</AvaText.Body2>
+              </OvalTagBg>
+            }
           />
-          {contractAddress && (
+          <Row style={styles.marketCap}>
             <DataItem
-              title={'Contract Address'}
+              title={'MarketCap'}
+              value={formatMarketNumbers(marketCap)}
+              testID={'token_detail__market_cap'}
+            />
+            {contractAddress && (
+              <DataItem
+                title={'Contract Address'}
+                value={
+                  <TokenAddress
+                    address={contractAddress}
+                    textType={'Heading'}
+                  />
+                }
+              />
+            )}
+          </Row>
+          <Row style={styles.row}>
+            <DataItem
+              testID="token_detail__24h_volume"
+              title={'24h Volume'}
+              value={formatMarketNumbers(marketVolume)}
+            />
+            <DataItem
+              testID={'token_detail__website'}
+              title={'Website'}
               value={
-                <TokenAddress address={contractAddress} textType={'Heading'} />
+                <AvaText.Heading3
+                  textStyle={hyperLinkStyle}
+                  onPress={openWebsite}>
+                  {urlHostname}
+                </AvaText.Heading3>
               }
             />
-          )}
-        </Row>
-        <Row style={styles.row}>
-          <DataItem
-            testID="token_detail__24h_volume"
-            title={'24h Volume'}
-            value={formatMarketNumbers(marketVolume)}
-          />
-          <DataItem
-            testID={'token_detail__website'}
-            title={'Website'}
-            value={
-              <AvaText.Heading3
-                textStyle={hyperLinkStyle}
-                onPress={openWebsite}>
-                {urlHostname}
-              </AvaText.Heading3>
-            }
-          />
-        </Row>
-        <Row style={styles.row}>
-          <DataItem
-            testID={'token_detail__available_supply'}
-            title={'Available Supply'}
-            value={formatLargeNumber(marketCirculatingSupply)}
-          />
-          <DataItem
-            testID="token_detail__twitter"
-            title={'Twitter'}
-            value={
-              <AvaText.Heading3
-                testID={'token_detail__twitter_handle'}
-                textStyle={hyperLinkStyle}
-                onPress={openTwitter}>
-                {twitterHandle ? `@${twitterHandle}` : ''}
-              </AvaText.Heading3>
-            }
-          />
-        </Row>
-        <Row style={styles.totalSupply}>
-          <DataItem
-            testID={'token_detail__total_supply'}
-            title={'Total Supply'}
-            value={formatLargeNumber(marketTotalSupply)}
-          />
-        </Row>
+          </Row>
+          <Row style={styles.row}>
+            <DataItem
+              testID={'token_detail__available_supply'}
+              title={'Available Supply'}
+              value={formatLargeNumber(marketCirculatingSupply)}
+            />
+            <DataItem
+              testID="token_detail__twitter"
+              title={'Twitter'}
+              value={
+                <AvaText.Heading3
+                  testID={'token_detail__twitter_handle'}
+                  textStyle={hyperLinkStyle}
+                  onPress={openTwitter}>
+                  {twitterHandle ? `@${twitterHandle}` : ''}
+                </AvaText.Heading3>
+              }
+            />
+          </Row>
+          <Row style={styles.totalSupply}>
+            <DataItem
+              testID={'token_detail__total_supply'}
+              title={'Total Supply'}
+              value={formatLargeNumber(marketTotalSupply)}
+            />
+          </Row>
 
-        {symbol === TokenSymbol.AVAX && !buyDisabled && (
-          <AvaButton.SecondaryLarge
-            testID="token_detail__buy_button"
-            onPress={openMoonPay}
-            style={styles.buyBtn}>
-            Buy {symbol}
-          </AvaButton.SecondaryLarge>
-        )}
-      </View>
-    </ScrollView>
+          {symbol === TokenSymbol.AVAX && !buyDisabled && (
+            <AvaButton.SecondaryLarge
+              testID="token_detail__buy_button"
+              onPress={openMoonPay}
+              style={styles.buyBtn}>
+              Buy {symbol}
+            </AvaButton.SecondaryLarge>
+          )}
+        </View>
+      </ScrollView>
+    </SafeLowerAreaView>
   )
 }
 

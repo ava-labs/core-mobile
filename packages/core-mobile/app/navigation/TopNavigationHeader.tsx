@@ -15,6 +15,7 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import { Row } from 'components/Row'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getAddressByNetwork } from 'store/account/utils'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
   showAddress?: boolean
@@ -42,6 +43,7 @@ const TopNavigationHeader: FC<Props> = ({
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const activeAccount = useSelector(selectActiveAccount)
+  const insets = useSafeAreaInsets()
 
   const address = activeAccount
     ? getAddressByNetwork(activeAccount, activeNetwork)
@@ -111,7 +113,7 @@ const TopNavigationHeader: FC<Props> = ({
   )
 
   return (
-    <View>
+    <View style={{ paddingTop: insets.top }}>
       <Row
         style={{
           paddingLeft: 8,

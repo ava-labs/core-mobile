@@ -7,6 +7,7 @@ import AvaListItem from 'components/AvaListItem'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from 'resources/Constants'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type LegalStackParamList = {
   [AppNavigation.Legal.Legal]: undefined
@@ -16,16 +17,18 @@ const LegalStack = createStackNavigator<LegalStackParamList>()
 
 function LegalStackScreen(): JSX.Element {
   return (
-    <LegalStack.Navigator
-      screenOptions={{
-        headerBackTitleVisible: false
-      }}>
-      <LegalStack.Screen
-        options={MainHeaderOptions({ title: 'Legal' })}
-        name={AppNavigation.Legal.Legal}
-        component={LegalScreen}
-      />
-    </LegalStack.Navigator>
+    <SafeLowerAreaView>
+      <LegalStack.Navigator
+        screenOptions={{
+          headerBackTitleVisible: false
+        }}>
+        <LegalStack.Screen
+          options={MainHeaderOptions({ title: 'Legal' })}
+          name={AppNavigation.Legal.Legal}
+          component={LegalScreen}
+        />
+      </LegalStack.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

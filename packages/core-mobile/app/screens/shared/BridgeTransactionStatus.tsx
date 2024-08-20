@@ -30,6 +30,7 @@ import { useBridgeAmounts } from 'screens/bridge/hooks/useBridgeAmounts'
 import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPrice'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSimplePrice } from 'hooks/useSimplePrice'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 type Props = {
   txHash: string
@@ -165,7 +166,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeLowerAreaView>
       <View style={[styles.infoContainer, { backgroundColor: theme.colorBg2 }]}>
         {tokenLogo}
         {bridgeTransaction && (
@@ -251,7 +252,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           />
         )}
       </View>
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

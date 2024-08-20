@@ -11,6 +11,7 @@ import { Space } from 'components/Space'
 import Avatar from 'components/Avatar'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { ShowSnackBar } from 'components/Snackbar'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 const AddCustomToken: FC = () => {
   const theme = useApplicationContext().theme
@@ -34,9 +35,8 @@ const AddCustomToken: FC = () => {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
+    <SafeLowerAreaView
+      sx={{
         backgroundColor: theme.background,
         justifyContent: 'space-between'
       }}>
@@ -97,7 +97,7 @@ const AddCustomToken: FC = () => {
           onCancel={() => setShowQrScanner(false)}
         />
       </Modal>
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

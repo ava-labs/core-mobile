@@ -33,6 +33,7 @@ import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountAp
 import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import GlobeSVG from 'components/svg/GlobeSVG'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
@@ -426,34 +427,36 @@ const ApprovalPopup = (): JSX.Element => {
         onClose={() => {
           rejectAndClose()
         }}>
-        <ScrollView contentContainerStyle={styles.scrollView}>
-          <View>
-            <Text variant="heading4">{displayData.title}</Text>
-            <Space y={12} />
-            {renderAlert()}
-            <Space y={12} />
-            {renderDappInfo()}
-            {renderNetwork()}
-            {renderAccount()}
-            {renderMessageDetails()}
-            {renderTransactionDetails()}
-            {renderSpendLimits()}
-            {renderBalanceChange()}
-          </View>
-          {showNetworkFeeSelector && chainId && (
-            <NetworkFeeSelector
-              chainId={chainId}
-              gasLimit={
-                signingData.data.gasLimit
-                  ? Number(signingData.data.gasLimit)
-                  : 0
-              }
-              onFeesChange={handleFeesChange}
-            />
-          )}
-          {renderDisclaimer()}
-        </ScrollView>
-        {renderApproveRejectButtons()}
+        <SafeLowerAreaView>
+          <ScrollView contentContainerStyle={styles.scrollView}>
+            <View>
+              <Text variant="heading4">{displayData.title}</Text>
+              <Space y={12} />
+              {renderAlert()}
+              <Space y={12} />
+              {renderDappInfo()}
+              {renderNetwork()}
+              {renderAccount()}
+              {renderMessageDetails()}
+              {renderTransactionDetails()}
+              {renderSpendLimits()}
+              {renderBalanceChange()}
+            </View>
+            {showNetworkFeeSelector && chainId && (
+              <NetworkFeeSelector
+                chainId={chainId}
+                gasLimit={
+                  signingData.data.gasLimit
+                    ? Number(signingData.data.gasLimit)
+                    : 0
+                }
+                onFeesChange={handleFeesChange}
+              />
+            )}
+            {renderDisclaimer()}
+          </ScrollView>
+          {renderApproveRejectButtons()}
+        </SafeLowerAreaView>
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
         <FeatureBlocked

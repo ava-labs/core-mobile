@@ -16,6 +16,7 @@ import { WalletScreenProps } from 'navigation/types'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import ZeroState from 'components/ZeroState'
 import { TokenType } from '@avalabs/vm-module-types'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.TokenManagement
@@ -55,7 +56,7 @@ function TokenManagement(): JSX.Element {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeLowerAreaView>
       <View style={{ marginHorizontal: 16 }}>
         <SearchBar onTextChanged={handleSearch} searchText={searchText} />
       </View>
@@ -81,7 +82,7 @@ function TokenManagement(): JSX.Element {
           ListEmptyComponent={emptyView}
         />
       )}
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

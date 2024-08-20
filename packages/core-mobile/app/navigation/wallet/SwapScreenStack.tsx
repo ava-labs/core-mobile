@@ -9,6 +9,7 @@ import { SwapContextProvider } from 'contexts/SwapContext/SwapContext'
 import { useNavigation } from '@react-navigation/native'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import * as Navigation from 'utils/Navigation'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type SwapStackParamList = {
   [AppNavigation.Swap.Swap]: { initialTokenId: string } | undefined
@@ -35,26 +36,31 @@ function SwapScreenStack(): JSX.Element {
   const { goBack } = useNavigation()
 
   return (
-    <SwapContextProvider>
-      <SwapStack.Navigator
-        screenOptions={{
-          presentation: 'card',
-          headerShown: true,
-          headerBackTitleVisible: false,
-          headerTitleAlign: 'center',
-          headerTitle: HeaderTitle
-        }}>
-        <SwapStack.Screen name={AppNavigation.Swap.Swap} component={SwapView} />
-      </SwapStack.Navigator>
-      {isSwapBlocked && (
-        <FeatureBlocked
-          onOk={goBack}
-          message={
-            'Swap is currently under maintenance. Service will resume shortly.'
-          }
-        />
-      )}
-    </SwapContextProvider>
+    <SafeLowerAreaView>
+      <SwapContextProvider>
+        <SwapStack.Navigator
+          screenOptions={{
+            presentation: 'card',
+            headerShown: true,
+            headerBackTitleVisible: false,
+            headerTitleAlign: 'center',
+            headerTitle: HeaderTitle
+          }}>
+          <SwapStack.Screen
+            name={AppNavigation.Swap.Swap}
+            component={SwapView}
+          />
+        </SwapStack.Navigator>
+        {isSwapBlocked && (
+          <FeatureBlocked
+            onOk={goBack}
+            message={
+              'Swap is currently under maintenance. Service will resume shortly.'
+            }
+          />
+        )}
+      </SwapContextProvider>
+    </SafeLowerAreaView>
   )
 }
 

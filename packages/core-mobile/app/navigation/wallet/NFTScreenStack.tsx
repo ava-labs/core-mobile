@@ -8,6 +8,7 @@ import NFTSendScreenStack, {
 } from 'navigation/wallet/NFTSendStack'
 import { NFTImageData, NFTItem } from 'store/nft'
 import NftDetailsScreen from 'screens/nft/NftDetailsScreen'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type NFTStackParamList = {
   [AppNavigation.Nft.Details]: { nftItem: NFTItem }
@@ -21,31 +22,33 @@ const NFTStack = createStackNavigator<NFTStackParamList>()
 
 function NFTScreenStack(): JSX.Element {
   return (
-    <NFTStack.Navigator
-      screenOptions={{
-        presentation: 'card',
-        headerShown: true,
-        title: '',
-        headerBackTitleVisible: false,
-        headerTitleAlign: 'center'
-      }}>
-      <NFTStack.Screen
-        name={AppNavigation.Nft.Details}
-        component={NftDetailsScreen}
-      />
-      <NFTStack.Screen
-        options={{ headerShown: false }}
-        name={AppNavigation.Nft.Send}
-        component={NFTSendScreenStack}
-      />
-      <NFTStack.Screen
-        options={{
-          headerTransparent: true
-        }}
-        name={AppNavigation.Nft.FullScreen}
-        component={NftFullScreen}
-      />
-    </NFTStack.Navigator>
+    <SafeLowerAreaView>
+      <NFTStack.Navigator
+        screenOptions={{
+          presentation: 'card',
+          headerShown: true,
+          title: '',
+          headerBackTitleVisible: false,
+          headerTitleAlign: 'center'
+        }}>
+        <NFTStack.Screen
+          name={AppNavigation.Nft.Details}
+          component={NftDetailsScreen}
+        />
+        <NFTStack.Screen
+          options={{ headerShown: false }}
+          name={AppNavigation.Nft.Send}
+          component={NFTSendScreenStack}
+        />
+        <NFTStack.Screen
+          options={{
+            headerTransparent: true
+          }}
+          name={AppNavigation.Nft.FullScreen}
+          component={NftFullScreen}
+        />
+      </NFTStack.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

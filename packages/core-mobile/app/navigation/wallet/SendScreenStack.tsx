@@ -12,6 +12,7 @@ import { selectIsSendBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Contact } from '@avalabs/types'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
@@ -26,27 +27,29 @@ function SendScreenStack(): JSX.Element {
   const { goBack } = useNavigation()
 
   return (
-    <SendTokenContextProvider>
-      <SendStack.Navigator
-        screenOptions={{
-          headerShown: true,
-          title: ''
-        }}>
-        <SendStack.Screen
-          options={SubHeaderOptions('')}
-          name={AppNavigation.Send.Send}
-          component={SendTokenComponent}
-        />
-      </SendStack.Navigator>
-      {isSendBlocked && (
-        <FeatureBlocked
-          onOk={goBack}
-          message={
-            'Send is currently under maintenance.  Service will resume shortly.'
-          }
-        />
-      )}
-    </SendTokenContextProvider>
+    <SafeLowerAreaView>
+      <SendTokenContextProvider>
+        <SendStack.Navigator
+          screenOptions={{
+            headerShown: true,
+            title: ''
+          }}>
+          <SendStack.Screen
+            options={SubHeaderOptions('')}
+            name={AppNavigation.Send.Send}
+            component={SendTokenComponent}
+          />
+        </SendStack.Navigator>
+        {isSendBlocked && (
+          <FeatureBlocked
+            onOk={goBack}
+            message={
+              'Send is currently under maintenance.  Service will resume shortly.'
+            }
+          />
+        )}
+      </SendTokenContextProvider>
+    </SafeLowerAreaView>
   )
 }
 

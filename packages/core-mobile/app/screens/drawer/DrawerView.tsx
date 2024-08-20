@@ -1,33 +1,35 @@
+import { useFocusEffect } from '@react-navigation/native'
+import { Row } from 'components/Row'
+import Separator from 'components/Separator'
+import DarkModeSVG from 'components/svg/DarkModeSVG'
+import LightModeSVG from 'components/svg/LightModeSVG'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import CurrencyItem from 'screens/drawer/components/CurrencyItem'
-import SecurityItem from 'screens/drawer/components/SecurityItem'
-import LegalItem from 'screens/drawer/components/LegalItem'
-import HelpItem from 'screens/drawer/components/HelpItem'
-import Separator from 'components/Separator'
-import VersionItem from 'screens/drawer/components/VersionItem'
-import LightModeSVG from 'components/svg/LightModeSVG'
-import DarkModeSVG from 'components/svg/DarkModeSVG'
 import { ScrollView } from 'react-native-gesture-handler'
-import SignOutItem from 'screens/drawer/components/SignOutItem'
-import AddressBookItem from 'screens/drawer/components/AddressBookItem'
-import { Row } from 'components/Row'
-import AdvancedItem from 'screens/drawer/components/AdvancedItem'
-import DrawerLogo from 'screens/drawer/components/DrawerLogo'
-import NotificationsItem from 'screens/drawer/components/NotificationsItem'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
-import { selectIsNotificationBlocked, selectUseDarkMode } from 'store/posthog'
+import AddressBookItem from 'screens/drawer/components/AddressBookItem'
+import AdvancedItem from 'screens/drawer/components/AdvancedItem'
+import CurrencyItem from 'screens/drawer/components/CurrencyItem'
+import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 import FeedbackItem from 'screens/drawer/components/FeedbackItem'
+import HelpItem from 'screens/drawer/components/HelpItem'
+import LegalItem from 'screens/drawer/components/LegalItem'
+import NotificationsItem from 'screens/drawer/components/NotificationsItem'
+import SecurityItem from 'screens/drawer/components/SecurityItem'
+import SignOutItem from 'screens/drawer/components/SignOutItem'
+import VersionItem from 'screens/drawer/components/VersionItem'
 import SeedlessService from 'seedless/services/SeedlessService'
-import Logger from 'utils/Logger'
-import { useFocusEffect } from '@react-navigation/native'
 import { SeedlessSessionManagerEvent } from 'seedless/services/SeedlessSessionManager'
+import { selectIsNotificationBlocked, selectUseDarkMode } from 'store/posthog'
+import Logger from 'utils/Logger'
 import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
   const context = useApplicationContext()
   const enableDarkMode = useSelector(selectUseDarkMode)
+  const insets = useSafeAreaInsets()
 
   function toggleDarkLightMode(): void {
     Alert.alert('Toggle dark/light mode')
@@ -49,7 +51,10 @@ const DrawerView = (): JSX.Element => {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: context.theme.colorBg2 }]}>
+      style={[
+        styles.container,
+        { backgroundColor: context.theme.colorBg2, paddingTop: insets.top }
+      ]}>
       {header}
       <Main />
     </View>
@@ -64,6 +69,7 @@ const Main = (): JSX.Element => {
   const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>(false)
   const [isSeedlessTokenValid, setIsSeedlessTokenValid] =
     useState<boolean>(false)
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     SeedlessService.sessionManager.addListener(
@@ -96,7 +102,8 @@ const Main = (): JSX.Element => {
   return (
     <View
       style={{
-        flex: 1
+        flex: 1,
+        paddingBottom: insets.bottom
       }}>
       <ScrollView>
         {hasRecoveryMethodsFetched && hasRecoveryMethods === false && (

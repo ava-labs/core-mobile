@@ -9,6 +9,7 @@ import { selectIsLocked, selectWalletState, WalletState } from 'store/app'
 import { useDispatch, useSelector } from 'react-redux'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
 import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
@@ -53,33 +54,35 @@ const OnboardScreenStack: FC = () => {
   }, [navigation])
 
   return (
-    <OnboardingScreenS.Navigator
-      screenOptions={{
-        headerShown: false,
-        cardStyle: { backgroundColor: theme.colorBg2 }
-      }}>
-      <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.Signup}
-        component={SignupScreen}
-      />
-      <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.AccessMnemonicWallet}
-        component={AccessMnemonicWalletScreen}
-      />
-      <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.Welcome}
-        component={WelcomeScreenStack}
-      />
-      <OnboardingScreenS.Screen
-        options={MainHeaderOptions()}
-        name={AppNavigation.Onboard.NameYourWallet}
-        component={NameYourWalletScreen}
-      />
-      <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.RecoverWithMnemonicStack}
-        component={EnterWithMnemonicStack}
-      />
-    </OnboardingScreenS.Navigator>
+    <SafeLowerAreaView>
+      <OnboardingScreenS.Navigator
+        screenOptions={{
+          headerShown: false,
+          cardStyle: { backgroundColor: theme.colorBg2 }
+        }}>
+        <OnboardingScreenS.Screen
+          name={AppNavigation.Onboard.Signup}
+          component={SignupScreen}
+        />
+        <OnboardingScreenS.Screen
+          name={AppNavigation.Onboard.AccessMnemonicWallet}
+          component={AccessMnemonicWalletScreen}
+        />
+        <OnboardingScreenS.Screen
+          name={AppNavigation.Onboard.Welcome}
+          component={WelcomeScreenStack}
+        />
+        <OnboardingScreenS.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.Onboard.NameYourWallet}
+          component={NameYourWalletScreen}
+        />
+        <OnboardingScreenS.Screen
+          name={AppNavigation.Onboard.RecoverWithMnemonicStack}
+          component={EnterWithMnemonicStack}
+        />
+      </OnboardingScreenS.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

@@ -11,6 +11,7 @@ import { RefreshTokenScreenProps } from 'navigation/types'
 import WrongSocialAccount, {
   WrongSocialAccountParams
 } from 'seedless/screens/WrongSocialAccount'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type RefreshTokenScreenStackParamList = {
   [AppNavigation.RefreshToken.OwlLoader]: undefined
@@ -25,26 +26,28 @@ const RefreshTokenScreenStack: FC = () => {
   const { theme } = useTheme()
 
   return (
-    <RefreshTokenScreenS.Navigator
-      screenOptions={{
-        headerShown: false,
-        cardStyle: { backgroundColor: theme.colors.$black }
-      }}>
-      <RefreshTokenScreenS.Screen
-        name={AppNavigation.RefreshToken.OwlLoader}
-        component={OwlLoader}
-      />
-      <RefreshTokenScreenS.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.RefreshToken.SessionTimeout}
-        component={SessionTimeoutScreen}
-      />
-      <RefreshTokenScreenS.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.RefreshToken.WrongSocialAccount}
-        component={WrongSocialAccountScreen}
-      />
-    </RefreshTokenScreenS.Navigator>
+    <SafeLowerAreaView>
+      <RefreshTokenScreenS.Navigator
+        screenOptions={{
+          headerShown: false,
+          cardStyle: { backgroundColor: theme.colors.$black }
+        }}>
+        <RefreshTokenScreenS.Screen
+          name={AppNavigation.RefreshToken.OwlLoader}
+          component={OwlLoader}
+        />
+        <RefreshTokenScreenS.Screen
+          options={{ presentation: 'transparentModal' }}
+          name={AppNavigation.RefreshToken.SessionTimeout}
+          component={SessionTimeoutScreen}
+        />
+        <RefreshTokenScreenS.Screen
+          options={{ presentation: 'transparentModal' }}
+          name={AppNavigation.RefreshToken.WrongSocialAccount}
+          component={WrongSocialAccountScreen}
+        />
+      </RefreshTokenScreenS.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

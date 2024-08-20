@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect } from 'react'
-import { Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
+import { Icons, Text, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { RootStackScreenProps } from 'navigation/types'
 import { MFA } from 'seedless/types'
 import { BackButton } from 'components/BackButton'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RootStackScreenProps<
@@ -35,7 +36,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   }, [setOptions, handlePressBack])
 
   return (
-    <View sx={{ marginHorizontal: 16, flex: 1 }}>
+    <SafeLowerAreaView sx={{ marginHorizontal: 16 }}>
       <Text variant="heading3">Verify Recovery Methods</Text>
       <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
         Verify your recovery method(s) to continue.
@@ -67,6 +68,6 @@ export const SelectRecoveryMethods = (): JSX.Element => {
 
         return null
       })}
-    </View>
+    </SafeLowerAreaView>
   )
 }
