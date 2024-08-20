@@ -15,7 +15,7 @@ type StringToAvax = (value: string | undefined) => Avax
 type ValidParams = StringToAvax | undefined
 
 type AvaxFormatter = (
-  value: Avax | undefined,
+  value: Avax | undefined | bigint,
   rounded?: boolean
 ) => [string, string]
 
@@ -32,6 +32,7 @@ type Formatter<T> = T extends StringToAvax
 
 export const createAvaxFormatterHook =
   <T extends ValidParams>(stringToAvax: T) =>
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   (): Formatter<T> => {
     const {
       appHook: { tokenInCurrencyFormatter }
@@ -50,16 +51,16 @@ export const createAvaxFormatterHook =
     )
 
     const formatter = (
-      value: string | undefined | Avax,
+      value: string | undefined | Avax | bigint,
       rounded = false
     ): [string, string] => {
       let baseAvax = Avax.fromBase(0)
 
       // convert to Avax object if necessary
-      if (!(value instanceof Avax)) {
+      if (!(value instanceof Avax) && typeof value !== 'bigint') {
         if (stringToAvax) baseAvax = stringToAvax(value)
       } else {
-        baseAvax = value
+        baseAvax = value instanceof Avax ? value : Avax.fromNanoAvax(value)
       }
 
       // format Avax amount

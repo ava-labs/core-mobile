@@ -34,7 +34,7 @@ const SmartStakeAmount = (): React.JSX.Element => {
     if (cChainBalance.data?.balance !== undefined) {
       const availableAvax = Avax.fromWei(cChainBalance.data.balance)
         .add(claimableBalance ?? 0)
-        .sub(networkFees ?? 0)
+        .sub(Avax.fromNanoAvax(networkFees ?? 0))
       const notEnoughAvax = availableAvax.lt(minStakeAmount)
 
       if (notEnoughAvax) {

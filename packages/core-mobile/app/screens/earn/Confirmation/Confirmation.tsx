@@ -43,9 +43,11 @@ import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showTransactionSuccessToast } from 'utils/toast'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { Avax } from 'types'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
+
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
@@ -123,7 +125,8 @@ export const Confirmation = (): JSX.Element | null => {
     )
       return undefined
 
-    return data.estimatedTokenReward.mul(validator.delegationFee).div(100)
+    const estimatedTokenReward = Avax.fromNanoAvax(data.estimatedTokenReward)
+    return estimatedTokenReward.mul(validator.delegationFee).div(100)
   }, [data?.estimatedTokenReward, validator?.delegationFee])
 
   const cancelStaking = (): void => {
@@ -139,7 +142,7 @@ export const Confirmation = (): JSX.Element | null => {
     })
   }
 
-  const issueDelegation = (): void => {
+  const issueDelegation = useCallback((): void => {
     if (!claimableBalance) {
       return
     }
@@ -150,7 +153,14 @@ export const Confirmation = (): JSX.Element | null => {
       endDate: validatedStakingEndTime,
       nodeId
     })
-  }
+  }, [
+    claimableBalance,
+    deductedStakingAmount,
+    issueDelegationMutation,
+    minStartTime,
+    nodeId,
+    validatedStakingEndTime
+  ])
 
   function onDelegationSuccess(txHash: string): void {
     AnalyticsService.capture('StakeDelegationSuccess')
@@ -267,10 +277,9 @@ export const Confirmation = (): JSX.Element | null => {
 
   const renderStakingFee = (): JSX.Element => {
     if (delegationFee) {
-      const [delegationFeeInAvax] = avaxFormatter(delegationFee, true)
       return (
         <AvaText.Heading6>
-          {delegationFeeInAvax + ' ' + tokenSymbol}
+          {delegationFee.toDisplay() + ' ' + tokenSymbol}
         </AvaText.Heading6>
       )
     }

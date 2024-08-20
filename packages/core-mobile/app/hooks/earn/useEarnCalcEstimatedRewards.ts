@@ -26,7 +26,7 @@ export const useEarnCalcEstimatedRewards = ({
   delegationFee
 }: useEarnCalcEstimatedRewardsProps): UseQueryResult<
   {
-    estimatedTokenReward: Avax
+    estimatedTokenReward: bigint
     estimatedRewardInCurrency: string
   },
   Error
@@ -46,7 +46,7 @@ export const useEarnCalcEstimatedRewards = ({
         isDeveloperMode
       )
       return {
-        estimatedTokenReward: reward,
+        estimatedTokenReward: reward.toSubUnit(),
         estimatedRewardInCurrency: reward.mul(avaxPrice).toFixed(2)
       }
     }
