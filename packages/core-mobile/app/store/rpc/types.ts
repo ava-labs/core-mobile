@@ -137,5 +137,10 @@ export const CORE_MOBILE_META: PeerMeta = {
   icons: []
 }
 
-export const EVM_IDENTIFIER = 'eip155'
+export enum BlockchainNamespace {
+  EIP155 = 'eip155', // Evm
+  AVAX = 'avax', // Avalanche
+  BIP122 = 'bip122' // Bitcoin
+}
+
 export const AVM_PVM_IDENTIFIER = 'avax'
