@@ -20,7 +20,6 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { DebankNetwork } from 'services/network/types'
 import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
-import { DeBankToken } from '@avalabs/evm-module/src/services/debank-service/de-bank'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
@@ -193,7 +192,7 @@ class NetworkService {
           if (!tokenResponse.ok) {
             throw Error('Failed to fetch debank/v1/token')
           }
-          return (await tokenResponse.json()) as DeBankToken
+          return await tokenResponse.json() //as DeBankToken
         })(),
         chainId
       )
