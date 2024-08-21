@@ -57,7 +57,13 @@ const validRequiredNamespaces = {
   eip155: {
     methods: ['eth_sendTransaction', 'personal_sign'],
     chains: ['eip155:43114', 'eip155:1'],
-    events: ['chainChanged', 'accountsChanged'],
+    events: [
+      'chainChanged',
+      'accountsChanged',
+      'message',
+      'disconnect',
+      'connect'
+    ],
     rpcMap: {
       '1': 'https://rpc.ankr.com/eth',
       '43114': 'https://api.avax.network/ext/bc/C/rpc'
@@ -68,7 +74,13 @@ const validRequiredNamespaces = {
 const testNamespacesToApprove = {
   eip155: {
     chains: ['eip155:43114', 'eip155:1'],
-    events: ['chainChanged', 'accountsChanged'],
+    events: [
+      'chainChanged',
+      'accountsChanged',
+      'message',
+      'disconnect',
+      'connect'
+    ],
     methods: ['eth_sendTransaction', 'personal_sign']
   }
 }
@@ -84,9 +96,22 @@ const testNonEVMNamespacesToApprove = {
     methods: [
       RpcMethod.AVALANCHE_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-      RpcMethod.BITCOIN_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_MESSAGE
     ],
+    events: [
+      'chainChanged',
+      'accountsChanged',
+      'message',
+      'disconnect',
+      'connect'
+    ]
+  },
+  bip122: {
+    chains: [
+      'bip122:000000000019d6689c085ae165831e93',
+      'bip122:000000000933ea01ad0ee984209779ba'
+    ],
+    methods: [RpcMethod.BITCOIN_SEND_TRANSACTION],
     events: [
       'chainChanged',
       'accountsChanged',
@@ -173,8 +198,7 @@ const testApproveInvalidData = async (data: unknown) => {
   })
 }
 
-// eslint-disable-next-line jest/no-disabled-tests
-xdescribe('session_request handler', () => {
+describe('session_request handler', () => {
   it('should contain correct methods', () => {
     expect(handler.methods).toEqual(['wc_sessionRequest'])
   })
@@ -272,14 +296,20 @@ xdescribe('session_request handler', () => {
         eip155: {
           methods: ['eth_sendTransaction'],
           chains: ['eip155:43114', 'eip155:1'],
-          events: ['chainChanged', 'accountsChanged']
+          events: [
+            'chainChanged',
+            'accountsChanged',
+            'message',
+            'disconnect',
+            'connect'
+          ]
         }
       }
       const testRequest = createRequest(testRequiredNamespaces)
 
       jest
         .spyOn(require('store/network/slice'), 'selectActiveNetwork')
-        .mockReturnValueOnce(mockNetworks[4503599627370475])
+        .mockReturnValueOnce(mockNetworks[432204])
 
       const mockRequest = jest.fn().mockResolvedValue({})
       const {
@@ -291,6 +321,7 @@ xdescribe('session_request handler', () => {
       await handler.handle(testRequest, mockListenerApi)
 
       expect(mockRequest).toHaveBeenCalledWith({
+        chainId: 'eip155:43114',
         method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
         params: [
           {
@@ -557,12 +588,12 @@ xdescribe('session_request handler', () => {
           accounts: [
             'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress1',
             'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress2',
-            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:avmAddress1',
-            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:avmAddress2',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:pvmAddress1',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:pvmAddress2',
             'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress1',
             'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress2',
-            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:pvmAddress1',
-            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:pvmAddress2'
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:avmAddress1',
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:avmAddress2'
           ],
           chains: [
             'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
@@ -570,13 +601,38 @@ xdescribe('session_request handler', () => {
             'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
             'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
           ],
-          events: ['chainChanged', 'accountsChanged'],
+          events: [
+            'chainChanged',
+            'accountsChanged',
+            'message',
+            'disconnect',
+            'connect'
+          ],
           methods: [
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
-            'bitcoin_sendTransaction',
             'avalanche_signMessage'
           ]
+        },
+        bip122: {
+          accounts: [
+            'bip122:000000000019d6689c085ae165831e93:btcAddress1',
+            'bip122:000000000019d6689c085ae165831e93:btcAddress2',
+            'bip122:000000000933ea01ad0ee984209779ba:btcAddress1',
+            'bip122:000000000933ea01ad0ee984209779ba:btcAddress2'
+          ],
+          chains: [
+            'bip122:000000000019d6689c085ae165831e93',
+            'bip122:000000000933ea01ad0ee984209779ba'
+          ],
+          events: [
+            'chainChanged',
+            'accountsChanged',
+            'message',
+            'disconnect',
+            'connect'
+          ],
+          methods: ['bitcoin_sendTransaction']
         }
       }
 

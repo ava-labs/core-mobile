@@ -7,7 +7,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 
-export const handleAvalancheSignTransaction = async ({
+export const avalancheSignTransaction = async ({
   unsignedTxJson,
   account,
   ownSignatureIndices,

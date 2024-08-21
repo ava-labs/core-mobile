@@ -1,7 +1,7 @@
-/* eslint-disable sonarjs/cognitive-complexity */
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
+import { isAddress as isEvmAddress } from 'ethers'
+import { TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -36,6 +36,7 @@ import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
+import { isBtcAddress } from 'utils/isBtcAddress'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
@@ -55,6 +56,7 @@ const ApprovalPopup = (): JSX.Element => {
   const caip2ChainId = request.chainId
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
+
   const accountSelector =
     'account' in signingData
       ? selectAccountByAddress(signingData.account)
@@ -77,13 +79,11 @@ const ApprovalPopup = (): JSX.Element => {
   const approveDisabled =
     !network ||
     !account ||
-    (displayData.networkFeeSelector && !maxFeePerGas) ||
-    (displayData.networkFeeSelector && !maxPriorityFeePerGas) ||
+    (displayData.networkFeeSelector && maxFeePerGas === undefined) ||
+    (displayData.networkFeeSelector && maxPriorityFeePerGas === undefined) ||
     submitting
 
-  const showNetworkFeeSelector =
-    displayData.networkFeeSelector &&
-    signingData.type === RpcMethod.ETH_SEND_TRANSACTION
+  const showNetworkFeeSelector = displayData.networkFeeSelector
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -323,8 +323,8 @@ const ApprovalPopup = (): JSX.Element => {
         continue
 
       if (typeof value === 'string') {
-        const isAddress = value.substring(0, 2) === '0x'
-
+        const isAddress =
+          isEvmAddress(value) || isBtcAddress(value, !network?.isTestnet)
         detailsToDisplay.push(
           <Row style={{ justifyContent: 'space-between' }} key={key}>
             <Text variant="caption">{humanize(key)}</Text>
@@ -420,6 +420,29 @@ const ApprovalPopup = (): JSX.Element => {
     return <BalanceChange balanceChange={balanceChange} />
   }
 
+  const renderNetworkFeeSelector = (): JSX.Element | null => {
+    if (!showNetworkFeeSelector || !chainId) return null
+
+    let gasLimit: number | undefined
+
+    if (
+      typeof signingData.data === 'object' &&
+      'gasLimit' in signingData.data
+    ) {
+      gasLimit = Number(signingData.data.gasLimit || 0)
+    }
+
+    if (!gasLimit) return null
+
+    return (
+      <NetworkFeeSelector
+        chainId={chainId}
+        gasLimit={gasLimit}
+        onFeesChange={handleFeesChange}
+      />
+    )
+  }
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -440,17 +463,7 @@ const ApprovalPopup = (): JSX.Element => {
             {renderSpendLimits()}
             {renderBalanceChange()}
           </View>
-          {showNetworkFeeSelector && chainId && (
-            <NetworkFeeSelector
-              chainId={chainId}
-              gasLimit={
-                signingData.data.gasLimit
-                  ? Number(signingData.data.gasLimit)
-                  : 0
-              }
-              onFeesChange={handleFeesChange}
-            />
-          )}
+          {renderNetworkFeeSelector()}
           {renderDisclaimer()}
         </ScrollView>
         {renderApproveRejectButtons()}
