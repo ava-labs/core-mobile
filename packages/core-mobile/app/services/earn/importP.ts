@@ -103,9 +103,20 @@ const getUnlockedUnstakedAmount = async ({
     network: mapToVmNetwork(network),
     storage: coingeckoInMemoryCache
   })
-  const pChainBalance =
-    balancesResponse[addressPVM]?.[network.networkToken.symbol]
-  if (pChainBalance === undefined || !isTokenWithBalancePVM(pChainBalance)) {
+  const pChainBalanceResponse = balancesResponse[addressPVM]
+  if (!pChainBalanceResponse || 'error' in pChainBalanceResponse) {
+    Logger.error(
+      'Failed to fetch p-chain balance',
+      pChainBalanceResponse?.error
+    )
+    return
+  }
+  const pChainBalance = pChainBalanceResponse[network.networkToken.symbol]
+  if (
+    pChainBalance === undefined ||
+    'error' in pChainBalance ||
+    !isTokenWithBalancePVM(pChainBalance)
+  ) {
     return
   }
   return pChainBalance.balancePerType.unlockedUnstaked
