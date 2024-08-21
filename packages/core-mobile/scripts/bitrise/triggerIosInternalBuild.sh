@@ -7,7 +7,8 @@ PIPELINE=$(
   -d '{
   "build_params": {
     "branch": $BITRISE_GIT_BRANCH,
-    "pipeline_id": "build-ios-apps-internal-triggered-e2e"
+    "pipeline_id": "build-ios-apps-internal-triggered-e2e",
+    "commit_message": $GIT_CLONE_COMMIT_MESSAGE_SUBJECT,
   },
   "hook_info": {
     "type": "bitrise"
