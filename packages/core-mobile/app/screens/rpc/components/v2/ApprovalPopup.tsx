@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
 import { isAddress as isEvmAddress } from 'ethers'
-import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
+import { TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -37,7 +37,6 @@ import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import { isBtcAddress } from 'utils/isBtcAddress'
-import { getGasLimit } from 'services/send/SendServiceBTC'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
@@ -426,9 +425,10 @@ const ApprovalPopup = (): JSX.Element => {
 
     let gasLimit: number | undefined
 
-    if (signingData.type === RpcMethod.BITCOIN_SEND_TRANSACTION) {
-      gasLimit = getGasLimit(signingData.data.fee, signingData.data.feeRate)
-    } else if (signingData.type === RpcMethod.ETH_SEND_TRANSACTION) {
+    if (
+      typeof signingData.data === 'object' &&
+      'gasLimit' in signingData.data
+    ) {
       gasLimit = Number(signingData.data.gasLimit || 0)
     }
 

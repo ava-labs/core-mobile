@@ -19,14 +19,7 @@ import { Transaction } from '@sentry/types'
 import { isBtcAddress } from 'utils/isBtcAddress'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-
-// The transaction's byte size is for BTC as gasLimit is for EVM.
-// Bitcoin's formula for fee is `transactionByteLength * feeRate`.
-// Since we know the `fee` and the `feeRate`, we can get the transaction's
-// byte length by division.
-export const getGasLimit = (fee: number, feeRate: number): number => {
-  return fee / feeRate
-}
+import { calculateGasLimit } from '@avalabs/bitcoin-module'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
@@ -134,7 +127,7 @@ class SendServiceBTC implements SendServiceHelper {
           error: undefined,
           maxAmount,
           sendFee: BigInt(fee),
-          gasLimit: getGasLimit(fee, feeRate)
+          gasLimit: calculateGasLimit(fee, feeRate)
         }
 
         if (!amountInSatoshis)
