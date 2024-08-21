@@ -1,12 +1,15 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
-import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
+import {
+  NetworkVMType,
+  Network,
+  BlockchainNamespace
+} from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
-import { BlockchainNamespace } from 'store/rpc/types'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'

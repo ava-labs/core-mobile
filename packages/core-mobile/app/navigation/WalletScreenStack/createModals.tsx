@@ -30,7 +30,6 @@ import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import AnalyticsConsentSheet from 'screens/mainView/AnalyticsConsentSheet'
 import { AvalancheSetDeveloperMode } from 'screens/rpc/components/v2/AvalancheSetDeveloperMode'
 import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
-import BitcoinSendTransaction from 'screens/rpc/components/v2/BitcoinSendTransaction'
 import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
 import EditSpendLimit from 'components/EditSpendLimit'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
@@ -79,10 +78,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSendTransactionV2}
         component={AvalancheSendTransactionV2}
-      />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.BitcoinSendTransaction}
-        component={BitcoinSendTransaction}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSetDeveloperMode}
