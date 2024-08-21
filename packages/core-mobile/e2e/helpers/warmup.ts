@@ -1,17 +1,27 @@
 import { device } from 'detox'
+import { DeviceLaunchAppConfig, DevicePermissions } from 'detox/detox'
 import CommonElsPage from '../pages/commonEls.page'
 import Assert from '../helpers/assertions'
 import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
-export const warmup = async () => {
-  await device.launchApp({
-    permissions: { notifications: 'YES', camera: 'YES' },
+export const warmup = async (newInstance = false) => {
+  const permissions: DevicePermissions = { notifications: 'YES', camera: 'YES' }
+  const initialArgs: DeviceLaunchAppConfig = {
+    permissions: permissions,
     launchArgs: {
-      detoxURLBlacklistRegex: ['.*cloudflare-ipfs.*']
+      detoxURLBlacklistRegex: [
+        '.*cloudflare-ipfs.*',
+        '.*[ipfs.io/ipfs].*',
+        '.*[amazonaws.com].*'
+      ]
     }
-  })
+  }
+  if (newInstance) {
+    initialArgs.newInstance = true
+  }
+  await device.launchApp(initialArgs)
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   const jailbrokenWarningPrsent = CommonElsPage.jailbrokenWarning
@@ -30,7 +40,11 @@ export const warmup = async () => {
     )
     console.log('Jailbroken warning handled!!!')
   }
-  await loginRecoverWallet.recoverWalletLogin()
+  try {
+    await loginRecoverWallet.recoverWalletLogin()
+  } catch (e) {
+    console.log('Skipped login process...')
+  }
 }
 
 export const handleJailbrokenWarning = async () => {

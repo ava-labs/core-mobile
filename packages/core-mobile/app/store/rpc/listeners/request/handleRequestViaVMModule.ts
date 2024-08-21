@@ -8,6 +8,12 @@ import Logger from 'utils/Logger'
 import { selectNetwork } from 'store/network/slice'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
+import { CorePrimaryAccount } from '@avalabs/types'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { getAddressByVM } from 'store/account/utils'
+import MnemonicWalletInstance from 'services/wallet/MnemonicWallet'
+import { selectActiveAccount } from 'store/account'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -33,7 +39,19 @@ export const handleRequestViaVMModule = async ({
   }
 
   const caip2ChainId = request.data.params.chainId
-  const chainId = Number(caip2ChainId.split(':')[1])
+  const chainId = getChainIdFromCaip2(caip2ChainId)
+
+  if (!chainId) {
+    Logger.error(`ChainId ${caip2ChainId} not supported`)
+    rpcProvider.onError({
+      request,
+      error: rpcErrors.resourceNotFound('Chain Id not supported'),
+      listenerApi
+    })
+
+    return
+  }
+
   const network = selectNetwork(chainId)(listenerApi.getState())
 
   if (!network) {
@@ -47,6 +65,12 @@ export const handleRequestViaVMModule = async ({
     return
   }
 
+  const { getState } = listenerApi
+  const activeAccount = selectActiveAccount(getState())
+
+  const params = request.data.params.request.params
+  const method = request.method as VmModuleRpcMethod
+
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),
@@ -57,8 +81,9 @@ export const handleRequestViaVMModule = async ({
         icon: request.peerMeta.icons[0] ?? '',
         url: request.peerMeta.url
       },
-      method: request.method as VmModuleRpcMethod,
-      params: request.data.params.request.params
+      method,
+      params,
+      context: getContext(method, params, activeAccount)
     },
     mapToVmNetwork(network)
   )
@@ -76,4 +101,33 @@ export const handleRequestViaVMModule = async ({
       listenerApi
     })
   }
+}
+
+const getContext = (
+  method: VmModuleRpcMethod,
+  params: unknown,
+  activeAccount: CorePrimaryAccount | undefined
+): Record<string, string> | undefined => {
+  if (
+    method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||
+    method === VmModuleRpcMethod.AVALANCHE_SIGN_TRANSACTION
+  ) {
+    if (!params || typeof params !== 'object' || !('chainAlias' in params)) {
+      return undefined
+    }
+
+    const vm = Avalanche.getVmByChainAlias(params.chainAlias as string)
+    const currentAddress = getAddressByVM(vm, activeAccount)
+
+    if (!currentAddress) {
+      return undefined
+    }
+
+    return {
+      currentAddress,
+      xpubXP: MnemonicWalletInstance.xpubXP
+    }
+  }
+
+  return undefined
 }

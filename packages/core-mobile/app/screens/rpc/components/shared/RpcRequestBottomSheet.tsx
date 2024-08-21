@@ -35,7 +35,7 @@ const RpcRequestBottomSheet: React.FC<Props> = ({
             type="primary"
             size="xlarge"
             onPress={onApprove}
-            testID="approve_btn">
+            testID="approve_button">
             Approve
           </Button>
           <Space y={16} />

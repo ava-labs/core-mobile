@@ -47,7 +47,7 @@ function TokenSelector({
     const token = item.item
     return (
       <PortfolioListItem
-        testID={`token_selector__${token.name}`}
+        testID={`token_selector__${token.symbol}`}
         tokenName={token.name}
         tokenPrice={token.balanceDisplayValue ?? '0'}
         tokenPriceInCurrency={token.balanceInCurrency}
@@ -78,12 +78,17 @@ function TokenSelector({
 
   return (
     <View style={{ flex: 1, marginHorizontal: horizontalMargin }}>
-      <SearchBar onTextChanged={handleSearch} searchText={searchText} />
+      <SearchBar
+        testID="search_bar__select_token"
+        onTextChanged={handleSearch}
+        searchText={searchText}
+      />
       <Space y={16} />
       {!filteredTokenList ? (
         <Loader />
       ) : (
         <BottomSheetFlatList
+          testID="token_selector_list"
           keyboardShouldPersistTaps="handled"
           data={filteredTokenList}
           renderItem={renderItem}

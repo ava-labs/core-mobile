@@ -227,7 +227,7 @@ class NotificationsService {
         url: detail.notification.data.url as string,
         accountIndex: detail.notification.data.accountIndex as number,
         origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-        isDevMode: Boolean(detail?.notification?.data?.isDeveloperMode) ?? false
+        isDevMode: detail?.notification?.data?.isDeveloperMode === 'true'
       })
     }
   }

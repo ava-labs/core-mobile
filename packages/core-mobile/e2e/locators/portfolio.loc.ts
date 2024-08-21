@@ -22,7 +22,10 @@ export default {
   networksHeader: 'Networks',
   networksDropdownItem: 'network_dropdown__',
   networksDropdownBTC: 'network_dropdown__Bitcoin',
+  networksDropdownBTCTestNet: 'network_dropdown__Bitcoin Testnet',
   networksDropdownAVAX: 'network_dropdown__Avalanche (C-Chain)',
+  networksDropdownPChain: 'network_dropdown__Avalanche (P-Chain)',
+  networksDropdownXChain: 'network_dropdown__Avalanche (X-Chain)',
   networksDropdownETH: 'network_dropdown__Ethereum',
   networksDropdownManage: 'network_dropdown__Manage Networks',
   networksDropdown: 'network_dropdown_main',
@@ -33,5 +36,6 @@ export default {
   sendSuccessToast: 'send_token_context__send_successful_toast',
   activeNetwork: 'active_network__',
   inactiveNetwork: 'inactive_network__',
-  networkDropdownCheckMark: 'network_dropdown_check_mark__'
+  networkDropdownCheckMark: 'network_dropdown_check_mark__',
+  tokensTab: 'Tokens'
 }

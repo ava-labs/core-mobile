@@ -23,10 +23,6 @@ class PopUpModalPage {
     return by.text(popUpModalLoc.type)
   }
 
-  get accountText() {
-    return by.text(popUpModalLoc.account)
-  }
-
   get approveTransactionTitle() {
     return by.text(popUpModalLoc.approveTransactionTitle)
   }
@@ -37,10 +33,6 @@ class PopUpModalPage {
 
   get balanceChangeText() {
     return by.text(popUpModalLoc.balanceChange)
-  }
-
-  get accountNumberText() {
-    return by.text(popUpModalLoc.accountNumber)
   }
 
   get successfulToastMsg() {

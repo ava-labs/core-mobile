@@ -31,7 +31,6 @@ import AnalyticsConsentSheet from 'screens/mainView/AnalyticsConsentSheet'
 import { AvalancheSetDeveloperMode } from 'screens/rpc/components/v2/AvalancheSetDeveloperMode'
 import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
 import BitcoinSendTransaction from 'screens/rpc/components/v2/BitcoinSendTransaction'
-import { AvalancheSignMessage } from 'screens/rpc/components/v2/AvalancheSignMessage'
 import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
 import EditSpendLimit from 'components/EditSpendLimit'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
@@ -44,10 +43,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SessionProposalV2}
         component={SessionProposalV2}
-      />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.AvalancheSignMessage}
-        component={AvalancheSignMessage}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.CreateRemoveContactV2}
@@ -83,10 +78,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSendTransactionV2}
-        component={AvalancheSendTransactionV2}
-      />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.AvalancheSignTransactionV2}
         component={AvalancheSendTransactionV2}
       />
       <WalletScreenS.Screen

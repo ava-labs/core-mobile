@@ -6,9 +6,9 @@ import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import type {
-  GetBalancesResponse,
   NetworkContractToken,
-  TokenWithBalance
+  TokenWithBalance,
+  Error
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -21,8 +21,7 @@ export type BalancesForAccount = {
   accountIndex: number
   chainId: number
   accountAddress: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tokens: (TokenWithBalance | { error: any })[]
+  tokens: (TokenWithBalance | Error)[]
 }
 
 export class BalanceService {
@@ -44,60 +43,28 @@ export class BalanceService {
       .executeAsync(async () => {
         const accountAddress = getAddressByNetwork(account, network)
 
-        if (
-          network.vmName === 'EVM' ||
-          network.vmName === 'AVM' ||
-          network.vmName === 'PVM'
-        ) {
-          const module = await ModuleManager.loadModuleByNetwork(network)
-          const balancesResponse: GetBalancesResponse =
-            await module.getBalances({
-              customTokens,
-              addresses: [accountAddress],
-              currency,
-              network: mapToVmNetwork(network),
-              storage: coingeckoInMemoryCache
-            })
-          const balances = balancesResponse[accountAddress] ?? {}
-          if ('error' in balances) {
-            return {
-              accountIndex: account.index,
-              chainId: network.chainId,
-              tokens: [],
-              accountAddress
-            }
-          }
-
+        const module = await ModuleManager.loadModuleByNetwork(network)
+        const balancesResponse = await module.getBalances({
+          customTokens,
+          addresses: [accountAddress],
+          currency,
+          network: mapToVmNetwork(network),
+          storage: coingeckoInMemoryCache
+        })
+        const balances = balancesResponse[accountAddress] ?? {}
+        if ('error' in balances) {
           return {
             accountIndex: account.index,
             chainId: network.chainId,
-            tokens: Object.values(balances),
+            tokens: [],
             accountAddress
           }
         }
 
-        const balanceProvider = await findAsyncSequential(
-          balanceProviders,
-          value => value.isProviderFor(network)
-        )
-        if (!balanceProvider) {
-          throw new Error(
-            `no balance provider found for network ${network.chainId}`
-          )
-        }
-
-        const tokens = await balanceProvider.getBalances({
-          network,
-          accountAddress,
-          currency,
-          sentryTrx,
-          customTokens
-        })
-
         return {
           accountIndex: account.index,
           chainId: network.chainId,
-          tokens,
+          tokens: Object.values(balances),
           accountAddress
         }
       })

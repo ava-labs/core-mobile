@@ -134,6 +134,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
         </TabViewAva.Item>
         <TabViewAva.Item title={title} testID="networks_tab">
           <FlatList
+            testID="networks_tab_scroll_view"
             data={filteredNetworks}
             renderItem={renderNetwork}
             keyExtractor={item => item.chainName}

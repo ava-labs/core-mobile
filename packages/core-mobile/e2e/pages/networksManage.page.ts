@@ -10,10 +10,6 @@ class NetworksPage {
     return by.id(networksManage.addNetwork)
   }
 
-  get bitcoinTestnet() {
-    return by.text(networksManage.bitcoinTestnet)
-  }
-
   get chainID() {
     return by.id(networksManage.chainID)
   }
@@ -34,8 +30,16 @@ class NetworksPage {
     return by.text(networksManage.ethereumSepoliaNetwork)
   }
 
+  get bitcoinTestnetNetwork() {
+    return by.text(networksManage.bitcoinTestnetNetwork)
+  }
+
   get ethTokenOnCustomNetwork() {
     return by.text(networksManage.ethTokenOnCustomNetwork)
+  }
+
+  get arbCustomNativeTokenSymbol() {
+    return by.text(networksManage.arbCustomNativeTokenSymbol)
   }
 
   get explorerUrl() {
@@ -74,8 +78,12 @@ class NetworksPage {
     return by.id(networksManage.networkInfo)
   }
 
-  get arbWrongCustomNetworkName() {
-    return by.text(networksManage.arbWrongCustomNetworkName)
+  get celoWrongNetworkName() {
+    return by.text(networksManage.celoWrongNetworkName)
+  }
+
+  get celoNetworkName() {
+    return by.text(networksManage.celoNetworkName)
   }
 
   get customTab() {
@@ -122,6 +130,11 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.starSvg, index)
   }
 
+  async tapStarSvgByNetwork(network: string) {
+    await Action.waitForElement(by.id(`star_svg__${network}`))
+    await Action.tap(by.id(`star_svg__${network}`))
+  }
+
   async tapBitcoin() {
     await Action.tapElementAtIndex(this.bitcoin, 0)
   }
@@ -138,8 +151,16 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.ethereumSepoliaNetwork, index)
   }
 
+  async tapBitcoinTestNetwork(index = 0) {
+    await Action.tapElementAtIndex(this.bitcoinTestnetNetwork, index)
+  }
+
   async tapCustomTab() {
     await Action.tapElementAtIndex(this.customTab, 0)
+  }
+
+  async tapCeloMainnet() {
+    await Action.tapElementAtIndex(this.celoNetworkName, 0)
   }
 
   async tapDropdown() {
@@ -167,12 +188,19 @@ class NetworksPage {
   }
 
   async tapPolygonCustomNetwork() {
+    await Action.waitForElement(this.polygonCustomNetwork)
     await Action.tapElementAtIndex(this.polygonCustomNetwork, 0)
   }
 
   async tapSaveButton() {
-    await Action.tapElementAtIndex(this.saveButton, 0)
-    await Action.tapElementAtIndex(this.saveButton, 0)
+    await Action.scrollListUntil(
+      this.saveButton,
+      by.id('addEditNetwork_scroll_view'),
+      100
+    )
+    while (await Action.isVisible(this.saveButton, 0)) {
+      await Action.tapElementAtIndex(this.saveButton, 0)
+    }
   }
 
   async tapArbCustomNetwork() {
@@ -221,7 +249,13 @@ class NetworksPage {
     await PortfolioPage.tapManageNetworks()
     await this.tapNetworksTab()
     await this.searchNetworks(networksManage.ethereumSepoliaNetwork)
+    await this.tapStarSvgByNetwork(networksManage.ethereumSepoliaNetwork)
     await this.tapEthereumSepoliaNetwork(1)
+  }
+
+  async switchToBitcoinTestNet() {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapNetworksDropdownBTCTestNet()
   }
 
   async verifyNetworkRow(network: string) {

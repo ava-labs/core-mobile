@@ -160,6 +160,7 @@ class ActivityTabPage {
   }
 
   async getLatestActivityRow() {
+    await Action.waitForElement(this.activityListItem)
     const newRow = await Action.getAttributes(this.activityListItem)
     return 'elements' in newRow ? newRow.elements[0] : newRow
   }
@@ -170,6 +171,7 @@ class ActivityTabPage {
   }
 
   async verifyNewRow(type: string, amount: string) {
+    await Action.waitForElement(this.activityListItem)
     const typeEle = await this.getLatestActivityRow()
     const amountEle = await this.getLatestActivityRowAmount()
     await this.verifyActivityRow(typeEle, type)

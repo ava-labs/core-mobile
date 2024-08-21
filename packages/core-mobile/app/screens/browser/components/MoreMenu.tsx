@@ -150,9 +150,11 @@ export const MoreMenu: FC<Props & PropsWithChildren> = ({
       const activeHistoryDomain =
         activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
 
-      let favicon: string | undefined
+      let favicon: string | number | undefined
       if (activeHistory.favicon) {
-        if (isValidUrl(activeHistory.favicon)) {
+        if (typeof activeHistory.favicon === 'number') {
+          favicon = activeHistory.favicon
+        } else if (isValidUrl(activeHistory.favicon)) {
           favicon = activeHistory.favicon
         } else {
           favicon = activeHistoryDomain + activeHistory.favicon

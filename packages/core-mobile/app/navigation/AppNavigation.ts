@@ -158,7 +158,7 @@ enum SendFeedbackScreens {
   SendFeedback = 'SendFeedbackScreens.SendFeedback'
 }
 
-enum Tabs {
+export enum Tabs {
   Portfolio = 'Portfolio',
   Activity = 'Activity',
   Swap = 'Swap',
@@ -202,7 +202,6 @@ enum ModalScreens {
   BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
-  AvalancheSignMessage = 'ModalScreens.AvalancheSignMessage',
   AlertScreen = 'ModalScreens.AlertScreen'
 }
 

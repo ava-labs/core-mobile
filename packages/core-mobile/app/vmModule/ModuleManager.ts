@@ -1,11 +1,13 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
-import { Environment, Module } from '@avalabs/vm-module-types'
+import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
 import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
+import { BlockchainNamespace } from 'store/rpc/types'
+import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -20,8 +22,26 @@ class ModuleManager {
 
   get avalancheModule(): AvalancheModule {
     return this.#modules?.find(module =>
-      module.getManifest()?.network.namespaces.includes('avax')
+      module
+        .getManifest()
+        ?.network.namespaces.includes(BlockchainNamespace.AVAX)
     ) as AvalancheModule
+  }
+
+  get bitcoinModule(): BitcoinModule {
+    return this.#modules?.find(module =>
+      module
+        .getManifest()
+        ?.network.namespaces.includes(BlockchainNamespace.BIP122)
+    ) as BitcoinModule
+  }
+
+  get evmModule(): EvmModule {
+    return this.#modules?.find(module =>
+      module
+        .getManifest()
+        ?.network.namespaces.includes(BlockchainNamespace.EIP155)
+    ) as EvmModule
   }
 
   constructor() {
@@ -42,18 +62,54 @@ class ModuleManager {
 
     const environment = isDev ? Environment.DEV : Environment.PRODUCTION
 
+    const moduleInitParams = { environment, approvalController }
+
     this.modules = [
-      new EvmModule({
-        environment,
-        approvalController
-      }),
-      new BitcoinModule({ environment }),
-      new AvalancheModule({ environment })
+      new EvmModule(moduleInitParams),
+      new BitcoinModule(moduleInitParams),
+      new AvalancheModule(moduleInitParams)
     ]
+  }
+
+  /**
+   * @param param0 walletType
+   * @param param1 accountIndex
+   * @param param2 xpub
+   * @param param3 xpubXP
+   * @param param4 isTestnet
+   * @returns EVM, AVM, PVM and Bitcoin addresses
+   */
+  getAddresses = async ({
+    walletType,
+    accountIndex,
+    xpub,
+    xpubXP,
+    isTestnet
+  }: GetAddressParams): Promise<Record<string, string>> => {
+    return Promise.allSettled(
+      this.modules.map(async module =>
+        module.getAddress({
+          walletType,
+          accountIndex,
+          xpub,
+          xpubXP,
+          isTestnet
+        })
+      )
+    ).then(results => {
+      let addresses = {}
+      results.forEach(result => {
+        if (result.status === 'fulfilled') {
+          addresses = { ...addresses, ...result.value }
+        }
+      })
+      return addresses
+    })
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
     const module = await this.getModule(chainId)
+
     if (module === undefined) {
       throw new VmModuleErrors({
         name: ModuleErrors.UNSUPPORTED_CHAIN_ID,
@@ -83,29 +139,33 @@ class ModuleManager {
 
   convertChainIdToCaip2 = (network: Network): string => {
     switch (network.vmName) {
-      case NetworkVMType.BITCOIN:
-        return `bip122:${network.chainId}`
+      case NetworkVMType.BITCOIN: {
+        if (network.vmName !== NetworkVMType.BITCOIN) {
+          throw new Error('Unsupported network')
+        }
+
+        return getBitcoinCaip2ChainId(!network.isTestnet)
+      }
       case NetworkVMType.PVM:
       case NetworkVMType.AVM: {
-        const blockchainId = this.getBlockchainId(
-          network.vmName,
-          network.isTestnet
-        )
         return AvalancheModule.getHashedBlockchainId({
-          blockchainId,
+          blockchainId: this.getAvalancheBlockchainId(
+            network.vmName,
+            network.isTestnet
+          ),
           isTestnet: network.isTestnet
         })
       }
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
-        return `eip155:${network.chainId}`
+        return getEvmCaip2ChainId(network.chainId)
       default:
         throw new Error('Unsupported network')
     }
   }
 
   // todo: remove this function once we have blockchainId in Network
-  private getBlockchainId = (
+  private getAvalancheBlockchainId = (
     vmName: NetworkVMType,
     isTestnet?: boolean
   ): string => {

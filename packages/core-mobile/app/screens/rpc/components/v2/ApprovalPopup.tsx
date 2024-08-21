@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
 import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
@@ -19,17 +20,22 @@ import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { selectAccountByAddress } from 'store/account'
+import {
+  selectAccountByAddress,
+  selectAccountByIndex,
+  selectActiveAccount
+} from 'store/account/slice'
 import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
 import { humanize } from 'utils/string/humanize'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
-import { isAddressApproved } from 'store/rpc/utils/isAddressApproved/isAddressApproved'
+import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
 import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
+import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
@@ -46,9 +52,17 @@ const ApprovalPopup = (): JSX.Element => {
   const { request, displayData, signingData, onApprove, onReject } =
     useRoute<ApprovalPopupScreenProps['route']>().params
   const { getNetwork } = useNetworks()
-  const chainId = signingData.chainId
+  const caip2ChainId = request.chainId
+  const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
-  const account = useSelector(selectAccountByAddress(signingData.account))
+  const accountSelector =
+    'account' in signingData
+      ? selectAccountByAddress(signingData.account)
+      : 'accountIndex' in signingData && signingData.accountIndex
+      ? selectAccountByIndex(signingData.accountIndex)
+      : selectActiveAccount
+
+  const account = useSelector(accountSelector)
 
   const {
     theme: { colors }
@@ -90,13 +104,13 @@ const ApprovalPopup = (): JSX.Element => {
       return
     }
 
-    const fromAddress = signingData.account
-    const requestedAddress = `${request.chainId}:${fromAddress}`
-
-    if (!isAddressApproved(requestedAddress, session.namespaces)) {
+    if (
+      !account ||
+      !isAccountApproved(account, request.chainId, session.namespaces)
+    ) {
       rejectAndClose('Requested address is not authorized')
     }
-  }, [rejectAndClose, request, signingData.account, signingData.type])
+  }, [rejectAndClose, request, account])
 
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
     useSpendLimits(displayData.tokenApprovals)
@@ -109,9 +123,13 @@ const ApprovalPopup = (): JSX.Element => {
     []
   )
 
-  if (showData && displayData.transactionDetails?.data) {
-    const data = displayData.transactionDetails.data
+  const transactionDetailsData =
+    displayData.transactionDetails && 'data' in displayData.transactionDetails
+      ? displayData.transactionDetails.data
+      : undefined
 
+  if (showData && transactionDetailsData) {
+    const data = transactionDetailsData
     return (
       <RpcRequestBottomSheet onClose={() => rejectAndClose()}>
         <View style={{ padding: 16 }}>
@@ -324,7 +342,7 @@ const ApprovalPopup = (): JSX.Element => {
       <>
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Text variant="buttonMedium">Transaction Details</Text>
-          {displayData.transactionDetails.data && (
+          {transactionDetailsData && (
             <AvaButton.Base onPress={() => setShowData(true)}>
               <Row>
                 <CarrotSVG
@@ -422,7 +440,7 @@ const ApprovalPopup = (): JSX.Element => {
             {renderSpendLimits()}
             {renderBalanceChange()}
           </View>
-          {showNetworkFeeSelector && (
+          {showNetworkFeeSelector && chainId && (
             <NetworkFeeSelector
               chainId={chainId}
               gasLimit={

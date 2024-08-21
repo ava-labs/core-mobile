@@ -16,7 +16,7 @@ describe('Favorites Token', () => {
   })
 
   let favorites = ['AVAX', 'BTC', 'ETH']
-  const newToken = 'USDC'
+  const newToken = 'XRP'
 
   it('should have default favorites on watchlist', async () => {
     // Display default favorites on WatchList Carousel
@@ -33,7 +33,7 @@ describe('Favorites Token', () => {
     await BottomTabsPage.tapWatchlistTab()
     await WatchListPage.setWatchListToken(newToken)
     await device.disableSynchronization()
-    await WatchListPage.tapWatchListToken(newToken.toLowerCase())
+    await WatchListPage.tapWatchListToken(newToken.toLowerCase(), 1)
     await Actions.waitForElement(TokenDetailPage.favorite)
     await TokenDetailPage.tapFavorite()
     await TokenDetailPage.tapBackButton()

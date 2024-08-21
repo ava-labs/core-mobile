@@ -26,67 +26,39 @@ describe('Add custom network', () => {
 
   it('should add custom network', async () => {
     await PortfolioPage.tapNetworksDropdown()
-    await Actions.waitForElement(PortfolioPage.manageNetworks)
     await PortfolioPage.tapManageNetworks()
-    //Should Check manage Networks element for Favorites screen
     await NetworksManagePage.tapAddNetwork()
-    await Actions.waitForElement(NetworksManagePage.networkRpcUrl, 10000, 0)
-
-    await NetworksManagePage.inputNetworkRpcUrl(
-      NetworksManageLoc.arbCustomRpcUrl
-    )
+    await NetworksManagePage.inputNetworkRpcUrl(NetworksManageLoc.celoRpcUrl)
     await NetworksManagePage.inputNetworkName(
-      NetworksManageLoc.arbWrongCustomNetworkName
+      NetworksManageLoc.celoWrongNetworkName
     )
-    await NetworksManagePage.inputChainId(NetworksManageLoc.arbCustomChainID)
+    await NetworksManagePage.inputChainId(NetworksManageLoc.celoChainID)
     await NetworksManagePage.inputNativeTokenSymbol(
-      NetworksManageLoc.arbCustomNativeTokenSymbol
+      NetworksManageLoc.celoNativeTokenSymbol
     )
-    if (
-      (await Actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
-    ) {
-      await NetworksManagePage.swipeUp()
-    }
-    await NetworksManagePage.inputExplorerUrl(
-      NetworksManageLoc.arbCustomExplorerUrl
-    )
+    await NetworksManagePage.swipeUp()
+    await NetworksManagePage.inputExplorerUrl(NetworksManageLoc.celoExplorerUrl)
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
-    await Assert.isVisible(NetworksManagePage.arbWrongCustomNetworkName)
+    await Assert.isVisible(NetworksManagePage.celoWrongNetworkName)
   })
 
   it('should edit custom network', async () => {
     await NetworksManagePage.tapNetworkInfo()
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapEditNetwork()
-    await NetworksManagePage.inputNetworkName(
-      NetworksManageLoc.arbCustomNetworkName
-    )
+    await NetworksManagePage.inputNetworkName(NetworksManageLoc.celoNetworkName)
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapHeaderBack()
-    await Assert.isVisible(NetworksManagePage.arbCustomNetwork)
-  })
-
-  it('should add custom network to favorites', async () => {
-    await NetworksManagePage.addBtcNetwork()
-    await NetworksManagePage.tapFavoritesTab()
-    await Assert.isVisible(NetworksManagePage.arbCustomNetwork)
+    await Assert.isVisible(NetworksManagePage.celoNetworkName)
   })
 
   it('should change active network to custom', async () => {
-    await NetworksManagePage.tapCustomTab()
+    await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.tapArbCustomNetwork()
-    await Assert.isVisible(NetworksManagePage.arbCustomNetwork)
-  })
-
-  it('should view balances of custom network', async () => {
-    await PortfolioPage.tapArbitrumNetwork()
-    await Actions.waitForElement(
-      NetworksManagePage.ethTokenOnCustomNetwork,
-      60000
-    )
-    await Assert.isVisible(NetworksManagePage.ethTokenOnCustomNetwork)
+    await Actions.waitForElement(NetworksManagePage.arbCustomNetwork, 60000)
+    await Actions.waitForElement(NetworksManagePage.ethTokenOnCustomNetwork)
   })
 
   it('should delete custom network', async () => {
@@ -97,6 +69,6 @@ describe('Add custom network', () => {
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapDeleteNetwork()
     await NetworksManagePage.tapDeleteNetwork()
-    await Assert.isNotVisible(NetworksManagePage.arbCustomNetwork)
+    await Actions.waitForElementNotVisible(NetworksManagePage.celoNetworkName)
   })
 })

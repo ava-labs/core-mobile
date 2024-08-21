@@ -4,12 +4,13 @@ import { selectNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { SessionTypes } from '@walletconnect/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { showSimpleToast, showDappToastError } from 'components/Snackbar'
+import { showDappToastError } from 'components/Snackbar'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromRequest } from 'store/rpc/utils/getChainIdFromRequest/getChainIdFromRequest'
+import { showDappConnectionSuccessToast } from 'utils/toast'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
@@ -89,9 +90,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         const requiredNamespaces = JSON.stringify(session.requiredNamespaces)
         const optionalNamespaces = JSON.stringify(session.optionalNamespaces)
 
-        const message = `Connected to ${name}`
-
-        showSimpleToast(message)
+        showDappConnectionSuccessToast({ dappName: name })
 
         AnalyticsService.capture('WalletConnectSessionApprovedV2', {
           namespaces,
@@ -109,14 +108,14 @@ class WalletConnectProvider implements AgnosticRpcProvider {
          * notes: the delay is to allow dapps to settle down after session approval. wallet connect se sdk also does the same.
          */
         const state = getState()
-        const address = selectActiveAccount(state)?.addressC
+        const account = selectActiveAccount(state)
         const { chainId } = selectActiveNetwork(state)
-        address &&
+        account &&
           setTimeout(() => {
             WalletConnectService.updateSessionWithTimeout({
               session,
               chainId,
-              address
+              account
             })
           }, UPDATE_SESSION_DELAY)
       } catch (e) {

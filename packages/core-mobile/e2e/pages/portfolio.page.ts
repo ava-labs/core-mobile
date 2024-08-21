@@ -11,6 +11,14 @@ class PortfolioPage {
     return by.text(portfolio.avaxNetwork)
   }
 
+  get avaxPNetwork() {
+    return by.text(portfolio.avaxPNetwork)
+  }
+
+  get avaxXNetwork() {
+    return by.text(portfolio.avaxXNetwork)
+  }
+
   get arbitrumNetwork() {
     return by.text(portfolio.arbitrumNetwork)
   }
@@ -45,6 +53,10 @@ class PortfolioPage {
 
   get activityTab() {
     return by.text(portfolio.activityTab)
+  }
+
+  get tokensTab() {
+    return by.text(portfolio.tokensTab)
   }
 
   get btcNetwork() {
@@ -91,12 +103,24 @@ class PortfolioPage {
     return by.id(portfolio.networksDropdownBTC)
   }
 
+  get networksDropdownBTCTestNet() {
+    return by.id(portfolio.networksDropdownBTCTestNet)
+  }
+
   get networksDropdownETH() {
     return by.id(portfolio.networksDropdownETH)
   }
 
   get networksDropdownAVAX() {
     return by.id(portfolio.networksDropdownAVAX)
+  }
+
+  get networksDropdownPChain() {
+    return by.id(portfolio.networksDropdownPChain)
+  }
+
+  get networksDropdownXChain() {
+    return by.id(portfolio.networksDropdownXChain)
   }
 
   get networksDropdownManage() {
@@ -136,6 +160,10 @@ class PortfolioPage {
   async tapActivityTab() {
     await Action.waitForElementNotVisible(this.sendSuccessToast, 10000)
     await Action.tapElementAtIndex(this.activityTab, 0)
+  }
+
+  async tapTokensTab() {
+    await Action.tapElementAtIndex(this.tokensTab, 0)
   }
 
   async tapArbitrumNetwork() {
@@ -196,15 +224,22 @@ class PortfolioPage {
     }
   }
 
+  async tapNetworksDropdownBTCTestNet() {
+    await Action.tapElementAtIndex(
+      this.networksDropdownBTCTestNet,
+      platformIndex
+    )
+  }
+
   async tapNetworksDropdownETH() {
     await Action.tapElementAtIndex(this.networksDropdownETH, platformIndex)
   }
 
-  async tapNetworksDropdownAVAX() {
+  async tapNetworksDropdownAVAX(network = this.networksDropdownAVAX) {
     if (Action.platform() === 'ios') {
-      await Action.tapElementAtIndex(this.networksDropdownAVAX, 1)
+      await Action.tapElementAtIndex(network, 1)
     } else {
-      await Action.tapElementAtIndex(this.networksDropdownAVAX, 0)
+      await Action.tapElementAtIndex(network, 0)
     }
   }
 
@@ -259,6 +294,16 @@ class PortfolioPage {
       by.id(portfolio.networksDropdownItem + network)
     )
     await this.tapNetworksDropdownAVAX()
+  }
+
+  async getAllAvailableTokens() {
+    let output: string[] = []
+    await this.tapAvaxNetwork()
+    await this.tapTokensTab()
+    output = await Action.getElementsTextByTestId('portfolio_list_item')
+    console.log(output)
+    console.log('nothing?')
+    return output
   }
 }
 

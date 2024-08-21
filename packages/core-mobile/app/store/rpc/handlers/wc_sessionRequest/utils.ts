@@ -1,15 +1,12 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { Networks } from 'store/network/types'
-import { CORE_ONLY_METHODS, RpcMethod } from 'store/rpc/types'
 import {
-  SafeParseError,
-  SafeParseSuccess,
-  z,
-  ZodArray,
-  ZodNumber,
-  ZodString
-} from 'zod'
+  CORE_EVM_METHODS,
+  CORE_NONEVM_METHODS,
+  RpcMethod
+} from 'store/rpc/types'
+import { SafeParseError, SafeParseSuccess, z, ZodArray } from 'zod'
 import * as Navigation from 'utils/Navigation'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
@@ -20,6 +17,8 @@ import { providerErrors } from '@metamask/rpc-errors'
 import { onRequestRejected } from 'store/rpc/slice'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 import { AlertType } from '@avalabs/vm-module-types'
+import { ProposalTypes } from '@walletconnect/types'
+import { isAVMChainId, isPVMChainId } from 'temp/caip2ChainIds'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -47,7 +46,7 @@ const CORE_WEB_URLS_REGEX = [
 ]
 
 export const isCoreMethod = (method: string): boolean =>
-  CORE_ONLY_METHODS.includes(method as RpcMethod)
+  [...CORE_EVM_METHODS, ...CORE_NONEVM_METHODS].includes(method as RpcMethod)
 
 export const isCoreDomain = (url: string): boolean => {
   let hostname = ''
@@ -73,25 +72,79 @@ export const isCoreDomain = (url: string): boolean => {
 
 export const isNetworkSupported = (
   supportedNetworks: Networks,
-  chainId: number
+  caip2ChainId: string
 ): boolean => {
+  const chainId = caip2ChainId.split(':')[1] ?? ''
   const network = supportedNetworks[Number(chainId)]
-  return Boolean(network && [NetworkVMType.EVM].includes(network.vmName))
+  if (network) {
+    return [NetworkVMType.EVM].includes(network.vmName)
+  }
+
+  return isAVMChainId(caip2ChainId) || isPVMChainId(caip2ChainId)
 }
 
+export type CoreAccountAddresses = z.infer<typeof coreAccountAddresses>
+
+export const getAddressForChainId = (
+  caip2ChainId: string,
+  account: CoreAccountAddresses
+): string => {
+  return isAVMChainId(caip2ChainId)
+    ? account.addressAVM
+    : isPVMChainId(caip2ChainId)
+    ? account.addressPVM
+    : account.addressC
+}
+
+const coreAccountAddresses = z.object({
+  addressC: z.string(),
+  addressBTC: z.string(),
+  addressAVM: z.string(),
+  addressPVM: z.string(),
+  addressCoreEth: z.string()
+})
+
+const namespaceToApproveSchema = z.object({
+  chains: z.array(z.string()).optional(),
+  methods: z.array(z.string()),
+  events: z.array(z.string())
+})
+
+export type NamespaceToApprove = z.infer<typeof namespaceToApproveSchema>
+
 const approveDataSchema = z.object({
-  selectedAccounts: z.array(z.string()).nonempty(),
-  approvedChainIds: z.array(z.number()).nonempty()
+  selectedAccounts: z.array(coreAccountAddresses).nonempty(),
+  namespaces: z.record(namespaceToApproveSchema)
 })
 
 export const parseApproveData: (data: unknown) =>
   | SafeParseSuccess<{
-      selectedAccounts: ZodArray<ZodString, 'atleastone'>['_output']
-      approvedChainIds: ZodArray<ZodNumber, 'atleastone'>['_output']
+      selectedAccounts: ZodArray<
+        typeof coreAccountAddresses,
+        'atleastone'
+      >['_output']
+      namespaces: Record<
+        string,
+        {
+          chains?: string[]
+          methods: string[]
+          events: string[]
+        }
+      >
     }>
   | SafeParseError<{
-      selectedAccounts: ZodArray<ZodString, 'atleastone'>['_input']
-      approvedChainIds: ZodArray<ZodNumber, 'atleastone'>['_input']
+      selectedAccounts: ZodArray<
+        typeof coreAccountAddresses,
+        'atleastone'
+      >['_input']
+      namespaces: Record<
+        string,
+        {
+          chains?: string[]
+          methods: string[]
+          events: string[]
+        }
+      >
     }> = (data: unknown) => {
   return approveDataSchema.safeParse(data)
 }
@@ -99,12 +152,12 @@ export const parseApproveData: (data: unknown) =>
 export const scanAndSessionProposal = async ({
   dappUrl,
   request,
-  chainIds,
+  namespaces,
   dispatch
 }: {
   dappUrl: string
   request: WCSessionProposal
-  chainIds: number[]
+  namespaces: Record<string, ProposalTypes.RequiredNamespace>
   dispatch: Dispatch<AnyAction>
 }): Promise<void> => {
   try {
@@ -136,18 +189,22 @@ export const scanAndSessionProposal = async ({
               )
             },
             onProceed: () => {
-              navigateToSessionProposal({ request, chainIds, scanResponse })
+              navigateToSessionProposal({
+                request,
+                namespaces,
+                scanResponse
+              })
             }
           }
         }
       })
     } else {
-      navigateToSessionProposal({ request, chainIds, scanResponse })
+      navigateToSessionProposal({ request, namespaces, scanResponse })
     }
   } catch (error) {
     Logger.error('[Blockaid] Failed to scan dApp', error)
 
-    navigateToSessionProposal({ request, chainIds })
+    navigateToSessionProposal({ request, namespaces })
   }
 }
 
