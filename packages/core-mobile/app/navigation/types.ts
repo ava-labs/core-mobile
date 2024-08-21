@@ -37,10 +37,6 @@ import {
   AvalancheSetDeveloperModeRpcRequest
 } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
-import {
-  BitcoinSendTransactionApproveData,
-  BitcoinSendTransactionRpcRequest
-} from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
 import { ProposalTypes } from '@walletconnect/types'
@@ -151,11 +147,6 @@ export type AvalancheSendTransactionV2Params = {
 export type AvalancheSetDeveloperModeParams = {
   request: AvalancheSetDeveloperModeRpcRequest
   data: AvalancheSetDeveloperModeApproveData
-}
-
-export type BitcoinSendTransactionParams = {
-  request: BitcoinSendTransactionRpcRequest
-  data: BitcoinSendTransactionApproveData
 }
 
 export type BridgeAssetV2Params = {

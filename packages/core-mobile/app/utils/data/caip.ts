@@ -1,5 +1,5 @@
 import { caip2 } from '@avalabs/bridge-unified'
-import { BlockchainNamespace } from 'store/rpc'
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 
 export const chainIdToCaip = (
   chainId: number,

@@ -23,6 +23,8 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { showTransactionErrorToast } from 'utils/toast'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 
 export interface SendNFTContextState {
   sendToken: NFTItem
@@ -132,6 +134,9 @@ export const SendNFTContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
+          showTransactionErrorToast({
+            message: getJsonRpcErrorMessage(reason)
+          })
           AnalyticsService.capture('NftSendFailed', {
             errorMessage: reason?.error?.message,
             chainId: activeNetwork.chainId

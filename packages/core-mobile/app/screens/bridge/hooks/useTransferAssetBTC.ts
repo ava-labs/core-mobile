@@ -4,6 +4,7 @@ import { Blockchain, useBridgeSDK } from '@avalabs/core-bridge-sdk'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import BridgeService from 'services/bridge/BridgeService'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 
 type TransferParams = {
   amount: string
@@ -18,6 +19,7 @@ export function useTransferAssetBTC(): {
 } {
   const config = useSelector(selectBridgeAppConfig)
   const { currentBlockchain } = useBridgeSDK()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const { request } = useInAppRequest()
 
@@ -35,10 +37,11 @@ export function useTransferAssetBTC(): {
         amount,
         feeRate,
         config,
+        isMainnet: !isDeveloperMode,
         request
       })
     },
-    [currentBlockchain, config, request]
+    [currentBlockchain, config, isDeveloperMode, request]
   )
 
   return {
