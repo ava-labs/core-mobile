@@ -9,8 +9,8 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { getChainIdFromRequest } from 'store/rpc/utils/getChainIdFromRequest/getChainIdFromRequest'
 import { showDappConnectionSuccessToast } from 'utils/toast'
+import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
@@ -152,9 +152,20 @@ class WalletConnectProvider implements AgnosticRpcProvider {
     const isDeveloperMode = selectIsDeveloperMode(state)
 
     // validate chain against the current developer mode
-    const chainId = getChainIdFromRequest(request)
+    const caip2ChainId = request.data.params.chainId
+    const chainId = getChainIdFromCaip2(caip2ChainId)
+
+    if (chainId === undefined) {
+      throw rpcErrors.internal('Invalid chainId')
+    }
+
     const network = selectNetwork(chainId)(state)
-    const isTestnet = Boolean(network?.isTestnet)
+
+    if (network === undefined) {
+      throw rpcErrors.internal('Invalid chainId')
+    }
+
+    const isTestnet = Boolean(network.isTestnet)
 
     if (isTestnet !== isDeveloperMode) {
       const message = isDeveloperMode

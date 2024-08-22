@@ -53,7 +53,10 @@ const ClaimRewards = (): JSX.Element | null => {
     return null
   }
 
-  if (data.balancePerType.unlockedUnstaked === undefined) {
+  if (
+    data.balancePerType.unlockedUnstaked === undefined ||
+    data.balancePerType.unlockedUnstaked === 0
+  ) {
     return <EmptyClaimRewards />
   }
 

@@ -76,10 +76,16 @@ export const useIssueDelegation = (
         storage: coingeckoInMemoryCache
       })
 
-      const pChainBalance =
-        balancesResponse[pAddress]?.[network.networkToken.symbol]
+      const pChainBalanceResponse = balancesResponse[pAddress]
+      if (!pChainBalanceResponse || 'error' in pChainBalanceResponse) {
+        return Promise.reject(
+          `Failed to fetch cChain balance. ${pChainBalanceResponse?.error}`
+        )
+      }
+      const pChainBalance = pChainBalanceResponse[network.networkToken.symbol]
       if (
         pChainBalance === undefined ||
+        'error' in pChainBalance ||
         !isTokenWithBalancePVM(pChainBalance)
       ) {
         return Promise.reject('invalid balance type.')

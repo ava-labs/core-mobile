@@ -194,7 +194,6 @@ enum ModalScreens {
   EditSpendLimit = 'ModalScreens.EditSpendLimit',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
-  BitcoinSendTransaction = 'ModalScreens.BitcoinSendTransaction',
   AvalancheSetDeveloperMode = 'ModalScreens.AvalancheSetDeveloperMode',
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
   CoreIntro = 'ModalScreens.CoreIntro',

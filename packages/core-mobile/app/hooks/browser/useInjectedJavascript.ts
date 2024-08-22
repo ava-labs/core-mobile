@@ -1,4 +1,4 @@
-import { BlockchainNamespace } from 'store/rpc/types'
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 
 export type InjectedJavascripts = {
   injectCoreAsRecent: string

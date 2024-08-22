@@ -41,6 +41,7 @@ jest.mock('store/account/slice', () => {
 const mockOnRpcRequest = jest.fn()
 
 const mockModule: Module = {
+  getProvider: jest.fn(),
   getManifest: jest.fn(),
   getBalances: jest.fn(),
   getTransactionHistory: jest.fn(),
