@@ -11,9 +11,9 @@ export const NodeID = ({ nodeID }: { nodeID: string }): JSX.Element => {
       textStyle={{ textAlign: 'left' }}
       onPress={() => copyToClipboard(nodeID)}
       icon={<CopySVG />}
-      iconPlacement="right"
+      iconPlacement="left"
       text={
-        <Text variant="caption" sx={{ color: '$neutral50' }}>
+        <Text variant="buttonSmall" sx={{ color: '$neutral50' }}>
           {truncateNodeId(nodeID)}
         </Text>
       }

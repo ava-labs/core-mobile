@@ -9,11 +9,11 @@ import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
-import { selectAvaxPrice } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NodeID } from 'components/NodeID'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 
 export const DetailSectionView = ({
   detailSection,
@@ -22,7 +22,7 @@ export const DetailSectionView = ({
   detailSection: DetailSection
   onPressDataItem: (data: string) => void
 }): JSX.Element => {
-  const avaxPrice = useSelector(selectAvaxPrice)
+  const { getMarketToken } = useWatchlist()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
 
@@ -74,18 +74,24 @@ export const DetailSectionView = ({
     value: bigint,
     decimals: number,
     symbol: string
-  ): JSX.Element => (
-    <View sx={{ alignItems: 'flex-end' }}>
-      <Text variant="buttonSmall">
-        {new TokenUnit(value, decimals, symbol).toDisplay()} {symbol}
-      </Text>
-      <Text variant="caption" sx={{ color: '$neutral400' }}>
-        {`${tokenInCurrencyFormatter(
-          Number(bigIntToString(value, decimals)) * avaxPrice
-        )} ${selectedCurrency}`}
-      </Text>
-    </View>
-  )
+  ): JSX.Element => {
+    const marketToken = getMarketToken(symbol)
+
+    return (
+      <View sx={{ alignItems: 'flex-end' }}>
+        <Text variant="buttonSmall">
+          {new TokenUnit(value, decimals, symbol).toDisplay()} {symbol}
+        </Text>
+        {marketToken?.currentPrice !== undefined && (
+          <Text variant="caption" sx={{ color: '$neutral400' }}>
+            {`${tokenInCurrencyFormatter(
+              Number(bigIntToString(value, decimals)) * marketToken.currentPrice
+            )} ${selectedCurrency}`}
+          </Text>
+        )}
+      </View>
+    )
+  }
 
   return (
     <View>
