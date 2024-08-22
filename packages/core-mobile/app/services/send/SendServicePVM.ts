@@ -15,7 +15,7 @@ import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { stripChainAddress } from 'store/account/utils'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
-  AvalancheTxParams,
+  AvalancheSendTransactionParams,
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
@@ -118,7 +118,7 @@ export class SendServicePVM {
     sentryTrx,
     accountIndex,
     fromAddress
-  }: GetPVMTransactionRequestParams): Promise<AvalancheTxParams> {
+  }: GetPVMTransactionRequestParams): Promise<AvalancheSendTransactionParams> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.pvm.get_trx_request')
       .executeAsync(async () => {

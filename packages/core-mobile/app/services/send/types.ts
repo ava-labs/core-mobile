@@ -4,7 +4,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
-import { AvalancheTxParams } from '@avalabs/avalanche-module'
+import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 
 export interface SendError {
   error: boolean
@@ -41,7 +41,7 @@ export enum SendErrorMessage {
 export interface SendServiceHelper {
   getTransactionRequest(
     params: GetTransactionRequestParams
-  ): Promise<SignTransactionRequest | AvalancheTxParams>
+  ): Promise<SignTransactionRequest | AvalancheSendTransactionParams>
   validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState>

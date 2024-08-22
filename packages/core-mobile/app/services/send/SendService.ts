@@ -17,7 +17,7 @@ import {
   getBitcoinCaip2ChainId,
   getEvmCaip2ChainId
 } from 'temp/caip2ChainIds'
-import { AvalancheTxParams } from '@avalabs/avalanche-module'
+import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -94,7 +94,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTxParams,
+              params: txRequest as AvalancheSendTransactionParams,
               chainId: getAvalancheCaip2ChainId(network.chainId)
             })
           )
@@ -115,7 +115,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTxParams,
+              params: txRequest as AvalancheSendTransactionParams,
               chainId: getAvalancheCaip2ChainId(network.chainId)
             })
           )

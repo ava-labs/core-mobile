@@ -19,7 +19,7 @@ import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
 import { btcSendTransaction } from '../handlers/btcSendTransaction'
-import { handleAvalancheSendTransaction } from './handleAvalancheSendTransaction'
+import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
   onTransactionConfirmed(txHash: Hex): void {
@@ -93,7 +93,7 @@ class ApprovalController implements VmModuleApprovalController {
             break
           }
           case RpcMethod.AVALANCHE_SEND_TRANSACTION: {
-            handleAvalancheSendTransaction({
+            avalancheSendTransaction({
               unsignedTxJson: signingData.unsignedTxJson,
               vm: signingData.vm,
               externalIndices: signingData.externalIndices ?? [],

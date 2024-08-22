@@ -6,7 +6,7 @@ import { ApprovalResponse, Hex, Network } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 
-export const handleAvalancheSendTransaction = async ({
+export const avalancheSendTransaction = async ({
   unsignedTxJson,
   vm,
   externalIndices,
