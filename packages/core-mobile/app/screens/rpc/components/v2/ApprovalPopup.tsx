@@ -469,7 +469,7 @@ const ApprovalPopup = (): JSX.Element => {
             {renderDisclaimer()}
           </ScrollView>
           {renderApproveRejectButtons()}
-      </SafeLowerAreaView>
+        </SafeLowerAreaView>
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
         <FeatureBlocked
