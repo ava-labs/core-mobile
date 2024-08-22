@@ -88,6 +88,8 @@ const testNamespacesToApprove = {
 const testNonEVMNamespacesToApprove = {
   avax: {
     chains: [
+      AvalancheCaip2ChainId.C,
+      AvalancheCaip2ChainId.C_TESTNET,
       AvalancheCaip2ChainId.P,
       AvalancheCaip2ChainId.P_TESTNET,
       AvalancheCaip2ChainId.X,
@@ -586,6 +588,10 @@ describe('session_request handler', () => {
         },
         avax: {
           accounts: [
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
             'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress1',
             'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress2',
             'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:pvmAddress1',
@@ -596,6 +602,8 @@ describe('session_request handler', () => {
             'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:avmAddress2'
           ],
           chains: [
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a',
+            'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd',
             'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
             'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
             'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
