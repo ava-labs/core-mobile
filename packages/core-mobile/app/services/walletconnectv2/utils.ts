@@ -2,8 +2,8 @@ import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 import {
   getAvalancheCaip2ChainId,
   getBitcoinCaip2ChainIdByChainId,
-  isAVMChainId,
-  isPVMChainId
+  isXChainId,
+  isPChainId
 } from 'temp/caip2ChainIds'
 import { CorePrimaryAccount } from '@avalabs/types'
 
@@ -35,9 +35,9 @@ export const getAddressWithCaip2ChainId = ({
   let address: string | undefined
 
   if (blockchainNamespace === BlockchainNamespace.AVAX) {
-    address = isAVMChainId(caip2ChainId)
+    address = isXChainId(caip2ChainId)
       ? `${caip2ChainId}:${account.addressAVM}`
-      : isPVMChainId(caip2ChainId)
+      : isPChainId(caip2ChainId)
       ? `${caip2ChainId}:${account.addressPVM}`
       : undefined
   } else if (blockchainNamespace === BlockchainNamespace.BIP122) {

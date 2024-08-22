@@ -19,7 +19,12 @@ import { onRequestRejected } from 'store/rpc/slice'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 import { AlertType } from '@avalabs/vm-module-types'
 import { ProposalTypes } from '@walletconnect/types'
-import { isAVMChainId, isBtcChainId, isPVMChainId } from 'temp/caip2ChainIds'
+import {
+  isXChainId,
+  isCChainId,
+  isPChainId,
+  isBtcChainId
+} from 'temp/caip2ChainIds'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -84,8 +89,9 @@ export const isNetworkSupported = (
   }
 
   return (
-    isAVMChainId(caip2ChainId) ||
-    isPVMChainId(caip2ChainId) ||
+    isXChainId(caip2ChainId) ||
+    isPChainId(caip2ChainId) ||
+    isCChainId(caip2ChainId) ||
     isBtcChainId(caip2ChainId)
   )
 }
@@ -96,9 +102,9 @@ export const getAddressForChainId = (
   caip2ChainId: string,
   account: CoreAccountAddresses
 ): string => {
-  return isAVMChainId(caip2ChainId)
+  return isXChainId(caip2ChainId)
     ? account.addressAVM
-    : isPVMChainId(caip2ChainId)
+    : isPChainId(caip2ChainId)
     ? account.addressPVM
     : isBtcChainId(caip2ChainId)
     ? account.addressBTC

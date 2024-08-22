@@ -22,10 +22,6 @@ import { Asset, Blockchain } from '@avalabs/core-bridge-sdk'
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/core-chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import {
-  SendTransactionApproveData,
-  AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2
-} from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
@@ -93,6 +89,11 @@ export type EditSpendLimitParams = {
   dAppName?: string
 }
 
+export type TransactionDataParams = {
+  data: string
+  onClose(): void
+}
+
 export type SessionProposalV2Params = {
   request: WCSessionProposal
   namespaces: Record<string, ProposalTypes.RequiredNamespace>
@@ -137,11 +138,6 @@ export type ApprovalPopupParams = {
     overrideData?: string
   }) => Promise<void>
   onReject: (message?: string) => void
-}
-
-export type AvalancheSendTransactionV2Params = {
-  request: AvalancheSendTransactionRpcRequestV2
-  data: SendTransactionApproveData
 }
 
 export type AvalancheSetDeveloperModeParams = {
