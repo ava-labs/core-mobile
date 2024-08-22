@@ -2,9 +2,9 @@ import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
-import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 
 export interface SendError {
   error: boolean
@@ -41,7 +41,7 @@ export enum SendErrorMessage {
 export interface SendServiceHelper {
   getTransactionRequest(
     params: GetTransactionRequestParams
-  ): Promise<SignTransactionRequest | AvalancheTxParams>
+  ): Promise<SignTransactionRequest | AvalancheSendTransactionParams>
   validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState>

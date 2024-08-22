@@ -80,7 +80,6 @@ import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
   ApprovalPopupParams,
-  AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
   BridgeAssetV2Params,
   BridgeTransactionStatusParams,
@@ -95,7 +94,8 @@ import {
   SwitchEthereumChainV2Params,
   TokenSelectParams,
   UpdateContactV2Params,
-  WalletScreenProps
+  WalletScreenProps,
+  TransactionDataParams
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -158,6 +158,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
   [AppNavigation.Modal.EditSpendLimit]: EditSpendLimitParams
+  [AppNavigation.Modal.TransactionData]: TransactionDataParams
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   // rpc prompts for wallet connect v2
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
@@ -168,8 +169,6 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SwitchEthereumChainV2]: SwitchEthereumChainV2Params
   [AppNavigation.Modal.BridgeAssetV2]: BridgeAssetV2Params
   [AppNavigation.Modal.ApprovalPopup]: ApprovalPopupParams
-  [AppNavigation.Modal
-    .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
   [AppNavigation.Modal
     .AvalancheSetDeveloperMode]: AvalancheSetDeveloperModeParams
   [AppNavigation.Modal.StakeDisclaimer]: undefined
