@@ -15,6 +15,7 @@ import { selectActiveAccount, setActiveAccountIndex } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import { onRequest } from 'store/rpc/slice'
 import { CorePrimaryAccount } from '@avalabs/types'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import { RpcMethod, RpcProvider } from '../../rpc/types'
 
@@ -77,13 +78,40 @@ export const initWalletConnect = async (
      */
     const { chainId } = selectActiveNetwork(state)
     const account = selectActiveAccount(state)
-    setTimeout(() => updateSessions(chainId, account), UPDATE_SESSION_DELAY)
+    setTimeout(() => updateSessions({ chainId, account }), UPDATE_SESSION_DELAY)
   } catch (e) {
     Logger.error('Unable to init wallet connect v2', e)
   }
 }
 
-export const updateSessions = async (
+export const updateSessions = async ({
+  chainId,
+  account,
+  onlyCustomChains = false,
+  isTestnet = false
+}: {
+  chainId: number
+  account?: CorePrimaryAccount | undefined
+  onlyCustomChains?: boolean
+  isTestnet?: boolean
+}): Promise<void> => {
+  try {
+    if (!account) return
+
+    await WalletConnectService.updateSessions({
+      chainId,
+      account,
+      onlyCustomChains,
+      isTestnet
+    })
+  } catch (e) {
+    Logger.error('Unable to update WC sessions', e)
+  }
+}
+
+// since walletConnect does not support non-evm chains,
+// we need to update non-evm acconts in wc namespace whenever testnet mode is toggled
+export const updateSessionsForNonEvmAccounts = async (
   chainId: number,
   account: CorePrimaryAccount | undefined
 ): Promise<void> => {
@@ -141,17 +169,26 @@ export const handleNetworkChange = async (
   const state = listenerApi.getState()
   const account = selectActiveAccount(state)
   const chainId = action.payload
-
-  updateSessions(chainId, account)
+  updateSessions({ chainId, account })
 }
 
 export const handleAccountChange = async (
-  action: ReturnType<typeof setActiveAccountIndex>,
+  _: ReturnType<typeof setActiveAccountIndex>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
   const { chainId } = selectActiveNetwork(state)
   const account = selectActiveAccount(state)
+  updateSessions({ chainId, account })
+}
 
-  updateSessions(chainId, account)
+export const handleNonEvmAccountsChange = async (
+  _: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const isTestnet = selectIsDeveloperMode(state)
+  const { chainId } = selectActiveNetwork(state)
+  const account = selectActiveAccount(state)
+  updateSessions({ chainId, account, onlyCustomChains: true, isTestnet })
 }

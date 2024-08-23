@@ -4,12 +4,17 @@ import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from '@avalabs/vm-module-types'
-import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
+import {
+  AvalancheCaip2ChainId,
+  BitcoinCaip2ChainId,
+  BlockchainNamespace
+} from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import { CorePrimaryAccount } from '@avalabs/types'
+import { isCoreDomain } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
   CLIENT_METADATA,
   WalletConnectCallbacks,
@@ -280,19 +285,93 @@ class WalletConnectService implements WalletConnectServiceInterface {
     })
   }
 
+  updateSessionForNonEvmAccounts = async ({
+    session,
+    account,
+    isTestnet = false
+  }: {
+    session: SessionTypes.Struct
+    account: CorePrimaryAccount
+    isTestnet?: boolean
+  }): Promise<void> => {
+    const topic = session.topic
+    Logger.info(
+      `updating WC session '${session.peer.metadata.name}' with non evm chains.`
+    )
+
+    const namespaces: SessionTypes.Namespaces = {}
+
+    for (const key of Object.keys(session.namespaces)) {
+      const namespace = session.namespaces[key]
+
+      if (!namespace) continue
+
+      // for the matching namespace, we need to update both chain and account lists
+      // for the rest, we just leave as is
+      if (key === BlockchainNamespace.AVAX) {
+        namespace.chains = isTestnet
+          ? [
+              AvalancheCaip2ChainId.C_TESTNET,
+              AvalancheCaip2ChainId.P_TESTNET,
+              AvalancheCaip2ChainId.X_TESTNET
+            ]
+          : [
+              AvalancheCaip2ChainId.C,
+              AvalancheCaip2ChainId.P,
+              AvalancheCaip2ChainId.X
+            ]
+
+        namespace.accounts = [
+          account.addressC,
+          account.addressAVM,
+          account.addressPVM
+        ]
+      }
+
+      if (key === BlockchainNamespace.BIP122) {
+        namespace.chains = isTestnet
+          ? [BitcoinCaip2ChainId.TESTNET]
+          : [BitcoinCaip2ChainId.MAINNET]
+
+        namespace.accounts = [account.addressBTC]
+      }
+
+      namespaces[key] = { ...namespace }
+    }
+
+    // check if dapp is online first
+    await this.client.engine.signClient.ping({ topic })
+
+    await this.client.updateSession({
+      topic,
+      namespaces
+    })
+  }
+
   updateSessionWithTimeout = async ({
     session,
     chainId,
-    account
+    account,
+    onlyCustomChains,
+    isTestnet
   }: {
     session: SessionTypes.Struct
     chainId: number
     account: CorePrimaryAccount
+    onlyCustomChains?: boolean
+    isTestnet?: boolean
   }): Promise<void> => {
+    const isCoreApp = isCoreDomain(session.peer.metadata.url)
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
     return promiseWithTimeout(
-      this.updateSession({ session, chainId, account }),
+      onlyCustomChains && isCoreApp
+        ? this.updateSessionForNonEvmAccounts({
+            session,
+            account,
+            isTestnet
+          })
+        : this.updateSession({ session, chainId, account }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
       Logger.warn(
@@ -304,10 +383,14 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
   updateSessions = async ({
     chainId,
-    account
+    account,
+    onlyCustomChains,
+    isTestnet
   }: {
     chainId: number
     account: CorePrimaryAccount
+    onlyCustomChains?: boolean
+    isTestnet?: boolean
   }): Promise<void> => {
     const promises: Promise<void>[] = []
 
@@ -315,7 +398,9 @@ class WalletConnectService implements WalletConnectServiceInterface {
       const promise = this.updateSessionWithTimeout({
         session,
         chainId,
-        account
+        account,
+        onlyCustomChains,
+        isTestnet
       })
       promises.push(promise)
     })
