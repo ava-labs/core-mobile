@@ -51,7 +51,13 @@ describe('ModuleManager', () => {
           param.chainId,
           param.method
         )
-        expect(module?.getManifest()?.network.chainIds).toContain(param.chainId)
+        const isChainIdSupported = module
+          ?.getManifest()
+          ?.network.chainIds.includes(param.chainId)
+        const isNamespaceSupported = module
+          ?.getManifest()
+          ?.network.namespaces.includes(param.chainId.split(':')[0] ?? '')
+        expect(isChainIdSupported || isNamespaceSupported).toBeTruthy()
       })
     })
     it('should have thrown with incorrect chainId', async () => {

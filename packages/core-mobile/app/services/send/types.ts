@@ -35,7 +35,7 @@ export enum SendErrorMessage {
   INVALID_NETWORK_FEE = 'Network Fee is invalid',
   INSUFFICIENT_BALANCE = 'Insufficient balance.',
   INSUFFICIENT_BALANCE_FOR_FEE = 'Insufficient balance for fee.',
-  INVALID_GAS_LIMIT = 'Gas limit is invalid'
+  INVALID_GAS_LIMIT = 'Unable to send token, invalid gas limit.'
 }
 
 export interface SendServiceHelper {
