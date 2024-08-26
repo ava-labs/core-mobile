@@ -1,6 +1,10 @@
 import { JsonMap } from 'store/posthog'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { BlockchainNamespace } from 'store/rpc/types'
+import {
+  AvalancheCaip2ChainId,
+  BitcoinCaip2ChainId,
+  BlockchainNamespace,
+  ChainId
+} from '@avalabs/core-chains-sdk'
 
 /**
  * In the process of switching to CAIP2 naming convention for blockchain ids we are temporarily modifying Posthog
@@ -41,30 +45,31 @@ enum BlockchainId {
   X_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm`
 }
 
-// Based on CAIP-2, hashed
-enum AvalancheChainId {
-  P_CHAIN = `${BlockchainNamespace.AVAX}:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo`,
-  P_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl`,
-  X_CHAIN = `${BlockchainNamespace.AVAX}:imji8papUf2EhV3le337w1vgFauqkJg-`,
-  X_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG`
-}
-
-enum BitcoinChainId {
-  MAINNET = `${BlockchainNamespace.BIP122}:000000000019d6689c085ae165831e93`,
-  TESTNET = `${BlockchainNamespace.BIP122}:000000000933ea01ad0ee984209779ba`
-}
-
-export const isPVMChainId = (caip2ChainId: string): boolean => {
+export const isPChainId = (caip2ChainId: string): boolean => {
   return (
-    caip2ChainId === AvalancheChainId.P_CHAIN ||
-    caip2ChainId === AvalancheChainId.P_CHAIN_TESTNET
+    caip2ChainId === AvalancheCaip2ChainId.P ||
+    caip2ChainId === AvalancheCaip2ChainId.P_TESTNET
   )
 }
 
-export const isAVMChainId = (caip2ChainId: string): boolean => {
+export const isXChainId = (caip2ChainId: string): boolean => {
   return (
-    caip2ChainId === AvalancheChainId.X_CHAIN ||
-    caip2ChainId === AvalancheChainId.X_CHAIN_TESTNET
+    caip2ChainId === AvalancheCaip2ChainId.X ||
+    caip2ChainId === AvalancheCaip2ChainId.X_TESTNET
+  )
+}
+
+export const isCChainId = (caip2ChainId: string): boolean => {
+  return (
+    caip2ChainId === AvalancheCaip2ChainId.C ||
+    caip2ChainId === AvalancheCaip2ChainId.C_TESTNET
+  )
+}
+
+export const isBtcChainId = (caip2ChainId: string): boolean => {
+  return (
+    caip2ChainId === BitcoinCaip2ChainId.MAINNET ||
+    caip2ChainId === BitcoinCaip2ChainId.TESTNET
   )
 }
 
@@ -72,13 +77,13 @@ export const getAvalancheCaip2ChainId = (
   chainId: number
 ): string | undefined => {
   if (chainId === ChainId.AVALANCHE_P) {
-    return AvalancheChainId.P_CHAIN
+    return AvalancheCaip2ChainId.P
   } else if (chainId === ChainId.AVALANCHE_TEST_P) {
-    return AvalancheChainId.P_CHAIN_TESTNET
+    return AvalancheCaip2ChainId.P_TESTNET
   } else if (chainId === ChainId.AVALANCHE_X) {
-    return AvalancheChainId.X_CHAIN
+    return AvalancheCaip2ChainId.X
   } else if (chainId === ChainId.AVALANCHE_TEST_X) {
-    return AvalancheChainId.X_CHAIN_TESTNET
+    return AvalancheCaip2ChainId.X_TESTNET
   }
   return undefined
 }
@@ -86,23 +91,27 @@ export const getAvalancheCaip2ChainId = (
 export const getAvalancheChainId = (
   caip2ChainId: string
 ): number | undefined => {
-  if (caip2ChainId === AvalancheChainId.P_CHAIN) {
+  if (caip2ChainId === AvalancheCaip2ChainId.P) {
     return ChainId.AVALANCHE_P
-  } else if (caip2ChainId === AvalancheChainId.P_CHAIN_TESTNET) {
+  } else if (caip2ChainId === AvalancheCaip2ChainId.P_TESTNET) {
     return ChainId.AVALANCHE_TEST_P
-  } else if (caip2ChainId === AvalancheChainId.X_CHAIN) {
+  } else if (caip2ChainId === AvalancheCaip2ChainId.X) {
     return ChainId.AVALANCHE_X
-  } else if (caip2ChainId === AvalancheChainId.X_CHAIN_TESTNET) {
+  } else if (caip2ChainId === AvalancheCaip2ChainId.X_TESTNET) {
     return ChainId.AVALANCHE_TEST_X
+  } else if (caip2ChainId === AvalancheCaip2ChainId.C) {
+    return ChainId.AVALANCHE_MAINNET_ID
+  } else if (caip2ChainId === AvalancheCaip2ChainId.C_TESTNET) {
+    return ChainId.AVALANCHE_MAINNET_ID
   }
 
   return undefined
 }
 
 export const getBitcoinChainId = (caip2ChainId: string): number | undefined => {
-  if (caip2ChainId === BitcoinChainId.MAINNET) {
+  if (caip2ChainId === BitcoinCaip2ChainId.MAINNET) {
     return ChainId.BITCOIN
-  } else if (caip2ChainId === BitcoinChainId.TESTNET) {
+  } else if (caip2ChainId === BitcoinCaip2ChainId.TESTNET) {
     return ChainId.BITCOIN_TESTNET
   }
 
@@ -110,7 +119,18 @@ export const getBitcoinChainId = (caip2ChainId: string): number | undefined => {
 }
 
 export const getBitcoinCaip2ChainId = (isMainnet: boolean): string => {
-  return isMainnet ? BitcoinChainId.MAINNET : BitcoinChainId.TESTNET
+  return isMainnet ? BitcoinCaip2ChainId.MAINNET : BitcoinCaip2ChainId.TESTNET
+}
+
+export const getBitcoinCaip2ChainIdByChainId = (
+  chainId: number
+): string | undefined => {
+  if (chainId === ChainId.BITCOIN) {
+    return BitcoinCaip2ChainId.MAINNET
+  } else if (chainId === ChainId.BITCOIN_TESTNET) {
+    return BitcoinCaip2ChainId.TESTNET
+  }
+  return undefined
 }
 
 export const getEvmCaip2ChainId = (chainId: number): string => {

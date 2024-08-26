@@ -1,6 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  Hex,
   ApprovalResponse,
   RpcMethod,
   TypedData,
@@ -11,7 +10,7 @@ import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 
-export const handleSignMessage = async ({
+export const signMessage = async ({
   method,
   data,
   account,
@@ -33,11 +32,14 @@ export const handleSignMessage = async ({
     })
 
     resolve({
-      signedData: signedMessage as Hex
+      signedData: signedMessage
     })
   } catch (error) {
     resolve({
-      error: rpcErrors.internal(`failed to sign ${network.vmName} message`)
+      error: rpcErrors.internal({
+        message: `Failed to sign ${network.vmName} message`,
+        data: { cause: error }
+      })
     })
   }
 }

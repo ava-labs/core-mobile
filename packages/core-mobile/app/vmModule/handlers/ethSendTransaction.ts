@@ -1,11 +1,11 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { Hex, ApprovalResponse } from '@avalabs/vm-module-types'
+import { ApprovalResponse } from '@avalabs/vm-module-types'
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { TransactionRequest } from 'ethers'
 
-export const handleEthSendTransaction = async ({
+export const ethSendTransaction = async ({
   transactionRequest,
   network,
   account,
@@ -45,11 +45,14 @@ export const handleEthSendTransaction = async ({
     })
 
     resolve({
-      signedData: signedTx as Hex
+      signedData: signedTx
     })
   } catch (error) {
     resolve({
-      error: rpcErrors.internal('failed to sign evm transaction')
+      error: rpcErrors.internal({
+        message: 'Failed to sign evm transaction',
+        data: { cause: error }
+      })
     })
   }
 }

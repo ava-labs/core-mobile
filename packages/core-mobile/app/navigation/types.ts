@@ -22,10 +22,6 @@ import { Asset, Blockchain } from '@avalabs/core-bridge-sdk'
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/core-chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import {
-  SendTransactionApproveData,
-  AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2
-} from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
@@ -37,10 +33,6 @@ import {
   AvalancheSetDeveloperModeRpcRequest
 } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
-import {
-  BitcoinSendTransactionApproveData,
-  BitcoinSendTransactionRpcRequest
-} from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
 import { ProposalTypes } from '@walletconnect/types'
@@ -97,6 +89,11 @@ export type EditSpendLimitParams = {
   dAppName?: string
 }
 
+export type TransactionDataParams = {
+  data: string
+  onClose(): void
+}
+
 export type SessionProposalV2Params = {
   request: WCSessionProposal
   namespaces: Record<string, ProposalTypes.RequiredNamespace>
@@ -143,19 +140,9 @@ export type ApprovalPopupParams = {
   onReject: (message?: string) => void
 }
 
-export type AvalancheSendTransactionV2Params = {
-  request: AvalancheSendTransactionRpcRequestV2
-  data: SendTransactionApproveData
-}
-
 export type AvalancheSetDeveloperModeParams = {
   request: AvalancheSetDeveloperModeRpcRequest
   data: AvalancheSetDeveloperModeApproveData
-}
-
-export type BitcoinSendTransactionParams = {
-  request: BitcoinSendTransactionRpcRequest
-  data: BitcoinSendTransactionApproveData
 }
 
 export type BridgeAssetV2Params = {

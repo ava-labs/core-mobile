@@ -110,6 +110,7 @@ class AvalancheBridgeAssetHandler
           amount: amountStr,
           config: bridgeAppConfig,
           feeRate: Number(maxFeePerGas),
+          isMainnet: !isDeveloperMode,
           onStatusChange: noop,
           onTxHashChange: noop,
           request

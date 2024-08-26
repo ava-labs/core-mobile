@@ -1,3 +1,4 @@
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcRequest } from '../../types'
 
 export const getChainIdFromRequest = (
@@ -9,7 +10,7 @@ export const getChainIdFromRequest = (
 
   const parts = request.data.params.chainId.split(':')
   if (parts.length < 2 || isNaN(Number(parts[1]))) {
-    throw new Error('chainId is not in a valid format')
+    throw rpcErrors.internal('chainId is not in a valid format')
   }
 
   return Number(parts[1])

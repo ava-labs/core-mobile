@@ -3,7 +3,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { Networks } from 'store/network/types'
 import {
   CORE_EVM_METHODS,
-  CORE_NONEVM_METHODS,
+  CORE_AVAX_METHODS,
+  CORE_BTC_METHODS,
   RpcMethod
 } from 'store/rpc/types'
 import { SafeParseError, SafeParseSuccess, z, ZodArray } from 'zod'
@@ -18,7 +19,12 @@ import { onRequestRejected } from 'store/rpc/slice'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 import { AlertType } from '@avalabs/vm-module-types'
 import { ProposalTypes } from '@walletconnect/types'
-import { isAVMChainId, isPVMChainId } from 'temp/caip2ChainIds'
+import {
+  isXChainId,
+  isCChainId,
+  isPChainId,
+  isBtcChainId
+} from 'temp/caip2ChainIds'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -46,7 +52,9 @@ const CORE_WEB_URLS_REGEX = [
 ]
 
 export const isCoreMethod = (method: string): boolean =>
-  [...CORE_EVM_METHODS, ...CORE_NONEVM_METHODS].includes(method as RpcMethod)
+  [...CORE_EVM_METHODS, ...CORE_AVAX_METHODS, ...CORE_BTC_METHODS].includes(
+    method as RpcMethod
+  )
 
 export const isCoreDomain = (url: string): boolean => {
   let hostname = ''
@@ -80,7 +88,12 @@ export const isNetworkSupported = (
     return [NetworkVMType.EVM].includes(network.vmName)
   }
 
-  return isAVMChainId(caip2ChainId) || isPVMChainId(caip2ChainId)
+  return (
+    isXChainId(caip2ChainId) ||
+    isPChainId(caip2ChainId) ||
+    isCChainId(caip2ChainId) ||
+    isBtcChainId(caip2ChainId)
+  )
 }
 
 export type CoreAccountAddresses = z.infer<typeof coreAccountAddresses>
@@ -89,10 +102,12 @@ export const getAddressForChainId = (
   caip2ChainId: string,
   account: CoreAccountAddresses
 ): string => {
-  return isAVMChainId(caip2ChainId)
+  return isXChainId(caip2ChainId)
     ? account.addressAVM
-    : isPVMChainId(caip2ChainId)
+    : isPChainId(caip2ChainId)
     ? account.addressPVM
+    : isBtcChainId(caip2ChainId)
+    ? account.addressBTC
     : account.addressC
 }
 
