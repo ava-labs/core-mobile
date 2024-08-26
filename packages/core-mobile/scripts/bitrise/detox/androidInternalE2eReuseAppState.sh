@@ -14,10 +14,10 @@ echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 
 if (($IS_REGRESSION_RUN=='true')); then
   ./node_modules/.bin/detox test --listTests --configuration android.internal.release.regression.ci
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless --reuse; test_result=$?
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless; test_result=$?
 else
   ./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --headless --reuse; test_result=$?
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --headless; test_result=$?
 fi
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
