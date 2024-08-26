@@ -1201,7 +1201,7 @@ PODS:
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - RNSensors (7.3.5):
+  - RNSensors (7.3.6):
     - React-Core
   - RNSentry (5.24.1):
     - React-Core
@@ -1659,7 +1659,7 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: afa5bf2794aecbb2dba2525329253da0d66656df
   RNReanimated: 00ee495a70897aa9d541e76debec14253133b812
   RNScreens: 17e2f657f1b09a71ec3c821368a04acbb7ebcb46
-  RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
+  RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
   RNSentry: 0aefd4f23b45e3c00577c3a18af79b8f8193bcdb
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
   RNSVG: 0eea30725f92fc53f86d2a427ee75f28bdfb8692
