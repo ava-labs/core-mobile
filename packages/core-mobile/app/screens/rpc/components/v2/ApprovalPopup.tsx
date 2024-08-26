@@ -1,13 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { isAddress as isEvmAddress } from 'ethers'
 import { TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { getHexStringToBytes } from 'utils/getHexStringToBytes'
-import CarrotSVG from 'components/svg/CarrotSVG'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -27,7 +23,6 @@ import {
 } from 'store/account/slice'
 import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
-import { humanize } from 'utils/string/humanize'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
 import OvalTagBg from 'components/OvalTagBg'
@@ -37,8 +32,8 @@ import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
-import { isBtcAddress } from 'utils/isBtcAddress'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
+import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
 import AlertBanner from './AlertBanner'
@@ -71,7 +66,6 @@ const ApprovalPopup = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const [submitting, setSubmitting] = useState(false)
-  const [showData, setShowData] = useState(false)
   const [maxFeePerGas, setMaxFeePerGas] = useState<bigint | undefined>()
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
     bigint | undefined
@@ -113,6 +107,25 @@ const ApprovalPopup = (): JSX.Element => {
     }
   }, [rejectAndClose, request, account])
 
+  const filteredSections = useMemo(() => {
+    return displayData.details.map(detailSection => {
+      if (detailSection.title !== 'Transaction Details') {
+        return detailSection
+      }
+
+      const filteredItems = detailSection.items.filter(item => {
+        if (typeof item === 'string') return true
+
+        const isDataOrInAppWebsite =
+          item.label === 'Website' && isInAppRequest(request)
+
+        return !isDataOrInAppWebsite
+      })
+
+      return { ...detailSection, items: filteredItems }
+    })
+  }, [displayData.details, request])
+
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
     useSpendLimits(displayData.tokenApprovals)
 
@@ -123,44 +136,6 @@ const ApprovalPopup = (): JSX.Element => {
     },
     []
   )
-
-  const transactionDetailsData =
-    displayData.transactionDetails && 'data' in displayData.transactionDetails
-      ? displayData.transactionDetails.data
-      : undefined
-
-  if (showData && transactionDetailsData) {
-    const data = transactionDetailsData
-    return (
-      <RpcRequestBottomSheet onClose={() => rejectAndClose()}>
-        <View style={{ padding: 16 }}>
-          <Row style={{ alignItems: 'center' }}>
-            <AvaButton.Base onPress={() => setShowData(false)}>
-              <CarrotSVG direction={'left'} size={23} />
-            </AvaButton.Base>
-            <Space x={14} />
-            <Text variant="heading4">Transaction Data</Text>
-          </Row>
-          <Space y={16} />
-          <Row style={{ justifyContent: 'space-between' }}>
-            <Text variant="body1">Hex Data:</Text>
-            <Text variant="body1">{getHexStringToBytes(data)} Bytes</Text>
-          </Row>
-          <View style={{ paddingVertical: 14 }}>
-            <Text
-              variant="body1"
-              sx={{
-                padding: 16,
-                backgroundColor: '$neutral800',
-                borderRadius: 15
-              }}>
-              {data}
-            </Text>
-          </View>
-        </View>
-      </RpcRequestBottomSheet>
-    )
-  }
 
   const onHandleApprove = async (): Promise<void> => {
     if (approveDisabled) return
@@ -278,6 +253,13 @@ const ApprovalPopup = (): JSX.Element => {
     })
   }
 
+  const handlePressDataItem = (data: string): void => {
+    navigate(AppNavigation.Modal.TransactionData, {
+      data,
+      onClose: goBack
+    })
+  }
+
   const renderAccount = (): JSX.Element | null => {
     if (!displayData.account) return null
 
@@ -289,75 +271,6 @@ const ApprovalPopup = (): JSX.Element => {
         </Row>
         <Space y={16} />
       </View>
-    )
-  }
-
-  const renderMessageDetails = (): JSX.Element | null => {
-    if (!displayData.messageDetails) return null
-
-    return (
-      <View>
-        <Text variant="buttonMedium">Message:</Text>
-        <View sx={styles.details}>
-          <Text testID="message_detail" variant="body1">
-            {displayData.messageDetails}
-          </Text>
-        </View>
-      </View>
-    )
-  }
-  const renderTransactionDetails = (): JSX.Element | null => {
-    if (!displayData.transactionDetails) return null
-
-    const isInternalRequest = isInAppRequest(request)
-
-    const detailsToDisplay = []
-
-    // loop through the transaction details
-    // if the value is a string, display it
-    // if the value is an address, display it as a token address
-    for (const [key, value] of Object.entries(displayData.transactionDetails)) {
-      if (
-        key === 'data' || // skip data since we display it separately
-        (key === 'website' && isInternalRequest) // skip website for internal requests
-      )
-        continue
-
-      if (typeof value === 'string') {
-        const isAddress =
-          isEvmAddress(value) || isBtcAddress(value, !network?.isTestnet)
-        detailsToDisplay.push(
-          <Row style={{ justifyContent: 'space-between' }} key={key}>
-            <Text variant="caption">{humanize(key)}</Text>
-            {isAddress ? (
-              <TokenAddress address={value} />
-            ) : (
-              <Text variant="buttonSmall">{value}</Text>
-            )}
-          </Row>
-        )
-      }
-    }
-
-    return (
-      <>
-        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text variant="buttonMedium">Transaction Details</Text>
-          {transactionDetailsData && (
-            <AvaButton.Base onPress={() => setShowData(true)}>
-              <Row>
-                <CarrotSVG
-                  color={colors.$neutral50}
-                  direction={'left'}
-                  size={12}
-                />
-                <CarrotSVG color={colors.$neutral50} size={12} />
-              </Row>
-            </AvaButton.Base>
-          )}
-        </Row>
-        <View sx={styles.details}>{detailsToDisplay}</View>
-      </>
     )
   }
 
@@ -444,32 +357,41 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const renderDetails = (): JSX.Element => {
+    return (
+      <>
+        {filteredSections.map((detailSection, index) => (
+          <DetailSectionView
+            key={index}
+            detailSection={detailSection}
+            onPressDataItem={handlePressDataItem}
+          />
+        ))}
+      </>
+    )
+  }
+
   return (
-    <>
+    <SafeLowerAreaView>
       <RpcRequestBottomSheet
         onClose={() => {
           rejectAndClose()
         }}>
-        <SafeLowerAreaView>
-          <ScrollView contentContainerStyle={styles.scrollView}>
-            <View>
-              <Text variant="heading4">{displayData.title}</Text>
-              <Space y={12} />
-              {renderAlert()}
-              <Space y={12} />
-              {renderDappInfo()}
-              {renderNetwork()}
-              {renderAccount()}
-              {renderMessageDetails()}
-              {renderTransactionDetails()}
-              {renderSpendLimits()}
-              {renderBalanceChange()}
-            </View>
-            {renderNetworkFeeSelector()}
-            {renderDisclaimer()}
-          </ScrollView>
-          {renderApproveRejectButtons()}
-        </SafeLowerAreaView>
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          <Text variant="heading4">{displayData.title}</Text>
+          <Space y={12} />
+          {renderAlert()}
+          <Space y={12} />
+          {renderDappInfo()}
+          {renderNetwork()}
+          {renderAccount()}
+          {renderDetails()}
+          {renderSpendLimits()}
+          {renderBalanceChange()}
+          {renderNetworkFeeSelector()}
+          {renderDisclaimer()}
+        </ScrollView>
+        {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
         <FeatureBlocked
@@ -479,7 +401,7 @@ const ApprovalPopup = (): JSX.Element => {
           }
         />
       )}
-    </>
+    </SafeLowerAreaView>
   )
 }
 
@@ -492,14 +414,6 @@ export const styles = StyleSheet.create({
   },
   fullWidthContainer: {
     width: '100%'
-  },
-  details: {
-    justifyContent: 'space-between',
-    marginTop: 16,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    backgroundColor: '$neutral800'
   }
 })
 

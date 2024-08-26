@@ -45,17 +45,24 @@ enum BlockchainId {
   X_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm`
 }
 
-export const isPVMChainId = (caip2ChainId: string): boolean => {
+export const isPChainId = (caip2ChainId: string): boolean => {
   return (
     caip2ChainId === AvalancheCaip2ChainId.P ||
     caip2ChainId === AvalancheCaip2ChainId.P_TESTNET
   )
 }
 
-export const isAVMChainId = (caip2ChainId: string): boolean => {
+export const isXChainId = (caip2ChainId: string): boolean => {
   return (
     caip2ChainId === AvalancheCaip2ChainId.X ||
     caip2ChainId === AvalancheCaip2ChainId.X_TESTNET
+  )
+}
+
+export const isCChainId = (caip2ChainId: string): boolean => {
+  return (
+    caip2ChainId === AvalancheCaip2ChainId.C ||
+    caip2ChainId === AvalancheCaip2ChainId.C_TESTNET
   )
 }
 
@@ -92,6 +99,10 @@ export const getAvalancheChainId = (
     return ChainId.AVALANCHE_X
   } else if (caip2ChainId === AvalancheCaip2ChainId.X_TESTNET) {
     return ChainId.AVALANCHE_TEST_X
+  } else if (caip2ChainId === AvalancheCaip2ChainId.C) {
+    return ChainId.AVALANCHE_MAINNET_ID
+  } else if (caip2ChainId === AvalancheCaip2ChainId.C_TESTNET) {
+    return ChainId.AVALANCHE_MAINNET_ID
   }
 
   return undefined
