@@ -107,7 +107,7 @@ class SwapTabPage {
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapSwapButton()
     await this.tapSelectTokenDropdown()
-    await Actions.tap(by.text(from))
+    await sendPage.selectToken(from)
     await this.inputTokenAmount(amount)
     await this.tapSelectTokenDropdown()
     await sendPage.selectToken(to)

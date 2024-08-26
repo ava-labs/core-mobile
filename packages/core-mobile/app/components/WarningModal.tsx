@@ -44,7 +44,7 @@ const WarningModal: FC<Props> = ({
           size="xlarge"
           style={{ marginTop: 28 }}
           onPress={onAction}
-          testID="warning_modal__i_understand_button">
+          testID="warning_modal_button">
           {actionText}
         </Button>
       )}
@@ -54,7 +54,7 @@ const WarningModal: FC<Props> = ({
           size="xlarge"
           style={{ marginTop: 16 }}
           onPress={onDismiss}
-          testID="warning_modal__back_button">
+          testID="warning_modal_button">
           {dismissText}
         </Button>
       )}
