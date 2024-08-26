@@ -10,6 +10,7 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
+import Logger from 'utils/Logger'
 
 export const usePChainBalance = (): UseQueryResult<
   TokenWithBalancePVM | undefined,
@@ -35,10 +36,20 @@ export const usePChainBalance = (): UseQueryResult<
         network: mapToVmNetwork(network),
         storage: coingeckoInMemoryCache
       })
-      const pChainBalance =
-        balancesResponse[addressPVM]?.[network.networkToken.symbol]
+
+      const pChainBalanceResponse = balancesResponse[addressPVM]
+      if (!pChainBalanceResponse || 'error' in pChainBalanceResponse) {
+        Logger.error(
+          'Failed to fetch p-chain balance',
+          pChainBalanceResponse?.error
+        )
+        return
+      }
+      const pChainBalance = pChainBalanceResponse[network.networkToken.symbol]
+
       if (
         pChainBalance === undefined ||
+        'error' in pChainBalance ||
         !isTokenWithBalancePVM(pChainBalance)
       ) {
         return

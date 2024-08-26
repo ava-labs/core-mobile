@@ -4,19 +4,23 @@ import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from '@avalabs/vm-module-types'
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
-import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import { CorePrimaryAccount } from '@avalabs/types'
-import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import {
   CLIENT_METADATA,
   WalletConnectCallbacks,
   WalletConnectServiceInterface
 } from './types'
-import { addNamespaceToAddress, addNamespaceToChain } from './utils'
+import {
+  addNamespaceToChain,
+  getAddressWithCaip2ChainId,
+  updateAccountListInNamespace,
+  updateChainListInNamespace
+} from './utils'
 
 const UPDATE_SESSION_TIMEOUT = 15000
 
@@ -196,45 +200,48 @@ class WalletConnectService implements WalletConnectServiceInterface {
     chainId: number
     account: CorePrimaryAccount
   }): Promise<void> => {
-    if (isBitcoinChainId(chainId)) {
-      Logger.info('skip updating WC session for bitcoin network')
-      return
+    const topic = session.topic
+    const caip2ChainId = addNamespaceToChain(chainId)
+
+    const blockchainNamespace = caip2ChainId.split(':')[0]
+
+    if (!blockchainNamespace) {
+      throw new Error('invalid chain data')
+    }
+
+    const addressWithCaip2ChainId = getAddressWithCaip2ChainId({
+      account,
+      blockchainNamespace,
+      caip2ChainId
+    })
+
+    if (!addressWithCaip2ChainId) {
+      throw new Error('invalid chain data')
     }
 
     Logger.info(
-      `updating WC session '${session.peer.metadata.name}' with chainId ${chainId} and address ${account.addressC}`
+      `updating WC session '${session.peer.metadata.name}' with chainId '${caip2ChainId}' and account '${addressWithCaip2ChainId}'`
     )
-    const topic = session.topic
-    const formattedChain = addNamespaceToChain(chainId)
-    let address = account.addressC
-    if (isXChain(chainId)) {
-      address = account.addressAVM
-    } else if (isPChain(chainId)) {
-      address = account.addressPVM
-    }
-    const formattedAddress = addNamespaceToAddress(address, chainId)
 
     const namespaces: SessionTypes.Namespaces = {}
 
     for (const key of Object.keys(session.namespaces)) {
       const namespace = session.namespaces[key]
-      if (namespace) {
-        const chains = namespace.chains || []
-        if (!chains.includes(formattedChain)) {
-          chains.push(formattedChain)
-        }
 
-        const accounts = namespace.accounts
-        if (!accounts.includes(formattedAddress)) {
-          accounts.push(formattedAddress)
-        }
+      if (!namespace) continue
 
-        namespaces[key] = {
-          ...namespace,
-          chains,
-          accounts
-        }
+      // for the matching namespace, we need to update both chain and account lists
+      // for the rest, we just leave as is
+      if (key === blockchainNamespace) {
+        updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
+
+        updateAccountListInNamespace({
+          account: addressWithCaip2ChainId,
+          accounts: namespace.accounts
+        })
       }
+
+      namespaces[key] = { ...namespace }
     }
 
     // check if dapp is online first
@@ -246,22 +253,30 @@ class WalletConnectService implements WalletConnectServiceInterface {
     })
 
     // emitting events
+    // but only for evm chains since neither wagmi/universal provider can handle non-evm chain events
+    if (blockchainNamespace !== BlockchainNamespace.EIP155) {
+      Logger.info(
+        'skipping emitting wallet connect events since it is for a non-evm chain'
+      )
+      return
+    }
+
     await this.client.emitSessionEvent({
       topic,
       event: {
         name: 'chainChanged',
-        data: formattedChain
+        data: chainId
       },
-      chainId: formattedChain
+      chainId: caip2ChainId
     })
 
     await this.client.emitSessionEvent({
       topic,
       event: {
         name: 'accountsChanged',
-        data: [formattedAddress]
+        data: [addressWithCaip2ChainId]
       },
-      chainId: formattedChain
+      chainId: caip2ChainId
     })
   }
 
@@ -294,11 +309,6 @@ class WalletConnectService implements WalletConnectServiceInterface {
     chainId: number
     account: CorePrimaryAccount
   }): Promise<void> => {
-    if (isBitcoinChainId(chainId)) {
-      Logger.info('skip updating WC sessions for bitcoin network')
-      return
-    }
-
     const promises: Promise<void>[] = []
 
     this.getSessions().forEach(session => {

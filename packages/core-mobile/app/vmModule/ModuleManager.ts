@@ -1,12 +1,15 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
-import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
+import {
+  NetworkVMType,
+  Network,
+  BlockchainNamespace
+} from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
-import { BlockchainNamespace } from 'store/rpc/types'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
@@ -174,7 +177,12 @@ class ModuleManager {
         ? BlockchainId._2JVSBOINJ9C2J33VNTVZ_YT_VJNZD_N2NKIWW_KJCUM_HUWEB5DB_BRM
         : BlockchainId._2O_YMBNV4E_NHYQK2FJJ_V5N_VQLDBTM_NJZQ5S3QS3LO6FTN_C6FBY_M
     }
-    return BlockchainId._11111111111111111111111111111111LPO_YY
+    if (vmName === NetworkVMType.PVM)
+      return BlockchainId._11111111111111111111111111111111LPO_YY
+
+    return isTestnet
+      ? BlockchainId.Y_H8D7TH_NJKXMTKUV2JG_BA4P1RN3QPR4P_PR7QYNFCDO_S6K6HWP // c chain for testnet
+      : BlockchainId._2Q9E4R6MU3U68N_U1F_YJGB_R6JVWR_RX36COHP_AX5UQXSE55X1Q5 // c chain
   }
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {

@@ -1,3 +1,4 @@
+import { BitcoinSendTransactionParams } from '@avalabs/bitcoin-module'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Account } from 'store/account'
@@ -8,15 +9,15 @@ import { isErc721 } from 'services/nft/utils'
 import { SendServicePVM } from 'services/send/SendServicePVM'
 import { RpcMethod } from 'store/rpc'
 import { getAddressByNetwork } from 'store/account/utils'
-import { TransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bitcoin_sendTransaction/utils'
-import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
 import { SendServiceAVM } from 'services/send/SendServiceAVM'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 import { type NftTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
 import {
   getAvalancheCaip2ChainId,
+  getBitcoinCaip2ChainId,
   getEvmCaip2ChainId
 } from 'temp/caip2ChainIds'
+import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -55,23 +56,25 @@ class SendService {
           throw new Error(sendState.error.message)
         }
 
-        if (!isValidSendState(sendState)) {
+        if (!isValidSendState(sendState) || !sendState.address) {
           throw new Error('Unknown error, unable to submit')
         }
 
         let txHash, txError
 
         if (network.vmName === NetworkVMType.BITCOIN) {
-          const params: BtcTransactionParams = [
-            sendState.address ?? '',
-            sendState.amount?.toString() ?? '',
-            Number(sendState.defaultMaxFeePerGas ?? 0)
-          ]
+          const params: BitcoinSendTransactionParams = {
+            from: fromAddress,
+            to: sendState.address,
+            amount: Number(sendState.amount),
+            feeRate: Number(sendState.defaultMaxFeePerGas ?? 0)
+          }
 
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.BITCOIN_SEND_TRANSACTION,
-              params
+              params,
+              chainId: getBitcoinCaip2ChainId(!network.isTestnet)
             })
           )
         }
@@ -91,7 +94,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTransactionParams,
+              params: txRequest as AvalancheSendTransactionParams,
               chainId: getAvalancheCaip2ChainId(network.chainId)
             })
           )
@@ -112,7 +115,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTransactionParams,
+              params: txRequest as AvalancheSendTransactionParams,
               chainId: getAvalancheCaip2ChainId(network.chainId)
             })
           )

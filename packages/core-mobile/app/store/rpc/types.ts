@@ -81,12 +81,13 @@ export const CORE_EVM_METHODS = [
   RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
 ]
 
-export const CORE_NONEVM_METHODS = [
+export const CORE_AVAX_METHODS = [
   RpcMethod.AVALANCHE_SEND_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-  RpcMethod.BITCOIN_SEND_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_MESSAGE
 ]
+
+export const CORE_BTC_METHODS = [RpcMethod.BITCOIN_SEND_TRANSACTION]
 
 export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
 
@@ -136,11 +137,3 @@ export const CORE_MOBILE_META: PeerMeta = {
   url: 'https://core.app/',
   icons: []
 }
-
-export enum BlockchainNamespace {
-  EIP155 = 'eip155', // Evm
-  AVAX = 'avax', // Avalanche
-  BIP122 = 'bip122' // Bitcoin
-}
-
-export const AVM_PVM_IDENTIFIER = 'avax'
