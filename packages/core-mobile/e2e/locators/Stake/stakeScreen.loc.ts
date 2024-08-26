@@ -40,7 +40,7 @@ export default {
   stakingAmountTitle: 'Staking Amount',
   stakingAmountDescription: 'How many AVAX would you like to stake?',
   inputAmount: 'token_base_unit_input',
-  notNowButton: 'warning_modal__back_button',
+  notNowButton: 'warning_modal_button',
   newStakeTimeRemaining: '1 day remaining',
   usdText: 'USD',
   topBalanceItem: 'balance_item',

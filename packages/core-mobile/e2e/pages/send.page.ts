@@ -106,12 +106,6 @@ class SendPage {
   async selectToken(tokenName: string) {
     await Actions.waitForElement(this.searchBarOnSelectToken)
     await Actions.setInputText(this.searchBarOnSelectToken, tokenName)
-    await Actions.scrollListUntil(
-      by.id(`token_selector__${tokenName}`),
-      by.id('token_selector_list'),
-      100,
-      'down'
-    )
     await Actions.tapElementAtIndex(by.id(`token_selector__${tokenName}`), 0)
   }
 

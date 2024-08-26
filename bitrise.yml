@@ -118,9 +118,10 @@ workflows:
         - variables: |-
             TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            TESTS_TO_RUN_GROUP_1=$TESTS_ONE
-            TESTS_TO_RUN_GROUP_2=$TESTS_TWO
-            TESTS_TO_RUN_GROUP_3=$TESTS_THREE
+            TESTS_TO_RUN_GROUP_1=$TESTS_1
+            TESTS_TO_RUN_GROUP_2=$TESTS_2
+            TESTS_TO_RUN_GROUP_3=$TESTS_3
+            TESTS_TO_RUN_GROUP_4=$TESTS_4
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
@@ -286,6 +287,13 @@ workflows:
         no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2eReuseAppState.sh
+  _run_android_detox_tests:
+    steps:
+    - script-runner@0:
+        title: Detox
+        no_output_timeout: 300
+        inputs:
+        - file_path: scripts/bitrise/detox/androidInternalE2ENoReuseAppState.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -546,7 +554,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
-    - _run_android_tests_reuse_app_state
+    - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
@@ -593,7 +601,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
-    - _run_android_tests_reuse_app_state
+    - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
@@ -640,7 +648,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
-    - _run_android_tests_reuse_app_state
+    - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
@@ -687,9 +695,13 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
-    - _run_android_tests
+    - _run_android_detox_tests
+    - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
+    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_4
+      opts:
+          is_expand: false
     - ENVIRONMENT: production
       opts:
         is_expand: false

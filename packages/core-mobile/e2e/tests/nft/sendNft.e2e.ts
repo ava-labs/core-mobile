@@ -18,7 +18,7 @@ describe('Send NFT', () => {
 
   let account = 'first'
 
-  it('should send NFT', async () => {
+  it('should send NFT ', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await CollectiblesPage.tapListSvg()
     try {

@@ -19,7 +19,7 @@ describe('Swap AVAX', () => {
     await SendPage.verifySuccessToast()
   })
 
-  it('Should verify swap transaction in Activity', async () => {
+  it('Should verify swap transaction on Activity tab', async () => {
     await portfolioPage.goToActivityTab()
     await activityTabPage.verifyNewRow('Contract Call', '-0.001 USDC')
   })
