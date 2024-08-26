@@ -15,9 +15,9 @@ describe('Send ERC20', () => {
     await warmup(newInstance)
   })
 
-  Tokens.forEach(({ symbol }) => {
+  Tokens.forEach(({ symbol, amount }) => {
     test(`should send ${symbol}`, async () => {
-      await sendPage.sendTokenTo2ndAccount(symbol, '0.0001')
+      await sendPage.sendTokenTo2ndAccount(symbol, amount)
       await actions.waitForElementNotVisible(sendPage.sendTitle)
       await sendPage.verifySuccessToast()
       console.log(`${symbol}: Transaction Successful`)

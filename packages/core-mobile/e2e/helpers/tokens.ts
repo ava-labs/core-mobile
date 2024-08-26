@@ -1,17 +1,17 @@
 export const Tokens = [
-  { symbol: 'BTC.b', name: 'Bitcoin' },
-  { symbol: 'COQ', name: 'Coq Inu' },
-  { symbol: 'WETH.e', name: 'Wrapped ETH' },
-  { symbol: 'USDC', name: 'USD Coin' },
-  { symbol: 'ALPHA.e', name: 'AlphaToken' },
-  { symbol: 'SUSHI.e', name: 'SushiToken' },
-  { symbol: 'JOE', name: 'JoeToken' },
-  { symbol: 'APE', name: 'ApeCoin' },
-  { symbol: 'AAVE.e', name: 'Aave Token' }
+  { symbol: 'BTC.b', name: 'Bitcoin', amount: '0.000001' },
+  { symbol: 'COQ', name: 'Coq Inu', amount: '0.000001' },
+  { symbol: 'WETH.e', name: 'Wrapped ETH', amount: '0.000001' },
+  { symbol: 'USDC', name: 'USD Coin', amount: '0.000001' },
+  { symbol: 'ALPHA.e', name: 'AlphaToken', amount: '0.000001' },
+  { symbol: 'SUSHI.e', name: 'SushiToken', amount: '0.000001' },
+  { symbol: 'JOE', name: 'JoeToken', amount: '0.000001' },
+  { symbol: 'APE', name: 'ApeCoin', amount: '0.000001' },
+  { symbol: 'AAVE.e', name: 'Aave Token', amount: '0.000001' }
 ]
 
 export const SwapTokens = [
-  { symbol: 'BTC.b', name: 'Bitcoin', amount: '0.001' },
+  { symbol: 'BTC.b', name: 'Bitcoin', amount: '0.0001' },
   { symbol: 'ETH', name: 'Ether', amount: '0.00001' },
   { symbol: 'WETH.e', name: 'Wrapped ETH', amount: '0.000001' },
   { symbol: 'USDT', name: 'Tether', amount: '0.00001' },
