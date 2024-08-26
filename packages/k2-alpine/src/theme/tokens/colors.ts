@@ -8,10 +8,10 @@ const white = {
   neutral50: '#F2F2F3' // White Lilac
 }
 
-const success = {
+/* const success = {
   success: '#3AC489', // Shamrock
   success2: '#47C4AF' // Puerto Rico
-}
+} */
 
 const glass = {
   light: 'rgba(255, 255, 255, 0.6)', // #FFFFFF
@@ -21,7 +21,7 @@ const glass = {
   dark3: 'rgba(197, 197, 200, 0.25)' // #C5C5C8
 }
 
-const gradient = {
+/* const gradient = {
   green: {
     step0: '#1CC51D',
     stepF: '#47C4AF'
@@ -57,7 +57,7 @@ const gradient = {
     step0: '#30BEFE',
     stepF: '#FF7683'
   }
-}
+} */
 
 export const darkModeColors = {
   $primaryBackground: white.neutral,
