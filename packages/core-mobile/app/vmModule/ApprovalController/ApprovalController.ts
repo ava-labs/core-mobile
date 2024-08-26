@@ -15,9 +15,11 @@ import {
   showTransactionErrorToast,
   showTransactionSuccessToast
 } from 'utils/toast'
-import { handleEthSendTransaction } from './handleEthSendTransaction'
-import { handleSignMessage } from './handleSignMessage'
-import { handleAvalancheSignTransaction } from './handleAvalancheSignTransaction'
+import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
+import { ethSendTransaction } from '../handlers/ethSendTransaction'
+import { signMessage } from '../handlers/signMessage'
+import { btcSendTransaction } from '../handlers/btcSendTransaction'
+import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
   onTransactionConfirmed(txHash: Hex): void {
@@ -51,8 +53,19 @@ class ApprovalController implements VmModuleApprovalController {
         overrideData?: string
       }): Promise<void> => {
         switch (signingData.type) {
+          case RpcMethod.BITCOIN_SEND_TRANSACTION: {
+            btcSendTransaction({
+              transactionData: signingData.data,
+              finalFeeRate: Number(maxFeePerGas || 0),
+              account,
+              network,
+              resolve
+            })
+
+            break
+          }
           case RpcMethod.ETH_SEND_TRANSACTION: {
-            handleEthSendTransaction({
+            ethSendTransaction({
               transactionRequest: signingData.data,
               network,
               account,
@@ -61,7 +74,6 @@ class ApprovalController implements VmModuleApprovalController {
               overrideData,
               resolve
             })
-
             break
           }
           case RpcMethod.PERSONAL_SIGN:
@@ -71,18 +83,29 @@ class ApprovalController implements VmModuleApprovalController {
           case RpcMethod.SIGN_TYPED_DATA_V3:
           case RpcMethod.SIGN_TYPED_DATA_V4:
           case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
-            handleSignMessage({
+            signMessage({
               method: signingData.type,
               data: signingData.data,
               account,
               network,
               resolve
             })
-
+            break
+          }
+          case RpcMethod.AVALANCHE_SEND_TRANSACTION: {
+            avalancheSendTransaction({
+              unsignedTxJson: signingData.unsignedTxJson,
+              vm: signingData.vm,
+              externalIndices: signingData.externalIndices ?? [],
+              internalIndices: signingData.internalIndices ?? [],
+              account,
+              network,
+              resolve
+            })
             break
           }
           case RpcMethod.AVALANCHE_SIGN_TRANSACTION: {
-            handleAvalancheSignTransaction({
+            avalancheSignTransaction({
               unsignedTxJson: signingData.unsignedTxJson,
               ownSignatureIndices: signingData.ownSignatureIndices,
               account,

@@ -5,7 +5,8 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import type {
   NetworkContractToken,
-  TokenWithBalance
+  TokenWithBalance,
+  Error
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -15,7 +16,7 @@ export type BalancesForAccount = {
   accountIndex: number
   chainId: number
   accountAddress: string
-  tokens: TokenWithBalance[]
+  tokens: (TokenWithBalance | Error)[]
 }
 
 export class BalanceService {
@@ -36,6 +37,7 @@ export class BalanceService {
       .setContext('svc.balance.get_for_account')
       .executeAsync(async () => {
         const accountAddress = getAddressByNetwork(account, network)
+
         const module = await ModuleManager.loadModuleByNetwork(network)
         const balancesResponse = await module.getBalances({
           customTokens,
@@ -44,11 +46,20 @@ export class BalanceService {
           network: mapToVmNetwork(network),
           storage: coingeckoInMemoryCache
         })
-        const balances = Object.values(balancesResponse[accountAddress] ?? [])
+        const balances = balancesResponse[accountAddress] ?? {}
+        if ('error' in balances) {
+          return {
+            accountIndex: account.index,
+            chainId: network.chainId,
+            tokens: [],
+            accountAddress
+          }
+        }
+
         return {
           accountIndex: account.index,
           chainId: network.chainId,
-          tokens: balances,
+          tokens: Object.values(balances),
           accountAddress
         }
       })

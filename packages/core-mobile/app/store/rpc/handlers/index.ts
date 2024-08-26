@@ -9,12 +9,10 @@ import { walletSwitchEthereumChainHandler } from './chain/wallet_switchEthereumC
 import { avalancheBridgeAssetHandler } from './avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { avalancheSelectAccountHandler } from './account/avalanche_selectAccount/avalanche_selectAccount'
 import { RpcRequestHandler } from './types'
-import { avalancheSendTransactionHandler } from './avalanche_sendTransaction/avalanche_sendTransaction'
 import { avalancheGetAccountPubKeyHandler } from './avalanche_getAccountPubKey/avalanche_getAccountPubKey'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode/avalanche_setDeveloperMode'
 import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange/avalanche_getAddressesInRange'
-import { bitcoinSendTransactionHandler } from './bitcoin_sendTransaction/bitcoin_sendTransaction'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -28,11 +26,9 @@ const handlerMap = [
   walletAddEthereumChainHandler,
   walletSwitchEthereumChainHandler,
   walletGetEthereumChainHandler,
-  avalancheSendTransactionHandler,
   avalancheGetAccountPubKeyHandler,
   avalancheSetDeveloperModeHandler,
-  avalancheGetAddressesInRangeHandler,
-  bitcoinSendTransactionHandler
+  avalancheGetAddressesInRangeHandler
 ].reduce((acc, current) => {
   if (current?.methods === undefined) return acc
 

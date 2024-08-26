@@ -267,10 +267,9 @@ export const Confirmation = (): JSX.Element | null => {
 
   const renderStakingFee = (): JSX.Element => {
     if (delegationFee) {
-      const [delegationFeeInAvax] = avaxFormatter(delegationFee, true)
       return (
         <AvaText.Heading6>
-          {delegationFeeInAvax + ' ' + tokenSymbol}
+          {delegationFee.toDisplay() + ' ' + tokenSymbol}
         </AvaText.Heading6>
       )
     }

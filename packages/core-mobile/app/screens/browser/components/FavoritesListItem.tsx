@@ -49,7 +49,7 @@ export const FavoritesListItem = ({
             {favorite.title}
           </Text>
           <Text variant="body2" sx={{ color: '$neutral400' }} numberOfLines={1}>
-            {favorite.description}
+            {favorite.url}
           </Text>
           <FlexSpacer />
         </View>
