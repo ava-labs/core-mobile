@@ -15,8 +15,8 @@ class BrowserPage {
     return by.id(BrowserLoc.browserBackBtn)
   }
 
-  get iUnderstandBtn() {
-    return by.id(BrowserLoc.iUnderstandBtn)
+  get continueBtn() {
+    return by.text(BrowserLoc.continueBtn)
   }
 
   async tapSearchBar() {
@@ -72,6 +72,7 @@ class BrowserPage {
         xpath =
           '//*[@data-testid="connect-wallet-connect-button"]//p[text()="WalletConnect"]'
     }
+    await Wbs.waitForEleByXpathToBeVisible(xpath)
     await Wbs.tapByXpath(xpath)
   }
 
@@ -122,13 +123,9 @@ class BrowserPage {
   }
 
   async dismissConnectWalletModal() {
-    await Actions.waitForElementNoSync(this.iUnderstandBtn, 8000)
-    if (Actions.platform() === 'android') {
-      await device.pressBack()
-    } else {
-      await Actions.tap(this.iUnderstandBtn)
-    }
-    await Actions.waitForElementNotVisible(this.iUnderstandBtn, 5000)
+    await Actions.waitForElementNoSync(this.continueBtn, 10000)
+    await Actions.tap(this.continueBtn)
+    await Actions.waitForElementNotVisible(this.continueBtn, 5000)
   }
 
   async connectTo(
