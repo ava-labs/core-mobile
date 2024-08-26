@@ -169,7 +169,11 @@ export default function PinOrBiometryLogin({
 
   return (
     <SafeVerticalAreaView
-      sx={{ height: '100%', backgroundColor: theme.colors.$black }}>
+      sx={{
+        height: '100%',
+        backgroundColor: theme.colors.$black,
+        position: 'absolute'
+      }}>
       <Space y={TOP_SPACE} />
       {!isResettingPin && (
         <ReAnimated.View
