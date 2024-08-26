@@ -193,7 +193,7 @@ __metadata:
     "@ethereumjs/common": 2.6.5
     "@ethereumjs/tx": 3.4.0
     "@gorhom/bottom-sheet": 4.6.3
-    "@hookform/resolvers": 2.6.0
+    "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.3.0
     "@lavamoat/allow-scripts": 2.0.3
     "@lavamoat/preinstall-always-fail": 1.0.0
@@ -3555,12 +3555,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hookform/resolvers@npm:2.6.0":
-  version: 2.6.0
-  resolution: "@hookform/resolvers@npm:2.6.0"
+"@hookform/resolvers@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@hookform/resolvers@npm:3.9.0"
   peerDependencies:
     react-hook-form: ^7.0.0
-  checksum: e76c04c886640b4df27772fb008aaea29a8f851c75ba35ef1c9b83dd666bb6f20ffd458ce34c4e4717bcc1ab1702a117e11416a464b7e055245a1b9a75b89945
+  checksum: 64a1e77ea2eeeba521ec624f2cea33ec2d20c60de12847b59520393780a9c8b92b3d76b7b3eeabadef85e8c776826f7bc9016fa90a890580c4ed75503c060dd1
   languageName: node
   linkType: hard
 
