@@ -1211,7 +1211,7 @@ PODS:
     - RNSound/Core (= 0.11.2)
   - RNSound/Core (0.11.2):
     - React-Core
-  - RNSVG (15.1.0):
+  - RNSVG (15.6.0):
     - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -1662,7 +1662,7 @@ SPEC CHECKSUMS:
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
   RNSentry: 0aefd4f23b45e3c00577c3a18af79b8f8193bcdb
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
-  RNSVG: 0eea30725f92fc53f86d2a427ee75f28bdfb8692
+  RNSVG: 5da7a24f31968ec74f0b091e3440080f347e279b
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: c446963245407030e17f1b926a83c6337dc99f4e
