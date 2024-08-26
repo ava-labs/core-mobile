@@ -316,7 +316,7 @@ __metadata:
     react-native-dialog: 8.2.0
     react-native-document-picker: 5.3.0
     react-native-fast-image: 8.6.3
-    react-native-fs: 2.19.0
+    react-native-fs: 2.20.0
     react-native-gesture-handler: 2.15.0
     react-native-graph: 1.1.0
     react-native-haptic-feedback: 2.0.3
@@ -21027,9 +21027,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-fs@npm:2.19.0":
-  version: 2.19.0
-  resolution: "react-native-fs@npm:2.19.0"
+"react-native-fs@npm:2.20.0":
+  version: 2.20.0
+  resolution: "react-native-fs@npm:2.20.0"
   dependencies:
     base-64: ^0.1.0
     utf8: ^3.0.0
@@ -21039,7 +21039,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-windows:
       optional: true
-  checksum: 89f0591bfca1f93155d2e72b80b45fed46e9f2674a2eaa92cfe2bc49701dd249fc79d5ed89b54d859fdf6cedd0063a6d9d760a750adf744f76180cedb505652c
+  checksum: 0be9bb9a5c13b501d0a3006efc3aa5c0b5b211456ee04718297f4e522532f3527f1daa220bd67d3b82d819ed8fdab8f64b7d6e0d7b768c1fd1d8ec9122d94316
   languageName: node
   linkType: hard
 
