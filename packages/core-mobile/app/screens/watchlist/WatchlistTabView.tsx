@@ -39,7 +39,7 @@ export default function WatchlistTab(): JSX.Element {
   )
 
   return (
-    <SafeLowerAreaView>
+    <SafeLowerAreaView inTabNavigation>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Watchlist
       </AvaText.LargeTitleBold>
