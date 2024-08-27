@@ -10,7 +10,7 @@ describe('NFT Error Messages', () => {
     await warmup()
   })
 
-  it('should verify Address Required warning', async () => {
+  it('should verify NFT send address required warning', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
     await CollectiblesPage.tapGridItem()
@@ -18,7 +18,7 @@ describe('NFT Error Messages', () => {
     await Assert.isVisible(CollectiblesPage.warningAddressRequired)
   })
 
-  it('should verify Insufficient balance warning', async () => {
+  it('should verify NFT send Insufficient balance warning', async () => {
     await CollectiblesPage.tapAddressBook()
     await CollectiblesPage.tapMyAccounts()
     await AccountManagePage.tapFirstAccount()

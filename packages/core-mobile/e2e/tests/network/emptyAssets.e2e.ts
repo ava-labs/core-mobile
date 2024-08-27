@@ -3,6 +3,8 @@ import actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
 import { warmup } from '../../helpers/warmup'
+import { cleanup } from '../../helpers/cleanup'
+import accountManagePage from '../../pages/accountManage.page'
 
 describe('Empty Assets', () => {
   beforeAll(async () => {
@@ -10,10 +12,11 @@ describe('Empty Assets', () => {
   })
 
   afterAll(async () => {
-    await NetworksManagePage.switchToAvalancheNetwork()
+    await cleanup()
   })
 
   it('should check empty assets on custom Network', async () => {
+    await accountManagePage.createNthAccountAndSwitchToNth(3)
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()

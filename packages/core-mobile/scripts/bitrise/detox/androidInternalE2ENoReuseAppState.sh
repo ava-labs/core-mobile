@@ -7,17 +7,20 @@ yarn start &
 
 npm rebuild detox
 
+
 adb install -r $BITRISE_TEST_APK_PATH
 adb install -r $BITRISE_APK_PATH
 
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
+echo "Got test list: $TESTS_TO_RUN"
 
-if (($IS_REGRESSION_RUN=='true')); then
-  ./node_modules/.bin/detox test --listTests --configuration android.internal.release.regression.ci
+if [ "$IS_REGRESSION_RUN" = true ]; then
+  echo "running regression run..."
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless; test_result=$?
 else
-  ./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --headless; test_result=$?
+  echo "The test list above will be reduced by the android smoke config ignoreTestList"
+  echo "running smoke run..."
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless; test_result=$?
 fi
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
