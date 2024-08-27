@@ -205,7 +205,7 @@ __metadata:
     "@ethereumjs/common": 2.6.5
     "@ethereumjs/tx": 3.4.0
     "@gorhom/bottom-sheet": 4.6.3
-    "@hookform/resolvers": 2.6.0
+    "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.3.0
     "@lavamoat/allow-scripts": 2.0.3
     "@lavamoat/preinstall-always-fail": 1.0.0
@@ -291,8 +291,8 @@ __metadata:
     eslint-plugin-avalabs-mobile: "workspace:*"
     ethers: 6.8.1
     events: 3.3.0
-    https-browserify: 0.0.1
-    jail-monkey: 2.6.0
+    https-browserify: 1.0.0
+    jail-monkey: 2.8.0
     jest: 29.7.0
     jimp: 0.22.10
     jsc-android: 294992.0.0
@@ -328,7 +328,7 @@ __metadata:
     react-native-dialog: 8.2.0
     react-native-document-picker: 5.3.0
     react-native-fast-image: 8.6.3
-    react-native-fs: 2.19.0
+    react-native-fs: 2.20.0
     react-native-gesture-handler: 2.15.0
     react-native-graph: 1.1.0
     react-native-haptic-feedback: 2.0.3
@@ -356,7 +356,7 @@ __metadata:
     react-native-screens: 3.29.0
     react-native-sensors: 7.3.6
     react-native-sound: 0.11.2
-    react-native-svg: 15.1.0
+    react-native-svg: 15.6.0
     react-native-svg-transformer: 1.3.0
     react-native-tab-view: 3.5.1
     react-native-toast-notifications: 3.3.0
@@ -592,7 +592,7 @@ __metadata:
     react-native: 0.73.7
     react-native-mmkv: 2.12.2
     react-native-safe-area-context: 4.9.0
-    react-native-svg: 15.1.0
+    react-native-svg: 15.6.0
     react-native-svg-transformer: 1.3.0
     react-test-renderer: 18.2.0
     tinycolor2: 1.6.0
@@ -600,7 +600,7 @@ __metadata:
   peerDependencies:
     react: 18.2.0
     react-native: 0.73.7
-    react-native-svg: 15.1.0
+    react-native-svg: 15.6.0
   languageName: unknown
   linkType: soft
 
@@ -4434,12 +4434,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hookform/resolvers@npm:2.6.0":
-  version: 2.6.0
-  resolution: "@hookform/resolvers@npm:2.6.0"
+"@hookform/resolvers@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@hookform/resolvers@npm:3.9.0"
   peerDependencies:
     react-hook-form: ^7.0.0
-  checksum: e76c04c886640b4df27772fb008aaea29a8f851c75ba35ef1c9b83dd666bb6f20ffd458ce34c4e4717bcc1ab1702a117e11416a464b7e055245a1b9a75b89945
+  checksum: 64a1e77ea2eeeba521ec624f2cea33ec2d20c60de12847b59520393780a9c8b92b3d76b7b3eeabadef85e8c776826f7bc9016fa90a890580c4ed75503c060dd1
   languageName: node
   linkType: hard
 
@@ -17888,10 +17888,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-browserify@npm:0.0.1":
-  version: 0.0.1
-  resolution: "https-browserify@npm:0.0.1"
-  checksum: 331683e00f2e4718912783540ed7faddb424f20c789eab6cc28fb8ebabc11e3409365e6b62a1eca6ac033c81044be87b5d7cf684170e392cf5a629d0f77dc8be
+"https-browserify@npm:1.0.0":
+  version: 1.0.0
+  resolution: "https-browserify@npm:1.0.0"
+  checksum: 09b35353e42069fde2435760d13f8a3fb7dd9105e358270e2e225b8a94f811b461edd17cb57594e5f36ec1218f121c160ddceeec6e8be2d55e01dcbbbed8cbae
   languageName: node
   linkType: hard
 
@@ -23978,9 +23978,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-fs@npm:2.19.0":
-  version: 2.19.0
-  resolution: "react-native-fs@npm:2.19.0"
+"react-native-fs@npm:2.20.0":
+  version: 2.20.0
+  resolution: "react-native-fs@npm:2.20.0"
   dependencies:
     base-64: ^0.1.0
     utf8: ^3.0.0
@@ -23990,7 +23990,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-windows:
       optional: true
-  checksum: 89f0591bfca1f93155d2e72b80b45fed46e9f2674a2eaa92cfe2bc49701dd249fc79d5ed89b54d859fdf6cedd0063a6d9d760a750adf744f76180cedb505652c
+  checksum: 0be9bb9a5c13b501d0a3006efc3aa5c0b5b211456ee04718297f4e522532f3527f1daa220bd67d3b82d819ed8fdab8f64b7d6e0d7b768c1fd1d8ec9122d94316
   languageName: node
   linkType: hard
 
@@ -24407,16 +24407,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:15.1.0":
-  version: 15.1.0
-  resolution: "react-native-svg@npm:15.1.0"
+"react-native-svg@npm:15.6.0":
+  version: 15.6.0
+  resolution: "react-native-svg@npm:15.6.0"
   dependencies:
     css-select: ^5.1.0
     css-tree: ^1.1.3
+    warn-once: 0.1.1
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: a3694b74097e56a810a9142c9480532b63fb9cac0ff8b74c038478172d09acdb4077d93cfa53a8bb31e7ec1a9fc9f6e81a95b028c64af5370b5b3534c99aee0b
+  checksum: 31c70317b7ca4c74d2b1db28af7ae127920c004c606ed4bd37f1e191a9433f6ce9929eabd105ed8768a1327ad26675ef0eaa06a97ca736ced8bfc6410b0d7480
   languageName: node
   linkType: hard
 
@@ -28422,7 +28423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"warn-once@npm:^0.1.0":
+"warn-once@npm:0.1.1, warn-once@npm:^0.1.0":
   version: 0.1.1
   resolution: "warn-once@npm:0.1.1"
   checksum: e6a5a1f5a8dba7744399743d3cfb571db4c3947897875d4962a7c5b1bf2195ab4518c838cb4cea652e71729f21bba2e98dc75686f5fccde0fabbd894e2ed0c0d

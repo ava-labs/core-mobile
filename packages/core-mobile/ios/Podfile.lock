@@ -48,7 +48,7 @@ PODS:
     - AppAuth/Core (~> 1.7)
     - GTMSessionFetcher/Core (< 4.0, >= 3.3)
   - GTMSessionFetcher/Core (3.4.1)
-  - jail-monkey (2.6.0):
+  - jail-monkey (2.8.0):
     - React-Core
   - libwebp (1.3.2):
     - libwebp/demux (= 1.3.2)
@@ -1166,7 +1166,7 @@ PODS:
     - SDWebImageWebPCoder (~> 0.8.4)
   - RNFlashList (1.6.3):
     - React-Core
-  - RNFS (2.19.0):
+  - RNFS (2.20.0):
     - React-Core
   - RNGestureHandler (2.15.0):
     - glog
@@ -1211,7 +1211,7 @@ PODS:
     - RNSound/Core (= 0.11.2)
   - RNSound/Core (0.11.2):
     - React-Core
-  - RNSVG (15.1.0):
+  - RNSVG (15.6.0):
     - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -1567,7 +1567,7 @@ SPEC CHECKSUMS:
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
-  jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
+  jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: fcb5e73e17ba4c983140b7d21095c834b3087418
   lottie-react-native: 13cd0c4782c3e6bb26bfa4cc2d08bfb84f6d1ab6
@@ -1647,7 +1647,7 @@ SPEC CHECKSUMS:
   RNDominantColor: 7c17c31201566a592ba4b2fbe2bb7e00df468753
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFlashList: 4b4b6b093afc0df60ae08f9cbf6ccd4c836c667a
-  RNFS: fc610f78fdf8bfc89a9e5cc2f898519f4dba1002
+  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 67fb54b3e6ca338a8044e85cd6f340265aa41091
   RNGoogleSignin: a6a612cce56a45ab701c5c5c6e36f5390522d100
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
@@ -1662,7 +1662,7 @@ SPEC CHECKSUMS:
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
   RNSentry: 0aefd4f23b45e3c00577c3a18af79b8f8193bcdb
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
-  RNSVG: 0eea30725f92fc53f86d2a427ee75f28bdfb8692
+  RNSVG: 5da7a24f31968ec74f0b091e3440080f347e279b
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: c446963245407030e17f1b926a83c6337dc99f4e
