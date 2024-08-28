@@ -50,7 +50,7 @@
     "@metamask/eth-sig-util": "5.0.2",
     "@metamask/rpc-errors": "6.3.0",
     "@noble/secp256k1": "2.0.0",
-    "@notifee/react-native": "7.8.0",
+    "@notifee/react-native": "7.8.2",
     "@openzeppelin/contracts": "4.9.3",
     "@react-native-async-storage/async-storage": "1.18.1",
     "@react-native-clipboard/clipboard": "1.13.2",
