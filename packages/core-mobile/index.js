@@ -36,6 +36,10 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 
 AppRegistry.registerComponent(appName, () => AppEntryPoint)
 
+if (__DEV__) {
+  require('./ReactotronConfig')
+}
+
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen({
     onUnhandledRequest: 'bypass'

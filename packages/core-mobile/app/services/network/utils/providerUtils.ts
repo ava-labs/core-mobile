@@ -12,7 +12,7 @@ import {
 import { Network as EthersNetwork } from 'ethers'
 import Config from 'react-native-config'
 import { Networks } from 'store/network/types'
-import { addGlacierAPIKeyIfNeeded } from 'utils/network/glacier'
+// import { addGlacierAPIKeyIfNeeded } from 'utils/network/glacier'
 
 const BITCOIN_NODE_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btc`
 const BITCOIN_EXPLORER_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btcbook`
@@ -25,7 +25,7 @@ export function getBitcoinProvider(
     undefined,
     `${BITCOIN_EXPLORER_PROXY_URL}${isTest ? '-testnet' : ''}`,
     `${BITCOIN_NODE_PROXY_URL}${isTest ? '-testnet' : ''}`,
-    Config.GLACIER_API_KEY ? { token: Config.GLACIER_API_KEY } : {}
+    {}
   )
 }
 
@@ -37,7 +37,7 @@ export function getEvmProvider(network: Network): JsonRpcBatchInternal {
   const rpcUrl = network.rpcUrl
   const provider = new JsonRpcBatchInternal(
     { maxCalls: 40, multiContractAddress },
-    addGlacierAPIKeyIfNeeded(rpcUrl),
+    rpcUrl,
     new EthersNetwork(network.chainName, network.chainId)
   )
 
