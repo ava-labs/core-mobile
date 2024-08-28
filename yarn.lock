@@ -240,7 +240,7 @@ __metadata:
     "@types/d3": 7.4.0
     "@types/jest": 29.5.6
     "@types/lodash.debounce": 4.0.6
-    "@types/lodash.isempty": 4.4.7
+    "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.6
     "@types/numeral": 2.0.2
     "@types/react": 18.2.6
@@ -8341,12 +8341,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.isempty@npm:4.4.7":
-  version: 4.4.7
-  resolution: "@types/lodash.isempty@npm:4.4.7"
+"@types/lodash.isempty@npm:4.4.9":
+  version: 4.4.9
+  resolution: "@types/lodash.isempty@npm:4.4.9"
   dependencies:
     "@types/lodash": "*"
-  checksum: d941e2d9eca0e4059ed9fafbba3b39ed9be4afea69a599a431c1818f2ab8565ca2e1e891bbea4aff10ab51335b33c978517490c6dbd67b5bb9ca6c7bcc832dce
+  checksum: 89f94bac5364850cb2f49a414a1632371541bdb2e6c00d73fbe2f7ad827a3ced3eaa42d64d9463eced4499d99c0619757605322f45c5b0d36cd761c561dcf8a2
   languageName: node
   linkType: hard
 
