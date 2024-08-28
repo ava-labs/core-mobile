@@ -119,6 +119,11 @@ export async function performSwap({
         throw new Error(`Approve Error: ${approveError}`)
       }
 
+      const receipt = hash && (await provider.waitForTransaction(hash))
+      if (!receipt || (receipt && receipt.status !== 1)) {
+        throw new Error('Approve Error')
+      }
+
       assert(hash, 'Tx hash empty')
       approveTxHash = hash
     } else {
