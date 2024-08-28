@@ -8,8 +8,7 @@ import React, {
   useState
 } from 'react'
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
-import { SwapSide } from 'paraswap'
-import { OptimalRate } from 'paraswap-core'
+import { SwapSide, OptimalRate } from '@paraswap/sdk'
 import Logger from 'utils/Logger'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Amount } from 'types'
