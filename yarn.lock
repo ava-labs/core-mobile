@@ -200,7 +200,7 @@ __metadata:
     "@cubist-labs/cubesigner-sdk": 0.3.28
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.23
     "@datadog/mobile-react-native": 2.2.0
-    "@datadog/mobile-react-navigation": 2.2.0
+    "@datadog/mobile-react-navigation": 2.4.3
     "@dlenroc/testrail": 1.7.2
     "@ethereumjs/common": 2.6.5
     "@ethereumjs/tx": 3.4.0
@@ -212,7 +212,7 @@ __metadata:
     "@metamask/eth-sig-util": 5.0.2
     "@metamask/rpc-errors": 6.3.0
     "@noble/secp256k1": 2.0.0
-    "@notifee/react-native": 7.8.0
+    "@notifee/react-native": 7.8.2
     "@openzeppelin/contracts": 4.9.3
     "@playwright/test": 1.42.1
     "@react-native-async-storage/async-storage": 1.18.1
@@ -252,7 +252,7 @@ __metadata:
     "@types/d3": 7.4.0
     "@types/jest": 29.5.6
     "@types/lodash.debounce": 4.0.6
-    "@types/lodash.isempty": 4.4.7
+    "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.6
     "@types/numeral": 2.0.2
     "@types/react": 18.2.6
@@ -318,7 +318,7 @@ __metadata:
     react-native-aes-crypto: 1.3.10
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
-    react-native-bootsplash: 5.5.3
+    react-native-bootsplash: 6.1.2
     react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.3.9
@@ -3368,14 +3368,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/mobile-react-navigation@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@datadog/mobile-react-navigation@npm:2.2.0"
+"@datadog/mobile-react-navigation@npm:2.4.3":
+  version: 2.4.3
+  resolution: "@datadog/mobile-react-navigation@npm:2.4.3"
   peerDependencies:
     "@datadog/mobile-react-native": ^2.0.1
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
-  checksum: 507d3f45423a36a4b829305d405d1158d5db954099cc1ceda07df1fd80fa9f25ba0a0e044588daa25332cd95d3241a133aa614b066a7575c1daf04f3035d2134
+  checksum: 90d7efd11664d23118521277980784da2c0a30f805df0c11fc3cda077f8347379af5862d5211b098ea21a2136f642b09e6e4546b2254e8aba27c62551becde08
   languageName: node
   linkType: hard
 
@@ -3395,13 +3395,6 @@ __metadata:
   dependencies:
     "@types/hammerjs": ^2.0.36
   checksum: 8945137cec5837edd70af3f2e0ea621543eb0aa3b667e6269ec6485350f4d120c2434b37c7c30b1cf42a65275dd61c1f24626749c616696d3956ac0c008c4766
-  languageName: node
-  linkType: hard
-
-"@emotion/hash@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "@emotion/hash@npm:0.9.1"
-  checksum: 716e17e48bf9047bf9383982c071de49f2615310fb4e986738931776f5a823bc1f29c84501abe0d3df91a3803c80122d24e28b57351bca9e01356ebb33d89876
   languageName: node
   linkType: hard
 
@@ -4037,24 +4030,22 @@ __metadata:
   version: 7.9.1
   resolution: "@expo/config-plugins@npm:7.9.1"
   dependencies:
-    "@expo/config-types": ^50.0.0-alpha.1
-    "@expo/fingerprint": ^0.6.0
+    "@expo/config-types": ^51.0.0-unreleased
     "@expo/json-file": ~8.3.0
     "@expo/plist": ^0.1.0
     "@expo/sdk-runtime-versions": ^1.0.0
-    "@react-native/normalize-color": ^2.0.0
     chalk: ^4.1.2
     debug: ^4.3.1
     find-up: ~5.0.0
     getenv: ^1.0.0
     glob: 7.1.6
     resolve-from: ^5.0.0
-    semver: ^7.5.3
+    semver: ^7.5.4
     slash: ^3.0.0
     slugify: ^1.6.6
     xcode: ^3.0.1
     xml2js: 0.6.0
-  checksum: b685c76a9f01af779494058f5206f7663888fa47191217a1ead24f4bd56315dab5c0865e920e7141f2fd1bf1872c3b973c9987a90c6c02156c1a9e78a2b673e7
+  checksum: 2b46a636b7aee46825f17b5208de735c98dca70938a5821e00172e5cebaa347f4a4537b2d94fefef7c8d2f5a979e4f8d4b4d0775a559c7d7dec09c78e2d93bae
   languageName: node
   linkType: hard
 
@@ -5858,12 +5849,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@notifee/react-native@npm:7.8.0":
-  version: 7.8.0
-  resolution: "@notifee/react-native@npm:7.8.0"
+"@notifee/react-native@npm:7.8.2":
+  version: 7.8.2
+  resolution: "@notifee/react-native@npm:7.8.2"
   peerDependencies:
     react-native: "*"
-  checksum: 800233c9505195046e918ee42a4b11d8e84cf1846ea4a0b52599e1a40181b2bbfcab09c64b445b5a7eed98c38556c97550bce32ed24a51ce05ccd8b65047548d
+  checksum: f3b3ea116653d4dc7b50f8124898f9e22567ae30306225841d2057bc9ce40d451b15436dff3e60e0e042ffd7f34338054b202cd2dc61c5dc5eab7676b625b9f9
   languageName: node
   linkType: hard
 
@@ -7542,7 +7533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/normalize-color@npm:*, @react-native/normalize-color@npm:^2.0.0":
+"@react-native/normalize-color@npm:*":
   version: 2.1.0
   resolution: "@react-native/normalize-color@npm:2.1.0"
   checksum: 8ccbd40b3c7629f1dc97b3e9aadd95fd3507fcf2e37535a6299a70436ab891c34cbdc4240b07380553d6e85dd909e23d5773b5be1da2906b026312e0b0768838
@@ -10118,12 +10109,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.isempty@npm:4.4.7":
-  version: 4.4.7
-  resolution: "@types/lodash.isempty@npm:4.4.7"
+"@types/lodash.isempty@npm:4.4.9":
+  version: 4.4.9
+  resolution: "@types/lodash.isempty@npm:4.4.9"
   dependencies:
     "@types/lodash": "*"
-  checksum: d941e2d9eca0e4059ed9fafbba3b39ed9be4afea69a599a431c1818f2ab8565ca2e1e891bbea4aff10ab51335b33c978517490c6dbd67b5bb9ca6c7bcc832dce
+  checksum: 89f94bac5364850cb2f49a414a1632371541bdb2e6c00d73fbe2f7ad827a3ced3eaa42d64d9463eced4499d99c0619757605322f45c5b0d36cd761c561dcf8a2
   languageName: node
   linkType: hard
 
@@ -16894,7 +16885,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:^11.1.0":
+"fs-extra@npm:^11.1.0, fs-extra@npm:^11.2.0":
   version: 11.2.0
   resolution: "fs-extra@npm:11.2.0"
   dependencies:
@@ -21879,7 +21870,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-html-parser@npm:^6.1.12":
+"node-html-parser@npm:^6.1.13":
   version: 6.1.13
   resolution: "node-html-parser@npm:6.1.13"
   dependencies:
@@ -23240,12 +23231,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.1.1":
-  version: 3.2.5
-  resolution: "prettier@npm:3.2.5"
+"prettier@npm:^3.2.5":
+  version: 3.3.3
+  resolution: "prettier@npm:3.3.3"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 2ee4e1417572372afb7a13bb446b34f20f1bf1747db77cf6ccaf57a9be005f2f15c40f903d41a6b79eec3f57fff14d32a20fb6dee1f126da48908926fe43c311
+  checksum: bc8604354805acfdde6106852d14b045bb20827ad76a5ffc2455b71a8257f94de93f17f14e463fe844808d2ccc87248364a5691488a3304f1031326e62d9276e
   languageName: node
   linkType: hard
 
@@ -23858,23 +23849,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-bootsplash@npm:5.5.3":
-  version: 5.5.3
-  resolution: "react-native-bootsplash@npm:5.5.3"
+"react-native-bootsplash@npm:6.1.2":
+  version: 6.1.2
+  resolution: "react-native-bootsplash@npm:6.1.2"
   dependencies:
-    "@emotion/hash": ^0.9.1
-    "@expo/config-plugins": ^7.8.4
+    "@expo/config-plugins": ^8.0.4
     detect-indent: ^6.1.0
-    node-html-parser: ^6.1.12
+    fs-extra: ^11.2.0
+    node-html-parser: ^6.1.13
     picocolors: ^1.0.0
-    prettier: ^3.1.1
+    prettier: ^3.2.5
     sharp: ^0.32.6
     ts-dedent: ^2.2.0
-    xml-formatter: ^3.6.0
+    xml-formatter: ^3.6.2
   peerDependencies:
     react: ">=18.1.0"
     react-native: ">=0.70.0"
-  checksum: 2a5a81078c04d0bd16b5c7ac513b44bb3bbd2090dfc86ebe351324a6eef8d40fa5bc4cf3f0477a7b9b63d804f9a997851d3cb72b219fc506c89b9752cd0cf646
+  checksum: e7d7565c557573f8a3338e369d587e635e997d3d8735256f45d70b31a671b2f6ca404d31afe3d6e86c3e115943471d2d16cf5a9ec10e6de010a5911b48187eac
   languageName: node
   linkType: hard
 
@@ -29162,12 +29153,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-formatter@npm:^3.6.0":
-  version: 3.6.2
-  resolution: "xml-formatter@npm:3.6.2"
+"xml-formatter@npm:^3.6.2":
+  version: 3.6.3
+  resolution: "xml-formatter@npm:3.6.3"
   dependencies:
-    xml-parser-xo: ^4.1.0
-  checksum: 6ca632b136d47f68b12be88e5543f859cdc754c9e1c1386c68b8c7803f9b894c8ec19f51bdcbfa957d782358aa19778b2ef46702f4120a78920661b683033290
+    xml-parser-xo: ^4.1.2
+  checksum: e4c6927d30de9e82f69ea1752d93b9e31e5eb308c2261e039272a04cdf1120a03cf01aea5cbb01c4197a1dee9dc67b04bf91a24acd6a1abe52b4fcb7ac843086
   languageName: node
   linkType: hard
 
@@ -29178,10 +29169,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-parser-xo@npm:^4.1.0":
-  version: 4.1.1
-  resolution: "xml-parser-xo@npm:4.1.1"
-  checksum: f726f4416d501eb9b197a7a34178aeaee9ba9a53babf61e78265240f8a6f44bd099a15c76d2610a9519c9d1dcc812bb773ae8a00df39019f911f24e1ecff0cdf
+"xml-parser-xo@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "xml-parser-xo@npm:4.1.2"
+  checksum: 732aaeb54e01bf21036a7f711147dceb693a2042b657ffd98166abb4c124946b3e41f2d3e5f3571398cedde7fbd99b346821c4d44d5fed5f86bac506c8a06a2a
   languageName: node
   linkType: hard
 
