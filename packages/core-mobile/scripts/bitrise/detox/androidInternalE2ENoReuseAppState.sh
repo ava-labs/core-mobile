@@ -16,11 +16,11 @@ echo "Got test list: $TESTS_TO_RUN"
 
 if [ "$IS_REGRESSION_RUN" = true ]; then
   echo "running regression run..."
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless; test_result=$?
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci; test_result=$?
 else
   echo "The test list above will be reduced by the android smoke config ignoreTestList"
   echo "running smoke run..."
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless; test_result=$?
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci; test_result=$?
 fi
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
