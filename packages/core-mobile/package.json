@@ -192,7 +192,7 @@
     "@babel/plugin-transform-private-methods": "7.22.5",
     "@babel/preset-env": "7.24.0",
     "@babel/preset-typescript": "7.22.11",
-    "@babel/runtime": "7.24.0",
+    "@babel/runtime": "7.25.4",
     "@dlenroc/testrail": "1.7.2",
     "@lavamoat/allow-scripts": "2.0.3",
     "@playwright/test": "1.42.1",
