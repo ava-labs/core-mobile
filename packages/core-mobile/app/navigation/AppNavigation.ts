@@ -185,7 +185,6 @@ enum ModalScreens {
   SignMessageV2 = 'ModalScreens.SignMessageV2',
   CreateRemoveContactV2 = 'ModalScreens.CreateRemoveContactV2',
   UpdateContactV2 = 'ModalScreens.UpdateContactV2',
-  SelectAccountV2 = 'ModalScreens.SelectAccountV2',
   AddEthereumChainV2 = 'ModalScreens.AddEthereumChainV2',
   SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
