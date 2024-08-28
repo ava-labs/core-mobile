@@ -40,7 +40,7 @@
     "@cubist-labs/cubesigner-sdk": "0.3.28",
     "@cubist-labs/cubesigner-sdk-ethers-v6": "0.3.23",
     "@datadog/mobile-react-native": "2.2.0",
-    "@datadog/mobile-react-navigation": "2.2.0",
+    "@datadog/mobile-react-navigation": "2.4.3",
     "@ethereumjs/common": "2.6.5",
     "@ethereumjs/tx": "3.4.0",
     "@gorhom/bottom-sheet": "4.6.3",

@@ -188,7 +188,7 @@ __metadata:
     "@cubist-labs/cubesigner-sdk": 0.3.28
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.23
     "@datadog/mobile-react-native": 2.2.0
-    "@datadog/mobile-react-navigation": 2.2.0
+    "@datadog/mobile-react-navigation": 2.4.3
     "@dlenroc/testrail": 1.7.2
     "@ethereumjs/common": 2.6.5
     "@ethereumjs/tx": 3.4.0
@@ -2830,14 +2830,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/mobile-react-navigation@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@datadog/mobile-react-navigation@npm:2.2.0"
+"@datadog/mobile-react-navigation@npm:2.4.3":
+  version: 2.4.3
+  resolution: "@datadog/mobile-react-navigation@npm:2.4.3"
   peerDependencies:
     "@datadog/mobile-react-native": ^2.0.1
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
-  checksum: 507d3f45423a36a4b829305d405d1158d5db954099cc1ceda07df1fd80fa9f25ba0a0e044588daa25332cd95d3241a133aa614b066a7575c1daf04f3035d2134
+  checksum: 90d7efd11664d23118521277980784da2c0a30f805df0c11fc3cda077f8347379af5862d5211b098ea21a2136f642b09e6e4546b2254e8aba27c62551becde08
   languageName: node
   linkType: hard
 
