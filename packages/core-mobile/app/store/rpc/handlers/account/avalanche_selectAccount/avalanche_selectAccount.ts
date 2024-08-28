@@ -10,7 +10,7 @@ import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { parseRequestParams } from './utils'
 
-export type AvalancheSelectAccountRequest =
+type AvalancheSelectAccountRequest =
   RpcRequest<RpcMethod.AVALANCHE_SELECT_ACCOUNT>
 
 class AvalancheSelectAccountHandler
