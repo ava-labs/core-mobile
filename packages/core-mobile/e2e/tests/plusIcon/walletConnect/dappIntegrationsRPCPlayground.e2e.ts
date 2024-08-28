@@ -22,12 +22,7 @@ describe('Dapp - Core Playground', () => {
       false,
       false
     )
-    let qrUri
-    try {
-      qrUri = await browserPage.getQrUriViaAllWallets()
-    } catch (e) {
-      qrUri = await browserPage.getQrUri()
-    }
+    const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
     await bottomTabsPage.tapPortfolioTab()
@@ -38,55 +33,55 @@ describe('Dapp - Core Playground', () => {
     await warmup(newInstance)
   })
 
-  // it('should handle eth_sendTransaction', async () => {
-  //   await browserPage.sendRpcCall('eth_sendTransaction')
-  //   await popUpModalPage.verifyApproveTransactionItems()
-  //   await popUpModalPage.tapApproveBtn()
-  //   await browserPage.verifyResponseReceived()
-  //   await bottomTabsPage.tapPortfolioTab()
-  //   await actions.waitForElement(popUpModalPage.successfulToastMsg, 10000)
-  //   await actions.waitForElementNotVisible(
-  //     popUpModalPage.successfulToastMsg,
-  //     10000
-  //   )
-  // })
+  it('should handle eth_sendTransaction', async () => {
+    await browserPage.sendRpcCall('eth_sendTransaction')
+    await popUpModalPage.verifyApproveTransactionItems()
+    await popUpModalPage.tapApproveBtn()
+    await browserPage.verifyResponseReceived()
+    await bottomTabsPage.tapPortfolioTab()
+    await actions.waitForElement(popUpModalPage.successfulToastMsg, 10000)
+    await actions.waitForElementNotVisible(
+      popUpModalPage.successfulToastMsg,
+      10000
+    )
+  })
 
-  // it('should handle eth_signTypedData', async () => {
-  //   await browserPage.sendRpcCall('eth_signTypedData')
-  //   await popUpModalPage.verifySignMessageModal()
-  //   await popUpModalPage.tapApproveBtn()
-  //   await browserPage.verifyResponseReceived()
-  // })
+  it('should handle eth_signTypedData', async () => {
+    await browserPage.sendRpcCall('eth_signTypedData')
+    await popUpModalPage.verifySignMessageModal()
+    await popUpModalPage.tapApproveBtn()
+    await browserPage.verifyResponseReceived()
+  })
 
-  // it('should handle eth_signTypedData_v3', async () => {
-  //   await browserPage.sendRpcCall('eth_signTypedData_v3')
-  //   await popUpModalPage.verifySignMessageModal()
-  //   await popUpModalPage.tapApproveBtn()
-  //   await browserPage.verifyResponseReceived()
-  // })
+  it('should handle eth_signTypedData_v3', async () => {
+    await browserPage.sendRpcCall('eth_signTypedData_v3')
+    await popUpModalPage.verifySignMessageModal()
+    await popUpModalPage.tapApproveBtn()
+    await browserPage.verifyResponseReceived()
+  })
 
-  // it('should handle eth_signTypedData_v4', async () => {
-  //   await browserPage.sendRpcCall('eth_signTypedData_v4')
-  //   await popUpModalPage.verifySignMessageModal()
-  //   await popUpModalPage.tapApproveBtn()
-  //   await browserPage.verifyResponseReceived()
-  // })
+  it('should handle eth_signTypedData_v4', async () => {
+    await browserPage.sendRpcCall('eth_signTypedData_v4')
+    await popUpModalPage.verifySignMessageModal()
+    await popUpModalPage.tapApproveBtn()
+    await browserPage.verifyResponseReceived()
+  })
 
-  // it('should handle eth_sign', async () => {
-  //   await browserPage.sendRpcCall('eth_sign')
-  //   await popUpModalPage.verifyScamTransactionModal()
-  //   await popUpModalPage.tapProceedAnyway()
-  //   await popUpModalPage.verifyScamAlertedSignMessageModal()
-  //   await popUpModalPage.tapRejectBtn()
-  //   await browserPage.verifyErrorReceived('User rejected the request.')
-  // })
+  it('should handle eth_sign', async () => {
+    await browserPage.sendRpcCall('eth_sign')
+    await popUpModalPage.verifyScamTransactionModal()
+    await popUpModalPage.tapProceedAnyway()
+    await popUpModalPage.verifyScamAlertedSignMessageModal()
+    await popUpModalPage.tapRejectBtn()
+    await browserPage.verifyErrorReceived('User rejected the request.')
+  })
 
-  // it('should handle personal_sign', async () => {
-  //   await browserPage.sendRpcCall('personal_sign')
-  //   await popUpModalPage.verifySignMessageModal()
-  //   await popUpModalPage.tapApproveBtn()
-  //   await browserPage.verifyResponseReceived()
-  // })
+  it('should handle personal_sign', async () => {
+    await browserPage.sendRpcCall('personal_sign')
+    await popUpModalPage.verifySignMessageModal()
+    await popUpModalPage.tapApproveBtn()
+    await browserPage.verifyResponseReceived()
+  })
 
   it('should handle avalanche_signMessage', async () => {
     await browserPage.sendRpcCall('avalanche_signMessage')
