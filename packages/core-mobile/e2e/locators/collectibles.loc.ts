@@ -21,7 +21,7 @@ export default {
   nftlogo: 'avatar__logo_avatar',
   warningAddressRequired: 'Address required',
   warningInsufficientFee: 'Insufficient balance for fee.',
-  warningGasLimitIsInvalid: 'Unable to send token, invalid gags limit.',
+  warningGasLimitIsInvalid: 'Unable to send token, invalid gas limit.',
   nftItem: 'nft_item',
   listSvg: 'list_svg',
   nftListView: 'nft_list_view',
