@@ -52,6 +52,7 @@
     "@noble/secp256k1": "2.1.0",
     "@notifee/react-native": "7.8.2",
     "@openzeppelin/contracts": "5.0.2",
+    "@paraswap/sdk": "6.9.1",
     "@react-native-async-storage/async-storage": "1.18.1",
     "@react-native-clipboard/clipboard": "1.13.2",
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
