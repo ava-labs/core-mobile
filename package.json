@@ -36,7 +36,7 @@
     "ethers": "6.8.1",
     "web3": "1.7.5",
     "@hpke/core": "1.2.7",
-    "@noble/secp256k1": "2.0.0"
+    "@noble/secp256k1": "2.1.0"
   },
   "engines": {
     "node": ">=18.14.1",
