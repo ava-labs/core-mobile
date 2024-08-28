@@ -272,6 +272,15 @@ class NetworksPage {
     }
     await PortfolioPage.tapNetworksDropdownAVAX()
   }
+
+  async switchToFujiAvalanche(network = 'Avalanche (P-Chain)') {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapManageNetworks()
+    await this.tapNetworksTab()
+    await this.searchNetworks(network)
+    await this.tapStarSvgByNetwork(network)
+    await Action.tapElementAtIndex(by.text(network), 1)
+  }
 }
 
 export default new NetworksPage()

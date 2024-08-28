@@ -1,13 +1,12 @@
 export const Tokens = [
-  { symbol: 'BTC.b', name: 'Bitcoin', amount: '0.000001' },
   { symbol: 'COQ', name: 'Coq Inu', amount: '0.000001' },
   { symbol: 'WETH.e', name: 'Wrapped ETH', amount: '0.000001' },
-  { symbol: 'USDC', name: 'USD Coin', amount: '0.000001' },
   { symbol: 'ALPHA.e', name: 'AlphaToken', amount: '0.000001' },
   { symbol: 'SUSHI.e', name: 'SushiToken', amount: '0.000001' },
   { symbol: 'JOE', name: 'JoeToken', amount: '0.000001' },
   { symbol: 'APE', name: 'ApeCoin', amount: '0.000001' },
   { symbol: 'AAVE.e', name: 'Aave Token', amount: '0.000001' }
+  // { symbol: 'BTC.b', name: 'Bitcoin', amount: '0.000001' },
 ]
 
 export const SwapTokens = [
