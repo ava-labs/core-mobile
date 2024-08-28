@@ -18,7 +18,7 @@ describe('NFT Error Messages', () => {
     await Assert.isVisible(CollectiblesPage.warningAddressRequired)
   })
 
-  it('should verify NFT send Insufficient balance warning', async () => {
+  it('should have NFT send warning - Unable to send token', async () => {
     await CollectiblesPage.tapAddressBook()
     await CollectiblesPage.tapMyAccounts()
     await AccountManagePage.tapFirstAccount()

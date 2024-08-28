@@ -33,6 +33,7 @@ class Advanced {
       await BurgerMenuPage.tapAdvanced()
       await Actions.waitForElement(this.switchButton)
       await this.tapSwitchToTestnetButton()
+      await BurgerMenuPage.exitBurgerMenu()
     } catch (e) {
       console.log('You are on mainnet')
     }
