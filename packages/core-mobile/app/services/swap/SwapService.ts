@@ -56,15 +56,24 @@ interface SwapRate {
 }
 
 const SUPPORTED_SWAP_NETWORKS = [
-  ChainId.AVALANCHE_MAINNET_ID,
-  ChainId.ETHEREUM_HOMESTEAD,
-  ChainId.POLYGON,
-  ChainId.FANTOM,
-  ChainId.BNB,
-  ChainId.ARBITRUM,
-  ChainId.OPTIMISM,
-  ChainId.POLYGON_ZK_EVM,
-  ChainId.BASE
+  ChainId.AVALANCHE_MAINNET_ID
+
+  // Chains below are supported by Paraswap but not used in the app
+  // ChainId.ETHEREUM_HOMESTEAD,
+  // ChainId.POLYGON,
+  // ChainId.FANTOM,
+  // ChainId.BNB,
+  // ChainId.ARBITRUM,
+  // ChainId.OPTIMISM,
+  // ChainId.POLYGON_ZK_EVM,
+  // ChainId.BASE
+  // POLYGON = 137,
+  // FANTOM = 250,
+  // BNB = 56,
+  // ARBITRUM = 42161,
+  // OPTIMISM = 69,
+  // POLYGON_ZK_EVM = 1101,
+  // BASE = 8453,
 ]
 
 class SwapService {
