@@ -201,7 +201,7 @@ __metadata:
     "@metamask/rpc-errors": 6.3.0
     "@noble/secp256k1": 2.0.0
     "@notifee/react-native": 7.8.2
-    "@openzeppelin/contracts": 4.9.3
+    "@openzeppelin/contracts": 5.0.2
     "@playwright/test": 1.42.1
     "@react-native-async-storage/async-storage": 1.18.1
     "@react-native-clipboard/clipboard": 1.13.2
@@ -4969,17 +4969,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts@npm:4.9.3":
-  version: 4.9.3
-  resolution: "@openzeppelin/contracts@npm:4.9.3"
-  checksum: 4932063e733b35fa7669b9fe2053f69b062366c5c208b0c6cfa1ac451712100c78acff98120c3a4b88d94154c802be05d160d71f37e7d74cadbe150964458838
-  languageName: node
-  linkType: hard
-
 "@openzeppelin/contracts@npm:4.9.6":
   version: 4.9.6
   resolution: "@openzeppelin/contracts@npm:4.9.6"
   checksum: 274b6e968268294f12d5ca4f0278f6e6357792c8bb4d76664f83dbdc325f780541538a127e6a6e97e4f018088b42f65952014dec9c745c0fa25081f43ef9c4bf
+  languageName: node
+  linkType: hard
+
+"@openzeppelin/contracts@npm:5.0.2":
+  version: 5.0.2
+  resolution: "@openzeppelin/contracts@npm:5.0.2"
+  checksum: 0cce6fc284bd1d89e2a447027832a62f1356b44ee31088899453e10349a63a62df2f07da63d76e4c41aad9c86b96b650b2b6fc85439ef276850dda1170a047fd
   languageName: node
   linkType: hard
 
