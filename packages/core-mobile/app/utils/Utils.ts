@@ -146,11 +146,6 @@ export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isAPIError(rate: any): rate is Error {
-  return typeof rate?.message === 'string'
-}
-
 export async function findAsyncSequential<T>(
   array: T[],
   predicate: (t: T) => Promise<boolean>
