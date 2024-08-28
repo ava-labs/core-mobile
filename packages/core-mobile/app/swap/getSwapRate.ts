@@ -1,9 +1,8 @@
-import { APIError, SwapSide } from 'paraswap'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
 import { resolve } from '@avalabs/core-utils-sdk'
-import swapService from 'services/swap/SwapService'
-import { OptimalRate } from 'paraswap-core'
+import SwapService from 'services/swap/SwapService'
+import { OptimalRate, SwapSide } from '@paraswap/sdk'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 
 export const getTokenAddress = (token?: TokenWithBalance): string => {
@@ -55,7 +54,7 @@ export async function getSwapRate({
   }
 
   const [priceResponse, error] = await resolve(
-    swapService.getSwapRate({
+    SwapService.getSwapRate({
       srcToken: fromTokenAddress,
       srcDecimals: fromTokenDecimals,
       destToken: toTokenAddress,
@@ -80,8 +79,8 @@ export async function getSwapRate({
     }
   }
 
-  if ((priceResponse as APIError).message) {
-    return { error: (priceResponse as APIError).message }
+  if ((priceResponse as Error).message) {
+    return { error: (priceResponse as Error).message }
   }
 
   return {

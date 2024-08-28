@@ -1,5 +1,4 @@
 import Big from 'big.js'
-import { APIError } from 'paraswap'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
 
 export const truncateAddress = (address: string, size = 6): string => {
@@ -148,7 +147,7 @@ export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isAPIError(rate: any): rate is APIError {
+export function isAPIError(rate: any): rate is Error {
   return typeof rate?.message === 'string'
 }
 

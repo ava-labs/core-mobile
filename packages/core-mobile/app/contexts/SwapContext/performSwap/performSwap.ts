@@ -5,12 +5,11 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Big from 'big.js'
-import { APIError, ETHER_ADDRESS, Transaction } from 'paraswap'
-import { OptimalRate } from 'paraswap-core'
+import { OptimalRate, TransactionParams as Transaction } from '@paraswap/sdk'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { buildTx, getParaswapSpender } from './paraswapUtils'
+import SwapService, { ETHER_ADDRESS } from 'services/swap/SwapService'
 
 export type PerformSwapParams = {
   srcTokenAddress: string | undefined
@@ -52,20 +51,14 @@ export async function performSwap({
   assert(activeNetwork, 'Network Init Error: Wrong network')
   assert(!activeNetwork.isTestnet, 'Network Init Error: Wrong network')
 
-  const spenderAddress = await getParaswapSpender()
+  const spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
 
   const sourceTokenAddress = isSrcTokenNative ? ETHER_ADDRESS : srcTokenAddress
   const destinationTokenAddress = isDestTokenNative
     ? ETHER_ADDRESS
     : destTokenAddress
 
-  const buildOptions = undefined,
-    partnerAddress = undefined,
-    partner = 'Avalanche',
-    receiver = undefined,
-    permit = undefined,
-    deadline = undefined,
-    partnerFeeBps = undefined
+  const partner = 'Avalanche'
 
   let approveTxHash: string | undefined
 
@@ -140,9 +133,9 @@ export async function performSwap({
     }
   }
 
-  function checkForErrorsInResult(result: Transaction | APIError): boolean {
+  function checkForErrorsInResult(result: Transaction | Error): boolean {
     return (
-      (result as APIError).message === 'Server too busy' ||
+      (result as Error).message === 'Server too busy' ||
       // paraswap returns responses like this: {error: 'Not enough 0x4f60a160d8c2dddaafe16fcc57566db84d674…}
       // when they are too slow to detect the approval
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -153,8 +146,8 @@ export async function performSwap({
   const [txBuildData, txBuildDataError] = await resolve(
     promiseResolveWithBackoff(
       () =>
-        buildTx({
-          network: activeNetwork.chainId.toString(),
+        SwapService.buildTx({
+          network: activeNetwork,
           srcToken: sourceTokenAddress,
           destToken: destinationTokenAddress,
           srcAmount: sourceAmount,
@@ -162,14 +155,8 @@ export async function performSwap({
           priceRoute,
           userAddress,
           partner,
-          partnerAddress,
-          partnerFeeBps,
-          receiver,
-          options: buildOptions,
           srcDecimals: priceRoute.srcDecimals,
-          destDecimals: priceRoute.destDecimals,
-          permit,
-          deadline
+          destDecimals: priceRoute.destDecimals
         }),
       checkForErrorsInResult,
       0,
