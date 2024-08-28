@@ -15,8 +15,6 @@ import { AvalancheCreateContactRequest as AvalancheCreateContactRequestV2 } from
 import { AvalancheRemoveContactRequest as AvalancheRemoveContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_removeContact/avalanche_removeContact'
 import { CorePrimaryAccount, Contact as SharedContact } from '@avalabs/types'
 import { AvalancheUpdateContactRequest as AvalancheUpdateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
-import { AvalancheSelectAccountRequest as AvalancheSelectAccountRequestV2 } from 'store/rpc/handlers/account/avalanche_selectAccount/avalanche_selectAccount'
-import { Account } from 'store/account'
 import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/rpc/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { Asset, Blockchain } from '@avalabs/core-bridge-sdk'
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
@@ -109,11 +107,6 @@ export type CreateRemoveContactV2Params = {
 export type UpdateContactV2Params = {
   request: AvalancheUpdateContactRequestV2
   contact: SharedContact
-}
-
-export type SelectAccountV2Params = {
-  request: AvalancheSelectAccountRequestV2
-  account: Account
 }
 
 export type BuyCarefullyParams = {
