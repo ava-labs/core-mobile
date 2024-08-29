@@ -69,10 +69,9 @@ class BrowserPage {
         xpath = '//button[text()="Connect via Wallet Connect - Wagmi"]'
         break
       default: // core app
-        xpath =
-          '//*[@data-testid="connect-wallet-connect-button"]//p[text()="WalletConnect"]'
+        xpath = '//*[text()="WalletConnect"]'
     }
-    await Wbs.waitForEleByXpathToBeVisible(xpath)
+    await Wbs.waitForEleByXpathToBeVisible(xpath, 10000)
     await Wbs.tapByXpath(xpath)
   }
 

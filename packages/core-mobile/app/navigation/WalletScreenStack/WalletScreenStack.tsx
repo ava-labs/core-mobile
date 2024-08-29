@@ -89,7 +89,6 @@ import {
   EditSpendLimitParams,
   AlertScreenParams,
   QRCodeParams,
-  SelectAccountV2Params,
   SessionProposalV2Params,
   SwitchEthereumChainV2Params,
   TokenSelectParams,
@@ -164,7 +163,6 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
   [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
   [AppNavigation.Modal.UpdateContactV2]: UpdateContactV2Params
-  [AppNavigation.Modal.SelectAccountV2]: SelectAccountV2Params
   [AppNavigation.Modal.AddEthereumChainV2]: AddEthereumChainV2Params
   [AppNavigation.Modal.SwitchEthereumChainV2]: SwitchEthereumChainV2Params
   [AppNavigation.Modal.BridgeAssetV2]: BridgeAssetV2Params

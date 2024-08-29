@@ -9,6 +9,10 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    open-pull-requests-limit: 20
     ignore:
       - dependency-name: "react-native"
       - dependency-name: "@react-native/metro-config"
+      - dependency-name: "@walletconnect/react-native-compat"
+      - dependency-name: "@walletconnect/types"
+      - dependency-name: "@walletconnect/utils"     

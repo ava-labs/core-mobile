@@ -11,6 +11,7 @@ import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showDappConnectionSuccessToast } from 'utils/toast'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
@@ -50,7 +51,8 @@ class WalletConnectProvider implements AgnosticRpcProvider {
       const requestId = request.data.id
       const dappName = request.peerMeta.name
 
-      shouldShowErrorToast && showDappToastError(error.message, dappName)
+      shouldShowErrorToast &&
+        showDappToastError(getJsonRpcErrorMessage(error), dappName)
 
       try {
         await WalletConnectService.rejectRequest(

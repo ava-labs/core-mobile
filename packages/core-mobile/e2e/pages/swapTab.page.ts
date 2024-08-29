@@ -113,7 +113,7 @@ class SwapTabPage {
     await sendPage.selectToken(to)
     await delay(5000)
     await this.reviewOrderButton()
-    await Actions.waitForElement(this.approveBtn, 10000, 1)
+    await Actions.waitForElement(this.approveBtn, 10000)
     await this.tapApproveButton()
   }
 }
