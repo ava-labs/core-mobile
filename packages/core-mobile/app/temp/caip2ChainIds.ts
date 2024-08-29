@@ -102,7 +102,7 @@ export const getAvalancheChainId = (
   } else if (caip2ChainId === AvalancheCaip2ChainId.C) {
     return ChainId.AVALANCHE_MAINNET_ID
   } else if (caip2ChainId === AvalancheCaip2ChainId.C_TESTNET) {
-    return ChainId.AVALANCHE_MAINNET_ID
+    return ChainId.AVALANCHE_TESTNET_ID
   }
 
   return undefined
