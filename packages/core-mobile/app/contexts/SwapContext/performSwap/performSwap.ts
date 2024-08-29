@@ -59,6 +59,7 @@ export async function performSwap({
   const partner = 'Avalanche'
 
   let approveTxHash: string | undefined
+  let spenderAddress: string
 
   const minAmount = new Big(priceRoute.destAmount)
     .times(1 - slippage / 100)
@@ -76,11 +77,10 @@ export async function performSwap({
 
   // no need to approve native token
   if (!isSrcTokenNative) {
-    const [spenderAddress, spenderAddressError] = await resolve<string>(
-      SwapService.getParaswapSpender(activeNetwork) ?? Promise.resolve(null)
-    )
-    if (spenderAddressError || spenderAddress === null) {
-      throw new Error(`Spender Address Error: ${spenderAddressError}`)
+    try {
+      spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
+    } catch (error) {
+      throw new Error(`Spender Address Error: ${error}`)
     }
 
     const contract = new Contract(sourceTokenAddress, ERC20.abi, provider)
