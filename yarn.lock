@@ -192,7 +192,7 @@ __metadata:
     "@dlenroc/testrail": 1.7.2
     "@ethereumjs/common": 2.6.5
     "@ethereumjs/tx": 3.4.0
-    "@gorhom/bottom-sheet": 4.6.3
+    "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.3.0
     "@lavamoat/allow-scripts": 2.0.3
@@ -3653,9 +3653,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gorhom/bottom-sheet@npm:4.6.3":
-  version: 4.6.3
-  resolution: "@gorhom/bottom-sheet@npm:4.6.3"
+"@gorhom/bottom-sheet@npm:4.6.4":
+  version: 4.6.4
+  resolution: "@gorhom/bottom-sheet@npm:4.6.4"
   dependencies:
     "@gorhom/portal": 1.0.14
     invariant: ^2.2.4
@@ -3671,7 +3671,7 @@ __metadata:
       optional: true
     "@types/react-native":
       optional: true
-  checksum: 718c55a89b0e18581eae6080d1d21caabf4895088e01f0dfe17b5891835a110d7aee1d0cb1b9e623efc16b598fdb28c2ec929e0ed74bfbca283306191d8a5c41
+  checksum: 2cea033c4f321b93fdbf61470b507b5efd51425a8ab927b49d7aaa1d9f0568cbcfb188e385311389dbffbafe47b941dbd3e60f74b1d663a1a2d73262e2719f85
   languageName: node
   linkType: hard
 
