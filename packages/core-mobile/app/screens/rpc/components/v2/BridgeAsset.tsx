@@ -16,6 +16,8 @@ import { NetworkTokenUnit } from 'types'
 import { View } from '@avalabs/k2-mobile'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
+import { selectBridgeAppConfig } from 'store/bridge/slice'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
@@ -27,17 +29,17 @@ const BridgeAsset = (): JSX.Element => {
   const { goBack } = useNavigation<BridgeAssetScreenProps['navigation']>()
   const { request, asset, amountStr, currentBlockchain } =
     useRoute<BridgeAssetScreenProps['route']>().params
-
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-  const { activeNetwork } = useNetworks()
-
+  const { activeNetwork, networks } = useNetworks()
+  const bridgeAppConfig = useSelector(selectBridgeAppConfig)
   const theme = useContext(ApplicationContext).theme
-
-  const { data: networkFee } = useNetworkFee(activeNetwork)
-
+  const network =
+    blockchainToNetwork(currentBlockchain, networks, bridgeAppConfig) ??
+    activeNetwork
+  const { data: networkFee } = useNetworkFee(network)
   const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
-    NetworkTokenUnit.fromNetwork(activeNetwork)
+    NetworkTokenUnit.fromNetwork(network)
   )
 
   useEffect(() => {

@@ -5,9 +5,10 @@ import { selectBridgeAppConfig } from 'store/bridge'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import BridgeService from 'services/bridge/BridgeService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveAccount } from 'store/account/slice'
 
 type TransferParams = {
-  amount: string
+  amount: number
   feeRate: number
 }
 
@@ -20,7 +21,7 @@ export function useTransferAssetBTC(): {
   const config = useSelector(selectBridgeAppConfig)
   const { currentBlockchain } = useBridgeSDK()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-
+  const activeAccount = useSelector(selectActiveAccount)
   const { request } = useInAppRequest()
 
   const transfer = useCallback(
@@ -33,7 +34,12 @@ export function useTransferAssetBTC(): {
         return Promise.reject('Wallet not ready')
       }
 
+      if (!activeAccount) {
+        return Promise.reject('No active account')
+      }
+
       return BridgeService.transferBTC({
+        fromAccount: activeAccount.addressBTC,
         amount,
         feeRate,
         config,
@@ -41,7 +47,7 @@ export function useTransferAssetBTC(): {
         request
       })
     },
-    [currentBlockchain, config, isDeveloperMode, request]
+    [currentBlockchain, config, activeAccount, isDeveloperMode, request]
   )
 
   return {
