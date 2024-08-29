@@ -252,7 +252,7 @@ __metadata:
     "@walletconnect/types": 2.11.0
     "@walletconnect/utils": 2.11.0
     "@walletconnect/web3wallet": 1.10.0
-    "@welldone-software/why-did-you-render": 7.0.1
+    "@welldone-software/why-did-you-render": 8.0.3
     "@zodios/core": 10.9.6
     assert: 1.1.1
     asyncstorage-down: 4.2.0
@@ -9363,14 +9363,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@welldone-software/why-did-you-render@npm:7.0.1":
-  version: 7.0.1
-  resolution: "@welldone-software/why-did-you-render@npm:7.0.1"
+"@welldone-software/why-did-you-render@npm:8.0.3":
+  version: 8.0.3
+  resolution: "@welldone-software/why-did-you-render@npm:8.0.3"
   dependencies:
     lodash: ^4
   peerDependencies:
-    react: ^16 || ^17 || ^18
-  checksum: 0bfc59f1f8613e7dc5fbf189305e88b01c50ee278df2c9b69082ed6abcf8d71758eb468d027235916c6126934a755d6547e9704883007236544763fffad6f48c
+    react: ^18
+  checksum: 89840392f56877f3f5bf98b04037486b9d76467edb59110085076e4409c46a51485ca3c83d81c5b620fc4a535b4c5abe6568279a86872098bb2ae4f2b427123b
   languageName: node
   linkType: hard
 
