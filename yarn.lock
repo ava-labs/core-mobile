@@ -239,7 +239,7 @@ __metadata:
     "@types/bn.js": 5.1.0
     "@types/d3": 7.4.0
     "@types/jest": 29.5.6
-    "@types/lodash.debounce": 4.0.6
+    "@types/lodash.debounce": 4.0.9
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.6
     "@types/numeral": 2.0.2
@@ -8508,12 +8508,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.debounce@npm:4.0.6":
-  version: 4.0.6
-  resolution: "@types/lodash.debounce@npm:4.0.6"
+"@types/lodash.debounce@npm:4.0.9":
+  version: 4.0.9
+  resolution: "@types/lodash.debounce@npm:4.0.9"
   dependencies:
     "@types/lodash": "*"
-  checksum: 54b181c65009d2523ad13a608e1db22950467573bf6e10adaccdf46b5c2c68e7d109ff352e7e95c0035a6dd30eafd06f59356c893373098c4fb60db368158595
+  checksum: 8183a152e01928e3b97ca773f6ae6038b8695e76493ba8bf6b743ec143948a62294fbc9d49fa4a78b52265b3ba4892ef57534e0c13d04aa0f111671b5a944feb
   languageName: node
   linkType: hard
 
