@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0B1C89B127E4D7EF00C19912 /* Inter-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B1C89B027E4D7EF00C19912 /* Inter-ExtraBold.ttf */; };
-		0B66CE2B2C91C7D70059E353 /* core_receive.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0B66CE2A2C91C7D70059E353 /* core_receive.wav */; };
-		0B66CE2C2C91C7D70059E353 /* core_receive.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0B66CE2A2C91C7D70059E353 /* core_receive.wav */; };
 		0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */; };
 		0B73DE0B2C80D72900DED1DF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0B73DE0A2C80D72900DED1DF /* GoogleService-Info.plist */; };
 		0B73DE0C2C80D72900DED1DF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0B73DE0A2C80D72900DED1DF /* GoogleService-Info.plist */; };
@@ -41,7 +39,6 @@
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AvaxWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AvaxWalletTests.m; sourceTree = "<group>"; };
 		0B1C89B027E4D7EF00C19912 /* Inter-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-ExtraBold.ttf"; path = "../app/assets/fonts/Inter-ExtraBold.ttf"; sourceTree = "<group>"; };
-		0B66CE2A2C91C7D70059E353 /* core_receive.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = core_receive.wav; sourceTree = "<group>"; };
 		0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-SemiBold.ttf"; sourceTree = "<group>"; };
 		0B73DE0A2C80D72900DED1DF /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AvaxWallet-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -146,7 +143,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				0B66CE2A2C91C7D70059E353 /* core_receive.wav */,
 				0B73DE0A2C80D72900DED1DF /* GoogleService-Info.plist */,
 				501C50822C35C63800DAFF77 /* core_send.wav */,
 				13B07FAE1A68108700A75B9A /* AvaxWallet */,
@@ -282,7 +278,6 @@
 				0BAAA735269F480900722C85 /* Inter-Bold.ttf in Resources */,
 				0BAAA734269F480900722C85 /* Inter-Regular.ttf in Resources */,
 				501C50832C35C63800DAFF77 /* core_send.wav in Resources */,
-				0B66CE2B2C91C7D70059E353 /* core_receive.wav in Resources */,
 				81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */,
 				0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
@@ -300,7 +295,6 @@
 				5084807F2C3C3E78008762B2 /* core_send.wav in Resources */,
 				8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */,
 				8E858A5C28AFD47300236EF2 /* Inter-Regular.ttf in Resources */,
-				0B66CE2C2C91C7D70059E353 /* core_receive.wav in Resources */,
 				81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */,
 				8E858A5D28AFD47300236EF2 /* Inter-SemiBold.ttf in Resources */,
 				8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */,
