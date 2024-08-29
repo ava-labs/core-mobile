@@ -218,7 +218,7 @@
     "@types/react-test-renderer": "18.0.7",
     "@types/semver": "7.5.4",
     "@types/uuid": "8.3.4",
-    "@welldone-software/why-did-you-render": "7.0.1",
+    "@welldone-software/why-did-you-render": "8.0.3",
     "babel-jest": "29.7.0",
     "babel-loader": "9.1.0",
     "babel-plugin-inline-dotenv": "1.7.0",
