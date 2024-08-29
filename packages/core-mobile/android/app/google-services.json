@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1023766203719",
+    "project_id": "core-wallet-401208",
+    "storage_bucket": "core-wallet-401208.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023766203719:android:93bcf21f18e3fe46479062",
+        "android_client_info": {
+          "package_name": "com.avaxwallet.internal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023766203719-o6q337dkc3brnumrkmsjuq8vvvd06p9s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASLt4OJUBB6SQ8CgJeMWLw2oIT4DKK4LY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1023766203719-o6q337dkc3brnumrkmsjuq8vvvd06p9s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1023766203719-ele18nbck20nkq79trj6gm808igl8q2j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.avalabs.corewallet"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

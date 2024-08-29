@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1023766203719-9n9n0kchvcu3blh66ptdg81ivt9s5s78.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyA2u6_toKqO7x85JlxxYAK5OFz8au23n7U</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1023766203719</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.avalabs.avaxwallet.internal</string>
+	<key>PROJECT_ID</key>
+	<string>core-wallet-401208</string>
+	<key>STORAGE_BUCKET</key>
+	<string>core-wallet-401208.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1023766203719:ios:14ee0239fca19ca8479062</string>
+</dict>
+</plist>
