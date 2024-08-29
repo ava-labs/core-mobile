@@ -51,8 +51,6 @@ export async function performSwap({
   assert(activeNetwork, 'Network Init Error: Wrong network')
   assert(!activeNetwork.isTestnet, 'Network Init Error: Wrong network')
 
-  const spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
-
   const sourceTokenAddress = isSrcTokenNative ? ETHER_ADDRESS : srcTokenAddress
   const destinationTokenAddress = isDestTokenNative
     ? ETHER_ADDRESS
@@ -78,6 +76,13 @@ export async function performSwap({
 
   // no need to approve native token
   if (!isSrcTokenNative) {
+    const [spenderAddress, spenderAddressError] = await resolve<string>(
+      SwapService.getParaswapSpender(activeNetwork) ?? Promise.resolve(null)
+    )
+    if (spenderAddressError || spenderAddress === null) {
+      throw new Error(`Spender Address Error: ${spenderAddressError}`)
+    }
+
     const contract = new Contract(sourceTokenAddress, ERC20.abi, provider)
 
     const [allowance, allowanceError] = await resolve<bigint>(

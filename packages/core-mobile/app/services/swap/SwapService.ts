@@ -15,7 +15,6 @@ import {
 } from '@paraswap/sdk'
 import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
-import Logger from 'utils/Logger'
 
 export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 
@@ -123,7 +122,7 @@ class SwapService {
   async getParaswapSpender(
     network: Network,
     sentryTrx?: SentryTransaction
-  ): Promise<Address | undefined> {
+  ): Promise<Address> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_paraswap_spender')
       .executeAsync(async () => {
@@ -133,19 +132,14 @@ class SwapService {
         if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
           throw new Error(`${network.chainName} is not supported by Paraswap`)
         }
-        try {
-          const fetcher = constructFetchFetcher(fetch)
-          const { getSpender } = constructGetSpender({
-            apiURL: this.getParaSwapSDK(network.chainId).apiURL,
-            chainId: ChainId.AVALANCHE_MAINNET_ID,
-            version: ParaSwapVersion.V6,
-            fetcher
-          })
-          return getSpender()
-        } catch (error) {
-          Logger.error('Failed to get Paraswap spender', error)
-          return undefined
-        }
+        const fetcher = constructFetchFetcher(fetch)
+        const { getSpender } = constructGetSpender({
+          apiURL: this.getParaSwapSDK(network.chainId).apiURL,
+          chainId: ChainId.AVALANCHE_MAINNET_ID,
+          version: ParaSwapVersion.V6,
+          fetcher
+        })
+        return getSpender()
       })
   }
 
