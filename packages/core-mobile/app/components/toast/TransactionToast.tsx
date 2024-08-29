@@ -161,9 +161,8 @@ const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
     backgroundColor: theme.neutral850,
     borderRadius: 8,
     justifyContent: 'center',
-    width: WINDOW_WIDTH * 0.89,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    width: WINDOW_WIDTH * 0.86,
+    padding: 16,
     height: getToastHeight(type, txHash),
     minHeight: 60
   } as StyleProp<ViewStyle>
