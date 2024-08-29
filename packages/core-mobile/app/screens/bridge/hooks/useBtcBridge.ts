@@ -154,7 +154,7 @@ export function useBtcBridge({
     const symbol = currentAsset || ''
 
     const transactionHash = await transferBTC({
-      amount: amountInSatoshis.toString(),
+      amount: amountInSatoshis,
       feeRate
     })
 
