@@ -76,6 +76,7 @@ import TestnetBanner from 'components/TestnetBanner'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NFTMetadataProvider } from 'contexts/NFTItemsContext'
 import { BridgeProvider } from 'contexts/BridgeContext'
+import { ChannelId } from 'services/notifications/channels'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
@@ -179,6 +180,11 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
   [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
   [AppNavigation.Modal.AlertScreen]: AlertScreenParams
+  [AppNavigation.Modal.EnableNotificationsPrompt]: {
+    notificationChannel: ChannelId
+    title: string
+    message: string
+  }
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
