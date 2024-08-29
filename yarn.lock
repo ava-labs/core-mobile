@@ -314,7 +314,6 @@ __metadata:
     react-native-config: 1.4.5
     react-native-device-info: 10.0.2
     react-native-dialog: 8.2.0
-    react-native-document-picker: 5.3.0
     react-native-fast-image: 8.6.3
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.18.1
@@ -21319,19 +21318,6 @@ __metadata:
   peerDependencies:
     react-native: ">=0.63.0"
   checksum: f54e795796eee8accce727bdf724d60da4b3bfce6276a526bc6609c0d725874b2537f4c755b0ab530708f6b0a8690af61a283606b3e34eb6ca40c3398af9af01
-  languageName: node
-  linkType: hard
-
-"react-native-document-picker@npm:5.3.0":
-  version: 5.3.0
-  resolution: "react-native-document-picker@npm:5.3.0"
-  dependencies:
-    invariant: ^2.2.4
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-    react-native-windows: "*"
-  checksum: ba558d2d781f6e83b1c488f603246a35c0039402ff041f7c96315fd40cca16fa8e3a28bad1e5a5e54e0140ed20ab582cb6ca7017d1671ea252d9929aa4dd1b15
   languageName: node
   linkType: hard
 
