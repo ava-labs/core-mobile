@@ -1,5 +1,6 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { onAppUnlocked } from 'store/app'
+import { handleMaybePromptBalanceNotification } from 'store/notifications/listeners/handleMaybePromptBalanceNotification'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
@@ -15,10 +16,14 @@ import { scheduleNotificationsForActiveStakesPeriodically } from './scheduleNoti
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
-) => {
+): void => {
   startListening({
     actionCreator: maybePromptEarnNotification,
     effect: handleMaybePromptEarnNotification
+  })
+  startListening({
+    actionCreator: maybePromptBalanceNotification,
+    effect: handleMaybePromptBalanceNotification
   })
 
   startListening({
