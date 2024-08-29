@@ -102,7 +102,8 @@ export const SendTokenContextProvider = ({
 
   useEffect(() => {
     const fetchBtcBalance = async (): Promise<void> => {
-      if (!activeAccount) return
+      if (!activeAccount || activeNetwork.vmName !== NetworkVMType.BITCOIN)
+        return
 
       const balance = await SendServiceBTC.getBalance({
         isMainnet: !activeNetwork.isTestnet,
@@ -112,8 +113,15 @@ export const SendTokenContextProvider = ({
       setUtxos(balance.utxos)
     }
 
-    if (activeNetwork.vmName === NetworkVMType.BITCOIN) {
-      fetchBtcBalance().catch(Logger.error)
+    fetchBtcBalance()
+
+    const intervalId = setInterval(
+      () => fetchBtcBalance().catch(Logger.error),
+      30000
+    )
+
+    return () => {
+      clearInterval(intervalId)
     }
   }, [
     activeAccount,
@@ -241,14 +249,14 @@ export const SendTokenContextProvider = ({
       })
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
-        state.maxAmount &&
-          setMaxAmount({
-            bn: state.maxAmount ?? 0n,
-            amount:
-              state.maxAmount && sendToken
-                ? bigIntToString(state.maxAmount, sendToken.decimals)
-                : ''
-          })
+
+        setMaxAmount({
+          bn: state.maxAmount ?? 0n,
+          amount:
+            state.maxAmount && sendToken
+              ? bigIntToString(state.maxAmount, sendToken.decimals)
+              : ''
+        })
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
