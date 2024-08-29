@@ -242,7 +242,7 @@ __metadata:
     "@types/lodash.debounce": 4.0.6
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.6
-    "@types/numeral": 2.0.2
+    "@types/numeral": 2.0.5
     "@types/react": 18.2.6
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.0.7
@@ -8651,10 +8651,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/numeral@npm:2.0.2":
-  version: 2.0.2
-  resolution: "@types/numeral@npm:2.0.2"
-  checksum: d8b778ef5d1b20cb5919fb2cf41108b324ccfaeccb0238caaf54bd9d4bffbbd57d7b860844f05831fb356a5dc0115b477891531325180a670076036ee1b4a8ca
+"@types/numeral@npm:2.0.5":
+  version: 2.0.5
+  resolution: "@types/numeral@npm:2.0.5"
+  checksum: 0ec9d195248da1865bae5f1939bf93d2464fd2ddc5171444266c66092efb7335031852005842ec4449e1ae5742cd9717cc3af117d6f8cd6e51f083bc08f35239
   languageName: node
   linkType: hard
 
