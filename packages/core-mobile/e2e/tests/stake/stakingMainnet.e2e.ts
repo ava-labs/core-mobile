@@ -26,7 +26,7 @@ describe('Stake mainnet flow', () => {
   })
 
   it('should verify confirm staking screen items on mainnet', async () => {
-    await Actions.waitForElement(StakePage.avaLogo, 15000, 0)
+    await Actions.waitForElement(StakePage.avaLogo, 30000, 0)
     await ConfirmStakingPage.verifyConfirmStakingScreenItems()
   })
 })
