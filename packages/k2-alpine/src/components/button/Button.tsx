@@ -1,6 +1,6 @@
 import React, { type FC, type PropsWithChildren } from 'react'
-import { Text, Pressable, useDripsyTheme } from 'dripsy'
-import type { K2AlpineTheme } from '../../theme/theme'
+import { useTheme, type K2AlpineTheme } from '../../theme/theme'
+import { Pressable, Text } from '../Primitives'
 
 export type Props = {
   onPress: () => void
@@ -40,7 +40,7 @@ export const Button: FC<PropsWithChildren<Props>> = ({
   disabled,
   children
 }) => {
-  const { theme } = useDripsyTheme()
+  const { theme } = useTheme()
   const colors = getTypeColors(type, theme)
 
   return (
