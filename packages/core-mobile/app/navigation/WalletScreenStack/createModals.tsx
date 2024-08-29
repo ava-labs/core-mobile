@@ -32,6 +32,7 @@ import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
 import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
 import EditSpendLimit from 'components/EditSpendLimit'
 import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScreen'
+import EnableNotificationsModal from 'screens/notifications/EnableNotificationsModal'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -86,6 +87,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AlertScreen}
         component={AlertScreen}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.EnableNotificationsPrompt}
+        component={EnableNotificationsModal}
       />
       <WalletScreenS.Group
         screenOptions={{

@@ -13,7 +13,7 @@ import {
 export const handleMaybePromptEarnNotification = async (
   action: ReturnType<typeof maybePromptEarnNotification>,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const blockedNotifications =
     await NotificationsService.getBlockedNotifications()
   const state = listenerApi.getState()
@@ -29,7 +29,17 @@ export const handleMaybePromptEarnNotification = async (
       blockedNotifications.has(ChannelId.STAKING_COMPLETE))
   ) {
     // @ts-ignore
-    Navigation.navigate(AppNavigation.Earn.EarnNotificationsPrompt)
+    Navigation.navigate({
+      // @ts-ignore
+      name: AppNavigation.Modal.EnableNotificationsPrompt,
+      params: {
+        // @ts-ignore
+        notificationChannel: ChannelId.STAKING_COMPLETE,
+        title: 'Turn on Notifications?',
+        message:
+          'You will be notified when staking is complete. You can change your preference in settings.'
+      }
+    })
     listenerApi.dispatch(setHasPromptedAfterFirstDelegation(true))
   }
 }
