@@ -80,10 +80,7 @@ import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
   ApprovalPopupParams,
-  AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
-  AvalancheSignTransactionV2Params,
-  BitcoinSendTransactionParams,
   BridgeAssetV2Params,
   BridgeTransactionStatusParams,
   BuyCarefullyParams,
@@ -92,12 +89,12 @@ import {
   EditSpendLimitParams,
   AlertScreenParams,
   QRCodeParams,
-  SelectAccountV2Params,
   SessionProposalV2Params,
   SwitchEthereumChainV2Params,
   TokenSelectParams,
   UpdateContactV2Params,
-  WalletScreenProps
+  WalletScreenProps,
+  TransactionDataParams
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -160,20 +157,16 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
   [AppNavigation.Modal.EditSpendLimit]: EditSpendLimitParams
+  [AppNavigation.Modal.TransactionData]: TransactionDataParams
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   // rpc prompts for wallet connect v2
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
   [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
   [AppNavigation.Modal.UpdateContactV2]: UpdateContactV2Params
-  [AppNavigation.Modal.SelectAccountV2]: SelectAccountV2Params
   [AppNavigation.Modal.AddEthereumChainV2]: AddEthereumChainV2Params
   [AppNavigation.Modal.SwitchEthereumChainV2]: SwitchEthereumChainV2Params
   [AppNavigation.Modal.BridgeAssetV2]: BridgeAssetV2Params
   [AppNavigation.Modal.ApprovalPopup]: ApprovalPopupParams
-  [AppNavigation.Modal
-    .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
-  [AppNavigation.Modal
-    .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
   [AppNavigation.Modal
     .AvalancheSetDeveloperMode]: AvalancheSetDeveloperModeParams
   [AppNavigation.Modal.StakeDisclaimer]: undefined
@@ -183,7 +176,6 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.BrowserTabCloseAll]: { onConfirm: () => void }
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
   [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
-  [AppNavigation.Modal.BitcoinSendTransaction]: BitcoinSendTransactionParams
   [AppNavigation.Modal.AlertScreen]: AlertScreenParams
 }
 

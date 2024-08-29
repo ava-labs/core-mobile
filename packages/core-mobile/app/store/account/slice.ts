@@ -60,13 +60,19 @@ export const selectAccounts = (state: RootState): AccountCollection =>
   state.account.accounts
 
 export const selectAccountByAddress =
-  (address?: string) =>
+  (address: string) =>
   (state: RootState): Account | undefined => {
     const accounts: Account[] = Object.values(state.account.accounts)
+    const givenAddress = address.toLowerCase()
 
-    return accounts.find(
-      acc => acc.addressC.toLowerCase() === address?.toLowerCase()
-    )
+    return accounts.find(acc => {
+      return (
+        acc.addressC.toLowerCase() === givenAddress ||
+        acc.addressBTC.toLowerCase() === givenAddress ||
+        acc.addressAVM.toLowerCase() === givenAddress ||
+        acc.addressPVM.toLowerCase() === givenAddress
+      )
+    })
   }
 
 export const selectAccountByIndex =

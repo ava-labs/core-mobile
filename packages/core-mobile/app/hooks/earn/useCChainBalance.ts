@@ -10,6 +10,7 @@ import { TokenWithBalanceEVM } from '@avalabs/vm-module-types'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import Logger from 'utils/Logger'
 import useCChainNetwork from './useCChainNetwork'
 
 export const useCChainBalance = (): UseQueryResult<
@@ -44,7 +45,12 @@ export const useCChainBalance = (): UseQueryResult<
         network: mapToVmNetwork(network),
         storage: coingeckoInMemoryCache
       })
-      return balancesResponse[addressC]?.[network.networkToken.symbol]
+      const cChainBalance = balancesResponse[addressC]
+      if (!cChainBalance || 'error' in cChainBalance) {
+        Logger.error('Failed to fetch c-chain balance', cChainBalance?.error)
+        return undefined
+      }
+      return cChainBalance[network.networkToken.symbol]
     }
   })
 }

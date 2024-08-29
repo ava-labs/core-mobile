@@ -1,12 +1,16 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
-import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
+import {
+  NetworkVMType,
+  Network,
+  BlockchainNamespace
+} from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
-import { BitcoinCaipId } from 'utils/caip2Ids'
+import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -21,19 +25,25 @@ class ModuleManager {
 
   get avalancheModule(): AvalancheModule {
     return this.#modules?.find(module =>
-      module.getManifest()?.network.namespaces.includes('avax')
+      module
+        .getManifest()
+        ?.network.namespaces.includes(BlockchainNamespace.AVAX)
     ) as AvalancheModule
   }
 
   get bitcoinModule(): BitcoinModule {
     return this.#modules?.find(module =>
-      module.getManifest()?.network.namespaces.includes('bip122')
+      module
+        .getManifest()
+        ?.network.namespaces.includes(BlockchainNamespace.BIP122)
     ) as BitcoinModule
   }
 
   get evmModule(): EvmModule {
     return this.#modules?.find(module =>
-      module.getManifest()?.network.namespaces.includes('eip155')
+      module
+        .getManifest()
+        ?.network.namespaces.includes(BlockchainNamespace.EIP155)
     ) as EvmModule
   }
 
@@ -55,13 +65,12 @@ class ModuleManager {
 
     const environment = isDev ? Environment.DEV : Environment.PRODUCTION
 
+    const moduleInitParams = { environment, approvalController }
+
     this.modules = [
-      new EvmModule({
-        environment,
-        approvalController
-      }),
-      new BitcoinModule({ environment }),
-      new AvalancheModule({ environment, approvalController })
+      new EvmModule(moduleInitParams),
+      new BitcoinModule(moduleInitParams),
+      new AvalancheModule(moduleInitParams)
     ]
   }
 
@@ -103,6 +112,7 @@ class ModuleManager {
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
     const module = await this.getModule(chainId)
+
     if (module === undefined) {
       throw new VmModuleErrors({
         name: ModuleErrors.UNSUPPORTED_CHAIN_ID,
@@ -133,14 +143,11 @@ class ModuleManager {
   convertChainIdToCaip2 = (network: Network): string => {
     switch (network.vmName) {
       case NetworkVMType.BITCOIN: {
-        const bitcoinBlockchainId = this.getBitcoinBlockchainId(
-          network.vmName,
-          network.isTestnet
-        )
-        if (bitcoinBlockchainId === undefined) {
-          throw new Error('bitcoinBlockchainId is undefined')
+        if (network.vmName !== NetworkVMType.BITCOIN) {
+          throw new Error('Unsupported network')
         }
-        return bitcoinBlockchainId
+
+        return getBitcoinCaip2ChainId(!network.isTestnet)
       }
       case NetworkVMType.PVM:
       case NetworkVMType.AVM: {
@@ -154,7 +161,7 @@ class ModuleManager {
       }
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
-        return `eip155:${network.chainId}`
+        return getEvmCaip2ChainId(network.chainId)
       default:
         throw new Error('Unsupported network')
     }
@@ -170,21 +177,12 @@ class ModuleManager {
         ? BlockchainId._2JVSBOINJ9C2J33VNTVZ_YT_VJNZD_N2NKIWW_KJCUM_HUWEB5DB_BRM
         : BlockchainId._2O_YMBNV4E_NHYQK2FJJ_V5N_VQLDBTM_NJZQ5S3QS3LO6FTN_C6FBY_M
     }
-    return BlockchainId._11111111111111111111111111111111LPO_YY
-  }
-
-  // todo: remove this function once we have blockchainId in Network
-  private getBitcoinBlockchainId = (
-    vmName: NetworkVMType,
-    isTestnet?: boolean
-  ): string | undefined => {
-    if (vmName !== NetworkVMType.BITCOIN) {
-      throw new Error('Unsupported network')
-    }
+    if (vmName === NetworkVMType.PVM)
+      return BlockchainId._11111111111111111111111111111111LPO_YY
 
     return isTestnet
-      ? BitcoinCaipId[4503599627370474]
-      : BitcoinCaipId[4503599627370475]
+      ? BlockchainId.Y_H8D7TH_NJKXMTKUV2JG_BA4P1RN3QPR4P_PR7QYNFCDO_S6K6HWP // c chain for testnet
+      : BlockchainId._2Q9E4R6MU3U68N_U1F_YJGB_R6JVWR_RX36COHP_AX5UQXSE55X1Q5 // c chain
   }
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {

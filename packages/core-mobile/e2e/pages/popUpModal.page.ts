@@ -106,8 +106,6 @@ class PopUpModalPage {
   async verifySignMessageModal() {
     await actions.waitForElement(this.signMessage, 8000)
     await asserts.isVisible(this.network)
-    await asserts.isVisible(this.account)
-    await asserts.isVisible(this.messageTitle)
     await asserts.isVisible(this.approveBtn)
     await asserts.isVisible(this.rejectBtn)
   }

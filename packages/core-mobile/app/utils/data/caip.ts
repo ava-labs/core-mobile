@@ -1,8 +1,9 @@
 import { caip2 } from '@avalabs/bridge-unified'
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 
 export const chainIdToCaip = (
   chainId: number,
-  namespace = 'eip155'
+  namespace = BlockchainNamespace.EIP155
 ): string => {
   return caip2.toString({ namespace, reference: chainId.toString() })
 }

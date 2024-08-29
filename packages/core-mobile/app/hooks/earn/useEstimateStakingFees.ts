@@ -7,11 +7,11 @@ import {
 } from 'services/earn/calculateCrossChainFees'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
+import NetworkService from 'services/network/NetworkService'
 
 const importFee = calculatePChainFee()
 
@@ -42,7 +42,7 @@ export const useEstimateStakingFees = (
   )
 
   useEffect(() => {
-    const calculateEstimatedStakingFee = async () => {
+    const calculateEstimatedStakingFee = async (): Promise<void> => {
       if (amountForCrossChainTransfer === undefined) {
         setEstimatedStakingFee(undefined)
         return

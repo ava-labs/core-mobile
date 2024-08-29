@@ -18,7 +18,7 @@ describe('Send NFT', () => {
 
   let account = 'first'
 
-  it('should send NFT', async () => {
+  it('should send NFT ', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await CollectiblesPage.tapListSvg()
     try {
@@ -41,10 +41,10 @@ describe('Send NFT', () => {
     // sender activity tab:
     await PortfolioPage.tapAssetsTab()
     await PortfolioPage.goToActivityTab()
-    await activityTabPage.verifyNewRow('Send', '-1')
+    await activityTabPage.verifyExistingRow('Send', '-1 ')
     // receiver activity tab:
     await AccountManagePage.switchToReceivedAccount(account)
     await activityTabPage.refreshActivityPage()
-    await activityTabPage.verifyNewRow('Contract Call', '+1')
+    await activityTabPage.verifyExistingRow('Contract Call', '+1 ')
   })
 })

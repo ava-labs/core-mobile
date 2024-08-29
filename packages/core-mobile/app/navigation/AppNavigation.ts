@@ -158,7 +158,7 @@ enum SendFeedbackScreens {
   SendFeedback = 'SendFeedbackScreens.SendFeedback'
 }
 
-enum Tabs {
+export enum Tabs {
   Portfolio = 'Portfolio',
   Activity = 'Activity',
   Swap = 'Swap',
@@ -185,16 +185,13 @@ enum ModalScreens {
   SignMessageV2 = 'ModalScreens.SignMessageV2',
   CreateRemoveContactV2 = 'ModalScreens.CreateRemoveContactV2',
   UpdateContactV2 = 'ModalScreens.UpdateContactV2',
-  SelectAccountV2 = 'ModalScreens.SelectAccountV2',
   AddEthereumChainV2 = 'ModalScreens.AddEthereumChainV2',
   SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
   ApprovalPopup = 'ModalScreens.ApprovalPopup',
   EditSpendLimit = 'ModalScreens.EditSpendLimit',
-  AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
-  AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
-  BitcoinSendTransaction = 'ModalScreens.BitcoinSendTransaction',
+  TransactionData = 'ModalScreens.TransactionData',
   AvalancheSetDeveloperMode = 'ModalScreens.AvalancheSetDeveloperMode',
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
   CoreIntro = 'ModalScreens.CoreIntro',

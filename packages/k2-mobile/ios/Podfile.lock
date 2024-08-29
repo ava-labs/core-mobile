@@ -1029,9 +1029,9 @@ PODS:
     - React-perflogger (= 0.73.7)
   - RNCAsyncStorage (1.18.1):
     - React-Core
-  - RNDateTimePicker (7.1.0):
+  - RNDateTimePicker (8.2.0):
     - React-Core
-  - RNSVG (15.1.0):
+  - RNSVG (15.6.0):
     - React-Core
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
@@ -1262,11 +1262,11 @@ SPEC CHECKSUMS:
   React-utils: d07d009101c7dabff68b710da5c4a47b7a850d98
   ReactCommon: 1a139d94a3ab30b7ee77b0654bd24a7ecfc67318
   RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
-  RNDateTimePicker: 7ecd54a97fc3749f38c3c89a171f6cbd52f3c142
-  RNSVG: 0eea30725f92fc53f86d2a427ee75f28bdfb8692
+  RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
+  RNSVG: 7268638e737364540ff8f010afb69998f3855ecb
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 47d399a73c0c0caa9ff824e5c657eae31215bfee
 
-PODFILE CHECKSUM: ba3262bca06083177f3f71f11f708c15213f9963
+PODFILE CHECKSUM: 1bb4458391fb3dbcc2107dac1dc694b34031a330
 
 COCOAPODS: 1.12.1

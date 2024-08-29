@@ -1,3 +1,5 @@
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
+
 export type InjectedJavascripts = {
   injectCoreAsRecent: string
   /**
@@ -60,7 +62,7 @@ export function useInjectedJavascript(): InjectedJavascripts {
       injected: [
         {
           injected_id: 'isAvalanche',
-          namespace: 'eip155'
+          namespace: ${BlockchainNamespace.EIP155},
         }
       ],
       rdns: null,

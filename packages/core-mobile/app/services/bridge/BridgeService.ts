@@ -30,11 +30,13 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from 'store/rpc/types'
 import { bnToBig, noop, stringToBN } from '@avalabs/core-utils-sdk'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
+import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 
 type TransferBTCParams = {
   amount: string
   feeRate: number
   config: AppConfig
+  isMainnet: boolean
   onStatusChange?: (status: WrapStatus) => void
   onTxHashChange?: (txHash: string) => void
   request: Request
@@ -140,6 +142,7 @@ export class BridgeService {
     amount,
     config,
     feeRate,
+    isMainnet,
     onStatusChange,
     onTxHashChange,
     request
@@ -148,7 +151,8 @@ export class BridgeService {
       async txData => {
         return request({
           method: RpcMethod.BITCOIN_SEND_TRANSACTION,
-          params: txData
+          params: txData,
+          chainId: getBitcoinCaip2ChainId(isMainnet)
         })
       }
 
@@ -199,7 +203,7 @@ export class BridgeService {
         return request({
           method: RpcMethod.ETH_SEND_TRANSACTION,
           params: [txParams],
-          chainId: blockchainNetwork.chainId.toString()
+          chainId: getEvmCaip2ChainId(blockchainNetwork.chainId)
         })
       }
 

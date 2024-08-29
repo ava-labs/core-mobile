@@ -71,7 +71,6 @@ import SwitchSVG from 'components/svg/SwitchSVG'
 import TagSVG from 'components/svg/TagSVG'
 import TrashSVG from 'components/svg/TrashSVG'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
-import WalletSVG from 'components/svg/WalletSVG'
 import WatchListSVG from 'components/svg/WatchlistSVG'
 import FingerprintSVG from 'components/svg/FingerprintSVG'
 import FaceIdSVG from 'components/svg/FaceIdSVG'
@@ -221,7 +220,6 @@ export const SVGList = (): JSX.Element => {
         children={<WalletConnectSVG color={'white'} />}
         name="Wallet Connect"
       />
-      <IconContainer children={<WalletSVG />} name="Wallet" />
       <IconContainer
         children={<WatchListSVG selected={true} />}
         name="Watch List"

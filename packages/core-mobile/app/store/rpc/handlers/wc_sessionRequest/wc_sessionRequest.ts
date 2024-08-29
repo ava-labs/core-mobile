@@ -2,12 +2,13 @@ import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { normalizeNamespaces } from '@walletconnect/utils'
+import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import {
   selectActiveNetwork,
   selectAllNetworks,
   selectFavoriteNetworks
-} from 'store/network'
+} from 'store/network/slice'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
@@ -15,7 +16,6 @@ import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
-import { EVM_IDENTIFIER } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,
@@ -33,9 +33,7 @@ import {
   parseApproveData,
   scanAndSessionProposal
 } from './utils'
-import { NONEVM_OPTIONAL_NAMESPACES } from './namespaces'
-
-const DEFAULT_EVENTS = ['chainChanged', 'accountsChanged']
+import { NON_EVM_OPTIONAL_NAMESPACES, COMMON_EVENTS } from './namespaces'
 
 const supportedMethods = [
   RpcMethod.ETH_SEND_TRANSACTION,
@@ -53,7 +51,7 @@ const supportedMethods = [
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   methods = [RpcMethod.WC_SESSION_REQUEST]
 
-  private getApprovedMethods = (dappUrl: string): RpcMethod[] => {
+  private getApprovedEvmMethods = (dappUrl: string): RpcMethod[] => {
     const isCoreApp = isCoreDomain(dappUrl)
 
     // approve all methods that we support here to allow dApps
@@ -65,12 +63,13 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   }
 
   private getApprovedEvents = (
-    requiredNamespaces: ProposalTypes.RequiredNamespaces
+    requiredNamespaces: ProposalTypes.RequiredNamespaces,
+    namespace: string
   ): string[] => {
     return [
       ...new Set([
-        ...DEFAULT_EVENTS,
-        ...(requiredNamespaces[EVM_IDENTIFIER]?.events ?? [])
+        ...COMMON_EVENTS,
+        ...(requiredNamespaces[namespace]?.events ?? [])
       ])
     ]
   }
@@ -127,14 +126,16 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     }
 
     try {
+      const chainId = chainIdtoSwitch.toString()
       const request = createInAppRequest(listenerApi.dispatch)
       await request({
         method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
         params: [
           {
-            chainId: chainIdtoSwitch.toString()
+            chainId
           }
-        ]
+        ],
+        chainId: `${BlockchainNamespace.EIP155}:${chainId}`
       })
     } catch (error) {
       throw new Error(`Failed to switch to network ${chainIdtoSwitch}`)
@@ -209,7 +210,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       // it throws an error when we add these non-EVM namespaces in the dapp.
       // This is a temporary fix until core web supports these namespaces
       isCoreApp
-        ? { ...optionalNamespaces, ...NONEVM_OPTIONAL_NAMESPACES }
+        ? { ...optionalNamespaces, ...NON_EVM_OPTIONAL_NAMESPACES }
         : optionalNamespaces
     )
 
@@ -217,7 +218,9 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
 
       const hasCoreMethod =
-        normalizedRequired[EVM_IDENTIFIER]?.methods.some(isCoreMethod) ?? false
+        normalizedRequired[BlockchainNamespace.EIP155]?.methods.some(
+          isCoreMethod
+        ) ?? false
 
       if (hasCoreMethod && !isCoreApp) {
         throw new Error('Requested method is not authorized')
@@ -277,8 +280,6 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
 
     const dappUrl = payload.request.data.params.proposer.metadata.url
 
-    const events = this.getApprovedEvents(requiredNamespaces)
-
     const namespacesToApprove = result.data.namespaces
 
     const selectedAccounts = result.data.selectedAccounts
@@ -293,9 +294,11 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
         )
 
         const methods =
-          namespace === EVM_IDENTIFIER
-            ? this.getApprovedMethods(dappUrl)
+          namespace === BlockchainNamespace.EIP155
+            ? this.getApprovedEvmMethods(dappUrl)
             : namespaceToApprove.methods
+
+        const events = this.getApprovedEvents(requiredNamespaces, namespace)
 
         namespaces[namespace] = {
           chains: namespaceToApprove.chains,
