@@ -10,7 +10,8 @@ const reducerName = 'notifications'
 
 const initialState = {
   notificationSubscriptions: {},
-  hasPromptedAfterFirstDelegation: false
+  hasPromptedAfterFirstDelegation: false,
+  hasPromptedForBalanceChange: false
 } as NotificationsState
 
 const notificationsSlice = createSlice({
@@ -28,6 +29,9 @@ const notificationsSlice = createSlice({
       action: PayloadAction<boolean>
     ) => {
       state.hasPromptedAfterFirstDelegation = action.payload
+    },
+    setHasPromptedForBalanceChange: (state, action: PayloadAction<boolean>) => {
+      state.hasPromptedForBalanceChange = action.payload
     }
   }
 })
@@ -37,17 +41,25 @@ export const selectNotificationSubscription =
   (channelId: ChannelId) => (state: RootState) =>
     state.notifications.notificationSubscriptions[channelId]
 
-export const selectHasPromptedAfterFirstDelegation = (state: RootState) =>
-  state.notifications.hasPromptedAfterFirstDelegation
+export const selectHasPromptedAfterFirstDelegation = (
+  state: RootState
+): boolean => state.notifications.hasPromptedAfterFirstDelegation
+
+export const selectHasPromptedForBalanceChange = (state: RootState): boolean =>
+  state.notifications.hasPromptedForBalanceChange
 
 //actions
 export const {
   setNotificationSubscriptions,
-  setHasPromptedAfterFirstDelegation
+  setHasPromptedAfterFirstDelegation,
+  setHasPromptedForBalanceChange
 } = notificationsSlice.actions
 
 export const maybePromptEarnNotification = createAction(
   `${reducerName}/maybePromptEarnNotification`
+)
+export const maybePromptBalanceNotification = createAction(
+  `${reducerName}/maybePromptBalanceNotification`
 )
 
 export const turnOnNotificationsFor = createAction<{ channelId: ChannelId }>(
