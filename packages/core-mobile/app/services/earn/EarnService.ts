@@ -40,7 +40,6 @@ import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import ModuleManager from 'vmModule/ModuleManager'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -254,8 +253,7 @@ class EarnService {
     })
     Logger.trace('txID', txID)
 
-    const avaxProvider =
-      ModuleManager.avalancheModule.getProvider(avaxXPNetwork)
+    const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
 
     try {
       await retry({

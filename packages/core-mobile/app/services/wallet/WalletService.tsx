@@ -30,7 +30,6 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
-import ModuleManager from 'vmModule/ModuleManager'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -602,7 +601,9 @@ class WalletService {
 
     Logger.info('validating burned amount')
 
-    const avalancheProvider = ModuleManager.avalancheModule.getProvider(network)
+    const avalancheProvider = NetworkService.getAvalancheProviderXP(
+      Boolean(network.isTestnet)
+    )
 
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,

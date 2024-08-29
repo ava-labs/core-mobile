@@ -2,7 +2,6 @@ import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import ModuleManager from 'vmModule/ModuleManager'
 
 const REFETCH_INTERVAL = 10000 // 10 seconds
 
@@ -14,8 +13,7 @@ const REFETCH_INTERVAL = 10000 // 10 seconds
  */
 export const useCChainBaseFee = (): UseQueryResult<bigint, Error> => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const avaxProvider = ModuleManager.avalancheModule.getProvider(avaxXPNetwork)
+  const avaxProvider = NetworkService.getAvalancheProviderXP(isDeveloperMode)
 
   return useQuery({
     // no need to retry failed request as we are already doing interval fetching

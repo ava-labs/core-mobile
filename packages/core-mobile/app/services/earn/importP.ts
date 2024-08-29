@@ -66,7 +66,7 @@ export async function importP({
 
   Logger.trace('txID', txID)
 
-  const avaxProvider = ModuleManager.avalancheModule.getProvider(avaxPNetwork)
+  const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
 
   try {
     await retry({

@@ -1,4 +1,3 @@
-import ModuleManager from 'vmModule/ModuleManager'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
@@ -51,7 +50,7 @@ export async function exportP({
   })
   Logger.trace('txID', txID)
 
-  const avaxProvider = ModuleManager.avalancheModule.getProvider(avaxXPNetwork)
+  const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
 
   try {
     await retry({

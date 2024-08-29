@@ -7,7 +7,6 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Avax } from 'types/Avax'
-import ModuleManager from 'vmModule/ModuleManager'
 
 describe('earn/exportC', () => {
   describe('exportC', () => {
@@ -17,7 +16,7 @@ describe('earn/exportC', () => {
     })
     jest.mock('services/network/NetworkService')
     jest
-      .spyOn(ModuleManager.avalancheModule, 'getProvider')
+      .spyOn(NetworkService, 'getAvalancheProviderXP')
       .mockImplementation(() => {
         return {
           getApiC: () => {
