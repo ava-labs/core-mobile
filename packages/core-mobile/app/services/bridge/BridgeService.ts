@@ -33,7 +33,8 @@ import { transactionRequestToTransactionParams } from 'store/rpc/utils/transacti
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 
 type TransferBTCParams = {
-  amount: string
+  fromAccount: string
+  amount: number
   feeRate: number
   config: AppConfig
   isMainnet: boolean
@@ -139,6 +140,7 @@ export class BridgeService {
   }
 
   async transferBTC({
+    fromAccount,
     amount,
     config,
     feeRate,
@@ -157,6 +159,7 @@ export class BridgeService {
       }
 
     return transferAssetBTC({
+      fromAccount,
       amount,
       feeRate,
       config,
