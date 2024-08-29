@@ -58,6 +58,8 @@
     "@react-native-community/datetimepicker": "7.6.3",
     "@react-native-community/netinfo": "9.3.10",
     "@react-native-community/slider": "4.4.2",
+    "@react-native-firebase/app": "20.4.0",
+    "@react-native-firebase/messaging": "20.4.0",
     "@react-native-google-signin/google-signin": "10.1.0",
     "@react-native-menu/menu": "0.9.1",
     "@react-navigation/bottom-tabs": "6.6.1",
