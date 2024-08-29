@@ -329,7 +329,7 @@ __metadata:
     react-native-os: 1.2.6
     react-native-pager-view: 6.2.3
     react-native-passkey: 2.1.1
-    react-native-performance: 4.0.0
+    react-native-performance: 5.1.2
     react-native-permissions: 3.6.0
     react-native-popable: 0.4.3
     react-native-qrcode-scanner: 1.5.5
@@ -21205,12 +21205,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-performance@npm:4.0.0":
-  version: 4.0.0
-  resolution: "react-native-performance@npm:4.0.0"
+"react-native-performance@npm:5.1.2":
+  version: 5.1.2
+  resolution: "react-native-performance@npm:5.1.2"
   peerDependencies:
     react-native: "*"
-  checksum: 4accaab3a9ea8229d4dc535f8e63562b7b19372c2fc3aef23aaa370ef1fab66e5f80d1b794b760dc14ffe348cbaa3cbf83b3a6a1800cca372f8aec8b82c1075e
+  checksum: e0ea6616ba75a13028271c8c5cd29a9eecb35c806db2b412baa160d6ce428c0ba8e9bc0c762856b4c8bebd92b5aea925532731a4dc19591ad15af575163cccd8
   languageName: node
   linkType: hard
 
