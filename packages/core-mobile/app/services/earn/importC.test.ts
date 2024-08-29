@@ -5,6 +5,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importC } from 'services/earn/importC'
 import { Avax } from 'types/Avax'
+import ModuleManager from 'vmModule/ModuleManager'
 
 describe('earn/importC', () => {
   describe('importC', () => {
@@ -14,7 +15,7 @@ describe('earn/importC', () => {
     })
     jest.mock('services/network/NetworkService')
     jest
-      .spyOn(NetworkService, 'getProviderForNetwork')
+      .spyOn(ModuleManager.avalancheModule, 'getProvider')
       .mockImplementation(() => {
         return {
           getApiC: () => {

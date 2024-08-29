@@ -9,6 +9,7 @@ import { APIError, ETHER_ADDRESS, Transaction } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { buildTx, getParaswapSpender } from './paraswapUtils'
 
 export type PerformSwapParams = {
@@ -91,7 +92,10 @@ export async function performSwap({
     )
 
     if (allowanceError || allowance === null) {
-      throw new Error(`Allowance Error: ${allowanceError}`)
+      throw rpcErrors.internal({
+        message: 'Allowance Error',
+        data: { cause: allowanceError }
+      })
     }
 
     if (allowance < BigInt(sourceAmount)) {
@@ -123,10 +127,13 @@ export async function performSwap({
       const [hash, approveError] = await resolve(signAndSend(txParams))
 
       if (approveError) {
-        throw new Error(`Approve Error: ${approveError}`)
+        throw approveError
       }
 
-      assert(hash, 'Tx hash empty')
+      if (!hash) {
+        throw rpcErrors.internal('Invalid transaction hash')
+      }
+
       approveTxHash = hash
     } else {
       approveTxHash = undefined
@@ -171,7 +178,10 @@ export async function performSwap({
   )
 
   if (!txBuildData || txBuildDataError || 'message' in txBuildData) {
-    throw new Error(`Data Error: ${txBuildDataError}`)
+    throw rpcErrors.internal({
+      message: 'Data Error',
+      data: { cause: txBuildDataError }
+    })
   }
 
   const txParams: [TransactionParams] = [
@@ -188,10 +198,12 @@ export async function performSwap({
   const [swapTxHash, txError] = await resolve(signAndSend(txParams))
 
   if (txError) {
-    throw new Error(`Tx Error: ${txError}`)
+    throw txError
   }
 
-  assert(swapTxHash, 'Tx hash empty')
+  if (!swapTxHash) {
+    throw rpcErrors.internal('Invalid transaction hash')
+  }
 
   return {
     swapTxHash,

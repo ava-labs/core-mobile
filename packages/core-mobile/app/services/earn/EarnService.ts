@@ -14,7 +14,6 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
@@ -41,6 +40,7 @@ import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import ModuleManager from 'vmModule/ModuleManager'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -254,9 +254,8 @@ class EarnService {
     })
     Logger.trace('txID', txID)
 
-    const avaxProvider = NetworkService.getProviderForNetwork(
-      avaxXPNetwork
-    ) as Avalanche.JsonRpcProvider
+    const avaxProvider =
+      ModuleManager.avalancheModule.getProvider(avaxXPNetwork)
 
     try {
       await retry({

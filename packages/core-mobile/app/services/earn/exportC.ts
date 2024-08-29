@@ -1,6 +1,6 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import ModuleManager from 'vmModule/ModuleManager'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { calculatePChainFee } from 'services/earn/calculateCrossChainFees'
@@ -36,9 +36,7 @@ export async function exportC({
     ]
   assertNotUndefined(cChainNetwork)
 
-  const avaxProvider = NetworkService.getProviderForNetwork(
-    avaxXPNetwork
-  ) as Avalanche.JsonRpcProvider
+  const avaxProvider = ModuleManager.avalancheModule.getProvider(avaxXPNetwork)
 
   const baseFee = Avax.fromWei(await avaxProvider.getApiC().getBaseFee())
   const instantBaseFee = WalletService.getInstantBaseFee(baseFee)

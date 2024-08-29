@@ -1,8 +1,8 @@
-import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import ModuleManager from 'vmModule/ModuleManager'
 
 const REFETCH_INTERVAL = 10000 // 10 seconds
 
@@ -15,9 +15,7 @@ const REFETCH_INTERVAL = 10000 // 10 seconds
 export const useCChainBaseFee = (): UseQueryResult<bigint, Error> => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const avaxProvider = NetworkService.getProviderForNetwork(
-    avaxXPNetwork
-  ) as Avalanche.JsonRpcProvider
+  const avaxProvider = ModuleManager.avalancheModule.getProvider(avaxXPNetwork)
 
   return useQuery({
     // no need to retry failed request as we are already doing interval fetching

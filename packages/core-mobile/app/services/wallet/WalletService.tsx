@@ -30,6 +30,7 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -82,7 +83,7 @@ class WalletService {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.sign')
       .executeAsync(async () => {
-        const provider = NetworkService.getProviderForNetwork(network)
+        const provider = await NetworkService.getProviderForNetwork(network)
         const wallet = await WalletFactory.createWallet(
           accountIndex,
           this.walletType
@@ -213,6 +214,7 @@ class WalletService {
       Logger.error(reason)
       throw reason
     })
+
     const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
 
     return wallet.getAddresses({ accountIndex, isTestnet, provXP })
@@ -599,9 +601,8 @@ class WalletService {
     }
 
     Logger.info('validating burned amount')
-    const avalancheProvider = NetworkService.getProviderForNetwork(
-      network
-    ) as Avalanche.JsonRpcProvider
+
+    const avalancheProvider = ModuleManager.avalancheModule.getProvider(network)
 
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,

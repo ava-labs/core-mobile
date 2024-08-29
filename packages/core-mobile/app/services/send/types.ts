@@ -5,6 +5,7 @@ import { Account } from 'store/account/types'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
+import { BitcoinInputUTXO } from '@avalabs/core-wallets-sdk'
 
 export interface SendError {
   error: boolean
@@ -33,13 +34,14 @@ export enum SendErrorMessage {
   ADDRESS_REQUIRED = 'Address required',
   INVALID_ADDRESS = 'Address is invalid',
   INVALID_NETWORK_FEE = 'Network Fee is invalid',
+  BALANCE_NOT_FOUND = 'Unable to fetch balance.',
   INSUFFICIENT_BALANCE = 'Insufficient balance.',
   INSUFFICIENT_BALANCE_FOR_FEE = 'Insufficient balance for fee.',
   INVALID_GAS_LIMIT = 'Unable to send token, invalid gas limit.'
 }
 
 export interface SendServiceHelper {
-  getTransactionRequest(
+  getTransactionRequest?(
     params: GetTransactionRequestParams
   ): Promise<SignTransactionRequest | AvalancheSendTransactionParams>
   validateStateAndCalculateFees(
@@ -51,6 +53,11 @@ export type GetTransactionRequestParams = SendServiceFuncParams
 
 export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
   nativeTokenBalance?: bigint // in wei
+
+  // TODO:
+  // https://ava-labs.atlassian.net/browse/CP-9142
+  // refactor ValidateStateAndCalculateFees logic in SendService
+  utxos?: BitcoinInputUTXO[] // temp field to make validating btc faster by not re-fetching balance every time
 }
 
 export type GetPVMTransactionRequestParams = SendServiceFuncParams & {

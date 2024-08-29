@@ -1,4 +1,3 @@
-import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
@@ -67,9 +66,8 @@ export async function importP({
 
   Logger.trace('txID', txID)
 
-  const avaxProvider = NetworkService.getProviderForNetwork(
-    avaxPNetwork
-  ) as Avalanche.JsonRpcProvider
+  const avaxProvider = ModuleManager.avalancheModule.getProvider(avaxPNetwork)
+
   try {
     await retry({
       operation: () => avaxProvider.getApiP().getTxStatus({ txID }),

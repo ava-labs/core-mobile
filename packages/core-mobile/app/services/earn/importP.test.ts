@@ -5,6 +5,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importP } from 'services/earn/importP'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
+import ModuleManager from 'vmModule/ModuleManager'
 
 describe('earn/importP', () => {
   describe('importP', () => {
@@ -13,7 +14,7 @@ describe('earn/importP', () => {
     })
     jest.mock('services/network/NetworkService')
     jest
-      .spyOn(NetworkService, 'getProviderForNetwork')
+      .spyOn(ModuleManager.avalancheModule, 'getProvider')
       .mockImplementation(() => {
         return {
           getApiP: () => {
