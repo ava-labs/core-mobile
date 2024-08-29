@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 // a hook to implement infinite scroll with RTK Query
 // it manages nextPageToken and the combined data from different pages
 // inspired by https://github.com/reduxjs/redux-toolkit/discussions/1163#discussioncomment-1667214
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useInfiniteScroll = <
   QueryArg extends { nextPageToken?: unknown },
   QueryResult extends { nextPageToken?: unknown },
@@ -27,11 +28,17 @@ export const useInfiniteScroll = <
   const [shouldRefresh, setShouldRefresh] = useState(false)
   const refresh = useCallback(() => setShouldRefresh(true), [])
 
-  const queryResponse = useQuery({
+  const {
+    data: queryResponseData,
+    refetch,
+    isLoading,
+    isFetching,
+    isSuccess,
+    isError
+  } = useQuery({
     nextPageToken: pageToken,
     ...queryParams
   } as QueryArg)
-  const queryResponseData = queryResponse.data
 
   useEffect(() => {
     //initiate refresh every time queryParams change
@@ -43,11 +50,11 @@ export const useInfiniteScroll = <
     //so here we reset pageToken if necessary and only then do re-fetch
     if (shouldRefresh && !pageToken) {
       setShouldRefresh(false)
-      queryResponse.refetch()
+      refetch()
     } else if (shouldRefresh) {
       setPageToken(undefined)
     }
-  }, [pageToken, queryResponse, shouldRefresh])
+  }, [pageToken, refetch, shouldRefresh])
 
   const [data, nextPageToken] = useMemo(() => {
     if (
@@ -84,19 +91,11 @@ export const useInfiniteScroll = <
     }
   }
 
-  const isLoading = queryResponse?.isLoading
-  const isFetching = queryResponse?.isFetching
-  const isSuccess = queryResponse?.isSuccess
-  const isError = queryResponse?.isError
   const hasMore = !!nextPageToken
   const isFirstPage = pageToken === undefined
   const isFetchingNext = isFetching && pageToken !== undefined
 
-  const isRefreshing =
-    queryResponse &&
-    !queryResponse.isLoading &&
-    queryResponse.isFetching &&
-    pageToken === undefined
+  const isRefreshing = !isLoading && isFetching && pageToken === undefined
 
   return {
     data: combinedData,
