@@ -166,7 +166,7 @@ __metadata:
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.5
     "@avalabs/core-chains-sdk": 3.1.0-alpha.5
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.5
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.5
+    "@avalabs/core-utils-sdk": 3.1.0-canary.1784917.0
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.5
     "@avalabs/evm-module": 0.3.1
     "@avalabs/glacier-sdk": 3.1.0-alpha.5
@@ -406,6 +406,21 @@ __metadata:
     bn.js: ^5.2.1
     ethers: ^6.7.1
   checksum: 89c7ee53fb8a71f07b12587ffabc425d30c1fb31088851a6e43c5c343c8c71fa677f226cde7de4f40c814c8a6a7e45921ec87516f5828e9cf27c0b2cd4c2a468
+  languageName: node
+  linkType: hard
+
+"@avalabs/core-utils-sdk@npm:3.1.0-canary.1784917.0":
+  version: 3.1.0-canary.1784917.0
+  resolution: "@avalabs/core-utils-sdk@npm:3.1.0-canary.1784917.0"
+  dependencies:
+    "@avalabs/avalanchejs": 4.0.5
+    "@hpke/core": 1.2.5
+    is-ipfs: 6.0.2
+  peerDependencies:
+    big.js: ^6.2.1
+    bn.js: ^5.2.1
+    ethers: ^6.7.1
+  checksum: be46c7d4211d5eb927b9216dbcbce30da63e0bb36e4760d12367390850f0b597b37626db814af6c897181f930a1527097a3cbc66985fe9d4f0da2afaa010b720
   languageName: node
   linkType: hard
 
