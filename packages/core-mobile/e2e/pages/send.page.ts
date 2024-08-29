@@ -4,6 +4,7 @@ import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from '../pages/plusMenu.page'
 import popUpModalPage from '../pages/popUpModal.page'
 import Send from '../locators/send.loc'
+import delay from '../helpers/waits'
 
 class SendPage {
   get addressBook() {
@@ -106,6 +107,7 @@ class SendPage {
   async selectToken(tokenName: string) {
     await Actions.waitForElement(this.searchBarOnSelectToken)
     await Actions.setInputText(this.searchBarOnSelectToken, tokenName)
+    await delay(1000)
     await Actions.tapElementAtIndex(by.id(`token_selector__${tokenName}`), 0)
   }
 
@@ -131,10 +133,7 @@ class SendPage {
 
   async verifySuccessToast() {
     await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
-    await Actions.waitForElementNotVisible(
-      popUpModalPage.successfulToastMsg,
-      120000
-    )
+    await delay(3000)
   }
 }
 

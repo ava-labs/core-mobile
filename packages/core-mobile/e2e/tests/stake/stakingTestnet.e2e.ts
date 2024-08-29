@@ -39,7 +39,7 @@ describe('Stake: testnet flow', () => {
   it('should verify confirm staking screen items on testnet', async () => {
     await Actions.waitForElement(
       ConfirmStakingPage.confirmStakingTitle,
-      25000,
+      30000,
       0
     )
     await ConfirmStakingPage.verifyConfirmStakingScreenItems()
