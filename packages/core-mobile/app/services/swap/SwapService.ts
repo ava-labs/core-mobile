@@ -2,7 +2,6 @@ import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
-import { retry } from 'utils/js/retry'
 import {
   constructFetchFetcher,
   constructGetSpender,
@@ -16,6 +15,7 @@ import {
 } from '@paraswap/sdk'
 import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
+import Logger from 'utils/Logger'
 
 export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 
@@ -95,7 +95,7 @@ class SwapService {
     network,
     account,
     sentryTrx
-  }: SwapRate): Promise<OptimalRate | Error> {
+  }: SwapRate): Promise<OptimalRate> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_rate')
       .executeAsync(async () => {
@@ -108,22 +108,14 @@ class SwapService {
         if (!account) {
           throw new Error('Account address missing')
         }
-
-        const optimalRates = async (): Promise<OptimalRate | Error> => {
-          return await this.getParaSwapSDK(network.chainId).swap.getRate({
-            srcToken,
-            destToken,
-            amount: srcAmount,
-            userAddress: account.addressC,
-            side: swapSide,
-            srcDecimals,
-            destDecimals
-          })
-        }
-
-        return await retry({
-          operation: optimalRates,
-          isSuccess: result => (result as Error).message !== 'Server too busy'
+        return await this.getParaSwapSDK(network.chainId).swap.getRate({
+          srcToken,
+          destToken,
+          amount: srcAmount,
+          userAddress: account.addressC,
+          side: swapSide,
+          srcDecimals,
+          destDecimals
         })
       })
   }
@@ -131,7 +123,7 @@ class SwapService {
   async getParaswapSpender(
     network: Network,
     sentryTrx?: SentryTransaction
-  ): Promise<string | Error> {
+  ): Promise<Address | undefined> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_paraswap_spender')
       .executeAsync(async () => {
@@ -141,14 +133,19 @@ class SwapService {
         if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
           throw new Error(`${network.chainName} is not supported by Paraswap`)
         }
-        const fetcher = constructFetchFetcher(fetch)
-        const { getSpender } = constructGetSpender({
-          apiURL: this.getParaSwapSDK(network.chainId).apiURL,
-          chainId: ChainId.AVALANCHE_MAINNET_ID,
-          version: ParaSwapVersion.V6,
-          fetcher
-        })
-        return getSpender()
+        try {
+          const fetcher = constructFetchFetcher(fetch)
+          const { getSpender } = constructGetSpender({
+            apiURL: this.getParaSwapSDK(network.chainId).apiURL,
+            chainId: ChainId.AVALANCHE_MAINNET_ID,
+            version: ParaSwapVersion.V6,
+            fetcher
+          })
+          return getSpender()
+        } catch (error) {
+          Logger.error('Failed to get Paraswap spender', error)
+          return undefined
+        }
       })
   }
 
