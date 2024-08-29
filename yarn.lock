@@ -372,7 +372,7 @@ __metadata:
     url: 0.11.0
     uuid: 8.3.2
     viem: 2.17.0
-    vm-browserify: 0.0.4
+    vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.14
     zod: 3.20.2
@@ -15624,7 +15624,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"indexof@npm:0.0.1, indexof@npm:~0.0.1":
+"indexof@npm:~0.0.1":
   version: 0.0.1
   resolution: "indexof@npm:0.0.1"
   checksum: 0fb04e8b147b8585d981a6df1564f25bb3678d6fa74e33e5cecc1464b10f78e15e8ef6bb688f135fe5c2844a128fac8a7831cbe5adc81fdcf12681b093dfcc25
@@ -25024,12 +25024,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vm-browserify@npm:0.0.4":
-  version: 0.0.4
-  resolution: "vm-browserify@npm:0.0.4"
-  dependencies:
-    indexof: 0.0.1
-  checksum: 96f216ab040452b4da801c3e759307f10782017e9e7eae8ebd5a93e61340ff46caa4b13839ece52b8947b8e8aca59a285f723b6b7b101d8e46131b804bcf195d
+"vm-browserify@npm:1.1.2":
+  version: 1.1.2
+  resolution: "vm-browserify@npm:1.1.2"
+  checksum: 10a1c50aab54ff8b4c9042c15fc64aefccce8d2fb90c0640403242db0ee7fb269f9b102bdb69cfb435d7ef3180d61fd4fb004a043a12709abaf9056cfd7e039d
   languageName: node
   linkType: hard
 
