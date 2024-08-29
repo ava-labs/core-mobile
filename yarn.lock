@@ -182,16 +182,16 @@ __metadata:
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
-    "@babel/plugin-transform-class-static-block": 7.22.11
-    "@babel/plugin-transform-export-namespace-from": 7.22.11
-    "@babel/plugin-transform-private-methods": 7.22.5
+    "@babel/plugin-transform-class-static-block": 7.24.7
+    "@babel/plugin-transform-export-namespace-from": 7.24.7
+    "@babel/plugin-transform-private-methods": 7.25.4
     "@babel/preset-env": 7.24.0
     "@babel/preset-typescript": 7.22.11
     "@babel/runtime": 7.25.4
     "@blockaid/client": 0.10.0
     "@coinbase/cbpay-js": 2.2.1
-    "@cubist-labs/cubesigner-sdk": 0.3.28
-    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.23
+    "@cubist-labs/cubesigner-sdk": 0.3.29
+    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
     "@datadog/mobile-react-native": 2.2.0
     "@datadog/mobile-react-navigation": 2.4.3
     "@dlenroc/testrail": 1.7.2
@@ -334,7 +334,7 @@ __metadata:
     react-native-os: 1.2.6
     react-native-pager-view: 6.2.3
     react-native-passkey: 2.1.1
-    react-native-performance: 4.0.0
+    react-native-performance: 5.1.2
     react-native-permissions: 3.6.0
     react-native-popable: 0.4.3
     react-native-qrcode-scanner: 1.5.5
@@ -370,14 +370,14 @@ __metadata:
     stream-browserify: 1.0.0
     text-encoding: 0.7.0
     ts-jest: 29.2.5
-    ts-node: 10.9.1
+    ts-node: 10.9.2
     type-fest: 4.3.1
     typechain: 8.3.1
     typescript: 5.2.2
     url: 0.11.0
     uuid: 8.3.2
     viem: 2.17.0
-    vm-browserify: 0.0.4
+    vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.14
     zod: 3.20.2
@@ -1517,16 +1517,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-class-static-block@npm:7.22.11":
-  version: 7.22.11
-  resolution: "@babel/plugin-transform-class-static-block@npm:7.22.11"
+"@babel/plugin-transform-class-static-block@npm:7.24.7":
+  version: 7.24.7
+  resolution: "@babel/plugin-transform-class-static-block@npm:7.24.7"
   dependencies:
-    "@babel/helper-create-class-features-plugin": ^7.22.11
-    "@babel/helper-plugin-utils": ^7.22.5
+    "@babel/helper-create-class-features-plugin": ^7.24.7
+    "@babel/helper-plugin-utils": ^7.24.7
     "@babel/plugin-syntax-class-static-block": ^7.14.5
   peerDependencies:
     "@babel/core": ^7.12.0
-  checksum: 69f040506fad66f1c6918d288d0e0edbc5c8a07c8b4462c1184ad2f9f08995d68b057126c213871c0853ae0c72afc60ec87492049dfacb20902e32346a448bcb
+  checksum: 324049263504f18416f1c3e24033baebfafd05480fdd885c8ebe6f2b415b0fc8e0b98d719360f9e30743cc78ac387fabc0b3c6606d2b54135756ffb92963b382
   languageName: node
   linkType: hard
 
@@ -1641,15 +1641,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-export-namespace-from@npm:7.22.11":
-  version: 7.22.11
-  resolution: "@babel/plugin-transform-export-namespace-from@npm:7.22.11"
+"@babel/plugin-transform-export-namespace-from@npm:7.24.7":
+  version: 7.24.7
+  resolution: "@babel/plugin-transform-export-namespace-from@npm:7.24.7"
   dependencies:
-    "@babel/helper-plugin-utils": ^7.22.5
+    "@babel/helper-plugin-utils": ^7.24.7
     "@babel/plugin-syntax-export-namespace-from": ^7.8.3
   peerDependencies:
     "@babel/core": ^7.0.0-0
-  checksum: 73af5883a321ed56a4bfd43c8a7de0164faebe619287706896fc6ee2f7a4e69042adaa1338c0b8b4bdb9f7e5fdceb016fb1d40694cb43ca3b8827429e8aac4bf
+  checksum: 3bd3a10038f10ae0dea1ee42137f3edcf7036b5e9e570a0d1cbd0865f03658990c6c2d84fa2475f87a754e7dc5b46766c16f7ce5c9b32c3040150b6a21233a80
   languageName: node
   linkType: hard
 
@@ -2517,6 +2517,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/types@npm:^7.24.7, @babel/types@npm:^7.24.8, @babel/types@npm:^7.25.0, @babel/types@npm:^7.25.6":
+  version: 7.25.6
+  resolution: "@babel/types@npm:7.25.6"
+  dependencies:
+    "@babel/helper-string-parser": ^7.24.8
+    "@babel/helper-validator-identifier": ^7.24.7
+    to-fast-properties: ^2.0.0
+  checksum: 9b2f84ff3f874ad05b0b9bf06862c56f478b65781801f82296b4cc01bee39e79c20a7c0a06959fed0ee582c8267e1cb21638318655c5e070b0287242a844d1c9
+  languageName: node
+  linkType: hard
+
 "@base2/pretty-print-object@npm:1.0.1":
   version: 1.0.1
   resolution: "@base2/pretty-print-object@npm:1.0.1"
@@ -2631,26 +2642,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.23":
-  version: 0.3.23
-  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.23"
+"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.29":
+  version: 0.3.29
+  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.29"
   peerDependencies:
-    "@cubist-labs/cubesigner-sdk": ^0.3.23
+    "@cubist-labs/cubesigner-sdk": ^0.3.29
     ethers: 6.7.1
-  checksum: 58fc6c7c1633daa36cdde9ab0b2d047040e4b18dcfac5df50c376032bbd799e907e95e92cccbcb1bfabb6361a8f9e7246c3feca08b3b13b8df33f785cfe49c5d
+  checksum: c87ceb39aeaf86cbee933d6dde2849a14484a6f708b6758ca2d3b75e9beaa0b4b5bcaaec61abdbdcb5e082e206f7efdb07ac02e4e5a4156114bef081c1072850
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk@npm:0.3.28":
-  version: 0.3.28
-  resolution: "@cubist-labs/cubesigner-sdk@npm:0.3.28"
+"@cubist-labs/cubesigner-sdk@npm:0.3.29":
+  version: 0.3.29
+  resolution: "@cubist-labs/cubesigner-sdk@npm:0.3.29"
   dependencies:
     "@hpke/core": ^1.2.7
     openapi-fetch: 0.6.1
   dependenciesMeta:
     "@hpke/core":
       optional: true
-  checksum: 20bedd49689bcc419e0738a6c2e203f7f0cd95a594bd626e7ac39d48fdbe0f5042474e07823b6303082991149d9a594c718ec4cd67a8de5ad5c212c81225da64
+  checksum: 32d67140baa33598de390eba144bd419bed2cb78c86867727701ff924f87b278da09d8016cf089347596180176aa3f102d4f36e4a9666185ee1b3d057ffbae56
   languageName: node
   linkType: hard
 
@@ -4463,10 +4474,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jridgewell/gen-mapping@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "@jridgewell/gen-mapping@npm:0.3.5"
+  dependencies:
+    "@jridgewell/set-array": ^1.2.1
+    "@jridgewell/sourcemap-codec": ^1.4.10
+    "@jridgewell/trace-mapping": ^0.3.24
+  checksum: ff7a1764ebd76a5e129c8890aa3e2f46045109dabde62b0b6c6a250152227647178ff2069ea234753a690d8f3c4ac8b5e7b267bbee272bffb7f3b0a370ab6e52
+  languageName: node
+  linkType: hard
+
 "@jridgewell/resolve-uri@npm:^3.0.3, @jridgewell/resolve-uri@npm:^3.1.0":
   version: 3.1.2
   resolution: "@jridgewell/resolve-uri@npm:3.1.2"
   checksum: 83b85f72c59d1c080b4cbec0fef84528963a1b5db34e4370fa4bd1e3ff64a0d80e0cee7369d11d73c704e0286fb2865b530acac7a871088fbe92b5edf1000870
+  languageName: node
+  linkType: hard
+
+"@jridgewell/set-array@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "@jridgewell/set-array@npm:1.2.1"
+  checksum: 832e513a85a588f8ed4f27d1279420d8547743cc37fcad5a5a76fc74bb895b013dfe614d0eed9cb860048e6546b798f8f2652020b4b2ba0561b05caa8c654b10
   languageName: node
   linkType: hard
 
@@ -4505,6 +4534,16 @@ __metadata:
   linkType: hard
 
 "@jridgewell/trace-mapping@npm:^0.3.12, @jridgewell/trace-mapping@npm:^0.3.18, @jridgewell/trace-mapping@npm:^0.3.24, @jridgewell/trace-mapping@npm:^0.3.25":
+  version: 0.3.25
+  resolution: "@jridgewell/trace-mapping@npm:0.3.25"
+  dependencies:
+    "@jridgewell/resolve-uri": ^3.1.0
+    "@jridgewell/sourcemap-codec": ^1.4.14
+  checksum: 9d3c40d225e139987b50c48988f8717a54a8c994d8a948ee42e1412e08988761d0754d7d10b803061cc3aebf35f92a5dbbab493bd0e1a9ef9e89a2130e83ba34
+  languageName: node
+  linkType: hard
+
+"@jridgewell/trace-mapping@npm:^0.3.24, @jridgewell/trace-mapping@npm:^0.3.25":
   version: 0.3.25
   resolution: "@jridgewell/trace-mapping@npm:0.3.25"
   dependencies:
@@ -16821,7 +16860,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"indexof@npm:0.0.1, indexof@npm:~0.0.1":
+"indexof@npm:~0.0.1":
   version: 0.0.1
   resolution: "indexof@npm:0.0.1"
   checksum: 0fb04e8b147b8585d981a6df1564f25bb3678d6fa74e33e5cecc1464b10f78e15e8ef6bb688f135fe5c2844a128fac8a7831cbe5adc81fdcf12681b093dfcc25
@@ -22798,12 +22837,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-performance@npm:4.0.0":
-  version: 4.0.0
-  resolution: "react-native-performance@npm:4.0.0"
+"react-native-performance@npm:5.1.2":
+  version: 5.1.2
+  resolution: "react-native-performance@npm:5.1.2"
   peerDependencies:
     react-native: "*"
-  checksum: 4accaab3a9ea8229d4dc535f8e63562b7b19372c2fc3aef23aaa370ef1fab66e5f80d1b794b760dc14ffe348cbaa3cbf83b3a6a1800cca372f8aec8b82c1075e
+  checksum: e0ea6616ba75a13028271c8c5cd29a9eecb35c806db2b412baa160d6ce428c0ba8e9bc0c762856b4c8bebd92b5aea925532731a4dc19591ad15af575163cccd8
   languageName: node
   linkType: hard
 
@@ -25840,9 +25879,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-node@npm:10.9.1":
-  version: 10.9.1
-  resolution: "ts-node@npm:10.9.1"
+"ts-node@npm:10.9.2":
+  version: 10.9.2
+  resolution: "ts-node@npm:10.9.2"
   dependencies:
     "@cspotcode/source-map-support": ^0.8.0
     "@tsconfig/node10": ^1.0.7
@@ -25874,7 +25913,7 @@ __metadata:
     ts-node-script: dist/bin-script.js
     ts-node-transpile-only: dist/bin-transpile.js
     ts-script: dist/bin-script-deprecated.js
-  checksum: 090adff1302ab20bd3486e6b4799e90f97726ed39e02b39e566f8ab674fd5bd5f727f43615debbfc580d33c6d9d1c6b1b3ce7d8e3cca3e20530a145ffa232c35
+  checksum: fde256c9073969e234526e2cfead42591b9a2aec5222bac154b0de2fa9e4ceb30efcd717ee8bc785a56f3a119bdd5aa27b333d9dbec94ed254bd26f8944c67ac
   languageName: node
   linkType: hard
 
@@ -26888,12 +26927,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vm-browserify@npm:0.0.4":
-  version: 0.0.4
-  resolution: "vm-browserify@npm:0.0.4"
-  dependencies:
-    indexof: 0.0.1
-  checksum: 96f216ab040452b4da801c3e759307f10782017e9e7eae8ebd5a93e61340ff46caa4b13839ece52b8947b8e8aca59a285f723b6b7b101d8e46131b804bcf195d
+"vm-browserify@npm:1.1.2":
+  version: 1.1.2
+  resolution: "vm-browserify@npm:1.1.2"
+  checksum: 10a1c50aab54ff8b4c9042c15fc64aefccce8d2fb90c0640403242db0ee7fb269f9b102bdb69cfb435d7ef3180d61fd4fb004a043a12709abaf9056cfd7e039d
   languageName: node
   linkType: hard
 
