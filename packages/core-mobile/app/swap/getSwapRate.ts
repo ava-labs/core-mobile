@@ -69,7 +69,7 @@ export async function getSwapRate({
     }
   } catch (error) {
     return {
-      error: (error as Error).message
+      error: error instanceof Error ? error.message : 'unknown error'
     }
   }
 }
