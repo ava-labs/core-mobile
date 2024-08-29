@@ -29,9 +29,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.3.1":
-  version: 0.3.1
-  resolution: "@avalabs/avalanche-module@npm:0.3.1"
+"@avalabs/avalanche-module@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@avalabs/avalanche-module@npm:0.4.0"
   dependencies:
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/core-chains-sdk": 3.1.0-alpha.1
@@ -41,13 +41,13 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.1
     "@avalabs/glacier-sdk": 3.1.0-alpha.1
     "@avalabs/types": 3.1.0-alpha.1
-    "@avalabs/vm-module-types": 0.3.1
+    "@avalabs/vm-module-types": 0.4.0
     "@metamask/rpc-errors": 6.3.0
     "@zodios/core": 10.9.6
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: 87ad445cc92e5aca3afbd3e7189689fcfa70205468c6d8566375fbd285e566814f6a52a8616926655066fd933e6ff1dc396c31b75ccc1f9f8d9ee7d489110d1c
+  checksum: f7346a6a75beb8728221c37489863c0abfd99f935727137621af4235b6c48a9eee724b0bda0ba5fa67f28f2798ad7ded702be9383262c7304e61df0a51a0eeaa
   languageName: node
   linkType: hard
 
@@ -159,7 +159,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.3.1
+    "@avalabs/avalanche-module": 0.4.0
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bitcoin-module": 0.3.1
     "@avalabs/bridge-unified": 2.1.0
@@ -595,6 +595,21 @@ __metadata:
   peerDependencies:
     ethers: ^6.8.1
   checksum: 3e1bc0b03c0b06402ca1f4f8878472a2e84def8c1e63700fe5731c3ac74c258c2cbeeaee37cf406df5e597ff05abef6c1cadf1161f0c6aa1d0b31f9bfd45e7c5
+  languageName: node
+  linkType: hard
+
+"@avalabs/vm-module-types@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@avalabs/vm-module-types@npm:0.4.0"
+  dependencies:
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.1
+    "@metamask/rpc-errors": 6.3.0
+    bitcoinjs-lib: 5.2.0
+    ethers: 6.8.1
+    zod: 3.23.8
+  peerDependencies:
+    ethers: ^6.8.1
+  checksum: ad86c48b003b9c5bd8afa1810600b3f9f6f228bf526b65112040482fc22492a431551b2fe3ec1a606499096a23642b308dbc182e0b0bc7be322fa332cd183cb5
   languageName: node
   linkType: hard
 
