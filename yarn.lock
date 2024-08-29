@@ -354,7 +354,7 @@ __metadata:
     react-native-webview-crypto: 0.0.25
     react-redux: 8.0.1
     react-test-renderer: 18.2.0
-    react-timer-hook: 3.0.5
+    react-timer-hook: 3.0.7
     readable-stream: 1.1.14
     redux-persist: 6.0.0
     redux-persist-transform-encrypt: 4.0.0
@@ -21924,13 +21924,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-timer-hook@npm:3.0.5":
-  version: 3.0.5
-  resolution: "react-timer-hook@npm:3.0.5"
+"react-timer-hook@npm:3.0.7":
+  version: 3.0.7
+  resolution: "react-timer-hook@npm:3.0.7"
   peerDependencies:
     react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 4464f10c21df41ae0c97ebadcc52bffcef9177f3d298b5726f041f509c05f985898cafdea766f9cc0f4d64a7a0c711e9c78256fba5992ee8826d8efd18f363ed
+  checksum: 800c45a7fbf181897971b15f0d7b226f35348a12c48f933afbc1112693101bf3966bd7d276e4cb9fdc922c1ea66d8cbeddb0268e1631d1e39aa4b062cba2a7d1
   languageName: node
   linkType: hard
 

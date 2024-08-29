@@ -163,7 +163,7 @@
     "react-native-webview": "13.8.1",
     "react-native-webview-crypto": "0.0.25",
     "react-redux": "8.0.1",
-    "react-timer-hook": "3.0.5",
+    "react-timer-hook": "3.0.7",
     "readable-stream": "1.1.14",
     "redux-persist": "6.0.0",
     "redux-persist-transform-encrypt": "4.0.0",
