@@ -186,7 +186,7 @@ __metadata:
     "@blockaid/client": 0.10.0
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.3.28
-    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.23
+    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
     "@datadog/mobile-react-native": 2.2.0
     "@datadog/mobile-react-navigation": 2.4.3
     "@dlenroc/testrail": 1.7.2
@@ -2797,13 +2797,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.23":
-  version: 0.3.23
-  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.23"
+"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.29":
+  version: 0.3.29
+  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.29"
   peerDependencies:
-    "@cubist-labs/cubesigner-sdk": ^0.3.23
+    "@cubist-labs/cubesigner-sdk": ^0.3.29
     ethers: 6.7.1
-  checksum: 58fc6c7c1633daa36cdde9ab0b2d047040e4b18dcfac5df50c376032bbd799e907e95e92cccbcb1bfabb6361a8f9e7246c3feca08b3b13b8df33f785cfe49c5d
+  checksum: c87ceb39aeaf86cbee933d6dde2849a14484a6f708b6758ca2d3b75e9beaa0b4b5bcaaec61abdbdcb5e082e206f7efdb07ac02e4e5a4156114bef081c1072850
   languageName: node
   linkType: hard
 
