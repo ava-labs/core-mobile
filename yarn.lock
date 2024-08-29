@@ -230,7 +230,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@tanstack/query-sync-storage-persister": 5.28.13
+    "@tanstack/query-sync-storage-persister": 5.52.2
     "@tanstack/react-query": 5.24.8
     "@tanstack/react-query-persist-client": 5.28.14
     "@tradle/react-native-http": 2.0.1
@@ -7822,6 +7822,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.52.2":
+  version: 5.52.2
+  resolution: "@tanstack/query-core@npm:5.52.2"
+  checksum: 8750cb3aa88044c2ea6c15c0a6ab53f355fa60ec568bcd76bdcb873c982c7ddd85e454075b2cba72320ac7bd4648fad9b4af80beaacd2f223ed75213c3a14ef1
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-persist-client-core@npm:5.28.13":
   version: 5.28.13
   resolution: "@tanstack/query-persist-client-core@npm:5.28.13"
@@ -7831,13 +7838,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-sync-storage-persister@npm:5.28.13":
-  version: 5.28.13
-  resolution: "@tanstack/query-sync-storage-persister@npm:5.28.13"
+"@tanstack/query-persist-client-core@npm:5.52.2":
+  version: 5.52.2
+  resolution: "@tanstack/query-persist-client-core@npm:5.52.2"
   dependencies:
-    "@tanstack/query-core": 5.28.13
-    "@tanstack/query-persist-client-core": 5.28.13
-  checksum: bf44a3774394d171bd31c92a50b77f431e32c6dbf3b3b07e91e98b59f27b02a977680b7acf6df2f2f8a0d52a8f55b202de143edc2df94a834b3df8af8e3e1a1b
+    "@tanstack/query-core": 5.52.2
+  checksum: aed30ae992dfd09a09fbf43eb87aeebbd1152a92aa6786d4cadc3e5c957de25547e63f238f0f4fcf7502c1eeb9172e9951837a3ea69abda4ad2f878adfec50e1
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-sync-storage-persister@npm:5.52.2":
+  version: 5.52.2
+  resolution: "@tanstack/query-sync-storage-persister@npm:5.52.2"
+  dependencies:
+    "@tanstack/query-core": 5.52.2
+    "@tanstack/query-persist-client-core": 5.52.2
+  checksum: f0bcf5eafdad01f200cd6d487c2a4442c5a3d2d54087cc4d0f48196f126059906a9326ef575b8ed4b418f60db1ef765521c019ee013ba9f005ebf695e5655250
   languageName: node
   linkType: hard
 
