@@ -42,6 +42,7 @@ FCMService.listenForMessagesBackground()
 // NotificationsService.onBackgroundEvent(handleNotificationCallback)
 
 AppRegistry.registerComponent(appName, () => AppEntryPoint)
+FCMService.listenForMessagesBackground()
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen({
