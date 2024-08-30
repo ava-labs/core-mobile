@@ -189,7 +189,7 @@
     "@babel/plugin-transform-class-static-block": "7.24.7",
     "@babel/plugin-transform-export-namespace-from": "7.24.7",
     "@babel/plugin-transform-private-methods": "7.25.4",
-    "@babel/preset-env": "7.24.0",
+    "@babel/preset-env": "7.25.4",
     "@babel/preset-typescript": "7.24.7",
     "@babel/runtime": "7.25.4",
     "@dlenroc/testrail": "1.7.2",
