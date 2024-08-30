@@ -203,6 +203,7 @@ __metadata:
     "@noble/secp256k1": 2.1.0
     "@notifee/react-native": 7.8.2
     "@openzeppelin/contracts": 5.0.2
+    "@paraswap/sdk": 6.9.1
     "@playwright/test": 1.42.1
     "@react-native-async-storage/async-storage": 1.18.1
     "@react-native-clipboard/clipboard": 1.13.2
@@ -294,7 +295,6 @@ __metadata:
     msw: 1.3.2
     node-cache: 5.1.2
     node-fetch: 3.3.2
-    paraswap: 5.2.0
     patch-package: 8.0.0
     path-browserify: 1.0.1
     postinstall-postinstall: 2.1.0
@@ -6768,6 +6768,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@paraswap/core@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@paraswap/core@npm:2.2.0"
+  checksum: b481e4b0d0590cafe3a2f0991391fabeb967339a25c11da3769215e95c9495a7b73728b39483ef00f2e1dd6e9dc33ca2467bf0c5b8cc0b5c5f77564d60093ea0
+  languageName: node
+  linkType: hard
+
+"@paraswap/sdk@npm:6.9.1":
+  version: 6.9.1
+  resolution: "@paraswap/sdk@npm:6.9.1"
+  dependencies:
+    "@paraswap/core": 2.2.0
+    bignumber.js: ^9.0.2
+    ts-essentials: ^9.1.2
+  peerDependencies:
+    axios: ">=0.25.0 <2.0.0"
+    ethers: ^5.5.0
+    web3: ^1.7.1
+  peerDependenciesMeta:
+    axios:
+      optional: true
+    ethers:
+      optional: true
+    web3:
+      optional: true
+  checksum: de00ca74240b08b4c7c3c0e978be7b4896e1e2dfc99afbd62ddb7a8e94763f5b0339eefa50a9d65a136c2e25aa6fd7f6e3db974f7bb1db75311abffd445ff011
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-android-arm64@npm:2.3.0":
   version: 2.3.0
   resolution: "@parcel/watcher-android-arm64@npm:2.3.0"
@@ -12145,13 +12174,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async@npm:^3.1.0":
-  version: 3.2.4
-  resolution: "async@npm:3.2.4"
-  checksum: 43d07459a4e1d09b84a20772414aa684ff4de085cbcaec6eea3c7a8f8150e8c62aa6cd4e699fe8ee93c3a5b324e777d34642531875a0817a35697522c1b02e89
-  languageName: node
-  linkType: hard
-
 "async@npm:^3.2.3":
   version: 3.2.6
   resolution: "async@npm:3.2.6"
@@ -12229,15 +12251,6 @@ __metadata:
   version: 1.12.0
   resolution: "aws4@npm:1.12.0"
   checksum: 68f79708ac7c335992730bf638286a3ee0a645cf12575d557860100767c500c08b30e24726b9f03265d74116417f628af78509e1333575e9f8d52a80edfe8cbc
-  languageName: node
-  linkType: hard
-
-"axios@npm:0.21.2":
-  version: 0.21.2
-  resolution: "axios@npm:0.21.2"
-  dependencies:
-    follow-redirects: ^1.14.0
-  checksum: 41299c21f77323e7c56ea49d2d5ed25407d24bb145a4ce3441a8db17359ae56554f9495dca6e15d343a9530e106212a684c75a4db3bedfbe19f6414a8d94378e
   languageName: node
   linkType: hard
 
@@ -17331,7 +17344,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.14.8, follow-redirects@npm:^1.15.0":
+"follow-redirects@npm:^1.14.8, follow-redirects@npm:^1.15.0":
   version: 1.15.3
   resolution: "follow-redirects@npm:1.15.3"
   peerDependenciesMeta:
@@ -23414,29 +23427,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"paraswap-core@npm:1.0.2":
-  version: 1.0.2
-  resolution: "paraswap-core@npm:1.0.2"
-  checksum: 916086b193f5402dd0539f6a714b3dbfd9eaa5f2eb9c9e37855e2d9e0426b86888c7a799b3788c432c8b18ad216341e8dcd00e1d91870f514ba8db27ce693740
-  languageName: node
-  linkType: hard
-
-"paraswap@npm:5.2.0":
-  version: 5.2.0
-  resolution: "paraswap@npm:5.2.0"
-  dependencies:
-    async: ^3.1.0
-    axios: 0.21.2
-    bignumber.js: 8.1.1
-    lodash: 4.17.21
-    paraswap-core: 1.0.2
-    qs: ^6.9.1
-    ts-essentials: ^7.0.0
-    web3: ^1.5.0
-  checksum: 752a4fac49c1cafe9304f147411ad250bbe2d3e8006ffdb6f0f5e721a20ceaeb9f4d48702837e27e946946d578d1893618bdff0b03147d1937d43e113ad998bc
-  languageName: node
-  linkType: hard
-
 "parent-module@npm:^1.0.0":
   version: 1.0.1
   resolution: "parent-module@npm:1.0.1"
@@ -24361,7 +24351,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.10.0, qs@npm:^6.9.1":
+"qs@npm:^6.10.0":
   version: 6.11.2
   resolution: "qs@npm:6.11.2"
   dependencies:
@@ -28106,7 +28096,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-essentials@npm:^7.0.0, ts-essentials@npm:^7.0.1":
+"ts-essentials@npm:^7.0.1":
   version: 7.0.3
   resolution: "ts-essentials@npm:7.0.3"
   peerDependencies:
