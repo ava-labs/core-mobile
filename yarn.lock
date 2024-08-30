@@ -178,7 +178,7 @@ __metadata:
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
     "@datadog/mobile-react-native": 2.2.0
     "@datadog/mobile-react-navigation": 2.4.3
-    "@dlenroc/testrail": 1.7.2
+    "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 2.6.5
     "@ethereumjs/tx": 3.4.0
     "@gorhom/bottom-sheet": 4.6.4
@@ -3046,13 +3046,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dlenroc/testrail@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@dlenroc/testrail@npm:1.7.2"
+"@dlenroc/testrail@npm:1.9.1":
+  version: 1.9.1
+  resolution: "@dlenroc/testrail@npm:1.9.1"
   dependencies:
     form-data: ^4
     node-fetch: ^2.6.4
-  checksum: 5486b2317beaa5e5be17611498783149e9b95232fedb8ede03f0611ff8b44583088f08ab34cc3c48d8f654da2faa2689bbd2625e34e59131b3d00092cd9d4c9f
+  checksum: 3a2213a73240bb4469b7923f812b4514efcac279efc48260fbf989dbd03c9f03049231b22c6da0f8fde094ec886e3c16dd4f563597a46a41c65e56f11e317da5
   languageName: node
   linkType: hard
 
