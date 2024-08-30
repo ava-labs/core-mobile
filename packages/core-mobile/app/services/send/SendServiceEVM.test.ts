@@ -64,16 +64,6 @@ describe('validateStateAndCalculateFees', () => {
       expect(newState.canSubmit).toBe(true)
     })
 
-    it('should fail for missing address', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees({
-        ...params,
-        sendState: { ...params.sendState, address: undefined }
-      })
-
-      expect(newState.canSubmit).toBe(false)
-      expect(newState.error?.message).toBe(SendErrorMessage.ADDRESS_REQUIRED)
-    })
-
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
@@ -139,16 +129,6 @@ describe('validateStateAndCalculateFees', () => {
       const newState = await serviceToTest.validateStateAndCalculateFees(params)
 
       expect(newState.canSubmit).toBe(true)
-    })
-
-    it('should fail for missing address', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees({
-        ...params,
-        sendState: { ...params.sendState, address: undefined }
-      })
-
-      expect(newState.canSubmit).toBe(false)
-      expect(newState.error?.message).toBe(SendErrorMessage.ADDRESS_REQUIRED)
     })
 
     it('should fail for missing network fee', async () => {

@@ -41,8 +41,9 @@ export class SendServiceEVM implements SendServiceHelper {
         .executeAsync(async () => {
           const { amount, address, defaultMaxFeePerGas, token } = sendState
 
-          // Set canSubmit to false if token is not set
-          if (!token) return SendServiceEVM.getErrorState(sendState, '')
+          // Set canSubmit to false if token/address is not set
+          if (!token || !address)
+            return SendServiceEVM.getErrorState(sendState, '')
 
           const gasLimit = await this.getGasLimit(sendState)
           const sendFee = defaultMaxFeePerGas
@@ -63,12 +64,6 @@ export class SendServiceEVM implements SendServiceHelper {
             maxAmount,
             sendFee
           }
-
-          if (!address)
-            return SendServiceEVM.getErrorState(
-              newState,
-              SendErrorMessage.ADDRESS_REQUIRED
-            )
 
           if (!isAddress(address))
             return SendServiceEVM.getErrorState(

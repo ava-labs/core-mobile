@@ -9,44 +9,25 @@ import {
   BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
-import { Network as EthersNetwork } from 'ethers'
-import Config from 'react-native-config'
 import { Networks } from 'store/network/types'
-import { addGlacierAPIKeyIfNeeded } from 'utils/network/glacier'
-
-const BITCOIN_NODE_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btc`
-const BITCOIN_EXPLORER_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btcbook`
+import ModuleManager from 'vmModule/ModuleManager'
 
 export function getBitcoinProvider(
   isTest: boolean | undefined
 ): BitcoinProvider {
-  return new BitcoinProvider(
-    !isTest,
-    undefined,
-    `${BITCOIN_EXPLORER_PROXY_URL}${isTest ? '-testnet' : ''}`,
-    `${BITCOIN_NODE_PROXY_URL}${isTest ? '-testnet' : ''}`,
-    Config.GLACIER_API_KEY ? { token: Config.GLACIER_API_KEY } : {}
-  )
+  return ModuleManager.bitcoinModule.getProvider(getBitcoinNetwork(isTest))
 }
 
 export function getEvmProvider(network: Network): JsonRpcBatchInternal {
   if (network.vmName !== NetworkVMType.EVM)
-    throw new Error(`Cannot get provider for network type: ${network.vmName}`)
+    throw new Error(
+      `Cannot get evm provider for network type: ${network.vmName}`
+    )
 
-  const multiContractAddress = network.utilityAddresses?.multicall
-  const rpcUrl = network.rpcUrl
-  const provider = new JsonRpcBatchInternal(
-    { maxCalls: 40, multiContractAddress },
-    addGlacierAPIKeyIfNeeded(rpcUrl),
-    new EthersNetwork(network.chainName, network.chainId)
-  )
-
-  provider.pollingInterval = 2000
-
-  return provider
+  return ModuleManager.evmModule.getProvider(network)
 }
 
-export function getAvalancheProvider(
+export function getAvalancheEvmProvider(
   networks: Networks,
   isTest: boolean | undefined
 ): JsonRpcBatchInternal | undefined {
