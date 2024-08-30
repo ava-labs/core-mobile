@@ -5,6 +5,7 @@ import { Text, TextInput } from 'react-native'
 import './polyfills'
 import { AppRegistry } from 'react-native'
 import Big from 'big.js'
+import FCMService from 'services/fcm/FCMService'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
@@ -35,6 +36,7 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 }
 
 AppRegistry.registerComponent(appName, () => AppEntryPoint)
+FCMService.listenForMessagesBackground()
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen({
