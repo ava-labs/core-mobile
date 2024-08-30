@@ -203,7 +203,7 @@ __metadata:
     "@react-navigation/native-stack": 6.11.0
     "@react-navigation/stack": 6.4.1
     "@reduxjs/toolkit": 1.8.1
-    "@rushstack/eslint-patch": 1.5.1
+    "@rushstack/eslint-patch": 1.10.4
     "@sentry/react-native": 5.31.1
     "@shopify/flash-list": 1.6.3
     "@shopify/react-native-performance": 4.1.2
@@ -459,7 +459,7 @@ __metadata:
     "@react-native-community/slider": 4.4.2
     "@react-native/babel-preset": 0.73.21
     "@react-native/metro-config": 0.73.5
-    "@rushstack/eslint-patch": 1.5.1
+    "@rushstack/eslint-patch": 1.10.4
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
@@ -6730,10 +6730,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rushstack/eslint-patch@npm:1.5.1":
-  version: 1.5.1
-  resolution: "@rushstack/eslint-patch@npm:1.5.1"
-  checksum: e4c25322312dbaa29e835a7ab4fbac53c8731dd0da65e46646e38945e296429e7fb91c2ef3da5af5d5938d44b0cde1d5290438ebb3dcb015e02b80b5e2530d24
+"@rushstack/eslint-patch@npm:1.10.4":
+  version: 1.10.4
+  resolution: "@rushstack/eslint-patch@npm:1.10.4"
+  checksum: ec17ac954ed01e9c714e29ae00da29099234a71615d6f61f2da5c7beeef283f5619132114faf9481cb1ca7b4417aed74c05a54d416e4d8facc189bb216d49066
   languageName: node
   linkType: hard
 
