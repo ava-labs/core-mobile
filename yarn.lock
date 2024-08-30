@@ -193,7 +193,7 @@ __metadata:
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 6.9.1
     "@playwright/test": 1.42.1
-    "@react-native-async-storage/async-storage": 1.18.1
+    "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.13.2
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
     "@react-native-community/datetimepicker": 8.2.0
@@ -461,7 +461,7 @@ __metadata:
     "@babel/core": 7.24.0
     "@babel/runtime": 7.25.4
     "@lavamoat/allow-scripts": 2.0.3
-    "@react-native-async-storage/async-storage": 1.18.1
+    "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.4.2
     "@react-native/babel-preset": 0.73.21
@@ -5976,14 +5976,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-async-storage/async-storage@npm:1.18.1":
-  version: 1.18.1
-  resolution: "@react-native-async-storage/async-storage@npm:1.18.1"
+"@react-native-async-storage/async-storage@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@react-native-async-storage/async-storage@npm:2.0.0"
   dependencies:
     merge-options: ^3.0.4
   peerDependencies:
-    react-native: ^0.0.0-0 || 0.60 - 0.72 || 1000.0.0
-  checksum: 58c8497fafdd4d112c4a70b0976783abdc6fa487f0cffca196901efd146fc838dee0cf498fdc4ef67a4634ba4ca97d60fec5a24720aea1d46f1999b0ba8b249b
+    react-native: ^0.0.0-0 || >=0.65 <1.0
+  checksum: 7007a411f13988594a3f9b5ebb29f1554ab65ff2bd90814fa8b125fa68b69c431bdfcd38769ae2dcb6505aec2bad9296f0a0fa1ac8f123007eda49c826f2d138
   languageName: node
   linkType: hard
 
