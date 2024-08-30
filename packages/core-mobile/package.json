@@ -178,7 +178,7 @@
     "viem": "2.17.0",
     "vm-browserify": "1.1.2",
     "web3": "1.7.5",
-    "xss": "1.0.14",
+    "xss": "1.0.15",
     "zod": "3.20.2"
   },
   "devDependencies": {
