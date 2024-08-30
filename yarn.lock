@@ -366,7 +366,7 @@ __metadata:
     ts-jest: 29.2.5
     ts-node: 10.9.2
     type-fest: 4.3.1
-    typechain: 8.3.1
+    typechain: 8.3.2
     typescript: 5.2.2
     url: 0.11.4
     uuid: 8.3.2
@@ -24566,9 +24566,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typechain@npm:8.3.1":
-  version: 8.3.1
-  resolution: "typechain@npm:8.3.1"
+"typechain@npm:8.3.2":
+  version: 8.3.2
+  resolution: "typechain@npm:8.3.2"
   dependencies:
     "@types/prettier": ^2.1.1
     debug: ^4.3.1
@@ -24584,7 +24584,7 @@ __metadata:
     typescript: ">=4.3.0"
   bin:
     typechain: dist/cli/cli.js
-  checksum: c1e11ab1452d0c83be0c34a8b900b156b0c6654b95f7e7bb18dd98c0decd6009ffa1316e393f4e8def187af1bea3e931a13503815cc37155c0c945b7ae5b5215
+  checksum: 146a1896fa93403404be78757790b0f95b5457efebcca16b61622e09c374d555ef4f837c1c4eedf77e03abc50276d96a2f33064ec09bb802f62d8cc2b13fce70
   languageName: node
   linkType: hard
 
