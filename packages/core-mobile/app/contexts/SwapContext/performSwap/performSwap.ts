@@ -138,7 +138,6 @@ export async function performSwap({
         throw new Error('Swap token approval failed')
       }
 
-      assert(hash, 'Tx hash empty')
       approveTxHash = hash
     } else {
       approveTxHash = undefined
@@ -203,8 +202,6 @@ export async function performSwap({
   if (!swapTxHash) {
     throw rpcErrors.internal('Invalid transaction hash')
   }
-
-  assert(swapTxHash, 'Tx hash empty')
 
   return {
     swapTxHash,
