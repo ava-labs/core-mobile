@@ -312,7 +312,7 @@ __metadata:
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.0
     react-native-localize: 2.2.6
-    react-native-mmkv: 2.12.2
+    react-native-mmkv: 3.0.2
     react-native-modal-datetime-picker: 15.0.1
     react-native-os: 1.2.6
     react-native-pager-view: 6.2.3
@@ -487,7 +487,7 @@ __metadata:
     react: 18.3.1
     react-dom: 18.2.0
     react-native: 0.73.7
-    react-native-mmkv: 2.12.2
+    react-native-mmkv: 3.0.2
     react-native-safe-area-context: 4.10.9
     react-native-svg: 15.6.0
     react-native-svg-transformer: 1.5.0
@@ -21415,13 +21415,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-mmkv@npm:2.12.2":
-  version: 2.12.2
-  resolution: "react-native-mmkv@npm:2.12.2"
+"react-native-mmkv@npm:3.0.2":
+  version: 3.0.2
+  resolution: "react-native-mmkv@npm:3.0.2"
   peerDependencies:
     react: "*"
-    react-native: ">=0.71.0"
-  checksum: 8c79504a89fefd7f9c290a4a6bb24f1f9ef9e2a69d20d0f7d882b89f3943556e9c919c9d46583e44ab698f25213489277fccb6d4c856cce310267c5f907388f1
+    react-native: "*"
+  checksum: a6426a446514abac7f2ce76a54716210ff26e4220317d86cae0efd13b878566ce1112380915a36deb3e5e3498fa1c8910a82065b547f6c24d61aa6a026af01ed
   languageName: node
   linkType: hard
 
