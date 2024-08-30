@@ -361,7 +361,7 @@ __metadata:
     uuid: 8.3.2
     viem: 2.17.0
     vm-browserify: 1.1.2
-    web3: 1.7.5
+    web3: 4.12.1
     xss: 1.0.14
     zod: 3.20.2
   languageName: unknown
