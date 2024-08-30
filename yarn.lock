@@ -243,7 +243,7 @@ __metadata:
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.6
     "@types/numeral": 2.0.5
-    "@types/react": 18.2.6
+    "@types/react": 18.3.4
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.0.7
     "@types/semver": 7.5.4
@@ -298,7 +298,7 @@ __metadata:
     path-browserify: 0.0.0
     postinstall-postinstall: 2.1.0
     qrcode-reader: 1.0.4
-    react: 18.2.0
+    react: 18.3.1
     react-content-loader: 6.2.0
     react-dom: 18.2.0
     react-hook-form: 7.45.1
@@ -533,7 +533,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@types/jest": 29.5.6
-    "@types/react": 18.2.6
+    "@types/react": 18.3.4
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.0.7
     "@types/tinycolor2": 1.4.5
@@ -545,7 +545,7 @@ __metadata:
     jest: 29.7.0
     json-stringify-pretty-compact: 4.0.0
     patch-package: 6.4.7
-    react: 18.2.0
+    react: 18.3.1
     react-dom: 18.2.0
     react-native: 0.73.7
     react-native-mmkv: 2.12.2
@@ -556,7 +556,7 @@ __metadata:
     tinycolor2: 1.6.0
     typescript: 5.2.2
   peerDependencies:
-    react: 18.2.0
+    react: 18.3.1
     react-native: 0.73.7
     react-native-svg: 15.6.0
   languageName: unknown
@@ -22002,12 +22002,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:18.2.0":
-  version: 18.2.0
-  resolution: "react@npm:18.2.0"
+"react@npm:18.3.1, react@npm:^18.2.0":
+  version: 18.3.1
+  resolution: "react@npm:18.3.1"
   dependencies:
     loose-envify: ^1.1.0
-  checksum: 88e38092da8839b830cda6feef2e8505dec8ace60579e46aa5490fc3dc9bba0bd50336507dc166f43e3afc1c42939c09fe33b25fae889d6f402721dcd78fca1b
+  checksum: a27bcfa8ff7c15a1e50244ad0d0c1cb2ad4375eeffefd266a64889beea6f6b64c4966c9b37d14ee32d6c9fcd5aa6ba183b6988167ab4d127d13e7cb5b386a376
   languageName: node
   linkType: hard
 
@@ -22018,15 +22018,6 @@ __metadata:
     loose-envify: ^1.1.0
     object-assign: ^4.1.1
   checksum: b254cc17ce3011788330f7bbf383ab653c6848902d7936a87b09d835d091e3f295f7e9dd1597c6daac5dc80f90e778c8230218ba8ad599f74adcc11e33b9d61b
-  languageName: node
-  linkType: hard
-
-"react@npm:^18.2.0":
-  version: 18.3.1
-  resolution: "react@npm:18.3.1"
-  dependencies:
-    loose-envify: ^1.1.0
-  checksum: a27bcfa8ff7c15a1e50244ad0d0c1cb2ad4375eeffefd266a64889beea6f6b64c4966c9b37d14ee32d6c9fcd5aa6ba183b6988167ab4d127d13e7cb5b386a376
   languageName: node
   linkType: hard
 
