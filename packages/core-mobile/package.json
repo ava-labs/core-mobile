@@ -172,7 +172,7 @@
     "semver": "7.5.4",
     "stream-browserify": "1.0.0",
     "text-encoding": "0.7.0",
-    "type-fest": "4.3.1",
+    "type-fest": "4.26.0",
     "url": "0.11.4",
     "uuid": "8.3.2",
     "viem": "2.17.0",

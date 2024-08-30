@@ -365,7 +365,7 @@ __metadata:
     text-encoding: 0.7.0
     ts-jest: 29.2.5
     ts-node: 10.9.2
-    type-fest: 4.3.1
+    type-fest: 4.26.0
     typechain: 8.3.1
     typescript: 5.2.2
     url: 0.11.4
@@ -24500,10 +24500,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:4.3.1":
-  version: 4.3.1
-  resolution: "type-fest@npm:4.3.1"
-  checksum: 04e0f073dcc31c113c1b8856c089b388e7e9f4383a9ed72cc1466a89ec50d9d67678844eeec342b5a1ce71b21e817764d4f067aa148f6bcb5df9005ff3803382
+"type-fest@npm:4.26.0":
+  version: 4.26.0
+  resolution: "type-fest@npm:4.26.0"
+  checksum: f8073dc59a4a5bd897eecb3dfbf9d7716031fc161062ef572c402252a0375cc692c9ae1f50c75c80722964f1eda4011d1edbab36af63a130a53b3c1aab4ed1c5
   languageName: node
   linkType: hard
 
