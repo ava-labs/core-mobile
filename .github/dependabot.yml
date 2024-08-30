@@ -15,7 +15,6 @@ updates:
       - dependency-name: "@react-native/metro-config"
       - dependency-name: "react-native-reanimated"
       - dependency-name: "react-native-mmkv" # we're currently on 2.12.2 which is the latest version compatible with react-native 0.73.7
-      - dependency-name: "react-native-screens"
       - dependency-name: "@walletconnect/react-native-compat"
       - dependency-name: "@walletconnect/types"
       - dependency-name: "@walletconnect/utils"
