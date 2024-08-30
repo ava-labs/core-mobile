@@ -185,7 +185,7 @@ __metadata:
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.3.0
     "@lavamoat/allow-scripts": 2.0.3
-    "@lavamoat/preinstall-always-fail": 1.0.0
+    "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 5.0.2
     "@metamask/rpc-errors": 6.3.0
     "@noble/secp256k1": 2.1.0
@@ -4585,10 +4585,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lavamoat/preinstall-always-fail@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@lavamoat/preinstall-always-fail@npm:1.0.0"
-  checksum: 93af02b34c8a7d99296025fd2052272f26310b38998c07b39f698ba395a5543b450dea41d3a26005c83a634738e6f7de01a7cea0eb5552cfe83abe619c3e7b31
+"@lavamoat/preinstall-always-fail@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@lavamoat/preinstall-always-fail@npm:2.1.0"
+  checksum: 385c3fac828b9edff2d8b5825bd29ea475206046984cdb3217518ad655f145ff37046414041534960d92cbe0759f0dc675f7c7dcf39a95003ae715a834fbd750
   languageName: node
   linkType: hard
 
