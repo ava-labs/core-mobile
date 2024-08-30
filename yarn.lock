@@ -303,7 +303,7 @@ __metadata:
     react-native-haptic-feedback: 2.0.3
     react-native-inappbrowser-reborn: 3.7.0
     react-native-keychain: 8.1.1
-    react-native-level-fs: 3.0.0
+    react-native-level-fs: 3.0.1
     react-native-localize: 2.2.6
     react-native-mmkv: 2.12.2
     react-native-modal-datetime-picker: 15.0.1
@@ -21593,15 +21593,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-level-fs@npm:3.0.0":
-  version: 3.0.0
-  resolution: "react-native-level-fs@npm:3.0.0"
+"react-native-level-fs@npm:3.0.1":
+  version: 3.0.1
+  resolution: "react-native-level-fs@npm:3.0.1"
   dependencies:
     level-filesystem: ^1.0.1
     levelup: ^0.18.2
   peerDependencies:
-    asyncstorage-down: ^3.0.0
-  checksum: 22fa0973edf6053b46c0db7263636492ec32308179c858e8bac36944c1db91f61b74885bedc2da8efe642f775c4384dda4727aff350cbece58eb9cb263128f0a
+    asyncstorage-down: ">=3.0.0 <5.0.0"
+  checksum: 99ee634f498e4b7b1fbba15042b526c6a34fbb71ed05cf84fa80862cbda6ee23bce99be2a03b8ef85c0edb4ce63238277d4accc5c2ede784a67dcf4ca80ddd94
   languageName: node
   linkType: hard
 
