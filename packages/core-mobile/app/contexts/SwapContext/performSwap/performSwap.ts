@@ -59,7 +59,6 @@ export async function performSwap({
   const partner = 'Avalanche'
 
   let approveTxHash: string | undefined
-  let spenderAddress: string
 
   const minAmount = new Big(priceRoute.destAmount)
     .times(1 - slippage / 100)
@@ -77,6 +76,8 @@ export async function performSwap({
 
   // no need to approve native token
   if (!isSrcTokenNative) {
+    let spenderAddress: string
+
     try {
       spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
     } catch (error) {
