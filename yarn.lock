@@ -295,7 +295,7 @@ __metadata:
     node-fetch: 3.3.2
     paraswap: 5.2.0
     patch-package: 8.0.0
-    path-browserify: 0.0.0
+    path-browserify: 1.0.1
     postinstall-postinstall: 2.1.0
     qrcode-reader: 1.0.4
     react: 18.2.0
@@ -20186,10 +20186,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-browserify@npm:0.0.0":
-  version: 0.0.0
-  resolution: "path-browserify@npm:0.0.0"
-  checksum: 6a6755c7813a8c9652d137729976d9828aa6d1a7bf9de985b0e79aa3617f646d037449a82e71d229ce3351aae01705f8e07a7f0ca62bb1e147d4001be737c6b5
+"path-browserify@npm:1.0.1":
+  version: 1.0.1
+  resolution: "path-browserify@npm:1.0.1"
+  checksum: c6d7fa376423fe35b95b2d67990060c3ee304fc815ff0a2dc1c6c3cfaff2bd0d572ee67e18f19d0ea3bbe32e8add2a05021132ac40509416459fffee35200699
   languageName: node
   linkType: hard
 

@@ -108,7 +108,7 @@
     "moment": "2.29.4",
     "node-cache": "5.1.2",
     "paraswap": "5.2.0",
-    "path-browserify": "0.0.0",
+    "path-browserify": "1.0.1",
     "qrcode-reader": "1.0.4",
     "react": "18.2.0",
     "react-content-loader": "6.2.0",
