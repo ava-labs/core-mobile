@@ -13,6 +13,8 @@ updates:
     ignore:
       - dependency-name: "react-native"
       - dependency-name: "@react-native/metro-config"
+      - dependency-name: "react-native-reanimated"
       - dependency-name: "@walletconnect/react-native-compat"
       - dependency-name: "@walletconnect/types"
-      - dependency-name: "@walletconnect/utils"     
+      - dependency-name: "@walletconnect/utils"
+      - dependency-name: "@avalabs/*"
