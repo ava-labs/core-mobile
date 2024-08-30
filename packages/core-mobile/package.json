@@ -210,7 +210,7 @@
     "@types/jest": "29.5.12",
     "@types/lodash.debounce": "4.0.9",
     "@types/lodash.isempty": "4.4.9",
-    "@types/lodash.isstring": "4.0.6",
+    "@types/lodash.isstring": "4.0.9",
     "@types/numeral": "2.0.5",
     "@types/react": "18.3.4",
     "@types/react-dom": "18.2.21",
