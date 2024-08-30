@@ -1,13 +1,13 @@
 import notifee, {
+  AndroidChannel,
   AuthorizationStatus,
+  Event,
+  EventDetail,
+  EventType,
+  InitialNotification,
   TimestampTrigger,
   TriggerNotification,
-  TriggerType,
-  Event,
-  EventType,
-  EventDetail,
-  AndroidChannel,
-  InitialNotification
+  TriggerType
 } from '@notifee/react-native'
 import {
   DeepLinkOrigin,
@@ -285,6 +285,31 @@ class NotificationsService {
 
   createChannel = async (channel: AndroidChannel): Promise<string> => {
     return notifee.createChannel(channel)
+  }
+
+  displayNotification = async ({
+    channelId,
+    title,
+    body,
+    data
+  }: {
+    channelId: ChannelId
+    title: string
+    body?: string
+    data?: { [p: string]: string | object | number }
+  }): Promise<void> => {
+    await notifee.displayNotification({
+      title,
+      body,
+      android: {
+        channelId,
+        // pressAction is needed if you want the notification to open the app when pressed
+        pressAction: {
+          id: 'openC-ChainPortfolio'
+        }
+      },
+      data
+    })
   }
 }
 
