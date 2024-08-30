@@ -217,7 +217,7 @@ __metadata:
     "@react-navigation/drawer": 6.7.2
     "@react-navigation/elements": 1.3.31
     "@react-navigation/native": 6.1.18
-    "@react-navigation/native-stack": 6.10.1
+    "@react-navigation/native-stack": 6.11.0
     "@react-navigation/stack": 6.4.1
     "@reduxjs/toolkit": 1.8.1
     "@rushstack/eslint-patch": 1.5.1
@@ -6492,9 +6492,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native-stack@npm:6.10.1":
-  version: 6.10.1
-  resolution: "@react-navigation/native-stack@npm:6.10.1"
+"@react-navigation/native-stack@npm:6.11.0":
+  version: 6.11.0
+  resolution: "@react-navigation/native-stack@npm:6.11.0"
   dependencies:
     "@react-navigation/elements": ^1.3.31
     warn-once: ^0.1.0
@@ -6504,7 +6504,7 @@ __metadata:
     react-native: "*"
     react-native-safe-area-context: ">= 3.0.0"
     react-native-screens: ">= 3.0.0"
-  checksum: be3c81351bf29eaf2c18b37014961afb02ae1931b50d7a66c6c55a3d522ee2a371b2f0f94e7a71f0b7f510ac6f24af91b3b5d5b511d74c9f3bd99e7f7d90f51f
+  checksum: d3dd57c216f5dbe53636bdb9aa48fe27831640f868cf5c68731943a49b68cb457d81182e7868f3e3033da0564e9f193f1b06b69085b8bc5b04ccfbe12ea2bbc0
   languageName: node
   linkType: hard
 
