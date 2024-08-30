@@ -24,7 +24,11 @@ module.exports = {
         'formdata-polyfill',
         '@notifee/react-native',
         '@invertase/react-native-apple-authentication',
-        '@avalabs/vm-module-types'
+        '@avalabs/vm-module-types',
+        'camelcase-keys',
+        'map-obj',
+        'camelcase',
+        'quick-lru'
       ].join('|') +
       ')'
   ]
