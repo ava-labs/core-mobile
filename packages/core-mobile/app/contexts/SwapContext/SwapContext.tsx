@@ -27,6 +27,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { showTransactionErrorToast } from 'utils/toast'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { performSwap } from './performSwap/performSwap'
 
 // success here just means the transaction was sent, not that it was successful/confirmed
@@ -168,11 +169,13 @@ export const SwapContextProvider = ({
         .then(([result, err]) => {
           if (err || (result && 'error' in result)) {
             setSwapStatus('Fail')
-            AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
-              address: activeAccount.addressC,
-              chainId: activeNetwork.chainId
-            })
-            showTransactionErrorToast({ message: humanizeSwapErrors(err) })
+            if (!isUserRejectedError(err)) {
+              AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
+                address: activeAccount.addressC,
+                chainId: activeNetwork.chainId
+              })
+              showTransactionErrorToast({ message: humanizeSwapErrors(err) })
+            }
           } else {
             setSwapStatus('Success')
             AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {

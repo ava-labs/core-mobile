@@ -11,6 +11,7 @@ import {
   NetworkToken,
   NetworkVMType
 } from '@avalabs/core-chains-sdk'
+import ModuleManager from 'vmModule/ModuleManager'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'
@@ -20,7 +21,6 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { DebankNetwork } from 'services/network/types'
 import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
-import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -45,27 +45,13 @@ class NetworkService {
     }
   }
 
-  getProviderForNetwork(
+  async getProviderForNetwork(
     network: Network
-  ): JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider {
-    if (network.vmName === NetworkVMType.BITCOIN) {
-      return getBitcoinProvider(network.isTestnet)
-    }
-
-    if (network.vmName === NetworkVMType.EVM) {
-      return getEvmProvider(network)
-    }
-
-    if (
-      network.vmName === NetworkVMType.AVM ||
-      network.vmName === NetworkVMType.PVM
-    ) {
-      return network.isTestnet
-        ? Avalanche.JsonRpcProvider.getDefaultFujiProvider()
-        : Avalanche.JsonRpcProvider.getDefaultMainnetProvider()
-    }
-
-    throw new Error(`Unsupported network type: ${network.vmName}`)
+  ): Promise<
+    JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
+  > {
+    const module = await ModuleManager.loadModuleByNetwork(network)
+    return module.getProvider(network)
   }
 
   async sendTransaction({
@@ -132,7 +118,7 @@ class NetworkService {
    */
   getAvalancheProviderXP(isDeveloperMode: boolean): Avalanche.JsonRpcProvider {
     const network = this.getAvalancheNetworkP(isDeveloperMode)
-    return this.getProviderForNetwork(network) as Avalanche.JsonRpcProvider
+    return ModuleManager.avalancheModule.getProvider(network)
   }
 
   private async fetchERC20Networks(): Promise<Networks> {

@@ -25,6 +25,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 
 export interface SendNFTContextState {
   sendToken: NFTItem
@@ -134,13 +135,15 @@ export const SendNFTContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
-          showTransactionErrorToast({
-            message: getJsonRpcErrorMessage(reason)
-          })
-          AnalyticsService.capture('NftSendFailed', {
-            errorMessage: reason?.error?.message,
-            chainId: activeNetwork.chainId
-          })
+          if (!isUserRejectedError(reason)) {
+            showTransactionErrorToast({
+              message: getJsonRpcErrorMessage(reason)
+            })
+            AnalyticsService.capture('NftSendFailed', {
+              errorMessage: reason?.error?.message,
+              chainId: activeNetwork.chainId
+            })
+          }
         })
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
@@ -164,13 +167,13 @@ export const SendNFTContextProvider = ({
     }
 
     sendService
-      .validateStateAndCalculateFees(
+      .validateStateAndCalculateFees({
         sendState,
         activeNetwork,
-        activeAccount,
-        selectedCurrency,
+        account: activeAccount,
+        currency: selectedCurrency,
         nativeTokenBalance
-      )
+      })
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
         setError(state.error ? state.error.message : undefined)

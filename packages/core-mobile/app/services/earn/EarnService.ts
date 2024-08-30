@@ -14,7 +14,6 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
@@ -254,9 +253,7 @@ class EarnService {
     })
     Logger.trace('txID', txID)
 
-    const avaxProvider = NetworkService.getProviderForNetwork(
-      avaxXPNetwork
-    ) as Avalanche.JsonRpcProvider
+    const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
 
     try {
       await retry({

@@ -18,6 +18,7 @@ import {
   getEvmCaip2ChainId
 } from 'temp/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
+import { BitcoinInputUTXO } from '@avalabs/core-wallets-sdk'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -43,14 +44,6 @@ class SendService {
           throw new Error('Source address not set')
         }
         const service = this.getService(network, fromAddress)
-
-        sendState = await service.validateStateAndCalculateFees({
-          sendState,
-          isMainnet: !network.isTestnet,
-          fromAddress,
-          currency,
-          sentryTrx
-        })
 
         if (sendState.error?.error) {
           throw new Error(sendState.error.message)
@@ -155,14 +148,21 @@ class SendService {
       })
   }
 
-  // eslint-disable-next-line max-params
-  async validateStateAndCalculateFees(
-    sendState: SendState,
-    activeNetwork: Network,
-    account: Account,
-    currency: string,
+  async validateStateAndCalculateFees({
+    sendState,
+    activeNetwork,
+    account,
+    currency,
+    nativeTokenBalance,
+    utxos
+  }: {
+    sendState: SendState
+    activeNetwork: Network
+    account: Account
+    currency: string
     nativeTokenBalance?: bigint
-  ): Promise<SendState> {
+    utxos?: BitcoinInputUTXO[]
+  }): Promise<SendState> {
     const fromAddress = getAddressByNetwork(account, activeNetwork)
 
     if (!fromAddress) {
@@ -175,8 +175,10 @@ class SendService {
       fromAddress,
       currency,
       accountIndex: account.index,
-      nativeTokenBalance
+      nativeTokenBalance,
+      utxos
     }
+
     return service.validateStateAndCalculateFees(params)
   }
 
