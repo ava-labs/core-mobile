@@ -304,7 +304,7 @@ __metadata:
     react-native-inappbrowser-reborn: 3.7.0
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.0
-    react-native-localize: 2.2.6
+    react-native-localize: 3.2.1
     react-native-mmkv: 2.12.2
     react-native-modal-datetime-picker: 15.0.1
     react-native-os: 1.2.6
@@ -21605,20 +21605,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-localize@npm:2.2.6":
-  version: 2.2.6
-  resolution: "react-native-localize@npm:2.2.6"
+"react-native-localize@npm:3.2.1":
+  version: 3.2.1
+  resolution: "react-native-localize@npm:3.2.1"
   peerDependencies:
-    react: ">=16.8.6"
-    react-native: ">=0.60.0"
-    react-native-macos: ">=0.64.0"
-    react-native-windows: ">=0.62.0"
+    react: ">=18.1.0"
+    react-native: ">=0.70.0"
+    react-native-macos: ">=0.70.0"
   peerDependenciesMeta:
     react-native-macos:
       optional: true
-    react-native-windows:
-      optional: true
-  checksum: aa03c37a254e4bec71dcd8b9844ece091e9b14ff38b6e1db6307674d33f62477c8d42b5a022da8ec892586004985846e08b79822f05989382ef07ba696438917
+  checksum: 35708cb792ba67db6b3e67a9430eec9dfc665b96d1c9c15e9e4729cf0b24d32880b3b9a9743a232da817e1ab8a8159528ba07354fbc3ff879b1b6b2c92cb8fc8
   languageName: node
   linkType: hard
 
