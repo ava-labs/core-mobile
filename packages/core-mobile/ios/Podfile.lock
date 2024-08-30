@@ -1202,9 +1202,11 @@ PODS:
     - React-RCTImage
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (5.24.1):
+  - RNSentry (5.31.1):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
     - React-Core
-    - Sentry/HybridSDK (= 8.29.1)
+    - Sentry/HybridSDK (= 8.36.0)
   - RNSound (0.11.2):
     - React-Core
     - RNSound/Core (= 0.11.2)
@@ -1218,7 +1220,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.29.1)
+  - Sentry/HybridSDK (8.36.0)
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
 
@@ -1655,12 +1657,12 @@ SPEC CHECKSUMS:
   RNReanimated: 00ee495a70897aa9d541e76debec14253133b812
   RNScreens: 29418ceffb585b8f0ebd363de304288c3dce8323
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
-  RNSentry: 0aefd4f23b45e3c00577c3a18af79b8f8193bcdb
+  RNSentry: 568a6de0674536ba3120d0dbfa1e0193d7ed425f
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
   RNSVG: 5da7a24f31968ec74f0b091e3440080f347e279b
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: c446963245407030e17f1b926a83c6337dc99f4e
+  Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 47d399a73c0c0caa9ff824e5c657eae31215bfee
 
