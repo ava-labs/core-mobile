@@ -13746,7 +13746,7 @@ __metadata:
     eslint-plugin-import: 2.29.1
     eslint-plugin-jest: 27.6.0
     eslint-plugin-prettier: 4.2.1
-    eslint-plugin-promise: 6.1.1
+    eslint-plugin-promise: 7.1.0
     eslint-plugin-react-hooks: 4.6.0
     eslint-plugin-sonarjs: 0.21.0
     prettier: 2.6.2
@@ -13869,12 +13869,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-promise@npm:6.1.1":
-  version: 6.1.1
-  resolution: "eslint-plugin-promise@npm:6.1.1"
+"eslint-plugin-promise@npm:7.1.0":
+  version: 7.1.0
+  resolution: "eslint-plugin-promise@npm:7.1.0"
   peerDependencies:
-    eslint: ^7.0.0 || ^8.0.0
-  checksum: 46b9a4f79dae5539987922afc27cc17cbccdecf4f0ba19c0ccbf911b0e31853e9f39d9959eefb9637461b52772afa1a482f1f87ff16c1ba38bdb6fcf21897e9a
+    eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
+  checksum: 6b4d28cbb33847c732262aee8a1784cdfc37754e91611ac0c86bfd8dd07fbba966a953a212ae49f91de1f4a31b28d65153935b0f183ce14647b31451706f722b
   languageName: node
   linkType: hard
 
