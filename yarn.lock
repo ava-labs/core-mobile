@@ -306,7 +306,7 @@ __metadata:
     react-native-level-fs: 3.0.0
     react-native-localize: 2.2.6
     react-native-mmkv: 2.12.2
-    react-native-modal-datetime-picker: 15.0.1
+    react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
     react-native-pager-view: 6.2.3
     react-native-passkey: 2.1.1
@@ -21632,15 +21632,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-modal-datetime-picker@npm:15.0.1":
-  version: 15.0.1
-  resolution: "react-native-modal-datetime-picker@npm:15.0.1"
+"react-native-modal-datetime-picker@npm:18.0.0":
+  version: 18.0.0
+  resolution: "react-native-modal-datetime-picker@npm:18.0.0"
   dependencies:
     prop-types: ^15.7.2
   peerDependencies:
     "@react-native-community/datetimepicker": ">=6.7.0"
     react-native: ">=0.65.0"
-  checksum: 22655acfadf586ddbbbcc9dc1b0712308bdd92b9b9328fd5c419c1c0c0994353ee02ac2027fdc2caa20d83870795133c4556ebab9d31405c08137b18ae6f13a1
+  checksum: 30d28a8e599c7a36df4c3e93928aa246087edb95a82a98cb1162b045d18db47447c4e28a89190c83a8258f080066531b2b67805a9aeb007b135d62abfccf8c4c
   languageName: node
   linkType: hard
 
