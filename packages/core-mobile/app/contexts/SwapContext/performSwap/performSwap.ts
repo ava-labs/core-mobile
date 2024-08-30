@@ -133,6 +133,11 @@ export async function performSwap({
         throw rpcErrors.internal('Invalid transaction hash')
       }
 
+      const receipt = hash && (await provider.waitForTransaction(hash))
+      if (!receipt || (receipt && receipt.status !== 1)) {
+        throw new Error('Swap token approval failed')
+      }
+
       assert(hash, 'Tx hash empty')
       approveTxHash = hash
     } else {
