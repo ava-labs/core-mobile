@@ -179,7 +179,7 @@
     "vm-browserify": "1.1.2",
     "web3": "1.7.5",
     "xss": "1.0.15",
-    "zod": "3.20.2"
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
