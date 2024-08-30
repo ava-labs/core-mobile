@@ -932,9 +932,9 @@ PODS:
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - react-native-config (1.4.5):
-    - react-native-config/App (= 1.4.5)
-  - react-native-config/App (1.4.5):
+  - react-native-config (1.5.3):
+    - react-native-config/App (= 1.5.3)
+  - react-native-config/App (1.5.3):
     - React-Core
   - react-native-menu (0.9.1):
     - React
@@ -1148,7 +1148,7 @@ PODS:
     - React-Core
   - RNBootSplash (6.1.2):
     - React-Core
-  - RNCAsyncStorage (1.18.1):
+  - RNCAsyncStorage (2.0.0):
     - React-Core
   - RNCClipboard (1.13.2):
     - React-Core
@@ -1599,7 +1599,7 @@ SPEC CHECKSUMS:
   react-native-blur: 4568dd93d1d82748c180df8beb2d929c97b13b47
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
   react-native-compat: 5a5b7a043bec932a7814dc35f0649712bc10324e
-  react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
+  react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-menu: 9728f90160c36b9a75481fc76e05354b99d54c59
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2
   react-native-netinfo: ccbe1085dffd16592791d550189772e13bf479e2
@@ -1637,7 +1637,7 @@ SPEC CHECKSUMS:
   RNAppleAuthentication: e99eaf3c4c01ad8ecb6125dd6f0cfd98871685b5
   RNArgon2: 1481820722fd4af1575c09f7fc9ad67c00ee8a42
   RNBootSplash: 4cb5ac8f6eeb5c30b0d2d3a44b8f40f80bcf8b45
-  RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
+  RNCAsyncStorage: d35c79ffba52c1013013e16b1fc295aec2feabb6
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
   RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
   RNDeviceInfo: 0a7c1d2532aa7691f9b9925a27e43af006db4dae
