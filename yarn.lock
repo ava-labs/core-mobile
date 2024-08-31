@@ -237,7 +237,7 @@ __metadata:
     "@walletconnect/web3wallet": 1.10.0
     "@welldone-software/why-did-you-render": 8.0.3
     "@zodios/core": 10.9.6
-    assert: 1.1.1
+    assert: 2.1.0
     asyncstorage-down: 4.2.0
     axios: 1.7.5
     babel-jest: 29.7.0
@@ -10179,16 +10179,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"assert@npm:1.1.1":
-  version: 1.1.1
-  resolution: "assert@npm:1.1.1"
-  dependencies:
-    util: 0.10.2
-  checksum: c84073c67b6e5829a57efff10e62823c1c137c80b2bd768a490da6a587f3eeb6a95d99cb13efe733b9cc3f781013e867d2de10fdbd61bb03fc9104e24731ee6f
-  languageName: node
-  linkType: hard
-
-"assert@npm:^2.1.0":
+"assert@npm:2.1.0, assert@npm:^2.1.0":
   version: 2.1.0
   resolution: "assert@npm:2.1.0"
   dependencies:
@@ -16108,13 +16099,6 @@ __metadata:
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 4a48a733847879d6cf6691860a6b1e3f0f4754176e4d71494c41f3475553768b10f84b5ce1d40fbd0e34e6bfbb864ee35858ad4dd2cf31e02fc4a154b724d7f1
-  languageName: node
-  linkType: hard
-
-"inherits@npm:2.0.1":
-  version: 2.0.1
-  resolution: "inherits@npm:2.0.1"
-  checksum: 6536b9377296d4ce8ee89c5c543cb75030934e61af42dba98a428e7d026938c5985ea4d1e3b87743a5b834f40ed1187f89c2d7479e9d59e41d2d1051aefba07b
   languageName: node
   linkType: hard
 
@@ -25275,15 +25259,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
-  languageName: node
-  linkType: hard
-
-"util@npm:0.10.2":
-  version: 0.10.2
-  resolution: "util@npm:0.10.2"
-  dependencies:
-    inherits: 2.0.1
-  checksum: 54eaa203f84a74fde44222e49f667da21e4d3ed7650a6b62cd33d31d2a73e104057d5d6a097939cd10d3d648d7c28d500573b1548ba429a8e6db41634a0bc5b7
   languageName: node
   linkType: hard
 
