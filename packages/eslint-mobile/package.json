@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
-    "@lavamoat/allow-scripts": "2.0.3",
+    "@lavamoat/allow-scripts": "3.2.0",
     "@react-native-community/eslint-config": "3.0.3",
     "@tanstack/eslint-plugin-query": "5.53.0",
     "@types/node": "22.5.1",
