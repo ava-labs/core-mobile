@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "husky": "8.0.1",
-    "lint-staged": "15.0.2"
+    "lint-staged": "15.2.9"
   },
   "resolutions": {
     "minimist": "1.2.6",
