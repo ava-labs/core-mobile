@@ -88,7 +88,7 @@
     "big.js": "6.2.1",
     "bip174": "2.1.0",
     "bip39": "3.0.4",
-    "bitcoinjs-lib": "5.2.0",
+    "bitcoinjs-lib": "6.1.6",
     "bn.js": "5.2.1",
     "browserify-zlib": "0.2.0",
     "camelcase-keys": "9.1.3",
