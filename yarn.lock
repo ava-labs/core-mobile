@@ -352,7 +352,7 @@ __metadata:
     typescript: 5.2.2
     url: 0.11.4
     uuid: 8.3.2
-    viem: 2.17.0
+    viem: 2.21.0
     vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.15
@@ -5188,6 +5188,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@noble/curves@npm:^1.4.0":
+  version: 1.5.0
+  resolution: "@noble/curves@npm:1.5.0"
+  dependencies:
+    "@noble/hashes": 1.4.0
+  checksum: a43464c5db67a931b1c93d6634c98e30d791dd567408ebeffd582be1a7f31169f6f26b191e24a9552d89d935408bd8c3dfb90ad8b47286ecf53cbdd2d79d02af
+  languageName: node
+  linkType: hard
+
 "@noble/hashes@npm:1.2.0, @noble/hashes@npm:~1.2.0":
   version: 1.2.0
   resolution: "@noble/hashes@npm:1.2.0"
@@ -5216,7 +5225,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.4.0, @noble/hashes@npm:^1.3.1, @noble/hashes@npm:~1.4.0":
+"@noble/hashes@npm:1.4.0, @noble/hashes@npm:^1.3.1, @noble/hashes@npm:^1.4.0, @noble/hashes@npm:~1.4.0":
   version: 1.4.0
   resolution: "@noble/hashes@npm:1.4.0"
   checksum: 8ba816ae26c90764b8c42493eea383716396096c5f7ba6bea559993194f49d80a73c081f315f4c367e51bd2d5891700bcdfa816b421d24ab45b41cb03e4f3342
@@ -25448,9 +25457,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.17.0":
-  version: 2.17.0
-  resolution: "viem@npm:2.17.0"
+"viem@npm:2.21.0":
+  version: 2.21.0
+  resolution: "viem@npm:2.21.0"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.4.0
@@ -25459,13 +25468,14 @@ __metadata:
     "@scure/bip39": 1.3.0
     abitype: 1.0.5
     isows: 1.0.4
+    webauthn-p256: 0.0.5
     ws: 8.17.1
   peerDependencies:
     typescript: ">=5.0.4"
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 511d2bbdee6edf0bc4bedf4f9a704c455bd9e27bb83f17d26f6f52a6975c9abe170b86847293240b9d2f2aeb75aa24ccb7b61870cbd460acfa99b01a3ed75f02
+  checksum: 24b854e1ee2316bc43e0548e1b1703059cdf8ef46f1ed0805c457316967da3763a64172497cca1bbf111ef03c8c706cce353e0876ce7c6a71cf822d220387a84
   languageName: node
   linkType: hard
 
@@ -25811,6 +25821,16 @@ __metadata:
     web3-shh: 1.7.5
     web3-utils: 1.7.5
   checksum: 823c015a5820480ca9216038199f2df40e21a9ccb66be4e18a19aada0c9dd21b45b270042823a16e7e9a65e6b63f4fd3a0f2acb930a2ec0fe6d80a3791e6c63a
+  languageName: node
+  linkType: hard
+
+"webauthn-p256@npm:0.0.5":
+  version: 0.0.5
+  resolution: "webauthn-p256@npm:0.0.5"
+  dependencies:
+    "@noble/curves": ^1.4.0
+    "@noble/hashes": ^1.4.0
+  checksum: 2837188d1e6d947c87c5728374fb6aec96387cb766f78e7a04d5903774264feb278d68a639748f09997f591e5278796c662bb5c4e8b8286b0f22254694023584
   languageName: node
   linkType: hard
 
