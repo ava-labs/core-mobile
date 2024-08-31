@@ -316,7 +316,7 @@ __metadata:
     react-native-qrcode-scanner: 1.5.5
     react-native-qrcode-svg: 6.3.2
     react-native-quick-base64: 2.0.8
-    react-native-quick-crypto: 0.6.1
+    react-native-quick-crypto: 0.7.3
     react-native-reanimated: 3.8.0
     react-native-redash: 18.1.3
     react-native-restart: 0.0.27
@@ -8802,13 +8802,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^17.0.31":
-  version: 17.0.45
-  resolution: "@types/node@npm:17.0.45"
-  checksum: aa04366b9103b7d6cfd6b2ef64182e0eaa7d4462c3f817618486ea0422984c51fc69fd0d436eae6c9e696ddfdbec9ccaa27a917f7c2e8c75c5d57827fe3d95e8
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^18.0.0":
   version: 18.19.31
   resolution: "@types/node@npm:18.19.31"
@@ -11193,7 +11186,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:6.0.3":
+"buffer@npm:6.0.3, buffer@npm:^6.0.3":
   version: 6.0.3
   resolution: "buffer@npm:6.0.3"
   dependencies:
@@ -12309,7 +12302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"crypto-browserify@npm:3.12.0, crypto-browserify@npm:^3.12.0":
+"crypto-browserify@npm:3.12.0":
   version: 3.12.0
   resolution: "crypto-browserify@npm:3.12.0"
   dependencies:
@@ -16104,7 +16097,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inherits@npm:2, inherits@npm:2.0.4, inherits@npm:^2.0.1, inherits@npm:^2.0.3, inherits@npm:^2.0.4, inherits@npm:~2.0.1, inherits@npm:~2.0.3, inherits@npm:~2.0.4":
+"inherits@npm:2, inherits@npm:2.0.4, inherits@npm:^2.0.1, inherits@npm:^2.0.3, inherits@npm:^2.0.4, inherits@npm:~2.0.1, inherits@npm:~2.0.3":
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 4a48a733847879d6cf6691860a6b1e3f0f4754176e4d71494c41f3475553768b10f84b5ce1d40fbd0e34e6bfbb864ee35858ad4dd2cf31e02fc4a154b724d7f1
@@ -21723,21 +21716,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-quick-crypto@npm:0.6.1":
-  version: 0.6.1
-  resolution: "react-native-quick-crypto@npm:0.6.1"
+"react-native-quick-crypto@npm:0.7.3":
+  version: 0.7.3
+  resolution: "react-native-quick-crypto@npm:0.7.3"
   dependencies:
     "@craftzdog/react-native-buffer": ^6.0.5
-    "@types/node": ^17.0.31
-    crypto-browserify: ^3.12.0
     events: ^3.3.0
-    react-native-quick-base64: ^2.0.5
-    stream-browserify: ^3.0.0
+    readable-stream: ^4.5.2
     string_decoder: ^1.3.0
+    util: ^0.12.5
   peerDependencies:
     react: "*"
-    react-native: ">=0.71.0"
-  checksum: 47b227c74cef0c9630ce7e91fe2153bcf2492f3fae175352818ca2278779f28c2932611df44cb8a18cb290da6d73aa3a927bcea56c3a9a4a51db6a7f4f72ac4d
+    react-native: "*"
+  checksum: c995edf1da77f31e2e714330cc07d338861f982efe1d3b5ff3b63de04a59b8ec6cbd4c50c05e4379e064e6581b69e4cb541f41c944d0226fb5606063a696ad6a
   languageName: node
   linkType: hard
 
@@ -22202,7 +22193,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^3.1.1, readable-stream@npm:^3.4.0, readable-stream@npm:^3.5.0, readable-stream@npm:^3.6.0":
+"readable-stream@npm:^3.1.1, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
   version: 3.6.2
   resolution: "readable-stream@npm:3.6.2"
   dependencies:
@@ -22210,6 +22201,19 @@ __metadata:
     string_decoder: ^1.1.1
     util-deprecate: ^1.0.1
   checksum: bdcbe6c22e846b6af075e32cf8f4751c2576238c5043169a1c221c92ee2878458a816a4ea33f4c67623c0b6827c8a400409bfb3cf0bf3381392d0b1dfb52ac8d
+  languageName: node
+  linkType: hard
+
+"readable-stream@npm:^4.5.2":
+  version: 4.5.2
+  resolution: "readable-stream@npm:4.5.2"
+  dependencies:
+    abort-controller: ^3.0.0
+    buffer: ^6.0.3
+    events: ^3.3.0
+    process: ^0.11.10
+    string_decoder: ^1.3.0
+  checksum: c4030ccff010b83e4f33289c535f7830190773e274b3fcb6e2541475070bdfd69c98001c3b0cb78763fc00c8b62f514d96c2b10a8bd35d5ce45203a25fa1d33a
   languageName: node
   linkType: hard
 
@@ -23567,16 +23571,6 @@ __metadata:
     inherits: ~2.0.1
     readable-stream: ^1.0.27-1
   checksum: 528313913f5ccd579d2d858eb21c19d28654f8922266145661066c0df6ee046557fb3bd977a64bfbee3aad2e8fd72cb24d17c432602a114875cc05073aab2a32
-  languageName: node
-  linkType: hard
-
-"stream-browserify@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "stream-browserify@npm:3.0.0"
-  dependencies:
-    inherits: ~2.0.4
-    readable-stream: ^3.5.0
-  checksum: 4c47ef64d6f03815a9ca3874e2319805e8e8a85f3550776c47ce523b6f4c6cd57f40e46ec6a9ab8ad260fde61863c2718f250d3bedb3fe9052444eb9abfd9921
   languageName: node
   linkType: hard
 
