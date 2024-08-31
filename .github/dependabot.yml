@@ -26,7 +26,7 @@ updates:
       - dependency-name: "eslint" # we should be using eslint 8.50.0 (please refer to dependencies_resolutions.md)
       - dependency-name: "eslint-config-prettier" # we should be using eslint-config-prettier 8.10.0 (please refer to dependencies_resolutions.md)
       - dependency-name: "eslint-plugin-prettier" # to use the latest version, update eslint first
-      - depencency-name: "prettier" # to use the latest version, update eslint first
+      - dependency-name: "prettier" # to use the latest version, update eslint first
       - dependency-name: "@typescript-eslint/eslint-plugin" # to use the latest version, update eslint first
       - dependency-name: "@typescript-eslint/parser" # to use the latest version, update eslint first
       - dependency-name: "bip174" # we should be using bip174 2.1.0 (please refer to dependencies_resolutions.md)
