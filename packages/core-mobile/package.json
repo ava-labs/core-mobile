@@ -195,7 +195,7 @@
     "@dlenroc/testrail": "1.9.1",
     "@lavamoat/allow-scripts": "2.0.3",
     "@playwright/test": "1.42.1",
-    "@react-native/babel-preset": "0.73.21",
+    "@react-native/babel-preset": "0.75.2",
     "@react-native/metro-config": "0.73.5",
     "@rushstack/eslint-patch": "1.10.4",
     "@spotlightjs/spotlight": "2.0.0",
