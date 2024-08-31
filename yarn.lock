@@ -214,7 +214,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@tanstack/query-sync-storage-persister": 5.53.1
-    "@tanstack/react-query": 5.52.2
+    "@tanstack/react-query": 5.53.1
     "@tanstack/react-query-persist-client": 5.52.2
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.0
@@ -8029,14 +8029,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:5.52.2":
-  version: 5.52.2
-  resolution: "@tanstack/react-query@npm:5.52.2"
+"@tanstack/react-query@npm:5.53.1":
+  version: 5.53.1
+  resolution: "@tanstack/react-query@npm:5.53.1"
   dependencies:
-    "@tanstack/query-core": 5.52.2
+    "@tanstack/query-core": 5.53.1
   peerDependencies:
     react: ^18 || ^19
-  checksum: decaed468b1884859db949bcc67c129648f9212bcd688a9683e8bc9ab8b325263c2c31c30bbf8faa61d7e3ed951dce4828db7fb74533a707d872994be2244514
+  checksum: 1675125adf1041f7caa7f7a3413e6483711c2de57de83af0bdad2278e17682a235d0b0ce1c0c5ef1b5480b8bc7335d3ce7091c3cdd2974479da25437e27b6105
   languageName: node
   linkType: hard
 
