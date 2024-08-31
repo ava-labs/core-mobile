@@ -343,7 +343,7 @@ __metadata:
     rn-nodeify: 10.3.0
     rxjs: 7.8.1
     semver: 7.5.4
-    stream-browserify: 1.0.0
+    stream-browserify: 3.0.0
     text-encoding: 0.7.0
     ts-jest: 29.2.5
     ts-node: 10.9.2
@@ -22175,7 +22175,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:1.1.14, readable-stream@npm:^1.0.26-4, readable-stream@npm:^1.0.27-1":
+"readable-stream@npm:1.1.14, readable-stream@npm:^1.0.26-4":
   version: 1.1.14
   resolution: "readable-stream@npm:1.1.14"
   dependencies:
@@ -23560,17 +23560,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stream-browserify@npm:1.0.0":
-  version: 1.0.0
-  resolution: "stream-browserify@npm:1.0.0"
-  dependencies:
-    inherits: ~2.0.1
-    readable-stream: ^1.0.27-1
-  checksum: 528313913f5ccd579d2d858eb21c19d28654f8922266145661066c0df6ee046557fb3bd977a64bfbee3aad2e8fd72cb24d17c432602a114875cc05073aab2a32
-  languageName: node
-  linkType: hard
-
-"stream-browserify@npm:^3.0.0":
+"stream-browserify@npm:3.0.0, stream-browserify@npm:^3.0.0":
   version: 3.0.0
   resolution: "stream-browserify@npm:3.0.0"
   dependencies:
