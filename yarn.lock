@@ -210,6 +210,7 @@ __metadata:
     "@react-native-community/netinfo": 9.3.10
     "@react-native-community/slider": 4.4.2
     "@react-native-firebase/app": 20.4.0
+    "@react-native-firebase/app-check": 20.4.0
     "@react-native-firebase/messaging": 20.4.0
     "@react-native-google-signin/google-signin": 10.1.0
     "@react-native-menu/menu": 0.9.1
@@ -6663,6 +6664,19 @@ __metadata:
   version: 4.4.2
   resolution: "@react-native-community/slider@npm:4.4.2"
   checksum: 1ae613f594a8ea9d7243b3125d26b36aab4e4c2dd9eba1bf66c4f31878e74fae055cd35a1babc46b262240885bb61fa321610417bb2a6d9f77a330136ff33293
+  languageName: node
+  linkType: hard
+
+"@react-native-firebase/app-check@npm:20.4.0":
+  version: 20.4.0
+  resolution: "@react-native-firebase/app-check@npm:20.4.0"
+  peerDependencies:
+    "@react-native-firebase/app": 20.4.0
+    expo: ">=47.0.0"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 318c132de989e891b5eff75a9bdbe241cdbfb48cd682184ddfa8dbb39572d13a6abaf470306d8c8a7b414a5ab5c4ddc502ce2d0f54cb983f14474054c52014bc
   languageName: node
   linkType: hard
 

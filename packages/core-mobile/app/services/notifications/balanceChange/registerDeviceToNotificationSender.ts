@@ -1,12 +1,15 @@
 import Logger from 'utils/Logger'
+import AppCheckService from 'services/fcm/AppCheckService'
 
 export async function registerDeviceToNotificationSender(
   fcmToken: string
 ): Promise<{ deviceArn: string }> {
-  const options = {
+  const appCheckToken = await AppCheckService.getToken()
+  const options: RequestInit = {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Firebase-AppCheck': appCheckToken.token
     },
     body: JSON.stringify({
       deviceToken: fcmToken,

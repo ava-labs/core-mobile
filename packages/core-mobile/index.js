@@ -6,6 +6,8 @@ import './polyfills'
 import { AppRegistry } from 'react-native'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
+import { firebase } from '@react-native-firebase/app-check'
+import Logger from 'utils/Logger'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
@@ -43,3 +45,28 @@ if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
     onUnhandledRequest: 'bypass'
   })
 }
+
+const rnfbProvider = firebase
+  .appCheck()
+  .newReactNativeFirebaseAppCheckProvider()
+rnfbProvider.configure({
+  android: {
+    provider: __DEV__ ? 'debug' : 'playIntegrity',
+    debugToken:
+      'some token you have configured for your project firebase web console'
+  },
+  apple: {
+    provider: __DEV__ ? 'debug' : 'appAttestWithDeviceCheckFallback',
+    debugToken: process.env.APPCHECK_DEBUG_TOKEN_APPLE
+  }
+})
+
+firebase
+  .appCheck()
+  .initializeAppCheck({
+    provider: rnfbProvider,
+    isTokenAutoRefreshEnabled: true
+  })
+  .catch(reason => {
+    Logger.error(`initializeAppCheck failed: ${reason}`)
+  })
