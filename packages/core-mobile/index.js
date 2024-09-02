@@ -49,3 +49,28 @@ if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
     onUnhandledRequest: 'bypass'
   })
 }
+
+const rnfbProvider = firebase
+  .appCheck()
+  .newReactNativeFirebaseAppCheckProvider()
+rnfbProvider.configure({
+  android: {
+    provider: __DEV__ ? 'debug' : 'playIntegrity',
+    debugToken:
+      'some token you have configured for your project firebase web console'
+  },
+  apple: {
+    provider: __DEV__ ? 'debug' : 'appAttestWithDeviceCheckFallback',
+    debugToken: process.env.APPCHECK_DEBUG_TOKEN_APPLE
+  }
+})
+
+firebase
+  .appCheck()
+  .initializeAppCheck({
+    provider: rnfbProvider,
+    isTokenAutoRefreshEnabled: true
+  })
+  .catch(reason => {
+    Logger.error(`initializeAppCheck failed: ${reason}`)
+  })
