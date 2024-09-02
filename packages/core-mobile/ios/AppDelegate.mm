@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "RNFBAppCheckModule.h"
 #import <Firebase.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
@@ -9,6 +10,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  [RNFBAppCheckModule sharedInstance];
   [FIRApp configure];
   self.moduleName = @"AvaxWallet";
   

@@ -59,6 +59,7 @@
     "@react-native-community/netinfo": "9.3.10",
     "@react-native-community/slider": "4.4.2",
     "@react-native-firebase/app": "20.4.0",
+    "@react-native-firebase/app-check": "20.4.0",
     "@react-native-firebase/messaging": "20.4.0",
     "@react-native-google-signin/google-signin": "10.1.0",
     "@react-native-menu/menu": "0.9.1",
@@ -270,7 +271,8 @@
       "web3": false,
       "web3>web3-bzz": false,
       "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>es5-ext": false,
-      "web3>web3-shh": false
+      "web3>web3-shh": false,
+      "@react-native-firebase/app>firebase>@firebase/firestore>@grpc/proto-loader>protobufjs": false
     }
   },
   "react-native": {
