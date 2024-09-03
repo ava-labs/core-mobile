@@ -19,7 +19,7 @@ const PortfolioStack = createStackNavigator<PortfolioStackParamList>()
 
 function PortfolioScreenStack(): JSX.Element {
   return (
-    <SafeLowerAreaView inTabNavigation>
+    <SafeLowerAreaView>
       <PortfolioStack.Navigator
         screenOptions={{
           headerShown: false

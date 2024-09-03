@@ -46,7 +46,7 @@ export default function TabViewScreen(): JSX.Element {
   )
 
   return (
-    <SafeLowerAreaView inTabNavigation>
+    <SafeLowerAreaView>
       <ViewShot
         ref={viewShotRef}
         options={{ fileName: activeTab?.id, format: 'jpg', quality: 0.5 }}

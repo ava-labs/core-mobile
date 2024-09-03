@@ -36,7 +36,7 @@ const EarnStack = createStackNavigator<EarnStackParamList>()
 
 function EarnScreenStack(): JSX.Element {
   return (
-    <SafeLowerAreaView inTabNavigation>
+    <SafeLowerAreaView>
       <EarnStack.Navigator
         screenOptions={{
           headerShown: true,

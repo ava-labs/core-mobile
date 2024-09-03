@@ -35,7 +35,7 @@ export const HistoryScreen = (): JSX.Element => {
 
   const renderHistoryList = (): JSX.Element => {
     return (
-      <SafeLowerAreaView inTabNavigation>
+      <SafeLowerAreaView>
         <SearchBar
           onTextChanged={setSearchText}
           searchText={searchText}

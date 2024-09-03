@@ -107,7 +107,12 @@ export const TabButton = ({
   focused
 }: TabButtonProps): JSX.Element => {
   return (
-    <View style={{ justifyContent: 'center', alignItems: 'center', top: 2 }}>
+    <View
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20
+      }}>
       {image}
       <Text
         variant="bottomNavigationSmall"

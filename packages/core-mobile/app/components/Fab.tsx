@@ -204,7 +204,7 @@ export const Fab: FC = () => {
       height: '100%',
       justifyContent: 'flex-end',
       alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
-      paddingBottom: 60,
+      paddingBottom: 80,
       backgroundColor: expanded
         ? alpha(colors.$black, 0.5)
         : colors.$transparent

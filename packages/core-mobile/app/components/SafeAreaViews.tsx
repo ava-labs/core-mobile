@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 type Props = {
   sx?: SxProp
   noPaddingTop?: boolean
-  inTabNavigation?: boolean
 } & ViewProps
 /**
  * SafeVerticalAreaView is a component that wraps the children components and adds padding to the top
@@ -17,23 +16,20 @@ type Props = {
  * @param {ReactNode} children - The children components to be wrapped
  * @param {Object} sx - Any styling to be applied to the component
  * @param {boolean} noPaddingTop - Disable the calculated top padding
- * @param {boolean} inTabNavigation - Modify the bottom padding when the screen is part of a tab navigation
  **/
 export const SafeVerticalAreaView: FC<PropsWithChildren<Props>> = ({
   children,
   sx,
   noPaddingTop,
-  inTabNavigation,
   ...rest
 }) => {
   const insets = useSafeAreaInsets()
-  const bottomModifier = inTabNavigation ? 2 : 1
 
   return (
     <View
       sx={{
         paddingTop: !noPaddingTop ? insets.top : 0,
-        paddingBottom: insets.bottom / bottomModifier,
+        paddingBottom: insets.bottom,
         flex: 1,
         ...sx
       }}
@@ -52,7 +48,6 @@ type SafeLowerAreaView = PropsWithChildren<Omit<Props, 'noPaddingTop'>>
  *
  * @param {ReactNode} children - The children components to be wrapped
  * @param {Object} sx - Any styling to be applied to the component
- * @param {boolean} inTabNavigation - Modify the bottom padding when the screen is part of a tab navigation
  *
  **/
 export const SafeLowerAreaView: FC<SafeLowerAreaView> = props => (
