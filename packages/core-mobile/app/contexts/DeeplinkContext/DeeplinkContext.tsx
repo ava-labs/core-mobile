@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, useStore } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
@@ -14,18 +14,18 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { setActiveAccountIndex } from 'store/account'
+import { selectAccountByAddress, setActiveAccountIndex } from 'store/account'
 import Logger from 'utils/Logger'
 import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
-import { setActive } from 'store/network'
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { selectNetwork, setActive } from 'store/network'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
+import { RootState } from 'store'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
   DeepLink,
   DeeplinkContextType,
   DeepLinkOrigin,
-  NotificationCallbackProps
+  HandleNotificationCallback
 } from './types'
 
 const DeeplinkContext = createContext<DeeplinkContextType>({
@@ -39,6 +39,7 @@ export const DeeplinkContextProvider = ({
   children: React.ReactNode
 }): JSX.Element => {
   const dispatch = useDispatch()
+  const store = useStore()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -46,28 +47,66 @@ export const DeeplinkContextProvider = ({
   const processedFeatureFlags = useSelector(selectFeatureFlags)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
 
-  const expireDeepLink = useCallback(() => {
-    setPendingDeepLink(undefined)
-  }, [])
+  const maybeSetActiveNetwork = useCallback(
+    (data: { [p: string]: string | number | object }) => {
+      if (
+        'chainId' in data &&
+        ['string' || 'number'].includes(typeof data.chainId)
+      ) {
+        const chainId = Number(data.chainId)
+        const network = selectNetwork(chainId)(store.getState() as RootState)
+        //check if testnet should be toggled to match chainId provided in data
+        if (network && network.isTestnet !== isDeveloperMode) {
+          dispatch(toggleDeveloperMode())
+        }
+        dispatch(setActive(chainId))
+      }
+    },
+    [dispatch, isDeveloperMode, store]
+  )
 
-  const handleNotificationCallback = useCallback(
-    ({ url, accountIndex, origin, isDevMode }: NotificationCallbackProps) => {
+  const maybeSetActiveAccount = useCallback(
+    (data: { [p: string]: string | number | object }) => {
+      if ('accountAddress' in data && typeof data.accountAddress === 'string') {
+        const account = selectAccountByAddress(data.accountAddress)(
+          store.getState() as RootState
+        )
+        if (account) {
+          dispatch(setActiveAccountIndex(account.index))
+        }
+      }
+      if ('accountIndex' in data && typeof data.accountIndex === 'number') {
+        dispatch(setActiveAccountIndex(data.accountIndex))
+      }
+    },
+    [dispatch, store]
+  )
+
+  const handleNotificationCallback: HandleNotificationCallback = useCallback(
+    (data: { [p: string]: string | number | object } | undefined) => {
+      if (!data) {
+        Logger.error(
+          `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][handleNotificationCallback] no data`
+        )
+        return
+      }
+      if (!data.url) {
+        Logger.error(
+          `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][handleNotificationCallback] no url`
+        )
+        return
+      }
       const runCallback = (): void => {
-        const avalancheChainId = isDevMode
-          ? ChainId.AVALANCHE_TESTNET_ID
-          : ChainId.AVALANCHE_MAINNET_ID
-
-        isDevMode !== isDeveloperMode && dispatch(toggleDeveloperMode())
-        dispatch(setActive(avalancheChainId))
-        dispatch(setActiveAccountIndex(accountIndex))
+        maybeSetActiveNetwork(data)
+        maybeSetActiveAccount(data)
       }
       setPendingDeepLink({
-        url,
-        origin,
+        url: data.url as string,
+        origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
         callback: runCallback
       })
     },
-    [dispatch, isDeveloperMode]
+    [maybeSetActiveAccount, maybeSetActiveNetwork]
   )
 
   /******************************************************************************
@@ -75,19 +114,13 @@ export const DeeplinkContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (isNotificationBlocked) return
-    NotificationsService.getInitialNotification()
-      .then(async event => {
-        if (event?.notification?.data?.url)
-          handleNotificationCallback({
-            url: String(event.notification.data.url),
-            accountIndex: Number(event.notification.data.accountIndex),
-            origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-            isDevMode: isDeveloperMode
-          })
-      })
-      .catch(e => {
-        Logger.error('Error getting initial notification:', e)
-      })
+    NotificationsService.getInitialNotification(
+      handleNotificationCallback
+    ).catch(reason => {
+      Logger.error(
+        `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][getInitialNotification]${reason}`
+      )
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNotificationBlocked])
 
@@ -95,22 +128,10 @@ export const DeeplinkContextProvider = ({
     if (isNotificationBlocked) return
 
     const unsubscribeForegroundEvent = NotificationsService.onForegroundEvent(
-      async ({ type, detail }) => {
-        await NotificationsService.handleNotificationEvent({
-          type,
-          detail,
-          callback: handleNotificationCallback
-        })
-      }
+      handleNotificationCallback
     )
 
-    NotificationsService.onBackgroundEvent(async ({ type, detail }) => {
-      await NotificationsService.handleNotificationEvent({
-        type,
-        detail,
-        callback: handleNotificationCallback
-      })
-    })
+    NotificationsService.onBackgroundEvent(handleNotificationCallback)
 
     return () => {
       unsubscribeForegroundEvent()
@@ -143,7 +164,11 @@ export const DeeplinkContextProvider = ({
       }
     }
 
-    checkInitialUrl()
+    checkInitialUrl().catch(reason => {
+      Logger.error(
+        `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][checkInitialUrl]${reason}`
+      )
+    })
 
     return () => {
       listener.remove()

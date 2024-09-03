@@ -4,15 +4,10 @@ import notifee, {
   Event,
   EventDetail,
   EventType,
-  InitialNotification,
   TimestampTrigger,
   TriggerNotification,
   TriggerType
 } from '@notifee/react-native'
-import {
-  DeepLinkOrigin,
-  NotificationCallbackProps
-} from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import {
@@ -21,6 +16,7 @@ import {
 } from 'services/notifications/channels'
 import { StakeCompleteNotification } from 'store/notifications'
 import Logger from 'utils/Logger'
+import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import {
   LAUNCH_ACTIVITY,
   OPEN_CLAIM_REWARDS_PRESS_ACTION_ID,
@@ -184,12 +180,24 @@ class NotificationsService {
     }
   }
 
-  onForegroundEvent = (observer: (event: Event) => void): (() => void) => {
-    return notifee.onForegroundEvent(observer)
+  onForegroundEvent = (callback: HandleNotificationCallback): (() => void) => {
+    return notifee.onForegroundEvent(async ({ type, detail }) => {
+      await this.handleNotificationEvent({
+        type,
+        detail,
+        callback
+      })
+    })
   }
 
-  onBackgroundEvent = (observer: (event: Event) => Promise<void>): void => {
-    return notifee.onBackgroundEvent(observer)
+  onBackgroundEvent = (callback: HandleNotificationCallback): void => {
+    return notifee.onBackgroundEvent(async ({ type, detail }) => {
+      await this.handleNotificationEvent({
+        type,
+        detail,
+        callback
+      })
+    })
   }
 
   incrementBadgeCount = async (incrementBy?: number): Promise<void> => {
@@ -214,26 +222,13 @@ class NotificationsService {
     callback
   }: {
     detail: EventDetail
-    callback?: ({
-      url,
-      accountIndex,
-      origin,
-      isDevMode
-    }: NotificationCallbackProps) => void
+    callback: HandleNotificationCallback
   }): Promise<void> => {
     await this.decrementBadgeCount(1)
     if (detail?.notification?.id) {
       await this.cancelTriggerNotification(detail.notification.id)
     }
-
-    if (detail?.notification?.data?.url) {
-      callback?.({
-        url: detail.notification.data.url as string,
-        accountIndex: detail.notification.data.accountIndex as number,
-        origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-        isDevMode: detail?.notification?.data?.isDeveloperMode === 'true'
-      })
-    }
+    callback(detail?.notification?.data)
   }
 
   handleNotificationEvent = async ({
@@ -241,12 +236,7 @@ class NotificationsService {
     detail,
     callback
   }: Event & {
-    callback?: ({
-      url,
-      accountIndex,
-      origin,
-      isDevMode
-    }: NotificationCallbackProps) => void
+    callback: HandleNotificationCallback
   }): Promise<void> => {
     switch (type) {
       case EventType.DELIVERED:
@@ -275,8 +265,13 @@ class NotificationsService {
 
   // only for Android to obtain the notification data when the app is in the background
   // for iOS, it is handled in the onForegroundEvent PRESS event
-  getInitialNotification = async (): Promise<InitialNotification | null> => {
-    return notifee.getInitialNotification()
+  getInitialNotification = async (
+    callback: HandleNotificationCallback
+  ): Promise<void> => {
+    const event = await notifee.getInitialNotification()
+    if (event) {
+      callback(event.notification.data)
+    }
   }
 
   cancelAllNotifications = async (): Promise<void> => {
