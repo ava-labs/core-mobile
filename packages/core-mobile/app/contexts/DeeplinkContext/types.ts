@@ -40,3 +40,7 @@ export interface NotificationCallbackProps {
   origin: DeepLinkOrigin
   isDevMode: boolean
 }
+
+export type HandleNotificationCallback = (
+  data: { [p: string]: string | number | object } | undefined
+) => void
