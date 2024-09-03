@@ -15,6 +15,8 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
   
+  [self loadRocketSimConnect];
+  
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
@@ -56,6 +58,21 @@
   return [RCTLinkingManager application:application
                    continueUserActivity:userActivity
                      restorationHandler:restorationHandler];
+}
+
+- (void)loadRocketSimConnect {
+#if DEBUG
+    NSString *frameworkPath = @"/Applications/RocketSim.app/Contents/Frameworks/RocketSimConnectLinker.nocache.framework";
+    NSBundle *frameworkBundle = [NSBundle bundleWithPath:frameworkPath];
+    NSError *error = nil;
+
+    if (![frameworkBundle loadAndReturnError:&error]) {
+        NSLog(@"Failed to load linker framework: %@", error);
+        return;
+    }
+
+    NSLog(@"RocketSim Connect successfully linked");
+#endif
 }
 
 @end
