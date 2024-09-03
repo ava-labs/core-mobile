@@ -34,13 +34,6 @@ export const ACTIONS = {
   OpenChainPortfolio: 'openchainportfolio'
 }
 
-export interface NotificationCallbackProps {
-  url: string
-  accountIndex: number
-  origin: DeepLinkOrigin
-  isDevMode: boolean
-}
-
 export type HandleNotificationCallback = (
   data: { [p: string]: string | number | object } | undefined
 ) => void
