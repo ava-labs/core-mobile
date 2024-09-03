@@ -22,6 +22,10 @@ import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
 import { useMigrateFromAsyncStorage } from 'hooks/useMigrateFromAsyncStorage'
 
+if (__DEV__) {
+  require('../ReactotronConfig')
+}
+
 function setToast(toast: Toast): void {
   global.toast = toast
 }

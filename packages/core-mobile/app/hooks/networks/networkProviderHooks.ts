@@ -4,7 +4,7 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { useMemo } from 'react'
 import {
-  getAvalancheProvider,
+  getAvalancheEvmProvider,
   getBitcoinProvider,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
@@ -32,7 +32,7 @@ export function useAvalancheProvider(): JsonRpcBatchInternal | undefined {
   const { activeNetwork, networks } = useNetworks()
 
   return useMemo(
-    () => getAvalancheProvider(networks, activeNetwork.isTestnet),
+    () => getAvalancheEvmProvider(networks, activeNetwork.isTestnet),
     [networks, activeNetwork]
   )
 }

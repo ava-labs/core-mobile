@@ -1,9 +1,7 @@
-import { APIError, SwapSide } from 'paraswap'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
-import { resolve } from '@avalabs/core-utils-sdk'
-import swapService from 'services/swap/SwapService'
-import { OptimalRate } from 'paraswap-core'
+import SwapService from 'services/swap/SwapService'
+import { OptimalRate, SwapSide } from '@paraswap/sdk'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 
 export const getTokenAddress = (token?: TokenWithBalance): string => {
@@ -54,8 +52,8 @@ export async function getSwapRate({
     }
   }
 
-  const [priceResponse, error] = await resolve(
-    swapService.getSwapRate({
+  try {
+    const priceResponse = await SwapService.getSwapRate({
       srcToken: fromTokenAddress,
       srcDecimals: fromTokenDecimals,
       destToken: toTokenAddress,
@@ -65,27 +63,13 @@ export async function getSwapRate({
       network: network,
       account: account
     })
-  )
-
-  if (error) {
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: (error as any).toString()
+      optimalRate: priceResponse,
+      destAmount: priceResponse.destAmount
     }
-  }
-
-  if (!priceResponse) {
+  } catch (error) {
     return {
-      error: 'no price response'
+      error: error instanceof Error ? error.message : 'unknown error'
     }
-  }
-
-  if ((priceResponse as APIError).message) {
-    return { error: (priceResponse as APIError).message }
-  }
-
-  return {
-    optimalRate: priceResponse as OptimalRate,
-    destAmount: (priceResponse as OptimalRate).destAmount
   }
 }

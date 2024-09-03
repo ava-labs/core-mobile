@@ -20,7 +20,7 @@ import Big from 'big.js'
 import { Account } from 'store/account/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  getAvalancheProvider,
+  getAvalancheEvmProvider,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
 import { Networks } from 'store/network/types'
@@ -118,7 +118,7 @@ export class BridgeService {
 
       return BigInt(byteLength)
     } else {
-      const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
+      const avalancheProvider = getAvalancheEvmProvider(allNetworks, isTestnet)
       const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
 
       if (!avalancheProvider || !ethereumProvider) {
@@ -191,7 +191,7 @@ export class BridgeService {
       throw new Error('Invalid blockchain')
     }
 
-    const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
+    const avalancheProvider = getAvalancheEvmProvider(allNetworks, isTestnet)
 
     const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
 

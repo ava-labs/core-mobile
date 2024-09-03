@@ -82,7 +82,7 @@ class WalletService {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.sign')
       .executeAsync(async () => {
-        const provider = NetworkService.getProviderForNetwork(network)
+        const provider = await NetworkService.getProviderForNetwork(network)
         const wallet = await WalletFactory.createWallet(
           accountIndex,
           this.walletType
@@ -145,7 +145,7 @@ class WalletService {
       accountIndex,
       this.walletType
     )
-    const provider = NetworkService.getProviderForNetwork(network)
+    const provider = await NetworkService.getProviderForNetwork(network)
 
     if (
       !(provider instanceof JsonRpcBatchInternal) &&
@@ -213,6 +213,7 @@ class WalletService {
       Logger.error(reason)
       throw reason
     })
+
     const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
 
     return wallet.getAddresses({ accountIndex, isTestnet, provXP })
@@ -599,9 +600,10 @@ class WalletService {
     }
 
     Logger.info('validating burned amount')
-    const avalancheProvider = NetworkService.getProviderForNetwork(
-      network
-    ) as Avalanche.JsonRpcProvider
+
+    const avalancheProvider = NetworkService.getAvalancheProviderXP(
+      Boolean(network.isTestnet)
+    )
 
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,

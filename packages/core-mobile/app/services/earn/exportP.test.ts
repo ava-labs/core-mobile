@@ -15,7 +15,7 @@ describe('earn/exportP', () => {
     })
     jest.mock('services/network/NetworkService')
     jest
-      .spyOn(NetworkService, 'getProviderForNetwork')
+      .spyOn(NetworkService, 'getAvalancheProviderXP')
       .mockImplementation(() => {
         return {
           getApiP: () => {
