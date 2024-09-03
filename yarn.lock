@@ -336,6 +336,9 @@ __metadata:
     react-redux: 8.0.1
     react-test-renderer: 18.3.1
     react-timer-hook: 3.0.7
+    reactotron-react-native: 5.1.8
+    reactotron-react-native-mmkv: 0.2.7
+    reactotron-redux: 3.1.10
     readable-stream: 1.1.14
     redux-persist: 6.0.0
     redux-persist-transform-encrypt: 4.0.0
@@ -19309,6 +19312,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mitt@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mitt@npm:3.0.1"
+  checksum: b55a489ac9c2949ab166b7f060601d3b6d893a852515ae9eca4e11df01c013876df777ea109317622b5c1c60e8aae252558e33c8c94e14124db38f64a39614b1
+  languageName: node
+  linkType: hard
+
 "mkdirp-classic@npm:^0.5.2, mkdirp-classic@npm:^0.5.3":
   version: 0.5.3
   resolution: "mkdirp-classic@npm:0.5.3"
@@ -21770,6 +21780,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-flipper@npm:^0.164.0":
+  version: 0.164.0
+  resolution: "react-native-flipper@npm:0.164.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-native: ">0.62.0"
+  checksum: 8730d7349bec27a23558760320082bd89b07fb404a87bf039a8d852455f28e4d5419f093bb7900ff5f6d85488274cfb246278b6700878bcabe574d5aacd88dac
+  languageName: node
+  linkType: hard
+
 "react-native-fs@npm:2.20.0":
   version: 2.20.0
   resolution: "react-native-fs@npm:2.20.0"
@@ -22472,6 +22492,58 @@ __metadata:
     loose-envify: ^1.1.0
     object-assign: ^4.1.1
   checksum: b254cc17ce3011788330f7bbf383ab653c6848902d7936a87b09d835d091e3f295f7e9dd1597c6daac5dc80f90e778c8230218ba8ad599f74adcc11e33b9d61b
+  languageName: node
+  linkType: hard
+
+"reactotron-core-client@npm:2.9.4":
+  version: 2.9.4
+  resolution: "reactotron-core-client@npm:2.9.4"
+  dependencies:
+    reactotron-core-contract: 0.2.4
+  checksum: d55cfb71d2b0ea7ff131242b94f0cf7b6f7d1815de911dea72f03c919359a761b8d260f8a4d999d49beff4bde3f32df33c81cc6d338057b924fdbcb1beef31f3
+  languageName: node
+  linkType: hard
+
+"reactotron-core-contract@npm:0.2.4":
+  version: 0.2.4
+  resolution: "reactotron-core-contract@npm:0.2.4"
+  checksum: b3c3e21f3137202d3089b00eda409ec1fb72b8ec296d710883dca07dfb98fa8c48564347854b40b031adcbeb17842730adebac53890f516a5304d03d90d1c1c7
+  languageName: node
+  linkType: hard
+
+"reactotron-react-native-mmkv@npm:0.2.7":
+  version: 0.2.7
+  resolution: "reactotron-react-native-mmkv@npm:0.2.7"
+  peerDependencies:
+    react-native-mmkv: "*"
+    reactotron-core-client: "*"
+  checksum: f8aeb18858e1421b87580fc781b60c27fa1a54773eb944d5b83b195873455aa04e1b2c065e9222cc16fd9f1edead084785c0abc5cdc573f1d89e0c56bb1823b6
+  languageName: node
+  linkType: hard
+
+"reactotron-react-native@npm:5.1.8":
+  version: 5.1.8
+  resolution: "reactotron-react-native@npm:5.1.8"
+  dependencies:
+    mitt: ^3.0.1
+    react-native-flipper: ^0.164.0
+    reactotron-core-client: 2.9.4
+  peerDependencies:
+    react-native: ">=0.40.0"
+  dependenciesMeta:
+    react-native-flipper:
+      optional: true
+  checksum: 36a5c3a2d573b0e337d65dadc37f451e1a1dfe2de455d7ea68cdadfa4bd25b0ed100920f1bb0d1972109a2c59fded3d6325a77850c17d41e9b811d0ba60d0e1b
+  languageName: node
+  linkType: hard
+
+"reactotron-redux@npm:3.1.10":
+  version: 3.1.10
+  resolution: "reactotron-redux@npm:3.1.10"
+  peerDependencies:
+    reactotron-core-client: "*"
+    redux: ">=4.0.0"
+  checksum: 5922ba94240bb6d221e58e798a30aff35f5de3b4e3bfc0a8ae7d4e9554b6328a4a33e771fd6a9ca8c0fdfc65cd16fd82b583361c41b7e17aa823c3850947392b
   languageName: node
   linkType: hard
 
