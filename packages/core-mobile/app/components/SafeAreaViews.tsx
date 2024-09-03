@@ -1,12 +1,13 @@
 import { View, type SxProp } from '@avalabs/k2-mobile'
 import React, { type FC, type PropsWithChildren } from 'react'
+import type { ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
   sx?: SxProp
   noPaddingTop?: boolean
   inTabNavigation?: boolean
-}
+} & ViewProps
 /**
  * SafeVerticalAreaView is a component that wraps the children components and adds padding to the top
  * and bottom of the screen to ensure that the content is not hidden by the device's status bar or home indicator.
@@ -22,7 +23,8 @@ export const SafeVerticalAreaView: FC<PropsWithChildren<Props>> = ({
   children,
   sx,
   noPaddingTop,
-  inTabNavigation
+  inTabNavigation,
+  ...rest
 }) => {
   const insets = useSafeAreaInsets()
   const bottomModifier = inTabNavigation ? 2 : 1
@@ -34,7 +36,8 @@ export const SafeVerticalAreaView: FC<PropsWithChildren<Props>> = ({
         paddingBottom: insets.bottom / bottomModifier,
         flex: 1,
         ...sx
-      }}>
+      }}
+      {...rest}>
       {children}
     </View>
   )
