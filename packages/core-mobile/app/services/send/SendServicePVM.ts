@@ -34,8 +34,9 @@ export class SendServicePVM {
         .executeAsync(async () => {
           const { amount, address, defaultMaxFeePerGas, token } = sendState
 
-          // Set canSubmit to false if token is not set
-          if (!token) return SendServicePVM.getErrorState(sendState, '')
+          // Set canSubmit to false if token/address is not set
+          if (!token || !address)
+            return SendServicePVM.getErrorState(sendState, '')
 
           const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
           const sendFee = defaultMaxFeePerGas
@@ -56,12 +57,6 @@ export class SendServicePVM {
             maxAmount,
             sendFee
           }
-
-          if (!address)
-            return SendServicePVM.getErrorState(
-              newState,
-              SendErrorMessage.ADDRESS_REQUIRED
-            )
 
           if (
             !Avalanche.isBech32Address(address, false) &&

@@ -1,26 +1,29 @@
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import {
-  Address,
-  APIError,
-  BuildOptions,
-  ParaSwap,
-  PriceString,
-  SwapSide,
-  Transaction
-} from 'paraswap'
-import { OptimalRate } from 'paraswap-core'
-import Web3 from 'web3'
 import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
-import { retry } from 'utils/js/retry'
+import {
+  constructFetchFetcher,
+  constructGetSpender,
+  constructSimpleSDK,
+  TransactionParams,
+  OptimalRate,
+  BuildOptions,
+  Address,
+  SwapSide,
+  PriceString
+} from '@paraswap/sdk'
+import { ParaSwapVersion } from '@paraswap/core'
+import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
 
-const NETWORK_UNSUPPORTED_ERROR = new Error(
-  'Fuji network is not supported by Paraswap'
+export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+
+const TESTNET_NETWORK_UNSUPPORTED_ERROR = new Error(
+  'Testnet network is not supported by Paraswap'
 )
 
 interface BuildTxParams {
-  network: string
+  network: Network
   srcToken: Address
   destToken: Address
   srcAmount: PriceString
@@ -51,16 +54,34 @@ interface SwapRate {
   sentryTrx?: SentryTransaction
 }
 
-class SwapService {
-  private paraSwap = new ParaSwap(
-    ChainId.AVALANCHE_MAINNET_ID,
-    undefined,
-    new Web3()
-  )
+const SUPPORTED_SWAP_NETWORKS = [
+  ChainId.AVALANCHE_MAINNET_ID
 
-  public get apiUrl(): string {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (this.paraSwap as any).apiURL
+  // Chains below are supported by Paraswap but not used in the app
+  // ChainId.ETHEREUM_HOMESTEAD,
+  // ChainId.POLYGON,
+  // ChainId.FANTOM,
+  // ChainId.BNB,
+  // ChainId.ARBITRUM,
+  // ChainId.OPTIMISM,
+  // ChainId.POLYGON_ZK_EVM,
+  // ChainId.BASE
+  // POLYGON = 137,
+  // FANTOM = 250,
+  // BNB = 56,
+  // ARBITRUM = 42161,
+  // OPTIMISM = 69,
+  // POLYGON_ZK_EVM = 1101,
+  // BASE = 8453,
+]
+
+class SwapService {
+  private getParaSwapSDK = (chainId: number): SimpleFetchSDK => {
+    return constructSimpleSDK({
+      chainId,
+      fetch,
+      version: ParaSwapVersion.V6
+    })
   }
 
   async getSwapRate({
@@ -73,49 +94,57 @@ class SwapService {
     network,
     account,
     sentryTrx
-  }: SwapRate): Promise<OptimalRate | APIError> {
+  }: SwapRate): Promise<OptimalRate> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_rate')
       .executeAsync(async () => {
         if (network.isTestnet) {
-          throw NETWORK_UNSUPPORTED_ERROR
+          throw TESTNET_NETWORK_UNSUPPORTED_ERROR
+        }
+        if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
+          throw new Error(`${network.chainName} is not supported by Paraswap`)
         }
         if (!account) {
           throw new Error('Account address missing')
         }
-
-        const optimalRates = async (): Promise<OptimalRate | APIError> => {
-          return await this.paraSwap.getRate(
-            srcToken,
-            destToken,
-            srcAmount,
-            account.addressC,
-            swapSide,
-            {},
-            srcDecimals,
-            destDecimals
-          )
-        }
-
-        return await retry({
-          operation: optimalRates,
-          isSuccess: result =>
-            (result as APIError).message !== 'Server too busy'
+        return await this.getParaSwapSDK(network.chainId).swap.getRate({
+          srcToken,
+          destToken,
+          amount: srcAmount,
+          userAddress: account.addressC,
+          side: swapSide,
+          srcDecimals,
+          destDecimals
         })
       })
   }
 
   async getParaswapSpender(
+    network: Network,
     sentryTrx?: SentryTransaction
-  ): Promise<string | APIError> {
+  ): Promise<Address> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_paraswap_spender')
       .executeAsync(async () => {
-        return this.paraSwap.getTokenTransferProxy()
+        if (network.isTestnet) {
+          throw TESTNET_NETWORK_UNSUPPORTED_ERROR
+        }
+        if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
+          throw new Error(`${network.chainName} is not supported by Paraswap`)
+        }
+        const fetcher = constructFetchFetcher(fetch)
+        const { getSpender } = constructGetSpender({
+          apiURL: this.getParaSwapSDK(network.chainId).apiURL,
+          chainId: ChainId.AVALANCHE_MAINNET_ID,
+          version: ParaSwapVersion.V6,
+          fetcher
+        })
+        return getSpender()
       })
   }
 
   async buildTx({
+    network,
     srcToken,
     destToken,
     srcAmount,
@@ -126,17 +155,22 @@ class SwapService {
     partnerAddress,
     partnerFeeBps,
     receiver,
-    options,
     srcDecimals,
     destDecimals,
     permit,
     deadline,
     sentryTrx
-  }: BuildTxParams): Promise<APIError | Transaction> {
+  }: BuildTxParams): Promise<Error | TransactionParams> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.build_trx')
       .executeAsync(async () => {
-        return await this.paraSwap.buildTx(
+        if (network.isTestnet) {
+          throw TESTNET_NETWORK_UNSUPPORTED_ERROR
+        }
+        if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
+          throw new Error(`${network.chainName} is not supported by Paraswap`)
+        }
+        return await this.getParaSwapSDK(network.chainId).swap.buildTx({
           srcToken,
           destToken,
           srcAmount,
@@ -147,12 +181,11 @@ class SwapService {
           partnerAddress,
           partnerFeeBps,
           receiver,
-          options,
           srcDecimals,
           destDecimals,
           permit,
           deadline
-        )
+        })
       })
   }
 }

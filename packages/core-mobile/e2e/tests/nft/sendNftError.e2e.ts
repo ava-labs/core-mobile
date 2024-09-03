@@ -1,4 +1,3 @@
-import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import { warmup } from '../../helpers/warmup'
 import AccountManagePage from '../../pages/accountManage.page'
@@ -12,8 +11,8 @@ describe('NFT Error Messages', () => {
 
   it('should verify NFT send address required warning', async () => {
     await PortfolioPage.tapCollectiblesTab()
-    await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
-    await CollectiblesPage.tapGridItem()
+    await CollectiblesPage.tapListSvg()
+    await CollectiblesPage.tapInvalidNFT()
     await CollectiblesPage.tapSendButton()
     await Assert.isVisible(CollectiblesPage.warningAddressRequired)
   })

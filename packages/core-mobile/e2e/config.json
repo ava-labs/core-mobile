@@ -27,7 +27,8 @@
     "./e2e/tests/bridge",
     "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
     "./e2e/tests/plusIcon/walletConnect/dappEthIntegrations.e2e.ts",
-    ".e2e/tests/stake/claimTestnet.e2e.smoke.ts", 
-    ".e2e/tests/plusIcon/send/sendBitcoin.e2e.ts"
+    "./e2e/tests/stake/claimTestnet.e2e.smoke.ts",
+    "./e2e/tests/plusIcon/send/sendBitcoin.e2e.ts",
+    "./e2e/tests/plusIcon/walletConnect/dappIntegrationsCore.e2e.smoke.ts"
   ]
 }
