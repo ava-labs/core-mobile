@@ -47,8 +47,8 @@ export const Button: FC<PropsWithChildren<Props>> = ({
     <Pressable
       sx={{
         backgroundColor: colors.background,
-        opacity: disabled ? theme.util.disabledOpacity : 1,
-        borderRadius: theme.util.borderRadius,
+        opacity: disabled ? theme.styles.disabledOpacity : 1,
+        borderRadius: theme.styles.borderRadius,
         width: size === 'large' ? '100%' : '50%'
       }}
       onPress={onPress}>

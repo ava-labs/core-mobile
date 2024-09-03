@@ -1,7 +1,7 @@
 import { makeTheme, useDripsyTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from './tokens/colors'
 import { text } from './tokens/text'
-import { util } from './tokens/util'
+import { styles } from './tokens/styles'
 
 export const darkTheme = makeTheme({
   types: {
@@ -10,7 +10,7 @@ export const darkTheme = makeTheme({
   },
   colors: darkModeColors,
   text,
-  util
+  styles
 })
 
 export const lightTheme = {
