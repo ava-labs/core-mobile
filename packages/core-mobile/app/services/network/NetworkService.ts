@@ -73,7 +73,7 @@ class NetworkService {
         }
 
         let txID: string | undefined
-        const provider = this.getProviderForNetwork(network)
+        const provider = await this.getProviderForNetwork(network)
 
         if (
           signedTx instanceof avaxSerial.SignedTx &&
