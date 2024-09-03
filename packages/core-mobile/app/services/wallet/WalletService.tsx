@@ -145,7 +145,7 @@ class WalletService {
       accountIndex,
       this.walletType
     )
-    const provider = NetworkService.getProviderForNetwork(network)
+    const provider = await NetworkService.getProviderForNetwork(network)
 
     if (
       !(provider instanceof JsonRpcBatchInternal) &&
