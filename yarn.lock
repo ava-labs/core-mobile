@@ -208,7 +208,7 @@ __metadata:
     "@shopify/flash-list": 1.6.3
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
-    "@spotlightjs/spotlight": 2.0.0
+    "@spotlightjs/spotlight": 2.3.2
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
@@ -7241,31 +7241,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spotlightjs/overlay@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@spotlightjs/overlay@npm:2.0.0"
-  checksum: fbd1bde8d0875a604671a1f698f80298139738d074ab59f46cb863eeb8a52c5f3c7ccf6d7b2cd2defd41011c6f39e0e4625d70418afced1e61a5fc6524bbc446
+"@spotlightjs/overlay@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@spotlightjs/overlay@npm:2.4.0"
+  checksum: 8aea22a7b88f6b405dbd6aa9c08bc7d063c2c9685a2d72be19f8075c4d98226391f0c0020c9bb1506d67386873c3203d8c530f5d4f81b168aaabe11e7bfac480
   languageName: node
   linkType: hard
 
-"@spotlightjs/sidecar@npm:1.4.0":
-  version: 1.4.0
-  resolution: "@spotlightjs/sidecar@npm:1.4.0"
+"@spotlightjs/sidecar@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@spotlightjs/sidecar@npm:1.7.0"
+  dependencies:
+    kleur: ^4.1.5
+    launch-editor: ^2.8.0
+    source-map: ^0.7.4
   bin:
     spotlight-sidecar: server.js
-  checksum: 23f5b20fabc3eb9f24387acb7d74659ff35612d1040c093d8c01a54e6fc6f7b85a4dfc447c3e8b6820f52de3b67ceb2ef195687658ace6122d0653767eea8b79
+  checksum: 8326f7aa80a49bf2ddd707edb31a704a09e2afb271ddbe0716f27245432a3e40099e755a829bfc6620d4c64211e6aa9c5503363727bf813819789773c8bcd7a1
   languageName: node
   linkType: hard
 
-"@spotlightjs/spotlight@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@spotlightjs/spotlight@npm:2.0.0"
+"@spotlightjs/spotlight@npm:2.3.2":
+  version: 2.3.2
+  resolution: "@spotlightjs/spotlight@npm:2.3.2"
   dependencies:
-    "@spotlightjs/overlay": 2.0.0
-    "@spotlightjs/sidecar": 1.4.0
+    "@spotlightjs/overlay": 2.4.0
+    "@spotlightjs/sidecar": 1.7.0
+    import-meta-resolve: ^4.1.0
   bin:
-    spotlight-sidecar: bin/run.js
-  checksum: 0f0abb506a7946b4649924b27365ea0d4ecb2a34c07e76c0d4a4ca70e9b142747044307c2e5d3045e046653bc1ea50c648ba4c1db8310aace7e7a228cbf93122
+    spotlight: bin/run.js
+  checksum: 9bce71ce92d1553b07c7a10c6c632c06a8252a8e1214f4aafa03084de29b632bc883f7be7cc0d0f7cf5f773ac8dc525aa23b6358726cd5820eed016e94a5a2d1
   languageName: node
   linkType: hard
 
@@ -16220,6 +16225,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"import-meta-resolve@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "import-meta-resolve@npm:4.1.0"
+  checksum: 6497af27bf3ee384ad4efd4e0ec3facf9a114863f35a7b35f248659f32faa5e1ae07baa74d603069f35734ae3718a78b3f66926f98dc9a62e261e7df37854a62
+  languageName: node
+  linkType: hard
+
 "imurmurhash@npm:^0.1.4":
   version: 0.1.4
   resolution: "imurmurhash@npm:0.1.4"
@@ -17997,6 +18009,23 @@ __metadata:
   version: 3.0.3
   resolution: "kleur@npm:3.0.3"
   checksum: df82cd1e172f957bae9c536286265a5cdbd5eeca487cb0a3b2a7b41ef959fc61f8e7c0e9aeea9c114ccf2c166b6a8dd45a46fd619c1c569d210ecd2765ad5169
+  languageName: node
+  linkType: hard
+
+"kleur@npm:^4.1.5":
+  version: 4.1.5
+  resolution: "kleur@npm:4.1.5"
+  checksum: 1dc476e32741acf0b1b5b0627ffd0d722e342c1b0da14de3e8ae97821327ca08f9fb944542fb3c126d90ac5f27f9d804edbe7c585bf7d12ef495d115e0f22c12
+  languageName: node
+  linkType: hard
+
+"launch-editor@npm:^2.8.0":
+  version: 2.8.2
+  resolution: "launch-editor@npm:2.8.2"
+  dependencies:
+    picocolors: ^1.0.0
+    shell-quote: ^1.8.1
+  checksum: 4b0f38db0ed260ff42396db732662973be2eccb249cb5b6e3af15ba65bb6d25e9604403733b403a875307a67934b9b6db6ad09923d7af8eef3ac0d1292ab5afb
   languageName: node
   linkType: hard
 
@@ -23845,7 +23874,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map@npm:^0.7.3":
+"source-map@npm:^0.7.3, source-map@npm:^0.7.4":
   version: 0.7.4
   resolution: "source-map@npm:0.7.4"
   checksum: 01cc5a74b1f0e1d626a58d36ad6898ea820567e87f18dfc9d24a9843a351aaa2ec09b87422589906d6ff1deed29693e176194dc88bcae7c9a852dc74b311dbf5
