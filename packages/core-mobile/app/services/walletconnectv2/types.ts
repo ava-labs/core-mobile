@@ -100,4 +100,12 @@ export interface WalletConnectServiceInterface {
     chainId: number
     account: CorePrimaryAccount
   }): Promise<void>
+
+  updateSessionsForNonEvm({
+    account,
+    isTestnet
+  }: {
+    account: CorePrimaryAccount
+    isTestnet?: boolean
+  }): Promise<void>
 }

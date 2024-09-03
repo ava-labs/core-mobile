@@ -15,6 +15,7 @@ import { selectActiveAccount, setActiveAccountIndex } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import { onRequest } from 'store/rpc/slice'
 import { CorePrimaryAccount } from '@avalabs/types'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import { RpcMethod, RpcProvider } from '../../rpc/types'
 
@@ -77,16 +78,19 @@ export const initWalletConnect = async (
      */
     const { chainId } = selectActiveNetwork(state)
     const account = selectActiveAccount(state)
-    setTimeout(() => updateSessions(chainId, account), UPDATE_SESSION_DELAY)
+    setTimeout(() => updateSessions({ chainId, account }), UPDATE_SESSION_DELAY)
   } catch (e) {
     Logger.error('Unable to init wallet connect v2', e)
   }
 }
 
-export const updateSessions = async (
-  chainId: number,
-  account: CorePrimaryAccount | undefined
-): Promise<void> => {
+export const updateSessions = async ({
+  chainId,
+  account
+}: {
+  chainId: number
+  account?: CorePrimaryAccount
+}): Promise<void> => {
   try {
     if (!account) return
 
@@ -142,16 +146,30 @@ export const handleNetworkChange = async (
   const account = selectActiveAccount(state)
   const chainId = action.payload
 
-  updateSessions(chainId, account)
+  updateSessions({ chainId, account })
 }
 
 export const handleAccountChange = async (
-  action: ReturnType<typeof setActiveAccountIndex>,
+  _: ReturnType<typeof setActiveAccountIndex>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
   const { chainId } = selectActiveNetwork(state)
   const account = selectActiveAccount(state)
 
-  updateSessions(chainId, account)
+  updateSessions({ chainId, account })
+}
+
+export const handleNonEvmAccountsChange = async (
+  _: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const account = selectActiveAccount(state)
+
+  WalletConnectService.updateSessionsForNonEvm({
+    account,
+    isTestnet: isDeveloperMode
+  })
 }
