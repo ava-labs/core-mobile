@@ -14,6 +14,8 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import MnemonicWalletInstance from 'services/wallet/MnemonicWallet'
 import { selectActiveAccount } from 'store/account'
+import WalletService from 'services/wallet/WalletService'
+import { WalletType } from 'services/wallet/types'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -123,10 +125,16 @@ const getContext = (
       return undefined
     }
 
-    return {
-      currentAddress,
-      xpubXP: MnemonicWalletInstance.xpubXP
+    const context = { currentAddress }
+
+    if (WalletService.walletType === WalletType.MNEMONIC) {
+      return {
+        ...context,
+        xpubXP: MnemonicWalletInstance.xpubXP
+      }
     }
+
+    return context
   }
 
   return undefined
