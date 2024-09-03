@@ -57,7 +57,7 @@ export class WalletConnectServiceNoop {
     //noop
   }
 
-  updateSessionsForNonEvm = async (): Promise<void> => {
+  updateSessionWithTimeoutForNonEvm = async (): Promise<void> => {
     //noop
   }
 }

@@ -14,7 +14,6 @@ import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import { CorePrimaryAccount } from '@avalabs/types'
-import { isCoreDomain } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
   CLIENT_METADATA,
   WalletConnectCallbacks,
@@ -328,31 +327,6 @@ class WalletConnectService implements WalletConnectServiceInterface {
     await Promise.allSettled(promises)
   }
 
-  updateSessionsForNonEvm = async ({
-    account,
-    isTestnet
-  }: {
-    account?: CorePrimaryAccount
-    isTestnet?: boolean
-  }): Promise<void> => {
-    if (!account) {
-      Logger.info('no active account')
-      return
-    }
-    const promises: Promise<void>[] = []
-
-    this.getSessions().forEach(session => {
-      const promise = this.updateSessionWithTimeoutForNonEvm({
-        session,
-        account,
-        isTestnet
-      })
-      promises.push(promise)
-    })
-
-    await Promise.allSettled(promises)
-  }
-
   updateSessionForNonEvmAccount = async ({
     session,
     account,
@@ -447,7 +421,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
     })
   }
 
-  private updateSessionWithTimeoutForNonEvm = async ({
+  updateSessionWithTimeoutForNonEvm = async ({
     session,
     account,
     isTestnet
@@ -456,15 +430,6 @@ class WalletConnectService implements WalletConnectServiceInterface {
     account: CorePrimaryAccount
     isTestnet?: boolean
   }): Promise<void> => {
-    const isCoreApp = isCoreDomain(session.peer.metadata.url)
-
-    if (!isCoreApp) {
-      Logger.info(
-        `skipping updating WC session '${session.peer.metadata.name}' with non evm chains since it is not a core app`
-      )
-      return
-    }
-
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
     return promiseWithTimeout(

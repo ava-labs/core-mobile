@@ -16,6 +16,7 @@ import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import { onRequest } from 'store/rpc/slice'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isCoreDomain } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import { RpcMethod, RpcProvider } from '../../rpc/types'
 
@@ -168,8 +169,31 @@ export const handleNonEvmAccountsChange = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const account = selectActiveAccount(state)
 
-  WalletConnectService.updateSessionsForNonEvm({
-    account,
-    isTestnet: isDeveloperMode
+  if (!account) {
+    Logger.info(
+      'skipping updating sessions for non evm namespaces due to no active account'
+    )
+    return
+  }
+
+  const promises: Promise<void>[] = []
+
+  WalletConnectService.getSessions().forEach(session => {
+    const isCoreApp = isCoreDomain(session.peer.metadata.url)
+
+    if (!isCoreApp) {
+      Logger.info(
+        `skipping updating WC session '${session.peer.metadata.name}' with non evm chains since it is not a core app`
+      )
+      return
+    }
+
+    const promise = WalletConnectService.updateSessionWithTimeoutForNonEvm({
+      session,
+      account,
+      isTestnet: isDeveloperMode
+    })
+    promises.push(promise)
   })
+  await Promise.allSettled(promises)
 }

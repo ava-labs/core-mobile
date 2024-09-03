@@ -101,10 +101,12 @@ export interface WalletConnectServiceInterface {
     account: CorePrimaryAccount
   }): Promise<void>
 
-  updateSessionsForNonEvm({
+  updateSessionWithTimeoutForNonEvm({
+    session,
     account,
     isTestnet
   }: {
+    session: SessionTypes.Struct
     account: CorePrimaryAccount
     isTestnet?: boolean
   }): Promise<void>
