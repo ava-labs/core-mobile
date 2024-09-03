@@ -125,13 +125,10 @@ const getContext = (
       return undefined
     }
 
-    const context = { currentAddress }
+    const context: Record<string, string> = { currentAddress }
 
     if (WalletService.walletType === WalletType.MNEMONIC) {
-      return {
-        ...context,
-        xpubXP: MnemonicWalletInstance.xpubXP
-      }
+      context.xpubXP = MnemonicWalletInstance.xpubXP
     }
 
     return context
