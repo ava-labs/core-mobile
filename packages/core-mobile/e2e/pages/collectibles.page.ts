@@ -90,6 +90,10 @@ class CollectiblesPage {
     return by.id(Collectibles.listSvg)
   }
 
+  get invalidNFT() {
+    return by.text(Collectibles.invalidNFT)
+  }
+
   get nftItem() {
     return by.id(Collectibles.nftItem)
   }
@@ -124,6 +128,10 @@ class CollectiblesPage {
 
   async tapListSvg() {
     await Action.tapElementAtIndex(this.listSvg, 0)
+  }
+
+  async tapInvalidNFT() {
+    await Action.tapElementAtIndex(this.invalidNFT, 0)
   }
 
   async getTextValue(pageElement: string) {

@@ -1,4 +1,3 @@
-import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
@@ -25,10 +24,7 @@ export async function importC({
   Logger.info('importing C started')
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
-
-  const avaxProvider = NetworkService.getProviderForNetwork(
-    avaxXPNetwork
-  ) as Avalanche.JsonRpcProvider
+  const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
   const baseFeeAvax = Avax.fromWei(baseFee)
