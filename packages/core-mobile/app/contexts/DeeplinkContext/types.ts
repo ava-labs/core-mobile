@@ -30,7 +30,8 @@ export enum StakeActions {
 
 export const ACTIONS = {
   WC: 'wc',
-  StakeComplete: StakeActions.StakeComplete
+  StakeComplete: StakeActions.StakeComplete,
+  OpenChainPortfolio: 'openchainportfolio'
 }
 
 export interface NotificationCallbackProps {
