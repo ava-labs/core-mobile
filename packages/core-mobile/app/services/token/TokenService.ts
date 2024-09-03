@@ -55,10 +55,10 @@ export class TokenService {
     network: Network
   ): Promise<NetworkContractToken | undefined> {
     if (!network || network.vmName !== NetworkVMType.EVM) {
-      throw new Error('No network')
+      throw new Error('Invalid network')
     }
 
-    const provider = NetworkService.getProviderForNetwork(network)
+    const provider = await NetworkService.getProviderForNetwork(network)
 
     if (!provider || !(provider instanceof JsonRpcBatchInternal)) {
       throw new Error('No provider')

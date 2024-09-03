@@ -6,6 +6,7 @@ import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
+import reactotron from '../../ReactotronConfig'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -97,6 +98,7 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
   const store = configureStore({
     reducer: persistedReducer,
     devTools: __DEV__,
+    enhancers: __DEV__ ? [reactotron.createEnhancer()] : [],
     middleware: getDefaultMiddleware => {
       const defaultMiddleWare = getDefaultMiddleware({
         serializableCheck: false,

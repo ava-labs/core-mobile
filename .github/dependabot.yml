@@ -13,6 +13,22 @@ updates:
     ignore:
       - dependency-name: "react-native"
       - dependency-name: "@react-native/metro-config"
+      - dependency-name: "@react-native/babel-preset"
+      - dependency-name: "react-native-reanimated"
+      - dependency-name: "react-native-mmkv" # we're currently on 2.12.2 which is the latest version compatible with react-native 0.73.7
       - dependency-name: "@walletconnect/react-native-compat"
       - dependency-name: "@walletconnect/types"
-      - dependency-name: "@walletconnect/utils"     
+      - dependency-name: "@walletconnect/utils"
+      - dependency-name: "@walletconnect/web3wallet"
+      - dependency-name: "@avalabs/*"
+      - dependency-name: "ethers" # we should be using ethers 6.8.1 (please refer to dependencies_resolutions.md)
+      - dependency-name: "web3" # we should be using web3 1.7.5 (please refer to dependencies_resolutions.md)
+      - dependency-name: "eslint" # we should be using eslint 8.50.0 (please refer to dependencies_resolutions.md)
+      - dependency-name: "eslint-config-prettier" # we should be using eslint-config-prettier 8.10.0 (please refer to dependencies_resolutions.md)
+      - dependency-name: "eslint-plugin-prettier" # to use the latest version, update eslint first
+      - dependency-name: "prettier" # to use the latest version, update eslint first
+      - dependency-name: "@typescript-eslint/eslint-plugin" # to use the latest version, update eslint first
+      - dependency-name: "@typescript-eslint/parser" # to use the latest version, update eslint first
+      - dependency-name: "bip174" # we should be using bip174 2.1.0 (please refer to dependencies_resolutions.md)
+      - dependency-name: "bitcoinjs-lib" # we should be using bitcoinjs-lib 5.2.0 (please refer to dependencies_resolutions.md)
+      - dependency-name: "bip39" # we should be using patched version of bip39 3.0.4 (please refer to /patches/bip39+3.0.4.patch) 

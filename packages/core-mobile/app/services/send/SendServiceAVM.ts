@@ -34,8 +34,9 @@ export class SendServiceAVM {
         .executeAsync(async () => {
           const { amount, address, defaultMaxFeePerGas, token } = sendState
 
-          // Set canSubmit to false if token is not set
-          if (!token) return SendServiceAVM.getErrorState(sendState, '')
+          // Set canSubmit to false if token/address is not set
+          if (!token || !address)
+            return SendServiceAVM.getErrorState(sendState, '')
 
           const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
           const sendFee = defaultMaxFeePerGas
@@ -57,12 +58,6 @@ export class SendServiceAVM {
             maxAmount,
             sendFee
           }
-
-          if (!address)
-            return SendServiceAVM.getErrorState(
-              newState,
-              SendErrorMessage.ADDRESS_REQUIRED
-            )
 
           if (
             !Avalanche.isBech32Address(address, false) &&

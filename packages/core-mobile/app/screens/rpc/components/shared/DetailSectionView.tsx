@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from '@avalabs/k2-mobile'
 import {
   DetailItemType,
   DetailSection,
+  LinkItem,
   TextItem
 } from '@avalabs/vm-module-types'
 import { Row } from 'components/Row'
@@ -47,6 +48,18 @@ export const DetailSectionView = ({
       key={key}>
       <Text variant="caption">{item.label}</Text>
       <Text variant="buttonSmall">{item.value}</Text>
+    </Row>
+  )
+
+  const renderLinkItem = (item: LinkItem, key: React.Key): JSX.Element => (
+    <Row
+      style={{
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}
+      key={key}>
+      <Text variant="caption">{item.label}</Text>
+      <Text variant="buttonSmall">{new URL(item.value.url).hostname}</Text>
     </Row>
   )
 
@@ -115,6 +128,8 @@ export const DetailSectionView = ({
             return renderPlainText(item, index)
           } else if (item.type === DetailItemType.TEXT) {
             return renderTextItem(item, index)
+          } else if (item.type === DetailItemType.LINK) {
+            return renderLinkItem(item, index)
           }
 
           return (
