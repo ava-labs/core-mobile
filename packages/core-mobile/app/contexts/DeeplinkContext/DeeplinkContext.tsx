@@ -180,19 +180,11 @@ export const DeeplinkContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive) {
-      setTimeout(() => {
-        handleDeeplink(pendingDeepLink, dispatch, processedFeatureFlags)
-        // once we used the url, we can expire it
-        expireDeepLink()
-      }, 1000)
+      handleDeeplink(pendingDeepLink, dispatch, processedFeatureFlags)
+      // once we used the url, we can expire it
+      setPendingDeepLink(undefined)
     }
-  }, [
-    isWalletActive,
-    pendingDeepLink,
-    expireDeepLink,
-    dispatch,
-    processedFeatureFlags
-  ])
+  }, [isWalletActive, pendingDeepLink, dispatch, processedFeatureFlags])
 
   return (
     <DeeplinkContext.Provider
