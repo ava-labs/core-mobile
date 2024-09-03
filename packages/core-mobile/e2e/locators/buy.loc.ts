@@ -2,7 +2,7 @@ export default {
   moonPay: 'Moonpay',
   moonPayLogo: 'moonPay_logo',
   coinbasePay: 'Coinbase Pay',
-  coinbasePayLogo: 'moonPay_logo',
+  coinbasePayLogo: 'coinbasePay_logo',
   buy: 'Buy',
   continueWith: 'Continue with...',
   readCarefully: 'Read Carefully',

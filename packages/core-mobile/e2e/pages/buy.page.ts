@@ -71,8 +71,8 @@ class BuyPage {
     await assertions.isVisible(this.cancel)
   }
 
-  async tapConfirm() {
-    await Actions.tap(this.confirm)
+  async tapCancel() {
+    await Actions.tap(this.cancel)
   }
 }
 
