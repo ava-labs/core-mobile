@@ -6,7 +6,7 @@ To accomplish this, we should add a toggle switch inside the Advanced settings (
 
 The actual switch will be done by verifying that the switch was turned on (as a state) and that the feature flag is turned on.
 
-Because the new and old interfaces will have visual differences that go beyond the content of the screens, it is best to keep the entry point to the redesigned version at the very top of the app structure before rendering any visual component. This means we need to keep a second version of every layer of the application.
+Because the new and old interfaces will have visual differences that go beyond the content of the screens, it is best to keep the entry point to the redesigned version at the very top of the app structure before rendering any visual component. This means we need to keep a second version of every layer of the application. There will therefore be two different `App` components.
 
 We will not create a second directory structure because we want to easily share the business logic and data from one version to another. The files will, therefore, live alongside one another. To differentiate both, it will be important to either prefix one version or the two of them. We will later remove the prefix once we permanently move to the newest version.
 
