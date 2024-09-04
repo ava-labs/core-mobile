@@ -54,6 +54,10 @@ class SwapTabPage {
     return by.id(swapTab.amountField)
   }
 
+  get tokenSpendApproval() {
+    return by.text(swapTab.tokenSpendApproval)
+  }
+
   async tapAvaxToken() {
     return Actions.tapElementAtIndex(this.avaxToken, 0)
   }
@@ -113,7 +117,9 @@ class SwapTabPage {
     await sendPage.selectToken(to)
     await delay(5000)
     await this.reviewOrderButton()
-    await Actions.waitForElement(this.approveBtn, 10000)
+    if (await Actions.isVisible(this.tokenSpendApproval, 0)) {
+      await this.tapApproveButton()
+    }
     await this.tapApproveButton()
   }
 }

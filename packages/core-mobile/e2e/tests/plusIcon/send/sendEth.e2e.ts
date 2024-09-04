@@ -34,12 +34,11 @@ describe('Send ETH', () => {
   it('Should verify the ETH transaction on MainNet ', async () => {
     await portfolioPage.tapEthNetwork()
     await portfolioPage.tapActivityTab()
-    const sendRow = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(sendRow, 'Send')
-
+    await activityTabPage.verifyExistingRow('Send', '-0.000001 ETH')
+    
     await accountManagePage.switchToSecondAccount()
-    const receiveRow = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(receiveRow, 'Receive')
+    await activityTabPage.refreshActivityPage()
+    await activityTabPage.verifyExistingRow('Receive', '+0.000001 ETH')
     await accountManagePage.switchToFirstAccount()
   })
 
@@ -64,12 +63,10 @@ describe('Send ETH', () => {
   it('Should verify the ETH transaction on TestNet ', async () => {
     await networksManagePage.tapEthereumSepoliaNetwork(1)
     await portfolioPage.tapActivityTab()
-    const sendRow = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(sendRow, 'Send')
-
+    await activityTabPage.verifyExistingRow('Send', '-0.000001 ETH')
+    
     await accountManagePage.switchToSecondAccount()
     await activityTabPage.refreshActivityPage()
-    const receiveRow = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(receiveRow, 'Receive')
+    await activityTabPage.verifyExistingRow('Receive', '+0.000001 ETH')
   })
 })

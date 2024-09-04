@@ -59,7 +59,7 @@ const SimplePrompt: FC<Props> = ({
               paddingVertical: 16
             }}>
             <Button
-              testID="approve_button"
+              testID={isApproving ? "disabled_approve_button" : "approve_button"}
               type="primary"
               size="xlarge"
               onPress={onApprove}

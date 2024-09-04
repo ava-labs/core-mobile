@@ -11,5 +11,6 @@ export default {
   toastMessage: 'Transaction Successful',
   linkSvg: 'link_svg',
   approveBtn: 'approve_button',
-  rejectBtn: 'reject_button'
+  rejectBtn: 'reject_button', 
+  tokenSpendApproval: "Token Spend Approval"
 }
