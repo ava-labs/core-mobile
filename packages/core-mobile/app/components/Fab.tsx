@@ -12,6 +12,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 import { ActionProp } from './fab/types'
 import ArrowSVG from './svg/ArrowSVG'
 import QRCodeSVG from './svg/QRCodeSVG'
@@ -41,6 +42,7 @@ export const Fab: FC = () => {
   const tokensWithBalance = useSelector(
     selectTokensWithBalanceByNetwork(activeNetwork)
   )
+  const { bottom } = useVariableSafeAreaInsets()
 
   const {
     theme: { colors }
@@ -204,12 +206,12 @@ export const Fab: FC = () => {
       height: '100%',
       justifyContent: 'flex-end',
       alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
-      paddingBottom: 80,
+      paddingBottom: bottom + 60,
       backgroundColor: expanded
         ? alpha(colors.$black, 0.5)
         : colors.$transparent
     } as SxProp
-  }, [colors.$black, colors.$transparent, expanded, isLeftHanded])
+  }, [colors.$black, colors.$transparent, expanded, isLeftHanded, bottom])
 
   return (
     <Pressable

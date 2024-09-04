@@ -1,7 +1,7 @@
 import { View, type SxProp } from '@avalabs/k2-mobile'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 import React, { type FC, type PropsWithChildren } from 'react'
 import type { ViewProps } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
   sx?: SxProp
@@ -23,13 +23,13 @@ export const SafeVerticalAreaView: FC<PropsWithChildren<Props>> = ({
   noPaddingTop,
   ...rest
 }) => {
-  const insets = useSafeAreaInsets()
+  const { conditionalTop, bottom } = useVariableSafeAreaInsets()
 
   return (
     <View
       sx={{
-        paddingTop: !noPaddingTop ? insets.top : 0,
-        paddingBottom: insets.bottom,
+        paddingTop: !noPaddingTop ? conditionalTop : 0,
+        paddingBottom: bottom,
         flex: 1,
         ...sx
       }}

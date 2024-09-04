@@ -33,6 +33,7 @@ import EditSpendLimit from 'components/EditSpendLimit'
 import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScreen'
 import { SafeVerticalAreaView } from 'components/SafeAreaViews'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
   /* we have to disable gesture here so bottom sheet swipe down gesture
@@ -271,6 +272,7 @@ const StakeDisclaimer = (): JSX.Element => {
 }
 
 const CoreIntroModal = (): JSX.Element => {
+  const { activeNetwork } = useNetworks()
   const descriptions = [
     { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem' },
     {
@@ -284,7 +286,7 @@ const CoreIntroModal = (): JSX.Element => {
   ]
 
   return (
-    <SafeVerticalAreaView>
+    <SafeVerticalAreaView noPaddingTop={activeNetwork.isTestnet}>
       <IntroModal
         heading="Welcome to Core!"
         viewOnceKey={ViewOnceKey.CORE_INTRO}

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
@@ -17,6 +17,7 @@ import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkLogo } from './NetworkLogo'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 
 const ManageNetworks = 'Manage networks'
 
@@ -29,6 +30,7 @@ export default function NetworkDropdown(): JSX.Element {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
+  const { conditionalTop } = useVariableSafeAreaInsets()
 
   const data = useMemo(
     () => [
@@ -96,7 +98,8 @@ export default function NetworkDropdown(): JSX.Element {
       <Dropdown
         key={dropdownUniqueId}
         style={{
-          left: 4
+          left: 4,
+          top: Platform.OS === 'ios' ? 15 : -10
         }}
         data={data}
         width={300}

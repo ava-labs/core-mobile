@@ -21,6 +21,7 @@ import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
 import { useMigrateFromAsyncStorage } from 'hooks/useMigrateFromAsyncStorage'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 function setToast(toast: Toast): void {
   global.toast = toast
@@ -48,11 +49,6 @@ const ContextApp = (): JSX.Element => {
 
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-      <StatusBar
-        barStyle="light-content"
-        translucent
-        backgroundColor="#00000000"
-      />
       {hasMigrated ? (
         <ContextProviders>
           <JailBrokenCheck>
@@ -71,10 +67,17 @@ const ContextApp = (): JSX.Element => {
           />
         </ContextProviders>
       ) : (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <CoreSplash />
-        </View>
+        <>
+          <StatusBar
+            barStyle="light-content"
+            translucent
+            backgroundColor="#00000000"
+          />
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <CoreSplash />
+          </View>
+        </>
       )}
     </Sentry.ErrorBoundary>
   )
