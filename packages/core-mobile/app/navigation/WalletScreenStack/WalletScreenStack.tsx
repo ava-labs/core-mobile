@@ -1,5 +1,6 @@
 import React, { memo, useCallback } from 'react'
 import { BackHandler } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import {
   NavigatorScreenParams,
   useFocusEffect,
@@ -100,7 +101,6 @@ import AdvancedStackScreen, {
   AdvancedStackParamList
 } from '../wallet/AdvancedStackScreen'
 import { createModals } from './createModals'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 // @ts-expect-error lazy import is fine but typescript doesn't like it
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
