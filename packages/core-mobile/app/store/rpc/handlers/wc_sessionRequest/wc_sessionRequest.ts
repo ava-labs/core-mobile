@@ -15,6 +15,7 @@ import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -33,7 +34,7 @@ import {
   parseApproveData,
   scanAndSessionProposal
 } from './utils'
-import { NON_EVM_OPTIONAL_NAMESPACES, COMMON_EVENTS } from './namespaces'
+import { COMMON_EVENTS, getNonEvmOptionalNamespaces } from './namespaces'
 
 const supportedMethods = [
   RpcMethod.ETH_SEND_TRANSACTION,
@@ -198,6 +199,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
+    const isDeveloperMode = selectIsDeveloperMode(state)
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
     const dappUrl = proposer.metadata.url
@@ -210,7 +212,10 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       // it throws an error when we add these non-EVM namespaces in the dapp.
       // This is a temporary fix until core web supports these namespaces
       isCoreApp
-        ? { ...optionalNamespaces, ...NON_EVM_OPTIONAL_NAMESPACES }
+        ? {
+            ...optionalNamespaces,
+            ...getNonEvmOptionalNamespaces(isDeveloperMode)
+          }
         : optionalNamespaces
     )
 

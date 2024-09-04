@@ -100,4 +100,14 @@ export interface WalletConnectServiceInterface {
     chainId: number
     account: CorePrimaryAccount
   }): Promise<void>
+
+  updateSessionWithTimeoutForNonEvm({
+    session,
+    account,
+    isTestnet
+  }: {
+    session: SessionTypes.Struct
+    account: CorePrimaryAccount
+    isTestnet?: boolean
+  }): Promise<void>
 }

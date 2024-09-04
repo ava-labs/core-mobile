@@ -18,18 +18,41 @@ export const NON_EVM_OPTIONAL_NAMESPACES: ProposalTypes.OptionalNamespaces = {
   [BlockchainNamespace.AVAX]: {
     chains: [
       AvalancheCaip2ChainId.C,
-      AvalancheCaip2ChainId.C_TESTNET,
       AvalancheCaip2ChainId.P,
-      AvalancheCaip2ChainId.P_TESTNET,
-      AvalancheCaip2ChainId.X,
-      AvalancheCaip2ChainId.X_TESTNET
+      AvalancheCaip2ChainId.X
     ],
     methods: CORE_AVAX_METHODS,
     events: COMMON_EVENTS
   },
   [BlockchainNamespace.BIP122]: {
-    chains: [BitcoinCaip2ChainId.MAINNET, BitcoinCaip2ChainId.TESTNET],
+    chains: [BitcoinCaip2ChainId.MAINNET],
     methods: CORE_BTC_METHODS,
     events: COMMON_EVENTS
   }
+}
+
+export const NON_EVM_TEST_NET_OPTIONAL_NAMESPACES: ProposalTypes.OptionalNamespaces =
+  {
+    [BlockchainNamespace.AVAX]: {
+      chains: [
+        AvalancheCaip2ChainId.C_TESTNET,
+        AvalancheCaip2ChainId.P_TESTNET,
+        AvalancheCaip2ChainId.X_TESTNET
+      ],
+      methods: CORE_AVAX_METHODS,
+      events: COMMON_EVENTS
+    },
+    [BlockchainNamespace.BIP122]: {
+      chains: [BitcoinCaip2ChainId.TESTNET],
+      methods: CORE_BTC_METHODS,
+      events: COMMON_EVENTS
+    }
+  }
+
+export const getNonEvmOptionalNamespaces = (
+  isTestnet?: boolean
+): ProposalTypes.OptionalNamespaces => {
+  return isTestnet
+    ? NON_EVM_TEST_NET_OPTIONAL_NAMESPACES
+    : NON_EVM_OPTIONAL_NAMESPACES
 }
