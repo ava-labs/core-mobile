@@ -173,7 +173,7 @@ export const SendTokenContextProvider = ({
       defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
       gasLimit,
       token: sendToken,
-      canSubmit: true
+      canSubmit
     }
 
     InteractionManager.runAfterInteractions(() => {
