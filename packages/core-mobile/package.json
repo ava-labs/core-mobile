@@ -198,7 +198,7 @@
     "@react-native/babel-preset": "0.73.21",
     "@react-native/metro-config": "0.73.5",
     "@rushstack/eslint-patch": "1.10.4",
-    "@spotlightjs/spotlight": "2.0.0",
+    "@spotlightjs/spotlight": "2.3.2",
     "@storybook/addon-ondevice-actions": "7.6.20",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
