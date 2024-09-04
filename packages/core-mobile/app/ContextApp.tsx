@@ -48,7 +48,11 @@ const ContextApp = (): JSX.Element => {
 
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-      <StatusBar translucent backgroundColor="#00000000" />
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="#00000000"
+      />
       {hasMigrated ? (
         <ContextProviders>
           <JailBrokenCheck>
