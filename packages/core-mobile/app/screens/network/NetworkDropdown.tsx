@@ -17,7 +17,6 @@ import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkLogo } from './NetworkLogo'
-import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 
 const ManageNetworks = 'Manage networks'
 
@@ -30,7 +29,6 @@ export default function NetworkDropdown(): JSX.Element {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
-  const { conditionalTop } = useVariableSafeAreaInsets()
 
   const data = useMemo(
     () => [

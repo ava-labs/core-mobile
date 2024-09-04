@@ -21,7 +21,6 @@ import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
 import { useMigrateFromAsyncStorage } from 'hooks/useMigrateFromAsyncStorage'
-import { useNetworks } from 'hooks/networks/useNetworks'
 
 function setToast(toast: Toast): void {
   global.toast = toast
