@@ -15,7 +15,6 @@ import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -34,7 +33,7 @@ import {
   parseApproveData,
   scanAndSessionProposal
 } from './utils'
-import { COMMON_EVENTS, getNonEvmOptionalNamespaces } from './namespaces'
+import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
 const supportedMethods = [
   RpcMethod.ETH_SEND_TRANSACTION,
@@ -199,7 +198,6 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
-    const isDeveloperMode = selectIsDeveloperMode(state)
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
     const dappUrl = proposer.metadata.url
@@ -214,7 +212,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       isCoreApp
         ? {
             ...optionalNamespaces,
-            ...getNonEvmOptionalNamespaces(isDeveloperMode)
+            ...NON_EVM_OPTIONAL_NAMESPACES
           }
         : optionalNamespaces
     )
