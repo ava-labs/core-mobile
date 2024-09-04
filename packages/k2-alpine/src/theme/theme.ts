@@ -18,7 +18,7 @@ export const lightTheme = {
   colors: lightModeColors
 }
 
-export interface K2AlpineTheme {
+export type K2AlpineTheme = typeof darkTheme & {
   colors: typeof darkModeColors
   styles: typeof styles
   text: typeof text
