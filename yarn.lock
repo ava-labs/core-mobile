@@ -288,7 +288,7 @@ __metadata:
     react-native-aes-crypto: 1.3.10
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
-    react-native-bootsplash: 6.1.2
+    react-native-bootsplash: 6.1.3
     react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.3.9
@@ -21591,9 +21591,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-bootsplash@npm:6.1.2":
-  version: 6.1.2
-  resolution: "react-native-bootsplash@npm:6.1.2"
+"react-native-bootsplash@npm:6.1.3":
+  version: 6.1.3
+  resolution: "react-native-bootsplash@npm:6.1.3"
   dependencies:
     "@expo/config-plugins": ^8.0.4
     detect-indent: ^6.1.0
@@ -21607,7 +21607,7 @@ __metadata:
   peerDependencies:
     react: ">=18.1.0"
     react-native: ">=0.70.0"
-  checksum: e7d7565c557573f8a3338e369d587e635e997d3d8735256f45d70b31a671b2f6ca404d31afe3d6e86c3e115943471d2d16cf5a9ec10e6de010a5911b48187eac
+  checksum: 423115fb4807f9703992ec7bd403e32ceb61360c5a20c3b9494d95b7d4e4f4f031250faeb3e1ecd456de4983d624e700101b466033922e64779f94b1d86a1c3d
   languageName: node
   linkType: hard
 
