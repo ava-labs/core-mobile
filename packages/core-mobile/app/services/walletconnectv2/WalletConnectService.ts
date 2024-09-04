@@ -4,7 +4,11 @@ import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from '@avalabs/vm-module-types'
-import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
+import {
+  AvalancheCaip2ChainId,
+  BitcoinCaip2ChainId,
+  BlockchainNamespace
+} from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
@@ -321,6 +325,122 @@ class WalletConnectService implements WalletConnectServiceInterface {
     })
 
     await Promise.allSettled(promises)
+  }
+
+  updateSessionForNonEvmAccount = async ({
+    session,
+    account,
+    isTestnet = false
+  }: {
+    session: SessionTypes.Struct
+    account: CorePrimaryAccount
+    isTestnet?: boolean
+  }): Promise<void> => {
+    const topic = session.topic
+    Logger.info(
+      `updating WC session '${session.peer.metadata.name}' with non evm chains.`
+    )
+
+    const namespaces: SessionTypes.Namespaces = {}
+
+    for (const key of Object.keys(session.namespaces)) {
+      const namespace = session.namespaces[key]
+
+      if (!namespace) continue
+
+      // update chain and account lists for avax and bip122 namespaces
+      // when we toggle between testnet and mainnet, or change active account
+      if (key === BlockchainNamespace.AVAX) {
+        const caip2ChainIds = isTestnet
+          ? [
+              AvalancheCaip2ChainId.C_TESTNET,
+              AvalancheCaip2ChainId.P_TESTNET,
+              AvalancheCaip2ChainId.X_TESTNET
+            ]
+          : [
+              AvalancheCaip2ChainId.C,
+              AvalancheCaip2ChainId.P,
+              AvalancheCaip2ChainId.X
+            ]
+
+        this.updateNamespaceForNonEvmCaip2ChainId({
+          account,
+          namespace,
+          caip2ChainIds,
+          blockchainNamespace: BlockchainNamespace.AVAX
+        })
+      }
+
+      if (key === BlockchainNamespace.BIP122) {
+        const caip2ChainIds = isTestnet
+          ? [BitcoinCaip2ChainId.TESTNET]
+          : [BitcoinCaip2ChainId.MAINNET]
+
+        this.updateNamespaceForNonEvmCaip2ChainId({
+          account,
+          namespace,
+          caip2ChainIds,
+          blockchainNamespace: BlockchainNamespace.BIP122
+        })
+      }
+      namespaces[key] = { ...namespace }
+    }
+
+    // check if dapp is online first
+    await this.client.engine.signClient.ping({ topic })
+
+    await this.client.updateSession({
+      topic,
+      namespaces
+    })
+  }
+
+  private updateNamespaceForNonEvmCaip2ChainId = ({
+    account,
+    namespace,
+    caip2ChainIds,
+    blockchainNamespace
+  }: {
+    account: CorePrimaryAccount
+    namespace: SessionTypes.Namespace
+    caip2ChainIds: string[]
+    blockchainNamespace: BlockchainNamespace
+  }): void => {
+    caip2ChainIds.forEach(caip2ChainId => {
+      updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
+      const addressWithCaip2ChainId = getAddressWithCaip2ChainId({
+        account,
+        blockchainNamespace,
+        caip2ChainId
+      })
+      addressWithCaip2ChainId &&
+        updateAccountListInNamespace({
+          account: addressWithCaip2ChainId,
+          accounts: namespace.accounts
+        })
+    })
+  }
+
+  updateSessionWithTimeoutForNonEvm = async ({
+    session,
+    account,
+    isTestnet
+  }: {
+    session: SessionTypes.Struct
+    account: CorePrimaryAccount
+    isTestnet?: boolean
+  }): Promise<void> => {
+    // if dapp is not online, updateSession will be stuck for a long time
+    // we are using promiseWithTimeout here to exit early when that happens
+    return promiseWithTimeout(
+      this.updateSessionForNonEvmAccount({ session, account, isTestnet }),
+      UPDATE_SESSION_TIMEOUT
+    ).catch(e => {
+      Logger.warn(
+        `unable to update WC session '${session.peer.metadata.name}' for non evm chains`,
+        e
+      )
+    })
   }
 }
 
