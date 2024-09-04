@@ -1,8 +1,5 @@
 {
   "extends": "@avalabs/tsconfig-mobile/base.json",
-  "compilerOptions": {
-    "esModuleInterop": true
-  },
   "include": [
     "**/*.ts",
     "**/*.tsx",
