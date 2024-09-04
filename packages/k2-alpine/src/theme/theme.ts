@@ -1,11 +1,11 @@
-import { makeTheme, useDripsyTheme } from 'dripsy'
+import { makeTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from './tokens/colors'
 import { text } from './tokens/text'
 import { styles } from './tokens/styles'
 
 export const darkTheme = makeTheme({
   types: {
-    onlyAllowThemeValues: 'never',
+    onlyAllowThemeValues: 'always',
     reactNativeTypesOnly: true
   },
   colors: darkModeColors,
@@ -18,11 +18,13 @@ export const lightTheme = {
   colors: lightModeColors
 }
 
-export type K2AlpineTheme = typeof darkTheme
+export interface K2AlpineTheme {
+  colors: typeof darkModeColors
+  styles: typeof styles
+  text: typeof text
+}
 
 declare module 'dripsy' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DripsyCustomTheme extends K2AlpineTheme {}
 }
-
-export { useDripsyTheme as useTheme }

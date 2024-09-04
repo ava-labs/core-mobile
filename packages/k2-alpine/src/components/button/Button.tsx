@@ -1,6 +1,7 @@
 import React, { type FC, type PropsWithChildren } from 'react'
-import { useTheme, type K2AlpineTheme } from '../../theme/theme'
+import { type K2AlpineTheme } from '../../theme/theme'
 import { Pressable, Text } from '../Primitives'
+import { useTheme } from '../..'
 
 export type Props = {
   onPress: () => void
