@@ -52,7 +52,7 @@ export const DeeplinkContextProvider = ({
     (data: NotificationData) => {
       if (
         'chainId' in data &&
-        ['string' || 'number'].includes(typeof data.chainId)
+        ['string', 'number'].includes(typeof data.chainId)
       ) {
         const chainId = Number(data.chainId)
         const network = selectNetwork(chainId)(store.getState() as RootState)

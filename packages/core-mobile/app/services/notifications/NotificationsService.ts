@@ -16,7 +16,10 @@ import {
 } from 'services/notifications/channels'
 import { StakeCompleteNotification } from 'store/notifications'
 import Logger from 'utils/Logger'
-import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
+import {
+  HandleNotificationCallback,
+  NotificationData
+} from 'contexts/DeeplinkContext/types'
 import {
   LAUNCH_ACTIVITY,
   OPEN_CLAIM_REWARDS_PRESS_ACTION_ID,
@@ -291,7 +294,7 @@ class NotificationsService {
     channelId: ChannelId
     title: string
     body?: string
-    data?: { [p: string]: string | object | number }
+    data?: NotificationData
   }): Promise<void> => {
     await notifee.displayNotification({
       title,

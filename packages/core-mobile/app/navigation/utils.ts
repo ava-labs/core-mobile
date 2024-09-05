@@ -4,7 +4,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import { NetworkTokensTabs } from 'screens/portfolio/network/NetworkTokens'
 
 export const navigateToChainPortfolio = async (): Promise<void> => {
-  //AppNavigation.Portfolio.NetworkTokens
   setTimeout(async () => {
     Logger.info('navigating to chain portfolio')
     navigate({
