@@ -86,14 +86,12 @@ export const DeeplinkContextProvider = ({
     (data: { [p: string]: string | number | object } | undefined) => {
       if (!data) {
         Logger.error(
-          `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][handleNotificationCallback] no data`
+          `[DeeplinkContext.tsx][handleNotificationCallback] no data`
         )
         return
       }
       if (!data.url) {
-        Logger.error(
-          `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][handleNotificationCallback] no url`
-        )
+        Logger.error(`[DeeplinkContext.tsx][handleNotificationCallback] no url`)
         return
       }
       const runCallback = (): void => {
@@ -117,9 +115,7 @@ export const DeeplinkContextProvider = ({
     NotificationsService.getInitialNotification(
       handleNotificationCallback
     ).catch(reason => {
-      Logger.error(
-        `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][getInitialNotification]${reason}`
-      )
+      Logger.error(`[DeeplinkContext.tsx][getInitialNotification]${reason}`)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNotificationBlocked])
@@ -165,9 +161,7 @@ export const DeeplinkContextProvider = ({
     }
 
     checkInitialUrl().catch(reason => {
-      Logger.error(
-        `[packages/core-mobile/app/contexts/DeeplinkContext/DeeplinkContext.tsx][checkInitialUrl]${reason}`
-      )
+      Logger.error(`[DeeplinkContext.tsx][checkInitialUrl]${reason}`)
     })
 
     return () => {

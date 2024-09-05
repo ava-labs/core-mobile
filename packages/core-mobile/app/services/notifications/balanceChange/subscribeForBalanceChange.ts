@@ -28,9 +28,7 @@ export async function subscribeForBalanceChange({
     'https://core-notification-sender-api.avax-test.network/v1/push/balance-changes/subscribe',
     options
   ).catch(error => {
-    Logger.error(
-      `[packages/core-mobile/app/services/notifications/subscribe.ts][subscribe]${error}`
-    )
+    Logger.error(`[subscribe.ts][subscribe]${error}`)
     throw new Error(error)
   })
   if (response.ok) {

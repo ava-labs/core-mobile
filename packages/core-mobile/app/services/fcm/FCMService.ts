@@ -67,14 +67,12 @@ class FCMService {
     notification: { title: string }
   } => {
     if (!remoteMessage.notification) {
-      Logger.error(
-        `[packages/core-mobile/app/services/fcm/FCMService.ts][notification empty]${remoteMessage}`
-      )
+      Logger.error(`[FCMService.ts][notification empty]${remoteMessage}`)
       throw Error('Notification is empty')
     }
     if (!remoteMessage.notification.title) {
       Logger.error(
-        `[packages/core-mobile/app/services/fcm/FCMService.ts][notification title empty]${remoteMessage.notification}`
+        `[FCMService.ts][notification title empty]${remoteMessage.notification}`
       )
       throw Error('Notification title is not set')
     }

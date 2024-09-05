@@ -52,7 +52,7 @@ export async function setupBalanceChangeNotifications(
   })
   if (response.message !== 'ok') {
     Logger.error(
-      `[packages/core-mobile/app/store/notifications/listeners/setupBalanceChangeNotifications.ts][setupBalanceChangeNotifications]${response.message}`
+      `[setupBalanceChangeNotifications.ts][setupBalanceChangeNotifications]${response.message}`
     )
     throw Error(response.message)
   }

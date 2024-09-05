@@ -19,9 +19,7 @@ export async function unSubscribeForBalanceChange({
     'https://core-notification-sender-api.avax-test.network/v1/push/balance-changes/unsubscribe',
     options
   ).catch(error => {
-    Logger.error(
-      `[packages/core-mobile/app/services/notifications/balanceChange/unsubscribeForBalanceChange.ts][unsubscribe]${error}`
-    )
+    Logger.error(`[unsubscribeForBalanceChange.ts][unsubscribe]${error}`)
     throw Error(error)
   })
   if (response.ok) {

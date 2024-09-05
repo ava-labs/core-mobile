@@ -21,9 +21,7 @@ export async function registerDeviceToNotificationSender(
     'https://core-notification-sender-api.avax-test.network/v1/push/register',
     options
   ).catch(error => {
-    Logger.error(
-      `[packages/core-mobile/app/services/notifications/register.ts][registerDevice]${error}`
-    )
+    Logger.error(`[register.ts][registerDevice]${error}`)
     throw new Error(error)
   })
   if (response.ok) {

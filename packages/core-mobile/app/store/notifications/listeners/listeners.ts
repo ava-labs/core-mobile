@@ -86,7 +86,7 @@ export const addNotificationsListeners = (
       await setupBalanceChangeNotifications(listenerApi, action).catch(
         reason => {
           Logger.error(
-            `[packages/core-mobile/app/store/notifications/listeners/listeners.ts][setupBalanceChangeNotifications]${reason}`
+            `[listeners.ts][setupBalanceChangeNotifications]${reason}`
           )
         }
       )
@@ -98,7 +98,7 @@ export const addNotificationsListeners = (
       await manageForegroundNotificationSubscription(listenerApi).catch(
         reason => {
           Logger.error(
-            `[packages/core-mobile/app/store/notifications/listeners/listeners.ts][manageForegroundNotificationSubscription]${reason}`
+            `[listeners.ts][manageForegroundNotificationSubscription]${reason}`
           )
         }
       )

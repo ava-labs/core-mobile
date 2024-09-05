@@ -13,9 +13,7 @@ class AppCheckService {
         Logger.info('AppCheckService:verifyAppCheck passed')
       }
     } catch (error) {
-      Logger.error(
-        `[packages/core-mobile/app/services/fcm/AppCheckService.ts][verifyAppCheck]${error}`
-      )
+      Logger.error(`[AppCheckService.ts][verifyAppCheck]${error}`)
     }
   }
 

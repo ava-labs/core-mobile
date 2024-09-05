@@ -93,9 +93,7 @@ const handleWalletConnectActions = ({
     case ACTIONS.OpenChainPortfolio: {
       deeplink.callback?.()
       navigateToChainPortfolio().catch(reason => {
-        Logger.error(
-          `[packages/core-mobile/app/contexts/DeeplinkContext/utils/handleDeeplink.ts][navigateToChainPortfolio]${reason}`
-        )
+        Logger.error(`[handleDeeplink.ts][navigateToChainPortfolio]${reason}`)
       })
       break
     }
