@@ -2,7 +2,6 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
-import * as Navigation from 'utils/Navigation'
 import { avalancheRenameAccountHandler as handler } from './avalanche_renameAccount'
 
 jest.mock('store/account/slice', () => {
@@ -12,9 +11,6 @@ jest.mock('store/account/slice', () => {
     selectAccounts: () => mockAccounts
   }
 })
-
-const mockNavigate = jest.fn()
-jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 
 const mockDispatch = jest.fn()
 const mockListenerApi = {
