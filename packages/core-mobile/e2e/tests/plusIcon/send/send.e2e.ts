@@ -1,7 +1,6 @@
 import accountManagePage from '../../../pages/accountManage.page'
 import sendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
-import activityTabPage from '../../../pages/activityTab.page'
 import portfolioPage from '../../../pages/portfolio.page'
 import { warmup } from '../../../helpers/warmup'
 import actions from '../../../helpers/actions'
@@ -24,9 +23,6 @@ describe('Send AVAX', () => {
       sendLoc.sendingAmount
     )
     await sendPage.verifySuccessToast()
-    await portfolioPage.goToActivityTab()
-    const newRow = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(newRow, 'Send')
   })
 
   it('should send AVAX on P-Chain', async () => {

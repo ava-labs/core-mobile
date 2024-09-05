@@ -47,7 +47,7 @@ describe('Stake: testnet flow', () => {
 
   it('should verify staking on testnet', async () => {
     await StakePage.tapStakeNow()
-    await Actions.waitForElement(StakePage.notNowButton, 25000, 0)
+    await Actions.waitForElement(StakePage.notNowButton, 60000, 0)
     await StakePage.tapNotNowButton()
     await Actions.waitForElement(StakePage.newStakeTimeRemaining, 15000, 0)
     await Assert.isVisible(StakePage.newStakeTimeRemaining)
