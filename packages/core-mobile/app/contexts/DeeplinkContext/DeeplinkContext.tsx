@@ -25,7 +25,8 @@ import {
   DeepLink,
   DeeplinkContextType,
   DeepLinkOrigin,
-  HandleNotificationCallback
+  HandleNotificationCallback,
+  NotificationData
 } from './types'
 
 const DeeplinkContext = createContext<DeeplinkContextType>({
@@ -48,7 +49,7 @@ export const DeeplinkContextProvider = ({
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
 
   const maybeSetActiveNetwork = useCallback(
-    (data: { [p: string]: string | number | object }) => {
+    (data: NotificationData) => {
       if (
         'chainId' in data &&
         ['string' || 'number'].includes(typeof data.chainId)
@@ -66,7 +67,7 @@ export const DeeplinkContextProvider = ({
   )
 
   const maybeSetActiveAccount = useCallback(
-    (data: { [p: string]: string | number | object }) => {
+    (data: NotificationData) => {
       if ('accountAddress' in data && typeof data.accountAddress === 'string') {
         const account = selectAccountByAddress(data.accountAddress)(
           store.getState() as RootState
@@ -83,7 +84,7 @@ export const DeeplinkContextProvider = ({
   )
 
   const handleNotificationCallback: HandleNotificationCallback = useCallback(
-    (data: { [p: string]: string | number | object } | undefined) => {
+    (data: NotificationData | undefined) => {
       if (!data) {
         Logger.error(
           `[DeeplinkContext.tsx][handleNotificationCallback] no data`

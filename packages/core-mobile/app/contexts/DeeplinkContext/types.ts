@@ -34,6 +34,7 @@ export const ACTIONS = {
   OpenChainPortfolio: 'openchainportfolio'
 }
 
+export type NotificationData = { [p: string]: string | number | object }
 export type HandleNotificationCallback = (
-  data: { [p: string]: string | number | object } | undefined
+  data: NotificationData | undefined
 ) => void
