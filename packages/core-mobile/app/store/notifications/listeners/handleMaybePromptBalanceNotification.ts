@@ -36,7 +36,7 @@ export const handleMaybePromptBalanceNotification = async (
         notificationChannel: ChannelId.BALANCE_CHANGES,
         title: 'Turn on Notifications?',
         message:
-          'You will be notified when your balance on C-Chain changes. You can change your preference in settings.'
+          'You will be notified when certain wallet actions occur. You can change your preference in settings.'
       }
     })
     listenerApi.dispatch(setHasPromptedForBalanceChange(true))
