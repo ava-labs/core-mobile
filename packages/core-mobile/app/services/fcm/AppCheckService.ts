@@ -3,6 +3,7 @@ import {
   FirebaseAppCheckTypes
 } from '@react-native-firebase/app-check'
 import Logger from 'utils/Logger'
+import Config from 'react-native-config'
 
 class AppCheckService {
   init = (): void => {
@@ -17,7 +18,7 @@ class AppCheckService {
       },
       apple: {
         provider: __DEV__ ? 'debug' : 'appAttestWithDeviceCheckFallback',
-        debugToken: process.env.APPCHECK_DEBUG_TOKEN_APPLE
+        debugToken: Config.APPCHECK_DEBUG_TOKEN_APPLE
       }
     })
 
@@ -48,7 +49,21 @@ class AppCheckService {
   }
 
   getToken = async (): Promise<FirebaseAppCheckTypes.AppCheckTokenResult> => {
-    return await firebase.appCheck().getToken(true)
+    return await firebase.appCheck().getToken(false)
+  }
+
+  fetch = async (url: string, bodyJson: string): Promise<Response> => {
+    const appCheckToken = await this.getToken()
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Firebase-AppCheck': appCheckToken.token
+      },
+      body: bodyJson
+    }
+
+    return fetch(url, options)
   }
 }
 export default new AppCheckService()

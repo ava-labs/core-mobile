@@ -10,23 +10,13 @@ export async function subscribeForBalanceChange({
   chainIds: string[]
   addresses: string[]
 }): Promise<{ message: 'ok' }> {
-  const appCheckToken = await AppCheckService.getToken()
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Firebase-AppCheck': appCheckToken.token
-    },
-    body: JSON.stringify({
+  const response = await AppCheckService.fetch(
+    'https://core-notification-sender-api.avax-test.network/v1/push/balance-changes/subscribe',
+    JSON.stringify({
       deviceArn,
       chainIds,
       addresses
     })
-  }
-
-  const response = await fetch(
-    'https://core-notification-sender-api.avax-test.network/v1/push/balance-changes/subscribe',
-    options
   ).catch(error => {
     Logger.error(`[subscribe.ts][subscribe]${error}`)
     throw new Error(error)

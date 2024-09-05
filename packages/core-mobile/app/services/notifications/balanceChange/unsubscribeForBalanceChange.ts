@@ -1,23 +1,16 @@
 import Logger from 'utils/Logger'
+import AppCheckService from 'services/fcm/AppCheckService'
 
 export async function unSubscribeForBalanceChange({
   deviceArn
 }: {
   deviceArn: string
 }): Promise<{ message: 'ok' }> {
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
+  const response = await AppCheckService.fetch(
+    'https://core-notification-sender-api.avax-test.network/v1/push/balance-changes/unsubscribe',
+    JSON.stringify({
       deviceArn
     })
-  }
-
-  const response = await fetch(
-    'https://core-notification-sender-api.avax-test.network/v1/push/balance-changes/unsubscribe',
-    options
   ).catch(error => {
     Logger.error(`[unsubscribeForBalanceChange.ts][unsubscribe]${error}`)
     throw error
