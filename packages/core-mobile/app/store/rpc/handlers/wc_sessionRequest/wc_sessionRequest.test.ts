@@ -12,15 +12,6 @@ import { AlertType } from '@avalabs/vm-module-types'
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
-const mockIsDeveloperMode = true
-jest.mock('store/settings/advanced/slice', () => {
-  const actual = jest.requireActual('store/settings/advanced/slice')
-  return {
-    ...actual,
-    selectIsDeveloperMode: () => mockIsDeveloperMode
-  }
-})
-
 jest.mock('store/network/slice', () => {
   const actual = jest.requireActual('store/network/slice')
   return {
@@ -97,8 +88,11 @@ const testNamespacesToApprove = {
 const testNonEVMNamespacesToApprove = {
   avax: {
     chains: [
+      AvalancheCaip2ChainId.C,
       AvalancheCaip2ChainId.C_TESTNET,
+      AvalancheCaip2ChainId.P,
       AvalancheCaip2ChainId.P_TESTNET,
+      AvalancheCaip2ChainId.X,
       AvalancheCaip2ChainId.X_TESTNET
     ],
     methods: [
@@ -115,7 +109,10 @@ const testNonEVMNamespacesToApprove = {
     ]
   },
   bip122: {
-    chains: ['bip122:000000000933ea01ad0ee984209779ba'],
+    chains: [
+      'bip122:000000000019d6689c085ae165831e93',
+      'bip122:000000000933ea01ad0ee984209779ba'
+    ],
     methods: [RpcMethod.BITCOIN_SEND_TRANSACTION],
     events: [
       'chainChanged',
@@ -591,16 +588,25 @@ describe('session_request handler', () => {
         },
         avax: {
           accounts: [
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
             'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress1',
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress2',
             'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:pvmAddress1',
             'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:pvmAddress2',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress1',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress2',
             'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:avmAddress1',
             'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:avmAddress2'
           ],
           chains: [
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a',
             'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd',
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
             'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
             'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
           ],
           events: [
@@ -618,10 +624,15 @@ describe('session_request handler', () => {
         },
         bip122: {
           accounts: [
+            'bip122:000000000019d6689c085ae165831e93:btcAddress1',
+            'bip122:000000000019d6689c085ae165831e93:btcAddress2',
             'bip122:000000000933ea01ad0ee984209779ba:btcAddress1',
             'bip122:000000000933ea01ad0ee984209779ba:btcAddress2'
           ],
-          chains: ['bip122:000000000933ea01ad0ee984209779ba'],
+          chains: [
+            'bip122:000000000019d6689c085ae165831e93',
+            'bip122:000000000933ea01ad0ee984209779ba'
+          ],
           events: [
             'chainChanged',
             'accountsChanged',

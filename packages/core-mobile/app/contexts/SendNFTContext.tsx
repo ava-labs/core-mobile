@@ -110,7 +110,8 @@ export const SendNFTContextProvider = ({
       address: sendToAddress,
       defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
       gasLimit,
-      token: sendService.mapTokenFromNFT(sendToken)
+      token: sendService.mapTokenFromNFT(sendToken),
+      canSubmit
     } as SendState
 
     InteractionManager.runAfterInteractions(() => {
