@@ -12,12 +12,10 @@ export const isStakeCompleteNotificationDisabled = async (
     ChannelId.STAKING_COMPLETE
   )(state)
 
-  const isStakeCompleteNotificationBlocked = async (): Promise<
-    boolean | undefined
-  > => {
+  const isStakeCompleteNotificationBlocked = async (): Promise<boolean> => {
     const blockedNotifications =
       await NotificationsService.getBlockedNotifications()
-    return blockedNotifications.get(ChannelId.STAKING_COMPLETE)
+    return blockedNotifications.get(ChannelId.STAKING_COMPLETE) === true
   }
   const isSystemStakeCompleteNotificationBlocked =
     await isStakeCompleteNotificationBlocked()
