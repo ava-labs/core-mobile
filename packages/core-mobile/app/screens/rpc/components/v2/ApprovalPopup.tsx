@@ -290,7 +290,9 @@ const ApprovalPopup = (): JSX.Element => {
     return (
       <View sx={{ padding: 16 }}>
         <Button
-          testID="approve_button"
+          testID={
+            approveDisabled ? 'disabled_approve_button' : 'approve_button'
+          }
           size="xlarge"
           type="primary"
           onPress={onHandleApprove}

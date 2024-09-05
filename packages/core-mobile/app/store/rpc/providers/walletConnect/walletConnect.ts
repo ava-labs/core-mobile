@@ -25,7 +25,8 @@ const chainAgnosticMethods = [
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
   RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
   RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY,
-  RpcMethod.AVALANCHE_SET_DEVELOPER_MODE
+  RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
+  RpcMethod.AVALANCHE_RENAME_ACCOUNT
 ]
 
 class WalletConnectProvider implements AgnosticRpcProvider {

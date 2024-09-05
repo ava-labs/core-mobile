@@ -196,7 +196,7 @@ class NetworksPage {
     await Action.scrollListUntil(
       this.saveButton,
       by.id('addEditNetwork_scroll_view'),
-      100
+      30
     )
     while (await Action.isVisible(this.saveButton, 0)) {
       await Action.tapElementAtIndex(this.saveButton, 0)
