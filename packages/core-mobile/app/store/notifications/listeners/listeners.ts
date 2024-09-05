@@ -7,10 +7,11 @@ import {
 } from 'store/app'
 import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
 import { handleMaybePromptBalanceNotification } from 'store/notifications/listeners/handleMaybePromptBalanceNotification'
-import { setupBalanceChangeNotifications } from 'store/notifications/listeners/setupBalanceChangeNotifications'
+import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
 import Logger from 'utils/Logger'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { manageForegroundNotificationSubscription } from 'store/notifications/listeners/manageForegroundNotificationSubscription'
+import { unsubscribeBalanceChangeNotifications } from 'store/notifications/listeners/unsubscribeBalanceChangeNotifications'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
@@ -78,18 +79,22 @@ export const addNotificationsListeners = (
       setAccounts,
       setNonActiveAccounts,
       setAccount,
-      onLogOut,
-      turnOnNotificationsFor,
-      turnOffNotificationsFor
+      turnOnNotificationsFor
     ),
-    effect: async (action, listenerApi) =>
-      await setupBalanceChangeNotifications(listenerApi, action).catch(
-        reason => {
-          Logger.error(
-            `[listeners.ts][setupBalanceChangeNotifications]${reason}`
-          )
-        }
-      )
+    effect: async (_, listenerApi) =>
+      await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
+        Logger.error(`[listeners.ts][setupBalanceChangeNotifications]${reason}`)
+      })
+  })
+
+  startListening({
+    matcher: isAnyOf(onLogOut, turnOffNotificationsFor),
+    effect: async action =>
+      await unsubscribeBalanceChangeNotifications(action).catch(reason => {
+        Logger.error(
+          `[listeners.ts][unsubscribeBalanceChangeNotifications]${reason}`
+        )
+      })
   })
 
   startListening({
