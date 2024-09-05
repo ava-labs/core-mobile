@@ -35,7 +35,7 @@ describe('Send ETH', () => {
     await portfolioPage.tapEthNetwork()
     await portfolioPage.tapActivityTab()
     await activityTabPage.verifyExistingRow('Send', '-0.000001 ETH')
-    
+
     await accountManagePage.switchToSecondAccount()
     await activityTabPage.refreshActivityPage()
     await activityTabPage.verifyExistingRow('Receive', '+0.000001 ETH')
@@ -64,7 +64,7 @@ describe('Send ETH', () => {
     await networksManagePage.tapEthereumSepoliaNetwork(1)
     await portfolioPage.tapActivityTab()
     await activityTabPage.verifyExistingRow('Send', '-0.000001 ETH')
-    
+
     await accountManagePage.switchToSecondAccount()
     await activityTabPage.refreshActivityPage()
     await activityTabPage.verifyExistingRow('Receive', '+0.000001 ETH')
