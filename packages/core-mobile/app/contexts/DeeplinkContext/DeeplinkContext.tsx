@@ -17,9 +17,10 @@ import {
 import { selectAccountByAddress, setActiveAccountIndex } from 'store/account'
 import Logger from 'utils/Logger'
 import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
-import { selectNetwork, setActive } from 'store/network'
+import { setActive } from 'store/network'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { RootState } from 'store'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
   DeepLink,
@@ -47,6 +48,7 @@ export const DeeplinkContextProvider = ({
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
   const processedFeatureFlags = useSelector(selectFeatureFlags)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
+  const { getNetwork } = useNetworks()
 
   const maybeSetActiveNetwork = useCallback(
     (data: NotificationData) => {
@@ -55,7 +57,7 @@ export const DeeplinkContextProvider = ({
         ['string', 'number'].includes(typeof data.chainId)
       ) {
         const chainId = Number(data.chainId)
-        const network = selectNetwork(chainId)(store.getState() as RootState)
+        const network = getNetwork(chainId)
         //check if testnet should be toggled to match chainId provided in data
         if (network && network.isTestnet !== isDeveloperMode) {
           dispatch(toggleDeveloperMode())
@@ -63,7 +65,7 @@ export const DeeplinkContextProvider = ({
         dispatch(setActive(chainId))
       }
     },
-    [dispatch, isDeveloperMode, store]
+    [dispatch, getNetwork, isDeveloperMode]
   )
 
   const maybeSetActiveAccount = useCallback(
