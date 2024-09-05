@@ -62,6 +62,7 @@ export enum RpcMethod {
   AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange',
   BITCOIN_SEND_TRANSACTION = 'bitcoin_sendTransaction',
   AVALANCHE_SIGN_MESSAGE = 'avalanche_signMessage',
+  AVALANCHE_RENAME_ACCOUNT = 'avalanche_renameAccount',
 
   /* custom methods that only apply to Wallet Connect*/
   WC_SESSION_REQUEST = 'wc_sessionRequest'
@@ -78,7 +79,8 @@ export const CORE_EVM_METHODS = [
   RpcMethod.AVALANCHE_SELECT_ACCOUNT,
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT,
-  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
+  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
+  RpcMethod.AVALANCHE_RENAME_ACCOUNT
 ]
 
 export const CORE_AVAX_METHODS = [
