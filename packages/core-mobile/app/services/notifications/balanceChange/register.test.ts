@@ -28,7 +28,8 @@ describe('registerDevice', () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Firebase-AppCheck': 'appCheckToken'
         },
         body: JSON.stringify({
           deviceToken: deviceToken,
