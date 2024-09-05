@@ -32,9 +32,12 @@ class AppCheckService {
       })
   }
 
+  /**
+   * For debug purpose, to check if setup is correct
+   */
   verifyAppCheck = async (): Promise<void> => {
     try {
-      const { token } = await firebase.appCheck().getToken(true)
+      const { token } = await this.getToken()
 
       if (token.length > 0) {
         Logger.info('AppCheckService:verifyAppCheck passed')
