@@ -40,8 +40,16 @@ class PlusMenuPage {
     return by.id(PlusMenuLoc.receive)
   }
 
+  get buyButton() {
+    return by.id(PlusMenuLoc.buy)
+  }
+
   async tapReceiveButton() {
     await Actions.tap(this.receiveButton)
+  }
+
+  async tapBuyButton() {
+    await Actions.tap(this.buyButton)
   }
 
   async connectWallet(qrUri: string) {
