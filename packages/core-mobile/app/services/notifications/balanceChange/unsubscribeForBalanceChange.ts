@@ -20,7 +20,7 @@ export async function unSubscribeForBalanceChange({
     options
   ).catch(error => {
     Logger.error(`[unsubscribeForBalanceChange.ts][unsubscribe]${error}`)
-    throw Error(error)
+    throw error
   })
   if (response.ok) {
     return response.json()

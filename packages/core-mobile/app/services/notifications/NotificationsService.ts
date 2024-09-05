@@ -58,7 +58,7 @@ class NotificationsService {
    * work opens system settings
    */
   async getAllPermissions(shouldOpenSettings = true): Promise<{
-    permission: string
+    permission: 'authorized' | 'denied'
     blockedNotifications: Map<ChannelId, boolean>
   }> {
     const promises = [] as Promise<string>[]
@@ -185,21 +185,25 @@ class NotificationsService {
 
   onForegroundEvent = (callback: HandleNotificationCallback): (() => void) => {
     return notifee.onForegroundEvent(async ({ type, detail }) => {
-      await this.handleNotificationEvent({
+      this.handleNotificationEvent({
         type,
         detail,
         callback
-      })
+      }).catch(reason =>
+        Logger.error(`[NotificationsService.ts][onForegroundEvent]${reason}`)
+      )
     })
   }
 
   onBackgroundEvent = (callback: HandleNotificationCallback): void => {
     return notifee.onBackgroundEvent(async ({ type, detail }) => {
-      await this.handleNotificationEvent({
+      this.handleNotificationEvent({
         type,
         detail,
         callback
-      })
+      }).catch(reason =>
+        Logger.error(`[NotificationsService.ts][onBackgroundEvent]${reason}`)
+      )
     })
   }
 
