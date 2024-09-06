@@ -14,8 +14,10 @@ import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
-import DataDogService from 'services/datadog/DataDogService'
 import Logger, { LogLevel } from 'utils/Logger'
+import { DatadogProvider } from '@datadog/mobile-react-native'
+import { DataDogConfig } from 'services/datadog/DataDogConfig'
+import { DdRumReactNavigationTracking } from '@datadog/mobile-react-navigation'
 
 Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
@@ -48,20 +50,23 @@ function App(): JSX.Element {
         enabled={context.keyboardAvoidingViewEnabled}
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          ref={navigationRef}
-          onReady={() => {
-            SentryService.routingInstrumentation.registerNavigationContainer(
-              navigationRef
-            )
-            DataDogService.init(navigationRef).catch(Logger.error)
-          }}>
-          <RootScreenStack />
-        </NavigationContainer>
+        <DatadogProvider configuration={DataDogConfig}>
+          <NavigationContainer
+            theme={context.navContainerTheme}
+            ref={navigationRef}
+            onReady={() => {
+              SentryService.routingInstrumentation.registerNavigationContainer(
+                navigationRef
+              )
+              DdRumReactNavigationTracking.startTrackingViews(
+                navigationRef.current
+              )
+            }}>
+            <RootScreenStack />
+          </NavigationContainer>
+        </DatadogProvider>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
-
 export default Sentry.wrap(App)

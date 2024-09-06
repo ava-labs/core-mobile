@@ -576,6 +576,7 @@ export async function getTestCasesFromRun(runId: number): Promise<object[]> {
       already_posted: true
     })
   }
+  console.log(titleArray)
   return titleArray
 }
 

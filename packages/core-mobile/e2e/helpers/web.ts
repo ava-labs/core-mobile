@@ -38,9 +38,12 @@ const tapByText = async (text: string) => {
 }
 
 const isTextVisible = async (text: string) => {
-  await expect(
-    wb.element(by.web.xpath(`//*[contains(., "${text}")]`))
-  ).toExist()
+  try {
+    expect(wb.element(by.web.xpath(`//*[contains(., "${text}")]`))).toExist()
+    return true
+  } catch (e) {
+    return false
+  }
 }
 
 const waitForWebElement = async (

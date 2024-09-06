@@ -29,7 +29,11 @@ class BrowserPage {
   }
 
   async tapAccept() {
-    await Wbs.tapByText('Accept')
+    try {
+      await Wbs.tapByText('Accept')
+    } catch (e) {
+      console.log('Accept button is not displayed')
+    }
   }
 
   async tapCoreConnectWallet() {

@@ -4,8 +4,10 @@
 import assert from 'assert'
 import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
+import { AndroidElementAttributes, IosElementAttributes } from 'detox/detox'
 import { Platform } from './constants'
 import Constants from './constants'
+import delay from './waits'
 const fs = require('fs')
 
 const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
@@ -134,6 +136,35 @@ const waitForElementNotVisible = async (
 
 const getAttributes = async (item: any, index = 0) => {
   return await element(item).atIndex(index).getAttributes()
+}
+
+const waitForElementToBeEnabled = async (
+  item: any,
+  timeout = 500,
+  index = 0
+) => {
+  const attributes:
+    | IosElementAttributes
+    | AndroidElementAttributes
+    | { elements: IosElementAttributes[] | AndroidElementAttributes[] } =
+    await getAttributes(item, index)
+
+  console.log(attributes, ' this is the attributes')
+
+  // Type guard to check if attributes have the 'enabled' property
+  function hasEnabledProperty(
+    attr: any
+  ): attr is IosElementAttributes | AndroidElementAttributes {
+    return 'enabled' in attr
+  }
+
+  for (let i = 0; i < 20; i++) {
+    if (hasEnabledProperty(attributes) && attributes.enabled === true) {
+      return
+    } else {
+      await delay(timeout)
+    }
+  }
 }
 
 const getElementsTextByTestId = async (testID: string): Promise<string[]> => {
@@ -301,5 +332,6 @@ export default {
   expectToBeVisible,
   scrollListUntil,
   getElementsByTestId,
-  getElementsTextByTestId
+  getElementsTextByTestId,
+  waitForElementToBeEnabled
 }

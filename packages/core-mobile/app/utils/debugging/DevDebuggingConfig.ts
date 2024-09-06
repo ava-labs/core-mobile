@@ -5,7 +5,7 @@
 const DevDebuggingConfig = {
   WDYR: false,
   STORYBOOK_ENABLED: false,
-  LOGBOX_DISABLED: false,
+  LOGBOX_DISABLED: true,
   REDSCREEN_DISABLED: false,
   LOGBOX_IGNORED_WARNINGS: [],
   SHOW_DEMO_NFTS: false,

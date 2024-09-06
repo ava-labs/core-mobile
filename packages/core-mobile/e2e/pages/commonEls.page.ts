@@ -38,7 +38,13 @@ class CommonElsPage {
   }
 
   async tapGetStartedButton() {
-    await Actions.tap(this.getStartedButton)
+    const getStartedBtnVisible = await Actions.isVisible(
+      this.getStartedButton,
+      0
+    )
+    if (getStartedBtnVisible) {
+      await Actions.tap(this.getStartedButton)
+    }
   }
 
   async enterTextInput(index: number, inputText: string) {

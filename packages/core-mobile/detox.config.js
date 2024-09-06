@@ -39,7 +39,7 @@ module.exports = {
       type: 'android.attached',
       device: {
         // Run 'adb devices' in terminal to get the device name and replace it here
-        adbName: 'R5CN709H42E'
+        adbName: '0A281FDD4001KZ'
       }
     }
   },

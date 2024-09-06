@@ -3,7 +3,7 @@ import { DdRumReactNavigationTracking } from '@datadog/mobile-react-navigation'
 import { NavigationContainerRefWithCurrent } from '@react-navigation/native'
 import { RootScreenStackParamList } from 'navigation/types'
 import Config from 'react-native-config'
-import DataDogConfig from 'services/datadog/DataDogConfig'
+import { DataDogConfig } from 'services/datadog/DataDogConfig'
 import Logger from 'utils/Logger'
 
 export const DataDogService = {
@@ -27,6 +27,7 @@ export const DataDogService = {
     navigationRef: NavigationContainerRefWithCurrent<RootScreenStackParamList>
   ) => {
     if (navigationRef) {
+      Logger.info('Starting RUM tracking')
       DdRumReactNavigationTracking.startTrackingViews(navigationRef.current)
     } else {
       Logger.error(
