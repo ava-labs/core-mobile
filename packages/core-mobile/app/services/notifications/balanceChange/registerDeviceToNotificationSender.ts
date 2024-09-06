@@ -1,11 +1,12 @@
 import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
+import Config from 'react-native-config'
 
 export async function registerDeviceToNotificationSender(
   fcmToken: string
 ): Promise<{ deviceArn: string }> {
   const response = await AppCheckService.fetch(
-    'https://core-notification-sender-api.avax-test.network/v1/push/register',
+    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
     JSON.stringify({
       deviceToken: fcmToken,
       appType: 'CORE_MOBILE_APP'

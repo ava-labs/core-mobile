@@ -1,4 +1,5 @@
 import { subscribeForBalanceChange } from 'services/notifications/balanceChange/subscribeForBalanceChange'
+import Config from 'react-native-config'
 
 global.fetch = jest.fn()
 
@@ -29,7 +30,7 @@ describe('subscribe', () => {
 
     // Check if fetch was called with correct URL and options
     expect(fetch).toHaveBeenCalledWith(
-      'https://core-notification-sender-api.avax-test.network/v1/push/balance-changes/subscribe',
+      Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/subscribe',
       {
         method: 'POST',
         headers: {

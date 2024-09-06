@@ -1,4 +1,5 @@
 import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
+import Config from 'react-native-config'
 
 global.fetch = jest.fn()
 
@@ -24,7 +25,7 @@ describe('registerDevice', () => {
 
     // Check if fetch was called with correct URL and options
     expect(fetch).toHaveBeenCalledWith(
-      'https://core-notification-sender-api.avax-test.network/v1/push/register',
+      Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
       {
         method: 'POST',
         headers: {
