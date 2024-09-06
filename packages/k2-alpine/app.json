@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "k2-alpine",
+    "slug": "k2-alpine",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "platforms": ["ios", "android"]
+  }
+}
