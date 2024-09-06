@@ -5,6 +5,7 @@ import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { ChannelId } from 'services/notifications/channels'
 import { ACTIONS, PROTOCOLS } from 'contexts/DeeplinkContext/types'
+import { NotificationsBalanceChangeSchema } from 'services/fcm/types'
 
 type UnsubscribeFunc = () => void
 
@@ -21,10 +22,17 @@ class FCMService {
       Logger.info('A new FCM message arrived!', remoteMessage)
       if (this.isValidRemoteMessage(remoteMessage)) {
         //TO DESIGN: show in-app notification instead of native
+        const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
+        if (!result.success) {
+          Logger.error(
+            `[FCMService.ts][listenForMessagesForeground:NotificationsBalanceChangeSchema]${result}`
+          )
+          return
+        }
         const data = {
-          accountAddress: remoteMessage.data?.accountAddress ?? '',
-          chainId: remoteMessage.data?.chainId ?? '',
-          transactionHash: remoteMessage.data?.transactionHash ?? '',
+          accountAddress: result.data.accountAddress,
+          chainId: result.data.chainId,
+          transactionHash: result.data.transactionHash,
           url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
         }
         await NotificationsService.displayNotification({
@@ -44,11 +52,18 @@ class FCMService {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       Logger.info('A new FCM message arrived in background', remoteMessage)
       if (this.isValidRemoteMessage(remoteMessage)) {
+        const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
+        if (!result.success) {
+          Logger.error(
+            `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+          )
+          return
+        }
         //show native notification
         const data = {
-          accountAddress: remoteMessage.data?.accountAddress ?? '',
-          chainId: remoteMessage.data?.chainId ?? '',
-          transactionHash: remoteMessage.data?.transactionHash ?? '',
+          accountAddress: result.data.accountAddress,
+          chainId: result.data.chainId,
+          transactionHash: result.data.transactionHash,
           url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
         }
         await NotificationsService.displayNotification({
