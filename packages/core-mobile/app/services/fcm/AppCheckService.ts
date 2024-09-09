@@ -13,8 +13,7 @@ class AppCheckService {
     rnfbProvider.configure({
       android: {
         provider: __DEV__ ? 'debug' : 'playIntegrity',
-        debugToken:
-          'some token you have configured for your project firebase web console'
+        debugToken: Config.APPCHECK_DEBUG_TOKEN_APPLE
       },
       apple: {
         provider: __DEV__ ? 'debug' : 'appAttestWithDeviceCheckFallback',
