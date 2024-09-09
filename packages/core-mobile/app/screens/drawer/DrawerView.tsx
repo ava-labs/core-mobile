@@ -23,11 +23,14 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 import { useFocusEffect } from '@react-navigation/native'
 import { SeedlessSessionManagerEvent } from 'seedless/services/SeedlessSessionManager'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
   const context = useApplicationContext()
   const enableDarkMode = useSelector(selectUseDarkMode)
+  const { conditionalTop } = useVariableSafeAreaInsets()
 
   function toggleDarkLightMode(): void {
     Alert.alert('Toggle dark/light mode')
@@ -49,7 +52,13 @@ const DrawerView = (): JSX.Element => {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: context.theme.colorBg2 }]}>
+      style={[
+        styles.container,
+        {
+          backgroundColor: context.theme.colorBg2,
+          paddingTop: conditionalTop
+        }
+      ]}>
       {header}
       <Main />
     </View>
@@ -94,10 +103,7 @@ const Main = (): JSX.Element => {
   )
 
   return (
-    <View
-      style={{
-        flex: 1
-      }}>
+    <SafeLowerAreaView>
       <ScrollView>
         {hasRecoveryMethodsFetched && hasRecoveryMethods === false && (
           <>
@@ -118,7 +124,7 @@ const Main = (): JSX.Element => {
       <Separator style={{ marginHorizontal: 16 }} />
       <VersionItem />
       <SignOutItem />
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

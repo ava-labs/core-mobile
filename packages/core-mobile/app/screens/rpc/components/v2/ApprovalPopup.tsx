@@ -28,6 +28,7 @@ import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountAp
 import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import GlobeSVG from 'components/svg/GlobeSVG'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
@@ -373,7 +374,7 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   return (
-    <>
+    <SafeLowerAreaView>
       <RpcRequestBottomSheet
         onClose={() => {
           rejectAndClose()
@@ -402,7 +403,7 @@ const ApprovalPopup = (): JSX.Element => {
           }
         />
       )}
-    </>
+    </SafeLowerAreaView>
   )
 }
 

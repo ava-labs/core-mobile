@@ -8,6 +8,7 @@ import ViewShot from 'react-native-view-shot'
 import { TabId } from 'store/browser'
 import SnapshotService from 'services/snapshot/SnapshotService'
 import { updateSnapshotTimestamp } from 'store/snapshots/slice'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import useBrowserPool from './useBrowserPool'
 
 export default function TabViewScreen(): JSX.Element {
@@ -45,16 +46,18 @@ export default function TabViewScreen(): JSX.Element {
   )
 
   return (
-    <ViewShot
-      ref={viewShotRef}
-      options={{ fileName: activeTab?.id, format: 'jpg', quality: 0.5 }}
-      style={{ flex: 1 }}>
-      <View sx={{ flex: 1 }}>
-        {showEmptyTab && <EmptyTab />}
-        <View sx={{ display: showWebView ? 'flex' : 'none', flex: 1 }}>
-          {browsers}
+    <SafeLowerAreaView>
+      <ViewShot
+        ref={viewShotRef}
+        options={{ fileName: activeTab?.id, format: 'jpg', quality: 0.5 }}
+        style={{ flex: 1 }}>
+        <View sx={{ flex: 1 }}>
+          {showEmptyTab && <EmptyTab />}
+          <View sx={{ display: showWebView ? 'flex' : 'none', flex: 1 }}>
+            {browsers}
+          </View>
         </View>
-      </View>
-    </ViewShot>
+      </ViewShot>
+    </SafeLowerAreaView>
   )
 }

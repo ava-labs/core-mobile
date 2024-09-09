@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react'
-import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TabViewAva from 'components/TabViewAva'
@@ -9,6 +8,7 @@ import SearchBar from 'components/SearchBar'
 import { useSelector } from 'react-redux'
 import { selectWatchlistFavoritesIsEmpty } from 'store/watchlist'
 import FavoriteWatchlistView from 'screens/watchlist/FavoriteWatchlistView'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
   focused,
@@ -39,7 +39,7 @@ export default function WatchlistTab(): JSX.Element {
   )
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeLowerAreaView>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Watchlist
       </AvaText.LargeTitleBold>
@@ -69,6 +69,6 @@ export default function WatchlistTab(): JSX.Element {
           <TabViewAva.Item title={'All'}>{allWatchList}</TabViewAva.Item>
         </TabViewAva>
       )}
-    </View>
+    </SafeLowerAreaView>
   )
 }

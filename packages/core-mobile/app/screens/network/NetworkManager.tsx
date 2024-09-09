@@ -11,6 +11,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 type Props = {
   onShowInfo: (chainId: ChainID) => void
@@ -103,10 +104,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   }
 
   return (
-    <View
-      style={{
-        flex: 1
-      }}>
+    <SafeLowerAreaView>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         {title}
       </AvaText.LargeTitleBold>
@@ -163,7 +161,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
           />
         </TabViewAva.Item>
       </TabViewAva>
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

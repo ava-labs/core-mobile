@@ -6,6 +6,7 @@ import NetworkTokens, {
 } from 'screens/portfolio/network/NetworkTokens'
 import { createStackNavigator } from '@react-navigation/stack'
 import { PortfolioTabs } from 'consts/portfolio'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type PortfolioStackParamList = {
   [AppNavigation.Portfolio.Portfolio]: { tabIndex?: PortfolioTabs }
@@ -18,19 +19,21 @@ const PortfolioStack = createStackNavigator<PortfolioStackParamList>()
 
 function PortfolioScreenStack(): JSX.Element {
   return (
-    <PortfolioStack.Navigator
-      screenOptions={{
-        headerShown: false
-      }}>
-      <PortfolioStack.Screen
-        name={AppNavigation.Portfolio.Portfolio}
-        component={Portfolio}
-      />
-      <PortfolioStack.Screen
-        name={AppNavigation.Portfolio.NetworkTokens}
-        component={NetworkTokens}
-      />
-    </PortfolioStack.Navigator>
+    <SafeLowerAreaView>
+      <PortfolioStack.Navigator
+        screenOptions={{
+          headerShown: false
+        }}>
+        <PortfolioStack.Screen
+          name={AppNavigation.Portfolio.Portfolio}
+          component={Portfolio}
+        />
+        <PortfolioStack.Screen
+          name={AppNavigation.Portfolio.NetworkTokens}
+          component={NetworkTokens}
+        />
+      </PortfolioStack.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

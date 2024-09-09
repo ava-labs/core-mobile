@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
@@ -96,7 +96,8 @@ export default function NetworkDropdown(): JSX.Element {
       <Dropdown
         key={dropdownUniqueId}
         style={{
-          left: 4
+          left: 4,
+          top: Platform.OS === 'ios' ? 15 : -10
         }}
         data={data}
         width={300}

@@ -5,7 +5,6 @@ import {
   ListRenderItemInfo,
   StyleSheet
 } from 'react-native'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -15,6 +14,7 @@ import {
 } from 'store/settings/currency'
 import { useNavigation } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 const CurrencySelector = (): JSX.Element => {
   const navigation = useNavigation()
@@ -55,7 +55,7 @@ const CurrencySelector = (): JSX.Element => {
   }
 
   return (
-    <SafeAreaProvider style={styles.flex}>
+    <SafeLowerAreaView>
       <FlatList
         style={styles.tokenList}
         data={currencies}
@@ -63,14 +63,11 @@ const CurrencySelector = (): JSX.Element => {
         keyExtractor={item => item.name}
         scrollEventThrottle={16}
       />
-    </SafeAreaProvider>
+    </SafeLowerAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1
-  },
   tokenList: {
     flex: 1,
     marginTop: 8

@@ -1,13 +1,16 @@
 import { Text, View } from '@avalabs/k2-mobile'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 import React, { FC } from 'react'
 
 const TestnetBanner: FC = () => {
+  const { top } = useVariableSafeAreaInsets()
   return (
     <View
       testID="testnet_banner"
       sx={{
         backgroundColor: '$warningMain',
-        paddingVertical: 4,
+        paddingBottom: 4,
+        paddingTop: top,
         paddingHorizontal: 16
       }}>
       <Text variant="alertTitle" sx={{ color: '$black' }}>

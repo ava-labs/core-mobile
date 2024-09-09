@@ -26,6 +26,7 @@ import { useNavigation } from '@react-navigation/native'
 import { noop } from '@avalabs/core-utils-sdk'
 import { isIphoneSE } from 'utils/device/isIphoneSE'
 import { PinDots } from 'screens/login/PinDots'
+import { SafeVerticalAreaView } from 'components/SafeAreaViews'
 import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
 
 const WINDOW_HEIGHT = Dimensions.get('window').height
@@ -167,7 +168,12 @@ export default function PinOrBiometryLogin({
   }
 
   return (
-    <View sx={{ height: '100%', backgroundColor: theme.colors.$black }}>
+    <SafeVerticalAreaView
+      sx={{
+        height: '100%',
+        backgroundColor: theme.colors.$black,
+        position: 'absolute'
+      }}>
       <Space y={TOP_SPACE} />
       {!isResettingPin && (
         <ReAnimated.View
@@ -224,7 +230,7 @@ export default function PinOrBiometryLogin({
           )}
         </ReAnimated.View>
       }
-    </View>
+    </SafeVerticalAreaView>
   )
 }
 

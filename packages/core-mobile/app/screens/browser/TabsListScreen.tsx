@@ -27,6 +27,7 @@ import {
   selectAllSnapshotTimestamps
 } from 'store/snapshots/slice'
 import SnapshotService from 'services/snapshot/SnapshotService'
+import { SafeVerticalAreaView } from 'components/SafeAreaViews'
 import TabsListToolbarMenu from './components/TabsListToolbarMenu'
 import TabListItem from './components/TabListItem'
 import { removeProtocol } from './utils'
@@ -181,7 +182,7 @@ function TabsListScreen(): JSX.Element {
   }
 
   return (
-    <>
+    <SafeVerticalAreaView>
       <FlatList
         data={tabs}
         contentContainerStyle={{
@@ -194,7 +195,7 @@ function TabsListScreen(): JSX.Element {
         keyExtractor={item => item.id}
       />
       {renderToolbar()}
-    </>
+    </SafeVerticalAreaView>
   )
 }
 

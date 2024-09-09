@@ -29,6 +29,7 @@ import {
 import ContactShareModal from 'screens/drawer/addressBook/components/ContactShareModal'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { NameAndAddresses } from 'screens/drawer/addressBook/types'
 import { Contact } from '@avalabs/types'
 import { AddressBookScreenProps } from '../types'
@@ -48,49 +49,51 @@ const Stack = createStackNavigator<AddressBookStackParamList>()
 
 const AddressBookStack = (): JSX.Element => {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false
-      }}>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          ...(MainHeaderOptions({
-            title: 'Address Book',
-            headerBackTestID: 'header_back',
-            hideHeaderLeft: false,
-            actionComponent: <AddAddressBookContact />
-          }) as Partial<StackNavigationOptions>)
-        }}
-        name={AppNavigation.AddressBook.List}
-        component={AddressBook}
-      />
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          ...(MainHeaderOptions() as Partial<StackNavigationOptions>)
-        }}
-        name={AppNavigation.AddressBook.Add}
-        component={AddContact}
-      />
-      <Stack.Screen
-        options={{
-          headerShown: true
-        }}
-        name={AppNavigation.AddressBook.Details}
-        component={ContactDetailsComp}
-      />
-      <Stack.Screen
-        options={{ presentation: 'transparentModal', headerShown: false }}
-        name={AppNavigation.AddressBook.DeleteConfirm}
-        component={DeleteConfirmModal}
-      />
-      <Stack.Screen
-        options={{ presentation: 'transparentModal', headerShown: false }}
-        name={AppNavigation.AddressBook.Share}
-        component={ShareContactModal}
-      />
-    </Stack.Navigator>
+    <SafeLowerAreaView>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false
+        }}>
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            ...(MainHeaderOptions({
+              title: 'Address Book',
+              headerBackTestID: 'header_back',
+              hideHeaderLeft: false,
+              actionComponent: <AddAddressBookContact />
+            }) as Partial<StackNavigationOptions>)
+          }}
+          name={AppNavigation.AddressBook.List}
+          component={AddressBook}
+        />
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            ...(MainHeaderOptions() as Partial<StackNavigationOptions>)
+          }}
+          name={AppNavigation.AddressBook.Add}
+          component={AddContact}
+        />
+        <Stack.Screen
+          options={{
+            headerShown: true
+          }}
+          name={AppNavigation.AddressBook.Details}
+          component={ContactDetailsComp}
+        />
+        <Stack.Screen
+          options={{ presentation: 'transparentModal', headerShown: false }}
+          name={AppNavigation.AddressBook.DeleteConfirm}
+          component={DeleteConfirmModal}
+        />
+        <Stack.Screen
+          options={{ presentation: 'transparentModal', headerShown: false }}
+          name={AppNavigation.AddressBook.Share}
+          component={ShareContactModal}
+        />
+      </Stack.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

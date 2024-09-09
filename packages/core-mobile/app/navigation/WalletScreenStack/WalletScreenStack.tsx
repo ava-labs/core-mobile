@@ -1,5 +1,6 @@
 import React, { memo, useCallback } from 'react'
 import { BackHandler } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import {
   NavigatorScreenParams,
   useFocusEffect,
@@ -240,177 +241,180 @@ function WalletScreenStack(props: Props): JSX.Element {
     <BridgeProvider>
       <NFTMetadataProvider>
         {isTestnet && <TestnetBanner />}
-        <WalletScreenS.Navigator
-          screenOptions={{
-            headerShown: false
-          }}>
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.Drawer}
-            component={DrawerScreenStack}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...MainHeaderOptions({ title: 'Manage token list' })
-            }}
-            name={AppNavigation.Wallet.TokenManagement}
-            component={TokenManagement}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.SendTokens}
-            options={{
+        <SafeAreaProvider>
+          <WalletScreenS.Navigator
+            screenOptions={{
               headerShown: false
-            }}
-            component={SendScreenStack}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.Buy}
-            component={BuyScreenStack}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.ReceiveTokens}
-            component={ReceiveScreenStack}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...MainHeaderOptions({ title: 'Add Custom Token' })
-            }}
-            name={AppNavigation.Wallet.AddCustomToken}
-            component={AddCustomToken}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...MainHeaderOptions()
-            }}
-            name={AppNavigation.Wallet.TokenDetail}
-            component={TokenDetail}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...MainHeaderOptions()
-            }}
-            name={AppNavigation.Wallet.OwnedTokenDetail}
-            component={OwnedTokenDetail}
-          />
-          <WalletScreenS.Screen
-            options={{
-              headerShown: false
-            }}
-            name={AppNavigation.Wallet.Swap}
-            component={SwapScreenStack}
-          />
-          <WalletScreenS.Screen
-            options={{
-              headerShown: false
-            }}
-            name={AppNavigation.Wallet.Earn}
-            component={EarnScreenStack}
-          />
-          <WalletScreenS.Screen
-            options={{
-              headerShown: false
-            }}
-            name={AppNavigation.Wallet.NFTDetails}
-            component={NFTScreenStack}
-          />
-          <WalletScreenS.Screen
-            options={MainHeaderOptions()}
-            name={AppNavigation.Wallet.NFTManage}
-            component={NftManage}
-          />
-          <WalletScreenS.Screen
-            options={{
-              headerShown: false
-            }}
-            name={AppNavigation.Wallet.AddressBook}
-            component={AddressBookStack}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...MainHeaderOptions({ title: 'Currency' })
-            }}
-            name={AppNavigation.Wallet.CurrencySelector}
-            component={CurrencySelector}
-          />
-          <WalletScreenS.Screen
-            options={
-              MainHeaderOptions({
+            }}>
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.Drawer}
+              component={DrawerScreenStack}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...MainHeaderOptions({ title: 'Manage token list' })
+              }}
+              name={AppNavigation.Wallet.TokenManagement}
+              component={TokenManagement}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.SendTokens}
+              options={{
+                headerShown: false
+              }}
+              component={SendScreenStack}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.Buy}
+              component={BuyScreenStack}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.ReceiveTokens}
+              component={ReceiveScreenStack}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...MainHeaderOptions({ title: 'Add Custom Token' })
+              }}
+              name={AppNavigation.Wallet.AddCustomToken}
+              component={AddCustomToken}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...MainHeaderOptions()
+              }}
+              name={AppNavigation.Wallet.TokenDetail}
+              component={TokenDetail}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...MainHeaderOptions()
+              }}
+              name={AppNavigation.Wallet.OwnedTokenDetail}
+              component={OwnedTokenDetail}
+            />
+            <WalletScreenS.Screen
+              options={{
+                headerShown: false
+              }}
+              name={AppNavigation.Wallet.Swap}
+              component={SwapScreenStack}
+            />
+            <WalletScreenS.Screen
+              options={{
+                headerShown: false
+              }}
+              name={AppNavigation.Wallet.Earn}
+              component={EarnScreenStack}
+            />
+            <WalletScreenS.Screen
+              options={{
+                headerShown: false
+              }}
+              name={AppNavigation.Wallet.NFTDetails}
+              component={NFTScreenStack}
+            />
+            <WalletScreenS.Screen
+              options={MainHeaderOptions()}
+              name={AppNavigation.Wallet.NFTManage}
+              component={NftManage}
+            />
+            <WalletScreenS.Screen
+              options={{
+                headerShown: false
+              }}
+              name={AppNavigation.Wallet.AddressBook}
+              component={AddressBookStack}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...MainHeaderOptions({ title: 'Currency' })
+              }}
+              name={AppNavigation.Wallet.CurrencySelector}
+              component={CurrencySelector}
+            />
+            <WalletScreenS.Screen
+              options={
+                MainHeaderOptions({
+                  title: '',
+                  hideHeaderLeft: false,
+                  actionComponent: <AddNetworkAction />,
+                  headerBackTestID: 'header_back'
+                }) as Partial<StackNavigationOptions>
+              }
+              name={AppNavigation.Wallet.NetworkSelector}
+              component={NetworkSelectorScreen}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...MainHeaderOptions({
+                  title: '',
+                  hideHeaderLeft: false,
+                  actionComponent: <NetworkDetailsAction />,
+                  headerBackTestID: 'header_back'
+                })
+              }}
+              name={AppNavigation.Wallet.NetworkDetails}
+              component={NetworkDetailsScreen}
+            />
+            <WalletScreenS.Screen
+              options={MainHeaderOptions({
                 title: '',
-                hideHeaderLeft: false,
-                actionComponent: <AddNetworkAction />,
                 headerBackTestID: 'header_back'
-              }) as Partial<StackNavigationOptions>
-            }
-            name={AppNavigation.Wallet.NetworkSelector}
-            component={NetworkSelectorScreen}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...MainHeaderOptions({
+              })}
+              name={AppNavigation.Wallet.NetworkAddEdit}
+              component={NetworkAddEditScreen}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.Advanced}
+              component={AdvancedStackScreen}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.Notifications}
+              component={NotificationsStackScreen}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.SendFeedback}
+              component={SendFeedbackStackScreen}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.SecurityPrivacy}
+              component={SecurityPrivacyStackScreen}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.Legal}
+              component={LegalStackScreen}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...SubHeaderOptions('Transaction Details', false, 'header_back')
+              }}
+              name={AppNavigation.Bridge.BridgeTransactionStatus}
+              component={BridgeTransactionStatus}
+            />
+            <WalletScreenS.Screen
+              name={AppNavigation.Wallet.Bridge}
+              component={BridgeScreenStack}
+            />
+            <WalletScreenS.Screen
+              options={{
+                ...SubHeaderOptions('')
+              }}
+              name={AppNavigation.Wallet.QRCode}
+              component={CaptureDappQR}
+            />
+            <WalletScreenS.Screen
+              options={MainHeaderOptions({
                 title: '',
-                hideHeaderLeft: false,
-                actionComponent: <NetworkDetailsAction />,
                 headerBackTestID: 'header_back'
-              })
-            }}
-            name={AppNavigation.Wallet.NetworkDetails}
-            component={NetworkDetailsScreen}
-          />
-          <WalletScreenS.Screen
-            options={MainHeaderOptions({
-              title: '',
-              headerBackTestID: 'header_back'
-            })}
-            name={AppNavigation.Wallet.NetworkAddEdit}
-            component={NetworkAddEditScreen}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.Advanced}
-            component={AdvancedStackScreen}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.Notifications}
-            component={NotificationsStackScreen}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.SendFeedback}
-            component={SendFeedbackStackScreen}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.SecurityPrivacy}
-            component={SecurityPrivacyStackScreen}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.Legal}
-            component={LegalStackScreen}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...SubHeaderOptions('Transaction Details', false, 'header_back')
-            }}
-            name={AppNavigation.Bridge.BridgeTransactionStatus}
-            component={BridgeTransactionStatus}
-          />
-          <WalletScreenS.Screen
-            name={AppNavigation.Wallet.Bridge}
-            component={BridgeScreenStack}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...SubHeaderOptions('')
-            }}
-            name={AppNavigation.Wallet.QRCode}
-            component={CaptureDappQR}
-          />
-          <WalletScreenS.Screen
-            options={MainHeaderOptions({
-              title: '',
-              headerBackTestID: 'header_back'
-            })}
-            name={AppNavigation.Wallet.DeFiProtocolDetails}
-            component={DeFiProtocolDetails}
-          />
-          {createModals(WalletScreenS)}
-        </WalletScreenS.Navigator>
+              })}
+              name={AppNavigation.Wallet.DeFiProtocolDetails}
+              component={DeFiProtocolDetails}
+            />
+            {createModals(WalletScreenS)}
+          </WalletScreenS.Navigator>
+        </SafeAreaProvider>
+
         <PolyfillCrypto />
       </NFTMetadataProvider>
     </BridgeProvider>

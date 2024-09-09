@@ -16,6 +16,7 @@ import InputText from 'components/InputText'
 import { addCustomNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type AddEditNetworkProps = {
   mode: 'edit' | 'create'
@@ -152,70 +153,72 @@ export default function AddEditNetwork({
   }
 
   return (
-    <ScrollView
-      testID="addEditNetwork_scroll_view"
-      style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
-      <AvaText.LargeTitleBold>
-        {mode === 'edit' ? 'Edit Network' : 'Add Network'}
-      </AvaText.LargeTitleBold>
-      <Space y={16} />
-      <DetailItem
-        title={'Network RPC URL'}
-        value={rpcUrl}
-        error={getError('rpcUrl')}
-        onChange={value => setRpcUrl(value)}
-        testID="networkRpcUrl"
-      />
-      <Space y={8} />
-      <DetailItem
-        title={'Network Name'}
-        value={networkName.toString()}
-        error={getError('networkName')}
-        onChange={value => setNetworkName(value)}
-        testID="networkName"
-      />
-      <Space y={8} />
-      <DetailItem
-        title={'Chain ID'}
-        value={chainId.toString()}
-        error={getError('chainId')}
-        onChange={value => setChainId(value)}
-        testID="chainId"
-      />
-      <Space y={8} />
-      <DetailItem
-        title={'Native Token Symbol'}
-        value={nativeTokenSymbol}
-        error={getError('nativeTokenSymbol')}
-        onChange={value => setNativeTokenSymbol(value)}
-        testID="nativeTokenSymbol"
-      />
-      <DetailItem
-        title={'Native Token Name (Optional)'}
-        value={nativeTokenName}
-        onChange={value => setNativeTokenName(value)}
-        testID="nativeTokenName"
-      />
-      <Space y={8} />
-      <DetailItem
-        title={'Explorer URL'}
-        value={explorerUrl}
-        error={getError('explorerUrl')}
-        onChange={value => setExplorerUrl(value)}
-        testID="explorerUrl"
-      />
-      <Space y={8} />
-      <DetailItem
-        title={'Logo URL (Optional)'}
-        value={logoUri}
-        onChange={value => setLogoUri(value)}
-        testID="logoUri"
-      />
-      <FlexSpacer minHeight={24} />
-      <AvaButton.PrimaryLarge testID="save_btn" onPress={save}>
-        Save
-      </AvaButton.PrimaryLarge>
-    </ScrollView>
+    <SafeLowerAreaView>
+      <ScrollView
+        testID="addEditNetwork_scroll_view"
+        style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
+        <AvaText.LargeTitleBold>
+          {mode === 'edit' ? 'Edit Network' : 'Add Network'}
+        </AvaText.LargeTitleBold>
+        <Space y={16} />
+        <DetailItem
+          title={'Network RPC URL'}
+          value={rpcUrl}
+          error={getError('rpcUrl')}
+          onChange={value => setRpcUrl(value)}
+          testID="networkRpcUrl"
+        />
+        <Space y={8} />
+        <DetailItem
+          title={'Network Name'}
+          value={networkName.toString()}
+          error={getError('networkName')}
+          onChange={value => setNetworkName(value)}
+          testID="networkName"
+        />
+        <Space y={8} />
+        <DetailItem
+          title={'Chain ID'}
+          value={chainId.toString()}
+          error={getError('chainId')}
+          onChange={value => setChainId(value)}
+          testID="chainId"
+        />
+        <Space y={8} />
+        <DetailItem
+          title={'Native Token Symbol'}
+          value={nativeTokenSymbol}
+          error={getError('nativeTokenSymbol')}
+          onChange={value => setNativeTokenSymbol(value)}
+          testID="nativeTokenSymbol"
+        />
+        <DetailItem
+          title={'Native Token Name (Optional)'}
+          value={nativeTokenName}
+          onChange={value => setNativeTokenName(value)}
+          testID="nativeTokenName"
+        />
+        <Space y={8} />
+        <DetailItem
+          title={'Explorer URL'}
+          value={explorerUrl}
+          error={getError('explorerUrl')}
+          onChange={value => setExplorerUrl(value)}
+          testID="explorerUrl"
+        />
+        <Space y={8} />
+        <DetailItem
+          title={'Logo URL (Optional)'}
+          value={logoUri}
+          onChange={value => setLogoUri(value)}
+          testID="logoUri"
+        />
+        <FlexSpacer minHeight={24} />
+        <AvaButton.PrimaryLarge testID="save_btn" onPress={save}>
+          Save
+        </AvaButton.PrimaryLarge>
+      </ScrollView>
+    </SafeLowerAreaView>
   )
 }
 

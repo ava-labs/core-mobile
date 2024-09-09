@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import InputText from 'components/InputText'
 import React, { useCallback, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -6,6 +6,7 @@ import AvaText from 'components/AvaText'
 import QrScannerAva from 'components/QrScannerAva'
 import { Space } from 'components/Space'
 import { Tooltip } from 'components/Tooltip'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 type Props = {
   onScanned: (qrText: string) => void
@@ -25,7 +26,7 @@ function DappQrReader({ onScanned }: Props): JSX.Element {
   )
 
   return (
-    <View style={styles.modalContainer}>
+    <SafeLowerAreaView>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Scan QR Code
       </AvaText.LargeTitleBold>
@@ -57,21 +58,8 @@ function DappQrReader({ onScanned }: Props): JSX.Element {
         keyboardWillShow={() => setShowMaskOverQR(true)}
         keyboardDidHide={() => setShowMaskOverQR(false)}
       />
-    </View>
+    </SafeLowerAreaView>
   )
 }
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1
-  },
-  modal: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1
-  }
-})
 
 export default DappQrReader

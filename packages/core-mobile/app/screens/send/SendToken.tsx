@@ -28,6 +28,7 @@ import { SendTokensScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 
 type Props = {
   onOpenAddressBook: () => void
@@ -144,8 +145,10 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
   const handleMax = useCallback(() => {
     setSendAmount(maxAmount)
   }, [maxAmount, setSendAmount])
+  const { bottom } = useVariableSafeAreaInsets()
+
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <ScrollView contentContainerStyle={{ paddingBottom: bottom, flexGrow: 1 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Send
       </AvaText.LargeTitleBold>

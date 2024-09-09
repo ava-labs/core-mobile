@@ -10,6 +10,7 @@ import {
 } from '@react-navigation/native'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { createStackNavigator } from '@react-navigation/stack'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
@@ -43,68 +44,70 @@ const SecurityStack = createStackNavigator<SecurityStackParamList>()
 
 function SecurityPrivacyStackScreen(): JSX.Element {
   return (
-    <SecurityStack.Navigator
-      screenOptions={{
-        headerBackTitleVisible: false
-      }}>
-      <SecurityStack.Group>
-        <SecurityStack.Screen
-          options={MainHeaderOptions({
-            title: 'Security & Privacy',
-            headerBackTestID: 'header_back'
-          })}
-          name={AppNavigation.SecurityPrivacy.SecurityPrivacy}
-          component={SecurityPrivacyScreen}
-        />
-        <SecurityStack.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.SecurityPrivacy.DappList}
-          component={DappConnectionsList}
-        />
-        <SecurityStack.Screen
-          options={{ headerShown: false }}
-          name={AppNavigation.SecurityPrivacy.SettingRecoveryMethods}
-          component={SettingRecoveryMethodsStack}
-        />
-        <SecurityStack.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.SecurityPrivacy.QRCode}
-          component={CaptureDappQR}
-        />
-        <SecurityStack.Screen
-          options={{ headerShown: false }}
-          name={AppNavigation.SecurityPrivacy.SeedlessExport}
-          component={SeedlessExportStack}
-        />
-      </SecurityStack.Group>
-      <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
-        <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Enter your pin' })}
-          name={AppNavigation.SecurityPrivacy.PinChange}
-          component={PinOrBiometryLoginForPassChange}
-        />
-        <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Set new pin' })}
-          name={AppNavigation.SecurityPrivacy.CreatePin}
-          component={CreatePinScreen}
-        />
-        <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Enter your pin' })}
-          name={AppNavigation.SecurityPrivacy.ShowRecoveryPhrase}
-          component={PinOrBiometryLoginForRecoveryReveal}
-        />
-        <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Enter your pin' })}
-          name={AppNavigation.SecurityPrivacy.TurnOnBiometrics}
-          component={PinForBiometryEnable}
-        />
-        <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Recovery Phrase' })}
-          name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
-          component={RecoveryPhraseNavigation}
-        />
-      </SecurityStack.Group>
-    </SecurityStack.Navigator>
+    <SafeLowerAreaView>
+      <SecurityStack.Navigator
+        screenOptions={{
+          headerBackTitleVisible: false
+        }}>
+        <SecurityStack.Group>
+          <SecurityStack.Screen
+            options={MainHeaderOptions({
+              title: 'Security & Privacy',
+              headerBackTestID: 'header_back'
+            })}
+            name={AppNavigation.SecurityPrivacy.SecurityPrivacy}
+            component={SecurityPrivacyScreen}
+          />
+          <SecurityStack.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.SecurityPrivacy.DappList}
+            component={DappConnectionsList}
+          />
+          <SecurityStack.Screen
+            options={{ headerShown: false }}
+            name={AppNavigation.SecurityPrivacy.SettingRecoveryMethods}
+            component={SettingRecoveryMethodsStack}
+          />
+          <SecurityStack.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.SecurityPrivacy.QRCode}
+            component={CaptureDappQR}
+          />
+          <SecurityStack.Screen
+            options={{ headerShown: false }}
+            name={AppNavigation.SecurityPrivacy.SeedlessExport}
+            component={SeedlessExportStack}
+          />
+        </SecurityStack.Group>
+        <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
+          <SecurityStack.Screen
+            options={MainHeaderOptions({ title: 'Enter your pin' })}
+            name={AppNavigation.SecurityPrivacy.PinChange}
+            component={PinOrBiometryLoginForPassChange}
+          />
+          <SecurityStack.Screen
+            options={MainHeaderOptions({ title: 'Set new pin' })}
+            name={AppNavigation.SecurityPrivacy.CreatePin}
+            component={CreatePinScreen}
+          />
+          <SecurityStack.Screen
+            options={MainHeaderOptions({ title: 'Enter your pin' })}
+            name={AppNavigation.SecurityPrivacy.ShowRecoveryPhrase}
+            component={PinOrBiometryLoginForRecoveryReveal}
+          />
+          <SecurityStack.Screen
+            options={MainHeaderOptions({ title: 'Enter your pin' })}
+            name={AppNavigation.SecurityPrivacy.TurnOnBiometrics}
+            component={PinForBiometryEnable}
+          />
+          <SecurityStack.Screen
+            options={MainHeaderOptions({ title: 'Recovery Phrase' })}
+            name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
+            component={RecoveryPhraseNavigation}
+          />
+        </SecurityStack.Group>
+      </SecurityStack.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

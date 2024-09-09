@@ -31,6 +31,8 @@ import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
 import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
 import EditSpendLimit from 'components/EditSpendLimit'
 import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScreen'
+import { SafeVerticalAreaView } from 'components/SafeAreaViews'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -270,6 +272,9 @@ const StakeDisclaimer = (): JSX.Element => {
 }
 
 const CoreIntroModal = (): JSX.Element => {
+  const {
+    activeNetwork: { isTestnet }
+  } = useNetworks()
   const descriptions = [
     { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem' },
     {
@@ -283,12 +288,14 @@ const CoreIntroModal = (): JSX.Element => {
   ]
 
   return (
-    <IntroModal
-      heading="Welcome to Core!"
-      viewOnceKey={ViewOnceKey.CORE_INTRO}
-      buttonText="Get Started"
-      descriptions={descriptions}
-      styles={{ marginBottom: 74 }}
-    />
+    <SafeVerticalAreaView noPaddingTop={isTestnet}>
+      <IntroModal
+        heading="Welcome to Core!"
+        viewOnceKey={ViewOnceKey.CORE_INTRO}
+        buttonText="Get Started"
+        descriptions={descriptions}
+        styles={{ marginBottom: 74 }}
+      />
+    </SafeVerticalAreaView>
   )
 }

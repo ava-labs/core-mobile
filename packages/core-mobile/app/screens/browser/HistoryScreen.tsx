@@ -7,6 +7,7 @@ import React from 'react'
 import { History } from 'store/browser'
 import SearchBar from 'components/SearchBar'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { HistoryListItem } from './components/HistoryListItem'
 import { NoHistory } from './components/NoHistory'
 import { SearchNotFound } from './components/SearchNotFound'
@@ -34,7 +35,7 @@ export const HistoryScreen = (): JSX.Element => {
 
   const renderHistoryList = (): JSX.Element => {
     return (
-      <>
+      <SafeLowerAreaView>
         <SearchBar
           onTextChanged={setSearchText}
           searchText={searchText}
@@ -74,7 +75,7 @@ export const HistoryScreen = (): JSX.Element => {
         ) : (
           <SearchNotFound />
         )}
-      </>
+      </SafeLowerAreaView>
     )
   }
 

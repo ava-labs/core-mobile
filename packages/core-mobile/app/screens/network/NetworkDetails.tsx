@@ -8,6 +8,7 @@ import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
 import TextFieldBg from 'components/styling/TextFieldBg'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { Network } from '@avalabs/core-chains-sdk'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
@@ -47,7 +48,7 @@ export default function NetworkDetails({
   }
 
   return (
-    <>
+    <SafeLowerAreaView>
       {network && (
         <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
           <View style={{ alignItems: 'center' }}>
@@ -80,7 +81,7 @@ export default function NetworkDetails({
           </AvaButton.PrimaryLarge>
         </ScrollView>
       )}
-    </>
+    </SafeLowerAreaView>
   )
 }
 

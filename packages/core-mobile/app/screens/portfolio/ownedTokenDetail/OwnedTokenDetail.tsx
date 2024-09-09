@@ -21,6 +21,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import Separator from 'components/Separator'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import useBridge from 'screens/bridge/hooks/useBridge'
@@ -137,7 +138,7 @@ const OwnedTokenDetail: FC = () => {
   }
 
   return (
-    <View sx={{ paddingHorizontal: 16, flex: 1 }}>
+    <SafeLowerAreaView sx={{ paddingHorizontal: 16 }}>
       <Text variant="heading3">Token Details</Text>
       <Space y={8} />
       <View sx={{ marginHorizontal: -16 }}>
@@ -186,7 +187,7 @@ const OwnedTokenDetail: FC = () => {
           openTransactionStatus={openTransactionStatus}
         />
       </View>
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

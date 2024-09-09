@@ -15,6 +15,7 @@ import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import Separator from 'components/Separator'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { mapPortfolioItems } from './utils'
@@ -102,7 +103,7 @@ export const DeFiProtocolDetails = (): JSX.Element => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeLowerAreaView sx={styles.container}>
       <Card style={styles.card}>
         <DeFiPortfolioHeader
           logoUrl={data.logoUrl}
@@ -123,13 +124,12 @@ export const DeFiProtocolDetails = (): JSX.Element => {
           {`Go to ${data?.name ?? protocolId}`}
         </AvaButton.PrimaryLarge>
       </View>
-    </View>
+    </SafeLowerAreaView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     paddingHorizontal: 16,
     justifyContent: 'space-between'
   },

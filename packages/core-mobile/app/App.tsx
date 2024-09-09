@@ -3,8 +3,9 @@ import {
   KeyboardAvoidingView,
   LogBox,
   Platform,
-  SafeAreaView,
-  UIManager
+  StatusBar,
+  UIManager,
+  View
 } from 'react-native'
 import * as Sentry from '@sentry/react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
@@ -16,6 +17,8 @@ import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
 import DataDogService from 'services/datadog/DataDogService'
 import Logger, { LogLevel } from 'utils/Logger'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
@@ -34,6 +37,9 @@ Platform.OS === 'android' &&
 
 function App(): JSX.Element {
   const { configure } = useDevDebugging()
+  const {
+    activeNetwork: { isTestnet }
+  } = useNetworks()
   const isProduction = process.env.NODE_ENV === 'production'
   if (!isProduction) {
     configure()
@@ -43,24 +49,33 @@ function App(): JSX.Element {
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <KeyboardAvoidingView
-        enabled={context.keyboardAvoidingViewEnabled}
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          ref={navigationRef}
-          onReady={() => {
-            SentryService.routingInstrumentation.registerNavigationContainer(
-              navigationRef
-            )
-            DataDogService.init(navigationRef).catch(Logger.error)
-          }}>
-          <RootScreenStack />
-        </NavigationContainer>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <>
+      <StatusBar
+        barStyle={isTestnet ? 'dark-content' : 'light-content'}
+        translucent
+        backgroundColor="#00000000"
+      />
+      <View style={backgroundStyle}>
+        <SafeAreaProvider>
+          <KeyboardAvoidingView
+            enabled={context.keyboardAvoidingViewEnabled}
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <NavigationContainer
+              theme={context.navContainerTheme}
+              ref={navigationRef}
+              onReady={() => {
+                SentryService.routingInstrumentation.registerNavigationContainer(
+                  navigationRef
+                )
+                DataDogService.init(navigationRef).catch(Logger.error)
+              }}>
+              <RootScreenStack />
+            </NavigationContainer>
+          </KeyboardAvoidingView>
+        </SafeAreaProvider>
+      </View>
+    </>
   )
 }
 

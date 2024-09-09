@@ -11,6 +11,7 @@ import { EarnNotificationsModal } from 'screens/earn/EarnNotificationsModal'
 import * as Navigation from 'utils/Navigation'
 import { noop } from '@avalabs/core-utils-sdk'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
 } from './StakeSetupScreenStack'
@@ -35,64 +36,66 @@ const EarnStack = createStackNavigator<EarnStackParamList>()
 
 function EarnScreenStack(): JSX.Element {
   return (
-    <EarnStack.Navigator
-      screenOptions={{
-        headerShown: true,
-        title: '',
-        headerBackTitleVisible: false,
-        headerTitleAlign: 'center',
-        headerLeftContainerStyle: {
-          paddingLeft: 8
-        }
-      }}>
-      <EarnStack.Screen
-        name={AppNavigation.Earn.StakeDashboard}
-        options={{
-          header: () => renderNavigationHeader({})
-        }}
-        component={StakeDashboard}
-      />
-      <EarnStack.Screen
-        name={AppNavigation.Earn.StakeSetup}
-        options={{ headerShown: false }}
-        component={StakeSetupScreenStack}
-      />
-      <EarnStack.Screen
-        name={AppNavigation.Earn.StakeDetails}
-        component={StakeDetails}
-      />
-      <EarnStack.Screen
-        options={{
-          header: () =>
-            renderNavigationHeader({
-              showBackButton: true,
-              onBack: () => {
-                Navigation.navigate({
-                  // @ts-ignore
-                  name: AppNavigation.Tabs.Stake
-                })
-              }
-            })
-        }}
-        name={AppNavigation.Earn.ClaimRewards}
-        component={ClaimRewards}
-      />
-      <EarnStack.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.Earn.FeeUnavailable}
-        component={FeeUnavailableModal}
-      />
-      <EarnStack.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.Earn.EarnNotificationsPrompt}
-        component={EarnNotificationsModal}
-      />
-      <EarnStack.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.Earn.FundsStuck}
-        component={FundsStuckModal}
-      />
-    </EarnStack.Navigator>
+    <SafeLowerAreaView>
+      <EarnStack.Navigator
+        screenOptions={{
+          headerShown: true,
+          title: '',
+          headerBackTitleVisible: false,
+          headerTitleAlign: 'center',
+          headerLeftContainerStyle: {
+            paddingLeft: 8
+          }
+        }}>
+        <EarnStack.Screen
+          name={AppNavigation.Earn.StakeDashboard}
+          options={{
+            header: () => renderNavigationHeader({})
+          }}
+          component={StakeDashboard}
+        />
+        <EarnStack.Screen
+          name={AppNavigation.Earn.StakeSetup}
+          options={{ headerShown: false }}
+          component={StakeSetupScreenStack}
+        />
+        <EarnStack.Screen
+          name={AppNavigation.Earn.StakeDetails}
+          component={StakeDetails}
+        />
+        <EarnStack.Screen
+          options={{
+            header: () =>
+              renderNavigationHeader({
+                showBackButton: true,
+                onBack: () => {
+                  Navigation.navigate({
+                    // @ts-ignore
+                    name: AppNavigation.Tabs.Stake
+                  })
+                }
+              })
+          }}
+          name={AppNavigation.Earn.ClaimRewards}
+          component={ClaimRewards}
+        />
+        <EarnStack.Screen
+          options={{ presentation: 'transparentModal' }}
+          name={AppNavigation.Earn.FeeUnavailable}
+          component={FeeUnavailableModal}
+        />
+        <EarnStack.Screen
+          options={{ presentation: 'transparentModal' }}
+          name={AppNavigation.Earn.EarnNotificationsPrompt}
+          component={EarnNotificationsModal}
+        />
+        <EarnStack.Screen
+          options={{ presentation: 'transparentModal' }}
+          name={AppNavigation.Earn.FundsStuck}
+          component={FundsStuckModal}
+        />
+      </EarnStack.Navigator>
+    </SafeLowerAreaView>
   )
 }
 

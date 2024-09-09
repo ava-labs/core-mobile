@@ -6,6 +6,7 @@ import ZeroState from 'components/ZeroState'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import Switch from 'components/Switch'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 import { selectHiddenNftUIDs, setHidden, NFTItem } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
 import { RefreshControl } from 'components/RefreshControl'
@@ -55,7 +56,7 @@ const NftManage = (): JSX.Element => {
   }
 
   return (
-    <View sx={{ paddingHorizontal: 16, flex: 1 }}>
+    <SafeLowerAreaView sx={{ paddingHorizontal: 16 }}>
       <AvaText.LargeTitleBold>Manage List</AvaText.LargeTitleBold>
       <SearchBar onTextChanged={updateSearch} searchText={searchText} />
       <FlatList
@@ -83,7 +84,7 @@ const NftManage = (): JSX.Element => {
           <FetchingNextIndicator isVisible={isFetchingNextPage} />
         }
       />
-    </View>
+    </SafeLowerAreaView>
   )
 }
 

@@ -18,6 +18,8 @@ import SearchIcon from 'assets/icons/search.svg'
 import { useTheme } from '@avalabs/k2-mobile'
 import { ClearAllHistoryModal } from 'screens/browser/ClearAllHistoryModal'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { SafeVerticalAreaView } from 'components/SafeAreaViews'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -81,6 +83,7 @@ const BrowserIntroModal = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { activeNetwork } = useNetworks()
 
   const descriptions = [
     {
@@ -101,16 +104,18 @@ const BrowserIntroModal = (): JSX.Element => {
     }
   ]
   return (
-    <IntroModal
-      heading="How to use the Core Browser..."
-      viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
-      buttonText="Get Started"
-      descriptions={descriptions}
-      onConfirm={() =>
-        AnalyticsService.capture('BrowserWelcomeScreenButtonTapped')
-      }
-      testID="browser-intro-modal"
-    />
+    <SafeVerticalAreaView noPaddingTop={activeNetwork.isTestnet}>
+      <IntroModal
+        heading="How to use the Core Browser..."
+        viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
+        buttonText="Get Started"
+        descriptions={descriptions}
+        onConfirm={() =>
+          AnalyticsService.capture('BrowserWelcomeScreenButtonTapped')
+        }
+        testID="browser-intro-modal"
+      />
+    </SafeVerticalAreaView>
   )
 }
 

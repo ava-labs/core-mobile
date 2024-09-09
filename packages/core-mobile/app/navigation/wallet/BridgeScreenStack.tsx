@@ -17,6 +17,7 @@ import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectIsBridgeBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { SafeLowerAreaView } from 'components/SafeAreaViews'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: { initialTokenSymbol: string } | undefined
@@ -39,7 +40,7 @@ function BridgeScreenStack(): JSX.Element {
   const { goBack } = useNavigation<BridgeNavigationProp>()
 
   return (
-    <>
+    <SafeLowerAreaView>
       <BridgeStack.Navigator>
         <BridgeStack.Screen
           options={{
@@ -76,7 +77,7 @@ function BridgeScreenStack(): JSX.Element {
           }
         />
       )}
-    </>
+    </SafeLowerAreaView>
   )
 }
 

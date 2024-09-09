@@ -15,6 +15,7 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import { Row } from 'components/Row'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getAddressByNetwork } from 'store/account/utils'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 
 type Props = {
   showAddress?: boolean
@@ -42,6 +43,7 @@ const TopNavigationHeader: FC<Props> = ({
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const activeAccount = useSelector(selectActiveAccount)
+  const { conditionalTop } = useVariableSafeAreaInsets()
 
   const address = activeAccount
     ? getAddressByNetwork(activeAccount, activeNetwork)
@@ -111,7 +113,7 @@ const TopNavigationHeader: FC<Props> = ({
   )
 
   return (
-    <View>
+    <View style={{ paddingTop: conditionalTop }}>
       <Row
         style={{
           paddingLeft: 8,

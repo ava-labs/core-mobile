@@ -3,6 +3,7 @@ package com.avaxwallet
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.enableEdgeToEdge
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -31,6 +32,7 @@ class MainActivity : ReactActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         RNBootSplash.init(this, R.style.BootTheme)
         super.onCreate(null)
+        enableEdgeToEdge()
         privacyView = View.inflate(this, R.layout.privacy_layout, null)
     }
 
