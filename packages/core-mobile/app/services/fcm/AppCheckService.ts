@@ -13,11 +13,11 @@ class AppCheckService {
     rnfbProvider.configure({
       android: {
         provider: __DEV__ ? 'debug' : 'playIntegrity',
-        debugToken: Config.APPCHECK_DEBUG_TOKEN_APPLE
+        debugToken: Config.APPCHECK_DEBUG_TOKEN
       },
       apple: {
         provider: __DEV__ ? 'debug' : 'appAttestWithDeviceCheckFallback',
-        debugToken: Config.APPCHECK_DEBUG_TOKEN_APPLE
+        debugToken: Config.APPCHECK_DEBUG_TOKEN
       }
     })
 
@@ -61,7 +61,6 @@ class AppCheckService {
       },
       body: bodyJson
     }
-
     return fetch(url, options)
   }
 }
