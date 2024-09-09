@@ -70,6 +70,8 @@ export const turnOffNotificationsFor = createAction<{ channelId: ChannelId }>(
   `${reducerName}/turnOffNotificationsFor`
 )
 
+export const onFcmTokenChange = createAction(`${reducerName}/onFcmTokenChange`)
+
 export const scheduleStakingCompleteNotifications = createAction<
   StakeCompleteNotification[]
 >(`${reducerName}/scheduleStakingCompleteNotifications`)

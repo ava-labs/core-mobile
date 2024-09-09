@@ -17,7 +17,8 @@ import {
   maybePromptEarnNotification,
   turnOffNotificationsFor,
   turnOnNotificationsFor,
-  maybePromptBalanceNotification
+  maybePromptBalanceNotification,
+  onFcmTokenChange
 } from '../slice'
 import { handleScheduleStakingCompleteNotifications } from './handleScheduleStakingCompleteNotifications'
 import { handleMaybePromptEarnNotification } from './handleMaybePromptEarnNotification'
@@ -79,6 +80,7 @@ export const addNotificationsListeners = (
       setAccounts,
       setNonActiveAccounts,
       setAccount,
+      onFcmTokenChange,
       turnOnNotificationsFor
     ),
     effect: async (_, listenerApi) =>
