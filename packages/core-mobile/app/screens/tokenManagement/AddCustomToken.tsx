@@ -11,6 +11,7 @@ import { Space } from 'components/Space'
 import Avatar from 'components/Avatar'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { ShowSnackBar } from 'components/Snackbar'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 const AddCustomToken: FC = () => {
   const theme = useApplicationContext().theme
@@ -22,8 +23,14 @@ const AddCustomToken: FC = () => {
     goBack()
   }, [goBack])
 
-  const { tokenAddress, setTokenAddress, errorMessage, token, addCustomToken } =
-    useAddCustomToken(showSuccess)
+  const {
+    tokenAddress,
+    setTokenAddress,
+    errorMessage,
+    token,
+    addCustomToken,
+    isLoading
+  } = useAddCustomToken(showSuccess)
 
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token)
@@ -97,6 +104,17 @@ const AddCustomToken: FC = () => {
           onCancel={() => setShowQrScanner(false)}
         />
       </Modal>
+
+      {isLoading && (
+        <ActivityIndicator
+          style={{
+            position: 'absolute',
+            alignSelf: 'center',
+            top: '50%'
+          }}
+          size={'large'}
+        />
+      )}
     </View>
   )
 }

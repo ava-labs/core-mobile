@@ -58,6 +58,7 @@ type CustomToken = {
   errorMessage: string
   token: NetworkContractToken | undefined
   addCustomToken: () => void
+  isLoading: boolean
 }
 
 const useAddCustomToken = (callback: () => void): CustomToken => {
@@ -68,32 +69,39 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const [token, setToken] = useState<NetworkContractToken>()
   const dispatch = useDispatch()
   const chainId = activeNetwork.chainId
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    setErrorMessage('')
-    setToken(undefined)
-
+    setIsLoading(true)
     const validationStatus = validateAddress(tokenAddress, tokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
         setErrorMessage('Not a valid ERC-20 token address.')
+        setIsLoading(false)
         break
       case AddressValidationStatus.AlreadyExists:
+        setErrorMessage('Token already exists in the wallet.')
+        setIsLoading(false)
+        break
       case AddressValidationStatus.Valid:
-        if (validationStatus === AddressValidationStatus.AlreadyExists) {
-          setErrorMessage('Token already exists in the wallet.')
-        }
-
         fetchTokenData(activeNetwork, tokenAddress)
-          .then(setToken)
+          .then(token => {
+            setToken(token)
+          })
           .catch(err => {
             setErrorMessage('Not a valid ERC-20 token address.')
             Logger.error(err)
           })
+          .finally(() => {
+            setIsLoading(false)
+          })
         break
       case AddressValidationStatus.TooShort:
-        // do not show error message for too short addresses
-        break
+      default:
+        // do not show error message for too short addresses or default case
+        setErrorMessage('')
+        setToken(undefined)
+        setIsLoading(false)
     }
   }, [activeNetwork, tokenAddress, tokens])
 
@@ -109,7 +117,14 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     }
   }
 
-  return { tokenAddress, setTokenAddress, errorMessage, token, addCustomToken }
+  return {
+    tokenAddress,
+    setTokenAddress,
+    errorMessage,
+    token,
+    addCustomToken,
+    isLoading
+  }
 }
 
 export default useAddCustomToken
