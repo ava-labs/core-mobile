@@ -1,10 +1,5 @@
 import { AppStartListening } from 'store/middleware/listener'
-import {
-  onAppUnlocked,
-  onForeground,
-  onLogOut,
-  onRehydrationComplete
-} from 'store/app'
+import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
 import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
 import { handleMaybePromptBalanceNotification } from 'store/notifications/listeners/handleMaybePromptBalanceNotification'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
@@ -100,7 +95,7 @@ export const addNotificationsListeners = (
   })
 
   startListening({
-    matcher: isAnyOf(onForeground, onAppUnlocked),
+    matcher: isAnyOf(onRehydrationComplete),
     effect: async (_, listenerApi) =>
       await manageForegroundNotificationSubscription(listenerApi).catch(
         reason => {
