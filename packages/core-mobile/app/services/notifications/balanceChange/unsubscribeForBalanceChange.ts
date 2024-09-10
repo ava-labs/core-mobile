@@ -1,6 +1,7 @@
 import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
 import Config from 'react-native-config'
+import messaging from '@react-native-firebase/messaging'
 
 export async function unSubscribeForBalanceChange({
   deviceArn
@@ -13,6 +14,8 @@ export async function unSubscribeForBalanceChange({
       deviceArn
     })
   ).catch(error => {
+    //as fallback invalidate token so user doesn't get notifications
+    messaging().deleteToken()
     Logger.error(`[unsubscribeForBalanceChange.ts][unsubscribe]${error}`)
     throw error
   })
