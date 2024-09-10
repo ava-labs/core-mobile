@@ -4,72 +4,64 @@ import {
   CriticalConfig,
   getNativeSymbol
 } from '@avalabs/core-bridge-sdk'
-import { BitcoinHistoryTx } from '@avalabs/core-wallets-sdk'
 import { Transaction } from 'store/transaction'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { Networks } from 'store/network'
 import { BridgeAsset, BridgeTransfer, Chain } from '@avalabs/bridge-unified'
+import {
+  Transaction as InternalTransaction,
+  TxToken
+} from '@avalabs/vm-module-types'
 
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 /**
  * Checking if the transaction is a bridge transaction with Ethereum
  */
-export function isBridgeTransactionEVM({
-  tx,
-  network,
+export function isBridgeTransactionEthereum({
+  transaction,
   criticalConfig,
   bridgeAddresses
 }: {
-  tx: {
-    contractAddress: string
-    to: string
-    from: string
-  }
+  transaction: InternalTransaction
   network: Network
   criticalConfig: CriticalConfig | undefined
   bridgeAddresses: string[]
 }): boolean {
-  const addressesToCheck = [tx.to.toLowerCase(), tx.from.toLowerCase()]
+  const addressesToCheck = [
+    transaction.to.toLowerCase(),
+    transaction.from.toLowerCase()
+  ]
 
-  if (isEthereumNetwork(network)) {
-    const ethBridgeAddress = criticalConfig?.critical.walletAddresses.ethereum
+  const ethBridgeAddress = criticalConfig?.critical.walletAddresses.ethereum
 
-    if (ethBridgeAddress === undefined) return false
+  if (ethBridgeAddress === undefined) return false
 
-    const smartContractAddresses = [ethBridgeAddress, ...bridgeAddresses]
+  const smartContractAddresses = [ethBridgeAddress, ...bridgeAddresses]
 
-    return addressesToCheck.some(address =>
-      smartContractAddresses.includes(address)
-    )
-  } else {
-    const ethereumAssets = criticalConfig?.critical.assets
-    const bitcoinAssets = criticalConfig?.criticalBitcoin?.bitcoinAssets
+  return addressesToCheck.some(address =>
+    smartContractAddresses.includes(address)
+  )
+}
 
-    if (!ethereumAssets || !bitcoinAssets) return false
-
-    if (addressesToCheck.some(address => bridgeAddresses.includes(address))) {
-      return true
-    }
-
-    return (
-      Object.values<{ wrappedContractAddress: string }>(ethereumAssets)
-        .concat(Object.values(bitcoinAssets))
-        .some(
-          ({ wrappedContractAddress }) =>
-            wrappedContractAddress.toLowerCase() ===
-            tx.contractAddress.toLowerCase()
-        ) && addressesToCheck.includes(NULL_ADDRESS)
-    )
-  }
+export function isBridgeTransactionERC20({
+  token,
+  bridgeAddresses
+}: {
+  token: TxToken
+  bridgeAddresses: string[]
+}): boolean {
+  return [
+    token.to?.address.toLowerCase(),
+    token.from?.address.toLowerCase()
+  ].some(item => item && [...bridgeAddresses, NULL_ADDRESS].includes(item))
 }
 
 /**
  * Checking if the transaction is a bridge transaction with Bitcoin
  */
 export const isBridgeTransactionBTC = (
-  transaction: BitcoinHistoryTx,
+  transaction: InternalTransaction,
   bitcoinWalletAddresses:
     | {
         avalanche: string
@@ -81,7 +73,8 @@ export const isBridgeTransactionBTC = (
     return false
   }
 
-  return transaction.addresses.some(address => {
+  const addresses = transaction.isSender ? [transaction.to] : [transaction.from]
+  return addresses.some(address => {
     return [bitcoinWalletAddresses.btc, bitcoinWalletAddresses.avalanche].some(
       walletAddress => address.toLowerCase() === walletAddress.toLowerCase()
     )
