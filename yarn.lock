@@ -219,7 +219,7 @@ __metadata:
     "@sentry/react-native": 5.31.1
     "@shopify/flash-list": 1.7.1
     "@shopify/react-native-performance": 4.1.2
-    "@shopify/react-native-skia": 0.1.233
+    "@shopify/react-native-skia": 1.3.12
     "@spotlightjs/spotlight": 2.3.2
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
@@ -7752,12 +7752,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shopify/react-native-skia@npm:0.1.233":
-  version: 0.1.233
-  resolution: "@shopify/react-native-skia@npm:0.1.233"
+"@shopify/react-native-skia@npm:1.3.12":
+  version: 1.3.12
+  resolution: "@shopify/react-native-skia@npm:1.3.12"
   dependencies:
     canvaskit-wasm: 0.39.1
-    react-reconciler: ^0.27.0
+    react-reconciler: 0.27.0
   peerDependencies:
     react: ">=18.0"
     react-native: ">=0.64"
@@ -7768,8 +7768,8 @@ __metadata:
     react-native-reanimated:
       optional: true
   bin:
-    setup-skia-web: scripts/setup-canvaskit.js
-  checksum: dafc450d3d225fd49aa94d1bd1508d6e33580e12d9299cea439077676497ce0c483564a875c0d70451bf47cf75adf5e123cd94b05bf61f3d2b926019442696fa
+    setup-skia-web: ./scripts/setup-canvaskit.js
+  checksum: fa7ebff6129f21ab29d18c7ea43484293397d55b94aebad9ce952ce136cac85cf64c05967257fe8d18e636b5606de462320e6a7466ca801cd14f1e24604b5807
   languageName: node
   linkType: hard
 
@@ -24049,7 +24049,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-reconciler@npm:^0.27.0":
+"react-reconciler@npm:0.27.0":
   version: 0.27.0
   resolution: "react-reconciler@npm:0.27.0"
   dependencies:
