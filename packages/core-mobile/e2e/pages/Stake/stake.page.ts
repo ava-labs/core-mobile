@@ -107,6 +107,10 @@ class StakePage {
   get stakeSecondaryButton() {
     return by.id(stakeScreenLoc.stakeButtonSecondary)
   }
+  
+  get stakeClaimButton() {
+    return by.id(stakeScreenLoc.stakeClaimButton)
+  }
 
   get stakingAmountTitle() {
     return by.text(stakeScreenLoc.stakingAmountTitle)
@@ -122,6 +126,14 @@ class StakePage {
 
   get stakeNow() {
     return by.id(stakeScreenLoc.stakeNow)
+  }
+
+  get cancel() {
+    return by.id(stakeScreenLoc.cancel)
+  }
+
+  get cancelModal() {
+    return by.id(stakeScreenLoc.cancelModal)
   }
 
   get notEnoughAvaxTitle() {
@@ -242,6 +254,14 @@ class StakePage {
 
   async tapStakeNow() {
     await Actions.tapElementAtIndex(this.stakeNow, 0)
+  }
+
+  async tapCancel() {
+    await Actions.tapElementAtIndex(this.cancel, 0)
+  }
+
+  async tapCancelModal() {
+    await Actions.tapElementAtIndex(this.cancelModal, 0)
   }
 
   async tapNextButton() {

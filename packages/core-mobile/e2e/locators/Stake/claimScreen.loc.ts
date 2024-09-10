@@ -1,7 +1,7 @@
 export default {
   avaLogo: 'ava_logo',
   claimRewardsTitle: 'Claim Rewards',
-  claimNowButton: 'btnPrimary',
+  claimNowButton: 'Claim Now',
   claimableAmountText: 'Claimable Amount',
   networkFeeText: 'Network Fee',
   claimableAvaxAmount: 'claimable_balance',

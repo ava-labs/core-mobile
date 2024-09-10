@@ -150,6 +150,7 @@ class CollectiblesPage {
   }
 
   async scrollToMintNFT() {
+    await Action.waitForElement(this.nftListView)
     await Action.scrollListUntil(this.testingNft, this.nftListView, 300)
   }
 
