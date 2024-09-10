@@ -72,5 +72,4 @@ describe('Stake on Testnet', () => {
     await BottomTabsPage.tapStakeTab()
     await StakePage.verifyNoActiveStakesScreenItems()
   })
-
 })

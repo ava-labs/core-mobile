@@ -107,7 +107,7 @@ class StakePage {
   get stakeSecondaryButton() {
     return by.id(stakeScreenLoc.stakeButtonSecondary)
   }
-  
+
   get stakeClaimButton() {
     return by.id(stakeScreenLoc.stakeClaimButton)
   }
