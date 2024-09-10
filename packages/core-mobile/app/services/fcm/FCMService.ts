@@ -1,6 +1,4 @@
-import messaging, {
-  FirebaseMessagingTypes
-} from '@react-native-firebase/messaging'
+import messaging from '@react-native-firebase/messaging'
 import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { ChannelId } from 'services/notifications/channels'
@@ -28,28 +26,26 @@ class FCMService {
   listenForMessagesForeground = (): UnsubscribeFunc => {
     return messaging().onMessage(async remoteMessage => {
       Logger.info('A new FCM message arrived!', remoteMessage)
-      if (this.isValidRemoteMessage(remoteMessage)) {
-        //TO DESIGN: show in-app notification instead of native
-        const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
-        if (!result.success) {
-          Logger.error(
-            `[FCMService.ts][listenForMessagesForeground:NotificationsBalanceChangeSchema]${result}`
-          )
-          return
-        }
-        const data = {
-          accountAddress: result.data.accountAddress,
-          chainId: result.data.chainId,
-          transactionHash: result.data.transactionHash,
-          url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
-        }
-        await NotificationsService.displayNotification({
-          channelId: ChannelId.BALANCE_CHANGES,
-          title: remoteMessage.notification.title,
-          body: remoteMessage.notification.body,
-          data
-        })
+      //TO DESIGN: show in-app notification instead of native
+      const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
+      if (!result.success) {
+        Logger.error(
+          `[FCMService.ts][listenForMessagesForeground:NotificationsBalanceChangeSchema]${result}`
+        )
+        return
       }
+      const data = {
+        accountAddress: result.data.data.accountAddress,
+        chainId: result.data.data.chainId,
+        transactionHash: result.data.data.transactionHash,
+        url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
+      }
+      await NotificationsService.displayNotification({
+        channelId: ChannelId.BALANCE_CHANGES,
+        title: result.data.notification.title,
+        body: result.data.notification.body,
+        data
+      })
     })
   }
   /**
@@ -59,47 +55,29 @@ class FCMService {
   listenForMessagesBackground = (): void => {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       Logger.info('A new FCM message arrived in background', remoteMessage)
-      if (this.isValidRemoteMessage(remoteMessage)) {
-        const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
-        if (!result.success) {
-          Logger.error(
-            `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
-          )
-          return
-        }
-        //show native notification
-        const data = {
-          accountAddress: result.data.accountAddress,
-          chainId: result.data.chainId,
-          transactionHash: result.data.transactionHash,
-          url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
-        }
-        await NotificationsService.displayNotification({
-          channelId: ChannelId.BALANCE_CHANGES,
-          title: remoteMessage.notification.title,
-          body: remoteMessage.notification.body,
-          data
-        })
-      }
-    })
-  }
-
-  private isValidRemoteMessage = (
-    remoteMessage: FirebaseMessagingTypes.RemoteMessage
-  ): remoteMessage is FirebaseMessagingTypes.RemoteMessage & {
-    notification: { title: string }
-  } => {
-    if (!remoteMessage.notification) {
-      Logger.error(`[FCMService.ts][notification empty]${remoteMessage}`)
-      throw Error('Notification is empty')
-    }
-    if (!remoteMessage.notification.title) {
-      Logger.error(
-        `[FCMService.ts][notification title empty]${remoteMessage.notification}`
+      const result = NotificationsBalanceChangeSchema.safeParse(
+        remoteMessage.data
       )
-      throw Error('Notification title is not set')
-    }
-    return true
+      if (!result.success) {
+        Logger.error(
+          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+        )
+        return
+      }
+      //show native notification
+      const data = {
+        accountAddress: result.data.data.accountAddress,
+        chainId: result.data.data.chainId,
+        transactionHash: result.data.data.transactionHash,
+        url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
+      }
+      await NotificationsService.displayNotification({
+        channelId: ChannelId.BALANCE_CHANGES,
+        title: result.data.notification.title,
+        body: result.data.notification.body,
+        data
+      })
+    })
   }
 }
 export default new FCMService()
