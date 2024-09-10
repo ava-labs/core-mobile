@@ -9,7 +9,6 @@ import TokenService from 'services/token/TokenService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkContractToken } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
-import memoize from 'lodash/memoize'
 
 enum AddressValidationStatus {
   Valid,
