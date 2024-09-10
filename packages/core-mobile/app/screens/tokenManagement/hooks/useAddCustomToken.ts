@@ -77,16 +77,22 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     const validationStatus = validateAddress(tokenAddress, tokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
+        setToken(undefined)
         setErrorMessage('Not a valid ERC-20 token address.')
         break
       case AddressValidationStatus.AlreadyExists:
+        setToken(undefined)
         setErrorMessage('Token already exists in the wallet.')
         break
       case AddressValidationStatus.Valid:
         setIsLoading(true)
         fetchTokenData(activeNetwork, tokenAddress)
-          .then(token => setToken(token))
+          .then(token => {
+            setToken(token)
+            setErrorMessage('')
+          })
           .catch(err => {
+            setToken(undefined)
             setErrorMessage('Not a valid ERC-20 token address.')
             Logger.error(err)
           })
