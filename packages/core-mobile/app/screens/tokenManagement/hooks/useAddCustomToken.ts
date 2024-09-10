@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux'
 import { isAddress } from 'ethers'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -71,23 +71,21 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
 
+  const memoizedTokens = useMemo(() => tokens, [activeNetwork])
+
   useEffect(() => {
-    setIsLoading(true)
     const validationStatus = validateAddress(tokenAddress, tokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
         setErrorMessage('Not a valid ERC-20 token address.')
-        setIsLoading(false)
         break
       case AddressValidationStatus.AlreadyExists:
         setErrorMessage('Token already exists in the wallet.')
-        setIsLoading(false)
         break
       case AddressValidationStatus.Valid:
+        setIsLoading(true)
         fetchTokenData(activeNetwork, tokenAddress)
-          .then(token => {
-            setToken(token)
-          })
+          .then(token => setToken(token))
           .catch(err => {
             setErrorMessage('Not a valid ERC-20 token address.')
             Logger.error(err)
@@ -101,9 +99,8 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         // do not show error message for too short addresses or default case
         setErrorMessage('')
         setToken(undefined)
-        setIsLoading(false)
     }
-  }, [activeNetwork, tokenAddress, tokens])
+  }, [activeNetwork, tokenAddress, memoizedTokens])
 
   const addCustomToken = (): void => {
     if (token) {

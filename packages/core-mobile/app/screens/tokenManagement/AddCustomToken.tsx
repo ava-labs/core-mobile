@@ -33,7 +33,7 @@ const AddCustomToken: FC = () => {
   } = useAddCustomToken(showSuccess)
 
   // only enable button if we have token and no error message
-  const disabled = !!(errorMessage || !token)
+  const disabled = !!(errorMessage || !token || isLoading)
 
   const handleQrCodeScanSuccess = (data: string): void => {
     setTokenAddress(data)
