@@ -71,8 +71,6 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
 
-  const memoizedTokens = useMemo(() => tokens, [activeNetwork])
-
   useEffect(() => {
     const validationStatus = validateAddress(tokenAddress, tokens)
     switch (validationStatus) {
@@ -106,7 +104,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [activeNetwork, tokenAddress, memoizedTokens])
+  }, [activeNetwork, tokenAddress, tokens])
 
   const addCustomToken = (): void => {
     if (token) {
