@@ -4,7 +4,7 @@
   "license": "Limited Ecosystem License",
   "scripts": {
     "setup": "yarn allow-scripts",
-    "envs": "./scripts/getEnvs.sh",
+    "envs": "./scripts/getEnvs.sh && ./scripts/getGoogleServices.sh",
     "android": "ENVFILE=.env.development react-native run-android --mode=internalDebug",
     "podInstall": "bundle _2.1.4_ install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios",
