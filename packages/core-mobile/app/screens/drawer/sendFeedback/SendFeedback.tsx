@@ -9,10 +9,11 @@ const SendFeedback = (): JSX.Element => {
   const { theme } = useApplicationContext()
   const { openUrl } = useInAppBrowser()
 
+  const preselectPlatform =
+    Platform.OS === 'ios' ? 'Core+mobile+(iOS)' : 'Core+mobile+(Android)'
+
   function openBugReport(): void {
     const version = DeviceInfo.getReadableVersion()
-    const preselectPlatform =
-      Platform.OS === 'ios' ? 'Core+mobile+(iOS)' : 'Core+mobile+(Android)'
     openUrl(
       `https://docs.google.com/forms/d/e/1FAIpQLSdUQiVnJoqQ1g_6XTREpkSB5vxKKK8ba5DRjhzQf1XVeET8Rw/viewform?usp=pp_url&entry.2070152111=${preselectPlatform}&entry.903657115=${version}`
     )
@@ -20,7 +21,7 @@ const SendFeedback = (): JSX.Element => {
 
   function openFeatureRequest(): void {
     openUrl(
-      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform`
+      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform?entry.2070152111=${preselectPlatform}`
     )
   }
 
