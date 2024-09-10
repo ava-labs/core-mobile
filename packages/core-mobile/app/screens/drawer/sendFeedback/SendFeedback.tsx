@@ -20,7 +20,9 @@ const SendFeedback = (): JSX.Element => {
 
   function openFeatureRequest(): void {
     openUrl(
-      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform`
+      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform?entry.2070152111=Core%20mobile%20(${
+        Platform.OS === 'ios' ? `iOS` : `Android`
+      })`
     )
   }
 
