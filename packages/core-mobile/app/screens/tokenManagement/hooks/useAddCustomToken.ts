@@ -9,6 +9,7 @@ import TokenService from 'services/token/TokenService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkContractToken } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
+import memoize from 'lodash/memoize'
 
 enum AddressValidationStatus {
   Valid,
@@ -71,8 +72,10 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
 
+  const memoizedTokens = useMemo(() => tokens, [activeNetwork])
+
   useEffect(() => {
-    const validationStatus = validateAddress(tokenAddress, tokens)
+    const validationStatus = validateAddress(tokenAddress, memoizedTokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
         setToken(undefined)
@@ -104,7 +107,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [activeNetwork, tokenAddress, tokens])
+  }, [activeNetwork, tokenAddress, memoizedTokens])
 
   const addCustomToken = (): void => {
     if (token) {
