@@ -5,11 +5,11 @@ import AvaListItem from 'components/AvaListItem'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import DeviceInfo from 'react-native-device-info'
 
-const SendFeedback = () => {
+const SendFeedback = (): JSX.Element => {
   const { theme } = useApplicationContext()
   const { openUrl } = useInAppBrowser()
 
-  function openBugReport() {
+  function openBugReport(): void {
     const version = DeviceInfo.getReadableVersion()
     const preselectPlatform =
       Platform.OS === 'ios' ? 'Core+mobile+(iOS)' : 'Core+mobile+(Android)'
@@ -18,9 +18,9 @@ const SendFeedback = () => {
     )
   }
 
-  function openFeatureRequest() {
+  function openFeatureRequest(): void {
     openUrl(
-      `https://portal.productboard.com/dndv9ahlkdfye4opdm8ksafi/tabs/2-core-mobile`
+      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform`
     )
   }
 
