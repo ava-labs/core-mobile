@@ -13,7 +13,7 @@ class ClaimPage {
   }
 
   get claimButton() {
-    return by.id(claimScreenLoc.claimNowButton)
+    return by.text(claimScreenLoc.claimNowButton)
   }
 
   get claimableAmountText() {

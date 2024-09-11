@@ -150,11 +150,21 @@ class CollectiblesPage {
   }
 
   async scrollToMintNFT() {
-    await Action.scrollListUntil(this.testingNft, this.nftListView, 300)
+    await Action.waitForElement(this.nftListView)
+    await Action.scrollListUntil(
+      this.nftItem
+        .withDescendant(by.text('#2 '))
+        .withDescendant(by.text('mint')),
+      this.nftListView,
+      300
+    )
   }
 
   async tapMintNFT() {
-    await Action.tap(this.nftItem.withDescendant(by.text('mint')))
+    await Action.tapElementAtIndex(
+      this.nftItem.withDescendant(by.text('mint')),
+      1
+    )
   }
 
   async tapMyAccounts() {
