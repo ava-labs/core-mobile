@@ -3,7 +3,10 @@ import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { ChannelId } from 'services/notifications/channels'
 import { ACTIONS, PROTOCOLS } from 'contexts/DeeplinkContext/types'
-import { NotificationsBalanceChangeSchema } from 'services/fcm/types'
+import {
+  BalanceChangeEvents,
+  NotificationsBalanceChangeSchema
+} from 'services/fcm/types'
 
 type UnsubscribeFunc = () => void
 
@@ -24,12 +27,15 @@ class FCMService {
   listenForMessagesForeground = (): UnsubscribeFunc => {
     return messaging().onMessage(async remoteMessage => {
       Logger.info('A new FCM message arrived!', remoteMessage)
-      //TO DESIGN: show in-app notification instead of native
       const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
       if (!result.success) {
         Logger.error(
           `[FCMService.ts][listenForMessagesForeground:NotificationsBalanceChangeSchema]${result}`
         )
+        return
+      }
+      if (result.data.data.event === BalanceChangeEvents.BALANCES_SPENT) {
+        // skip showing notification if user just spent balance in app
         return
       }
       const data = {
