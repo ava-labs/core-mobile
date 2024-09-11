@@ -7,6 +7,7 @@ import Logger from 'utils/Logger'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { manageForegroundNotificationSubscription } from 'store/notifications/listeners/manageForegroundNotificationSubscription'
 import { unsubscribeBalanceChangeNotifications } from 'store/notifications/listeners/unsubscribeBalanceChangeNotifications'
+import { setFeatureFlags } from 'store/posthog'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
@@ -76,18 +77,21 @@ export const addNotificationsListeners = (
       setNonActiveAccounts,
       setAccount,
       onFcmTokenChange,
-      turnOnNotificationsFor
+      turnOnNotificationsFor,
+      setFeatureFlags
     ),
-    effect: async (_, listenerApi) =>
-      await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
-        Logger.error(
-          `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
-        )
-      })
+    effect: async (action, listenerApi) =>
+      await subscribeBalanceChangeNotifications(action, listenerApi).catch(
+        reason => {
+          Logger.error(
+            `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
+          )
+        }
+      )
   })
 
   startListening({
-    matcher: isAnyOf(onLogOut, turnOffNotificationsFor),
+    matcher: isAnyOf(onLogOut, turnOffNotificationsFor, setFeatureFlags),
     effect: async action =>
       await unsubscribeBalanceChangeNotifications(action).catch(reason => {
         Logger.error(
