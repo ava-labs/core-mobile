@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CurrencyItem from 'screens/drawer/components/CurrencyItem'
 import SecurityItem from 'screens/drawer/components/SecurityItem'
@@ -24,13 +25,12 @@ import Logger from 'utils/Logger'
 import { useFocusEffect } from '@react-navigation/native'
 import { SeedlessSessionManagerEvent } from 'seedless/services/SeedlessSessionManager'
 import { SafeLowerAreaView } from 'components/SafeAreaViews'
-import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
   const context = useApplicationContext()
   const enableDarkMode = useSelector(selectUseDarkMode)
-  const { conditionalTop } = useVariableSafeAreaInsets()
+  const { top } = useSafeAreaInsets()
 
   function toggleDarkLightMode(): void {
     Alert.alert('Toggle dark/light mode')
@@ -56,7 +56,7 @@ const DrawerView = (): JSX.Element => {
         styles.container,
         {
           backgroundColor: context.theme.colorBg2,
-          paddingTop: conditionalTop
+          paddingTop: top
         }
       ]}>
       {header}

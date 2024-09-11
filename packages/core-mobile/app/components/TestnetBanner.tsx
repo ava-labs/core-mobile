@@ -1,9 +1,9 @@
 import { Text, View } from '@avalabs/k2-mobile'
-import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 import React, { FC } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const TestnetBanner: FC = () => {
-  const { top } = useVariableSafeAreaInsets()
+  const { top } = useSafeAreaInsets()
   return (
     <View
       testID="testnet_banner"

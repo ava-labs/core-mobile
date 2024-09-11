@@ -4,6 +4,7 @@ import { Platform } from 'react-native'
 import { Row } from 'components/Row'
 import { AppTheme } from 'contexts/ApplicationContext'
 import { Text, View } from '@avalabs/k2-mobile'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const BOTTOM_BAR_HEIGHT = 60
 
@@ -106,12 +107,14 @@ export const TabButton = ({
   image,
   focused
 }: TabButtonProps): JSX.Element => {
+  const { bottom } = useSafeAreaInsets()
+
   return (
     <View
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 20
+        paddingBottom: bottom
       }}>
       {image}
       <Text

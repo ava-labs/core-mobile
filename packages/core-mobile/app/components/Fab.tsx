@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import AppNavigation from 'navigation/AppNavigation'
@@ -12,7 +13,6 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
 import { ActionProp } from './fab/types'
 import ArrowSVG from './svg/ArrowSVG'
 import QRCodeSVG from './svg/QRCodeSVG'
@@ -42,7 +42,7 @@ export const Fab: FC = () => {
   const tokensWithBalance = useSelector(
     selectTokensWithBalanceByNetwork(activeNetwork)
   )
-  const { bottom } = useVariableSafeAreaInsets()
+  const { bottom } = useSafeAreaInsets()
 
   const {
     theme: { colors }
