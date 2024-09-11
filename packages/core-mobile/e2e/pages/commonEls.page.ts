@@ -1,6 +1,7 @@
 import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
 import loginRecoverWallet from '../helpers/loginRecoverWallet'
+import delay from '../helpers/waits'
 import advancedPage from './burgerMenu/advanced.page'
 import burgerMenuPage from './burgerMenu/burgerMenu.page'
 
@@ -11,6 +12,10 @@ class CommonElsPage {
 
   get backButton() {
     return by.id(commonEls.backButton)
+  }
+
+  get backSecondaryButton() {
+    return by.id(commonEls.backSecondaryButton)
   }
 
   get getStartedButton() {
@@ -91,6 +96,15 @@ class CommonElsPage {
       await device.launchApp({ newInstance: true })
     }
     loginRecoverWallet.enterPin()
+  }
+
+  async goBack() {
+    await delay(1000)
+    try {
+      await Actions.tapElementAtIndex(this.backButton, 0)
+    } catch (e) {
+      await Actions.tapElementAtIndex(this.backSecondaryButton, 0)
+    }
   }
 }
 
