@@ -7,6 +7,7 @@ import {
   BalanceChangeEvents,
   NotificationsBalanceChangeSchema
 } from 'services/fcm/types'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
 
 type UnsubscribeFunc = () => void
 
@@ -37,6 +38,9 @@ class FCMService {
       if (result.data.data.event === BalanceChangeEvents.BALANCES_SPENT) {
         // skip showing notification if user just spent balance in app
         return
+      }
+      if (result.data.data.event === BalanceChangeEvents.BALANCES_RECEIVED) {
+        audioFeedback(Audios.Receive)
       }
       const data = {
         accountAddress: result.data.data.accountAddress,
