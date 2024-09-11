@@ -13,6 +13,14 @@ export async function subscribeBalanceChangeNotifications(
   listenerApi: AppListenerEffectAPI
 ): Promise<void> {
   const { getState } = listenerApi
+  const accounts = selectAccounts(getState())
+  const addresses = Object.values(accounts).map(account => account.addressC)
+
+  if (addresses.length === 0) {
+    //skip if no addresses, means wallet is not yet created
+    return
+  }
+
   const fcmToken = await FCMService.getFCMToken()
   const { deviceArn } = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
 
