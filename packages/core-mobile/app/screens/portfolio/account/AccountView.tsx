@@ -16,11 +16,13 @@ import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import WalletService from 'services/wallet/WalletService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
+  const { bottom } = useSafeAreaInsets()
 
   const addAccountAndSetActive = async (): Promise<void> => {
     try {
@@ -48,7 +50,8 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
     <View
       style={{
         flex: 1,
-        paddingHorizontal: 16
+        paddingHorizontal: 16,
+        paddingBottom: bottom
       }}>
       <View
         style={{
