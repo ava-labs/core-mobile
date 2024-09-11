@@ -1,5 +1,6 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useNetworks } from './networks/useNetworks'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useVariableSafeAreaInsets = (): {
   top: number
@@ -7,9 +8,7 @@ export const useVariableSafeAreaInsets = (): {
   conditionalTop: number
 } => {
   const { top, bottom } = useSafeAreaInsets()
-  const {
-    activeNetwork: { isTestnet }
-  } = useNetworks()
+  const isTestnet = useSelector(selectIsDeveloperMode)
 
   return {
     conditionalTop: isTestnet ? 0 : top,
