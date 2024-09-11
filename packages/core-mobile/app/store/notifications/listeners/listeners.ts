@@ -80,7 +80,9 @@ export const addNotificationsListeners = (
     ),
     effect: async (_, listenerApi) =>
       await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
-        Logger.error(`[listeners.ts][setupBalanceChangeNotifications]${reason}`)
+        Logger.error(
+          `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
+        )
       })
   })
 
