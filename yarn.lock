@@ -232,7 +232,7 @@ __metadata:
     "@typechain/ethers-v6": 0.5.0
     "@types/big.js": 6.2.2
     "@types/bn.js": 5.1.5
-    "@types/d3": 7.4.0
+    "@types/d3": 7.4.3
     "@types/jest": 29.5.12
     "@types/lodash.debounce": 4.0.9
     "@types/lodash.isempty": 4.4.9
@@ -9128,9 +9128,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3@npm:7.4.0":
-  version: 7.4.0
-  resolution: "@types/d3@npm:7.4.0"
+"@types/d3@npm:7.4.3":
+  version: 7.4.3
+  resolution: "@types/d3@npm:7.4.3"
   dependencies:
     "@types/d3-array": "*"
     "@types/d3-axis": "*"
@@ -9162,7 +9162,7 @@ __metadata:
     "@types/d3-timer": "*"
     "@types/d3-transition": "*"
     "@types/d3-zoom": "*"
-  checksum: d1383f5fca7c4a819d57eb4bccc387dccaa7cb4c24d56388e5247954db6c88f5fb7c74d156165dfe044f1da8d4d510796c8d8487b5956d8270a94a1182a6e00f
+  checksum: 12234aa093c8661546168becdd8956e892b276f525d96f65a7b32fed886fc6a569fe5a1171bff26fef2a5663960635f460c9504a6f2d242ba281a2b6c8c6465c
   languageName: node
   linkType: hard
 
