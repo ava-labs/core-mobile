@@ -3,8 +3,6 @@ import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { ChannelId } from 'services/notifications/channels'
 import { ACTIONS, PROTOCOLS } from 'contexts/DeeplinkContext/types'
-import { Dispatch } from '@reduxjs/toolkit'
-import { onFcmTokenChange } from 'store/notifications'
 import { NotificationsBalanceChangeSchema } from 'services/fcm/types'
 
 type UnsubscribeFunc = () => void
@@ -17,9 +15,9 @@ class FCMService {
     return await messaging().getToken()
   }
 
-  listenForTokenRefresh = (dispatch: Dispatch): void => {
+  listenForTokenRefresh = (callback: () => void): void => {
     messaging().onTokenRefresh(_ => {
-      dispatch(onFcmTokenChange)
+      callback()
     })
   }
 
