@@ -517,7 +517,7 @@ __metadata:
     "@types/react": 18.3.4
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
-    "@types/tinycolor2": 1.4.5
+    "@types/tinycolor2": 1.4.6
     babel-jest: 29.7.0
     deprecated-react-native-prop-types: 5.0.0
     dripsy: 4.3.5
@@ -9637,10 +9637,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/tinycolor2@npm:1.4.5":
-  version: 1.4.5
-  resolution: "@types/tinycolor2@npm:1.4.5"
-  checksum: 653b9d9b4a07c94f9e507e2173ee8d6bebcfbc7c73b19f5d357a3af489957390d817db82a9e5a4823b41b10179e9d0b2b825068f7f9d42706d591f8b2c1a464f
+"@types/tinycolor2@npm:1.4.6":
+  version: 1.4.6
+  resolution: "@types/tinycolor2@npm:1.4.6"
+  checksum: 50179851b32dcf78e0b4b691350a61043d8a00c3a8176d8155a257b34bb937136ff5d7950c814dca3c832673c7b6dc835f89dd154e85ccec3a4d4eac3993ed84
   languageName: node
   linkType: hard
 
