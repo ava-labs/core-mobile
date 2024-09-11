@@ -320,7 +320,7 @@ __metadata:
     react-native-mmkv: 2.12.2
     react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
-    react-native-pager-view: 6.2.3
+    react-native-pager-view: 6.4.1
     react-native-passkey: 2.1.1
     react-native-performance: 5.1.2
     react-native-permissions: 3.6.0
@@ -23638,13 +23638,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-pager-view@npm:6.2.3":
-  version: 6.2.3
-  resolution: "react-native-pager-view@npm:6.2.3"
+"react-native-pager-view@npm:6.4.1":
+  version: 6.4.1
+  resolution: "react-native-pager-view@npm:6.4.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e82a7a485045727c82b9d93d759118d5c1b12d11c3a0e3d644d638041a2bfb96e998472e245fa6e09806667ec188a8f1c7a951895ae88fc6ca614f80df939fc2
+  checksum: 558f08efccf748eed91a2a88be4f90e49e2b63a28c1b9db5de9711eb324a75e9565a3dbf92c523a623a2c7d5a7e0d8a0db88599bc85d33158544a7d0e724319e
   languageName: node
   linkType: hard
 
