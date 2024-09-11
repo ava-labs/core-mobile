@@ -4,10 +4,13 @@ import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
 import { handleMaybePromptBalanceNotification } from 'store/notifications/listeners/handleMaybePromptBalanceNotification'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
 import Logger from 'utils/Logger'
-import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
+import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
 import { manageForegroundNotificationSubscription } from 'store/notifications/listeners/manageForegroundNotificationSubscription'
 import { unsubscribeBalanceChangeNotifications } from 'store/notifications/listeners/unsubscribeBalanceChangeNotifications'
 import { setFeatureFlags } from 'store/posthog'
+import { FeatureFlags, FeatureGates } from 'services/posthog/types'
+import type { Action } from 'redux'
+import { ChannelId } from 'services/notifications/channels'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
@@ -78,22 +81,25 @@ export const addNotificationsListeners = (
       setAccount,
       onFcmTokenChange,
       turnOnNotificationsFor,
-      setFeatureFlags
+      matcherIsSubscribeBalanceChangeNotificationsEnabled
     ),
-    effect: async (action, listenerApi) =>
-      await subscribeBalanceChangeNotifications(action, listenerApi).catch(
-        reason => {
-          Logger.error(
-            `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
-          )
-        }
-      )
+    effect: async (_, listenerApi) => {
+      await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
+        Logger.error(
+          `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
+        )
+      })
+    }
   })
 
   startListening({
-    matcher: isAnyOf(onLogOut, turnOffNotificationsFor, setFeatureFlags),
-    effect: async action =>
-      await unsubscribeBalanceChangeNotifications(action).catch(reason => {
+    matcher: isAnyOf(
+      onLogOut,
+      matcherNotificationsTurnedOffForBalanceChange,
+      matcherIsSubscribeBalanceChangeNotificationsDisabled
+    ),
+    effect: async () =>
+      await unsubscribeBalanceChangeNotifications().catch(reason => {
         Logger.error(
           `[listeners.ts][unsubscribeBalanceChangeNotifications]${reason}`
         )
@@ -111,4 +117,35 @@ export const addNotificationsListeners = (
         }
       )
   })
+}
+const matcherIsSubscribeBalanceChangeNotificationsEnabled = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    if (action.type === setFeatureFlags.type) {
+      const setFeatureFlagsAction = action as PayloadAction<FeatureFlags>
+      return !!setFeatureFlagsAction.payload[
+        FeatureGates.BALANCE_CHANGE_NOTIFICATIONS
+      ]
+    }
+    return false
+  }
+}
+const matcherIsSubscribeBalanceChangeNotificationsDisabled = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    if (action.type === setFeatureFlags.type) {
+      const setFeatureFlagsAction = action as PayloadAction<FeatureFlags>
+      return !setFeatureFlagsAction.payload[
+        FeatureGates.BALANCE_CHANGE_NOTIFICATIONS
+      ]
+    }
+    return false
+  }
+}
+const matcherNotificationsTurnedOffForBalanceChange = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    return (
+      action.type === turnOffNotificationsFor.type &&
+      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
+        ChannelId.BALANCE_CHANGES
+    )
+  }
 }

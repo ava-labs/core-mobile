@@ -8,28 +8,11 @@ import { subscribeForBalanceChange } from 'services/notifications/balanceChange/
 import Logger from 'utils/Logger'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { AnyAction, PayloadAction } from '@reduxjs/toolkit'
-import { setFeatureFlags } from 'store/posthog'
-import { FeatureFlags, FeatureGates } from 'services/posthog/types'
 
 export async function subscribeBalanceChangeNotifications(
-  action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> {
   const { getState } = listenerApi
-
-  if (action.type === setFeatureFlags.type) {
-    const setFeatureFlagsAction = action as PayloadAction<FeatureFlags>
-    if (
-      !setFeatureFlagsAction.payload[FeatureGates.BALANCE_CHANGE_NOTIFICATIONS]
-    ) {
-      Logger.info(
-        'skipping subscribeBalanceChangeNotifications: feature flag disabled'
-      )
-      return
-    }
-  }
-
   const accounts = selectAccounts(getState())
   const addresses = Object.values(accounts).map(account => account.addressC)
 
