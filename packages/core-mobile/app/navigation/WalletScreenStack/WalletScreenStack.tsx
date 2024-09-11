@@ -1,4 +1,9 @@
-import React, { memo, useCallback } from 'react'
+import React, {
+  memo,
+  useCallback,
+  type FC,
+  type PropsWithChildren
+} from 'react'
 import { BackHandler } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import {
@@ -194,6 +199,11 @@ export const SignOutModalScreen = (): JSX.Element => {
   return <SignOutModal onConfirm={doSwitchWallet} />
 }
 
+const TestnetSafeAreaProvider: FC<
+  PropsWithChildren<{ isTestnet: boolean }>
+> = ({ children, isTestnet }) =>
+  isTestnet ? <SafeAreaProvider>{children}</SafeAreaProvider> : <>{children}</>
+
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
 >['navigation']
@@ -241,7 +251,7 @@ function WalletScreenStack(props: Props): JSX.Element {
     <BridgeProvider>
       <NFTMetadataProvider>
         {isTestnet && <TestnetBanner />}
-        <SafeAreaProvider>
+        <TestnetSafeAreaProvider isTestnet={isTestnet}>
           <WalletScreenS.Navigator
             screenOptions={{
               headerShown: false
@@ -413,7 +423,7 @@ function WalletScreenStack(props: Props): JSX.Element {
             />
             {createModals(WalletScreenS)}
           </WalletScreenS.Navigator>
-        </SafeAreaProvider>
+        </TestnetSafeAreaProvider>
         <PolyfillCrypto />
       </NFTMetadataProvider>
     </BridgeProvider>
