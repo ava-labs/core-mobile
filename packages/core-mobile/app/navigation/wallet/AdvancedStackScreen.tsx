@@ -13,7 +13,7 @@ const AdvancedStack = createStackNavigator<AdvancedStackParamList>()
 
 const AdvancedStackScreen = () => {
   return (
-    <SafeLowerAreaView>
+    <SafeLowerAreaView withHeader>
       <AdvancedStack.Navigator
         screenOptions={{
           headerBackTitleVisible: false

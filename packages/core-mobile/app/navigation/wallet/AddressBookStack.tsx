@@ -49,7 +49,7 @@ const Stack = createStackNavigator<AddressBookStackParamList>()
 
 const AddressBookStack = (): JSX.Element => {
   return (
-    <SafeLowerAreaView>
+    <SafeLowerAreaView withHeader>
       <Stack.Navigator
         screenOptions={{
           headerShown: false

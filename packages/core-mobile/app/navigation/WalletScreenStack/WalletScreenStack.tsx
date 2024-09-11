@@ -414,7 +414,6 @@ function WalletScreenStack(props: Props): JSX.Element {
             {createModals(WalletScreenS)}
           </WalletScreenS.Navigator>
         </SafeAreaProvider>
-
         <PolyfillCrypto />
       </NFTMetadataProvider>
     </BridgeProvider>
