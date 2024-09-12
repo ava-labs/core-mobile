@@ -1,74 +1,74 @@
-import { ImageRequireSource } from 'react-native'
-
 export const MAXIMUM_TABS = 100
 export const MAXIMUM_TAB_HISTORIES = 20
 export const MAXIMUM_HISTORIES = MAXIMUM_TABS * MAXIMUM_TAB_HISTORIES
 
 export type SugggestedItem = {
-  name: string
+  name: SuggestedLogo
   siteUrl: string
-  logo: ImageRequireSource
+}
+
+export enum SuggestedLogo {
+  TRADER_JOE = 'Trader Joe',
+  YIELD_YAK = 'Yield Yak',
+  GMX = 'GMX',
+  AAVE = 'Aave',
+  GOGOPOOL = 'GoGoPool',
+  SALVOR = 'Salvor',
+  DELTA_PRIME = 'Delta Prime',
+  THE_ARENA = 'The Arena',
+  STEAKHUT = 'SteakHut',
+  PHARAOH = 'Pharaoh',
+  PANGOLIN = 'Pangolin',
+  BENQI = 'Benqi'
 }
 
 export const SUGGESTED_ITEMS: SugggestedItem[] = [
   {
-    name: 'Trader Joe',
-    siteUrl: 'https://traderjoexyz.com',
-    logo: require('assets/icons/browser_suggested_icons/traderjoe.png')
+    name: SuggestedLogo.TRADER_JOE,
+    siteUrl: 'https://traderjoexyz.com'
   },
   {
-    name: 'Yield Yak',
-    siteUrl: 'https://yieldyak.com/avalanche/',
-    logo: require('assets/icons/browser_suggested_icons/yieldyak.png')
+    name: SuggestedLogo.YIELD_YAK,
+    siteUrl: 'https://yieldyak.com/avalanche/'
   },
   {
-    name: 'GMX',
-    siteUrl: 'https://app.gmx.io/#/trade',
-    logo: require('assets/icons/browser_suggested_icons/gmx.png')
+    name: SuggestedLogo.GMX,
+    siteUrl: 'https://app.gmx.io/#/trade'
   },
   {
-    name: 'Aave',
-    siteUrl: 'https://app.aave.com/',
-    logo: require('assets/icons/browser_suggested_icons/aave.png')
+    name: SuggestedLogo.AAVE,
+    siteUrl: 'https://app.aave.com/'
   },
   {
-    name: 'GoGoPool',
-    siteUrl: 'https://www.gogopool.com/',
-    logo: require('assets/icons/browser_suggested_icons/ggp.png')
+    name: SuggestedLogo.GOGOPOOL,
+    siteUrl: 'https://www.gogopool.com/'
   },
   {
-    name: 'Salvor',
-    siteUrl: 'https://salvor.io/',
-    logo: require('assets/icons/browser_suggested_icons/salvor.png')
+    name: SuggestedLogo.SALVOR,
+    siteUrl: 'https://salvor.io/'
   },
   {
-    name: 'Delta Prime',
-    siteUrl: 'https://app.deltaprime.io/#/pools',
-    logo: require('assets/icons/browser_suggested_icons/deltaprime.png')
+    name: SuggestedLogo.DELTA_PRIME,
+    siteUrl: 'https://app.deltaprime.io/#/pools'
   },
   {
-    name: 'The Arena',
-    siteUrl: 'https://arena.social/',
-    logo: require('assets/icons/browser_suggested_icons/arena.png')
+    name: SuggestedLogo.THE_ARENA,
+    siteUrl: 'https://arena.social/'
   },
   {
-    name: 'SteakHut',
-    siteUrl: 'https://app.steakhut.finance/liquidity',
-    logo: require('assets/icons/browser_suggested_icons/steakhut.png')
+    name: SuggestedLogo.STEAKHUT,
+    siteUrl: 'https://app.steakhut.finance/liquidity'
   },
   {
-    name: 'Pharaoh',
-    siteUrl: 'https://pharaoh.exchange/swap',
-    logo: require('assets/icons/browser_suggested_icons/pharaoh.png')
+    name: SuggestedLogo.PHARAOH,
+    siteUrl: 'https://pharaoh.exchange/swap'
   },
   {
-    name: 'Pangolin',
-    siteUrl: 'https://app.pangolin.exchange/',
-    logo: require('assets/icons/browser_suggested_icons/pango.png')
+    name: SuggestedLogo.PANGOLIN,
+    siteUrl: 'https://app.pangolin.exchange/'
   },
   {
-    name: 'Benqi',
-    siteUrl: 'https://benqi.fi/',
-    logo: require('assets/icons/browser_suggested_icons/benqi.png')
+    name: SuggestedLogo.BENQI,
+    siteUrl: 'https://benqi.fi/'
   }
 ]

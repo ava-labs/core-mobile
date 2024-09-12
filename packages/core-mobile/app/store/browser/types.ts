@@ -1,5 +1,4 @@
 import { EntityState } from '@reduxjs/toolkit'
-import { ImageRequireSource } from 'react-native'
 
 export type TabId = string // unique, generated
 export type HistoryId = string // unique, generated
@@ -19,7 +18,7 @@ export type History = {
   url: string // url grabbed from html metadata
   lastVisited: number
   description?: string // description grabbed from html metadata
-  favicon?: string | ImageRequireSource // url to favicon
+  favicon?: string // url to favicon
 }
 
 export type TabState = EntityState<Tab> & {
@@ -52,7 +51,7 @@ export type Favorite = {
   title: string //title grabbed from html metadata
   description: string //description grabbed from html metadata
   url: string
-  favicon?: string | ImageRequireSource //url to favicon
+  favicon?: string //url to favicon
 }
 
 export type FavoriteState = EntityState<Favorite>
