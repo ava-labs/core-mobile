@@ -11,6 +11,7 @@ import {
 import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
 import { addHistoryForActiveTab } from './tabs'
+import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
 
 const reducerName = 'browser/globalHistory'
 
@@ -33,8 +34,10 @@ const globalHistorySlice = createSlice({
       state: HistoryState,
       action: PayloadAction<UpdateHistoryPayload>
     ) => {
+      const url = trimTrailingSlash(action.payload.url)
+
       historyAdapter.updateOne(state, {
-        id: createHash(action.payload.url),
+        id: createHash(url),
         changes: {
           favicon: action.payload.favicon,
           description: action.payload.description

@@ -10,7 +10,8 @@ import {
   selectAllTabs,
   selectCanGoBack,
   selectCanGoForward,
-  selectTab
+  selectTab,
+  setActiveHistoryForTab
 } from 'store/browser/slices/tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
@@ -56,7 +57,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     coreConnectInterceptor,
     injectCustomWindowOpen
   } = useInjectedJavascript()
-  const activeHistory = useSelector(selectTab(tabId))?.activeHistory
+  const activeTab = useSelector(selectTab(tabId))
+  const activeHistory = activeTab?.activeHistory
   const webViewRef = useRef<WebView>(null)
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const [description, setDescription] = useState('')
@@ -132,6 +134,19 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
             description: desc
           })
         )
+        activeTab &&
+          activeTab.activeHistory &&
+          dispatch(
+            setActiveHistoryForTab({
+              id: activeTab.id,
+              activeHistoryIndex: activeTab.activeHistoryIndex,
+              activeHistory: {
+                ...activeTab.activeHistory,
+                favicon: favi,
+                description: desc
+              }
+            })
+          )
       }
     },
     [dispatch]
