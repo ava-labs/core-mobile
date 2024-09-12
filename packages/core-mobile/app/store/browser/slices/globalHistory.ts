@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
 import { getUnixTime } from 'date-fns'
+import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
 import {
   History,
   HistoryId,
@@ -11,7 +12,6 @@ import {
 import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
 import { addHistoryForActiveTab } from './tabs'
-import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
 
 const reducerName = 'browser/globalHistory'
 

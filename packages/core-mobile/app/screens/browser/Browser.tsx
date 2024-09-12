@@ -60,7 +60,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const activeTab = useSelector(selectTab(tabId))
   const activeHistory = activeTab?.activeHistory
   const webViewRef = useRef<WebView>(null)
-  const [favicon, setFavicon] = useState<string | undefined>(undefined)
+  const [favicon, setFavicon] = useState<string | number | undefined>(undefined)
   const [description, setDescription] = useState('')
   const { navigateToGoogleSearchResult } = useGoogleSearch()
   const totalTabs = useSelector(selectAllTabs).length
@@ -119,18 +119,31 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     webViewRef.current?.reload()
   }
 
+  const updateFavicon = ({
+    newIcon,
+    existing
+  }: {
+    newIcon: string
+    existing?: string | number
+  }): string | number => {
+    // if the favicon is already set to static favicon from suggested list, don't update it
+    if (existing && typeof existing === 'number') return existing
+    return newIcon
+  }
+
   const parseDescriptionAndFavicon = useCallback(
     (wrapper: InjectedJsMessageWrapper, event: WebViewMessageEvent) => {
       const { favicon: favi, description: desc } = JSON.parse(
         wrapper.payload
       ) as GetDescriptionAndFavicon
       if (favi || desc) {
-        setFavicon(favi)
+        const icon = updateFavicon({ newIcon: favi, existing: activeHistory?.favicon })
+        setFavicon(icon)
         setDescription(desc)
         dispatch(
           updateMetadataForActiveTab({
             url: event.nativeEvent.url,
-            favicon: favi,
+            favicon: icon,
             description: desc
           })
         )
@@ -142,7 +155,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
               activeHistoryIndex: activeTab.activeHistoryIndex,
               activeHistory: {
                 ...activeTab.activeHistory,
-                favicon: favi,
+                favicon: icon,
                 description: desc
               }
             })
