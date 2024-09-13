@@ -2,7 +2,7 @@ import { FlatList, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import React from 'react'
 import { Dimensions } from 'react-native'
-import { SUGGESTED_ITEMS, SugggestedItem } from 'store/browser/const'
+import { SUGGESTED_ITEMS, SuggestedItem } from 'store/browser/const'
 import { SuggestedListItem } from './SuggestedListItem'
 
 const width = Dimensions.get('window').width
@@ -28,7 +28,7 @@ export const SuggestedSection = (): JSX.Element | null => {
         data={SUGGESTED_ITEMS}
         renderItem={item => (
           <SuggestedListItem
-            suggested={item.item as SugggestedItem}
+            suggested={item.item as SuggestedItem}
             marginRight={item.index !== 3 && item.index !== 7 ? itemGap : 0}
           />
         )}

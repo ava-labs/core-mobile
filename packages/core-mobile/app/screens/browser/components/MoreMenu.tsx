@@ -12,7 +12,7 @@ import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isValidUrl } from '../utils'
-import { SuggestedLogo } from '../../../store/browser/const'
+import { SuggestedSiteName } from '../../../store/browser/const'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -154,8 +154,8 @@ export const MoreMenu: FC<Props & PropsWithChildren> = ({
       let favicon: string | undefined
       if (activeHistory.favicon) {
         if (
-          Object.values(SuggestedLogo).includes(
-            activeHistory.favicon as SuggestedLogo
+          Object.values(SuggestedSiteName).includes(
+            activeHistory.favicon as SuggestedSiteName
           )
         ) {
           favicon = activeHistory.favicon

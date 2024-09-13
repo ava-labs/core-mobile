@@ -7,11 +7,11 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
-import { SugggestedItem } from 'store/browser/const'
+import { SuggestedItem } from 'store/browser/const'
 import { SuggestedSiteIcon } from './SuggestedIcons'
 
 interface Props {
-  suggested: SugggestedItem
+  suggested: SuggestedItem
   marginRight: number
 }
 

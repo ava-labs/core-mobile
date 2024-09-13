@@ -8,7 +8,7 @@ import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
 import { Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
-import { SuggestedLogo } from 'store/browser/const'
+import { SuggestedSiteName } from 'store/browser/const'
 import { SuggestedSiteIcon } from '../screens/browser/components/SuggestedIcons'
 
 interface AvatarBaseProps {
@@ -56,14 +56,14 @@ const AvatarBase: FC<AvatarBaseProps> = ({
     return <BitcoinSVG size={size} />
   }
 
-  const isSuggestedLogo = Object.values(SuggestedLogo).includes(
-    logoUri as SuggestedLogo
+  const isSuggestedSiteName = Object.values(SuggestedSiteName).includes(
+    logoUri as SuggestedSiteName
   )
 
-  if (isSuggestedLogo) {
+  if (isSuggestedSiteName) {
     return (
       <SuggestedSiteIcon
-        name={logoUri as SuggestedLogo}
+        name={logoUri as SuggestedSiteName}
         sx={{
           width: size,
           height: size,

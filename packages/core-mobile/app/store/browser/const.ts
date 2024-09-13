@@ -2,12 +2,12 @@ export const MAXIMUM_TABS = 100
 export const MAXIMUM_TAB_HISTORIES = 20
 export const MAXIMUM_HISTORIES = MAXIMUM_TABS * MAXIMUM_TAB_HISTORIES
 
-export type SugggestedItem = {
-  name: SuggestedLogo
+export type SuggestedItem = {
+  name: SuggestedSiteName
   siteUrl: string
 }
 
-export enum SuggestedLogo {
+export enum SuggestedSiteName {
   TRADER_JOE = 'Trader Joe',
   YIELD_YAK = 'Yield Yak',
   GMX = 'GMX',
@@ -22,53 +22,53 @@ export enum SuggestedLogo {
   BENQI = 'Benqi'
 }
 
-export const SUGGESTED_ITEMS: SugggestedItem[] = [
+export const SUGGESTED_ITEMS: SuggestedItem[] = [
   {
-    name: SuggestedLogo.TRADER_JOE,
+    name: SuggestedSiteName.TRADER_JOE,
     siteUrl: 'https://traderjoexyz.com'
   },
   {
-    name: SuggestedLogo.YIELD_YAK,
+    name: SuggestedSiteName.YIELD_YAK,
     siteUrl: 'https://yieldyak.com/avalanche/'
   },
   {
-    name: SuggestedLogo.GMX,
+    name: SuggestedSiteName.GMX,
     siteUrl: 'https://app.gmx.io/#/trade'
   },
   {
-    name: SuggestedLogo.AAVE,
+    name: SuggestedSiteName.AAVE,
     siteUrl: 'https://app.aave.com/'
   },
   {
-    name: SuggestedLogo.GOGOPOOL,
+    name: SuggestedSiteName.GOGOPOOL,
     siteUrl: 'https://www.gogopool.com/'
   },
   {
-    name: SuggestedLogo.SALVOR,
+    name: SuggestedSiteName.SALVOR,
     siteUrl: 'https://salvor.io/'
   },
   {
-    name: SuggestedLogo.DELTA_PRIME,
+    name: SuggestedSiteName.DELTA_PRIME,
     siteUrl: 'https://app.deltaprime.io/#/pools'
   },
   {
-    name: SuggestedLogo.THE_ARENA,
+    name: SuggestedSiteName.THE_ARENA,
     siteUrl: 'https://arena.social/'
   },
   {
-    name: SuggestedLogo.STEAKHUT,
+    name: SuggestedSiteName.STEAKHUT,
     siteUrl: 'https://app.steakhut.finance/liquidity'
   },
   {
-    name: SuggestedLogo.PHARAOH,
+    name: SuggestedSiteName.PHARAOH,
     siteUrl: 'https://pharaoh.exchange/swap'
   },
   {
-    name: SuggestedLogo.PANGOLIN,
+    name: SuggestedSiteName.PANGOLIN,
     siteUrl: 'https://app.pangolin.exchange/'
   },
   {
-    name: SuggestedLogo.BENQI,
+    name: SuggestedSiteName.BENQI,
     siteUrl: 'https://benqi.fi/'
   }
 ]
