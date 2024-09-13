@@ -23,6 +23,7 @@ import { viewOnceReducer as viewOnce } from './viewOnce'
 import settings from './settings'
 import { transactionApi } from './transaction'
 import { rpcReducer as rpc } from './rpc'
+import { layoutReducer as layout } from './layout'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
@@ -52,6 +53,7 @@ const combinedReducer = combineReducers({
   viewOnce,
   browser,
   snapshots,
+  layout,
 
   // user preferences
   settings,
