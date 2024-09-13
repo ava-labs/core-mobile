@@ -3,8 +3,10 @@ import {
   AvalancheCaip2ChainId,
   BitcoinCaip2ChainId,
   BlockchainNamespace,
-  ChainId
+  ChainId,
+  Network
 } from '@avalabs/core-chains-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 /**
  * In the process of switching to CAIP2 naming convention for blockchain ids we are temporarily modifying Posthog
@@ -146,4 +148,16 @@ export const getChainIdFromCaip2 = (
     : namespace === BlockchainNamespace.BIP122
     ? getBitcoinChainId(caip2ChainId)
     : Number(caip2ChainId.split(':')[1])
+}
+
+export const useNetworksByCaip2ChainIds = (
+  caip2ChainIds: string[]
+): Network[] => {
+  const { networks } = useNetworks()
+
+  return caip2ChainIds
+    .map(caip2ChainId => getChainIdFromCaip2(caip2ChainId))
+    .filter((chainId): chainId is number => !!chainId)
+    .map(chainId => networks[chainId])
+    .filter((network): network is Network => !!network)
 }

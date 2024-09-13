@@ -35,7 +35,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
     if (!pending) return item.tokens[0]?.amount
 
     if (isUnifiedBridgeTransfer(item)) {
-      return bigintToBig(item.amount, item.amountDecimals).toString()
+      return bigintToBig(item.amount, item.asset.decimals).toString()
     }
 
     return item.amount.toString()
@@ -65,7 +65,12 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {amount} {pending ? item.symbol : item.tokens[0]?.symbol}
+            {amount}{' '}
+            {pending
+              ? isUnifiedBridgeTransfer(item)
+                ? item.asset.symbol
+                : item.symbol
+              : item.tokens[0]?.symbol}
           </AvaText.ActivityTotal>
           {'explorerLink' in item && item?.explorerLink && (
             <>

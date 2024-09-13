@@ -1,26 +1,23 @@
 import Big from 'big.js'
 import { BIG_ZERO, bigToBigInt, bigintToBig } from '@avalabs/core-utils-sdk'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Blockchain, useBridgeSDK } from '@avalabs/core-bridge-sdk'
+import { Blockchain } from '@avalabs/core-bridge-sdk'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account/slice'
 import { setPendingTransfer } from 'store/unifiedBridge/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
+import { useNetworksByCaip2ChainIds } from 'temp/caip2ChainIds'
+import { Network } from '@avalabs/core-chains-sdk'
+import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
+import { BridgeAsset } from '@avalabs/bridge-unified'
 import { isUnifiedBridgeAsset } from '../../utils/bridgeUtils'
-import { AssetBalance } from '../../utils/types'
 import { useUnifiedBridgeAssets } from '../useUnifiedBridgeAssets'
 import { useAssetBalancesEVM } from '../useAssetBalancesEVM'
 import { BridgeAdapter } from '../useBridge'
-import {
-  getIsAssetSupported,
-  getSourceBalance,
-  getTargetChainId
-} from './utils'
+import { getSourceBalance } from './utils'
 interface UnifiedBridge extends BridgeAdapter {
   isAssetSupported: boolean
 }
@@ -28,64 +25,53 @@ interface UnifiedBridge extends BridgeAdapter {
 /**
  * Hook for when the Unified Bridge SDK can handle the transfer
  */
-export const useUnifiedBridge = (
-  amount: Big,
-  selectedAsset?: AssetBalance
-): UnifiedBridge => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export const useUnifiedBridge = (amount: Big): UnifiedBridge => {
   const { request } = useInAppRequest()
   const dispatch = useDispatch()
-  const { activeNetwork, getNetwork } = useNetworks()
-  const { currentBlockchain, targetBlockchain } = useBridgeSDK()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const [sourceNetwork, setSourceNetwork] = useState<Network>()
+  const [targetNetwork, setTargetNetwork] = useState<Network>()
+  const [selectedBridgeAsset, setSelectedBridgeAsset] = useState<BridgeAsset>()
   const activeAccount = useSelector(selectActiveAccount)
-  const { assets } = useUnifiedBridgeAssets()
+  const { bridgeAssets, chainAssetMap } = useUnifiedBridgeAssets()
+  const [bridgeError, setBridgeError] = useState<Error>()
+
   const [receiveAmount, setReceiveAmount] = useState<Big>()
   const [minimum, setMinimum] = useState<Big>()
   const [bridgeFee, setBridgeFee] = useState<Big>()
 
-  const isEthereum = currentBlockchain === Blockchain.ETHEREUM
-
   const { assetsWithBalances, loading } = useAssetBalancesEVM(
-    isEthereum ? Blockchain.ETHEREUM : Blockchain.AVALANCHE
-  )
-
-  const targetChainId = useMemo(
-    () => getTargetChainId(isDeveloperMode, targetBlockchain),
-    [isDeveloperMode, targetBlockchain]
-  )
-
-  const targetNetwork = getNetwork(targetChainId)
-
-  const isAssetSupported = useMemo(
-    () => getIsAssetSupported(selectedAsset, assets, targetChainId),
-    [assets, selectedAsset, targetChainId]
+    sourceNetwork && isEthereumNetwork(sourceNetwork)
+      ? Blockchain.ETHEREUM
+      : Blockchain.AVALANCHE
   )
 
   const sourceBalance = useMemo(
-    () => getSourceBalance(selectedAsset, assetsWithBalances),
-    [selectedAsset, assetsWithBalances]
+    () => getSourceBalance(selectedBridgeAsset, assetsWithBalances),
+    [selectedBridgeAsset, assetsWithBalances]
   )
 
-  const maximum = sourceBalance?.balance
+  const sourceNetworks = useNetworksByCaip2ChainIds(
+    Object.keys(chainAssetMap ?? [])
+  )
+
+  const targetNetworks = useNetworksByCaip2ChainIds(
+    Object.keys(selectedBridgeAsset?.destinations ?? [])
+  )
 
   useEffect(() => {
     const getFee = async (): Promise<void> => {
       const hasAmount = amount && !amount.eq(BIG_ZERO)
 
-      if (
-        selectedAsset &&
-        isUnifiedBridgeAsset(selectedAsset.asset) &&
-        hasAmount &&
-        targetNetwork
-      ) {
+      if (selectedBridgeAsset && hasAmount && targetNetwork && sourceNetwork) {
         const fee = await UnifiedBridgeService.getFee({
-          asset: selectedAsset.asset,
-          amount: bigToBigInt(amount, selectedAsset.asset.decimals),
-          sourceNetwork: activeNetwork,
+          asset: selectedBridgeAsset,
+          amount: bigToBigInt(amount, selectedBridgeAsset.decimals),
+          sourceNetwork: sourceNetwork,
           targetNetwork: targetNetwork
         })
 
-        const feeBig = bigintToBig(fee, selectedAsset.asset.decimals)
+        const feeBig = bigintToBig(fee, selectedBridgeAsset.decimals)
 
         setBridgeFee(feeBig)
         setMinimum(feeBig)
@@ -93,24 +79,23 @@ export const useUnifiedBridge = (
       }
     }
 
-    getFee().catch(Logger.error)
-  }, [
-    amount,
-    targetChainId,
-    sourceBalance,
-    selectedAsset?.asset,
-    targetNetwork,
-    activeNetwork,
-    selectedAsset
-  ])
+    getFee().catch(error => {
+      Logger.error(error)
+      setBridgeError(error)
+    })
+  }, [amount, sourceBalance, selectedBridgeAsset, targetNetwork, sourceNetwork])
 
   const transfer = useCallback(async () => {
-    if (!selectedAsset) {
+    if (!selectedBridgeAsset) {
       throw new Error('No asset chosen')
     }
 
-    if (!isUnifiedBridgeAsset(selectedAsset.asset)) {
+    if (!isUnifiedBridgeAsset(selectedBridgeAsset)) {
       throw new Error('Asset is not supported ')
+    }
+
+    if (!sourceNetwork) {
+      throw new Error('Invalid source network')
     }
 
     if (!targetNetwork) {
@@ -122,10 +107,10 @@ export const useUnifiedBridge = (
     }
 
     const pendingTransfer = await UnifiedBridgeService.transfer({
-      asset: selectedAsset.asset,
-      amount: bigToBigInt(amount, selectedAsset.asset.decimals),
+      asset: selectedBridgeAsset,
+      amount: bigToBigInt(amount, selectedBridgeAsset.decimals),
       targetNetwork,
-      activeNetwork,
+      sourceNetwork,
       activeAccount,
       updateListener: updatedTransfer => {
         dispatch(setPendingTransfer(updatedTransfer))
@@ -135,12 +120,12 @@ export const useUnifiedBridge = (
 
     AnalyticsService.capture('UnifedBridgeTransferStarted', {
       bridgeType: 'CCTP',
-      activeChainId: activeNetwork.chainId,
+      activeChainId: sourceNetwork.chainId,
       targetChainId: targetNetwork.chainId
     })
 
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
-      chainId: activeNetwork.chainId,
+      chainId: sourceNetwork.chainId,
       sourceTxHash: pendingTransfer.sourceTxHash,
       fromAddress: pendingTransfer.fromAddress,
       toAddress: pendingTransfer.toAddress
@@ -150,14 +135,31 @@ export const useUnifiedBridge = (
 
     return pendingTransfer.sourceTxHash
   }, [
-    selectedAsset,
+    selectedBridgeAsset,
     targetNetwork,
     activeAccount,
     amount,
-    activeNetwork,
+    sourceNetwork,
     dispatch,
     request
   ])
+
+  useEffect(() => {
+    setSelectedBridgeAsset(bridgeAssets[0])
+  }, [bridgeAssets])
+
+  useEffect(() => {
+    if (targetNetworks.length === 0) {
+      return
+    }
+
+    if (
+      !targetNetwork ||
+      !targetNetworks.find(network => network.chainId === targetNetwork.chainId)
+    ) {
+      setTargetNetwork(targetNetworks[0])
+    }
+  }, [targetNetworks, targetNetwork])
 
   return {
     sourceBalance,
@@ -165,9 +167,19 @@ export const useUnifiedBridge = (
     assetsWithBalances,
     receiveAmount,
     bridgeFee,
-    maximum,
+    maximum: sourceBalance?.balance,
     minimum,
     transfer,
-    isAssetSupported
+    isAssetSupported: true,
+    sourceNetworks,
+    targetNetworks,
+    sourceNetwork,
+    setSourceNetwork,
+    targetNetwork,
+    setTargetNetwork,
+    bridgeAssets,
+    selectedBridgeAsset,
+    setSelectedBridgeAsset,
+    error: bridgeError
   }
 }

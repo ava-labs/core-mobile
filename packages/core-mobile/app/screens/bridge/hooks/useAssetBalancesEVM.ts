@@ -29,7 +29,7 @@ export function useAssetBalancesEVM(
 } {
   const tokens = useSelector(selectTokensWithBalance)
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
-  const { assets: unifiedBridgeAssets } = useUnifiedBridgeAssets()
+  const { bridgeAssets } = useUnifiedBridgeAssets()
 
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
 
@@ -62,12 +62,12 @@ export function useAssetBalancesEVM(
   // unifiedBridgeAssets go first so that they're not the ones removed (we prefer Unified bridge over legacy)
   const allAssets = useMemo(
     () =>
-      uniqBy([...unifiedBridgeAssets, ...legacyAssets], asset => {
+      uniqBy([...bridgeAssets, ...legacyAssets], asset => {
         return isUnifiedBridgeAsset(asset)
           ? asset.symbol
           : getTokenSymbolOnNetwork(asset.symbol, chain)
       }),
-    [chain, getTokenSymbolOnNetwork, legacyAssets, unifiedBridgeAssets]
+    [chain, getTokenSymbolOnNetwork, legacyAssets, bridgeAssets]
   )
 
   const assetsWithBalances = useMemo(

@@ -1,7 +1,11 @@
 import { Blockchain } from '@avalabs/core-bridge-sdk'
 import { chainIdToCaip } from 'utils/data/caip'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { BridgeAsset } from '@avalabs/bridge-unified'
+import {
+  BridgeAsset,
+  isErc20Asset,
+  isNativeAsset
+} from '@avalabs/bridge-unified'
 import { isUnifiedBridgeAsset } from '../../utils/bridgeUtils'
 import { AssetBalance } from '../../utils/types'
 
@@ -35,10 +39,14 @@ export const getIsAssetSupported = (
 ): boolean => {
   if (!selectedAsset || !isUnifiedBridgeAsset(selectedAsset.asset)) return false
 
+  if (isNativeAsset(selectedAsset.asset)) {
+    return true
+  }
+
   const lookupAddress = selectedAsset.asset.address ?? ''
 
-  const asset = assets.find(({ address }) => {
-    return lookupAddress === address
+  const asset = assets.find(_asset => {
+    return isErc20Asset(_asset) && lookupAddress === _asset.address
   })
 
   if (!asset) {
@@ -49,10 +57,10 @@ export const getIsAssetSupported = (
 }
 
 export const getSourceBalance = (
-  selectedAsset: AssetBalance | undefined,
+  selectedAsset: BridgeAsset | undefined,
   assetsWithBalances: AssetBalance[]
 ): AssetBalance | undefined => {
-  if (!selectedAsset || !isUnifiedBridgeAsset(selectedAsset?.asset)) {
+  if (!selectedAsset) {
     return undefined
   }
 
