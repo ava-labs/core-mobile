@@ -5,6 +5,8 @@ import { Row } from 'components/Row'
 import { AppTheme } from 'contexts/ApplicationContext'
 import { Text, View } from '@avalabs/k2-mobile'
 
+// Comment to trigger a change
+
 export const BOTTOM_BAR_HEIGHT = 60
 
 interface MainHeaderOptionsProps {
