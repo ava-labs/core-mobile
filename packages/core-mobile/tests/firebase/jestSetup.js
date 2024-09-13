@@ -11,4 +11,12 @@ jest.mock('@react-native-firebase/app-check', () => ({
     }
   }
 }))
-jest.mock('@react-native-firebase/messaging', () => ({}))
+jest.mock('@react-native-firebase/messaging', () => () => {
+    return {
+        deleteToken: () => {
+            return {
+                token: 'fcmToken'
+            }
+        }
+    }
+})
