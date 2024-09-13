@@ -9,6 +9,7 @@ import { NetworkContractToken } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
+import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
 
 export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
@@ -36,16 +37,19 @@ export function useTokenForBridgeTransaction(
   }
 
   const tokens = useNetworkContractTokens(network)
+  const symbol = isUnifiedBridgeTransfer(bridgeTransaction)
+    ? bridgeTransaction.asset.symbol
+    : bridgeTransaction?.symbol
 
   return useMemo(() => {
-    const token = tokens.find(t => t.symbol === bridgeTransaction?.symbol)
+    const token = tokens.find(t => t.symbol === symbol)
 
     if (token) return token
 
-    if (bridgeTransaction?.symbol === BITCOIN_NETWORK.networkToken.symbol) {
+    if (symbol === BITCOIN_NETWORK.networkToken.symbol) {
       return BITCOIN_NETWORK.networkToken
     }
 
     return undefined
-  }, [tokens, bridgeTransaction])
+  }, [tokens, symbol])
 }

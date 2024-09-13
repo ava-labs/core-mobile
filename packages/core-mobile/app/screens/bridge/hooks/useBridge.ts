@@ -8,8 +8,6 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useBtcBridge } from 'screens/bridge/hooks/useBtcBridge'
-import { useEthBridge } from 'screens/bridge/hooks/useEthBridge'
-import { useAvalancheBridge } from 'screens/bridge/hooks/useAvalancheBridge'
 import { AssetBalance, BridgeProvider } from 'screens/bridge/utils/types'
 import Big from 'big.js'
 import { useSelector } from 'react-redux'
@@ -26,6 +24,8 @@ import { useNetworkFee } from 'hooks/useNetworkFee'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
 import { useSimplePrice } from 'hooks/useSimplePrice'
+import { Network } from '@avalabs/core-chains-sdk'
+import { BridgeAsset } from '@avalabs/bridge-unified'
 import { isUnifiedBridgeAsset, networkToBlockchain } from '../utils/bridgeUtils'
 import { useUnifiedBridge } from './useUnifiedBridge/useUnifiedBridge'
 import { getTargetChainId } from './useUnifiedBridge/utils'
@@ -46,24 +46,35 @@ export interface BridgeAdapter {
   minimum?: Big
   wrapStatus?: WrapStatus
   /**
-   * Transfer funds to the target blockchain
+   * Transfer funds to the target network
    * @returns the transaction hash
    */
   transfer: () => Promise<string | undefined>
+
+  sourceNetworks: Network[]
+  targetNetworks: Network[]
+  sourceNetwork?: Network
+  setSourceNetwork: (network: Network) => void
+  targetNetwork?: Network
+  setTargetNetwork: (network: Network) => void
+  bridgeAssets: BridgeAsset[]
+  selectedBridgeAsset?: BridgeAsset
+  setSelectedBridgeAsset: (asset: BridgeAsset) => void
+  error: Error | undefined
 }
 
 interface Bridge extends BridgeAdapter {
   amount: Big
-  setAmount: (amount: Big) => void
-  price: Big
+  setAmount: (amount: Big | undefined) => void
+  price: Big | undefined
   provider: BridgeProvider
   bridgeFee: Big
   denomination: number
-  amountBN: bigint
+  amountBN: bigint | undefined
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export default function useBridge(selectedAsset?: AssetBalance): Bridge {
+export default function useBridge(): Bridge {
   const { activeNetwork, networks, getNetwork } = useNetworks()
   const config = useSelector(selectBridgeAppConfig)
   const isTestnet = useSelector(selectIsDeveloperMode)
@@ -73,7 +84,6 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   const {
     currentBlockchain,
     setCurrentBlockchain,
-    currentAsset,
     currentAssetData,
     setCurrentAsset,
     targetBlockchain
@@ -93,23 +103,19 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     }
   }, [setCurrentAsset])
 
-  const [amount, setAmount] = useState<Big>(new Big(0))
+  const [inputAmount, setAmount] = useState<Big>()
   const [networkFee, setNetworkFee] = useState<Big>()
+
+  const amount = inputAmount || BIG_ZERO
 
   const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO
   const minimum = useMinimumTransferAmount(amount)
   const { data: networkFeeRate } = useNetworkFee()
 
   const btc = useBtcBridge({ amount, bridgeFee, minimum })
-  const eth = useEthBridge({ amount, bridgeFee, minimum })
-  const avalanche = useAvalancheBridge({
-    amount,
-    bridgeFee,
-    minimum
-  })
-  const unified = useUnifiedBridge(amount, selectedAsset)
+  const unified = useUnifiedBridge(amount)
 
-  const coingeckoId = useCoinGeckoId(currentAsset)
+  const coingeckoId = useCoinGeckoId(unified.selectedBridgeAsset?.symbol)
 
   const price = useSimplePrice(
     coingeckoId,
@@ -129,8 +135,11 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   }, [sourceBalance])
 
   const amountBN = useMemo(
-    () => bigToBigInt(amount, denomination),
-    [amount, denomination]
+    () =>
+      inputAmount !== undefined
+        ? bigToBigInt(inputAmount, denomination)
+        : undefined,
+    [inputAmount, denomination]
   )
 
   useEffect(() => {
@@ -138,28 +147,17 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
       setSourceBalance(unified.sourceBalance)
     } else if (currentBlockchain === Blockchain.BITCOIN) {
       setSourceBalance(btc.sourceBalance)
-    } else if (currentBlockchain === Blockchain.ETHEREUM) {
-      setSourceBalance(eth.sourceBalance)
-    } else if (currentBlockchain === Blockchain.AVALANCHE) {
-      setSourceBalance(avalanche.sourceBalance)
     } else {
       setSourceBalance(undefined)
     }
-  }, [
-    btc,
-    eth,
-    avalanche,
-    currentBlockchain,
-    unified.isAssetSupported,
-    unified.sourceBalance
-  ])
+  }, [btc, currentBlockchain, unified.isAssetSupported, unified.sourceBalance])
 
   useEffect(() => {
     const getNetworkFee = async (): Promise<bigint | undefined> => {
       if (
         !networkFeeRate ||
         !activeAccount ||
-        !selectedAsset ||
+        !unified.selectedBridgeAsset ||
         !currentAssetData ||
         amount.eq(BIG_ZERO)
       )
@@ -169,7 +167,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
 
       if (unified.isAssetSupported) {
         gasLimit = await UnifiedBridgeService.estimateGas({
-          asset: selectedAsset.asset,
+          asset: unified.selectedBridgeAsset,
           amount,
           activeAccount,
           sourceNetwork: activeNetwork,
@@ -212,10 +210,9 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     currentAssetData,
     currentBlockchain,
     isTestnet,
-    selectedAsset,
     targetNetwork,
     networkFeeRate,
-    unified.isAssetSupported
+    unified
   ])
 
   // Derive bridge Blockchain from active network
@@ -248,16 +245,6 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     return {
       ...defaults,
       ...btc
-    }
-  } else if (currentBlockchain === Blockchain.ETHEREUM) {
-    return {
-      ...defaults,
-      ...eth
-    }
-  } else if (currentBlockchain === Blockchain.AVALANCHE) {
-    return {
-      ...defaults,
-      ...avalanche
     }
   } else {
     return {

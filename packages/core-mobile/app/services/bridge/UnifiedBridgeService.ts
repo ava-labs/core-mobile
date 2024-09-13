@@ -7,7 +7,9 @@ import {
   ChainAssetMap,
   Chain,
   TokenType,
-  Signer
+  Signer,
+  getEnabledBridgeServices,
+  isErc20Asset
 } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
 import { rpcErrors } from '@metamask/rpc-errors'
@@ -43,12 +45,15 @@ export class UnifiedBridgeService {
       disabledBridgeTypes
     })
 
-    this.service = createUnifiedBridgeService({
+    const enabledBridgeServices = await getEnabledBridgeServices(
       environment,
       disabledBridgeTypes
-    })
+    )
 
-    await this.service.init()
+    this.service = createUnifiedBridgeService({
+      environment,
+      enabledBridgeServices
+    })
   }
 
   isInitialized(): boolean {
@@ -58,15 +63,15 @@ export class UnifiedBridgeService {
   getBridgeAddresses(): string[] {
     const addresses: string[] = []
 
-    this.service.bridges.forEach(bridge => {
-      if (bridge.config) {
-        addresses.push(
-          ...bridge.config.map(
-            ({ tokenRouterAddress }) => tokenRouterAddress as string
-          )
-        )
-      }
-    })
+    // this.service.bridges.forEach(bridge => {
+    //   if (bridge.config) {
+    //     addresses.push(
+    //       ...bridge.config.map(
+    //         ({ tokenRouterAddress }) => tokenRouterAddress as string
+    //       )
+    //     )
+    //   }
+    // })
 
     return addresses
   }
@@ -93,24 +98,27 @@ export class UnifiedBridgeService {
       sourceChain: await this.buildChain(sourceNetwork)
     })
 
-    const fee = asset.address && feeMap[asset.address]
+    if (isErc20Asset(asset) && asset.address) {
+      const address = asset.address.toLowerCase() as `0x${string}`
+      const fee = feeMap[address]
 
-    if (!fee) {
-      throw rpcErrors.invalidRequest({
-        data: {
-          reason: 'invalid fee'
-        }
-      })
+      if (!fee) {
+        // todo: handle this properly
+        return 0n
+        // throw new Error('invalid fee')
+      }
+
+      return fee
+    } else {
+      throw new Error('invalid asset')
     }
-
-    return fee
   }
 
   async transfer({
     asset,
     amount,
     targetNetwork,
-    activeNetwork,
+    sourceNetwork,
     activeAccount,
     updateListener,
     request
@@ -118,12 +126,12 @@ export class UnifiedBridgeService {
     asset: BridgeAsset
     amount: bigint
     targetNetwork: Network
-    activeNetwork: Network
+    sourceNetwork: Network
     activeAccount: Account
     updateListener: (transfer: BridgeTransfer) => void
     request: Request
   }): Promise<BridgeTransfer> {
-    if (isBitcoinNetwork(activeNetwork)) {
+    if (isBitcoinNetwork(sourceNetwork)) {
       throw rpcErrors.invalidParams({
         data: {
           reason: 'unsupported network'
@@ -131,7 +139,7 @@ export class UnifiedBridgeService {
       })
     }
 
-    const sourceChain = await this.buildChain(activeNetwork)
+    const sourceChain = await this.buildChain(sourceNetwork)
     const targetChain = await this.buildChain(targetNetwork)
 
     const sign: Signer = async ({ from, to, data }) => {
@@ -148,7 +156,7 @@ export class UnifiedBridgeService {
       return request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: txParams,
-        chainId: getEvmCaip2ChainId(activeNetwork.chainId)
+        chainId: getEvmCaip2ChainId(sourceNetwork.chainId)
       }) as Promise<`0x${string}`>
     }
 

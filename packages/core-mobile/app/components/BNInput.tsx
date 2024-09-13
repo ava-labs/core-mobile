@@ -43,6 +43,8 @@ export function BNInput({
     // This also preserves zeros in the input ui.
     if (valueBig && (!valueAsString || !new Big(valueAsString).eq(valueBig))) {
       setValueAsString(valueBig.toString())
+    } else if (value === undefined) {
+      setValueAsString('')
     }
   }, [valueBig, valueAsString, value])
 

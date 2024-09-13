@@ -4,7 +4,7 @@ import {
   isBtcAsset,
   isNativeAsset
 } from '@avalabs/core-bridge-sdk'
-import { BridgeAsset } from '@avalabs/bridge-unified'
+import { BridgeAsset, isErc20Asset } from '@avalabs/bridge-unified'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
@@ -34,7 +34,9 @@ export function getEVMAssetBalances(
   return Object.values(assets).map(asset => {
     const symbol = asset.symbol
     const token = isUnifiedBridgeAsset(asset)
-      ? erc20TokensByAddress[asset.address?.toLowerCase() ?? asset.symbol]
+      ? erc20TokensByAddress[
+          isErc20Asset(asset) ? asset.address?.toLowerCase() : asset.symbol
+        ]
       : isNativeAsset(asset)
       ? erc20TokensByAddress[asset.symbol.toLowerCase()]
       : isBtcAsset(asset)

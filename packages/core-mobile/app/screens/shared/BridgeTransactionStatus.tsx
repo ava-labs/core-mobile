@@ -52,7 +52,10 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
-  const coingeckoId = useCoinGeckoId(bridgeTransaction?.symbol)
+  const symbol = isUnifiedBridgeTransfer(bridgeTransaction)
+    ? bridgeTransaction.asset.symbol
+    : bridgeTransaction?.symbol
+  const coingeckoId = useCoinGeckoId(symbol)
 
   const assetPrice = useSimplePrice(
     coingeckoId,
@@ -183,7 +186,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
                         : bridgeTransaction.amount.toNumber().toFixed(6)}
                     </AvaText.Heading3>
                     <AvaText.Heading3 color={theme.colorText3}>
-                      {' ' + bridgeTransaction.symbol}
+                      {' ' + symbol}
                     </AvaText.Heading3>
                   </Row>
                   <AvaText.Body3 currency color={theme.colorText1}>
