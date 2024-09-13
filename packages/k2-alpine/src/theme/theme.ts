@@ -28,3 +28,5 @@ declare module 'dripsy' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DripsyCustomTheme extends K2AlpineTheme {}
 }
+
+export { useDripsyTheme as useTheme } from 'dripsy'

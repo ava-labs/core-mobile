@@ -467,6 +467,7 @@ __metadata:
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.2
+    "@gorhom/bottom-sheet": 4.6.4
     "@lavamoat/allow-scripts": ^3.2.0
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
@@ -485,13 +486,13 @@ __metadata:
     react: 18.3.1
     react-dom: 18.2.0
     react-native: 0.73.7
-    react-native-reanimated: 3.8.0
+    react-native-gesture-handler: 2.19.0
+    react-native-reanimated: 3.6.2
     react-native-safe-area-context: 4.8.2
     typescript: 5.2.2
   peerDependencies:
     react: 18.3.1
     react-native: 0.73.7
-    react-native-reanimated: 3.8.0
   languageName: unknown
   linkType: soft
 
@@ -2371,6 +2372,17 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: 561b5f1d08b2c3f92ce849f092751558b5e6cfeb7eb55c79e7375c34dd9c3066dce5e630bb439affef6adcf202b6cbcaaa23870070276fa5bb429c8f5b8c7514
+  languageName: node
+  linkType: hard
+
+"@babel/plugin-transform-object-assign@npm:^7.16.7":
+  version: 7.24.7
+  resolution: "@babel/plugin-transform-object-assign@npm:7.24.7"
+  dependencies:
+    "@babel/helper-plugin-utils": ^7.24.7
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: e208760295511ba086131dd828903b2f1b12724a8bdbb6708b62534c17b3796d8ba4d38820d1b75a8861b3dbd8cccda7d17324c6796d42e2a4f33ae12dc68838
   languageName: node
   linkType: hard
 
@@ -23521,6 +23533,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-gesture-handler@npm:2.19.0":
+  version: 2.19.0
+  resolution: "react-native-gesture-handler@npm:2.19.0"
+  dependencies:
+    "@egjs/hammerjs": ^2.0.17
+    hoist-non-react-statics: ^3.3.0
+    invariant: ^2.2.4
+    prop-types: ^15.7.2
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: ce9b9fc6537debf962e6b8d84f1c4cf18fe00f39bd86498e84a203ebb26bf3543c2642ed247d974537840407b7ddb602939fd8c817c00a3416e87bddc8f2088f
+  languageName: node
+  linkType: hard
+
 "react-native-graph@npm:1.1.0":
   version: 1.1.0
   resolution: "react-native-graph@npm:1.1.0"
@@ -23768,6 +23795,27 @@ __metadata:
     react: "*"
     react-native: ">=0.71.0"
   checksum: 47b227c74cef0c9630ce7e91fe2153bcf2492f3fae175352818ca2278779f28c2932611df44cb8a18cb290da6d73aa3a927bcea56c3a9a4a51db6a7f4f72ac4d
+  languageName: node
+  linkType: hard
+
+"react-native-reanimated@npm:3.6.2":
+  version: 3.6.2
+  resolution: "react-native-reanimated@npm:3.6.2"
+  dependencies:
+    "@babel/plugin-transform-object-assign": ^7.16.7
+    "@babel/preset-typescript": ^7.16.7
+    convert-source-map: ^2.0.0
+    invariant: ^2.2.4
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+    "@babel/plugin-proposal-nullish-coalescing-operator": ^7.0.0-0
+    "@babel/plugin-proposal-optional-chaining": ^7.0.0-0
+    "@babel/plugin-transform-arrow-functions": ^7.0.0-0
+    "@babel/plugin-transform-shorthand-properties": ^7.0.0-0
+    "@babel/plugin-transform-template-literals": ^7.0.0-0
+    react: "*"
+    react-native: "*"
+  checksum: 0a5030ec7d66603bdb1777fb9a37f6621c7c329b47101596d882d0dd526fe1ed34f4088635aacb9d44988bdbc6fe5b792145fc44eafaceb080b7a8c7ddd69eff
   languageName: node
   linkType: hard
 

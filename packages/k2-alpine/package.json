@@ -15,17 +15,18 @@
     "tsc": "tsc -p ."
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "4.6.4",
     "dripsy": "4.3.5",
     "expo": "50.0.20",
     "expo-status-bar": "1.11.1",
     "react": "18.3.1",
     "react-native": "0.73.7",
-    "react-native-reanimated": "3.8.0"
+    "react-native-gesture-handler": "2.19.0",
+    "react-native-reanimated": "3.6.2"
   },
   "peerDependencies": {
     "react": "18.3.1",
-    "react-native": "0.73.7",
-    "react-native-reanimated": "3.8.0"
+    "react-native": "0.73.7"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
