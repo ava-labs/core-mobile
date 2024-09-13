@@ -19,6 +19,11 @@
 		501C50832C35C63800DAFF77 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		5084807F2C3C3E78008762B2 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		6C25E0BD63D10BFA52C4F482 /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DB754F7AA8AF2B8562CD5CE /* libPods-common-AvaxWallet.a */; };
+		815E55122C92071A000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55112C92071A000F8E0F /* NotificationService.swift */; };
+		815E55162C92071A000F8E0F /* NotificationServiceExtensionInternal.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		815E551E2C921989000F8E0F /* NotificationService.swift in CopyFiles */ = {isa = PBXBuildFile; fileRef = 815E55112C92071A000F8E0F /* NotificationService.swift */; };
+		815E55482C94A396000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
+		815E554C2C94A396000F8E0F /* NotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 815E55452C94A396000F8E0F /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
@@ -37,6 +42,65 @@
 		8F8F28F150E3852D82C46F49 /* libPods-common-AvaxWalletInternal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FB64E2EA8BE4173E8D0EB4B6 /* libPods-common-AvaxWalletInternal.a */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		815E55142C92071A000F8E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
+			remoteInfo = NotificationServiceExtensionInternal;
+		};
+		815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
+			remoteInfo = NotificationServiceExtensionInternal;
+		};
+		815E554A2C94A396000F8E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E55442C94A396000F8E0F;
+			remoteInfo = NotificationServiceExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		815E55092C920510000F8E0F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				815E554C2C94A396000F8E0F /* NotificationServiceExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815E551A2C92071A000F8E0F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				815E55162C92071A000F8E0F /* NotificationServiceExtensionInternal.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815E551D2C92197B000F8E0F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				815E551E2C921989000F8E0F /* NotificationService.swift in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AvaxWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AvaxWalletTests.m; sourceTree = "<group>"; };
@@ -54,6 +118,14 @@
 		27981BC628AECFB200672611 /* AvaxWalletRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWalletRelease.entitlements; path = AvaxWallet/AvaxWalletRelease.entitlements; sourceTree = "<group>"; };
 		3DE558FF49E888A0002110D6 /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
 		501C50822C35C63800DAFF77 /* core_send.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = core_send.wav; sourceTree = "<group>"; };
+		815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtensionInternal.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		815E55112C92071A000F8E0F /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		815E55132C92071A000F8E0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		815E551B2C9209AF000F8E0F /* NotificationServiceExtensionInternal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationServiceExtensionInternal.entitlements; sourceTree = "<group>"; };
+		815E55452C94A396000F8E0F /* NotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		815E55472C94A396000F8E0F /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		815E55492C94A396000F8E0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		815E55502C94A3A8000F8E0F /* NotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationServiceExtension.entitlements; sourceTree = "<group>"; };
 		81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BootSplash.storyboard; sourceTree = "<group>"; };
 		8E83528A28F09E0900880FD3 /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		8E858A6628AFD47300236EF2 /* AvaxWalletInternal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWalletInternal.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -76,6 +148,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C25E0BD63D10BFA52C4F482 /* libPods-common-AvaxWallet.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815E550C2C92071A000F8E0F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815E55422C94A396000F8E0F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,6 +222,26 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		815E55102C92071A000F8E0F /* NotificationServiceExtensionInternal */ = {
+			isa = PBXGroup;
+			children = (
+				815E551B2C9209AF000F8E0F /* NotificationServiceExtensionInternal.entitlements */,
+				815E55112C92071A000F8E0F /* NotificationService.swift */,
+				815E55132C92071A000F8E0F /* Info.plist */,
+			);
+			path = NotificationServiceExtensionInternal;
+			sourceTree = "<group>";
+		};
+		815E55462C94A396000F8E0F /* NotificationServiceExtension */ = {
+			isa = PBXGroup;
+			children = (
+				815E55502C94A3A8000F8E0F /* NotificationServiceExtension.entitlements */,
+				815E55472C94A396000F8E0F /* NotificationService.swift */,
+				815E55492C94A396000F8E0F /* Info.plist */,
+			);
+			path = NotificationServiceExtension;
+			sourceTree = "<group>";
+		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -152,6 +258,8 @@
 				13B07FAE1A68108700A75B9A /* AvaxWallet */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* AvaxWalletTests */,
+				815E55102C92071A000F8E0F /* NotificationServiceExtensionInternal */,
+				815E55462C94A396000F8E0F /* NotificationServiceExtension */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				F8B72680A82297B40C47D111 /* Pods */,
@@ -167,6 +275,8 @@
 			children = (
 				13B07F961A680F5B00A75B9A /* AvaxWallet.app */,
 				8E858A6628AFD47300236EF2 /* AvaxWalletInternal.app */,
+				815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */,
+				815E55452C94A396000F8E0F /* NotificationServiceExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -209,15 +319,51 @@
 				B4F48A60165B43B3BD16ACAF /* Upload Debug Symbols to Sentry */,
 				4E13BB7D23ED7A30EF091D06 /* [CP] Embed Pods Frameworks */,
 				51AA1C033C0CE7089D03C1C0 /* [CP] Copy Pods Resources */,
+				815E55092C920510000F8E0F /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				815E554B2C94A396000F8E0F /* PBXTargetDependency */,
 			);
 			name = AvaxWallet;
 			productName = AvaxWallet;
 			productReference = 13B07F961A680F5B00A75B9A /* AvaxWallet.app */;
 			productType = "com.apple.product-type.application";
+		};
+		815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 815E55172C92071A000F8E0F /* Build configuration list for PBXNativeTarget "NotificationServiceExtensionInternal" */;
+			buildPhases = (
+				815E550B2C92071A000F8E0F /* Sources */,
+				815E550C2C92071A000F8E0F /* Frameworks */,
+				815E550D2C92071A000F8E0F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NotificationServiceExtensionInternal;
+			productName = NotificationServiceExtensionInternal;
+			productReference = 815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		815E55442C94A396000F8E0F /* NotificationServiceExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 815E554F2C94A397000F8E0F /* Build configuration list for PBXNativeTarget "NotificationServiceExtension" */;
+			buildPhases = (
+				815E55412C94A396000F8E0F /* Sources */,
+				815E55422C94A396000F8E0F /* Frameworks */,
+				815E55432C94A396000F8E0F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NotificationServiceExtension;
+			productName = NotificationServiceExtension;
+			productReference = 815E55452C94A396000F8E0F /* NotificationServiceExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		8E858A5228AFD47300236EF2 /* AvaxWalletInternal */ = {
 			isa = PBXNativeTarget;
@@ -232,10 +378,14 @@
 				8E858A6828B3F10F00236EF2 /* Upload Debug Symbols to Sentry */,
 				619EB25865247DEF0BD88A4A /* [CP] Embed Pods Frameworks */,
 				B0B14020D273105B1D82A417 /* [CP] Copy Pods Resources */,
+				815E551A2C92071A000F8E0F /* Embed Foundation Extensions */,
+				815E551D2C92197B000F8E0F /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				815E55152C92071A000F8E0F /* PBXTargetDependency */,
+				815E55202C921A9F000F8E0F /* PBXTargetDependency */,
 			);
 			name = AvaxWalletInternal;
 			productName = AvaxWallet;
@@ -248,10 +398,17 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1520;
 				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1320;
+					};
+					815E550E2C92071A000F8E0F = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					815E55442C94A396000F8E0F = {
+						CreatedOnToolsVersion = 15.2;
 					};
 				};
 			};
@@ -270,6 +427,8 @@
 			targets = (
 				13B07F861A680F5B00A75B9A /* AvaxWallet */,
 				8E858A5228AFD47300236EF2 /* AvaxWalletInternal */,
+				815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */,
+				815E55442C94A396000F8E0F /* NotificationServiceExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -290,6 +449,20 @@
 				0B73DE0B2C80D72900DED1DF /* GoogleService-Info.plist in Resources */,
 				8EACAADB2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */,
 				0B1C89B127E4D7EF00C19912 /* Inter-ExtraBold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815E550D2C92071A000F8E0F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815E55432C94A396000F8E0F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -537,6 +710,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		815E550B2C92071A000F8E0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				815E55122C92071A000F8E0F /* NotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815E55412C94A396000F8E0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				815E55482C94A396000F8E0F /* NotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8E858A5528AFD47300236EF2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -548,11 +737,30 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		815E55152C92071A000F8E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
+			targetProxy = 815E55142C92071A000F8E0F /* PBXContainerItemProxy */;
+		};
+		815E55202C921A9F000F8E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
+			targetProxy = 815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */;
+		};
+		815E554B2C94A396000F8E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E55442C94A396000F8E0F /* NotificationServiceExtension */;
+			targetProxy = 815E554A2C94A396000F8E0F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A1F9CA7DF4E8ED1A314A6B67 /* Pods-common-AvaxWallet.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
@@ -596,6 +804,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3DE558FF49E888A0002110D6 /* Pods-common-AvaxWallet.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
@@ -635,6 +844,183 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		815E55182C92071A000F8E0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = NotificationServiceExtensionInternal/NotificationServiceExtensionInternal.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = U57DXD258P;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NotificationServiceExtensionInternal/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtensionInternal;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		815E55192C92071A000F8E0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = NotificationServiceExtensionInternal/NotificationServiceExtensionInternal.entitlements;
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NotificationServiceExtensionInternal/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtensionInternal;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		815E554D2C94A397000F8E0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = NotificationServiceExtension/NotificationServiceExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = U57DXD258P;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet.NotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		815E554E2C94A397000F8E0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = NotificationServiceExtension/NotificationServiceExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = U57DXD258P;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet.NotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -802,6 +1188,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 984A40DE1A2D0F4F517B2F17 /* Pods-common-AvaxWalletInternal.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Internal";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWallet.entitlements;
@@ -837,6 +1224,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B3C883B7AAD6C29EC0B9BD41 /* Pods-common-AvaxWalletInternal.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Internal";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWalletRelease.entitlements;
@@ -875,6 +1263,24 @@
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
 				13B07F951A680F5B00A75B9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		815E55172C92071A000F8E0F /* Build configuration list for PBXNativeTarget "NotificationServiceExtensionInternal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				815E55182C92071A000F8E0F /* Debug */,
+				815E55192C92071A000F8E0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		815E554F2C94A397000F8E0F /* Build configuration list for PBXNativeTarget "NotificationServiceExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				815E554D2C94A397000F8E0F /* Debug */,
+				815E554E2C94A397000F8E0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
