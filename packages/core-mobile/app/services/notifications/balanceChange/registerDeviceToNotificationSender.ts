@@ -12,8 +12,10 @@ export async function registerDeviceToNotificationSender(
       appType: 'CORE_MOBILE_APP'
     })
   ).catch(error => {
-    Logger.error(`[register.ts][registerDevice]${error}`)
-    throw new Error(error)
+    Logger.error(
+      `[registerDeviceToNotificationSender.ts][registerDevice]${error}`
+    )
+    throw error
   })
   if (response.ok) {
     return response.json()

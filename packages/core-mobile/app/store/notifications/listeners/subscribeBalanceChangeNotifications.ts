@@ -37,8 +37,6 @@ export async function subscribeBalanceChangeNotifications(
     ChainId.AVALANCHE_MAINNET_ID.toString(),
     ChainId.AVALANCHE_TESTNET_ID.toString()
   ]
-  const accounts = selectAccounts(getState())
-  const addresses = Object.values(accounts).map(account => account.addressC)
   const response = await subscribeForBalanceChange({
     addresses,
     chainIds,
