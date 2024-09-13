@@ -21,9 +21,10 @@ export default {
   nftlogo: 'avatar__logo_avatar',
   warningAddressRequired: 'Address required',
   warningInsufficientFee: 'Insufficient balance for fee.',
-  warningGasLimitIsInvalid: 'Gas limit is invalid',
+  warningGasLimitIsInvalid: 'Unable to send token, invalid gas limit.',
   nftItem: 'nft_item',
   listSvg: 'list_svg',
   nftListView: 'nft_list_view',
+  invalidNFT: '#7452 ',
   testingNft: 'mint' // Eunji added a lot of NFTs named `mint` on mnemonic wallet for testing purpose.
 }

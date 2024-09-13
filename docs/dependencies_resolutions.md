@@ -12,7 +12,7 @@ TypeError: Cannot convert undefined or null to object
     at Object.<anonymous> (/Users/vagrant/git/node_modules/jest-cli/node_modules/jest-snapshot/node_modules/@babel/highlight/node_modules/chalk/index.js:82:28)
 ```
 
-### "rxjs": "7.5.6"
+### "rxjs": "7.8.1"
 
 in NftFullScreen we have a type error related to rxjs
 
@@ -46,6 +46,6 @@ supports promise out of the box
 
 @avalabs/core-utils-sdk depends on @hpke/core 1.2.5 while core mobile depends on 1.2.7. we need to force it to 1.2.7 so that we can apply the same patch to @hpke/core.
 
-### "@noble/secp256k1": "2.0.0"
+### "@noble/secp256k1": "2.1.0"
 
-before, we were using secp256k1 < 2.0.0 and to make it use react-native-quick-crypto, we had to patch it. we now force it to be 2.0.0 so we can remove the manual patch. secp256k1 is being used in multiple places: @avalabs/avalanchejs, @avalabs/core-mobile, ethereum-cryptography,...
+before, we were using secp256k1 < 2.0.0 and to make it use react-native-quick-crypto, we had to patch it. we now force it to be 2.1.0 so we can remove the manual patch. secp256k1 is being used in multiple places: @avalabs/avalanchejs, @avalabs/core-mobile, ethereum-cryptography,...

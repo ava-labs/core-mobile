@@ -22,7 +22,7 @@ module.exports = {
     emulator: {
       type: 'android.emulator',
       device: {
-        avdName: 'Pixel_3_API_30'
+        avdName: 'Pixel_4_API_34'
       }
     },
     simulator: {
@@ -413,7 +413,8 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: './e2e/configs/smokeTestConfig.json'
+          config: './e2e/configs/smokeTestConfig.json',
+          _: [process.env.TESTS_TO_RUN]
         }
       }
     },

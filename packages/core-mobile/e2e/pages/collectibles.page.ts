@@ -90,6 +90,10 @@ class CollectiblesPage {
     return by.id(Collectibles.listSvg)
   }
 
+  get invalidNFT() {
+    return by.text(Collectibles.invalidNFT)
+  }
+
   get nftItem() {
     return by.id(Collectibles.nftItem)
   }
@@ -126,6 +130,10 @@ class CollectiblesPage {
     await Action.tapElementAtIndex(this.listSvg, 0)
   }
 
+  async tapInvalidNFT() {
+    await Action.tapElementAtIndex(this.invalidNFT, 0)
+  }
+
   async getTextValue(pageElement: string) {
     const atr =
       pageElement === 'nftTokenId'
@@ -142,11 +150,21 @@ class CollectiblesPage {
   }
 
   async scrollToMintNFT() {
-    await Action.scrollListUntil(this.testingNft, this.nftListView, 300)
+    await Action.waitForElement(this.nftListView)
+    await Action.scrollListUntil(
+      this.nftItem
+        .withDescendant(by.text('#2 '))
+        .withDescendant(by.text('mint')),
+      this.nftListView,
+      300
+    )
   }
 
   async tapMintNFT() {
-    await Action.tap(this.nftItem.withDescendant(by.text('mint')))
+    await Action.tapElementAtIndex(
+      this.nftItem.withDescendant(by.text('mint')),
+      1
+    )
   }
 
   async tapMyAccounts() {

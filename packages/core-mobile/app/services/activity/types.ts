@@ -11,14 +11,6 @@ export type GetActivitiesForAccountParams = {
   criticalConfig: CriticalConfig | undefined
 }
 
-export type GetActivitiesForAddressParams = {
-  network: Network
-  address: string
-  nextPageToken?: string
-  pageSize?: number
-  criticalConfig: CriticalConfig | undefined
-}
-
 export type ActivityResponse = {
   transactions: Transaction[]
   nextPageToken?: string

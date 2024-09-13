@@ -42,7 +42,7 @@ const DappToast: FC<Props> = ({ toastId, message, type, dappName }) => {
     backgroundColor: colors.$neutral850,
     borderRadius: 8,
     justifyContent: 'center',
-    width: WINDOW_WIDTH * 0.89,
+    width: WINDOW_WIDTH * 0.86,
     padding: 16
   } as StyleProp<ViewStyle>
 
@@ -105,7 +105,7 @@ const Error = ({
         variant="buttonLarge"
         sx={{ lineHeight: 28, color: '$neutral50' }}
         ellipsizeMode="tail"
-        numberOfLines={5}>
+        numberOfLines={7}>
         {message}
       </Text>
     </View>

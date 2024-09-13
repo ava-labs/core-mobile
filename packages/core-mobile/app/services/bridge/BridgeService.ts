@@ -20,7 +20,7 @@ import Big from 'big.js'
 import { Account } from 'store/account/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  getAvalancheProvider,
+  getAvalancheEvmProvider,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
 import { Networks } from 'store/network/types'
@@ -33,7 +33,8 @@ import { transactionRequestToTransactionParams } from 'store/rpc/utils/transacti
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 
 type TransferBTCParams = {
-  amount: string
+  fromAccount: string
+  amount: number
   feeRate: number
   config: AppConfig
   isMainnet: boolean
@@ -117,7 +118,7 @@ export class BridgeService {
 
       return BigInt(byteLength)
     } else {
-      const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
+      const avalancheProvider = getAvalancheEvmProvider(allNetworks, isTestnet)
       const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
 
       if (!avalancheProvider || !ethereumProvider) {
@@ -139,6 +140,7 @@ export class BridgeService {
   }
 
   async transferBTC({
+    fromAccount,
     amount,
     config,
     feeRate,
@@ -157,6 +159,7 @@ export class BridgeService {
       }
 
     return transferAssetBTC({
+      fromAccount,
       amount,
       feeRate,
       config,
@@ -188,7 +191,7 @@ export class BridgeService {
       throw new Error('Invalid blockchain')
     }
 
-    const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
+    const avalancheProvider = getAvalancheEvmProvider(allNetworks, isTestnet)
 
     const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
 

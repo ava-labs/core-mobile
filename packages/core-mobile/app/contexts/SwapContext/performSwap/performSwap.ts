@@ -5,11 +5,11 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Big from 'big.js'
-import { APIError, ETHER_ADDRESS, Transaction } from 'paraswap'
-import { OptimalRate } from 'paraswap-core'
+import { OptimalRate, TransactionParams as Transaction } from '@paraswap/sdk'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
-import { buildTx, getParaswapSpender } from './paraswapUtils'
+import { rpcErrors } from '@metamask/rpc-errors'
+import SwapService, { ETHER_ADDRESS } from 'services/swap/SwapService'
 
 export type PerformSwapParams = {
   srcTokenAddress: string | undefined
@@ -51,20 +51,12 @@ export async function performSwap({
   assert(activeNetwork, 'Network Init Error: Wrong network')
   assert(!activeNetwork.isTestnet, 'Network Init Error: Wrong network')
 
-  const spenderAddress = await getParaswapSpender()
-
   const sourceTokenAddress = isSrcTokenNative ? ETHER_ADDRESS : srcTokenAddress
   const destinationTokenAddress = isDestTokenNative
     ? ETHER_ADDRESS
     : destTokenAddress
 
-  const buildOptions = undefined,
-    partnerAddress = undefined,
-    partner = 'Avalanche',
-    receiver = undefined,
-    permit = undefined,
-    deadline = undefined,
-    partnerFeeBps = undefined
+  const partner = 'Avalanche'
 
   let approveTxHash: string | undefined
 
@@ -84,6 +76,14 @@ export async function performSwap({
 
   // no need to approve native token
   if (!isSrcTokenNative) {
+    let spenderAddress: string
+
+    try {
+      spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
+    } catch (error) {
+      throw new Error(`Spender Address Error: ${error}`)
+    }
+
     const contract = new Contract(sourceTokenAddress, ERC20.abi, provider)
 
     const [allowance, allowanceError] = await resolve<bigint>(
@@ -91,7 +91,10 @@ export async function performSwap({
     )
 
     if (allowanceError || allowance === null) {
-      throw new Error(`Allowance Error: ${allowanceError}`)
+      throw rpcErrors.internal({
+        message: 'Allowance Error',
+        data: { cause: allowanceError }
+      })
     }
 
     if (allowance < BigInt(sourceAmount)) {
@@ -123,19 +126,27 @@ export async function performSwap({
       const [hash, approveError] = await resolve(signAndSend(txParams))
 
       if (approveError) {
-        throw new Error(`Approve Error: ${approveError}`)
+        throw approveError
       }
 
-      assert(hash, 'Tx hash empty')
+      if (!hash) {
+        throw rpcErrors.internal('Invalid transaction hash')
+      }
+
+      const receipt = hash && (await provider.waitForTransaction(hash))
+      if (!receipt || (receipt && receipt.status !== 1)) {
+        throw new Error('Swap token approval failed')
+      }
+
       approveTxHash = hash
     } else {
       approveTxHash = undefined
     }
   }
 
-  function checkForErrorsInResult(result: Transaction | APIError): boolean {
+  function checkForErrorsInResult(result: Transaction | Error): boolean {
     return (
-      (result as APIError).message === 'Server too busy' ||
+      (result as Error).message === 'Server too busy' ||
       // paraswap returns responses like this: {error: 'Not enough 0x4f60a160d8c2dddaafe16fcc57566db84d674…}
       // when they are too slow to detect the approval
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -146,8 +157,8 @@ export async function performSwap({
   const [txBuildData, txBuildDataError] = await resolve(
     promiseResolveWithBackoff(
       () =>
-        buildTx({
-          network: activeNetwork.chainId.toString(),
+        SwapService.buildTx({
+          network: activeNetwork,
           srcToken: sourceTokenAddress,
           destToken: destinationTokenAddress,
           srcAmount: sourceAmount,
@@ -155,14 +166,8 @@ export async function performSwap({
           priceRoute,
           userAddress,
           partner,
-          partnerAddress,
-          partnerFeeBps,
-          receiver,
-          options: buildOptions,
           srcDecimals: priceRoute.srcDecimals,
-          destDecimals: priceRoute.destDecimals,
-          permit,
-          deadline
+          destDecimals: priceRoute.destDecimals
         }),
       checkForErrorsInResult,
       0,
@@ -171,7 +176,10 @@ export async function performSwap({
   )
 
   if (!txBuildData || txBuildDataError || 'message' in txBuildData) {
-    throw new Error(`Data Error: ${txBuildDataError}`)
+    throw rpcErrors.internal({
+      message: 'Data Error',
+      data: { cause: txBuildDataError }
+    })
   }
 
   const txParams: [TransactionParams] = [
@@ -188,10 +196,12 @@ export async function performSwap({
   const [swapTxHash, txError] = await resolve(signAndSend(txParams))
 
   if (txError) {
-    throw new Error(`Tx Error: ${txError}`)
+    throw txError
   }
 
-  assert(swapTxHash, 'Tx hash empty')
+  if (!swapTxHash) {
+    throw rpcErrors.internal('Invalid transaction hash')
+  }
 
   return {
     swapTxHash,

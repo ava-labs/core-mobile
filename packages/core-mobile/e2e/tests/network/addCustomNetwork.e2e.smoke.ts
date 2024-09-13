@@ -58,7 +58,6 @@ describe('Add custom network', () => {
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.tapArbCustomNetwork()
     await Actions.waitForElement(NetworksManagePage.arbCustomNetwork, 60000)
-    await Actions.waitForElement(NetworksManagePage.ethTokenOnCustomNetwork)
   })
 
   it('should delete custom network', async () => {

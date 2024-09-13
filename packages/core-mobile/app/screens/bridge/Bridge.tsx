@@ -56,6 +56,9 @@ import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/bal
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account/slice'
 import { Audios, audioFeedback } from 'utils/AudioFeedback'
+import { showTransactionErrorToast } from 'utils/toast'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -320,8 +323,8 @@ const Bridge: FC = () => {
 
       if (error || !hash) {
         // do not show the error when the user denied the transfer
-        if (error === 'User declined the transaction') {
-          Logger.error(error)
+        if (isUserRejectedError(error)) {
+          Logger.error('failed to bridge', error)
           AnalyticsService.capture('BridgeTransferRequestUserRejectedError', {
             sourceBlockchain: currentBlockchain,
             targetBlockchain,
@@ -330,6 +333,9 @@ const Bridge: FC = () => {
           return
         }
         setBridgeError(TRANSFER_ERROR)
+        showTransactionErrorToast({
+          message: getJsonRpcErrorMessage(error)
+        })
         Logger.error(TRANSFER_ERROR, error)
         AnalyticsService.capture('BridgeTransferRequestError', {
           sourceBlockchain: currentBlockchain,

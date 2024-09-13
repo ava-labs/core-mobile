@@ -1,6 +1,7 @@
 import Actions from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import { Platform } from '../helpers/constants'
+import delay from '../helpers/waits'
 import swapTab from '../locators/swapTab.loc'
 import bottomTabsPage from './bottomTabs.page'
 import plusMenuPage from './plusMenu.page'
@@ -37,6 +38,10 @@ class SwapTabPage {
     return by.id(swapTab.reviewOrderBtn)
   }
 
+  get disabledReviewOrderBtn() {
+    return by.id(swapTab.disabledReviewOrderBtn)
+  }
+
   get approveBtn() {
     return by.id(swapTab.approveBtn)
   }
@@ -47,6 +52,10 @@ class SwapTabPage {
 
   get amountField() {
     return by.id(swapTab.amountField)
+  }
+
+  get tokenSpendApproval() {
+    return by.text(swapTab.tokenSpendApproval)
   }
 
   async tapAvaxToken() {
@@ -61,16 +70,13 @@ class SwapTabPage {
     await Actions.tapElementAtIndex(this.selectTokenDropdown, 0)
   }
 
-  async reviewOrderButton() {
-    await Actions.tapElementAtIndex(this.reviewOrderBtn, 0)
-  }
-
-  async waitForReviewOrderBtnEnabled() {
-    await Actions.waitForElement(this.reviewOrderBtn, 5000)
+  async reviewOrderButton(index = 0) {
+    await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
   }
 
   async tapApproveButton() {
-    await Actions.waitForElement(this.approveBtn, 5000)
+    await Actions.waitForElement(this.approveBtn, 10000)
+    delay(2000)
     await Actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
@@ -105,12 +111,15 @@ class SwapTabPage {
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapSwapButton()
     await this.tapSelectTokenDropdown()
-    await Actions.tap(by.text(from))
+    await sendPage.selectToken(from)
     await this.inputTokenAmount(amount)
     await this.tapSelectTokenDropdown()
     await sendPage.selectToken(to)
-    await this.waitForReviewOrderBtnEnabled()
+    await delay(5000)
     await this.reviewOrderButton()
+    if (await Actions.isVisible(this.tokenSpendApproval, 0)) {
+      await this.tapApproveButton()
+    }
     await this.tapApproveButton()
   }
 }

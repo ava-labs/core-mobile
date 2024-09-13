@@ -16,24 +16,13 @@ describe('Send NFT', () => {
     await cleanup()
   })
 
-  let account = 'first'
-
-  it('should send NFT', async () => {
+  it('should send NFT ', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await CollectiblesPage.tapListSvg()
-    try {
-      await CollectiblesPage.scrollToMintNFT()
-    } catch (e) {
-      console.log(
-        'Unable to find `mint` NFT on first account, switching to 2nd account'
-      )
-      await AccountManagePage.switchToSecondAccount()
-      await CollectiblesPage.scrollToMintNFT()
-      account = 'second'
-    }
+    await CollectiblesPage.scrollToMintNFT()
     await CollectiblesPage.tapMintNFT()
     await CollectiblesPage.verifyNftDetailsItems()
-    await CollectiblesPage.sendNft(account)
+    await CollectiblesPage.sendNft('first')
     await sendPage.verifySuccessToast()
   }, 200000)
 
@@ -41,10 +30,10 @@ describe('Send NFT', () => {
     // sender activity tab:
     await PortfolioPage.tapAssetsTab()
     await PortfolioPage.goToActivityTab()
-    await activityTabPage.verifyNewRow('Send', '-1')
+    await activityTabPage.verifyExistingRow('Send', '-1 ')
     // receiver activity tab:
-    await AccountManagePage.switchToReceivedAccount(account)
+    await AccountManagePage.switchToReceivedAccount('first')
     await activityTabPage.refreshActivityPage()
-    await activityTabPage.verifyNewRow('Contract Call', '+1')
+    await activityTabPage.verifyExistingRow('Contract Call', '+1 ')
   })
 })

@@ -84,7 +84,7 @@ export const ConfirmScreen = ({
               {confirmBtnTitle}
             </AvaButton.PrimaryLarge>
             <Space y={16} />
-            <AvaButton.SecondaryLarge onPress={onCancel}>
+            <AvaButton.SecondaryLarge testID="cancel_btn" onPress={onCancel}>
               {cancelBtnTitle}
             </AvaButton.SecondaryLarge>
           </>

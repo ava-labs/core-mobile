@@ -28,6 +28,10 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { BitcoinInputUTXO } from '@avalabs/core-wallets-sdk'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import SendServiceBTC from 'services/send/SendServiceBTC'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
@@ -72,7 +76,6 @@ export const SendTokenContextProvider = ({
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState<Amount>(ZERO_AMOUNT)
   const [sendAmount, setSendAmount] = useState<Amount>(ZERO_AMOUNT)
-
   const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
 
   const [sendToAddress, setSendToAddress] = useState('')
@@ -93,8 +96,39 @@ export const SendTokenContextProvider = ({
 
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
+  const [utxos, setUtxos] = useState<BitcoinInputUTXO[] | undefined>()
 
   const { request } = useInAppRequest()
+
+  useEffect(() => {
+    const fetchBtcBalance = async (): Promise<void> => {
+      if (!activeAccount || activeNetwork.vmName !== NetworkVMType.BITCOIN)
+        return
+
+      const balance = await SendServiceBTC.getBalance({
+        isMainnet: !activeNetwork.isTestnet,
+        address: activeAccount.addressBTC,
+        currency: selectedCurrency.toLowerCase()
+      })
+      setUtxos(balance.utxos)
+    }
+
+    fetchBtcBalance()
+
+    const intervalId = setInterval(
+      () => fetchBtcBalance().catch(Logger.error),
+      30000
+    )
+
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [
+    activeAccount,
+    activeNetwork.isTestnet,
+    activeNetwork.vmName,
+    selectedCurrency
+  ])
 
   useEffect(validateStateFx, [
     activeAccount,
@@ -105,7 +139,8 @@ export const SendTokenContextProvider = ({
     sendToAddress,
     sendToken,
     defaultMaxFeePerGas,
-    nativeTokenBalance
+    nativeTokenBalance,
+    utxos
   ])
 
   const setSendTokenAndResetAmount = useCallback(
@@ -137,7 +172,8 @@ export const SendTokenContextProvider = ({
       amount: sendAmount.bn,
       defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
       gasLimit,
-      token: sendToken
+      token: sendToken,
+      canSubmit
     }
 
     InteractionManager.runAfterInteractions(() => {
@@ -164,13 +200,15 @@ export const SendTokenContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
-          showTransactionErrorToast({
-            message: getJsonRpcErrorMessage(reason)
-          })
-          AnalyticsService.capture('SendTransactionFailed', {
-            errorMessage: reason.message,
-            chainId: activeNetwork.chainId
-          })
+          if (!isUserRejectedError(reason)) {
+            showTransactionErrorToast({
+              message: getJsonRpcErrorMessage(reason)
+            })
+            AnalyticsService.capture('SendTransactionFailed', {
+              errorMessage: reason.message,
+              chainId: activeNetwork.chainId
+            })
+          }
         })
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
@@ -201,15 +239,17 @@ export const SendTokenContextProvider = ({
     }
 
     sendService
-      .validateStateAndCalculateFees(
+      .validateStateAndCalculateFees({
         sendState,
         activeNetwork,
-        activeAccount,
-        selectedCurrency,
-        nativeTokenBalance
-      )
+        account: activeAccount,
+        currency: selectedCurrency,
+        nativeTokenBalance,
+        utxos
+      })
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
+
         setMaxAmount({
           bn: state.maxAmount ?? 0n,
           amount:

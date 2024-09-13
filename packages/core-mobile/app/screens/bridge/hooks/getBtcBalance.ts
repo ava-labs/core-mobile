@@ -1,5 +1,5 @@
-import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/core-chains-sdk'
 import type { TokenWithBalanceBTC } from '@avalabs/vm-module-types'
+import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
@@ -8,7 +8,7 @@ export async function getBtcBalance(
   address: string,
   currency: string
 ): Promise<TokenWithBalanceBTC> {
-  const network = isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK
+  const network = getBitcoinNetwork(!isMainnet)
   const balancesResponse = await ModuleManager.bitcoinModule.getBalances({
     addresses: [address],
     currency,

@@ -581,7 +581,8 @@ describe('session_request handler', () => {
             'avalanche_selectAccount',
             'avalanche_setDeveloperMode',
             'avalanche_updateContact',
-            'avalanche_getAddressesInRange'
+            'avalanche_getAddressesInRange',
+            'avalanche_renameAccount'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events

@@ -33,7 +33,7 @@ import {
   parseApproveData,
   scanAndSessionProposal
 } from './utils'
-import { NON_EVM_OPTIONAL_NAMESPACES, COMMON_EVENTS } from './namespaces'
+import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
 const supportedMethods = [
   RpcMethod.ETH_SEND_TRANSACTION,
@@ -210,7 +210,10 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       // it throws an error when we add these non-EVM namespaces in the dapp.
       // This is a temporary fix until core web supports these namespaces
       isCoreApp
-        ? { ...optionalNamespaces, ...NON_EVM_OPTIONAL_NAMESPACES }
+        ? {
+            ...optionalNamespaces,
+            ...NON_EVM_OPTIONAL_NAMESPACES
+          }
         : optionalNamespaces
     )
 

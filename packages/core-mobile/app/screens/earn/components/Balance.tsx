@@ -119,7 +119,10 @@ export const Balance = (): JSX.Element | null => {
         Stake
       </AvaButton.SecondaryLarge>
       <Space x={16} />
-      <AvaButton.SecondaryLarge style={{ flex: 1 }} onPress={goToClaimRewards}>
+      <AvaButton.SecondaryLarge
+        testID="stake_claim_btn"
+        style={{ flex: 1 }}
+        onPress={goToClaimRewards}>
         Claim
       </AvaButton.SecondaryLarge>
     </View>

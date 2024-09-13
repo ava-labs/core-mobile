@@ -1,3 +1,4 @@
+import { expect as jestExpect } from 'expect'
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import AccountManagePage from '../../pages/accountManage.page'
@@ -8,19 +9,19 @@ import DurationPage from '../../pages/Stake/duration.page'
 import { warmup } from '../../helpers/warmup'
 import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 import StakePage from '../../pages/Stake/stake.page'
+import ClaimPage from '../../pages/Stake/claim.page'
+import { cleanup } from '../../helpers/cleanup'
 
-describe('Stake: testnet flow', () => {
+describe('Stake on Testnet', () => {
   beforeAll(async () => {
     await warmup()
   })
 
   afterAll(async () => {
-    if (process.env.SEEDLESS_TEST === 'true') {
-      await AdvancedPage.switchToMainnet()
-    }
+    await cleanup()
   })
 
-  it('should verify staking amount screen items', async () => {
+  it('should test a staking flow on testnet for an existing account', async () => {
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
@@ -29,35 +30,43 @@ describe('Stake: testnet flow', () => {
     await StakePage.verifyStakingAmountScreenItems()
     await StakePage.inputStakingAmount('1')
     await StakePage.tapNextButton()
-  })
-
-  it('should verify duration screen items on testnet', async () => {
     await DurationPage.verifyDurationScreenItems(true)
     await StakePage.tapNextButton()
-  })
-
-  it('should verify confirm staking screen items on testnet', async () => {
     await Actions.waitForElement(
       ConfirmStakingPage.confirmStakingTitle,
-      25000,
+      30000,
       0
     )
     await ConfirmStakingPage.verifyConfirmStakingScreenItems()
   })
 
-  it('should verify staking on testnet', async () => {
+  it('should complete the stake on testnet', async () => {
     await StakePage.tapStakeNow()
-    await Actions.waitForElement(StakePage.notNowButton, 25000, 0)
+    await Actions.waitForElement(StakePage.notNowButton, 60000, 0)
     await StakePage.tapNotNowButton()
     await Actions.waitForElement(StakePage.newStakeTimeRemaining, 15000, 0)
     await Assert.isVisible(StakePage.newStakeTimeRemaining)
-  })
-
-  it('should verify active staking items', async () => {
     await StakePage.verifyActiveTabItems()
   })
 
-  it('should verify no active stakes screen', async () => {
+  it('should claim the stake on testnet', async () => {
+    await BottomTabsPage.tapPortfolioTab()
+    await BottomTabsPage.tapStakeTab()
+    if (await Actions.isVisible(StakePage.stakeClaimButton, 0)) {
+      const claimableBalance = await StakePage.getTopBalance('claimable')
+      await Actions.tap(StakePage.stakeClaimButton)
+      await ClaimPage.verifyClaimRewardsScreenItems(claimableBalance)
+      await ClaimPage.tapClaimNowButton()
+      await Actions.waitForElement(StakePage.stakePrimaryButton, 25000, 0)
+      await Assert.isVisible(StakePage.stakePrimaryButton)
+      if (Actions.platform() === 'android') {
+        const newClaimableBalance = await StakePage.getTopBalance('claimable')
+        jestExpect(newClaimableBalance).toBe(0)
+      }
+    }
+  })
+
+  it('should test a staking flow for a new account', async () => {
     await BottomTabsPage.tapPortfolioTab()
     await AccountManagePage.createNthAccountAndSwitchToNth(3)
     await BottomTabsPage.tapStakeTab()

@@ -10,15 +10,12 @@ describe('NFT Error Messages', () => {
     await warmup()
   })
 
-  it('should verify Address Required warning', async () => {
+  it('should have NFT send warning - Unable to send token', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
-    await CollectiblesPage.tapGridItem()
+    await CollectiblesPage.tapListSvg()
+    await CollectiblesPage.tapInvalidNFT()
     await CollectiblesPage.tapSendButton()
-    await Assert.isVisible(CollectiblesPage.warningAddressRequired)
-  })
-
-  it('should verify Insufficient balance warning', async () => {
     await CollectiblesPage.tapAddressBook()
     await CollectiblesPage.tapMyAccounts()
     await AccountManagePage.tapFirstAccount()

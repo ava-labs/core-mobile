@@ -21,6 +21,10 @@ import {
 } from '../types'
 import { parseApproveData, parseRequestParams } from './utils'
 
+const convertToSatoshis = (btcString: string): number => {
+  return Math.round(parseFloat(btcString) * 100000000)
+}
+
 export type AvalancheBridgeAssetRequest =
   RpcRequest<RpcMethod.AVALANCHE_BRIDGE_ASSET>
 
@@ -107,7 +111,8 @@ class AvalancheBridgeAssetHandler
 
       if (currentBlockchain === Blockchain.BITCOIN) {
         txHash = await BridgeService.transferBTC({
-          amount: amountStr,
+          fromAccount: activeAccount.addressBTC,
+          amount: convertToSatoshis(amountStr),
           config: bridgeAppConfig,
           feeRate: Number(maxFeePerGas),
           isMainnet: !isDeveloperMode,
@@ -134,7 +139,10 @@ class AvalancheBridgeAssetHandler
     } catch (e) {
       Logger.error('Unable to transfer asset', e)
 
-      const error = rpcErrors.internal('Unable to transfer asset')
+      const error = rpcErrors.internal({
+        message: 'Unable to transfer asset',
+        data: { cause: e }
+      })
 
       Sentry.captureException(e, { tags: { dapps: 'bridgeAssetV2' } })
 

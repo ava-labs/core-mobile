@@ -187,9 +187,9 @@ export const selectBalanceTotalInCurrencyForAccount =
     }, 0)
   }
 export const selectBalanceForAccountIsAccurate =
-  (accountIndex: number | undefined) => (state: RootState) => {
-    if (accountIndex === undefined) return true
-
+  (accountIndex: number) => (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(accountIndex)(state)
+    if (tokens.length === 0) return false
     return !Object.values(state.balance.balances).some(
       balance => !balance.dataAccurate
     )

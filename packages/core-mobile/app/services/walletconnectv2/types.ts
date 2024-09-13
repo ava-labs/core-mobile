@@ -6,6 +6,7 @@ import {
 import { PeerMeta } from 'store/rpc/types'
 import { RpcError } from '@avalabs/vm-module-types'
 import { CorePrimaryAccount } from '@avalabs/types'
+import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 
 export const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
@@ -16,7 +17,8 @@ export const CLIENT_METADATA = {
   icons: [
     'https://assets.website-files.com/5fec984ac113c1d4eec8f1ef/62602f568fb4677b559827e5_core.jpg'
   ],
-  walletId: CORE_MOBILE_WALLET_ID // core web depends on this id to distinguish core mobile from other wallets
+  walletId: CORE_MOBILE_WALLET_ID, // core web depends on this id to distinguish core mobile from other wallets
+  appVersion: DeviceInfoService.getAppVersion()
 }
 
 export type Session = SessionTypes.Struct
@@ -97,5 +99,15 @@ export interface WalletConnectServiceInterface {
   }: {
     chainId: number
     account: CorePrimaryAccount
+  }): Promise<void>
+
+  updateSessionWithTimeoutForNonEvm({
+    session,
+    account,
+    isTestnet
+  }: {
+    session: SessionTypes.Struct
+    account: CorePrimaryAccount
+    isTestnet?: boolean
   }): Promise<void>
 }
