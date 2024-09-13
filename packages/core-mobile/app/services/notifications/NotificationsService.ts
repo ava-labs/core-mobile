@@ -195,6 +195,9 @@ class NotificationsService {
     })
   }
 
+  /**
+   * method should be registered as early on in your project as possible (e.g. the index.js file)
+   */
   onBackgroundEvent = (callback: HandleNotificationCallback): void => {
     return notifee.onBackgroundEvent(async ({ type, detail }) => {
       this.handleNotificationEvent({

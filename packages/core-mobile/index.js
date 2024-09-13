@@ -35,9 +35,11 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   AppEntryPoint = require('./storybook').default
 }
 
-AppRegistry.registerComponent(appName, () => AppEntryPoint)
-FCMService.listenForMessagesBackground()
 AppCheckService.init()
+FCMService.listenForMessagesBackground()
+// NotificationsService.onBackgroundEvent(handleNotificationCallback)
+
+AppRegistry.registerComponent(appName, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen({
