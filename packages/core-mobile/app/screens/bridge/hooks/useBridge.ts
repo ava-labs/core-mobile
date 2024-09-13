@@ -26,7 +26,11 @@ import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
 import { useSimplePrice } from 'hooks/useSimplePrice'
 import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset } from '@avalabs/bridge-unified'
-import { isUnifiedBridgeAsset, networkToBlockchain } from '../utils/bridgeUtils'
+import {
+  getOriginalSymbol,
+  isUnifiedBridgeAsset,
+  networkToBlockchain
+} from '../utils/bridgeUtils'
 import { useUnifiedBridge } from './useUnifiedBridge/useUnifiedBridge'
 import { getTargetChainId } from './useUnifiedBridge/utils'
 
@@ -115,7 +119,11 @@ export default function useBridge(): Bridge {
   const btc = useBtcBridge({ amount, bridgeFee, minimum })
   const unified = useUnifiedBridge(amount)
 
-  const coingeckoId = useCoinGeckoId(unified.selectedBridgeAsset?.symbol)
+  const assetSymbol = unified.selectedBridgeAsset?.symbol
+    ? getOriginalSymbol(unified.selectedBridgeAsset.symbol)
+    : undefined
+
+  const coingeckoId = useCoinGeckoId(assetSymbol)
 
   const price = useSimplePrice(
     coingeckoId,
