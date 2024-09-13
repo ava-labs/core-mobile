@@ -105,7 +105,7 @@ const Bridge: FC = () => {
     provider,
     denomination,
     amountBN
-  } = useBridge(selectedAsset)
+  } = useBridge()
 
   const {
     setCurrentAsset: setCurrentAssetSymbol,
@@ -158,9 +158,10 @@ const Bridge: FC = () => {
   const hasInvalidReceiveAmount =
     hasValidAmount && !!receiveAmount && receiveAmount.eq(BIG_ZERO)
 
-  const formattedAmountCurrency = hasValidAmount
-    ? currencyFormatter(price.mul(amount).toNumber())
-    : NO_AMOUNT
+  const formattedAmountCurrency =
+    hasValidAmount && price
+      ? currencyFormatter(price.mul(amount).toNumber())
+      : NO_AMOUNT
 
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount

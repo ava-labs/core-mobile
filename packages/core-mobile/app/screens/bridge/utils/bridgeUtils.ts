@@ -162,3 +162,7 @@ export const getNativeTokenSymbol = (chain: Blockchain | Chain): string => {
 
   return getNativeSymbol(chain)
 }
+
+export function getOriginalSymbol(symbol: string): string {
+  return symbol.replace(/\.(e|b|p)$/i, '')
+}
