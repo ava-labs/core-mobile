@@ -11,7 +11,7 @@ import {
   selectCanGoBack,
   selectCanGoForward,
   selectTab,
-  setActiveHistoryForTab
+  updateActiveHistoryForTab
 } from 'store/browser/slices/tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
@@ -30,9 +30,9 @@ import { BrowserScreenProps } from 'navigation/types'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
 import { LayoutAnimation } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import {
+  isSugguestedSiteName,
   isValidHttpUrl,
   normalizeUrlWithHttps,
   removeTrailingSlash
@@ -126,20 +126,15 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
       ) as GetDescriptionAndFavicon
       if (favi || desc) {
         // if the favicon is already set to static favicon from suggested list, don't update it
-        const icon = activeHistory?.favicon ?? favi
+        const icon = isSugguestedSiteName(activeHistory?.favicon)
+          ? activeHistory?.favicon
+          : favi
         setFavicon(icon)
         setDescription(desc)
-        dispatch(
-          updateMetadataForActiveTab({
-            url: event.nativeEvent.url,
-            favicon: icon,
-            description: desc
-          })
-        )
         activeTab &&
           activeTab.activeHistory &&
           dispatch(
-            setActiveHistoryForTab({
+            updateActiveHistoryForTab({
               id: activeTab.id,
               activeHistoryIndex: activeTab.activeHistoryIndex,
               activeHistory: {

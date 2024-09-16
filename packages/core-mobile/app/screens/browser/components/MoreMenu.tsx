@@ -11,7 +11,7 @@ import { addTab, selectActiveHistory } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { isValidUrl } from '../utils'
+import { isSugguestedSiteName, isValidUrl } from '../utils'
 import { SuggestedSiteName } from '../../../store/browser/const'
 
 enum MenuId {
@@ -153,11 +153,7 @@ export const MoreMenu: FC<Props & PropsWithChildren> = ({
 
       let favicon: string | undefined
       if (activeHistory.favicon) {
-        if (
-          Object.values(SuggestedSiteName).includes(
-            activeHistory.favicon as SuggestedSiteName
-          )
-        ) {
+        if (isSugguestedSiteName(activeHistory.favicon as SuggestedSiteName)) {
           favicon = activeHistory.favicon
         } else if (isValidUrl(activeHistory.favicon)) {
           favicon = activeHistory.favicon

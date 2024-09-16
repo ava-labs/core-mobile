@@ -10,6 +10,7 @@ import { Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
 import { SuggestedSiteName } from 'store/browser/const'
 import { SuggestedSiteIcon } from '../screens/browser/components/SuggestedIcons'
+import { isSugguestedSiteName } from 'screens/browser/utils'
 
 interface AvatarBaseProps {
   title: string
@@ -56,11 +57,7 @@ const AvatarBase: FC<AvatarBaseProps> = ({
     return <BitcoinSVG size={size} />
   }
 
-  const isSuggestedSiteName = Object.values(SuggestedSiteName).includes(
-    logoUri as SuggestedSiteName
-  )
-
-  if (isSuggestedSiteName) {
+  if (isSugguestedSiteName(logoUri)) {
     return (
       <SuggestedSiteIcon
         name={logoUri as SuggestedSiteName}

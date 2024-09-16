@@ -2,7 +2,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
 import { getUnixTime } from 'date-fns'
-import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
 import {
   History,
   HistoryId,
@@ -30,14 +29,13 @@ const globalHistorySlice = createSlice({
     ) => {
       historyAdapter.removeOne(state, action.payload.historyId)
     },
-    updateMetadataForActiveTab: (
+    updateMetadataForHistory: (
       state: HistoryState,
       action: PayloadAction<UpdateHistoryPayload>
     ) => {
-      const url = trimTrailingSlash(action.payload.url)
-
+      const id = action.payload.id
       historyAdapter.updateOne(state, {
-        id: createHash(url),
+        id,
         changes: {
           favicon: action.payload.favicon,
           description: action.payload.description
@@ -83,7 +81,7 @@ export const selectAllHistories = (state: RootState): History[] => {
 }
 
 // actions
-export const { removeAllHistories, removeHistory, updateMetadataForActiveTab } =
+export const { removeAllHistories, removeHistory, updateMetadataForHistory } =
   globalHistorySlice.actions
 
 export const globalHistoryReducer = globalHistorySlice.reducer

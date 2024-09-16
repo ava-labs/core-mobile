@@ -1,3 +1,4 @@
+import { PartialBy } from '@avalabs/vm-module-types'
 import { EntityState } from '@reduxjs/toolkit'
 
 export type TabId = string // unique, generated
@@ -29,7 +30,10 @@ export type HistoryState = EntityState<History>
 
 export type AddHistoryPayload = Omit<History, 'id' | 'lastVisited'>
 
-export type UpdateHistoryPayload = Omit<History, 'id' | 'lastVisited' | 'title'>
+export type UpdateHistoryPayload = Omit<
+  History,
+  'url' | 'lastVisited' | 'title'
+>
 
 export type TabHistoryPayload = {
   tabId: TabId
@@ -53,5 +57,10 @@ export type Favorite = {
   url: string
   favicon?: string //url to favicon
 }
+
+export type UpdateFavoritePayload = Omit<
+  PartialBy<Favorite, 'description' | 'title'>,
+  'url'
+>
 
 export type FavoriteState = EntityState<Favorite>

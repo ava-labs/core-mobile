@@ -1,6 +1,7 @@
 import { DeFiProtocolInformation } from 'services/browser/types'
 import { assertNotUndefined } from 'utils/assertions'
 import { FavoriteId } from 'store/browser'
+import { SuggestedSiteName } from 'store/browser/const'
 
 export const sortDeFiProtocolInformationListByTvl = (
   protocolInformationList: DeFiProtocolInformation[]
@@ -83,4 +84,9 @@ export function getNextFavColor(id: FavoriteId): string {
 
 export const removeTrailingSlash = (url: string): string => {
   return url.replace(/\/$/, '')
+}
+
+export const isSugguestedSiteName = (name?: string): boolean => {
+  if (name === undefined) return false
+  return Object.values(SuggestedSiteName).includes(name as SuggestedSiteName)
 }
