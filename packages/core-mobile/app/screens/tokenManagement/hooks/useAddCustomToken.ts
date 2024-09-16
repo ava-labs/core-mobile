@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux'
 import { isAddress } from 'ethers'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -58,6 +58,7 @@ type CustomToken = {
   errorMessage: string
   token: NetworkContractToken | undefined
   addCustomToken: () => void
+  isLoading: boolean
 }
 
 const useAddCustomToken = (callback: () => void): CustomToken => {
@@ -68,34 +69,44 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const [token, setToken] = useState<NetworkContractToken>()
   const dispatch = useDispatch()
   const chainId = activeNetwork.chainId
+  const [isLoading, setIsLoading] = useState(false)
+
+  const memoizedTokens = useMemo(() => tokens, [activeNetwork])
 
   useEffect(() => {
-    setErrorMessage('')
-    setToken(undefined)
-
-    const validationStatus = validateAddress(tokenAddress, tokens)
+    const validationStatus = validateAddress(tokenAddress, memoizedTokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
+        setToken(undefined)
         setErrorMessage('Not a valid ERC-20 token address.')
         break
       case AddressValidationStatus.AlreadyExists:
+        setToken(undefined)
+        setErrorMessage('Token already exists in the wallet.')
+        break
       case AddressValidationStatus.Valid:
-        if (validationStatus === AddressValidationStatus.AlreadyExists) {
-          setErrorMessage('Token already exists in the wallet.')
-        }
-
+        setIsLoading(true)
         fetchTokenData(activeNetwork, tokenAddress)
-          .then(setToken)
+          .then(token => {
+            setToken(token)
+            setErrorMessage('')
+          })
           .catch(err => {
+            setToken(undefined)
             setErrorMessage('Not a valid ERC-20 token address.')
             Logger.error(err)
           })
+          .finally(() => {
+            setIsLoading(false)
+          })
         break
       case AddressValidationStatus.TooShort:
-        // do not show error message for too short addresses
-        break
+      default:
+        // do not show error message for too short addresses or default case
+        setErrorMessage('')
+        setToken(undefined)
     }
-  }, [activeNetwork, tokenAddress, tokens])
+  }, [activeNetwork, tokenAddress, memoizedTokens])
 
   const addCustomToken = (): void => {
     if (token) {
@@ -109,7 +120,14 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     }
   }
 
-  return { tokenAddress, setTokenAddress, errorMessage, token, addCustomToken }
+  return {
+    tokenAddress,
+    setTokenAddress,
+    errorMessage,
+    token,
+    addCustomToken,
+    isLoading
+  }
 }
 
 export default useAddCustomToken
