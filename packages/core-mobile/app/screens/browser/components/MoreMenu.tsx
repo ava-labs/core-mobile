@@ -11,8 +11,7 @@ import { addTab, selectActiveHistory } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { isSugguestedSiteName, isValidUrl } from '../utils'
-import { SuggestedSiteName } from '../../../store/browser/const'
+import { isValidUrl } from '../utils'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -147,30 +146,14 @@ export const MoreMenu: FC<Props & PropsWithChildren> = ({
 
       showSimpleToast('Removed from Favorites')
     } else {
-      const activeHistoryUrl = new URL(activeHistory.url)
-      const activeHistoryDomain =
-        activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
-
-      let favicon: string | undefined
-      if (activeHistory.favicon) {
-        if (isSugguestedSiteName(activeHistory.favicon as SuggestedSiteName)) {
-          favicon = activeHistory.favicon
-        } else if (isValidUrl(activeHistory.favicon)) {
-          favicon = activeHistory.favicon
-        } else {
-          favicon = activeHistoryDomain + activeHistory.favicon
-        }
-      }
-
       dispatch(
         addFavorite({
-          favicon,
+          favicon: activeHistory.favicon,
           title: activeHistory.title,
           description: activeHistory.description ?? '',
           url: activeHistory.url
         })
       )
-
       showSimpleToast('Added to Favorites')
     }
   }

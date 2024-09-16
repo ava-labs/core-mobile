@@ -76,7 +76,7 @@ const updateMetadataForFavorite = ({
       id: activeHistory.id,
       favicon: activeHistory?.favicon,
       description: activeHistory?.description,
-      title: activeHistory?.title,
+      title: activeHistory?.title
     })
   )
 }

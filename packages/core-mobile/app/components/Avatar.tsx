@@ -9,8 +9,8 @@ import FastImage from 'react-native-fast-image'
 import { Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
 import { SuggestedSiteName } from 'store/browser/const'
-import { SuggestedSiteIcon } from '../screens/browser/components/SuggestedIcons'
 import { isSugguestedSiteName } from 'screens/browser/utils'
+import { SuggestedSiteIcon } from '../screens/browser/components/SuggestedIcons'
 
 interface AvatarBaseProps {
   title: string

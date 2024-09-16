@@ -120,7 +120,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   }
 
   const parseDescriptionAndFavicon = useCallback(
-    (wrapper: InjectedJsMessageWrapper, event: WebViewMessageEvent) => {
+    (wrapper: InjectedJsMessageWrapper, _: WebViewMessageEvent) => {
       const { favicon: favi, description: desc } = JSON.parse(
         wrapper.payload
       ) as GetDescriptionAndFavicon

@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { FavoriteState, Favorite, HistoryId, UpdateFavoritePayload } from 'store/browser/types'
+import {
+  FavoriteState,
+  Favorite,
+  HistoryId,
+  UpdateFavoritePayload
+} from 'store/browser/types'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
 import { favoriteAdapter } from '../utils'

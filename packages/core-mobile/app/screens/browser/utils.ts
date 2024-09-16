@@ -90,3 +90,24 @@ export const isSugguestedSiteName = (name?: string): boolean => {
   if (name === undefined) return false
   return Object.values(SuggestedSiteName).includes(name as SuggestedSiteName)
 }
+
+// This function is used to prepare favicon to load in the browser favorites list
+export const prepareFaviconToLoad = (
+  url: string,
+  favicon?: string
+): string | undefined => {
+  const activeHistoryUrl = new URL(url)
+  const activeHistoryDomain =
+    activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
+
+  if (favicon) {
+    if (
+      isSugguestedSiteName(favicon as SuggestedSiteName) ||
+      isValidUrl(favicon)
+    ) {
+      return favicon
+    } else {
+      return activeHistoryDomain + favicon
+    }
+  }
+}
