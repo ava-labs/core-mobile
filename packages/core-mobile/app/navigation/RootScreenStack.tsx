@@ -15,7 +15,7 @@ import WalletScreenStack, {
   WalletScreenStackParams
 } from 'navigation/WalletScreenStack/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectWalletState, WalletState, selectIsReady } from 'store/app'
 import { useBgDetect } from 'navigation/useBgDetect'
 import { RootStackScreenProps } from 'navigation/types'
@@ -35,6 +35,8 @@ import { MFA } from 'seedless/types'
 import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { CubeSignerResponse } from '@cubist-labs/cubesigner-sdk'
+import { useVariableSafeAreaInsets } from 'hooks/useVariableSafeAreaInsets'
+import { setMainTopInset } from 'store/layout'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
 import RecoveryMethodsStack, {
   RecoveryMethodsStackParamList
@@ -144,6 +146,12 @@ const WalletScreenStackWithContext: FC = () => {
 
 const RootScreenStack: FC = () => {
   const walletState = useSelector(selectWalletState)
+  const { top } = useVariableSafeAreaInsets()
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(setMainTopInset(top))
+  }, [dispatch, top])
 
   return (
     <RootStack.Navigator

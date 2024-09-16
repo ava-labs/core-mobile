@@ -49,9 +49,6 @@ export const MainHeaderOptions = (
       shadowColor: 'transparent',
       elevation: 0,
       shadowOpacity: 0
-    },
-    contentStyle: {
-      marginTop: -20
     }
   }
   return options

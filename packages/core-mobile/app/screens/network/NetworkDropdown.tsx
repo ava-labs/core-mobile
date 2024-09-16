@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import { Platform, View } from 'react-native'
@@ -16,6 +16,7 @@ import { arrayHash } from 'utils/Utils'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { selectMainTopInset } from 'store/layout'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -28,6 +29,7 @@ export default function NetworkDropdown(): JSX.Element {
   const { favoriteNetworks, activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
+  const mainTopInset = useSelector(selectMainTopInset)
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
 
   const data = useMemo(
@@ -97,7 +99,7 @@ export default function NetworkDropdown(): JSX.Element {
         key={dropdownUniqueId}
         style={{
           left: 4,
-          top: Platform.OS === 'ios' ? 15 : -10
+          marginTop: Platform.OS === 'ios' ? 0 : -mainTopInset / 2
         }}
         data={data}
         width={300}
