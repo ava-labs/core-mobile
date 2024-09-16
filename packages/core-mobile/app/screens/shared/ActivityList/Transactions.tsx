@@ -14,7 +14,6 @@ import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { Transaction } from 'store/transaction'
 import ZeroState from 'components/ZeroState'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
 import FlashList from 'components/FlashList'
@@ -30,10 +29,10 @@ const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
 
 type Section = {
   title: string
-  data: Transaction[] | Array<BridgeTransaction | BridgeTransfer>
+  data: Transaction[] | Array<BridgeTransfer>
 }
 
-type Item = string | Transaction | BridgeTransaction | BridgeTransfer
+type Item = string | Transaction | BridgeTransfer
 
 interface Props {
   isRefreshing: boolean
@@ -110,9 +109,7 @@ const Transactions: FC<Props> = ({
     return flatListData
   }, [bridgeDisabled, data, pendingBridgeTxs])
 
-  const renderPendingBridgeTransaction = (
-    tx: BridgeTransaction | BridgeTransfer
-  ): JSX.Element => {
+  const renderPendingBridgeTransaction = (tx: BridgeTransfer): JSX.Element => {
     return (
       <BridgeTransactionItem
         key={tx.sourceTxHash}
@@ -162,7 +159,7 @@ const Transactions: FC<Props> = ({
   }
 
   const keyExtractor = (
-    item: string | Transaction | BridgeTransaction | BridgeTransfer
+    item: string | Transaction | BridgeTransfer
   ): string => {
     if (typeof item === 'string') return item
 

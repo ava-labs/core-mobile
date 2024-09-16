@@ -1,6 +1,5 @@
 import React, { FC, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import BridgeSVG from 'components/svg/BridgeSVG'
@@ -19,7 +18,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 
 interface BridgeTransactionItemProps {
-  item: Transaction | BridgeTransaction | BridgeTransfer
+  item: Transaction | BridgeTransfer
   onPress: () => void
 }
 
@@ -38,7 +37,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       return bigintToBig(item.amount, item.asset.decimals).toString()
     }
 
-    return item.amount.toString()
+    return undefined
   }, [item, pending])
 
   return (
@@ -65,12 +64,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {amount}{' '}
-            {pending
-              ? isUnifiedBridgeTransfer(item)
-                ? item.asset.symbol
-                : item.symbol
-              : item.tokens[0]?.symbol}
+            {amount} {pending ? item.asset.symbol : item.tokens[0]?.symbol}
           </AvaText.ActivityTotal>
           {'explorerLink' in item && item?.explorerLink && (
             <>

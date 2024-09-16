@@ -2,7 +2,7 @@ import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { Blockchain } from '@avalabs/core-bridge-sdk'
 import DotSVG from 'components/svg/DotSVG'
 import Avatar from 'components/Avatar'
 import AvaListItem from 'components/AvaListItem'
@@ -14,11 +14,7 @@ import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
-import {
-  getBlockchainDisplayName,
-  getNativeTokenSymbol,
-  isUnifiedBridgeTransfer
-} from 'screens/bridge/utils/bridgeUtils'
+import { getNativeTokenSymbol } from 'screens/bridge/utils/bridgeUtils'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { useTokenForBridgeTransaction } from 'screens/bridge/hooks/useTokenForBridgeTransaction'
@@ -37,9 +33,7 @@ type Props = {
 }
 
 const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
-  const [bridgeTransaction, setBridgeTransaction] = useState<
-    BridgeTransaction | BridgeTransfer
-  >()
+  const [bridgeTransaction, setBridgeTransaction] = useState<BridgeTransfer>()
   const { activeNetwork } = useNetworks()
   const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
@@ -52,9 +46,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
-  const symbol = isUnifiedBridgeTransfer(bridgeTransaction)
-    ? bridgeTransaction.asset.symbol
-    : bridgeTransaction?.symbol
+  const symbol = bridgeTransaction?.asset.symbol
+
   const coingeckoId = useCoinGeckoId(symbol)
 
   const assetPrice = useSimplePrice(
@@ -132,18 +125,22 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
     [bridgeTransaction, isComplete, sourceCurrentConfirmations]
   )
 
-  const tokenLogo = (
-    <View style={styles.logoContainer}>
-      <View style={{ position: 'absolute' }}>
-        <DotSVG fillColor={theme.colorBg1} size={72} />
+  const renderTokenLogo = (): JSX.Element | undefined => {
+    if (!bridgeTransaction) return undefined
+
+    return (
+      <View style={styles.logoContainer}>
+        <View style={{ position: 'absolute' }}>
+          <DotSVG fillColor={theme.colorBg1} size={72} />
+        </View>
+        <Avatar.Custom
+          name={bridgeTransaction?.asset.symbol ?? ''}
+          logoUri={tokenInfo?.logoUri ?? ''}
+          size={55}
+        />
       </View>
-      <Avatar.Custom
-        name={tokenInfo?.symbol ?? ''}
-        logoUri={tokenInfo?.logoUri}
-        size={55}
-      />
-    </View>
-  )
+    )
+  }
 
   const renderNetworkFeeRightComponent = (): React.JSX.Element => {
     if (sourceNetworkFee === undefined) {
@@ -170,7 +167,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   return (
     <View style={{ flex: 1 }}>
       <View style={[styles.infoContainer, { backgroundColor: theme.colorBg2 }]}>
-        {tokenLogo}
+        {renderTokenLogo()}
         {bridgeTransaction && (
           <View>
             <AvaListItem.Base
@@ -181,17 +178,17 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
                 <View style={{ alignItems: 'flex-end' }}>
                   <Row>
                     <AvaText.Heading3>
-                      {isUnifiedBridgeTransfer(bridgeTransaction)
-                        ? amount?.toNumber().toFixed(6)
-                        : bridgeTransaction.amount.toNumber().toFixed(6)}
+                      {amount?.toNumber().toFixed(6)}
                     </AvaText.Heading3>
                     <AvaText.Heading3 color={theme.colorText3}>
                       {' ' + symbol}
                     </AvaText.Heading3>
                   </Row>
-                  <AvaText.Body3 currency color={theme.colorText1}>
-                    {amount && assetPrice.mul(amount).toNumber()}
-                  </AvaText.Body3>
+                  {assetPrice !== undefined && (
+                    <AvaText.Body3 currency color={theme.colorText1}>
+                      {amount && assetPrice.mul(amount).toNumber()}
+                    </AvaText.Body3>
+                  )}
                 </View>
               }
             />
@@ -204,11 +201,11 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           title={<AvaText.Body2>From</AvaText.Body2>}
           titleAlignment="flex-start"
           rightComponent={
-            <AvaText.Heading3>
-              {isUnifiedBridgeTransfer(bridgeTransaction)
-                ? humanize(bridgeTransaction.sourceChain.chainName)
-                : getBlockchainDisplayName(bridgeTransaction?.sourceChain)}
-            </AvaText.Heading3>
+            bridgeTransaction && (
+              <AvaText.Heading3>
+                {humanize(bridgeTransaction.sourceChain.chainName)}
+              </AvaText.Heading3>
+            )
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
@@ -234,11 +231,11 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           title={<AvaText.Body2>To</AvaText.Body2>}
           titleAlignment="flex-start"
           rightComponent={
-            <AvaText.Heading3>
-              {isUnifiedBridgeTransfer(bridgeTransaction)
-                ? humanize(bridgeTransaction.targetChain.chainName)
-                : getBlockchainDisplayName(bridgeTransaction?.targetChain)}
-            </AvaText.Heading3>
+            bridgeTransaction && (
+              <AvaText.Heading3>
+                {humanize(bridgeTransaction.targetChain.chainName)}
+              </AvaText.Heading3>
+            )
           }
         />
         <Separator color={theme.colorBg3} inset={16} />

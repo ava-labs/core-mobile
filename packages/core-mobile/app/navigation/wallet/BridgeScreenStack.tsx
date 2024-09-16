@@ -16,7 +16,7 @@ import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectIsBridgeBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import BridgeUniversal from 'screens/bridge/BridgeUniversal'
+import Bridge from 'screens/bridge/Bridge'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: { initialTokenSymbol: string } | undefined
@@ -46,7 +46,7 @@ function BridgeScreenStack(): JSX.Element {
             ...MainHeaderOptions()
           }}
           name={AppNavigation.Bridge.Bridge}
-          component={BridgeUniversal}
+          component={Bridge}
         />
         <BridgeStack.Screen
           options={{
