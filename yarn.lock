@@ -367,7 +367,7 @@ __metadata:
     typescript: 5.2.2
     url: 0.11.4
     uuid: 8.3.2
-    viem: 2.21.1
+    viem: 2.21.7
     vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.15
@@ -5764,6 +5764,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@noble/hashes@npm:~1.5.0":
+  version: 1.5.0
+  resolution: "@noble/hashes@npm:1.5.0"
+  checksum: 9cc031d5c888c455bfeef76af649b87f75380a4511405baea633c1e4912fd84aff7b61e99716f0231d244c9cfeda1fafd7d718963e6a0c674ed705e9b1b4f76b
+  languageName: node
+  linkType: hard
+
 "@noble/secp256k1@npm:2.1.0":
   version: 2.1.0
   resolution: "@noble/secp256k1@npm:2.1.0"
@@ -7398,6 +7405,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@scure/base@npm:~1.1.8":
+  version: 1.1.8
+  resolution: "@scure/base@npm:1.1.8"
+  checksum: 1fc8a355ba68663c0eb430cf6a2c5ff5af790c347c1ba1953f344e8681ab37e37e2545e495f7f971b0245727d710fea8c1e57d232d0c6c543cbed4965c7596a1
+  languageName: node
+  linkType: hard
+
 "@scure/bip32@npm:1.1.5":
   version: 1.1.5
   resolution: "@scure/bip32@npm:1.1.5"
@@ -7469,6 +7483,16 @@ __metadata:
     "@noble/hashes": ~1.4.0
     "@scure/base": ~1.1.6
   checksum: dbb0b27df753eb6c6380010b25cc9a9ea31f9cb08864fc51e69e5880ff7e2b8f85b72caea1f1f28af165e83b72c48dd38617e43fc632779d025b50ba32ea759e
+  languageName: node
+  linkType: hard
+
+"@scure/bip39@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@scure/bip39@npm:1.4.0"
+  dependencies:
+    "@noble/hashes": ~1.5.0
+    "@scure/base": ~1.1.8
+  checksum: 211f2c01361993bfe54c0e4949f290224381457c7f76d7cd51d6a983f3f4b6b9f85adfd0e623977d777ed80417a5fe729eb19dd34e657147810a0e58a8e7b9e0
   languageName: node
   linkType: hard
 
@@ -27964,15 +27988,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.21.1":
-  version: 2.21.1
-  resolution: "viem@npm:2.21.1"
+"viem@npm:2.21.7":
+  version: 2.21.7
+  resolution: "viem@npm:2.21.7"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.4.0
     "@noble/hashes": 1.4.0
     "@scure/bip32": 1.4.0
-    "@scure/bip39": 1.3.0
+    "@scure/bip39": 1.4.0
     abitype: 1.0.5
     isows: 1.0.4
     webauthn-p256: 0.0.5
@@ -27982,7 +28006,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 344347546a9ac6373684cde3f67654c5711ba3cb98b92e3d3c52e0bdf9ad756281a8bd1fdf3c0f0cb29c17bb654997423b6c456689311e379fe100a31e2b2b47
+  checksum: 6a95e00ded06e2d8e71446b0d99ae5d57f6d883418f745960f9a8451f5b507643c3b61813d319c7e464c68eaba91c5e23d31d8f13c8e0d0033bab7c2e60697b6
   languageName: node
   linkType: hard
 
