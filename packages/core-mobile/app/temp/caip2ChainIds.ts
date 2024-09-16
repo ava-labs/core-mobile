@@ -150,7 +150,7 @@ export const getChainIdFromCaip2 = (
     : Number(caip2ChainId.split(':')[1])
 }
 
-export const useNetworksByCaip2ChainIds = (
+export const useNetworksFromCaip2ChainIds = (
   caip2ChainIds: string[]
 ): Network[] => {
   const { networks } = useNetworks()
