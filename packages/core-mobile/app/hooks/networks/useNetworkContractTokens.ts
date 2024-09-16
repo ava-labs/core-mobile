@@ -29,6 +29,5 @@ export const useNetworkContractTokens = (
       return [...tokens, ...customTokens]
     }
   }
-
   return tokens
 }
