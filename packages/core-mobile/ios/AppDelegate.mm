@@ -83,6 +83,5 @@
   // the actual badge count is reset in handleNotificationCleanup
   // inside react native project
     [[[NSUserDefaults alloc] initWithSuiteName:@"group.org.avalabs.corewallet"] setInteger:0 forKey:@"badgeCount"];
-//    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
 }
 @end
