@@ -79,7 +79,6 @@ class FCMService {
         transactionHash: result.data.data.transactionHash,
         url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
       }
-      await NotificationsService.incrementBadgeCount()
       await NotificationsService.displayNotification({
         channelId: ChannelId.BALANCE_CHANGES,
         title: result.data.notification.title,
