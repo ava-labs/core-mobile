@@ -37,6 +37,8 @@ export default {
   stakeButtonSecondary: 'stake_btn_secondary',
   stakeButtonText: 'Stake',
   stakeNow: 'confirm_btn',
+  cancel: 'cancel_btn',
+  cancelModal: 'warning_modal_button',
   stakingAmountTitle: 'Staking Amount',
   stakingAmountDescription: 'How many AVAX would you like to stake?',
   inputAmount: 'token_base_unit_input',
@@ -47,5 +49,6 @@ export default {
   tenPercentText: '10%',
   twentyFivePercentText: '25%',
   fiftyPercentText: '50%',
-  maxText: 'Max'
+  maxText: 'Max',
+  stakeClaimButton: 'stake_claim_btn'
 }

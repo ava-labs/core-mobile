@@ -20,6 +20,7 @@ class BrowserPage {
   }
 
   async tapSearchBar() {
+    await Actions.waitForElement(this.searchBar)
     await Actions.tapElementAtIndex(this.searchBar, 0)
   }
 
