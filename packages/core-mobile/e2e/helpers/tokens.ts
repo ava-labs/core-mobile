@@ -21,5 +21,5 @@ export const SwapTokens = [
   { symbol: '1INCH', name: '1INCH Token', amount: '0.000001' },
   { symbol: 'AAVE', name: 'Aave Token', amount: '0.000001' },
   { symbol: 'APE', name: 'ApeCoin', amount: '0.000001' },
-  { symbol: 'COQ', name: 'Coq Inu', amount: '0.000001' },
+  { symbol: 'COQ', name: 'Coq Inu', amount: '0.000001' }
 ]
