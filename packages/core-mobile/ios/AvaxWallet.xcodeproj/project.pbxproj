@@ -19,11 +19,10 @@
 		501C50832C35C63800DAFF77 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		5084807F2C3C3E78008762B2 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		6C25E0BD63D10BFA52C4F482 /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DB754F7AA8AF2B8562CD5CE /* libPods-common-AvaxWallet.a */; };
-		815E55122C92071A000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55112C92071A000F8E0F /* NotificationService.swift */; };
 		815E55162C92071A000F8E0F /* NotificationServiceExtensionInternal.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		815E551E2C921989000F8E0F /* NotificationService.swift in CopyFiles */ = {isa = PBXBuildFile; fileRef = 815E55112C92071A000F8E0F /* NotificationService.swift */; };
 		815E55482C94A396000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
 		815E554C2C94A396000F8E0F /* NotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 815E55452C94A396000F8E0F /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		815E55532C989231000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
 		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
@@ -95,7 +94,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				815E551E2C921989000F8E0F /* NotificationService.swift in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,7 +117,6 @@
 		3DE558FF49E888A0002110D6 /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
 		501C50822C35C63800DAFF77 /* core_send.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = core_send.wav; sourceTree = "<group>"; };
 		815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtensionInternal.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		815E55112C92071A000F8E0F /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		815E55132C92071A000F8E0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		815E551B2C9209AF000F8E0F /* NotificationServiceExtensionInternal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationServiceExtensionInternal.entitlements; sourceTree = "<group>"; };
 		815E55452C94A396000F8E0F /* NotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -226,7 +223,6 @@
 			isa = PBXGroup;
 			children = (
 				815E551B2C9209AF000F8E0F /* NotificationServiceExtensionInternal.entitlements */,
-				815E55112C92071A000F8E0F /* NotificationService.swift */,
 				815E55132C92071A000F8E0F /* Info.plist */,
 			);
 			path = NotificationServiceExtensionInternal;
@@ -714,7 +710,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				815E55122C92071A000F8E0F /* NotificationService.swift in Sources */,
+				815E55532C989231000F8E0F /* NotificationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

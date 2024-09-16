@@ -16,8 +16,8 @@ class NotificationService: UNNotificationServiceExtension {
     override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
         self.contentHandler = contentHandler
         bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
-      var count: Int = defaults?.value(forKey: "badgeCount") as? Int ?? 0
         if let bestAttemptContent = bestAttemptContent {
+            var count: Int = defaults?.value(forKey: "badgeCount") as? Int ?? 0
             count = count + 1
             defaults?.set(count, forKey: "badgeCount")
             bestAttemptContent.badge = count as NSNumber
