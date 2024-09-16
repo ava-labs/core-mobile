@@ -9,7 +9,7 @@ import { selectActiveAccount } from 'store/account/slice'
 import { setPendingTransfer } from 'store/unifiedBridge/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useInAppRequest } from 'hooks/useInAppRequest'
-import { useNetworksByCaip2ChainIds } from 'temp/caip2ChainIds'
+import { useNetworksFromCaip2ChainIds } from 'temp/caip2ChainIds'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { BridgeAsset } from '@avalabs/bridge-unified'
@@ -51,11 +51,11 @@ export const useUnifiedBridge = (amount: Big): UnifiedBridge => {
     [selectedBridgeAsset, assetsWithBalances]
   )
 
-  const sourceNetworks = useNetworksByCaip2ChainIds(
+  const sourceNetworks = useNetworksFromCaip2ChainIds(
     Object.keys(chainAssetMap ?? [])
   )
 
-  const targetNetworks = useNetworksByCaip2ChainIds(
+  const targetNetworks = useNetworksFromCaip2ChainIds(
     Object.keys(selectedBridgeAsset?.destinations ?? [])
   )
 
@@ -145,8 +145,10 @@ export const useUnifiedBridge = (amount: Big): UnifiedBridge => {
   ])
 
   useEffect(() => {
-    setSelectedBridgeAsset(bridgeAssets[0])
-  }, [bridgeAssets])
+    if (!selectedBridgeAsset) {
+      setSelectedBridgeAsset(bridgeAssets[0])
+    }
+  }, [selectedBridgeAsset, bridgeAssets])
 
   useEffect(() => {
     if (targetNetworks.length === 0) {

@@ -52,6 +52,7 @@ import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { Network } from '@avalabs/core-chains-sdk'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { BridgeAsset } from '@avalabs/bridge-unified'
+import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -162,41 +163,6 @@ const BridgeUniversal: FC = () => {
     BIG_ZERO.eq(amount) ||
     hasInvalidReceiveAmount
 
-  // Update selected asset for unified bridge whenever currentBlockchain changes
-  // useEffect(() => {
-  //   if (!selectedBridgeAsset) return
-
-  //   const correspondingAsset = assetsWithBalances?.find(asset => {
-  //     // when selected asset is USDC.e and we are switching to Ethereum
-  //     // we want to automatically select USDC
-  //     // to do that, we need to compare by symbol (USDC) instead of symbolOnNetwork (USDC.e)
-  //     if (
-  //       currentBlockchain === Blockchain.ETHEREUM &&
-  //       selectedBridgeAsset.symbolOnNetwork === 'USDC.e'
-  //     ) {
-  //       return asset.symbol === selectedBridgeAsset.symbol
-  //     }
-
-  //     // for all other cases we just simply compare the real symbol on network
-  //     return asset.symbolOnNetwork === selectedBridgeAsset.symbolOnNetwork
-  //   })
-
-  //   // if the found asset is not in the list of new assets with balances, clear the selection
-  //   if (!correspondingAsset) {
-  //     setSelectedBridgeAsset(undefined)
-  //     return
-  //   }
-
-  //   // if the found asset is a unified bridge asset and its value is different, set it as the current asset
-  //   if (
-  //     isUnifiedBridgeAsset(correspondingAsset.asset) &&
-  //     JSON.stringify(correspondingAsset.asset) !==
-  //       JSON.stringify(selectedAsset.asset)
-  //   ) {
-  //     setSelectedAsset(correspondingAsset)
-  //   }
-  // }, [assetsWithBalances, currentBlockchain, selectedAsset])
-
   useEffect(() => {
     setSourceNetwork(activeNetwork)
   }, [activeNetwork, setSourceNetwork])
@@ -281,34 +247,50 @@ const BridgeUniversal: FC = () => {
   }>()
 
   useEffect(() => {
-    if (previousConfig) {
-      const oldChainId = previousConfig.sourceNetwork.chainId
-
+    if (previousConfig?.bridgeAsset) {
+      let bridgeAssetSymbol = previousConfig.bridgeAsset.symbol
       if (
-        targetNetworks.findIndex(network => network.chainId === oldChainId) !==
-        -1
+        sourceNetwork &&
+        isEthereumNetwork(sourceNetwork) &&
+        bridgeAssetSymbol === 'USDC.e'
       ) {
-        setTargetNetwork(previousConfig.sourceNetwork)
-        if (previousConfig.bridgeAsset) {
-          const bridgeAssetSymbol = previousConfig.bridgeAsset.symbol
-          const bridgeAsset = bridgeAssets.find(
-            asset => asset.symbol === bridgeAssetSymbol
-          )
-          if (bridgeAsset) {
-            setSelectedBridgeAsset(bridgeAsset)
-          }
-        }
-        setPreviousConfig(undefined)
-        setAmount(undefined)
+        bridgeAssetSymbol = 'USDC'
+      }
+
+      const bridgeAsset = bridgeAssets.find(
+        asset => asset.symbol === bridgeAssetSymbol
+      )
+
+      if (bridgeAsset) {
+        setSelectedBridgeAsset(bridgeAsset)
       }
     }
   }, [
-    sourceNetwork,
-    previousConfig,
-    targetNetworks,
-    setTargetNetwork,
+    previousConfig?.bridgeAsset,
     setSelectedBridgeAsset,
     bridgeAssets,
+    setAmount,
+    sourceNetwork
+  ])
+
+  useEffect(() => {
+    if (
+      previousConfig?.sourceNetwork &&
+      targetNetworks.findIndex(
+        network => network.chainId === previousConfig.sourceNetwork.chainId
+      ) !== -1
+    ) {
+      setTargetNetwork(previousConfig.sourceNetwork)
+
+      setPreviousConfig(undefined)
+      setAmount(undefined)
+    }
+  }, [
+    selectedBridgeAsset,
+    previousConfig?.sourceNetwork,
+    targetNetworks,
+    setTargetNetwork,
+    setPreviousConfig,
     setAmount
   ])
 
