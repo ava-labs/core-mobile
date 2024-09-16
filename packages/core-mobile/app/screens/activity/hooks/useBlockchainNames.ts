@@ -1,8 +1,4 @@
-import {
-  Blockchain,
-  BridgeTransaction,
-  useBridgeSDK
-} from '@avalabs/core-bridge-sdk'
+import { Blockchain, useBridgeSDK } from '@avalabs/core-bridge-sdk'
 import {
   getBlockchainDisplayName,
   isPendingBridgeTransaction
@@ -16,9 +12,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
  * Get the source and target blockchain names to display a Bridge transaction.
  * @param tx Assumed to be a Bridge transaction for the active network
  */
-export function useBlockchainNames(
-  tx: Transaction | BridgeTransaction | BridgeTransfer
-): {
+export function useBlockchainNames(tx: Transaction | BridgeTransfer): {
   sourceBlockchain: string
   targetBlockchain: string
 } {

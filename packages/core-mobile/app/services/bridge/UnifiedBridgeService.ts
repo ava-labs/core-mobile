@@ -9,7 +9,8 @@ import {
   TokenType,
   Signer,
   getEnabledBridgeServices,
-  isErc20Asset
+  isErc20Asset,
+  isNativeAsset
 } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
 import { rpcErrors } from '@metamask/rpc-errors'
@@ -18,10 +19,9 @@ import { Account } from 'store/account/types'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { bigToBigInt, noop } from '@avalabs/core-utils-sdk'
+import { noop } from '@avalabs/core-utils-sdk'
 import { isUnifiedBridgeAsset } from 'screens/bridge/utils/bridgeUtils'
 import { Asset } from '@avalabs/core-bridge-sdk'
-import Big from 'big.js'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from 'store/rpc/types'
 import { TransactionParams } from '@avalabs/evm-module'
@@ -98,7 +98,10 @@ export class UnifiedBridgeService {
       sourceChain: await this.buildChain(sourceNetwork)
     })
 
-    if (isErc20Asset(asset) && asset.address) {
+    if (isNativeAsset(asset)) {
+      // todo: handle this properly
+      return 0n
+    } else if (isErc20Asset(asset) && asset.address) {
       const address = asset.address.toLowerCase() as `0x${string}`
       const fee = feeMap[address]
 
@@ -193,7 +196,7 @@ export class UnifiedBridgeService {
     targetNetwork
   }: {
     asset: Asset | BridgeAsset
-    amount: Big
+    amount: bigint
     activeAccount: Account
     sourceNetwork: Network
     targetNetwork?: Network
@@ -226,7 +229,29 @@ export class UnifiedBridgeService {
     return await this.service.estimateGas({
       asset,
       fromAddress,
-      amount: bigToBigInt(amount, asset.decimals),
+      amount,
+      sourceChain,
+      targetChain
+    })
+  }
+
+  async getMinimumTransferAmount({
+    asset,
+    amount,
+    sourceNetwork,
+    targetNetwork
+  }: {
+    asset: BridgeAsset
+    amount: bigint
+    sourceNetwork: Network
+    targetNetwork: Network
+  }): Promise<bigint> {
+    const sourceChain = await this.buildChain(sourceNetwork)
+    const targetChain = await this.buildChain(targetNetwork)
+
+    return this.service.getMinimumTransferAmount({
+      asset,
+      amount,
       sourceChain,
       targetChain
     })

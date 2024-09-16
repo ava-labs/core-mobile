@@ -1,4 +1,5 @@
 import {
+  Asset,
   Blockchain,
   BridgeTransaction,
   CriticalConfig,
@@ -12,6 +13,7 @@ import {
   Transaction as InternalTransaction,
   TxToken
 } from '@avalabs/vm-module-types'
+import { AssetBalance } from './types'
 
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -82,8 +84,8 @@ export const isBridgeTransactionBTC = (
 }
 
 export function isPendingBridgeTransaction(
-  item: Transaction | BridgeTransaction | BridgeTransfer
-): item is BridgeTransaction | BridgeTransfer {
+  item: Transaction | BridgeTransfer
+): item is BridgeTransfer {
   return 'addressBTC' in item || 'sourceChain' in item
 }
 
@@ -165,4 +167,32 @@ export const getNativeTokenSymbol = (chain: Blockchain | Chain): string => {
 
 export function getOriginalSymbol(symbol: string): string {
   return symbol.replace(/\.(e|b|p)$/i, '')
+}
+
+export const getAssetBalance = (
+  symbol: string | undefined,
+  assetsWithBalances: AssetBalance[]
+): AssetBalance | undefined => {
+  if (!symbol) {
+    return undefined
+  }
+
+  return assetsWithBalances.find(({ asset }) => {
+    return asset.symbol === symbol
+  })
+}
+
+export const getDenomination = (asset: BridgeAsset | Asset): number =>
+  isUnifiedBridgeAsset(asset) ? asset.decimals : asset.denomination
+
+export const unwrapAssetSymbol = (symbol: string): string => {
+  if (symbol.endsWith('.e')) {
+    return symbol.slice(0, -2) // remove .e
+  }
+
+  return symbol
+}
+
+export const wrapAssetSymbol = (symbol: string): string => {
+  return `${symbol}.e` // add .e
 }

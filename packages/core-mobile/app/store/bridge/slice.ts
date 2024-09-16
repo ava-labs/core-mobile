@@ -1,13 +1,11 @@
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import {
   AppConfig,
   BridgeConfig,
-  BridgeTransaction,
   CriticalConfig
 } from '@avalabs/core-bridge-sdk'
-import { BridgeState, initialState } from 'store/bridge/types'
-import { selectActiveNetwork } from 'store/network'
+import { initialState } from 'store/bridge/types'
 
 export const reducerName = 'bridge'
 
@@ -15,10 +13,6 @@ export const bridgeSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    addBridgeTransaction: (state, action: PayloadAction<BridgeTransaction>) => {
-      const bridgeTx = action.payload
-      state.bridgeTransactions[bridgeTx.sourceTxHash] = bridgeTx
-    },
     popBridgeTransaction: (state, action: PayloadAction<string>) => {
       const sourceTxHash = action.payload
       delete state.bridgeTransactions[sourceTxHash]
@@ -28,12 +22,6 @@ export const bridgeSlice = createSlice({
     }
   }
 })
-
-const selectTransactions = (
-  state: RootState
-): {
-  [key: string]: BridgeTransaction
-} => state.bridge.bridgeTransactions
 
 export const selectBridgeConfig = (
   state: RootState
@@ -54,24 +42,6 @@ export const selectBridgeCriticalConfig = (
   }
 }
 
-export const selectBridgeTransactions = createSelector(
-  [selectActiveNetwork, selectTransactions],
-  (activeNetwork, bridgeTransactions): { [key: string]: BridgeTransaction } => {
-    return Object.values(bridgeTransactions).reduce<
-      BridgeState['bridgeTransactions']
-    >((txs, btx) => {
-      const isMainnet = !activeNetwork.isTestnet
-      // go figure
-      const bridgeTx = btx as BridgeTransaction
-      if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
-        txs[bridgeTx.sourceTxHash] = bridgeTx
-      }
-      return txs
-    }, {})
-  }
-)
-
-export const { addBridgeTransaction, popBridgeTransaction, setConfig } =
-  bridgeSlice.actions
+export const { popBridgeTransaction, setConfig } = bridgeSlice.actions
 
 export const bridgeReducer = bridgeSlice.reducer

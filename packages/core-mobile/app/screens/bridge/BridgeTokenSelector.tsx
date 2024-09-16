@@ -3,7 +3,7 @@ import { ListRenderItemInfo, View } from 'react-native'
 import { Text } from '@avalabs/k2-mobile'
 import Loader from 'components/Loader'
 import { Space } from 'components/Space'
-import { Asset, BIG_ZERO, useTokenInfoContext } from '@avalabs/core-bridge-sdk'
+import { Asset, useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { formatTokenAmount } from 'utils/Utils'
@@ -12,7 +12,8 @@ import { BridgeAsset } from '@avalabs/bridge-unified'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { isUnifiedBridgeAsset } from './utils/bridgeUtils'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { isUnifiedBridgeAsset, unwrapAssetSymbol } from './utils/bridgeUtils'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -55,10 +56,14 @@ function BridgeTokenSelector({
         <Avatar.Custom
           name={name}
           symbol={symbol}
-          logoUri={tokenInfoData?.[token.symbol]?.logo}
+          logoUri={tokenInfoData?.[unwrapAssetSymbol(symbol)]?.logo}
         />
       )
     }
+
+    const denomination = isUnifiedBridgeAsset(token.asset)
+      ? token.asset.decimals
+      : token.asset.denomination
 
     return (
       <AvaListItem.Base
@@ -68,7 +73,11 @@ function BridgeTokenSelector({
         rightComponentVerticalAlignment={'center'}
         rightComponent={
           <Text variant="body1" style={{ marginLeft: 12 }}>
-            {formatTokenAmount(token.balance || BIG_ZERO, 6)} {token.symbol}
+            {formatTokenAmount(
+              bigintToBig(token.balance || 0n, denomination),
+              6
+            )}{' '}
+            {token.symbol}
           </Text>
         }
         onPress={() => {
