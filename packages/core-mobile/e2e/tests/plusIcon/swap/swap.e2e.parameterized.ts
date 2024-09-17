@@ -36,8 +36,8 @@ describe('Swap AVAX', () => {
   const secondHalf = randomSixTokens.slice(2, 4)
 
   firstHalf.forEach((item, index) => {
-    let firstToken = item
-    let secondToken = secondHalf[index]
+    const firstToken = item
+    const secondToken = secondHalf[index]
     test(`should swap ${firstToken.symbol} <> ${secondToken.symbol}`, async () => {
       await SwapTabPage.swap(firstToken.symbol, secondToken.symbol, '0.0001')
       await SendPage.verifySuccessToast()
