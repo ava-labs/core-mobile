@@ -27,6 +27,7 @@ LogBox.ignoreLogs([
 ])
 
 SentryService.init()
+DataDogService.init(navigationRef).catch(Logger.error)
 
 Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
@@ -55,7 +56,6 @@ function App(): JSX.Element {
             SentryService.routingInstrumentation.registerNavigationContainer(
               navigationRef
             )
-            DataDogService.init(navigationRef).catch(Logger.error)
           }}>
           <RootScreenStack />
         </NavigationContainer>
