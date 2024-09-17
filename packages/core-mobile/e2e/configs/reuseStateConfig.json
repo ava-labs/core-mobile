@@ -7,7 +7,7 @@
   "testMatch": [
     "<rootDir>/tests/**/*.e2e.ts",
     "<rootDir>/tests/**/*.e2e.smoke.ts",
-    "<rootDir>/tests/**/*.e2e.singleRunner.ts"
+    "<rootDir>/tests/**/*.e2e.parameterized.ts"
   ],
   "reporters": ["detox/runners/jest/reporter"],
   "verbose": true,
