@@ -205,7 +205,7 @@
     "@storybook/react-native": "7.6.20",
     "@typechain/ethers-v6": "0.5.0",
     "@types/big.js": "6.2.2",
-    "@types/bn.js": "5.1.5",
+    "@types/bn.js": "5.1.6",
     "@types/d3": "7.4.3",
     "@types/jest": "29.5.12",
     "@types/lodash.debounce": "4.0.9",
