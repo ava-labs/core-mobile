@@ -297,7 +297,7 @@ __metadata:
     react-dom: 18.2.0
     react-hook-form: 7.45.1
     react-native: 0.73.7
-    react-native-aes-crypto: 1.3.10
+    react-native-aes-crypto: 3.0.3
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.1.3
@@ -23368,10 +23368,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-aes-crypto@npm:1.3.10":
-  version: 1.3.10
-  resolution: "react-native-aes-crypto@npm:1.3.10"
-  checksum: 84682c2900a843b102efa22baa6584713b6a3ba4b063c53358ac8991184e5c160820a707ea7d17a3637cf19edc0a3abd64958a326898c491880872f19d908531
+"react-native-aes-crypto@npm:3.0.3":
+  version: 3.0.3
+  resolution: "react-native-aes-crypto@npm:3.0.3"
+  checksum: c455ca0a4212f3178ffea1f14b385f09bb5c9733965e1cde39f56bfe24a1c7fded1cfa8162bf0f9650cf0a1ec1f2f02d4953147e18b3ac10bc6b62f9983ad64c
   languageName: node
   linkType: hard
 
