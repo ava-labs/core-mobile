@@ -181,7 +181,7 @@ __metadata:
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.3.29
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
-    "@datadog/mobile-react-native": 2.2.0
+    "@datadog/mobile-react-native": 2.4.3
     "@datadog/mobile-react-navigation": 2.4.3
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 2.6.5
@@ -189,7 +189,7 @@ __metadata:
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.3.0
-    "@lavamoat/allow-scripts": 3.2.0
+    "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 5.0.2
     "@metamask/rpc-errors": 6.3.0
@@ -202,7 +202,7 @@ __metadata:
     "@react-native-clipboard/clipboard": 1.13.2
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
     "@react-native-community/datetimepicker": 8.2.0
-    "@react-native-community/netinfo": 9.3.10
+    "@react-native-community/netinfo": 11.4.0
     "@react-native-community/slider": 4.4.2
     "@react-native-google-signin/google-signin": 10.1.0
     "@react-native-menu/menu": 0.9.1
@@ -216,7 +216,7 @@ __metadata:
     "@react-navigation/stack": 6.4.1
     "@reduxjs/toolkit": 1.8.1
     "@rushstack/eslint-patch": 1.10.4
-    "@sentry/react-native": 5.31.1
+    "@sentry/react-native": 5.32.0
     "@shopify/flash-list": 1.7.1
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
@@ -231,7 +231,7 @@ __metadata:
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.0
     "@types/big.js": 6.2.2
-    "@types/bn.js": 5.1.5
+    "@types/bn.js": 5.1.6
     "@types/d3": 7.4.3
     "@types/jest": 29.5.12
     "@types/lodash.debounce": 4.0.9
@@ -297,7 +297,6 @@ __metadata:
     react-dom: 18.2.0
     react-hook-form: 7.45.1
     react-native: 0.73.7
-    react-native-aes-crypto: 1.3.10
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.1.3
@@ -337,7 +336,7 @@ __metadata:
     react-native-screens: 3.34.0
     react-native-sensors: 7.3.6
     react-native-sound: 0.11.2
-    react-native-svg: 15.6.0
+    react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
     react-native-tab-view: 3.5.1
     react-native-toast-notifications: 3.3.0
@@ -467,7 +466,7 @@ __metadata:
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.2
-    "@lavamoat/allow-scripts": ^3.2.0
+    "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.2
@@ -481,7 +480,7 @@ __metadata:
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 50.0.20
-    expo-status-bar: 1.11.1
+    expo-status-bar: 1.12.1
     react: 18.3.1
     react-dom: 18.2.0
     react-native: 0.73.7
@@ -502,7 +501,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.24.0
     "@babel/runtime": 7.25.4
-    "@lavamoat/allow-scripts": 3.2.0
+    "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.4.2
@@ -531,7 +530,7 @@ __metadata:
     react-native: 0.73.7
     react-native-mmkv: 2.12.2
     react-native-safe-area-context: 4.10.9
-    react-native-svg: 15.6.0
+    react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
     react-test-renderer: 18.3.1
     tinycolor2: 1.6.0
@@ -539,7 +538,7 @@ __metadata:
   peerDependencies:
     react: 18.2.0
     react-native: 0.73.7
-    react-native-svg: 15.6.0
+    react-native-svg: 15.7.1
   languageName: unknown
   linkType: soft
 
@@ -3335,13 +3334,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/mobile-react-native@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@datadog/mobile-react-native@npm:2.2.0"
+"@datadog/mobile-react-native@npm:2.4.3":
+  version: 2.4.3
+  resolution: "@datadog/mobile-react-native@npm:2.4.3"
   peerDependencies:
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
-  checksum: 61452cba78f8ad22b9bcf64d77614cf71bbceade10f6271e7f98050a9b563ec80e10f12b3b8d89db121393cc7cf507a165824f7a1d87f42e1ca69865d0cbb9b0
+  checksum: c1baa070ce4ebc88c6e0e5237704a7cf16df343cf735cbe04494b32b9de9bdacdb93d0c218cad8bc074f29709d54a356b5bdd09573c9343c242f7093698bd100
   languageName: node
   linkType: hard
 
@@ -5207,9 +5206,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lavamoat/allow-scripts@npm:3.2.0, @lavamoat/allow-scripts@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "@lavamoat/allow-scripts@npm:3.2.0"
+"@lavamoat/allow-scripts@npm:3.2.1":
+  version: 3.2.1
+  resolution: "@lavamoat/allow-scripts@npm:3.2.1"
   dependencies:
     "@lavamoat/aa": ^4.3.0
     "@npmcli/run-script": 8.1.0
@@ -5220,7 +5219,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "*"
   bin:
     allow-scripts: src/cli.js
-  checksum: bbe41fe856242f8f782cc36e2dc599e4abcff7dbddd9d46384b8b6cec615f116682ddfbfdb216dea21d123e9e06bb206ee259dcd3fb7afc63ad8ebacfaac4f76
+  checksum: e3a619845cac89b0553b89ef2f4a642e5203efbb0615ba06b87b0ebd48f291cc943b372ca3115b9efec762e4afb371836300762b9851470f7b9bf578d7678bcb
   languageName: node
   linkType: hard
 
@@ -6977,12 +6976,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/netinfo@npm:9.3.10":
-  version: 9.3.10
-  resolution: "@react-native-community/netinfo@npm:9.3.10"
+"@react-native-community/netinfo@npm:11.4.0":
+  version: 11.4.0
+  resolution: "@react-native-community/netinfo@npm:11.4.0"
   peerDependencies:
     react-native: ">=0.59"
-  checksum: b3d79a61de0b08d6174616facda21cdac35a07a8d63b7d1830212862eef208c204dec90d74b29e85a6e60adc89ea5b7adf19c612c39073cc8ad4050440b1085b
+  checksum: 634efa40917db1febb04b925658d1ee78bb612585a96533b477f8cbf989be5e4a6ed2b25d8fe24982cf95619467aed86a742a566b3d13393147fcbaf606cda26
   languageName: node
   linkType: hard
 
@@ -7562,66 +7561,66 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/cli-darwin@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli-darwin@npm:2.34.0"
+"@sentry/cli-darwin@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli-darwin@npm:2.36.1"
   conditions: os=darwin
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-arm64@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli-linux-arm64@npm:2.34.0"
+"@sentry/cli-linux-arm64@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli-linux-arm64@npm:2.36.1"
   conditions: (os=linux | os=freebsd) & cpu=arm64
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-arm@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli-linux-arm@npm:2.34.0"
+"@sentry/cli-linux-arm@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli-linux-arm@npm:2.36.1"
   conditions: (os=linux | os=freebsd) & cpu=arm
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-i686@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli-linux-i686@npm:2.34.0"
+"@sentry/cli-linux-i686@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli-linux-i686@npm:2.36.1"
   conditions: (os=linux | os=freebsd) & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-x64@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli-linux-x64@npm:2.34.0"
+"@sentry/cli-linux-x64@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli-linux-x64@npm:2.36.1"
   conditions: (os=linux | os=freebsd) & cpu=x64
   languageName: node
   linkType: hard
 
-"@sentry/cli-win32-i686@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli-win32-i686@npm:2.34.0"
+"@sentry/cli-win32-i686@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli-win32-i686@npm:2.36.1"
   conditions: os=win32 & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
-"@sentry/cli-win32-x64@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli-win32-x64@npm:2.34.0"
+"@sentry/cli-win32-x64@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli-win32-x64@npm:2.36.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@sentry/cli@npm:2.34.0":
-  version: 2.34.0
-  resolution: "@sentry/cli@npm:2.34.0"
+"@sentry/cli@npm:2.36.1":
+  version: 2.36.1
+  resolution: "@sentry/cli@npm:2.36.1"
   dependencies:
-    "@sentry/cli-darwin": 2.34.0
-    "@sentry/cli-linux-arm": 2.34.0
-    "@sentry/cli-linux-arm64": 2.34.0
-    "@sentry/cli-linux-i686": 2.34.0
-    "@sentry/cli-linux-x64": 2.34.0
-    "@sentry/cli-win32-i686": 2.34.0
-    "@sentry/cli-win32-x64": 2.34.0
+    "@sentry/cli-darwin": 2.36.1
+    "@sentry/cli-linux-arm": 2.36.1
+    "@sentry/cli-linux-arm64": 2.36.1
+    "@sentry/cli-linux-i686": 2.36.1
+    "@sentry/cli-linux-x64": 2.36.1
+    "@sentry/cli-win32-i686": 2.36.1
+    "@sentry/cli-win32-x64": 2.36.1
     https-proxy-agent: ^5.0.0
     node-fetch: ^2.6.7
     progress: ^2.0.3
@@ -7644,7 +7643,7 @@ __metadata:
       optional: true
   bin:
     sentry-cli: bin/sentry-cli
-  checksum: c01c3711475af2d264bab49d2ca584e68b73cf780b1e2ca74c3bc57d5c84534afe540c3f4c830053874916976c03e25be346258af5318acba8a4bc2bbd705040
+  checksum: 036ebfa2a7847a40bebc71f15767cdac644ac0c4bd2737bdc16e687661a2c6a0e528b481cee0b1deeddc154e138cb21ca5b292970113998b061495f3d710ec1a
   languageName: node
   linkType: hard
 
@@ -7681,13 +7680,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/react-native@npm:5.31.1":
-  version: 5.31.1
-  resolution: "@sentry/react-native@npm:5.31.1"
+"@sentry/react-native@npm:5.32.0":
+  version: 5.32.0
+  resolution: "@sentry/react-native@npm:5.32.0"
   dependencies:
     "@sentry/babel-plugin-component-annotate": 2.20.1
     "@sentry/browser": 7.119.0
-    "@sentry/cli": 2.34.0
+    "@sentry/cli": 2.36.1
     "@sentry/core": 7.119.0
     "@sentry/hub": 7.119.0
     "@sentry/integrations": 7.119.0
@@ -7703,7 +7702,7 @@ __metadata:
       optional: true
   bin:
     sentry-expo-upload-sourcemaps: scripts/expo-upload-sourcemaps.js
-  checksum: c00ab7ff747fbde8a5ddf59f725f8af3600efa6b3d59759e862939905b12f894a617f2aeff34c3b6cdefa27e60ed6f20a1b3970b00d28a85630060e12195d96f
+  checksum: efc332d8fef97ca6d6238d0d2cdabc344b5b1ec6b2f5bd3fc9235c99fa2fdb25c656d59b2440aa37c085d173773c33ed29cde1ddf1709eb2ef3ee4a888734d4f
   languageName: node
   linkType: hard
 
@@ -8861,12 +8860,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bn.js@npm:5.1.5":
-  version: 5.1.5
-  resolution: "@types/bn.js@npm:5.1.5"
+"@types/bn.js@npm:5.1.6":
+  version: 5.1.6
+  resolution: "@types/bn.js@npm:5.1.6"
   dependencies:
     "@types/node": "*"
-  checksum: c87b28c4af74545624f8a3dae5294b16aa190c222626e8d4b2e327b33b1a3f1eeb43e7a24d914a9774bca43d8cd6e1cb0325c1f4b3a244af6693a024e1d918e6
+  checksum: 887411126d40e3d28aef2df8075cda2832db2b0e926bb4046039bbb026f2e3cfbcf1a3ce90bd935be0fcc039f8009e32026dfbb84a11c1f5d051cd7f8194ba23
   languageName: node
   linkType: hard
 
@@ -14824,7 +14823,7 @@ __metadata:
   resolution: "eslint-plugin-avalabs-mobile@workspace:packages/eslint-mobile"
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@lavamoat/allow-scripts": 3.2.0
+    "@lavamoat/allow-scripts": 3.2.1
     "@react-native-community/eslint-config": 3.0.3
     "@tanstack/eslint-plugin-query": 5.53.0
     "@types/node": 22.5.1
@@ -15554,10 +15553,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-status-bar@npm:1.11.1":
-  version: 1.11.1
-  resolution: "expo-status-bar@npm:1.11.1"
-  checksum: 5ac4d6b592acff4c8d5da2cbe1eb337b9389b648e4e4c56af4c484b5f1fa0dddf09f5b7c86b34fb03d0a77d4a6658e370cfd57904587794fa14b7e06cae41e88
+"expo-status-bar@npm:1.12.1":
+  version: 1.12.1
+  resolution: "expo-status-bar@npm:1.12.1"
+  checksum: 82f2e9096660cdb521b920662908b93e1909c2bbe776802c314dff6e0863300d19ba4b9e093825b2bdc094f333010df0b8ed11fcb330e4c29a16c2d55da0aa96
   languageName: node
   linkType: hard
 
@@ -23368,13 +23367,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-aes-crypto@npm:1.3.10":
-  version: 1.3.10
-  resolution: "react-native-aes-crypto@npm:1.3.10"
-  checksum: 84682c2900a843b102efa22baa6584713b6a3ba4b063c53358ac8991184e5c160820a707ea7d17a3637cf19edc0a3abd64958a326898c491880872f19d908531
-  languageName: node
-  linkType: hard
-
 "react-native-argon2@npm:2.0.1":
   version: 2.0.1
   resolution: "react-native-argon2@npm:2.0.1"
@@ -23916,9 +23908,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:15.6.0":
-  version: 15.6.0
-  resolution: "react-native-svg@npm:15.6.0"
+"react-native-svg@npm:15.7.1":
+  version: 15.7.1
+  resolution: "react-native-svg@npm:15.7.1"
   dependencies:
     css-select: ^5.1.0
     css-tree: ^1.1.3
@@ -23926,7 +23918,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 31c70317b7ca4c74d2b1db28af7ae127920c004c606ed4bd37f1e191a9433f6ce9929eabd105ed8768a1327ad26675ef0eaa06a97ca736ced8bfc6410b0d7480
+  checksum: ad7f711883ee45673486fe6bedadf8490bb06fd36e6de5d2f00898e6ac6c61ed34a5a8f7e6b25684c93e44ab51f9ea76642abfcca6a29462bc525f97204e6f41
   languageName: node
   linkType: hard
 
