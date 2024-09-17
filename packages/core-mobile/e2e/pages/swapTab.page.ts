@@ -70,7 +70,8 @@ class SwapTabPage {
     await Actions.tapElementAtIndex(this.selectTokenDropdown, 0)
   }
 
-  async reviewOrderButton(index = 0) {
+  async tapReviewOrderButton(index = 0) {
+    await Actions.waitForElementNoSync(this.reviewOrderBtn, 8000)
     await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
   }
 
@@ -115,8 +116,7 @@ class SwapTabPage {
     await this.inputTokenAmount(amount)
     await this.tapSelectTokenDropdown()
     await sendPage.selectToken(to)
-    await delay(5000)
-    await this.reviewOrderButton()
+    await this.tapReviewOrderButton()
     if (await Actions.isVisible(this.tokenSpendApproval, 0)) {
       await this.tapApproveButton()
     }

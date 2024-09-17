@@ -5,7 +5,7 @@
   "testTimeout": 180000,
   "rootDir": "..",
   "testMatch": [
-    "<rootDir>/tests/**/*.e2e.singleRunner.ts"
+    "<rootDir>/tests/**/*.e2e.parameterized.ts"
   ],
   "reporters": ["detox/runners/jest/reporter"],
   "verbose": true,
@@ -22,5 +22,6 @@
       }
     ]
   },
-  "testPathIgnorePatterns": []
+  "testPathIgnorePatterns": [
+  ]
 }
