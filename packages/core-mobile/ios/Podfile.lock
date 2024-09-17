@@ -918,8 +918,6 @@ PODS:
   - React-Mapbuffer (0.73.7):
     - glog
     - React-debug
-  - react-native-aes (1.3.10):
-    - React-Core
   - react-native-blur (3.6.1):
     - React
   - react-native-camera (4.2.1):
@@ -945,7 +943,7 @@ PODS:
     - MMKV (>= 1.3.3)
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - react-native-netinfo (9.3.10):
+  - react-native-netinfo (11.4.0):
     - React-Core
   - react-native-pager-view (6.4.1):
     - glog
@@ -1208,7 +1206,7 @@ PODS:
     - React-RCTImage
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (5.31.1):
+  - RNSentry (5.32.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1218,7 +1216,7 @@ PODS:
     - RNSound/Core (= 0.11.2)
   - RNSound/Core (0.11.2):
     - React-Core
-  - RNSVG (15.6.0):
+  - RNSVG (15.7.1):
     - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -1264,7 +1262,6 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
-  - react-native-aes (from `../node_modules/react-native-aes-crypto`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-camera (from `../node_modules/react-native-camera`)
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
@@ -1419,8 +1416,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
-  react-native-aes:
-    :path: "../node_modules/react-native-aes-crypto"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
   react-native-camera:
@@ -1603,14 +1598,13 @@ SPEC CHECKSUMS:
   React-jsinspector: f356e49aa086380d3a4892708ca173ad31ac69c1
   React-logger: 7b19bdfb254772a0332d6cd4d66eceb0678b6730
   React-Mapbuffer: 6f392912435adb8fbf4c3eee0e79a0a0b4e4b717
-  react-native-aes: c6e4e3ffcff410535e31e161fca95d50e608d4ee
   react-native-blur: 4568dd93d1d82748c180df8beb2d929c97b13b47
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
   react-native-compat: 5a5b7a043bec932a7814dc35f0649712bc10324e
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-menu: 9728f90160c36b9a75481fc76e05354b99d54c59
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2
-  react-native-netinfo: ccbe1085dffd16592791d550189772e13bf479e2
+  react-native-netinfo: e8e9cf28ede012e47603c9b35b2fa5b19b7bd71d
   react-native-pager-view: 7c45504fe805a954ebabd005d369937ea1c04de1
   react-native-passkey: 29ff814a83dfd4311478498e71a801dce68043ac
   react-native-quick-base64: e1ea036b3dec44c6da2439bd62881a09de614b23
@@ -1665,9 +1659,9 @@ SPEC CHECKSUMS:
   RNReanimated: 00ee495a70897aa9d541e76debec14253133b812
   RNScreens: 29418ceffb585b8f0ebd363de304288c3dce8323
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
-  RNSentry: 568a6de0674536ba3120d0dbfa1e0193d7ed425f
+  RNSentry: 5d312d51896cdc554e227001e0182a9ce5d95f37
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
-  RNSVG: 5da7a24f31968ec74f0b091e3440080f347e279b
+  RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
