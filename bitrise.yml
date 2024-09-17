@@ -276,6 +276,7 @@ workflows:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 450
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2ENoReuseAppState.sh
   _send-notification-slack:
