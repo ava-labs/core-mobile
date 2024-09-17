@@ -314,7 +314,7 @@ __metadata:
     react-native-graph: 1.1.0
     react-native-haptic-feedback: 2.0.3
     react-native-inappbrowser-reborn: 3.7.0
-    react-native-keychain: 8.1.1
+    react-native-keychain: 8.2.0
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
     react-native-mmkv: 2.12.2
@@ -23578,10 +23578,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-keychain@npm:8.1.1":
-  version: 8.1.1
-  resolution: "react-native-keychain@npm:8.1.1"
-  checksum: fce8319ef8f793516982f96b86080d0a85281d35e91585f1490c41751df4703dcb52b0f22523d2e5f1b87ca7e037daf7d412c7098712cdd3913e6baf239cb673
+"react-native-keychain@npm:8.2.0":
+  version: 8.2.0
+  resolution: "react-native-keychain@npm:8.2.0"
+  checksum: 4c4d5331013b8ab17c21120a2388e1e82aa30586738c0a34ed9dcffb6ce12454125ddb690951cad5563c9290b060eb68ccffa9477650cc3a5ddc347696b5d4ef
   languageName: node
   linkType: hard
 
