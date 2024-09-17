@@ -177,7 +177,7 @@ __metadata:
     "@babel/preset-env": 7.25.4
     "@babel/preset-typescript": 7.24.7
     "@babel/runtime": 7.25.4
-    "@blockaid/client": 0.10.0
+    "@blockaid/client": 0.26.0
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.3.29
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
@@ -197,7 +197,7 @@ __metadata:
     "@notifee/react-native": 7.8.2
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 6.9.1
-    "@playwright/test": 1.42.1
+    "@playwright/test": 1.47.1
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.13.2
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
@@ -232,7 +232,7 @@ __metadata:
     "@typechain/ethers-v6": 0.5.0
     "@types/big.js": 6.2.2
     "@types/bn.js": 5.1.5
-    "@types/d3": 7.4.0
+    "@types/d3": 7.4.3
     "@types/jest": 29.5.12
     "@types/lodash.debounce": 4.0.9
     "@types/lodash.isempty": 4.4.9
@@ -242,7 +242,7 @@ __metadata:
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
     "@types/semver": 7.5.4
-    "@types/uuid": 8.3.4
+    "@types/uuid": 10.0.0
     "@walletconnect/react-native-compat": 2.11.0
     "@walletconnect/types": 2.11.0
     "@walletconnect/utils": 2.11.0
@@ -256,7 +256,7 @@ __metadata:
     babel-loader: 9.1.0
     babel-plugin-inline-dotenv: 1.7.0
     babel-plugin-module-resolver: 5.0.2
-    babel-plugin-react-require: 3.1.3
+    babel-plugin-react-require: 4.0.3
     base-64: 1.0.0
     big.js: 6.2.1
     bip174: 2.1.0
@@ -320,7 +320,7 @@ __metadata:
     react-native-mmkv: 2.12.2
     react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
-    react-native-pager-view: 6.2.3
+    react-native-pager-view: 6.4.1
     react-native-passkey: 2.1.1
     react-native-performance: 5.1.2
     react-native-permissions: 3.6.0
@@ -366,8 +366,8 @@ __metadata:
     typechain: 8.3.2
     typescript: 5.2.2
     url: 0.11.4
-    uuid: 8.3.2
-    viem: 2.21.1
+    uuid: 10.0.0
+    viem: 2.21.8
     vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.15
@@ -517,7 +517,7 @@ __metadata:
     "@types/react": 18.3.4
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
-    "@types/tinycolor2": 1.4.5
+    "@types/tinycolor2": 1.4.6
     babel-jest: 29.7.0
     deprecated-react-native-prop-types: 5.0.0
     dripsy: 4.3.5
@@ -3250,22 +3250,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@blockaid/client@npm:0.10.0":
-  version: 0.10.0
-  resolution: "@blockaid/client@npm:0.10.0"
-  dependencies:
-    "@types/node": ^18.11.18
-    "@types/node-fetch": ^2.6.4
-    abort-controller: ^3.0.0
-    agentkeepalive: ^4.2.1
-    form-data-encoder: 1.7.2
-    formdata-node: ^4.3.2
-    node-fetch: ^2.6.7
-    web-streams-polyfill: ^3.2.1
-  checksum: 3fbf655591727da8dc669e656d7ec1184271121ad6fd6493d1821807c1022feab273a25fce6f2755ad89630561311072cdf7dc8ec66954d3d1c87b5c97b4a58a
-  languageName: node
-  linkType: hard
-
 "@blockaid/client@npm:0.11.0":
   version: 0.11.0
   resolution: "@blockaid/client@npm:0.11.0"
@@ -3279,6 +3263,21 @@ __metadata:
     node-fetch: ^2.6.7
     web-streams-polyfill: ^3.2.1
   checksum: 0f5808759036106876b491ec19dacde8c40bb692e9f2cc57f80d2724a47e5a01863d7aaea4e15ec812d38b728623fceb3b26425d0a46b3c35a3465fe9c71e9f6
+  languageName: node
+  linkType: hard
+
+"@blockaid/client@npm:0.26.0":
+  version: 0.26.0
+  resolution: "@blockaid/client@npm:0.26.0"
+  dependencies:
+    "@types/node": ^18.11.18
+    "@types/node-fetch": ^2.6.4
+    abort-controller: ^3.0.0
+    agentkeepalive: ^4.2.1
+    form-data-encoder: 1.7.2
+    formdata-node: ^4.3.2
+    node-fetch: ^2.6.7
+  checksum: bfe558663db297bef4d75cdac7b468c0aa1111b5be1f5f5dd6b5a8c7c7e9d5b3ed8eb9f2c19cf31d61098e5b665cd470130f01fa4c1f093cd374f4d78422ee3e
   languageName: node
   linkType: hard
 
@@ -5764,6 +5763,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@noble/hashes@npm:~1.5.0":
+  version: 1.5.0
+  resolution: "@noble/hashes@npm:1.5.0"
+  checksum: 9cc031d5c888c455bfeef76af649b87f75380a4511405baea633c1e4912fd84aff7b61e99716f0231d244c9cfeda1fafd7d718963e6a0c674ed705e9b1b4f76b
+  languageName: node
+  linkType: hard
+
 "@noble/secp256k1@npm:2.1.0":
   version: 2.1.0
   resolution: "@noble/secp256k1@npm:2.1.0"
@@ -6113,14 +6119,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.42.1":
-  version: 1.42.1
-  resolution: "@playwright/test@npm:1.42.1"
+"@playwright/test@npm:1.47.1":
+  version: 1.47.1
+  resolution: "@playwright/test@npm:1.47.1"
   dependencies:
-    playwright: 1.42.1
+    playwright: 1.47.1
   bin:
     playwright: cli.js
-  checksum: a41505f02a4dac358e645452a190cac620b8d4eae79ab5d90ea1fb7ca06d86a9f5749b1a803dea789b662d1cbfd216380f722bed72093897e18b4238f4a07a4d
+  checksum: 8596e03e2a05f3fa3c3dac2a591d2366275dd643f6d181adf6b006ed1cb202b25a9ef1d13a41346bdbd9117cfe5e660422a8e1197bff9e020e569b1737f5dee9
   languageName: node
   linkType: hard
 
@@ -7398,6 +7404,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@scure/base@npm:~1.1.8":
+  version: 1.1.8
+  resolution: "@scure/base@npm:1.1.8"
+  checksum: 1fc8a355ba68663c0eb430cf6a2c5ff5af790c347c1ba1953f344e8681ab37e37e2545e495f7f971b0245727d710fea8c1e57d232d0c6c543cbed4965c7596a1
+  languageName: node
+  linkType: hard
+
 "@scure/bip32@npm:1.1.5":
   version: 1.1.5
   resolution: "@scure/bip32@npm:1.1.5"
@@ -7469,6 +7482,16 @@ __metadata:
     "@noble/hashes": ~1.4.0
     "@scure/base": ~1.1.6
   checksum: dbb0b27df753eb6c6380010b25cc9a9ea31f9cb08864fc51e69e5880ff7e2b8f85b72caea1f1f28af165e83b72c48dd38617e43fc632779d025b50ba32ea759e
+  languageName: node
+  linkType: hard
+
+"@scure/bip39@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@scure/bip39@npm:1.4.0"
+  dependencies:
+    "@noble/hashes": ~1.5.0
+    "@scure/base": ~1.1.8
+  checksum: 211f2c01361993bfe54c0e4949f290224381457c7f76d7cd51d6a983f3f4b6b9f85adfd0e623977d777ed80417a5fe729eb19dd34e657147810a0e58a8e7b9e0
   languageName: node
   linkType: hard
 
@@ -9128,9 +9151,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3@npm:7.4.0":
-  version: 7.4.0
-  resolution: "@types/d3@npm:7.4.0"
+"@types/d3@npm:7.4.3":
+  version: 7.4.3
+  resolution: "@types/d3@npm:7.4.3"
   dependencies:
     "@types/d3-array": "*"
     "@types/d3-axis": "*"
@@ -9162,7 +9185,7 @@ __metadata:
     "@types/d3-timer": "*"
     "@types/d3-transition": "*"
     "@types/d3-zoom": "*"
-  checksum: d1383f5fca7c4a819d57eb4bccc387dccaa7cb4c24d56388e5247954db6c88f5fb7c74d156165dfe044f1da8d4d510796c8d8487b5956d8270a94a1182a6e00f
+  checksum: 12234aa093c8661546168becdd8956e892b276f525d96f65a7b32fed886fc6a569fe5a1171bff26fef2a5663960635f460c9504a6f2d242ba281a2b6c8c6465c
   languageName: node
   linkType: hard
 
@@ -9637,10 +9660,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/tinycolor2@npm:1.4.5":
-  version: 1.4.5
-  resolution: "@types/tinycolor2@npm:1.4.5"
-  checksum: 653b9d9b4a07c94f9e507e2173ee8d6bebcfbc7c73b19f5d357a3af489957390d817db82a9e5a4823b41b10179e9d0b2b825068f7f9d42706d591f8b2c1a464f
+"@types/tinycolor2@npm:1.4.6":
+  version: 1.4.6
+  resolution: "@types/tinycolor2@npm:1.4.6"
+  checksum: 50179851b32dcf78e0b4b691350a61043d8a00c3a8176d8155a257b34bb937136ff5d7950c814dca3c832673c7b6dc835f89dd154e85ccec3a4d4eac3993ed84
   languageName: node
   linkType: hard
 
@@ -9651,10 +9674,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:8.3.4":
-  version: 8.3.4
-  resolution: "@types/uuid@npm:8.3.4"
-  checksum: 6f11f3ff70f30210edaa8071422d405e9c1d4e53abbe50fdce365150d3c698fe7bbff65c1e71ae080cbfb8fded860dbb5e174da96fdbbdfcaa3fb3daa474d20f
+"@types/uuid@npm:10.0.0":
+  version: 10.0.0
+  resolution: "@types/uuid@npm:10.0.0"
+  checksum: e3958f8b0fe551c86c14431f5940c3470127293280830684154b91dc7eb3514aeb79fe3216968833cf79d4d1c67f580f054b5be2cd562bebf4f728913e73e944
   languageName: node
   linkType: hard
 
@@ -11261,10 +11284,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-react-require@npm:3.1.3":
-  version: 3.1.3
-  resolution: "babel-plugin-react-require@npm:3.1.3"
-  checksum: fcc36fa88b3f78e7fc90e3a49536a95f2af12528c997ef994e006ccc2b8311c2a96155cb9e946191d3a1d48ccdde47442bf9956dd00c1db571f8a97301c4450f
+"babel-plugin-react-require@npm:4.0.3":
+  version: 4.0.3
+  resolution: "babel-plugin-react-require@npm:4.0.3"
+  checksum: 07faf7ad2374d5fa82d1d7a662dfccd29ddb6e2b7fce7730f500e28ebe6d0e4bb127828a6d27aad79fb7e96c37d12517e846b3233ad79b4928fef5f854389b7f
   languageName: node
   linkType: hard
 
@@ -22577,27 +22600,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.42.1":
-  version: 1.42.1
-  resolution: "playwright-core@npm:1.42.1"
+"playwright-core@npm:1.47.1":
+  version: 1.47.1
+  resolution: "playwright-core@npm:1.47.1"
   bin:
     playwright-core: cli.js
-  checksum: e7081ff0f43b4b9053255109eb1d82164b7c6b55c7d022e25fca935d0f4fc547cb2e02a7b64f0c2a9462729be7bb45edb082f8b038306415944f1061d00d9c90
+  checksum: f61cee27a04df439b1e0df48e43bcd4f71cc41adcac3c35ac2df538d27be52cd1da91220295abb089c702ef40311af0dce12e1a71959ec15933bcdc1e6091563
   languageName: node
   linkType: hard
 
-"playwright@npm:1.42.1":
-  version: 1.42.1
-  resolution: "playwright@npm:1.42.1"
+"playwright@npm:1.47.1":
+  version: 1.47.1
+  resolution: "playwright@npm:1.47.1"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.42.1
+    playwright-core: 1.47.1
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 06c16bcd07d03993126ee6c168bde28c59d3cab7f7d4721eaf57bd5c51e9c929e10a286758de062b5fc02874413ceae2684d14cbb7865c0a51fc8df6d9001ad1
+  checksum: 90b9405b20946f1dd6bafc5b0248bb8a0217e850b1f740c672448cb0a284c57c7faef4c7207807d1a94cb45172fc5903478b12aef4f1bd03541630e8ab6267c1
   languageName: node
   linkType: hard
 
@@ -23638,13 +23661,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-pager-view@npm:6.2.3":
-  version: 6.2.3
-  resolution: "react-native-pager-view@npm:6.2.3"
+"react-native-pager-view@npm:6.4.1":
+  version: 6.4.1
+  resolution: "react-native-pager-view@npm:6.4.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e82a7a485045727c82b9d93d759118d5c1b12d11c3a0e3d644d638041a2bfb96e998472e245fa6e09806667ec188a8f1c7a951895ae88fc6ca614f80df939fc2
+  checksum: 558f08efccf748eed91a2a88be4f90e49e2b63a28c1b9db5de9711eb324a75e9565a3dbf92c523a623a2c7d5a7e0d8a0db88599bc85d33158544a7d0e724319e
   languageName: node
   linkType: hard
 
@@ -27806,21 +27829,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:10.0.0":
+  version: 10.0.0
+  resolution: "uuid@npm:10.0.0"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 4b81611ade2885d2313ddd8dc865d93d8dccc13ddf901745edca8f86d99bc46d7a330d678e7532e7ebf93ce616679fb19b2e3568873ac0c14c999032acb25869
+  languageName: node
+  linkType: hard
+
 "uuid@npm:3.3.2":
   version: 3.3.2
   resolution: "uuid@npm:3.3.2"
   bin:
     uuid: ./bin/uuid
   checksum: 8793629d2799f500aeea9fcd0aec6c4e9fbcc4d62ed42159ad96be345c3fffac1bbf61a23e18e2782600884fee05e6d4012ce4b70d0037c8e987533ae6a77870
-  languageName: node
-  linkType: hard
-
-"uuid@npm:8.3.2, uuid@npm:^8.0.0, uuid@npm:^8.3.2":
-  version: 8.3.2
-  resolution: "uuid@npm:8.3.2"
-  bin:
-    uuid: dist/bin/uuid
-  checksum: 5575a8a75c13120e2f10e6ddc801b2c7ed7d8f3c8ac22c7ed0c7b2ba6383ec0abda88c905085d630e251719e0777045ae3236f04c812184b7c765f63a70e58df
   languageName: node
   linkType: hard
 
@@ -27839,6 +27862,15 @@ __metadata:
   bin:
     uuid: dist/bin/uuid
   checksum: f5b7b5cc28accac68d5c083fd51cca64896639ebd4cca88c6cfb363801aaa83aa439c86dfc8446ea250a7a98d17afd2ad9e88d9d4958c79a412eccb93bae29de
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^8.0.0, uuid@npm:^8.3.2":
+  version: 8.3.2
+  resolution: "uuid@npm:8.3.2"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 5575a8a75c13120e2f10e6ddc801b2c7ed7d8f3c8ac22c7ed0c7b2ba6383ec0abda88c905085d630e251719e0777045ae3236f04c812184b7c765f63a70e58df
   languageName: node
   linkType: hard
 
@@ -27964,15 +27996,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.21.1":
-  version: 2.21.1
-  resolution: "viem@npm:2.21.1"
+"viem@npm:2.21.8":
+  version: 2.21.8
+  resolution: "viem@npm:2.21.8"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.4.0
     "@noble/hashes": 1.4.0
     "@scure/bip32": 1.4.0
-    "@scure/bip39": 1.3.0
+    "@scure/bip39": 1.4.0
     abitype: 1.0.5
     isows: 1.0.4
     webauthn-p256: 0.0.5
@@ -27982,7 +28014,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 344347546a9ac6373684cde3f67654c5711ba3cb98b92e3d3c52e0bdf9ad756281a8bd1fdf3c0f0cb29c17bb654997423b6c456689311e379fe100a31e2b2b47
+  checksum: db8b0d911ae2d6dc24ed46f2f3169557cfb4dbde07fd068b9d6f525301e604c9253cf846c280bab11e9d643544a0e2b9704b4ab32dc4f8af201ad6bd52c00f31
   languageName: node
   linkType: hard
 
