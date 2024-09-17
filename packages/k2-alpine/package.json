@@ -39,7 +39,7 @@
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
     "@types/react": "18.2.45",
-    "babel-loader": "8.3.0",
+    "babel-loader": "9.2.1",
     "eslint": "9.9.1",
     "eslint-plugin-avalabs-mobile": "workspace:*",
     "react-dom": "18.2.0",
