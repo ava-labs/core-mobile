@@ -367,7 +367,7 @@ __metadata:
     typescript: 5.2.2
     url: 0.11.4
     uuid: 10.0.0
-    viem: 2.21.7
+    viem: 2.21.8
     vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.15
@@ -27996,9 +27996,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.21.7":
-  version: 2.21.7
-  resolution: "viem@npm:2.21.7"
+"viem@npm:2.21.8":
+  version: 2.21.8
+  resolution: "viem@npm:2.21.8"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.4.0
@@ -28014,7 +28014,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 6a95e00ded06e2d8e71446b0d99ae5d57f6d883418f745960f9a8451f5b507643c3b61813d319c7e464c68eaba91c5e23d31d8f13c8e0d0033bab7c2e60697b6
+  checksum: db8b0d911ae2d6dc24ed46f2f3169557cfb4dbde07fd068b9d6f525301e604c9253cf846c280bab11e9d643544a0e2b9704b4ab32dc4f8af201ad6bd52c00f31
   languageName: node
   linkType: hard
 
