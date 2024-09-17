@@ -4,7 +4,7 @@ export const Tokens = [
   { symbol: 'BTC.b', name: 'Bitcoin', amount: '0.000001' },
   { symbol: 'USDT', name: 'Tether', amount: '0.00001' },
   { symbol: 'USDC', name: 'USD Coin', amount: '0.00001' },
-  { symbol: 'AAVE', name: 'Aave Token', amount: '0.000001' },
+  { symbol: 'AAVE', name: 'Aave Token', amount: '0.000001' }
 ]
 
 export const SwapTokens = [
