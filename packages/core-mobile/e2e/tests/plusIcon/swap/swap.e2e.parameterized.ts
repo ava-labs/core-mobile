@@ -37,7 +37,7 @@ describe('Swap AVAX', () => {
 
   firstHalf.forEach((item, index) => {
     const firstToken = item
-    const secondToken = secondHalf[index] || 'AVAX'
+    const secondToken = secondHalf[index] || { symbol: 'AVAX' }
     test(`should swap ${firstToken.symbol} <> ${secondToken.symbol}`, async () => {
       await SwapTabPage.swap(firstToken.symbol, secondToken.symbol, '0.0001')
       await SendPage.verifySuccessToast()
