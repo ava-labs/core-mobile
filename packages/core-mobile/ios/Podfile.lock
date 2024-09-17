@@ -945,7 +945,7 @@ PODS:
     - React-Core
   - react-native-netinfo (9.3.10):
     - React-Core
-  - react-native-pager-view (6.2.3):
+  - react-native-pager-view (6.4.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1607,7 +1607,7 @@ SPEC CHECKSUMS:
   react-native-menu: 9728f90160c36b9a75481fc76e05354b99d54c59
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2
   react-native-netinfo: ccbe1085dffd16592791d550189772e13bf479e2
-  react-native-pager-view: d5f3adb58a4e6e0d200055e9a4afdcda9b9022ce
+  react-native-pager-view: 7c45504fe805a954ebabd005d369937ea1c04de1
   react-native-passkey: 29ff814a83dfd4311478498e71a801dce68043ac
   react-native-quick-base64: e1ea036b3dec44c6da2439bd62881a09de614b23
   react-native-quick-crypto: 455c1b411db006dba1026a30681ececb19180187
