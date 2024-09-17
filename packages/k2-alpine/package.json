@@ -30,7 +30,7 @@
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
     "@babel/core": "7.25.2",
-    "@lavamoat/allow-scripts": "^3.2.0",
+    "@lavamoat/allow-scripts": "^3.2.1",
     "@react-native-async-storage/async-storage": "1.24.0",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-community/slider": "4.5.2",

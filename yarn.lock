@@ -189,7 +189,7 @@ __metadata:
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.3.0
-    "@lavamoat/allow-scripts": 3.2.0
+    "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 5.0.2
     "@metamask/rpc-errors": 6.3.0
@@ -467,7 +467,7 @@ __metadata:
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.2
-    "@lavamoat/allow-scripts": ^3.2.0
+    "@lavamoat/allow-scripts": ^3.2.1
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.2
@@ -502,7 +502,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.24.0
     "@babel/runtime": 7.25.4
-    "@lavamoat/allow-scripts": 3.2.0
+    "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.4.2
@@ -5207,9 +5207,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lavamoat/allow-scripts@npm:3.2.0, @lavamoat/allow-scripts@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "@lavamoat/allow-scripts@npm:3.2.0"
+"@lavamoat/allow-scripts@npm:3.2.1, @lavamoat/allow-scripts@npm:^3.2.1":
+  version: 3.2.1
+  resolution: "@lavamoat/allow-scripts@npm:3.2.1"
   dependencies:
     "@lavamoat/aa": ^4.3.0
     "@npmcli/run-script": 8.1.0
@@ -5220,7 +5220,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "*"
   bin:
     allow-scripts: src/cli.js
-  checksum: bbe41fe856242f8f782cc36e2dc599e4abcff7dbddd9d46384b8b6cec615f116682ddfbfdb216dea21d123e9e06bb206ee259dcd3fb7afc63ad8ebacfaac4f76
+  checksum: e3a619845cac89b0553b89ef2f4a642e5203efbb0615ba06b87b0ebd48f291cc943b372ca3115b9efec762e4afb371836300762b9851470f7b9bf578d7678bcb
   languageName: node
   linkType: hard
 
@@ -14824,7 +14824,7 @@ __metadata:
   resolution: "eslint-plugin-avalabs-mobile@workspace:packages/eslint-mobile"
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@lavamoat/allow-scripts": 3.2.0
+    "@lavamoat/allow-scripts": 3.2.1
     "@react-native-community/eslint-config": 3.0.3
     "@tanstack/eslint-plugin-query": 5.53.0
     "@types/node": 22.5.1

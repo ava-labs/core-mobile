@@ -193,7 +193,7 @@
     "@babel/preset-typescript": "7.24.7",
     "@babel/runtime": "7.25.4",
     "@dlenroc/testrail": "1.9.1",
-    "@lavamoat/allow-scripts": "3.2.0",
+    "@lavamoat/allow-scripts": "3.2.1",
     "@playwright/test": "1.47.1",
     "@react-native/babel-preset": "0.73.21",
     "@react-native/metro-config": "0.73.5",
