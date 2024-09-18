@@ -127,7 +127,7 @@ const tabSlice = createSlice({
         entity.lastVisited = getUnixTime(new Date())
       }
     },
-    setActiveHistoryForTab: (
+    updateActiveHistoryForTab: (
       state: TabState,
       action: PayloadAction<Omit<Tab, 'historyIds' | 'lastVisited'>>
     ) => {
@@ -235,7 +235,7 @@ export const {
   removeTab,
   removeAllTabs,
   setActiveTabId,
-  setActiveHistoryForTab
+  updateActiveHistoryForTab
 } = tabSlice.actions
 
 export const tabReducer = tabSlice.reducer

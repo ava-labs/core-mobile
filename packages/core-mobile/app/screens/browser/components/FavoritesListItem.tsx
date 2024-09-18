@@ -6,7 +6,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { Favorite } from 'store/browser'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
-import { getNextFavColor } from 'screens/browser/utils'
+import { getNextFavColor, prepareFaviconToLoad } from 'screens/browser/utils'
 import { Row } from 'components/Row'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
@@ -40,7 +40,7 @@ export const FavoritesListItem = ({
       <Row style={{ alignItems: 'center', marginVertical: 8 }}>
         <Avatar.Basic
           title={favorite.title}
-          logoUri={favorite.favicon}
+          logoUri={prepareFaviconToLoad(favorite.url, favorite.favicon)}
           size={48}
           fallbackBackgroundColor={getNextFavColor(favorite.id)}
         />

@@ -10,7 +10,8 @@ import {
   selectAllTabs,
   selectCanGoBack,
   selectCanGoForward,
-  selectTab
+  selectTab,
+  updateActiveHistoryForTab
 } from 'store/browser/slices/tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
@@ -29,9 +30,9 @@ import { BrowserScreenProps } from 'navigation/types'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
 import { LayoutAnimation } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import {
+  isSugguestedSiteName,
   isValidHttpUrl,
   normalizeUrlWithHttps,
   removeTrailingSlash
@@ -56,7 +57,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     coreConnectInterceptor,
     injectCustomWindowOpen
   } = useInjectedJavascript()
-  const activeHistory = useSelector(selectTab(tabId))?.activeHistory
+  const activeTab = useSelector(selectTab(tabId))
+  const activeHistory = activeTab?.activeHistory
   const webViewRef = useRef<WebView>(null)
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const [description, setDescription] = useState('')
@@ -118,23 +120,33 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   }
 
   const parseDescriptionAndFavicon = useCallback(
-    (wrapper: InjectedJsMessageWrapper, event: WebViewMessageEvent) => {
+    (wrapper: InjectedJsMessageWrapper, _: WebViewMessageEvent) => {
       const { favicon: favi, description: desc } = JSON.parse(
         wrapper.payload
       ) as GetDescriptionAndFavicon
       if (favi || desc) {
-        setFavicon(favi)
+        // if the favicon is already set to static favicon from suggested list, don't update it
+        const icon = isSugguestedSiteName(activeHistory?.favicon)
+          ? activeHistory?.favicon
+          : favi
+        setFavicon(icon)
         setDescription(desc)
-        dispatch(
-          updateMetadataForActiveTab({
-            url: event.nativeEvent.url,
-            favicon: favi,
-            description: desc
-          })
-        )
+        activeTab &&
+          activeTab.activeHistory &&
+          dispatch(
+            updateActiveHistoryForTab({
+              id: activeTab.id,
+              activeHistoryIndex: activeTab.activeHistoryIndex,
+              activeHistory: {
+                ...activeTab.activeHistory,
+                favicon: icon,
+                description: desc
+              }
+            })
+          )
       }
     },
-    [dispatch]
+    [dispatch, activeTab, activeHistory]
   )
 
   const showWalletConnectDialog = useCallback(() => {

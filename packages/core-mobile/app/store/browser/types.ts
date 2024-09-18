@@ -1,5 +1,5 @@
+import { PartialBy } from '@avalabs/vm-module-types'
 import { EntityState } from '@reduxjs/toolkit'
-import { ImageRequireSource } from 'react-native'
 
 export type TabId = string // unique, generated
 export type HistoryId = string // unique, generated
@@ -19,7 +19,7 @@ export type History = {
   url: string // url grabbed from html metadata
   lastVisited: number
   description?: string // description grabbed from html metadata
-  favicon?: string | ImageRequireSource // url to favicon
+  favicon?: string // url to favicon
 }
 
 export type TabState = EntityState<Tab> & {
@@ -30,7 +30,10 @@ export type HistoryState = EntityState<History>
 
 export type AddHistoryPayload = Omit<History, 'id' | 'lastVisited'>
 
-export type UpdateHistoryPayload = Omit<History, 'id' | 'lastVisited' | 'title'>
+export type UpdateHistoryPayload = Omit<
+  History,
+  'url' | 'lastVisited' | 'title'
+>
 
 export type TabHistoryPayload = {
   tabId: TabId
@@ -52,7 +55,12 @@ export type Favorite = {
   title: string //title grabbed from html metadata
   description: string //description grabbed from html metadata
   url: string
-  favicon?: string | ImageRequireSource //url to favicon
+  favicon?: string //url to favicon
 }
+
+export type UpdateFavoritePayload = Omit<
+  PartialBy<Favorite, 'description' | 'title'>,
+  'url'
+>
 
 export type FavoriteState = EntityState<Favorite>
