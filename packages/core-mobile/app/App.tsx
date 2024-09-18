@@ -14,8 +14,9 @@ import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
-import DataDogService from 'services/datadog/DataDogService'
 import Logger, { LogLevel } from 'utils/Logger'
+import { DatadogProvider, FileBasedConfiguration } from '@datadog/mobile-react-native'
+const configuration = new FileBasedConfiguration(require('./datadog-configuration.json'))
 
 Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
@@ -27,7 +28,6 @@ LogBox.ignoreLogs([
 ])
 
 SentryService.init()
-DataDogService.init(navigationRef).catch(Logger.error)
 
 Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
@@ -44,23 +44,25 @@ function App(): JSX.Element {
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <KeyboardAvoidingView
-        enabled={context.keyboardAvoidingViewEnabled}
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          ref={navigationRef}
-          onReady={() => {
-            SentryService.routingInstrumentation.registerNavigationContainer(
-              navigationRef
-            )
-          }}>
-          <RootScreenStack />
-        </NavigationContainer>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <DatadogProvider configuration={configuration}>
+      <SafeAreaView style={backgroundStyle}>
+        <KeyboardAvoidingView
+          enabled={context.keyboardAvoidingViewEnabled}
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <NavigationContainer
+            theme={context.navContainerTheme}
+            ref={navigationRef}
+            onReady={() => {
+              SentryService.routingInstrumentation.registerNavigationContainer(
+                navigationRef
+              )
+            }}>
+            <RootScreenStack />
+          </NavigationContainer>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </DatadogProvider>
   )
 }
 

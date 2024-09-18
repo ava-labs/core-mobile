@@ -1,0 +1,10 @@
+{
+  "$schema": "../node_modules/@datadog/mobile-react-native/datadog-configuration.schema.json",
+  "configuration": {
+    "applicationId": "59d44517-638e-43f0-9dbc-c09cd3296db7",
+    "clientToken": "pubddf90c8e62e38e3807cfe18bb800f7ab",
+    "env": "production",
+    "sessionSamplingRate": 100,
+    "batchSize": "LARGE"
+  }
+}
