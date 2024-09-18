@@ -29,12 +29,13 @@ const globalHistorySlice = createSlice({
     ) => {
       historyAdapter.removeOne(state, action.payload.historyId)
     },
-    updateMetadataForActiveTab: (
+    updateMetadataForHistory: (
       state: HistoryState,
       action: PayloadAction<UpdateHistoryPayload>
     ) => {
+      const id = action.payload.id
       historyAdapter.updateOne(state, {
-        id: createHash(action.payload.url),
+        id,
         changes: {
           favicon: action.payload.favicon,
           description: action.payload.description
@@ -80,7 +81,7 @@ export const selectAllHistories = (state: RootState): History[] => {
 }
 
 // actions
-export const { removeAllHistories, removeHistory, updateMetadataForActiveTab } =
+export const { removeAllHistories, removeHistory, updateMetadataForHistory } =
   globalHistorySlice.actions
 
 export const globalHistoryReducer = globalHistorySlice.reducer

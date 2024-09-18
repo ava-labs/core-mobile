@@ -1,4 +1,4 @@
-import { Pressable, Text, Image, alpha, useTheme } from '@avalabs/k2-mobile'
+import { Pressable, Text, alpha, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
@@ -7,10 +7,11 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
-import { SugggestedItem } from 'store/browser/const'
+import { SuggestedItem } from 'store/browser/const'
+import { SuggestedSiteIcon } from './SuggestedIcons'
 
 interface Props {
-  suggested: SugggestedItem
+  suggested: SuggestedItem
   marginRight: number
 }
 
@@ -36,7 +37,7 @@ export const SuggestedListItem = ({
       addHistoryForActiveTab({
         title: suggested.name ?? '',
         url: suggested.siteUrl ?? '',
-        favicon: suggested.logo
+        favicon: suggested.name
       })
     )
     navigate(AppNavigation.Browser.TabView)
@@ -50,8 +51,8 @@ export const SuggestedListItem = ({
         alignItems: 'center',
         marginBottom: 24
       }}>
-      <Image
-        source={suggested.logo}
+      <SuggestedSiteIcon
+        name={suggested.name}
         sx={{
           width: 64,
           height: 64,
