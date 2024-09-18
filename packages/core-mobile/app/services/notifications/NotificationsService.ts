@@ -227,11 +227,6 @@ class NotificationsService {
     await notifee.cancelTriggerNotification(id)
   }
 
-  cancelNotification = async (id?: string): Promise<void> => {
-    if (id === undefined) return
-    notifee.cancelNotification(id)
-  }
-
   handleNotificationPress = async ({
     detail,
     callback
@@ -262,14 +257,6 @@ class NotificationsService {
           detail,
           callback
         })
-        break
-      case EventType.ACTION_PRESS:
-        const { pressAction, notification } = detail
-        if (pressAction?.id === 'mark-as-read') {
-          await this.decrementBadgeCount()
-          await this.cancelNotification(notification?.id)
-        }
-        break
     }
   }
 
