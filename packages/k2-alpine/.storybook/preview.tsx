@@ -13,9 +13,9 @@ const preview: Preview = {
       }
     },
     backgrounds: {
-      default: 'day',
+      default: 'night',
       values: [
-        { name: 'night', value: 'black' },
+        { name: 'night', value: '#1E1E24' },
         { name: 'day', value: 'white' }
       ]
     }

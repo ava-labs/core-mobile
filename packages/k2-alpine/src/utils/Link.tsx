@@ -16,7 +16,7 @@ const Link = ({ title, url, style }: Props): JSX.Element => {
         Linking.openURL(url)
       }}
       sx={{
-        color: 'blue',
+        color: '$textPrimary',
         textDecorationLine: 'underline'
       }}
       style={style}>
