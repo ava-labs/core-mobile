@@ -30,7 +30,7 @@
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
     "@babel/core": "7.24.0",
-    "@babel/runtime": "7.25.4",
+    "@babel/runtime": "7.25.6",
     "@lavamoat/allow-scripts": "3.2.1",
     "@react-native/babel-preset": "0.73.21",
     "@react-native/metro-config": "0.73.5",
