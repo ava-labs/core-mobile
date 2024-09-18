@@ -18,9 +18,9 @@
   "dependencies": {
     "dripsy": "4.3.5",
     "expo": "50.0.20",
-    "expo-status-bar": "1.12.1",
     "expo-font": "11.10.3",
     "expo-splash-screen": "0.27.5",
+    "expo-status-bar": "1.12.1",
     "react": "18.3.1",
     "react-native": "0.73.7",
     "react-native-reanimated": "3.8.0"
@@ -43,8 +43,8 @@
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
     "@types/react": "18.2.45",
-    "babel-loader": "9.2.1",
     "@types/tinycolor2": "1.4.5",
+    "babel-loader": "9.2.1",
     "eslint": "9.9.1",
     "eslint-plugin-avalabs-mobile": "workspace:*",
     "json-stringify-pretty-compact": "4.0.0",
