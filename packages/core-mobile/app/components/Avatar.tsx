@@ -9,7 +9,7 @@ import FastImage from 'react-native-fast-image'
 import { Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
 import { SuggestedSiteName } from 'store/browser/const'
-import { isSugguestedSiteName } from 'screens/browser/utils'
+import { isBase64Png, isSugguestedSiteName } from 'screens/browser/utils'
 import { SuggestedSiteIcon } from '../screens/browser/components/SuggestedIcons'
 
 interface AvatarBaseProps {
@@ -74,7 +74,9 @@ const AvatarBase: FC<AvatarBaseProps> = ({
 
   const hasValidLogoUri =
     !!logoUri &&
-    (logoUri.startsWith('http') || logoUri.startsWith('https')) &&
+    (logoUri.startsWith('http') ||
+      logoUri.startsWith('https') ||
+      isBase64Png(logoUri)) &&
     !failedToLoad
 
   if (!hasValidLogoUri) {
