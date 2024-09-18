@@ -18,7 +18,7 @@ describe('Favorites Token', () => {
   let favorites = ['AVAX', 'BTC', 'ETH']
   const newToken = 'XRP'
 
-  it('should have default favorites on watchlist', async () => {
+  it('should have default favorite tokens on Favorites and Watchlist', async () => {
     // Display default favorites on WatchList Carousel
     await PortfolioPage.verifyWatchListCarousel(favorites)
 
@@ -38,7 +38,9 @@ describe('Favorites Token', () => {
     await TokenDetailPage.tapFavorite()
     await TokenDetailPage.tapBackButton()
     await device.enableSynchronization()
+  })
 
+  it('should verify new token added to Favorites and Watchlist', async () => {
     // Verify watchlist items on watchlist tab
     await WatchListPage.clearSearchBar()
     await WatchListPage.verifyFavorites(favorites)
@@ -48,7 +50,7 @@ describe('Favorites Token', () => {
     await PortfolioPage.verifyWatchListCarousel(favorites)
   })
 
-  it('should verify removing token from favorite', async () => {
+  it('should remove a token from Favorite', async () => {
     // Remove token from favorite list
     favorites = favorites.filter(fav => fav !== newToken)
     await device.disableSynchronization()
@@ -57,7 +59,9 @@ describe('Favorites Token', () => {
     await TokenDetailPage.tapFavorite()
     await TokenDetailPage.tapBackButton()
     await device.enableSynchronization()
+  })
 
+  it('should verify a token removal from Favorites', async () => {
     // Verify watchlist items on portfolio tab
     await PortfolioPage.verifyWatchListCarousel(favorites)
     await Assert.isNotVisible(

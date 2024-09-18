@@ -7,28 +7,29 @@ PODS:
     - AppAuth/Core
   - boost (1.83.0)
   - CatCrypto (0.3.2)
-  - DatadogCore (2.7.1):
-    - DatadogInternal (= 2.7.1)
-  - DatadogCrashReporting (2.7.1):
-    - DatadogInternal (= 2.7.1)
-    - PLCrashReporter (~> 1.11.1)
-  - DatadogInternal (2.7.1)
-  - DatadogLogs (2.7.1):
-    - DatadogInternal (= 2.7.1)
-  - DatadogRUM (2.7.1):
-    - DatadogInternal (= 2.7.1)
-  - DatadogSDKReactNative (2.2.0):
-    - DatadogCore (~> 2.7.1)
-    - DatadogCrashReporting (~> 2.7.1)
-    - DatadogLogs (~> 2.7.1)
-    - DatadogRUM (~> 2.7.1)
-    - DatadogTrace (~> 2.7.1)
-    - DatadogWebViewTracking (~> 2.7.1)
+  - DatadogCore (2.14.2):
+    - DatadogInternal (= 2.14.2)
+  - DatadogCrashReporting (2.14.2):
+    - DatadogInternal (= 2.14.2)
+    - PLCrashReporter (~> 1.11.2)
+  - DatadogInternal (2.14.2)
+  - DatadogLogs (2.14.2):
+    - DatadogInternal (= 2.14.2)
+  - DatadogRUM (2.14.2):
+    - DatadogInternal (= 2.14.2)
+  - DatadogSDKReactNative (2.4.3):
+    - DatadogCore (~> 2.14.1)
+    - DatadogCrashReporting (~> 2.14.1)
+    - DatadogLogs (~> 2.14.1)
+    - DatadogRUM (~> 2.14.1)
+    - DatadogTrace (~> 2.14.1)
+    - DatadogWebViewTracking (~> 2.14.1)
     - React-Core
-  - DatadogTrace (2.7.1):
-    - DatadogInternal (= 2.7.1)
-  - DatadogWebViewTracking (2.7.1):
-    - DatadogInternal (= 2.7.1)
+  - DatadogTrace (2.14.2):
+    - DatadogInternal (= 2.14.2)
+    - OpenTelemetrySwiftApi (= 1.6.0)
+  - DatadogWebViewTracking (2.14.2):
+    - DatadogInternal (= 2.14.2)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.73.7)
   - FBReactNativeSpec (0.73.7):
@@ -47,7 +48,7 @@ PODS:
   - GTMAppAuth (4.1.1):
     - AppAuth/Core (~> 1.7)
     - GTMSessionFetcher/Core (< 4.0, >= 3.3)
-  - GTMSessionFetcher/Core (3.4.1)
+  - GTMSessionFetcher/Core (3.5.0)
   - jail-monkey (2.8.0):
     - React-Core
   - libwebp (1.3.2):
@@ -68,10 +69,11 @@ PODS:
     - lottie-ios (~> 4.4.1)
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - MMKV (1.3.5):
-    - MMKVCore (~> 1.3.5)
-  - MMKVCore (1.3.5)
+  - MMKV (1.3.9):
+    - MMKVCore (~> 1.3.9)
+  - MMKVCore (1.3.9)
   - OpenSSL-Universal (1.1.1100)
+  - OpenTelemetrySwiftApi (1.6.0)
   - Permission-Camera (3.6.0):
     - RNPermissions
   - PLCrashReporter (1.11.2)
@@ -943,9 +945,9 @@ PODS:
     - MMKV (>= 1.3.3)
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - react-native-netinfo (9.3.10):
+  - react-native-netinfo (11.4.0):
     - React-Core
-  - react-native-pager-view (6.2.3):
+  - react-native-pager-view (6.4.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -974,7 +976,7 @@ PODS:
     - React-Core
   - react-native-view-shot (3.8.0):
     - React-Core
-  - react-native-webview (13.8.1):
+  - react-native-webview (13.12.2):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1179,7 +1181,7 @@ PODS:
     - React-Core
   - RNInAppBrowser (3.7.0):
     - React-Core
-  - RNKeychain (8.1.1):
+  - RNKeychain (8.2.0):
     - React-Core
   - RNLocalize (3.2.1):
     - React-Core
@@ -1206,7 +1208,7 @@ PODS:
     - React-RCTImage
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (5.31.1):
+  - RNSentry (5.32.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1216,7 +1218,7 @@ PODS:
     - RNSound/Core (= 0.11.2)
   - RNSound/Core (0.11.2):
     - React-Core
-  - RNSVG (15.6.0):
+  - RNSVG (15.7.1):
     - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -1349,6 +1351,7 @@ SPEC REPOS:
     - MMKV
     - MMKVCore
     - OpenSSL-Universal
+    - OpenTelemetrySwiftApi
     - PLCrashReporter
     - SDWebImage
     - SDWebImageWebPCoder
@@ -1553,14 +1556,14 @@ SPEC CHECKSUMS:
   AppAuth: 501c04eda8a8d11f179dbe8637b7a91bb7e5d2fa
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
-  DatadogCore: 4a4cdf7beca3aa12b7095bebd926acea1a865a99
-  DatadogCrashReporting: f8b4ea638acaf58b68bbc51cb62a2d876f763241
-  DatadogInternal: b9217da25018284c087a2ed4b9bb3b0f26c767c0
-  DatadogLogs: 3b4132eefa67f196bb3ab2d603c1a2acd1292615
-  DatadogRUM: 8845815ba89f5ab8ceee765ee268f7de36f3e35d
-  DatadogSDKReactNative: df8874f04262606461d8db6b48d6be145d3bf483
-  DatadogTrace: a63da746c609bd4c683bca61a94429889e33b11e
-  DatadogWebViewTracking: 713f862ddd89173e0a3f5342cefa23def40f0f48
+  DatadogCore: a3429f62b7da0e715e179833b3daa0203ba2a5ad
+  DatadogCrashReporting: 3b5e496c1f61971a93b9a1bff3312297be03f031
+  DatadogInternal: 11798eea970f195ad720168f9a51712e71affe33
+  DatadogLogs: 4192cc1979467ce0c2521d73ba92b6197e0c7f06
+  DatadogRUM: f732009eba7a848d6e2df9ef12944e30f0e94ba2
+  DatadogSDKReactNative: f418f95923dc78ad7b4dcd1710804f1672d8abfa
+  DatadogTrace: 5687191622d91152f10616e206500fe5acd8a342
+  DatadogWebViewTracking: cb818ee5943de63940b4f536320361c17af0f7b1
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: 9f533d5a4c75ca77c8ed774aced1a91a0701781e
   FBReactNativeSpec: 40b791f4a1df779e7e4aa12c000319f4f216d40a
@@ -1568,14 +1571,15 @@ SPEC CHECKSUMS:
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
-  GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
+  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: fcb5e73e17ba4c983140b7d21095c834b3087418
   lottie-react-native: 13cd0c4782c3e6bb26bfa4cc2d08bfb84f6d1ab6
-  MMKV: 506311d0494023c2f7e0b62cc1f31b7370fa3cfb
-  MMKVCore: 9e2e5fd529b64a9fe15f1a7afb3d73b2e27b4db9
+  MMKV: 817ba1eea17421547e01e087285606eb270a8dcb
+  MMKVCore: af055b00e27d88cd92fad301c5fecd1ff9b26dd9
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
+  OpenTelemetrySwiftApi: 657da8071c2908caecce11548e006f779924ff9c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   PLCrashReporter: 499c53b0104f95c302d94fd723ebb03c56d9bac8
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
@@ -1606,8 +1610,8 @@ SPEC CHECKSUMS:
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-menu: 9728f90160c36b9a75481fc76e05354b99d54c59
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2
-  react-native-netinfo: ccbe1085dffd16592791d550189772e13bf479e2
-  react-native-pager-view: d5f3adb58a4e6e0d200055e9a4afdcda9b9022ce
+  react-native-netinfo: e8e9cf28ede012e47603c9b35b2fa5b19b7bd71d
+  react-native-pager-view: 7c45504fe805a954ebabd005d369937ea1c04de1
   react-native-passkey: 29ff814a83dfd4311478498e71a801dce68043ac
   react-native-quick-base64: e1ea036b3dec44c6da2439bd62881a09de614b23
   react-native-quick-crypto: 455c1b411db006dba1026a30681ececb19180187
@@ -1616,7 +1620,7 @@ SPEC CHECKSUMS:
   react-native-skia: d3c0468a78db975b919d364e3634ceb20a165902
   react-native-slider: 33b8d190b59d4f67a541061bb91775d53d617d9d
   react-native-view-shot: 6b7ed61d77d88580fed10954d45fad0eb2d47688
-  react-native-webview: 05fa0e766f1c408e8c293cbcb84b2c199711cfd1
+  react-native-webview: 8600348afad520e40ac629eb7963a514f16cdd17
   React-nativeconfig: 754233aac2a769578f828093b672b399355582e6
   React-NativeModulesApple: 7359dd8830ba09d157afcc7088836e69d3f61743
   React-perflogger: 68ec84e2f858a3e35009aef8866b55893e5e0a1f
@@ -1652,7 +1656,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 1155b1898ceddefeebf77792927360d44fe11e77
   RNGoogleSignin: a6a612cce56a45ab701c5c5c6e36f5390522d100
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
-  RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
+  RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
   RNLocalize: 4f22418187ecd5ca693231093ff1d912d1b3c9bc
   RNNotifee: 8e2d3df3f0e9ce8f5d1fe4c967431138190b6175
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
@@ -1661,9 +1665,9 @@ SPEC CHECKSUMS:
   RNReanimated: 00ee495a70897aa9d541e76debec14253133b812
   RNScreens: 29418ceffb585b8f0ebd363de304288c3dce8323
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
-  RNSentry: 568a6de0674536ba3120d0dbfa1e0193d7ed425f
+  RNSentry: 5d312d51896cdc554e227001e0182a9ce5d95f37
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
-  RNSVG: 5da7a24f31968ec74f0b091e3440080f347e279b
+  RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
