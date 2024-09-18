@@ -312,7 +312,7 @@ __metadata:
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.18.1
     react-native-graph: 1.1.0
-    react-native-haptic-feedback: 2.0.3
+    react-native-haptic-feedback: 2.3.2
     react-native-inappbrowser-reborn: 3.7.0
     react-native-keychain: 8.2.0
     react-native-level-fs: 3.0.1
@@ -23562,12 +23562,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-haptic-feedback@npm:2.0.3":
-  version: 2.0.3
-  resolution: "react-native-haptic-feedback@npm:2.0.3"
+"react-native-haptic-feedback@npm:2.3.2":
+  version: 2.3.2
+  resolution: "react-native-haptic-feedback@npm:2.3.2"
   peerDependencies:
     react-native: ">=0.60.0"
-  checksum: c0952135c54535439b3b307f4ecc11721eb208ef7210f56becd5471488d5ee130d78cdf0c8515aa80097ba284347925d2df3f402a09200e645522fe99fad3d64
+  checksum: 3da5cf82403834f828070ed89007a3d26152a49a7c43b49702ee27770a1da07671b29aefce837e7f0e117c47d41da98f9acc2fbd495b502380b5ec8ba0b05d64
   languageName: node
   linkType: hard
 
