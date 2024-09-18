@@ -976,7 +976,7 @@ PODS:
     - React-Core
   - react-native-view-shot (3.8.0):
     - React-Core
-  - react-native-webview (13.8.1):
+  - react-native-webview (13.12.2):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1181,7 +1181,7 @@ PODS:
     - React-Core
   - RNInAppBrowser (3.7.0):
     - React-Core
-  - RNKeychain (8.1.1):
+  - RNKeychain (8.2.0):
     - React-Core
   - RNLocalize (3.2.1):
     - React-Core
@@ -1620,7 +1620,7 @@ SPEC CHECKSUMS:
   react-native-skia: d3c0468a78db975b919d364e3634ceb20a165902
   react-native-slider: 33b8d190b59d4f67a541061bb91775d53d617d9d
   react-native-view-shot: 6b7ed61d77d88580fed10954d45fad0eb2d47688
-  react-native-webview: 05fa0e766f1c408e8c293cbcb84b2c199711cfd1
+  react-native-webview: 8600348afad520e40ac629eb7963a514f16cdd17
   React-nativeconfig: 754233aac2a769578f828093b672b399355582e6
   React-NativeModulesApple: 7359dd8830ba09d157afcc7088836e69d3f61743
   React-perflogger: 68ec84e2f858a3e35009aef8866b55893e5e0a1f
@@ -1656,7 +1656,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 1155b1898ceddefeebf77792927360d44fe11e77
   RNGoogleSignin: a6a612cce56a45ab701c5c5c6e36f5390522d100
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
-  RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
+  RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
   RNLocalize: 4f22418187ecd5ca693231093ff1d912d1b3c9bc
   RNNotifee: 8e2d3df3f0e9ce8f5d1fe4c967431138190b6175
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
