@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react'
 import React from 'react'
+import { withBackgrounds } from '@storybook/addon-ondevice-backgrounds'
 import { K2AlpineThemeProvider } from '../src/theme/ThemeProvider'
 import { View } from 'react-native'
 
@@ -10,11 +11,23 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/
       }
+    },
+    backgrounds: {
+      default: 'day',
+      values: [
+        { name: 'night', value: 'black' },
+        { name: 'day', value: 'white' }
+      ]
     }
   },
   decorators: [
     Story => (
-      <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1
+        }}>
         <Story />
       </View>
     ),
@@ -22,7 +35,8 @@ const preview: Preview = {
       <K2AlpineThemeProvider>
         <Story />
       </K2AlpineThemeProvider>
-    )
+    ),
+    withBackgrounds
   ]
 }
 
