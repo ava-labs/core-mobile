@@ -91,6 +91,10 @@ export const isSugguestedSiteName = (name?: string): boolean => {
   return Object.values(SuggestedSiteName).includes(name as SuggestedSiteName)
 }
 
+export const isBase64Png = (imageData: string): boolean => {
+  return imageData.startsWith('data:image/png;base64')
+}
+
 // This function is used to prepare favicon to load in the browser favorites list
 export const prepareFaviconToLoad = (
   url: string,
@@ -103,11 +107,15 @@ export const prepareFaviconToLoad = (
   if (favicon) {
     if (
       isSugguestedSiteName(favicon as SuggestedSiteName) ||
-      isValidUrl(favicon)
+      isValidUrl(favicon) ||
+      isBase64Png(favicon)
     ) {
       return favicon
     } else {
-      return activeHistoryDomain + favicon
+      if (favicon.startsWith('/')) {
+        return activeHistoryDomain + favicon
+      }
+      return activeHistoryDomain + '/' + favicon
     }
   }
 }
