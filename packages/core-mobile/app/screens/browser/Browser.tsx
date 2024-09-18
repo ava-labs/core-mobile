@@ -146,7 +146,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
           )
       }
     },
-    [dispatch]
+    [dispatch, activeTab, activeHistory]
   )
 
   const showWalletConnectDialog = useCallback(() => {
