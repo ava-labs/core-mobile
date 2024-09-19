@@ -138,7 +138,6 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
       )}
     </View>
   )
-
   return (
     <AvaListItem.Base
       testID="activityListItem"

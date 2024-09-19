@@ -68,6 +68,10 @@ class ActivityTabPage {
     return by.id(activityTab.linkIcon)
   }
 
+  get noRecentActivity() {
+    return by.text(activityTab.noRecentActivity)
+  }
+
   async tapArrowIcon(index: number) {
     await Action.tapElementAtIndex(this.arrowSVG, index)
   }
@@ -94,6 +98,11 @@ class ActivityTabPage {
 
   async tapBridgeFilterOption() {
     await Action.tapElementAtIndex(this.bridgeFilterOption, platformIndex)
+  }
+
+  async verifySelectedFilter(filter: string) {
+    await Action.waitForElement(this.selectFilterDropdown)
+    await Assert.hasText(this.selectFilterDropdown, `Display: ${filter}`)
   }
 
   async tapContractCallFilterOption() {
@@ -180,8 +189,8 @@ class ActivityTabPage {
 
   async verifyExistingRow(type: string, amount: string) {
     await Action.waitForElement(this.activityListItem)
-    await Action.waitForElement(by.text(type))
     await Action.waitForElement(by.text(amount))
+    await Assert.isVisible(by.text(type))
   }
 }
 

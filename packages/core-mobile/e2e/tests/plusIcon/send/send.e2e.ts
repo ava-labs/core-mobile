@@ -8,7 +8,7 @@ import bottomTabsPage from '../../../pages/bottomTabs.page'
 import { cleanup } from '../../../helpers/cleanup'
 
 describe('Send AVAX', () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
     await warmup()
   })
 
@@ -31,7 +31,7 @@ describe('Send AVAX', () => {
     await portfolioPage.tapNetworksDropdownAVAX(
       portfolioPage.networksDropdownPChain
     )
-    await actions.waitForElement(portfolioPage.avaxPNetwork)
+    await actions.waitForElement(portfolioPage.avaxPNetwork, 6000)
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
@@ -45,7 +45,7 @@ describe('Send AVAX', () => {
     await portfolioPage.tapNetworksDropdownAVAX(
       portfolioPage.networksDropdownXChain
     )
-    await actions.waitForElement(portfolioPage.avaxXNetwork)
+    await actions.waitForElement(portfolioPage.avaxXNetwork, 6000)
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount

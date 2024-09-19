@@ -11,10 +11,12 @@ import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 import StakePage from '../../pages/Stake/stake.page'
 import ClaimPage from '../../pages/Stake/claim.page'
 import { cleanup } from '../../helpers/cleanup'
+import accountManagePage from '../../pages/accountManage.page'
 
 describe('Stake on Testnet', () => {
   beforeAll(async () => {
     await warmup()
+    await AdvancedPage.switchToTestnet()
   })
 
   afterAll(async () => {
@@ -22,7 +24,7 @@ describe('Stake on Testnet', () => {
   })
 
   it('should test a staking flow on testnet for an existing account', async () => {
-    await AdvancedPage.switchToTestnet()
+    await accountManagePage.switchToFirstAccount()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
     await GetStartedScreenPage.verifyGetStartedScreenItems()
@@ -66,7 +68,7 @@ describe('Stake on Testnet', () => {
     }
   })
 
-  it('should test a staking flow for a new account', async () => {
+  it('should test a staking flow for a new account on testnet', async () => {
     await BottomTabsPage.tapPortfolioTab()
     await AccountManagePage.createNthAccountAndSwitchToNth(3)
     await BottomTabsPage.tapStakeTab()

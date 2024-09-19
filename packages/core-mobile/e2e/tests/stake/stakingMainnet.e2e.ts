@@ -7,10 +7,12 @@ import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 import StakePage from '../../pages/Stake/stake.page'
 import AccountManagePage from '../../pages/accountManage.page'
 import commonElsPage from '../../pages/commonEls.page'
+import advancedPage from '../../pages/burgerMenu/advanced.page'
 
 describe('Stake on Mainnet', () => {
   beforeAll(async () => {
     await warmup()
+    await advancedPage.switchToMainnet()
   })
 
   it('should test a staking flow on mainnet for an existing account', async () => {
