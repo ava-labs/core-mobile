@@ -50,7 +50,7 @@ const tabSlice = createSlice({
   initialState: getInitialState,
   reducers: {
     addTab: (state: TabState) => {
-      const tabId = uuidv4()
+      const tabId = uuid()
       tabAdapter.addOne(state, {
         id: tabId,
         historyIds: [],
