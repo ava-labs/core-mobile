@@ -1,17 +1,13 @@
 import notifee, {
+  AndroidChannel,
   AuthorizationStatus,
+  Event,
+  EventDetail,
+  EventType,
   TimestampTrigger,
   TriggerNotification,
-  TriggerType,
-  Event,
-  EventType,
-  EventDetail,
-  AndroidChannel
+  TriggerType
 } from '@notifee/react-native'
-import {
-  DeepLinkOrigin,
-  NotificationCallbackProps
-} from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import {
@@ -20,6 +16,10 @@ import {
 } from 'services/notifications/channels'
 import { StakeCompleteNotification } from 'store/notifications'
 import Logger from 'utils/Logger'
+import {
+  HandleNotificationCallback,
+  NotificationData
+} from 'contexts/DeeplinkContext/types'
 import {
   LAUNCH_ACTIVITY,
   OPEN_CLAIM_REWARDS_PRESS_ACTION_ID,
@@ -57,7 +57,10 @@ class NotificationsService {
    * Tries to pull up system prompt for allowing notifications, if that doesn't
    * work opens system settings
    */
-  async getAllPermissions(shouldOpenSettings = true) {
+  async getAllPermissions(shouldOpenSettings = true): Promise<{
+    permission: 'authorized' | 'denied'
+    blockedNotifications: Map<ChannelId, boolean>
+  }> {
     const promises = [] as Promise<string>[]
     notificationChannels.forEach(channel => {
       promises.push(this.createChannel(channel))
@@ -74,15 +77,15 @@ class NotificationsService {
     return { permission, blockedNotifications }
   }
 
-  openSystemSettings() {
+  openSystemSettings(): void {
     if (Platform.OS === 'ios') {
-      Linking.openSettings()
+      Linking.openSettings().catch(Logger.error)
     } else {
-      notifee.openNotificationSettings()
+      notifee.openNotificationSettings().catch(Logger.error)
     }
   }
 
-  async requestPermission() {
+  async requestPermission(): Promise<'authorized' | 'denied'> {
     const settings = await notifee.requestPermission()
     return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
       settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
@@ -102,7 +105,7 @@ class NotificationsService {
     channelId: ChannelId
     accountIndex?: number
     isDeveloperMode?: boolean
-  }) => {
+  }): Promise<void> => {
     const timestamp = fromUnixTime(unixTimestamp).getTime()
     // Create a time-based trigger
     const trigger: TimestampTrigger = {
@@ -155,10 +158,10 @@ class NotificationsService {
 
   updateStakeCompleteNotification = async (
     notificationData: StakeCompleteNotification[]
-  ) => {
+  ): Promise<void> => {
     await this.cleanupNotifications()
 
-    notificationData.forEach(async data => {
+    for (const data of notificationData) {
       setTimeout(async () => {
         if (data.txHash && data.endTimestamp) {
           const trigger = await this.getNotificationTriggerById(data.txHash)
@@ -177,30 +180,49 @@ class NotificationsService {
           }
         }
       }, 500)
+    }
+  }
+
+  onForegroundEvent = (callback: HandleNotificationCallback): (() => void) => {
+    return notifee.onForegroundEvent(async ({ type, detail }) => {
+      this.handleNotificationEvent({
+        type,
+        detail,
+        callback
+      }).catch(reason =>
+        Logger.error(`[NotificationsService.ts][onForegroundEvent]${reason}`)
+      )
     })
   }
 
-  onForegroundEvent = (observer: (event: Event) => void): (() => void) => {
-    return notifee.onForegroundEvent(observer)
+  /**
+   * method should be registered as early on in your project as possible (e.g. the index.js file)
+   */
+  onBackgroundEvent = (callback: HandleNotificationCallback): void => {
+    return notifee.onBackgroundEvent(async ({ type, detail }) => {
+      this.handleNotificationEvent({
+        type,
+        detail,
+        callback
+      }).catch(reason =>
+        Logger.error(`[NotificationsService.ts][onBackgroundEvent]${reason}`)
+      )
+    })
   }
 
-  onBackgroundEvent = (observer: (event: Event) => Promise<void>) => {
-    return notifee.onBackgroundEvent(observer)
+  incrementBadgeCount = async (incrementBy?: number): Promise<void> => {
+    await notifee.incrementBadgeCount(incrementBy)
   }
 
-  incrementBadgeCount = async (incrementBy?: number) => {
-    notifee.incrementBadgeCount(incrementBy)
+  decrementBadgeCount = async (decrementBy?: number): Promise<void> => {
+    await notifee.decrementBadgeCount(decrementBy)
   }
 
-  decrementBadgeCount = async (decrementBy?: number) => {
-    notifee.decrementBadgeCount(decrementBy)
+  setBadgeCount = async (count: number): Promise<void> => {
+    await notifee.setBadgeCount(count)
   }
 
-  setBadgeCount = async (count: number) => {
-    notifee.setBadgeCount(count)
-  }
-
-  cancelTriggerNotification = async (id?: string) => {
+  cancelTriggerNotification = async (id?: string): Promise<void> => {
     if (!id) return
     await notifee.cancelTriggerNotification(id)
   }
@@ -210,26 +232,13 @@ class NotificationsService {
     callback
   }: {
     detail: EventDetail
-    callback?: ({
-      url,
-      accountIndex,
-      origin,
-      isDevMode
-    }: NotificationCallbackProps) => void
-  }) => {
-    this.decrementBadgeCount(1)
+    callback: HandleNotificationCallback
+  }): Promise<void> => {
+    await this.decrementBadgeCount(1)
     if (detail?.notification?.id) {
       await this.cancelTriggerNotification(detail.notification.id)
     }
-
-    if (detail?.notification?.data?.url) {
-      callback?.({
-        url: detail.notification.data.url as string,
-        accountIndex: detail.notification.data.accountIndex as number,
-        origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-        isDevMode: detail?.notification?.data?.isDeveloperMode === 'true'
-      })
-    }
+    callback(detail?.notification?.data)
   }
 
   handleNotificationEvent = async ({
@@ -237,19 +246,14 @@ class NotificationsService {
     detail,
     callback
   }: Event & {
-    callback?: ({
-      url,
-      accountIndex,
-      origin,
-      isDevMode
-    }: NotificationCallbackProps) => void
-  }) => {
+    callback: HandleNotificationCallback
+  }): Promise<void> => {
     switch (type) {
       case EventType.DELIVERED:
-        this.incrementBadgeCount(1)
+        await this.incrementBadgeCount(1)
         break
       case EventType.PRESS:
-        this.handleNotificationPress({
+        await this.handleNotificationPress({
           detail,
           callback
         })
@@ -257,35 +261,60 @@ class NotificationsService {
     }
   }
 
-  cleanupNotifications = async () => {
+  cleanupNotifications = async (): Promise<void> => {
     const pendings = await notifee.getTriggerNotifications()
-    pendings.forEach(async pending => {
+    for (const pending of pendings) {
       const timestamp = fromUnixTime(
         (pending.trigger as TimestampTrigger).timestamp
       )
       if (isPast(timestamp) && pending.notification?.id) {
         await notifee.cancelTriggerNotification(pending.notification.id)
       }
-    })
+    }
   }
 
   // only for Android to obtain the notification data when the app is in the background
   // for iOS, it is handled in the onForegroundEvent PRESS event
-  getInitialNotification = async () => {
-    return notifee.getInitialNotification()
+  getInitialNotification = async (
+    callback: HandleNotificationCallback
+  ): Promise<void> => {
+    const event = await notifee.getInitialNotification()
+    if (event) {
+      callback(event.notification.data)
+    }
   }
 
-  isStakeCompleteNotificationBlocked = async () => {
-    const blockedNotifications = await this.getBlockedNotifications()
-    return blockedNotifications.get(ChannelId.STAKING_COMPLETE)
-  }
-
-  cancelAllNotifications = async () => {
+  cancelAllNotifications = async (): Promise<void> => {
     await notifee.cancelAllNotifications()
   }
 
   createChannel = async (channel: AndroidChannel): Promise<string> => {
     return notifee.createChannel(channel)
+  }
+
+  displayNotification = async ({
+    channelId,
+    title,
+    body,
+    data
+  }: {
+    channelId: ChannelId
+    title: string
+    body?: string
+    data?: NotificationData
+  }): Promise<void> => {
+    await notifee.displayNotification({
+      title,
+      body,
+      android: {
+        channelId,
+        // pressAction is needed if you want the notification to open the app when pressed
+        pressAction: {
+          id: 'openC-ChainPortfolio'
+        }
+      },
+      data
+    })
   }
 }
 

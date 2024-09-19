@@ -30,6 +30,9 @@ export const selectDistinctID = (state: RootState): string =>
   state.posthog.distinctID
 export const selectIsAnalyticsEnabled = (state: RootState): boolean =>
   state.posthog.isAnalyticsEnabled
+/**
+ * @Deprecated The only place where this is used can easily be reduced to selectIsEarnBlocked
+ */
 export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
   const swapBlocked = selectIsSwapBlocked(state)
   const bridgeBlocked = selectIsBridgeBlocked(state)
@@ -314,6 +317,16 @@ export const selectIsBlockaidDappScanBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.BLOCKAID_DAPP_SCAN] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsBalanceChangeNotificationsBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.BALANCE_CHANGE_NOTIFICATIONS] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }

@@ -82,9 +82,5 @@ metro.monorepo.config.js
 .metro-health-check*
 
 # Google Services files
-google-services.json.external
-google-services.json.internal
-GoogleService-Info.plist.external
-GoogleService-Info.plist.internal
-google-services.json
-GoogleService-Info.plist
+google-services.json*
+GoogleService-Info.plist*

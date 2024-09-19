@@ -5,28 +5,27 @@ import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { AnyAction } from '@reduxjs/toolkit'
 import {
-  selectHasPromptedAfterFirstDelegation,
+  selectHasPromptedForBalanceChange,
   selectNotificationSubscription,
-  setHasPromptedAfterFirstDelegation
+  setHasPromptedForBalanceChange
 } from '../slice'
 
-export const handleMaybePromptEarnNotification = async (
+export const handleMaybePromptBalanceNotification = async (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const blockedNotifications =
     await NotificationsService.getBlockedNotifications()
   const state = listenerApi.getState()
-  const isSubscribedToStakingComplete = selectNotificationSubscription(
-    ChannelId.STAKING_COMPLETE
+  const isSubscribedToBalanceChanges = selectNotificationSubscription(
+    ChannelId.BALANCE_CHANGES
   )(state)
 
-  const hasPromptedAfterFirstDelegation =
-    selectHasPromptedAfterFirstDelegation(state)
+  const hasPromptedForBalanceChange = selectHasPromptedForBalanceChange(state)
   if (
-    !hasPromptedAfterFirstDelegation &&
-    (!isSubscribedToStakingComplete ||
-      blockedNotifications.has(ChannelId.STAKING_COMPLETE))
+    !hasPromptedForBalanceChange &&
+    (!isSubscribedToBalanceChanges ||
+      blockedNotifications.has(ChannelId.BALANCE_CHANGES))
   ) {
     // @ts-ignore
     Navigation.navigate({
@@ -34,12 +33,12 @@ export const handleMaybePromptEarnNotification = async (
       name: AppNavigation.Modal.EnableNotificationsPrompt,
       params: {
         // @ts-ignore
-        notificationChannel: ChannelId.STAKING_COMPLETE,
+        notificationChannel: ChannelId.BALANCE_CHANGES,
         title: 'Turn on Notifications?',
         message:
-          'You will be notified when staking is complete. You can change your preference in settings.'
+          'You will be notified when certain wallet actions occur. You can change your preference in settings.'
       }
     })
-    listenerApi.dispatch(setHasPromptedAfterFirstDelegation(true))
+    listenerApi.dispatch(setHasPromptedForBalanceChange(true))
   }
 }

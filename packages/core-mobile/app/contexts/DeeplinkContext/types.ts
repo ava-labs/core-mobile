@@ -30,12 +30,11 @@ export enum StakeActions {
 
 export const ACTIONS = {
   WC: 'wc',
-  StakeComplete: StakeActions.StakeComplete
+  StakeComplete: StakeActions.StakeComplete,
+  OpenChainPortfolio: 'openchainportfolio'
 }
 
-export interface NotificationCallbackProps {
-  url: string
-  accountIndex: number
-  origin: DeepLinkOrigin
-  isDevMode: boolean
-}
+export type NotificationData = { [p: string]: string | number | object }
+export type HandleNotificationCallback = (
+  data: NotificationData | undefined
+) => void

@@ -7,11 +7,12 @@ import { parseUri } from '@walletconnect/utils'
 import { showSimpleToast } from 'components/Snackbar'
 import { WalletConnectVersions } from 'store/walletConnectV2/types'
 import { newSession } from 'store/walletConnectV2/slice'
+import { navigateToChainPortfolio } from 'navigation/utils'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = (
   deeplink: DeepLink,
-  dispatch: Dispatch<AnyAction>,
+  dispatch: Dispatch,
   processedFeatureFlags: ProcessedFeatureFlags
 ): void => {
   let url
@@ -87,6 +88,13 @@ const handleWalletConnectActions = ({
       if (processedFeatureFlags.earnBlocked) return
       deeplink.callback?.()
       navigateToClaimRewards()
+      break
+    }
+    case ACTIONS.OpenChainPortfolio: {
+      deeplink.callback?.()
+      navigateToChainPortfolio().catch(reason => {
+        Logger.error(`[handleDeeplink.ts][navigateToChainPortfolio]${reason}`)
+      })
       break
     }
     default:

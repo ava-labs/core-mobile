@@ -1,7 +1,8 @@
 import { AndroidChannel, AndroidImportance } from '@notifee/react-native'
 
 export enum ChannelId {
-  STAKING_COMPLETE = 'stakeComplete'
+  STAKING_COMPLETE = 'stakeComplete',
+  BALANCE_CHANGES = 'balanceChanges'
 }
 
 export interface AvaxAndroidChannel extends AndroidChannel {
@@ -23,5 +24,14 @@ export const notificationChannels = [
     importance: AndroidImportance.DEFAULT,
     title: 'Stake',
     subtitle: 'Staking Complete'
+  } as AvaxAndroidChannel,
+  {
+    id: ChannelId.BALANCE_CHANGES,
+    name: 'Balance Changes',
+    lights: false,
+    vibration: false,
+    importance: AndroidImportance.DEFAULT,
+    title: 'Balance',
+    subtitle: 'Notifications when your balance changes'
   } as AvaxAndroidChannel
 ]

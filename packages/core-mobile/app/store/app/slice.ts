@@ -64,6 +64,10 @@ export const onAppLocked = createAction(`${reducerName}/onAppLocked`)
 
 export const onBackground = createAction(`${reducerName}/onBackground`)
 
+/**
+ * It dispatches once the app has gone to background then foreground again.
+ * It doesn't dispatch on app start.
+ */
 export const onForeground = createAction(`${reducerName}/onForeground`)
 
 // when user has successfully created/recovered a wallet

@@ -15,6 +15,10 @@ const audioFiles = {
   Send: {
     file: 'core_send.wav',
     hapticType: HapticFeedbackTypes.notificationSuccess
+  },
+  Receive: {
+    file: 'core_receive.wav',
+    hapticType: HapticFeedbackTypes.notificationSuccess
   }
 }
 

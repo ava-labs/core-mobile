@@ -90,7 +90,6 @@ enum EarnScreens {
   StakeSetup = 'EarnScreens.StakeSetup',
   ClaimRewards = 'EarnScreens.ClaimRewards',
   FeeUnavailable = 'EarnScreens.FeeUnavailable',
-  EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt',
   FundsStuck = 'EarnScreens.FundsStuck'
 }
 
@@ -199,7 +198,8 @@ enum ModalScreens {
   BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
-  AlertScreen = 'ModalScreens.AlertScreen'
+  AlertScreen = 'ModalScreens.AlertScreen',
+  EnableNotificationsPrompt = 'ModalScreens.EnableNotificationsPrompt'
 }
 
 enum SendScreens {

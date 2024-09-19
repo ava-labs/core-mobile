@@ -1,18 +1,19 @@
 import React, { useCallback } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import { EarnScreenProps } from 'navigation/types'
+import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useDispatch } from 'react-redux'
 import { turnOnNotificationsFor } from 'store/notifications'
-import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
 
-type ScreenProps = EarnScreenProps<
-  typeof AppNavigation.Earn.EarnNotificationsPrompt
+type ScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.EnableNotificationsPrompt
 >
 
-export const EarnNotificationsModal = () => {
+const EnableNotificationsModal = (): JSX.Element => {
+  const { params } = useRoute<ScreenProps['route']>()
+  const { notificationChannel, title, message } = params
   const { goBack, canGoBack } = useNavigation<ScreenProps['navigation']>()
   const dispatch = useDispatch()
 
@@ -21,16 +22,14 @@ export const EarnNotificationsModal = () => {
       await NotificationsService.getAllPermissions(false)
     if (
       permission === 'authorized' &&
-      blockedNotifications.get(ChannelId.STAKING_COMPLETE) !== true
+      blockedNotifications.get(notificationChannel) !== true
     ) {
-      dispatch(
-        turnOnNotificationsFor({ channelId: ChannelId.STAKING_COMPLETE })
-      )
+      dispatch(turnOnNotificationsFor({ channelId: notificationChannel }))
     }
     if (canGoBack()) {
       goBack()
     }
-  }, [canGoBack, dispatch, goBack])
+  }, [canGoBack, dispatch, goBack, notificationChannel])
 
   const onLater = useCallback(() => {
     if (canGoBack()) {
@@ -41,10 +40,8 @@ export const EarnNotificationsModal = () => {
   return (
     <WarningModal
       testID="turn_on_notifications_modal"
-      title={'Turn on Notifications?'}
-      message={
-        'You will be notified when staking is complete. You can change your preference in settings.'
-      }
+      title={title}
+      message={message}
       actionText={'Turn on Notifications'}
       dismissText={'Not Now'}
       onAction={onTurnOnNotifications}
@@ -52,3 +49,4 @@ export const EarnNotificationsModal = () => {
     />
   )
 }
+export default EnableNotificationsModal
