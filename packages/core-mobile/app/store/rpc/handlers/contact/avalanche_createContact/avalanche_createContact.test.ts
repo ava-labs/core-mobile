@@ -17,10 +17,6 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-jest.mock('react-native-quick-crypto', () => ({
-  randomUUID: jest.fn()
-}))
-
 const testMethod = RpcMethod.AVALANCHE_CREATE_CONTACT
 
 const createRequest = (
