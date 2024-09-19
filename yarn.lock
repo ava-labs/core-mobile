@@ -203,7 +203,7 @@ __metadata:
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/netinfo": 11.4.0
-    "@react-native-community/slider": 4.4.2
+    "@react-native-community/slider": 4.5.3
     "@react-native-google-signin/google-signin": 10.1.0
     "@react-native-menu/menu": 0.9.1
     "@react-native/babel-preset": 0.73.21
@@ -468,7 +468,7 @@ __metadata:
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
-    "@react-native-community/slider": 4.5.2
+    "@react-native-community/slider": 4.5.3
     "@rushstack/eslint-patch": 1.5.1
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
@@ -509,7 +509,7 @@ __metadata:
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
-    "@react-native-community/slider": 4.4.2
+    "@react-native-community/slider": 4.5.3
     "@react-native/babel-preset": 0.73.21
     "@react-native/metro-config": 0.73.5
     "@rushstack/eslint-patch": 1.10.4
@@ -7039,17 +7039,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/slider@npm:4.4.2":
-  version: 4.4.2
-  resolution: "@react-native-community/slider@npm:4.4.2"
-  checksum: 1ae613f594a8ea9d7243b3125d26b36aab4e4c2dd9eba1bf66c4f31878e74fae055cd35a1babc46b262240885bb61fa321610417bb2a6d9f77a330136ff33293
-  languageName: node
-  linkType: hard
-
-"@react-native-community/slider@npm:4.5.2":
-  version: 4.5.2
-  resolution: "@react-native-community/slider@npm:4.5.2"
-  checksum: 99023660756a1a876fc3d9c1a7cec13f7e414abee3452e1e03d2794bc7f46a9d689740bed5c3889914adf6ed85a55c6017e2f0d73b5de353025ba52bba6e79e1
+"@react-native-community/slider@npm:4.5.3":
+  version: 4.5.3
+  resolution: "@react-native-community/slider@npm:4.5.3"
+  checksum: 4cd70b0e24fedf6152d5316b73266569ef2af83dabc713ed7c68330b7d9844ace131e32dd90919b6189fc9f041c528bf7b48eb5b6b2b6e36fb474ba861c7a9c3
   languageName: node
   linkType: hard
 
