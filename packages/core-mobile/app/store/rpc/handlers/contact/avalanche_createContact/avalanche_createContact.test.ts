@@ -3,11 +3,9 @@ import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
-import * as uuid from 'uuid'
 import { addContact } from 'store/addressBook'
+import Crypto from 'react-native-quick-crypto'
 import { avalancheCreateContactHandler as handler } from './avalanche_createContact'
-
-jest.mock('uuid')
 
 const mockNavigate = jest.fn()
 jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
@@ -18,6 +16,10 @@ const mockListenerApi = {
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
+
+jest.mock('react-native-quick-crypto', () => ({
+  randomUUID: jest.fn()
+}))
 
 const testMethod = RpcMethod.AVALANCHE_CREATE_CONTACT
 
@@ -88,7 +90,7 @@ describe('avalanche_createContact handler', () => {
     })
 
     it('should display prompt and return success', async () => {
-      jest.spyOn(uuid, 'v4').mockImplementationOnce(() => 'testId')
+      jest.spyOn(Crypto, 'randomUUID').mockImplementationOnce(() => 'testId')
 
       const testContact = {
         name: 'Bob',

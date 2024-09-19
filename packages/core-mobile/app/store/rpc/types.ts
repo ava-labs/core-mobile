@@ -1,7 +1,7 @@
-import { v4 as uuidv4 } from 'uuid'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { AppListenerEffectAPI } from 'store'
 import { RpcError } from '@avalabs/vm-module-types'
+import { uuid } from 'utils/uuid'
 
 export interface PeerMeta {
   name: string
@@ -131,7 +131,7 @@ export interface AgnosticRpcProvider {
 
 // this is the session id for all Core Mobile in-app requests
 // it stays the same during an app session
-export const CORE_MOBILE_TOPIC = uuidv4()
+export const CORE_MOBILE_TOPIC = uuid()
 
 export const CORE_MOBILE_META: PeerMeta = {
   name: 'Core',
