@@ -42,7 +42,7 @@
     "@datadog/mobile-react-native": "2.4.3",
     "@datadog/mobile-react-navigation": "2.4.3",
     "@ethereumjs/common": "4.4.0",
-    "@ethereumjs/tx": "3.4.0",
+    "@ethereumjs/tx": "5.4.0",
     "@gorhom/bottom-sheet": "4.6.4",
     "@hookform/resolvers": "3.9.0",
     "@invertase/react-native-apple-authentication": "2.3.0",
@@ -252,7 +252,6 @@
       "@avalabs/evm-module": false,
       "@avalabs/k2-mobile": false,
       "@datadog/mobile-react-native": false,
-      "@ethereumjs/tx>ethereumjs-util>ethereum-cryptography>keccak": false,
       "@lavamoat/preinstall-always-fail": false,
       "@sentry/react-native>@sentry/cli": false,
       "@storybook/react-native>@storybook/core-common>esbuild": false,
@@ -268,7 +267,8 @@
       "web3": false,
       "web3>web3-bzz": false,
       "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>es5-ext": false,
-      "web3>web3-shh": false
+      "web3>web3-shh": false,
+      "web3>web3-utils>ethereumjs-util>ethereum-cryptography>keccak": false
     }
   },
   "react-native": {
