@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "setup": "yarn workspaces foreach -p run setup",
     "lint": "yarn workspaces foreach -p run lint",
     "tsc": "yarn workspaces foreach -p run tsc",
