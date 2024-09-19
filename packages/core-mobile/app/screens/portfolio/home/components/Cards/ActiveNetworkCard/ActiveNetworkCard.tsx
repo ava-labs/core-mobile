@@ -103,6 +103,7 @@ const ActiveNetworkCard = (): JSX.Element => {
         </View>
         <Space y={8} />
         <View
+          testID="active_network"
           sx={{
             flexDirection: 'row',
             justifyContent: 'space-between'

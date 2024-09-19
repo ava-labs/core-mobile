@@ -2,7 +2,6 @@
 /**
  * @jest-environment ./environment.ts
  */
-import Actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
 import commonElsPage from '../../pages/commonEls.page'
@@ -18,8 +17,11 @@ describe('Change Network', () => {
     await NetworksManagePage.switchToAvalancheNetwork()
   })
 
-  it('should verify default active network and inactive networks', async () => {
+  it('should have C-chain as Active Network by default', async () => {
     await PortfolioPage.verifyActiveNetwork(portfolio.avaxNetwork)
+  })
+
+  it('should have Inactive Networks by default', async () => {
     await PortfolioPage.verifyInactiveNetworks([
       portfolio.avaxPNetwork,
       portfolio.avaxXNetwork,
@@ -28,46 +30,48 @@ describe('Change Network', () => {
     ])
   })
 
-  it('should verify changing Active network to ETH', async () => {
+  it('should set Ethereum as Active Network', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
-    await Actions.waitForElement(PortfolioPage.ethNetwork)
     await PortfolioPage.verifyActiveNetwork(portfolio.ethNetwork)
   })
 
-  it('should verify changing Active network to BTC', async () => {
+  it('should set Bitcoin as Active Network', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownBTC()
-    await Actions.waitForElement(PortfolioPage.btcNetwork)
     await PortfolioPage.verifyActiveNetwork(portfolio.btcNetwork)
   })
 
-  it('should verify changing Active network to AVAX', async () => {
+  it('should set P-Chain as Active Network', async () => {
     await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapNetworksDropdownAVAX()
-    await Actions.waitForElement(PortfolioPage.avaxNetwork)
-    await PortfolioPage.verifyActiveNetwork(portfolio.avaxNetwork)
+    await PortfolioPage.tapNetworksDropdownAVAX(
+      PortfolioPage.networksDropdownPChain
+    )
+    await PortfolioPage.verifyActiveNetwork(portfolio.avaxPNetwork)
   })
 
-  it('should remove BTC network from favorites', async () => {
+  it('should set X-Chain as Active Network', async () => {
     await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.addBtcNetwork()
-    await NetworksManagePage.tapHeaderBack()
-    await PortfolioPage.verifyNetworkRemoved(portfolio.btcNetwork)
+    await PortfolioPage.tapNetworksDropdownAVAX(
+      PortfolioPage.networksDropdownXChain
+    )
+    await PortfolioPage.verifyActiveNetwork(portfolio.avaxXNetwork)
   })
 
-  it('should add BTC network to favorites', async () => {
+  it('should add Arbitrum One to favorite networks', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
-    await Actions.scrollListUntil(
-      by.id(`star_svg__${portfolio.btcNetwork}`),
-      by.id('networks_tab_scroll_view'),
-      50
-    )
-    await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork)
+    await NetworksManagePage.tapStarSvgByNetwork(portfolio.arbitrumNetwork)
     await commonElsPage.tapBackButton()
-    await PortfolioPage.verifyInactiveNetworks([portfolio.btcNetwork])
+    await PortfolioPage.verifyInactiveNetworks([portfolio.arbitrumNetwork])
+  })
+
+  it('should remove Bitcoin from favorite networks', async () => {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapManageNetworks()
+    await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork)
+    await NetworksManagePage.tapHeaderBack()
+    await PortfolioPage.verifyNetworkRemoved(portfolio.btcNetwork)
   })
 })
