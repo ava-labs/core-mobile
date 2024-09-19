@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { v4 as uuidv4 } from 'uuid'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
+import { uuid } from 'utils/uuid'
 import { initialState, ProcessedFeatureFlags } from './types'
 
 const reducerName = 'posthog'
@@ -12,7 +12,7 @@ export const posthogSlice = createSlice({
   initialState,
   reducers: {
     regenerateUserId: state => {
-      state.userID = uuidv4()
+      state.userID = uuid()
     },
     toggleAnalytics: (state, action: PayloadAction<boolean>) => {
       const value = action.payload

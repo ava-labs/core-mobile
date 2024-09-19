@@ -3,8 +3,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
   moduleNameMapper: {
-    '^react-native$': '<rootDir>/node_modules/react-native',
-    '^uuid$': require.resolve('uuid')
+    '^react-native$': '<rootDir>/node_modules/react-native'
   },
   testPathIgnorePatterns: ['<rootDir>/e2e/tests/playwright/'],
   setupFilesAfterEnv: [

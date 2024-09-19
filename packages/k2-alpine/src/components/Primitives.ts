@@ -14,7 +14,7 @@ export const Text = styled(DripsyText, {
   defaultVariant: 'body1'
 })({
   // default color
-  color: '$primaryText'
+  color: '$textPrimary'
 })
 
 export {

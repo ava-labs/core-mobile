@@ -1,5 +1,5 @@
 import { FeatureFlags, FeatureGates, FeatureVars } from 'services/posthog/types'
-import { v4 as uuidv4 } from 'uuid'
+import { uuid } from 'utils/uuid'
 
 export const DefaultFeatureFlagConfig = {
   [FeatureGates.EVERYTHING]: true,
@@ -31,8 +31,8 @@ export const DefaultFeatureFlagConfig = {
 }
 
 export const initialState = {
-  userID: uuidv4(),
-  distinctID: uuidv4(),
+  userID: uuid(),
+  distinctID: uuid(),
   isAnalyticsEnabled: false,
   featureFlags: DefaultFeatureFlagConfig
 } as PosthogState

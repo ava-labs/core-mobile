@@ -1,82 +1,53 @@
-const black = {
-  neutral900: '#1E1E24', // Black Russian
-  neutral850: '#28282E' // Jaguar
-}
+// K2 Alpine - Colors
+// https://www.figma.com/design/opZ4C1UGzcoGRjxE4ZIE3J/K2-Alpine?node-id=781-3507&node-type=frame&t=J5mVaf37BsbqucdK-0
 
-const white = {
-  neutral: '#FFFFFF', // White
-  neutral50: '#F2F2F3' // White Lilac
-}
+import { alpha } from '../../utils'
 
-/* const success = {
-  success: '#3AC489', // Shamrock
-  success2: '#47C4AF' // Puerto Rico
-} */
+// notes: raw colors should never be used directly
+export const colors = {
+  // neutral
+  $neutralWhite: '#FFFFFF',
+  $neutral50: '#F5F5F6',
+  $neutral850: '#28282E',
+  $neutral900: '#1B1B1D',
+  $neutral950: '#121213',
 
-const glass = {
-  light: 'rgba(255, 255, 255, 0.6)', // #FFFFFF
-  light2: 'rgba(161, 161, 170, 0.25)', // #A1A1AA
-  dark: 'rgba(40, 40, 46, 0.85)', // #28282E
-  dark2: 'rgba(129, 129, 137, 0.6)', // #818189
-  dark3: 'rgba(197, 197, 200, 0.25)' // #C5C5C8
-}
-
-/* const gradient = {
-  green: {
-    step0: '#1CC51D',
-    stepF: '#47C4AF'
-  },
-
-  violetPink: {
-    step0: '#B28DFA',
-    step1: '#F9C1FC',
-    step2: '#E47AC1',
-    stepF: '#AD8BF8'
-  },
-
-  greenBlue: {
-    step0: '#7FFBB3',
-    step1: '#ABE3FB',
-    stepF: '#80E5E7'
-  },
-
-  blueMagenta: {
-    step0: '#7BDDFC',
-    step1: '#E567FF',
-    stepF: '#42C8FE'
-  },
-
-  yellowPink: {
-    step0: '#FBF4B3',
-    step1: '#E47AC1',
-    step2: '#E47AC1',
-    stepF: '#F4B591'
-  },
-
-  bluePink: {
-    step0: '#30BEFE',
-    stepF: '#FF7683'
-  }
-} */
-
-export const darkModeColors = {
-  $primaryBackground: white.neutral,
-  $primaryText: black.neutral850,
-
-  $secondaryBackground: glass.dark3,
-  $secondaryText: white.neutral,
-
-  $tertiaryBackground: black.neutral900,
-  $tertiaryText: white.neutral
+  // accent
+  $accentSuccessL: '#1FA95E',
+  $accentSuccessD: '#1CC51D',
+  $accentDanger: '#E84142',
+  $accentRed: '#FF2A6D',
+  $accentTeal: '#47C4AF'
 }
 
 export const lightModeColors = {
-  $primaryBackground: black.neutral900,
-  $primaryText: white.neutral,
+  // text
+  $textPrimary: colors.$neutral850,
+  $textSecondary: alpha(colors.$neutral850, 0.6),
+  $textDanger: colors.$accentDanger,
+  $textSuccess: colors.$accentSuccessL,
 
-  $secondaryBackground: glass.light2,
-  $secondaryText: black.neutral850,
+  // surface
+  $surfacePrimary: colors.$neutralWhite,
+  $surfaceSecondary: colors.$neutral50,
+  $surfaceTertiary: alpha(colors.$neutralWhite, 0.6),
 
-  $tertiaryBackground: white.neutral,
-  $tertiaryText: black.neutral850
+  // border
+  $borderPrimary: alpha(colors.$neutral850, 0.1)
+}
+
+export const darkModeColors = {
+  // text
+  $textPrimary: colors.$neutralWhite,
+  $textSecondary: alpha(colors.$neutralWhite, 0.6),
+  $textDanger: colors.$accentDanger,
+  $textSuccess: colors.$accentSuccessD,
+
+  // surface
+  $surfacePrimary: colors.$neutral950,
+  $surfaceSecondary: colors.$neutral850,
+  $surfaceTertiary: colors.$neutral900,
+
+  // border
+  $borderPrimary: alpha(colors.$neutralWhite, 0.1)
 }
