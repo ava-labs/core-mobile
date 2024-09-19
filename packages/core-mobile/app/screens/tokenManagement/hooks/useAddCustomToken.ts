@@ -71,6 +71,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
 
+  
   const memoizedTokens = useMemo(() => tokens, [activeNetwork])
 
   useEffect(() => {
