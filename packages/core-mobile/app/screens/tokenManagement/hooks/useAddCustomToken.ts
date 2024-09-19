@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux'
 import { isAddress } from 'ethers'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -71,10 +71,8 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
 
-  const memoizedTokens = useMemo(() => tokens, [activeNetwork])
-
   useEffect(() => {
-    const validationStatus = validateAddress(tokenAddress, memoizedTokens)
+    const validationStatus = validateAddress(tokenAddress, tokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
         setToken(undefined)
@@ -87,8 +85,8 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
       case AddressValidationStatus.Valid:
         setIsLoading(true)
         fetchTokenData(activeNetwork, tokenAddress)
-          .then(token => {
-            setToken(token)
+          .then(t => {
+            setToken(t)
             setErrorMessage('')
           })
           .catch(err => {
@@ -106,7 +104,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [activeNetwork, tokenAddress, memoizedTokens])
+  }, [activeNetwork, tokenAddress, tokens])
 
   const addCustomToken = (): void => {
     if (token) {

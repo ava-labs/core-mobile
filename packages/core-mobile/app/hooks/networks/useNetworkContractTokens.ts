@@ -5,9 +5,10 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'
 import { selectAllCustomTokens } from 'store/customToken'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useMemo } from 'react'
 import { getNetworkContractTokens } from './utils/getNetworkContractTokens'
 
-export const useNetworkContractTokens = (
+const useNetworkContractTokensInternal = (
   network: Network
 ): NetworkContractToken[] => {
   const allCustomTokens = useSelector(selectAllCustomTokens)
@@ -30,4 +31,12 @@ export const useNetworkContractTokens = (
     }
   }
   return tokens
+}
+
+export const useNetworkContractTokens = (
+  network: Network
+): NetworkContractToken[] => {
+  const tokens = useNetworkContractTokensInternal(network)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => tokens, [network])
 }

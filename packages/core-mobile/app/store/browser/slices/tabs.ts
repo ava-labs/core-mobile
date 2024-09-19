@@ -5,7 +5,6 @@ import {
   PayloadAction
 } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
-import { v4 as uuidv4 } from 'uuid'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
 import {
@@ -13,6 +12,7 @@ import {
   removeHistory
 } from 'store/browser/slices/globalHistory'
 import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
+import { uuid } from 'utils/uuid'
 import {
   AddHistoryPayload,
   History,
@@ -28,7 +28,7 @@ import { MAXIMUM_TAB_HISTORIES } from '../const'
 const reducerName = 'browser/tabs'
 
 export const getInitialState = (): TabState => {
-  const tabId = uuidv4()
+  const tabId = uuid()
   return {
     ...({
       ids: [tabId],
@@ -50,7 +50,7 @@ const tabSlice = createSlice({
   initialState: getInitialState,
   reducers: {
     addTab: (state: TabState) => {
-      const tabId = uuidv4()
+      const tabId = uuid()
       tabAdapter.addOne(state, {
         id: tabId,
         historyIds: [],
