@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Button } from '../../src/components/button/Button'
+import { Button } from './Button'
 
 const ButtonMeta: Meta<typeof Button> = {
   title: 'Button',
@@ -8,7 +8,9 @@ const ButtonMeta: Meta<typeof Button> = {
     onPress: { action: 'pressed the button' }
   },
   args: {
-    onPress: () => {},
+    onPress: () => {
+      // do nothing
+    },
     children: 'Next',
     type: 'primary'
   }
