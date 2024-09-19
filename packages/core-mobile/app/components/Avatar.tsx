@@ -6,13 +6,15 @@ import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
-import { Image, Text, useTheme, View } from '@avalabs/k2-mobile'
+import { Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
-import { ImageRequireSource } from 'react-native'
+import { SuggestedSiteName } from 'store/browser/const'
+import { isBase64Png, isSugguestedSiteName } from 'screens/browser/utils'
+import { SuggestedSiteIcon } from '../screens/browser/components/SuggestedIcons'
 
 interface AvatarBaseProps {
   title: string
-  logoUri?: string | ImageRequireSource
+  logoUri?: string
   showBorder?: boolean
   size?: number
   testID?: string
@@ -55,11 +57,26 @@ const AvatarBase: FC<AvatarBaseProps> = ({
     return <BitcoinSVG size={size} />
   }
 
+  if (isSugguestedSiteName(logoUri)) {
+    return (
+      <SuggestedSiteIcon
+        name={logoUri as SuggestedSiteName}
+        sx={{
+          width: size,
+          height: size,
+          borderRadius: size,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      />
+    )
+  }
+
   const hasValidLogoUri =
     !!logoUri &&
-    (typeof logoUri === 'number' ||
-      logoUri.startsWith('http') ||
-      logoUri.startsWith('https')) &&
+    (logoUri.startsWith('http') ||
+      logoUri.startsWith('https') ||
+      isBase64Png(logoUri)) &&
     !failedToLoad
 
   if (!hasValidLogoUri) {
@@ -69,21 +86,6 @@ const AvatarBase: FC<AvatarBaseProps> = ({
         size={size}
         showBorder={showBorder}
         fallbackBackgroundColor={fallbackBackgroundColor ?? backgroundColor}
-      />
-    )
-  }
-
-  if (typeof logoUri === 'number') {
-    return (
-      <Image
-        source={logoUri}
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
       />
     )
   }

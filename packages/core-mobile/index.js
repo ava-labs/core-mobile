@@ -6,6 +6,7 @@ import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
 import AppCheckService from 'services/fcm/AppCheckService'
+import Bootsplash from 'react-native-bootsplash'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
@@ -32,6 +33,7 @@ TextInput.defaultProps.allowFontScaling = false
 let AppEntryPoint = ContextApp
 
 if (DevDebuggingConfig.STORYBOOK_ENABLED) {
+  Bootsplash.hide()
   AppEntryPoint = require('./storybook').default
 }
 

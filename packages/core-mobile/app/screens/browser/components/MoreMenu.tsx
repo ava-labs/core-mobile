@@ -146,30 +146,14 @@ export const MoreMenu: FC<Props & PropsWithChildren> = ({
 
       showSimpleToast('Removed from Favorites')
     } else {
-      const activeHistoryUrl = new URL(activeHistory.url)
-      const activeHistoryDomain =
-        activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
-
-      let favicon: string | number | undefined
-      if (activeHistory.favicon) {
-        if (typeof activeHistory.favicon === 'number') {
-          favicon = activeHistory.favicon
-        } else if (isValidUrl(activeHistory.favicon)) {
-          favicon = activeHistory.favicon
-        } else {
-          favicon = activeHistoryDomain + activeHistory.favicon
-        }
-      }
-
       dispatch(
         addFavorite({
-          favicon,
+          favicon: activeHistory.favicon,
           title: activeHistory.title,
           description: activeHistory.description ?? '',
           url: activeHistory.url
         })
       )
-
       showSimpleToast('Added to Favorites')
     }
   }

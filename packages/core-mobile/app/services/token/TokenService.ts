@@ -9,7 +9,7 @@ import {
   simpleTokenPrice,
   VsCurrencyType
 } from '@avalabs/core-coingecko-sdk'
-import { ethers } from 'ethers'
+import { Contract } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
@@ -64,7 +64,7 @@ export class TokenService {
       throw new Error('No provider')
     }
 
-    const contract = new ethers.Contract(address, ERC20.abi, provider)
+    const contract = new Contract(address, ERC20.abi, provider)
 
     let contractCalls
     try {

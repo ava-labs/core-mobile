@@ -1,6 +1,7 @@
 import { DeFiProtocolInformation } from 'services/browser/types'
 import { assertNotUndefined } from 'utils/assertions'
 import { FavoriteId } from 'store/browser'
+import { SuggestedSiteName } from 'store/browser/const'
 
 export const sortDeFiProtocolInformationListByTvl = (
   protocolInformationList: DeFiProtocolInformation[]
@@ -83,4 +84,38 @@ export function getNextFavColor(id: FavoriteId): string {
 
 export const removeTrailingSlash = (url: string): string => {
   return url.replace(/\/$/, '')
+}
+
+export const isSugguestedSiteName = (name?: string): boolean => {
+  if (name === undefined) return false
+  return Object.values(SuggestedSiteName).includes(name as SuggestedSiteName)
+}
+
+export const isBase64Png = (imageData: string): boolean => {
+  return imageData.startsWith('data:image/png;base64')
+}
+
+// This function is used to prepare favicon to load in the browser favorites list
+export const prepareFaviconToLoad = (
+  url: string,
+  favicon?: string
+): string | undefined => {
+  const activeHistoryUrl = new URL(url)
+  const activeHistoryDomain =
+    activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
+
+  if (favicon) {
+    if (
+      isSugguestedSiteName(favicon as SuggestedSiteName) ||
+      isValidUrl(favicon) ||
+      isBase64Png(favicon)
+    ) {
+      return favicon
+    } else {
+      if (favicon.startsWith('/')) {
+        return activeHistoryDomain + favicon
+      }
+      return activeHistoryDomain + '/' + favicon
+    }
+  }
 }
