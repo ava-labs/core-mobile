@@ -1,6 +1,6 @@
 import Logger from 'utils/Logger'
-import AppCheckService from 'services/fcm/AppCheckService'
 import Config from 'react-native-config'
+import fetchWithAppCheck from 'utils/httpClient'
 
 export async function subscribeForBalanceChange({
   deviceArn,
@@ -11,7 +11,7 @@ export async function subscribeForBalanceChange({
   chainIds: string[]
   addresses: string[]
 }): Promise<{ message: 'ok' }> {
-  const response = await AppCheckService.fetch(
+  const response = await fetchWithAppCheck(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/subscribe',
     JSON.stringify({
       deviceArn,

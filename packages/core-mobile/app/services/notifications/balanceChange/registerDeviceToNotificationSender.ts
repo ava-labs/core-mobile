@@ -1,11 +1,11 @@
 import Logger from 'utils/Logger'
-import AppCheckService from 'services/fcm/AppCheckService'
 import Config from 'react-native-config'
+import fetchWithAppCheck from 'utils/httpClient'
 
 export async function registerDeviceToNotificationSender(
   fcmToken: string
 ): Promise<{ deviceArn: string }> {
-  const response = await AppCheckService.fetch(
+  const response = await fetchWithAppCheck(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
     JSON.stringify({
       deviceToken: fcmToken,
