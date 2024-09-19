@@ -1,10 +1,10 @@
-import { v4 as uuidv4 } from 'uuid'
 import { AppListenerEffectAPI } from 'store'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { addContact } from 'store/addressBook'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
+import { uuid } from 'utils/uuid'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -37,7 +37,7 @@ class AvalancheCreateContactHandler
 
     const contact = {
       ...result.data[0],
-      id: uuidv4()
+      id: uuid()
     }
 
     Navigation.navigate({
