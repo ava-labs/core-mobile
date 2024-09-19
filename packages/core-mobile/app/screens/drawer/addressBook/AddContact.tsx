@@ -3,7 +3,6 @@ import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput'
-import { v4 as uuidv4 } from 'uuid'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { AddressBookScreenProps } from 'navigation/types'
@@ -14,6 +13,7 @@ import { useDispatch } from 'react-redux'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { ScrollView } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { uuid } from 'utils/uuid'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
@@ -41,7 +41,7 @@ const AddContact = (): JSX.Element => {
       setError(err)
       return
     }
-    const id = uuidv4()
+    const id = uuid()
     dispatch(
       addContact({
         id,

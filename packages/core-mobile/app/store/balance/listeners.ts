@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService, {
@@ -34,6 +33,7 @@ import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
+import { uuid } from 'utils/uuid'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -199,7 +199,7 @@ const fetchBalancePeriodically = async (
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
 
   const pollingTask = listenerApi.fork(async forkApi => {
-    const taskId = uuidv4().slice(0, 8)
+    const taskId = uuid().slice(0, 8)
     Logger.info(`started task ${taskId}`, 'fetch balance periodically')
 
     let intervalCount = 1
