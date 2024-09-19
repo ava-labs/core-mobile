@@ -3,15 +3,15 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { AnyAction } from '@reduxjs/toolkit'
 import {
-  maybePromptEarnNotification,
   selectHasPromptedAfterFirstDelegation,
   selectNotificationSubscription,
   setHasPromptedAfterFirstDelegation
 } from '../slice'
 
 export const handleMaybePromptEarnNotification = async (
-  action: ReturnType<typeof maybePromptEarnNotification>,
+  _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const blockedNotifications =

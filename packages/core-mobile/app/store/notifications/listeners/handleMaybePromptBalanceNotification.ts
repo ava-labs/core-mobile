@@ -3,15 +3,15 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { AnyAction } from '@reduxjs/toolkit'
 import {
-  maybePromptBalanceNotification,
   selectHasPromptedForBalanceChange,
   selectNotificationSubscription,
   setHasPromptedForBalanceChange
 } from '../slice'
 
 export const handleMaybePromptBalanceNotification = async (
-  action: ReturnType<typeof maybePromptBalanceNotification>,
+  _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const blockedNotifications =
