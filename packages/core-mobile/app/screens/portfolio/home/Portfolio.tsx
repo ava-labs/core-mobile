@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ListRenderItemInfo, Platform } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -23,6 +23,7 @@ import { fetchWatchlist } from 'store/watchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectIsBalanceLoadedForNetworks } from 'store/balance/slice'
 import { setActive } from 'store/network'
+import { maybePromptBalanceNotification } from 'store/notifications'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import PortfolioHeader from './components/PortfolioHeader'
 import { PortfolioInactiveNetworksLoader } from './components/Loaders/PortfolioInactiveNetworksLoader'
@@ -34,9 +35,14 @@ type PortfolioNavigationProp = PortfolioScreenProps<
 const Portfolio = (): JSX.Element => {
   const { params } = useRoute<PortfolioNavigationProp['route']>()
   const { setParams } = useNavigation<PortfolioNavigationProp['navigation']>()
+  const dispatch = useDispatch()
 
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const defiBlocked = useSelector(selectIsDeFiBlocked)
+
+  useEffect(() => {
+    dispatch(maybePromptBalanceNotification)
+  }, [dispatch])
 
   function captureAnalyticsEvents(tabIndex: number): void {
     switch (tabIndex) {
