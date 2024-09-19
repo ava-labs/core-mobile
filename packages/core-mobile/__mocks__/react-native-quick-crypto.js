@@ -1,3 +1,3 @@
-jest.mock('react-native-quick-crypto', () => {
-  return jest.requireActual('crypto')
-})
+const crypto = require('crypto')
+
+module.exports = crypto
