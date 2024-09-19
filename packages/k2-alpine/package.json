@@ -42,7 +42,7 @@
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
-    "@types/react": "18.2.45",
+    "@types/react": "18.3.7",
     "@types/tinycolor2": "1.4.5",
     "babel-loader": "9.2.1",
     "eslint": "9.9.1",
