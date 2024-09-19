@@ -126,6 +126,10 @@ class NetworksPage {
     return by.text(networksManage.chainIdText)
   }
 
+  get explorerUrlText() {
+    return by.text(networksManage.explorerUrlText)
+  }
+
   async tapStarSvgByIndex(index: number) {
     await Action.tapElementAtIndex(this.starSvg, index)
   }
@@ -236,8 +240,8 @@ class NetworksPage {
     await Action.setInputText(this.searchBar, network, 0)
   }
 
-  async swipeUp() {
-    await Action.swipeUp(this.chainIdText, 'fast', 0.5, 0)
+  async swipeUp(text: Detox.NativeMatcher = this.chainIdText) {
+    await Action.swipeUp(text, 'fast', 0.5, 0)
   }
 
   async switchToEthereumSepoliaNetwork() {
