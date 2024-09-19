@@ -71,6 +71,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoizedTokens = useMemo(() => tokens, [activeNetwork])
 
   useEffect(() => {
@@ -87,8 +88,8 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
       case AddressValidationStatus.Valid:
         setIsLoading(true)
         fetchTokenData(activeNetwork, tokenAddress)
-          .then(token => {
-            setToken(token)
+          .then(t => {
+            setToken(t)
             setErrorMessage('')
           })
           .catch(err => {
