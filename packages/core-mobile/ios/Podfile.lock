@@ -972,7 +972,9 @@ PODS:
     - React
     - React-callinvoker
     - React-Core
-  - react-native-slider (4.4.2):
+  - react-native-slider (4.5.3):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
     - React-Core
   - react-native-view-shot (3.8.0):
     - React-Core
@@ -1172,7 +1174,7 @@ PODS:
     - React-Core
   - RNFS (2.20.0):
     - React-Core
-  - RNGestureHandler (2.18.1):
+  - RNGestureHandler (2.19.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1208,7 +1210,7 @@ PODS:
     - React-RCTImage
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (5.32.0):
+  - RNSentry (5.33.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1618,7 +1620,7 @@ SPEC CHECKSUMS:
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: ab8f4a3d8180913bd78ae75dd599c94cce3d5e9a
   react-native-skia: d3c0468a78db975b919d364e3634ceb20a165902
-  react-native-slider: 33b8d190b59d4f67a541061bb91775d53d617d9d
+  react-native-slider: 5166a537d6f3e851732f5fe2e84aef0ff6ed733d
   react-native-view-shot: 6b7ed61d77d88580fed10954d45fad0eb2d47688
   react-native-webview: 8600348afad520e40ac629eb7963a514f16cdd17
   React-nativeconfig: 754233aac2a769578f828093b672b399355582e6
@@ -1653,7 +1655,7 @@ SPEC CHECKSUMS:
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFlashList: 83a272ae1c35b08a02490f4d1503631fb64b3dd8
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
-  RNGestureHandler: 1155b1898ceddefeebf77792927360d44fe11e77
+  RNGestureHandler: 75e2ebf4e8ac521f2b3c9afdc048fcbc2e2c9ea4
   RNGoogleSignin: a6a612cce56a45ab701c5c5c6e36f5390522d100
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
@@ -1665,7 +1667,7 @@ SPEC CHECKSUMS:
   RNReanimated: 00ee495a70897aa9d541e76debec14253133b812
   RNScreens: 29418ceffb585b8f0ebd363de304288c3dce8323
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
-  RNSentry: 5d312d51896cdc554e227001e0182a9ce5d95f37
+  RNSentry: 9031f6ba4210db80b2f0e952517b947484dc249f
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
   RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
