@@ -8,7 +8,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useMemo } from 'react'
 import { getNetworkContractTokens } from './utils/getNetworkContractTokens'
 
-const useNetworkContractTokensInternal = (
+export const useNetworkContractTokens = (
   network: Network
 ): NetworkContractToken[] => {
   const allCustomTokens = useSelector(selectAllCustomTokens)
@@ -21,22 +21,16 @@ const useNetworkContractTokensInternal = (
     networkMode: 'offlineFirst'
   })
 
-  const tokens = data ?? []
+  return useMemo(() => {
+    const t = data ?? []
 
-  // if network is testnet, merge with custom tokens if exists
-  if (network && network.isTestnet === isDeveloperMode) {
-    const customTokens = allCustomTokens[network.chainId]
-    if (customTokens && customTokens.length > 0) {
-      return [...tokens, ...customTokens]
+    // if network is testnet, merge with custom tokens if exists
+    if (network && network.isTestnet === isDeveloperMode) {
+      const customTokens = allCustomTokens[network.chainId]
+      if (customTokens && customTokens.length > 0) {
+        return [...t, ...customTokens]
+      }
     }
-  }
-  return tokens
-}
-
-export const useNetworkContractTokens = (
-  network: Network
-): NetworkContractToken[] => {
-  const tokens = useNetworkContractTokensInternal(network)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => tokens, [network])
+    return t
+  }, [allCustomTokens, data, isDeveloperMode, network])
 }
