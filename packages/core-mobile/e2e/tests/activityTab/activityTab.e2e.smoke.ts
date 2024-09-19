@@ -1,68 +1,59 @@
-import Assert from '../../helpers/assertions'
-import actions from '../../helpers/actions'
+import Actions from '../../helpers/actions'
 import ActivityTabPage from '../../pages/activityTab.page'
-import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
+import activityTabPage from '../../pages/activityTab.page'
+import accountManagePage from '../../pages/accountManage.page'
 
-describe('Activity Tab', () => {
+describe('Filter transactions on Activity List', () => {
   beforeAll(async () => {
     await warmup()
   })
 
-  it('should show contract call only in activity list', async () => {
+  afterAll(async () => {
+    await accountManagePage.switchToFirstAccount()
+  })
+
+  it('should filter Contract Call and Swap on Activity List', async () => {
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
-    await actions.waitForElement(ActivityTabPage.contractCallFilterOption)
-    await Assert.isNotVisible(ActivityTabPage.bridgeSVG)
-    // Need to make some contract call transactions on the mobile test account or these elements will not be present
-    // await Assert.isVisible(ActivityTabPage.arrowSVG)
-    // await Assert.isVisible(ActivityTabPage.linkSVG)
-    await Assert.hasText(
-      ActivityTabPage.selectFilterDropdown,
-      'Display: Contract Call'
-    )
+    await ActivityTabPage.verifySelectedFilter('Contract Call')
+    const row = await ActivityTabPage.getLatestActivityRow()
+    try {
+      await ActivityTabPage.verifyActivityRow(row, 'Contract Call')
+    } catch (error) {
+      await ActivityTabPage.verifyActivityRow(row, 'Swap')
+    }
   })
 
-  it('should show bridge transactions only in list', async () => {
+  it('should filter Bridge on Activity List', async () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapBridgeFilterOption()
-    await actions.waitForElement(ActivityTabPage.bridgeFilterOption)
-    await Assert.isNotVisible(ActivityTabPage.arrowSVG, 1)
-    await Assert.isVisible(ActivityTabPage.selectFilterDropdown)
-    // Todo: need to figure out why this locator is not working in the app
-    // await Assert.isVisible(ActivityTabPage.linkSVG)
-    await Assert.hasText(
-      ActivityTabPage.selectFilterDropdown,
-      'Display: Bridge'
-    )
+    await ActivityTabPage.verifySelectedFilter('Bridge')
+    try {
+      const row = await ActivityTabPage.getLatestActivityRow()
+      await ActivityTabPage.verifyActivityRow(row, 'Bridge')
+    } catch (error) {
+      await Actions.waitForElement(activityTabPage.noRecentActivity)
+    }
   })
 
-  it('should display incoming transaction details', async () => {
-    await ActivityTabPage.tapFilterDropdown()
-    await ActivityTabPage.tapIncomingFilterOption()
-    await actions.waitForElement(ActivityTabPage.incomingFilterOption)
-    await Assert.hasText(
-      ActivityTabPage.selectFilterDropdown,
-      'Display: Incoming'
-    )
-  })
-
-  it('should display outgoing transaction details', async () => {
+  it('should filter Outgoing on Activity List', async () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapOutgingFilterOption()
-    await actions.waitForElement(ActivityTabPage.outgoingFilterOption)
-    await Assert.hasText(
-      ActivityTabPage.selectFilterDropdown,
-      'Display: Outgoing'
-    )
+    await ActivityTabPage.verifySelectedFilter('Outgoing')
+    const row = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(row, 'Send')
+  })
 
-    if ((await actions.isVisible(ActivityTabPage.linkSVG, 0)) === false) {
-      await ActivityTabPage.tapArrowIcon(0)
-      await Assert.isVisible(TransactionDetailsPage.status)
-      await Assert.isVisible(TransactionDetailsPage.transactionType)
-    }
+  it('should filter Incoming on Activity List', async () => {
+    await accountManagePage.createNthAccountAndSwitchToNth(2)
+    await ActivityTabPage.tapFilterDropdown()
+    await ActivityTabPage.tapIncomingFilterOption()
+    await ActivityTabPage.verifySelectedFilter('Incoming')
+    const row = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(row, 'Receive')
   })
 })

@@ -21,5 +21,6 @@ export default {
   usdcOutgoingTransactionDetail: '-0.0001 USDC',
   usdcIncomingTransactionDetail: '+0.0001 USDC',
   wethOutgoingTransactionDetail: '-0.0001 WETH.e',
-  wethIncomingTransactionDetail: '+0.0001 WETH.e'
+  wethIncomingTransactionDetail: '+0.0001 WETH.e',
+  noRecentActivity: 'No recent activity'
 }

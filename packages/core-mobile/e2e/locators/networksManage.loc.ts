@@ -40,5 +40,6 @@ export default {
   nativeTokenName: 'nativeTokenName',
   logoURL: 'logoUri',
   chainIdText: 'Chain ID',
+  explorerUrlText: 'Explorer URL',
   noCustomNetworks: 'No custom networks'
 }

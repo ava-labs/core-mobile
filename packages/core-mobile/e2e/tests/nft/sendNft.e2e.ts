@@ -34,6 +34,8 @@ describe('Send NFT', () => {
     // receiver activity tab:
     await AccountManagePage.switchToReceivedAccount('first')
     await activityTabPage.refreshActivityPage()
-    await activityTabPage.verifyExistingRow('Contract Call', '+1 ')
+    const row = await activityTabPage.getLatestActivityRow()
+    await activityTabPage.verifyActivityRow(row, 'Contract Call')
+    await activityTabPage.verifyActivityRow(row, '+1 ')
   })
 })
