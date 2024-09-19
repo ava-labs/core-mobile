@@ -216,7 +216,7 @@ __metadata:
     "@react-navigation/stack": 6.4.1
     "@reduxjs/toolkit": 1.8.1
     "@rushstack/eslint-patch": 1.10.4
-    "@sentry/react-native": 5.32.0
+    "@sentry/react-native": 5.33.0
     "@shopify/flash-list": 1.7.1
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
@@ -7741,9 +7741,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/react-native@npm:5.32.0":
-  version: 5.32.0
-  resolution: "@sentry/react-native@npm:5.32.0"
+"@sentry/react-native@npm:5.33.0":
+  version: 5.33.0
+  resolution: "@sentry/react-native@npm:5.33.0"
   dependencies:
     "@sentry/babel-plugin-component-annotate": 2.20.1
     "@sentry/browser": 7.119.0
@@ -7763,7 +7763,7 @@ __metadata:
       optional: true
   bin:
     sentry-expo-upload-sourcemaps: scripts/expo-upload-sourcemaps.js
-  checksum: efc332d8fef97ca6d6238d0d2cdabc344b5b1ec6b2f5bd3fc9235c99fa2fdb25c656d59b2440aa37c085d173773c33ed29cde1ddf1709eb2ef3ee4a888734d4f
+  checksum: 95c539c3d1aba6a550e262ad3f664d4b7361a82936c4f367526800d053f8df86a1764cdef0962c4f920c733055ad50a2d424c0c97fd848329ea5ceef84e65787
   languageName: node
   linkType: hard
 
