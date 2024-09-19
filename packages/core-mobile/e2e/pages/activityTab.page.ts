@@ -189,8 +189,8 @@ class ActivityTabPage {
 
   async verifyExistingRow(type: string, amount: string) {
     await Action.waitForElement(this.activityListItem)
+    await Action.waitForElement(by.text(type))
     await Action.waitForElement(by.text(amount))
-    await Assert.isVisible(by.text(type))
   }
 }
 
