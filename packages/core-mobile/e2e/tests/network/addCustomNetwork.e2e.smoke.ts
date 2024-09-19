@@ -9,6 +9,7 @@ import NetworksManagePage from '../../pages/networksManage.page'
 import NetworksManageLoc from '../../locators/networksManage.loc'
 import { warmup } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
+import portfolioLoc from '../../locators/portfolio.loc'
 
 describe('Add custom network', () => {
   beforeAll(async () => {
@@ -38,6 +39,7 @@ describe('Add custom network', () => {
     )
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.inputExplorerUrl(NetworksManageLoc.celoExplorerUrl)
+    await NetworksManagePage.swipeUp(NetworksManagePage.explorerUrlText)
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
     await Assert.isVisible(NetworksManagePage.celoWrongNetworkName)
@@ -48,7 +50,7 @@ describe('Add custom network', () => {
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapEditNetwork()
     await NetworksManagePage.inputNetworkName(NetworksManageLoc.celoNetworkName)
-    await NetworksManagePage.swipeUp()
+    await NetworksManagePage.swipeUp(NetworksManagePage.explorerUrlText)
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapHeaderBack()
     await Assert.isVisible(NetworksManagePage.celoNetworkName)
@@ -57,7 +59,9 @@ describe('Add custom network', () => {
   it('should change active network to custom', async () => {
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.tapArbCustomNetwork()
-    await Actions.waitForElement(NetworksManagePage.arbCustomNetwork, 60000)
+    await Actions.waitForElement(
+      by.id(portfolioLoc.activeNetwork + 'Arbitrum One')
+    )
   })
 
   it('should delete custom network', async () => {
