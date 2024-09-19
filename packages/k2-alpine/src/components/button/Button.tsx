@@ -17,19 +17,19 @@ const getTypeColors = (
   switch (type) {
     case 'secondary':
       return {
-        background: theme.colors.$secondaryBackground,
-        text: theme.colors.$secondaryText
+        background: theme.colors.$surfaceSecondary,
+        text: theme.colors.$textSecondary
       }
     case 'tertiary':
       return {
-        background: theme.colors.$tertiaryBackground,
-        text: theme.colors.$tertiaryText
+        background: theme.colors.$surfaceTertiary,
+        text: theme.colors.$textPrimary
       }
     case 'primary':
     default:
       return {
-        background: theme.colors.$primaryBackground,
-        text: theme.colors.$primaryText
+        background: theme.colors.$surfacePrimary,
+        text: theme.colors.$textPrimary
       }
   }
 }
