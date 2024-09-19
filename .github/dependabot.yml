@@ -12,6 +12,7 @@ updates:
     open-pull-requests-limit: 20
     ignore:
       - dependency-name: "react-native"
+      - dependency-name: "expo"
       - dependency-name: "@react-native/metro-config"
       - dependency-name: "@react-native/babel-preset"
       - dependency-name: "react-native-reanimated"

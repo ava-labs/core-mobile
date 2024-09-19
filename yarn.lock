@@ -241,7 +241,7 @@ __metadata:
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.9
     "@types/numeral": 2.0.5
-    "@types/react": 18.3.7
+    "@types/react": 18.3.8
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
     "@types/semver": 7.5.4
@@ -314,7 +314,7 @@ __metadata:
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.19.0
     react-native-graph: 1.1.0
-    react-native-haptic-feedback: 2.0.3
+    react-native-haptic-feedback: 2.3.3
     react-native-inappbrowser-reborn: 3.7.0
     react-native-keychain: 8.2.0
     react-native-level-fs: 3.0.1
@@ -477,7 +477,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@types/react": 18.3.7
+    "@types/react": 18.3.8
     "@types/tinycolor2": 1.4.5
     babel-loader: 9.2.1
     dripsy: 4.3.5
@@ -521,7 +521,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@types/jest": 29.5.12
-    "@types/react": 18.3.7
+    "@types/react": 18.3.8
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
     "@types/tinycolor2": 1.4.6
@@ -10335,13 +10335,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.7":
-  version: 18.3.7
-  resolution: "@types/react@npm:18.3.7"
+"@types/react@npm:18.3.8":
+  version: 18.3.8
+  resolution: "@types/react@npm:18.3.8"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
-  checksum: 027cf84d8309c4d0a9b16ec26f71de0950e2d748293bbc4dac42519f77d0bec099aeb5fb1c0bcb891725973e53085c1aedea5c3a16bca215c2fc2ecf68c7ec6e
+  checksum: a2cc2034746cde564a49a9d7f1ae57214bc83adb0daafd4724dc400569adc54c5a489c0e7d8656752b8748908a364d6811e4d7a2adc7f18a7f7179728d20147a
   languageName: node
   linkType: hard
 
@@ -24480,12 +24480,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-haptic-feedback@npm:2.0.3":
-  version: 2.0.3
-  resolution: "react-native-haptic-feedback@npm:2.0.3"
+"react-native-haptic-feedback@npm:2.3.3":
+  version: 2.3.3
+  resolution: "react-native-haptic-feedback@npm:2.3.3"
   peerDependencies:
     react-native: ">=0.60.0"
-  checksum: c0952135c54535439b3b307f4ecc11721eb208ef7210f56becd5471488d5ee130d78cdf0c8515aa80097ba284347925d2df3f402a09200e645522fe99fad3d64
+  checksum: 5ff12aaf44fa1cad8ab3d9c58046a11c631c6622955120294060efc51c625203ee4cd7ccb565663c12b27552ebbb7034a386000d9da738b9eea5ff62d58b14c0
   languageName: node
   linkType: hard
 
