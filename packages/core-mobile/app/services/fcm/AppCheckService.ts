@@ -50,18 +50,5 @@ class AppCheckService {
   getToken = async (): Promise<FirebaseAppCheckTypes.AppCheckTokenResult> => {
     return await firebase.appCheck().getToken(false)
   }
-
-  fetch = async (url: string, bodyJson: string): Promise<Response> => {
-    const appCheckToken = await this.getToken()
-    const options: RequestInit = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Firebase-AppCheck': appCheckToken.token
-      },
-      body: bodyJson
-    }
-    return fetch(url, options)
-  }
 }
 export default new AppCheckService()
