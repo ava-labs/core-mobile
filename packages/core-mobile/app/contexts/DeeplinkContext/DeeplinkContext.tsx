@@ -10,22 +10,17 @@ import { selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
-import {
-  selectIsDeveloperMode,
-  toggleDeveloperMode
-} from 'store/settings/advanced'
-import { setActiveAccountIndex } from 'store/account'
 import Logger from 'utils/Logger'
 import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
-import { setActive } from 'store/network'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
+import { processNotificationData } from 'store/notifications'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
   DeepLink,
   DeeplinkContextType,
   DeepLinkOrigin,
-  NotificationCallbackProps
+  HandleNotificationCallback,
+  NotificationData
 } from './types'
 
 const DeeplinkContext = createContext<DeeplinkContextType>({
@@ -41,33 +36,32 @@ export const DeeplinkContextProvider = ({
   const dispatch = useDispatch()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
   const processedFeatureFlags = useSelector(selectFeatureFlags)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
 
-  const expireDeepLink = useCallback(() => {
-    setPendingDeepLink(undefined)
-  }, [])
-
-  const handleNotificationCallback = useCallback(
-    ({ url, accountIndex, origin, isDevMode }: NotificationCallbackProps) => {
+  const handleNotificationCallback: HandleNotificationCallback = useCallback(
+    (data: NotificationData | undefined) => {
+      if (!data) {
+        Logger.error(
+          `[DeeplinkContext.tsx][handleNotificationCallback] no data`
+        )
+        return
+      }
+      if (!data.url) {
+        Logger.error(`[DeeplinkContext.tsx][handleNotificationCallback] no url`)
+        return
+      }
       const runCallback = (): void => {
-        const avalancheChainId = isDevMode
-          ? ChainId.AVALANCHE_TESTNET_ID
-          : ChainId.AVALANCHE_MAINNET_ID
-
-        isDevMode !== isDeveloperMode && dispatch(toggleDeveloperMode())
-        dispatch(setActive(avalancheChainId))
-        dispatch(setActiveAccountIndex(accountIndex))
+        dispatch(processNotificationData({ data }))
       }
       setPendingDeepLink({
-        url,
-        origin,
+        url: data.url as string,
+        origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
         callback: runCallback
       })
     },
-    [dispatch, isDeveloperMode]
+    [dispatch]
   )
 
   /******************************************************************************
@@ -75,19 +69,11 @@ export const DeeplinkContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (isNotificationBlocked) return
-    NotificationsService.getInitialNotification()
-      .then(async event => {
-        if (event?.notification?.data?.url)
-          handleNotificationCallback({
-            url: String(event.notification.data.url),
-            accountIndex: Number(event.notification.data.accountIndex),
-            origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-            isDevMode: isDeveloperMode
-          })
-      })
-      .catch(e => {
-        Logger.error('Error getting initial notification:', e)
-      })
+    NotificationsService.getInitialNotification(
+      handleNotificationCallback
+    ).catch(reason => {
+      Logger.error(`[DeeplinkContext.tsx][getInitialNotification]${reason}`)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNotificationBlocked])
 
@@ -95,22 +81,10 @@ export const DeeplinkContextProvider = ({
     if (isNotificationBlocked) return
 
     const unsubscribeForegroundEvent = NotificationsService.onForegroundEvent(
-      async ({ type, detail }) => {
-        await NotificationsService.handleNotificationEvent({
-          type,
-          detail,
-          callback: handleNotificationCallback
-        })
-      }
+      handleNotificationCallback
     )
 
-    NotificationsService.onBackgroundEvent(async ({ type, detail }) => {
-      await NotificationsService.handleNotificationEvent({
-        type,
-        detail,
-        callback: handleNotificationCallback
-      })
-    })
+    NotificationsService.onBackgroundEvent(handleNotificationCallback)
 
     return () => {
       unsubscribeForegroundEvent()
@@ -143,7 +117,9 @@ export const DeeplinkContextProvider = ({
       }
     }
 
-    checkInitialUrl()
+    checkInitialUrl().catch(reason => {
+      Logger.error(`[DeeplinkContext.tsx][checkInitialUrl]${reason}`)
+    })
 
     return () => {
       listener.remove()
@@ -155,19 +131,11 @@ export const DeeplinkContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive) {
-      setTimeout(() => {
-        handleDeeplink(pendingDeepLink, dispatch, processedFeatureFlags)
-        // once we used the url, we can expire it
-        expireDeepLink()
-      }, 1000)
+      handleDeeplink(pendingDeepLink, dispatch, processedFeatureFlags)
+      // once we used the url, we can expire it
+      setPendingDeepLink(undefined)
     }
-  }, [
-    isWalletActive,
-    pendingDeepLink,
-    expireDeepLink,
-    dispatch,
-    processedFeatureFlags
-  ])
+  }, [isWalletActive, pendingDeepLink, dispatch, processedFeatureFlags])
 
   return (
     <DeeplinkContext.Provider
