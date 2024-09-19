@@ -11,13 +11,15 @@ import { setFeatureFlags } from 'store/posthog'
 import { FeatureFlags, FeatureGates } from 'services/posthog/types'
 import type { Action } from 'redux'
 import { ChannelId } from 'services/notifications/channels'
+import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
   turnOffNotificationsFor,
   turnOnNotificationsFor,
   maybePromptBalanceNotification,
-  onFcmTokenChange
+  onFcmTokenChange,
+  processNotificationData
 } from '../slice'
 import { handleScheduleStakingCompleteNotifications } from './handleScheduleStakingCompleteNotifications'
 import { handleMaybePromptEarnNotification } from './handleMaybePromptEarnNotification'
@@ -116,6 +118,19 @@ export const addNotificationsListeners = (
           )
         }
       )
+  })
+
+  startListening({
+    actionCreator: processNotificationData,
+    effect: async (action: AnyAction, listenerApi) =>
+      await handleProcessNotificationData(
+        listenerApi,
+        action.payload.data
+      ).catch(reason => {
+        Logger.error(
+          `[notifications/listeners/listeners.ts][handleProcessNotificationData]${reason}`
+        )
+      })
   })
 }
 const matcherIsSubscribeBalanceChangeNotificationsEnabled = {

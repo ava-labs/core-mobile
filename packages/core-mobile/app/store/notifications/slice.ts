@@ -5,6 +5,7 @@ import {
   StakeCompleteNotification
 } from 'store/notifications/types'
 import { ChannelId } from 'services/notifications/channels'
+import { NotificationData } from 'contexts/DeeplinkContext/types'
 
 const reducerName = 'notifications'
 
@@ -60,6 +61,9 @@ export const maybePromptEarnNotification = createAction(
 )
 export const maybePromptBalanceNotification = createAction(
   `${reducerName}/maybePromptBalanceNotification`
+)
+export const processNotificationData = createAction<{ data: NotificationData }>(
+  `${reducerName}/processNotificationData`
 )
 
 export const turnOnNotificationsFor = createAction<{ channelId: ChannelId }>(
