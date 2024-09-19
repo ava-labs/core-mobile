@@ -5,14 +5,19 @@ import { selectNotificationSubscription } from '../slice'
 
 export const isStakeCompleteNotificationDisabled = async (
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<undefined | boolean> => {
   const state = listenerApi.getState()
 
   const isInAppNotificationEnabled = selectNotificationSubscription(
     ChannelId.STAKING_COMPLETE
   )(state)
 
+  const isStakeCompleteNotificationBlocked = async (): Promise<boolean> => {
+    const blockedNotifications =
+      await NotificationsService.getBlockedNotifications()
+    return blockedNotifications.get(ChannelId.STAKING_COMPLETE) === true
+  }
   const isSystemStakeCompleteNotificationBlocked =
-    await NotificationsService.isStakeCompleteNotificationBlocked()
+    await isStakeCompleteNotificationBlocked()
   return !isInAppNotificationEnabled || isSystemStakeCompleteNotificationBlocked
 }

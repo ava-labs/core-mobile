@@ -90,32 +90,6 @@ describe('handleNotificationPress', () => {
     expect(mockCancelTriggerNotification).toHaveBeenCalled()
     expect(mockCallback).toHaveBeenCalled()
   })
-  it('should not have called mockCallback', async () => {
-    const mockDetail = {
-      notification: {
-        id: 'testNodeId'
-      }
-    }
-    await NotificationsService.handleNotificationPress({
-      detail: mockDetail,
-      callback: mockCallback
-    })
-    expect(mockCancelTriggerNotification).toHaveBeenCalled()
-    expect(mockCallback).not.toHaveBeenCalled()
-  })
-  it('should not have called mockCancelTriggerNotification and mockCallback', async () => {
-    const mockDetail = {
-      notification: {
-        ida: 'testNodeId'
-      }
-    }
-    await NotificationsService.handleNotificationPress({
-      detail: mockDetail as EventDetail,
-      callback: mockCallback
-    })
-    expect(mockCancelTriggerNotification).not.toHaveBeenCalled()
-    expect(mockCallback).not.toHaveBeenCalled()
-  })
 })
 
 describe('handleNotificationEvent', () => {

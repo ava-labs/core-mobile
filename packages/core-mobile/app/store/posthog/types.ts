@@ -26,7 +26,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEEDLESS_MFA_YUBIKEY]: true,
   [FeatureGates.SEEDLESS_SIGNING]: true,
   [FeatureGates.BLOCKAID_TRANSACTION_VALIDATION]: true,
-  [FeatureGates.BLOCKAID_DAPP_SCAN]: true
+  [FeatureGates.BLOCKAID_DAPP_SCAN]: true,
+  [FeatureGates.BALANCE_CHANGE_NOTIFICATIONS]: true
 }
 
 export const initialState = {

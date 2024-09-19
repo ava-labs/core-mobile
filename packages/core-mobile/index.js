@@ -1,10 +1,11 @@
 /**
  * @format
  */
-import { Text, TextInput } from 'react-native'
+import { AppRegistry, Text, TextInput } from 'react-native'
 import './polyfills'
-import { AppRegistry } from 'react-native'
 import Big from 'big.js'
+import FCMService from 'services/fcm/FCMService'
+import AppCheckService from 'services/fcm/AppCheckService'
 import Bootsplash from 'react-native-bootsplash'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
@@ -35,6 +36,10 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   Bootsplash.hide()
   AppEntryPoint = require('./storybook').default
 }
+
+AppCheckService.init()
+FCMService.listenForMessagesBackground()
+// NotificationsService.onBackgroundEvent(handleNotificationCallback)
 
 AppRegistry.registerComponent(appName, () => AppEntryPoint)
 
