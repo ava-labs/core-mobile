@@ -238,7 +238,7 @@ __metadata:
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.9
     "@types/numeral": 2.0.5
-    "@types/react": 18.3.4
+    "@types/react": 18.3.7
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
     "@types/semver": 7.5.4
@@ -474,7 +474,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@types/react": 18.2.45
+    "@types/react": 18.3.7
     "@types/tinycolor2": 1.4.5
     babel-loader: 9.2.1
     dripsy: 4.3.5
@@ -518,7 +518,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@types/jest": 29.5.12
-    "@types/react": 18.3.4
+    "@types/react": 18.3.7
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
     "@types/tinycolor2": 1.4.6
@@ -9664,13 +9664,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.4":
-  version: 18.3.4
-  resolution: "@types/react@npm:18.3.4"
+"@types/react@npm:18.3.7":
+  version: 18.3.7
+  resolution: "@types/react@npm:18.3.7"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
-  checksum: 555ccd1af86a23c781dea0360de64b2f7a0708cdcbf9e6496744b77630065868526fd55147c727dc5ef11b7fd712b04f7898757a84c67e2eb9dfd4c4ead10d95
+  checksum: 027cf84d8309c4d0a9b16ec26f71de0950e2d748293bbc4dac42519f77d0bec099aeb5fb1c0bcb891725973e53085c1aedea5c3a16bca215c2fc2ecf68c7ec6e
   languageName: node
   linkType: hard
 
