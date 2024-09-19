@@ -184,8 +184,8 @@ __metadata:
     "@datadog/mobile-react-native": 2.4.3
     "@datadog/mobile-react-navigation": 2.4.3
     "@dlenroc/testrail": 1.9.1
-    "@ethereumjs/common": 2.6.5
-    "@ethereumjs/tx": 3.4.0
+    "@ethereumjs/common": 4.4.0
+    "@ethereumjs/tx": 5.4.0
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.3.0
@@ -196,14 +196,14 @@ __metadata:
     "@noble/secp256k1": 2.1.0
     "@notifee/react-native": 7.8.2
     "@openzeppelin/contracts": 5.0.2
-    "@paraswap/sdk": 6.9.1
+    "@paraswap/sdk": 6.10.0
     "@playwright/test": 1.47.1
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.13.2
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/netinfo": 11.4.0
-    "@react-native-community/slider": 4.4.2
+    "@react-native-community/slider": 4.5.3
     "@react-native-google-signin/google-signin": 10.1.0
     "@react-native-menu/menu": 0.9.1
     "@react-native/babel-preset": 0.73.21
@@ -216,7 +216,7 @@ __metadata:
     "@react-navigation/stack": 6.4.1
     "@reduxjs/toolkit": 1.8.1
     "@rushstack/eslint-patch": 1.10.4
-    "@sentry/react-native": 5.32.0
+    "@sentry/react-native": 5.33.0
     "@shopify/flash-list": 1.7.1
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
@@ -238,7 +238,7 @@ __metadata:
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.9
     "@types/numeral": 2.0.5
-    "@types/react": 18.3.4
+    "@types/react": 18.3.7
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
     "@types/semver": 7.5.4
@@ -309,7 +309,7 @@ __metadata:
     react-native-dialog: 8.2.0
     react-native-fast-image: 8.6.3
     react-native-fs: 2.20.0
-    react-native-gesture-handler: 2.18.1
+    react-native-gesture-handler: 2.19.0
     react-native-graph: 1.1.0
     react-native-haptic-feedback: 2.0.3
     react-native-inappbrowser-reborn: 3.7.0
@@ -361,7 +361,7 @@ __metadata:
     text-encoding: 0.7.0
     ts-jest: 29.2.5
     ts-node: 10.9.2
-    type-fest: 4.26.0
+    type-fest: 4.26.1
     typechain: 8.3.2
     typescript: 5.2.2
     url: 0.11.4
@@ -468,13 +468,13 @@ __metadata:
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
-    "@react-native-community/slider": 4.5.2
+    "@react-native-community/slider": 4.5.3
     "@rushstack/eslint-patch": 1.5.1
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@types/react": 18.2.45
+    "@types/react": 18.3.7
     "@types/tinycolor2": 1.4.5
     babel-loader: 9.2.1
     dripsy: 4.3.5
@@ -509,7 +509,7 @@ __metadata:
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
-    "@react-native-community/slider": 4.4.2
+    "@react-native-community/slider": 4.5.3
     "@react-native/babel-preset": 0.73.21
     "@react-native/metro-config": 0.73.5
     "@rushstack/eslint-patch": 1.10.4
@@ -518,7 +518,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@types/jest": 29.5.12
-    "@types/react": 18.3.4
+    "@types/react": 18.3.7
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
     "@types/tinycolor2": 1.4.6
@@ -3575,7 +3575,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethereumjs/common@npm:2.6.5, @ethereumjs/common@npm:^2.5.0, @ethereumjs/common@npm:^2.6.0, @ethereumjs/common@npm:^2.6.4":
+"@ethereumjs/common@npm:4.4.0, @ethereumjs/common@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "@ethereumjs/common@npm:4.4.0"
+  dependencies:
+    "@ethereumjs/util": ^9.1.0
+  checksum: 6b8cbfcfb5bdde839545c89dce3665706733260e26455d0eb3bcbc3c09e371ae629d51032b95d86f2aeeb15325244a6622171f9005165266fefd923eaa99f1c5
+  languageName: node
+  linkType: hard
+
+"@ethereumjs/common@npm:^2.5.0, @ethereumjs/common@npm:^2.6.4":
   version: 2.6.5
   resolution: "@ethereumjs/common@npm:2.6.5"
   dependencies:
@@ -3613,13 +3622,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethereumjs/tx@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@ethereumjs/tx@npm:3.4.0"
+"@ethereumjs/rlp@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "@ethereumjs/rlp@npm:5.0.2"
+  bin:
+    rlp: bin/rlp.cjs
+  checksum: b569061ddb1f4cf56a82f7a677c735ba37f9e94e2bbaf567404beb9e2da7aa1f595e72fc12a17c61f7aec67fd5448443efe542967c685a2fe0ffc435793dcbab
+  languageName: node
+  linkType: hard
+
+"@ethereumjs/tx@npm:5.4.0":
+  version: 5.4.0
+  resolution: "@ethereumjs/tx@npm:5.4.0"
   dependencies:
-    "@ethereumjs/common": ^2.6.0
-    ethereumjs-util: ^7.1.3
-  checksum: 381cbb872edb0ae83a56bf5d5657ac4f594f43ca0956b6577fb762840033081252345d67151d4feafde3f97caaab9a9826348780553c05d5a8ca2984259ad555
+    "@ethereumjs/common": ^4.4.0
+    "@ethereumjs/rlp": ^5.0.2
+    "@ethereumjs/util": ^9.1.0
+    ethereum-cryptography: ^2.2.1
+  checksum: 72882a977dee4a15b5216ccdee906b6d9488e3ab93cadc1d6639a841e81b91c71d01221c56ac541026d592b8b33345cdc5468e711013e8fa33ac6da18089cf2c
   languageName: node
   linkType: hard
 
@@ -3653,6 +3673,16 @@ __metadata:
     ethereum-cryptography: ^2.0.0
     micro-ftch: ^0.3.1
   checksum: 9ae5dee8f12b0faf81cd83f06a41560e79b0ba96a48262771d897a510ecae605eb6d84f687da001ab8ccffd50f612ae50f988ef76e6312c752897f462f3ac08d
+  languageName: node
+  linkType: hard
+
+"@ethereumjs/util@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "@ethereumjs/util@npm:9.1.0"
+  dependencies:
+    "@ethereumjs/rlp": ^5.0.2
+    ethereum-cryptography: ^2.2.1
+  checksum: 594e009c3001ca1ca658b4ded01b38e72f5dd5dd76389efd90cb020de099176a3327685557df268161ac3144333cfe8abaae68cda8ae035d9cc82409d386d79a
   languageName: node
   linkType: hard
 
@@ -5998,9 +6028,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@paraswap/sdk@npm:6.9.1":
-  version: 6.9.1
-  resolution: "@paraswap/sdk@npm:6.9.1"
+"@paraswap/sdk@npm:6.10.0":
+  version: 6.10.0
+  resolution: "@paraswap/sdk@npm:6.10.0"
   dependencies:
     "@paraswap/core": 2.2.0
     bignumber.js: ^9.0.2
@@ -6016,7 +6046,7 @@ __metadata:
       optional: true
     web3:
       optional: true
-  checksum: de00ca74240b08b4c7c3c0e978be7b4896e1e2dfc99afbd62ddb7a8e94763f5b0339eefa50a9d65a136c2e25aa6fd7f6e3db974f7bb1db75311abffd445ff011
+  checksum: 4e50e3f658c638405bf728911846af63b46ab35e5d57fcc2378eb98e294f803b3af96db262221f6074e8c94db4c4465c7544fa78ab30e1734c11e6958db5d425
   languageName: node
   linkType: hard
 
@@ -7039,17 +7069,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/slider@npm:4.4.2":
-  version: 4.4.2
-  resolution: "@react-native-community/slider@npm:4.4.2"
-  checksum: 1ae613f594a8ea9d7243b3125d26b36aab4e4c2dd9eba1bf66c4f31878e74fae055cd35a1babc46b262240885bb61fa321610417bb2a6d9f77a330136ff33293
-  languageName: node
-  linkType: hard
-
-"@react-native-community/slider@npm:4.5.2":
-  version: 4.5.2
-  resolution: "@react-native-community/slider@npm:4.5.2"
-  checksum: 99023660756a1a876fc3d9c1a7cec13f7e414abee3452e1e03d2794bc7f46a9d689740bed5c3889914adf6ed85a55c6017e2f0d73b5de353025ba52bba6e79e1
+"@react-native-community/slider@npm:4.5.3":
+  version: 4.5.3
+  resolution: "@react-native-community/slider@npm:4.5.3"
+  checksum: 4cd70b0e24fedf6152d5316b73266569ef2af83dabc713ed7c68330b7d9844ace131e32dd90919b6189fc9f041c528bf7b48eb5b6b2b6e36fb474ba861c7a9c3
   languageName: node
   linkType: hard
 
@@ -7741,9 +7764,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/react-native@npm:5.32.0":
-  version: 5.32.0
-  resolution: "@sentry/react-native@npm:5.32.0"
+"@sentry/react-native@npm:5.33.0":
+  version: 5.33.0
+  resolution: "@sentry/react-native@npm:5.33.0"
   dependencies:
     "@sentry/babel-plugin-component-annotate": 2.20.1
     "@sentry/browser": 7.119.0
@@ -7763,7 +7786,7 @@ __metadata:
       optional: true
   bin:
     sentry-expo-upload-sourcemaps: scripts/expo-upload-sourcemaps.js
-  checksum: efc332d8fef97ca6d6238d0d2cdabc344b5b1ec6b2f5bd3fc9235c99fa2fdb25c656d59b2440aa37c085d173773c33ed29cde1ddf1709eb2ef3ee4a888734d4f
+  checksum: 95c539c3d1aba6a550e262ad3f664d4b7361a82936c4f367526800d053f8df86a1764cdef0962c4f920c733055ad50a2d424c0c97fd848329ea5ceef84e65787
   languageName: node
   linkType: hard
 
@@ -9641,13 +9664,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.4":
-  version: 18.3.4
-  resolution: "@types/react@npm:18.3.4"
+"@types/react@npm:18.3.7":
+  version: 18.3.7
+  resolution: "@types/react@npm:18.3.7"
   dependencies:
     "@types/prop-types": "*"
     csstype: ^3.0.2
-  checksum: 555ccd1af86a23c781dea0360de64b2f7a0708cdcbf9e6496744b77630065868526fd55147c727dc5ef11b7fd712b04f7898757a84c67e2eb9dfd4c4ead10d95
+  checksum: 027cf84d8309c4d0a9b16ec26f71de0950e2d748293bbc4dac42519f77d0bec099aeb5fb1c0bcb891725973e53085c1aedea5c3a16bca215c2fc2ecf68c7ec6e
   languageName: node
   linkType: hard
 
@@ -15294,7 +15317,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereum-cryptography@npm:^2.1.2":
+"ethereum-cryptography@npm:^2.1.2, ethereum-cryptography@npm:^2.2.1":
   version: 2.2.1
   resolution: "ethereum-cryptography@npm:2.2.1"
   dependencies:
@@ -15306,7 +15329,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereumjs-util@npm:^7.0.10, ethereumjs-util@npm:^7.1.0, ethereumjs-util@npm:^7.1.3, ethereumjs-util@npm:^7.1.5":
+"ethereumjs-util@npm:^7.0.10, ethereumjs-util@npm:^7.1.0, ethereumjs-util@npm:^7.1.5":
   version: 7.1.5
   resolution: "ethereumjs-util@npm:7.1.5"
   dependencies:
@@ -23614,9 +23637,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:2.18.1":
-  version: 2.18.1
-  resolution: "react-native-gesture-handler@npm:2.18.1"
+"react-native-gesture-handler@npm:2.19.0":
+  version: 2.19.0
+  resolution: "react-native-gesture-handler@npm:2.19.0"
   dependencies:
     "@egjs/hammerjs": ^2.0.17
     hoist-non-react-statics: ^3.3.0
@@ -23625,7 +23648,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 49b5b9a232fc60ddc38124a804410150070af5b20efbba1550831221560d71df704b7a7edfa2fb70d84fde32faf8675ad6118aea8b40f50c2a9d80eb7a08eb1c
+  checksum: ce9b9fc6537debf962e6b8d84f1c4cf18fe00f39bd86498e84a203ebb26bf3543c2642ed247d974537840407b7ddb602939fd8c817c00a3416e87bddc8f2088f
   languageName: node
   linkType: hard
 
@@ -27142,10 +27165,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:4.26.0, type-fest@npm:^4.3.2":
-  version: 4.26.0
-  resolution: "type-fest@npm:4.26.0"
-  checksum: f8073dc59a4a5bd897eecb3dfbf9d7716031fc161062ef572c402252a0375cc692c9ae1f50c75c80722964f1eda4011d1edbab36af63a130a53b3c1aab4ed1c5
+"type-fest@npm:4.26.1":
+  version: 4.26.1
+  resolution: "type-fest@npm:4.26.1"
+  checksum: 7188db3bca82afa62c69a8043fb7c5eb74e63c45e7e28efb986da1629d844286f7181bc5a8185f38989fffff0d6c96be66fd13529b01932d1b6ebe725181d31a
   languageName: node
   linkType: hard
 
@@ -27188,6 +27211,13 @@ __metadata:
   version: 2.19.0
   resolution: "type-fest@npm:2.19.0"
   checksum: a4ef07ece297c9fba78fc1bd6d85dff4472fe043ede98bd4710d2615d15776902b595abf62bd78339ed6278f021235fb28a96361f8be86ed754f778973a0d278
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^4.3.2":
+  version: 4.26.0
+  resolution: "type-fest@npm:4.26.0"
+  checksum: f8073dc59a4a5bd897eecb3dfbf9d7716031fc161062ef572c402252a0375cc692c9ae1f50c75c80722964f1eda4011d1edbab36af63a130a53b3c1aab4ed1c5
   languageName: node
   linkType: hard
 
