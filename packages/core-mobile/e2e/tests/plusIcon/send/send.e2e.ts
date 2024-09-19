@@ -3,9 +3,10 @@ import sendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
 import portfolioPage from '../../../pages/portfolio.page'
 import { warmup } from '../../../helpers/warmup'
-import actions from '../../../helpers/actions'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
 import { cleanup } from '../../../helpers/cleanup'
+import actions from '../../../helpers/actions'
+import portfolioLoc from '../../../locators/portfolio.loc'
 
 describe('Send AVAX', () => {
   beforeAll(async () => {
@@ -31,7 +32,9 @@ describe('Send AVAX', () => {
     await portfolioPage.tapNetworksDropdownAVAX(
       portfolioPage.networksDropdownPChain
     )
-    await actions.waitForElement(portfolioPage.avaxPNetwork, 6000)
+    await actions.waitForElement(
+      by.id(portfolioLoc.activeNetwork + portfolioLoc.avaxPNetwork)
+    )
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
@@ -45,7 +48,9 @@ describe('Send AVAX', () => {
     await portfolioPage.tapNetworksDropdownAVAX(
       portfolioPage.networksDropdownXChain
     )
-    await actions.waitForElement(portfolioPage.avaxXNetwork, 6000)
+    await actions.waitForElement(
+      by.id(portfolioLoc.activeNetwork + portfolioLoc.avaxXNetwork)
+    )
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount

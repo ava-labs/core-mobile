@@ -139,10 +139,6 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.bitcoin, 0)
   }
 
-  async addBtcNetwork() {
-    await Action.tapElementAtIndex(this.favoriteNetwork, 2)
-  }
-
   async tapAddNetwork() {
     await Action.tapElementAtIndex(this.addNetwork, 0)
   }
