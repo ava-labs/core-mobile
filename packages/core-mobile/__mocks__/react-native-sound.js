@@ -1,3 +1,3 @@
 export default {
-    setCategory: jest.fn()
+  setCategory: jest.fn()
 }
