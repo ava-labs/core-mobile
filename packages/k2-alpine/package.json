@@ -51,7 +51,7 @@
     "react-dom": "18.2.0",
     "react-native-safe-area-context": "4.8.2",
     "tinycolor2": "1.6.0",
-    "typescript": "5.2.2"
+    "typescript": "5.6.2"
   },
   "private": true,
   "lavamoat": {
