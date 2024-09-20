@@ -60,7 +60,7 @@
     "@react-native-community/netinfo": "11.4.0",
     "@react-native-community/slider": "4.5.3",
     "@react-native-firebase/app": "20.4.0",
-    "@react-native-firebase/app-check": "20.4.0",
+    "@react-native-firebase/app-check": "20.5.0",
     "@react-native-firebase/messaging": "20.4.0",
     "@react-native-google-signin/google-signin": "10.1.0",
     "@react-native-menu/menu": "0.9.1",
