@@ -2,9 +2,6 @@
 # Source the AWS utilities script
 source ./scripts/common/awsUtils.sh
 
-# Source the common write to file script
-source ./scripts/common/writeGoogleServicesToFile.sh
-
 # Ensure AWS session is valid
 ensureAwsSession
 
@@ -17,7 +14,7 @@ download_and_save_secret() {
   # Retrieve the secret from AWS
   secret_value=$(getSecretFromAWS "$secret_key")
 
-  write_to_file "$secret_value" "$output_file" "$format"
+  ./scripts/common/writeGoogleServicesToFile.sh "$secret_value" "$output_file" "$format"
 }
 
 # Retrieve all google services files from AWS

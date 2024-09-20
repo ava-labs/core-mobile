@@ -22,7 +22,7 @@ jobs:
           role-to-assume: arn:aws:iam::975050371175:role/github-sa-role
           role-session-name: githubsa
 
-      - name: Get envs from AWS
+      - name: Get secrets from AWS
         uses: aws-actions/aws-secretsmanager-get-secrets@v1
         with:
           secret-ids: |
@@ -35,7 +35,7 @@ jobs:
             ANDROID_GOOGLE_SERVICES_EXTERNAL, core/dev/mobile/android/prod/google-services.json
             IOS_GOOGLE_SERVICES_EXTERNAL, core/dev/mobile/ios/prod/GoogleService-Info.plist
 
-      - name: Write envs to files
+      - name: Write secrets to files
         working-directory: packages/core-mobile/scripts/github
         run: |
           ../common/writeEnvsToFile.sh "$ENV_DEV" ".env.development"
