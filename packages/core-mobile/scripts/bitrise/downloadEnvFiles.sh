@@ -4,8 +4,10 @@ set -e
 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
 set -o pipefail
 
-# download
-curl -Lfo "$BITRISE_SOURCE_DIR/resource.zip" "$BITRISEIO_ENV_FILES_URL"
+# download and unzip env files
+curl -Lfo "$BITRISE_SOURCE_DIR/envs.zip" "$BITRISEIO_ENV_FILES_URL"
+unzip -u "$BITRISE_SOURCE_DIR/envs" -d "$BITRISE_SOURCE_DIR"
 
-# unzip
-unzip -u "$BITRISE_SOURCE_DIR/resource" -d "$BITRISE_SOURCE_DIR"
+# download and unzip google services files
+curl -Lfo "$BITRISE_SOURCE_DIR/googleservices.zip" "$BITRISEIO_GOOGLE_SERVICES_FILES_URL"
+unzip -u "$BITRISE_SOURCE_DIR/googleservices" -d "$BITRISE_SOURCE_DIR"
