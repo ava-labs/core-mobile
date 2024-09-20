@@ -257,7 +257,6 @@ class NotificationsService {
           detail,
           callback
         })
-        break
     }
   }
 

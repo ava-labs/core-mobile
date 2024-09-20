@@ -12,6 +12,10 @@
 		<string>applinks:test.core.app</string>
 		<string>webcredentials:identity.core.app</string>
 	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.org.avalabs.corewallet</string>
+	</array>
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>
 </dict>

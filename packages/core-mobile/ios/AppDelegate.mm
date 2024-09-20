@@ -78,4 +78,10 @@
 #endif
 }
 
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+  // this only reset the badgeCount in app group userDefaults,
+  // the actual badge count is reset in handleNotificationCleanup
+  // inside react native project
+    [[[NSUserDefaults alloc] initWithSuiteName:@"group.org.avalabs.corewallet"] setInteger:0 forKey:@"badgeCount"];
+}
 @end
