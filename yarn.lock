@@ -228,7 +228,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@tanstack/query-sync-storage-persister": 5.53.3
+    "@tanstack/query-sync-storage-persister": 5.56.2
     "@tanstack/react-query": 5.52.2
     "@tanstack/react-query-persist-client": 5.52.2
     "@tradle/react-native-http": 2.0.1
@@ -9421,10 +9421,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:5.53.3":
-  version: 5.53.3
-  resolution: "@tanstack/query-core@npm:5.53.3"
-  checksum: 58692328047b16ebd52752f63a5f1bc5539b9d258c5b2d3921ebf45e0a6ee6746c5dc7a8e3503b6bc9d06ffbe6af59b0bfb2a3a1621eb79b98e0c9f2a68e4b42
+"@tanstack/query-core@npm:5.56.2":
+  version: 5.56.2
+  resolution: "@tanstack/query-core@npm:5.56.2"
+  checksum: e78430464de89fd2543155449391415983c7cdcd1ff2bb86da019414204b6800e2405e341db88000b36a101d3619ee7e94e90da1fa5497b2e021c5765924a64c
   languageName: node
   linkType: hard
 
@@ -9437,22 +9437,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-persist-client-core@npm:5.53.3":
-  version: 5.53.3
-  resolution: "@tanstack/query-persist-client-core@npm:5.53.3"
+"@tanstack/query-persist-client-core@npm:5.56.2":
+  version: 5.56.2
+  resolution: "@tanstack/query-persist-client-core@npm:5.56.2"
   dependencies:
-    "@tanstack/query-core": 5.53.3
-  checksum: 7c218cd819f92077960c1a85e52155cc441116ac021e50daeee0765d24ee855ef8b678be6fc52a3375f686e0ab9c6e9840c843aace716c98fcfb5376959e2725
+    "@tanstack/query-core": 5.56.2
+  checksum: 9e76873d23d0a51925306dca33920962d35eebd368e37abb343ed3a4863a21378006a55b89f18885d04364eb3805273ab67b8efdb05e4bf9064641fc23744cbc
   languageName: node
   linkType: hard
 
-"@tanstack/query-sync-storage-persister@npm:5.53.3":
-  version: 5.53.3
-  resolution: "@tanstack/query-sync-storage-persister@npm:5.53.3"
+"@tanstack/query-sync-storage-persister@npm:5.56.2":
+  version: 5.56.2
+  resolution: "@tanstack/query-sync-storage-persister@npm:5.56.2"
   dependencies:
-    "@tanstack/query-core": 5.53.3
-    "@tanstack/query-persist-client-core": 5.53.3
-  checksum: 3fe8b1b81356860c37266673d396755b4b383f4cb19408a5ca63285c1bacc735fbc126de68b5d5fc5e0b2ef17f9382e1d6baac37efa391875943f4fe4c52ee4c
+    "@tanstack/query-core": 5.56.2
+    "@tanstack/query-persist-client-core": 5.56.2
+  checksum: 0f7686dfbafb997bdb854663c4108592e74701265577f0c15c9438885012ff11d3312e59e3b0ec6e01a8132779595c7dc78017b79960f64fa7c31867d9cc76a6
   languageName: node
   linkType: hard
 
