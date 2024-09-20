@@ -22,7 +22,7 @@ jobs:
           role-to-assume: arn:aws:iam::975050371175:role/github-sa-role
           role-session-name: githubsa
 
-      - name: Get envs from AWS
+      - name: Get secrets from AWS
         uses: aws-actions/aws-secretsmanager-get-secrets@v1
         with:
           secret-ids: |
@@ -30,16 +30,29 @@ jobs:
             ENV_DEV_E2E, core/dev/mobile/.env.development.e2e
             ENV_PROD, core/dev/mobile/.env.production
             ENV_PROD_E2E, core/dev/mobile/.env.production.e2e
+            ANDROID_GOOGLE_SERVICES_INTERNAL, core/dev/mobile/android/internal/google-services.json
+            IOS_GOOGLE_SERVICES_INTERNAL, core/dev/mobile/ios/internal/GoogleService-Info.plist
+            ANDROID_GOOGLE_SERVICES_EXTERNAL, core/dev/mobile/android/prod/google-services.json
+            IOS_GOOGLE_SERVICES_EXTERNAL, core/dev/mobile/ios/prod/GoogleService-Info.plist
 
-      - name: Write envs to files
+      - name: Write secrets to files
         working-directory: packages/core-mobile/scripts/github
         run: |
           ../common/writeEnvsToFile.sh "$ENV_DEV" ".env.development"
           ../common/writeEnvsToFile.sh "$ENV_DEV_E2E" ".env.development.e2e"
           ../common/writeEnvsToFile.sh "$ENV_PROD" ".env.production"
           ../common/writeEnvsToFile.sh "$ENV_PROD_E2E" ".env.production.e2e"
+          ../common/writeGoogleServicesToFile.sh "$ANDROID_GOOGLE_SERVICES_INTERNAL" "google-services.json.internal" "json"
+          ../common/writeGoogleServicesToFile.sh "$IOS_GOOGLE_SERVICES_INTERNAL" "GoogleService-Info.plist.internal" "plist"
+          ../common/writeGoogleServicesToFile.sh "$ANDROID_GOOGLE_SERVICES_EXTERNAL" "google-services.json.external" "json"
+          ../common/writeGoogleServicesToFile.sh "$IOS_GOOGLE_SERVICES_EXTERNAL" "GoogleService-Info.plist.external" "plist"
 
       - name: Upload envs to Bitrise
         working-directory: packages/core-mobile/scripts/github
         run: |
           ./uploadEnvsToBitrise.sh ${{ secrets.BITRISE_ACCESS_TOKEN }}
+
+      - name: Upload google services to Bitrise
+        working-directory: packages/core-mobile/scripts/github
+        run: |
+          ./uploadGoogleServicesToBitrise.sh ${{ secrets.BITRISE_ACCESS_TOKEN }}
