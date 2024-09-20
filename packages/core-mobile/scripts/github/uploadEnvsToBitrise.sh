@@ -2,7 +2,7 @@
 set -e
 
 # Source the bitrise utils file
-source ./scripts/common/bitriseUtils.sh
+source ../common/bitriseUtils.sh
 
 # Check if the correct number of parameters are provided
 if [ "$#" -ne 1 ]; then
