@@ -21,6 +21,7 @@ import { useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import { selectActiveNetwork } from 'store/network'
 
 type NavigationProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
 
@@ -49,6 +50,7 @@ export default function SwapView(): JSX.Element {
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<Amount>()
   const [toTokenValue, setToTokenValue] = useState<Amount>()
+  const activeNetwork = useSelector(selectActiveNetwork)
 
   const [localError, setLocalError] = useState<string>('')
 
@@ -158,17 +160,26 @@ export default function SwapView(): JSX.Element {
     if (!fromToken || !('decimals' in fromToken)) {
       return
     }
+    const decimals =
+      'decimals' in fromToken
+        ? fromToken.decimals
+        : activeNetwork.networkToken.decimals
 
     const totalBalance = {
       bn: fromToken.balance,
-      amount: bigIntToString(fromToken.balance, fromToken?.decimals)
+      amount: bigIntToString(fromToken.balance, decimals)
     } as Amount
 
     // no calculations needed for non-native tokens
     setFromTokenValue(totalBalance)
     setDestination(SwapSide.SELL)
     setAmount(totalBalance)
-  }, [fromToken, setAmount, setDestination])
+  }, [
+    activeNetwork.networkToken.decimals,
+    fromToken,
+    setAmount,
+    setDestination
+  ])
 
   return (
     <View style={styles.container}>
