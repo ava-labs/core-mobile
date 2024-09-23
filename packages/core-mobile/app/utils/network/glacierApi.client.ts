@@ -1,6 +1,6 @@
 import { makeApi, Zodios, type ZodiosOptions } from '@zodios/core'
 import { z } from 'zod'
-import { DEAFULT_HEADERS } from './constants'
+import { CORE_HEADERS } from './constants'
 
 const NftTokenMetadataStatus = z.enum([
   'UNKNOWN',
@@ -3943,7 +3943,7 @@ The transaction export operation runs asynchronously in the background. The stat
 ])
 
 export const api = new Zodios(endpoints, {
-  axiosConfig: { headers: DEAFULT_HEADERS }
+  axiosConfig: { headers: CORE_HEADERS }
 })
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
