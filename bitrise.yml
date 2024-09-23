@@ -346,7 +346,7 @@ workflows:
     - script-runner@0:
         title: Set iOS Version
         inputs:
-        - file_path: scripts/bitrise/detox/setiOSVersion.sh
+        - file_path: scripts/bitrise/setiOSVersion.sh
     - change-android-versioncode-and-versionname@1:
         title: Set Android Version
         run_if: '{{enveq "PLATFORM" "Android"}}'
