@@ -31,6 +31,8 @@ updates:
       - dependency-name: "prettier" # to use the latest version, update eslint first
       - dependency-name: "@typescript-eslint/eslint-plugin" # to use the latest version, update eslint first
       - dependency-name: "@typescript-eslint/parser" # to use the latest version, update eslint first
+      - dependency-name: "@typescript-eslint/utils" # to use the latest version, update eslint first
+      - dependency-name: "eslint-plugin-sonarjs" # to use the latest version, update eslint first
       - dependency-name: "bip174" # we should be using bip174 2.1.0 (please refer to dependencies_resolutions.md)
       - dependency-name: "bitcoinjs-lib" # we should be using bitcoinjs-lib 5.2.0 (please refer to dependencies_resolutions.md)
       - dependency-name: "bip39" # we should be using patched version of bip39 3.0.4 (please refer to /patches/bip39+3.0.4.patch) 

@@ -45,7 +45,7 @@
     "eslint": "9.9.1",
     "eslint-plugin-avalabs-mobile": "workspace:*",
     "json-stringify-pretty-compact": "4.0.0",
-    "react-dom": "18.2.0",
+    "react-dom": "18.3.1",
     "react-native-safe-area-context": "4.11.0",
     "tinycolor2": "1.6.0",
     "typescript": "5.6.2"
