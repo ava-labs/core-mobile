@@ -865,7 +865,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				GENERATE_INFOPLIST_FILE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationServiceExtensionInternal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtensionInternal;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -909,7 +909,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationServiceExtensionInternal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtensionInternal;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -956,7 +956,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				GENERATE_INFOPLIST_FILE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1000,7 +1000,7 @@
 				DEVELOPMENT_TEAM = U57DXD258P;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
