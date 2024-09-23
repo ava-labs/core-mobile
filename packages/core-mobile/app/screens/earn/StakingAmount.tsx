@@ -18,14 +18,15 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { Avax } from 'types/Avax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getZeroAvaxPChain } from 'utils/units/zeroValues'
+import { getCChainTokenUnit } from 'utils/units/knownTokens'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -33,13 +34,19 @@ type ScreenProps = StakeSetupScreenProps<
 
 export default function StakingAmount(): JSX.Element {
   const { getNetwork } = useNetworks()
-  const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
   const cChainBalanceAvax = useMemo(
-    () => Avax.fromWei(cChainBalance?.data?.balance || 0),
+    () =>
+      cChainBalance?.data?.balance
+        ? new TokenUnit(
+            cChainBalance?.data?.balance || 0,
+            getCChainTokenUnit().getMaxDecimals(),
+            getCChainTokenUnit().getSymbol()
+          )
+        : undefined,
     [cChainBalance?.data?.balance]
   )
   const fetchingBalance = cChainBalance?.data?.balance === undefined
@@ -55,27 +62,28 @@ export default function StakingAmount(): JSX.Element {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState(Avax.fromBase(0))
+  const [inputAmount, setInputAmount] = useState(getZeroAvaxPChain())
   const stakeInCurrency = useMemo(
-    () => inputAmount.mul(nativeTokenPrice).toFixed(2),
+    () => inputAmount.mul(nativeTokenPrice).toDisplay({ fixedDp: 2 }),
     [inputAmount, nativeTokenPrice]
   )
 
   const cumulativeBalance = useMemo(
-    () => cChainBalanceAvax.add(claimableBalance || 0),
+    () =>
+      claimableBalance ? cChainBalanceAvax?.add(claimableBalance) : undefined,
     [cChainBalanceAvax, claimableBalance]
   )
   const amountNotEnough =
     !inputAmount.isZero() && inputAmount.lt(minStakeAmount)
 
-  const notEnoughBalance = inputAmount.gt(cumulativeBalance)
+  const notEnoughBalance = cumulativeBalance?.lt(inputAmount) ?? true
 
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
 
-  const [balanceInAvax] = avaxFormatter(cumulativeBalance, true)
+  const balanceInAvax = cumulativeBalance?.toDisplay() ?? '-'
 
-  function handleAmountChange(amount: Avax): void {
+  function handleAmountChange(amount: TokenUnit): void {
     setInputAmount(amount)
   }
 
@@ -83,6 +91,7 @@ export default function StakingAmount(): JSX.Element {
     AnalyticsService.capture('StakeUseAmountPercentage', {
       percent: (100 / factor).toString()
     })
+    if (!cumulativeBalance) return
     setInputAmount(cumulativeBalance.div(factor))
   }
 

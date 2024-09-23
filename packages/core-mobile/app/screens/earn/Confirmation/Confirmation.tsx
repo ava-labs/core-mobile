@@ -31,7 +31,6 @@ import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
-import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import {
   maybePromptEarnNotification,
   scheduleStakingCompleteNotifications
@@ -43,6 +42,7 @@ import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showTransactionSuccessToast } from 'utils/toast'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -53,7 +53,6 @@ type ScreenProps = StakeSetupScreenProps<
 export const Confirmation = (): JSX.Element | null => {
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
-  const avaxFormatter = useAvaxFormatter()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFocused = useIsFocused()
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
@@ -75,6 +74,7 @@ export const Confirmation = (): JSX.Element | null => {
   )
   const claimableBalance = useGetClaimableBalance()
   const networkFees = useEstimateStakingFees(stakingAmount)
+  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
 
   let deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
   if (deductedStakingAmount.lt(minStakeAmount)) {
@@ -216,10 +216,10 @@ export const Confirmation = (): JSX.Element | null => {
   )
 
   const renderStakedAmount = (): JSX.Element => {
-    const [stakingAmountInAvax, stakingAmountInCurrency] = avaxFormatter(
-      deductedStakingAmount,
-      true
-    )
+    const stakingAmountInAvax = deductedStakingAmount.toDisplay()
+    const stakingAmountInCurrency = deductedStakingAmount
+      .mul(avaxPrice)
+      .toDisplay({ fixedDp: 2 })
 
     return (
       <Row style={{ justifyContent: 'space-between' }}>
@@ -241,10 +241,10 @@ export const Confirmation = (): JSX.Element | null => {
 
   const renderEstimatedReward = (): JSX.Element => {
     if (data?.estimatedTokenReward) {
-      const [estimatedRewardInAvax, estimatedRewardInCurrency] = avaxFormatter(
-        data.estimatedTokenReward,
-        true
-      )
+      const estimatedRewardInAvax = data.estimatedTokenReward.toDisplay()
+      const estimatedRewardInCurrency = data.estimatedTokenReward
+        .mul(avaxPrice)
+        .toDisplay({ fixedDp: 2 })
 
       return (
         <View
@@ -281,7 +281,7 @@ export const Confirmation = (): JSX.Element | null => {
       return <Spinner size={22} />
     }
 
-    const [networkFeesInAvax] = avaxFormatter(networkFees, true)
+    const networkFeesInAvax = networkFees?.toDisplay() ?? '-'
 
     return (
       <AvaText.Heading6 testID="network_fee">
