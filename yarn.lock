@@ -346,7 +346,7 @@ __metadata:
     react-native-url-polyfill: 1.3.0
     react-native-view-shot: 3.8.0
     react-native-webview: 13.12.2
-    react-native-webview-crypto: 0.0.25
+    react-native-webview-crypto: 0.0.26
     react-redux: 8.0.1
     react-test-renderer: 18.3.1
     react-timer-hook: 3.0.7
@@ -24882,9 +24882,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-webview-crypto@npm:0.0.25":
-  version: 0.0.25
-  resolution: "react-native-webview-crypto@npm:0.0.25"
+"react-native-webview-crypto@npm:0.0.26":
+  version: 0.0.26
+  resolution: "react-native-webview-crypto@npm:0.0.26"
   dependencies:
     encode-utf8: ^1.0.2
     fast-base64-encode: ^1.0.0
@@ -24893,7 +24893,7 @@ __metadata:
     react: ">=16.4"
     react-native: ">=0.56"
     react-native-webview: ">=8.*"
-  checksum: 66277ecf2ec7a433bea64c99ee2914c34f80d8e0fd323367831145be5bc4aa1a1be5e1ebe04af168f4f498e0352b6323223c3e2fd44a44f893268ada8bbf750b
+  checksum: 0fd94179b53b856d2fc49bdbdd1ea1523a3e35558fdd8b8fd0c1ea50dc768e52f0dc3c51a33ec54186ef28493ce3f126d7f400ee3f58b6cf74f270573231dba5
   languageName: node
   linkType: hard
 
