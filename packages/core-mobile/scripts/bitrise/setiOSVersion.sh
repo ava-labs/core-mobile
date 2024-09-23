@@ -11,6 +11,8 @@ if [ -z "$BUILD_NUMBER" ]; then
     exit 1
 fi
 
+cd ../ios
+
 # Update the build number (CURRENT_PROJECT_VERSION)
 xcrun agvtool new-version -all $BUILD_NUMBER
 
