@@ -945,47 +945,6 @@ workflows:
         no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2e.sh
-  ios-internal-e2e-core-web-test:
-      before_run:
-      - _install-and-set-env
-      - _set-version
-      - _pull_app_files
-      after_run:
-      - _upload-detox-artifacts
-      - _send-test-result-notification-slack
-      envs:
-      - ENVIRONMENT: production
-        opts:
-          is_expand: false
-      - PLATFORM: iOS
-        opts:
-          is_expand: false
-      - IOS_CONFIGURATION: Release
-        opts:
-          is_expand: false
-      - IOS_SCHEME: AvaxWalletInternal
-        opts:
-          is_expand: false
-      - APP_TITLE: Core Mobile Internal
-        opts:
-          is_expand: false
-      - E2E: "true"
-        opts:
-          is_expand: false
-      - USE_TEST_FEATURE_FLAGS: "true"
-        opts:
-          is_expand: false
-      - USE_SEEDLESS_GAMMA: "true"
-        opts:
-          is_expand: false
-      - POST_TO_TESTRAIL: "true"
-        opts:
-          is_expand: false 
-      steps:
-      - script-runner@0:
-          title: Detox
-          inputs:
-          - file_path: scripts/bitrise/detox/iosCoreWebTestRunner.sh
   ios-internal-e2e-regression:
     before_run:
     - _install-and-set-env
