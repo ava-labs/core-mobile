@@ -344,12 +344,26 @@ workflows:
         inputs:
         - file_path: scripts/bitrise/getBuildNumber.sh
     - set-ios-info-plist-unified@1:
-        title: Set iOS Version
+        title: Set iOS Version for AvaxWallet
         run_if: '{{enveq "PLATFORM" "iOS"}}'
         inputs:
         - bundle_version: $BUILD_NUMBER
         - bundle_version_short: $APP_VERSION
         - info_plist_file: $BITRISE_SOURCE_DIR/ios/AvaxWallet/InfoRelease.plist
+    - set-ios-info-plist-unified@1:
+        title: Set iOS Version for NotificationServiceExtension
+        run_if: '{{enveq "PLATFORM" "iOS"}}'
+        inputs:
+        - bundle_version: $BUILD_NUMBER
+        - bundle_version_short: $APP_VERSION
+        - info_plist_file: $BITRISE_SOURCE_DIR/ios/NotificationServiceExtension/Info.plist
+    - set-ios-info-plist-unified@1:
+        title: Set iOS Version for NotificationServiceExtensionInternal
+        run_if: '{{enveq "PLATFORM" "iOS"}}'
+        inputs:
+        - bundle_version: $BUILD_NUMBER
+        - bundle_version_short: $APP_VERSION
+        - info_plist_file: $BITRISE_SOURCE_DIR/ios/NotificationServiceExtensionInternal/Info.plist
     - change-android-versioncode-and-versionname@1:
         title: Set Android Version
         run_if: '{{enveq "PLATFORM" "Android"}}'
