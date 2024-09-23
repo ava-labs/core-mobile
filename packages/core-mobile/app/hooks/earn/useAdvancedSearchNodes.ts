@@ -8,11 +8,11 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import Logger from 'utils/Logger'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { usePeers } from './usePeers'
 
 export type useAdvancedSearchNodesProps = {
-  stakingAmount: Avax
+  stakingAmount: TokenUnit
   stakingEndTime: Date
   minUpTime?: number
   maxFee?: number

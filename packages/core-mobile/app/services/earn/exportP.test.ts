@@ -6,7 +6,7 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
 import { exportP } from 'services/earn/exportP'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 describe('earn/exportP', () => {
   describe('exportP', () => {
@@ -61,8 +61,8 @@ describe('earn/exportP', () => {
     it('should fail if pChainBalance is less than required amount', async () => {
       await expect(async () => {
         await exportP({
-          pChainBalance: Avax.fromBase(12),
-          requiredAmount: Avax.fromBase(13),
+          pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
+          requiredAmount: new TokenUnit(13 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -72,8 +72,8 @@ describe('earn/exportP', () => {
     it('should call walletService.createExportPTx', async () => {
       expect(async () => {
         await exportP({
-          pChainBalance: Avax.fromBase(12),
-          requiredAmount: Avax.fromBase(10),
+          pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
+          requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -90,8 +90,8 @@ describe('earn/exportP', () => {
     it('should call walletService.signAvaxTx', async () => {
       expect(async () => {
         await exportP({
-          pChainBalance: Avax.fromBase(12),
-          requiredAmount: Avax.fromBase(10),
+          pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
+          requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -102,8 +102,8 @@ describe('earn/exportP', () => {
     it('should call networkService.sendTransaction', async () => {
       expect(async () => {
         await exportP({
-          pChainBalance: Avax.fromBase(12),
-          requiredAmount: Avax.fromBase(10),
+          pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
+          requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
           activeAccount: {} as Account
         })

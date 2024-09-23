@@ -1,18 +1,21 @@
 import AvaButton from 'components/AvaButton'
 import React from 'react'
 import { StyleSheet } from 'react-native'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getZeroAvaxPChain } from 'utils/units/zeroValues'
 
 const PercentButtons = ({
   balance,
   onPercentageSelected,
   isDeveloperMode
 }: {
-  balance: Avax | undefined
+  balance: TokenUnit | undefined
   onPercentageSelected: (factor: number) => void
   isDeveloperMode: boolean
-}) => {
-  const minStakeAmount = Avax.fromBase(isDeveloperMode ? 1 : 25)
+}): JSX.Element => {
+  const minStakeAmount = isDeveloperMode
+    ? getZeroAvaxPChain().add(1)
+    : getZeroAvaxPChain().add(25)
   const canStake10Percent = balance && balance.gt(minStakeAmount.mul(10))
   const canStake25Percent = balance && balance.gt(minStakeAmount.mul(4))
   const canStake50Percent = balance && balance.gt(minStakeAmount.mul(2))

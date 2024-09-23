@@ -1,7 +1,8 @@
 import testValidators from 'tests/fixtures/pvm/validators.json'
 import { Hour, MainnetParams } from 'utils/NetworkParams'
 import { Seconds } from 'types/siUnits'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getZeroAvaxPChain } from 'utils/units/zeroValues'
 import EarnService from './EarnService'
 
 describe('EarnService', () => {
@@ -15,24 +16,28 @@ describe('EarnService', () => {
     it('should return zero if current supply is max', () => {
       expect(
         EarnService.calcReward(
-          Avax.fromBase(25),
+          new TokenUnit(25 * 10 ** 9, 9, 'AVAX'),
           Seconds(7 * 24 * Hour),
-          Avax.fromNanoAvax(MainnetParams.stakingConfig.RewardConfig.SupplyCap),
+          new TokenUnit(
+            MainnetParams.stakingConfig.RewardConfig.SupplyCap,
+            9,
+            'AVAX'
+          ),
           2,
           true
         )
-      ).toEqual(Avax.fromBase(0))
+      ).toEqual(getZeroAvaxPChain())
     })
     it('should return non zero if current supply is less than max', () => {
       expect(
         EarnService.calcReward(
-          Avax.fromBase(2000000),
+          new TokenUnit(2000000 * 10 ** 9, 9, 'AVAX'),
           Seconds(7 * 24 * Hour),
-          Avax.fromBase(400_000_000),
+          new TokenUnit(400_000_000 * 10 ** 9, 9, 'AVAX'),
           2,
           true
         ).toDisplay()
-      ).toEqual('3018.65746')
+      ).toEqual('3,018.66')
     })
   })
 })

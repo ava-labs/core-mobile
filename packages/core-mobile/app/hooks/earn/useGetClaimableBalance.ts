@@ -1,17 +1,32 @@
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { useMemo } from 'react'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import NetworkService from 'services/network/NetworkService'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
-export const useGetClaimableBalance = (): Avax | undefined => {
+export const useGetClaimableBalance = (): TokenUnit | undefined => {
   const pChainBalance = usePChainBalance()
-  const pChainBalanceAvax = pChainBalance.data?.balancePerType.unlockedUnstaked
+  const unlockedUnstakedNAvax =
+    pChainBalance.data?.balancePerType.unlockedUnstaked
   const hasErrors = pChainBalance.error || !pChainBalance.data
   const dataReady = !pChainBalance.isLoading && !hasErrors
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useMemo(() => {
-    if (dataReady) {
-      return Avax.fromBase(pChainBalanceAvax || 0)
+    if (dataReady && unlockedUnstakedNAvax) {
+      return new TokenUnit(
+        unlockedUnstakedNAvax,
+        networkToken.decimals,
+        networkToken.symbol
+      )
     }
     return undefined
-  }, [dataReady, pChainBalanceAvax])
+  }, [
+    dataReady,
+    networkToken.decimals,
+    networkToken.symbol,
+    unlockedUnstakedNAvax
+  ])
 }

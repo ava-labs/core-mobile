@@ -1,5 +1,6 @@
 import { UnsignedTx } from '@avalabs/avalanchejs'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { AvaxXP } from 'types/AvaxXP'
 
 /**
  * Calculate the fee needed to perform C-Chain atomic transactions (imports + exports from/to other chains)
@@ -9,9 +10,9 @@ import { Avax } from 'types/Avax'
  * More details: https://docs.avax.network/quickstart/transaction-fees#atomic-transaction-fees
  */
 export function calculateCChainFee(
-  baseFee: Avax,
+  baseFee: TokenUnit,
   unsignedTx: UnsignedTx
-): Avax {
+): TokenUnit {
   const usedGas =
     BigInt(unsignedTx.toBytes().length) +
     BigInt(1000 * unsignedTx.getSignedTx().getAllSignatures().length) +
