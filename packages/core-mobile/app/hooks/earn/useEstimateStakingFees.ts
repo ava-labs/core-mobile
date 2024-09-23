@@ -1,6 +1,5 @@
-import { Avax } from 'types/Avax'
 import { useGetAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   calculateCChainFee,
   calculatePChainFee
@@ -12,6 +11,8 @@ import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import NetworkService from 'services/network/NetworkService'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getZeroAvaxPChain } from 'utils/units/zeroValues'
 
 const importFee = calculatePChainFee()
 
@@ -22,24 +23,17 @@ const importFee = calculatePChainFee()
  * using useGetAmountForCrossChainTransfer.
  */
 export const useEstimateStakingFees = (
-  stakingAmount: Avax
-): Avax | undefined => {
+  stakingAmount: TokenUnit
+): TokenUnit | undefined => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const activeAccount = useSelector(selectActiveAccount)
   const amountForCrossChainTransfer =
     useGetAmountForCrossChainTransfer(stakingAmount)
   const [estimatedStakingFee, setEstimatedStakingFee] = useState<
-    Avax | undefined
+    TokenUnit | undefined
   >(undefined)
-  const cChainBaseFeeWei = useCChainBaseFee()
-  const baseFee = useMemo(
-    () =>
-      cChainBaseFeeWei.data !== undefined
-        ? Avax.fromWei(cChainBaseFeeWei.data)
-        : undefined,
-    [cChainBaseFeeWei.data]
-  )
+  const baseFee = useCChainBaseFee().data
 
   useEffect(() => {
     const calculateEstimatedStakingFee = async (): Promise<void> => {
@@ -48,7 +42,7 @@ export const useEstimateStakingFees = (
         return
       }
       if (amountForCrossChainTransfer.isZero()) {
-        setEstimatedStakingFee(Avax.fromBase(0))
+        setEstimatedStakingFee(getZeroAvaxPChain())
         return
       }
       if (
@@ -64,8 +58,8 @@ export const useEstimateStakingFees = (
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
       const unsignedTx = await WalletService.createExportCTx({
-        amount: totalAmount,
-        baseFee: instantBaseFee,
+        amount: totalAmount.toSubUnit(),
+        baseFee: instantBaseFee.toSubUnit(),
         accountIndex: activeAccount.index,
         avaxXPNetwork,
         destinationChain: 'P',
