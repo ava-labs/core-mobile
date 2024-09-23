@@ -127,13 +127,10 @@ const ApprovalPopup = (): JSX.Element => {
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
     useSpendLimits(displayData.tokenApprovals)
 
-  const handleFeesChange = useCallback(
-    (fees: Eip1559Fees) => {
-      setMaxFeePerGas(fees.maxFeePerGas.toSubUnit())
-      setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas.toSubUnit())
-    },
-    []
-  )
+  const handleFeesChange = useCallback((fees: Eip1559Fees) => {
+    setMaxFeePerGas(fees.maxFeePerGas)
+    setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
+  }, [])
 
   const onHandleApprove = async (): Promise<void> => {
     if (approveDisabled) return

@@ -87,7 +87,7 @@ export function useBtcBridge({
   useEffect(() => {
     if (!networkFee) return
 
-    setFeeRate(Number(networkFee.low.maxFeePerGas.toSubUnit()))
+    setFeeRate(Number(networkFee.low.maxFeePerGas))
   }, [networkFee])
 
   useEffect(() => {
