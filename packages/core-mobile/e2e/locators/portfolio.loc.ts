@@ -17,7 +17,7 @@ export default {
   ethNetwork: 'Ethereum',
   ethSepoliaNetwork: 'Ethereum Sepolia',
   favoritesHeader: 'Favorites',
-  manageNetworks: 'Manage networks',
+  manageNetworks: 'Manage Networks',
   manageTokens: 'Manage',
   networksHeader: 'Networks',
   networksDropdownItem: 'network_dropdown__',
