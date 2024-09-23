@@ -155,13 +155,13 @@ export default function SwapView(): JSX.Element {
   }
 
   const handleOnMax = useCallback(() => {
-    if (!fromToken) {
+    if (!fromToken || !('decimals' in fromToken)) {
       return
     }
 
     const totalBalance = {
       bn: fromToken.balance,
-      amount: bigIntToString(fromToken.balance, fromToken?.decimals)
+      amount: bigIntToString(fromToken.balance, fromToken.decimals)
     } as Amount
 
     // no calculations needed for non-native tokens

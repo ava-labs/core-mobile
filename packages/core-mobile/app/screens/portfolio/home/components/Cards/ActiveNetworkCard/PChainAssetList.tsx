@@ -2,11 +2,11 @@ import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { PChainBalance } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { assetPDisplayNames } from 'store/balance/types'
-import { Avax } from 'types'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getCChainTokenUnit } from 'utils/units/knownTokens'
 
 type ChainBalanceType = keyof PChainBalance
 
@@ -21,9 +21,6 @@ export const PChainAssetList = ({
   sx?: Sx
   ItemSeparator?: React.ComponentType | null
 }): React.JSX.Element => {
-  const {
-    appHook: { currencyFormatter }
-  } = useApplicationContext()
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
   const token = tokens.find(t => isTokenWithBalancePVM(t))
@@ -33,20 +30,11 @@ export const PChainAssetList = ({
       ? Object.keys(token.balancePerType)
           .sort((a, b) => {
             return Number(
-              Avax.fromBase(
-                token.balancePerType[b as ChainBalanceType] ?? '0'
-              )?.sub(
-                Avax.fromBase(
-                  token.balancePerType[a as ChainBalanceType] ?? '0'
-                )
-              )
+              (token.balancePerType[b as ChainBalanceType] ?? 0n) -
+                (token.balancePerType[a as ChainBalanceType] ?? 0n)
             )
           })
-          .filter(k =>
-            Avax.fromBase(
-              token.balancePerType[k as ChainBalanceType] ?? '0'
-            )?.gt(0)
-          )
+          .filter(k => (token.balancePerType[k as ChainBalanceType] ?? 0) > 0)
       : []
   }, [token])
 
@@ -57,13 +45,18 @@ export const PChainAssetList = ({
       token && isTokenWithBalancePVM(token)
         ? token.balancePerType[assetType as ChainBalanceType]
         : 0
-    const balanceInAvax = Avax.fromBase(balance.toString()).toDisplay()
+    const balanceInAvax = balance
+      ? new TokenUnit(
+          balance,
+          getCChainTokenUnit().getMaxDecimals(),
+          getCChainTokenUnit().getSymbol()
+        )
+      : undefined
 
-    const formattedBalance = currencyFormatter(
-      Avax.fromBase(balance.toString())
-        .mul(token?.priceInCurrency ?? 0)
-        .toDisplay(2)
-    )
+    const formattedBalance =
+      balanceInAvax
+        ?.mul(token?.priceInCurrency ?? 0)
+        .toDisplay({ fixedDp: 2 }) ?? '-'
 
     const assetName = assetPDisplayNames[assetType]
 
@@ -94,7 +87,7 @@ export const PChainAssetList = ({
                 variant="overline"
                 sx={{ color: '$neutral50' }}
                 ellipsizeMode="tail">
-                {balanceInAvax}
+                {balanceInAvax?.toDisplay() ?? '-'}
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">

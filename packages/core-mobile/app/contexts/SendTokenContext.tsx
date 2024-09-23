@@ -14,12 +14,12 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
-import { bigIntToString } from '@avalabs/core-utils-sdk'
+import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit, Amount } from 'types'
+import { Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -253,7 +253,7 @@ export const SendTokenContextProvider = ({
         setMaxAmount({
           bn: state.maxAmount ?? 0n,
           amount:
-            state.maxAmount && sendToken
+            state.maxAmount && sendToken && 'decimals' in sendToken
               ? bigIntToString(state.maxAmount, sendToken.decimals)
               : ''
         })
