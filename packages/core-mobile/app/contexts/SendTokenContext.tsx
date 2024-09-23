@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
-import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
+import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
@@ -85,8 +85,7 @@ export const SendTokenContextProvider = ({
 
   const { data: networkFee } = useNetworkFee(activeNetwork)
 
-  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
-    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
+  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] = useState<bigint>(0n)
 
   // setting maxFeePerGas to lowest network fee to calculate max amount in Send screen
   useEffect(() => {
@@ -170,7 +169,7 @@ export const SendTokenContextProvider = ({
     const sendState: SendState = {
       address: sendToAddress,
       amount: sendAmount.bn,
-      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      defaultMaxFeePerGas: defaultMaxFeePerGas,
       gasLimit,
       token: sendToken,
       canSubmit
@@ -234,7 +233,7 @@ export const SendTokenContextProvider = ({
       token: sendToken,
       amount: sendAmount.bn,
       address: sendToAddress,
-      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      defaultMaxFeePerGas: defaultMaxFeePerGas,
       gasLimit
     }
 

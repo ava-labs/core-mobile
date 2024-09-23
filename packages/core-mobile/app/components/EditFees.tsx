@@ -16,22 +16,21 @@ import {
   useTheme
 } from '@avalabs/k2-mobile'
 import { Tooltip } from 'components/Tooltip'
-import { TokenBaseUnit } from 'types/TokenBaseUnit'
-import { NetworkTokenUnit } from 'types'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 
-type EditFeesProps<T extends TokenBaseUnit<T>> = {
+type EditFeesProps = {
   network: Network
-  onSave: (customFees: Eip1559Fees<T>) => void
+  onSave: (customFees: Eip1559Fees) => void
   onClose?: () => void
-  lowMaxFeePerGas: NetworkTokenUnit
+  lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isBtcNetwork?: boolean
+  isBtcNetwork: boolean
   noGasLimitError?: string
-} & Eip1559Fees<T>
+} & Eip1559Fees
 
 const maxBaseFeeInfoMessage =
   'The Base Fee is set by the network and changes frequently. Any difference between the set Base Fee and the actual Base Fee will be refunded.'
@@ -50,6 +49,14 @@ function CurrencyHelperText({ text }: { text: string }): JSX.Element {
   )
 }
 
+function feeDenominationToBigint(fee: string, isBtcNetwork: boolean): bigint {
+  return isBtcNetwork ? BigInt(fee) : BigInt(fee) * BigInt(1e9)
+}
+
+function bigIntToFeeDenomination(fee: bigint, isBtcNetwork: boolean): string {
+  return isBtcNetwork ? fee.toString() : (fee / BigInt(1e9)).toString()
+}
+
 const EditFees = ({
   lowMaxFeePerGas,
   maxFeePerGas: initMaxFeePerGas,
@@ -61,7 +68,7 @@ const EditFees = ({
   isGasLimitEditable,
   isBtcNetwork,
   noGasLimitError
-}: EditFeesProps<NetworkTokenUnit>): JSX.Element => {
+}: EditFeesProps): JSX.Element => {
   const _gasLimitError = noGasLimitError ?? 'Please enter a valid gas limit'
   const {
     theme: { colors }
@@ -70,52 +77,78 @@ const EditFees = ({
     selectSelectedCurrency
   ).toLowerCase() as VsCurrencyType
   const typeCreator = useMemo(
-    () => NetworkTokenUnit.fromNetwork(network),
+    () =>
+      new TokenUnit(
+        0,
+        network.networkToken.decimals,
+        network.networkToken.symbol
+      ),
     [network]
   )
   const [newGasLimit, setNewGasLimit] = useState<string>(
     initGasLimit.toString()
   )
+  /**
+   * Denominated depending of network:
+   * BTC - Satoshi
+   * AVAX - nAVAX
+   * EVM - gWei
+   */
   const [newMaxFeePerGas, setNewMaxFeePerGas] = useState<string>(
-    isBtcNetwork
-      ? initMaxFeePerGas.toSubUnit().toString()
-      : initMaxFeePerGas.toFeeUnit()
+    bigIntToFeeDenomination(initMaxFeePerGas, isBtcNetwork)
   )
+  /**
+   * Denominated depending of network:
+   * BTC - Satoshi
+   * AVAX - nAVAX
+   * EVM - gWei
+   */
   const [newMaxPriorityFeePerGas, setNewMaxPriorityFeePerGas] =
-    useState<string>(initMaxPriorityFeePerGas.toFeeUnit().toString())
+    useState<string>(
+      bigIntToFeeDenomination(initMaxPriorityFeePerGas, isBtcNetwork)
+    )
   const tokenPrice = useNativeTokenPriceForNetwork(network).nativeTokenPrice
   const [feeError, setFeeError] = useState('')
   const [gasLimitError, setGasLimitError] = useState('')
-  const [newFees, setNewFees] = useState<GasAndFees<NetworkTokenUnit>>(
+  const [newFees, setNewFees] = useState<GasAndFees>(
     calculateGasAndFees({
       maxFeePerGas: initMaxFeePerGas,
       maxPriorityFeePerGas: initMaxPriorityFeePerGas,
       tokenPrice,
-      gasLimit: initGasLimit
+      gasLimit: initGasLimit,
+      networkToken: network.networkToken
     })
   )
   const maxTotalFee = useMemo(
-    () => newFees.maxTotalFee.toDisplay(6),
-    [newFees.maxTotalFee]
+    () =>
+      new TokenUnit(
+        newFees.maxTotalFee,
+        network.networkToken.decimals,
+        network.networkToken.symbol
+      ).toDisplay(),
+    [
+      network.networkToken.decimals,
+      network.networkToken.symbol,
+      newFees.maxTotalFee
+    ]
   )
 
   useEffect(() => {
     try {
       const fees = calculateGasAndFees({
         tokenPrice,
-        maxFeePerGas: typeCreator.newFromFeeUnit(
-          newMaxFeePerGas,
-          isBtcNetwork ? 8 : undefined
+        maxFeePerGas: feeDenominationToBigint(newMaxFeePerGas, isBtcNetwork),
+        maxPriorityFeePerGas: feeDenominationToBigint(
+          newMaxPriorityFeePerGas,
+          isBtcNetwork
         ),
-        maxPriorityFeePerGas: typeCreator.newFromFeeUnit(
-          newMaxPriorityFeePerGas
-        ),
-        gasLimit: isNaN(parseInt(newGasLimit)) ? 0 : parseInt(newGasLimit)
+        gasLimit: isNaN(parseInt(newGasLimit)) ? 0 : parseInt(newGasLimit),
+        networkToken: network.networkToken
       })
       setNewFees(fees)
       setGasLimitError(fees.gasLimit <= 0 ? _gasLimitError : '')
       setFeeError(
-        fees.maxFeePerGas.lt(lowMaxFeePerGas) ? 'Max base fee is too low' : ''
+        fees.maxFeePerGas < lowMaxFeePerGas ? 'Max base fee is too low' : ''
       )
     } catch (e) {
       setFeeError('Gas Limit is too much')
@@ -131,7 +164,8 @@ const EditFees = ({
     typeCreator,
     lowMaxFeePerGas,
     _gasLimitError,
-    isBtcNetwork
+    isBtcNetwork,
+    network.networkToken
   ])
 
   const handleOnSave = (): void => {

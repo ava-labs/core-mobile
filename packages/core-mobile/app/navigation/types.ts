@@ -24,7 +24,6 @@ import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreen
 import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { Eip1559Fees } from 'utils/Utils'
-import { NetworkTokenUnit } from 'types'
 import { WalletGetEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import {
   AvalancheSetDeveloperModeApproveData,
@@ -69,12 +68,12 @@ export type BridgeTransactionStatusParams = {
 
 export type EditGasLimitParams = {
   network: Network
-  onSave: (customFees: Eip1559Fees<NetworkTokenUnit>) => void
-  lowMaxFeePerGas: NetworkTokenUnit
+  onSave: (customFees: Eip1559Fees) => void
+  lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isBtcNetwork?: boolean
+  isBtcNetwork: boolean
   noGasLimitError?: string
-} & Eip1559Fees<NetworkTokenUnit>
+} & Eip1559Fees
 
 export type EditSpendLimitParams = {
   updateSpendLimit(limitData: SpendLimit): void

@@ -12,12 +12,13 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import { NetworkTokenUnit } from 'types'
 import { View } from '@avalabs/k2-mobile'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
 import { selectBridgeAppConfig } from 'store/bridge/slice'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getZeroTokenUnit } from 'utils/units/zeroValues'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
@@ -38,8 +39,8 @@ const BridgeAsset = (): JSX.Element => {
     blockchainToNetwork(currentBlockchain, networks, bridgeAppConfig) ??
     activeNetwork
   const { data: networkFee } = useNetworkFee(network)
-  const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
-    NetworkTokenUnit.fromNetwork(network)
+  const [maxFeePerGas, setMaxFeePerGas] = useState<TokenUnit>(
+    getZeroTokenUnit(network.networkToken)
   )
 
   useEffect(() => {
