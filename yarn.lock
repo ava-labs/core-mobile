@@ -484,7 +484,7 @@ __metadata:
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 50.0.20
-    expo-font: 11.10.3
+    expo-font: 12.0.10
     expo-splash-screen: 0.27.5
     expo-status-bar: 1.12.1
     json-stringify-pretty-compact: 4.0.0
@@ -16202,7 +16202,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-font@npm:11.10.3, expo-font@npm:~11.10.3":
+"expo-font@npm:12.0.10":
+  version: 12.0.10
+  resolution: "expo-font@npm:12.0.10"
+  dependencies:
+    fontfaceobserver: ^2.1.0
+  peerDependencies:
+    expo: "*"
+  checksum: c8fdc046158d4c2d71d81fcd9ba115bc0e142bc0d637ae9b5fea04cd816c62c051f63e44685530109106565d29feca2035ef6123c56cf9c951d0a2775a8cd9a7
+  languageName: node
+  linkType: hard
+
+"expo-font@npm:~11.10.3":
   version: 11.10.3
   resolution: "expo-font@npm:11.10.3"
   dependencies:
