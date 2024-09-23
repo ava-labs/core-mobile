@@ -9383,14 +9383,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/eslint-plugin-query@npm:5.53.0":
-  version: 5.53.0
-  resolution: "@tanstack/eslint-plugin-query@npm:5.53.0"
+"@tanstack/eslint-plugin-query@npm:5.57.1":
+  version: 5.57.1
+  resolution: "@tanstack/eslint-plugin-query@npm:5.57.1"
   dependencies:
     "@typescript-eslint/utils": ^8.3.0
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
-  checksum: 3f7a291d765dab98b9ba229bbc1203fbf86763e591442f4c286cca86d7b988bd44d177ce2866a1fb2a7913dfdff9584607f93506aa5fc928290867f280aecbc2
+  checksum: aaf6949eee3546a0c6c5e498d40315a5a5b62fcb6643c99f54e58d3157563083c62bc7b3d11c620cf0a1c019d11c31c6f3ba9a09ec573cf13703034e04a8713a
   languageName: node
   linkType: hard
 
@@ -15542,7 +15542,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-community/eslint-config": 3.0.3
-    "@tanstack/eslint-plugin-query": 5.53.0
+    "@tanstack/eslint-plugin-query": 5.57.1
     "@types/node": 22.5.5
     "@typescript-eslint/eslint-plugin": 5.62.0
     "@typescript-eslint/parser": 5.62.0
