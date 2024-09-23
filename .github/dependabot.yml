@@ -13,6 +13,7 @@ updates:
     ignore:
       - dependency-name: "react-native"
       - dependency-name: "expo"
+      - dependency-name: "expo-font"
       - dependency-name: "@react-native/metro-config"
       - dependency-name: "@react-native/babel-preset"
       - dependency-name: "react-native-reanimated"
