@@ -37,7 +37,7 @@ export const useClaimFees = (): {
       const baseFeeRaw = cChainBaseFee?.data
       if (!baseFeeRaw) throw new Error('no base fee available')
 
-      if (!activeAccount) throw new Error('no active acocunt')
+      if (!activeAccount) throw new Error('no active account')
 
       const baseFee = Avax.fromWei(baseFeeRaw)
 
@@ -47,7 +47,7 @@ export const useClaimFees = (): {
 
       const unsignedTx = await WalletService.createImportCTx({
         accountIndex: activeAccount.index,
-        baseFee: instantBaseFee,
+        baseFee: instantBaseFee.toSubUnit(),
         avaxXPNetwork,
         sourceChain: 'P',
         destinationAddress: activeAccount.addressC,

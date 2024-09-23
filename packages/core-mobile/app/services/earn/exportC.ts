@@ -8,13 +8,13 @@ import { Account } from 'store/account/types'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
-import { Avax } from 'types/Avax'
 import { FundsStuckError } from 'hooks/earn/errors'
+import { AvaxC } from 'types/AvaxC'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
-  cChainBalance: Avax
-  requiredAmount: Avax
+  cChainBalance: bigint
+  requiredAmount: bigint
   activeAccount: Account
   isDevMode: boolean
 }
@@ -37,19 +37,21 @@ export async function exportC({
 
   const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
 
-  const baseFee = Avax.fromWei(await avaxProvider.getApiC().getBaseFee())
-  const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
+  const baseFeeAvax = AvaxC.fromWei(await avaxProvider.getApiC().getBaseFee())
+  const instantBaseFeeAvax = WalletService.getInstantBaseFee(baseFeeAvax)
 
-  const pChainFee = calculatePChainFee()
-  const amount = requiredAmount.add(pChainFee)
+  const cChainBalanceAvax = AvaxC.fromWei(cChainBalance)
+  const requiredAmountAvax = AvaxC.fromWei(requiredAmount)
+  const pChainFeeAvax = calculatePChainFee()
+  const amountAvax = requiredAmountAvax.add(pChainFeeAvax)
 
-  if (cChainBalance.lt(amount)) {
+  if (cChainBalanceAvax.lt(amountAvax)) {
     throw Error('Not enough balance on C chain')
   }
 
   const unsignedTxWithFee = await WalletService.createExportCTx({
-    amount,
-    baseFee: instantBaseFee,
+    amount: amountAvax.toSubUnit(),
+    baseFee: instantBaseFeeAvax.toSubUnit(),
     accountIndex: activeAccount.index,
     avaxXPNetwork,
     destinationChain: 'P',
