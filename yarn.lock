@@ -305,7 +305,7 @@ __metadata:
     react-native-bootsplash: 6.1.3
     react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
-    react-native-circular-progress: 1.3.9
+    react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
     react-native-config: 1.5.3
     react-native-device-info: 10.0.2
@@ -24328,16 +24328,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-circular-progress@npm:1.3.9":
-  version: 1.3.9
-  resolution: "react-native-circular-progress@npm:1.3.9"
+"react-native-circular-progress@npm:1.4.0":
+  version: 1.4.0
+  resolution: "react-native-circular-progress@npm:1.4.0"
   dependencies:
     prop-types: ^15.8.1
   peerDependencies:
     react: ">=16.0.0"
     react-native: ">=0.50.0"
     react-native-svg: ">=7.0.0"
-  checksum: e0a33d7ff7afd9912f52e0237e33fc2c4e33d42b7e887ffd52a1b05bd098c50caa5350fab4cb8a65dd8cf4e52587ed652449ffa13f64de42fcf022d2d84fe4d6
+  checksum: e98425c57c82964be1b0bf8378f3fa85513013b9c9c7c3a7d4be9d193ce683cbc9877f454f08f5322d07e620faa1381a9fe8ff64f78fc295278909f329a47861
   languageName: node
   linkType: hard
 
