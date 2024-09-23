@@ -1,47 +1,46 @@
 import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
-import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 
-interface TokenBaseUnitProps<T extends TokenBaseUnit<T>>
-  extends Omit<InputTextProps, 'text'> {
-  value?: T
+interface TokenBaseUnitProps extends Omit<InputTextProps, 'text'> {
+  value?: TokenUnit
   maxDecimals: number
+  symbol: string
   isValueLoading?: boolean
   hideErrorMessage?: boolean
   testID?: string
   // Used to construct concrete class, extender of TokenBaseUnit
-  baseUnitConstructor: new (value: AcceptedTypes, maxDecimals: number) => T
 
-  onChange?(amount: T): void
+  onChange?(amount: TokenUnit): void
 
   onMax?(): void
 }
 
 /**
- * BaseAvaxInput takes user's input via InputText component and calls "onChange" callback with TokenBaseUnit object.
+ * BaseAvaxInput takes user's input via InputText component and calls "onChange" callback with TokenUnit object.
  * Users input is kept in baseValueString.
- * Since TokenBaseUnit object will strip trailing decimal zeroes this component will compare "value" param with
- * baseValueString using TokenBaseUnit.eq() operation to detect if there are any changes.
+ * Since TokenUnit object will strip trailing decimal zeroes this component will compare "value" param with
+ * baseValueString using TokenUnit.eq() operation to detect if there are any changes.
  */
-export function TokenBaseUnitInput<T extends TokenBaseUnit<T>>({
+export function TokenBaseUnitInput({
   value,
   maxDecimals,
-  baseUnitConstructor,
+  symbol,
   onChange,
   onMax,
   isValueLoading,
   hideErrorMessage,
   ..._props
-}: TokenBaseUnitProps<T>) {
+}: TokenBaseUnitProps): JSX.Element {
   const sanitizedValue = value && value.isZero() ? undefined : value
   const [baseValueString, setBaseValueString] = useState('')
   const [maxLength, setMaxLength] = useState<number | undefined>(undefined)
 
   useEffect(updateValueStrFx, [baseValueString, sanitizedValue])
 
-  const onValueChanged = (rawValue: string) => {
+  const onValueChanged = (rawValue: string): void => {
     if (!rawValue) {
-      onChange?.(new baseUnitConstructor(0, maxDecimals))
+      onChange?.(new TokenUnit(0, maxDecimals, symbol))
       setBaseValueString('')
       return
     }
@@ -59,13 +58,13 @@ export function TokenBaseUnitInput<T extends TokenBaseUnit<T>>({
       setMaxLength(frontValue.length + '.'.length + maxDecimals)
 
       setBaseValueString(changedValue)
-      onChange?.(new baseUnitConstructor(changedValue, maxDecimals))
+      onChange?.(new TokenUnit(changedValue, maxDecimals, symbol))
     } else {
       setMaxLength(undefined)
     }
   }
 
-  function updateValueStrFx() {
+  function updateValueStrFx(): void {
     // When deleting zeros after decimal, all zeros delete without this check.
     // This also preserves zeros in the input ui.
     if (
