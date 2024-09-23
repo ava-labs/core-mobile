@@ -208,7 +208,7 @@ __metadata:
     "@react-native-firebase/app-check": 20.5.0
     "@react-native-firebase/messaging": 20.5.0
     "@react-native-google-signin/google-signin": 10.1.0
-    "@react-native-menu/menu": 0.9.1
+    "@react-native-menu/menu": 1.1.3
     "@react-native/babel-preset": 0.73.21
     "@react-native/metro-config": 0.73.5
     "@react-navigation/bottom-tabs": 6.6.1
@@ -7768,13 +7768,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-menu/menu@npm:0.9.1":
-  version: 0.9.1
-  resolution: "@react-native-menu/menu@npm:0.9.1"
+"@react-native-menu/menu@npm:1.1.3":
+  version: 1.1.3
+  resolution: "@react-native-menu/menu@npm:1.1.3"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 97de17ddcd4292f9f1cf2f47b62eed2bdb11c7d69734ffc260cbeb1e19e02ee3f279d9df1b9c9be3191ee12b3645842510087c0e6166aa99f87694c1a50787da
+  checksum: eda42afd70e0bb3f338d931813d4f37fbddfbb54c845847235e147ed5e40d6b91c9a66f09e4080784c30e1917b5854f1a0e736f442ac423387347c4bffc6ec92
   languageName: node
   linkType: hard
 
