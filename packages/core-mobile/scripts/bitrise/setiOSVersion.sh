@@ -11,7 +11,7 @@ if [ -z "$BUILD_NUMBER" ]; then
     exit 1
 fi
 
-cd ../ios
+cd ios
 
 # Update the build number (CURRENT_PROJECT_VERSION)
 xcrun agvtool new-version -all $BUILD_NUMBER
@@ -21,3 +21,5 @@ xcrun agvtool new-marketing-version $APP_VERSION
 
 echo "Updated build number to: $BUILD_NUMBER"
 echo "Updated version to: $APP_VERSION"
+
+cd ..
