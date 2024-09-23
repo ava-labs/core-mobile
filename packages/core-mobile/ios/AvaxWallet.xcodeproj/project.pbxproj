@@ -25,6 +25,8 @@
 		815E55532C989231000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
 		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
+		8E2CDCBE2CA1D8B00050DEEB /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 815E55132C92071A000F8E0F /* Info.plist */; };
+		8E2CDCBF2CA1D8C20050DEEB /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 815E55492C94A396000F8E0F /* Info.plist */; };
 		8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
 		8E858A5C28AFD47300236EF2 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA732269F480900722C85 /* Inter-Regular.ttf */; };
 		8E858A5D28AFD47300236EF2 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */; };
@@ -452,6 +454,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E2CDCBE2CA1D8B00050DEEB /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,6 +462,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E2CDCBF2CA1D8C20050DEEB /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
