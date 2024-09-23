@@ -11,7 +11,7 @@ import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
-import { DEAFULT_HEADERS } from 'utils/network/constants'
+import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -69,7 +69,8 @@ class ModuleManager {
     const moduleInitParams = {
       environment,
       approvalController,
-      headers: DEAFULT_HEADERS
+      appName: APPLICATION_NAME,
+      appVersion: APPLICATION_VERSION
     }
 
     this.modules = [
