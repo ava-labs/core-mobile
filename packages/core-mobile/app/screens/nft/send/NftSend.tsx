@@ -192,9 +192,9 @@ const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
           {nft.imageData?.isSvg ? (
             <View style={{ alignItems: 'center' }}>
               <SvgXml
-                xml={nft.imageData.image ?? null}
+                xml={nft.imageData?.image ?? null}
                 width={80}
-                height={80 * nft.imageData.aspect ?? 1}
+                height={80 * (nft.imageData?.aspect ?? 1)}
               />
             </View>
           ) : (

@@ -12,6 +12,7 @@ updates:
     open-pull-requests-limit: 20
     ignore:
       - dependency-name: "react-native"
+      - dependency-name: "expo"
       - dependency-name: "@react-native/metro-config"
       - dependency-name: "@react-native/babel-preset"
       - dependency-name: "react-native-reanimated"
@@ -35,3 +36,4 @@ updates:
       - dependency-name: "@shopify/react-native-skia" # the latest version is not compatible with react-native-graph 1.1.0.
       - dependency-name: "react-native-aes-crypto" # the latest version crashes on Android
       - dependency-name: "react-native-quick-crypto" # the latest version has conflicts with @wallet-connect/react-native-compat. consider to update @walletconnect/* first
+      - dependency-name: "react-native-haptic-feedback" # the latest version is only compatible with new architecture of react-native  
