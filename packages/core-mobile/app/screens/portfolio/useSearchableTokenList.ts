@@ -11,6 +11,7 @@ import { selectTokenBlacklist } from 'store/portfolio'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getLocalTokenId } from 'store/balance/utils'
+import { TokenType } from '@avalabs/vm-module-types'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
@@ -18,6 +19,9 @@ const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
 const isNotBlacklisted =
   (tokenBlacklist: string[]) => (token: LocalTokenWithBalance) =>
     !tokenBlacklist.includes(token.localId)
+
+const isNotNFT = (token: LocalTokenWithBalance): boolean =>
+  token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
 
 const containSearchText = (text: string) => (token: LocalTokenWithBalance) => {
   const substring = text.toLowerCase()
@@ -30,7 +34,8 @@ const containSearchText = (text: string) => (token: LocalTokenWithBalance) => {
 
 export function useSearchableTokenList(
   hideZeroBalance = true,
-  hideBlacklist = true
+  hideBlacklist = true,
+  hideNft = true
 ): {
   searchText: string
   filteredTokenList: LocalTokenWithBalance[]
@@ -91,6 +96,10 @@ export function useSearchableTokenList(
       filters.push(isNotBlacklisted(tokenBlacklist))
     }
 
+    if (hideNft) {
+      filters.push(isNotNFT)
+    }
+
     if (searchText.length > 0) {
       filters.push(containSearchText(searchText))
     }
@@ -99,7 +108,14 @@ export function useSearchableTokenList(
       (tokens, filter) => tokens.filter(filter),
       mergedTokens
     )
-  }, [hideZeroBalance, hideBlacklist, searchText, mergedTokens, tokenBlacklist])
+  }, [
+    hideZeroBalance,
+    hideBlacklist,
+    hideNft,
+    searchText,
+    mergedTokens,
+    tokenBlacklist
+  ])
 
   // 3. sort tokens by amount
   const tokensSortedByAmount = useMemo(
