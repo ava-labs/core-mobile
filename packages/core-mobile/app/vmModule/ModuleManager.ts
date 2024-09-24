@@ -66,7 +66,7 @@ class ModuleManager {
 
     const environment = isDev ? Environment.DEV : Environment.PRODUCTION
 
-    const moduleInitParams = {
+    const moduleInitParams: ConstructorParams = {
       environment,
       approvalController,
       appInfo: {
