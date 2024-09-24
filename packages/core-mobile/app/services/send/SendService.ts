@@ -195,16 +195,14 @@ class SendService {
       balanceDisplayValue: '',
       balanceCurrencyDisplayValue: '',
       priceInCurrency: 0,
-      decimals: 0,
       description: '',
       marketCap: 0,
       change24: 0,
       vol24: 0,
       balance: 0n,
       logoSmall: '',
-      attributes: [],
       collectionName: isErc721(nft) ? nft.name : nft.metadata.name ?? 'Unknown',
-      coingeckoId: ''
+      tokenUri: ''
     }
   }
 

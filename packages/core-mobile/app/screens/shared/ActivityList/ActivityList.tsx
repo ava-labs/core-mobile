@@ -58,9 +58,10 @@ const ActivityList = ({
           }
         })
         .filter(tx => {
-          return tokenSymbolFilter && tx.tokens[0]?.symbol
-            ? tokenSymbolFilter === tx.tokens[0].symbol
-            : true
+          return (
+            !tokenSymbolFilter ||
+            (tx.tokens[0]?.symbol && tokenSymbolFilter === tx.tokens[0].symbol)
+          )
         }),
     [transactions, tokenSymbolFilter, filter]
   )
