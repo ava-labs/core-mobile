@@ -1,6 +1,7 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { createApiClient, createNoopApiClient } from './glacierApi.client'
+import { CORE_HEADERS } from './constants'
 
 if (!Config.GLACIER_URL) Logger.warn('GLACIER_URL ENV is missing')
 
@@ -26,5 +27,5 @@ export function addGlacierAPIKeyIfNeeded(url: string): string {
 }
 
 export const glacierApi = GLACIER_URL
-  ? createApiClient(GLACIER_URL)
+  ? createApiClient(GLACIER_URL, { axiosConfig: { headers: CORE_HEADERS } })
   : createNoopApiClient()

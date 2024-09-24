@@ -7,6 +7,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
+import { CORE_HEADERS } from 'utils/network/constants'
 
 if (!Config.GLACIER_URL)
   Logger.warn(
@@ -16,7 +17,10 @@ if (!Config.GLACIER_URL)
 export const GLACIER_URL = Config.GLACIER_URL
 
 class GlacierService {
-  private glacierSdk = new Glacier({ BASE: process.env.GLACIER_URL })
+  private glacierSdk = new Glacier({
+    BASE: process.env.GLACIER_URL,
+    HEADERS: CORE_HEADERS
+  })
   private isGlacierHealthy = true
   private supportedChainIds: string[] = []
 
