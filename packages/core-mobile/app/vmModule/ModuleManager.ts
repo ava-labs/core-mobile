@@ -69,8 +69,10 @@ class ModuleManager {
     const moduleInitParams = {
       environment,
       approvalController,
-      appName: APPLICATION_NAME,
-      appVersion: APPLICATION_VERSION
+      appInfo: {
+        name: APPLICATION_NAME,
+        version: APPLICATION_VERSION
+      }
     }
 
     this.modules = [
