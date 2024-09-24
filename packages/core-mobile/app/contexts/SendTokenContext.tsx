@@ -253,7 +253,7 @@ export const SendTokenContextProvider = ({
         setMaxAmount({
           bn: state.maxAmount ?? 0n,
           amount:
-            state.maxAmount && sendToken && 'decimals' in sendToken
+            state.maxAmount && sendToken
               ? bigIntToString(state.maxAmount, sendToken.decimals)
               : ''
         })

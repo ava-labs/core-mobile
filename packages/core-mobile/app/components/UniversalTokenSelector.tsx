@@ -82,7 +82,12 @@ const UniversalTokenSelector: FC<Props> = ({
           4
         )
       : undefined
-  }, [currencyFormatter, inputAmount, selectedToken])
+  }, [
+    currencyFormatter,
+    inputAmount,
+    selectedToken?.decimals,
+    selectedToken?.priceInCurrency
+  ])
 
   const handleAmountChange = useCallback(
     (value: Amount) => {
@@ -155,11 +160,7 @@ const UniversalTokenSelector: FC<Props> = ({
               testID="universal_token_selector__amount_field"
               value={inputAmount}
               onMax={onMax}
-              denomination={
-                selectedToken && 'decimals' in selectedToken
-                  ? selectedToken?.decimals
-                  : 9
-              }
+              denomination={selectedToken?.decimals || 9}
               placeholder={'0.0'}
               onChange={handleAmountChange}
               hideErrorMessage={hideErrorMessage}

@@ -96,12 +96,8 @@ export const SwapContextProvider = ({
         return getSwapRate({
           fromTokenAddress: getTokenAddress(fromToken),
           toTokenAddress: getTokenAddress(toToken),
-          fromTokenDecimals:
-            fromToken && 'decimals' in fromToken
-              ? fromToken.decimals
-              : undefined,
-          toTokenDecimals:
-            toToken && 'decimals' in toToken ? toToken.decimals : undefined,
+          fromTokenDecimals: fromToken?.decimals,
+          toTokenDecimals: toToken?.decimals,
           amount: amnt.bn.toString(),
           swapSide: destination,
           network: activeNetwork,
