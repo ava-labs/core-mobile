@@ -43,7 +43,10 @@ export function getEVMAssetBalances(
         erc20TokensByAddress[asset.nativeContractAddress?.toLowerCase()]
 
     const balance =
-      (token && bigintToBig(token.balance, token.decimals)) || BIG_ZERO
+      (token &&
+        'decimals' in token &&
+        bigintToBig(token.balance, token.decimals)) ||
+      BIG_ZERO
     return { symbol, asset, balance }
   })
 }
