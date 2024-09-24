@@ -155,7 +155,7 @@ export default function SwapView(): JSX.Element {
   }
 
   const handleOnMax = useCallback(() => {
-    if (!fromToken) {
+    if (!fromToken || !('decimals' in fromToken)) {
       return
     }
 

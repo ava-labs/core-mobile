@@ -85,12 +85,19 @@ export const SwapContextProvider = ({
 
   const getOptimalRateForAmount = useCallback(
     (amnt: Amount | undefined) => {
-      if (activeAccount && amnt) {
+      if (
+        activeAccount &&
+        amnt &&
+        fromToken &&
+        'decimals' in fromToken &&
+        toToken &&
+        'decimals' in toToken
+      ) {
         return getSwapRate({
           fromTokenAddress: getTokenAddress(fromToken),
           toTokenAddress: getTokenAddress(toToken),
-          fromTokenDecimals: fromToken?.decimals,
-          toTokenDecimals: toToken?.decimals,
+          fromTokenDecimals: fromToken.decimals,
+          toTokenDecimals: toToken.decimals,
           amount: amnt.bn.toString(),
           swapSide: destination,
           network: activeNetwork,
