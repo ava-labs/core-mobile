@@ -1,6 +1,11 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
-import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
+import {
+  Environment,
+  GetAddressParams,
+  Module,
+  ConstructorParams
+} from '@avalabs/vm-module-types'
 import {
   NetworkVMType,
   Network,
