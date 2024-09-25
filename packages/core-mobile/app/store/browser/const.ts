@@ -8,7 +8,7 @@ export type SuggestedItem = {
 }
 
 export enum SuggestedSiteName {
-  TRADER_JOE = 'Trader Joe',
+  LFJ = 'LFJ',
   YIELD_YAK = 'Yield Yak',
   GMX = 'GMX',
   AAVE = 'Aave',
@@ -24,8 +24,8 @@ export enum SuggestedSiteName {
 
 export const SUGGESTED_ITEMS: SuggestedItem[] = [
   {
-    name: SuggestedSiteName.TRADER_JOE,
-    siteUrl: 'https://traderjoexyz.com'
+    name: SuggestedSiteName.LFJ,
+    siteUrl: 'https://lfj.gg/'
   },
   {
     name: SuggestedSiteName.YIELD_YAK,
