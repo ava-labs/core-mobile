@@ -10185,12 +10185,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.5.1":
-  version: 22.5.1
-  resolution: "@types/node@npm:22.5.1"
+"@types/node@npm:22.7.0":
+  version: 22.7.0
+  resolution: "@types/node@npm:22.7.0"
   dependencies:
     undici-types: ~6.19.2
-  checksum: 366990347c12e08e9ffe113e493253ac454d5337828e23cb02c790d5abe1f2ab0148da37b728eb886d858c4c5f29f4341a29987e89555d482ea236691d9d2648
+  checksum: a40a013afb3d00c2246d6eca39885a5516216785e9c6668191fd836eefd9b3daed0c8865485ebab181838131dbded6b9ee3275b404202261c31a7f9fa51a871a
   languageName: node
   linkType: hard
 
@@ -15539,7 +15539,7 @@ __metadata:
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-community/eslint-config": 3.0.3
     "@tanstack/eslint-plugin-query": 5.53.0
-    "@types/node": 22.5.1
+    "@types/node": 22.7.0
     "@typescript-eslint/eslint-plugin": 5.62.0
     "@typescript-eslint/parser": 5.62.0
     "@typescript-eslint/utils": 5.62.0
