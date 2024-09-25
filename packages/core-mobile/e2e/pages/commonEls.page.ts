@@ -38,6 +38,10 @@ class CommonElsPage {
     return by.id(commonEls.testnetBanner)
   }
 
+  get notNow() {
+    return by.text(commonEls.notNow)
+  }
+
   async tapBackButton(index = 0) {
     await Actions.tapElementAtIndex(this.backButton, index)
   }
@@ -105,6 +109,10 @@ class CommonElsPage {
     } catch (e) {
       await Actions.tapElementAtIndex(this.backSecondaryButton, 0)
     }
+  }
+
+  async tapNotNow() {
+    await Actions.tapElementAtIndex(this.notNow, 0)
   }
 }
 
