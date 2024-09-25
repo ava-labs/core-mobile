@@ -221,7 +221,7 @@ __metadata:
     "@shopify/flash-list": 1.7.1
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
-    "@spotlightjs/spotlight": 2.3.2
+    "@spotlightjs/spotlight": 2.4.1
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
@@ -8588,36 +8588,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spotlightjs/overlay@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@spotlightjs/overlay@npm:2.4.0"
-  checksum: 8aea22a7b88f6b405dbd6aa9c08bc7d063c2c9685a2d72be19f8075c4d98226391f0c0020c9bb1506d67386873c3203d8c530f5d4f81b168aaabe11e7bfac480
+"@spotlightjs/overlay@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@spotlightjs/overlay@npm:2.5.1"
+  checksum: 5f8f974bda5a2f87a9579630fcdb15cc6303bd4dae872b038ad5a284608987fb76ae9f2fbcd7cc2afb7f84fc83d87e2b1dea674911a956bb2cfdad252dc1301b
   languageName: node
   linkType: hard
 
-"@spotlightjs/sidecar@npm:1.7.0":
-  version: 1.7.0
-  resolution: "@spotlightjs/sidecar@npm:1.7.0"
+"@spotlightjs/sidecar@npm:1.8.0":
+  version: 1.8.0
+  resolution: "@spotlightjs/sidecar@npm:1.8.0"
   dependencies:
     kleur: ^4.1.5
     launch-editor: ^2.8.0
     source-map: ^0.7.4
   bin:
     spotlight-sidecar: server.js
-  checksum: 8326f7aa80a49bf2ddd707edb31a704a09e2afb271ddbe0716f27245432a3e40099e755a829bfc6620d4c64211e6aa9c5503363727bf813819789773c8bcd7a1
+  checksum: 1af09c15207c72111234d924ff44caf0b622ba0018c548d3b2d7ff33678e96ce5c4a95e17912f11696012d4072cd154fa76082557abecd18449d4fc41f95e7d0
   languageName: node
   linkType: hard
 
-"@spotlightjs/spotlight@npm:2.3.2":
-  version: 2.3.2
-  resolution: "@spotlightjs/spotlight@npm:2.3.2"
+"@spotlightjs/spotlight@npm:2.4.1":
+  version: 2.4.1
+  resolution: "@spotlightjs/spotlight@npm:2.4.1"
   dependencies:
-    "@spotlightjs/overlay": 2.4.0
-    "@spotlightjs/sidecar": 1.7.0
+    "@spotlightjs/overlay": 2.5.1
+    "@spotlightjs/sidecar": 1.8.0
     import-meta-resolve: ^4.1.0
   bin:
     spotlight: bin/run.js
-  checksum: 9bce71ce92d1553b07c7a10c6c632c06a8252a8e1214f4aafa03084de29b632bc883f7be7cc0d0f7cf5f773ac8dc525aa23b6358726cd5820eed016e94a5a2d1
+  checksum: e486692ffc40b62ccb3e2c4a8cab2f3e12917a89c4b015e951ff8b85782739b1c5386f67ee9e66f8f207bbd989f133192d0c857ecba306744aea9dbc72fb69a2
   languageName: node
   linkType: hard
 
