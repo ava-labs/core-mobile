@@ -9,7 +9,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { TokenType } from '@avalabs/vm-module-types'
+import { NftTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
 import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
@@ -252,6 +252,18 @@ export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
       return nativeToken?.balance ?? 0n
     }
   )
+
+export const selectNfts = (
+  state: RootState
+): (NftTokenWithBalance & { localId: string })[] => {
+  const allTokens = selectTokensWithBalance(state)
+  return allTokens.filter(selectNftTokenWithBalance)
+}
+
+const selectNftTokenWithBalance = (
+  token: LocalTokenWithBalance
+): token is NftTokenWithBalance & { localId: string } =>
+  token.type === TokenType.ERC1155 || token.type === TokenType.ERC721
 
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions

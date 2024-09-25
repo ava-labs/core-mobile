@@ -3,7 +3,7 @@ import { NftProvider } from 'services/nft/types'
 import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { NFTItemData, NftResponse } from 'store/nft'
+import { NFTItemData } from 'store/nft'
 
 export class NftService {
   providers: NftProvider[] = [glacierNftProvider]
@@ -18,37 +18,6 @@ export class NftService {
         return findAsyncSequential(this.providers, value =>
           value.isProviderFor(chainId)
         )
-      })
-  }
-
-  /**
-   * @throws {@link Error}
-   */
-  async fetchNfts({
-    chainId,
-    address,
-    pageToken,
-    sentryTrx
-  }: {
-    chainId: number
-    address: string
-    pageToken?:
-      | {
-          erc1155?: string
-          erc721?: string
-        }
-      | string
-    sentryTrx?: Transaction
-  }): Promise<NftResponse> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.nft.fetchNfts')
-      .executeAsync(async () => {
-        //TODO: providers cant mix, so if suddenly one becomes unavailable we need to reset pageToken to undefined
-        const provider = await this.getProvider(chainId)
-
-        if (!provider) throw Error('no available providers')
-
-        return await provider.fetchNfts(chainId, address, pageToken)
       })
   }
 

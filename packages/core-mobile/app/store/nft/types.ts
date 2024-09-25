@@ -52,15 +52,3 @@ export type NFTItemExternalDataAttribute = {
   value: string
   percentOwned: number
 }
-
-export type NftResponse = {
-  nfts: NFTItemData[]
-  nextPageToken?: NftPageParam
-}
-
-export type NftPageParam =
-  | {
-      erc1155?: string
-      erc721?: string
-    }
-  | string

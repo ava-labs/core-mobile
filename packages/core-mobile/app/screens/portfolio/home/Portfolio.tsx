@@ -57,9 +57,65 @@ const Portfolio = (): JSX.Element => {
     }
   }
 
-  return (
-    <>
-      <PortfolioHeader />
+  const renderTabs = (): JSX.Element => {
+    if (collectiblesDisabled && defiBlocked) {
+      return (
+        <TabViewAva
+          currentTabIndex={params?.tabIndex}
+          onTabIndexChange={tabIndex => {
+            setParams({ tabIndex })
+            captureAnalyticsEvents(tabIndex)
+          }}
+          hideSingleTab={false}
+          renderCustomLabel={renderCustomLabel}>
+          <TabViewAva.Item title={'Assets'}>
+            <TokensTab />
+          </TabViewAva.Item>
+        </TabViewAva>
+      )
+    }
+
+    if (collectiblesDisabled) {
+      return (
+        <TabViewAva
+          currentTabIndex={params?.tabIndex}
+          onTabIndexChange={tabIndex => {
+            setParams({ tabIndex })
+            captureAnalyticsEvents(tabIndex)
+          }}
+          hideSingleTab={false}
+          renderCustomLabel={renderCustomLabel}>
+          <TabViewAva.Item title={'Assets'}>
+            <TokensTab />
+          </TabViewAva.Item>
+          <TabViewAva.Item title={'DeFi'}>
+            <DeFiTab />
+          </TabViewAva.Item>
+        </TabViewAva>
+      )
+    }
+
+    if (defiBlocked) {
+      return (
+        <TabViewAva
+          currentTabIndex={params?.tabIndex}
+          onTabIndexChange={tabIndex => {
+            setParams({ tabIndex })
+            captureAnalyticsEvents(tabIndex)
+          }}
+          hideSingleTab={false}
+          renderCustomLabel={renderCustomLabel}>
+          <TabViewAva.Item title={'Assets'}>
+            <TokensTab />
+          </TabViewAva.Item>
+          <TabViewAva.Item title={'Collectibles'}>
+            <NftTab />
+          </TabViewAva.Item>
+        </TabViewAva>
+      )
+    }
+
+    return (
       <TabViewAva
         currentTabIndex={params?.tabIndex}
         onTabIndexChange={tabIndex => {
@@ -71,17 +127,20 @@ const Portfolio = (): JSX.Element => {
         <TabViewAva.Item title={'Assets'}>
           <TokensTab />
         </TabViewAva.Item>
-        {!collectiblesDisabled && (
-          <TabViewAva.Item title={'Collectibles'}>
-            <NftTab />
-          </TabViewAva.Item>
-        )}
-        {!defiBlocked && (
-          <TabViewAva.Item title={'DeFi'}>
-            <DeFiTab />
-          </TabViewAva.Item>
-        )}
+        <TabViewAva.Item title={'Collectibles'}>
+          <NftTab />
+        </TabViewAva.Item>
+        <TabViewAva.Item title={'DeFi'}>
+          <DeFiTab />
+        </TabViewAva.Item>
       </TabViewAva>
+    )
+  }
+
+  return (
+    <>
+      <PortfolioHeader />
+      {renderTabs()}
     </>
   )
 }

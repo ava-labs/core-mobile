@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import RadioGroup from 'components/RadioGroup'
 import GridSVG from 'components/svg/GridSVG'
@@ -7,7 +7,6 @@ import AvaButton from 'components/AvaButton'
 import ListSVG from 'components/svg/ListSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NFTItem } from 'store/nft'
-import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { NftList } from './components/NftList/NftList'
 import { NftGrid } from './components/NftGrid/NftGrid'
 
@@ -22,14 +21,8 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: Props): JSX.Element {
-  const { setNftsLoadEnabled } = useNftItemsContext()
-
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
-
-  useEffect(() => {
-    setNftsLoadEnabled(true)
-  }, [setNftsLoadEnabled])
 
   return (
     <View style={styles.container}>

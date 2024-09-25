@@ -8,23 +8,14 @@ import Avatar from 'components/Avatar'
 import Switch from 'components/Switch'
 import { selectHiddenNftUIDs, setHidden, NFTItem } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
-import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
-import { FetchingNextIndicator } from './components/FetchingNextIndicator'
 
 const NftManage = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const dispatch = useDispatch()
   const hiddenNftUIDs = useSelector(selectHiddenNftUIDs)
-  const {
-    nftItems: nfts,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetchNfts,
-    isNftsRefetching
-  } = useNftItemsContext()
+  const { nftItems: nfts } = useNftItemsContext()
   const filteredData = useMemo(() => {
     const keyword = searchText.toLowerCase()
 
@@ -46,14 +37,6 @@ const NftManage = (): JSX.Element => {
     dispatch(setHidden({ tokenUid: item.uid }))
   }
 
-  const onEndReached = ({
-    distanceFromEnd
-  }: {
-    distanceFromEnd: number
-  }): void => {
-    if (distanceFromEnd > 0 && hasNextPage) fetchNextPage()
-  }
-
   return (
     <View sx={{ paddingHorizontal: 16, flex: 1 }}>
       <AvaText.LargeTitleBold>Manage List</AvaText.LargeTitleBold>
@@ -61,8 +44,6 @@ const NftManage = (): JSX.Element => {
       <FlatList
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.8}
         keyExtractor={item => item.uid}
         ItemSeparatorComponent={Separator}
         renderItem={info =>
@@ -73,15 +54,6 @@ const NftManage = (): JSX.Element => {
           })
         }
         indicatorStyle="white"
-        refreshControl={
-          <RefreshControl
-            onRefresh={refetchNfts}
-            refreshing={isNftsRefetching}
-          />
-        }
-        ListFooterComponent={
-          <FetchingNextIndicator isVisible={isFetchingNextPage} />
-        }
       />
     </View>
   )

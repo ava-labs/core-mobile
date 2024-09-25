@@ -30,13 +30,6 @@ type NFTItemsContextState = {
   refreshNftMetadata: (nftData: NFTItemData, chainId: number) => Promise<void>
   isNftRefreshing: (uid: string) => boolean
   checkIfNftRefreshed: (nftData: NFTItemData) => void
-  fetchNextPage: () => void
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  refetchNfts: () => void
-  isNftsRefetching: boolean
-  isNftsLoading: boolean
-  setNftsLoadEnabled: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const NFTItemsContext = createContext<NFTItemsContextState>(
@@ -51,8 +44,8 @@ export const NFTMetadataProvider = ({
   const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
   const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
   const [reindexedAt, setReindexedAt] = useState<Record<string, number>>({})
-  const [nftsLoadEnabled, setNftsLoadEnabled] = useState<boolean>(false)
   const hiddenNfts = useSelector(selectHiddenNftUIDs)
+
   const processImageData = useCallback((items: NFTItemData[]): void => {
     items.forEach(nft => {
       if (nft.metadata.imageUri) {
@@ -149,10 +142,10 @@ export const NFTMetadataProvider = ({
     [processImageData, processMetadata]
   )
 
-  const query = useNfts(nftsLoadEnabled)
+  const nfts = useNfts()
 
   const nftItems = useMemo(() => {
-    return query.nfts.map(nft => ({
+    return nfts.map(nft => ({
       ...nft,
       imageData: imageData[nft.uid],
       processedMetadata: metadata[nft.uid] ?? {
@@ -160,7 +153,7 @@ export const NFTMetadataProvider = ({
         attributes: []
       }
     }))
-  }, [query.nfts, imageData, metadata])
+  }, [imageData, metadata, nfts])
 
   const getNftItem = useCallback(
     (uid: string): NFTItem | undefined => {
@@ -235,17 +228,10 @@ export const NFTMetadataProvider = ({
   }, [hiddenNfts, nftItems])
 
   useEffect(() => {
-    if (query.data && query.data.pages.length > 0) {
-      // It runs every time new data is fetched by useInfiniteQuery, specifically
-      // when a new page is added, to ensure the newly fetched NFTs are processed.
-      const lastPageIndex = query.data.pages.length - 1
-
-      const lastPageNfts = query.data.pages[lastPageIndex]?.nfts ?? []
-      if (lastPageNfts.length > 0) {
-        process(lastPageNfts)
-      }
+    if (nfts.length > 0) {
+      process(nfts)
     }
-  }, [query.data, process])
+  }, [nfts, process])
 
   return (
     <NFTItemsContext.Provider
@@ -255,14 +241,7 @@ export const NFTMetadataProvider = ({
         getNftItem,
         refreshNftMetadata,
         isNftRefreshing,
-        checkIfNftRefreshed,
-        fetchNextPage: query.fetchNextPage,
-        hasNextPage: query.hasNextPage,
-        isFetchingNextPage: query.isFetchingNextPage,
-        refetchNfts: query.refetch,
-        isNftsRefetching: query.isRefetching,
-        isNftsLoading: query.isLoading,
-        setNftsLoadEnabled
+        checkIfNftRefreshed
       }}>
       {children}
     </NFTItemsContext.Provider>

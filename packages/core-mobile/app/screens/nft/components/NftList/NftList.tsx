@@ -1,12 +1,9 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
 import { NFTItem } from 'store/nft'
-import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
-import { FetchingNextIndicator } from '../FetchingNextIndicator'
-import { NftListLoader } from './NftListLoader'
 import { ListItem } from './ListItem'
 
 type Props = {
@@ -14,45 +11,17 @@ type Props = {
 }
 
 export const NftList = ({ onItemSelected }: Props): JSX.Element => {
-  const {
-    filteredNftItems,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isNftsLoading,
-    isNftsRefetching,
-    refetchNfts
-  } = useNftItemsContext()
-
-  const onEndReached = useCallback(
-    ({ distanceFromEnd }: { distanceFromEnd: number }) => {
-      if (distanceFromEnd > 0 && hasNextPage && !isFetchingNextPage)
-        fetchNextPage()
-    },
-    [fetchNextPage, hasNextPage, isFetchingNextPage]
-  )
-
-  if (isNftsLoading)
-    return (
-      <View sx={{ paddingHorizontal: 16 }}>
-        <NftListLoader />
-      </View>
-    )
+  const { filteredNftItems } = useNftItemsContext()
 
   return (
     <FlatList
       testID="nft_list_view"
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.8}
       data={filteredNftItems}
       ListEmptyComponent={<ZeroState.Collectibles />}
       keyExtractor={item => item.uid}
       ItemSeparatorComponent={Separator}
-      ListFooterComponent={
-        <FetchingNextIndicator isVisible={isFetchingNextPage} />
-      }
       renderItem={info =>
         renderItem({
           item: info.item,
@@ -60,9 +29,6 @@ export const NftList = ({ onItemSelected }: Props): JSX.Element => {
         })
       }
       indicatorStyle="white"
-      refreshControl={
-        <RefreshControl onRefresh={refetchNfts} refreshing={isNftsRefetching} />
-      }
     />
   )
 }
