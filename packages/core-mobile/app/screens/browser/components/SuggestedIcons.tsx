@@ -10,7 +10,7 @@ export const SuggestedSiteIcon = ({
   sx?: SxProp
 }): JSX.Element => {
   switch (name) {
-    case SuggestedSiteName.TRADER_JOE:
+    case SuggestedSiteName.LFJ:
       return (
         <Image
           source={require('assets/icons/browser_suggested_icons/traderjoe.png')}
