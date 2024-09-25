@@ -11,7 +11,7 @@ index 24e96f2..9163c3d 100644
       * Whether to enable Graph scrubbing/pan gesture.
       */
 diff --git a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
-index bee225a..c8dd381 100644
+index bee225a..0391347 100644
 --- a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
 +++ b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
 @@ -53,6 +53,7 @@ const INDICATOR_PULSE_BLUR_RADIUS_BIG =
@@ -22,7 +22,15 @@ index bee225a..c8dd381 100644
    gradientFillColors,
    lineThickness = 3,
    range,
-@@ -341,7 +342,7 @@ export function AnimatedLineGraph({
+@@ -335,13 +336,15 @@ export function AnimatedLineGraph({
+ 
+   const setFingerPoint = useCallback(
+     (fingerX: number) => {
++      if (!pointsInRange[pointsInRange.length - 1]) return 
++
+       const fingerXInRange = Math.max(fingerX - horizontalPadding, 0)
+ 
+       const index = Math.round(
          (fingerXInRange /
            getXInRange(
              drawingWidth,
@@ -31,7 +39,7 @@ index bee225a..c8dd381 100644
              pathRange.x
            )) *
            (pointsInRange.length - 1)
-@@ -369,19 +370,14 @@ export function AnimatedLineGraph({
+@@ -369,19 +372,13 @@ export function AnimatedLineGraph({
    const setFingerX = useCallback(
      (fingerX: number) => {
        'worklet'
@@ -39,21 +47,21 @@ index bee225a..c8dd381 100644
 -      const y = getYForX(commands.value, fingerX)
 -
 -      if (y != null) {
-+      if (!pointsInRange?.[pointsInRange.length - 1]?.date) return 
-         circleX.value = fingerX
+-        circleX.value = fingerX
 -        circleY.value = y
 -      }
++      circleX.value = fingerX
  
        if (isActive.value) pathEnd.value = fingerX / width
      },
      // pathRange.x must be extra included in deps otherwise onPointSelected doesn't work, IDK why
      // eslint-disable-next-line react-hooks/exhaustive-deps
 -    [circleX, circleY, isActive, pathEnd, pathRange.x, width, commands]
-+    [circleX, isActive, pathEnd, pathRange.x, width, commands]
++    [circleX, isActive, pathEnd, pathRange.x, width]
    )
  
    const setIsActive = useCallback(
-@@ -481,6 +477,7 @@ export function AnimatedLineGraph({
+@@ -481,6 +478,7 @@ export function AnimatedLineGraph({
                      colors={gradientColors}
                      positions={positions}
                    />
