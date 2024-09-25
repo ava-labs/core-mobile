@@ -16,7 +16,7 @@ class AppCheckService {
         debugToken: Config.APPCHECK_DEBUG_TOKEN
       },
       apple: {
-        provider: __DEV__ ? 'debug' : 'appAttestWithDeviceCheckFallback',
+        provider: __DEV__ ? 'debug' : 'appAttest',
         debugToken: Config.APPCHECK_DEBUG_TOKEN
       }
     })
