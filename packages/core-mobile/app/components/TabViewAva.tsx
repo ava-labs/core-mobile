@@ -90,7 +90,11 @@ const TabViewAva: TabViewAvaFC = ({
   )
 
   const navState = useMemo(() => {
-    return { index: currentIndex, routes }
+    return {
+      index:
+        currentIndex + 1 >= routes.length ? routes.length - 1 : currentIndex,
+      routes
+    }
   }, [currentIndex, routes])
 
   const scenes = useCallback(
