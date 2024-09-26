@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ListRenderItemInfo, Platform } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
 import AvaText from 'components/AvaText'
-import TabViewAva from 'components/TabViewAva'
 import NftListView from 'screens/nft/NftListView'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useDispatch, useSelector } from 'react-redux'
@@ -24,6 +23,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectIsBalanceLoadedForNetworks } from 'store/balance/slice'
 import { setActive } from 'store/network'
 import { maybePromptBalanceNotification } from 'store/notifications'
+import { TabView } from 'components/TabView'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import PortfolioHeader from './components/PortfolioHeader'
 import { PortfolioInactiveNetworksLoader } from './components/Loaders/PortfolioInactiveNetworksLoader'
@@ -44,12 +44,23 @@ const Portfolio = (): JSX.Element => {
     dispatch(maybePromptBalanceNotification)
   }, [dispatch])
 
-  function captureAnalyticsEvents(tabIndex: number): void {
-    switch (tabIndex) {
-      case PortfolioTabs.Tokens:
+  const tabScreens = useMemo(() => {
+    const screens = [{ name: PortfolioTabs.Assets, component: TokensTab }]
+    if (!collectiblesDisabled) {
+      screens.push({ name: PortfolioTabs.Collectibles, component: NftTab })
+    }
+    if (!defiBlocked) {
+      screens.push({ name: PortfolioTabs.DeFi, component: DeFiTab })
+    }
+    return screens
+  }, [collectiblesDisabled, defiBlocked])
+
+  function captureAnalyticsEvents(name: string): void {
+    switch (name) {
+      case PortfolioTabs.Assets:
         AnalyticsService.capture('PortfolioAssetsClicked')
         break
-      case PortfolioTabs.NFT:
+      case PortfolioTabs.Collectibles:
         AnalyticsService.capture('PortfolioCollectiblesClicked')
         break
       case PortfolioTabs.DeFi:
@@ -60,28 +71,15 @@ const Portfolio = (): JSX.Element => {
   return (
     <>
       <PortfolioHeader />
-      <TabViewAva
-        currentTabIndex={params?.tabIndex}
-        onTabIndexChange={tabIndex => {
-          setParams({ tabIndex })
-          captureAnalyticsEvents(tabIndex)
+      <TabView
+        currenTabName={params?.tabName}
+        tabScreens={tabScreens}
+        onPress={(name: PortfolioTabs) => {
+          setParams({ tabName: name })
+          captureAnalyticsEvents(name)
         }}
-        hideSingleTab={false}
-        renderCustomLabel={renderCustomLabel}>
-        <TabViewAva.Item title={'Assets'}>
-          <TokensTab />
-        </TabViewAva.Item>
-        {!collectiblesDisabled && (
-          <TabViewAva.Item title={'Collectibles'}>
-            <NftTab />
-          </TabViewAva.Item>
-        )}
-        {!defiBlocked && (
-          <TabViewAva.Item title={'DeFi'}>
-            <DeFiTab />
-          </TabViewAva.Item>
-        )}
-      </TabViewAva>
+        renderCustomLabel={renderCustomLabel}
+      />
     </>
   )
 }
@@ -237,14 +235,17 @@ const DeFiTab = (): JSX.Element => {
   return <DeFiProtocolList />
 }
 
-const renderCustomLabel = (
-  title: string,
-  selected: boolean,
+const renderCustomLabel = ({
+  children,
+  color
+}: {
+  children: string
+  focused: boolean
   color: string
-): JSX.Element => {
+}): React.ReactNode => {
   return (
     <AvaText.Heading3 textStyle={{ color }} ellipsizeMode="tail">
-      {title}
+      {children}
     </AvaText.Heading3>
   )
 }

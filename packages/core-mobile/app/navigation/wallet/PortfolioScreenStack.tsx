@@ -8,7 +8,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { PortfolioTabs } from 'consts/portfolio'
 
 export type PortfolioStackParamList = {
-  [AppNavigation.Portfolio.Portfolio]: { tabIndex?: PortfolioTabs }
+  [AppNavigation.Portfolio.Portfolio]: { tabName?: PortfolioTabs }
   [AppNavigation.Portfolio.NetworkTokens]:
     | { tabIndex?: NetworkTokensTabs }
     | undefined
