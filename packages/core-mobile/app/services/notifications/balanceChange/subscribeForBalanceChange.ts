@@ -23,7 +23,7 @@ export async function subscribeForBalanceChange({
     throw new Error(error)
   })
   if (response.ok) {
-    return response.json()
+    return await response.json()
   } else {
     throw new Error(`${response.status}:${response.statusText}`)
   }
