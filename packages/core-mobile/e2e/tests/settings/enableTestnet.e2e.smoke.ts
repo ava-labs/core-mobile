@@ -5,6 +5,7 @@ import { warmup } from '../../helpers/warmup'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import commonElsPage from '../../pages/commonEls.page'
 import bottomTabsPage from '../../pages/bottomTabs.page'
+import portfolioLoc from '../../locators/portfolio.loc'
 
 describe('Enable Testnet', () => {
   beforeAll(async () => {
@@ -19,17 +20,19 @@ describe('Enable Testnet', () => {
 
   it('Should verify Avax Network', async () => {
     await AdvancedPage.switchToTestnet()
-    await PortfolioPage.tapAvaxNetwork()
-    await Assert.isVisible(PortfolioPage.avaxNetwork)
+    await PortfolioPage.verifyActiveNetwork(portfolioLoc.avaxNetwork)
   })
 
-  it('Should verify Bitcoin & Eth Sepolia Networks', async () => {
+  it('Should verify Bitcoin Testnet Network', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
-    await NetworksManagePage.searchNetworks('Ethereum Sepolia')
-    await Assert.count(NetworksManagePage.ethereumSepoliaNetwork, 2)
     await NetworksManagePage.searchNetworks('Bitcoin Testnet')
     await Assert.count(NetworksManagePage.bitcoinTestnetNetwork, 2)
+  })
+
+  it('Should verify Eth Sepolia Network', async () => {
+    await NetworksManagePage.searchNetworks('Ethereum Sepolia')
+    await Assert.count(NetworksManagePage.ethereumSepoliaNetwork, 2)
   })
 })
