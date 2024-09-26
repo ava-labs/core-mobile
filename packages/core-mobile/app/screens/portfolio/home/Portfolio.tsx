@@ -74,8 +74,8 @@ const Portfolio = (): JSX.Element => {
       <TabView
         currenTabName={params?.tabName}
         tabScreens={tabScreens}
-        onPress={(name: PortfolioTabs) => {
-          setParams({ tabName: name })
+        onPress={(name: string) => {
+          setParams({ tabName: name as PortfolioTabs })
           captureAnalyticsEvents(name)
         }}
         renderCustomLabel={renderCustomLabel}

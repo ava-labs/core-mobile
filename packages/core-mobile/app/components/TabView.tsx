@@ -6,11 +6,13 @@ import {
 import React from 'react'
 import { useTheme, View } from '@avalabs/k2-mobile'
 import { Dimensions } from 'react-native'
-import { PortfolioTabs } from 'consts/portfolio'
 
 export const Tab = createMaterialTopTabNavigator()
 
-export type TabScreens = { name: PortfolioTabs; component: React.FC }[]
+export type TabScreens = {
+  name: string
+  component: React.FC
+}[]
 
 export const TabView = ({
   currenTabName,
@@ -24,9 +26,9 @@ export const TabView = ({
   lazy?: boolean
   testID?: string
   hideSingleTab?: boolean
-  currenTabName?: PortfolioTabs
+  currenTabName?: string
   tabScreens: TabScreens
-  onPress?: (name: PortfolioTabs) => void
+  onPress?: (name: string) => void
   renderCustomLabel?: (props: {
     focused: boolean
     color: string
