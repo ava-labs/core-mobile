@@ -117,8 +117,11 @@ class SwapTabPage {
     await this.tapSelectTokenDropdown()
     await sendPage.selectToken(to)
     await this.tapReviewOrderButton()
-    if (await Actions.isVisible(this.tokenSpendApproval, 0)) {
+    try {
+      await Actions.waitForElement(this.tokenSpendApproval, 5000)
       await this.tapApproveButton()
+    } catch (e) {
+      console.error('Token spend approval not found')
     }
     await this.tapApproveButton()
   }
