@@ -13,13 +13,13 @@ import type { Action } from 'redux'
 import { ChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
 import {
-  scheduleStakingCompleteNotifications,
-  maybePromptEarnNotification,
-  turnOffNotificationsFor,
-  turnOnNotificationsFor,
   maybePromptBalanceNotification,
+  maybePromptEarnNotification,
   onFcmTokenChange,
-  processNotificationData
+  processNotificationData,
+  scheduleStakingCompleteNotifications,
+  turnOffNotificationsFor,
+  turnOnNotificationsFor
 } from '../slice'
 import { handleScheduleStakingCompleteNotifications } from './handleScheduleStakingCompleteNotifications'
 import { handleMaybePromptEarnNotification } from './handleMaybePromptEarnNotification'

@@ -5,15 +5,26 @@ import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { AnyAction } from '@reduxjs/toolkit'
 import {
+  selectHasBeenViewedOnce,
+  setViewOnce,
+  ViewOnceKey
+} from 'store/viewOnce'
+import {
   selectHasPromptedForBalanceChange,
   selectNotificationSubscription,
   setHasPromptedForBalanceChange
 } from '../slice'
 
+let isWaitingForIntroMux = false
+
 export const handleMaybePromptBalanceNotification = async (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  if (isWaitingForIntroMux) return //if already waiting ignore this handler
+  await waitIfIntroScreenIsYetNotDismissed(listenerApi)
+  isWaitingForIntroMux = false
+
   const blockedNotifications =
     await NotificationsService.getBlockedNotifications()
   const state = listenerApi.getState()
@@ -40,5 +51,18 @@ export const handleMaybePromptBalanceNotification = async (
       }
     })
     listenerApi.dispatch(setHasPromptedForBalanceChange(true))
+  }
+}
+
+async function waitIfIntroScreenIsYetNotDismissed(
+  listenerApi: AppListenerEffectAPI
+): Promise<void> {
+  const { take } = listenerApi
+  const state = listenerApi.getState()
+  let hasSeenIntro = selectHasBeenViewedOnce(ViewOnceKey.CORE_INTRO)(state)
+  while (!hasSeenIntro) {
+    isWaitingForIntroMux = true
+    const [{ payload }] = await take(setViewOnce.match)
+    hasSeenIntro = payload === ViewOnceKey.CORE_INTRO
   }
 }
