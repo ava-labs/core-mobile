@@ -51,4 +51,5 @@ class AppCheckService {
     return await firebase.appCheck().getToken(false)
   }
 }
+
 export default new AppCheckService()
