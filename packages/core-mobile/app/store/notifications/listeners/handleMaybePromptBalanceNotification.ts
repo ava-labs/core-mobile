@@ -4,11 +4,8 @@ import * as Navigation from 'utils/Navigation'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { AnyAction } from '@reduxjs/toolkit'
-import {
-  selectHasBeenViewedOnce,
-  setViewOnce,
-  ViewOnceKey
-} from 'store/viewOnce'
+import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
+import { ViewOnceKey } from 'store/viewOnce/types'
 import {
   selectHasPromptedForBalanceChange,
   selectNotificationSubscription,
