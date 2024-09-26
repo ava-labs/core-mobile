@@ -306,6 +306,7 @@ class NotificationsService {
       title,
       body,
       android: {
+        smallIcon: 'notification_icon',
         channelId,
         // pressAction is needed if you want the notification to open the app when pressed
         pressAction: {
