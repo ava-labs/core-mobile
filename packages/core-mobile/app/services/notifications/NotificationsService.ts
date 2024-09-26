@@ -22,7 +22,7 @@ import {
 } from 'contexts/DeeplinkContext/types'
 import {
   LAUNCH_ACTIVITY,
-  OPEN_CLAIM_REWARDS_PRESS_ACTION_ID,
+  PressActionId,
   STAKE_COMPELETE_DEEPLINK_URL
 } from './constants'
 
@@ -137,7 +137,7 @@ class NotificationsService {
           badgeCount: 1,
           channelId: channel.id,
           pressAction: {
-            id: OPEN_CLAIM_REWARDS_PRESS_ACTION_ID,
+            id: PressActionId.OPEN_CLAIM_REWARDS,
             launchActivity: LAUNCH_ACTIVITY
           }
         }
@@ -310,7 +310,8 @@ class NotificationsService {
         channelId,
         // pressAction is needed if you want the notification to open the app when pressed
         pressAction: {
-          id: 'openC-ChainPortfolio'
+          id: PressActionId.OPEN_PORTFOLIO,
+          launchActivity: LAUNCH_ACTIVITY
         }
       },
       data
