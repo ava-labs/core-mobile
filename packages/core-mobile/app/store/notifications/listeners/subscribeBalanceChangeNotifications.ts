@@ -8,16 +8,26 @@ import { subscribeForBalanceChange } from 'services/notifications/balanceChange/
 import Logger from 'utils/Logger'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { selectHasPromptedForBalanceChange } from '../slice'
 
 export async function subscribeBalanceChangeNotifications(
   listenerApi: AppListenerEffectAPI
 ): Promise<void> {
   const { getState } = listenerApi
-  const accounts = selectAccounts(getState())
+
+  const state = getState()
+  const hasPromptedForBalanceChange = selectHasPromptedForBalanceChange(state)
+
+  if (!hasPromptedForBalanceChange) {
+    // skip if user has not been prompted for balance change notifications
+    return
+  }
+
+  const accounts = selectAccounts(state)
   const addresses = Object.values(accounts).map(account => account.addressC)
 
   if (addresses.length === 0) {
-    //skip if no addresses, means wallet is not yet created
+    // skip if no addresses, means wallet is not yet created
     return
   }
 

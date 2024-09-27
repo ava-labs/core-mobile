@@ -13,5 +13,6 @@ export default async function fetchWithAppCheck(
     },
     body: bodyJson
   }
+
   return fetch(url, options)
 }

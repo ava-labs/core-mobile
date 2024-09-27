@@ -269,6 +269,7 @@ class StakePage {
   }
 
   async tapNotNowButton() {
+    await Actions.waitForElement(this.notNowButton)
     await Actions.tapElementAtIndex(this.notNowButton, 0)
   }
 

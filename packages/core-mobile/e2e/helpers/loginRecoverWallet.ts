@@ -21,6 +21,11 @@ class LoginRecoverWallet {
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
+    try {
+      await commonElsPage.tapNotNow()
+    } catch (e) {
+      console.log('The Not Now Button is not displayed')
+    }
     await PortfolioPage.verifyPorfolioScreen()
   }
 
