@@ -95,8 +95,7 @@ const TabViewAva: TabViewAvaFC = ({
   useEffect(() => {
     setCurrentIndex(0)
     onTabIndexChange?.(0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenArray.length])
+  }, [childrenArray.length, onTabIndexChange])
 
   const navState = useMemo(() => {
     return {

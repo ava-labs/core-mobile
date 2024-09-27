@@ -33,8 +33,7 @@ type NavigationProp = PortfolioScreenProps<
 
 const NetworkTokens = (): JSX.Element => {
   const { params } = useRoute<NavigationProp['route']>()
-  const { navigate, getParent, setParams } =
-    useNavigation<NavigationProp['navigation']>()
+  const { navigate, getParent } = useNavigation<NavigationProp['navigation']>()
   const { theme } = useApplicationContext()
   const {
     isLoading,
@@ -218,10 +217,7 @@ const NetworkTokens = (): JSX.Element => {
       <TabViewAva
         renderCustomLabel={renderTabViewLabel}
         currentTabIndex={params?.tabIndex}
-        onTabIndexChange={tabIndex => {
-          setParams({ tabIndex })
-          capturePosthogEvents(tabIndex)
-        }}>
+        onTabIndexChange={capturePosthogEvents}>
         <TabViewAva.Item title={TabLabel.Tokens}>
           {renderTokenTab()}
         </TabViewAva.Item>

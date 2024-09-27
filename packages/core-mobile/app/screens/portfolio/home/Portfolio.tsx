@@ -60,9 +60,7 @@ const Portfolio = (): JSX.Element => {
       <PortfolioHeader />
       <TabViewAva
         currentTabIndex={params?.tabIndex}
-        onTabIndexChange={tabIndex => {
-          captureAnalyticsEvents(tabIndex)
-        }}
+        onTabIndexChange={captureAnalyticsEvents}
         hideSingleTab={false}
         renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title={'Assets'}>
