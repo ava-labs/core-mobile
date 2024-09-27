@@ -22,6 +22,6 @@ export function calculateCChainFee(
 /**
  * https://docs.avax.network/quickstart/transaction-fees#fee-schedule
  */
-export function calculatePChainFee(): Avax {
-  return Avax.fromBase(0.001)
+export function calculatePChainFee(): AvaxXP {
+  return AvaxXP.fromNanoAvax(1e6)
 }
