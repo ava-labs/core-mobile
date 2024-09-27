@@ -127,7 +127,7 @@ enum NftScreens {
 }
 
 enum NftSendScreens {
-  AddressPick = 'NftSendScreens.AddressPick'
+  Send = 'NftSendScreens.Send'
 }
 
 enum SecurityPrivacyScreens {
@@ -199,7 +199,8 @@ enum ModalScreens {
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
   AlertScreen = 'ModalScreens.AlertScreen',
-  EnableNotificationsPrompt = 'ModalScreens.EnableNotificationsPrompt'
+  EnableNotificationsPrompt = 'ModalScreens.EnableNotificationsPrompt',
+  QRScanner = 'ModalScreens.QRScanner'
 }
 
 enum SendScreens {
