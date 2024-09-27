@@ -34,24 +34,13 @@ type PortfolioNavigationProp = PortfolioScreenProps<
 
 const Portfolio = (): JSX.Element => {
   const { params } = useRoute<PortfolioNavigationProp['route']>()
-  const { setParams } = useNavigation<PortfolioNavigationProp['navigation']>()
   const dispatch = useDispatch()
-  const paramTabIndex =
-    params?.tabIndex && params.tabIndex <= 2 ? params.tabIndex : 0
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const defiBlocked = useSelector(selectIsDeFiBlocked)
 
   useEffect(() => {
     dispatch(maybePromptBalanceNotification)
   }, [dispatch])
-
-  useEffect(() => {
-    // reset the tabIndex to 0 if nft or defi flag is changed
-    // this is to avoid pager view going out of sync when the tabview is re-rendered
-    // due to the change in the number of tabs
-    setParams({ tabIndex: 0 })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collectiblesDisabled, defiBlocked])
 
   function captureAnalyticsEvents(tabIndex: number): void {
     switch (tabIndex) {
@@ -70,9 +59,8 @@ const Portfolio = (): JSX.Element => {
     <>
       <PortfolioHeader />
       <TabViewAva
-        currentTabIndex={paramTabIndex}
+        currentTabIndex={params?.tabIndex}
         onTabIndexChange={tabIndex => {
-          setParams({ tabIndex })
           captureAnalyticsEvents(tabIndex)
         }}
         hideSingleTab={false}

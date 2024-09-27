@@ -60,13 +60,16 @@ const TabViewAva: TabViewAvaFC = ({
   children,
   testID
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
   const theme = useApplicationContext().theme
 
   const childrenArray = useMemo(
     () => React.Children.toArray(children),
     [children]
   )
+  const [currentIndex, setCurrentIndex] = useState(
+    currentTabIndex >= childrenArray.length ? 0 : currentTabIndex
+  )
+
   useEffect(() => {
     setCurrentIndex(currentTabIndex)
   }, [currentTabIndex])
@@ -89,10 +92,15 @@ const TabViewAva: TabViewAvaFC = ({
     [childrenArray]
   )
 
+  useEffect(() => {
+    setCurrentIndex(0)
+    onTabIndexChange?.(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childrenArray.length])
+
   const navState = useMemo(() => {
     return {
-      index:
-        currentIndex + 1 >= routes.length ? routes.length - 1 : currentIndex,
+      index: currentIndex,
       routes
     }
   }, [currentIndex, routes])
