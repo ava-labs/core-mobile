@@ -343,7 +343,7 @@ __metadata:
     react-native-toast-notifications: 3.3.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 3.8.0
-    react-native-webview: 13.12.2
+    react-native-webview: "https://github.com/ava-labs/react-native-webview#cp-9266"
     react-native-webview-crypto: 0.0.26
     react-redux: 8.0.1
     react-test-renderer: 18.3.1
@@ -24873,16 +24873,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-webview@npm:13.12.2":
+"react-native-webview@https://github.com/ava-labs/react-native-webview#cp-9266":
   version: 13.12.2
-  resolution: "react-native-webview@npm:13.12.2"
+  resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=5b6767d0b502f3f24cb21a6393037ca764cfaf17"
   dependencies:
     escape-string-regexp: ^4.0.0
     invariant: 2.2.4
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d84b2e2e75dc484eb40f8e285607b9686693f2d31e95802e2b358dc0820bcc294b438a77174eba157c31d95675c962c61c94885629af999416ad1355e9618fe0
+  checksum: 3cc7c9c2cd3d5a38a8a15b05e4fb3bf55ba38c59e2fdc68dd7c98fe67f5b17fd58100496c1d7b465be1072b6ecc0eb1f3cac85321520965d48201d73fb2d73b5
   languageName: node
   linkType: hard
 
