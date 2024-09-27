@@ -1,0 +1,33 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "app/assets/fonts/Aeonik-Bold.otf",
+      "sha1": "6a09a66531d4363c4eb4e7cbdaddb97b3e75bdd1"
+    },
+    {
+      "path": "app/assets/fonts/Aeonik-Medium.otf",
+      "sha1": "c4809eacaa00f3ae136661b2440a941f259e0f46"
+    },
+    {
+      "path": "app/assets/fonts/DejaVuSansMono.ttf",
+      "sha1": "73225779da81fc5a874596d065e336ca3d7b4c37"
+    },
+    {
+      "path": "app/assets/fonts/Inter-Bold.ttf",
+      "sha1": "47bb768bc0dce7072a0c11562c76aec42edd1b6a"
+    },
+    {
+      "path": "app/assets/fonts/Inter-ExtraBold.ttf",
+      "sha1": "c8887725a47ff1b04b90618ba3eeb566beadf686"
+    },
+    {
+      "path": "app/assets/fonts/Inter-Regular.ttf",
+      "sha1": "f2fa90d264ae0063b0cda7fee6721b405dd4b866"
+    },
+    {
+      "path": "app/assets/fonts/Inter-SemiBold.ttf",
+      "sha1": "76662bdb665197e1dd3f2f8933d4d8b4a5dfba80"
+    }
+  ]
+}
