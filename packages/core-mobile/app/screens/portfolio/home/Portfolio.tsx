@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ListRenderItemInfo, Platform } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -42,7 +42,7 @@ const Portfolio = (): JSX.Element => {
     dispatch(maybePromptBalanceNotification)
   }, [dispatch])
 
-  function captureAnalyticsEvents(tabIndex: number): void {
+  const captureAnalyticsEvents = useCallback((tabIndex: number): void => {
     switch (tabIndex) {
       case PortfolioTabs.Tokens:
         AnalyticsService.capture('PortfolioAssetsClicked')
@@ -53,14 +53,16 @@ const Portfolio = (): JSX.Element => {
       case PortfolioTabs.DeFi:
         AnalyticsService.capture('PortfolioDeFiClicked')
     }
-  }
+  }, [])
 
   return (
     <>
       <PortfolioHeader />
       <TabViewAva
         currentTabIndex={params?.tabIndex}
-        onTabIndexChange={captureAnalyticsEvents}
+        onTabIndexChange={tabIndex => {
+          captureAnalyticsEvents(tabIndex)
+        }}
         hideSingleTab={false}
         renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title={'Assets'}>
