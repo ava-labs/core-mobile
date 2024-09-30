@@ -9,8 +9,8 @@ npm rebuild detox
 
 ls -la $BITRISE_APK_PATH
 
-adb install -r $BITRISE_APK_PATH/app-*-e2e-bitrise-signed.apk
-adb install -r $BITRISE_APK_PATH/app-*-e2e-androidTest-bitrise-signed.apk
+adb install -r $BITRISE_APK_PATH/app-*-e2e-unsigned.apk
+adb install -r $BITRISE_APK_PATH/app-*-e2e-androidTest.apk
 
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 echo "Got test list: $TESTS_TO_RUN"
