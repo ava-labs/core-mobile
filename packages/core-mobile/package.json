@@ -9,7 +9,6 @@
     "podInstall": "bundle _2.1.4_ install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios",
     "start": "react-native start",
-    "assets": "npx react-native-asset",
     "test": "jest",
     "tsc": "tsc -p .",
     "lint": "eslint .",
