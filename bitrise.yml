@@ -133,7 +133,7 @@ workflows:
     - pull-intermediate-files@1:
         inputs:
         - artifact_sources: .*
-        - pipeline_intermediate_files: "$BITRISE_APK_PATH:BITRISE_APK_PATH\n$BITRISE_TEST_APK_PATH:BITRISE_TEST_APK_PATH\t"
+        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR:BITRISE_TEST_APK_PATH\t"
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
