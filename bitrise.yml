@@ -97,7 +97,7 @@ workflows:
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
-        - android_app: $BITRISE_APK_PATH/app-*-e2e-bitrise-signed.apk|$BITRISE_APK_PATH/app-*-e2e-androidTest-bitrise-signed.apk
+        - android_app: $BITRISE_DEPLOY_DIR/app-*-e2e-bitrise-signed.apk|$BITRISE_DEPLOY_DIR/app-*-e2e-androidTest-bitrise-signed.apk
         - use_apk_signer: "true"
         - debuggable_permitted: "false"
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
