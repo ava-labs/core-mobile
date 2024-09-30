@@ -2,10 +2,7 @@
   "name": "@avalabs/k2-alpine",
   "license": "Limited Ecosystem License",
   "version": "1.0.0",
-  "main": "expo/AppEntry.js",
-  "files": [
-    "./src/index.ts"
-  ],
+  "main": "src/index.ts",
   "scripts": {
     "setup": "yarn allow-scripts",
     "start": "expo start",
