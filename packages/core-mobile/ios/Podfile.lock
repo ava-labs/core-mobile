@@ -1272,7 +1272,7 @@ PODS:
     - React-Core
   - RNInAppBrowser (3.7.0):
     - React-Core
-  - RNKeychain (8.2.0):
+  - RNKeychain (8.1.1):
     - React-Core
   - RNLocalize (3.2.1):
     - React-Core
@@ -1785,7 +1785,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 75e2ebf4e8ac521f2b3c9afdc048fcbc2e2c9ea4
   RNGoogleSignin: a6a612cce56a45ab701c5c5c6e36f5390522d100
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
-  RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
+  RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNLocalize: 4f22418187ecd5ca693231093ff1d912d1b3c9bc
   RNNotifee: 2b7df6e32a9cc24b9af6b410fa7db1cd2f411d6d
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027

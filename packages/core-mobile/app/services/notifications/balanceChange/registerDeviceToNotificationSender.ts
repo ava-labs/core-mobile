@@ -18,7 +18,7 @@ export async function registerDeviceToNotificationSender(
     throw error
   })
   if (response.ok) {
-    return response.json()
+    return await response.json()
   } else {
     throw new Error(`${response.status}:${response.statusText}`)
   }

@@ -18,7 +18,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkLogo } from './NetworkLogo'
 
-const ManageNetworks = 'Manage networks'
+const ManageNetworks = 'Manage Networks'
 
 type NetworkDropdownNavigationProp = DrawerScreenProps<
   typeof AppNavigation.Wallet.Tabs
