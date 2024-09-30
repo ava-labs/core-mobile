@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -31,9 +31,6 @@ import Logger from 'utils/Logger'
  * https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372927490/Managing+Notifications
  */
 const Notifications = (): JSX.Element => {
-  const isBalanceChangeNotificationsBlocked = useSelector(
-    selectIsBalanceChangeNotificationsBlocked
-  )
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
   const [blockedChannels, setBlockedChannels] = useState(
@@ -41,6 +38,15 @@ const Notifications = (): JSX.Element => {
   )
   const appState = useSelector(selectAppState)
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
+  const isBalanceChangeNotificationsBlocked = useSelector(
+    selectIsBalanceChangeNotificationsBlocked
+  )
+  const disabledChannels = useMemo(() => {
+    return {
+      [ChannelId.BALANCE_CHANGES]: isBalanceChangeNotificationsBlocked,
+      [ChannelId.STAKING_COMPLETE]: isEarnBlocked
+    }
+  }, [isBalanceChangeNotificationsBlocked, isEarnBlocked])
 
   useEffect(() => {
     if (appState === 'active') {
@@ -56,10 +62,7 @@ const Notifications = (): JSX.Element => {
   const renderNotificationToggles = useCallback(() => {
     return notificationChannels
       .filter(ch => {
-        return !(
-          ch.id === ChannelId.BALANCE_CHANGES &&
-          isBalanceChangeNotificationsBlocked
-        )
+        return !disabledChannels[ch.id]
       })
       .map(ch => {
         return (
@@ -75,7 +78,7 @@ const Notifications = (): JSX.Element => {
   return (
     <View style={{ marginTop: 20 }}>
       {showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
-      {!isEarnBlocked && renderNotificationToggles()}
+      {renderNotificationToggles()}
     </View>
   )
 }
