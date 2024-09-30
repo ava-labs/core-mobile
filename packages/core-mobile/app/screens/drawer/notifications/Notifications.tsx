@@ -20,14 +20,20 @@ import {
   ChannelId,
   notificationChannels
 } from 'services/notifications/channels'
-import { selectIsEarnBlocked } from 'store/posthog'
+import {
+  selectIsBalanceChangeNotificationsBlocked,
+  selectIsEarnBlocked
+} from 'store/posthog'
 import Logger from 'utils/Logger'
 
 /**
  * Conceptual description of notification handling works can be found here
  * https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372927490/Managing+Notifications
  */
-const Notifications = () => {
+const Notifications = (): JSX.Element => {
+  const isBalanceChangeNotificationsBlocked = useSelector(
+    selectIsBalanceChangeNotificationsBlocked
+  )
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
   const [blockedChannels, setBlockedChannels] = useState(
@@ -48,16 +54,23 @@ const Notifications = () => {
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
   const renderNotificationToggles = useCallback(() => {
-    return notificationChannels.map(ch => {
-      return (
-        <NotificationToggle
-          key={ch.id}
-          channel={ch}
-          isSystemDisabled={blockedChannels.has(ch.id)}
-        />
-      )
-    })
-  }, [blockedChannels])
+    return notificationChannels
+      .filter(ch => {
+        return !(
+          ch.id === ChannelId.BALANCE_CHANGES &&
+          isBalanceChangeNotificationsBlocked
+        )
+      })
+      .map(ch => {
+        return (
+          <NotificationToggle
+            key={ch.id}
+            channel={ch}
+            isSystemDisabled={blockedChannels.has(ch.id)}
+          />
+        )
+      })
+  }, [blockedChannels, isBalanceChangeNotificationsBlocked])
 
   return (
     <View style={{ marginTop: 20 }}>
@@ -73,13 +86,13 @@ function NotificationToggle({
 }: {
   channel: AvaxAndroidChannel
   isSystemDisabled: boolean
-}) {
+}): JSX.Element {
   const { theme } = useApplicationContext()
   const inAppEnabled = useSelector(selectNotificationSubscription(channel.id))
   const checked = !isSystemDisabled && inAppEnabled
   const dispatch = useDispatch()
 
-  async function onChange(isChecked: boolean) {
+  async function onChange(isChecked: boolean): Promise<void> {
     // before we change the state, we need to check if the system settings allow us to do so
     const { permission } = await NotificationsService.getAllPermissions(false)
     if (permission !== 'authorized') {
@@ -109,15 +122,15 @@ function NotificationToggle({
   )
 }
 
-function AllowPushNotificationsCard() {
+function AllowPushNotificationsCard(): JSX.Element {
   const { theme } = useApplicationContext()
   const dispatch = useDispatch()
 
-  function onEnterSettings() {
+  function onEnterSettings(): void {
     notificationChannels.forEach(channel => {
       dispatch(setNotificationSubscriptions([channel.id, true]))
     })
-    NotificationsService.getAllPermissions()
+    NotificationsService.getAllPermissions().catch(Logger.error)
   }
 
   return (
