@@ -115,8 +115,8 @@ export const addNotificationsListeners = (
           listenerApi.getOriginalState().posthog.featureFlags[
             FeatureGates.BALANCE_CHANGE_NOTIFICATIONS
           ]
-        // avoid unsubscribing when previous flag is already false
-        if (previousFlag === false) return
+        // avoid unsubscribing when previous flag is already falsy
+        if (!previousFlag) return
       }
 
       await unsubscribeBalanceChangeNotifications().catch(reason => {
