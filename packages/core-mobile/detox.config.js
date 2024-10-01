@@ -17,18 +17,18 @@ async function getFiles(testFolder) {
 
 async function getApkPath(index) {
   const apkArray = await getFiles(process.env.BITRISE_APK_PATH)
-  console.log('APK Array:', apkArray)
   const filepath = `${process.env.BITRISE_APK_PATH}/${apkArray[index]}`
-  console.log('APK Path:', filepath)
   return filepath
 }
 async function getTestApkPath() {
   const androidTestApkPath = await getApkPath(1)
+  console.log('androidTestApkPath', androidTestApkPath)
   process.env.ANDROID_TEST_APK_PATH = androidTestApkPath
 }
 
 async function getSignedApkPath() {
   const signedApkPath = await getApkPath(5)
+  console.log('signedApkPath', signedApkPath)
   process.env.SIGNED_APK_PATH = signedApkPath
 }
 
