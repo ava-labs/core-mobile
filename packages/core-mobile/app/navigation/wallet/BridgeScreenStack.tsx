@@ -1,7 +1,6 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import Bridge from 'screens/bridge/Bridge'
 import SharedBridgeTransactionStatus from 'screens/shared/BridgeTransactionStatus'
 import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
 import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet'
@@ -17,6 +16,7 @@ import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectIsBridgeBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import Bridge from 'screens/bridge/Bridge'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: { initialTokenSymbol: string } | undefined

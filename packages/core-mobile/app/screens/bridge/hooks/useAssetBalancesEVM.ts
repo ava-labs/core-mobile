@@ -12,7 +12,8 @@ import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance/slice'
 import { uniqBy } from 'lodash'
-import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { getDenomination, isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 import { getEVMAssetBalances } from '../handlers/getEVMAssetBalances'
 import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
 
@@ -29,7 +30,7 @@ export function useAssetBalancesEVM(
 } {
   const tokens = useSelector(selectTokensWithBalance)
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
-  const { assets: unifiedBridgeAssets } = useUnifiedBridgeAssets()
+  const { bridgeAssets } = useUnifiedBridgeAssets()
 
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
 
@@ -62,12 +63,12 @@ export function useAssetBalancesEVM(
   // unifiedBridgeAssets go first so that they're not the ones removed (we prefer Unified bridge over legacy)
   const allAssets = useMemo(
     () =>
-      uniqBy([...unifiedBridgeAssets, ...legacyAssets], asset => {
+      uniqBy([...bridgeAssets, ...legacyAssets], asset => {
         return isUnifiedBridgeAsset(asset)
           ? asset.symbol
           : getTokenSymbolOnNetwork(asset.symbol, chain)
       }),
-    [chain, getTokenSymbolOnNetwork, legacyAssets, unifiedBridgeAssets]
+    [chain, getTokenSymbolOnNetwork, legacyAssets, bridgeAssets]
   )
 
   const assetsWithBalances = useMemo(
@@ -83,9 +84,18 @@ export function useAssetBalancesEVM(
     [allAssets, chain, getTokenSymbolOnNetwork, tokens]
   )
 
-  const sortedAssetsWithBalances = assetsWithBalances.sort(
-    (asset1, asset2) => asset2.balance?.cmp(asset1.balance || 0) || 0
-  )
+  const sortedAssetsWithBalances = assetsWithBalances.sort((asset1, asset2) => {
+    const asset1Balance = bigintToBig(
+      asset1.balance || 0n,
+      getDenomination(asset1.asset)
+    )
+    const asset2Balance = bigintToBig(
+      asset2.balance || 0n,
+      getDenomination(asset2.asset)
+    )
+
+    return asset2Balance.cmp(asset1Balance)
+  })
 
   return { assetsWithBalances: sortedAssetsWithBalances, loading: false }
 }
