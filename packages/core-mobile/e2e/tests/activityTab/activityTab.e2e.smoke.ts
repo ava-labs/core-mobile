@@ -20,11 +20,7 @@ describe('Filter transactions on Activity List', () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
     await ActivityTabPage.verifySelectedFilter('Contract Call')
-    try {
-      await ActivityTabPage.verifyExistingRow('Contract Call')
-    } catch (e) {
-      await ActivityTabPage.verifyExistingRow('Send NFT')
-    }
+    await Actions.waitForElement(by.text('Contract Call'), 5000, 1)
   })
 
   it('should filter Bridge on Activity List', async () => {

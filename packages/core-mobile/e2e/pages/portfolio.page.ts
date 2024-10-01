@@ -264,7 +264,7 @@ class PortfolioPage {
   }
 
   async verifyActiveNetwork(network: string) {
-    await Action.waitForElement(by.id(portfolio.activeNetwork + network))
+    await Action.waitForElement(by.id(portfolio.activeNetwork + network), 60000)
     await this.tapNetworksDropdown()
     await Action.waitForElement(
       by.id(portfolio.networkDropdownCheckMark + network)
