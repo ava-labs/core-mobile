@@ -3,7 +3,7 @@ import mockValidators from 'tests/fixtures/pvm/validators.json'
 import { addDays, addYears } from 'date-fns'
 import * as Navigation from 'utils/Navigation'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getZeroAvaxPChain } from 'utils/units/zeroValues'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import {
   calculateMaxWeight,
   getAvailableDelegationWeight,
@@ -60,7 +60,7 @@ describe('getAvailableDelegationWeight', () => {
 
     it('returns the correct value when delegatorWeight is zero', () => {
       const validatorWeight = new TokenUnit(51_000_000_000, 9, 'AVAX')
-      const delegatorWeight = getZeroAvaxPChain()
+      const delegatorWeight = zeroAvaxPChain()
 
       const expectedAvailableDelegationWeight = new TokenUnit(
         204_000_000_000,
@@ -92,7 +92,7 @@ describe('getAvailableDelegationWeight', () => {
 
     it('returns the correct value when delegatorWeight is zero', () => {
       const validatorWeight = new TokenUnit(51_000_000_000, 9, 'AVAX')
-      const delegatorWeight = getZeroAvaxPChain()
+      const delegatorWeight = zeroAvaxPChain()
 
       const expectedAvailableDelegationWeight = new TokenUnit(
         204_000_000_000,

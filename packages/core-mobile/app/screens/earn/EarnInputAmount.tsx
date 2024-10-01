@@ -12,7 +12,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
-import { getZeroTokenUnit } from 'utils/units/zeroValues'
+import { zeroTokenUnit } from 'utils/units/zeroValues'
 
 const EarnInputAmount = ({
   inputAmount,
@@ -42,8 +42,7 @@ const EarnInputAmount = ({
   }, [inputAmount])
 
   const interceptAmountChange = (amount: TokenUnit): void => {
-    const sanitized =
-      limitInput(amount) ?? getZeroTokenUnit(network.networkToken)
+    const sanitized = limitInput(amount) ?? zeroTokenUnit(network.networkToken)
     handleAmountChange?.(sanitized)
   }
 

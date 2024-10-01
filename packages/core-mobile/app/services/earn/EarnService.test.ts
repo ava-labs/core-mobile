@@ -2,7 +2,7 @@ import testValidators from 'tests/fixtures/pvm/validators.json'
 import { Hour, MainnetParams } from 'utils/NetworkParams'
 import { Seconds } from 'types/siUnits'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getZeroAvaxPChain } from 'utils/units/zeroValues'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import EarnService from './EarnService'
 
 describe('EarnService', () => {
@@ -26,7 +26,7 @@ describe('EarnService', () => {
           2,
           true
         )
-      ).toEqual(getZeroAvaxPChain())
+      ).toEqual(zeroAvaxPChain())
     })
     it('should return non zero if current supply is less than max', () => {
       expect(

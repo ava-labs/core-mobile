@@ -1,7 +1,7 @@
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getZeroAvaxPChain } from 'utils/units/zeroValues'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 
 /**
  * Wrapper hook for calculateAmountForCrossChainTransfer
@@ -27,7 +27,7 @@ export const calculateAmountForCrossChainTransfer = (
   claimableBalance: TokenUnit
 ): TokenUnit => {
   if (claimableBalance.gt(stakingAmount)) {
-    return getZeroAvaxPChain()
+    return zeroAvaxPChain()
   } else {
     return stakingAmount.sub(claimableBalance)
   }

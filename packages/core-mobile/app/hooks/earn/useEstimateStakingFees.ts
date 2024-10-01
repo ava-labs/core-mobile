@@ -12,7 +12,7 @@ import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getZeroAvaxPChain } from 'utils/units/zeroValues'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 
 const importFee = calculatePChainFee()
 
@@ -42,7 +42,7 @@ export const useEstimateStakingFees = (
         return
       }
       if (amountForCrossChainTransfer.isZero()) {
-        setEstimatedStakingFee(getZeroAvaxPChain())
+        setEstimatedStakingFee(zeroAvaxPChain())
         return
       }
       if (

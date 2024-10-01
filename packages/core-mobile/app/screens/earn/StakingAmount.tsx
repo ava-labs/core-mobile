@@ -25,7 +25,7 @@ import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getZeroAvaxPChain } from 'utils/units/zeroValues'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import { getCChainTokenUnit } from 'utils/units/knownTokens'
 
 type ScreenProps = StakeSetupScreenProps<
@@ -62,7 +62,7 @@ export default function StakingAmount(): JSX.Element {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState(getZeroAvaxPChain())
+  const [inputAmount, setInputAmount] = useState(zeroAvaxPChain())
   const stakeInCurrency = useMemo(
     () => inputAmount.mul(nativeTokenPrice).toDisplay({ fixedDp: 2 }),
     [inputAmount, nativeTokenPrice]
