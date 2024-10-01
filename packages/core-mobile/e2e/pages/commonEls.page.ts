@@ -112,7 +112,11 @@ class CommonElsPage {
   }
 
   async tapNotNow() {
-    await Actions.tapElementAtIndex(this.notNow, 0)
+    try {
+      await Actions.tapElementAtIndex(this.notNow, 0)
+    } catch (e) {
+      console.log('Not now button not found')
+    }
   }
 }
 

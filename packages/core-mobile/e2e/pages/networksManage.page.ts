@@ -135,7 +135,9 @@ class NetworksPage {
   }
 
   async tapStarSvgByNetwork(network: string) {
-    await Action.waitForElement(by.id(`star_svg__${network}`))
+    if (Action.platform() === Platform.iOS) {
+      await Action.tap(by.id(`star_svg__${network}`))
+    }
     await Action.tap(by.id(`star_svg__${network}`))
   }
 
@@ -185,11 +187,6 @@ class NetworksPage {
 
   async tapNetworkInfo() {
     await Action.tapElementAtIndex(this.networkInfo, 0)
-  }
-
-  async tapPolygonCustomNetwork() {
-    await Action.waitForElement(this.polygonCustomNetwork)
-    await Action.tapElementAtIndex(this.polygonCustomNetwork, 0)
   }
 
   async tapSaveButton() {

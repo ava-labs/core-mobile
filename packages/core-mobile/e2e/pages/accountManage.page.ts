@@ -107,7 +107,7 @@ class AccountManagePage {
   async createNthAccountAndSwitchToNth(account: number) {
     await this.tapAccountDropdownTitle()
     await this.tapAddEditAccounts()
-    for (let i = 0; i < account; i++) {
+    for (let i = 1; i < account; i++) {
       await this.tapAddAccountButton()
     }
     await this.tapNthAccount(account)

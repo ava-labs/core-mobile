@@ -32,6 +32,9 @@ describe('Favorites Token', () => {
     favorites.push(newToken)
     await BottomTabsPage.tapWatchlistTab()
     await WatchListPage.setWatchListToken(newToken)
+    if (Actions.platform() === 'ios') {
+      await Actions.dismissKeyboard()
+    }
     await device.disableSynchronization()
     await WatchListPage.tapWatchListToken(newToken.toLowerCase(), 1)
     await Actions.waitForElement(TokenDetailPage.favorite)

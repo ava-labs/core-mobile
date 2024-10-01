@@ -126,7 +126,7 @@ class ExistingRecoveryPhrasePage {
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
-    await Action.waitForElement(PortfolioPage.colectiblesTab)
+    await commonElsPage.tapNotNow()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
   }

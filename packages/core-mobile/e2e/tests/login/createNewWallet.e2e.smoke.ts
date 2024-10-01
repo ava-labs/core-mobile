@@ -64,6 +64,7 @@ describe('Create new wallet', () => {
     await createPinPage.createPin()
     await createPinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
+    await commonElsPage.tapNotNow()
     await portfolioPage.verifyPorfolioScreen()
     await bottomTabsPage.verifyBottomTabs()
   })
