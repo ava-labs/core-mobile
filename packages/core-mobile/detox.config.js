@@ -5,29 +5,31 @@ const fs = require('fs')
 async function getFiles(testFolder) {
   try {
     const apkFiles = []
-    await fs.readdirSync(testFolder).forEach(file =>  {
-        apkFiles.push(file)
-      })
+    fs.readdir(testFolder, (err, files) => {
+      files.forEach(file => {
+        apkFiles.push(file);
+      });
     return apkFiles
+    });
   } catch (err) {
     console.error('Error reading directory:', err)
     return []
   }
 }
 
-async function getApkPath(index) {
-  const apkArray = await getFiles(process.env.BITRISE_APK_PATH)
+function getApkPath(index) {
+  const apkArray = getFiles(process.env.BITRISE_APK_PATH)
   const filepath = `${process.env.BITRISE_APK_PATH}/${apkArray[index]}`
   return filepath
 }
-async function getTestApkPath() {
-  const androidTestApkPath = await getApkPath(1)
+function getTestApkPath() {
+  const androidTestApkPath = getApkPath(1)
   console.log('androidTestApkPath', androidTestApkPath)
   process.env.ANDROID_TEST_APK_PATH = androidTestApkPath
 }
 
-async function getSignedApkPath() {
-  const signedApkPath = await getApkPath(5)
+function getSignedApkPath() {
+  const signedApkPath = getApkPath(5)
   console.log('signedApkPath', signedApkPath)
   process.env.SIGNED_APK_PATH = signedApkPath
 }
@@ -93,8 +95,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: await getSignedApkPath(),
-      testBinaryPath: await getTestApkPath()
+      binaryPath: getSignedApkPath(),
+      testBinaryPath: getTestApkPath()
     },
     'android.external.release.ci': {
       type: 'android.apk',
