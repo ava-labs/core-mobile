@@ -11,6 +11,13 @@ const getApkPaths = () => {
 
 const [ANDROID_APK_PATH, ANDROID_TEST_APK_PATH] = getApkPaths()
 
+function getWildcardPath(pattern) {
+  const regexPattern =
+        new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$')
+        console.log('regexPattern', regexPattern)
+    return regexPattern
+}
+
 module.exports = {
   testRunner: {
     $0: 'jest',
@@ -71,8 +78,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: `${process.env.BITRISE_APK_PATH}/app-*-e2e-bitrise-signed.apk`,
-      testBinaryPath: `${process.env.BITRISE_TEST_APK_PATH}/app-*-e2e-androidTest.apk`
+      binaryPath: getWildcardPath(`${process.env.BITRISE_APK_PATH}/app-********-e2e-bitrise-signed.apk`),
+      testBinaryPath: getWildcardPath(`${process.env.BITRISE_TEST_APK_PATH}/app-********-e2e-androidTest.apk`)
     },
     'android.external.release.ci': {
       type: 'android.apk',
