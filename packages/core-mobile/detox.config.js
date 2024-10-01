@@ -2,7 +2,7 @@
 
 const fs = require('fs')
 
-async function getFiles() {
+async function getFiles(testFolder) {
   try {
     const files = await fs.readdir(testFolder)
     return files
@@ -13,7 +13,7 @@ async function getFiles() {
 }
 
 async function getApkPath(pattern) {
-  const apkArray = await getFiles()
+  const apkArray = await getFiles(process.env.BITRISE_APK_PATH)
   console.log('APK Array:', apkArray)
   const filepath = `${process.env.BITRISE_APK_PATH}/${apkArray.filter((file) => file.match(pattern))}`
   console.log('APK Path:', filepath)
