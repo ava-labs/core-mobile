@@ -22,11 +22,16 @@ async function getApkPath(index) {
   console.log('APK Path:', filepath)
   return filepath
 }
+async function getTestApkPath() {
+  const androidTestApkPath = await getApkPath(1)
+  process.env.ANDROID_TEST_APK_PATH = androidTestApkPath
+}
 
-const signedApkPath = getApkPath(2)
-console.log(JSON.stringify(signedApkPath), ' signedApkPath')
-const androidTestApkPath = getApkPath(0)
-console.log(JSON.stringify(androidTestApkPath), ' androidTestApkPath')
+async function getSignedApkPath() {
+  const signedApkPath = await getApkPath(5)
+  process.env.SIGNED_APK_PATH = signedApkPath
+}
+
 
 module.exports = {
   testRunner: {
@@ -88,8 +93,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: signedApkPath,
-      testBinaryPath: androidTestApkPath
+      binaryPath: await getSignedApkPath(),
+      testBinaryPath: await getTestApkPath()
     },
     'android.external.release.ci': {
       type: 'android.apk',
