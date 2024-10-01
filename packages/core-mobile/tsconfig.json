@@ -1,6 +1,8 @@
 {
   "extends": "@avalabs/tsconfig-mobile/base.json",
   "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
     "baseUrl": "./app",
     "paths": {
       "tests/*": ["../tests/*"]
