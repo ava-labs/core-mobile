@@ -20,6 +20,9 @@ async function getApkPath(pattern) {
   return filepath
 }
 
+const signedApkPath = await getApkPath('signed')
+const androidTestApkPath = await getApkPath('androidTest')
+
 module.exports = {
   testRunner: {
     $0: 'jest',
@@ -80,8 +83,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: await getApkPath('signed'),
-      testBinaryPath: await getApkPath('androidTest')
+      binaryPath: signedApkPath,
+      testBinaryPath: androidTestApkPath
     },
     'android.external.release.ci': {
       type: 'android.apk',
