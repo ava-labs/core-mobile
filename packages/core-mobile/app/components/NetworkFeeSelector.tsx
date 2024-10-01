@@ -33,6 +33,7 @@ import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { bigIntToFeeDenomination } from 'utils/units/fees'
 import { Tooltip } from './Tooltip'
 
 export enum FeePreset {
@@ -159,17 +160,24 @@ const NetworkFeeSelector = ({
   const displayGasValues = useMemo(() => {
     if (!networkFee) return undefined
 
-    const customFee =
-      customFees?.maxFeePerGas.toString() ??
-      networkFee.low.maxFeePerGas.toString()
+    const customFee = customFees?.maxFeePerGas ?? networkFee.low.maxFeePerGas
 
     return {
-      [FeePreset.Normal]: networkFee.low.maxFeePerGas.toString(),
-      [FeePreset.Fast]: networkFee.medium.maxFeePerGas.toString(),
-      [FeePreset.Instant]: networkFee.high.maxFeePerGas.toString(),
-      [FeePreset.Custom]: customFee
+      [FeePreset.Normal]: bigIntToFeeDenomination(
+        networkFee.low.maxFeePerGas,
+        isBtcNetwork
+      ),
+      [FeePreset.Fast]: bigIntToFeeDenomination(
+        networkFee.medium.maxFeePerGas,
+        isBtcNetwork
+      ),
+      [FeePreset.Instant]: bigIntToFeeDenomination(
+        networkFee.high.maxFeePerGas,
+        isBtcNetwork
+      ),
+      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isBtcNetwork)
     }
-  }, [customFees?.maxFeePerGas, networkFee])
+  }, [customFees?.maxFeePerGas, isBtcNetwork, networkFee])
 
   const goToEditGasLimit = (n?: Network): void => {
     if (networkFee === undefined || n === undefined) return

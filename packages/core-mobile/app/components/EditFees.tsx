@@ -21,6 +21,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import {
+  bigIntToFeeDenomination,
+  feeDenominationToBigint
+} from 'utils/units/fees'
 
 type EditFeesProps = {
   network: Network
@@ -47,14 +51,6 @@ function CurrencyHelperText({ text }: { text: string }): JSX.Element {
       </Text>
     </Row>
   )
-}
-
-function feeDenominationToBigint(fee: string, isBtcNetwork: boolean): bigint {
-  return isBtcNetwork ? BigInt(fee) : BigInt(fee) * BigInt(1e9)
-}
-
-function bigIntToFeeDenomination(fee: bigint, isBtcNetwork: boolean): string {
-  return isBtcNetwork ? fee.toString() : (fee / BigInt(1e9)).toString()
 }
 
 const EditFees = ({
