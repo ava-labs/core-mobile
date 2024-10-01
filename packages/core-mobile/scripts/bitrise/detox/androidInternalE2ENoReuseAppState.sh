@@ -7,10 +7,6 @@ yarn start &
 
 npm rebuild detox
 
-ls -la $BITRISE_APK_PATH
-
-echo $BITRISE_SIGNED_APK_PATH_LIST
-
 adb install -r $BITRISE_APK_PATH/app-*-e2e-bitrise-signed.apk
 adb install -r $BITRISE_APK_PATH/app-*-e2e-androidTest-bitrise-signed.apk
 
