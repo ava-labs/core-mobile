@@ -1,21 +1,23 @@
 /** @type {Detox.DetoxConfig} */
 
-const getApkPaths = () => {
-  if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
-    const apks = process.env.BITRISE_SIGNED_APK_PATH_LIST.split('|')
-    return [apks[0], apks[1]]
-  }
+const fs = require('fs')
 
-  return [undefined, undefined]
+async function getFiles() {
+  try {
+    const files = await fs.readdir(testFolder)
+    return files
+  } catch (err) {
+    console.error('Error reading directory:', err)
+    return []
+  }
 }
 
-const [ANDROID_APK_PATH, ANDROID_TEST_APK_PATH] = getApkPaths()
-
-function getWildcardPath(pattern) {
-  const regexPattern =
-        new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$')
-        console.log('regexPattern', regexPattern)
-    return regexPattern
+async function getApkPath(pattern) {
+  const apkArray = await getFiles()
+  console.log('APK Array:', apkArray)
+  const filepath = `${process.env.BITRISE_APK_PATH}/${apkArray.filter((file) => file.match(pattern))}`
+  console.log('APK Path:', filepath)
+  return filepath
 }
 
 module.exports = {
@@ -78,13 +80,13 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: getWildcardPath(`${process.env.BITRISE_APK_PATH}/app-********-e2e-bitrise-signed.apk`),
-      testBinaryPath: getWildcardPath(`${process.env.BITRISE_TEST_APK_PATH}/app-********-e2e-androidTest.apk`)
+      binaryPath: getApkPath('signed'),
+      testBinaryPath: getApkPath('androidTest')
     },
     'android.external.release.ci': {
       type: 'android.apk',
-      binaryPath:`${process.env.BITRISE_APK_PATH}/app-*-e2e-bitrise-signed.apk`,
-      testBinaryPath: `${process.env.BITRISE_TEST_APK_PATH}/app-*-e2e-androidTest.apk`
+      binaryPath: getApkPath('signed'),
+      testBinaryPath: getApkPath('androidTest')
     },
     'android.internal.e2e': {
       type: 'android.apk',
