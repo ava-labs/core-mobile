@@ -80,13 +80,13 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: getApkPath('signed'),
-      testBinaryPath: getApkPath('androidTest')
+      binaryPath: await getApkPath('signed'),
+      testBinaryPath: await getApkPath('androidTest')
     },
     'android.external.release.ci': {
       type: 'android.apk',
-      binaryPath: getApkPath('signed'),
-      testBinaryPath: getApkPath('androidTest')
+      binaryPath: await getApkPath('signed'),
+      testBinaryPath: await getApkPath('androidTest')
     },
     'android.internal.e2e': {
       type: 'android.apk',
