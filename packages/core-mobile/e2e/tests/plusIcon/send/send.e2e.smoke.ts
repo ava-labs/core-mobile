@@ -15,7 +15,7 @@ describe('Send AVAX', () => {
     await accountManagePage.switchToFirstAccount()
   })
 
-  it('should send AVAX on C-Chain', async () => {
+  it('should send AVAX', async () => {
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount

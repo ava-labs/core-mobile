@@ -92,6 +92,11 @@ class SendPage {
   }
 
   async tapApproveButton() {
+    try {
+      await Actions.waitForElement(this.approveButton, 5000)
+    } catch (e) {
+      await this.tapNextButton()
+    }
     await Actions.waitForElement(this.approveButton, 5000)
     await Actions.tapElementAtIndex(this.approveButton, 0)
   }
@@ -133,7 +138,10 @@ class SendPage {
 
   async verifySuccessToast() {
     await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
-    await delay(3000)
+    await Actions.waitForElementNotVisible(
+      popUpModalPage.successfulToastMsg,
+      120000
+    )
   }
 }
 
