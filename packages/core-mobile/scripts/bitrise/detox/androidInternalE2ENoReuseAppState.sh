@@ -12,7 +12,7 @@ ls -la $BITRISE_APK_PATH
 echo $BITRISE_SIGNED_APK_PATH_LIST
 
 adb install -r $BITRISE_APK_PATH/app-*-e2e-bitrise-signed.apk
-adb install -r $BITRISE_TEST_APK_PATH/app-*-e2e-androidTest.apk
+adb install -r $BITRISE_TEST_APK_PATH/app-*-e2e-androidTest-bitrise-signed.apk
 
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 echo "Got test list: $TESTS_TO_RUN"
