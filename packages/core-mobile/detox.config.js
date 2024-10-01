@@ -4,7 +4,12 @@ const fs = require('fs')
 
 async function getFiles(testFolder) {
   try {
-    const files = await fs.readdir(testFolder)
+    const apkFiles = []
+    await fs.readdir(testFolder, (err, files) => {
+      files.forEach((file) => {
+        apkFiles.push(file)
+      })
+    })
     return files
   } catch (err) {
     console.error('Error reading directory:', err)
