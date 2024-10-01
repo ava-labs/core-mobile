@@ -15,8 +15,8 @@ async function getFiles(testFolder) {
   }
 }
 
-function getApkPath(index) {
-  const apkArray = getFiles(process.env.BITRISE_APK_PATH)
+async function getApkPath(index) {
+  const apkArray = await getFiles(process.env.BITRISE_APK_PATH)
   console.log('APK Array:', apkArray)
   const filepath = `${process.env.BITRISE_APK_PATH}/${apkArray[index]}`
   console.log('APK Path:', filepath)
