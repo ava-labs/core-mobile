@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { FlatList, ListRenderItemInfo } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -33,8 +33,7 @@ type NavigationProp = PortfolioScreenProps<
 
 const NetworkTokens = (): JSX.Element => {
   const { params } = useRoute<NavigationProp['route']>()
-  const { navigate, getParent, setParams } =
-    useNavigation<NavigationProp['navigation']>()
+  const { navigate, getParent } = useNavigation<NavigationProp['navigation']>()
   const { theme } = useApplicationContext()
   const {
     isLoading,
@@ -85,12 +84,12 @@ const NetworkTokens = (): JSX.Element => {
     navigate(AppNavigation.Bridge.BridgeTransactionStatus, statusParams)
   }
 
-  function capturePosthogEvents(tabIndex: number): void {
+  const capturePosthogEvents = useCallback((tabIndex: number): void => {
     if (tabIndex === NetworkTokensTabs.Activity) {
       // capture event only for the activity tab with old event name, by request from product
       AnalyticsService.capture('PortfolioActivityClicked')
     }
-  }
+  }, [])
 
   const renderTabViewLabel = (
     title: string,
@@ -218,10 +217,7 @@ const NetworkTokens = (): JSX.Element => {
       <TabViewAva
         renderCustomLabel={renderTabViewLabel}
         currentTabIndex={params?.tabIndex}
-        onTabIndexChange={tabIndex => {
-          setParams({ tabIndex })
-          capturePosthogEvents(tabIndex)
-        }}>
+        onTabIndexChange={capturePosthogEvents}>
         <TabViewAva.Item title={TabLabel.Tokens}>
           {renderTokenTab()}
         </TabViewAva.Item>

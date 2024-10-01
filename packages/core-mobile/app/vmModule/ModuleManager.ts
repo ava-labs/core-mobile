@@ -1,6 +1,11 @@
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
-import { Environment, GetAddressParams, Module } from '@avalabs/vm-module-types'
+import {
+  Environment,
+  GetAddressParams,
+  Module,
+  ConstructorParams
+} from '@avalabs/vm-module-types'
 import {
   NetworkVMType,
   Network,
@@ -11,6 +16,7 @@ import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
+import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -65,7 +71,14 @@ class ModuleManager {
 
     const environment = isDev ? Environment.DEV : Environment.PRODUCTION
 
-    const moduleInitParams = { environment, approvalController }
+    const moduleInitParams: ConstructorParams = {
+      environment,
+      approvalController,
+      appInfo: {
+        name: APPLICATION_NAME,
+        version: APPLICATION_VERSION
+      }
+    }
 
     this.modules = [
       new EvmModule(moduleInitParams),

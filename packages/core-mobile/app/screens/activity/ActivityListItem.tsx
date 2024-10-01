@@ -127,8 +127,11 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
           maxWidth: windowWidth * 0.3,
           textAlign: 'right'
         }}>
-        {tx.isSender ? '-' : '+'}
-        {tx.tokens[0]?.amount} {tx.tokens[0]?.symbol}
+        {tx.tokens[0]?.collectableTokenId
+          ? `#${tx.tokens[0].collectableTokenId}`
+          : `${tx.isSender ? '-' : '+'}${tx.tokens[0]?.amount} ${
+              tx.tokens[0]?.symbol
+            }`}
       </AvaText.ActivityTotal>
       {'explorerLink' in tx && tx?.explorerLink && (
         <>

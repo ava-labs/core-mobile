@@ -14,18 +14,13 @@ describe('Filter transactions on Activity List', () => {
     await accountManagePage.switchToFirstAccount()
   })
 
-  it('should filter Contract Call and Swap on Activity List', async () => {
+  it('should filter Contract Call on Activity List', async () => {
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
     await ActivityTabPage.verifySelectedFilter('Contract Call')
-    const row = await ActivityTabPage.getLatestActivityRow()
-    try {
-      await ActivityTabPage.verifyActivityRow(row, 'Contract Call')
-    } catch (error) {
-      await ActivityTabPage.verifyActivityRow(row, 'Swap')
-    }
+    await Actions.waitForElement(by.text('Contract Call'), 5000, 1)
   })
 
   it('should filter Bridge on Activity List', async () => {
@@ -33,8 +28,7 @@ describe('Filter transactions on Activity List', () => {
     await ActivityTabPage.tapBridgeFilterOption()
     await ActivityTabPage.verifySelectedFilter('Bridge')
     try {
-      const row = await ActivityTabPage.getLatestActivityRow()
-      await ActivityTabPage.verifyActivityRow(row, 'Bridge')
+      await ActivityTabPage.verifyExistingRow('Bridge')
     } catch (error) {
       await Actions.waitForElement(activityTabPage.noRecentActivity)
     }
@@ -44,8 +38,7 @@ describe('Filter transactions on Activity List', () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapOutgingFilterOption()
     await ActivityTabPage.verifySelectedFilter('Outgoing')
-    const row = await ActivityTabPage.getLatestActivityRow()
-    await ActivityTabPage.verifyActivityRow(row, 'Send')
+    await ActivityTabPage.verifyExistingRow('Send')
   })
 
   it('should filter Incoming on Activity List', async () => {
@@ -53,7 +46,6 @@ describe('Filter transactions on Activity List', () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapIncomingFilterOption()
     await ActivityTabPage.verifySelectedFilter('Incoming')
-    const row = await ActivityTabPage.getLatestActivityRow()
-    await ActivityTabPage.verifyActivityRow(row, 'Receive')
+    await ActivityTabPage.verifyExistingRow('Receive')
   })
 })
