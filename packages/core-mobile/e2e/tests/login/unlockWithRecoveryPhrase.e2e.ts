@@ -29,6 +29,7 @@ describe('Login with Mnemonic wallet', () => {
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
+    await commonElsPage.tapNotNow()
     await analyticsConsentPage.tapUnlockBtn()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
