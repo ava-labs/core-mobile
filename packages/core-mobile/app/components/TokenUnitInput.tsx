@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 
-interface TokenBaseUnitProps extends Omit<InputTextProps, 'text'> {
+interface TokenUnitInputProps extends Omit<InputTextProps, 'text'> {
   value?: TokenUnit
   maxTokenDecimals: number
   maxDecimalDigits: number
@@ -18,12 +18,12 @@ interface TokenBaseUnitProps extends Omit<InputTextProps, 'text'> {
 }
 
 /**
- * BaseAvaxInput takes user's input via InputText component and calls "onChange" callback with TokenUnit object.
+ * TokenUnitInput takes user's input via InputText component and calls "onChange" callback with TokenUnit object.
  * Users input is kept in baseValueString.
  * Since TokenUnit object will strip trailing decimal zeroes this component will compare "value" param with
  * baseValueString using TokenUnit.eq() operation to detect if there are any changes.
  */
-export function TokenBaseUnitInput({
+export function TokenUnitInput({
   value,
   maxTokenDecimals,
   maxDecimalDigits,
@@ -33,7 +33,7 @@ export function TokenBaseUnitInput({
   isValueLoading,
   hideErrorMessage,
   ..._props
-}: TokenBaseUnitProps): JSX.Element {
+}: TokenUnitInputProps): JSX.Element {
   const sanitizedValue = value && value.isZero() ? undefined : value
   const [baseValueString, setBaseValueString] = useState('')
   const [maxLength, setMaxLength] = useState<number | undefined>(undefined)

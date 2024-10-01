@@ -6,7 +6,7 @@ import React, { useEffect, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Platform } from 'react-native'
 import limitInput, { getMaxDecimals } from 'screens/earn/limitInput'
-import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
+import { TokenUnitInput } from 'components/TokenUnitInput'
 import Avatar from 'components/Avatar'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
@@ -50,7 +50,7 @@ const EarnInputAmount = ({
         justifyContent: 'center',
         marginHorizontal: 16
       }}>
-      <TokenBaseUnitInput
+      <TokenUnitInput
         value={inputAmount}
         maxTokenDecimals={inputAmount.getMaxDecimals()}
         maxDecimalDigits={maxDecimalDigits}
