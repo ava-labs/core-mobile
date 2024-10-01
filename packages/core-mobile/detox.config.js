@@ -26,7 +26,9 @@ async function getApkPath(pattern) {
 }
 
 const signedApkPath = getApkPath('signed')
+console.log(JSON.stringify(signedApkPath), ' signedApkPath')
 const androidTestApkPath = getApkPath('androidTest')
+console.log(JSON.stringify(androidTestApkPath), ' androidTestApkPath')
 
 module.exports = {
   testRunner: {
