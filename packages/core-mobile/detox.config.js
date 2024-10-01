@@ -5,9 +5,9 @@ const fs = require('fs')
 async function getFiles(testFolder) {
   try {
     const apkFiles = []
-    await fs.readdirSync(testFolder.forEach(file =>  {
+    await fs.readdirSync(testFolder).forEach(file =>  {
         apkFiles.push(file)
-      }))
+      })
     return apkFiles
   } catch (err) {
     console.error('Error reading directory:', err)
@@ -17,7 +17,6 @@ async function getFiles(testFolder) {
 
 async function getApkPath(pattern) {
   const apkArray = await getFiles(process.env.BITRISE_APK_PATH)
-  console.log('APK Array:', apkArray)
   const filepath = `${process.env.BITRISE_APK_PATH}/${apkArray.filter((file) => file.match(pattern))}`
   console.log('APK Path:', filepath)
   return filepath
