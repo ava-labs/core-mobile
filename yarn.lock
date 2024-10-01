@@ -222,7 +222,7 @@ __metadata:
     "@shopify/flash-list": 1.7.1
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
-    "@spotlightjs/spotlight": 2.4.1
+    "@spotlightjs/spotlight": 2.4.2
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
@@ -8592,10 +8592,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spotlightjs/overlay@npm:2.5.1":
-  version: 2.5.1
-  resolution: "@spotlightjs/overlay@npm:2.5.1"
-  checksum: 5f8f974bda5a2f87a9579630fcdb15cc6303bd4dae872b038ad5a284608987fb76ae9f2fbcd7cc2afb7f84fc83d87e2b1dea674911a956bb2cfdad252dc1301b
+"@spotlightjs/overlay@npm:2.5.2":
+  version: 2.5.2
+  resolution: "@spotlightjs/overlay@npm:2.5.2"
+  checksum: 6101f8033b36054132b54fecaef4edc420c1ec7b8466fb593319ef1c09c6c1ec9168c015e5ee864d772115df370f53281d4a4182aeb31366863b3197a0691ffc
   languageName: node
   linkType: hard
 
@@ -8612,16 +8612,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spotlightjs/spotlight@npm:2.4.1":
-  version: 2.4.1
-  resolution: "@spotlightjs/spotlight@npm:2.4.1"
+"@spotlightjs/spotlight@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@spotlightjs/spotlight@npm:2.4.2"
   dependencies:
-    "@spotlightjs/overlay": 2.5.1
+    "@spotlightjs/overlay": 2.5.2
     "@spotlightjs/sidecar": 1.8.0
     import-meta-resolve: ^4.1.0
   bin:
     spotlight: bin/run.js
-  checksum: e486692ffc40b62ccb3e2c4a8cab2f3e12917a89c4b015e951ff8b85782739b1c5386f67ee9e66f8f207bbd989f133192d0c857ecba306744aea9dbc72fb69a2
+  checksum: 50b9bd948556e874f31d9d1e9ab6c6de4b352982c6f9e5c2c252194c6802301973dcc7a86dc546cbecfd6fbcfe97c0110fe0beebe8778cdf2c3d20b71f2f41cd
   languageName: node
   linkType: hard
 
@@ -9383,14 +9383,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/eslint-plugin-query@npm:5.57.1":
-  version: 5.57.1
-  resolution: "@tanstack/eslint-plugin-query@npm:5.57.1"
+"@tanstack/eslint-plugin-query@npm:5.58.1":
+  version: 5.58.1
+  resolution: "@tanstack/eslint-plugin-query@npm:5.58.1"
   dependencies:
     "@typescript-eslint/utils": ^8.3.0
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
-  checksum: aaf6949eee3546a0c6c5e498d40315a5a5b62fcb6643c99f54e58d3157563083c62bc7b3d11c620cf0a1c019d11c31c6f3ba9a09ec573cf13703034e04a8713a
+  checksum: 77c94866e10461e1533ee64cea8ad1ec2c2cb726143ad5f3fe137ecfb6fe6f961cc8948c9e3ddfa836771706b12690a8cdb70b6f161ec30984edf54da0331226
   languageName: node
   linkType: hard
 
@@ -10189,12 +10189,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.5.5":
-  version: 22.5.5
-  resolution: "@types/node@npm:22.5.5"
+"@types/node@npm:22.7.4":
+  version: 22.7.4
+  resolution: "@types/node@npm:22.7.4"
   dependencies:
     undici-types: ~6.19.2
-  checksum: 1f788966ff7df07add0af3481fb68c7fe5091cc72a265c671432abb443788ddacca4ca6378af64fe100c20f857c4d80170d358e66c070171fcea0d4adb1b45b1
+  checksum: a3f4154147639369aed08fe6f8d62eff637cf87b187bb252d7bbccdc82884626007af424b08a653c53f2182adfa0340001b4888cb7cbb942cef351210fc742a5
   languageName: node
   linkType: hard
 
@@ -15542,8 +15542,8 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-community/eslint-config": 3.0.3
-    "@tanstack/eslint-plugin-query": 5.57.1
-    "@types/node": 22.5.5
+    "@tanstack/eslint-plugin-query": 5.58.1
+    "@types/node": 22.7.4
     "@typescript-eslint/eslint-plugin": 5.62.0
     "@typescript-eslint/parser": 5.62.0
     "@typescript-eslint/utils": 5.62.0
