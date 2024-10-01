@@ -63,10 +63,11 @@ export default function StakingAmount(): JSX.Element {
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
   const [inputAmount, setInputAmount] = useState(zeroAvaxPChain())
-  const stakeInCurrency = useMemo(
-    () => inputAmount.mul(nativeTokenPrice).toDisplay({ fixedDp: 2 }),
-    [inputAmount, nativeTokenPrice]
-  )
+  const stakeInCurrency = useMemo(() => {
+    return inputAmount
+      .mul(nativeTokenPrice)
+      .toDisplay({ fixedDp: 2, asNumber: true })
+  }, [inputAmount, nativeTokenPrice])
 
   const cumulativeBalance = useMemo(
     () =>

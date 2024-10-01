@@ -4,8 +4,9 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 interface TokenBaseUnitProps extends Omit<InputTextProps, 'text'> {
   value?: TokenUnit
-  maxDecimals: number
-  symbol: string
+  maxTokenDecimals: number
+  maxDecimalDigits: number
+  tokenSymbol: string
   isValueLoading?: boolean
   hideErrorMessage?: boolean
   testID?: string
@@ -24,8 +25,9 @@ interface TokenBaseUnitProps extends Omit<InputTextProps, 'text'> {
  */
 export function TokenBaseUnitInput({
   value,
-  maxDecimals,
-  symbol,
+  maxTokenDecimals,
+  maxDecimalDigits,
+  tokenSymbol,
   onChange,
   onMax,
   isValueLoading,
@@ -40,7 +42,7 @@ export function TokenBaseUnitInput({
 
   const onValueChanged = (rawValue: string): void => {
     if (!rawValue) {
-      onChange?.(new TokenUnit(0, maxDecimals, symbol))
+      onChange?.(new TokenUnit(0, maxTokenDecimals, tokenSymbol))
       setBaseValueString('')
       return
     }
@@ -53,12 +55,25 @@ export function TokenBaseUnitInput({
     const [frontValue, endValue] = changedValue.includes('.')
       ? changedValue.split('.')
       : [changedValue, null]
-    if (!endValue || endValue.length <= maxDecimals) {
+    if (
+      !endValue ||
+      endValue.length <= Math.min(maxDecimalDigits, maxTokenDecimals)
+    ) {
       //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
-      setMaxLength(frontValue.length + '.'.length + maxDecimals)
+      setMaxLength(
+        frontValue.length +
+          '.'.length +
+          Math.min(maxDecimalDigits, maxTokenDecimals)
+      )
 
       setBaseValueString(changedValue)
-      onChange?.(new TokenUnit(changedValue, maxDecimals, symbol))
+      onChange?.(
+        new TokenUnit(
+          Number(changedValue) * 10 ** maxTokenDecimals,
+          maxTokenDecimals,
+          tokenSymbol
+        )
+      )
     } else {
       setMaxLength(undefined)
     }

@@ -2,7 +2,7 @@ import OvalTagBg from 'components/OvalTagBg'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Platform } from 'react-native'
 import limitInput, { getMaxDecimals } from 'screens/earn/limitInput'
@@ -22,7 +22,9 @@ const EarnInputAmount = ({
   handleAmountChange?: (amount: TokenUnit) => void
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const [maxDecimals, setMaxDecimals] = useState(inputAmount.getMaxDecimals)
+  const maxDecimalDigits = useMemo(() => {
+    return getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals()
+  }, [inputAmount])
 
   const isTestnet = useSelector(selectIsDeveloperMode)
   const network = NetworkService.getAvalancheNetworkP(isTestnet)
@@ -35,11 +37,6 @@ const EarnInputAmount = ({
       handleAmountChange?.(sanitized)
     }
   }, [handleAmountChange, inputAmount])
-
-  useEffect(() => {
-    if (!inputAmount) return
-    setMaxDecimals(getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals())
-  }, [inputAmount])
 
   const interceptAmountChange = (amount: TokenUnit): void => {
     const sanitized = limitInput(amount) ?? zeroTokenUnit(network.networkToken)
@@ -55,8 +52,9 @@ const EarnInputAmount = ({
       }}>
       <TokenBaseUnitInput
         value={inputAmount}
-        maxDecimals={maxDecimals}
-        symbol={inputAmount.getSymbol()}
+        maxTokenDecimals={inputAmount.getMaxDecimals()}
+        maxDecimalDigits={maxDecimalDigits}
+        tokenSymbol={inputAmount.getSymbol()}
         placeholder={'0.0'}
         onChange={interceptAmountChange}
         style={{
