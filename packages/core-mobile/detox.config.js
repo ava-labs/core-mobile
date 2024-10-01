@@ -72,8 +72,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: await glob(`${process.env.BITRISE_APK_PATH}/app-*-e2e-bitrise-signed.apk`),
-      testBinaryPath: await glob(`${process.env.BITRISE_TEST_APK_PATH}/app-*-e2e-androidTest.apk`)
+      binaryPath: `${process.env.BITRISE_APK_PATH}/app-*-e2e-bitrise-signed.apk`,
+      testBinaryPath: `${process.env.BITRISE_TEST_APK_PATH}/app-*-e2e-androidTest.apk`
     },
     'android.external.release.ci': {
       type: 'android.apk',
