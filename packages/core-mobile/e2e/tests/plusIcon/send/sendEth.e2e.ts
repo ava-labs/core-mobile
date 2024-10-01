@@ -1,4 +1,3 @@
-import Actions from '../../../helpers/actions'
 import { cleanup } from '../../../helpers/cleanup'
 import { warmup } from '../../../helpers/warmup'
 import sendLoc from '../../../locators/send.loc'
@@ -46,10 +45,7 @@ describe('Send ETH', () => {
     await bottomTabsPage.tapPortfolioTab()
     await advancedPage.switchToTestnet()
     await networksManagePage.switchToEthereumSepoliaNetwork()
-    await Actions.waitForElement(
-      networksManagePage.ethereumSepoliaNetwork,
-      60000
-    )
+    await portfolioPage.verifyActiveNetwork('Ethereum Sepolia')
   }, 120000)
 
   it('Should send Sepolia Eth on TestNet', async () => {
