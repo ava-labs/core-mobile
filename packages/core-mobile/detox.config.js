@@ -1,5 +1,4 @@
 /** @type {Detox.DetoxConfig} */
-const glob = require('glob')
 
 const getApkPaths = () => {
   if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
