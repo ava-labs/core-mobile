@@ -1,4 +1,5 @@
 /** @type {Detox.DetoxConfig} */
+const glob = require('glob')
 
 const getApkPaths = () => {
   if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
@@ -39,7 +40,7 @@ module.exports = {
       type: 'android.attached',
       device: {
         // Run 'adb devices' in terminal to get the device name and replace it here
-        adbName: 'R5CN709H42E'
+        adbName: '0A281FDD4001KZ'
       }
     }
   },
@@ -71,13 +72,13 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: process.env.BITRISE_APK_PATH,
-      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
+      binaryPath: glob(`${process.env.BITRISE_APK_PATH}/app-*-e2e-bitrise-signed.apk`),
+      testBinaryPath: glob(`${process.env.BITRISE_TEST_APK_PATH}/app-*-e2e-androidTest.apk`)
     },
     'android.external.release.ci': {
       type: 'android.apk',
-      binaryPath: ANDROID_APK_PATH,
-      testBinaryPath: ANDROID_TEST_APK_PATH
+      binaryPath: glob(`${process.env.BITRISE_APK_PATH}/app-*-e2e-bitrise-signed.apk`),
+      testBinaryPath: glob(`${process.env.BITRISE_TEST_APK_PATH}/app-*-e2e-androidTest.apk`)
     },
     'android.internal.e2e': {
       type: 'android.apk',
@@ -370,7 +371,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: './e2e/configs/smokeTestConfigNoReuseState.json'
+          config: './e2e/configs/reuseStateConfig.json'
         }
       }
     },
