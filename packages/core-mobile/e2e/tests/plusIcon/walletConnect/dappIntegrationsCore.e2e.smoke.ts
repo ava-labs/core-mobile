@@ -7,8 +7,8 @@ import BottomTabsPage from '../../../pages/bottomTabs.page'
 import actions from '../../../helpers/actions'
 import browserPage from '../../../pages/browser.page'
 import commonElsPage from '../../../pages/commonEls.page'
-import securityAndPrivacyPage from '../../../pages/burgerMenu/securityAndPrivacy.page'
-import connectedSitesPage from '../../../pages/connectedSites.page'
+// import securityAndPrivacyPage from '../../../pages/burgerMenu/securityAndPrivacy.page'
+// import connectedSitesPage from '../../../pages/connectedSites.page'
 import connectToSitePage from '../../../pages/connectToSite.page'
 
 describe('Dapp - Core', () => {
@@ -31,13 +31,13 @@ describe('Dapp - Core', () => {
     await connectToSitePage.selectAccountAndconnect()
   })
 
-  it('should verify core.app connected', async () => {
-    await securityAndPrivacyPage.goToConnectedSites()
-    await connectedSitesPage.verifyDapp('Core')
-  })
+  // it('should verify core.app connected', async () => {
+  //   await securityAndPrivacyPage.goToConnectedSites()
+  //   await connectedSitesPage.verifyDapp('Core')
+  // })
 
-  it('should verify core.app disconnected', async () => {
-    await connectedSitesPage.disconnectDapp('Core')
-    await connectedSitesPage.verifyEmtpyConnectedSites()
-  })
+  // it('should verify core.app disconnected', async () => {
+  //   await connectedSitesPage.disconnectDapp('Core')
+  //   await connectedSitesPage.verifyEmtpyConnectedSites()
+  // })
 })

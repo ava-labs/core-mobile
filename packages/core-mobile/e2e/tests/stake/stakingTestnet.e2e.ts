@@ -23,7 +23,15 @@ describe('Stake on Testnet', () => {
     await cleanup()
   })
 
+  it('should test a staking flow for a new account on testnet', async () => {
+    await BottomTabsPage.tapPortfolioTab()
+    await AccountManagePage.createNthAccountAndSwitchToNth(3)
+    await BottomTabsPage.tapStakeTab()
+    await StakePage.verifyNoActiveStakesScreenItems()
+  })
+
   it('should test a staking flow on testnet for an existing account', async () => {
+    await BottomTabsPage.tapPortfolioTab()
     await accountManagePage.switchToFirstAccount()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
@@ -66,12 +74,5 @@ describe('Stake on Testnet', () => {
         jestExpect(newClaimableBalance).toBe(0)
       }
     }
-  })
-
-  it('should test a staking flow for a new account on testnet', async () => {
-    await BottomTabsPage.tapPortfolioTab()
-    await AccountManagePage.createNthAccountAndSwitchToNth(3)
-    await BottomTabsPage.tapStakeTab()
-    await StakePage.verifyNoActiveStakesScreenItems()
   })
 })
