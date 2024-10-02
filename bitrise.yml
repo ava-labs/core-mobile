@@ -500,6 +500,13 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
   android-internal-e2e-regression-run:
     before_run:
     - _install-and-set-env
@@ -532,11 +539,15 @@ workflows:
     - IS_REGRESSION_RUN: "true"
       opts:
         is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
     steps:
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
   android-internal-e2e-run-pixel3:
     before_run:
     - _install-and-set-env

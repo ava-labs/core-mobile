@@ -1,42 +1,7 @@
 /** @type {Detox.DetoxConfig} */
 
-const fs = require('fs')
-
-async function getFiles(testFolder) {
-  try {
-    const apkFiles = []
-    fs.readdir(testFolder, (err, files) => {
-      files.forEach(file => {
-        apkFiles.push(file);
-      });
-    return apkFiles
-    });
-  } catch (err) {
-    console.error('Error reading directory:', err)
-    return []
-  }
-}
-
-function getApkPath(index) {
-  const apkArray = getFiles(process.env.BITRISE_APK_PATH)
-  console.log('apkArray', apkArray)
-  const sortedApkArray = apkArray.sort()
-  const filepath = `${process.env.BITRISE_APK_PATH}/${apkArray[index]}`
-  console.log(sortedApkArray)
-  return filepath
-}
-function getTestApkPath() {
-  const androidTestApkPath = getApkPath(1)
-  console.log('androidTestApkPath', androidTestApkPath)
-  process.env.ANDROID_TEST_APK_PATH = androidTestApkPath
-}
-
-function getSignedApkPath() {
-  const signedApkPath = getApkPath(5)
-  console.log('signedApkPath', signedApkPath)
-  process.env.SIGNED_APK_PATH = signedApkPath
-}
-
+const appBinaryPath = `${process.env.BITRISE_APK_PATH}/app-internal-e2e-bitrise-signed.apk` ? process.env.IS_INTERNAL_BUILD === 'true' : `${process.env.BITRISE_APK_PATH}/app-external-e2e-bitrise-signed.apk`
+const appTestBinaryPath = `${process.env.BITRISE_APK_PATH}/app-internal-e2e-androidTest.apk` ? process.env.IS_INTERNAL_BUILD === 'true' : `${process.env.BITRISE_APK_PATH}/app-external-e2e-androidTest.apk`
 
 module.exports = {
   testRunner: {
@@ -98,13 +63,13 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: getSignedApkPath(),
-      testBinaryPath: getTestApkPath()
+      binaryPath: appBinaryPath,
+      testBinaryPath: appTestBinaryPath
     },
     'android.external.release.ci': {
       type: 'android.apk',
-      binaryPath: signedApkPath,
-      testBinaryPath: androidTestApkPath
+      binaryPath: appBinaryPath,
+      testBinaryPath: appTestBinaryPath
     },
     'android.internal.e2e': {
       type: 'android.apk',
