@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
+import { lazy } from 'react'
 import AppNavigation, { Tabs } from 'navigation/AppNavigation'
 import HomeSVG from 'components/svg/HomeSVG'
 import WatchlistSVG from 'components/svg/WatchlistSVG'
@@ -6,7 +7,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
 import React, { useState } from 'react'
-import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, TabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
@@ -18,7 +18,13 @@ import { Fab } from 'components/Fab'
 import { addTab, selectActiveTab, selectAllTabs } from 'store/browser'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { withK2Alpine } from 'utils/withK2Alpine'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
+
+const WatchlistTab = withK2Alpine(
+  lazy(() => import('screens/watchlist/WatchlistTabView')),
+  lazy(() => import('screens/watchlist/WatchlistTabViewK2Alpine'))
+)
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -43,6 +49,7 @@ const TabNavigator: () => JSX.Element = () => {
 
   const renderEarnTab: () => null | JSX.Element = () => {
     if (earnBlocked) return null
+
     return (
       <Tab.Screen
         name={AppNavigation.Tabs.Stake}
