@@ -21,12 +21,6 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "./e2e/tests/bridge",
-    "./e2e/tests/network/emptyAsssets.e2e.ts",
-    "./e2e/tests/performance/performanceHelpUsImproveScreen.e2e.ts",
-    "./e2e/tests/login/recoverMetaMaskWallet.e2e.smoke.ts",
-    
-    "./e2e/tests/inAppBrowser/coreWebWCIntegration.e2e.smoke.ts",
-    "./e2e/tests/network/addCustomToken.e2e.smoke.ts"
+    "./e2e/tests/login/recoverMetaMaskWallet.e2e.smoke.ts"
   ]
 }
