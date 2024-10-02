@@ -136,7 +136,11 @@ class NetworksPage {
 
   async tapStarSvgByNetwork(network: string) {
     if (Action.platform() === Platform.iOS) {
-      await Action.tap(by.id(`star_svg__${network}`))
+      try {
+        await Action.dismissKeyboard()
+      } catch (e) {
+        console.log('No need to dismiss keyboard')
+      }
     }
     await Action.tap(by.id(`star_svg__${network}`))
   }
