@@ -331,6 +331,14 @@ export const selectIsBalanceChangeNotificationsBlocked = (
   )
 }
 
+export const selectIsK2AlpineBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.K2_ALPINE] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

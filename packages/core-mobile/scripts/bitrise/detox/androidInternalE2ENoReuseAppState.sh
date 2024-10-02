@@ -7,8 +7,8 @@ yarn start &
 
 npm rebuild detox
 
-adb install -r $BITRISE_APK_PATH/app-*-e2e-bitrise-signed.apk
-adb install -r $BITRISE_APK_PATH/app-*-e2e-androidTest-bitrise-signed.apk
+adb install -r $BITRISE_APK_PATH
+adb install -r $BITRISE_TEST_APK_PATH
 
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 echo "Got test list: $TESTS_TO_RUN"
@@ -28,10 +28,14 @@ if [ "$IS_REGRESSION_RUN" = true ]; then
     QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.external.release.regression.ci --headless
 fi
 else
-  echo "The test list above will be reduced by the android smoke config ignoreTestList"
-  echo "Running smoke run..."
-  QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
-  test_result=$?
+  if [ "$PARAMETERIZED_TESTS" = true ]; then
+    exit 0  # we don't run parameterized tests on smoke run
+  else
+    echo "The test list above will be reduced by the android smoke config ignoreTestList"
+    echo "Running smoke run..."
+    QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
+    test_result=$?
+  fi
 fi
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts

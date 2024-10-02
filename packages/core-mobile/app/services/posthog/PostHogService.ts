@@ -14,13 +14,15 @@ import {
 import { getPosthogDeviceInfo } from './utils'
 
 class PostHogService implements PostHogServiceInterface {
+  #posthogCaptureUrl: string
+
   constructor(
     private posthogAnalyticsKey: string,
     private posthogUrl: string,
     private posthogFeatureFlagsKey: string
-  ) {}
-
-  #posthogCaptureUrl = `${this.posthogUrl}/capture/`
+  ) {
+    this.#posthogCaptureUrl = `${posthogUrl}/capture/`
+  }
 
   distinctId: string | undefined
   userId: string | undefined

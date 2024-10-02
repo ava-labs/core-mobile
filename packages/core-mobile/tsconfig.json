@@ -1,6 +1,8 @@
 {
   "extends": "@avalabs/tsconfig-mobile/base.json",
   "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
     "baseUrl": "./app",
     "paths": {
       "tests/*": ["../tests/*"]
@@ -15,7 +17,8 @@
     ".eslintrc.js",
     "jest.config.js",
     ".prettierrc.js",
-    "../k2-mobile/src/theme.d.ts"
+    "../k2-mobile/src/theme.d.ts",
+    "../k2-alpine/src/theme.d.ts"
   ],
   "exclude": ["node_modules"]
 }

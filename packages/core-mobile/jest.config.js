@@ -9,7 +9,7 @@ module.exports = {
   setupFilesAfterEnv: [
     '<rootDir>/tests/msw/jestSetup.js',
     '<rootDir>/tests/firebase/jestSetup.js',
-    './node_modules/@react-native-google-signin/google-signin/jest/build/setup.js'
+    './node_modules/@react-native-google-signin/google-signin/jest/build/jest/setup.js'
   ],
   transformIgnorePatterns: [
     'node_modules/(?!' +

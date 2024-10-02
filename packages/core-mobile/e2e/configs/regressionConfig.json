@@ -24,11 +24,6 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "<rootDir>/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
-    "<rootDir>/tests/plusIcon/walletConnect/dappEthIntegrations.e2e.ts",
-    "<rootDir>/tests/plusIcon/walletConnect/dappIntegrations.e2e.dapp.ts",
-    "<rootDir>/tests/plusIcon/send/sendBitcoin.e2e.ts",
-    "<rootDir>/tests/network/addCustomNetwork.e2e.smoke.ts",
-    "<rootDir>/tests/plusIcon/walletConnect/dappIntegrationsCore.e2e.smoke.ts"
+    "<rootDir>/tests/plusIcon/send/sendBitcoin.e2e.ts"
   ]
 }

@@ -6,6 +6,7 @@ import NotificationsService from 'services/notifications/NotificationsService'
 import { AnyAction } from '@reduxjs/toolkit'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
+import { selectIsBalanceChangeNotificationsBlocked } from 'store/posthog'
 import {
   selectHasPromptedForBalanceChange,
   selectNotificationSubscription,
@@ -18,13 +19,16 @@ export const handleMaybePromptBalanceNotification = async (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  const state = listenerApi.getState()
+  const isBalanceChangeNotificationsBlocked =
+    selectIsBalanceChangeNotificationsBlocked(state)
+  if (isBalanceChangeNotificationsBlocked) return
   if (isWaitingForIntroMux) return //if already waiting ignore this handler
   await waitIfIntroScreenIsYetNotDismissed(listenerApi)
   isWaitingForIntroMux = false
 
   const blockedNotifications =
     await NotificationsService.getBlockedNotifications()
-  const state = listenerApi.getState()
   const isSubscribedToBalanceChanges = selectNotificationSubscription(
     ChannelId.BALANCE_CHANGES
   )(state)

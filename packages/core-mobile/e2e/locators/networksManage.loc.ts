@@ -9,7 +9,7 @@ export default {
   celoChainID: '42220',
   celoNativeTokenSymbol: 'CELO',
   celoExplorerUrl: 'https://explorer.celo.org',
-  polygonCustomNetworkName: 'Polygon Mainnet',
+  polygonCustomNetworkName: 'Polygon',
   polygonCustomRpcUrl: 'https://polygon-rpc.com/',
   polygonCustomChainID: '137',
   polygonCustomNativeTokenSymbol: 'MATIC',

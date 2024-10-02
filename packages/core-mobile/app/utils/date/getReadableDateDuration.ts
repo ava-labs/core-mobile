@@ -1,6 +1,7 @@
 import {
   differenceInHours,
   differenceInYears,
+  DurationUnit,
   formatDuration,
   intervalToDuration
 } from 'date-fns'
@@ -11,10 +12,10 @@ import {
  * @returns duration in different format that is more readable
  * e.g. 2 months 3 days | 10 hours 50 minutes | 2 years 5 months
  */
-export const getReadableDateDuration = (date: Date) => {
+export const getReadableDateDuration = (date: Date): string => {
   const currentDate = new Date()
   const duration = intervalToDuration({ start: currentDate, end: date })
-  let format = ['months', 'days']
+  let format: DurationUnit[] = ['months', 'days']
 
   if (differenceInYears(date, currentDate) > 1) {
     format = ['years', 'months']

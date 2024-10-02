@@ -135,7 +135,13 @@ class NetworksPage {
   }
 
   async tapStarSvgByNetwork(network: string) {
-    await Action.waitForElement(by.id(`star_svg__${network}`))
+    if (Action.platform() === Platform.iOS) {
+      try {
+        await Action.dismissKeyboard('network_manager__search_input')
+      } catch (e) {
+        console.log('No need to dismiss keyboard')
+      }
+    }
     await Action.tap(by.id(`star_svg__${network}`))
   }
 
@@ -187,17 +193,7 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.networkInfo, 0)
   }
 
-  async tapPolygonCustomNetwork() {
-    await Action.waitForElement(this.polygonCustomNetwork)
-    await Action.tapElementAtIndex(this.polygonCustomNetwork, 0)
-  }
-
   async tapSaveButton() {
-    await Action.scrollListUntil(
-      this.saveButton,
-      by.id('addEditNetwork_scroll_view'),
-      30
-    )
     while (await Action.isVisible(this.saveButton, 0)) {
       await Action.tapElementAtIndex(this.saveButton, 0)
     }

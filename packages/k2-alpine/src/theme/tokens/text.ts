@@ -15,7 +15,7 @@ export const text = {
   heading3: {
     fontFamily: 'Aeonik-Bold',
     fontSize: 27,
-    lineHeight: 30
+    lineHeight: 27
   },
   heading4: {
     fontFamily: 'Inter-SemiBold',

@@ -15,11 +15,15 @@ const Link = ({ title, url, style }: Props): JSX.Element => {
       onPress={() => {
         Linking.openURL(url)
       }}
+      style={[
+        style,
+        {
+          textDecorationLine: 'underline'
+        }
+      ]}
       sx={{
-        color: '$textPrimary',
-        textDecorationLine: 'underline'
-      }}
-      style={style}>
+        color: '$textPrimary'
+      }}>
       {title}
     </Text>
   )

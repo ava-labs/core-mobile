@@ -187,10 +187,13 @@ class ActivityTabPage {
     await this.verifyActivityRow(amountEle, amount)
   }
 
-  async verifyExistingRow(type: string, amount: string) {
+  async verifyExistingRow(
+    type: string,
+    amount: string | undefined = undefined
+  ) {
     await Action.waitForElement(this.activityListItem)
     await Action.waitForElement(by.text(type))
-    await Action.waitForElement(by.text(amount))
+    if (amount) await Action.waitForElement(by.text(amount))
   }
 }
 
