@@ -45,7 +45,7 @@
     "@ethereumjs/tx": "5.4.0",
     "@gorhom/bottom-sheet": "4.6.4",
     "@hookform/resolvers": "3.9.0",
-    "@invertase/react-native-apple-authentication": "2.3.0",
+    "@invertase/react-native-apple-authentication": "2.4.0",
     "@lavamoat/preinstall-always-fail": "2.1.0",
     "@metamask/eth-sig-util": "7.0.3",
     "@metamask/rpc-errors": "6.3.0",
