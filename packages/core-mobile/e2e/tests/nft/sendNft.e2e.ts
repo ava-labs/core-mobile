@@ -16,7 +16,7 @@ describe('Send NFT', () => {
     await cleanup()
   })
 
-  it('should send NFT ', async () => {
+  it('should send NFT', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await CollectiblesPage.tapListSvg()
     await CollectiblesPage.scrollToMintNFT()
@@ -30,12 +30,11 @@ describe('Send NFT', () => {
     // sender activity tab:
     await PortfolioPage.tapAssetsTab()
     await PortfolioPage.goToActivityTab()
-    await activityTabPage.verifyExistingRow('Send', '-1 ')
+    await activityTabPage.verifyExistingRow('Send NFT')
     // receiver activity tab:
     await AccountManagePage.switchToReceivedAccount('first')
     await activityTabPage.refreshActivityPage()
     const row = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(row, 'Contract Call')
-    await activityTabPage.verifyActivityRow(row, '+1 ')
+    await activityTabPage.verifyActivityRow(row, 'Receive NFT')
   })
 })

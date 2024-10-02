@@ -30,7 +30,7 @@ export default {
   networksDropdownManage: 'network_dropdown__Manage Networks',
   networksDropdown: 'network_dropdown_main',
   noAssetsHeader: 'No assets',
-  polygonNetwork: 'Polygon Mainnet',
+  polygonNetwork: 'Polygon',
   viewAll: 'View All',
   sendPendingToast: 'send_token_context__send_pending_toast',
   sendSuccessToast: 'send_token_context__send_successful_toast',

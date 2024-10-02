@@ -248,7 +248,8 @@ class PortfolioPage {
   }
 
   async tapPolygonNetwork() {
-    await Action.tapElementAtIndex(this.polygonNetwork, 1)
+    await Action.waitForElement(by.id('active_network__Polygon'), 60000)
+    await Action.tapElementAtIndex(by.id('active_network__Polygon'), 0)
   }
 
   async verifyWatchListCarousel(tokens: string[]) {
@@ -263,7 +264,7 @@ class PortfolioPage {
   }
 
   async verifyActiveNetwork(network: string) {
-    await Action.waitForElement(by.id(portfolio.activeNetwork + network))
+    await Action.waitForElement(by.id(portfolio.activeNetwork + network), 60000)
     await this.tapNetworksDropdown()
     await Action.waitForElement(
       by.id(portfolio.networkDropdownCheckMark + network)

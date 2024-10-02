@@ -25,10 +25,14 @@ if [ "$IS_REGRESSION_RUN" = true ]; then
     test_result=$?
   fi
 else
-  echo "The test list above will be reduced by the android smoke config ignoreTestList"
-  echo "Running smoke run..."
-  QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
-  test_result=$?
+  if [ "$PARAMETERIZED_TESTS" = true ]; then
+    exit 0  # we don't run parameterized tests on smoke run
+  else
+    echo "The test list above will be reduced by the android smoke config ignoreTestList"
+    echo "Running smoke run..."
+    QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
+    test_result=$?
+  fi
 fi
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
