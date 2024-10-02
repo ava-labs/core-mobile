@@ -11,7 +11,7 @@
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
     "@lavamoat/allow-scripts": "3.2.1",
-    "@react-native-community/eslint-config": "3.0.3",
+    "@react-native-community/eslint-config": "3.2.0",
     "@tanstack/eslint-plugin-query": "5.53.0",
     "@types/node": "22.5.1",
     "@typescript-eslint/eslint-plugin": "5.62.0",
