@@ -58,8 +58,9 @@ class ConnectedSites {
   }
 
   async disconnectDapp(dApp: string) {
-    await Actions.waitForElement(by.id(`x_btn__${dApp}`), 4000, 0)
-    await Actions.tapElementAtIndex(by.id(`x_btn__${dApp}`), 0)
+    while (await Actions.isVisible(by.id(`x_btn__${dApp}`), 0)) {
+      await Actions.tapElementAtIndex(by.id(`x_btn__${dApp}`), 0)
+    }
   }
 
   async verifyEmtpyConnectedSites() {
