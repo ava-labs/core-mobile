@@ -10189,16 +10189,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.7.4":
-  version: 22.7.4
-  resolution: "@types/node@npm:22.7.4"
-  dependencies:
-    undici-types: ~6.19.2
-  checksum: a3f4154147639369aed08fe6f8d62eff637cf87b187bb252d7bbccdc82884626007af424b08a653c53f2182adfa0340001b4888cb7cbb942cef351210fc742a5
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0":
+"@types/node@npm:22.7.4, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0":
   version: 22.7.4
   resolution: "@types/node@npm:22.7.4"
   dependencies:
@@ -24874,7 +24865,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 336439b4d5cd9c8ffd7713faf5584e93fdd2cd42e6e57850fb235a3eb0d6311a49c18b6faf5633e08a6c277a3b1ef69fd9784605e2a1e6a214a10947f301d7bc
+  checksum: 3bcc5a1872e957498743ef594e1fc73953fd9c8c8ac44a51f0176deb418acfe0375756e7ee3e94ec8ba77b33bc78af40eb127f6c7c7e5f6ca3ccdc9baed3401e
   languageName: node
   linkType: hard
 
