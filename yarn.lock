@@ -269,7 +269,7 @@ __metadata:
     crypto-browserify: 3.12.0
     date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
-    detox: 20.27.0
+    detox: 20.27.2
     es6-promise: 4.2.8
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
@@ -14595,16 +14595,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detox-copilot@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "detox-copilot@npm:0.0.5"
-  checksum: 352e2bee338a3529049c60d7f5f8994e90a6866dd34ac631c4cb52e924cafd247eb44da7a4d8a7591f072281d22786e97bbe22340c39b78d327cbea56657cf2c
+"detox-copilot@npm:^0.0.9":
+  version: 0.0.9
+  resolution: "detox-copilot@npm:0.0.9"
+  checksum: ba7a82191ccc0c642d54adbc601415283205885f444e91daca6b658a50392cdee0090fc95f876bef650f6e16be49f4a5ed89ad064dab405f45ba64d479a6d97c
   languageName: node
   linkType: hard
 
-"detox@npm:20.27.0":
-  version: 20.27.0
-  resolution: "detox@npm:20.27.0"
+"detox@npm:20.27.2":
+  version: 20.27.2
+  resolution: "detox@npm:20.27.2"
   dependencies:
     ajv: ^8.6.3
     bunyan: ^1.8.12
@@ -14612,7 +14612,7 @@ __metadata:
     caf: ^15.0.1
     chalk: ^4.0.0
     child-process-promise: ^2.2.0
-    detox-copilot: ^0.0.5
+    detox-copilot: ^0.0.9
     execa: ^5.1.1
     find-up: ^5.0.0
     fs-extra: ^11.0.0
@@ -14649,7 +14649,7 @@ __metadata:
       optional: true
   bin:
     detox: local-cli/cli.js
-  checksum: c2131e208502507d2f458c2a55fba417e78aba9f9b6ee9c8f9e04c1a0172e8d684a515dea0ae9e036af58e13a3c84b6b53906a14c07c2ebfcd5bd62856efcdfd
+  checksum: a7bb8997c591b827c31176ba107b1ec23f7bb8b78ce08c781343937637439771a1cc8f1086844301fbbf0f34ada2e889827821adf5245aa8f4c5b4f5cad23248
   languageName: node
   linkType: hard
 
