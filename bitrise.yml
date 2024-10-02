@@ -506,11 +506,6 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
-    steps:
-    - script-runner@0:
-        title: Detox
-        inputs:
-        - file_path: scripts/bitrise/detox/androidInternalRegressionRunner.sh
   android-internal:
     before_run:
     - _trigger_ios_internal_build
