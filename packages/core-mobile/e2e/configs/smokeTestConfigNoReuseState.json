@@ -21,6 +21,5 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "./e2e/tests/stake/claimTestnet.e2e.smoke.ts"
   ]
 }
