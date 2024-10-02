@@ -231,7 +231,7 @@ __metadata:
     "@tanstack/react-query": 5.56.2
     "@tanstack/react-query-persist-client": 5.56.2
     "@tradle/react-native-http": 2.0.1
-    "@typechain/ethers-v6": 0.5.0
+    "@typechain/ethers-v6": 0.5.1
     "@types/big.js": 6.2.2
     "@types/bn.js": 5.1.6
     "@types/d3": 7.4.3
@@ -9508,17 +9508,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typechain/ethers-v6@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@typechain/ethers-v6@npm:0.5.0"
+"@typechain/ethers-v6@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@typechain/ethers-v6@npm:0.5.1"
   dependencies:
     lodash: ^4.17.15
     ts-essentials: ^7.0.1
   peerDependencies:
     ethers: 6.x
-    typechain: ^8.3.1
+    typechain: ^8.3.2
     typescript: ">=4.7.0"
-  checksum: 98ad8785b26bf750e2eac31989b0ec8b5bb2f4d2f567358ce9e05180c63c72ddde89d7b8caf79f0c36003e95475e524c1a7b98c40fa3eabcee1a8e1174a4015a
+  checksum: 44e7970ce95eeb1a02019f8a53bbe30dcb87664e1df15fe436ae48eea1bf91ca72b5b230eac1bdf9cbe9b55bc488b54c6273e6f77155eaeff885fb34cfcd1108
   languageName: node
   linkType: hard
 
