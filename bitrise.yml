@@ -507,7 +507,6 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - wait-for-android-emulator@1: {}
     - script-runner@0:
         title: Detox
         inputs:
