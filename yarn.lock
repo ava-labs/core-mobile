@@ -259,7 +259,7 @@ __metadata:
     babel-plugin-module-resolver: 5.0.2
     babel-plugin-react-require: 4.0.3
     base-64: 1.0.0
-    big.js: 6.2.1
+    big.js: 6.2.2
     bip174: 2.1.0
     bip39: 3.0.4
     bitcoinjs-lib: 5.2.0
@@ -12217,6 +12217,13 @@ __metadata:
   version: 6.2.1
   resolution: "big.js@npm:6.2.1"
   checksum: 0b234a2fd56c52bed2798ed2020bcab6fef5e9523b99a05406ad071d1aed6ee97ada9fb8de9576092da74c68825c276e19015743b8d1baea269b60a5c666b0cd
+  languageName: node
+  linkType: hard
+
+"big.js@npm:6.2.2":
+  version: 6.2.2
+  resolution: "big.js@npm:6.2.2"
+  checksum: 3659092d155d01338f21a01a46a93aa343d25e83bce55700005a46eec27d90fe56abd3b3edde742f16fbc5fee31b4c572b6821a595c1c180392b60b469fcda54
   languageName: node
   linkType: hard
 
