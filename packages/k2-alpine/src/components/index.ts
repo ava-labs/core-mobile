@@ -1,1 +1,1 @@
-export * from './button/Button'
+export * from './Primitives'
