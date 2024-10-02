@@ -176,7 +176,7 @@ __metadata:
     "@babel/preset-env": 7.25.4
     "@babel/preset-typescript": 7.24.7
     "@babel/runtime": 7.25.6
-    "@blockaid/client": 0.26.0
+    "@blockaid/client": 0.27.3
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.3.29
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
@@ -3262,9 +3262,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@blockaid/client@npm:0.26.0":
-  version: 0.26.0
-  resolution: "@blockaid/client@npm:0.26.0"
+"@blockaid/client@npm:0.27.3":
+  version: 0.27.3
+  resolution: "@blockaid/client@npm:0.27.3"
   dependencies:
     "@types/node": ^18.11.18
     "@types/node-fetch": ^2.6.4
@@ -3273,7 +3273,7 @@ __metadata:
     form-data-encoder: 1.7.2
     formdata-node: ^4.3.2
     node-fetch: ^2.6.7
-  checksum: bfe558663db297bef4d75cdac7b468c0aa1111b5be1f5f5dd6b5a8c7c7e9d5b3ed8eb9f2c19cf31d61098e5b665cd470130f01fa4c1f093cd374f4d78422ee3e
+  checksum: 1c05f9047a9c80efbdc5bd85943cfc034a4e843ec699bc447c0ed35b850db8fc3a294f5f0c11b21b506d4aa15c38e2376830acbf1c862f4ea66ed0177d1e9682
   languageName: node
   linkType: hard
 
