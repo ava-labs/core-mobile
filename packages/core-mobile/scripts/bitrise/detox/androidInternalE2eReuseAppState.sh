@@ -7,8 +7,8 @@ yarn start &
 
 npm rebuild detox
 
-adb install -r $BITRISE_TEST_APK_PATH/app-*-e2e-androidTest-bitrise-signed.apk
-adb install -r $BITRISE_APK_PATH/app-*-e2e-androidTest.apk
+adb install -r $BITRISE_TEST_APK_PATH
+adb install -r $BITRISE_APK_PATH
 
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 
