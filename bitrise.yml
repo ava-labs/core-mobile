@@ -52,7 +52,84 @@ workflows:
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
-  _build-android-for-testing:
+  _build-android-external-for-testing:
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile External
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    steps:
+    - set-java-version@1:
+        inputs:
+        - set_java_version: "17"
+    - install-missing-android-tools@3:
+        inputs:
+        - ndk_version: 25.1.8937393
+        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+    - restore-gradle-cache@1: {}
+    - script-runner@0:
+        title: Fix Android Env Vars
+        inputs:
+        - file_path: scripts/bitrise/fixAndroidEnvVars.sh
+    - script-runner@0:
+        title: Create Test Run
+        inputs:
+        - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
+        - variables:
+          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+    - android-build-for-ui-testing@0:
+        inputs:
+        - module: $ANDROID_MODULE
+        - variant: $ANDROID_BUILD_VARIANT
+        - cache_level: all
+        - project_location: $ANDROID_PROJECT_LOCATION
+    - save-gradle-cache@1: {}
+    - sign-apk@1:
+        inputs:
+        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - use_apk_signer: "true"
+        - debuggable_permitted: "false"
+        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+        - keystore_password: $ANDROID_STORE_PASSWORD
+        - keystore_alias: $ANDROID_KEY_ALIAS
+        - private_key_password: $ANDROID_KEY_PASSWORD
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
+    - script-runner@0:
+        title: Create Tests To Run Arrays
+        inputs:
+        - file_path: scripts/bitrise/detox/distributeAndroidTests.sh
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+            TESTS_TO_RUN_GROUP_1=$TESTS_1
+            TESTS_TO_RUN_GROUP_2=$TESTS_2
+            TESTS_TO_RUN_GROUP_3=$TESTS_3
+            TESTS_TO_RUN_GROUP_4=$TESTS_4
+        - api_level: "28"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 2048M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_4
+  _build-android-internal-for-testing:
     envs:
     - ENVIRONMENT: production
       opts:
@@ -107,7 +184,8 @@ workflows:
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
     - script-runner@0:
         title: Create Tests To Run Arrays
         inputs:
@@ -133,13 +211,13 @@ workflows:
     - pull-intermediate-files@1:
         inputs:
         - artifact_sources: .*
-        - pipeline_intermediate_files: "$BITRISE_SIGNED_APK_PATH_LIST:BITRISE_APK_PATH\n$BITRISE_APK_PATH:BITRISE_TEST_APK_PATH\t"
+        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
         inputs:
         - artifact_sources: .*
-        - pipeline_intermediate_files: "$BITRISE_EXTERNAL_SIGNED_APK_PATH:BITRISE_APK_PATH\n$BITRISE_EXTERNAL_TEST_APK_PATH:BITRISE_TEST_APK_PATH\t"
+                - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
@@ -409,7 +487,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-android-for-testing
+    - _build-android-external-for-testing
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -475,7 +553,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-android-for-testing
+    - _build-android-internal-for-testing
     after_run:
     - _upload-detox-artifacts
     envs:
@@ -507,11 +585,11 @@ workflows:
         inputs:
         - variables: |-
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
-  android-internal-e2e-regression-run:
+  android-external-e2e-regression-run:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-android-for-testing
+    - _build-android-external-for-testing
     after_run:
     - _upload-detox-artifacts
     envs:
@@ -547,7 +625,46 @@ workflows:
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
+  android-internal-e2e-regression-run:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-android-internal-for-testing
+    after_run:
+    - _upload-detox-artifacts
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    steps:
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
   android-internal-e2e-run-pixel3:
     before_run:
     - _install-and-set-env

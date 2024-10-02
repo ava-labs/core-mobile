@@ -1,12 +1,5 @@
 /** @type {Detox.DetoxConfig} */
 
-const appBinaryPath = process.env.IS_INTERNAL_BUILD ? `${process.env.BITRISE_APK_PATH}/app-internal-e2e-bitrise-signed.apk` : `${process.env.BITRISE_APK_PATH}/app-external-e2e-bitrise-signed.apk`
-const appTestBinaryPath = process.env.IS_INTERNAL_BUILD ? `${process.env.BITRISE_APK_PATH}/app-internal-e2e-androidTest.apk` : `${process.env.BITRISE_APK_PATH}/app-external-e2e-androidTest.apk`
-
-console.log('appBinaryPath', appBinaryPath)
-
-console.log('appTestBinaryPath', appTestBinaryPath)
-
 module.exports = {
   testRunner: {
     $0: 'jest',
@@ -67,13 +60,13 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: appBinaryPath,
-      testBinaryPath: appTestBinaryPath
+      binaryPath: process.env.BITRISE_APK_PATH,
+      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
     'android.external.release.ci': {
       type: 'android.apk',
-      binaryPath: appBinaryPath,
-      testBinaryPath: appTestBinaryPath
+      binaryPath: process.env.BITRISE_APK_PATH,
+      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
     'android.internal.e2e': {
       type: 'android.apk',
