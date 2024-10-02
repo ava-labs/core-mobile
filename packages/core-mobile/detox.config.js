@@ -273,6 +273,12 @@ module.exports = {
         plugins: {
           instruments: 'all'
         }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/smokeTestConfigReuseState.json'
+        }
       }
     },
     'ios.external.release.smoke.ci': {
@@ -287,7 +293,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: './e2e/configs/smoke_test_config.json'
+          config: './e2e/configs/regressionConfig.json'
         }
       }
     },
@@ -430,7 +436,13 @@ module.exports = {
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
-      }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/regressionConfig.json',
+          _: [process.env.TESTS_TO_RUN]
+        }
     },
     'android.external.release.smoke.ci': {
       device: 'emulator_ci',

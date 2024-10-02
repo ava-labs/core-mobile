@@ -14,15 +14,19 @@ echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 echo "Got test list: $TESTS_TO_RUN"
 
 if [ "$IS_REGRESSION_RUN" = true ]; then
-  if [ "$PARAMETERIZED_TESTS" = true ]; then
-    echo "Running regression run on Pixel 6 for parameterized tests"
-    QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.regression.parameterized_tests.ci --headless
-    test_result=$?
-  else
-    echo "Running regression run..."
-    QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless
-    test_result=$?
-  fi
+  if ["$IS_INTERNAL_BUILD" = true ]; then
+    if [ "$PARAMETERIZED_TESTS" = true ]; then
+      echo "Running regression run on Pixel 6 for parameterized tests"
+      QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.regression.parameterized_tests.ci --headless
+      test_result=$?
+    else
+      echo "Running regression run..."
+      QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless
+      test_result=$?
+  else 
+    echo "Running regression on external build..."
+    QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.external.release.regression.ci --headless
+fi
 else
   echo "The test list above will be reduced by the android smoke config ignoreTestList"
   echo "Running smoke run..."
