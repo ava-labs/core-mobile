@@ -235,7 +235,7 @@ __metadata:
     "@types/big.js": 6.2.2
     "@types/bn.js": 5.1.6
     "@types/d3": 7.4.3
-    "@types/jest": 29.5.12
+    "@types/jest": 29.5.13
     "@types/lodash.debounce": 4.0.9
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.9
@@ -518,7 +518,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@types/jest": 29.5.12
+    "@types/jest": 29.5.13
     "@types/react": 18.3.8
     "@types/react-dom": 18.2.21
     "@types/react-test-renderer": 18.3.0
@@ -10044,13 +10044,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:29.5.12":
-  version: 29.5.12
-  resolution: "@types/jest@npm:29.5.12"
+"@types/jest@npm:29.5.13":
+  version: 29.5.13
+  resolution: "@types/jest@npm:29.5.13"
   dependencies:
     expect: ^29.0.0
     pretty-format: ^29.0.0
-  checksum: 19b1efdeed9d9a60a81edc8226cdeae5af7479e493eaed273e01243891c9651f7b8b4c08fc633a7d0d1d379b091c4179bbaa0807af62542325fd72f2dd17ce1c
+  checksum: 875ac23c2398cdcf22aa56c6ba24560f11d2afda226d4fa23936322dde6202f9fdbd2b91602af51c27ecba223d9fc3c1e33c9df7e47b3bf0e2aefc6baf13ce53
   languageName: node
   linkType: hard
 
