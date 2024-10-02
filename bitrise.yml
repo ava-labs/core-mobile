@@ -490,7 +490,6 @@ workflows:
     - _build-android-external-for-testing
     after_run:
     - _upload-detox-artifacts
-    - _send-test-result-notification-slack
     envs:
     - ENVIRONMENT: production
       opts:
@@ -512,7 +511,7 @@ workflows:
     - script-runner@0:
         title: Detox
         inputs:
-        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
+        - file_path: scripts/bitrise/detox/androidInternalRegressionRunner.sh
   android-internal:
     before_run:
     - _trigger_ios_internal_build
