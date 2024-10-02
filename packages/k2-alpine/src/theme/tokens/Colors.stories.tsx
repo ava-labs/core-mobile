@@ -23,17 +23,17 @@ const Color = ({
 
   return (
     <View
-      sx={{
+      style={{
         flex: 1,
         backgroundColor: value,
         height: 75,
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-      <Text sx={{ color: textColor }} variant="subtitle1">
+      <Text style={{ color: textColor }} variant="subtitle1">
         {name.substring(1)}
       </Text>
-      <Text sx={{ color: textColor }} variant="subtitle1">
+      <Text style={{ color: textColor }} variant="subtitle1">
         {value}
       </Text>
     </View>
