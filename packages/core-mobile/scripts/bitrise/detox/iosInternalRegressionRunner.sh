@@ -10,7 +10,7 @@ npm rebuild detox
 if [ "$IS_INTERNAL_BUILD" = true ]; then
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.regression.ci --headless --max-workers 3; test_result=$?
 else
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.external.release.regression.ci --headless --max-workers 3; test_result=$?
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.external.release.ci --headless --max-workers 3; test_result=$?
 fi
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts && sleep 5
