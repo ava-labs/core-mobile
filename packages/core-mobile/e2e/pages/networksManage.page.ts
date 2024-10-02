@@ -10,10 +10,6 @@ class NetworksPage {
     return by.id(networksManage.addNetwork)
   }
 
-  get editNetworkTitle() {
-    return by.text(networksManage.editNetworkTitle)
-  }
-
   get chainID() {
     return by.id(networksManage.chainID)
   }

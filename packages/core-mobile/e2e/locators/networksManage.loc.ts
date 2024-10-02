@@ -1,6 +1,5 @@
 export default {
   addNetwork: 'add_svg',
-  editNetworkTitle: 'Edit Network',
   chainID: 'chainId',
   arbCustomNetworkName: 'Arbitrum One',
   arbCustomNativeTokenSymbol: 'ETH',
