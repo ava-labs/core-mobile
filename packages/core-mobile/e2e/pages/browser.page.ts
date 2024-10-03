@@ -1,4 +1,3 @@
-// import assert from 'assert'
 import Actions from '../helpers/actions'
 import BrowserLoc from '../locators/browser.loc'
 import Wbs, { WebScripts } from '../helpers/web'

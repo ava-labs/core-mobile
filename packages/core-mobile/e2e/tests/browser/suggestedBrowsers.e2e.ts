@@ -15,16 +15,15 @@ describe('Suggested Browsers', () => {
   const names: string[] = SUGGESTED_ITEMS.map(item => item.name)
   const urls: string[] = SUGGESTED_ITEMS.map(item => item.siteUrl)
 
-  it('should have suggested browsers by default', async () => {
+  it('should have default suggested browser list', async () => {
     await bottomTabsPage.tapBrowserTab()
     await commonElsPage.tapGetStartedButton()
     await browserPage.verifySuggestedBrowserList(names)
   })
 
-  it('should land on expected url via suggested browser', async () => {
+  it('should land on expected url', async () => {
     for (const [index, name] of names.entries()) {
       if (urls[index]) {
-        console.log(`start testing for ${name}`)
         await actions.tap(by.text(name))
         await delay(3000)
         await browserPage.tapContinue()

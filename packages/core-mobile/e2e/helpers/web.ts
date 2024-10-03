@@ -4,6 +4,7 @@
 import { expect } from 'detox'
 import Constants from './constants'
 import actions from './actions'
+
 const wb =
   device.getPlatform() === 'ios'
     ? web(by.id('myWebview'))
