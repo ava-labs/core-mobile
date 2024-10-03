@@ -1,5 +1,6 @@
 import Big from 'big.js'
-import { TokenBaseUnit } from 'types/TokenBaseUnit'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { NetworkToken } from '@avalabs/core-chains-sdk'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -117,32 +118,39 @@ export function titleToInitials(title: string): string {
   )
 }
 
-export type GasAndFees<T extends TokenBaseUnit<T>> = {
-  maxTotalFee: T
+export type GasAndFees = {
+  maxTotalFee: bigint
   maxTotalFeeInCurrency: string
-} & Eip1559Fees<T>
+} & Eip1559Fees
 
-export type Eip1559Fees<T extends TokenBaseUnit<T>> = {
-  maxFeePerGas: T
-  maxPriorityFeePerGas: T
+export type Eip1559Fees = {
+  maxFeePerGas: bigint
+  maxPriorityFeePerGas: bigint
   gasLimit: number
 }
 
-export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
+export function calculateGasAndFees({
   maxFeePerGas,
   maxPriorityFeePerGas,
   tokenPrice,
-  gasLimit
-}: Eip1559Fees<T> & {
+  gasLimit,
+  networkToken
+}: Eip1559Fees & {
   tokenPrice: number
-}): GasAndFees<T> {
-  const maxTotalFee = maxFeePerGas.mul(gasLimit)
+  networkToken: NetworkToken
+}): GasAndFees {
+  const maxTotalFee = maxFeePerGas * BigInt(gasLimit)
+  const maxFeeInUnit = new TokenUnit(
+    maxTotalFee,
+    networkToken.decimals,
+    networkToken.symbol
+  )
   return {
     maxFeePerGas,
     maxPriorityFeePerGas,
     gasLimit,
     maxTotalFee,
-    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed()
+    maxTotalFeeInCurrency: maxFeeInUnit.mul(tokenPrice).toDisplay()
   }
 }
 

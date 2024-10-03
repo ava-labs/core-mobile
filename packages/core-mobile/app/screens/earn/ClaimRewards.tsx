@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -12,15 +12,22 @@ import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { showSimpleToast } from 'components/Snackbar'
 import { useClaimFees } from 'hooks/earn/useClaimFees'
-import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Avax } from 'types'
-import { ConfirmScreen } from './components/ConfirmScreen'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
+import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { ChainId } from '@avalabs/core-chains-sdk'
+import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
+import { ConfirmScreen } from './components/ConfirmScreen'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
@@ -30,7 +37,17 @@ const ClaimRewards = (): JSX.Element | null => {
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
-  const avaxFormatter = useAvaxFormatter()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+
+  const { getNetwork } = useNetworks()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const avaxNetwork = getNetwork(ChainId.AVALANCHE_MAINNET_ID)
+  const { nativeTokenPrice: avaxPrice } = useNativeTokenPriceForNetwork(
+    avaxNetwork,
+    selectedCurrency.toLowerCase() as VsCurrencyType
+  )
+
   const claimRewardsMutation = useClaimRewards(
     onClaimSuccess,
     onClaimError,
@@ -48,24 +65,32 @@ const ClaimRewards = (): JSX.Element | null => {
       navigate(AppNavigation.Earn.FeeUnavailable)
     }
   }, [navigate, showFeeError])
+  const [claimableAmountInAvax, claimableAmountInCurrency] = useMemo(() => {
+    if (data?.balancePerType.unlockedUnstaked) {
+      const unlockedInUnit = new TokenUnit(
+        data.balancePerType.unlockedUnstaked,
+        networkToken.decimals,
+        networkToken.symbol
+      )
+      return [
+        unlockedInUnit.toDisplay(),
+        unlockedInUnit.mul(avaxPrice).toDisplay()
+      ]
+    }
+    return ['-', '-']
+  }, [avaxPrice, data, networkToken.decimals, networkToken.symbol])
+
+  const [feesInAvax, feesInCurrency] = useMemo(() => {
+    return [totalFees?.toDisplay(), totalFees?.mul(avaxPrice).toDisplay()]
+  }, [avaxPrice, totalFees])
 
   if (!data) {
     return null
   }
 
-  if (
-    data.balancePerType.unlockedUnstaked === undefined ||
-    data.balancePerType.unlockedUnstaked === 0
-  ) {
+  if (data.balancePerType.unlockedUnstaked === undefined) {
     return <EmptyClaimRewards />
   }
-
-  const [claimableAmountInAvax, claimableAmountInCurrency] = avaxFormatter(
-    Avax.fromBase(data.balancePerType.unlockedUnstaked),
-    true
-  )
-
-  const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees, true)
 
   const cancelClaim = (): void => {
     AnalyticsService.capture('StakeCancelClaim')

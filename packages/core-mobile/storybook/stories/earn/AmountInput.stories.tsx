@@ -1,7 +1,7 @@
 import React from 'react'
 
 import EarnInputAmount from 'screens/earn/EarnInputAmount'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { withCenterView } from '../../decorators/withCenterView'
 
 export default {
@@ -10,5 +10,5 @@ export default {
 }
 
 export const Default: () => JSX.Element = () => (
-  <EarnInputAmount inputAmount={Avax.fromBase(1)} />
+  <EarnInputAmount inputAmount={new TokenUnit(1_000_000_000, 9, 'AVAX')} />
 )

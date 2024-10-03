@@ -5,13 +5,13 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
-import { Avax } from 'types/Avax'
 import { FundsStuckError } from 'hooks/earn/errors'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
-  pChainBalance: Avax
-  requiredAmount: Avax
+  pChainBalance: TokenUnit
+  requiredAmount: TokenUnit
   activeAccount: Account
   isDevMode: boolean
 }

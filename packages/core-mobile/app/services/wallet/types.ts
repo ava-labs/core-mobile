@@ -8,7 +8,6 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { Avax } from 'types/Avax'
 import { RpcMethod } from 'store/rpc/types'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
 
@@ -66,8 +65,14 @@ export interface CommonAvalancheTxParamsBase {
 }
 
 export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {
-  amount: Avax
-  baseFee: Avax
+  /**
+   * In `Wei`
+   */
+  amount: bigint
+  /**
+   * In `Wei`
+   */
+  baseFee: bigint
   destinationChain: 'P' | 'X'
 }
 
@@ -81,12 +86,18 @@ export type CreateExportPTxParams = CommonAvalancheTxParamsBase & {
 }
 
 export type CreateImportCTxParams = CommonAvalancheTxParamsBase & {
-  baseFee: Avax
+  /**
+   * In `Wei`
+   */
+  baseFee: bigint
   sourceChain: 'P' | 'X'
 }
 
 export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
-  amount: Avax
+  /**
+   * In `nAvax`
+   */
+  amount: bigint
   sourceAddress: string
 }
 

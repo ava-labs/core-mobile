@@ -2,9 +2,9 @@ import { AddDelegatorProps, WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
 import { Utxo } from '@avalabs/avalanchejs'
-import { Avax } from 'types/Avax'
 import { PChainId } from '@avalabs/glacier-sdk'
 import NetworkService from 'services/network/NetworkService'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
   ...jest.requireActual('@avalabs/core-wallets-sdk'),
@@ -22,9 +22,9 @@ jest.mock('@avalabs/core-wallets-sdk', () => ({
 describe('WalletService', () => {
   describe('getInstantBaseFee', () => {
     it('should increase base fee by 20%', async () => {
-      const baseFee = Avax.fromBase(1)
+      const baseFee = new TokenUnit(1_000_000_000, 9, 'AVAX')
       const instantFee = WalletService.getInstantBaseFee(baseFee)
-      expect(instantFee.eq(Avax.fromBase(1.2))).toBe(true)
+      expect(instantFee.eq(new TokenUnit(1_200_000_000, 9, 'AVAX'))).toBe(true)
     })
   })
 

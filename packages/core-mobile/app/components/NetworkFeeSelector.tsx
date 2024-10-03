@@ -19,7 +19,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
-import { NetworkTokenUnit } from 'types'
 import {
   alpha,
   Text,
@@ -33,6 +32,8 @@ import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { bigIntToFeeDenomination } from 'utils/units/fees'
 import { Tooltip } from './Tooltip'
 
 export enum FeePreset {
@@ -56,14 +57,12 @@ const NetworkFeeSelector = ({
   chainId,
   gasLimit,
   onFeesChange,
-  maxNetworkFee,
   isGasLimitEditable = true,
   noGasLimitError
 }: {
   chainId?: number
   gasLimit: number
-  onFeesChange?(fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset): void
-  maxNetworkFee?: NetworkTokenUnit
+  onFeesChange?(fees: Eip1559Fees, feePreset: FeePreset): void
   isGasLimitEditable?: boolean
   noGasLimitError?: string
 }): JSX.Element => {
@@ -71,6 +70,7 @@ const NetworkFeeSelector = ({
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const { activeNetwork, getNetwork } = useNetworks()
+  const { networkToken } = activeNetwork
   const { navigate } = useNavigation<NavigationProp>()
   const requestedNetwork = getNetwork(chainId)
   const network = chainId ? requestedNetwork : activeNetwork
@@ -86,22 +86,29 @@ const NetworkFeeSelector = ({
   const isPVM = isPvmNetwork(network)
   const isAVM = isAvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
-  const [calculatedFees, setCalculatedFees] =
-    useState<GasAndFees<NetworkTokenUnit>>()
-  const [customFees, setCustomFees] = useState<GasAndFees<NetworkTokenUnit>>()
+  const [calculatedFees, setCalculatedFees] = useState<GasAndFees>()
+  const calculatedMaxTotalFeeDisplayed = useMemo(() => {
+    if (!calculatedFees?.maxTotalFee) return '0'
+    const unit = new TokenUnit(
+      calculatedFees.maxTotalFee,
+      networkToken.decimals,
+      networkToken.symbol
+    )
+    return unit.toDisplay()
+  }, [calculatedFees, networkToken])
+  const [customFees, setCustomFees] = useState<GasAndFees>()
 
   const getInitialCustomFees = useCallback(
-    (fee: NetworkFee<NetworkTokenUnit>): GasAndFees<NetworkTokenUnit> => {
+    (fee: NetworkFee): GasAndFees => {
       return calculateGasAndFees({
         maxFeePerGas: fee.low.maxFeePerGas,
-        maxPriorityFeePerGas:
-          fee.low.maxPriorityFeePerGas ??
-          NetworkTokenUnit.fromNetwork(activeNetwork),
+        maxPriorityFeePerGas: fee.low.maxPriorityFeePerGas ?? 0n,
         tokenPrice: nativeTokenPrice,
-        gasLimit: isPVM || isAVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit
+        gasLimit: isPVM || isAVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit,
+        networkToken
       })
     },
-    [activeNetwork, gasLimit, isPVM, isAVM, nativeTokenPrice]
+    [nativeTokenPrice, isPVM, isAVM, gasLimit, networkToken]
   )
 
   // customFees init value.
@@ -123,27 +130,27 @@ const NetworkFeeSelector = ({
     } else {
       const presetFeeRate = networkFee?.[FeePresetNetworkFeeMap[preset]]
       if (!presetFeeRate) return
-      newFees = calculateGasAndFees<NetworkTokenUnit>({
+      newFees = calculateGasAndFees({
         maxFeePerGas: presetFeeRate.maxFeePerGas,
-        maxPriorityFeePerGas:
-          presetFeeRate.maxPriorityFeePerGas ??
-          NetworkTokenUnit.fromNetwork(activeNetwork),
+        maxPriorityFeePerGas: presetFeeRate.maxPriorityFeePerGas ?? 0n,
         tokenPrice: nativeTokenPrice,
-        gasLimit
+        gasLimit,
+        networkToken
       })
     }
     setCalculatedFees(newFees)
     newFees && onFeesChange?.(newFees, preset)
   }
 
-  function handleSetCustomFees(fees: Eip1559Fees<NetworkTokenUnit>): void {
+  function handleSetCustomFees(fees: Eip1559Fees): void {
     setSelectedPreset(FeePreset.Custom)
 
-    const newFees = calculateGasAndFees<NetworkTokenUnit>({
+    const newFees = calculateGasAndFees({
       maxFeePerGas: fees.maxFeePerGas,
       maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       tokenPrice: nativeTokenPrice,
-      gasLimit: fees.gasLimit
+      gasLimit: fees.gasLimit,
+      networkToken
     })
     setCustomFees(newFees)
     setCalculatedFees(newFees)
@@ -153,25 +160,24 @@ const NetworkFeeSelector = ({
   const displayGasValues = useMemo(() => {
     if (!networkFee) return undefined
 
-    const customFee = isBtcNetwork
-      ? customFees?.maxFeePerGas.toSubUnit().toString() ??
-        networkFee.low.maxFeePerGas.toSubUnit().toString()
-      : customFees?.maxFeePerGas.toFeeUnit() ??
-        networkFee.low.maxFeePerGas.toFeeUnit().toString()
+    const customFee = customFees?.maxFeePerGas ?? networkFee.low.maxFeePerGas
 
     return {
-      [FeePreset.Normal]: isBtcNetwork
-        ? networkFee.low.maxFeePerGas.toSubUnit().toString()
-        : networkFee.low.maxFeePerGas.toFeeUnit(),
-      [FeePreset.Fast]: isBtcNetwork
-        ? networkFee.medium.maxFeePerGas.toSubUnit().toString()
-        : networkFee.medium.maxFeePerGas.toFeeUnit(),
-      [FeePreset.Instant]: isBtcNetwork
-        ? networkFee.high.maxFeePerGas.toSubUnit().toString()
-        : networkFee.high.maxFeePerGas.toFeeUnit(),
-      [FeePreset.Custom]: customFee
+      [FeePreset.Normal]: bigIntToFeeDenomination(
+        networkFee.low.maxFeePerGas,
+        isBtcNetwork
+      ),
+      [FeePreset.Fast]: bigIntToFeeDenomination(
+        networkFee.medium.maxFeePerGas,
+        isBtcNetwork
+      ),
+      [FeePreset.Instant]: bigIntToFeeDenomination(
+        networkFee.high.maxFeePerGas,
+        isBtcNetwork
+      ),
+      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isBtcNetwork)
     }
-  }, [customFees?.maxFeePerGas, networkFee, isBtcNetwork])
+  }, [customFees?.maxFeePerGas, isBtcNetwork, networkFee])
 
   const goToEditGasLimit = (n?: Network): void => {
     if (networkFee === undefined || n === undefined) return
@@ -183,7 +189,7 @@ const NetworkFeeSelector = ({
       maxPriorityFeePerGas:
         customFees?.maxPriorityFeePerGas ??
         networkFee.low.maxPriorityFeePerGas ??
-        NetworkTokenUnit.fromNetwork(activeNetwork),
+        0n,
       gasLimit,
       isGasLimitEditable,
       isBtcNetwork,
@@ -275,7 +281,7 @@ const NetworkFeeSelector = ({
           </Text>
           <View sx={{ flexDirection: 'row' }}>
             <Text sx={{ color: '$neutral50' }}>
-              {`${calculatedFees?.maxTotalFee.toDisplay() ?? 0} `}
+              {`${calculatedMaxTotalFeeDisplayed} `}
             </Text>
             <Text variant="body1" sx={{ color: '$neutral400' }}>
               {network?.networkToken?.symbol}
@@ -289,20 +295,6 @@ const NetworkFeeSelector = ({
               selectedCurrency}
           </Text>
         </Row>
-
-        {maxNetworkFee &&
-          maxNetworkFee?.gt(0) &&
-          calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
-            <Text
-              variant="caption"
-              sx={{ color: '$dangerMain', lineHeight: 15 }}>
-              Insufficient balance to cover gas costs. {'\n'}
-              {network?.networkToken?.symbol
-                ? `Please add ${network.networkToken.symbol}`
-                : ''}
-              .
-            </Text>
-          )}
       </View>
     </>
   )

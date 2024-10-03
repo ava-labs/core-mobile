@@ -19,10 +19,11 @@ import {
   getAvailableDelegationWeight
 } from 'services/earn/utils'
 import { NodeValidator } from 'types/earn'
-import { Avax } from 'types/Avax'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { usePeers } from 'hooks/earn/usePeers'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import NetworkService from 'services/network/NetworkService'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -35,17 +36,27 @@ export const NodeCard = ({
   stakingEndTime
 }: {
   data: NodeValidator
-  stakingAmount: Avax
+  stakingAmount: TokenUnit
   stakingEndTime: Date
 }): JSX.Element => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { networkToken: pChainNetworkToken } =
+    NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
-  const validatorWeight = Avax.fromNanoAvax(data.weight)
-  const delegatorWeight = Avax.fromNanoAvax(data.delegatorWeight)
+  const validatorWeight = new TokenUnit(
+    data.weight,
+    pChainNetworkToken.decimals,
+    pChainNetworkToken.symbol
+  )
+  const delegatorWeight = new TokenUnit(
+    data.delegatorWeight,
+    pChainNetworkToken.decimals,
+    pChainNetworkToken.symbol
+  )
 
   const availableDelegationWeight = getAvailableDelegationWeight(
     isDeveloperMode,

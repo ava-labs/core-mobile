@@ -10,13 +10,13 @@ import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams, StakingConfig } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
-import { Avax } from 'types/Avax'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { valid, compare } from 'semver'
 import { Peer } from '@avalabs/avalanchejs/dist/info/model'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
@@ -65,9 +65,9 @@ export const getMaximumStakeEndDate = (): Date => {
  * @returns the maximum weight in nAvax
  */
 export const calculateMaxWeight = (
-  maxValidatorStake: Avax,
-  validatorWeight: Avax
-): Avax => {
+  maxValidatorStake: TokenUnit,
+  validatorWeight: TokenUnit
+): TokenUnit => {
   const stakeWeight = validatorWeight.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
   return stakeWeight.lt(maxValidatorStake) ? stakeWeight : maxValidatorStake
 }
@@ -116,12 +116,11 @@ const hasMinimumStakingTime = (
  */
 export const getAvailableDelegationWeight = (
   isDeveloperMode: boolean,
-  validatorWeight: Avax,
-  delegatorWeight: Avax
-): Avax => {
-  const maxValidatorStake = Avax.fromNanoAvax(
-    getStakingConfig(isDeveloperMode).MaxValidatorStake
-  )
+  validatorWeight: TokenUnit,
+  delegatorWeight: TokenUnit
+): TokenUnit => {
+  const nAvax = getStakingConfig(isDeveloperMode).MaxValidatorStake
+  const maxValidatorStake = new TokenUnit(nAvax, 9, 'AVAX')
   const maxWeight = calculateMaxWeight(maxValidatorStake, validatorWeight)
 
   return maxWeight.sub(validatorWeight).sub(delegatorWeight)
@@ -129,7 +128,7 @@ export const getAvailableDelegationWeight = (
 
 type getFilteredValidatorsProps = {
   validators: NodeValidators
-  stakingAmount: Avax
+  stakingAmount: TokenUnit
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number
@@ -179,8 +178,8 @@ export const getFilteredValidators = ({
     }) => {
       const availableDelegationWeight = getAvailableDelegationWeight(
         isDeveloperMode,
-        Avax.fromNanoAvax(weight),
-        Avax.fromNanoAvax(delegatorWeight)
+        new TokenUnit(weight, 9, 'AVAX'),
+        new TokenUnit(delegatorWeight, 9, 'AVAX')
       )
       const filterByMinimumStakingTime = (): boolean => {
         if (isEndTimeOverOneYear) {
@@ -256,8 +255,8 @@ export const getRandomValidator = (
 
 /**
  *
- * @param validators,
- * @param advancedSortFilter filter to sort validators by uptime, fee, or duration
+ * @param validators NodeValidators
+ * @param sortFilter filter to sort validators by uptime, fee, or duration
  * @param peers Record of <string, peers> to sort by version
  * @returns sorted validators
  */

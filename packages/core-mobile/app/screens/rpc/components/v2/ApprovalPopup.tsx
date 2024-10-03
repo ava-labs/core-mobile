@@ -12,7 +12,6 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -128,13 +127,10 @@ const ApprovalPopup = (): JSX.Element => {
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
     useSpendLimits(displayData.tokenApprovals)
 
-  const handleFeesChange = useCallback(
-    (fees: Eip1559Fees<NetworkTokenUnit>) => {
-      setMaxFeePerGas(fees.maxFeePerGas.toSubUnit())
-      setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas.toSubUnit())
-    },
-    []
-  )
+  const handleFeesChange = useCallback((fees: Eip1559Fees) => {
+    setMaxFeePerGas(fees.maxFeePerGas)
+    setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
+  }, [])
 
   const onHandleApprove = async (): Promise<void> => {
     if (approveDisabled) return
