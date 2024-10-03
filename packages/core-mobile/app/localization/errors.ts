@@ -1,3 +1,6 @@
+import { JsonRpcError } from '@metamask/rpc-errors'
+import { isError } from 'ethers'
+
 type ObjWithError = { error: string }
 
 const isObjWithError = (error: unknown): error is ObjWithError =>
@@ -22,6 +25,9 @@ export function humanizeSwapErrors(err: unknown): string {
   }
   if (errorString.toLowerCase().includes('network error')) {
     return 'Swap failed! Network error, please try again.'
+  }
+  if (err instanceof JsonRpcError && isError(err.cause, 'INSUFFICIENT_FUNDS')) {
+    return `Swap failed! Insufficient amount for gas. Reduce swap quantity and try again.`
   }
   return 'Swap failed! Please try again.'
 }
