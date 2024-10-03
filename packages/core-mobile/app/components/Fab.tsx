@@ -9,8 +9,6 @@ import { selectIsLeftHanded } from 'store/settings/advanced'
 import { alpha, Pressable, SxProp, useTheme, View } from '@avalabs/k2-mobile'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ActionProp } from './fab/types'
 import ArrowSVG from './svg/ArrowSVG'
@@ -38,9 +36,6 @@ export const Fab: FC = () => {
   const { setPendingDeepLink } = useDeeplink()
   const [expanded, setExpanded] = useState(false)
   const isLeftHanded = useSelector(selectIsLeftHanded)
-  const tokensWithBalance = useSelector(
-    selectTokensWithBalanceByNetwork(activeNetwork)
-  )
 
   const {
     theme: { colors }
@@ -63,19 +58,8 @@ export const Fab: FC = () => {
         </View>
       ),
       onPress: () => {
-        let preSelectedToken
-        if (
-          [NetworkVMType.PVM, NetworkVMType.AVM].includes(
-            activeNetwork.vmName
-          ) &&
-          tokensWithBalance[0] !== undefined &&
-          tokensWithBalance[0].symbol === 'AVAX'
-        ) {
-          preSelectedToken = tokensWithBalance[0]
-        }
         navigation.navigate(AppNavigation.Wallet.SendTokens, {
-          screen: AppNavigation.Send.Send,
-          params: { token: preSelectedToken }
+          screen: AppNavigation.Send.Send
         })
         AnalyticsService.capture('FABItemSelected_Send')
       }
@@ -187,9 +171,7 @@ export const Fab: FC = () => {
     navigation,
     setPendingDeepLink,
     isBridgeDisabled,
-    activeNetwork.chainName,
-    tokensWithBalance,
-    activeNetwork.vmName
+    activeNetwork.chainName
   ])
 
   function dismiss(): void {
