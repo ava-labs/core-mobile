@@ -296,7 +296,10 @@ const InputText = forwardRef<TextInput, InputTextProps>(
                 ...clearBtnContainerSx
               }}>
               <Pressable onPress={onRefresh}>
-                <Icons.Navigation.Refresh color={colors.$neutral50} />
+                <Icons.Navigation.Refresh
+                  testID="refresh"
+                  color={colors.$neutral50}
+                />
               </Pressable>
             </View>
           )}

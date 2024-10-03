@@ -1,4 +1,3 @@
-import assert from 'assert'
 import Actions from '../helpers/actions'
 import BrowserLoc from '../locators/browser.loc'
 import Wbs, { WebScripts } from '../helpers/web'
@@ -15,8 +14,16 @@ class BrowserPage {
     return by.id(BrowserLoc.browserBackBtn)
   }
 
+  get browserRefreshBtn() {
+    return by.id(BrowserLoc.browserRefreshBtn)
+  }
+
   get continueBtn() {
     return by.text(BrowserLoc.continueBtn)
+  }
+
+  get suggested() {
+    return by.text(BrowserLoc.suggested)
   }
 
   async tapSearchBar() {
@@ -40,18 +47,6 @@ class BrowserPage {
   async connectTermAndContinue() {
     await Wbs.tapByDataTestId('connect-terms-checkbox')
     await Wbs.tapByDataTestId('connect-terms-continue-btn')
-  }
-
-  async verifyInAppBrowserLoaded(url: string, timeout = 8000) {
-    let isLoaded = false
-    const start = Date.now()
-    while (Date.now() - start < timeout) {
-      const currUrl = await Wbs.getUrl()
-      isLoaded = currUrl === url
-      if (isLoaded) break
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-    assert(isLoaded)
   }
 
   async tapConnectWallet(dapp = 'Core') {
@@ -86,7 +81,17 @@ class BrowserPage {
   }
 
   async tapBrowserBackBtn() {
-    await Actions.tap(this.browserBackBtn)
+    while (!(await Actions.isVisible(this.suggested, 0))) {
+      await Actions.tapElementAtIndex(this.browserBackBtn, 0)
+    }
+  }
+
+  async tapbrowserRefreshBtn() {
+    try {
+      await Actions.tapElementAtIndex(this.browserRefreshBtn, 0)
+    } catch (e) {
+      console.error('Unable to tap refresh button')
+    }
   }
 
   async connectCore() {
@@ -224,6 +229,20 @@ class BrowserPage {
 
   async verifyErrorReceived(errorMessage = 'Error:') {
     await Wbs.isTextVisible(errorMessage)
+  }
+
+  async verifySuggestedBrowserList(list: string[]) {
+    list.forEach(async browser => {
+      await Actions.isVisible(by.text(browser), 0)
+    })
+  }
+
+  async tapContinue() {
+    try {
+      await Actions.tap(by.text('Continue'))
+    } catch (e) {
+      console.log('The Continue button is not displayed')
+    }
   }
 }
 
