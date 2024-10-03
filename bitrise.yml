@@ -581,6 +581,8 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-external-for-testing
+    after_run:
+      - _pull_external_app_files
     envs:
     - ENVIRONMENT: production
       opts:
@@ -657,7 +659,6 @@ workflows:
   android-internal-e2e-run-pixel3:
     before_run:
     - _install-and-set-env
-    - _pull_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -704,7 +705,6 @@ workflows:
   android-internal-e2e-run-pixel4:
     before_run:
     - _install-and-set-env
-    - _pull_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -751,7 +751,6 @@ workflows:
   android-internal-e2e-run-pixel5:
     before_run:
     - _install-and-set-env
-    - _pull_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -798,7 +797,6 @@ workflows:
   android-internal-e2e-run-pixel6:
     before_run:
     - _install-and-set-env
-    - _pull_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -845,7 +843,6 @@ workflows:
   android-internal-e2e-run-pixel2-arm:
     before_run:
     - _install-and-set-env
-    - _pull_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
