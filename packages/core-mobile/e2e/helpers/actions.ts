@@ -274,9 +274,13 @@ async function waitForCondition(func: any, condition: any, timeout = 5000) {
 
   const start = Date.now()
   while (Date.now() - start < timeout) {
-    if (condition(await func())) {
-      isFulfilled = true
-      break
+    try {
+      if (condition(await func())) {
+        isFulfilled = true
+        break
+      }
+    } catch (error) {
+      console.error(`Error in waitForCondition: ${error}`)
     }
     await new Promise(resolve => setTimeout(resolve, 100))
   }

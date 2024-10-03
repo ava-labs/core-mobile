@@ -1,4 +1,4 @@
-import sendResults from './sendResults'
+const sendResults = require('./sendResults')
 
 async function sendMyResults() {
   if (process.env.POST_TO_TESTRAIL === 'false') {

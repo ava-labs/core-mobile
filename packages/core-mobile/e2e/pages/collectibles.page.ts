@@ -149,21 +149,21 @@ class CollectiblesPage {
     return result.text.toLowerCase()
   }
 
-  async scrollToMintNFT() {
+  async scrollToNFT(symbol = 'TULIP', name = '#1 ') {
     await Action.waitForElement(this.nftListView)
     await Action.scrollListUntil(
       this.nftItem
-        .withDescendant(by.text('#2 '))
-        .withDescendant(by.text('mint')),
+        .withDescendant(by.text(name))
+        .withDescendant(by.text(symbol)),
       this.nftListView,
       300
     )
   }
 
-  async tapMintNFT() {
+  async tapNFT(nftName = 'TULIP') {
     await Action.tapElementAtIndex(
-      this.nftItem.withDescendant(by.text('mint')),
-      1
+      this.nftItem.withDescendant(by.text(nftName)),
+      0
     )
   }
 
