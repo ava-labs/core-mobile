@@ -17,8 +17,8 @@ import {
   getBitcoinCaip2ChainId,
   getEvmCaip2ChainId
 } from 'temp/caip2ChainIds'
-import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { BitcoinInputUTXO } from '@avalabs/core-wallets-sdk'
+import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -201,8 +201,8 @@ class SendService {
       vol24: 0,
       balance: 0n,
       logoSmall: '',
-      collectionName: isErc721(nft) ? nft.name : nft.metadata.name ?? 'Unknown',
-      tokenUri: ''
+      tokenUri: nft.tokenUri,
+      collectionName: isErc721(nft) ? nft.name : nft.metadata.name ?? 'Unknown'
     }
   }
 

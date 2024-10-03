@@ -11,34 +11,34 @@ import SelectNode from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import SmartStakeAmount from 'screens/earn/SmartStakeAmount'
-import { Avax } from 'types/Avax'
 import { BackButton } from 'components/BackButton'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
   [AppNavigation.StakeSetup.SmartStakeAmount]: undefined
-  [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: Avax }
+  [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: TokenUnit }
   [AppNavigation.StakeSetup.AdvancedStaking]: {
     stakingEndTime: Date
-    stakingAmount: Avax
+    stakingAmount: TokenUnit
     selectedDuration: string
   }
   [AppNavigation.StakeSetup.SelectNode]: {
     stakingEndTime: Date
-    stakingAmount: Avax
+    stakingAmount: TokenUnit
     minUpTime?: number
     maxFee?: number
   }
   [AppNavigation.StakeSetup.NodeSearch]: {
     stakingEndTime: Date
-    stakingAmount: Avax
+    stakingAmount: TokenUnit
   }
   [AppNavigation.StakeSetup.Confirmation]: {
     nodeId: string
-    stakingAmount: Avax
+    stakingAmount: TokenUnit
     stakingEndTime: Date
     onBack?: () => void
   }

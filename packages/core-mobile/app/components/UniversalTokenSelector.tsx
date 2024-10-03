@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useMemo } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { bigintToBig } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
@@ -14,7 +14,6 @@ import FlexSpacer from 'components/FlexSpacer'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { formatLargeCurrency } from 'utils/Utils'
 import { Amount } from 'types'
 import { Text } from '@avalabs/k2-mobile'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
@@ -57,7 +56,6 @@ const UniversalTokenSelector: FC<Props> = ({
   testID
 }) => {
   const theme = useApplicationContext().theme
-  const { currencyFormatter } = useApplicationContext().appHook
   const navigation = useNavigation<NavigationProp>()
   const hasError = !!error
 
@@ -68,21 +66,26 @@ const UniversalTokenSelector: FC<Props> = ({
     })
   }
 
+  const selectedTokenDecimals =
+    selectedToken && 'decimals' in selectedToken
+      ? selectedToken.decimals
+      : undefined
+
   const amountInCurrency = useMemo(() => {
-    if (!inputAmount || !selectedToken || !('decimals' in selectedToken)) {
+    if (!inputAmount || !selectedTokenDecimals) {
       return ''
     }
-    const bnNumber = bigintToBig(
+    const inputInTokenUnit = new TokenUnit(
       inputAmount,
-      selectedToken?.decimals
-    ).toNumber()
-    return selectedToken.priceInCurrency
-      ? formatLargeCurrency(
-          currencyFormatter(bnNumber * selectedToken.priceInCurrency),
-          4
-        )
+      selectedTokenDecimals,
+      selectedToken?.symbol ?? ''
+    )
+    return selectedToken?.priceInCurrency
+      ? inputInTokenUnit
+          .mul(selectedToken.priceInCurrency)
+          .toDisplay({ fixedDp: 2 })
       : undefined
-  }, [currencyFormatter, inputAmount, selectedToken])
+  }, [inputAmount, selectedToken, selectedTokenDecimals])
 
   const handleAmountChange = useCallback(
     (value: Amount) => {
@@ -155,11 +158,7 @@ const UniversalTokenSelector: FC<Props> = ({
               testID="universal_token_selector__amount_field"
               value={inputAmount}
               onMax={onMax}
-              denomination={
-                selectedToken && 'decimals' in selectedToken
-                  ? selectedToken?.decimals
-                  : 9
-              }
+              denomination={selectedTokenDecimals || 9}
               placeholder={'0.0'}
               onChange={handleAmountChange}
               hideErrorMessage={hideErrorMessage}

@@ -18,7 +18,6 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { RootState } from 'store'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -74,8 +73,7 @@ export const SendNFTContextProvider = ({
   const [error, setError] = useState<string | undefined>()
 
   const { data: networkFee } = useNetworkFee(activeNetwork)
-  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
-    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
+  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] = useState<bigint>(0n)
 
   const { request } = useInAppRequest()
 
@@ -108,7 +106,7 @@ export const SendNFTContextProvider = ({
 
     const sendState = {
       address: sendToAddress,
-      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      defaultMaxFeePerGas: defaultMaxFeePerGas,
       gasLimit,
       token: sendService.mapTokenFromNFT(sendToken),
       canSubmit
@@ -163,7 +161,7 @@ export const SendNFTContextProvider = ({
     const sendState: SendState = {
       token: sendService.mapTokenFromNFT(sendToken),
       address: sendToAddress,
-      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      defaultMaxFeePerGas: defaultMaxFeePerGas,
       gasLimit
     }
 

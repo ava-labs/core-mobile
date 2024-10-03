@@ -38,12 +38,12 @@ export default function NotEnoughAvax({
         />
         <View sx={{ paddingHorizontal: 23, alignItems: 'center', gap: 8 }}>
           <Text variant="heading5">
-            {minStakeAmount.toFixed()} AVAX required
+            {minStakeAmount.toDisplay()} AVAX required
           </Text>
           <Text
             variant="body2"
             sx={{ textAlign: 'center', color: '$neutral400' }}>
-            {`You need at least ${minStakeAmount.toFixed()} AVAX to stake.\nUse the options below to get started.`}
+            {`You need at least ${minStakeAmount.toDisplay()} AVAX to stake.\nUse the options below to get started.`}
           </Text>
         </View>
         <View sx={{ gap: 16 }}>

@@ -5,10 +5,11 @@ import { selectAvaxPrice } from 'store/balance/slice'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { pvm } from '@avalabs/avalanchejs'
 import { Seconds } from 'types/siUnits'
-import { Avax } from 'types/Avax'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import NetworkService from 'services/network/NetworkService'
 
 export type useEarnCalcEstimatedRewardsProps = {
-  amount: Avax
+  amount: TokenUnit
   duration: Seconds
   delegationFee: number
 }
@@ -26,13 +27,14 @@ export const useEarnCalcEstimatedRewards = ({
   delegationFee
 }: useEarnCalcEstimatedRewardsProps): UseQueryResult<
   {
-    estimatedTokenReward: Avax
+    estimatedTokenReward: TokenUnit
     estimatedRewardInCurrency: string
   },
   Error
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useSelector(selectAvaxPrice)
+  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useQuery({
     queryKey: ['currentSupply', isDeveloperMode],
@@ -41,13 +43,19 @@ export const useEarnCalcEstimatedRewards = ({
       const reward = EarnService.calcReward(
         amount,
         duration,
-        Avax.fromNanoAvax(currentSupply),
+        new TokenUnit(
+          currentSupply,
+          networkToken.decimals,
+          networkToken.symbol
+        ),
         delegationFee,
         isDeveloperMode
       )
       return {
         estimatedTokenReward: reward,
-        estimatedRewardInCurrency: reward.mul(avaxPrice).toFixed(2)
+        estimatedRewardInCurrency: reward
+          .mul(avaxPrice)
+          .toDisplay({ fixedDp: 2 })
       }
     }
   })

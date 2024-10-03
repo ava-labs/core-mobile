@@ -165,7 +165,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
       )
         return
 
-      let gasLimit
+      let gasLimit: bigint | undefined
 
       if (unified.isAssetSupported) {
         gasLimit = await UnifiedBridgeService.estimateGas({
@@ -192,7 +192,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
       if (gasLimit) {
         setNetworkFee(
           bigintToBig(
-            networkFeeRate.low.maxFeePerGas.mul(gasLimit).toSubUnit(),
+            networkFeeRate.low.maxFeePerGas * gasLimit,
             activeNetwork.networkToken.decimals
           )
         )

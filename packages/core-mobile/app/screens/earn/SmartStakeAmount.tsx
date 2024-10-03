@@ -6,9 +6,10 @@ import { StakeSetupScreenProps } from 'navigation/types'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
-import { Avax } from 'types/Avax'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import NotEnoughAvax from './NotEnoughAvax'
 import StakingAmount from './StakingAmount'
 
@@ -29,10 +30,16 @@ const SmartStakeAmount = (): React.JSX.Element => {
   const [balanceState, setBalanceState] = useState(BalanceStates.UNKNOWN)
   const claimableBalance = useGetClaimableBalance()
   const networkFees = useEstimateStakingFees(minStakeAmount)
+  const cChainNetwork = useCChainNetwork()
+  const cChainNetworkToken = cChainNetwork?.networkToken
 
   useEffect(() => {
-    if (cChainBalance.data?.balance !== undefined) {
-      const availableAvax = Avax.fromWei(cChainBalance.data.balance)
+    if (cChainBalance.data?.balance !== undefined && cChainNetworkToken) {
+      const availableAvax = new TokenUnit(
+        cChainBalance.data.balance,
+        cChainNetworkToken.decimals,
+        cChainNetworkToken.symbol
+      )
         .add(claimableBalance ?? 0)
         .sub(networkFees ?? 0)
       const notEnoughAvax = availableAvax.lt(minStakeAmount)
