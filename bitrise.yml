@@ -211,6 +211,13 @@ workflows:
     - pull-intermediate-files@1:
         inputs:
         - artifact_sources: .*
+        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
+  _pull_external_app_files:
+    steps:
+    - pull-intermediate-files@1:
+        inputs:
+        - artifact_sources: .*
+        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
@@ -481,8 +488,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-external-for-testing
-    after_run:
-    - _upload-detox-artifacts
     envs:
     - ENVIRONMENT: production
       opts:
@@ -576,8 +581,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-external-for-testing
-    after_run:
-    - _upload-detox-artifacts
     envs:
     - ENVIRONMENT: production
       opts:
