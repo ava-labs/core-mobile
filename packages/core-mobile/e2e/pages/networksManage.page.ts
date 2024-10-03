@@ -137,7 +137,7 @@ class NetworksPage {
   async tapStarSvgByNetwork(network: string) {
     if (Action.platform() === Platform.iOS) {
       try {
-        await Action.dismissKeyboard('network_manager__search_input')
+        await Action.dismissKeyboard()
       } catch (e) {
         console.log('No need to dismiss keyboard')
       }
@@ -194,6 +194,11 @@ class NetworksPage {
   }
 
   async tapSaveButton() {
+    await Action.scrollListUntil(
+      this.saveButton,
+      by.id('addEditNetwork_scroll_view'),
+      30
+    )
     while (await Action.isVisible(this.saveButton, 0)) {
       await Action.tapElementAtIndex(this.saveButton, 0)
     }
@@ -247,6 +252,14 @@ class NetworksPage {
     await this.searchNetworks(networksManage.ethereumSepoliaNetwork)
     await this.tapStarSvgByNetwork(networksManage.ethereumSepoliaNetwork)
     await this.tapEthereumSepoliaNetwork(1)
+  }
+
+  async switchNetwork(network: string) {
+    await PortfolioPage.tapNetworksDropdown()
+    await Action.tapElementAtIndex(
+      by.id(`network_dropdown__${network}`),
+      platformIndex
+    )
   }
 
   async switchToBitcoinTestNet() {
