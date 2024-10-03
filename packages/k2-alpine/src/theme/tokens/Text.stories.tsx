@@ -27,6 +27,7 @@ export const All = (): JSX.Element => {
         style={{ marginBottom: 20 }}
       />
       {Object.keys(text).map((variant, index) => (
+        // @ts-expect-error
         <Text key={index} variant={variant}>
           {variant}
         </Text>

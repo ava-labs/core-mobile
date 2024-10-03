@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-notifications'
 import JailMonkey from 'jail-monkey'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import { K2ThemeProvider } from '@avalabs/k2-mobile'
+import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { StatusBar, View } from 'react-native'
@@ -37,11 +38,13 @@ const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
       <PosthogContextProvider>
-        <K2ThemeProvider>
-          <ApplicationContextProvider>
-            <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
-          </ApplicationContextProvider>
-        </K2ThemeProvider>
+        <K2AlpineThemeProvider>
+          <K2ThemeProvider>
+            <ApplicationContextProvider>
+              <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
+            </ApplicationContextProvider>
+          </K2ThemeProvider>
+        </K2AlpineThemeProvider>
       </PosthogContextProvider>
     </ReactQueryProvider>
   </EncryptedStoreProvider>

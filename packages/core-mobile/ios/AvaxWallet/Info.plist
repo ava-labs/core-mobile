@@ -67,13 +67,16 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>$(DISPLAY_NAME) requires Face ID access to allow you quick and secure access to your wallet.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Inter-Regular.ttf</string>
 		<string>Inter-Bold.ttf</string>
 		<string>Inter-SemiBold.ttf</string>
 		<string>Inter-ExtraBold.ttf</string>
+		<string>Aeonik-Bold.otf</string>
+		<string>Aeonik-Medium.otf</string>
+		<string>DejaVuSansMono.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
