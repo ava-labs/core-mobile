@@ -28,7 +28,7 @@ if [ "$IS_REGRESSION_RUN" = true ]; then
     echo "Running regression on external build..."
     QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.external.release.regression.ci --headless
   fi
-fi
+
 else
   if [ "$PARAMETERIZED_TESTS" = true ]; then
     exit 0  # we don't run parameterized tests on smoke run
