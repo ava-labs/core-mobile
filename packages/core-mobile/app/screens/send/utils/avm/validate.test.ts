@@ -20,10 +20,10 @@ const mockNativeTokenWithBalance: TokenWithBalanceAVM = {
   description: 'description',
   logoUri: 'logoUri',
   balancePerType: {
-    locked: 0,
-    unlocked: 0,
-    atomicMemoryLocked: 0,
-    atomicMemoryUnlocked: 0
+    locked: 0n,
+    unlocked: 0n,
+    atomicMemoryLocked: 0n,
+    atomicMemoryUnlocked: 0n
   },
   available: 10000n
 }

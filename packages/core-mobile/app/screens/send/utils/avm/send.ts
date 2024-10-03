@@ -4,7 +4,6 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { Avax } from 'types'
 import { getAvalancheCaip2ChainId } from 'temp/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
@@ -86,7 +85,7 @@ const getTransactionRequest = ({
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendXTx({
         accountIndex,
-        amount: Avax.fromNanoAvax(amount || 0),
+        amount,
         avaxXPNetwork: network,
         destinationAddress: destinationAddress,
         sourceAddress: fromAddress

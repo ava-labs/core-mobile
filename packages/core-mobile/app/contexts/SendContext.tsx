@@ -7,7 +7,7 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import { NetworkTokenUnit, Amount } from 'types'
+import { Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
@@ -55,8 +55,7 @@ export const SendContextProvider = ({
   const [isSending, setIsSending] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
 
-  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
-    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
+  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] = useState<bigint>(0n)
 
   // setting maxFeePerGas to lowest network fee to calculate max amount in Send screen
   useEffect(() => {
@@ -84,7 +83,7 @@ export const SendContextProvider = ({
     setToAddress,
     maxAmount,
     setMaxAmount,
-    maxFee: defaultMaxFeePerGas.toSubUnit(),
+    maxFee: defaultMaxFeePerGas,
     error,
     setError,
     isSending,

@@ -21,14 +21,14 @@ const mockNativeTokenWithBalance: TokenWithBalancePVM = {
   logoUri: 'logoUri',
   balance: 10000n,
   balancePerType: {
-    lockedStaked: 0,
-    lockedStakeable: 0,
-    lockedPlatform: 0,
-    atomicMemoryLocked: 0,
-    atomicMemoryUnlocked: 0,
-    unlockedUnstaked: 0,
-    unlockedStaked: 0,
-    pendingStaked: 0
+    lockedStaked: 0n,
+    lockedStakeable: 0n,
+    lockedPlatform: 0n,
+    atomicMemoryLocked: 0n,
+    atomicMemoryUnlocked: 0n,
+    unlockedUnstaked: 0n,
+    unlockedStaked: 0n,
+    pendingStaked: 0n
   }
 }
 
