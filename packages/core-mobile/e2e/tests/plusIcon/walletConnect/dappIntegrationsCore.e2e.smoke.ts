@@ -10,6 +10,7 @@ import commonElsPage from '../../../pages/commonEls.page'
 import securityAndPrivacyPage from '../../../pages/burgerMenu/securityAndPrivacy.page'
 import connectedSitesPage from '../../../pages/connectedSites.page'
 import connectToSitePage from '../../../pages/connectToSite.page'
+import wbs from '../../../helpers/web'
 
 describe('Dapp - Core', () => {
   beforeAll(async () => {
@@ -22,7 +23,7 @@ describe('Dapp - Core', () => {
     await commonElsPage.tapGetStartedButton()
     await browserPage.tapSearchBar()
     await browserPage.enterBrowserSearchQuery('core.app')
-    await browserPage.verifyInAppBrowserLoaded('https://core.app/')
+    await wbs.verifyUrl('https://core.app/')
     await browserPage.tapAccept()
     await browserPage.tapCoreConnectWallet()
     await browserPage.tapConnectWallet()
