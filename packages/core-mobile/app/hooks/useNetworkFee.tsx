@@ -5,7 +5,6 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import Logger from 'utils/Logger'
 import { NetworkFee } from 'services/networkFee/types'
-import { NetworkTokenUnit } from 'types'
 import { useNetworks } from './networks/useNetworks'
 
 const REFETCH_INTERVAL = 30000 // 30 seconds
@@ -16,10 +15,7 @@ export const getQueryKey = (network: Network): [ReactQueryKeys, number] => [
 ]
 
 const getQueryFn = (network: Network) => () =>
-  NetworkFeeService.getNetworkFee(
-    network,
-    NetworkTokenUnit.getConstructor(network)
-  ).catch(Logger.error)
+  NetworkFeeService.getNetworkFee(network).catch(Logger.error)
 
 export const prefetchNetworkFee = (network: Network | undefined): void => {
   if (network) {
@@ -36,7 +32,7 @@ export const prefetchNetworkFee = (network: Network | undefined): void => {
 
 export const useNetworkFee = (
   network?: Network
-): UseQueryResult<NetworkFee<NetworkTokenUnit> | undefined> => {
+): UseQueryResult<NetworkFee | undefined> => {
   const { activeNetwork } = useNetworks()
   const networkToRequest = network || activeNetwork
 

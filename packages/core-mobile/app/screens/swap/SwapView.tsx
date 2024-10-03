@@ -161,7 +161,7 @@ export default function SwapView(): JSX.Element {
 
     const totalBalance = {
       bn: fromToken.balance,
-      amount: bigIntToString(fromToken.balance, fromToken?.decimals)
+      amount: bigIntToString(fromToken.balance, fromToken.decimals)
     } as Amount
 
     // no calculations needed for non-native tokens

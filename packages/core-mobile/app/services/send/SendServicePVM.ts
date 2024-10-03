@@ -7,7 +7,6 @@ import {
 import { Network } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'
-import { Avax } from 'types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { utils } from '@avalabs/avalanchejs'
 import { getInternalExternalAddrs } from 'services/send/utils'
@@ -124,7 +123,7 @@ export class SendServicePVM {
           'P-' + stripChainAddress(sendState.address ?? '')
         const unsignedTx = await WalletService.createSendPTx({
           accountIndex,
-          amount: Avax.fromNanoAvax(sendState.amount || 0),
+          amount: sendState.amount || 0n,
           avaxXPNetwork: this.activeNetwork,
           destinationAddress: destinationAddress,
           sourceAddress: fromAddress ?? ''

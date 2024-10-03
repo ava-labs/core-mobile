@@ -5,8 +5,9 @@ import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
-import { Avax } from 'types/Avax'
 import { FundsStuckError } from 'hooks/earn/errors'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getCChainTokenUnit } from 'utils/units/knownTokens'
 import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
@@ -22,17 +23,20 @@ export async function importC({
   isDevMode
 }: ImportCParams): Promise<void> {
   Logger.info('importing C started')
-
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
-  const baseFeeAvax = Avax.fromWei(baseFee)
+  const baseFeeAvax = new TokenUnit(
+    baseFee,
+    getCChainTokenUnit().getMaxDecimals(),
+    getCChainTokenUnit().getSymbol()
+  )
   const instantBaseFee = WalletService.getInstantBaseFee(baseFeeAvax)
 
   const unsignedTx = await WalletService.createImportCTx({
     accountIndex: activeAccount.index,
-    baseFee: instantBaseFee,
+    baseFee: instantBaseFee.toSubUnit(),
     avaxXPNetwork,
     sourceChain: 'P',
     destinationAddress: activeAccount.addressC

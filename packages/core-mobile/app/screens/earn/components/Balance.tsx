@@ -9,14 +9,16 @@ import { EarnScreenProps } from 'navigation/types'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
-import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
-import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { BalanceItem } from 'screens/earn/components/BalanceItem'
 import { Row } from 'components/Row'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
-import { Avax } from 'types/Avax'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import NetworkService from 'services/network/NetworkService'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -28,9 +30,11 @@ export const Balance = (): JSX.Element | null => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
   const cChainBalance = useCChainBalance()
-  const avaxFormatter = useAvaxFormatter()
-  const weiAvaxFormatter = useWeiAvaxFormatter()
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const cChainNetwork = useCChainNetwork()
+  const { networkToken: pChainNetworkToken } =
+    NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
   const isFocused = useIsFocused()
@@ -48,38 +52,60 @@ export const Balance = (): JSX.Element | null => {
 
   if (shouldShowError) return null
 
-  const [availableInAvax] = weiAvaxFormatter(
-    cChainBalance.data?.balance.toString(),
-    true
-  )
+  const availableInAvax =
+    cChainBalance.data?.balance && cChainNetwork
+      ? new TokenUnit(
+          cChainBalance.data.balance,
+          cChainNetwork.networkToken.decimals,
+          cChainNetwork.networkToken.symbol
+        )
+      : undefined
 
-  const [claimableInAvax] = avaxFormatter(
-    Avax.fromBase(pChainBalance.data?.balancePerType.unlockedUnstaked ?? 0),
-    true
-  )
+  const unlockedUnStakedInNAvax =
+    pChainBalance.data?.balancePerType.unlockedUnstaked
+  const claimableInAvax = unlockedUnStakedInNAvax
+    ? new TokenUnit(
+        unlockedUnStakedInNAvax,
+        pChainNetworkToken.decimals,
+        pChainNetworkToken.symbol
+      )
+    : undefined
 
-  const stakedAvax = Avax.fromBase(
-    pChainBalance.data?.balancePerType.unlockedStaked ?? '0'
-  )
-  const pendingStakedAvax = Avax.fromBase(
-    pChainBalance.data?.balancePerType.pendingStaked ?? '0'
-  )
-  const totalStakedAvax = stakedAvax.add(pendingStakedAvax)
+  const unlockedStakedInNAvax =
+    pChainBalance.data?.balancePerType.unlockedStaked
+  const stakedInAvax = unlockedStakedInNAvax
+    ? new TokenUnit(
+        unlockedStakedInNAvax,
+        pChainNetworkToken.decimals,
+        pChainNetworkToken.symbol
+      )
+    : undefined
 
-  const [totalStakedInAvax] = avaxFormatter(totalStakedAvax, true)
+  const pendingStakedInNAvax = pChainBalance.data?.balancePerType.pendingStaked
+  const pendingStakedInAvax = pendingStakedInNAvax
+    ? new TokenUnit(
+        pendingStakedInNAvax,
+        pChainNetworkToken.decimals,
+        pChainNetworkToken.symbol
+      )
+    : undefined
+
+  const totalStakedInAvax = pendingStakedInAvax
+    ? stakedInAvax?.add(pendingStakedInAvax)
+    : undefined
 
   const stakingData = [
     {
       type: StakeTypeEnum.Available,
-      amount: Number(availableInAvax)
+      amount: availableInAvax?.toDisplay({ asNumber: true }) ?? 0
     },
     {
       type: StakeTypeEnum.Staked,
-      amount: Number(totalStakedInAvax)
+      amount: totalStakedInAvax?.toDisplay({ asNumber: true }) ?? 0
     },
     {
       type: StakeTypeEnum.Claimable,
-      amount: Number(claimableInAvax)
+      amount: claimableInAvax?.toDisplay({ asNumber: true }) ?? 0
     }
   ]
 
@@ -142,7 +168,7 @@ export const Balance = (): JSX.Element | null => {
             <BalanceItem
               balanceType={StakeTypeEnum.Available}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Available, theme)}
-              balance={availableInAvax}
+              balance={availableInAvax?.toDisplay() ?? '-'}
               poppableItem={
                 [
                   RecoveryEvents.ImportCStart,
@@ -153,12 +179,12 @@ export const Balance = (): JSX.Element | null => {
             <BalanceItem
               balanceType={StakeTypeEnum.Staked}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Staked, theme)}
-              balance={totalStakedInAvax}
+              balance={totalStakedInAvax?.toDisplay() ?? '-'}
             />
             <BalanceItem
               balanceType={StakeTypeEnum.Claimable}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Claimable, theme)}
-              balance={claimableInAvax}
+              balance={claimableInAvax?.toDisplay() ?? '-'}
               poppableItem={
                 [
                   RecoveryEvents.ImportPStart,
@@ -170,7 +196,7 @@ export const Balance = (): JSX.Element | null => {
         </Row>
       </View>
       <View>
-        {Number(claimableInAvax) > 0
+        {claimableInAvax?.gt(0)
           ? renderStakeAndClaimButton()
           : renderStakeButton()}
       </View>

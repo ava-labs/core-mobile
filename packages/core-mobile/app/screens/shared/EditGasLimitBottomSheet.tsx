@@ -1,21 +1,19 @@
 import React from 'react'
 import EditFees from 'components/EditFees'
 import { Network } from '@avalabs/core-chains-sdk'
-import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { Sheet } from 'components/Sheet'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Eip1559Fees } from 'utils/Utils'
-import { NetworkTokenUnit } from 'types'
 
-type Props<T extends TokenBaseUnit<T>> = {
+type Props = {
   onClose?: () => void
-  onSave: (customFees: Eip1559Fees<T>) => void
+  onSave: (customFees: Eip1559Fees) => void
   network: Network
-  lowMaxFeePerGas: NetworkTokenUnit
+  lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isBtcNetwork?: boolean
+  isBtcNetwork: boolean
   noGasLimitError?: string
-} & Eip1559Fees<T>
+} & Eip1559Fees
 
 const EditGasLimitBottomSheet = ({
   onClose,
@@ -28,7 +26,7 @@ const EditGasLimitBottomSheet = ({
   isGasLimitEditable,
   isBtcNetwork,
   noGasLimitError
-}: Props<NetworkTokenUnit>): JSX.Element => {
+}: Props): JSX.Element => {
   return (
     <Sheet onClose={onClose || noop}>
       <EditFees

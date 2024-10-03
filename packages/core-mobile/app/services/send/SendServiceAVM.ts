@@ -8,7 +8,6 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'
-import { Avax } from 'types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { utils } from '@avalabs/avalanchejs'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
@@ -125,7 +124,7 @@ export class SendServiceAVM {
           'X-' + stripChainAddress(sendState.address ?? '')
         const unsignedTx = await WalletService.createSendXTx({
           accountIndex,
-          amount: Avax.fromNanoAvax(sendState.amount || 0),
+          amount: sendState.amount || 0n,
           avaxXPNetwork: this.activeNetwork,
           destinationAddress: destinationAddress,
           sourceAddress: fromAddress ?? ''

@@ -8,7 +8,7 @@ export enum SiUnits {
 export type MilliSeconds = Brand<bigint, SiUnits.MilliSeconds>
 export type Seconds = Brand<bigint, SiUnits.Seconds>
 
-export function Seconds(value: number) {
+export function Seconds(value: number): Seconds {
   return BigInt(value) as Seconds
 }
 
