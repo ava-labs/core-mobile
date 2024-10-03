@@ -32,6 +32,7 @@ import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
 import EditSpendLimit from 'components/EditSpendLimit'
 import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScreen'
 import EnableNotificationsModal from 'screens/notifications/EnableNotificationsModal'
+import QRScannerScreen from 'screens/shared/QRScannerScreen'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -86,6 +87,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.EnableNotificationsPrompt}
         component={EnableNotificationsModal}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.QRScanner}
+        component={QRScannerScreen}
       />
       <WalletScreenS.Group
         screenOptions={{

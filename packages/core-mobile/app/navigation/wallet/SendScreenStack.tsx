@@ -1,17 +1,15 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import SendToken from 'screens/send/SendToken'
-import { useNavigation, useRoute } from '@react-navigation/native'
-import { SendTokenContextProvider } from 'contexts/SendTokenContext'
-import { SendTokensScreenProps } from 'navigation/types'
+import { useNavigation } from '@react-navigation/native'
+import { SendContextProvider } from 'contexts/SendContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { SubHeaderOptions } from 'navigation/NavUtils'
 import { useSelector } from 'react-redux'
 import { selectIsSendBlocked } from 'store/posthog'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Contact } from '@avalabs/types'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import SendTokenScreen from 'screens/send/SendTokenScreen'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
@@ -26,7 +24,7 @@ function SendScreenStack(): JSX.Element {
   const { goBack } = useNavigation()
 
   return (
-    <SendTokenContextProvider>
+    <SendContextProvider>
       <SendStack.Navigator
         screenOptions={{
           headerShown: true,
@@ -35,7 +33,7 @@ function SendScreenStack(): JSX.Element {
         <SendStack.Screen
           options={SubHeaderOptions('')}
           name={AppNavigation.Send.Send}
-          component={SendTokenComponent}
+          component={SendTokenScreen}
         />
       </SendStack.Navigator>
       {isSendBlocked && (
@@ -46,34 +44,7 @@ function SendScreenStack(): JSX.Element {
           }
         />
       )}
-    </SendTokenContextProvider>
-  )
-}
-
-type SendScreenProps = SendTokensScreenProps<typeof AppNavigation.Send.Send>
-
-const SendTokenComponent = (): JSX.Element => {
-  const { navigate } = useNavigation<SendScreenProps['navigation']>()
-  const { params } = useRoute<SendScreenProps['route']>()
-
-  const onOpenSelectToken = (
-    onTokenSelected: (token: TokenWithBalance) => void
-  ): void => {
-    navigate(AppNavigation.Modal.SelectToken, {
-      onTokenSelected: (token: TokenWithBalance) => {
-        onTokenSelected(token)
-        AnalyticsService.capture('Send_TokenSelected')
-      }
-    })
-  }
-
-  return (
-    <SendToken
-      contact={params?.contact}
-      token={params?.token}
-      onOpenAddressBook={() => navigate(AppNavigation.Wallet.AddressBook)}
-      onOpenSelectToken={onOpenSelectToken}
-    />
+    </SendContextProvider>
   )
 }
 

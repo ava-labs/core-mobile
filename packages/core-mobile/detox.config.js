@@ -1,16 +1,5 @@
 /** @type {Detox.DetoxConfig} */
 
-const getApkPaths = () => {
-  if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
-    const apks = process.env.BITRISE_SIGNED_APK_PATH_LIST.split('|')
-    return [apks[0], apks[1]]
-  }
-
-  return [undefined, undefined]
-}
-
-const [ANDROID_APK_PATH, ANDROID_TEST_APK_PATH] = getApkPaths()
-
 module.exports = {
   testRunner: {
     $0: 'jest',
@@ -39,7 +28,7 @@ module.exports = {
       type: 'android.attached',
       device: {
         // Run 'adb devices' in terminal to get the device name and replace it here
-        adbName: 'R5CN709H42E'
+        adbName: '0A281FDD4001KZ'
       }
     }
   },
@@ -76,8 +65,8 @@ module.exports = {
     },
     'android.external.release.ci': {
       type: 'android.apk',
-      binaryPath: ANDROID_APK_PATH,
-      testBinaryPath: ANDROID_TEST_APK_PATH
+      binaryPath: process.env.BITRISE_APK_PATH,
+      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
     'android.internal.e2e': {
       type: 'android.apk',
@@ -284,6 +273,12 @@ module.exports = {
         plugins: {
           instruments: 'all'
         }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/smokeTestConfigReuseState.json'
+        }
       }
     },
     'ios.external.release.smoke.ci': {
@@ -298,7 +293,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: './e2e/configs/smoke_test_config.json'
+          config: './e2e/configs/regressionConfig.json'
         }
       }
     },
@@ -370,7 +365,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: './e2e/configs/smokeTestConfigNoReuseState.json'
+          config: './e2e/configs/reuseStateConfig.json'
         }
       }
     },
@@ -441,6 +436,13 @@ module.exports = {
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/regressionConfig.json',
+          _: [process.env.TESTS_TO_RUN]
+        }
       }
     },
     'android.external.release.smoke.ci': {
