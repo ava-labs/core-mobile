@@ -3,6 +3,8 @@
 
 import { expect } from 'detox'
 import Constants from './constants'
+import actions from './actions'
+
 const wb =
   device.getPlatform() === 'ios'
     ? web(by.id('myWebview'))
@@ -92,8 +94,12 @@ const waitAndRunScript = async (
   throw new Error(errorMessage)
 }
 
-const getUrl = async () => {
-  return await wb.element(by.web.tag('body')).getCurrentUrl()
+const verifyUrl = async (url: string, timeout = 5000) => {
+  await actions.waitForCondition(
+    () => wb.element(by.web.tag('body')).getCurrentUrl(),
+    (result: string) => result === url || result.includes(url),
+    timeout
+  )
 }
 
 const scrollToXpath = async (xpath: string) => {
@@ -125,5 +131,5 @@ export default {
   waitForEleByTextToBeVisible,
   waitForWebElement,
   waitAndRunScript,
-  getUrl
+  verifyUrl
 }
