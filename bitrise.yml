@@ -590,10 +590,10 @@ workflows:
     - PLATFORM: Android
       opts:
         is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
+    - ANDROID_BUILD_VARIANT: externale2e
       opts:
         is_expand: false
-    - APP_TITLE: Core Mobile Internal
+    - APP_TITLE: Core Mobile
       opts:
         is_expand: false
     - E2E: "true"
@@ -607,10 +607,7 @@ workflows:
         is_expand: false
     - IS_REGRESSION_RUN: "true"
       opts:
-        is_expand: false
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
+        is_expand: falsee
     steps:
     - share-pipeline-variable@1:
         inputs:
