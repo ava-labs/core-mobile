@@ -345,7 +345,7 @@ __metadata:
     react-native-toast-notifications: 3.3.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 3.8.0
-    react-native-webview: "ava-labs/react-native-webview#cp-9266"
+    react-native-webview: ava-labs/react-native-webview
     react-native-webview-crypto: 0.0.26
     react-redux: 8.0.1
     react-test-renderer: 18.3.1
@@ -9223,9 +9223,9 @@ __metadata:
   linkType: hard
 
 "@scure/base@npm:~1.1.8":
-  version: 1.1.8
-  resolution: "@scure/base@npm:1.1.8"
-  checksum: 1fc8a355ba68663c0eb430cf6a2c5ff5af790c347c1ba1953f344e8681ab37e37e2545e495f7f971b0245727d710fea8c1e57d232d0c6c543cbed4965c7596a1
+  version: 1.1.9
+  resolution: "@scure/base@npm:1.1.9"
+  checksum: 120820a37dfe9dfe4cab2b7b7460552d08e67dee8057ed5354eb68d8e3440890ae983ce3bee957d2b45684950b454a2b6d71d5ee77c1fd3fddc022e2a510337f
   languageName: node
   linkType: hard
 
@@ -11245,12 +11245,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.7.4, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0":
+"@types/node@npm:22.7.4":
   version: 22.7.4
   resolution: "@types/node@npm:22.7.4"
   dependencies:
     undici-types: ~6.19.2
   checksum: a3f4154147639369aed08fe6f8d62eff637cf87b187bb252d7bbccdc82884626007af424b08a653c53f2182adfa0340001b4888cb7cbb942cef351210fc742a5
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0":
+  version: 22.5.4
+  resolution: "@types/node@npm:22.5.4"
+  dependencies:
+    undici-types: ~6.19.2
+  checksum: 77ac225c38c428200036780036da0bc6764e2721cfa8f528c7e7da7cfefe01a32a5791e28a54efbeedbc977949058d7db902b2e00139298225d4686cee4ae6db
   languageName: node
   linkType: hard
 
@@ -16012,9 +16021,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.28":
-  version: 1.5.31
-  resolution: "electron-to-chromium@npm:1.5.31"
-  checksum: 578fe8930948e0dc9ae45196f2a0db9686649c86883748c918436bf10305104bee9f1dd913fc9bb37e5353d4555628b329ec2c9916768d0a1132a8e8d99c46a1
+  version: 1.5.32
+  resolution: "electron-to-chromium@npm:1.5.32"
+  checksum: ff75702fe4e62a23b80cd74db0fb29db60d1424716b1755fb79ffe01d214a2d3dc74bb27355b8e41994e3b6e24f3b57b46a060ea510afa3d1b6711fbf4b76219
   languageName: node
   linkType: hard
 
@@ -25956,16 +25965,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-webview@ava-labs/react-native-webview#cp-9266":
+react-native-webview@ava-labs/react-native-webview:
   version: 13.12.2
-  resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=8f099fedbc1cc84865472840e8586645aee8c310"
+  resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=179f5094a96b2234756753610fd7502095209927"
   dependencies:
     escape-string-regexp: ^4.0.0
     invariant: 2.2.4
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3bcc5a1872e957498743ef594e1fc73953fd9c8c8ac44a51f0176deb418acfe0375756e7ee3e94ec8ba77b33bc78af40eb127f6c7c7e5f6ca3ccdc9baed3401e
+  checksum: 6e268fad7aa8b8e56fd28cc95f94f35a33fdac4cec0085ae71a766d092760e3f9af35218706113ff7ae99a74baabc5112d32005dce9e66bdf4fda676fad9aa4e
   languageName: node
   linkType: hard
 
