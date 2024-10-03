@@ -23,9 +23,11 @@ if [ "$IS_REGRESSION_RUN" = true ]; then
       echo "Running regression run..."
       QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless
       test_result=$?
-  else 
+    fi
+  else
     echo "Running regression on external build..."
     QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.external.release.regression.ci --headless
+  fi
 fi
 else
   if [ "$PARAMETERIZED_TESTS" = true ]; then
