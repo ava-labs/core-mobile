@@ -607,7 +607,7 @@ workflows:
         is_expand: false
     - IS_REGRESSION_RUN: "true"
       opts:
-        is_expand: falsee
+        is_expand: false
     steps:
     - share-pipeline-variable@1:
         inputs:
