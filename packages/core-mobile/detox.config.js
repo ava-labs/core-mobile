@@ -444,6 +444,7 @@ module.exports = {
           _: [process.env.TESTS_TO_RUN]
         }
     },
+  },
     'android.external.release.smoke.ci': {
       device: 'emulator_ci',
       app: 'android.external.release.ci',
@@ -462,4 +463,4 @@ module.exports = {
       app: 'android.internal.e2e'
     }
   }
-}}
+}
