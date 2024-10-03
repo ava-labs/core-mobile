@@ -443,8 +443,8 @@ module.exports = {
           config: './e2e/configs/regressionConfig.json',
           _: [process.env.TESTS_TO_RUN]
         }
+      },
     },
-  },
     'android.external.release.smoke.ci': {
       device: 'emulator_ci',
       app: 'android.external.release.ci',
