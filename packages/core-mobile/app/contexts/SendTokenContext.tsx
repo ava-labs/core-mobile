@@ -19,7 +19,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit, Amount } from 'types'
+import { Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -85,8 +85,7 @@ export const SendTokenContextProvider = ({
 
   const { data: networkFee } = useNetworkFee(activeNetwork)
 
-  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
-    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
+  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] = useState<bigint>(0n)
 
   // setting maxFeePerGas to lowest network fee to calculate max amount in Send screen
   useEffect(() => {
@@ -170,7 +169,7 @@ export const SendTokenContextProvider = ({
     const sendState: SendState = {
       address: sendToAddress,
       amount: sendAmount.bn,
-      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      defaultMaxFeePerGas: defaultMaxFeePerGas,
       gasLimit,
       token: sendToken,
       canSubmit
@@ -234,7 +233,7 @@ export const SendTokenContextProvider = ({
       token: sendToken,
       amount: sendAmount.bn,
       address: sendToAddress,
-      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      defaultMaxFeePerGas: defaultMaxFeePerGas,
       gasLimit
     }
 

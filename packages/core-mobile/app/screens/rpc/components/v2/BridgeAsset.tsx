@@ -12,7 +12,6 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import { NetworkTokenUnit } from 'types'
 import { View } from '@avalabs/k2-mobile'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
@@ -38,9 +37,7 @@ const BridgeAsset = (): JSX.Element => {
     blockchainToNetwork(currentBlockchain, networks, bridgeAppConfig) ??
     activeNetwork
   const { data: networkFee } = useNetworkFee(network)
-  const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
-    NetworkTokenUnit.fromNetwork(network)
-  )
+  const [maxFeePerGas, setMaxFeePerGas] = useState<bigint>(0n)
 
   useEffect(() => {
     if (!networkFee) return
@@ -66,7 +63,7 @@ const BridgeAsset = (): JSX.Element => {
       currentBlockchain,
       amountStr,
       asset,
-      maxFeePerGas: maxFeePerGas.toSubUnit()
+      maxFeePerGas: maxFeePerGas
     })
     goBack()
   }, [

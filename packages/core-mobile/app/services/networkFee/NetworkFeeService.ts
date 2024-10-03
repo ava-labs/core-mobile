@@ -1,35 +1,27 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 import ModuleManager from 'vmModule/ModuleManager'
 import { NetworkFee } from 'services/networkFee/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 class NetworkFeeService {
-  async getNetworkFee<T extends TokenBaseUnit<T>>(
-    network: Network,
-    tokenUnitCreator: (value: AcceptedTypes) => T
-  ): Promise<NetworkFee<T> | undefined> {
+  async getNetworkFee(network: Network): Promise<NetworkFee | undefined> {
     const module = await ModuleManager.loadModuleByNetwork(network)
     const networkFees = await module.getNetworkFee(mapToVmNetwork(network))
     return {
-      baseFee: tokenUnitCreator(networkFees.baseFee ?? 0),
+      baseFee: networkFees.baseFee,
       low: {
-        maxFeePerGas: tokenUnitCreator(networkFees.low.maxFeePerGas),
-        maxPriorityFeePerGas: tokenUnitCreator(
-          networkFees.low.maxPriorityFeePerGas ?? 0
-        )
+        maxFeePerGas: networkFees.low.maxFeePerGas,
+        maxPriorityFeePerGas: networkFees.low.maxPriorityFeePerGas
+          ? networkFees.low.maxPriorityFeePerGas
+          : undefined
       },
       medium: {
-        maxFeePerGas: tokenUnitCreator(networkFees.medium.maxFeePerGas),
-        maxPriorityFeePerGas: tokenUnitCreator(
-          networkFees.medium.maxPriorityFeePerGas ?? 0
-        )
+        maxFeePerGas: networkFees.medium.maxFeePerGas,
+        maxPriorityFeePerGas: networkFees.medium.maxPriorityFeePerGas ?? 0n
       },
       high: {
-        maxFeePerGas: tokenUnitCreator(networkFees.high.maxFeePerGas),
-        maxPriorityFeePerGas: tokenUnitCreator(
-          networkFees.high.maxPriorityFeePerGas ?? 0
-        )
+        maxFeePerGas: networkFees.high.maxFeePerGas,
+        maxPriorityFeePerGas: networkFees.high.maxPriorityFeePerGas ?? 0n
       },
       isFixedFee: networkFees.isFixedFee
     }
