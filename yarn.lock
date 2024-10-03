@@ -355,7 +355,7 @@ __metadata:
     reactotron-redux: 3.1.10
     readable-stream: 4.5.2
     redux-persist: 6.0.0
-    redux-persist-transform-encrypt: 4.0.0
+    redux-persist-transform-encrypt: 5.1.1
     rn-dominant-color: 1.7.2
     rn-nodeify: 10.3.0
     rxjs: 7.8.1
@@ -15125,14 +15125,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"crypto-js@npm:4.1.1, crypto-js@npm:^4.1.1":
+"crypto-js@npm:4.1.1":
   version: 4.1.1
   resolution: "crypto-js@npm:4.1.1"
   checksum: b3747c12ee3a7632fab3b3e171ea50f78b182545f0714f6d3e7e2858385f0f4101a15f2517e033802ce9d12ba50a391575ff4638c9de3dd9b2c4bc47768d5425
   languageName: node
   linkType: hard
 
-"crypto-js@npm:4.2.0":
+"crypto-js@npm:4.2.0, crypto-js@npm:^4.2.0":
   version: 4.2.0
   resolution: "crypto-js@npm:4.2.0"
   checksum: f051666dbc077c8324777f44fbd3aaea2986f198fe85092535130d17026c7c2ccf2d23ee5b29b36f7a4a07312db2fae23c9094b644cc35f7858b1b4fcaf27774
@@ -26396,16 +26396,16 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"redux-persist-transform-encrypt@npm:4.0.0":
-  version: 4.0.0
-  resolution: "redux-persist-transform-encrypt@npm:4.0.0"
+"redux-persist-transform-encrypt@npm:5.1.1":
+  version: 5.1.1
+  resolution: "redux-persist-transform-encrypt@npm:5.1.1"
   dependencies:
-    crypto-js: ^4.1.1
+    crypto-js: ^4.2.0
     json-stringify-safe: ^5.0.1
   peerDependencies:
     redux: ">3.0.0"
     redux-persist: ^6.x.x
-  checksum: 4e4707df312180f72c6ad788ac95aa36b4955a398285b4767c9d613c0aaa587a59c06eb1d9190c389ec984bf040dad459df10581600c64124c717793aeb37752
+  checksum: 7b635659bf6db1837029e1d6d1340277bf93d3dfac19af48216cd352ec71560864f19fc34a40fb6b2a439725690fbbb1d3f1d2ce7e5d65c6f2d364559c6e12ac
   languageName: node
   linkType: hard
 
