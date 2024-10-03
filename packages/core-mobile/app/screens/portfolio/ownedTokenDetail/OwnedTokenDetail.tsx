@@ -105,7 +105,7 @@ const OwnedTokenDetail: FC = () => {
     })
     navigate(AppNavigation.Wallet.SendTokens, {
       screen: AppNavigation.Send.Send,
-      params: { token: token }
+      params: { token }
     })
   }
 

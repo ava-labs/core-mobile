@@ -1,19 +1,14 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import { NavigatorScreenParams } from '@react-navigation/native'
 import NftFullScreen from 'screens/nft/NftFullScreen'
-import NFTSendScreenStack, {
-  NFTSendStackParamList
-} from 'navigation/wallet/NFTSendStack'
+import NFTSendScreenStack from 'navigation/wallet/NFTSendStack'
 import { NFTImageData, NFTItem } from 'store/nft'
 import NftDetailsScreen from 'screens/nft/NftDetailsScreen'
 
 export type NFTStackParamList = {
   [AppNavigation.Nft.Details]: { nftItem: NFTItem }
-  [AppNavigation.Nft.Send]:
-    | { nft: NFTItem }
-    | NavigatorScreenParams<NFTSendStackParamList>
+  [AppNavigation.Nft.Send]: { nft: NFTItem }
   [AppNavigation.Nft.FullScreen]: { imageData: NFTImageData }
 }
 
