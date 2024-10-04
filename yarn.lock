@@ -193,7 +193,7 @@ __metadata:
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
     "@noble/secp256k1": 2.1.0
-    "@notifee/react-native": 9.0.2
+    "@notifee/react-native": 9.0.3
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 6.10.0
     "@playwright/test": 1.47.2
@@ -368,7 +368,7 @@ __metadata:
     typechain: 8.3.2
     typescript: 5.6.2
     url: 0.11.4
-    viem: 2.21.17
+    viem: 2.21.18
     vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.15
@@ -7567,12 +7567,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@notifee/react-native@npm:9.0.2":
-  version: 9.0.2
-  resolution: "@notifee/react-native@npm:9.0.2"
+"@notifee/react-native@npm:9.0.3":
+  version: 9.0.3
+  resolution: "@notifee/react-native@npm:9.0.3"
   peerDependencies:
     react-native: "*"
-  checksum: 2b46e360096dffea51803ff28a5e106d0bdea09651a72487728ee925f1748b2a374377c4db9e85f62fda8d7e16b0e0a2d7dcd4078c0342bac522bec364ccf21a
+  checksum: 888af0a65ce41ea764295a8587c98a95fb25232cb1938202999106c9498ad4188b79f39264dd163db0d132c43b2712d473fcd32959823b4519f27632d186b08c
   languageName: node
   linkType: hard
 
@@ -16678,15 +16678,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-module-utils@npm:^2.9.0":
-  version: 2.9.0
-  resolution: "eslint-module-utils@npm:2.9.0"
+"eslint-module-utils@npm:^2.12.0":
+  version: 2.12.0
+  resolution: "eslint-module-utils@npm:2.12.0"
   dependencies:
     debug: ^3.2.7
   peerDependenciesMeta:
     eslint:
       optional: true
-  checksum: 304ec1279cac62b242d9347859625235c07be8b8870306d85502375b2b4beeccda2da2f03884ec00a1820e643d87718e5a2eea149730c61aeb42ea8f4cb9f4a6
+  checksum: be3ac52e0971c6f46daeb1a7e760e45c7c45f820c8cc211799f85f10f04ccbf7afc17039165d56cb2da7f7ca9cec2b3a777013cddf0b976784b37eb9efa24180
   languageName: node
   linkType: hard
 
@@ -16705,7 +16705,7 @@ __metadata:
     eslint: 8.50.0
     eslint-config-prettier: 8.10.0
     eslint-plugin-detox: 1.0.0
-    eslint-plugin-import: 2.30.0
+    eslint-plugin-import: 2.31.0
     eslint-plugin-jest: 28.8.3
     eslint-plugin-prettier: 4.2.1
     eslint-plugin-promise: 7.1.0
@@ -16754,9 +16754,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-import@npm:2.30.0":
-  version: 2.30.0
-  resolution: "eslint-plugin-import@npm:2.30.0"
+"eslint-plugin-import@npm:2.31.0":
+  version: 2.31.0
+  resolution: "eslint-plugin-import@npm:2.31.0"
   dependencies:
     "@rtsao/scc": ^1.1.0
     array-includes: ^3.1.8
@@ -16766,7 +16766,7 @@ __metadata:
     debug: ^3.2.7
     doctrine: ^2.1.0
     eslint-import-resolver-node: ^0.3.9
-    eslint-module-utils: ^2.9.0
+    eslint-module-utils: ^2.12.0
     hasown: ^2.0.2
     is-core-module: ^2.15.1
     is-glob: ^4.0.3
@@ -16775,10 +16775,11 @@ __metadata:
     object.groupby: ^1.0.3
     object.values: ^1.2.0
     semver: ^6.3.1
+    string.prototype.trimend: ^1.0.8
     tsconfig-paths: ^3.15.0
   peerDependencies:
-    eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8
-  checksum: 0ec1ad69c0d22f15bc4a49ee97ae757e4adfc3181996f2c4a1ed4d5028bd99bab38e7623e58ef4477ba1db8425f441e4e986367125273efa4c5f7ad2c4467a9a
+    eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8 || ^9
+  checksum: b1d2ac268b3582ff1af2a72a2c476eae4d250c100f2e335b6e102036e4a35efa530b80ec578dfc36761fabb34a635b9bf5ab071abe9d4404a4bb054fdf22d415
   languageName: node
   linkType: hard
 
@@ -30031,9 +30032,9 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"viem@npm:2.21.17":
-  version: 2.21.17
-  resolution: "viem@npm:2.21.17"
+"viem@npm:2.21.18":
+  version: 2.21.18
+  resolution: "viem@npm:2.21.18"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.4.0
@@ -30049,7 +30050,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: ef76a35125e40edb0dd5d16fd104b1508a6f797152cfc254df5902f70658cd72830009dd5ecef31bf7b23e33d719058e1d9b55fa9b7fb0cbb716b063176b4cba
+  checksum: 60112b796beaa1b3a2dd2f559e61fddc0afb99dc97de2a3545e0da871044ba29d1dddc877220c77332bca36d5233b2807992abfd92154c84926abbcdffd6db6d
   languageName: node
   linkType: hard
 
