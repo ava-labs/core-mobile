@@ -37,7 +37,7 @@
     "@rushstack/eslint-patch": "1.5.1",
     "@storybook/addon-ondevice-actions": "7.6.20",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
-    "@storybook/addon-ondevice-controls": "7.6.20",
+    "@storybook/addon-ondevice-controls": "8.3.5",
     "@storybook/react-native": "7.6.20",
     "@types/react": "18.3.11",
     "@types/tinycolor2": "1.4.5",
