@@ -1271,10 +1271,10 @@ PODS:
     - React-Core
   - RNLocalize (3.2.1):
     - React-Core
-  - RNNotifee (9.0.3):
+  - RNNotifee (9.1.1):
     - React-Core
-    - RNNotifee/NotifeeCore (= 9.0.3)
-  - RNNotifee/NotifeeCore (9.0.3):
+    - RNNotifee/NotifeeCore (= 9.1.1)
+  - RNNotifee/NotifeeCore (9.1.1):
     - React-Core
   - RNOS (1.2.6):
     - React
@@ -1778,7 +1778,7 @@ SPEC CHECKSUMS:
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNLocalize: 4f22418187ecd5ca693231093ff1d912d1b3c9bc
-  RNNotifee: f4b57aec93bdc5f85f227d3bc8e4e08d45aacdc9
+  RNNotifee: 35b5f984d11083b02d7f2990b3408cd99a0aeeac
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: 0202407390834f85dd944f317aedb4fb25f11077
   RNReactNativeHapticFeedback: afa5bf2794aecbb2dba2525329253da0d66656df

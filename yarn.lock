@@ -200,7 +200,7 @@ __metadata:
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
     "@noble/secp256k1": 2.1.0
-    "@notifee/react-native": 9.0.3
+    "@notifee/react-native": 9.1.1
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 6.10.0
     "@playwright/test": 1.47.2
@@ -7574,12 +7574,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@notifee/react-native@npm:9.0.3":
-  version: 9.0.3
-  resolution: "@notifee/react-native@npm:9.0.3"
+"@notifee/react-native@npm:9.1.1":
+  version: 9.1.1
+  resolution: "@notifee/react-native@npm:9.1.1"
   peerDependencies:
     react-native: "*"
-  checksum: 888af0a65ce41ea764295a8587c98a95fb25232cb1938202999106c9498ad4188b79f39264dd163db0d132c43b2712d473fcd32959823b4519f27632d186b08c
+  checksum: 93d7efcb1a622cb6f53af99bd0b6856e2cf30ec684e74d8c91715dee5135cf7ea165eef26a7a5acc0e7b13db91c68982a4d22f186019322ed01c162fa02f5d03
   languageName: node
   linkType: hard
 
