@@ -203,7 +203,7 @@
     "@rushstack/eslint-patch": "1.10.4",
     "@spotlightjs/spotlight": "2.4.2",
     "@storybook/addon-ondevice-actions": "7.6.20",
-    "@storybook/addon-ondevice-backgrounds": "7.6.20",
+    "@storybook/addon-ondevice-backgrounds": "8.3.5",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
     "@typechain/ethers-v6": "0.5.1",
