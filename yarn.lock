@@ -222,7 +222,7 @@ __metadata:
     "@shopify/flash-list": 1.7.1
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
-    "@spotlightjs/spotlight": 2.4.2
+    "@spotlightjs/spotlight": 2.5.0
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
@@ -9736,10 +9736,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spotlightjs/overlay@npm:2.5.2":
-  version: 2.5.2
-  resolution: "@spotlightjs/overlay@npm:2.5.2"
-  checksum: 6101f8033b36054132b54fecaef4edc420c1ec7b8466fb593319ef1c09c6c1ec9168c015e5ee864d772115df370f53281d4a4182aeb31366863b3197a0691ffc
+"@spotlightjs/overlay@npm:2.6.0":
+  version: 2.6.0
+  resolution: "@spotlightjs/overlay@npm:2.6.0"
+  checksum: 5c735d1ee033ea5b6fb20927f82a374f67830a04c0693ce0a8e237de31cacaa399590c9fab582ab9c0d56cfc4d5ead5ea38f94e2e108e16215a5af25883165d1
   languageName: node
   linkType: hard
 
@@ -9756,16 +9756,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spotlightjs/spotlight@npm:2.4.2":
-  version: 2.4.2
-  resolution: "@spotlightjs/spotlight@npm:2.4.2"
+"@spotlightjs/spotlight@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@spotlightjs/spotlight@npm:2.5.0"
   dependencies:
-    "@spotlightjs/overlay": 2.5.2
+    "@spotlightjs/overlay": 2.6.0
     "@spotlightjs/sidecar": 1.8.0
     import-meta-resolve: ^4.1.0
   bin:
     spotlight: bin/run.js
-  checksum: 50b9bd948556e874f31d9d1e9ab6c6de4b352982c6f9e5c2c252194c6802301973dcc7a86dc546cbecfd6fbcfe97c0110fe0beebe8778cdf2c3d20b71f2f41cd
+  checksum: 0a8a44e25a4a5c6b368e6c67a78c5b66ebaa094ef8368495ededaea606282fcb0510a3c9d27a449ce757642068e798ba7bab4f12e5692480749fe9277a163b52
   languageName: node
   linkType: hard
 
