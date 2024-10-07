@@ -147,8 +147,6 @@ PODS:
   - nanopb/encode (3.30910.0)
   - OpenSSL-Universal (1.1.1100)
   - OpenTelemetrySwiftApi (1.6.0)
-  - Permission-Camera (3.6.0):
-    - RNPermissions
   - PLCrashReporter (1.11.2)
   - PromisesObjC (2.4.0)
   - RCT-Folly (2022.05.16.00):
@@ -1280,7 +1278,7 @@ PODS:
     - React-Core
   - RNOS (1.2.6):
     - React
-  - RNPermissions (3.6.0):
+  - RNPermissions (4.1.5):
     - React-Core
   - RNReactNativeHapticFeedback (2.0.3):
     - React-Core
@@ -1328,7 +1326,6 @@ DEPENDENCIES:
   - jail-monkey (from `../node_modules/jail-monkey`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - OpenSSL-Universal (= 1.1.1100)
-  - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -1479,8 +1476,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
-  Permission-Camera:
-    :path: "../node_modules/react-native-permissions/ios/Camera"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -1702,7 +1697,6 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: 657da8071c2908caecce11548e006f779924ff9c
-  Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   PLCrashReporter: 499c53b0104f95c302d94fd723ebb03c56d9bac8
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
@@ -1786,7 +1780,7 @@ SPEC CHECKSUMS:
   RNLocalize: 4f22418187ecd5ca693231093ff1d912d1b3c9bc
   RNNotifee: abfacfc1bf391aaa3beaa79d540078f17aa11985
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
-  RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
+  RNPermissions: 0202407390834f85dd944f317aedb4fb25f11077
   RNReactNativeHapticFeedback: afa5bf2794aecbb2dba2525329253da0d66656df
   RNReanimated: 00ee495a70897aa9d541e76debec14253133b812
   RNScreens: 29418ceffb585b8f0ebd363de304288c3dce8323
@@ -1800,6 +1794,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 47d399a73c0c0caa9ff824e5c657eae31215bfee
 
-PODFILE CHECKSUM: 15adc354162352c0923b004573ce27998cf9b548
+PODFILE CHECKSUM: 7320c8c19484ef614b2cbccc9cc6ef8fa1880f6f
 
 COCOAPODS: 1.15.2
