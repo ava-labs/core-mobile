@@ -37,5 +37,6 @@ export default {
   activeNetwork: 'active_network__',
   inactiveNetwork: 'inactive_network__',
   networkDropdownCheckMark: 'network_dropdown_check_mark__',
-  tokensTab: 'Tokens'
+  tokensTab: 'Tokens',
+  benqi: 'BENQI'
 }
