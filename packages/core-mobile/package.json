@@ -205,7 +205,7 @@
     "@storybook/addon-ondevice-actions": "7.6.20",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
-    "@storybook/react-native": "7.6.20",
+    "@storybook/react-native": "8.3.5",
     "@typechain/ethers-v6": "0.5.1",
     "@types/big.js": "6.2.2",
     "@types/bn.js": "5.1.6",
