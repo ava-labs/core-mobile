@@ -35,7 +35,7 @@
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-community/slider": "4.5.3",
     "@rushstack/eslint-patch": "1.5.1",
-    "@storybook/addon-ondevice-actions": "7.6.20",
+    "@storybook/addon-ondevice-actions": "8.3.5",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",

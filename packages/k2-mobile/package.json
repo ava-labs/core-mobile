@@ -35,7 +35,7 @@
     "@react-native/babel-preset": "0.73.21",
     "@react-native/metro-config": "0.73.5",
     "@rushstack/eslint-patch": "1.10.4",
-    "@storybook/addon-ondevice-actions": "7.6.20",
+    "@storybook/addon-ondevice-actions": "8.3.5",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
