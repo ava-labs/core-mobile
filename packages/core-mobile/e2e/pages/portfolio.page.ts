@@ -4,6 +4,7 @@ import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
+import collectiblesPage from './collectibles.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
@@ -143,12 +144,42 @@ class PortfolioPage {
     return by.id(portfolio.sendSuccessToast)
   }
 
+  get benqi() {
+    return by.text(portfolio.benqi)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
     await Assert.isVisible(this.networksHeader)
     await Assert.isVisible(this.assetsTab)
     await Assert.isVisible(this.colectiblesTab)
+  }
+
+  async verifySubTab(tab: string) {
+    if (tab === 'Assets') {
+      await Assert.isVisible(this.favoritesHeader)
+      await Assert.isVisible(this.networksHeader)
+      await Assert.isNotVisible(collectiblesPage.gridItem)
+    } else if (tab === 'Collectibles') {
+      await Assert.isVisible(collectiblesPage.gridItem)
+      await Assert.isVisible(collectiblesPage.listSvg)
+      await Assert.isNotVisible(this.networksHeader)
+    } else {
+      await Assert.isVisible(this.benqi)
+      await Assert.isNotVisible(this.networksHeader)
+      await Assert.isNotVisible(collectiblesPage.gridItem)
+    }
+  }
+
+  async verifySubTabs(all = true) {
+    await Assert.isVisible(this.assetsTab)
+    await Assert.isVisible(this.defiTab)
+    if (all) {
+      await Assert.isVisible(this.collectiblesTab)
+    } else {
+      await Assert.isNotVisible(this.collectiblesTab)
+    }
   }
 
   async goToActivityTab() {
