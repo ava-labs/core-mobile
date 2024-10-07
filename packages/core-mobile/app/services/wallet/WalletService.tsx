@@ -24,12 +24,11 @@ import Logger from 'utils/Logger'
 import { UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
-import { Avax } from 'types/Avax'
-import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -296,7 +295,7 @@ class WalletService {
     }
   }
 
-  public getInstantBaseFee(baseFee: Avax): Avax {
+  public getInstantBaseFee<T extends TokenUnit>(baseFee: T): TokenUnit {
     return baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
   }
 
@@ -317,10 +316,10 @@ class WalletService {
     const nonce = await readOnlySigner.getNonce()
 
     const unsignedTx = readOnlySigner.exportC(
-      amount.toSubUnit(),
+      amount,
       destinationChain,
       BigInt(nonce),
-      bnToBigint(baseFee.toWei()),
+      baseFee,
       destinationAddress
     )
 
@@ -328,7 +327,7 @@ class WalletService {
       this.validateAvalancheFee({
         network: avaxXPNetwork,
         unsignedTx,
-        evmBaseFee: baseFee
+        evmBaseFeeWei: baseFee
       })
 
     return unsignedTx
@@ -428,7 +427,7 @@ class WalletService {
       {
         [avaxXPNetwork.isTestnet
           ? TESTNET_AVAX_ASSET_ID
-          : MAINNET_AVAX_ASSET_ID]: amount.toSubUnit()
+          : MAINNET_AVAX_ASSET_ID]: amount
       },
       {
         changeAddresses: [changeAddress]
@@ -464,7 +463,7 @@ class WalletService {
       {
         [avaxXPNetwork.isTestnet
           ? TESTNET_AVAX_ASSET_ID
-          : MAINNET_AVAX_ASSET_ID]: amount.toSubUnit()
+          : MAINNET_AVAX_ASSET_ID]: amount
       },
       {
         changeAddresses: [changeAddress]
@@ -490,7 +489,7 @@ class WalletService {
     const unsignedTx = readOnlySigner.importC(
       utxoSet,
       sourceChain,
-      baseFee.toSubUnit(),
+      baseFee,
       undefined,
       destinationAddress
     )
@@ -499,7 +498,7 @@ class WalletService {
       this.validateAvalancheFee({
         network: avaxXPNetwork,
         unsignedTx,
-        evmBaseFee: baseFee
+        evmBaseFeeWei: baseFee
       })
 
     return unsignedTx
@@ -586,11 +585,11 @@ class WalletService {
   private validateAvalancheFee({
     network,
     unsignedTx,
-    evmBaseFee
+    evmBaseFeeWei
   }: {
     network: Network
     unsignedTx: UnsignedTx
-    evmBaseFee?: Avax
+    evmBaseFeeWei?: bigint
   }): void {
     if (
       network.vmName !== NetworkVMType.AVM &&
@@ -608,7 +607,7 @@ class WalletService {
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
-      evmBaseFee: evmBaseFee?.toSubUnit(),
+      evmBaseFee: evmBaseFeeWei,
       evmFeeTolerance: EVM_FEE_TOLERANCE
     })
 

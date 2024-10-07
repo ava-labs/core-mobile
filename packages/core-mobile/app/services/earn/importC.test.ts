@@ -4,7 +4,6 @@ import WalletService from 'services/wallet/WalletService'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importC } from 'services/earn/importC'
-import { Avax } from 'types/Avax'
 
 describe('earn/importC', () => {
   describe('importC', () => {
@@ -54,13 +53,19 @@ describe('earn/importC', () => {
     })
 
     it('should call walletService.createImportCTx', async () => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([])
+        })
+      ) as jest.Mock
       await importC({
         activeAccount: {} as Account,
         isDevMode: false
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith({
         accountIndex: undefined,
-        baseFee: Avax.fromBase(0.0003),
+        baseFee: BigInt(0.0003 * 10 ** 18),
         avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
         sourceChain: 'P',
         destinationAddress: undefined

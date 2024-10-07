@@ -12,8 +12,7 @@ import { RadioButton } from 'components/RadioButton'
 import AvaText from 'components/AvaText'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
-import { Avax } from 'types/Avax'
-import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 export const DurationOptionItem = ({
   stakeAmount,
@@ -21,12 +20,11 @@ export const DurationOptionItem = ({
   onRadioSelect,
   isSelected
 }: {
-  stakeAmount: Avax
+  stakeAmount: TokenUnit
   item: DurationOption
   onRadioSelect: (item: DurationOption) => void
   isSelected: boolean
-}) => {
-  const avaxFormatter = useAvaxFormatter()
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
@@ -44,10 +42,7 @@ export const DurationOptionItem = ({
     delegationFee: 2
   })
 
-  const [estimatedRewardsInAvax] = avaxFormatter(
-    data?.estimatedTokenReward,
-    true
-  )
+  const estimatedRewardsInAvax = data?.estimatedTokenReward
 
   return (
     <View style={{ marginBottom: 24 }} key={item.title}>
@@ -58,7 +53,9 @@ export const DurationOptionItem = ({
           </AvaText.Body2>
           <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
             {item.title !== StakeDurationTitle.CUSTOM
-              ? `Estimated Rewards: ${estimatedRewardsInAvax} AVAX`
+              ? `Estimated Rewards: ${
+                  estimatedRewardsInAvax?.toDisplay() ?? '-'
+                } AVAX`
               : 'Enter your desired end date'}
           </AvaText.Caption>
         </View>

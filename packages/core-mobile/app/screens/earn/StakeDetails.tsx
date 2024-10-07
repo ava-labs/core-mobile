@@ -14,7 +14,6 @@ import { Row } from 'components/Row'
 import Separator from 'components/Separator'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useStake } from 'hooks/earn/useStake'
-import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { format, fromUnixTime } from 'date-fns'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { humanize } from 'utils/string/humanize'
@@ -22,6 +21,9 @@ import { RewardType } from '@avalabs/glacier-sdk'
 import { isOnGoing } from 'utils/earn/status'
 import { estimatesTooltipText } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
+import { getXPChainTokenUnit } from 'utils/units/knownTokens'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
@@ -34,7 +36,7 @@ const StakeDetails = (): JSX.Element | null => {
     params: { txHash, stakeTitle }
   } = useRoute<ScreenProps['route']>()
   const stake = useStake(txHash)
-  const nAvaxFormatter = useNAvaxFormatter()
+  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
 
   const isActive = useMemo(() => {
     if (!stake) return false
@@ -80,10 +82,15 @@ const StakeDetails = (): JSX.Element | null => {
   const renderActiveDetails = (): JSX.Element => {
     const formattedEndDate = format(endDate, 'LLLL d, yyyy, H:mm aa')
     const remainingTime = humanize(getReadableDateDuration(endDate))
-    const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxFormatter(
-      stake.estimatedReward,
-      true
-    )
+    const estimatedRewardInAvax = stake.estimatedReward
+      ? new TokenUnit(
+          stake.estimatedReward,
+          getXPChainTokenUnit().getMaxDecimals(),
+          getXPChainTokenUnit().getSymbol()
+        )
+      : undefined
+    const estimatedRewardInCurrency =
+      estimatedRewardInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
 
     return (
       <>
@@ -97,7 +104,7 @@ const StakeDetails = (): JSX.Element | null => {
           </Tooltip>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading4 color={theme.colorBgGreen}>
-              {estimatedRewardInAvax} AVAX
+              {estimatedRewardInAvax?.toDisplay() ?? '-'} AVAX
             </AvaText.Heading4>
             <Space y={2} />
             <AvaText.Body2>{estimatedRewardInCurrency}</AvaText.Body2>
@@ -128,11 +135,15 @@ const StakeDetails = (): JSX.Element | null => {
         utxo.rewardType === RewardType.VALIDATOR
     )
     const rewardUtxoTxHash = rewardUtxo?.txHash
-    const rewardAmount = rewardUtxo?.asset.amount
-    const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxFormatter(
-      rewardAmount,
-      true
-    )
+    const rewardAmountInAvax = rewardUtxo?.asset.amount
+      ? new TokenUnit(
+          rewardUtxo.asset.amount,
+          getXPChainTokenUnit().getMaxDecimals(),
+          getXPChainTokenUnit().getSymbol()
+        )
+      : undefined
+    const rewardAmountInCurrency =
+      rewardAmountInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
 
     return (
       <>
@@ -144,7 +155,7 @@ const StakeDetails = (): JSX.Element | null => {
           </AvaText.Body2>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading4 color={theme.colorBgGreen}>
-              {rewardAmountInAvax} AVAX
+              {rewardAmountInAvax?.toDisplay() ?? '-'} AVAX
             </AvaText.Heading4>
             <Space y={2} />
             <AvaText.Body2>{rewardAmountInCurrency}</AvaText.Body2>
@@ -178,10 +189,15 @@ const StakeDetails = (): JSX.Element | null => {
   }
   const renderBody = (): JSX.Element => {
     const stakeAmount = stake.amountStaked?.[0]?.amount
-    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxFormatter(
-      stakeAmount,
-      true
-    )
+    const stakeAmountInAvax = stakeAmount
+      ? new TokenUnit(
+          stakeAmount,
+          getXPChainTokenUnit().getMaxDecimals(),
+          getXPChainTokenUnit().getSymbol()
+        )
+      : undefined
+    const stakeAmountInCurrency =
+      stakeAmountInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
 
     return (
       <View>
@@ -192,7 +208,9 @@ const StakeDetails = (): JSX.Element | null => {
             Staked Amount
           </AvaText.Body2>
           <View style={styles.value}>
-            <AvaText.Heading4>{stakeAmountInAvax} AVAX</AvaText.Heading4>
+            <AvaText.Heading4>
+              {stakeAmountInAvax?.toDisplay() ?? '-'} AVAX
+            </AvaText.Heading4>
             <Space y={4} />
             <AvaText.Body2>{stakeAmountInCurrency}</AvaText.Body2>
           </View>

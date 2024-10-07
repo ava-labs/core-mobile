@@ -1,4 +1,3 @@
-import { Avax } from 'types/Avax'
 import { useEffect, useState } from 'react'
 import {
   calculateCChainFee,
@@ -11,6 +10,7 @@ import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 const exportPFee = calculatePChainFee()
 
@@ -24,22 +24,20 @@ const exportPFee = calculatePChainFee()
  * https://docs.avax.network/quickstart/transaction-fees
  */
 export const useClaimFees = (): {
-  totalFees: Avax | undefined
-  exportPFee: Avax
+  totalFees: TokenUnit | undefined
+  exportPFee: TokenUnit
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
-  const [totalFees, setTotalFees] = useState<Avax | undefined>(undefined)
+  const [totalFees, setTotalFees] = useState<TokenUnit | undefined>(undefined)
   const cChainBaseFee = useCChainBaseFee()
 
   useEffect(() => {
     const calculateFees = async (): Promise<void> => {
-      const baseFeeRaw = cChainBaseFee?.data
-      if (!baseFeeRaw) throw new Error('no base fee available')
+      const baseFee = cChainBaseFee?.data
+      if (!baseFee) throw new Error('no base fee available')
 
-      if (!activeAccount) throw new Error('no active acocunt')
-
-      const baseFee = Avax.fromWei(baseFeeRaw)
+      if (!activeAccount) throw new Error('no active account')
 
       const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
@@ -47,7 +45,7 @@ export const useClaimFees = (): {
 
       const unsignedTx = await WalletService.createImportCTx({
         accountIndex: activeAccount.index,
-        baseFee: instantBaseFee,
+        baseFee: instantBaseFee.toSubUnit(),
         avaxXPNetwork,
         sourceChain: 'P',
         destinationAddress: activeAccount.addressC,
@@ -68,5 +66,5 @@ export const useClaimFees = (): {
     })
   }, [activeAccount, isDevMode, cChainBaseFee?.data])
 
-  return { totalFees, exportPFee }
+  return { totalFees: totalFees, exportPFee }
 }

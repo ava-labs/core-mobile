@@ -182,6 +182,10 @@ export type WalletScreenStackParams = {
     title: string
     message: string
   }
+  [AppNavigation.Modal.QRScanner]: {
+    onSuccess: (data: string) => void
+    onCancel?: () => void
+  }
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

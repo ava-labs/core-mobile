@@ -1,14 +1,12 @@
-import { TokenBaseUnit } from 'types/TokenBaseUnit'
-
-export interface NetworkFee<T extends TokenBaseUnit<T>> {
-  baseFee?: T
-  low: FeeRate<T>
-  medium: FeeRate<T>
-  high: FeeRate<T>
+export interface NetworkFee {
+  baseFee?: bigint
+  low: FeeRate
+  medium: FeeRate
+  high: FeeRate
   isFixedFee: boolean
 }
 
-export type FeeRate<T extends TokenBaseUnit<T>> = {
-  maxFeePerGas: T
-  maxPriorityFeePerGas?: T
+export type FeeRate = {
+  maxFeePerGas: bigint
+  maxPriorityFeePerGas?: bigint
 }

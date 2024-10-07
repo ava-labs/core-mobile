@@ -94,7 +94,7 @@ const getUnlockedUnstakedAmount = async ({
   network: Network
   addressPVM: string
   selectedCurrency: string
-}): Promise<number | undefined> => {
+}): Promise<bigint | undefined> => {
   const balancesResponse = await ModuleManager.avalancheModule.getBalances({
     addresses: [addressPVM],
     currency: selectedCurrency,

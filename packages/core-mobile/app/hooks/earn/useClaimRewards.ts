@@ -9,11 +9,11 @@ import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { Avax } from 'types/Avax'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import { usePChainBalance } from './usePChainBalance'
+import { AvaxXP } from 'types/AvaxXP'
 import { useClaimFees } from './useClaimFees'
+import { usePChainBalance } from './usePChainBalance'
 
 /**
  * a hook to claim rewards by doing a cross chain transfer from P to C chain
@@ -46,7 +46,7 @@ export const useClaimRewards = (
         throw Error('unable to calculate fees')
       }
 
-      const totalClaimable = Avax.fromBase(
+      const totalClaimable = AvaxXP.fromNanoAvax(
         pChainBalance?.data?.balancePerType.unlockedUnstaked ?? 0
       )
 

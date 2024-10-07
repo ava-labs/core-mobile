@@ -1,8 +1,9 @@
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
-import { Avax } from 'types/Avax'
 import { addDays, addYears } from 'date-fns'
 import * as Navigation from 'utils/Navigation'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import {
   calculateMaxWeight,
   getAvailableDelegationWeight,
@@ -18,10 +19,10 @@ import {
 
 describe('calculateMaxWeight', () => {
   it('returns the correct maxWeight when validatorWeight x 5 is greater than maxValidatorStake', () => {
-    const maxValidatorStake = Avax.fromBase(3000000)
-    const validatorWeight = Avax.fromNanoAvax('19002643767852140')
+    const maxValidatorStake = new TokenUnit(3000000_000_000_000, 9, 'AVAX')
+    const validatorWeight = new TokenUnit('19002643767852140', 9, 'AVAX')
 
-    const expectedMaxWeight = Avax.fromBase(3000000)
+    const expectedMaxWeight = new TokenUnit(3000000_000_000_000, 9, 'AVAX')
 
     expect(
       calculateMaxWeight(maxValidatorStake, validatorWeight)
@@ -29,10 +30,10 @@ describe('calculateMaxWeight', () => {
   })
 
   it('returns the correct maxWeight when validatorWeight x 5 is less than maxValidatorStake', () => {
-    const maxValidatorStake = Avax.fromBase(2000000)
-    const validatorWeight = Avax.fromNanoAvax('4376785214')
+    const maxValidatorStake = new TokenUnit(2000000_000_000_000, 9, 'AVAX')
+    const validatorWeight = new TokenUnit('4376785214', 9, 'AVAX')
 
-    const expectedMaxWeight = Avax.fromNanoAvax('21883926070') // 4376785214 x 5
+    const expectedMaxWeight = new TokenUnit('21883926070', 9, 'AVAX') // 4376785214 x 5
 
     expect(
       calculateMaxWeight(maxValidatorStake, validatorWeight)
@@ -43,10 +44,14 @@ describe('calculateMaxWeight', () => {
 describe('getAvailableDelegationWeight', () => {
   describe('with developer mode on', () => {
     it('returns the correct value when delegatorWeight is not zero', () => {
-      const validatorWeight = Avax.fromBase('51')
-      const delegatorWeight = Avax.fromBase('34')
+      const validatorWeight = new TokenUnit(51_000_000_000, 9, 'AVAX')
+      const delegatorWeight = new TokenUnit(34_000_000_000, 9, 'AVAX')
 
-      const expectedAvailableDelegationWeight = Avax.fromBase(170)
+      const expectedAvailableDelegationWeight = new TokenUnit(
+        170_000_000_000,
+        9,
+        'AVAX'
+      )
 
       expect(
         getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
@@ -54,10 +59,14 @@ describe('getAvailableDelegationWeight', () => {
     })
 
     it('returns the correct value when delegatorWeight is zero', () => {
-      const validatorWeight = Avax.fromBase('51')
-      const delegatorWeight = Avax.fromBase('0')
+      const validatorWeight = new TokenUnit(51_000_000_000, 9, 'AVAX')
+      const delegatorWeight = zeroAvaxPChain()
 
-      const expectedAvailableDelegationWeight = Avax.fromBase(204)
+      const expectedAvailableDelegationWeight = new TokenUnit(
+        204_000_000_000,
+        9,
+        'AVAX'
+      )
 
       expect(
         getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
@@ -67,10 +76,14 @@ describe('getAvailableDelegationWeight', () => {
 
   describe('with developer mode off', () => {
     it('returns the correct value when delegatorWeight is not zero', () => {
-      const validatorWeight = Avax.fromBase('51')
-      const delegatorWeight = Avax.fromBase('34')
+      const validatorWeight = new TokenUnit(51_000_000_000, 9, 'AVAX')
+      const delegatorWeight = new TokenUnit(34_000_000_000, 9, 'AVAX')
 
-      const expectedAvailableDelegationWeight = Avax.fromBase(170)
+      const expectedAvailableDelegationWeight = new TokenUnit(
+        170_000_000_000,
+        9,
+        'AVAX'
+      )
 
       expect(
         getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
@@ -78,10 +91,14 @@ describe('getAvailableDelegationWeight', () => {
     })
 
     it('returns the correct value when delegatorWeight is zero', () => {
-      const validatorWeight = Avax.fromBase('51')
-      const delegatorWeight = Avax.fromBase('0')
+      const validatorWeight = new TokenUnit(51_000_000_000, 9, 'AVAX')
+      const delegatorWeight = zeroAvaxPChain()
 
-      const expectedAvailableDelegationWeight = Avax.fromBase(204)
+      const expectedAvailableDelegationWeight = new TokenUnit(
+        204_000_000_000,
+        9,
+        'AVAX'
+      )
 
       expect(
         getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
@@ -94,7 +111,7 @@ describe('getFilteredValidators function', () => {
   it('should return empty array when the validators input is empty', () => {
     const result = getFilteredValidators({
       validators: [] as unknown as NodeValidators,
-      stakingAmount: Avax.fromBase(1),
+      stakingAmount: new TokenUnit(1_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -104,7 +121,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected uptime', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: Avax.fromBase(1),
+      stakingAmount: new TokenUnit(1_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -116,7 +133,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking duration', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: Avax.fromBase(1),
+      stakingAmount: new TokenUnit(1_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
       stakingEndTime: new Date('2122-07-05T16:57:10.140Z')
     })
@@ -126,7 +143,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking amount', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: Avax.fromBase(150),
+      stakingAmount: new TokenUnit(150_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
       stakingEndTime: new Date('2023-08-01T16:57:10.140Z')
     })

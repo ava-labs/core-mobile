@@ -9,7 +9,6 @@ import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -19,6 +18,7 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -31,7 +31,7 @@ export const useIssueDelegation = (
     Error,
     {
       nodeId: string
-      stakingAmount: Avax
+      stakingAmount: TokenUnit
       startDate: Date
       endDate: Date
     },
@@ -43,7 +43,9 @@ export const useIssueDelegation = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data: cChainBalanceRes } = useCChainBalance()
-  const cChainBalance = Avax.fromWei(cChainBalanceRes?.balance ?? 0)
+  const cChainBalanceWei = cChainBalanceRes?.balance
+  const { networkToken: pChainNetworkToken } =
+    NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
@@ -51,12 +53,15 @@ export const useIssueDelegation = (
   const issueDelegationMutation = useMutation({
     mutationFn: async (data: {
       nodeId: string
-      stakingAmount: Avax
+      stakingAmount: TokenUnit
       startDate: Date
       endDate: Date
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
+      }
+      if (!cChainBalanceWei) {
+        return Promise.reject('no C chain balance')
       }
 
       Logger.trace('importAnyStuckFunds...')
@@ -90,21 +95,29 @@ export const useIssueDelegation = (
       ) {
         return Promise.reject('invalid balance type.')
       }
-      const claimableBalance = Avax.fromBase(
-        pChainBalance.balancePerType.unlockedUnstaked
+      if (!pChainBalance.balancePerType.unlockedUnstaked) {
+        return Promise.reject('unlocked unstaked not defined')
+      }
+      const claimableBalance = new TokenUnit(
+        pChainBalance.balancePerType.unlockedUnstaked,
+        pChainNetworkToken.decimals,
+        pChainNetworkToken.symbol
       )
       Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
-      const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
+      const cChainRequiredAmountAvax = calculateAmountForCrossChainTransfer(
         data.stakingAmount,
         claimableBalance
       )
-      Logger.trace('cChainRequiredAmount: ', cChainRequiredAmount.toDisplay())
+      Logger.trace(
+        'cChainRequiredAmount: ',
+        cChainRequiredAmountAvax.toDisplay()
+      )
       Logger.trace('collectTokensForStaking...')
       await EarnService.collectTokensForStaking({
         activeAccount,
-        cChainBalance: cChainBalance,
+        cChainBalance: cChainBalanceWei,
         isDevMode: isDeveloperMode,
-        requiredAmount: cChainRequiredAmount,
+        requiredAmount: cChainRequiredAmountAvax.toSubUnit(),
         selectedCurrency
       })
       return EarnService.issueAddDelegatorTransaction({

@@ -34,12 +34,12 @@ import {
   PChainTransactionType,
   SortOrder
 } from '@avalabs/glacier-sdk'
-import { Avax } from 'types/Avax'
 import { getInfoApi } from 'utils/network/info'
 import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -124,7 +124,7 @@ class EarnService {
     isDevMode,
     selectedCurrency
   }: CollectTokensForStakingParams): Promise<void> {
-    if (requiredAmount.isZero()) {
+    if (requiredAmount === 0n) {
       Logger.info('no need to cross chain')
       return
     }
@@ -151,8 +151,8 @@ class EarnService {
    */
   // eslint-disable-next-line max-params
   async claimRewards(
-    pChainBalance: Avax,
-    requiredAmount: Avax,
+    pChainBalance: TokenUnit,
+    requiredAmount: TokenUnit,
     activeAccount: Account,
     isDevMode: boolean
   ): Promise<void> {
@@ -178,12 +178,13 @@ class EarnService {
    */
   // eslint-disable-next-line max-params
   calcReward(
-    amount: Avax,
+    amount: TokenUnit,
     duration: Seconds,
-    currentSupply: Avax,
+    currentSupply: TokenUnit,
     delegationFee: number,
     isDeveloperMode: boolean
-  ): Avax {
+  ): TokenUnit {
+    const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
     const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
     const minConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
@@ -199,8 +200,11 @@ class EarnService {
       .add(maxConsumptionRateRatio.mul(stakingPeriodOverMintingPeriod))
 
     const stakeOverSupply = amount.div(currentSupply)
-    const supplyCap = Avax.fromNanoAvax(
-      defPlatformVals.stakingConfig.RewardConfig.SupplyCap
+    const nAvax = defPlatformVals.stakingConfig.RewardConfig.SupplyCap
+    const supplyCap = new TokenUnit(
+      nAvax,
+      avaxPNetwork.networkToken.decimals,
+      avaxPNetwork.networkToken.symbol
     )
     const unmintedSupply = supplyCap.sub(currentSupply)
     const fullReward = unmintedSupply

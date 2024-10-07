@@ -1,5 +1,4 @@
 import { Account } from 'store/account'
-import { Avax } from 'types/Avax'
 
 export type AddDelegatorTransactionProps = {
   activeAccount: Account
@@ -17,8 +16,14 @@ export type AddDelegatorTransactionProps = {
 export type UnixTimeMs = number
 
 export type CollectTokensForStakingParams = {
-  cChainBalance: Avax
-  requiredAmount: Avax
+  /**
+   * In `Wei`
+   */
+  cChainBalance: bigint
+  /**
+   * In `Wei`
+   */
+  requiredAmount: bigint
   activeAccount: Account
   isDevMode: boolean
   selectedCurrency: string

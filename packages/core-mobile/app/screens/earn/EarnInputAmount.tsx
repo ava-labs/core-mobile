@@ -2,27 +2,32 @@ import OvalTagBg from 'components/OvalTagBg'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Platform } from 'react-native'
 import limitInput, { getMaxDecimals } from 'screens/earn/limitInput'
-import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
-import { Avax } from 'types/Avax'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { TokenUnitInput } from 'components/TokenUnitInput'
 import Avatar from 'components/Avatar'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
+import { zeroTokenUnit } from 'utils/units/zeroValues'
 
 const EarnInputAmount = ({
   inputAmount,
   handleAmountChange
 }: {
-  inputAmount?: Avax
-  handleAmountChange?: (amount: Avax) => void
+  inputAmount: TokenUnit
+  handleAmountChange?: (amount: TokenUnit) => void
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const [maxDecimals, setMaxDecimals] = useState(
-    inputAmount?.getMaxDecimals ?? 0
-  )
-  const network = useCChainNetwork()
+  const maxDecimalDigits = useMemo(() => {
+    return getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals()
+  }, [inputAmount])
+
+  const isTestnet = useSelector(selectIsDeveloperMode)
+  const network = NetworkService.getAvalancheNetworkP(isTestnet)
 
   const isAndroid = Platform.OS === 'android'
 
@@ -33,13 +38,8 @@ const EarnInputAmount = ({
     }
   }, [handleAmountChange, inputAmount])
 
-  useEffect(() => {
-    if (!inputAmount) return
-    setMaxDecimals(getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals())
-  }, [inputAmount])
-
-  const interceptAmountChange = (amount: Avax): void => {
-    const sanitized = limitInput(amount) ?? Avax.fromBase(0)
+  const interceptAmountChange = (amount: TokenUnit): void => {
+    const sanitized = limitInput(amount) ?? zeroTokenUnit(network.networkToken)
     handleAmountChange?.(sanitized)
   }
 
@@ -50,10 +50,11 @@ const EarnInputAmount = ({
         justifyContent: 'center',
         marginHorizontal: 16
       }}>
-      <TokenBaseUnitInput
+      <TokenUnitInput
         value={inputAmount}
-        baseUnitConstructor={Avax}
-        maxDecimals={maxDecimals}
+        maxTokenDecimals={inputAmount.getMaxDecimals()}
+        maxDecimalDigits={maxDecimalDigits}
+        tokenSymbol={inputAmount.getSymbol()}
         placeholder={'0.0'}
         onChange={interceptAmountChange}
         style={{

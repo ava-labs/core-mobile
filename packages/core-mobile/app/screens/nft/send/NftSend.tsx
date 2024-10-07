@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import { Text, Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
@@ -12,10 +12,8 @@ import FlexSpacer from 'components/FlexSpacer'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
-import { useSendNFTContext } from 'contexts/SendNFTContext'
-import { Account } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import { NFTItem } from 'store/nft'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { SvgXml } from 'react-native-svg'
 import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -23,33 +21,62 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { Contact } from '@avalabs/types'
 import { getAddressProperty } from 'store/utils/account&contactGetters'
 import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
+import useEVMSend from 'screens/send/hooks/useEVMSend'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
+import { useSelector } from 'react-redux'
+import { selectTokensWithBalance } from 'store/balance'
+import { NetworkTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { showTransactionErrorToast } from 'utils/toast'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { useSendContext } from 'contexts/SendContext'
 
 type NftSendScreenProps = {
   onOpenAddressBook: () => void
 }
 
 type NftSendNavigationProp = NFTDetailsSendScreenProps<
-  typeof AppNavigation.NftSend.AddressPick
->['navigation']
+  typeof AppNavigation.NftSend.Send
+>
 
 export default function NftSend({
   onOpenAddressBook
 }: NftSendScreenProps): JSX.Element {
-  const navigation = useNavigation<NftSendNavigationProp>()
+  const navigation = useNavigation<NftSendNavigationProp['navigation']>()
+  const { params } = useRoute<NftSendNavigationProp['route']>()
   const {
-    sendToken: nft,
-    toAccount,
-    canSubmit,
-    onSendNow,
-    sendStatus,
-    sdkError
-  } = useSendNFTContext()
+    token,
+    toAddress,
+    setToAddress,
+    maxFee,
+    error,
+    isSending,
+    isValid,
+    isValidating
+  } = useSendContext()
   const { activeNetwork } = useNetworks()
+  const provider = useMemo(() => getEvmProvider(activeNetwork), [activeNetwork])
+  const activeAccount = useSelector(selectActiveAccount)
+  const fromAddress = activeAccount?.addressC ?? ''
+  const tokens = useSelector(selectTokensWithBalance)
+  const nativeToken = tokens.find(
+    t => t.type === TokenType.NATIVE
+  ) as NetworkTokenWithBalance
+  const [touched, setTouched] = useState(false)
 
-  const sendInProcess = sendStatus === 'Sending'
-  const sendDisabled = !canSubmit || !toAccount.address || !!sdkError
+  const { send } = useEVMSend({
+    chainId: activeNetwork.chainId,
+    fromAddress,
+    provider,
+    maxFee,
+    nativeToken
+  })
+
+  const canSubmit =
+    !isValidating && !isSending && isValid && !!toAddress && error === undefined
 
   const {
     saveRecentContact,
@@ -59,20 +86,22 @@ export default function NftSend({
     showAddressBook
   } = useAddressBookLists()
 
-  const onNextPress = (): void => {
+  const onNextPress = async (): Promise<void> => {
     saveRecentContact()
-    onSendNow()
-  }
 
-  useEffect(() => {
-    if (toAccount.address) {
-      setShowAddressBook(false)
+    if (token === undefined || toAddress === undefined) {
+      return
     }
-  }, [setShowAddressBook, toAccount.address])
 
-  useEffect(() => {
-    if (sendStatus === 'Success') {
-      // go back to Portfolio - Collectibles screen
+    try {
+      await send()
+
+      AnalyticsService.capture('NftSendSucceeded', {
+        chainId: activeNetwork.chainId
+      })
+
+      audioFeedback(Audios.Send)
+
       navigation.navigate(AppNavigation.Wallet.Drawer, {
         screen: AppNavigation.Wallet.Tabs,
         params: {
@@ -80,36 +109,37 @@ export default function NftSend({
           params: {}
         }
       })
+    } catch (reason) {
+      if (reason instanceof Error && !isUserRejectedError(reason)) {
+        showTransactionErrorToast({
+          message: getJsonRpcErrorMessage(reason)
+        })
+        AnalyticsService.capture('NftSendFailed', {
+          errorMessage: reason?.message,
+          chainId: activeNetwork.chainId
+        })
+      }
     }
-  }, [navigation, sendStatus])
-
-  function setAddress({
-    address,
-    title
-  }: {
-    address: string
-    title: string
-  }): void {
-    toAccount.setAddress?.(address)
-    toAccount.setTitle?.(title)
   }
+
+  useEffect(() => {
+    if (toAddress) {
+      setShowAddressBook(false)
+    }
+  }, [setShowAddressBook, toAddress])
+
+  useEffect(() => {
+    if (touched === false && toAddress) {
+      setTouched(true)
+    }
+  }, [toAddress, token, touched])
 
   const onContactSelected = (
     item: Contact | Account,
     type: AddrBookItemType,
     source: AddressBookSource
   ): void => {
-    switch (activeNetwork.vmName) {
-      case NetworkVMType.EVM:
-        setAddress({ address: getAddressProperty(item), title: item.name })
-        break
-      case NetworkVMType.BITCOIN:
-        setAddress({
-          address: item.addressBTC ?? '',
-          title: item.name
-        })
-        break
-    }
+    setToAddress(getAddressProperty(item))
     selectContact(item, type)
     AnalyticsService.capture('NftSendContactSelected', {
       contactSource: source
@@ -126,12 +156,12 @@ export default function NftSend({
           placeholder={'Enter 0x Address'}
           multiline={true}
           onChangeText={text => {
-            toAccount.setAddress?.(text)
+            setToAddress(text)
             resetAddressBookList()
           }}
-          text={toAccount.address}
+          text={toAddress ?? ''}
         />
-        {!toAccount.address && (
+        {!toAddress && (
           <View
             style={{
               position: 'absolute',
@@ -156,9 +186,9 @@ export default function NftSend({
       ) : (
         <>
           <Text variant="heading6">Collectible</Text>
-          <CollectibleItem nft={nft} />
+          <CollectibleItem nft={params.nft} />
           <Text variant="body1" sx={{ color: '$dangerMain' }}>
-            {sdkError ?? ''}
+            {touched && error ? error : ''}
           </Text>
           <FlexSpacer />
         </>
@@ -168,7 +198,7 @@ export default function NftSend({
         type="primary"
         size="xlarge"
         onPress={onNextPress}
-        disabled={sendInProcess || sendDisabled}
+        disabled={!canSubmit}
         style={{ marginBottom: 16 }}>
         Next
       </Button>

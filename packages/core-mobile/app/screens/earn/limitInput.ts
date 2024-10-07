@@ -1,10 +1,11 @@
-import { TokenBaseUnit } from 'types/TokenBaseUnit'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import Big from 'big.js'
 
 const MAX_DIGITS = 7
 
-export default function limitInput<T extends TokenBaseUnit<T>>(
-  input: T | undefined
-): T | undefined {
+export default function limitInput(
+  input: TokenUnit | undefined
+): TokenUnit | undefined {
   if (!input) {
     return undefined
   }
@@ -17,13 +18,19 @@ export default function limitInput<T extends TokenBaseUnit<T>>(
     const decimals = split[1] ?? ''
     const trimmedDecimals = decimals.slice(0, -extraDigits)
     const trimmedDecimalsSize = trimmedDecimals.length
-    return input.cut(trimmedDecimalsSize)
+    const value = new Big(stringAmount).round(
+      trimmedDecimalsSize,
+      Big.roundDown
+    )
+    return new TokenUnit(0, input.getMaxDecimals(), input.getSymbol()).add(
+      value
+    )
   }
   return input
 }
 
-export function getMaxDecimals<T extends TokenBaseUnit<T>>(
-  input: T | undefined
+export function getMaxDecimals(
+  input: TokenUnit | undefined
 ): number | undefined {
   if (!input) {
     return undefined
