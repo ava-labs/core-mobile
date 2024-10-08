@@ -5,15 +5,15 @@ import {
 } from '@react-navigation/stack'
 import { Animated } from 'react-native'
 import React from 'react'
-import BackButtonIcon from 'components/BackButtonIcon'
 import Grabber from 'components/Grabber'
+import BackBarButton from 'components/BackBarButton'
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
   headerBackTitleVisible: false,
   headerTitle: () => <Grabber />,
   headerShadowVisible: false,
-  headerBackImage: () => <BackButtonIcon />
+  headerBackImage: () => <BackBarButton />
 }
 
 export const modalScreensOptions: StackNavigationOptions = {

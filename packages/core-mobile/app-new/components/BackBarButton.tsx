@@ -1,13 +1,13 @@
 import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
 
-const BackButtonIcon = (): JSX.Element => {
+const BackBarButton = (): JSX.Element => {
   return (
-    // todo: customise back image
+    // todo: use k2-alpine icon
     <View sx={{ paddingLeft: 18 }}>
       <Text>{'<<'}</Text>
     </View>
   )
 }
 
-export default BackButtonIcon
+export default BackBarButton
