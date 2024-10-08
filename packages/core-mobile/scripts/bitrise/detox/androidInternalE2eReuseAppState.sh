@@ -10,6 +10,9 @@ npm rebuild detox
 adb install -r $BITRISE_TEST_APK_PATH
 adb install -r $BITRISE_APK_PATH
 
+echo $IS_INTERNAL_BUILD
+echo $IS_EXTERNAL_BUILD
+
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
 
 if (($IS_REGRESSION_RUN=='true')); then
