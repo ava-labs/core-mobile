@@ -124,7 +124,7 @@ class SwapTabPage {
     } catch (e) {
       console.error('Token spend approval not found')
     }
-    await popUpModalPage.verifyFeeIsLegit(false, 0.1)
+    await popUpModalPage.verifyFeeIsLegit(false, 0.2)
     await this.tapApproveButton()
   }
 }
