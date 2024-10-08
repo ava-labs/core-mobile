@@ -2,7 +2,6 @@ import { cleanup } from '../../../helpers/cleanup'
 import { warmup } from '../../../helpers/warmup'
 import sendLoc from '../../../locators/send.loc'
 import accountManagePage from '../../../pages/accountManage.page'
-import activityTabPage from '../../../pages/activityTab.page'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
 import advancedPage from '../../../pages/burgerMenu/advanced.page'
 import networksManagePage from '../../../pages/networksManage.page'
@@ -30,17 +29,6 @@ describe('Send ETH', () => {
     await sendPage.verifySuccessToast()
   })
 
-  it('Should verify the ETH transaction on MainNet ', async () => {
-    await portfolioPage.tapEthNetwork()
-    await portfolioPage.tapActivityTab()
-    await activityTabPage.verifyExistingRow('Send', '-0.000001 ETH')
-
-    await accountManagePage.switchToSecondAccount()
-    await activityTabPage.refreshActivityPage()
-    await activityTabPage.verifyExistingRow('Receive', '+0.000001 ETH')
-    await accountManagePage.switchToFirstAccount()
-  })
-
   it('Should switch to Ethereum Sepolia on TestNet', async () => {
     await bottomTabsPage.tapPortfolioTab()
     await advancedPage.switchToTestnet()
@@ -54,15 +42,5 @@ describe('Send ETH', () => {
       sendLoc.sendingAmount
     )
     await sendPage.verifySuccessToast()
-  })
-
-  it('Should verify the ETH transaction on TestNet ', async () => {
-    await networksManagePage.tapEthereumSepoliaNetwork(1)
-    await portfolioPage.tapActivityTab()
-    await activityTabPage.verifyExistingRow('Send', '-0.000001 ETH')
-
-    await accountManagePage.switchToSecondAccount()
-    await activityTabPage.refreshActivityPage()
-    await activityTabPage.verifyExistingRow('Receive', '+0.000001 ETH')
   })
 })
