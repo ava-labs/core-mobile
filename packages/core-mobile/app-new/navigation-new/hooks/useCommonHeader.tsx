@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useEffect } from 'react'
-import BackButtonIcon from 'components/BackButtonIcon'
+import BackBarButton from 'components/BackBarButton'
 
 const useCommonHeader = (): void => {
   const navigation = useNavigation()
@@ -9,7 +9,7 @@ const useCommonHeader = (): void => {
     navigation.setOptions({
       title: '',
       headerBackTitleVisible: false,
-      headerBackImage: () => <BackButtonIcon />,
+      headerBackImage: () => <BackBarButton />,
       headerShadowVisible: false
     })
   }, [navigation])
