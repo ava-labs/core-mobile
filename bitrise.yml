@@ -69,6 +69,9 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
     steps:
     - set-java-version@1:
         inputs:
@@ -124,6 +127,7 @@ workflows:
             TESTS_TO_RUN_GROUP_4=$TESTS_4
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
+            IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
@@ -146,6 +150,9 @@ workflows:
       opts:
         is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
     steps:
@@ -203,6 +210,7 @@ workflows:
             TESTS_TO_RUN_GROUP_4=$TESTS_4
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
+            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
