@@ -6,7 +6,7 @@ import ReceiveBarButton from 'components/ReceiveBarButton'
 import NotificationBarButton from 'components/NotificationBarButton'
 import { View } from '@avalabs/k2-alpine'
 
-const useTabHomeHeader = (): void => {
+const useHomeScreenHeader = (): void => {
   const navigation = useNavigation<SignedInStackProps['navigation']>()
 
   const renderHeaderLeft = useCallback(
@@ -50,4 +50,4 @@ const useTabHomeHeader = (): void => {
   }, [navigation, renderHeaderLeft, renderHeaderRight])
 }
 
-export default useTabHomeHeader
+export default useHomeScreenHeader

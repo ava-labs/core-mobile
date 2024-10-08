@@ -1,6 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import PortfolioScreen from 'portfolio/screens/PortfolioScreen'
+import PortfolioHomeScreen from 'portfolio/screens/PortfolioHomeScreen'
 import PortfolioAssetsScreen from 'portfolio/screens/PortfolioAssetsScreen'
 
 const Stack = createStackNavigator<PortfolioStackParamList>()
@@ -8,7 +8,10 @@ const Stack = createStackNavigator<PortfolioStackParamList>()
 const PortfolioStack = (): JSX.Element => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="PortfolioScreen" component={PortfolioScreen} />
+      <Stack.Screen
+        name="PortfolioHomeScreen"
+        component={PortfolioHomeScreen}
+      />
       <Stack.Screen
         name="PortfolioAssetsScreen"
         component={PortfolioAssetsScreen}
@@ -18,7 +21,7 @@ const PortfolioStack = (): JSX.Element => {
 }
 
 export type PortfolioStackParamList = {
-  PortfolioScreen: undefined
+  PortfolioHomeScreen: undefined
   PortfolioAssetsScreen: undefined
 }
 

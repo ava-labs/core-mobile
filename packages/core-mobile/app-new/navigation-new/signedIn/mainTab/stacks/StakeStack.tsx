@@ -1,17 +1,13 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import StakeScreen from 'stake/screens/StakeScreen'
+import StakeHomeScreen from 'stake/screens/StakeHomeScreen'
 
 const Stack = createStackNavigator()
 
 const StakeStack = (): JSX.Element => {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="StakeScreen"
-        options={{ title: 'Stake' }}
-        component={StakeScreen}
-      />
+      <Stack.Screen name="StakeHomeScreen" component={StakeHomeScreen} />
     </Stack.Navigator>
   )
 }
