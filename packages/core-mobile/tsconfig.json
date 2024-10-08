@@ -3,8 +3,9 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "baseUrl": "./app",
+    "baseUrl": "./",
     "paths": {
+      "*": ["app/*", "app-new/*"],
       "tests/*": ["../tests/*"]
     }
   },
