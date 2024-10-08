@@ -280,7 +280,7 @@ const NetworkFeeSelector = ({
             Fee Amount
           </Text>
           <View sx={{ flexDirection: 'row' }}>
-            <Text sx={{ color: '$neutral50' }}>
+            <Text testID="token_gas_fee" sx={{ color: '$neutral50' }}>
               {`${calculatedMaxTotalFeeDisplayed} `}
             </Text>
             <Text variant="body1" sx={{ color: '$neutral400' }}>

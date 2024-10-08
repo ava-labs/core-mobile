@@ -92,12 +92,6 @@ class SendPage {
   }
 
   async tapApproveButton() {
-    try {
-      await Actions.waitForElement(this.approveButton, 5000)
-    } catch (e) {
-      await this.tapNextButton()
-    }
-    await Actions.waitForElement(this.approveButton, 5000)
     await Actions.tapElementAtIndex(this.approveButton, 0)
   }
 
@@ -120,7 +114,11 @@ class SendPage {
     await Actions.setInputText(this.amountToSendInput, amount, 0)
   }
 
-  async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
+  async sendTokenTo2ndAccount(
+    token: string,
+    sendingAmmount: string,
+    isPXChain = false
+  ) {
     await Actions.waitForElement(BottomTabsPage.plusIcon)
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSendButton()
@@ -133,6 +131,7 @@ class SendPage {
     await this.waitForNextBtnEnabled()
     await this.tapSendTitle()
     await this.tapNextButton()
+    await popUpModalPage.verifyFeeIsLegit(isPXChain)
     await this.tapApproveButton()
   }
 

@@ -1,6 +1,8 @@
+import assert from 'assert'
 import actions from '../helpers/actions'
 import asserts from '../helpers/assertions'
 import popUpModalLoc from '../locators/popupModal.loc'
+import sendPage from './send.page'
 
 class PopUpModalPage {
   get toastMessage() {
@@ -154,6 +156,38 @@ class PopUpModalPage {
     await asserts.isVisible(this.feeAmount)
     await asserts.isVisible(this.approveBtn)
     await asserts.isVisible(this.rejectBtn)
+  }
+
+  async verifyApproveTransactionScreen() {
+    try {
+      await actions.waitForElement(this.approveBtn, 5000)
+    } catch (e) {
+      await sendPage.tapNextButton()
+    }
+    await actions.waitForElement(this.approveBtn, 5000)
+  }
+
+  async verifyFeeIsLegit(isPXChain = false, estimatedGasFee = 0.009) {
+    await this.verifyApproveTransactionScreen()
+    await actions.swipeUp(this.feeAmount, 'fast', 0.25, 0)
+    let tokenGasFee
+    if (isPXChain) {
+      tokenGasFee = await actions.getElementText(
+        by.id(popUpModalLoc.tokenAmount),
+        1
+      )
+    } else {
+      tokenGasFee = await actions.getElementText(
+        by.id(popUpModalLoc.tokenGasFee)
+      )
+    }
+    console.log(`Current gas fee: ${tokenGasFee}`)
+    const tokenMatch = tokenGasFee?.match(/[\d.]+/)
+    const token = tokenMatch ? parseFloat(tokenMatch[0]) : 0
+    assert(
+      token > 0 && token <= estimatedGasFee,
+      `currVal: ${token} !<= expectedVal: ${estimatedGasFee}`
+    )
   }
 }
 

@@ -69,6 +69,9 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
     steps:
     - set-java-version@1:
         inputs:
@@ -122,6 +125,9 @@ workflows:
             TESTS_TO_RUN_GROUP_2=$TESTS_2
             TESTS_TO_RUN_GROUP_3=$TESTS_3
             TESTS_TO_RUN_GROUP_4=$TESTS_4
+            BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
+            BITRISE_APK_PATH=$BITRISE_APK_PATH
+            IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
@@ -144,6 +150,9 @@ workflows:
       opts:
         is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
     steps:
@@ -199,6 +208,9 @@ workflows:
             TESTS_TO_RUN_GROUP_2=$TESTS_2
             TESTS_TO_RUN_GROUP_3=$TESTS_3
             TESTS_TO_RUN_GROUP_4=$TESTS_4
+            BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
+            BITRISE_APK_PATH=$BITRISE_APK_PATH
+            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
@@ -209,12 +221,16 @@ workflows:
   _pull_app_files:
     steps:
     - pull-intermediate-files@1:
+        run_if: |-
+          {{getenv "IS_INTERNAL_BUILD" | eq "true"}}
         inputs:
         - artifact_sources: .*
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
+        run_if: |-
+          {{getenv "IS_EXTERNAL_BUILD" | eq "true"}}
         inputs:
         - artifact_sources: .*
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
@@ -504,6 +520,9 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
   android-internal:
     before_run:
     - _trigger_ios_internal_build
@@ -608,6 +627,9 @@ workflows:
     - IS_REGRESSION_RUN: "true"
       opts:
         is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
     steps:
     - share-pipeline-variable@1:
         inputs:
@@ -656,6 +678,8 @@ workflows:
   android-e2e-run-pixel3:
     before_run:
     - _install-and-set-env
+    - _pull_app_files
+    - _pull_external_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -702,6 +726,8 @@ workflows:
   android-e2e-run-pixel4:
     before_run:
     - _install-and-set-env
+    - _pull_app_files
+    - _pull_external_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -748,6 +774,8 @@ workflows:
   android-e2e-run-pixel5:
     before_run:
     - _install-and-set-env
+    - _pull_app_files
+    - _pull_external_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -794,6 +822,8 @@ workflows:
   android-e2e-run-pixel6:
     before_run:
     - _install-and-set-env
+    - _pull_app_files
+    - _pull_external_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -840,6 +870,8 @@ workflows:
   android-e2e-run-pixel2-arm:
     before_run:
     - _install-and-set-env
+    - _pull_app_files
+    - _pull_external_app_files
     after_run:
     - _run_android_detox_tests
     - _upload-detox-artifacts
@@ -939,6 +971,9 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
   ios-internal:
     before_run:
     - _install-and-set-env
@@ -969,6 +1004,9 @@ workflows:
       opts:
         is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
     steps:
@@ -1019,6 +1057,7 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
+    - _pull_external_app_files
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -1064,6 +1103,8 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-ios-simulator
+    - _pull_app_files
+    - _pull_external_app_files
     envs:
     - ENVIRONMENT: production
       opts:
@@ -1110,6 +1151,7 @@ workflows:
       - _install-and-set-env
       - _set-version
       - _pull_app_files
+      - _pull_external_app_files  
       after_run:
       - _upload-detox-artifacts
       - _send-test-result-notification-slack
@@ -1142,6 +1184,9 @@ workflows:
         opts:
           is_expand: false 
       - IS_REGRESSION_RUN: "true"
+        opts:
+          is_expand: false
+      - IS_EXTERNAL_BUILD: "true"
         opts:
           is_expand: false
       steps:

@@ -21,5 +21,7 @@ export default {
   switchToSepoliaNetwork: 'Switch to Sepolia Network?',
   switchToFujiNetwork: 'Switch to Avalanche (C-Chain) Network?',
   createContact: 'Create Contact?',
-  messageDetail: 'message_detail'
+  messageDetail: 'message_detail',
+  tokenGasFee: 'token_gas_fee',
+  tokenAmount: 'token_amount'
 }
