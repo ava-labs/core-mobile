@@ -1,5 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack'
-import BrowserScreen from 'browser/screens/BrowserScreen'
+import BrowserHomeScreen from 'browser/screens/BrowserHomeScreen'
 import React from 'react'
 
 const Stack = createStackNavigator()
@@ -7,11 +7,7 @@ const Stack = createStackNavigator()
 const BrowserStack = (): JSX.Element => {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="BrowserScreen"
-        options={{ title: 'Browser' }}
-        component={BrowserScreen}
-      />
+      <Stack.Screen name="BrowserHomeScreen" component={BrowserHomeScreen} />
     </Stack.Navigator>
   )
 }

@@ -1,10 +1,10 @@
 import useCommonHeader from 'navigation-new/hooks/useCommonHeader'
 import React from 'react'
 
-const BrowserScreen = (): JSX.Element => {
+const BrowserHomeScreen = (): JSX.Element => {
   useCommonHeader()
 
   return <></>
 }
 
-export default BrowserScreen
+export default BrowserHomeScreen

@@ -1,17 +1,13 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import TrackScreen from 'track/screens/TrackScreen'
+import TrackHomeScreen from 'track/screens/TrackHomeScreen'
 
 const Stack = createStackNavigator()
 
 const TrackStack = (): JSX.Element => {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="TrackScreen"
-        options={{ title: 'Track' }}
-        component={TrackScreen}
-      />
+      <Stack.Screen name="TrackHomeScreen" component={TrackHomeScreen} />
     </Stack.Navigator>
   )
 }
