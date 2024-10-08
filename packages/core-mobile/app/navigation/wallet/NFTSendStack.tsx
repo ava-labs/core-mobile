@@ -13,7 +13,7 @@ import { selectIsSendBlocked } from 'store/posthog'
 import { NFTItem, NFTItemData } from 'store/nft'
 import { NftTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
 import { isErc721 } from 'services/nft/utils'
-import { SendContextProvider } from 'contexts/SendContext'
+import { SendContextProvider, useSendContext } from 'contexts/SendContext'
 
 export type NFTSendStackParamList = {
   [AppNavigation.NftSend.Send]: { nft: NFTItem }
@@ -68,9 +68,21 @@ type AddressPickNavigationProp = NFTDetailsSendScreenProps<
 const NftSendScreen = (): JSX.Element => {
   const { navigate } = useNavigation<AddressPickNavigationProp>()
 
+  const navigation = useNavigation<NFTSendScreenProp['navigation']>()
+  const { setToAddress } = useSendContext()
+
+  const handleOpenQRScanner = (): void => {
+    navigation.navigate(AppNavigation.Modal.QRScanner, {
+      onSuccess: (data: string) => {
+        setToAddress(data)
+      }
+    })
+  }
+
   return (
     <NftSend
       onOpenAddressBook={() => navigate(AppNavigation.Wallet.AddressBook)}
+      onOpenQRScanner={() => handleOpenQRScanner()}
     />
   )
 }
