@@ -24,6 +24,7 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "<rootDir>/tests/plusIcon/send/sendBitcoin.e2e.ts"
+    "<rootDir>/tests/plusIcon/send/sendBitcoin.e2e.ts",
+    "<rootDir>/tests/notification/sendNotification.e2e.ts"
   ]
 }

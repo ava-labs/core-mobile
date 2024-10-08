@@ -120,7 +120,17 @@ function NotificationToggle({
       title={channel.title}
       subtitle={channel.subtitle}
       background={theme.background}
-      rightComponent={<Switch value={checked} onValueChange={onChange} />}
+      rightComponent={
+        <Switch
+          testID={
+            checked
+              ? `${channel.title}_enabled_switch`
+              : `${channel.title}_disabled_switch`
+          }
+          value={checked}
+          onValueChange={onChange}
+        />
+      }
     />
   )
 }

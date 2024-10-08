@@ -7,5 +7,6 @@ export default {
   getStartedBtn: 'Get Started',
   retryBtn: 'Retry',
   testnetBanner: 'testnet_banner',
-  notNow: 'Not Now'
+  notNow: 'Not Now',
+  turnOnNotifications: 'Turn on Notifications'
 }
