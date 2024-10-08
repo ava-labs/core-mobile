@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import TestRail from '@dlenroc/testrail'
-import getTestLogs, {
-  isSmokeTestRun,
-  testRunTimestamp
-} from './getResultsFromLogs'
+
 const fs = require('fs')
+const getTestLogs = require('./getResultsFromLogs').getTestLogs
+const isSmokeTestRun = require('./getResultsFromLogs').isSmokeTestRun
+const testRunTimestamp = require('./getResultsFromLogs').testRunTimestamp
 
 const projectId = 3
 const password = String(process.env.TESTRAIL_API_KEY)
