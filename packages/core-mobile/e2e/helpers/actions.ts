@@ -147,11 +147,24 @@ const getAttributes = async (item: any, index = 0) => {
 const getElementsTextByTestId = async (testID: string): Promise<string[]> => {
   const output: string[] = []
   const elements = await getElementsByTestId(testID)
-  elements.forEach(async ele => {
+  for (const ele of elements) {
     const curr = await ele.getAttributes()
     if (!('elements' in curr) && curr.text) output.push(curr.text)
-  })
+  }
+  console.log(output)
   return output
+}
+
+const getElementText = async (ele: Detox.NativeMatcher, index = 0) => {
+  try {
+    const eleAttr = await element(ele).getAttributes()
+    if (!('elements' in eleAttr)) {
+      return eleAttr.text
+    } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
+  } catch (e) {
+    console.error('Failed to get element text:', e)
+  }
+  return ''
 }
 
 const getElementsByTestId = async (testID: string) => {
@@ -162,7 +175,6 @@ const getElementsByTestId = async (testID: string) => {
   while (elementFound) {
     // Add the found element to the array
     elements.push(element(by.id(testID)).atIndex(elements.length))
-    console.log(elements.length)
     // Try to find the next element with the same testID
     elementFound = await isVisible(by.id(testID), elements.length)
     // await element(by.id(testID)).atIndex(elements.length).scrollTo('top')
@@ -314,5 +326,6 @@ export default {
   scrollListUntil,
   getElementsByTestId,
   getElementsTextByTestId,
-  dismissKeyboard
+  dismissKeyboard,
+  getElementText
 }

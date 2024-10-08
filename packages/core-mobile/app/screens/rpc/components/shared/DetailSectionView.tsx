@@ -92,7 +92,7 @@ export const DetailSectionView = ({
 
     return (
       <View sx={{ alignItems: 'flex-end' }}>
-        <Text variant="buttonSmall">
+        <Text variant="buttonSmall" testID="token_amount">
           {new TokenUnit(value, decimals, symbol).toDisplay()} {symbol}
         </Text>
         {marketToken?.currentPrice !== undefined && (
