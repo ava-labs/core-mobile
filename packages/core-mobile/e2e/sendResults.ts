@@ -96,7 +96,8 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   return { resultsToSendToTestrail, testCasesToSend }
 }
 
-export default async function sendResults() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function sendResults() {
   const preparedFinalResults = await prepareFinalResults()
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
