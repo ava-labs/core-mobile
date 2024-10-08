@@ -222,4 +222,6 @@ async function attachLogToRun(
   }
 }
 
-export { sendResults }
+module.exports = {
+  sendResults
+}

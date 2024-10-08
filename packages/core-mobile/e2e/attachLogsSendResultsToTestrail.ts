@@ -1,4 +1,4 @@
-const sendResults = require('./sendResults').sendResults
+const { sendTheResults } = require('./sendResults').sendResults
 
 async function sendMyResults() {
   if (process.env.POST_TO_TESTRAIL === 'false') {
@@ -6,7 +6,7 @@ async function sendMyResults() {
     return
   }
   console.log('Sending results to TestRail...')
-  await sendResults()
+  await sendTheResults()
 }
 
 sendMyResults()
