@@ -11,6 +11,7 @@ import portfolioLoc from '../../../locators/portfolio.loc'
 describe('Send AVAX', () => {
   beforeAll(async () => {
     await warmup()
+    await accountManagePage.createSecondAccount()
   })
 
   afterAll(async () => {
@@ -18,7 +19,6 @@ describe('Send AVAX', () => {
   })
 
   it('should send AVAX on C-Chain', async () => {
-    await accountManagePage.createSecondAccount()
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
@@ -37,7 +37,8 @@ describe('Send AVAX', () => {
     )
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
-      sendLoc.sendingAmount
+      sendLoc.sendingAmount,
+      true
     )
     await sendPage.verifySuccessToast()
   })
@@ -53,7 +54,8 @@ describe('Send AVAX', () => {
     )
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
-      sendLoc.sendingAmount
+      sendLoc.sendingAmount,
+      true
     )
     await sendPage.verifySuccessToast()
   })

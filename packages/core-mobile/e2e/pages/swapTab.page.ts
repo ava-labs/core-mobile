@@ -5,6 +5,7 @@ import delay from '../helpers/waits'
 import swapTab from '../locators/swapTab.loc'
 import bottomTabsPage from './bottomTabs.page'
 import plusMenuPage from './plusMenu.page'
+import popUpModalPage from './popUpModal.page'
 import sendPage from './send.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
@@ -123,6 +124,7 @@ class SwapTabPage {
     } catch (e) {
       console.error('Token spend approval not found')
     }
+    await popUpModalPage.verifyFeeIsLegit(false, 0.2)
     await this.tapApproveButton()
   }
 }

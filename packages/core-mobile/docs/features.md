@@ -40,4 +40,7 @@
   - PROXY_URL
 - NFT details, primary network balances and transactions, EVM balances
   - GLACIER_URL
+- C-Chain Balance notifications
+  - APPCHECK_DEBUG_TOKEN
+  - NOTIFICATION_SENDER_API_URL
 

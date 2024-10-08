@@ -6,7 +6,7 @@
 
 2. Set up [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
-3. Run `yarn envs` to fetch and create all the necessary .env files
+3. Run `yarn envs` to fetch and create all the necessary .env files as well as google-services files 
 
 4. Run `yarn install && yarn setup` if you haven't
 
