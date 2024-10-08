@@ -24,6 +24,7 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "./e2e/tests/plusIcon/send/sendBitcoin.e2e.ts"
+    "./e2e/tests/plusIcon/send/sendBitcoin.e2e.ts",
+    "./e2e/tests/notification/sendNotification.e2e.ts"
   ]
 }

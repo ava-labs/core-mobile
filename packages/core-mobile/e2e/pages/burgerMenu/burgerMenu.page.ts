@@ -30,6 +30,18 @@ class BurgerMenuPage {
     return by.text(burgerMenu.securityAndPrivacy)
   }
 
+  get notifications() {
+    return by.text(burgerMenu.notifications)
+  }
+
+  get deleteWalletBtn() {
+    return by.text(burgerMenu.deleteWalletBtn)
+  }
+
+  get iUnderstand() {
+    return by.text(burgerMenu.iUnderstand)
+  }
+
   async swipeLeft() {
     await Actions.swipeLeft(
       by.id(burgerMenu.carrotSvg),
@@ -52,6 +64,9 @@ class BurgerMenuPage {
     await Actions.tapElementAtIndex(this.burgerMenuButton, 0)
   }
 
+  async tapNotifications() {
+    await Actions.tapElementAtIndex(this.notifications, 0)
+  }
   async tapCurrency() {
     await Actions.tapElementAtIndex(this.currency, 0)
   }
@@ -71,6 +86,11 @@ class BurgerMenuPage {
   async exitBurgerMenu() {
     await this.tapBackbutton()
     await this.dismissBurgerMenu()
+  }
+
+  async deleteWallet() {
+    await Actions.tapElementAtIndex(this.deleteWalletBtn, 0)
+    await Actions.tapElementAtIndex(this.iUnderstand, 0)
   }
 }
 
