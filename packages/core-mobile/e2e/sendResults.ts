@@ -1,16 +1,17 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 // import * as fs from 'fs'
-import {
+const fs = require('fs')
+const path = require('path')
+const getTestLogs = require('./getResultsFromLogs').default
+const { isResultPresent } = require('./getResultsFromLogs')
+const {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
   getTestCasesFromRun,
   generateUtcTimestamp
-} from './generateTestrailObjects'
-import getTestLogs, { isResultPresent } from './getResultsFromLogs'
-const fs = require('fs')
-const path = require('path')
+} = require('./generateTestrailObjects')
 
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
