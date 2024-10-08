@@ -46,7 +46,7 @@ async function parseResultsFile() {
   return { casesToAddToRun, testIdArrayForTestrail }
 }
 
-export async function prepareResults() {
+async function prepareResults() {
   const resultsToSendObject = await parseResultsFile()
   const testIdArrayForTestrail = resultsToSendObject.testIdArrayForTestrail
   const casesToAddToRun = resultsToSendObject.casesToAddToRun
@@ -62,7 +62,7 @@ export async function prepareResults() {
   return { casesToAddToRun, testCasesToSend }
 }
 
-export async function prepareFinalResults() {
+async function prepareFinalResults() {
   const preparedResults = await prepareResults()
   const casesToAddToRun = preparedResults.casesToAddToRun
   const testCasesToSend = preparedResults.testCasesToSend
@@ -127,17 +127,6 @@ export default async function sendResults() {
       'POST_TO_TESTRAIL is false, skipping sending results to TestRail',
       process.env.POST_TO_TESTRAIL
     )
-  }
-}
-
-// Todo: Write a check for a different result and if the existing result differs from the result being sent update the result in testrail
-// Checks to see if a result already exists in testrail
-export async function isResultExistsInTestrail(runID: number, caseId: number) {
-  const caseDetails = await api.getResultsForCase(runID, caseId)
-  if (caseDetails.length > 0) {
-    return !(caseDetails[0].status_id === 5 && caseDetails.length < 2)
-  } else {
-    return false
   }
 }
 
