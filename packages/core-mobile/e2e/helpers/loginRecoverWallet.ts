@@ -9,7 +9,7 @@ import existingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import Actions from '../helpers/actions'
 
 class LoginRecoverWallet {
-  async recoverMnemonicWallet() {
+  async recoverMnemonicWallet(isBalanceNotificationOn = false) {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.tapAccessExistingWallet()
     await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
@@ -21,7 +21,11 @@ class LoginRecoverWallet {
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
-    await commonElsPage.tapNotNow()
+    if (isBalanceNotificationOn) {
+      await commonElsPage.tapTurnOnNotifications()
+    } else {
+      await commonElsPage.tapNotNow()
+    }
     await PortfolioPage.verifyPorfolioScreen()
   }
 
@@ -30,7 +34,7 @@ class LoginRecoverWallet {
     await commonElsPage.checkIfMainnet()
   }
 
-  async recoverWalletLogin() {
+  async recoverWalletLogin(isBalanceNotificationOn = false) {
     const isVisibleNo = await Actions.expectToBeVisible(
       existingRecoveryPhrasePage.forgotPinBtn
     )
@@ -39,7 +43,7 @@ class LoginRecoverWallet {
       await this.enterPin()
       await accountManagePage.switchToFirstAccount()
     } else {
-      await this.recoverMnemonicWallet()
+      await this.recoverMnemonicWallet(isBalanceNotificationOn)
     }
   }
 }

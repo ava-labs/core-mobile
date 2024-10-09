@@ -33,9 +33,11 @@ import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 import { useSendContext } from 'contexts/SendContext'
+import QRScanSVG from 'components/svg/QRScanSVG'
 
 type NftSendScreenProps = {
   onOpenAddressBook: () => void
+  onOpenQRScanner: () => void
 }
 
 type NftSendNavigationProp = NFTDetailsSendScreenProps<
@@ -43,7 +45,8 @@ type NftSendNavigationProp = NFTDetailsSendScreenProps<
 >
 
 export default function NftSend({
-  onOpenAddressBook
+  onOpenAddressBook,
+  onOpenQRScanner
 }: NftSendScreenProps): JSX.Element {
   const navigation = useNavigation<NftSendNavigationProp['navigation']>()
   const { params } = useRoute<NftSendNavigationProp['route']>()
@@ -172,6 +175,19 @@ export default function NftSend({
             <AvaButton.Icon
               onPress={() => setShowAddressBook(!showAddressBook)}>
               <AddressBookSVG />
+            </AvaButton.Icon>
+          </View>
+        )}
+        {!toAddress && (
+          <View
+            style={{
+              position: 'absolute',
+              right: 64,
+              justifyContent: 'center',
+              height: '100%'
+            }}>
+            <AvaButton.Icon onPress={onOpenQRScanner}>
+              <QRScanSVG />
             </AvaButton.Icon>
           </View>
         )}

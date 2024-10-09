@@ -42,6 +42,10 @@ class CommonElsPage {
     return by.text(commonEls.notNow)
   }
 
+  get turnOnNotifications() {
+    return by.text(commonEls.turnOnNotifications)
+  }
+
   async tapBackButton(index = 0) {
     await Actions.tapElementAtIndex(this.backButton, index)
   }
@@ -117,6 +121,10 @@ class CommonElsPage {
     } catch (e) {
       console.log('Not now button not found')
     }
+  }
+
+  async tapTurnOnNotifications() {
+    await Actions.tapElementAtIndex(this.turnOnNotifications, 0)
   }
 }
 
