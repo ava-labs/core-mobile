@@ -1,0 +1,3 @@
+{
+    "extends": "@avalabs/tsconfig-mobile/base.json"
+}
