@@ -1,9 +1,9 @@
 /* eslint-disable no-var */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import TestRail from '@dlenroc/testrail'
-
 const fs = require('fs')
+const TestRail = require('@dlenroc/testrail').TestRail
+
 const getTestLogs = require('./getResultsFromLogs').getTestLogs
 const isSmokeTestRun = require('./getResultsFromLogs').isSmokeTestRun
 const testRunTimestamp = require('./getResultsFromLogs').testRunTimestamp
@@ -308,13 +308,13 @@ async function getSectionsFromTestRail() {
   const sections = await api.getSections(projectId)
   const children: any[] = []
 
-  sections.forEach(function (arrayItem) {
+  sections.forEach(function (arrayItem: any) {
     if (arrayItem.parent_id !== null) {
       children.push(arrayItem)
     }
   })
 
-  sections.forEach(function (childArrayItem) {
+  sections.forEach(function (childArrayItem: any) {
     const childArray: string[] = []
     children.forEach(function (theChildItem) {
       if (theChildItem.parent_id === childArrayItem.id) {
@@ -324,7 +324,7 @@ async function getSectionsFromTestRail() {
     childArrayItem.children = childArray
   })
 
-  sections.forEach(function (item) {
+  sections.forEach(function (item: any) {
     if (item.parent_id !== null) {
       const index = sections.indexOf(item)
       delete sections[index]
