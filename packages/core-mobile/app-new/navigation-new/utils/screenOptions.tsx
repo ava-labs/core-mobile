@@ -13,6 +13,7 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   headerBackTitleVisible: false,
   headerTitle: () => <Grabber />,
   headerShadowVisible: false,
+  headerTitleAlign: 'center',
   headerBackImage: () => <BackBarButton />
 }
 
@@ -23,6 +24,7 @@ export const modalScreensOptions: StackNavigationOptions = {
     borderTopRightRadius: 40,
     marginTop: 75
   },
+  gestureEnabled: true,
   gestureDirection: 'vertical',
   cardStyleInterpolator: forModalPresentationIOS
 }
