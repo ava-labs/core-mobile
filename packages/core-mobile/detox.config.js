@@ -458,6 +458,33 @@ module.exports = {
         }
       }
     },
+    'android.external.release.regression.ci': {
+      device: 'emulator_ci',
+      app: 'android.external.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/regressionConfig.json',
+          _: [process.env.TESTS_TO_RUN]
+        }
+      }
+    },
+    'android.external.release.regression.parameterized_tests.ci': {
+      device: 'emulator_ci',
+      app: 'android.external.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/regressionParameterizedTestsConfig.json'
+        }
+      }
+    },
     'android.internal.e2e': {
       device: 'emulator',
       app: 'android.internal.e2e'
