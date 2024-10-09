@@ -1,6 +1,7 @@
 /* eslint-disable no-var */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import TestRail from '@dlenroc/testrail'
 const fs = require('fs')
 
 const getTestLogs = require('./getResultsFromLogs').getTestLogs
@@ -10,7 +11,7 @@ const testRunTimestamp = require('./getResultsFromLogs').testRunTimestamp
 const projectId = 3
 const password = String(process.env.TESTRAIL_API_KEY)
 
-export const api = require('testrail-api')({
+export var api = new TestRail({
   host: 'https://avalabs.testrail.net',
   username: 'mobiledevs@avalabs.org',
   password: password
