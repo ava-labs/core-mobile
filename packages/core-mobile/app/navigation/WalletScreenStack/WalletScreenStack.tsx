@@ -259,7 +259,10 @@ function WalletScreenStack(props: Props): JSX.Element {
           />
           <WalletScreenS.Screen
             options={{
-              ...MainHeaderOptions({ title: 'Manage token list' })
+              ...MainHeaderOptions({
+                title: 'Manage token list',
+                headerBackTestID: 'header_back'
+              })
             }}
             name={AppNavigation.Wallet.TokenManagement}
             component={TokenManagement}

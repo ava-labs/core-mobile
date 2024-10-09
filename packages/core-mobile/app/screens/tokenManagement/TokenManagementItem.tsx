@@ -20,6 +20,7 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
 
   const isBlacklisted = useSelector(selectIsTokenBlacklisted(id))
 
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleChange() {
     dispatch(toggleBlacklist(id))
   }
@@ -41,7 +42,11 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Switch value={!isBlacklisted} onValueChange={handleChange} />
+      <Switch
+        testID={isBlacklisted ? `${name}_blocked` : `${name}_displayed`}
+        value={!isBlacklisted}
+        onValueChange={handleChange}
+      />
     </View>
   )
 

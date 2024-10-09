@@ -82,7 +82,7 @@ class PlusMenuPage {
       PlusMenuLoc.swap,
       PlusMenuLoc.buy,
       PlusMenuLoc.receive,
-      PlusMenuLoc.walletConnect,
+      PlusMenuLoc.walletConnectSVG,
       PlusMenuLoc.bridge
     ]
     for (const option of options) {
