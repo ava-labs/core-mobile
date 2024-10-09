@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 const fs = require('fs')
-const TestRail = require('@dlenroc/testrail').TestRail
 
 const getTestLogs = require('./getResultsFromLogs').getTestLogs
 const isSmokeTestRun = require('./getResultsFromLogs').isSmokeTestRun
@@ -11,7 +10,7 @@ const testRunTimestamp = require('./getResultsFromLogs').testRunTimestamp
 const projectId = 3
 const password = String(process.env.TESTRAIL_API_KEY)
 
-export var api = new TestRail({
+export const api = require('testrail-api')({
   host: 'https://avalabs.testrail.net',
   username: 'mobiledevs@avalabs.org',
   password: password
@@ -465,32 +464,6 @@ export function parseTestName(testName: any) {
   const testCase: string = testCaseNotSplit.split('.').slice(0)[0]
 
   return { sectionName, subsection, testCase }
-}
-
-// Checks to see if a regression run has been created within the last 24 hours and returns the testrun id if one exists or returns false if none exists
-export async function createNewTestRunBool(platform: any) {
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  yesterday.setUTCHours(0, 0, 0, 0)
-  const yesterdayUTC = Number(yesterday) / 1000
-  const content = {
-    created_after: yesterdayUTC
-  }
-  const runDetails = await api.getRuns(projectId, content)
-  if (
-    runDetails.length === 0 ||
-    (runDetails[0] as TestRail.Run).created_on < yesterdayUTC
-  ) {
-    return false
-  } else {
-    for (let i = 0; i < runDetails.length; i++) {
-      const testRunName = runDetails[i]?.name
-      const testRunID = runDetails[i]?.id
-      if (testRunName?.includes(platform)) {
-        return testRunID
-      }
-    }
-  }
 }
 
 // Gets a list of test runs from testrail and then checks the timestamps in the names and returns false if there are no existing test runs with the timestamp
