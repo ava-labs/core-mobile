@@ -18,10 +18,10 @@ describe('Dynamic Plus Icon by Network', () => {
   ]
   it('should show dynamic plus icon items by network', async () => {
     for (const network of networks) {
-      // 1. Switch all the networks and check plus icon items
+      // Check PlusIcon Options by network
       await networksManagePage.switchNetwork(network)
       await bottomTabsPage.tapPlusIcon()
-      // 2. Verify swap and buy options are NOT visible for networks except C-Chain
+      // Verify SWAP and BUY are NOT available on all networks except C-Chain
       await plusMenuPage.verifyPlusIconOptions(network)
       await bottomTabsPage.tapPlusIcon()
     }

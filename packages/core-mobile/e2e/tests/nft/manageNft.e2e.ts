@@ -13,6 +13,7 @@ describe('Manage NFT', () => {
     await PortfolioPage.tapCollectiblesTab()
     await collectiblesPage.tapManageNft()
     await commonElsPage.typeSearchBar('7452')
+    // TryCatch Phrase is for test requirment
     try {
       await actions.waitForElement(by.id('7452_blocked_nft'))
       await actions.tap(by.id('7452_blocked_nft'))
@@ -20,9 +21,10 @@ describe('Manage NFT', () => {
     } catch (e) {
       console.log("It's already displayed on NFT list")
     }
-    // hide the token and verify it's not visible on token list
+    // Hide NFT
     await actions.tap(by.id(`7452_displayed_nft`))
     await commonElsPage.goBack()
+    // Verify NFT is NOT availble
     await collectiblesPage.tapListSvg()
     await actions.waitForElementNotVisible(by.text('#7452 '))
   })
@@ -30,6 +32,7 @@ describe('Manage NFT', () => {
   it('should show NFT via Manage List', async () => {
     await PortfolioPage.tapManageTokens()
     await commonElsPage.typeSearchBar('7452')
+    // TryCatch Phrase is for test requirment
     try {
       await actions.waitForElement(by.id('7452_displayed_nft'))
       await actions.tap(by.id('7452_displayed_nft'))
@@ -37,9 +40,10 @@ describe('Manage NFT', () => {
     } catch (e) {
       console.log("It's already blocked")
     }
-    // display the token that's hidden and verify it displays on token list
+    // Display NFT
     await actions.tap(by.id(`7452_blocked_nft`))
     await commonElsPage.goBack()
+    // Verify NFT is available
     await collectiblesPage.tapListSvg()
     await actions.waitForElement(by.text('#7452 '))
   })
