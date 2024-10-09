@@ -106,6 +106,10 @@ class CollectiblesPage {
     return by.id(Collectibles.nftListView)
   }
 
+  get manageNft() {
+    return by.text(Collectibles.manageNft)
+  }
+
   async tapSaveButton() {
     await Action.tapElementAtIndex(this.saveBtn, 0)
   }
@@ -208,6 +212,10 @@ class CollectiblesPage {
     await Action.setInputText(this.customFeeInput, '1000', 3)
     await this.tapSaveButton()
     await popUpModalPage.tapApproveBtn()
+  }
+
+  async tapManageNft() {
+    await Action.tapElementAtIndex(this.manageNft, 0)
   }
 }
 

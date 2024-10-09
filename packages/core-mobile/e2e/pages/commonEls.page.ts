@@ -46,6 +46,15 @@ class CommonElsPage {
     return by.text(commonEls.turnOnNotifications)
   }
 
+  get searchBar() {
+    return by.id(commonEls.searchBar)
+  }
+
+  async typeSearchBar(text: string) {
+    await Actions.waitForElement(this.searchBar)
+    await Actions.setInputText(this.searchBar, text)
+  }
+
   async tapBackButton(index = 0) {
     await Actions.tapElementAtIndex(this.backButton, index)
   }

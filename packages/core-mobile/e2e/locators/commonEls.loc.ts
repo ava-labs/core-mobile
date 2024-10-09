@@ -8,5 +8,6 @@ export default {
   retryBtn: 'Retry',
   testnetBanner: 'testnet_banner',
   notNow: 'Not Now',
-  turnOnNotifications: 'Turn on Notifications'
+  turnOnNotifications: 'Turn on Notifications',
+  searchBar: 'search_bar__search'
 }

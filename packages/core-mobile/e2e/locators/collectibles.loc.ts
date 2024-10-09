@@ -26,5 +26,6 @@ export default {
   listSvg: 'list_svg',
   nftListView: 'nft_list_view',
   invalidNFT: '#7452 ',
+  manageNft: 'Manage',
   testingNft: 'mint' // Eunji added a lot of NFTs named `mint` on mnemonic wallet for testing purpose.
 }

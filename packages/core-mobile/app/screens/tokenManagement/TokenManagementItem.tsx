@@ -20,7 +20,7 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
 
   const isBlacklisted = useSelector(selectIsTokenBlacklisted(id))
 
-  function handleChange() {
+  function handleChange(): void {
     dispatch(toggleBlacklist(id))
   }
 
@@ -41,7 +41,11 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Switch value={!isBlacklisted} onValueChange={handleChange} />
+      <Switch
+        testID={isBlacklisted ? `${name}_blocked` : `${name}_displayed`}
+        value={!isBlacklisted}
+        onValueChange={handleChange}
+      />
     </View>
   )
 

@@ -1,5 +1,6 @@
 import Actions from '../helpers/actions'
 import PlusMenuLoc from '../locators/plusMenu.loc'
+import portfolioLoc from '../locators/portfolio.loc'
 import bottomTabsPage from './bottomTabs.page'
 import scanQrCodePage from './scanQrCode.page'
 
@@ -73,6 +74,29 @@ class PlusMenuPage {
 
   async tapWalletConnectButton() {
     await Actions.tap(this.walletConnectButton)
+  }
+
+  async verifyPlusIconOptions(network: string) {
+    const options: string[] = [
+      PlusMenuLoc.send,
+      PlusMenuLoc.swap,
+      PlusMenuLoc.buy,
+      PlusMenuLoc.receive,
+      PlusMenuLoc.walletConnectSVG,
+      PlusMenuLoc.bridge
+    ]
+    for (const option of options) {
+      if (
+        network === portfolioLoc.avaxNetwork ||
+        (option !== PlusMenuLoc.buy && option !== PlusMenuLoc.swap)
+      ) {
+        // Show the option if it's the avaxNetwork or not a restricted option
+        await Actions.waitForElement(by.id(option))
+      } else {
+        // Hide the swap and buy for all the other networks
+        await Actions.waitForElementNotVisible(by.id(option))
+      }
+    }
   }
 }
 
