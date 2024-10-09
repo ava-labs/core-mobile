@@ -20,8 +20,7 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
 
   const isBlacklisted = useSelector(selectIsTokenBlacklisted(id))
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  function handleChange() {
+  function handleChange(): void {
     dispatch(toggleBlacklist(id))
   }
 
