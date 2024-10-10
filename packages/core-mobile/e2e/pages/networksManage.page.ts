@@ -130,6 +130,10 @@ class NetworksPage {
     return by.text(networksManage.explorerUrlText)
   }
 
+  get loadingNetworks() {
+    return by.text(networksManage.loadingNetworks)
+  }
+
   async tapStarSvgByIndex(index: number) {
     await Action.tapElementAtIndex(this.starSvg, index)
   }
@@ -187,6 +191,7 @@ class NetworksPage {
 
   async tapNetworksTab() {
     await Action.tapElementAtIndex(this.networksTab, 1)
+    await this.waitForNetworksToLoad()
   }
 
   async tapNetworkInfo() {
@@ -289,6 +294,10 @@ class NetworksPage {
     await this.searchNetworks(network)
     await this.tapStarSvgByNetwork(network)
     await Action.tapElementAtIndex(by.text(network), 1)
+  }
+
+  async waitForNetworksToLoad() {
+    await Action.waitForElementNotVisible(this.loadingNetworks, 60000, 0)
   }
 }
 

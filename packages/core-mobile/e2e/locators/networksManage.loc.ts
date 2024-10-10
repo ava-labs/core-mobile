@@ -41,5 +41,6 @@ export default {
   logoURL: 'logoUri',
   chainIdText: 'Chain ID',
   explorerUrlText: 'Explorer URL',
-  noCustomNetworks: 'No custom networks'
+  noCustomNetworks: 'No custom networks',
+  loadingNetworks: 'Loading networks'
 }
