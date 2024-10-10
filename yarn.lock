@@ -236,7 +236,7 @@ __metadata:
     "@storybook/react-native": 7.6.20
     "@tanstack/query-sync-storage-persister": 5.59.6
     "@tanstack/react-query": 5.59.8
-    "@tanstack/react-query-persist-client": 5.59.6
+    "@tanstack/react-query-persist-client": 5.59.8
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
     "@types/big.js": 6.2.2
@@ -10620,15 +10620,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-query-persist-client@npm:5.59.6":
-  version: 5.59.6
-  resolution: "@tanstack/react-query-persist-client@npm:5.59.6"
+"@tanstack/react-query-persist-client@npm:5.59.8":
+  version: 5.59.8
+  resolution: "@tanstack/react-query-persist-client@npm:5.59.8"
   dependencies:
     "@tanstack/query-persist-client-core": 5.59.6
   peerDependencies:
-    "@tanstack/react-query": ^5.59.6
+    "@tanstack/react-query": ^5.59.8
     react: ^18 || ^19
-  checksum: 48de12c5fe7c07e6ee8becff2fb3f63ace8657242d6b01da07bd66142b8d348f95651ff31b1b85e12abc5d8583e1c03d61ffac4924697d9df081d96535b3f435
+  checksum: 0bce5e5181e022eeb220fa99a62567cd1d778c3f583c8b4681032f625ff4f3daffb005be29d7bf86de50e995cebf875aaef4e79c5fef2b970896785af02d8ab4
   languageName: node
   linkType: hard
 
