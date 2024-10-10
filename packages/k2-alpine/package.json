@@ -13,7 +13,7 @@
     "tsc": "tsc -p ."
   },
   "dependencies": {
-    "dripsy": "4.3.5",
+    "dripsy": "4.3.7",
     "expo": "50.0.20",
     "expo-font": "11.10.3",
     "expo-splash-screen": "0.27.6",
@@ -48,7 +48,7 @@
     "react-dom": "18.3.1",
     "react-native-safe-area-context": "4.11.0",
     "tinycolor2": "1.6.0",
-    "typescript": "5.6.2"
+    "typescript": "5.6.3"
   },
   "private": true,
   "lavamoat": {
