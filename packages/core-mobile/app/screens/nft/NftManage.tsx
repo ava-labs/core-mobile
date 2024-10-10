@@ -115,7 +115,15 @@ const renderItemList = ({
           />
         }
         rightComponent={
-          <Switch value={!isHidden} onValueChange={_ => onHiddenToggle(item)} />
+          <Switch
+            testID={
+              isHidden
+                ? `${item.tokenId}_blocked_nft`
+                : `${item.tokenId}_displayed_nft`
+            }
+            value={!isHidden}
+            onValueChange={_ => onHiddenToggle(item)}
+          />
         }
       />
     </View>

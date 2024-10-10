@@ -98,7 +98,8 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
   const store = configureStore({
     reducer: persistedReducer,
     devTools: __DEV__,
-    enhancers: __DEV__ ? [reactotron.createEnhancer()] : [],
+    enhancers:
+      __DEV__ && reactotron !== undefined ? [reactotron.createEnhancer()] : [],
     middleware: getDefaultMiddleware => {
       const defaultMiddleWare = getDefaultMiddleware({
         serializableCheck: false,
