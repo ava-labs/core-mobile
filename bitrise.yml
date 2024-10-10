@@ -1146,6 +1146,10 @@ workflows:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+    - script-runner@0:
+          title: Detox
+          inputs:
+          - file_path: scripts/bitrise/detox/iosRegressionRunner.sh
   ios-external-e2e-regression-run:
       before_run:
       - _install-and-set-env
