@@ -1224,7 +1224,7 @@ PODS:
   - RNArgon2 (2.0.1):
     - CatCrypto
     - React-Core
-  - RNBootSplash (6.1.3):
+  - RNBootSplash (6.1.4):
     - React-Core
   - RNCAsyncStorage (2.0.0):
     - React-Core
@@ -1761,7 +1761,7 @@ SPEC CHECKSUMS:
   ReactNativePerformance: ab7dee4c4862623d72c1530a9fc71b55458edf71
   RNAppleAuthentication: e00c76acb03351f5544373c78fa7f359bef6d5d3
   RNArgon2: 1481820722fd4af1575c09f7fc9ad67c00ee8a42
-  RNBootSplash: 0177d81b7c094bbb9d7af80e77f8694922dae46d
+  RNBootSplash: 811d734a334afaf155bd588f3c10c34ead166265
   RNCAsyncStorage: d35c79ffba52c1013013e16b1fc295aec2feabb6
   RNCClipboard: 5e503962f0719ace8f7fdfe9c60282b526305c85
   RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
