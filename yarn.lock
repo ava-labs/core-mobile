@@ -486,7 +486,7 @@ __metadata:
     "@types/react": 18.3.11
     "@types/tinycolor2": 1.4.5
     babel-loader: 9.2.1
-    dripsy: 4.3.5
+    dripsy: 4.3.7
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 50.0.20
@@ -533,7 +533,7 @@ __metadata:
     "@types/tinycolor2": 1.4.6
     babel-jest: 29.7.0
     deprecated-react-native-prop-types: 5.0.0
-    dripsy: 4.3.5
+    dripsy: 4.3.7
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
     jest: 29.7.0
@@ -16021,15 +16021,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dripsy@npm:4.3.5":
-  version: 4.3.5
-  resolution: "dripsy@npm:4.3.5"
+"dripsy@npm:4.3.7":
+  version: 4.3.7
+  resolution: "dripsy@npm:4.3.7"
   dependencies:
     "@expo/html-elements": ^0.2.0
     "@theme-ui/css": ^0.4.0-rc.1
     stable-hash: ^0.0.2
     ts-toolbelt: ^9.6.0
-  checksum: 0d6de9a38696113c9bfc92ed860bc6bce4ca008d228ac86fc9121e2a328ea0a9200a83b681fe55f2bb516790d6cdff06fe5e50adf0f86950f84ce3be771c506d
+  checksum: 8b5dc4e6fec76961099344fc76f0351ab4b94315ccf8c08b3d8dde528961d5f6200a6b3209bcbc39b561b458a3f461d464af198206d8433af9b32ea9417d3a47
   languageName: node
   linkType: hard
 
