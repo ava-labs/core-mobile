@@ -13,5 +13,9 @@ export default {
   totalSupply: 'token_detail__total_supply',
   twentyFourHourTab: '24H',
   threeMonthTab: '3M',
-  volume: 'token_detail__24h_volume'
+  volume: 'token_detail__24h_volume',
+  sendBtn: 'send_token_action_btn',
+  receiveBtn: 'receive_token_action_btn',
+  bridgeBtn: 'bridge_token_action_btn',
+  swapBtn: 'swap_token_action_btn'
 }

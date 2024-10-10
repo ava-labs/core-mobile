@@ -1,8 +1,8 @@
-import Actions from '../../helpers/actions'
-import PortfolioPage from '../../pages/portfolio.page'
-import ManageTokensPage from '../../pages/manageTokens.page'
-import { warmup } from '../../helpers/warmup'
-import manageTokensLoc from '../../locators/manageTokens.loc'
+import Actions from '../../../helpers/actions'
+import PortfolioPage from '../../../pages/portfolio.page'
+import ManageTokensPage from '../../../pages/manageTokens.page'
+import { warmup } from '../../../helpers/warmup'
+import manageTokensLoc from '../../../locators/manageTokens.loc'
 
 describe('Add custom token', () => {
   beforeAll(async () => {

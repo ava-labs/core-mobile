@@ -756,6 +756,7 @@ const Bridge: FC = () => {
   const renderTransferBtn = (): JSX.Element => {
     return (
       <Button
+        testID="transfer_btn"
         type="primary"
         size="xlarge"
         style={{ marginHorizontal: 16, marginBottom: 10, marginTop: 16 }}

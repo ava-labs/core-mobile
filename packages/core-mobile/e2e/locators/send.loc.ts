@@ -17,5 +17,6 @@ export default {
   rejectBtn: 'Reject',
   addressField: 'end_token__send_field',
   searchBarOnSelectToken: 'search_bar__select_token',
-  selectTokenTitle: 'Select Token'
+  selectTokenTitle: 'Select Token',
+  sendTo: 'Send To'
 }

@@ -59,6 +59,10 @@ class SwapTabPage {
     return by.text(swapTab.tokenSpendApproval)
   }
 
+  get swapTitle() {
+    return by.text(swapTab.swapTitle)
+  }
+
   async tapAvaxToken() {
     return Actions.tapElementAtIndex(this.avaxToken, 0)
   }
@@ -126,6 +130,12 @@ class SwapTabPage {
     }
     await popUpModalPage.verifyFeeIsLegit(false, 0.2)
     await this.tapApproveButton()
+  }
+
+  async verifySwapScreen() {
+    await Actions.waitForElement(this.swapTitle)
+    await Actions.waitForElement(this.selectTokenDropdown)
+    await Actions.waitForElement(this.disabledReviewOrderBtn)
   }
 }
 

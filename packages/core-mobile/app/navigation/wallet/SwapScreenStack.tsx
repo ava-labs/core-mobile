@@ -42,7 +42,8 @@ function SwapScreenStack(): JSX.Element {
           headerShown: true,
           headerBackTitleVisible: false,
           headerTitleAlign: 'center',
-          headerTitle: HeaderTitle
+          headerTitle: HeaderTitle,
+          headerBackTestID: 'header_back'
         }}>
         <SwapStack.Screen name={AppNavigation.Swap.Swap} component={SwapView} />
       </SwapStack.Navigator>
