@@ -1098,7 +1098,7 @@ workflows:
         no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2e.sh
-  ios-internal-e2e-regression:
+  ios-internal-e2e-regression-run:
     before_run:
     - _install-and-set-env
     - _set-version
