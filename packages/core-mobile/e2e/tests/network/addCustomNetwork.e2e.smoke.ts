@@ -40,6 +40,7 @@ describe('Add custom network', () => {
     await NetworksManagePage.inputExplorerUrl(NetworksManageLoc.celoExplorerUrl)
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
+    await Actions.waitForElement(NetworksManagePage.celoWrongNetworkName, 60000)
     await Assert.isVisible(NetworksManagePage.celoWrongNetworkName)
   })
 
