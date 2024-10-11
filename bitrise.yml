@@ -648,14 +648,32 @@ workflows:
     - _upload-detox-artifacts
     envs:
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
     - PLATFORM: Android
+      opts:
+        is_expand: false
     - ANDROID_BUILD_VARIANT: $ANDROID_BUILD_VARIANT
+      opts:
+        is_expand: false
     - APP_TITLE: $APP_TITLE
+      opts:
+        is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
     - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
     steps:
     - share-pipeline-variable@1:
         inputs:
@@ -672,14 +690,32 @@ workflows:
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
+      opts:
+        is_expand: false
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
     - PLATFORM: Android
+      opts:
+        is_expand: false
     - ANDROID_BUILD_VARIANT: $ANDROID_BUILD_VARIANT
+      opts:
+        is_expand: false
     - APP_TITLE: $APP_TITLE
+      opts:
+        is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -702,14 +738,32 @@ workflows:
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
+      opts:
+        is_expand: false
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
     - PLATFORM: Android
+      opts:
+        is_expand: false
     - ANDROID_BUILD_VARIANT: $ANDROID_BUILD_VARIANT
+      opts:
+        is_expand: false
     - APP_TITLE: $APP_TITLE
+      opts:
+        is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -762,14 +816,32 @@ workflows:
     - _send-test-result-notification-slack
     envs:
     - PARAMETERIZED_TESTS: "true"
+      opts:
+        is_expand: false
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
     - PLATFORM: Android
+      opts:
+        is_expand: false
     - ANDROID_BUILD_VARIANT: $ANDROID_BUILD_VARIANT
+      opts:
+        is_expand: false
     - APP_TITLE: $APP_TITLE
+      opts:
+        is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -792,14 +864,32 @@ workflows:
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_4
+      opts:
+        is_expand: false
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
     - PLATFORM: Android
+      opts:
+        is_expand: false
     - ANDROID_BUILD_VARIANT: $ANDROID_BUILD_VARIANT
+      opts:
+        is_expand: false
     - APP_TITLE: $APP_TITLE
+      opts:
+        is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
