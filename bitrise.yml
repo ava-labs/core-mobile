@@ -534,7 +534,7 @@ workflows:
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-  android-internal-e2e-run-pixel3:
+  android-e2e-run-pixel3:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -581,7 +581,7 @@ workflows:
         - abi: x86_64
         - profile: pixel_3
     - wait-for-android-emulator@1: {}
-  android-internal-e2e-run-pixel4:
+  android-e2e-run-pixel4:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -628,7 +628,7 @@ workflows:
         - abi: x86_64
         - profile: pixel_4
     - wait-for-android-emulator@1: {}
-  android-internal-e2e-run-pixel5:
+  android-e2e-run-pixel5:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -675,7 +675,7 @@ workflows:
         - abi: x86_64
         - profile: pixel_5
     - wait-for-android-emulator@1: {}
-  android-internal-e2e-run-pixel6:
+  android-e2e-run-pixel6:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -722,7 +722,7 @@ workflows:
         - abi: x86_64
         - profile: pixel_6
     - wait-for-android-emulator@1: {}
-  android-internal-e2e-run-pixel2-arm:
+  android-e2e-run-pixel2-arm:
     before_run:
     - _install-and-set-env
     - _pull_app_files
