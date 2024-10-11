@@ -294,12 +294,14 @@ class PortfolioPage {
     }
   }
 
-  async tapActiveAvaxNetwork() {
-    await Action.waitForElement(
-      by.id(portfolio.activeNetwork + 'Avalanche (C-Chain)'),
-      60000
-    )
-    await Action.tap(by.id(portfolio.activeNetwork + 'Avalanche (C-Chain)'))
+  async tapActiveNetwork(network = 'Avalanche (C-Chain)') {
+    await Action.waitForElement(by.id(portfolio.activeNetwork + network), 60000)
+    await Action.tap(by.id(portfolio.activeNetwork + network))
+  }
+
+  async tapToken(token: string) {
+    await Action.waitForElement(by.id(`${token}_portfolio_list_item`))
+    await Action.tap(by.id(`${token}_portfolio_list_item`))
   }
 
   async verifyActiveNetwork(network: string) {

@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 set -ex
 
-# grab the correct env file based on ENVIRONMENT and E2E env vars
+# grab the correct env file
 if [ "$ENVIRONMENT" = "production" ]; then
-    if [ "$E2E" = "true" ]; then
-        cp .env.production.e2e .env
+    if [ "$APP_TITLE" = "Core Mobile Internal" ]; then
+        PREFIX=".env.internal"
     else
-        cp .env.production .env
+        PREFIX=".env.production"
+    fi
+
+    if [ "$E2E" = "true" ]; then
+        cp "$PREFIX.e2e" .env
+    else
+        cp "$PREFIX" .env
     fi
 elif [ "$ENVIRONMENT" = "development" ]; then
     cp .env.development .env

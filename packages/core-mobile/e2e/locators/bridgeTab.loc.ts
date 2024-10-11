@@ -29,5 +29,8 @@ export default {
   completedStatusEth: '96/96',
   completedStatusAvax: '1/1',
   completedStatusBtcAvaxMainnet: '6/6',
-  completedStatusBtcAvaxTestnet: '4/4'
+  completedStatusBtcAvaxTestnet: '4/4',
+  bridgeTitle: 'Bridge',
+  bridgeBtn: 'transfer_btn',
+  receive: 'Receive'
 }

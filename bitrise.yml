@@ -63,12 +63,6 @@ workflows:
     - APP_TITLE: Core Mobile External
       opts:
         is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
     - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
@@ -144,12 +138,6 @@ workflows:
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - IS_INTERNAL_BUILD: "true"
@@ -334,14 +322,6 @@ workflows:
         title: Set Env
         inputs:
         - file_path: scripts/bitrise/setEnv.sh
-    - script-runner@0:
-        title: Override Feature Flags Key
-        inputs:
-        - file_path: scripts/bitrise/overrideFeatureFlagsKey.sh
-    - script-runner@0:
-        title: Override Seedless Envs
-        inputs:
-        - file_path: scripts/bitrise/overrideSeedlessEnvs.sh
   _trigger_ios_internal_build:
     steps:
       - script-runner@0:
@@ -544,12 +524,6 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}
@@ -582,12 +556,6 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
@@ -618,12 +586,6 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - IS_REGRESSION_RUN: "true"
@@ -660,12 +622,6 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - IS_REGRESSION_RUN: "true"
@@ -705,12 +661,6 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -755,12 +705,6 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -801,12 +745,6 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -851,12 +789,6 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -897,12 +829,6 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -1004,12 +930,6 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
@@ -1044,12 +964,6 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -1082,12 +996,6 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -1125,12 +1033,6 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -1179,12 +1081,6 @@ workflows:
         opts:
           is_expand: false
       - E2E: "true"
-        opts:
-          is_expand: false
-      - USE_TEST_FEATURE_FLAGS: "true"
-        opts:
-          is_expand: false
-      - USE_SEEDLESS_GAMMA: "true"
         opts:
           is_expand: false
       - POST_TO_TESTRAIL: "true"

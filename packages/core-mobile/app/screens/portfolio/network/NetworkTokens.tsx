@@ -121,6 +121,7 @@ const NetworkTokens = (): JSX.Element => {
     const token = item.item
     return (
       <PortfolioListItem
+        testID={`${token.name}_portfolio_list_item`}
         showLoading={isLoading || isRefetching}
         tokenName={token.name}
         tokenPrice={token.balanceDisplayValue ?? '0'}

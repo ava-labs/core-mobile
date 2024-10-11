@@ -31,7 +31,7 @@ function SendScreenStack(): JSX.Element {
           title: ''
         }}>
         <SendStack.Screen
-          options={SubHeaderOptions('')}
+          options={SubHeaderOptions('', false, 'header_back')}
           name={AppNavigation.Send.Send}
           component={SendTokenScreen}
         />
