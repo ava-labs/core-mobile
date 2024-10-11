@@ -294,7 +294,7 @@ __metadata:
     lodash.merge: 4.6.2
     lottie-react-native: 7.0.0
     moment: 2.30.1
-    msw: 2.4.9
+    msw: 2.4.10
     node-cache: 5.1.2
     node-fetch: 3.3.2
     patch-package: 8.0.0
@@ -22990,9 +22990,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.4.9":
-  version: 2.4.9
-  resolution: "msw@npm:2.4.9"
+"msw@npm:2.4.10":
+  version: 2.4.10
+  resolution: "msw@npm:2.4.10"
   dependencies:
     "@bundled-es-modules/cookie": ^2.0.0
     "@bundled-es-modules/statuses": ^1.0.1
@@ -23018,7 +23018,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: add5a614ce58f5e75c65afcb59b76d0d807b9103b7fb3aaf23efd6ebd82d79415ecd9bc55dd48bcc4c31ec7ce196a75ace46d94224f0a80567c89a190e367ba8
+  checksum: 4800567402105881109068edd2623eeb331013b6276320dff230f0f61a2a75124a74276bba2dbda661634a71bae261b7ac3eb68c0d7bbe19ec4e2b9563ef1d19
   languageName: node
   linkType: hard
 
