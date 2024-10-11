@@ -114,6 +114,18 @@ class BridgeTabPage {
     return by.text(bridgeTab.wrappedEther)
   }
 
+  get bridgeTitle() {
+    return by.text(bridgeTab.bridgeTitle)
+  }
+
+  get bridgeBtn() {
+    return by.id(bridgeTab.bridgeBtn)
+  }
+
+  get receive() {
+    return by.text(bridgeTab.receive)
+  }
+
   async tapAvalancheNetwork() {
     return Actions.tapElementAtIndex(this.avalancheNetwork, platformIndex2)
   }
@@ -232,6 +244,14 @@ class BridgeTabPage {
     await Assert.isVisibleNoSync(this.toText)
   }
 
+  async verifyBridgeScreen() {
+    await Actions.waitForElement(this.bridgeTitle)
+    await Actions.waitForElement(this.bridgeBtn)
+    await Actions.waitForElement(this.fromText)
+    await Actions.waitForElement(this.receive)
+  }
+
+  // eslint-disable-next-line max-params
   async verifyBridgeTransaction(
     delay: number,
     completedStatusIncomingNetwork: Detox.NativeMatcher,

@@ -5,6 +5,7 @@ import PlusMenuPage from '../pages/plusMenu.page'
 import popUpModalPage from '../pages/popUpModal.page'
 import Send from '../locators/send.loc'
 import delay from '../helpers/waits'
+import assertions from '../helpers/assertions'
 
 class SendPage {
   get addressBook() {
@@ -57,6 +58,10 @@ class SendPage {
 
   get selectTokenTitle() {
     return by.text(Send.selectTokenTitle)
+  }
+
+  get sendTo() {
+    return by.text(Send.sendTo)
   }
 
   async tapAddressBook() {
@@ -141,6 +146,13 @@ class SendPage {
       popUpModalPage.successfulToastMsg,
       120000
     )
+  }
+
+  async verifySendScreen() {
+    await Actions.waitForElement(this.sendTitle)
+    await assertions.isVisible(this.sendTo)
+    await assertions.isVisible(this.amountToSendInput)
+    await assertions.isVisible(this.tokenDropdown)
   }
 }
 

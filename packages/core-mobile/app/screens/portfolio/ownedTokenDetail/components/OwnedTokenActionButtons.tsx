@@ -25,6 +25,7 @@ const OwnedTokenActionButtons = ({
     return (
       <Row style={{ gap: 16 }}>
         <Button
+          testID="send_token_action_btn"
           type="secondary"
           size="large"
           style={{ flex: 1 }}
@@ -32,6 +33,7 @@ const OwnedTokenActionButtons = ({
           Send
         </Button>
         <Button
+          testID="receive_token_action_btn"
           type="secondary"
           size="large"
           style={{ flex: 1 }}
@@ -44,8 +46,14 @@ const OwnedTokenActionButtons = ({
 
   return (
     <Row style={{ gap: 10 }}>
-      <ActionButton icon={<ArrowOutward />} text="Send" onPress={onSend} />
       <ActionButton
+        testID="send_token_action_btn"
+        icon={<ArrowOutward />}
+        text="Send"
+        onPress={onSend}
+      />
+      <ActionButton
+        testID="receive_token_action_btn"
         icon={
           <View sx={{ padding: 2 }}>
             <Icons.Communication.IconQRCode
@@ -60,6 +68,7 @@ const OwnedTokenActionButtons = ({
       />
       {showBridge && (
         <ActionButton
+          testID="bridge_token_action_btn"
           icon={
             <View sx={{ padding: 3 }}>
               <BridgeSVG color={theme.colors.$white} size={18} />
@@ -71,6 +80,7 @@ const OwnedTokenActionButtons = ({
       )}
       {showSwap && (
         <ActionButton
+          testID="swap_token_action_btn"
           icon={<SwapIcon color={theme.colors.$white} style={{ margin: 4 }} />}
           text="Swap"
           onPress={onSwap}
@@ -83,11 +93,13 @@ const OwnedTokenActionButtons = ({
 const ActionButton = ({
   text,
   icon,
-  onPress
+  onPress,
+  testID
 }: {
   text: string
   icon: JSX.Element
   onPress: () => void
+  testID?: string
 }): JSX.Element => {
   return (
     <TouchableOpacity onPress={onPress}>
@@ -101,6 +113,7 @@ const ActionButton = ({
         }}>
         <View sx={{ position: 'absolute', top: 10, left: 8 }}>{icon}</View>
         <Text
+          testID={testID}
           sx={{
             fontSize: 13,
             lineHeight: 21,
