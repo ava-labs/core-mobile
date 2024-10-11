@@ -1098,11 +1098,10 @@ workflows:
         no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2e.sh
-  ios-internal-e2e-regression:
+  ios-internal-e2e-regression-run:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios-simulator
     - _pull_app_files
     - _pull_external_app_files
     envs:
@@ -1146,6 +1145,10 @@ workflows:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+    - script-runner@0:
+          title: Detox
+          inputs:
+          - file_path: scripts/bitrise/detox/iosRegressionRunner.sh
   ios-external-e2e-regression-run:
       before_run:
       - _install-and-set-env

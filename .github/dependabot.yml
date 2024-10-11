@@ -45,3 +45,4 @@ updates:
       - dependency-name: "react-native-keychain" # the latest version slows down android app launch time. https://github.com/oblador/react-native-keychain/issues/630 please update after this issue is resolved
       - dependency-name: "redux-persist-transform-encrypt" # this project(https://github.com/maxdeviant/redux-persist-transform-encrypt) is dead and the latest version doesn't work.
       - dependency-name: "@storybook/*" # we're currently using storybook version 7.6.20, but still configuring it with v6 syntax. the latest version is 8.x.x and currently not compatible with our project.
+      - dependency-name: "reactotron-react-native" # the latest version(5.1.9) causes a crash on iOS

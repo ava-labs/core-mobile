@@ -183,7 +183,7 @@ __metadata:
     "@babel/preset-env": 7.25.7
     "@babel/preset-typescript": 7.25.7
     "@babel/runtime": 7.25.7
-    "@blockaid/client": 0.27.3
+    "@blockaid/client": 0.27.4
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.3.29
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
@@ -203,7 +203,7 @@ __metadata:
     "@notifee/react-native": 9.1.1
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 6.10.0
-    "@playwright/test": 1.47.2
+    "@playwright/test": 1.48.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.14.2
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
@@ -234,9 +234,9 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@tanstack/query-sync-storage-persister": 5.59.0
-    "@tanstack/react-query": 5.59.0
-    "@tanstack/react-query-persist-client": 5.59.0
+    "@tanstack/query-sync-storage-persister": 5.59.6
+    "@tanstack/react-query": 5.59.8
+    "@tanstack/react-query-persist-client": 5.59.6
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
     "@types/big.js": 6.2.2
@@ -277,7 +277,7 @@ __metadata:
     crypto-browserify: 3.12.0
     date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
-    detox: 20.27.2
+    detox: 20.27.3
     es6-promise: 4.2.8
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
@@ -309,7 +309,7 @@ __metadata:
     react-native-aes-crypto: 1.3.10
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
-    react-native-bootsplash: 6.1.3
+    react-native-bootsplash: 6.1.4
     react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
@@ -357,7 +357,7 @@ __metadata:
     react-redux: 9.1.2
     react-test-renderer: 18.3.1
     react-timer-hook: 3.0.7
-    reactotron-react-native: 5.1.9
+    reactotron-react-native: 5.1.8
     reactotron-react-native-mmkv: 0.2.7
     reactotron-redux: 3.1.10
     readable-stream: 4.5.2
@@ -373,9 +373,9 @@ __metadata:
     ts-node: 10.9.2
     type-fest: 4.26.1
     typechain: 8.3.2
-    typescript: 5.6.2
+    typescript: 5.6.3
     url: 0.11.4
-    viem: 2.21.19
+    viem: 2.21.21
     vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.15
@@ -486,7 +486,7 @@ __metadata:
     "@types/react": 18.3.11
     "@types/tinycolor2": 1.4.5
     babel-loader: 9.2.1
-    dripsy: 4.3.5
+    dripsy: 4.3.7
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 50.0.20
@@ -500,7 +500,7 @@ __metadata:
     react-native-reanimated: 3.8.0
     react-native-safe-area-context: 4.11.0
     tinycolor2: 1.6.0
-    typescript: 5.6.2
+    typescript: 5.6.3
   peerDependencies:
     react: 18.3.1
     react-native: 0.73.7
@@ -533,7 +533,7 @@ __metadata:
     "@types/tinycolor2": 1.4.6
     babel-jest: 29.7.0
     deprecated-react-native-prop-types: 5.0.0
-    dripsy: 4.3.5
+    dripsy: 4.3.7
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
     jest: 29.7.0
@@ -548,7 +548,7 @@ __metadata:
     react-native-svg-transformer: 1.5.0
     react-test-renderer: 18.3.1
     tinycolor2: 1.6.0
-    typescript: 5.6.2
+    typescript: 5.6.3
   peerDependencies:
     react: 18.2.0
     react-native: 0.73.7
@@ -4332,9 +4332,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@blockaid/client@npm:0.27.3":
-  version: 0.27.3
-  resolution: "@blockaid/client@npm:0.27.3"
+"@blockaid/client@npm:0.27.4":
+  version: 0.27.4
+  resolution: "@blockaid/client@npm:0.27.4"
   dependencies:
     "@types/node": ^18.11.18
     "@types/node-fetch": ^2.6.4
@@ -4343,7 +4343,7 @@ __metadata:
     form-data-encoder: 1.7.2
     formdata-node: ^4.3.2
     node-fetch: ^2.6.7
-  checksum: 1c05f9047a9c80efbdc5bd85943cfc034a4e843ec699bc447c0ed35b850db8fc3a294f5f0c11b21b506d4aa15c38e2376830acbf1c862f4ea66ed0177d1e9682
+  checksum: c89fe4467fe77e9bcac401f7ddb30c646e86000d5e4913ba6e11560c349fde71ad200551c4ec277fd6e3aad0d9f11cf137194e9568472eb78a2c0617d6011136
   languageName: node
   linkType: hard
 
@@ -7906,14 +7906,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.47.2":
-  version: 1.47.2
-  resolution: "@playwright/test@npm:1.47.2"
+"@playwright/test@npm:1.48.0":
+  version: 1.48.0
+  resolution: "@playwright/test@npm:1.48.0"
   dependencies:
-    playwright: 1.47.2
+    playwright: 1.48.0
   bin:
     playwright: cli.js
-  checksum: 4f149613c0fd4a40061425efdf5c7a257df09e1b6b797ad221597ddde52381edb69fce6645bf3b95a11eee74147a2025c1951041f29dbc717dab0cc46d9c3427
+  checksum: 81a6260db1b2dd4a6bff7a31f6fd83a6db21109268a3516e47f24e3de64b0da1b9fa985dab5fdccc73fc9c5cca2e0c1ef2137f5cdc5c5cacdfc7d13f4a36c5fd
   languageName: node
   linkType: hard
 
@@ -10583,63 +10583,63 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/eslint-plugin-query@npm:5.59.1":
-  version: 5.59.1
-  resolution: "@tanstack/eslint-plugin-query@npm:5.59.1"
+"@tanstack/eslint-plugin-query@npm:5.59.7":
+  version: 5.59.7
+  resolution: "@tanstack/eslint-plugin-query@npm:5.59.7"
   dependencies:
     "@typescript-eslint/utils": ^8.3.0
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
-  checksum: e08579a9bb25c758ca813d54ee6bd37fa96a9c9b815f2d6108a632106f521644b49185d3fdb718d4dbebb615ea9ffbff9afd569d18f48130e834bf40f0803724
+  checksum: c1e1a511a83f1a56bcb35ddbd398f54fe9a309ba2793e52716463adcf684850a66af31acfd0b1e867b72b36eeb7638627a7354ada1c5445b2155a241cdf2954f
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:5.59.0":
-  version: 5.59.0
-  resolution: "@tanstack/query-core@npm:5.59.0"
-  checksum: 2f7620b63170236755ff9d87cd4a94011a98697c92c090ebdb214274964e8545ae9962cfe38675ed1f49a0abad34bc2f59f8c78180913c3a55d8bf0a30c422ea
+"@tanstack/query-core@npm:5.59.6":
+  version: 5.59.6
+  resolution: "@tanstack/query-core@npm:5.59.6"
+  checksum: 3c26faf5db0dfbacdf258f1cdad27410e905394c9a4987115acb4e1afecaaf95ec60bde27a69a12beb5ef3978a16f9f5c30bf51f7d1f7646d74ad9a17383e157
   languageName: node
   linkType: hard
 
-"@tanstack/query-persist-client-core@npm:5.59.0":
-  version: 5.59.0
-  resolution: "@tanstack/query-persist-client-core@npm:5.59.0"
+"@tanstack/query-persist-client-core@npm:5.59.6":
+  version: 5.59.6
+  resolution: "@tanstack/query-persist-client-core@npm:5.59.6"
   dependencies:
-    "@tanstack/query-core": 5.59.0
-  checksum: 1812c5d85b5f053eea3505c09269cd71d4ec79a9852a10908ef06632ddc5d43dfb5bd7464f160f215e6662390b251bce8e40f3553d68f3c61e8d7863cc3f44b7
+    "@tanstack/query-core": 5.59.6
+  checksum: 3c074f8fc274e9b34505f67d82deb56f488cd1490a91fcfea2d1ad0319855c259c3c23ec1f2c9aafce8980691486ccf7059d3a4c91eccd16ed177cc516ebbb8d
   languageName: node
   linkType: hard
 
-"@tanstack/query-sync-storage-persister@npm:5.59.0":
-  version: 5.59.0
-  resolution: "@tanstack/query-sync-storage-persister@npm:5.59.0"
+"@tanstack/query-sync-storage-persister@npm:5.59.6":
+  version: 5.59.6
+  resolution: "@tanstack/query-sync-storage-persister@npm:5.59.6"
   dependencies:
-    "@tanstack/query-core": 5.59.0
-    "@tanstack/query-persist-client-core": 5.59.0
-  checksum: 6316e0579fde849a8505ab4708500f215261d4241031467a42c168d0d3d1e2f422cd22fd48d418dea1d4db98a9c19d4b9ca7b7d8e6dc54a0d2c0ae9fc21a010c
+    "@tanstack/query-core": 5.59.6
+    "@tanstack/query-persist-client-core": 5.59.6
+  checksum: 50915034928b7d3fa3c3193eeba71ffbd90e7ea1154415065b323b8ceabae5a4395e48e7bf3dc7f59a1aca320bfcdec4c51092c41120063b65f6da221ddb9d40
   languageName: node
   linkType: hard
 
-"@tanstack/react-query-persist-client@npm:5.59.0":
-  version: 5.59.0
-  resolution: "@tanstack/react-query-persist-client@npm:5.59.0"
+"@tanstack/react-query-persist-client@npm:5.59.6":
+  version: 5.59.6
+  resolution: "@tanstack/react-query-persist-client@npm:5.59.6"
   dependencies:
-    "@tanstack/query-persist-client-core": 5.59.0
+    "@tanstack/query-persist-client-core": 5.59.6
   peerDependencies:
-    "@tanstack/react-query": ^5.59.0
+    "@tanstack/react-query": ^5.59.6
     react: ^18 || ^19
-  checksum: 05bf16a1997f1da0e6cdcce440851e0d91b261b6732661d4a1ec2cd4e51ae62bb9f0a6bb579733eeef4a8961c6ee05af51bd4a65b4bc9bc7f9c23485e8d3c457
+  checksum: 48de12c5fe7c07e6ee8becff2fb3f63ace8657242d6b01da07bd66142b8d348f95651ff31b1b85e12abc5d8583e1c03d61ffac4924697d9df081d96535b3f435
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:5.59.0":
-  version: 5.59.0
-  resolution: "@tanstack/react-query@npm:5.59.0"
+"@tanstack/react-query@npm:5.59.8":
+  version: 5.59.8
+  resolution: "@tanstack/react-query@npm:5.59.8"
   dependencies:
-    "@tanstack/query-core": 5.59.0
+    "@tanstack/query-core": 5.59.6
   peerDependencies:
     react: ^18 || ^19
-  checksum: e2df523f7b40b949c23ad43e5c1d7a6d87902f114e086c6a65a60126f8d721a965b24146170c56334699b5ee96c36bf6a3c40b48d9a85bba6b944f397ffe744d
+  checksum: 584fa340f197d3afd8dc9639ab5fa0238eea41050b2ddd642f3be94d5c8a16cb7773da3fc6e90b3c1b473c9170fb4eedd83460270ce014a004cf97df3ab36f15
   languageName: node
   linkType: hard
 
@@ -11381,12 +11381,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.7.4, @types/node@npm:^22.5.5":
-  version: 22.7.4
-  resolution: "@types/node@npm:22.7.4"
+"@types/node@npm:22.7.5":
+  version: 22.7.5
+  resolution: "@types/node@npm:22.7.5"
   dependencies:
     undici-types: ~6.19.2
-  checksum: a3f4154147639369aed08fe6f8d62eff637cf87b187bb252d7bbccdc82884626007af424b08a653c53f2182adfa0340001b4888cb7cbb942cef351210fc742a5
+  checksum: 1a8bbb504efaffcef7b8491074a428e5c0b5425b0c0ffb13e7262cb8462c275e8cc5eaf90a38d8fbf52a1eeda7c01ab3b940673c43fc2414140779c973e40ec6
   languageName: node
   linkType: hard
 
@@ -11428,6 +11428,15 @@ __metadata:
   dependencies:
     undici-types: ~5.26.4
   checksum: b6db87d095bc541d64a410fa323a35c22c6113220b71b608bbe810b2397932d0f0a51c3c0f3ef90c20d8180a1502d950a7c5314b907e182d9cc10b36efd2a44e
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^22.5.5":
+  version: 22.7.4
+  resolution: "@types/node@npm:22.7.4"
+  dependencies:
+    undici-types: ~6.19.2
+  checksum: a3f4154147639369aed08fe6f8d62eff637cf87b187bb252d7bbccdc82884626007af424b08a653c53f2182adfa0340001b4888cb7cbb942cef351210fc742a5
   languageName: node
   linkType: hard
 
@@ -15808,16 +15817,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detox-copilot@npm:^0.0.9":
-  version: 0.0.9
-  resolution: "detox-copilot@npm:0.0.9"
-  checksum: ba7a82191ccc0c642d54adbc601415283205885f444e91daca6b658a50392cdee0090fc95f876bef650f6e16be49f4a5ed89ad064dab405f45ba64d479a6d97c
+"detox-copilot@npm:^0.0.14":
+  version: 0.0.14
+  resolution: "detox-copilot@npm:0.0.14"
+  checksum: 79b81f61d98ee1dd586823e3f6f93c186127f83298d85492e02b397f31cb9d96e76ee8073bd02a09b04e7f6e1b8bf08ffbd6819da06665c56ecd625efb31505b
   languageName: node
   linkType: hard
 
-"detox@npm:20.27.2":
-  version: 20.27.2
-  resolution: "detox@npm:20.27.2"
+"detox@npm:20.27.3":
+  version: 20.27.3
+  resolution: "detox@npm:20.27.3"
   dependencies:
     ajv: ^8.6.3
     bunyan: ^1.8.12
@@ -15825,7 +15834,7 @@ __metadata:
     caf: ^15.0.1
     chalk: ^4.0.0
     child-process-promise: ^2.2.0
-    detox-copilot: ^0.0.9
+    detox-copilot: ^0.0.14
     execa: ^5.1.1
     find-up: ^5.0.0
     fs-extra: ^11.0.0
@@ -15862,7 +15871,7 @@ __metadata:
       optional: true
   bin:
     detox: local-cli/cli.js
-  checksum: a7bb8997c591b827c31176ba107b1ec23f7bb8b78ce08c781343937637439771a1cc8f1086844301fbbf0f34ada2e889827821adf5245aa8f4c5b4f5cad23248
+  checksum: fc37750edfbaac59a8d892a9b055a2941e84e2c7d082910f7336feaf139cc528cc6e62a6874b1ab8ab9192e5430a66231d809b5deff8dcae711f6cea8e4d37a6
   languageName: node
   linkType: hard
 
@@ -16021,15 +16030,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dripsy@npm:4.3.5":
-  version: 4.3.5
-  resolution: "dripsy@npm:4.3.5"
+"dripsy@npm:4.3.7":
+  version: 4.3.7
+  resolution: "dripsy@npm:4.3.7"
   dependencies:
     "@expo/html-elements": ^0.2.0
     "@theme-ui/css": ^0.4.0-rc.1
     stable-hash: ^0.0.2
     ts-toolbelt: ^9.6.0
-  checksum: 0d6de9a38696113c9bfc92ed860bc6bce4ca008d228ac86fc9121e2a328ea0a9200a83b681fe55f2bb516790d6cdff06fe5e50adf0f86950f84ce3be771c506d
+  checksum: 8b5dc4e6fec76961099344fc76f0351ab4b94315ccf8c08b3d8dde528961d5f6200a6b3209bcbc39b561b458a3f461d464af198206d8433af9b32ea9417d3a47
   languageName: node
   linkType: hard
 
@@ -16753,8 +16762,8 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-community/eslint-config": 3.0.3
-    "@tanstack/eslint-plugin-query": 5.59.1
-    "@types/node": 22.7.4
+    "@tanstack/eslint-plugin-query": 5.59.7
+    "@types/node": 22.7.5
     "@typescript-eslint/eslint-plugin": 5.62.0
     "@typescript-eslint/parser": 5.62.0
     "@typescript-eslint/utils": 5.62.0
@@ -16768,10 +16777,10 @@ __metadata:
     eslint-plugin-react-hooks: 4.6.0
     eslint-plugin-sonarjs: 0.21.0
     prettier: 2.6.2
-    typescript: 5.6.2
+    typescript: 5.6.3
   peerDependencies:
     eslint: 8.50.0
-    typescript: 5.6.2
+    typescript: 5.6.3
   languageName: unknown
   linkType: soft
 
@@ -24503,6 +24512,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"picocolors@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "picocolors@npm:1.1.0"
+  checksum: a64d653d3a188119ff45781dfcdaeedd7625583f45280aea33fcb032c7a0d3959f2368f9b192ad5e8aade75b74dbd954ffe3106c158509a45e4c18ab379a2acd
+  languageName: node
+  linkType: hard
+
 "picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.2.3, picomatch@npm:^2.3.0, picomatch@npm:^2.3.1":
   version: 2.3.1
   resolution: "picomatch@npm:2.3.1"
@@ -24645,27 +24661,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.47.2":
-  version: 1.47.2
-  resolution: "playwright-core@npm:1.47.2"
+"playwright-core@npm:1.48.0":
+  version: 1.48.0
+  resolution: "playwright-core@npm:1.48.0"
   bin:
     playwright-core: cli.js
-  checksum: c06109a08dd672a92eb048ce7c9a1451ed701e62ff78f0d67c67ee6b06c88f0dc5422c2a7bb26e5fca05840e2adba154a25ca988e56f76c233affe61f42453a3
+  checksum: 8c6ecf1ca2484408e8a11bbb107cf4cb19621bbb85c5f4b29206df29ea13b4e6a008fb434df03e3411719c74e4f130a4ece05365fc1a2940e243725a10d04ad4
   languageName: node
   linkType: hard
 
-"playwright@npm:1.47.2":
-  version: 1.47.2
-  resolution: "playwright@npm:1.47.2"
+"playwright@npm:1.48.0":
+  version: 1.48.0
+  resolution: "playwright@npm:1.48.0"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.47.2
+    playwright-core: 1.48.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 41ec99d62c9d7282a3d0dd2444892a379be2f4c61e9045a0b1cfc5897796747d220df5af11c6a7515c56c82df02a1025a46a5da7abc17485b4e981e133588261
+  checksum: e19431f432b68fc08109382a0707e18d2034554f0857925d7d9b75b2277136cef2e756bd93e4228c26ece1446761641b398b0cc0e1c799db1b466a0953fda787
   languageName: node
   linkType: hard
 
@@ -24811,7 +24827,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.2.5":
+"prettier@npm:^3.3.3":
   version: 3.3.3
   resolution: "prettier@npm:3.3.3"
   bin:
@@ -25456,23 +25472,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-bootsplash@npm:6.1.3":
-  version: 6.1.3
-  resolution: "react-native-bootsplash@npm:6.1.3"
+"react-native-bootsplash@npm:6.1.4":
+  version: 6.1.4
+  resolution: "react-native-bootsplash@npm:6.1.4"
   dependencies:
     "@expo/config-plugins": ^8.0.4
     detect-indent: ^6.1.0
     fs-extra: ^11.2.0
     node-html-parser: ^6.1.13
-    picocolors: ^1.0.0
-    prettier: ^3.2.5
+    picocolors: ^1.1.0
+    prettier: ^3.3.3
     sharp: ^0.32.6
     ts-dedent: ^2.2.0
-    xml-formatter: ^3.6.2
+    xml-formatter: ^3.6.3
   peerDependencies:
     react: ">=18.1.0"
     react-native: ">=0.70.0"
-  checksum: 423115fb4807f9703992ec7bd403e32ceb61360c5a20c3b9494d95b7d4e4f4f031250faeb3e1ecd456de4983d624e700101b466033922e64779f94b1d86a1c3d
+  checksum: af1e3c206e411fa2013351cae0576fa543c5498407cb324a3275b6c43d652ecfabb1a8b6268609598698cb465d861e4813f14426ba00d03b4e949e5d7456976f
   languageName: node
   linkType: hard
 
@@ -26280,9 +26296,9 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"reactotron-react-native@npm:5.1.9":
-  version: 5.1.9
-  resolution: "reactotron-react-native@npm:5.1.9"
+"reactotron-react-native@npm:5.1.8":
+  version: 5.1.8
+  resolution: "reactotron-react-native@npm:5.1.8"
   dependencies:
     mitt: ^3.0.1
     react-native-flipper: ^0.164.0
@@ -26292,7 +26308,7 @@ react-native-webview@ava-labs/react-native-webview:
   dependenciesMeta:
     react-native-flipper:
       optional: true
-  checksum: a5cd240acdf7fe98277f79777e52b6efe39cf65949b1c81c8dbed8a2cfb3bcdb244689a1c6b395d25566074049c91639fce1b9fdab6eefcb1ac104b323ef237c
+  checksum: 36a5c3a2d573b0e337d65dadc37f451e1a1dfe2de455d7ea68cdadfa4bd25b0ed100920f1bb0d1972109a2c59fded3d6325a77850c17d41e9b811d0ba60d0e1b
   languageName: node
   linkType: hard
 
@@ -29376,23 +29392,23 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.6.2":
-  version: 5.6.2
-  resolution: "typescript@npm:5.6.2"
+"typescript@npm:5.6.3":
+  version: 5.6.3
+  resolution: "typescript@npm:5.6.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 48777e1dabd9044519f56cd012b0296e3b72bafe12b7e8e34222751d45c67e0eba5387ecdaa6c14a53871a29361127798df6dc8d1d35643a0a47cb0b1c65a33a
+  checksum: ba302f8822777ebefb28b554105f3e074466b671e7444ec6b75dadc008a62f46f373d9e57ceced1c433756d06c8b7dc569a7eefdf3a9573122a49205ff99021a
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@5.6.2#~builtin<compat/typescript>":
-  version: 5.6.2
-  resolution: "typescript@patch:typescript@npm%3A5.6.2#~builtin<compat/typescript>::version=5.6.2&hash=29ae49"
+"typescript@patch:typescript@5.6.3#~builtin<compat/typescript>":
+  version: 5.6.3
+  resolution: "typescript@patch:typescript@npm%3A5.6.3#~builtin<compat/typescript>::version=5.6.3&hash=29ae49"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: c084ee1ab865f108c787e6233a5f63c126c482c0c8e87ec998ac5288a2ad54b603e1ea8b8b272355823b833eb31b9fabb99e8c6152283e1cb47e3a76bd6faf6c
+  checksum: ade87bce2363ee963eed0e4ca8a312ea02c81873ebd53609bc3f6dc0a57f6e61ad7e3fb8cbb7f7ab8b5081cbee801b023f7c4823ee70b1c447eae050e6c7622b
   languageName: node
   linkType: hard
 
@@ -30088,9 +30104,9 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"viem@npm:2.21.19":
-  version: 2.21.19
-  resolution: "viem@npm:2.21.19"
+"viem@npm:2.21.21":
+  version: 2.21.21
+  resolution: "viem@npm:2.21.21"
   dependencies:
     "@adraffy/ens-normalize": 1.11.0
     "@noble/curves": 1.6.0
@@ -30106,7 +30122,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: a12ce892e43294574f8fd749b8c1ff6e9c93e38e61fc0615f0ab878f57cef00ef66055d4730b928c8ee41fa8d9a5995326b680adee99716b84c7f6126b41d10c
+  checksum: 71100fbbbf09ef743c7a2b3cfea94c0647c864856d2119cbdbf6abd3bd467310d02263492ec45f88dac20acfbdbd50c6eeea21e76f9e42ab5274245f11c975cf
   languageName: node
   linkType: hard
 
@@ -30904,7 +30920,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"xml-formatter@npm:^3.6.2":
+"xml-formatter@npm:^3.6.3":
   version: 3.6.3
   resolution: "xml-formatter@npm:3.6.3"
   dependencies:
