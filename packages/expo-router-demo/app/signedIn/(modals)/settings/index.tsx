@@ -1,7 +1,5 @@
-// import useHomeScreenHeader from 'navigation-new/hooks/useHomeScreenHeader'
 import React from 'react'
-import { Text, TouchableOpacity, View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { Text, View } from 'react-native'
 import { Link } from 'expo-router'
 
 const SettingsScreen = (): JSX.Element => {
