@@ -67,13 +67,6 @@ module.exports = {
       type: 'android.apk',
       binaryPath: process.env.BITRISE_APK_PATH,
       testBinaryPath: process.env.BITRISE_TEST_APK_PATH
-    },
-    'android.internal.e2e': {
-      type: 'android.apk',
-      binaryPath:
-        'android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk',
-      testBinaryPath:
-        'android/app/build/outputs/apk/androidTest/internal/debug/app-internal-e2e-androidTest.apk'
     }
   },
   artifacts: {
@@ -484,10 +477,6 @@ module.exports = {
           config: './e2e/configs/regressionParameterizedTestsConfig.json'
         }
       }
-    },
-    'android.internal.e2e': {
-      device: 'emulator',
-      app: 'android.internal.e2e'
     }
   }
 }
