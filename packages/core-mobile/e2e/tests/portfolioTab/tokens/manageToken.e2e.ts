@@ -1,7 +1,7 @@
-import actions from '../../helpers/actions'
-import PortfolioPage from '../../pages/portfolio.page'
-import { warmup } from '../../helpers/warmup'
-import commonElsPage from '../../pages/commonEls.page'
+import actions from '../../../helpers/actions'
+import PortfolioPage from '../../../pages/portfolio.page'
+import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
 
 describe('Manage Token', () => {
   beforeAll(async () => {
@@ -10,7 +10,7 @@ describe('Manage Token', () => {
 
   it('should not allow to manage AVAX via manage token', async () => {
     // Search for AVAX on Manage Token Screen
-    await PortfolioPage.tapActiveAvaxNetwork()
+    await PortfolioPage.tapActiveNetwork()
     await PortfolioPage.tapManageTokens()
     await commonElsPage.typeSearchBar('AVAX')
     // Verify AVAX is NOT available on Manage Token Screen

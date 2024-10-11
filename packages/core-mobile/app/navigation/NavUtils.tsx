@@ -19,7 +19,7 @@ export const MainHeaderOptions = (
     title,
     hideHeaderLeft = false,
     actionComponent,
-    headerBackTestID
+    headerBackTestID = 'header_back'
   }: MainHeaderOptionsProps = { title: '', headerBackTestID: 'header_back' }
 ): Partial<StackNavigationOptions> => {
   const options: Partial<StackNavigationOptions> = {
@@ -56,7 +56,7 @@ export const MainHeaderOptions = (
 export const SubHeaderOptions = (
   title: string,
   hideHeaderLeft = false,
-  headerBackTestID?: string
+  headerBackTestID = 'header_back'
 ): Partial<StackNavigationOptions> => {
   const options: Partial<StackNavigationOptions> = {
     headerBackTestID,

@@ -12,5 +12,6 @@ export default {
   linkSvg: 'link_svg',
   approveBtn: 'approve_button',
   rejectBtn: 'reject_button',
-  tokenSpendApproval: 'Token Spend Approval'
+  tokenSpendApproval: 'Token Spend Approval',
+  swapTitle: 'Swap'
 }
