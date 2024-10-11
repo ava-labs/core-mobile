@@ -35,6 +35,7 @@ export const warmup = async (
   }
   try {
     await loginRecoverWallet.recoverWalletLogin(isBalanceNotificationOn)
+    console.log('Logged In Success')
   } catch (e) {
     console.log('Skipped login process...')
   }

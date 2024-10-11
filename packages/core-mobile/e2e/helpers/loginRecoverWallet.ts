@@ -1,6 +1,5 @@
 import CreatePinPage from '../pages/createPin.page'
 import AnalyticsConsentPage from '../pages/analyticsConsent.page'
-import PortfolioPage from '../pages/portfolio.page'
 import commonElsPage from '../pages/commonEls.page'
 import nameWalletPage from '../pages/nameWallet.page'
 import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
@@ -26,7 +25,6 @@ class LoginRecoverWallet {
     } else {
       await commonElsPage.tapNotNow()
     }
-    await PortfolioPage.verifyPorfolioScreen()
   }
 
   async enterPin() {
