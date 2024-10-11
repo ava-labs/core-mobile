@@ -17,6 +17,7 @@
       "bundleIdentifier": "com.avaxwallet.exporouterdemo"
     },
     "android": {
+      "package": "com.avaxwallet.exporouterdemo",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
