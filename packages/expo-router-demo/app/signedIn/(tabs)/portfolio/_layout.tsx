@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router'
+import { Stack } from "@/layouts/Stack";
 
 export default function PortfolioLayout() {
   return (

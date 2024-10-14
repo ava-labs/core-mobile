@@ -1,5 +1,5 @@
+import { Stack } from "@/layouts/Stack";
 import { modalScreensOptions } from "@/utils/screenOptions";
-import { Stack } from "expo-router";
 
 export default function SignedInLayout() {
   return (
