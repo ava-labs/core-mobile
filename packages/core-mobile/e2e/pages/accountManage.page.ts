@@ -70,6 +70,10 @@ class AccountManagePage {
     return by.id(accountManage.accountBalance)
   }
 
+  get accountTitle() {
+    return by.id(accountManage.accountTitle)
+  }
+
   async tapAccountDropdownTitle(index = 0) {
     await Action.tapElementAtIndex(this.accountDropdownTitle, index)
   }
@@ -264,7 +268,7 @@ class AccountManagePage {
   }
 
   async verifyAccountNameOnMyAccounts(name: string, index = 0) {
-    await Assert.hasText(by.id('account_title'), name, index)
+    await Assert.hasText(this.accountTitle, name, index)
   }
 }
 

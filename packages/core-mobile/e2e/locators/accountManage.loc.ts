@@ -14,5 +14,6 @@ export default {
   accountDropdownTitle: 'account_dropdown_title',
   accountsDropdown: 'accounts_dropdown',
   editedAccountName: 'Edited Account 2',
-  accountBalance: 'account_balance'
+  accountBalance: 'account_balance',
+  accountTitle: 'account_title'
 }
