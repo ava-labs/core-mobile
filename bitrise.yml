@@ -524,6 +524,12 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}
@@ -554,6 +560,12 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - IS_INTERNAL_BUILD: "true"
@@ -620,6 +632,12 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - IS_REGRESSION_RUN: "true"
       opts:
         is_expand: false
@@ -657,6 +675,12 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -701,6 +725,12 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -741,6 +771,12 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -785,6 +821,12 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -825,6 +867,12 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -926,6 +974,12 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
@@ -963,6 +1017,9 @@ workflows:
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
@@ -992,6 +1049,9 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
