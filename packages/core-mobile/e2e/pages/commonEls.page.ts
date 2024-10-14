@@ -50,6 +50,18 @@ class CommonElsPage {
     return by.id(commonEls.searchBar)
   }
 
+  get bitcoinSVG() {
+    return by.id(commonEls.bitcoinSVG)
+  }
+
+  get avaSVG() {
+    return by.id(commonEls.avaSVG)
+  }
+
+  get reloadSVG() {
+    return by.id(commonEls.reloadSVG)
+  }
+
   async typeSearchBar(text: string) {
     await Actions.waitForElement(this.searchBar)
     await Actions.setInputText(this.searchBar, text)
@@ -63,7 +75,11 @@ class CommonElsPage {
     await Actions.tap(this.getStartedButton)
   }
 
-  async enterTextInput(index: number, inputText: string) {
+  async enterTextInput(inputText: string, index = 0) {
+    await Actions.setInputText(this.inputTextField, inputText, index)
+  }
+
+  async clearTextInput(inputText: string, index = 0) {
     await Actions.setInputText(this.inputTextField, inputText, index)
   }
 
@@ -134,6 +150,18 @@ class CommonElsPage {
 
   async tapTurnOnNotifications() {
     await Actions.tapElementAtIndex(this.turnOnNotifications, 0)
+  }
+
+  async tapAvaSVG(index = 0) {
+    await Actions.tapElementAtIndex(this.avaSVG, index)
+  }
+
+  async tapBitcoinSVG(index = 0) {
+    await Actions.tapElementAtIndex(this.bitcoinSVG, index)
+  }
+
+  async tapReloadSVG(index = 0) {
+    await Actions.tapElementAtIndex(this.reloadSVG, index)
   }
 }
 

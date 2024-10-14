@@ -113,7 +113,7 @@ function AccountItem({
                 onSubmit={() => saveAccountTitle(editedAccountTitle)}
               />
             ) : (
-              <Title title={account.name} />
+              <Title title={account.name} testID="account_title" />
             )}
             <Space y={4} />
             {showLoader && (
@@ -135,7 +135,9 @@ function AccountItem({
             )}
             {!showLoader && isBalanceLoaded && (
               <Row style={{ alignItems: 'center' }}>
-                <AvaText.Body3 currency>{accountBalance}</AvaText.Body3>
+                <AvaText.Body3 testID="account_balance" currency>
+                  {accountBalance}
+                </AvaText.Body3>
                 <Space x={8} />
                 <AvaButton.Base onPress={handleLoadBalance}>
                   <ReloadSVG />
@@ -237,6 +239,7 @@ const EditTitle = ({
   return (
     <Row>
       <InputText
+        testID="input_text"
         style={{
           margin: 0,
           backgroundColor: theme.colorBg1,
@@ -253,7 +256,17 @@ const EditTitle = ({
   )
 }
 
-const Title = ({ title }: { title: string }): JSX.Element => {
-  return <AvaText.Heading2 ellipsizeMode={'tail'}>{title}</AvaText.Heading2>
+const Title = ({
+  title,
+  testID
+}: {
+  title: string
+  testID?: string
+}): JSX.Element => {
+  return (
+    <AvaText.Heading2 ellipsizeMode={'tail'} testID={testID}>
+      {title}
+    </AvaText.Heading2>
+  )
 }
 export default AccountItem
