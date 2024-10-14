@@ -5,6 +5,7 @@ import { Platform } from '../helpers/constants'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
+import accountManagePage from './accountManage.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
@@ -346,6 +347,10 @@ class PortfolioPage {
     console.log(output)
     console.log('nothing?')
     return output
+  }
+
+  async verifyAccountName(name: string) {
+    await Assert.hasText(accountManagePage.accountDropdownTitle, name)
   }
 }
 
