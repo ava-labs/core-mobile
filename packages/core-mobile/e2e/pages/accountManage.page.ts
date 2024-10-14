@@ -3,6 +3,7 @@ import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
 import { Platform } from '../helpers/constants'
 import Assert from '../helpers/assertions'
+import commonElsLoc from '../locators/commonEls.loc'
 
 class AccountManagePage {
   get account() {
@@ -59,6 +60,18 @@ class AccountManagePage {
 
   get fourthAccount() {
     return by.text(accountManage.fourthaccount)
+  }
+
+  get editedAccountName() {
+    return by.text(accountManage.editedAccountName)
+  }
+
+  get accountBalance() {
+    return by.id(accountManage.accountBalance)
+  }
+
+  get accountTitle() {
+    return by.id(accountManage.accountTitle)
   }
 
   async tapAccountDropdownTitle(index = 0) {
@@ -195,12 +208,15 @@ class AccountManagePage {
     await Action.tapElementAtIndex(this.doneButton, 0)
   }
 
-  async tapEditAccount() {
-    await Action.tapElementAtIndex(this.editAccount, 0)
+  async tapEditAccount(index = 0) {
+    await Action.tapElementAtIndex(this.editAccount, index)
   }
 
   async tapSaveNewAccountName() {
-    await Action.tapElementAtIndex(this.saveNewAccountName, 0)
+    await Action.dismissKeyboard(commonElsLoc.inputTextField)
+    if (Action.platform() === 'android') {
+      await Action.tapElementAtIndex(this.saveNewAccountName, 0)
+    }
   }
 
   async tapFirstAccount() {
@@ -249,6 +265,10 @@ class AccountManagePage {
         await this.tapFirstAccount()
       }
     }
+  }
+
+  async verifyAccountNameOnMyAccounts(name: string, index = 0) {
+    await Assert.hasText(this.accountTitle, name, index)
   }
 }
 

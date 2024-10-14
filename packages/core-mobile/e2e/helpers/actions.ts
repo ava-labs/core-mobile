@@ -281,6 +281,10 @@ async function writeQrCodeToFile(clipboardValue: string) {
   )
 }
 
+const clearTextInput = async (item: Detox.NativeMatcher, index = 0) => {
+  await element(item).atIndex(index).clearText()
+}
+
 async function waitForCondition(func: any, condition: any, timeout = 5000) {
   let isFulfilled = false
 
@@ -327,5 +331,6 @@ export default {
   getElementsByTestId,
   getElementsTextByTestId,
   dismissKeyboard,
-  getElementText
+  getElementText,
+  clearTextInput
 }
