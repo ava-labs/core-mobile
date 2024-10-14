@@ -4,14 +4,18 @@ import { StackCardInterpolatedStyle, StackCardInterpolationProps, StackNavigatio
 import BackBarButton from '@/components/navigation/BackBarButton'
 import { Animated } from 'react-native'
 
-export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
+export const stackNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
   headerBackTitleVisible: false,
-  headerTitle: () => <Grabber />,
   headerShadowVisible: false,
   headerTitleAlign: 'center',
   headerBackImage: () => <BackBarButton />,
   ...TransitionPresets.SlideFromRightIOS
+}
+
+export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
+  ...stackNavigatorScreenOptions,
+  headerTitle: () => <Grabber />,
 }
 
 export const modalScreensOptions: StackNavigationOptions = {
