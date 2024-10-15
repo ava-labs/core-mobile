@@ -160,11 +160,10 @@ class PopUpModalPage {
 
   async verifyApproveTransactionScreen() {
     try {
-      await actions.waitForElement(this.approveBtn, 5000)
-    } catch (e) {
       await sendPage.tapNextButton()
+    } catch (e) {
+      await actions.waitForElement(this.approveBtn, 10000)
     }
-    await actions.waitForElement(this.approveBtn, 5000)
   }
 
   async verifyFeeIsLegit(isPXChain = false, estimatedGasFee = 0.009) {

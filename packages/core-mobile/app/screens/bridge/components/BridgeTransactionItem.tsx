@@ -43,7 +43,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
 
   return (
     <AvaListItem.Base
-      testID="activityListItem"
+      testID="bridgeActivityListItem"
       title={pending ? 'Bridging...' : 'Bridge'}
       leftComponent={
         <View

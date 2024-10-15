@@ -2,6 +2,7 @@ export default {
   transaction: 'activity_list__Contract Call',
   activityDetail: 'activity_detail__amount',
   activityListItem: 'activityListItem',
+  bridgeActivityListItem: 'bridgeActivityListItem',
   activityListItemAmount: 'acitivty_item_amount',
   avaxOutgoingTransactionDetail: '-0.0001 AVAX',
   avaxIncomingTransactionDetail: '+0.0001 AVAX',
