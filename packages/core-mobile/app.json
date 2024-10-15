@@ -1,4 +1,5 @@
 {
   "name": "AvaxWallet",
-  "displayName": "Core X"
+  "displayName": "Core X",
+  "scheme": "core" 
 }

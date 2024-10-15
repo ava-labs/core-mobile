@@ -117,6 +117,8 @@ PODS:
     - React-Core
   - ExpoFileSystem (16.0.9):
     - ExpoModulesCore
+  - ExpoHead (3.4.10):
+    - ExpoModulesCore
   - ExpoKeepAwake (12.8.2):
     - ExpoModulesCore
   - ExpoModulesCore (1.11.13):
@@ -126,6 +128,11 @@ PODS:
     - React-NativeModulesApple
     - React-RCTAppDelegate
     - ReactCommon/turbomodule/core
+  - EXSplashScreen (0.26.5):
+    - ExpoModulesCore
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
+    - React-Core
   - EXUpdatesInterface (0.15.3)
   - FBLazyVector (0.73.7)
   - FBReactNativeSpec (0.73.7):
@@ -1423,8 +1430,10 @@ DEPENDENCIES:
   - expo-dev-menu-interface (from `../node_modules/expo-dev-menu-interface/ios`)
   - "ExpoAdapterGoogleSignIn (from `../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
+  - ExpoHead (from `../node_modules/expo-router/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
@@ -1594,10 +1603,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin/expo/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
+  ExpoHead:
+    :path: "../node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
+  EXSplashScreen:
+    :path: "../node_modules/expo-splash-screen/ios"
   EXUpdatesInterface:
     :path: "../node_modules/expo-updates-interface/ios"
   FBLazyVector:
@@ -1816,8 +1829,10 @@ SPEC CHECKSUMS:
   expo-dev-menu-interface: 7ba029c9d1a82ac22b9b584c00514860b060553e
   ExpoAdapterGoogleSignIn: da10ae7e7c1d73a10c2facebcdfe5ebea8e073ce
   ExpoFileSystem: 74cc0fae916f9f044248433971dcfc8c3befd057
+  ExpoHead: 89ffd324e60520751c2c285233fe45e875c91874
   ExpoKeepAwake: 0f5cad99603a3268e50af9a6eb8b76d0d9ac956c
   ExpoModulesCore: 4a8928a228569301ac4fc4a1e846713e05754d05
+  EXSplashScreen: fb4d80520d2348d57879e7a272415438bbcdffd3
   EXUpdatesInterface: 3e444e2093e25b7ca0999a7d8c16e8392dee70c3
   FBLazyVector: 9f533d5a4c75ca77c8ed774aced1a91a0701781e
   FBReactNativeSpec: 40b791f4a1df779e7e4aa12c000319f4f216d40a
