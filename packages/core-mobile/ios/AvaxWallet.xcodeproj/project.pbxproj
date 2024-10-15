@@ -45,6 +45,8 @@
 		8EE9988B28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
 		8EE9988C28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
 		8F8F28F150E3852D82C46F49 /* libPods-common-AvaxWalletInternal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FB64E2EA8BE4173E8D0EB4B6 /* libPods-common-AvaxWalletInternal.a */; };
+		A96E77CAD2ABB49A6ACACD2C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762C9EF0EF8C043AB7880CD7 /* ExpoModulesProvider.swift */; };
+		C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -132,6 +134,8 @@
 		27981BC628AECFB200672611 /* AvaxWalletRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWalletRelease.entitlements; path = AvaxWallet/AvaxWalletRelease.entitlements; sourceTree = "<group>"; };
 		3DE558FF49E888A0002110D6 /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
 		501C50822C35C63800DAFF77 /* core_send.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = core_send.wav; sourceTree = "<group>"; };
+		743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWalletInternal/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		762C9EF0EF8C043AB7880CD7 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWallet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtensionInternal.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		815E55132C92071A000F8E0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		815E551B2C9209AF000F8E0F /* NotificationServiceExtensionInternal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationServiceExtensionInternal.entitlements; sourceTree = "<group>"; };
@@ -242,6 +246,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		6493DFA96F0295D04CEC5E67 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				ECCB1DEF911D4FA6ABECADCA /* AvaxWallet */,
+				C404B8FC20C759E8C006A159 /* AvaxWalletInternal */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 		815E55102C92071A000F8E0F /* NotificationServiceExtensionInternal */ = {
 			isa = PBXGroup;
 			children = (
@@ -283,6 +296,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				F8B72680A82297B40C47D111 /* Pods */,
 				D43AD4CD4B1C41E484E6B9ED /* Resources */,
+				6493DFA96F0295D04CEC5E67 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -300,6 +314,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		C404B8FC20C759E8C006A159 /* AvaxWalletInternal */ = {
+			isa = PBXGroup;
+			children = (
+				743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */,
+			);
+			name = AvaxWalletInternal;
+			sourceTree = "<group>";
+		};
 		D43AD4CD4B1C41E484E6B9ED /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -312,6 +334,14 @@
 				8E8003562CAAF3D800FFC562 /* Inter-SemiBold.ttf */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		ECCB1DEF911D4FA6ABECADCA /* AvaxWallet */ = {
+			isa = PBXGroup;
+			children = (
+				762C9EF0EF8C043AB7880CD7 /* ExpoModulesProvider.swift */,
+			);
+			name = AvaxWallet;
 			sourceTree = "<group>";
 		};
 		F8B72680A82297B40C47D111 /* Pods */ = {
@@ -334,6 +364,7 @@
 			buildPhases = (
 				D1F246C111DE32162BC170CD /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
+				EFFA1F3CA157F5BDAB10C843 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
@@ -394,6 +425,7 @@
 			buildPhases = (
 				3F4749475E4EBD11AF6A6F00 /* [CP] Check Pods Manifest.lock */,
 				8E858A5428AFD47300236EF2 /* Start Packager */,
+				7C608EFDA163D625CE80CBE7 /* [Expo] Configure project */,
 				8E858A5528AFD47300236EF2 /* Sources */,
 				8E858A5728AFD47300236EF2 /* Frameworks */,
 				8E858A5928AFD47300236EF2 /* Resources */,
@@ -605,6 +637,25 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		7C608EFDA163D625CE80CBE7 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-common-AvaxWalletInternal/expo-configure-project.sh\"\n";
+		};
 		8E858A5428AFD47300236EF2 /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -709,6 +760,25 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		EFFA1F3CA157F5BDAB10C843 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-common-AvaxWallet/expo-configure-project.sh\"\n";
+		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -737,6 +807,7 @@
 			files = (
 				8EA4B4D128EF9B8300A06DBA /* AppDelegate.mm in Sources */,
 				8EA4B4D028EF9B4D00A06DBA /* main.m in Sources */,
+				A96E77CAD2ABB49A6ACACD2C /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -762,6 +833,7 @@
 			files = (
 				8EA3A01328EF82E100F753C2 /* main.m in Sources */,
 				8EA3A01028EF825900F753C2 /* AppDelegate.mm in Sources */,
+				C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -829,6 +901,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet;
 				PRODUCT_NAME = AvaxWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -876,6 +949,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet;
 				PRODUCT_NAME = AvaxWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "Bitrise iOS app-store - (org.avalabs.corewallet)";
@@ -920,6 +994,7 @@
 				MARKETING_VERSION = 0.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -963,6 +1038,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 0.0.0;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1011,6 +1087,7 @@
 				MARKETING_VERSION = 0.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet.NotificationServiceExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1054,6 +1131,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 0.0.0;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet.NotificationServiceExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1253,6 +1331,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1289,6 +1368,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "Bitrise iOS app-store - (org.avalabs.avaxwallet.internal)";
