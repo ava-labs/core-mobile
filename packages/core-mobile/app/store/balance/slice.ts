@@ -6,7 +6,7 @@ import {
 } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork, selectIsTestnet } from 'store/network'
+import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
@@ -159,28 +159,43 @@ export const selectTokenByAddress = (address: string) => (state: RootState) => {
   return undefined
 }
 
-export const selectTokensWithBalanceForAccount =
-  (accountIndex: number | undefined) => (state: RootState) => {
+const _selectAccountIndex = (
+  _: RootState,
+  accountIndex: number | undefined
+): number | undefined => accountIndex
+
+const _selectBalancesByAccountIndex = createSelector(
+  [_selectAllBalances, _selectAccountIndex],
+  (balances, accountIndex) => {
     if (accountIndex === undefined) return []
 
-    const isDeveloperMode = selectIsDeveloperMode(state)
-    const balances = Object.values(state.balance.balances)
-      .filter(balance => balance.accountIndex === accountIndex)
-      .filter(balance => {
-        const isTestnet = selectIsTestnet(balance.chainId)(state)
-
-        return (
-          (isDeveloperMode && isTestnet) ||
-          (!isDeveloperMode && isTestnet === false)
-        )
-      })
-
-    return balances.flatMap(b => b.tokens)
+    // Filter balances based on accountIndex and other conditions
+    return Object.values(balances).filter(
+      balance => balance.accountIndex === accountIndex
+    )
   }
+)
+
+export const selectTokensWithBalanceForAccount = createSelector(
+  [selectIsDeveloperMode, selectAllNetworks, _selectBalancesByAccountIndex],
+  (isDeveloperMode, networks, balancesByAccountIndex) => {
+    const filteredBalancesForCurrentMode = balancesByAccountIndex.filter(
+      balance => {
+        const isTestnet = networks[balance.chainId]?.isTestnet
+        return (
+          (isDeveloperMode && isTestnet) || (!isDeveloperMode && !isTestnet)
+        )
+      }
+    )
+
+    // Return the tokens for filtered balances
+    return filteredBalancesForCurrentMode.flatMap(b => b.tokens)
+  }
+)
 
 export const selectBalanceTotalInCurrencyForAccount =
   (accountIndex: number) => (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(accountIndex)(state)
+    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
 
     return tokens.reduce((total, token) => {
       total += token.balanceInCurrency ?? 0
@@ -189,7 +204,7 @@ export const selectBalanceTotalInCurrencyForAccount =
   }
 export const selectBalanceForAccountIsAccurate =
   (accountIndex: number) => (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(accountIndex)(state)
+    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
     if (tokens.length === 0) return false
     return !Object.values(state.balance.balances).some(
       balance => !balance.dataAccurate
