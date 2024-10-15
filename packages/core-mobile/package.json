@@ -43,7 +43,7 @@
     "@datadog/mobile-react-navigation": "2.4.3",
     "@ethereumjs/common": "4.4.0",
     "@ethereumjs/tx": "5.4.0",
-    "@gorhom/bottom-sheet": "4.6.4",
+    "@gorhom/bottom-sheet": "5.0.2",
     "@hookform/resolvers": "3.9.0",
     "@invertase/react-native-apple-authentication": "2.4.0",
     "@lavamoat/preinstall-always-fail": "2.1.0",
