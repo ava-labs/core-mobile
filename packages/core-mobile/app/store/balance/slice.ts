@@ -95,19 +95,20 @@ export const selectIsLoadingBalances = (state: RootState): boolean =>
 export const selectIsRefetchingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.REFETCHING
 
+const _selectAllBalances = (state: RootState): Balances =>
+  state.balance.balances
+
 // get the list of tokens for the active network
 // each token will have info such as: balance, price, market cap,...
-export const selectTokensWithBalance = (
-  state: RootState
-): LocalTokenWithBalance[] => {
-  const activeNetwork = selectActiveNetwork(state)
-  const activeAccount = selectActiveAccount(state)
+export const selectTokensWithBalance = createSelector(
+  [selectActiveNetwork, selectActiveAccount, _selectAllBalances],
+  (activeNetwork, activeAccount, allBalances): LocalTokenWithBalance[] => {
+    if (!activeAccount) return []
 
-  if (!activeAccount) return []
-
-  const key = getKey(activeNetwork.chainId, activeAccount.index)
-  return state.balance.balances[key]?.tokens ?? []
-}
+    const key = getKey(activeNetwork.chainId, activeAccount.index)
+    return allBalances[key]?.tokens ?? []
+  }
+)
 
 export const selectTokensWithBalanceByNetwork =
   (network?: Network) =>
@@ -214,9 +215,6 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
     return totalInCurrency
   }
-
-const _selectAllBalances = (state: RootState): Balances =>
-  state.balance.balances
 
 const _selectBalanceKeyForNetworkAndAccount = (
   _state: RootState,
