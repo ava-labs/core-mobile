@@ -8,7 +8,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Link href="/signedIn/portfolio/assets">Go to Portfolio Assets</Link>
+      <Link href="/portfolio/assets">Go to Portfolio Assets</Link>
     </View>
   )
 }

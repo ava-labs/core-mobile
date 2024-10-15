@@ -8,7 +8,7 @@ const useHomeScreenHeader = (): void => {
   const renderHeaderLeft = useCallback(
     () => (
       <View style={{ marginLeft: 12 }}>
-        <Link href="/signedIn/settings/">Settings</Link>
+        <Link href="/settings/">Settings</Link>
       </View>
     ),
     []
@@ -17,8 +17,8 @@ const useHomeScreenHeader = (): void => {
   const renderHeaderRight = useCallback(
     () => (
       <View style={{ flexDirection: 'row', gap: 12, marginRight: 12 }}>
-        <Link href="/signedIn/receive/">Receive</Link>
-        <Link href="/signedIn/notifications/">Notifications</Link>
+        <Link href="/receive/">Receive</Link>
+        <Link href="/notifications/">Notifications</Link>
       </View>
     ),
     []
