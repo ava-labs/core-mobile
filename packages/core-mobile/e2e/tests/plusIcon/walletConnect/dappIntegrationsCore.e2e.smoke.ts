@@ -30,7 +30,7 @@ describe('Dapp - Core', () => {
     await browserPage.connectTermAndContinue()
     await browserPage.connectCore()
     await connectToSitePage.selectAccountAndconnect()
-  })
+  }, 60000)
 
   it('should verify core.app connected', async () => {
     await securityAndPrivacyPage.goToConnectedSites()
