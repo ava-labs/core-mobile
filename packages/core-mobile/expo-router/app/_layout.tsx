@@ -17,8 +17,8 @@ export default function RootLayout(): JSX.Element | null {
   return (
     <K2AlpineThemeProvider>
       <Stack screenOptions={{ headerShown: false, animationEnabled: false }}>
-        <Stack.Screen name="signedIn" />
-        <Stack.Screen name="signedOut" />
+        <Stack.Screen name="(signedIn)" />
+        <Stack.Screen name="signup" />
         <Stack.Screen name="+not-found" />
       </Stack>
     </K2AlpineThemeProvider>
