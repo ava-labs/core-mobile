@@ -177,7 +177,7 @@ __metadata:
     "@babel/core": 7.25.7
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
-    "@babel/plugin-transform-class-static-block": 7.25.7
+    "@babel/plugin-transform-class-static-block": 7.25.8
     "@babel/plugin-transform-export-namespace-from": 7.25.7
     "@babel/plugin-transform-private-methods": 7.25.7
     "@babel/preset-env": 7.25.7
@@ -2362,16 +2362,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-class-static-block@npm:7.25.7, @babel/plugin-transform-class-static-block@npm:^7.25.7":
-  version: 7.25.7
-  resolution: "@babel/plugin-transform-class-static-block@npm:7.25.7"
+"@babel/plugin-transform-class-static-block@npm:7.25.8":
+  version: 7.25.8
+  resolution: "@babel/plugin-transform-class-static-block@npm:7.25.8"
   dependencies:
     "@babel/helper-create-class-features-plugin": ^7.25.7
     "@babel/helper-plugin-utils": ^7.25.7
-    "@babel/plugin-syntax-class-static-block": ^7.14.5
   peerDependencies:
     "@babel/core": ^7.12.0
-  checksum: 565366abd42e77c424478293921e98eab17fe7a1bfd3b0896c4753d514df6caa33afa019637ed659dfd158de75d1e7c8641976269c8f91d081a0834327288a6a
+  checksum: 2cc64441c98bc93e1596a030f1a43b068980060f38373b1c985d60e05041eacf9753ed5440cae1cfa03c1dae7ffccfb2ffc8d93b83d584e0f3e8600313a3e034
   languageName: node
   linkType: hard
 
@@ -2385,6 +2384,19 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.12.0
   checksum: 324049263504f18416f1c3e24033baebfafd05480fdd885c8ebe6f2b415b0fc8e0b98d719360f9e30743cc78ac387fabc0b3c6606d2b54135756ffb92963b382
+  languageName: node
+  linkType: hard
+
+"@babel/plugin-transform-class-static-block@npm:^7.25.7":
+  version: 7.25.7
+  resolution: "@babel/plugin-transform-class-static-block@npm:7.25.7"
+  dependencies:
+    "@babel/helper-create-class-features-plugin": ^7.25.7
+    "@babel/helper-plugin-utils": ^7.25.7
+    "@babel/plugin-syntax-class-static-block": ^7.14.5
+  peerDependencies:
+    "@babel/core": ^7.12.0
+  checksum: 565366abd42e77c424478293921e98eab17fe7a1bfd3b0896c4753d514df6caa33afa019637ed659dfd158de75d1e7c8641976269c8f91d081a0834327288a6a
   languageName: node
   linkType: hard
 
