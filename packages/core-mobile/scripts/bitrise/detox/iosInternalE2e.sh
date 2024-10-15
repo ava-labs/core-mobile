@@ -13,6 +13,8 @@ npm rebuild detox
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts && sleep 5
 
+./scripts/datadog/updateIosDashboard.sh  & sleep 5
+
 if ((test_result != 0)); then
   exit 1
 fi
