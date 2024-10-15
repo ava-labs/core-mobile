@@ -2,7 +2,6 @@ import Actions from '../../helpers/actions'
 import ActivityTabPage from '../../pages/activityTab.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
-import activityTabPage from '../../pages/activityTab.page'
 import accountManagePage from '../../pages/accountManage.page'
 
 describe('Filter transactions on Activity List', () => {
@@ -28,9 +27,9 @@ describe('Filter transactions on Activity List', () => {
     await ActivityTabPage.tapBridgeFilterOption()
     await ActivityTabPage.verifySelectedFilter('Bridge')
     try {
-      await ActivityTabPage.verifyExistingRow('Bridge')
+      await Actions.waitForElement(ActivityTabPage.bridgeActivityListItem)
     } catch (error) {
-      await Actions.waitForElement(activityTabPage.noRecentActivity)
+      await Actions.waitForElement(ActivityTabPage.noRecentActivity)
     }
   })
 
