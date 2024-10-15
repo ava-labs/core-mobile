@@ -32,6 +32,10 @@ class ActivityTabPage {
     return by.id(activityTab.activityListItemAmount)
   }
 
+  get bridgeActivityListItem() {
+    return by.id(activityTab.bridgeActivityListItem)
+  }
+
   get selectFilterDropdown() {
     return by.id(activityTab.currentFilter)
   }
