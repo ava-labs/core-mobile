@@ -2,7 +2,6 @@ import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
-import { ProcessedFeatureFlags } from 'store/posthog/types'
 import { parseUri } from '@walletconnect/utils'
 import { showSimpleToast } from 'components/Snackbar'
 import { WalletConnectVersions } from 'store/walletConnectV2/types'
@@ -13,7 +12,7 @@ import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 export const handleDeeplink = (
   deeplink: DeepLink,
   dispatch: Dispatch,
-  processedFeatureFlags: ProcessedFeatureFlags
+  isEarnBlocked: boolean
 ): void => {
   let url
   try {
@@ -51,7 +50,7 @@ export const handleDeeplink = (
         url,
         deeplink,
         dispatch,
-        processedFeatureFlags
+        isEarnBlocked
       })
       break
     }
@@ -65,13 +64,13 @@ const handleWalletConnectActions = ({
   url,
   dispatch,
   deeplink,
-  processedFeatureFlags
+  isEarnBlocked
 }: {
   action: string
   url: URL
   dispatch: Dispatch<AnyAction>
   deeplink: DeepLink
-  processedFeatureFlags: ProcessedFeatureFlags
+  isEarnBlocked: boolean
 }): void => {
   switch (action) {
     case ACTIONS.WC: {
@@ -85,7 +84,7 @@ const handleWalletConnectActions = ({
       break
     }
     case ACTIONS.StakeComplete: {
-      if (processedFeatureFlags.earnBlocked) return
+      if (isEarnBlocked) return
       deeplink.callback?.()
       navigateToClaimRewards()
       break
