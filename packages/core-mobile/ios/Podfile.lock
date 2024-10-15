@@ -42,7 +42,7 @@ PODS:
   - EXJSONUtils (0.12.3)
   - EXManifests (0.13.2):
     - ExpoModulesCore
-  - Expo (50.0.21):
+  - Expo (50.0.20):
     - ExpoModulesCore
   - expo-dev-client (3.3.12):
     - EXManifests
@@ -117,9 +117,11 @@ PODS:
     - React-Core
   - ExpoFileSystem (16.0.9):
     - ExpoModulesCore
+  - ExpoHead (3.4.10):
+    - ExpoModulesCore
   - ExpoKeepAwake (12.8.2):
     - ExpoModulesCore
-  - ExpoModulesCore (1.11.14):
+  - ExpoModulesCore (1.11.13):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1321,7 +1323,7 @@ PODS:
   - RNArgon2 (2.0.1):
     - CatCrypto
     - React-Core
-  - RNBootSplash (6.1.3):
+  - RNBootSplash (6.1.4):
     - React-Core
   - RNCAsyncStorage (2.0.0):
     - React-Core
@@ -1428,6 +1430,7 @@ DEPENDENCIES:
   - expo-dev-menu-interface (from `../node_modules/expo-dev-menu-interface/ios`)
   - "ExpoAdapterGoogleSignIn (from `../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
+  - ExpoHead (from `../node_modules/expo-router/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
@@ -1600,6 +1603,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin/expo/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
+  ExpoHead:
+    :path: "../node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
   ExpoModulesCore:
@@ -1817,15 +1822,16 @@ SPEC CHECKSUMS:
   EXFont: f20669cb266ef48b004f1eb1f2b20db96cd1df9f
   EXJSONUtils: 5c42959e87be238b045ef37cc5268b16a6c0ad4a
   EXManifests: 5e8c29f36c716af768a4ea47ec05e1b89ab93091
-  Expo: 7b9976a9b2be116a701b233d6655b229a3c9316e
+  Expo: d86f597bbab83615207499c5b3bfd80992e2bbd3
   expo-dev-client: f22fdebdb8760bc22f660b7c0cb1dd58d80005c0
   expo-dev-launcher: 40aecc17b686338535356df9f2c727a42c88466b
   expo-dev-menu: 0e07e86ed397e431ee1171bb26caf7dc69cb494d
   expo-dev-menu-interface: 7ba029c9d1a82ac22b9b584c00514860b060553e
   ExpoAdapterGoogleSignIn: da10ae7e7c1d73a10c2facebcdfe5ebea8e073ce
   ExpoFileSystem: 74cc0fae916f9f044248433971dcfc8c3befd057
+  ExpoHead: 89ffd324e60520751c2c285233fe45e875c91874
   ExpoKeepAwake: 0f5cad99603a3268e50af9a6eb8b76d0d9ac956c
-  ExpoModulesCore: 421e9c6bcb63baf153a5ec22b2b4319addfe331c
+  ExpoModulesCore: 4a8928a228569301ac4fc4a1e846713e05754d05
   EXSplashScreen: fb4d80520d2348d57879e7a272415438bbcdffd3
   EXUpdatesInterface: 3e444e2093e25b7ca0999a7d8c16e8392dee70c3
   FBLazyVector: 9f533d5a4c75ca77c8ed774aced1a91a0701781e
@@ -1918,7 +1924,7 @@ SPEC CHECKSUMS:
   ReactNativePerformance: ab7dee4c4862623d72c1530a9fc71b55458edf71
   RNAppleAuthentication: e00c76acb03351f5544373c78fa7f359bef6d5d3
   RNArgon2: 1481820722fd4af1575c09f7fc9ad67c00ee8a42
-  RNBootSplash: 0177d81b7c094bbb9d7af80e77f8694922dae46d
+  RNBootSplash: 811d734a334afaf155bd588f3c10c34ead166265
   RNCAsyncStorage: d35c79ffba52c1013013e16b1fc295aec2feabb6
   RNCClipboard: 5e503962f0719ace8f7fdfe9c60282b526305c85
   RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
