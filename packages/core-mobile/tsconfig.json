@@ -5,8 +5,13 @@
     "module": "esnext",
     "baseUrl": "./",
     "paths": {
-      "*": ["app/*", "app-new/*"],
-      "tests/*": ["../tests/*"]
+      "*": [
+        "app/*",
+        "app-new/*"
+      ],
+      "tests/*": [
+        "../tests/*"
+      ]
     }
   },
   "include": [
@@ -19,7 +24,13 @@
     "jest.config.js",
     ".prettierrc.js",
     "../k2-mobile/src/theme.d.ts",
-    "../k2-alpine/src/theme.d.ts"
+    "../k2-alpine/src/theme.d.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ],
-  "exclude": ["node_modules", "./e2e/artifacts/*", "./ios/DerivedData"]
+  "exclude": [
+    "node_modules",
+    "./e2e/artifacts/*",
+    "./ios/DerivedData"
+  ]
 }

@@ -283,7 +283,7 @@ __metadata:
     eslint-plugin-avalabs-mobile: "workspace:*"
     ethers: 6.8.1
     events: 3.3.0
-    expo: 50.0.20
+    expo: 50.0.21
     expo-constants: 15.4.6
     expo-dev-client: 3.3.12
     expo-linking: 6.2.2
@@ -495,7 +495,7 @@ __metadata:
     dripsy: 4.3.7
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
-    expo: 50.0.20
+    expo: 50.0.21
     expo-font: 11.10.3
     expo-splash-screen: 0.27.6
     expo-status-bar: 1.12.1
@@ -16886,12 +16886,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-modules-core@npm:1.11.13":
-  version: 1.11.13
-  resolution: "expo-modules-core@npm:1.11.13"
+"expo-modules-core@npm:1.11.14":
+  version: 1.11.14
+  resolution: "expo-modules-core@npm:1.11.14"
   dependencies:
     invariant: ^2.2.4
-  checksum: c478dcf5652a71e4d14f36977f1f72b3e43760a8b5f0f4049fbf461927de68446eccdf6d5da1864cf27a49ae2a01c04f64ee5d474ecfcde29532ac10747e5cd9
+  checksum: 2fce3481b4cd632693e31412844acad84463da7bc7f104ff065295b68623801a3f97f044d7511fec2d125e06ed81e494a1fc6ebd274e2595c015976ec1788fa8
   languageName: node
   linkType: hard
 
@@ -16973,9 +16973,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo@npm:50.0.20":
-  version: 50.0.20
-  resolution: "expo@npm:50.0.20"
+"expo@npm:50.0.21":
+  version: 50.0.21
+  resolution: "expo@npm:50.0.21"
   dependencies:
     "@babel/runtime": ^7.20.0
     "@expo/cli": 0.17.13
@@ -16989,12 +16989,12 @@ __metadata:
     expo-font: ~11.10.3
     expo-keep-awake: ~12.8.2
     expo-modules-autolinking: 1.10.3
-    expo-modules-core: 1.11.13
+    expo-modules-core: 1.11.14
     fbemitter: ^3.0.0
     whatwg-url-without-unicode: 8.0.0-3
   bin:
     expo: bin/cli
-  checksum: 64e1537418780b7fd9ad1cfd23c09dc7f3be9b359b443de57455ffc70b431d3d0ff100e16de974eaa3c809f466bd781493c0663e10bca5ab0992527ff8b4cc98
+  checksum: 35b9d858865e0a8e6cde3372f86cbf0165f2584fb3ab3ce13e0f119e026ee0ed92176623528b76a4b8433e83273b1dc435fa15675ffcc740c74803653dade058
   languageName: node
   linkType: hard
 
