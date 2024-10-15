@@ -102,7 +102,7 @@
     "es6-promise": "4.2.8",
     "ethers": "6.8.1",
     "events": "3.3.0",
-    "expo": "50.0.20",
+    "expo": "50.0.21",
     "expo-constants": "15.4.6",
     "expo-dev-client": "3.3.12",
     "expo-linking": "6.2.2",
