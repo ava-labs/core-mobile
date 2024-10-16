@@ -8,6 +8,7 @@ import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSendContext } from 'contexts/SendContext'
 import { assertNotUndefined } from 'utils/assertions'
+import { useBitcoinProvider } from 'hooks/networks/networkProviderHooks'
 import { SendAdapterBTC } from '../utils/types'
 import { getBtcInputUtxos } from '../utils/btc/getBtcInputUtxos'
 import { send as sendBTC } from '../utils/btc/send'
@@ -16,9 +17,9 @@ import { validate as validateBTCSend } from '../utils/btc/validate'
 const useBTCSend: SendAdapterBTC = ({
   isMainnet,
   fromAddress,
-  provider,
   maxFee,
-  nativeToken
+  nativeToken,
+  network
 }) => {
   const [utxos, setUtxos] = useState<BitcoinInputUTXO[]>([])
   const { request } = useInAppRequest()
@@ -31,9 +32,11 @@ const useBTCSend: SendAdapterBTC = ({
     token,
     amount
   } = useSendContext()
+  const provider = useBitcoinProvider(!!network.isTestnet)
 
   useEffect(() => {
     const fetchInputUtxos = async (): Promise<void> => {
+      assertNotUndefined(provider)
       const inputUtxos = await getBtcInputUtxos(
         provider,
         nativeToken,

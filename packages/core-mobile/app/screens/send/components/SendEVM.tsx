@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { Network } from '@avalabs/core-chains-sdk'
-import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { NetworkTokenWithBalance } from '@avalabs/vm-module-types'
 import { Contact, CorePrimaryAccount } from '@avalabs/types'
 import { getAddressProperty } from 'store/utils/account&contactGetters'
@@ -35,14 +34,12 @@ const SendEVM = ({
     isSending,
     maxFee
   } = useSendContext()
-  const provider = useMemo(() => getEvmProvider(network), [network])
-
   const fromAddress = account?.addressC ?? ''
 
   const { send } = useEVMSend({
     chainId: network.chainId,
     fromAddress,
-    provider,
+    network,
     maxFee,
     nativeToken
   })

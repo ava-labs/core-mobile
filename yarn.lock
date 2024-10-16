@@ -48,54 +48,54 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.7.3":
-  version: 0.7.3
-  resolution: "@avalabs/avalanche-module@npm:0.7.3"
+"@avalabs/avalanche-module@npm:0.0.0-cp-8503-20241016185804":
+  version: 0.0.0-cp-8503-20241016185804
+  resolution: "@avalabs/avalanche-module@npm:0.0.0-cp-8503-20241016185804"
   dependencies:
-    "@avalabs/avalanchejs": 4.0.5
-    "@avalabs/core-chains-sdk": 3.1.0-alpha.7
-    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.7
-    "@avalabs/core-etherscan-sdk": 3.1.0-alpha.7
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.7
-    "@avalabs/glacier-sdk": 3.1.0-alpha.7
-    "@avalabs/types": 3.1.0-alpha.7
-    "@avalabs/vm-module-types": 0.7.3
+    "@avalabs/avalanchejs": 4.1.0-alpha.7
+    "@avalabs/core-chains-sdk": 3.1.0-alpha.9
+    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.9
+    "@avalabs/core-etherscan-sdk": 3.1.0-alpha.9
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.9
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.9
+    "@avalabs/glacier-sdk": 3.1.0-alpha.9
+    "@avalabs/types": 3.1.0-alpha.9
+    "@avalabs/vm-module-types": 0.0.0-cp-8503-20241016185804
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: d075a215f16aab54ed921dd2f0cfe74d3192adcc680d1e7b184aafecccdb73f5b9dd54fbc6f3fdd5f6b5bbccf89c595a2c4174f3efc095e70ae793dadf046db9
+  checksum: b6af836f1b26c77a9122401e05221fcc352cca321fa32df04703214f0e770b0db1f4dd8e400621022b3e8618319a84ccadd9036d98428249c3070fc90db86824
   languageName: node
   linkType: hard
 
-"@avalabs/avalanchejs@npm:4.0.5":
-  version: 4.0.5
-  resolution: "@avalabs/avalanchejs@npm:4.0.5"
+"@avalabs/avalanchejs@npm:4.1.0-alpha.7":
+  version: 4.1.0-alpha.7
+  resolution: "@avalabs/avalanchejs@npm:4.1.0-alpha.7"
   dependencies:
     "@noble/curves": 1.3.0
     "@noble/hashes": 1.3.3
     "@noble/secp256k1": 2.0.0
     "@scure/base": 1.1.5
     micro-eth-signer: 0.7.2
-  checksum: 2da6288bb2c444bcdd2c6e392a5ae4e4aa05a81ca78611d33916009fb7301d893753985d2c9d0c9127325f30a66e5d1db05a1b2513f62f79264b35616984957c
+  checksum: 844b1355197b1f5e05d84590ef99f05957bf463afcadde4898c99ed8a52a2830001f9ac922519c2a86966e12b50048213eb4f02b8919b88827249baa3b4b91eb
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:0.7.3":
-  version: 0.7.3
-  resolution: "@avalabs/bitcoin-module@npm:0.7.3"
+"@avalabs/bitcoin-module@npm:0.0.0-cp-8503-20241016185804":
+  version: 0.0.0-cp-8503-20241016185804
+  resolution: "@avalabs/bitcoin-module@npm:0.0.0-cp-8503-20241016185804"
   dependencies:
-    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.7
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.7
-    "@avalabs/vm-module-types": 0.7.3
+    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.9
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.9
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.9
+    "@avalabs/vm-module-types": 0.0.0-cp-8503-20241016185804
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: 77118559876ab1d26d647023175fd52878d8297f24f285d05290ddf753f3dfe9e6e58e8c79e30bffb0119f28c7d2c2c9c89b6fc5305173900753cfabd7d87af5
+  checksum: 3eaccfeb0ba8fb35ebfa598273267966a5cffc8944aee75bf5c8e34cf851358000591ebf0fd0e0dd829991a142371b0601a6b6d62dfdae119c0c0eccecdee162
   languageName: node
   linkType: hard
 
@@ -110,47 +110,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/core-bridge-sdk@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/core-bridge-sdk@npm:3.1.0-alpha.7"
+"@avalabs/core-bridge-sdk@npm:v3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/core-bridge-sdk@npm:3.1.0-alpha.9"
   dependencies:
-    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.7
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.7
+    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.9
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.9
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.9
   peerDependencies:
     big.js: ^6.2.1
     bitcoinjs-lib: ^5.2.0
     coinselect: ^3.1.12
     ethers: ^6.7.1
     react: ^17.0.2
-  checksum: 65b952a865125e83a1bbccf6f98bf953c817b4b539a051466f2a7f57c33d45d578d9113d3387f2f003019a137253722307cbeea57446a1e005999cea7e08c7f9
+  checksum: 764a25c38a6285af2396fb5b7a0d21d34c7e0be93378e0b9ee30a6143d211381c1960c44a092b36f3b91b7623bd076967ac3b1ab64028c8df511ecd45565b913
   languageName: node
   linkType: hard
 
-"@avalabs/core-chains-sdk@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/core-chains-sdk@npm:3.1.0-alpha.7"
+"@avalabs/core-chains-sdk@npm:3.1.0-alpha.9, @avalabs/core-chains-sdk@npm:v3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/core-chains-sdk@npm:3.1.0-alpha.9"
   dependencies:
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-  checksum: 1f79dbb988093c881798a28f546e8fa627653e4d32ad1bc8c0bdca19bd3934ea0df14db6641b4122624dfdcc02590bb5028f1088c372a5fa60571229146da08c
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.9
+  checksum: 6dad57173ab5dd17155e3932f059eba77554f22138017219f7b2589a333f6ba4f38bb12714a9fcee322c1d96c7ec085bfee5c05b834e428d5428ab5ce259bb60
   languageName: node
   linkType: hard
 
-"@avalabs/core-coingecko-sdk@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/core-coingecko-sdk@npm:3.1.0-alpha.7"
+"@avalabs/core-coingecko-sdk@npm:3.1.0-alpha.9, @avalabs/core-coingecko-sdk@npm:v3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/core-coingecko-sdk@npm:3.1.0-alpha.9"
   dependencies:
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-  checksum: 95112871ba85bb6ab51b1be299cdeb330970c6917ac2718e66b7162297f9ea24819ff54ad647884d0cd928eb733de57f5a73dc15c1d72f0523f0759ea79cd7c3
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.9
+  checksum: b61e70e5e5b34f94c8604690d590b5e8960c736ace85042b1faad1b78cfe7c4173f62a6e5413c426965107090e52bec729574783b327f8bd326bc750799cc8db
   languageName: node
   linkType: hard
 
-"@avalabs/core-etherscan-sdk@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/core-etherscan-sdk@npm:3.1.0-alpha.7"
+"@avalabs/core-etherscan-sdk@npm:3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/core-etherscan-sdk@npm:3.1.0-alpha.9"
   dependencies:
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-  checksum: 0adfd90dfc6367351f8a73baa309a67f146ccd35742725fd0c6ceb4cb7427dac549f7eb89b6d307753592d195e96be3cb082c2b66c632d0145aa3fc93aa8450d
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.9
+  checksum: 8af1275dd717a2d4b9a438b515adc4c21e495e7a30dc371230dd71b5208c346dfb86132fd7b4fe6281fce9577ee9c069a100bcbaea1a76da7d337eeb35368694
   languageName: node
   linkType: hard
 
@@ -158,22 +158,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.7.3
-    "@avalabs/avalanchejs": 4.0.5
-    "@avalabs/bitcoin-module": 0.7.3
+    "@avalabs/avalanche-module": 0.0.0-cp-8503-20241016185804
+    "@avalabs/avalanchejs": 4.1.0-alpha.7
+    "@avalabs/bitcoin-module": 0.0.0-cp-8503-20241016185804
     "@avalabs/bridge-unified": 2.1.0
-    "@avalabs/core-bridge-sdk": 3.1.0-alpha.7
-    "@avalabs/core-chains-sdk": 3.1.0-alpha.7
-    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.7
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.7
-    "@avalabs/evm-module": 0.7.3
-    "@avalabs/glacier-sdk": 3.1.0-alpha.7
+    "@avalabs/core-bridge-sdk": v3.1.0-alpha.9
+    "@avalabs/core-chains-sdk": v3.1.0-alpha.9
+    "@avalabs/core-coingecko-sdk": v3.1.0-alpha.9
+    "@avalabs/core-utils-sdk": v3.1.0-alpha.9
+    "@avalabs/core-wallets-sdk": v3.1.0-alpha.9
+    "@avalabs/evm-module": 0.0.0-cp-8503-20241016185804
+    "@avalabs/glacier-sdk": v3.1.0-alpha.9
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@avalabs/types": 3.1.0-alpha.7
-    "@avalabs/vm-module-types": 0.7.3
+    "@avalabs/types": v3.1.0-alpha.9
+    "@avalabs/vm-module-types": 0.0.0-cp-8503-20241016185804
     "@babel/core": 7.25.7
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -293,6 +293,7 @@ __metadata:
     lodash.isstring: 4.0.1
     lodash.merge: 4.6.2
     lottie-react-native: 7.0.0
+    micro-eth-signer: 0.7.2
     moment: 2.30.1
     msw: 1.3.2
     node-cache: 5.1.2
@@ -383,28 +384,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/core-utils-sdk@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/core-utils-sdk@npm:3.1.0-alpha.7"
+"@avalabs/core-utils-sdk@npm:3.1.0-alpha.9, @avalabs/core-utils-sdk@npm:v3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/core-utils-sdk@npm:3.1.0-alpha.9"
   dependencies:
-    "@avalabs/avalanchejs": 4.0.5
+    "@avalabs/avalanchejs": 4.1.0-alpha.7
     "@hpke/core": 1.2.5
     is-ipfs: 6.0.2
   peerDependencies:
     big.js: ^6.2.1
     bn.js: ^5.2.1
     ethers: ^6.7.1
-  checksum: f25534a584a0e6d89a9168ca4d340fb9b9bfbf9a94644763edf4fa5f054adba77fefe153342f380f03d480e8330f5f984dcd0f88a42fa795c84d5b622477c867
+  checksum: 2eab71e9984a5963ff9b58cb46f1de2ef3ddc68895171f0624652f025e269fcad084d97f075d1dd9f39620319b7c9fd1583db87a6c7a7ead3a42b07e61e4d556
   languageName: node
   linkType: hard
 
-"@avalabs/core-wallets-sdk@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/core-wallets-sdk@npm:3.1.0-alpha.7"
+"@avalabs/core-wallets-sdk@npm:3.1.0-alpha.9, @avalabs/core-wallets-sdk@npm:v3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/core-wallets-sdk@npm:3.1.0-alpha.9"
   dependencies:
-    "@avalabs/avalanchejs": 4.0.5
-    "@avalabs/core-chains-sdk": 3.1.0-alpha.7
-    "@avalabs/glacier-sdk": 3.1.0-alpha.7
+    "@avalabs/avalanchejs": 4.1.0-alpha.7
+    "@avalabs/core-chains-sdk": 3.1.0-alpha.9
+    "@avalabs/glacier-sdk": 3.1.0-alpha.9
     "@avalabs/hw-app-avalanche": 0.14.1
     "@ledgerhq/hw-app-btc": 10.2.4
     "@ledgerhq/hw-app-eth": 6.36.1
@@ -422,36 +423,38 @@ __metadata:
     xss: 1.0.14
   peerDependencies:
     ethers: ^6.7.1
-  checksum: 77b6bdecefcff80bccb8a09b3116a20869bed9db4405fb2a26088784caf8633d95341a8c90ea592889866e422c215f6e10b40b125211bc28c95ae4afd5182429
+  checksum: 79a6b065f1b971ebd0771dd41875688583b3cf6fd7bc5cb91609bf082f8c50a927a44e34398674f051edfef0dc5896ccd4bfe148c1127719005a70883648e1ec
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.7.3":
-  version: 0.7.3
-  resolution: "@avalabs/evm-module@npm:0.7.3"
+"@avalabs/evm-module@npm:0.0.0-cp-8503-20241016185804":
+  version: 0.0.0-cp-8503-20241016185804
+  resolution: "@avalabs/evm-module@npm:0.0.0-cp-8503-20241016185804"
   dependencies:
-    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.7
-    "@avalabs/core-etherscan-sdk": 3.1.0-alpha.7
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.7
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.7
-    "@avalabs/glacier-sdk": 3.1.0-alpha.7
-    "@avalabs/types": 3.1.0-alpha.7
-    "@avalabs/vm-module-types": 0.7.3
+    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.9
+    "@avalabs/core-etherscan-sdk": 3.1.0-alpha.9
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.9
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.9
+    "@avalabs/glacier-sdk": 3.1.0-alpha.9
+    "@avalabs/types": 3.1.0-alpha.9
+    "@avalabs/vm-module-types": 0.0.0-cp-8503-20241016185804
     "@blockaid/client": 0.11.0
     "@metamask/rpc-errors": 6.3.0
+    "@openzeppelin/contracts": 4.9.6
     bn.js: 5.2.1
     lodash.startcase: 4.4.0
+    xss: 1.0.13
     zod: 3.23.8
   peerDependencies:
-    ethers: ^6.8.1
-  checksum: da4b61537b87b5b06f13acdb14a27e78f28b1693692b7701182d7ac05a4c81b8facbf1f6adbaf13d4f3c1455973701a675b09fd1fb465ecd760aee0ed9b83931
+    ethers: 6.8.1
+  checksum: 9bc1d43f765bf8aa2cd0f217b50888f85631750745f97b70e08a2a7e09e566cd9dc2e8fa21db67c565751166480df782f07aee5e93e3605a4de183bea024ee6a
   languageName: node
   linkType: hard
 
-"@avalabs/glacier-sdk@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/glacier-sdk@npm:3.1.0-alpha.7"
-  checksum: c983deedee87ea4f072b9fd79b684fb93160dc6d61b32071a9d697386bf97c61752fc9e574b19d9671f1c2f2ca38091f4847478997e58d4ef0c2879305515cca
+"@avalabs/glacier-sdk@npm:3.1.0-alpha.9, @avalabs/glacier-sdk@npm:v3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/glacier-sdk@npm:3.1.0-alpha.9"
+  checksum: 75cda391f3f91881bf9e2bf0f08b116ce1bf9461c45bc766165b97f8df44ba8050cb932476b54e2c926b72d1a1012065092028753c72ea8521560b44942859c5
   languageName: node
   linkType: hard
 
@@ -562,25 +565,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/types@npm:3.1.0-alpha.7":
-  version: 3.1.0-alpha.7
-  resolution: "@avalabs/types@npm:3.1.0-alpha.7"
-  checksum: 4817e09e62003230618987083c4cae6d839fdd9c51fdba641a0f084aa4acb82fce49d5807e70b6a56510a60ba51b063013cdfbd9ed4b157d2133def48d76991d
+"@avalabs/types@npm:3.1.0-alpha.9, @avalabs/types@npm:v3.1.0-alpha.9":
+  version: 3.1.0-alpha.9
+  resolution: "@avalabs/types@npm:3.1.0-alpha.9"
+  checksum: 6f0a5e19b3a3c26a279d5eaeebb084665cea01c0fa40f8e636869aa89230b9df634f21fe9307051eea4daf83533551b578dce4c1dbca4b9260824e428f7b8dc8
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.7.3":
-  version: 0.7.3
-  resolution: "@avalabs/vm-module-types@npm:0.7.3"
+"@avalabs/vm-module-types@npm:0.0.0-cp-8503-20241016185804":
+  version: 0.0.0-cp-8503-20241016185804
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-cp-8503-20241016185804"
   dependencies:
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.7
-    "@avalabs/glacier-sdk": 3.1.0-alpha.7
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.9
+    "@avalabs/glacier-sdk": 3.1.0-alpha.9
     "@metamask/rpc-errors": 6.3.0
     bitcoinjs-lib: 5.2.0
     zod: 3.23.8
   peerDependencies:
-    ethers: ^6.8.1
-  checksum: 35b835a2351806aad9cd02680e74427ba88d7bb9c9166817a2e6e174689440b49535eec94e894c26dfc53e6c2ecc653ee43a8fa55489aa0aee7be32c55fc56e6
+    ethers: 6.8.1
+  checksum: e54c29862a9919a69cdacd0eed6a4bc4fc6861d27725d4db103ae8e0441391d71e15d12e4ba63acb8adf32f1eacf73ede7b4954c95a93f5d5aaa0ef718a5b6cb
   languageName: node
   linkType: hard
 
@@ -26054,7 +26057,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 0efa24aa4da8f418f515b6be88e91948284856000fe5fde7026fa63ee814d84e7b7fbc1e8b8d98bc1833c05c9740a9fe2edf15b0909b77b4d012db22b75f5370
+  checksum: 6e268fad7aa8b8e56fd28cc95f94f35a33fdac4cec0085ae71a766d092760e3f9af35218706113ff7ae99a74baabc5112d32005dce9e66bdf4fda676fad9aa4e
   languageName: node
   linkType: hard
 
@@ -30962,6 +30965,18 @@ react-native-webview@ava-labs/react-native-webview:
   version: 11.0.1
   resolution: "xmlbuilder@npm:11.0.1"
   checksum: 7152695e16f1a9976658215abab27e55d08b1b97bca901d58b048d2b6e106b5af31efccbdecf9b07af37c8377d8e7e821b494af10b3a68b0ff4ae60331b415b0
+  languageName: node
+  linkType: hard
+
+"xss@npm:1.0.13":
+  version: 1.0.13
+  resolution: "xss@npm:1.0.13"
+  dependencies:
+    commander: ^2.20.3
+    cssfilter: 0.0.10
+  bin:
+    xss: bin/xss
+  checksum: 21909bdf60a32a703e2208cf3a942c1f82d281651bacff56d72deaba9ce553295f45540cde94f2f3e215c90efeeff6fbca70f514ea7477c805e6116915cc7c08
   languageName: node
   linkType: hard
 

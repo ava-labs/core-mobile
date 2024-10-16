@@ -1,38 +1,74 @@
 import {
+  Avalanche,
   BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import {
   getAvalancheEvmProvider,
+  getAvalancheXpProvider,
   getBitcoinProvider,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
+import Logger from 'utils/Logger'
 import { useNetworks } from './useNetworks'
 
-export function useEthereumProvider(): JsonRpcBatchInternal | undefined {
+export function useEthereumProvider(
+  isTestnet?: boolean
+): JsonRpcBatchInternal | undefined {
   const { activeNetwork, networks } = useNetworks()
+  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
 
-  return useMemo(
-    () => getEthereumProvider(networks, activeNetwork.isTestnet),
-    [networks, activeNetwork]
-  )
+  const [ethereumProvider, setEthereumProvider] =
+    useState<JsonRpcBatchInternal>()
+  useEffect(() => {
+    getEthereumProvider(networks, _isTestnet)
+      .then(setEthereumProvider)
+      .catch(Logger.error)
+  }, [networks, activeNetwork, _isTestnet])
+
+  return ethereumProvider
 }
 
-export function useBitcoinProvider(): BitcoinProvider {
+export function useBitcoinProvider(
+  isTestnet?: boolean
+): BitcoinProvider | undefined {
   const { activeNetwork } = useNetworks()
+  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
+  const [bitcoinProvider, setBitcoinProvider] = useState<BitcoinProvider>()
+  useEffect(() => {
+    getBitcoinProvider(_isTestnet).then(setBitcoinProvider).catch(Logger.error)
+  }, [activeNetwork, _isTestnet])
 
-  return useMemo(
-    () => getBitcoinProvider(activeNetwork.isTestnet),
-    [activeNetwork]
-  )
+  return bitcoinProvider
 }
 
-export function useAvalancheProvider(): JsonRpcBatchInternal | undefined {
+export function useAvalancheProvider(
+  isTestnet?: boolean
+): JsonRpcBatchInternal | undefined {
   const { activeNetwork, networks } = useNetworks()
+  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
+  const [avalancheProvider, setAvalancheProvider] =
+    useState<JsonRpcBatchInternal>()
+  useEffect(() => {
+    getAvalancheEvmProvider(networks, _isTestnet)
+      .then(setAvalancheProvider)
+      .catch(Logger.error)
+  }, [networks, activeNetwork, _isTestnet])
+  return avalancheProvider
+}
 
-  return useMemo(
-    () => getAvalancheEvmProvider(networks, activeNetwork.isTestnet),
-    [networks, activeNetwork]
-  )
+export function useAvalancheXpProvider(
+  isTestnet?: boolean
+): Avalanche.JsonRpcProvider | undefined {
+  const { activeNetwork } = useNetworks()
+  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
+  const [avalancheXpProvider, setAvalancheXpProvider] =
+    useState<Avalanche.JsonRpcProvider>()
+  useEffect(() => {
+    getAvalancheXpProvider(!!_isTestnet)
+      .then(setAvalancheXpProvider)
+      .catch(Logger.error)
+  }, [activeNetwork, _isTestnet])
+  return avalancheXpProvider
 }
