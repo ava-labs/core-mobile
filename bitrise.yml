@@ -1046,7 +1046,6 @@ workflows:
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IOS_TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
     - script-runner@0:
           title: Detox
           inputs:
@@ -1097,4 +1096,3 @@ workflows:
           inputs:
           - variables: |-
               IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-              IOS_TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
