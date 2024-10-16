@@ -410,7 +410,7 @@ workflows:
         - buttons: |
             View App|${BITRISE_APP_URL}
             View Build|${BITRISE_BUILD_URL}
-            View Test Run|https://avalabs.testrail.io/index.php?/runs/view/${${PLATFORM}_${TESTRAIL_RUN_ID}}&group_by=cases:section_id&group_order=asc
+            View Test Run|https://avalabs.testrail.io/index.php?/runs/view/${TESTRAIL_RUN_ID}&group_by=cases:section_id&group_order=asc
         - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
   _set-version:
     steps:
@@ -577,7 +577,7 @@ workflows:
     - PLATFORM: Android
       opts:
         is_expand: false
-    - ANDROID_BUILD_VARIANT: externale2e
+    - ANDROID_BUILD_VARIANT: externalE2e
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile
