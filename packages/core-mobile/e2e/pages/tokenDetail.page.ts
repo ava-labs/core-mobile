@@ -99,6 +99,10 @@ class TokenDetailsPage {
     return by.text(tokenDetail.gotItBtn)
   }
 
+  get price() {
+    return by.id(tokenDetail.price)
+  }
+
   async verifyTokenDetailScreen() {
     await Assert.isVisible(this.totalSupply)
     await Assert.isVisible(this.rank)
@@ -203,12 +207,11 @@ class TokenDetailsPage {
     symbol: string,
     expectedPrice: number | undefined
   ) {
+    // Token Detail Header testing - Title, Symbol, Price
     const titledName = name.replace(/^\w/, char => char.toUpperCase())
+    const displayedPrice = await Action.getElementTextNoSync(this.price)
     await Action.waitForElementNoSync(by.text(titledName))
     await Action.waitForElementNoSync(by.text(symbol))
-    const displayedPrice = await Action.getElementTextNoSync(
-      by.id('token_detail__price')
-    )
     if (expectedPrice && displayedPrice) {
       const isValid = await this.isPriceValid(expectedPrice, displayedPrice)
       assert(
@@ -221,7 +224,7 @@ class TokenDetailsPage {
   async getTokensPrice(tokens: TokenDetailToken[]) {
     for (const token of tokens) {
       try {
-        // fetch를 사용하여 API 호출
+        // Fetch price from CoinGecko API
         const response = await fetch(
           `https://api.coingecko.com/api/v3/simple/price?ids=${token.id}&vs_currencies=usd`
         )
@@ -264,6 +267,7 @@ class TokenDetailsPage {
   }
 
   async verifyTokenDetailContent() {
+    // Navigate price timelines and hold and drag the price chart
     await this.navigatePriceTimelines()
     await this.holdAndDragSparklineChart()
     await this.navigatePriceTimelines()
@@ -272,7 +276,7 @@ class TokenDetailsPage {
   async navigatePriceTimelines() {
     const tabs = ['24H', '1W', '1M', '3M', '1Y']
     for (const tab of tabs) {
-      await delay(200)
+      await delay(300)
       await Action.tap(by.text(tab))
     }
   }
