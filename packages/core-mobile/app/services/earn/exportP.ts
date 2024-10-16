@@ -50,7 +50,7 @@ export async function exportP({
   })
   Logger.trace('txID', txID)
 
-  const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   try {
     await retry({

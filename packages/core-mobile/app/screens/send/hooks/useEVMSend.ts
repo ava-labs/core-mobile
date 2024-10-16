@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSendContext } from 'contexts/SendContext'
 import { assertNotUndefined } from 'utils/assertions'
+import { useEthereumProvider } from 'hooks/networks/networkProviderHooks'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -18,7 +19,7 @@ import {
 const useEVMSend: SendAdapterEVM = ({
   chainId,
   fromAddress,
-  provider,
+  network,
   maxFee,
   nativeToken
 }) => {
@@ -32,11 +33,13 @@ const useEVMSend: SendAdapterEVM = ({
     toAddress,
     amount
   } = useSendContext()
+  const provider = useEthereumProvider(!!network.isTestnet)
 
   const send = useCallback(async () => {
     try {
       assertNotUndefined(token)
       assertNotUndefined(toAddress)
+      assertNotUndefined(provider)
 
       setIsSending(true)
 
@@ -83,6 +86,7 @@ const useEVMSend: SendAdapterEVM = ({
 
       assertNotUndefined(token)
       assertNotUndefined(toAddress)
+      assertNotUndefined(provider)
 
       validateSupportedToken(token)
 

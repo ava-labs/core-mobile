@@ -30,7 +30,7 @@ export const btcSendTransaction = async ({
 
     // we need to re-create the transaction when fee rate has changed
     if (finalFeeRate !== 0 && finalFeeRate !== feeRate) {
-      const provider = ModuleManager.bitcoinModule.getProvider(network)
+      const provider = await ModuleManager.bitcoinModule.getProvider(network)
       const updatedTx = createTransferTx(
         to,
         account.addressBTC,

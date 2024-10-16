@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import NetworkService from 'services/network/NetworkService'
 import { Contact, CorePrimaryAccount } from '@avalabs/types'
 import { getAddressXP } from 'store/utils/account&contactGetters'
 import usePVMSend from '../hooks/usePVMSend'
@@ -38,11 +37,6 @@ const SendPVM = ({
     isSending,
     maxFee
   } = useSendContext()
-  const provider = useMemo(
-    () => NetworkService.getAvalancheProviderXP(!!network.isTestnet),
-    [network]
-  )
-
   const activeAccount = useSelector(selectActiveAccount)
 
   const fromAddress = activeAccount?.addressPVM ?? ''
@@ -50,7 +44,6 @@ const SendPVM = ({
   const { send } = usePVMSend({
     network,
     fromAddress,
-    provider,
     maxFee,
     nativeToken,
     account

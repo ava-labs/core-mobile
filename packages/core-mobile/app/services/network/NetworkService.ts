@@ -116,7 +116,9 @@ class NetworkService {
    * Returns the provider used by Avalanche X/P/CoreEth chains.
    * Using either X or P Network will result in same provider.
    */
-  getAvalancheProviderXP(isDeveloperMode: boolean): Avalanche.JsonRpcProvider {
+  async getAvalancheProviderXP(
+    isDeveloperMode: boolean
+  ): Promise<Avalanche.JsonRpcProvider> {
     const network = this.getAvalancheNetworkP(isDeveloperMode)
     return ModuleManager.avalancheModule.getProvider(network)
   }

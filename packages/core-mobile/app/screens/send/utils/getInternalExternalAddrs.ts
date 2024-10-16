@@ -23,7 +23,7 @@ const formatAvalancheAddress = (
 }
 
 export const getInternalExternalAddrs = (
-  utxos: Utxo[],
+  utxos: readonly Utxo[],
   xpAddressDict: XPAddressDictionary,
   isTestnet: boolean
 ): {
