@@ -100,34 +100,53 @@ const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
   }
 }
 
-// waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
-
+// waitForElementNoSync can be used to handle idle timeout error for Android AND to handle device.disableSynchronization()
 const waitForElementNoSync = async (
   item: Detox.NativeMatcher,
   timeout = 2000
 ) => {
-  if (platform() === Platform.Android) {
-    const startTime = Date.now()
-    const endTime = startTime + timeout
-
-    while (Date.now() < endTime) {
-      try {
-        await waitFor(element(item)).toBeVisible().withTimeout(timeout)
-        return
-      } catch (error: any) {
-        if (error.message === Constants.idleTimeoutError) {
-          console.error(Constants.animatedConsoleError)
-        } else {
-          throw error
-        }
+  const startTime = Date.now()
+  const endTime = startTime + timeout
+  while (Date.now() < endTime) {
+    try {
+      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+      return
+    } catch (error: any) {
+      if (error.message === Constants.idleTimeoutError) {
+        console.error(Constants.animatedConsoleError)
+      } else {
+        throw error
       }
     }
-
-    console.error('Error: Element not visible within timeout')
-    throw new Error('Element not visible within timeout')
-  } else {
-    await waitFor(element(item)).toBeVisible().withTimeout(timeout)
   }
+  console.error('Error: Element not visible within timeout')
+  throw new Error('Element not visible within timeout')
+}
+
+const getElementTextNoSync = async (
+  item: Detox.NativeMatcher,
+  timeout = 2000,
+  index = 0
+) => {
+  const startTime = Date.now()
+  const endTime = startTime + timeout
+  while (Date.now() < endTime) {
+    try {
+      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+      const eleAttr = await element(item).getAttributes()
+      if (!('elements' in eleAttr)) {
+        return eleAttr.text
+      } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
+    } catch (error: any) {
+      if (error.message === Constants.idleTimeoutError) {
+        console.error(Constants.animatedConsoleError)
+      } else {
+        throw error
+      }
+    }
+  }
+  console.error('Error: Element not visible within timeout')
+  throw new Error('Element not visible within timeout')
 }
 
 const waitForElementNotVisible = async (
@@ -332,5 +351,6 @@ export default {
   getElementsTextByTestId,
   dismissKeyboard,
   getElementText,
-  clearTextInput
+  clearTextInput,
+  getElementTextNoSync
 }

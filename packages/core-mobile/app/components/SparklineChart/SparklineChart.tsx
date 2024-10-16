@@ -77,6 +77,7 @@ const SparklineChart: FC<Props> = ({
         width: width,
         height: height
       }}
+      testID="line_graph"
       animated
       color={color}
       shadowColor={shadowColor}
@@ -102,6 +103,7 @@ const SparklineChart: FC<Props> = ({
       lineThickness={lineThickness}
       points={data}
       gradientFillColors={gradientFillColors}
+      testID="line_graph"
     />
   )
 }
