@@ -1,3 +1,5 @@
+echo "This is the build number: $BUILD_NUMBER"
+
 curl -X PUT \
   https://api.datadoghq.com/api/v1/dashboard/ipu-tbk-spn \
   -H "Content-Type: application/json" \
@@ -864,7 +866,7 @@ curl -X PUT \
                       "name": "query1",
                       "data_source": "rum",
                       "search": {
-                        "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:"'"$BUILD_NUMBER"'" service:org.avalabs.avaxwallet.internal"
+                        "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:$BUILD_NUMBER service:org.avalabs.avaxwallet.internal"
                       },
                       "indexes": [
                         "*"
