@@ -28,9 +28,9 @@ TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
 -X POST "https://avalabs.testrail.net/index.php?/api/v2/add_run/3")
 
 # Extract the test run id from the details and store in TESTRAIL_RUN_ID
-TESTRAIL_RUN_ID=$(jq -r ".id" <<< "$TEST_RUN_DETAILS")
+ANDROID_TESTRAIL_RUN_ID=$(jq -r ".id" <<< "$TEST_RUN_DETAILS")
 
-echo "Test run id: $TESTRAIL_RUN_ID"
+echo "Test run id: $ANDROID_TESTRAIL_RUN_ID"
 
-envman add --key TESTRAIL_RUN_ID --value "$TESTRAIL_RUN_ID"
+envman add --key TESTRAIL_RUN_ID --value "$ANDROID_TESTRAIL_RUN_ID"
 
