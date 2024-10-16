@@ -19,3 +19,16 @@ export const SwapTokens = [
   { symbol: 'AAVE', name: 'Aave Token', amount: '0.000001' },
   { symbol: 'COQ', name: 'Coq Inu', amount: '0.000001' }
 ]
+
+export type TokenDetailToken = {
+  id: string
+  symbol: string
+  name: string
+  price?: number
+}
+
+export interface TokenPriceResponse {
+  [key: string]: {
+    usd: number
+  }
+}

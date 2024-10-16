@@ -4,64 +4,33 @@
  */
 import PortfolioPage from '../../../pages/portfolio.page'
 import { warmup } from '../../../helpers/warmup'
-import tokenDetailPage from '../../../pages/tokenDetail.page'
 import commonElsPage from '../../../pages/commonEls.page'
-import bottomTabsPage from '../../../pages/bottomTabs.page'
-import networksManagePage from '../../../pages/networksManage.page'
+import tokenDetailPage from '../../../pages/tokenDetail.page'
+import { TokenDetailToken } from '../../../helpers/tokens'
 
-describe('Token Detail', () => {
+describe('Token Detail on Market', () => {
+  const tokens: TokenDetailToken[] = [
+    { id: 'avalanche-2', symbol: 'AVAX', name: 'avalanche' },
+    { id: 'bitcoin', symbol: 'BTC', name: 'bitcoin' },
+    { id: 'ethereum', symbol: 'ETH', name: 'ethereum' }
+  ]
+
   beforeAll(async () => {
+    await tokenDetailPage.getTokensPrice(tokens).then(() => console.log(tokens))
     await warmup()
   })
 
-  const tokens: Record<string, [boolean, boolean]> = {
-    Avalanche: [false, true], // { tokenName: [bridgeButtonToShow, swapButtonToShow]}
-    Bitcoin: [true, true],
-    TetherToken: [false, true]
-  }
-
-  Object.entries(tokens).forEach(
-    ([token, [bridgeBtnToShow, swapBtnToShow]]) => {
-      test(`should verify ${token} Detail on C-Chain`, async () => {
-        await PortfolioPage.tapActiveNetwork()
-        await PortfolioPage.tapToken(token)
-        await tokenDetailPage.verifyOwnedTokenActionButtons(
-          bridgeBtnToShow,
-          swapBtnToShow
-        )
-        await tokenDetailPage.verifyNavigateToSend()
-        await tokenDetailPage.verifyNavigateToReceive()
-        await tokenDetailPage.verifyNavigateToBridge(bridgeBtnToShow)
-        await tokenDetailPage.verifyNavigateToSwap(swapBtnToShow)
-        await commonElsPage.goBack()
-        await bottomTabsPage.tapPortfolioTab()
-      })
-    }
-  )
-
-  it('should verify token detail on Ethereum network', async () => {
-    await networksManagePage.switchNetwork('Ethereum')
-    await PortfolioPage.tapActiveNetwork('Ethereum')
-    await PortfolioPage.tapToken('Ether')
-    await tokenDetailPage.verifyOwnedTokenActionButtons(true, false)
-    await tokenDetailPage.verifyNavigateToSend()
-    await tokenDetailPage.verifyNavigateToReceive()
-    await tokenDetailPage.verifyNavigateToBridge(true)
-    await tokenDetailPage.verifyNavigateToSwap(false)
-    await commonElsPage.goBack()
-    await bottomTabsPage.tapPortfolioTab()
-  })
-
-  it('should verify token detail on Bitcoin network', async () => {
-    await networksManagePage.switchNetwork('Bitcoin')
-    await PortfolioPage.tapActiveNetwork('Bitcoin')
-    await PortfolioPage.tapToken('Bitcoin')
-    await tokenDetailPage.verifyOwnedTokenActionButtons(true, false)
-    await tokenDetailPage.verifyNavigateToSend()
-    await tokenDetailPage.verifyNavigateToReceive()
-    await tokenDetailPage.verifyNavigateToBridge(true)
-    await tokenDetailPage.verifyNavigateToSwap(false)
-    await commonElsPage.goBack()
-    await bottomTabsPage.tapPortfolioTab()
+  tokens.forEach(token => {
+    test(`should verify ${token.symbol} Detail on market`, async () => {
+      const { symbol, name, price } = token
+      await device.disableSynchronization()
+      await PortfolioPage.tapFavoriteToken(symbol)
+      await tokenDetailPage.dismissHoldAndDrag()
+      await tokenDetailPage.verifyTokenDetailHeader(name, symbol, price)
+      await tokenDetailPage.verifyTokenDetailFooter(name)
+      await tokenDetailPage.verifyTokenDetailContent()
+      await commonElsPage.tapBackButton()
+      await device.enableSynchronization()
+    })
   })
 })

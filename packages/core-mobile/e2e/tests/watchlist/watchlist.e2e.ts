@@ -14,6 +14,10 @@ describe('Verify Watchlist', () => {
     await device.disableSynchronization()
   })
 
+  afterAll(async () => {
+    await device.enableSynchronization()
+  })
+
   it('should navigate to watchlist', async () => {
     await BottomTabsPage.tapWatchlistTab()
     await Actions.waitForElement(WatchListPage.favoritesTab)
