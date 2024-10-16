@@ -866,7 +866,7 @@ curl -X PUT \
                       "name": "query1",
                       "data_source": "rum",
                       "search": {
-                        "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:$BUILD_NUMBER service:org.avalabs.avaxwallet.internal"
+                        "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:>$BUILD_NUMBER service:org.avalabs.avaxwallet.internal"
                       },
                       "indexes": [
                         "*"
