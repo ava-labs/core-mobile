@@ -92,7 +92,9 @@ class CreatePinPage {
   }
 
   async enterCurrentPin() {
-    await element(this.numpadZero).multiTap(6)
+    while (await Action.isVisible(this.numpadZero, 0)) {
+      await element(this.numpadZero).multiTap(6)
+    }
   }
 }
 
