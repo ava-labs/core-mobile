@@ -55,8 +55,7 @@ const globalHistorySlice = createSlice({
         })
         // limit max histories
         if (state.ids.length > MAXIMUM_HISTORIES) {
-          const historiesToRemove = historyAdapter
-            .getSelectors()
+          const historiesToRemove = historyAdapterSelectors
             .selectIds(state)
             .slice(0, -MAXIMUM_HISTORIES)
           historyAdapter.removeMany(state, historiesToRemove)
@@ -66,18 +65,18 @@ const globalHistorySlice = createSlice({
   }
 })
 
+export const historyAdapterSelectors = historyAdapter.getSelectors()
+
 // selectors
 export const selectHistory =
   (id?: HistoryId) =>
   (state: RootState): History | undefined => {
     if (id === undefined) return
-    return historyAdapter
-      .getSelectors()
-      .selectById(state.browser.globalHistory, id)
+    return historyAdapterSelectors.selectById(state.browser.globalHistory, id)
   }
 
 export const selectAllHistories = (state: RootState): History[] => {
-  return historyAdapter.getSelectors().selectAll(state.browser.globalHistory)
+  return historyAdapterSelectors.selectAll(state.browser.globalHistory)
 }
 
 // actions

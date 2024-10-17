@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   UIManager
 } from 'react-native'
-import * as Sentry from '@sentry/react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -64,4 +63,4 @@ function App(): JSX.Element {
   )
 }
 
-export default Sentry.wrap(App)
+export default App

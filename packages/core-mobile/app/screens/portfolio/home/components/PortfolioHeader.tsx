@@ -15,6 +15,7 @@ import { Icons, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { Tooltip } from 'components/Tooltip'
 import { Space } from 'components/Space'
+import { RootState } from 'store'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
 function PortfolioHeader(): JSX.Element {
@@ -36,8 +37,9 @@ function PortfolioHeader(): JSX.Element {
     !balanceAccurate && balanceTotalInCurrency === 0
       ? '-'
       : currencyFormatter(balanceTotalInCurrency)
-  const tokens = useSelector(
-    selectTokensWithBalanceForAccount(activeAccount?.index)
+
+  const tokens = useSelector((state: RootState) =>
+    selectTokensWithBalanceForAccount(state, activeAccount?.index)
   )
   const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
   const [contentHeight, setContentHeight] = useState(0)

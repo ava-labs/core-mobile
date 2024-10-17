@@ -3,7 +3,7 @@ import { RootState } from 'store'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
-import { initialState, ProcessedFeatureFlags } from './types'
+import { initialState } from './types'
 
 const reducerName = 'posthog'
 
@@ -30,41 +30,6 @@ export const selectDistinctID = (state: RootState): string =>
   state.posthog.distinctID
 export const selectIsAnalyticsEnabled = (state: RootState): boolean =>
   state.posthog.isAnalyticsEnabled
-/**
- * @Deprecated The only place where this is used can easily be reduced to selectIsEarnBlocked
- */
-export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
-  const swapBlocked = selectIsSwapBlocked(state)
-  const bridgeBlocked = selectIsBridgeBlocked(state)
-  const bridgeBtcBlocked = selectIsBridgeBtcBlocked(state)
-  const bridgeEthBlocked = selectIsBridgeEthBlocked(state)
-  const earnBlocked = selectIsEarnBlocked(state)
-  const sendBlocked = selectIsSendBlocked(state)
-  const sendNftBlockediOS = selectIsSendNftBlockediOS(state)
-  const sendNftBlockedAndroid = selectIsSendNftBlockedAndroid(state)
-  const eventsBlocked = selectIsEventsBlocked(state)
-  const sentrySampleRate = selectSentrySampleRate(state)
-  const coinbasePayBlocked = selectIsCoinbasePayBlocked(state)
-  const defiBlocked = selectIsDeFiBlocked(state)
-  const leftFab = selectUseLeftFab(state)
-  const darkMode = selectUseDarkMode(state)
-  return {
-    swapBlocked,
-    bridgeBlocked,
-    bridgeBtcBlocked,
-    bridgeEthBlocked,
-    earnBlocked,
-    sendBlocked,
-    sendNftBlockediOS,
-    sendNftBlockedAndroid,
-    eventsBlocked,
-    sentrySampleRate,
-    coinbasePayBlocked,
-    defiBlocked,
-    leftFab,
-    darkMode
-  }
-}
 
 const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
   return (
