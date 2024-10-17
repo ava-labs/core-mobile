@@ -13,12 +13,13 @@ describe('Settings Core Analytics', () => {
     await burgerMenuPage.deleteWallet()
   })
 
-  it('should turn off balance notification when log in', async () => {
+  it('should turn off Core Analytics when log in', async () => {
     await warmup()
     await burgerMenuPage.tapBurgerMenuButton()
     await burgerMenuPage.tapSecurityAndPrivacy()
     await securityAndPrivacyPage.verifyAnalyticsSwitch(false)
   })
+
   it('should persist Core Analystics switch setup', async () => {
     await securityAndPrivacyPage.tapAnalyticsSwitch()
     await securityAndPrivacyPage.verifyAnalyticsSwitch(true)
