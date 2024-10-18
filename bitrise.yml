@@ -1097,7 +1097,7 @@ workflows:
           title: Update DataDog Dashboard
           is_always_run: true
           inputs:
-          - file_path: scripts/bitrise/datadog/updateIosDashboard.sh
+          - file_path: scripts/datadog/updateIosDashboard.sh
       - share-pipeline-variable@1:
           inputs:
           - variables: |-
