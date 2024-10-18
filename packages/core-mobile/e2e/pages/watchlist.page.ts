@@ -97,12 +97,17 @@ class WatchListPage {
   }
 
   async verifyFavorites(tokens: string[]) {
+    await Action.waitForElement(by.id('favorites_watch_list'))
     for (const token of tokens) {
       await Action.waitForElement(
         by.id(`watchlist_item__${token.toLowerCase()}`)
       )
       await Assert.isVisible(by.id(`watchlist_item__${token.toLowerCase()}`))
     }
+  }
+
+  async verifyAllTabs() {
+    await Action.waitForElement(by.id('all_watch_list'))
   }
 
   async setWatchListToken(tokenSymbol: string) {
@@ -112,6 +117,15 @@ class WatchListPage {
   async clearSearchBar() {
     await Action.tap(this.searchBar)
     await Action.tap(by.text('Cancel'))
+  }
+
+  async reorderToken(tokenSymbol: string) {
+    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`))
+    await Action.drag(
+      by
+        .id(`drag_handle_svg`)
+        .withAncestor(by.id(`watchlist_item__${tokenSymbol}`))
+    )
   }
 }
 

@@ -9,7 +9,10 @@ interface Props {
   testID?: string
 }
 
-const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
+const FavoriteWatchlistView: React.FC<Props> = ({
+  onTabIndexChanged,
+  testID
+}) => {
   const { favorites, prices, charts, tokens } = useWatchlist()
 
   const isFetchingTokens = tokens.length === 0
@@ -27,7 +30,7 @@ const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
             isShowingFavorites={true}
             onExploreAllTokens={() => onTabIndexChanged?.(1)}
             filterBy={WatchlistFilter.MARKET_CAP}
-            testID="watchlist_item"
+            testID={testID}
           />
         </>
       )}
