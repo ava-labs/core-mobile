@@ -1,17 +1,14 @@
-import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
 import 'react-native-reanimated'
+import Bootsplash from 'react-native-bootsplash'
 
 import React from 'react'
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { Stack } from '../layouts/Stack'
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync()
-
 export default function RootLayout(): JSX.Element | null {
   useEffect(() => {
-    SplashScreen.hideAsync()
+    Bootsplash.hide()
   }, [])
 
   return (
