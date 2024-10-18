@@ -15,8 +15,39 @@ describe('Stake on Mainnet', () => {
     await advancedPage.switchToMainnet()
   })
 
-  it('should test a staking flow on mainnet for an existing account', async () => {
+  it('should verify stake tabs', async () => {
     await BottomTabsPage.tapStakeTab()
+    try {
+      await StakePage.verifyNoActiveStakesScreenItems()
+    } catch (e) {
+      await StakePage.verifyActiveTabItems()
+    }
+    await StakePage.tapHistoryTab()
+    await StakePage.verifyHistoryTabItems()
+  })
+
+  it('should verify active stake details', async () => {
+    await StakePage.tapActiveTab()
+    if (await Actions.isVisible(StakePage.stakeCardTitle, 0)) {
+      // Verify active stake details if there is one active stake card
+      const stakeCardInfo = await StakePage.getStakeCardInfo()
+      await StakePage.tapStakeCard()
+      await StakePage.verifyActiveStakeDetails(stakeCardInfo)
+      await commonElsPage.goBack()
+    } else {
+      console.log('There is no active stake card')
+    }
+  })
+
+  it('should verify completed stake details', async () => {
+    await StakePage.tapHistoryTab()
+    const stakeCardInfo = await StakePage.getStakeCardInfo(false)
+    await StakePage.tapStakeCard()
+    await StakePage.verifyCompletedStakeDetails(stakeCardInfo)
+    await commonElsPage.goBack()
+  })
+
+  it('should test a staking flow on mainnet for an existing account', async () => {
     await StakePage.tapStakeButton()
     await GetStartedScreenPage.tapNextButton()
     if (await Actions.isVisible(StakePage.notEnoughAvaxTitle, 0)) {
