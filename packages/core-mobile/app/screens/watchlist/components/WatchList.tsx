@@ -54,7 +54,8 @@ const WatchList: React.FC<Props> = ({
   filterBy,
   isShowingFavorites,
   isSearching,
-  onExploreAllTokens
+  onExploreAllTokens,
+  testID
 }) => {
   const navigation = useNavigation<NavigationProp>()
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
@@ -70,7 +71,7 @@ const WatchList: React.FC<Props> = ({
     const isFirstItem = index === 0
 
     return (
-      <View style={styles.item} key={token.id}>
+      <View testID={testID} style={styles.item} key={token.id}>
         {!isFirstItem && <SeparatorComponent />}
         <WatchListItem
           token={token}

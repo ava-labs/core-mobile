@@ -34,7 +34,7 @@ export default function WatchlistTab(): JSX.Element {
   }
 
   const allWatchList = useMemo(
-    () => <WatchlistView searchText={searchText} />,
+    () => <WatchlistView testID="all_watch_list" searchText={searchText} />,
     [searchText]
   )
 
@@ -64,7 +64,10 @@ export default function WatchlistTab(): JSX.Element {
           currentTabIndex={tabIndex}
           onTabIndexChange={setTabIndex}>
           <TabViewAva.Item title={'Favorites'}>
-            <FavoriteWatchlistView onTabIndexChanged={setTabIndex} />
+            <FavoriteWatchlistView
+              testID="favorites_watch_list"
+              onTabIndexChanged={setTabIndex}
+            />
           </TabViewAva.Item>
           <TabViewAva.Item title={'All'}>{allWatchList}</TabViewAva.Item>
         </TabViewAva>

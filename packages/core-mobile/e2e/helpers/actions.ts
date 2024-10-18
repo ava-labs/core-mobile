@@ -322,6 +322,19 @@ async function waitForCondition(func: any, condition: any, timeout = 5000) {
   assert(isFulfilled)
 }
 
+const drag = async (item: Detox.NativeMatcher, index = 0) => {
+  await element(item).atIndex(index).longPressAndDrag(
+    500, // duration of the long press (1000ms or 1 second)
+    0.5, // normalized starting X position (center of the element)
+    0.5, // normalized starting Y position (center of the element)
+    element(item), // target element to drag the item to
+    0.5, // normalized target X position (center of the target element)
+    1.5, // normalized target Y position (center of the target element)
+    'fast', // speed of the drag action
+    500 // hold the drag for 500ms before releasing
+  )
+}
+
 export default {
   balanceToNumber,
   tap,
@@ -352,5 +365,6 @@ export default {
   dismissKeyboard,
   getElementText,
   clearTextInput,
-  getElementTextNoSync
+  getElementTextNoSync,
+  drag
 }
