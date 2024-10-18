@@ -1093,6 +1093,10 @@ workflows:
           title: Detox
           inputs:
           - file_path: scripts/bitrise/detox/iosRegressionRunner.sh
+      - script-runner@0:
+          title: Update DataDog Dashboard
+          inputs:
+          - file_path: scripts/bitrise/datadog/updateIosDashboard.sh
       - share-pipeline-variable@1:
           inputs:
           - variables: |-
