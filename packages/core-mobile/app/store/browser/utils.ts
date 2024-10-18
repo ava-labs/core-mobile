@@ -18,6 +18,8 @@ export const getLatestTab = (tabs: Tab[]): Tab => {
 }
 
 export const tabAdapter = createEntityAdapter<Tab>({ selectId: tab => tab.id })
+export const tabAdapterSelectors = tabAdapter.getSelectors()
+
 export const historyAdapter = createEntityAdapter<History>({
   selectId: history => history.id
 })
@@ -26,7 +28,7 @@ export const favoriteAdapter = createEntityAdapter<Favorite>({
 })
 
 export const limitMaxTabs = (state: TabState): void => {
-  const tabs = tabAdapter.getSelectors().selectAll(state)
+  const tabs = tabAdapterSelectors.selectAll(state)
   if (tabs.length <= MAXIMUM_TABS) return
   tabAdapter.removeMany(state, getTabsToDelete(tabs))
 }
@@ -45,7 +47,7 @@ export const updateActiveTabId = (state: TabState, tabId: TabId): void => {
 }
 
 const getLastVisitedTabId = (state: TabState): TabId => {
-  const tabs = tabAdapter.getSelectors().selectAll(state)
+  const tabs = tabAdapterSelectors.selectAll(state)
   if (tabs.length === 0) throw Error('tabs should have at least one item')
   const lastVisitedTab = getLatestTab(tabs)
   return lastVisitedTab.id

@@ -41,15 +41,16 @@ const favoriteSlice = createSlice({
 })
 
 // selectors
+const favoriteAdapterSelectors = favoriteAdapter.getSelectors()
 export const selectAllFavorites = (state: RootState): Favorite[] =>
-  favoriteAdapter.getSelectors().selectAll(state.browser.favorites)
+  favoriteAdapterSelectors.selectAll(state.browser.favorites)
 
 export const selectIsFavorited =
   (id?: HistoryId) =>
   (state: RootState): boolean => {
     if (id === undefined) return false
     return (
-      favoriteAdapter.getSelectors().selectById(state.browser.favorites, id) !==
+      favoriteAdapterSelectors.selectById(state.browser.favorites, id) !==
       undefined
     )
   }

@@ -11,7 +11,7 @@ import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
-import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
+import { selectIsEarnBlocked, selectIsNotificationBlocked } from 'store/posthog'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
 import { handleDeeplink } from './utils/handleDeeplink'
@@ -37,7 +37,7 @@ export const DeeplinkContextProvider = ({
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
-  const processedFeatureFlags = useSelector(selectFeatureFlags)
+  const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
 
   const handleNotificationCallback: HandleNotificationCallback = useCallback(
@@ -131,11 +131,11 @@ export const DeeplinkContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive) {
-      handleDeeplink(pendingDeepLink, dispatch, processedFeatureFlags)
+      handleDeeplink(pendingDeepLink, dispatch, isEarnBlocked)
       // once we used the url, we can expire it
       setPendingDeepLink(undefined)
     }
-  }, [isWalletActive, pendingDeepLink, dispatch, processedFeatureFlags])
+  }, [isWalletActive, pendingDeepLink, dispatch, isEarnBlocked])
 
   return (
     <DeeplinkContext.Provider

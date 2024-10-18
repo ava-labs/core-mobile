@@ -1,6 +1,5 @@
 import crypto from 'crypto'
 import * as utils from 'services/earn/utils'
-import { ProcessedFeatureFlags } from 'store/posthog/types'
 import * as Toast from 'utils/toast'
 import { DeepLink } from '../types'
 import { handleDeeplink } from './handleDeeplink'
@@ -16,7 +15,6 @@ jest
 
 const mockDispatch = jest.fn()
 const mockNavigateToClaimRewards = jest.fn()
-const mockFeatureFlags = {}
 
 describe('handleDeeplink', () => {
   describe('handle walletConnect urls', () => {
@@ -24,11 +22,7 @@ describe('handleDeeplink', () => {
       const mockDeeplink = {
         url: 'https://core.app/wc?uri=wc%3Ab08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec%402%3Frelay-protocol%3Dirn%26symKey%3Da33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
       }
-      handleDeeplink(
-        mockDeeplink as DeepLink,
-        mockDispatch,
-        mockFeatureFlags as ProcessedFeatureFlags
-      )
+      handleDeeplink(mockDeeplink as DeepLink, mockDispatch, false)
       expect(mockDispatch).toHaveBeenCalledWith({
         payload:
           'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb',
@@ -40,11 +34,7 @@ describe('handleDeeplink', () => {
       const mockDeeplink = {
         url: 'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
       }
-      handleDeeplink(
-        mockDeeplink as DeepLink,
-        mockDispatch,
-        mockFeatureFlags as ProcessedFeatureFlags
-      )
+      handleDeeplink(mockDeeplink as DeepLink, mockDispatch, false)
       expect(mockDispatch).toHaveBeenCalledWith({
         payload:
           'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb',
@@ -56,11 +46,7 @@ describe('handleDeeplink', () => {
       const mockDeeplink = {
         url: 'core://wc?uri=wc%3Ab08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec%402%3Frelay-protocol%3Dirn%26symKey%3Da33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
       }
-      handleDeeplink(
-        mockDeeplink as DeepLink,
-        mockDispatch,
-        mockFeatureFlags as ProcessedFeatureFlags
-      )
+      handleDeeplink(mockDeeplink as DeepLink, mockDispatch, false)
       expect(mockDispatch).toHaveBeenCalledWith({
         payload:
           'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb',
@@ -72,11 +58,7 @@ describe('handleDeeplink', () => {
       const mockDeeplink = {
         url: 'http://core.app/wc?uri=wc%3Ab08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec%402%3Frelay-protocol%3Dirn%26symKey%3Da33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
       }
-      handleDeeplink(
-        mockDeeplink as DeepLink,
-        mockDispatch,
-        mockFeatureFlags as ProcessedFeatureFlags
-      )
+      handleDeeplink(mockDeeplink as DeepLink, mockDispatch, false)
       expect(mockDispatch).not.toHaveBeenCalled()
     })
 
@@ -85,11 +67,7 @@ describe('handleDeeplink', () => {
       const mockDeeplink = {
         url: randomString
       }
-      handleDeeplink(
-        mockDeeplink as DeepLink,
-        mockDispatch,
-        mockFeatureFlags as ProcessedFeatureFlags
-      )
+      handleDeeplink(mockDeeplink as DeepLink, mockDispatch, false)
       expect(mockDispatch).not.toHaveBeenCalled()
     })
   })
@@ -104,11 +82,7 @@ describe('handleDeeplink', () => {
     const mockDeeplink = {
       url: 'core://stakecomplete'
     }
-    handleDeeplink(
-      mockDeeplink as DeepLink,
-      mockDispatch,
-      mockFeatureFlags as ProcessedFeatureFlags
-    )
+    handleDeeplink(mockDeeplink as DeepLink, mockDispatch, false)
     expect(mockNavigateToClaimRewards).toHaveBeenCalled()
   })
 
@@ -116,11 +90,7 @@ describe('handleDeeplink', () => {
     const mockDeeplink = {
       url: 'core://stakecomplet'
     }
-    handleDeeplink(
-      mockDeeplink as DeepLink,
-      mockDispatch,
-      mockFeatureFlags as ProcessedFeatureFlags
-    )
+    handleDeeplink(mockDeeplink as DeepLink, mockDispatch, false)
     expect(mockNavigateToClaimRewards).not.toHaveBeenCalled()
   })
 })
