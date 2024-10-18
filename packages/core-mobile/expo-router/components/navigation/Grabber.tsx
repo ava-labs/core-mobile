@@ -7,7 +7,7 @@ const Grabber = (): JSX.Element => (
       height: 5,
       width: 50,
       borderRadius: 10,
-      backgroundColor: 'red',
+      backgroundColor: 'lightgray',
       position: 'relative',
       top: -12
     }}

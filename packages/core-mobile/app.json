@@ -8,15 +8,7 @@
     "expo-router"
   ],
   "expo": {
-    "scheme": "core",
-    "plugins": [
-      [
-        "expo-dev-launcher",
-        {
-          "launchMode": "most-recent"
-        }
-      ]
-    ]
+    "scheme": "core"
   },
   "experiments": {
     "typedRoutes": true

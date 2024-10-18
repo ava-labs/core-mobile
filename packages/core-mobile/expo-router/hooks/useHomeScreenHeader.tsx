@@ -8,7 +8,7 @@ const useHomeScreenHeader = (): void => {
   const renderHeaderLeft = useCallback(
     () => (
       <View style={{ marginLeft: 12 }}>
-        <Link href="/settings/">Settings</Link>
+        <Link href="/settings/">Account</Link>
       </View>
     ),
     []
