@@ -305,5 +305,9 @@
     "stream": "stream-browserify",
     "vm": "vm-browserify",
     "zlib": "browserify-zlib"
+  },
+  "volta": {
+    "node": "18.14.1",
+    "yarn": "1.22.10"
   }
 }
