@@ -62,22 +62,6 @@ class Notifications {
       await actions.waitForElement(this.balanceDisabledSwitch)
     }
   }
-
-  async verifyPushNotification() {
-    // TODO: currently push notification is broken on internal build. We can update the methods once it's fixed
-    console.log('verify push notification is received')
-  }
-
-  async tapPushNotification() {
-    // TODO: currently push notification is broken on internal build. We can update the methods once it's fixed
-    console.log('verify the deeplink works properly')
-    await device.launchApp() // temporary solution
-  }
-
-  async verifyNoPushNotification() {
-    // TODO: currently push notification is broken on internal build. We can update the methods once it's fixed
-    console.log('verify the push notification is NOT received')
-  }
 }
 
 export default new Notifications()
