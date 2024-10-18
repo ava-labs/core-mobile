@@ -10,7 +10,7 @@ describe('NFT Error Messages', () => {
     await warmup()
   })
 
-  it('should have NFT send warning - Unable to send token', async () => {
+  it('should have NFT send warning', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
     await CollectiblesPage.tapListSvg()
@@ -19,6 +19,6 @@ describe('NFT Error Messages', () => {
     await CollectiblesPage.tapAddressBook()
     await CollectiblesPage.tapMyAccounts()
     await AccountManagePage.tapFirstAccount()
-    await Assert.isVisible(CollectiblesPage.warningGasLimitIsInvalid)
+    await Assert.isVisible(CollectiblesPage.warningInsufficientFee)
   })
 })

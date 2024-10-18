@@ -50,9 +50,10 @@ const count = async (item: Detox.NativeMatcher, value: number) => {
 
 const hasPartialText = async (
   item: Detox.NativeMatcher,
-  expectedText: string
+  expectedText: string,
+  index = 0
 ) => {
-  const attri = await element(item).getAttributes()
+  const attri = await element(item).atIndex(index).getAttributes()
   if (!('elements' in attri)) {
     assert(
       attri.text?.toString().includes(expectedText),

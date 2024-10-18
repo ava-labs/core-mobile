@@ -8,7 +8,8 @@ import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async (
   newInstance = false,
-  isBalanceNotificationOn = false
+  isBalanceNotificationOn = false,
+  isCoreAnalyticsOn = false
 ) => {
   const permissions: DevicePermissions = { notifications: 'YES', camera: 'YES' }
   const initialArgs: DeviceLaunchAppConfig = {
@@ -34,7 +35,10 @@ export const warmup = async (
     console.log('Jailbroken warning handled!!!')
   }
   try {
-    await loginRecoverWallet.recoverWalletLogin(isBalanceNotificationOn)
+    await loginRecoverWallet.recoverWalletLogin(
+      isBalanceNotificationOn,
+      isCoreAnalyticsOn
+    )
   } catch (e) {
     console.log('Skipped login process...')
   }
