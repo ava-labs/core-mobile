@@ -9,22 +9,24 @@ import { StakeStatus } from 'types/earn'
 
 type Props = {
   status: StakeStatus
+  testID?: string
 }
 
-export const StatusChip = ({ status }: Props) => {
+export const StatusChip: React.FC<Props> = ({ status, testID }) => {
   const { theme } = useApplicationContext()
 
-  const renderLabel = (label: string) => (
+  const renderLabel = (label: string): JSX.Element => (
     <>
       <Space x={5} />
       <AvaText.ButtonMedium
+        testID={testID}
         textStyle={{ lineHeight: 20, color: theme.neutralSuccessLight }}>
         {label}
       </AvaText.ButtonMedium>
     </>
   )
 
-  const renderContent = () => {
+  const renderContent = (): JSX.Element => {
     if (status === StakeStatus.Completed)
       return (
         <>

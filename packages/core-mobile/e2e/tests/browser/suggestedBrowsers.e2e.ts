@@ -1,4 +1,3 @@
-import { SUGGESTED_ITEMS } from 'store/browser/const'
 import actions from '../../helpers/actions'
 import { warmup } from '../../helpers/warmup'
 import bottomTabsPage from '../../pages/bottomTabs.page'
@@ -12,6 +11,56 @@ describe('Suggested Browsers', () => {
     await warmup()
   })
 
+  const SUGGESTED_ITEMS = [
+    {
+      name: 'LFJ',
+      siteUrl: 'https://lfj.gg/'
+    },
+    {
+      name: 'Yield Yak',
+      siteUrl: 'https://yieldyak.com/avalanche/'
+    },
+    {
+      name: 'GMX',
+      siteUrl: 'https://app.gmx.io/#/trade'
+    },
+    {
+      name: 'Aave',
+      siteUrl: 'https://app.aave.com/'
+    },
+    {
+      name: 'GoGoPool',
+      siteUrl: 'https://www.gogopool.com/'
+    },
+    {
+      name: 'Salvor',
+      siteUrl: 'https://salvor.io/'
+    },
+    {
+      name: 'Delta Prime',
+      siteUrl: 'https://app.deltaprime.io/#/pools'
+    },
+    {
+      name: 'The Arena',
+      siteUrl: 'https://arena.social/'
+    },
+    {
+      name: 'SteakHut',
+      siteUrl: 'https://app.steakhut.finance/liquidity'
+    },
+    {
+      name: 'Pharaoh',
+      siteUrl: 'https://pharaoh.exchange/swap'
+    },
+    {
+      name: 'Pangolin',
+      siteUrl: 'https://app.pangolin.exchange/'
+    },
+    {
+      name: 'Benqi',
+      siteUrl: 'https://benqi.fi/'
+    }
+  ]
   const names: string[] = SUGGESTED_ITEMS.map(item => item.name)
   const urls: string[] = SUGGESTED_ITEMS.map(item => item.siteUrl)
 
