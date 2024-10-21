@@ -35,7 +35,7 @@ type Props = {
  * @param itemView View to wrap
  * @constructor
  */
-const DraggableItemWrapper = ({
+const DraggableItemWrapper: React.FC<Props> = ({
   id,
   height,
   scrollYShared,
@@ -133,7 +133,7 @@ const DraggableItemWrapper = ({
               padding: 16,
               marginLeft: -16
             }}>
-            <DragHandleSVG />
+            <DragHandleSVG testID={`drag_handle_svg__${id}`} />
           </Animated.View>
         </PanGestureHandler>
       </Row>

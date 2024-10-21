@@ -2,7 +2,6 @@ export default {
   addressBook: 'address_book',
   amountField: 'universal_token_selector__amount_field',
   avaxToken: 'AVAX',
-  carrotSVG: 'carrot_svg',
   ethToken: 'ETH',
   btcToken: 'BTC',
   sendingAmount: '0.000001',

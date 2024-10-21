@@ -64,10 +64,7 @@ export default function WatchlistTab(): JSX.Element {
           currentTabIndex={tabIndex}
           onTabIndexChange={setTabIndex}>
           <TabViewAva.Item title={'Favorites'}>
-            <FavoriteWatchlistView
-              testID="favorites_watch_list"
-              onTabIndexChanged={setTabIndex}
-            />
+            <FavoriteWatchlistView onTabIndexChanged={setTabIndex} />
           </TabViewAva.Item>
           <TabViewAva.Item title={'All'}>{allWatchList}</TabViewAva.Item>
         </TabViewAva>

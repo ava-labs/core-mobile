@@ -71,7 +71,7 @@ const WatchList: React.FC<Props> = ({
     const isFirstItem = index === 0
 
     return (
-      <View testID={testID} style={styles.item} key={token.id}>
+      <View style={styles.item} key={token.id}>
         {!isFirstItem && <SeparatorComponent />}
         <WatchListItem
           token={token}
@@ -118,6 +118,7 @@ const WatchList: React.FC<Props> = ({
   if (Platform.OS === 'ios') {
     return (
       <FlashList
+        testID={testID}
         data={tokens}
         renderItem={item => renderItem(item.item, item.index)}
         ListEmptyComponent={EmptyComponent}
@@ -131,6 +132,7 @@ const WatchList: React.FC<Props> = ({
 
   return (
     <BigList
+      testID={testID}
       data={tokens}
       renderItem={item => renderItem(item.item, item.index)}
       ListEmptyComponent={EmptyComponent}

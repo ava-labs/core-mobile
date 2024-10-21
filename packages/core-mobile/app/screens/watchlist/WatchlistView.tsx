@@ -38,11 +38,19 @@ const filterPriceOptions = [
   WatchlistFilter.LOSERS
 ]
 
-const SelectionItem = ({ title }: { title: string }): JSX.Element => {
+const SelectionItem = ({
+  title,
+  testID
+}: {
+  title: string
+  testID?: string
+}): JSX.Element => {
   const theme = useApplicationContext().theme
 
   return (
-    <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
+    <AvaText.ButtonSmall
+      testID={testID}
+      textStyle={{ color: theme.colorText1 }}>
       {title}
     </AvaText.ButtonSmall>
   )
@@ -50,9 +58,14 @@ const SelectionItem = ({ title }: { title: string }): JSX.Element => {
 
 const renderPriceFilterSelection = (
   selectedItem: WatchlistFilter
-): JSX.Element => <SelectionItem title={`Sort by: ${selectedItem}`} />
+): JSX.Element => (
+  <SelectionItem
+    testID={`watchlist_selected_filter__${selectedItem}`}
+    title={`Sort by: ${selectedItem}`}
+  />
+)
 
-const WatchlistView: React.FC<Props> = ({ searchText }) => {
+const WatchlistView: React.FC<Props> = ({ searchText, testID }) => {
   const { tokens, prices, charts } = useWatchlist()
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
@@ -128,7 +141,7 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
             prices={pricesToDisplay}
             filterBy={filterBy}
             isSearching={isSearching}
-            testID="watchlist_item"
+            testID={testID}
           />
         </>
       )}

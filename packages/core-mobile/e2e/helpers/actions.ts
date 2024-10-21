@@ -103,13 +103,16 @@ const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
 // waitForElementNoSync can be used to handle idle timeout error for Android AND to handle device.disableSynchronization()
 const waitForElementNoSync = async (
   item: Detox.NativeMatcher,
-  timeout = 2000
+  timeout = 2000,
+  index = 0
 ) => {
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
     try {
-      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+      await waitFor(element(item).atIndex(index))
+        .toBeVisible()
+        .withTimeout(timeout)
       return
     } catch (error: any) {
       if (error.message === Constants.idleTimeoutError) {
@@ -134,6 +137,7 @@ const getElementTextNoSync = async (
     try {
       await waitFor(element(item)).toBeVisible().withTimeout(timeout)
       const eleAttr = await element(item).getAttributes()
+      console.log('elements attributes: ', eleAttr)
       if (!('elements' in eleAttr)) {
         return eleAttr.text
       } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
@@ -322,18 +326,17 @@ async function waitForCondition(func: any, condition: any, timeout = 5000) {
   assert(isFulfilled)
 }
 
-const drag = async (item: Detox.NativeMatcher, index = 0) => {
-  await element(item).atIndex(index).longPressAndDrag(
-    500, // duration of the long press (1000ms or 1 second)
-    0.5, // normalized starting X position (center of the element)
-    0.5, // normalized starting Y position (center of the element)
-    element(item), // target element to drag the item to
-    0.5, // normalized target X position (center of the target element)
-    1.5, // normalized target Y position (center of the target element)
-    'fast', // speed of the drag action
-    500 // hold the drag for 500ms before releasing
-  )
+const drag = async (
+  item: Detox.NativeMatcher,
+  direction: Detox.Direction = 'down',
+  index = 0
+) => {
+  await element(item).atIndex(index).longPress()
+  await element(item).atIndex(index).swipe(direction, 'fast', 0.2)
 }
+
+const shuffleArray = <T>(array: T[]): T[] =>
+  array.sort(() => Math.random() - 0.5)
 
 export default {
   balanceToNumber,
@@ -366,5 +369,6 @@ export default {
   getElementText,
   clearTextInput,
   getElementTextNoSync,
-  drag
+  drag,
+  shuffleArray
 }

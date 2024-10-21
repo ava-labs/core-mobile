@@ -49,9 +49,7 @@ const WatchListItem: FC<Props> = ({
       subtitle={name}
       embedInCard={false}
       rightComponentMaxWidth={RIGHT_COMPONENT_MAX_WIDTH}
-      leftComponent={
-        <LeftComponent token={token} rank={rank} testID={testID} />
-      }
+      leftComponent={<LeftComponent token={token} rank={rank} />}
       rightComponent={
         <RightComponent
           token={token}

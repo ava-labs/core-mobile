@@ -26,10 +26,6 @@ class AccountManagePage {
     return by.text(accountManage.editedAccount)
   }
 
-  get carrotSVG() {
-    return by.id(accountManage.carrotSVG)
-  }
-
   get addAccountButton() {
     return by.text(accountManage.addAccountButton)
   }
@@ -240,18 +236,6 @@ class AccountManagePage {
 
   async tapSecondAccountMenu() {
     await Action.tapElementAtIndex(this.secondAccount, 0)
-  }
-
-  async tapCarrotSVG() {
-    if (Action.platform() === 'android') {
-      try {
-        await this.tapFirstAccount()
-      } catch (e) {
-        await this.tap2ndAccountMenu()
-      }
-    } else {
-      await Action.tapElementAtIndex(this.carrotSVG, 0)
-    }
   }
 
   async checkAccountNameIsCorrect() {

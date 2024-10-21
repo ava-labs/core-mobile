@@ -7,14 +7,18 @@ interface Prop {
   testID?: string
 }
 
-export default function DragHandleSVG({ fillColor, size }: Prop): JSX.Element {
+export default function DragHandleSVG({
+  fillColor,
+  size,
+  testID
+}: Prop): JSX.Element {
   const ratio = 16 / 6
   const width = size || 16
   const height = width / ratio
 
   return (
     <Svg
-      testID="drag_handle_svg"
+      testID={testID}
       width={width}
       height={height}
       viewBox="0 0 16 6"

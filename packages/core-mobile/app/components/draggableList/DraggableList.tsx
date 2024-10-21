@@ -32,7 +32,7 @@ const DraggableList = <TItem,>({
   keyExtractor,
   onDragEnd,
   ListEmptyComponent
-}: Props<TItem>) => {
+}: Props<TItem>): JSX.Element => {
   const scrollY = useSharedValue(0)
   const scrollViewOffset = useSharedValue(0)
   const positions = useSharedValue({} as Record<ItemId, ItemPosition>)
@@ -46,6 +46,7 @@ const DraggableList = <TItem,>({
   useLayoutEffect(() => {
     setTimeout(() => {
       // @ts-ignore
+      // eslint-disable-next-line max-params
       viewRef.current?.measure?.((x, y, width, height, pageX, pageY) => {
         scrollViewOffset.value = pageY
       })
@@ -63,7 +64,7 @@ const DraggableList = <TItem,>({
     scrollY.value = event.contentOffset.y
   })
 
-  const handleDragFinish = () => {
+  const handleDragFinish = (): void => {
     const newListOrder = new Array<TItem>(Object.keys(positions.value).length)
     Object.entries(positions.value).forEach(([itemId, position]) => {
       const item = dataRef.current.find(value => keyExtractor(value) === itemId)
@@ -76,7 +77,7 @@ const DraggableList = <TItem,>({
     onDragEnd({ newListOrder })
   }
 
-  function renderItems() {
+  function renderItems(): JSX.Element[] {
     return dataRef.current.map((item, index) => {
       const itemId = keyExtractor(item)
       return (
