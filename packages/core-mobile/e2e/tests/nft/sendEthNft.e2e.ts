@@ -17,7 +17,7 @@ describe('Send NFT', () => {
     await cleanup()
   })
 
-  it('should send Ethereum NFT ', async () => {
+  it('should send Ethereum NFT', async () => {
     await PortfolioPage.tapCollectiblesTab()
     await CollectiblesPage.tapListSvg()
     await CollectiblesPage.scrollToNFT()

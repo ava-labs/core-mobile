@@ -283,6 +283,7 @@ const TokenDetail: FC = () => {
             title={'Website'}
             value={
               <AvaText.Heading3
+                testID={'token_detail__website_url'}
                 textStyle={hyperLinkStyle}
                 onPress={openWebsite}>
                 {urlHostname}

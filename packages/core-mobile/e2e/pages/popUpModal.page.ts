@@ -167,7 +167,7 @@ class PopUpModalPage {
   }
 
   async verifyFeeIsLegit(isPXChain = false, estimatedGasFee = 0.009) {
-    await this.verifyApproveTransactionScreen()
+    await this.verifyApproveTransactionItems()
     await actions.swipeUp(this.feeAmount, 'fast', 0.25, 0)
     let tokenGasFee
     if (isPXChain) {

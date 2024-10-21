@@ -3,6 +3,13 @@ import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
 import { Platform } from '../../helpers/constants'
 
+type StakeCard = {
+  title: string
+  rewards: string
+  amount: string
+  time: string
+}
+
 class StakePage {
   get activeTab() {
     return by.text(stakeScreenLoc.activeTab)
@@ -152,6 +159,10 @@ class StakePage {
     return by.text(stakeScreenLoc.newStakeTimeRemaining)
   }
 
+  get timeRemaining() {
+    return by.text(stakeScreenLoc.timeRemaining)
+  }
+
   get nextButton() {
     return by.id(stakeScreenLoc.nextButton)
   }
@@ -206,6 +217,46 @@ class StakePage {
 
   get maxTextbutton() {
     return by.text(stakeScreenLoc.maxText)
+  }
+
+  get stakeCardTitle() {
+    return by.id(stakeScreenLoc.stakeCardTitle)
+  }
+
+  get stakeDetailsTitle() {
+    return by.id(stakeScreenLoc.stakeDetailsTitle)
+  }
+
+  get completedStatusChip() {
+    return by.id(stakeScreenLoc.completedStatusChip)
+  }
+
+  get activeStatusChip() {
+    return by.id(stakeScreenLoc.activeStatusChip)
+  }
+
+  get transactionIdText() {
+    return by.text(stakeScreenLoc.transactionIdText)
+  }
+
+  get estimatedRewardsId() {
+    return by.id(stakeScreenLoc.estimatedRewardsId)
+  }
+
+  get timeRemainingId() {
+    return by.id(stakeScreenLoc.timeRemainingId)
+  }
+
+  get stakedAmountId() {
+    return by.id(stakeScreenLoc.stakedAmountId)
+  }
+
+  get endDateId() {
+    return by.id(stakeScreenLoc.endDateId)
+  }
+
+  get earnedRewardsId() {
+    return by.id(stakeScreenLoc.earnedRewardsId)
   }
 
   async tapActiveTab() {
@@ -333,26 +384,94 @@ class StakePage {
     return availableBalance
   }
 
+  async tapStakeCard() {
+    await Actions.tapElementAtIndex(this.stakeCardTitle, 0)
+  }
+
   async verifyHistoryTabItems() {
+    await Actions.waitForElement(this.stakeCardTitle, 10000)
     await Assert.isVisible(this.amountStakedText)
     await Assert.isVisible(this.earnedRewardsText)
     await Assert.isVisible(this.endDateText)
-    await Assert.isVisible(this.firstStakeText)
-    //Add more items with testID's (date, amount, rewards, icons)
+    await Assert.isVisible(this.completedStatusChip)
+    await Assert.hasPartialText(this.stakeCardTitle, 'Stake #')
+    await Assert.isVisible(this.endDateId)
+    await Assert.isVisible(this.earnedRewardsId)
+    await Assert.isVisible(this.stakedAmountId)
   }
 
-  async verifyActiveTabItems() {
+  async verifyActiveStakeDetails(stakeCardInfo: StakeCard) {
+    // Verify the stake detail static text
+    await Actions.waitForElement(this.stakeDetailsTitle, 10000)
     await Assert.isVisible(this.stakedAmountText)
     await Assert.isVisible(this.estimatedRewardsText)
     await Assert.isVisible(this.estimatedRewardsTooltip)
-    await Assert.isVisible(this.firstStakeText)
-    //Add more items with testID's (date, amount, rewards)
+    await Assert.isVisible(this.activeStatusChip)
+    // Verify the active stake detail data
+    const { title, rewards, amount, time } = stakeCardInfo
+    await Assert.isVisible(by.text(title))
+    await Assert.isVisible(by.text(rewards))
+    await Assert.isVisible(by.text(amount))
+    await Assert.isVisible(by.text(time))
+  }
+
+  async verifyCompletedStakeDetails(stakeCardInfo: StakeCard) {
+    // Verify the stake detail static text
+    await Actions.waitForElement(this.stakeDetailsTitle, 10000)
+    await Assert.isVisible(this.stakedAmountText)
+    await Assert.isVisible(this.earnedRewardsText)
+    await Assert.isVisible(this.transactionIdText)
+    await Assert.isVisible(this.endDateText)
+    await Assert.isVisible(this.completedStatusChip)
+
+    // Verify the completed stake detail data
+    const { title, rewards, amount, time } = stakeCardInfo
+    await Assert.isVisible(by.text(title))
+    await Assert.isVisible(by.text(rewards))
+    await Assert.isVisible(by.text(amount))
+    await Assert.isVisible(by.text(time))
+  }
+
+  async verifyActiveTabItems() {
+    await Actions.waitForElement(this.stakeCardTitle, 10000)
+    await Assert.isVisible(this.stakedAmountText)
+    await Assert.isVisible(this.estimatedRewardsText)
+    await Assert.isVisible(this.estimatedRewardsTooltip)
+    await Assert.hasPartialText(this.stakeCardTitle, 'Stake #')
+    await Assert.isNotVisible(this.completedStatusChip)
+    await Assert.isNotVisible(this.activeStatusChip)
+    await Assert.isVisible(this.timeRemainingId)
+    await Assert.isVisible(this.estimatedRewardsId)
+    await Assert.isVisible(this.stakedAmountId)
   }
 
   async verifyNoActiveStakesScreenItems() {
     await Assert.isVisible(this.noActiveStakesTitle)
     await Assert.isVisible(this.noActiveStakesDescription)
     await Assert.isVisible(this.earnSvg)
+  }
+
+  async getStakeCardInfo(isActive = true): Promise<StakeCard> {
+    const rewardsId = isActive ? this.estimatedRewardsId : this.earnedRewardsId
+    const title = await Actions.getElementText(this.stakeCardTitle)
+    const timeId = isActive ? this.timeRemainingId : this.endDateId
+    const rewards = await Actions.getElementText(rewardsId)
+    const stakedAmount = await Actions.getElementText(this.stakedAmountId)
+    let time = await Actions.getElementText(timeId)
+    if (isActive) {
+      // We need to adjust the text a little bit
+      time = time?.replace(' remaining', '') // remove `remaining` from `1 day remaining`
+      time = time?.replace(/\b\w/g, char => char.toUpperCase()) // make it TitleCase `2 months 1 day` -> `2 Months 1 Day`
+    }
+    console.log(
+      `Title: ${title}, Time: ${time}, Rewards: ${rewards}, Staked Amount: ${stakedAmount}`
+    )
+    return {
+      title: title ?? '',
+      rewards: rewards ?? '',
+      amount: stakedAmount ?? '',
+      time: time ?? ''
+    }
   }
 }
 

@@ -10,6 +10,7 @@ import { FeeUnavailableModal } from 'screens/earn/FeeUnavailableModal'
 import * as Navigation from 'utils/Navigation'
 import { noop } from '@avalabs/core-utils-sdk'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
+import { MainHeaderOptions } from 'navigation/NavUtils'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
 } from './StakeSetupScreenStack'
@@ -58,6 +59,7 @@ function EarnScreenStack(): JSX.Element {
       <EarnStack.Screen
         name={AppNavigation.Earn.StakeDetails}
         component={StakeDetails}
+        options={MainHeaderOptions()}
       />
       <EarnStack.Screen
         options={{

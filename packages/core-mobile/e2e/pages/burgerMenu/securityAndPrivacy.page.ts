@@ -35,6 +35,14 @@ class SecurityAndPrivacy {
     return by.text(securityAndPrivacyLoc.iWroteItDownButton)
   }
 
+  get analyticsOn() {
+    return by.id(securityAndPrivacyLoc.analyticsOn)
+  }
+
+  get analyticsOff() {
+    return by.id(securityAndPrivacyLoc.analyticsOff)
+  }
+
   async tapChangePin() {
     await Actions.tapElementAtIndex(this.changePin, 0)
   }
@@ -55,6 +63,22 @@ class SecurityAndPrivacy {
     await burgerMenuPage.tapBurgerMenuButton()
     await burgerMenuPage.tapSecurityAndPrivacy()
     await this.tapConnectedSites()
+  }
+
+  async verifyAnalyticsSwitch(isOn = true) {
+    if (isOn) {
+      await Actions.waitForElement(this.analyticsOn)
+    } else {
+      await Actions.waitForElement(this.analyticsOff)
+    }
+  }
+
+  async tapAnalyticsSwitch(isOn = true) {
+    if (isOn) {
+      await Actions.tap(this.analyticsOff)
+    } else {
+      await Actions.tap(this.analyticsOn)
+    }
   }
 }
 

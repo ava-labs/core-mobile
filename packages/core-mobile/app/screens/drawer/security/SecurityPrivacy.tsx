@@ -109,6 +109,11 @@ function SecurityPrivacy({
         background={theme.background}
         rightComponent={
           <Switch
+            testID={
+              coreAnalyticsConsent
+                ? 'analytics_enabled_switch'
+                : 'analytics_disabled_switch'
+            }
             value={coreAnalyticsConsent}
             onValueChange={handleAnalyticsSwitchChange}
           />

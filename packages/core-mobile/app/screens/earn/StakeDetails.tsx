@@ -52,7 +52,7 @@ const StakeDetails = (): JSX.Element | null => {
       // eslint-disable-next-line react/no-unstable-nested-components
       headerRight: () => (
         <View style={styles.statusChip}>
-          <StatusChip status={status} />
+          <StatusChip testID={`${status}_status_chip`} status={status} />
         </View>
       )
     })
@@ -67,7 +67,9 @@ const StakeDetails = (): JSX.Element | null => {
       <View style={styles.header}>
         <StakeLogoBigSVG />
         <Space y={16} />
-        <AvaText.Heading4>Stake #{stakeTitle}</AvaText.Heading4>
+        <AvaText.Heading4 testID="stake_details_title">
+          Stake #{stakeTitle}
+        </AvaText.Heading4>
         <Space y={2} />
         <TokenAddress
           address={stake.nodeId ?? ''}
