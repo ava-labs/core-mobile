@@ -22,7 +22,12 @@ import {
   TabPayload,
   TabState
 } from '../types'
-import { limitMaxTabs, tabAdapter, updateActiveTabId } from '../utils'
+import {
+  limitMaxTabs,
+  tabAdapter,
+  tabAdapterSelectors,
+  updateActiveTabId
+} from '../utils'
 import { MAXIMUM_TAB_HISTORIES } from '../const'
 
 const reducerName = 'browser/tabs'
@@ -76,7 +81,7 @@ const tabSlice = createSlice({
       } as History
       const activeTabId = state.activeTabId
       if (activeTabId === undefined) return
-      const tab = tabAdapter.getSelectors().selectById(state, activeTabId)
+      const tab = tabAdapterSelectors.selectById(state, activeTabId)
       if (tab === undefined) return
 
       //if same as current, skip; useful for multiple loads of same page (by refresh, js, etc..)
@@ -106,7 +111,7 @@ const tabSlice = createSlice({
       const { id: tabId } = action.payload
       tabAdapter.removeOne(state, tabId)
 
-      if (tabAdapter.getSelectors().selectAll(state).length > 0) {
+      if (tabAdapterSelectors.selectAll(state).length > 0) {
         // update active tab id
         updateActiveTabId(state, tabId)
       } else {
@@ -147,7 +152,7 @@ const tabSlice = createSlice({
       removeHistory,
       (state: TabState, action: PayloadAction<{ historyId: HistoryId }>) => {
         //remove that history item from all tabs
-        const allTabs = tabAdapter.getSelectors().selectAll(state)
+        const allTabs = tabAdapterSelectors.selectAll(state)
         allTabs.forEach(tab => {
           let historyIds = tab.historyIds.filter(
             id => id !== action.payload.historyId
@@ -170,7 +175,7 @@ const tabSlice = createSlice({
       }
     )
     builder.addCase(removeAllHistories, (state: TabState) => {
-      const allTabs = tabAdapter.getSelectors().selectAll(state)
+      const allTabs = tabAdapterSelectors.selectAll(state)
       allTabs.forEach(tab => {
         tabAdapter.updateOne(state, {
           id: tab.id,
@@ -190,12 +195,12 @@ export const selectIsTabEmpty = (state: RootState): boolean => {
 }
 
 export const selectAllTabs = (state: RootState): Tab[] =>
-  tabAdapter.getSelectors().selectAll(state.browser.tabs)
+  tabAdapterSelectors.selectAll(state.browser.tabs)
 
 export const selectTab =
   (tabId: TabId) =>
   (state: RootState): Tab | undefined =>
-    tabAdapter.getSelectors().selectById(state.browser.tabs, tabId)
+    tabAdapterSelectors.selectById(state.browser.tabs, tabId)
 
 export const selectCanGoBack = (state: RootState): boolean => {
   const activeTab = selectActiveTab(state)
