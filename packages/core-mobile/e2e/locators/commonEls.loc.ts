@@ -12,6 +12,5 @@ export default {
   searchBar: 'search_bar__search',
   bitcoinSVG: 'bitcoin_svg',
   avaSVG: 'ava_logo',
-  reloadSVG: 'reload_svg',
-  carrotSVG: 'carrot_svg'
+  reloadSVG: 'reload_svg'
 }

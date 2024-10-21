@@ -85,7 +85,10 @@ class WatchListPage {
   }
 
   async tapWatchListToken(tokenSymbol: string, index = 0) {
-    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`))
+    await Action.waitForElementNoSync(
+      by.id(`watchlist_item__${tokenSymbol}`),
+      5000
+    )
     await Action.tapElementAtIndex(
       by.id(`watchlist_item__${tokenSymbol}`),
       index
@@ -118,8 +121,6 @@ class WatchListPage {
   async reorderToken(token: string) {
     const direction: Detox.Direction[] = ['up', 'down']
     const random = Action.shuffleArray(direction)[0]
-    console.log('token', token)
-    console.log('token', random)
     await Action.waitForElementNoSync(by.id(`drag_handle_svg__${token}`))
     await Action.drag(by.id(`drag_handle_svg__${token}`), random)
     await delay(1000)

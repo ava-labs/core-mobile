@@ -62,10 +62,6 @@ class CommonElsPage {
     return by.id(commonEls.reloadSVG)
   }
 
-  get carrotSVG() {
-    return by.id(commonEls.carrotSVG)
-  }
-
   async typeSearchBar(text: string) {
     await Actions.waitForElement(this.searchBar)
     await Actions.setInputText(this.searchBar, text)
