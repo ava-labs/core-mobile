@@ -49,10 +49,6 @@ class WatchListPage {
     return by.id(watchlist.searchBar)
   }
 
-  get allWatchList() {
-    return by.id(watchlist.allWatchList)
-  }
-
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
   }
@@ -142,8 +138,8 @@ class WatchListPage {
   }
 
   async getTopTokenFromList() {
-    const a = await Action.getElementTextNoSync(this.allWatchList)
-    console.log(a)
+    await Action.waitForElementNoSync(by.id('watchlist_item__btc'))
+    // const token = await Action.getElementText(by.id('watchlist_item__btc'))
   }
 
   async selectSortOption(option: string) {

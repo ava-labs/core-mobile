@@ -34,7 +34,7 @@ export default function WatchlistTab(): JSX.Element {
   }
 
   const allWatchList = useMemo(
-    () => <WatchlistView testID="all_watch_list" searchText={searchText} />,
+    () => <WatchlistView searchText={searchText} />,
     [searchText]
   )
 

@@ -9,6 +9,5 @@ export default {
   enterWalletBtn: 'btnPrimary',
   alreadyHaveAWalletBtn: 'Already Have a Wallet?',
   recoveryPhrase: 'Recovery Phrase',
-  searchBar: 'search_bar__search',
-  allWatchList: 'all_watch_list'
+  searchBar: 'search_bar__search'
 }

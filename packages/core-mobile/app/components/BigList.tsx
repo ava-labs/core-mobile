@@ -20,7 +20,6 @@ interface BigListProps<TItem> {
   onEndReachedThreshold?: number
   refreshControl?: React.ReactElement<RefreshControlProps>
   estimatedItemSize?: number
-  testID?: string
 }
 
 /**
@@ -36,15 +35,13 @@ const BigList = <T,>({
   contentContainerStyle,
   onEndReached,
   onEndReachedThreshold,
-  estimatedItemSize = 0,
-  testID
+  estimatedItemSize = 0
 }: BigListProps<T>): JSX.Element => {
   const hasRefreshProps =
     typeof onRefresh === 'function' && typeof refreshing === 'boolean'
 
   return (
     <RNBigList
-      testID={testID}
       data={data}
       renderItem={renderItem}
       onEndReachedThreshold={onEndReachedThreshold}

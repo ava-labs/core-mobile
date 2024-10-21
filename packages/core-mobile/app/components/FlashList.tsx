@@ -21,7 +21,6 @@ interface AvaListProps<TItem> {
   refreshControl?: React.ReactElement<RefreshControlProps> | undefined
   getItemType?: (item: TItem, index: number, extraData?: unknown) => string
   estimatedItemSize?: number
-  testID?: string
 }
 
 /**
@@ -43,12 +42,10 @@ const FlashList = <T,>({
   onEndReachedThreshold,
   refreshControl,
   getItemType,
-  estimatedItemSize,
-  testID
+  estimatedItemSize
 }: AvaListProps<T>): JSX.Element => {
   return (
     <ShopifyFlashList
-      testID={testID}
       data={data}
       renderItem={renderItem}
       ItemSeparatorComponent={ItemSeparatorComponent}

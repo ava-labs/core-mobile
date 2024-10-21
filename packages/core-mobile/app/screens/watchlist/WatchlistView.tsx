@@ -58,14 +58,9 @@ const SelectionItem = ({
 
 const renderPriceFilterSelection = (
   selectedItem: WatchlistFilter
-): JSX.Element => (
-  <SelectionItem
-    testID={`watchlist_selected_filter__${selectedItem}`}
-    title={`Sort by: ${selectedItem}`}
-  />
-)
+): JSX.Element => <SelectionItem title={`Sort by: ${selectedItem}`} />
 
-const WatchlistView: React.FC<Props> = ({ searchText, testID }) => {
+const WatchlistView: React.FC<Props> = ({ searchText }) => {
   const { tokens, prices, charts } = useWatchlist()
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
@@ -141,7 +136,7 @@ const WatchlistView: React.FC<Props> = ({ searchText, testID }) => {
             prices={pricesToDisplay}
             filterBy={filterBy}
             isSearching={isSearching}
-            testID={testID}
+            testID="watchlist_item"
           />
         </>
       )}

@@ -54,8 +54,7 @@ const WatchList: React.FC<Props> = ({
   filterBy,
   isShowingFavorites,
   isSearching,
-  onExploreAllTokens,
-  testID
+  onExploreAllTokens
 }) => {
   const navigation = useNavigation<NavigationProp>()
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
@@ -118,7 +117,6 @@ const WatchList: React.FC<Props> = ({
   if (Platform.OS === 'ios') {
     return (
       <FlashList
-        testID={testID}
         data={tokens}
         renderItem={item => renderItem(item.item, item.index)}
         ListEmptyComponent={EmptyComponent}
@@ -132,7 +130,6 @@ const WatchList: React.FC<Props> = ({
 
   return (
     <BigList
-      testID={testID}
       data={tokens}
       renderItem={item => renderItem(item.item, item.index)}
       ListEmptyComponent={EmptyComponent}
