@@ -8,7 +8,6 @@ import { warmup } from '../../helpers/warmup'
 import watchlistPage from '../../pages/watchlist.page'
 import actions from '../../helpers/actions'
 import { TokenDetailToken } from '../../helpers/tokens'
-import commonElsPage from '../../pages/commonEls.page'
 
 describe('Watchlist', () => {
   const tokens: TokenDetailToken[] = [
@@ -31,7 +30,7 @@ describe('Watchlist', () => {
     await actions.waitForElementNoSync(watchlistPage.favoritesTab, 10000)
     await watchlistPage.verifyFavorites(['AVAX', 'BTC', 'ETH'])
     await watchlistPage.tapAllTab()
-    await actions.waitForElementNoSync(watchlistPage.allWatchList, 10000)
+    await actions.waitForElementNoSync(by.text('Sort by: Market Cap'), 10000)
   })
 
   it('should reorder Favorites', async () => {
@@ -51,15 +50,16 @@ describe('Watchlist', () => {
   it('should sort on All tab', async () => {
     let previousOption = 'Market Cap'
     const sortOptions = ['Price', 'Volume', 'Gainers', 'Losers']
+    await actions.waitForElementNoSync(watchlistPage.allTab, 10000)
     await watchlistPage.tapAllTab()
-    await actions.waitForElementNoSync(watchlistPage.allWatchList)
+    await actions.waitForElementNoSync(by.text('Sort by: Market Cap'), 10000)
     for (const option of sortOptions) {
-      const beforeSort = await watchlistPage.getTopTokenFromList()
-      await commonElsPage.tapCarrotSVG()
+      const beforeSort = await watchlistPage.getTopTokenPriceFromList()
+      await watchlistPage.tapSortBtn()
       await watchlistPage.verifyWatchlistDropdownItems(previousOption)
       await watchlistPage.selectSortOption(option)
-      await watchlistPage.verifySortOption(option)
-      const afterSort = await watchlistPage.getTopTokenFromList()
+      await actions.waitForElementNoSync(by.text(`Sort by: ${option}`), 2000)
+      const afterSort = await watchlistPage.getTopTokenPriceFromList()
       assert.notEqual(beforeSort, afterSort)
       previousOption = option
     }

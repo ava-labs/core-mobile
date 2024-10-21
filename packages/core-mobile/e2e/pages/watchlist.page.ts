@@ -2,7 +2,6 @@ import watchlist from '../locators/watchlist.loc'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import delay from '../helpers/waits'
-import commonElsPage from './commonEls.page'
 
 class WatchListPage {
   get allTab() {
@@ -101,9 +100,9 @@ class WatchListPage {
   async verifyFavorites(tokens: string[]) {
     for (const token of tokens) {
       await Action.waitForElementNoSync(
-        by.id(`watchlist_item__${token.toLowerCase()}`)
+        by.id(`watchlist_item__${token.toLowerCase()}`),
+        10000
       )
-      await Assert.isVisible(by.id(`watchlist_item__${token.toLowerCase()}`))
     }
   }
 
@@ -127,34 +126,31 @@ class WatchListPage {
   }
 
   async verifyWatchlistDropdownItems(option: string) {
-    await Action.waitForElementNoSync(by.id('watchlist_dropdown'))
-    await Assert.isVisible(by.id('watchlist_dropdown'))
-    await Assert.isVisible(by.text('Market Cap'))
-    await Assert.isVisible(by.text('Price'))
-    await Assert.isVisible(by.text('Volume'))
-    await Assert.isVisible(by.text('Gainers'))
-    await Assert.isVisible(by.text('Losers'))
-    await Assert.isVisible(by.text(`checked__${option}`))
+    await Action.waitForElementNoSync(by.id(`checked__${option}`))
+    await Assert.isVisible(by.id('dropdown_item__Market Cap'))
+    await Assert.isVisible(by.id('dropdown_item__Price'))
+    await Assert.isVisible(by.id('dropdown_item__Volume'))
+    await Assert.isVisible(by.id('dropdown_item__Gainers'))
+    await Assert.isVisible(by.id('dropdown_item__Losers'))
   }
 
-  async getTopTokenFromList() {
-    await Action.waitForElementNoSync(by.id('watchlist_item__btc'))
-    // const token = await Action.getElementText(by.id('watchlist_item__btc'))
+  async tapSortBtn() {
+    await Action.tap(by.id('watchlist_sort_svg'))
+    await delay(1000)
+  }
+
+  async getTopTokenPriceFromList() {
+    await delay(1000)
+    return await Action.getElementText(by.id('watchlist_price'))
   }
 
   async selectSortOption(option: string) {
-    await Action.waitForElementNoSync(by.text(option))
-    await Action.tap(by.text(option))
-  }
-
-  async verifySortOption(option: string) {
-    await Action.waitForElementNoSync(by.text(`Sort by: ${option}`))
-    await Action.waitForElementNoSync(
-      by.id(`watchlist_selected_filter__${option}`)
+    const platformIndex = Action.platform() === 'ios' ? 1 : 0
+    await Action.waitForElementNoSync(by.id(`dropdown_item__${option}`))
+    await Action.tapElementAtIndex(
+      by.id(`dropdown_item__${option}`),
+      platformIndex
     )
-    await commonElsPage.tapCarrotSVG()
-    await Action.waitForElementNoSync(by.text(`checked__${option}`))
-    await commonElsPage.tapCarrotSVG()
   }
 }
 

@@ -167,10 +167,6 @@ class CommonElsPage {
   async tapReloadSVG(index = 0) {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
   }
-
-  async tapCarrotSVG(index = 0) {
-    await Actions.tapElementAtIndex(this.carrotSVG, index)
-  }
 }
 
 export default new CommonElsPage()

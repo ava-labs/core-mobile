@@ -58,7 +58,12 @@ const SelectionItem = ({
 
 const renderPriceFilterSelection = (
   selectedItem: WatchlistFilter
-): JSX.Element => <SelectionItem title={`Sort by: ${selectedItem}`} />
+): JSX.Element => (
+  <SelectionItem
+    testID="watchlist_sort_svg"
+    title={`Sort by: ${selectedItem}`}
+  />
+)
 
 const WatchlistView: React.FC<Props> = ({ searchText }) => {
   const { tokens, prices, charts } = useWatchlist()
