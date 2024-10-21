@@ -1,6 +1,7 @@
 import watchlist from '../locators/watchlist.loc'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
+import delay from '../helpers/waits'
 
 class WatchListPage {
   get allTab() {
@@ -84,7 +85,10 @@ class WatchListPage {
   }
 
   async tapWatchListToken(tokenSymbol: string, index = 0) {
-    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`))
+    await Action.waitForElementNoSync(
+      by.id(`watchlist_item__${tokenSymbol}`),
+      5000
+    )
     await Action.tapElementAtIndex(
       by.id(`watchlist_item__${tokenSymbol}`),
       index
@@ -98,10 +102,10 @@ class WatchListPage {
 
   async verifyFavorites(tokens: string[]) {
     for (const token of tokens) {
-      await Action.waitForElement(
-        by.id(`watchlist_item__${token.toLowerCase()}`)
+      await Action.waitForElementNoSync(
+        by.id(`watchlist_item__${token.toLowerCase()}`),
+        10000
       )
-      await Assert.isVisible(by.id(`watchlist_item__${token.toLowerCase()}`))
     }
   }
 
@@ -112,6 +116,42 @@ class WatchListPage {
   async clearSearchBar() {
     await Action.tap(this.searchBar)
     await Action.tap(by.text('Cancel'))
+  }
+
+  async reorderToken(token: string) {
+    const direction: Detox.Direction[] = ['up', 'down']
+    const random = Action.shuffleArray(direction)[0]
+    await Action.waitForElementNoSync(by.id(`drag_handle_svg__${token}`))
+    await Action.drag(by.id(`drag_handle_svg__${token}`), random)
+    await delay(1000)
+  }
+
+  async verifyWatchlistDropdownItems(option: string) {
+    await Action.waitForElementNoSync(by.id(`checked__${option}`))
+    await Assert.isVisible(by.id('dropdown_item__Market Cap'))
+    await Assert.isVisible(by.id('dropdown_item__Price'))
+    await Assert.isVisible(by.id('dropdown_item__Volume'))
+    await Assert.isVisible(by.id('dropdown_item__Gainers'))
+    await Assert.isVisible(by.id('dropdown_item__Losers'))
+  }
+
+  async tapSortBtn() {
+    await Action.tap(by.id('watchlist_sort_svg'))
+    await delay(1000)
+  }
+
+  async getTopTokenPriceFromList() {
+    await delay(1000)
+    return await Action.getElementText(by.id('watchlist_price'))
+  }
+
+  async selectSortOption(option: string) {
+    const platformIndex = Action.platform() === 'ios' ? 1 : 0
+    await Action.waitForElementNoSync(by.id(`dropdown_item__${option}`))
+    await Action.tapElementAtIndex(
+      by.id(`dropdown_item__${option}`),
+      platformIndex
+    )
   }
 }
 

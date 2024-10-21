@@ -20,10 +20,6 @@ class SendPage {
     return by.id(Send.tokenDropdown)
   }
 
-  get carrotSVG() {
-    return by.id('carrot_svg')
-  }
-
   get amountField() {
     return by.id(Send.amountField)
   }
@@ -78,10 +74,6 @@ class SendPage {
 
   async waitForNextBtnEnabled() {
     await Actions.waitForElement(this.nextButton, 5000)
-  }
-
-  async tapCarrotSVG() {
-    await Actions.tap(this.carrotSVG)
   }
 
   async tapMyAccounts() {

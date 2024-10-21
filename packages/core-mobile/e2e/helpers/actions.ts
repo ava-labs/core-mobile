@@ -103,13 +103,16 @@ const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
 // waitForElementNoSync can be used to handle idle timeout error for Android AND to handle device.disableSynchronization()
 const waitForElementNoSync = async (
   item: Detox.NativeMatcher,
-  timeout = 2000
+  timeout = 2000,
+  index = 0
 ) => {
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
     try {
-      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+      await waitFor(element(item).atIndex(index))
+        .toBeVisible()
+        .withTimeout(timeout)
       return
     } catch (error: any) {
       if (error.message === Constants.idleTimeoutError) {
@@ -134,6 +137,7 @@ const getElementTextNoSync = async (
     try {
       await waitFor(element(item)).toBeVisible().withTimeout(timeout)
       const eleAttr = await element(item).getAttributes()
+      console.log('elements attributes: ', eleAttr)
       if (!('elements' in eleAttr)) {
         return eleAttr.text
       } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
@@ -322,6 +326,18 @@ async function waitForCondition(func: any, condition: any, timeout = 5000) {
   assert(isFulfilled)
 }
 
+const drag = async (
+  item: Detox.NativeMatcher,
+  direction: Detox.Direction = 'down',
+  index = 0
+) => {
+  await element(item).atIndex(index).longPress()
+  await element(item).atIndex(index).swipe(direction, 'fast', 0.2)
+}
+
+const shuffleArray = <T>(array: T[]): T[] =>
+  array.sort(() => Math.random() - 0.5)
+
 export default {
   balanceToNumber,
   tap,
@@ -352,5 +368,7 @@ export default {
   dismissKeyboard,
   getElementText,
   clearTextInput,
-  getElementTextNoSync
+  getElementTextNoSync,
+  drag,
+  shuffleArray
 }

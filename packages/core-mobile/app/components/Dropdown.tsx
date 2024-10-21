@@ -138,10 +138,14 @@ function DropDown<ItemT>({
             justifyContent: 'space-between',
             paddingHorizontal: 16
           }}>
-          <AvaText.Body1 textStyle={{ paddingVertical: 8 }}>
+          <AvaText.Body1
+            testID={`dropdown_item__${item}`}
+            textStyle={{ paddingVertical: 8 }}>
             {item as JSX.Element}
           </AvaText.Body1>
-          {selectedItem === item && <CheckmarkSVG color={'white'} />}
+          {selectedItem === item && (
+            <CheckmarkSVG testID={`checked__${item}`} color={'white'} />
+          )}
         </Row>
       </AvaButton.Base>
     )
