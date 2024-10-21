@@ -12,7 +12,7 @@ const SettingsScreen = (): JSX.Element => {
         gap: 16
       }}>
       <Text variant="heading3" sx={{ color: 'black' }}>
-        Settings Screen
+        Settings
       </Text>
       <Link href="/settings/account">
         <Text sx={{ color: 'black' }}>Go to Account Setting</Text>

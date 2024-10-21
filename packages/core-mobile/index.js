@@ -33,7 +33,7 @@ TextInput.defaultProps = TextInput.defaultProps || {}
 TextInput.defaultProps.allowFontScaling = false
 
 function ExpoApp() {
-  const ctx = require.context('./expo-router/app') //Path with src folder
+  const ctx = require.context('./src/app') //Path with src folder
   return <ExpoRoot context={ctx} />
 }
 
