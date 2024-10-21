@@ -136,7 +136,7 @@ const RightComponent = ({
           flex: 1
         }}>
         <Row style={{ alignItems: 'flex-end' }}>
-          <AvaText.Heading3 ellipsizeMode={'tail'}>
+          <AvaText.Heading3 testID="watchlist_price" ellipsizeMode={'tail'}>
             {value.replace(selectedCurrency, '')}
           </AvaText.Heading3>
           <Space x={4} />
