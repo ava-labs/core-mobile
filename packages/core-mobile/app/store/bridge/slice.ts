@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import {
   AppConfig,
@@ -54,23 +54,22 @@ export const selectBridgeCriticalConfig = (
   }
 }
 
-export const selectBridgeTransactions = (
-  state: RootState
-): { [key: string]: BridgeTransaction } => {
-  const activeNetwork = selectActiveNetwork(state)
-  const bridgeTransactions = selectTransactions(state)
-  return Object.values(bridgeTransactions).reduce<
-    BridgeState['bridgeTransactions']
-  >((txs, btx) => {
-    const isMainnet = !activeNetwork.isTestnet
-    // go figure
-    const bridgeTx = btx as BridgeTransaction
-    if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
-      txs[bridgeTx.sourceTxHash] = bridgeTx
-    }
-    return txs
-  }, {})
-}
+export const selectBridgeTransactions = createSelector(
+  [selectActiveNetwork, selectTransactions],
+  (activeNetwork, bridgeTransactions): { [key: string]: BridgeTransaction } => {
+    return Object.values(bridgeTransactions).reduce<
+      BridgeState['bridgeTransactions']
+    >((txs, btx) => {
+      const isMainnet = !activeNetwork.isTestnet
+      // go figure
+      const bridgeTx = btx as BridgeTransaction
+      if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
+        txs[bridgeTx.sourceTxHash] = bridgeTx
+      }
+      return txs
+    }, {})
+  }
+)
 
 export const { addBridgeTransaction, popBridgeTransaction, setConfig } =
   bridgeSlice.actions
