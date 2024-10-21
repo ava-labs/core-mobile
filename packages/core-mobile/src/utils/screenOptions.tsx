@@ -6,8 +6,8 @@ import {
   TransitionPresets
 } from '@react-navigation/stack'
 import { Animated } from 'react-native'
-import Grabber from '../components/navigation/Grabber'
-import BackBarButton from '../components/navigation/BackBarButton'
+import Grabber from 'components/navigation/Grabber'
+import BackBarButton from 'components/navigation/BackBarButton'
 
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   title: '',

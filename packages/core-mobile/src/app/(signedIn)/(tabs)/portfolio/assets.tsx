@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
-import useCommonHeader from '../../../../hooks/useCommonHeader'
+import useCommonHeader from 'hooks/useCommonHeader'
 
 const PortfolioAssetsScreen = (): JSX.Element => {
   useCommonHeader()

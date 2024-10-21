@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
-import useHomeScreenHeader from '../../../../hooks/useHomeScreenHeader'
+import useHomeScreenHeader from 'hooks/useHomeScreenHeader'
 
 const TrackHomeScreen = (): JSX.Element => {
   useHomeScreenHeader()

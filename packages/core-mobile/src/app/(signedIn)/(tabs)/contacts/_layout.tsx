@@ -1,6 +1,6 @@
 import React from 'react'
-import { Stack } from '../../../../layouts/Stack'
-import { stackNavigatorScreenOptions } from '../../../../utils/screenOptions'
+import { Stack } from 'layouts/Stack'
+import { stackNavigatorScreenOptions } from 'utils/screenOptions'
 
 export default function ContactsLayout(): JSX.Element {
   return (

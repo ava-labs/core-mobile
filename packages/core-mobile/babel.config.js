@@ -14,7 +14,7 @@ module.exports = {
           '.ios.js',
           '.ios.tsx'
         ],
-        root: ['./app', './app-new'],
+        root: ['./app', './src'],
         alias: {
           tests: './tests'
         }

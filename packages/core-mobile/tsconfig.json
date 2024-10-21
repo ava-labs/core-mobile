@@ -7,7 +7,7 @@
     "paths": {
       "*": [
         "app/*",
-        "app-new/*"
+        "src/*"
       ],
       "tests/*": [
         "../tests/*"

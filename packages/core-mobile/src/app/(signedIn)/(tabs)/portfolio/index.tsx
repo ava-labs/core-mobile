@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
-import useHomeScreenHeader from '../../../../hooks/useHomeScreenHeader'
+import useHomeScreenHeader from 'hooks/useHomeScreenHeader'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   useHomeScreenHeader()

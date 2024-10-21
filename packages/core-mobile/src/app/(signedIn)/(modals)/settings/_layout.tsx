@@ -1,9 +1,9 @@
 import React from 'react'
-import { Stack } from '../../../../layouts/Stack'
+import { Stack } from 'layouts/Stack'
 import {
   modalFirstScreenOptions,
   modalStackNavigatorScreenOptions
-} from '../../../../utils/screenOptions'
+} from 'utils/screenOptions'
 
 export default function SettingsLayout(): JSX.Element {
   return (
