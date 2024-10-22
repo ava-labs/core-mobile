@@ -2016,3 +2016,35 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156523611" \
     }
 }
 EOF
+
+# Updates the monitor for app start time
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold",
+	"type": "rum alert",
+	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
+	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 650mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 734000000,
+			"warning": 681570000
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"include_tags": true,
+		"new_group_delay": 60,
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
