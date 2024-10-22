@@ -26,9 +26,7 @@ const useHomeScreenHeader = (): void => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: renderHeaderLeft,
-      headerRight: renderHeaderRight,
-      title: '',
-      headerShadowVisible: false
+      headerRight: renderHeaderRight
     })
   }, [navigation, renderHeaderLeft, renderHeaderRight])
 }
