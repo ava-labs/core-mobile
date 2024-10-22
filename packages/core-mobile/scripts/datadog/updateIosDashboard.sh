@@ -1980,6 +1980,7 @@ curl -X PUT \
 EOF
 
 # Updates the monitor for app start time
+echo "Updating monitor for app start time"
 curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156523611" \
 -H "Accept: application/json" \
 -H "Content-Type: application/json" \
@@ -2018,6 +2019,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156523611" \
 EOF
 
 # Updates the monitor for app start time
+echo "Updating monitor for memory use"
 curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 -H "Accept: application/json" \
 -H "Content-Type: application/json" \
@@ -2048,5 +2050,3 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 	}
 }
 EOF
-
-

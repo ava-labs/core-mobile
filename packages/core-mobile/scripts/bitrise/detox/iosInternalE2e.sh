@@ -7,8 +7,6 @@ npm rebuild detox
 
 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1 --max-workers 3; test_result=$?
 
-./scripts/datadog/updateIosDashboard.sh && sleep 5
-
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts && sleep 5
 
 if ((test_result != 0)); then
