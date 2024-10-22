@@ -9,8 +9,6 @@ import { Animated } from 'react-native'
 import Grabber from 'components/navigation/Grabber'
 import BackBarButton from 'components/navigation/BackBarButton'
 
-// common screen options for stack navigators
-// these options are used in the most stack navigators of the app
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
   headerBackTitleVisible: false,
@@ -20,15 +18,11 @@ export const stackNavigatorScreenOptions: StackNavigationOptions = {
   ...TransitionPresets.SlideFromRightIOS
 }
 
-// common screen options for stack navigators with modal presentation
-// these options are used in the modal stack navigators, having a grabber in the header
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   ...stackNavigatorScreenOptions,
   headerTitle: () => <Grabber />
 }
 
-// common screen options for modal screen
-// these options are used in the modal screens, having a modal presentation animation and customized card style
 export const modalScreensOptions: StackNavigationOptions = {
   presentation: 'modal',
   cardStyle: {
@@ -38,7 +32,7 @@ export const modalScreensOptions: StackNavigationOptions = {
   },
   gestureEnabled: true,
   gestureDirection: 'vertical',
-  cardStyleInterpolator: cardStyleInterpolatorForModalPresentation
+  cardStyleInterpolator: forModalPresentationIOS
 }
 
 /**
@@ -49,7 +43,7 @@ export const modalScreensOptions: StackNavigationOptions = {
  * of the transition between screens and applies vertical translation and opacity
  * to achieve smooth animations.
  */
-function cardStyleInterpolatorForModalPresentation({
+function forModalPresentationIOS({
   current,
   next,
   inverted,
@@ -92,6 +86,8 @@ function cardStyleInterpolatorForModalPresentation({
   }
 }
 
+// Options for the first screen of a modal stack navigator.
+// This screen does not have a back button, so we need to hide it.
 export const modalFirstScreenOptions: StackNavigationOptions = {
   headerBackImage: () => null
 }
