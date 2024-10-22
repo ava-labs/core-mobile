@@ -41,7 +41,7 @@ function CarrotSVG({ color, size = 14, direction }: Prop): JSX.Element {
       size={size}
       stroke={stroke}
       rotation={getDegrees()}
-      testID={direction === 'down' ? 'carrot_svg' : 'header_back'}
+      testID={direction === 'left' ? 'header_back' : 'carrot_svg'}
     />
   ) : (
     <Carrot size={size} stroke={stroke} testID="carrot_svg" />
