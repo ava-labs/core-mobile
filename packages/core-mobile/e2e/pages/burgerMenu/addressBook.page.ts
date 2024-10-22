@@ -92,6 +92,7 @@ class AddressBook {
   }
 
   async inputNewContactName() {
+    await Actions.clearTextInput(this.nameField)
     await Actions.setInputText(this.nameField, addressBookLoc.newContactName, 0)
     await Actions.tap(this.nameText)
   }

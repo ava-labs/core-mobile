@@ -1,6 +1,5 @@
 export default {
   availableSupply: 'token_detail__available_supply',
-  backButton: 'header_back',
   favorite: 'star_svg',
   marketCap: 'token_detail__market_cap',
   oneWeekTab: '1W',

@@ -82,10 +82,6 @@ class BridgeTabPage {
     return by.text(bridgeTab.hide)
   }
 
-  get headerBack() {
-    return by.id(bridgeTab.headerBack)
-  }
-
   get inputTextField() {
     return by.id(bridgeTab.inputTextField)
   }
@@ -148,10 +144,6 @@ class BridgeTabPage {
 
   async tapEthBridgeTransaction() {
     return Actions.tapElementAtIndex(this.ethBridgeTransaction, 0)
-  }
-
-  async tapHeaderBack() {
-    await Actions.tapElementAtIndex(this.headerBack, 0)
   }
 
   async tapHide() {

@@ -24,7 +24,6 @@ export default {
   explorerUrl: 'explorerUrl',
   favoriteNetwork: 'star_svg',
   favoritesTab: 'Favorites',
-  headerBack: 'header_back',
   inputTextField: 'input_text',
   nativeTokenSymbol: 'nativeTokenSymbol',
   networkName: 'networkName',

@@ -9,5 +9,5 @@ export const BackButton = ({
 }): JSX.Element => {
   const { goBack } = useNavigation()
 
-  return <HeaderBackButton onPress={onPress || goBack} testID="back_btn" />
+  return <HeaderBackButton onPress={onPress || goBack} testID="header_back" />
 }
