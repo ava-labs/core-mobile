@@ -1,12 +1,9 @@
 import React from 'react'
 import { Text, ScrollView, View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
-import useHomeScreenHeader from 'hooks/useHomeScreenHeader'
 import BlurredBarsContentLayout from 'components/navigation/BlurredBarsContentLayout'
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  useHomeScreenHeader()
-
   return (
     <BlurredBarsContentLayout>
       <ScrollView

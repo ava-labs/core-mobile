@@ -9,6 +9,8 @@ import { Animated } from 'react-native'
 import Grabber from 'components/navigation/Grabber'
 import BackBarButton from 'components/navigation/BackBarButton'
 import HeaderBackground from 'components/navigation/HeaderBackground'
+import { View } from '@avalabs/k2-alpine'
+import { Link } from 'expo-router'
 
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -93,4 +95,18 @@ function forModalPresentationIOS({
 // This screen does not have a back button, so we need to hide it.
 export const modalFirstScreenOptions: StackNavigationOptions = {
   headerBackImage: () => null
+}
+
+export const homeScreenOptions: StackNavigationOptions = {
+  headerLeft: () => (
+    <View sx={{ marginLeft: 12 }}>
+      <Link href="/settings/">Account</Link>
+    </View>
+  ),
+  headerRight: () => (
+    <View sx={{ flexDirection: 'row', gap: 12, marginRight: 12 }}>
+      <Link href="/receive/">Receive</Link>
+      <Link href="/notifications/">Notifications</Link>
+    </View>
+  )
 }

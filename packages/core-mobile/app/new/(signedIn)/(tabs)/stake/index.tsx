@@ -1,11 +1,8 @@
 import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
-import useHomeScreenHeader from 'hooks/useHomeScreenHeader'
 import BlurredBarsContentLayout from 'components/navigation/BlurredBarsContentLayout'
 
 const StakeHomeScreen = (): JSX.Element => {
-  useHomeScreenHeader()
-
   return (
     <BlurredBarsContentLayout>
       <View
