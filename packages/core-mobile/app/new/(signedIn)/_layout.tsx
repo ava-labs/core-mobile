@@ -1,6 +1,6 @@
 import React from 'react'
-import { Stack } from 'layouts/Stack'
-import { modalScreensOptions } from 'utils/screenOptions'
+import { Stack } from 'utils/navigation/Stack'
+import { modalScreensOptions } from 'utils/navigation/screenOptions'
 
 export default function SignedInLayout(): JSX.Element {
   return (

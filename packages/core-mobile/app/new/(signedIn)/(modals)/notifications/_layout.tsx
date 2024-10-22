@@ -1,15 +1,14 @@
 import React from 'react'
-import { Stack } from 'layouts/Stack'
+import { Stack } from 'utils/navigation/Stack'
 import {
   modalFirstScreenOptions,
   modalStackNavigatorScreenOptions
-} from 'utils/screenOptions'
+} from 'utils/navigation/screenOptions'
 
-export default function SettingsLayout(): JSX.Element {
+export default function NotificationsLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
-      <Stack.Screen name="account" />
     </Stack>
   )
 }

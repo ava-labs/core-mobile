@@ -4,7 +4,7 @@ import Bootsplash from 'react-native-bootsplash'
 
 import React from 'react'
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
-import { Stack } from 'layouts/Stack'
+import { Stack } from 'utils/navigation/Stack'
 
 export default function RootLayout(): JSX.Element | null {
   useEffect(() => {

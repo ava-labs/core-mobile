@@ -1,5 +1,5 @@
 import React from 'react'
-import { Stack } from 'layouts/Stack'
+import { Stack } from 'utils/navigation/Stack'
 
 export default function SignedOutLayout(): JSX.Element {
   return (

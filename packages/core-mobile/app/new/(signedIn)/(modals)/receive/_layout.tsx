@@ -1,9 +1,9 @@
 import React from 'react'
-import { Stack } from 'layouts/Stack'
+import { Stack } from 'utils/navigation/Stack'
 import {
   modalFirstScreenOptions,
   modalStackNavigatorScreenOptions
-} from 'utils/screenOptions'
+} from 'utils/navigation/screenOptions'
 
 export default function ReceiveLayout(): JSX.Element {
   return (
