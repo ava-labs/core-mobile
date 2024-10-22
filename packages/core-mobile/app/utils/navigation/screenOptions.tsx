@@ -12,19 +12,23 @@ import HeaderBackground from 'components/navigation/HeaderBackground'
 import { View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
 
-export const stackNavigatorScreenOptions: StackNavigationOptions = {
+const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
   headerBackTitleVisible: false,
   headerShadowVisible: false,
   headerTitleAlign: 'center',
   headerBackImage: () => <BackBarButton />,
-  ...TransitionPresets.SlideFromRightIOS,
+  ...TransitionPresets.SlideFromRightIOS
+}
+
+export const stackNavigatorScreenOptions: StackNavigationOptions = {
+  ...commonNavigatorScreenOptions,
   headerTransparent: true,
   headerBackground: () => <HeaderBackground />
 }
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
-  ...stackNavigatorScreenOptions,
+  ...commonNavigatorScreenOptions,
   headerTitle: () => <Grabber />
 }
 
