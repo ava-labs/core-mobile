@@ -41,7 +41,11 @@ export function NetworkListItem({
           </AvaButton.Icon>
         )}
         <AvaButton.Icon onPress={() => onInfo(networkChainId)}>
-          <InfoSVG size={24} color={theme.colorIcon1} testID="info_svg" />
+          <InfoSVG
+            size={24}
+            color={theme.colorIcon1}
+            testID={`info_svg__${networkName}`}
+          />
         </AvaButton.Icon>
       </Row>
     )

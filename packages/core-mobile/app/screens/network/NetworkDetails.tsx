@@ -53,7 +53,10 @@ export default function NetworkDetails({
           <View style={{ alignItems: 'center' }}>
             <NetworkLogo logoUri={network.logoUri} size={80} />
             <Space y={24} />
-            <AvaText.Heading2>{network.chainName}</AvaText.Heading2>
+            <AvaText.Heading2
+              testID={`network_details_title__${network.chainName}`}>
+              {network.chainName}
+            </AvaText.Heading2>
           </View>
           <Space y={40} />
           <DetailItem title={'Network RPC URL'} value={network.rpcUrl} />
