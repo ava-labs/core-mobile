@@ -63,7 +63,7 @@ describe('Change Network', () => {
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.tapStarSvgByNetwork(portfolio.arbitrumNetwork)
-    await commonElsPage.tapBackButton()
+    await commonElsPage.goBack()
     await PortfolioPage.verifyInactiveNetworks([portfolio.arbitrumNetwork])
   })
 
@@ -71,7 +71,7 @@ describe('Change Network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork)
-    await NetworksManagePage.tapHeaderBack()
+    await commonElsPage.goBack()
     await PortfolioPage.verifyNetworkRemoved(portfolio.btcNetwork)
   })
 })
