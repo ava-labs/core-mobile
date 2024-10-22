@@ -9,6 +9,8 @@ import { Animated } from 'react-native'
 import Grabber from 'components/navigation/Grabber'
 import BackBarButton from 'components/navigation/BackBarButton'
 
+// common screen options for stack navigators
+// these options are used in the most stack navigators of the app
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
   headerBackTitleVisible: false,
@@ -18,11 +20,15 @@ export const stackNavigatorScreenOptions: StackNavigationOptions = {
   ...TransitionPresets.SlideFromRightIOS
 }
 
+// common screen options for stack navigators with modal presentation
+// these options are used in the modal stack navigators, having a grabber in the header
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   ...stackNavigatorScreenOptions,
   headerTitle: () => <Grabber />
 }
 
+// common screen options for modal screen
+// these options are used in the modal screens, having a modal presentation animation and customized card style
 export const modalScreensOptions: StackNavigationOptions = {
   presentation: 'modal',
   cardStyle: {
@@ -32,10 +38,18 @@ export const modalScreensOptions: StackNavigationOptions = {
   },
   gestureEnabled: true,
   gestureDirection: 'vertical',
-  cardStyleInterpolator: forModalPresentationIOS
+  cardStyleInterpolator: cardStyleInterpolatorForModalPresentation
 }
 
-function forModalPresentationIOS({
+/**
+ * Custom card transition interpolator for modal presentations.
+ *
+ * This function defines the animations for modal screens, making them slide in
+ * from the bottom and adding an overlay fade effect. It calculates the progress
+ * of the transition between screens and applies vertical translation and opacity
+ * to achieve smooth animations.
+ */
+function cardStyleInterpolatorForModalPresentation({
   current,
   next,
   inverted,
