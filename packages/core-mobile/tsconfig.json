@@ -3,15 +3,9 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "baseUrl": "./",
+    "baseUrl": "./app",
     "paths": {
-      "*": [
-        "app/*",
-        "src/*"
-      ],
-      "tests/*": [
-        "tests/*"
-      ]
+      "tests/*": ["../tests/*"]
     }
   },
   "include": [
@@ -26,9 +20,5 @@
     "../k2-mobile/src/theme.d.ts",
     "../k2-alpine/src/theme.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "./e2e/artifacts/*",
-    "./ios/DerivedData"
-  ]
+  "exclude": ["node_modules", "./e2e/artifacts/*", "./ios/DerivedData"]
 }
