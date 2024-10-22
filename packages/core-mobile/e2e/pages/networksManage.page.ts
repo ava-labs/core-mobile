@@ -54,10 +54,6 @@ class NetworksPage {
     return by.text(networksManage.favoritesTab)
   }
 
-  get headerBack() {
-    return by.id(networksManage.headerBack)
-  }
-
   get inputTextField() {
     return by.id(networksManage.inputTextField)
   }
@@ -135,13 +131,10 @@ class NetworksPage {
   }
 
   async tapStarSvgByNetwork(network: string) {
-    if (Action.platform() === Platform.iOS) {
-      try {
-        await Action.dismissKeyboard()
-      } catch (e) {
-        console.log('No need to dismiss keyboard')
-      }
+    if (Action.platform() === 'ios') {
+      await Action.dismissKeyboard(networksManage.searchBar)
     }
+    await Action.waitForElement(by.id(`star_svg__${network}`))
     await Action.tap(by.id(`star_svg__${network}`))
   }
 
@@ -179,10 +172,6 @@ class NetworksPage {
 
   async tapFavoritesTab() {
     await Action.tapElementAtIndex(this.favoritesTab, 0)
-  }
-
-  async tapHeaderBack() {
-    await Action.tapElementAtIndex(this.headerBack, 0)
   }
 
   async tapNetworksTab() {

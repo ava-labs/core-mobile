@@ -9,6 +9,7 @@ import WatchListPage from '../../../pages/watchlist.page'
 import PortfolioPage from '../../../pages/portfolio.page'
 import TokenDetailPage from '../../../pages/tokenDetail.page'
 import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
 
 describe('Favorites Token', () => {
   beforeAll(async () => {
@@ -39,7 +40,7 @@ describe('Favorites Token', () => {
     await WatchListPage.tapWatchListToken(newToken.toLowerCase(), 1)
     await Actions.waitForElement(TokenDetailPage.favorite)
     await TokenDetailPage.tapFavorite()
-    await TokenDetailPage.tapBackButton()
+    await commonElsPage.goBack()
     await device.enableSynchronization()
   })
 
@@ -60,7 +61,7 @@ describe('Favorites Token', () => {
     await PortfolioPage.tapFavoriteToken(newToken)
     await Actions.waitForElement(TokenDetailPage.favorite)
     await TokenDetailPage.tapFavorite()
-    await TokenDetailPage.tapBackButton()
+    await commonElsPage.goBack()
     await device.enableSynchronization()
   })
 

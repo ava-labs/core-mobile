@@ -15,7 +15,7 @@ export const useGetClaimableBalance = (): TokenUnit | undefined => {
   const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useMemo(() => {
-    if (dataReady && unlockedUnstakedNAvax) {
+    if (dataReady && unlockedUnstakedNAvax !== undefined) {
       return new TokenUnit(
         unlockedUnstakedNAvax,
         networkToken.decimals,
