@@ -1667,7 +1667,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @device.type:Mobile -@action.type:(click OR tap) version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
+                                                "query": "@type:action @device.type:Mobile -@action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
