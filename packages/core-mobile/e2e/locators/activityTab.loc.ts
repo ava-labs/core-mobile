@@ -13,7 +13,6 @@ export default {
   filterOptionContractCall: 'activity_list__filter_Contract Call',
   filterOptionIncoming: 'activity_list__filter_Incoming',
   filterOptionOutgoing: 'activity_list__filter_Outgoing',
-  headerBack: 'header_back',
   bridgeTransaction: 'bridge_transaction__item',
   bridgeSVG: 'bridge_svg',
   networkIcon: 'network_icon',

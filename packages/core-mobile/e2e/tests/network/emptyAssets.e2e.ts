@@ -23,13 +23,13 @@ describe('Empty Assets', () => {
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.searchNetworks('Polygon')
-    await NetworksManagePage.tapStarSvgByNetwork('Polygon')
+    await NetworksManagePage.tapStarSvgByNetwork('Polygon Mainnet')
     await commonElsPage.goBack()
     await bottomTabsPage.tapPortfolioTab()
     await PortfolioPage.tapNetworksDropdown()
     const platformIndex = actions.platform() === 'ios' ? 1 : 0
     await actions.tapElementAtIndex(
-      by.id('network_dropdown__Polygon'),
+      by.id('network_dropdown__Polygon Mainnet'),
       platformIndex
     )
     await PortfolioPage.tapPolygonNetwork()

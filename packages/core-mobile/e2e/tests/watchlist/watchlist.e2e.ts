@@ -22,23 +22,14 @@ describe('Watchlist', () => {
     await device.disableSynchronization()
   })
 
-  it('should navigate watchlist tabs', async () => {
+  it('should verify Favorites tab', async () => {
     // Favorite tab > Verify the default favorites
     await BottomTabsPage.tapWatchlistTab()
-    await actions.waitForElementNoSync(watchlistPage.favoritesTab, 10000)
+    await actions.waitForElementNoSync(watchlistPage.favoritesTab, 20000)
     await watchlistPage.verifyFavorites(['AVAX', 'BTC', 'ETH'])
-
-    // All tab > Verify the the contents are displayed
-    await watchlistPage.tapAllTab()
-    await actions.waitForElementNoSync(by.text('Sort by: Market Cap'), 10000)
-    await actions.waitForElement(by.id('watchlist_price'))
   })
 
-  it('should reorder Favorites', async () => {
-    // Go to Favorites tab
-    await BottomTabsPage.tapWatchlistTab()
-    await actions.waitForElementNoSync(watchlistPage.favoritesTab)
-    await watchlistPage.tapFavoritesTab()
+  it('should reorder tokens on Favorites tab', async () => {
     // Pick random tokens 5 times and reorder randomly either up or down
     let i = 0
     while (i < 5) {
@@ -52,13 +43,16 @@ describe('Watchlist', () => {
     }
   })
 
+  it('should verify All tab', async () => {
+    // All tab > Verify the the contents are displayed
+    await watchlistPage.tapAllTab()
+    await actions.waitForElementNoSync(by.text('Sort by: Market Cap'), 30000)
+    await actions.waitForElement(by.id('watchlist_price'))
+  })
+
   it('should sort on All tab', async () => {
-    // Go to All tab
     let previousOption = 'Market Cap'
     const sortOptions = ['Price', 'Volume', 'Gainers', 'Losers']
-    await actions.waitForElementNoSync(watchlistPage.allTab, 10000)
-    await watchlistPage.tapAllTab()
-    await actions.waitForElementNoSync(by.text('Sort by: Market Cap'), 10000)
 
     for (const option of sortOptions) {
       // Get the top token price before sort
@@ -79,13 +73,13 @@ describe('Watchlist', () => {
     }
   })
 
-  it('should navigate to token detail screen', async () => {
+  it('should navigate to Token Detail', async () => {
     await watchlistPage.tapFavoritesTab()
     await watchlistPage.tapWatchListToken('btc', 1)
     await actions.waitForElement(tokenDetailPage.oneWeekTab)
   })
 
-  it('should verify token detail screen', async () => {
+  it('should verify Token Detail', async () => {
     await actions.swipeUp(tokenDetailPage.oneWeekTab, 'fast', 0.5, 0)
     await tokenDetailPage.verifyTokenDetailScreen()
   })

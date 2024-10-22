@@ -31,10 +31,6 @@ class TokenDetailsPage {
     return by.id(tokenDetail.availableSupply)
   }
 
-  get backButton() {
-    return by.id(tokenDetail.backButton)
-  }
-
   get favorite() {
     return by.id(tokenDetail.favorite)
   }
@@ -185,10 +181,6 @@ class TokenDetailsPage {
 
   async tapFavorite() {
     await Action.tapElementAtIndex(this.favorite, 0)
-  }
-
-  async tapBackButton() {
-    await Action.tapElementAtIndex(this.backButton, 0)
   }
 
   async dismissHoldAndDrag() {

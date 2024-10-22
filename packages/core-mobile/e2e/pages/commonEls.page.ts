@@ -14,10 +14,6 @@ class CommonElsPage {
     return by.id(commonEls.backButton)
   }
 
-  get backSecondaryButton() {
-    return by.id(commonEls.backSecondaryButton)
-  }
-
   get getStartedButton() {
     return by.text(commonEls.getStartedBtn)
   }
@@ -136,7 +132,7 @@ class CommonElsPage {
     try {
       await Actions.tapElementAtIndex(this.backButton, 0)
     } catch (e) {
-      await Actions.tapElementAtIndex(this.backSecondaryButton, 0)
+      await Actions.tapElementAtIndex(this.backButton, 1)
     }
   }
 
