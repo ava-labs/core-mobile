@@ -865,7 +865,7 @@ curl -X PUT \
                         {
                             "x": 0,
                             "y": 0,
-                            "width": 3,
+                            "width": 6,
                             "height": 2
                         }
                     },
@@ -980,94 +980,7 @@ curl -X PUT \
                         },
                         "layout":
                         {
-                            "x": 3,
-                            "y": 0,
-                            "width": 3,
-                            "height": 2
-                        }
-                    }
-                ]
-            },
-            "layout":
-            {
-                "x": 0,
-                "y": 0,
-                "width": 6,
-                "height": 3
-            }
-        },
-        {
-            "id": 1610846052592692,
-            "definition":
-            {
-                "title": "Average Application Start Time (Version: $BUILD_NUMBER)",
-                "background_color": "yellow",
-                "show_title": true,
-                "type": "group",
-                "layout_type": "ordered",
-                "widgets":
-                [
-                    {
-                        "id": 7849781516593068,
-                        "definition":
-                        {
-                            "title": "org.avalabs.avaxwallet.internal",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "query1"
-                                        }
-                                    ],
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "query1",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:$BUILD_NUMBER service:org.avalabs.corewallet"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "avg",
-                                                        "order": "desc",
-                                                        "metric": "@action.loading_time"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@action.loading_time"
-                                            },
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "response_format": "scalar",
-                                    "style":
-                                    {
-                                        "palette": "datadog16"
-                                    }
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 0,
+                            "x": 6,
                             "y": 0,
                             "width": 6,
                             "height": 2
@@ -1077,9 +990,9 @@ curl -X PUT \
             },
             "layout":
             {
-                "x": 6,
-                "y": 0,
-                "width": 6,
+                "x": 0,
+                "y": 11,
+                "width": 12,
                 "height": 3
             }
         },
@@ -1098,8 +1011,6 @@ curl -X PUT \
                         "id": 7860422761109870,
                         "definition":
                         {
-                            "time":
-                            {},
                             "title": "iOS Application Start Time (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1166,8 +1077,6 @@ curl -X PUT \
                         "id": 4656190487528324,
                         "definition":
                         {
-                            "time":
-                            {},
                             "title": "iOS Errors (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1304,8 +1213,6 @@ curl -X PUT \
                         "id": 4466470907554154,
                         "definition":
                         {
-                            "time":
-                            {},
                             "title": "iOS average action loading time (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1775,7 +1682,7 @@ curl -X PUT \
                 "x": 0,
                 "y": 14,
                 "width": 12,
-                "height": 15,
+                "height": 1,
                 "is_column_break": true
             }
         }
