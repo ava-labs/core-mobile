@@ -53,7 +53,7 @@ describe('Add custom network', () => {
     await NetworksManagePage.inputNetworkName(NetworksManageLoc.celoNetworkName)
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
-    await NetworksManagePage.tapHeaderBack()
+    await commonElsPage.goBack()
     await Assert.isVisible(NetworksManagePage.celoNetworkName)
   })
 

@@ -19,10 +19,6 @@ class DefiPage {
     return by.id(defi.goToProtocolButton)
   }
 
-  get headerBack() {
-    return by.id(defi.headerBack)
-  }
-
   get linkSvg() {
     return by.id(defi.linkSvg)
   }
@@ -53,10 +49,6 @@ class DefiPage {
 
   async tapDefiProtocol() {
     await Actions.tapElementAtIndex(this.protocolLogo, 0)
-  }
-
-  async tapHeaderBack() {
-    await Actions.tap(this.headerBack)
   }
 
   async verifyEmptyScreenItems() {
