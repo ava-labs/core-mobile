@@ -8,6 +8,7 @@ import {
 import { Animated } from 'react-native'
 import Grabber from 'components/navigation/Grabber'
 import BackBarButton from 'components/navigation/BackBarButton'
+import HeaderBackground from 'components/navigation/HeaderBackground'
 
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -15,7 +16,9 @@ export const stackNavigatorScreenOptions: StackNavigationOptions = {
   headerShadowVisible: false,
   headerTitleAlign: 'center',
   headerBackImage: () => <BackBarButton />,
-  ...TransitionPresets.SlideFromRightIOS
+  ...TransitionPresets.SlideFromRightIOS,
+  headerTransparent: true,
+  headerBackground: () => <HeaderBackground />
 }
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {

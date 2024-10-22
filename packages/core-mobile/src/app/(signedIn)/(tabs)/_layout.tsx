@@ -1,11 +1,18 @@
+import TabBarBackground from 'components/navigation/TabBarBackground'
 import { Tabs } from 'expo-router'
-import React from 'react'
+import React, { useCallback } from 'react'
 
 export default function TabLayout(): JSX.Element {
+  const tabBarBackground = useCallback(() => <TabBarBackground />, [])
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: false
+        headerShown: false,
+        tabBarBackground,
+        tabBarStyle: {
+          position: 'absolute'
+        }
       }}>
       <Tabs.Screen
         name="portfolio"

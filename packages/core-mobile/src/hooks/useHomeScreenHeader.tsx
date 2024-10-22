@@ -1,4 +1,3 @@
-// import { SignedInStackProps } from 'navigation-new/types'
 import React, { useCallback, useLayoutEffect } from 'react'
 import { View } from 'react-native'
 import { Link, useNavigation } from 'expo-router'
