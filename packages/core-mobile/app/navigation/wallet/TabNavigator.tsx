@@ -22,8 +22,8 @@ import { withK2Alpine } from 'utils/withK2Alpine'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 const WatchlistTab = withK2Alpine(
-  lazy(() => import('screens/watchlist/WatchlistTabView')),
-  lazy(() => import('screens/watchlist/WatchlistTabViewK2Alpine'))
+  lazy(() => import('screens/watchlist/WatchlistTabViewK2Alpine')),
+  lazy(() => import('screens/watchlist/WatchlistTabView'))
 )
 
 export type TabNavigatorParamList = {
