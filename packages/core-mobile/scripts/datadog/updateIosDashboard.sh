@@ -9,9 +9,10 @@ curl -X PUT \
   -H "Cache-Control: no-cache"  \
   -d @- << EOF
   {
-  "title": "iOS Mobile Performance Dashboard",
-  "description": "Performance metrics for Core iOS",
-  "widgets": [
+    "title": "iOS Mobile Performance Dashboard",
+    "description": "Performance metrics for Core iOS",
+    "widgets":
+    [
         {
             "id": 3605593076802110,
             "definition":
@@ -1087,7 +1088,7 @@ curl -X PUT \
             "definition":
             {
                 "title": "Latest Release Performance",
-                "background_color": "blue",
+                "background_color": "purple",
                 "show_title": true,
                 "type": "group",
                 "layout_type": "ordered",
@@ -1098,9 +1099,7 @@ curl -X PUT \
                         "definition":
                         {
                             "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
+                            {},
                             "title": "iOS Application Start Time (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1150,7 +1149,7 @@ curl -X PUT \
                                     "response_format": "scalar",
                                     "style":
                                     {
-                                        "palette": "datadog16"
+                                        "palette": "semantic"
                                     }
                                 }
                             ]
@@ -1164,12 +1163,12 @@ curl -X PUT \
                         }
                     },
                     {
-                        "id": 3560539831543508,
+                        "id": 4656190487528324,
                         "definition":
                         {
                             "time":
                             {},
-                            "title": "iOS application start time for latest version",
+                            "title": "iOS Errors (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1187,7 +1186,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" @os.name:iOS -version:<3897"
+                                                "query": "@type:error @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1200,17 +1199,17 @@ curl -X PUT \
                                                     "limit": 10,
                                                     "sort":
                                                     {
-                                                        "aggregation": "pc90",
+                                                        "aggregation": "count",
                                                         "order": "desc",
-                                                        "metric": "@action.loading_time"
+                                                        "metric": "count"
                                                     },
                                                     "should_exclude_missing": true
                                                 }
                                             ],
                                             "compute":
                                             {
-                                                "aggregation": "pc90",
-                                                "metric": "@action.loading_time"
+                                                "aggregation": "count",
+                                                "metric": "count"
                                             },
                                             "storage": "hot"
                                         }
@@ -1227,76 +1226,6 @@ curl -X PUT \
                         {
                             "x": 0,
                             "y": 3,
-                            "width": 12,
-                            "height": 3
-                        }
-                    },
-                    {
-                        "id": 2091766263734094,
-                        "definition":
-                        {
-                            "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "title": "iOS Refresh Rate by version(Update with script and set alert if refresh rate drops below threshold)",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "a"
-                                        }
-                                    ],
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "a",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "median",
-                                                        "order": "desc",
-                                                        "metric": "@view.refresh_rate_average"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "median",
-                                                "metric": "@view.refresh_rate_average"
-                                            },
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "response_format": "scalar",
-                                    "style":
-                                    {
-                                        "palette": "datadog16"
-                                    }
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 0,
-                            "y": 6,
                             "width": 6,
                             "height": 3
                         }
@@ -1366,7 +1295,285 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
+                            "y": 3,
+                            "width": 6,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "id": 4466470907554154,
+                        "definition":
+                        {
+                            "time":
+                            {},
+                            "title": "iOS average action loading time (Version: $BUILD_NUMBER)",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "response_format": "scalar",
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "a",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:action @device.type:Mobile -@action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "avg",
+                                                        "order": "desc",
+                                                        "metric": "@action.loading_time"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "avg",
+                                                "metric": "@action.loading_time"
+                                            },
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "a"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 0,
                             "y": 6,
+                            "width": 6,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "id": 23574404906818,
+                        "definition":
+                        {
+                            "time":
+                            {
+                                "hide_incomplete_cost_data": true
+                            },
+                            "title": "iOS Latest Internal Build Action Loading time by Action Type(Update with script)",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "response_format": "scalar",
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "a",
+                                            "data_source": "rum",
+                                            "compute":
+                                            {
+                                                "aggregation": "avg",
+                                                "metric": "@action.loading_time"
+                                            },
+                                            "search":
+                                            {
+                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "@action.name",
+                                                    "limit": 10,
+                                                    "should_exclude_missing": true,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "avg",
+                                                        "order": "desc",
+                                                        "metric": "@action.loading_time"
+                                                    }
+                                                }
+                                            ],
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "a"
+                                        }
+                                    ],
+                                    "sort":
+                                    {
+                                        "count": 10,
+                                        "order_by":
+                                        [
+                                            {
+                                                "type": "formula",
+                                                "index": 0,
+                                                "order": "desc"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 6,
+                            "y": 6,
+                            "width": 6,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "id": 2091766263734094,
+                        "definition":
+                        {
+                            "time":
+                            {
+                                "hide_incomplete_cost_data": true
+                            },
+                            "title": "iOS Refresh Rate by version(Update with script and set alert if refresh rate drops below threshold)",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "a"
+                                        }
+                                    ],
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "a",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "median",
+                                                        "order": "desc",
+                                                        "metric": "@view.refresh_rate_average"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "median",
+                                                "metric": "@view.refresh_rate_average"
+                                            },
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "response_format": "scalar",
+                                    "style":
+                                    {
+                                        "palette": "datadog16"
+                                    }
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 0,
+                            "y": 9,
+                            "width": 6,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "id": 2961425376476106,
+                        "definition":
+                        {
+                            "title": "iOS Memory Consumption by View Name (Version: $BUILD_NUMBER)",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "query1"
+                                        }
+                                    ],
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "query1",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "@view.name",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "avg",
+                                                        "order": "desc",
+                                                        "metric": "@view.memory_average"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "avg",
+                                                "metric": "@view.memory_average"
+                                            },
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "response_format": "scalar",
+                                    "style":
+                                    {
+                                        "palette": "datadog16"
+                                    }
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 6,
+                            "y": 9,
                             "width": 6,
                             "height": 3
                         }
@@ -1478,301 +1685,6 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 9,
-                            "width": 4,
-                            "height": 2
-                        }
-                    },
-                    {
-                        "id": 2961425376476106,
-                        "definition":
-                        {
-                            "time":
-                            {},
-                            "title": "iOS Memory Consumption by View Name (Version: $BUILD_NUMBER)",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "query1"
-                                        }
-                                    ],
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "query1",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "@view.name",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "avg",
-                                                        "order": "desc",
-                                                        "metric": "@view.memory_average"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@view.memory_average"
-                                            },
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "response_format": "scalar",
-                                    "style":
-                                    {
-                                        "palette": "datadog16"
-                                    }
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 6,
-                            "y": 9,
-                            "width": 6,
-                            "height": 3
-                        }
-                    },
-                    {
-                        "id": 4656190487528324,
-                        "definition":
-                        {
-                            "title": "iOS Errors (Version: $BUILD_NUMBER)",
-                            "title_size": "16",
-                            "title_align": "left",
-                            "show_legend": false,
-                            "legend_layout": "auto",
-                            "legend_columns":
-                            [
-                                "avg",
-                                "min",
-                                "max",
-                                "value",
-                                "sum"
-                            ],
-                            "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "type": "timeseries",
-                            "requests":
-                            [
-                                {
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "query1"
-                                        }
-                                    ],
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "query1",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:error @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "count",
-                                                        "order": "desc",
-                                                        "metric": "count"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "count",
-                                                "metric": "count"
-                                            },
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "response_format": "timeseries",
-                                    "style":
-                                    {
-                                        "palette": "red",
-                                        "line_type": "solid",
-                                        "line_width": "normal"
-                                    },
-                                    "display_type": "bars"
-                                }
-                            ],
-                            "yaxis":
-                            {
-                                "scale": "linear",
-                                "label": "",
-                                "include_zero": true,
-                                "min": "auto",
-                                "max": "auto"
-                            },
-                            "markers":
-                            []
-                        },
-                        "layout":
-                        {
-                            "x": 0,
-                            "y": 11,
-                            "width": 4,
-                            "height": 2
-                        }
-                    },
-                    {
-                        "id": 4466470907554154,
-                        "definition":
-                        {
-                            "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "title": "iOS average action loading time (Version: $BUILD_NUMBER)",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "response_format": "scalar",
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "a",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:action @device.type:Mobile -@action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "avg",
-                                                        "order": "desc",
-                                                        "metric": "@action.loading_time"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@action.loading_time"
-                                            },
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "a"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 4,
-                            "y": 12,
-                            "width": 4,
-                            "height": 2
-                        }
-                    },
-                    {
-                        "id": 7994506763556888,
-                        "definition":
-                        {
-                            "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "title": "iOS average action loading time (Version: $BUILD_NUMBER)",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "response_format": "scalar",
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "a",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:action @device.type:Mobile -@action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "avg",
-                                                        "order": "desc",
-                                                        "metric": "@action.loading_time"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@action.loading_time"
-                                            },
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "a"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 8,
                             "y": 12,
                             "width": 4,
                             "height": 2
@@ -1851,85 +1763,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 4,
-                            "y": 14,
-                            "width": 4,
-                            "height": 2
-                        }
-                    },
-                    {
-                        "id": 23574404906818,
-                        "definition":
-                        {
-                            "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "title": "iOS Latest Internal Build Action Loading time by Action Type(Update with script)",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "response_format": "scalar",
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "a",
-                                            "data_source": "rum",
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@action.loading_time"
-                                            },
-                                            "search":
-                                            {
-                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "@action.name",
-                                                    "limit": 10,
-                                                    "should_exclude_missing": true,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "avg",
-                                                        "order": "desc",
-                                                        "metric": "@action.loading_time"
-                                                    }
-                                                }
-                                            ],
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "a"
-                                        }
-                                    ],
-                                    "sort":
-                                    {
-                                        "count": 10,
-                                        "order_by":
-                                        [
-                                            {
-                                                "type": "formula",
-                                                "index": 0,
-                                                "order": "desc"
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 8,
-                            "y": 14,
+                            "y": 12,
                             "width": 4,
                             "height": 2
                         }
@@ -1939,9 +1773,9 @@ curl -X PUT \
             "layout":
             {
                 "x": 0,
-                "y": 0,
+                "y": 14,
                 "width": 12,
-                "height": 17,
+                "height": 15,
                 "is_column_break": true
             }
         }
