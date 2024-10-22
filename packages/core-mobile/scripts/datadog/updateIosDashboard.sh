@@ -1990,7 +1990,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156523611" \
 {
     "name": "[core-mobile] App startup time on iOS exceeds 4 seconds",
     "type": "rum alert",
-    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
+    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER\" service:org.avalabs.corewallet).rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
     "message": "{{#is_alert}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is over the accepted threshold of 4 seconds.  Double check the changes made today and revert or update to decrease app start time{{/is_alert}}\n\n{{#is_warning}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is approaching the acceptable threshold of 4 seconds{{/is_warning}}\n\n{{#is_recovery}}Average app start time has recovered at {{rum.attributes.[action.loading_time]}} which is below the acceptable threshold of 4 seconds{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
     "tags":
     [],
@@ -2029,7 +2029,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 {
 	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold",
 	"type": "rum alert",
-	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
+	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER\").rollup(\"avg\", \"@view.memory_average\" service:org.avalabs.corewallet).by(\"version\").last(\"1d\") > 734000000",
 	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 650mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
