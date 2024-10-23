@@ -1,4 +1,8 @@
-export { useDripsyTheme as useTheme } from 'dripsy'
-export * from './components'
-export * from './theme/ThemeProvider'
-export * from './utils'
+import Constants from 'expo-constants'
+import { init as initStorybook } from './storybook'
+
+if (Constants.expoConfig?.extra?.storybook === true) {
+  initStorybook()
+} else {
+  module.exports = require('./index.package.ts')
+}
