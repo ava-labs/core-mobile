@@ -24,7 +24,7 @@ describe('Change Pin', () => {
   it('Should set previous Pin', async () => {
     await Actions.waitForElement(SecurityAndPrivacyPage.changePin)
     await SecurityAndPrivacyPage.tapChangePin()
-    await CreatePinPage.enterNewCurrentPin()
+    await CreatePinPage.enterCurrentPin('1')
     await CreatePinPage.createPin()
   })
 })

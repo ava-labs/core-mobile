@@ -188,6 +188,7 @@ export default function SwapView(): JSX.Element {
           <Space y={20} />
 
           <UniversalTokenSelector
+            testID="from_token_selector"
             label={'From'}
             hideZeroBalanceTokens
             onTokenChange={token => {
@@ -226,6 +227,7 @@ export default function SwapView(): JSX.Element {
           </AvaButton.Base>
           <Space y={20} />
           <UniversalTokenSelector
+            testID="to_token_selector"
             label={'To'}
             onTokenChange={token => {
               const tkWithBalance = token as TokenWithBalance
