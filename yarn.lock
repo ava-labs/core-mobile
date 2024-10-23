@@ -314,7 +314,7 @@ __metadata:
     react-native-aes-crypto: 1.3.10
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
-    react-native-bootsplash: 6.1.4
+    react-native-bootsplash: 6.2.2
     react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
@@ -24925,9 +24925,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-bootsplash@npm:6.1.4":
-  version: 6.1.4
-  resolution: "react-native-bootsplash@npm:6.1.4"
+"react-native-bootsplash@npm:6.2.2":
+  version: 6.2.2
+  resolution: "react-native-bootsplash@npm:6.2.2"
   dependencies:
     "@expo/config-plugins": ^8.0.4
     detect-indent: ^6.1.0
@@ -24935,13 +24935,14 @@ __metadata:
     node-html-parser: ^6.1.13
     picocolors: ^1.1.0
     prettier: ^3.3.3
+    react-native-is-edge-to-edge: ^0.1.2
     sharp: ^0.32.6
     ts-dedent: ^2.2.0
     xml-formatter: ^3.6.3
   peerDependencies:
     react: ">=18.1.0"
     react-native: ">=0.70.0"
-  checksum: af1e3c206e411fa2013351cae0576fa543c5498407cb324a3275b6c43d652ecfabb1a8b6268609598698cb465d861e4813f14426ba00d03b4e949e5d7456976f
+  checksum: 7880a84bfd0bb2a12ef5804708b7bb93d87727394cda10243201a4dea5615f64e720311803728ef1278ca4942641559e714ce07dab93a7774bb40fdfd8a1df93
   languageName: node
   linkType: hard
 
@@ -25117,6 +25118,16 @@ __metadata:
   peerDependencies:
     react-native: ">=0.56"
   checksum: b2177addf05cc02a20c5b9b8397c410ccf2fffba6baf1a49fbeb199ceaf4b9d4e959549915c5221f4345f35ec96620ecf25f650a5e268793103d95ffa7e44127
+  languageName: node
+  linkType: hard
+
+"react-native-is-edge-to-edge@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "react-native-is-edge-to-edge@npm:0.1.2"
+  peerDependencies:
+    react: ">=18.2.0"
+    react-native: ">=0.73.0"
+  checksum: 243f7726c710d3bf6e44aa4d9df7bcaaffd1a49c7663422da0e4a3946852e671e4b69146bdb9ff0244c533e3d9ac0c84ae2add76c48067331cb9fbb3b9d23a2b
   languageName: node
   linkType: hard
 
