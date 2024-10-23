@@ -84,3 +84,6 @@ metro.monorepo.config.js
 # Google Services files
 google-services.json*
 GoogleService-Info.plist*
+
+# Expo
+.expo/
