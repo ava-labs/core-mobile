@@ -122,7 +122,7 @@ const OwnedTokenDetail: FC = () => {
     })
     navigate(AppNavigation.Wallet.Swap, {
       screen: AppNavigation.Swap.Swap,
-      params: { initialTokenId: tokenId }
+      params: { initialTokenIdFrom: tokenId, initialTokenIdTo: undefined }
     })
   }
 

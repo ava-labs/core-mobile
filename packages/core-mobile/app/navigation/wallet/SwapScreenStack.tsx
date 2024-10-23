@@ -11,7 +11,9 @@ import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import * as Navigation from 'utils/Navigation'
 
 export type SwapStackParamList = {
-  [AppNavigation.Swap.Swap]: { initialTokenId: string } | undefined
+  [AppNavigation.Swap.Swap]:
+    | { initialTokenIdFrom?: string; initialTokenIdTo?: string }
+    | undefined
 }
 
 const SwapStack = createStackNavigator<SwapStackParamList>()
@@ -45,7 +47,14 @@ function SwapScreenStack(): JSX.Element {
           headerTitle: HeaderTitle,
           headerBackTestID: 'header_back'
         }}>
-        <SwapStack.Screen name={AppNavigation.Swap.Swap} component={SwapView} />
+        <SwapStack.Screen
+          name={AppNavigation.Swap.Swap}
+          component={SwapView}
+          initialParams={{
+            initialTokenIdFrom: 'AvalancheAVAX', //AVAX
+            initialTokenIdTo: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E' //USDC
+          }}
+        />
       </SwapStack.Navigator>
       {isSwapBlocked && (
         <FeatureBlocked

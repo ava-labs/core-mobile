@@ -1,4 +1,16 @@
 {
   "name": "AvaxWallet",
-  "displayName": "Core X"
+  "displayName": "Core Mobile",
+  "slug": "core-wallet",
+  "orientation": "portrait",
+  "userInterfaceStyle": "automatic",
+  "plugins": [
+    "expo-router"
+  ],
+  "expo": {
+    "scheme": "core"
+  },
+  "experiments": {
+    "typedRoutes": true
+  }
 }
