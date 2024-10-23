@@ -11,10 +11,6 @@ import sendPage from './send.page'
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 
 class SwapTabPage {
-  get selectTokenDropdown() {
-    return by.text(swapTab.selectTokenDropdown)
-  }
-
   get avaxToken() {
     return by.text(swapTab.avaxToken)
   }
@@ -63,6 +59,14 @@ class SwapTabPage {
     return by.text(swapTab.swapTitle)
   }
 
+  get fromTokenSelector() {
+    return by.id(swapTab.fromTokenSelector)
+  }
+
+  get toTokenSelector() {
+    return by.id(swapTab.toTokenSelector)
+  }
+
   async tapAvaxToken() {
     return Actions.tapElementAtIndex(this.avaxToken, 0)
   }
@@ -70,9 +74,12 @@ class SwapTabPage {
   async tapUsdcToken() {
     return Actions.tapElementAtIndex(this.usdcToken, 0)
   }
+  async tapFromTokenSelector() {
+    await Actions.tapElementAtIndex(this.fromTokenSelector, 0)
+  }
 
-  async tapSelectTokenDropdown() {
-    await Actions.tapElementAtIndex(this.selectTokenDropdown, 0)
+  async tapToTokenSelector() {
+    await Actions.tapElementAtIndex(this.toTokenSelector, 0)
   }
 
   async tapReviewOrderButton(index = 0) {
@@ -116,11 +123,15 @@ class SwapTabPage {
   async swap(from: string, to: string, amount = '0.00001') {
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapSwapButton()
-    await this.tapSelectTokenDropdown()
-    await sendPage.selectToken(from)
+    if (from !== 'AVAX') {
+      await this.tapFromTokenSelector()
+      await sendPage.selectToken(from)
+    }
+    if (to !== 'USDC') {
+      await this.tapToTokenSelector()
+      await sendPage.selectToken(to)
+    }
     await this.inputTokenAmount(amount)
-    await this.tapSelectTokenDropdown()
-    await sendPage.selectToken(to)
     await this.tapReviewOrderButton()
     try {
       await Actions.waitForElementNoSync(this.tokenSpendApproval, 8000)
@@ -134,7 +145,6 @@ class SwapTabPage {
 
   async verifySwapScreen() {
     await Actions.waitForElement(this.swapTitle)
-    await Actions.waitForElement(this.selectTokenDropdown)
     await Actions.waitForElement(this.disabledReviewOrderBtn)
   }
 }
