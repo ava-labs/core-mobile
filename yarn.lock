@@ -198,7 +198,7 @@ __metadata:
     "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 7.0.3
-    "@metamask/rpc-errors": 6.3.0
+    "@metamask/rpc-errors": 7.0.0
     "@noble/secp256k1": 2.1.0
     "@notifee/react-native": 9.1.1
     "@openzeppelin/contracts": 5.0.2
@@ -6530,6 +6530,16 @@ __metadata:
     "@metamask/utils": ^8.3.0
     fast-safe-stringify: ^2.0.6
   checksum: de79d132f149cba6d2efcf7b17b93d0bad92c7e5c15b3826f889e0b01979883d71acc4445b781098cee13c3837c807ee56f8b03bce78887f6a6bc95de1adfe9d
+  languageName: node
+  linkType: hard
+
+"@metamask/rpc-errors@npm:7.0.0":
+  version: 7.0.0
+  resolution: "@metamask/rpc-errors@npm:7.0.0"
+  dependencies:
+    "@metamask/utils": ^9.0.0
+    fast-safe-stringify: ^2.0.6
+  checksum: 07984f473e9e7c0f57abee53de8da282d113b3e293453858f44b58a43706486b36dfbe2f46de4a92324797a53730f410d32c382f138ef015e250efacb7de2081
   languageName: node
   linkType: hard
 
