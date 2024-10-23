@@ -38,19 +38,22 @@ describe('Add custom network', () => {
     )
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.inputExplorerUrl(NetworksManageLoc.celoExplorerUrl)
+    await Actions.dismissKeyboard(NetworksManageLoc.explorerUrl)
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
     await Assert.isVisible(NetworksManagePage.celoWrongNetworkName)
   })
 
   it('should edit custom network', async () => {
-    await NetworksManagePage.tapNetworkInfo()
+    await NetworksManagePage.tapNetworkInfo(
+      NetworksManageLoc.celoWrongNetworkName
+    )
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapEditNetwork()
     await NetworksManagePage.inputNetworkName(NetworksManageLoc.celoNetworkName)
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
-    await NetworksManagePage.tapHeaderBack()
+    await commonElsPage.goBack()
     await Assert.isVisible(NetworksManagePage.celoNetworkName)
   })
 
@@ -64,7 +67,7 @@ describe('Add custom network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapCustomTab()
-    await NetworksManagePage.tapNetworkInfo()
+    await NetworksManagePage.tapNetworkInfo(NetworksManageLoc.celoNetworkName)
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapDeleteNetwork()
     await NetworksManagePage.tapDeleteNetwork()

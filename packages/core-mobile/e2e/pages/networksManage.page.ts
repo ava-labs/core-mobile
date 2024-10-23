@@ -1,4 +1,5 @@
 import Action from '../helpers/actions'
+import Assert from '../helpers/assertions'
 import networksManage from '../locators/networksManage.loc'
 import { Platform } from '../helpers/constants'
 import PortfolioPage from './portfolio.page'
@@ -54,10 +55,6 @@ class NetworksPage {
     return by.text(networksManage.favoritesTab)
   }
 
-  get headerBack() {
-    return by.id(networksManage.headerBack)
-  }
-
   get inputTextField() {
     return by.id(networksManage.inputTextField)
   }
@@ -74,8 +71,16 @@ class NetworksPage {
     return by.id(networksManage.networkRpcUrl)
   }
 
-  get networkInfo() {
-    return by.id(networksManage.networkInfo)
+  get networkRpcUrlText() {
+    return by.text(networksManage.networkRPCUrlText)
+  }
+
+  get networkTokenSymbol() {
+    return by.text(networksManage.networkTokenSymbol)
+  }
+
+  get networkTokenNameText() {
+    return by.text(networksManage.networkTokenNameText)
   }
 
   get celoWrongNetworkName() {
@@ -130,18 +135,19 @@ class NetworksPage {
     return by.text(networksManage.explorerUrlText)
   }
 
+  get connect() {
+    return by.text(networksManage.connect)
+  }
+
   async tapStarSvgByIndex(index: number) {
     await Action.tapElementAtIndex(this.starSvg, index)
   }
 
   async tapStarSvgByNetwork(network: string) {
-    if (Action.platform() === Platform.iOS) {
-      try {
-        await Action.dismissKeyboard()
-      } catch (e) {
-        console.log('No need to dismiss keyboard')
-      }
+    if (Action.platform() === 'ios') {
+      await Action.dismissKeyboard(networksManage.searchBar)
     }
+    await Action.waitForElement(by.id(`star_svg__${network}`))
     await Action.tap(by.id(`star_svg__${network}`))
   }
 
@@ -181,16 +187,43 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.favoritesTab, 0)
   }
 
-  async tapHeaderBack() {
-    await Action.tapElementAtIndex(this.headerBack, 0)
-  }
-
   async tapNetworksTab() {
     await Action.tapElementAtIndex(this.networksTab, 1)
   }
 
-  async tapNetworkInfo() {
-    await Action.tapElementAtIndex(this.networkInfo, 0)
+  async tapNetworkInfo(network: string) {
+    await Action.waitForElement(by.id(`info_svg__${network}`))
+    await Action.tap(by.id(`info_svg__${network}`))
+  }
+
+  async verifyNetworkDetails({
+    title,
+    url,
+    chainId,
+    tokenSymbol,
+    tokenName,
+    explorerUrl
+  }: {
+    title: string
+    url: string
+    chainId: string
+    tokenSymbol: string
+    tokenName: string
+    explorerUrl: string
+  }) {
+    // Verify Static text
+    await Action.waitForElement(this.networkRpcUrlText)
+    await Assert.isVisible(this.chainIdText)
+    await Assert.isVisible(this.networkTokenSymbol)
+    await Assert.isVisible(this.networkTokenNameText)
+    await Assert.isVisible(this.explorerUrlText)
+    // Verify network Data
+    await Assert.hasText(by.id(`network_details_title__${title}`), title)
+    await Assert.isVisible(by.text(url))
+    await Assert.isVisible(by.text(chainId))
+    await Assert.isVisible(by.text(tokenSymbol))
+    await Assert.isVisible(by.text(tokenName))
+    await Assert.isVisible(by.text(explorerUrl))
   }
 
   async tapSaveButton() {
@@ -289,6 +322,10 @@ class NetworksPage {
     await this.searchNetworks(network)
     await this.tapStarSvgByNetwork(network)
     await Action.tapElementAtIndex(by.text(network), 1)
+  }
+
+  async tapConnect() {
+    await Action.tapElementAtIndex(this.connect, 0)
   }
 }
 

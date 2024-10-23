@@ -36,10 +36,6 @@ class ConnectedSites {
     return by.text(connectedSitesLoc.addNewConnection)
   }
 
-  get backBtn() {
-    return by.id(connectedSitesLoc.backBtn)
-  }
-
   async tapManageBtn() {
     await Actions.tapElementAtIndex(this.manageBtn, 0)
   }
