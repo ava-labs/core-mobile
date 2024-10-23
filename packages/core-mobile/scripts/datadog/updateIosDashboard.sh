@@ -66,7 +66,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@type:action @action.type:application_start @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
+                                                "query": "@type:action @action.type:application_start @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user -version:<$BUILD_NUMBER service:org.avalabs.corewallet @os.name:iOS"
                                             }
                                         }
                                     ],
@@ -145,7 +145,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user -version:<$BUILD_NUMBER service:org.avalabs.corewallet @os.name:iOS"
                                             }
                                         }
                                     ],
@@ -193,7 +193,7 @@ curl -X PUT \
                         "id": 8096566132414896,
                         "definition":
                         {
-                            "title": "Crash free Sessions",
+                            "title": "Crash free Sessions for Version: $BUILD_NUMBER",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "query_value",
@@ -219,7 +219,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @type:session"
+                                                "query": "@session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @type:session -version:<$BUILD_NUMBER service:org.avalabs.corewallet" 
                                             }
                                         },
                                         {
@@ -292,7 +292,7 @@ curl -X PUT \
                         "id": 6590797298281856,
                         "definition":
                         {
-                            "title": "Memory Average",
+                            "title": "Memory Average For Version: $BUILD_NUMBER",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "query_value",
@@ -323,7 +323,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user -version:<$BUILD_NUMBER service:org.avalabs.corewallet @os.name:iOS"
                                             }
                                         }
                                     ],
@@ -1209,68 +1209,6 @@ curl -X PUT \
                         }
                     },
                     {
-                        "id": 4466470907554154,
-                        "definition":
-                        {
-                            "title": "iOS average action loading time (Version: $BUILD_NUMBER)",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "response_format": "scalar",
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "a",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:action @device.type:Mobile -@action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "avg",
-                                                        "order": "desc",
-                                                        "metric": "@action.loading_time"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@action.loading_time"
-                                            },
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "a"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 0,
-                            "y": 6,
-                            "width": 6,
-                            "height": 3
-                        }
-                    },
-                    {
                         "id": 23574404906818,
                         "definition":
                         {
@@ -1492,6 +1430,82 @@ curl -X PUT \
                 "height": 13,
                 "is_column_break": true
             }
+        },
+				{
+            "id": 6674831355259443,
+            "definition":
+            {
+                "time":
+                {},
+                "title": "Avg cpu ticks per view for version $BUILD_NUMBER",
+                "type": "treemap",
+                "requests":
+                [
+                    {
+                        "response_format": "scalar",
+                        "queries":
+                        [
+                            {
+                                "name": "a",
+                                "data_source": "rum",
+                                "search":
+                                {
+                                    "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @view.cpu_ticks_count:* @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                },
+                                "indexes":
+                                [
+                                    "*"
+                                ],
+                                "group_by":
+                                [
+                                    {
+                                        "facet": "@view.name",
+                                        "limit": 10,
+                                        "sort":
+                                        {
+                                            "aggregation": "avg",
+                                            "order": "desc",
+                                            "metric": "@view.cpu_ticks_count"
+                                        },
+                                        "should_exclude_missing": true
+                                    }
+                                ],
+                                "compute":
+                                {
+                                    "aggregation": "avg",
+                                    "metric": "@view.cpu_ticks_count"
+                                },
+                                "storage": "hot"
+                            }
+                        ],
+                        "formulas":
+                        [
+                            {
+                                "formula": "a"
+                            }
+                        ],
+                        "sort":
+                        {
+                            "count": 10,
+                            "order_by":
+                            [
+                                {
+                                    "type": "formula",
+                                    "index": 0,
+                                    "order": "desc"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "layout":
+            {
+                "x": 0,
+                "y": 0,
+                "width": 12,
+                "height": 4
+            }
         }
     ],
     "template_variables":
@@ -1578,12 +1592,12 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold",
 	"type": "rum alert",
 	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
-	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 650mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {
 			"critical": 734000000,
-			"warning": 681570000
+			"warning": 713030000
 		},
 		"enable_logs_sample": false,
 		"notify_audit": false,
@@ -1598,3 +1612,72 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 	}
 }
 EOF
+
+# Updates the monitor for crash free sessions
+echo "Updating monitor for crash free sessions"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156721804" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "Crash Free Sessions has dropped below 100%",
+	"type": "rum alert",
+	"query": "formula(\"(1 - query2 / query1) * 100\").last(\"5m\") < 99",
+	"message": "{{#is_alert}}Crash free sessions has dropped below 99% for version $BUILD_NUMBER! Please check test results and error reports to traceback this crash{{/is_alert}}\n\n{{#is_recovery}}Crash free sessions has returned to 100% for version $BUILD_NUMBER. Nice work!{{/is_recovery}}",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 99
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"variables": [
+			{
+				"data_source": "rum",
+				"name": "query2",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@session.id"
+				},
+				"group_by": [],
+				"search": {
+					"query": "@type:session @session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user service:org.avalabs.corewallet @os.name:iOS -version:<$BUILD_NUMBER"
+				},
+				"storage": "hot"
+			},
+			{
+				"data_source": "rum",
+				"name": "query1",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@session.id"
+				},
+				"group_by": [],
+				"search": {
+					"query": "@type:session @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
+				}
+			}
+		],
+		"include_tags": false,
+		"renotify_interval": 60,
+		"renotify_statuses": [
+			"alert"
+		],
+		"escalation_message": "",
+		"new_host_delay": 300,
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
