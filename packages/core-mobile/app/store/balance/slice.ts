@@ -122,12 +122,12 @@ export const selectTokensWithBalanceByNetwork =
     return state.balance.balances[key]?.tokens ?? []
   }
 
-export const selectTokensWithZeroBalance = (
-  state: RootState
-): LocalTokenWithBalance[] => {
-  const allTokens = selectTokensWithBalance(state)
-  return allTokens.filter(t => t.balance === 0n)
-}
+export const selectTokensWithZeroBalance = createSelector(
+  selectTokensWithBalance,
+  (allTokens: LocalTokenWithBalance[]): LocalTokenWithBalance[] => {
+    return allTokens.filter(t => t.balance === 0n)
+  }
+)
 
 export const selectAvaxPrice = (state: RootState): number => {
   const balances = Object.values(state.balance.balances)
