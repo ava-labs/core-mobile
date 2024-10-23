@@ -1,5 +1,5 @@
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
+  presets: ['babel-preset-expo'],
   plugins: [
     [
       'module-resolver',
@@ -20,7 +20,6 @@ module.exports = {
         }
       }
     ],
-    'react-require',
     'inline-dotenv',
     '@babel/plugin-transform-class-static-block',
     '@babel/plugin-transform-export-namespace-from',
