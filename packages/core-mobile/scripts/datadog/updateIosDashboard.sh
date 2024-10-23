@@ -14,7 +14,6 @@ curl -X PUT \
     "widgets":
     [
         {
-            "id": 3605593076802110,
             "definition":
             {
                 "title": "Overall Performance",
@@ -1276,10 +1275,8 @@ curl -X PUT \
                         "definition":
                         {
                             "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "title": "iOS Latest Internal Build Action Loading time by Action Type(Update with script)",
+                            {},
+                            "title": "iOS Latest Internal Build Action Loading time by Action Type(Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1290,14 +1287,9 @@ curl -X PUT \
                                         {
                                             "name": "a",
                                             "data_source": "rum",
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@action.loading_time"
-                                            },
                                             "search":
                                             {
-                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS"
+                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS -version:<$BUILD_NUMBER"
                                             },
                                             "indexes":
                                             [
@@ -1308,15 +1300,20 @@ curl -X PUT \
                                                 {
                                                     "facet": "@action.name",
                                                     "limit": 10,
-                                                    "should_exclude_missing": true,
                                                     "sort":
                                                     {
                                                         "aggregation": "avg",
                                                         "order": "desc",
                                                         "metric": "@action.loading_time"
-                                                    }
+                                                    },
+                                                    "should_exclude_missing": true
                                                 }
                                             ],
+                                            "compute":
+                                            {
+                                                "aggregation": "avg",
+                                                "metric": "@action.loading_time"
+                                            },
                                             "storage": "hot"
                                         }
                                     ],
@@ -1484,196 +1481,6 @@ curl -X PUT \
                             "width": 6,
                             "height": 3
                         }
-                    },
-                    {
-                        "id": 1105689629788846,
-                        "definition":
-                        {
-                            "title": "% of frozen frames (Version: $BUILD_NUMBER)",
-                            "title_size": "16",
-                            "title_align": "left",
-                            "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "type": "query_table",
-                            "requests":
-                            [
-                                {
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "query1",
-                                            "data_source": "rum",
-                                            "search":
-                                            {
-                                                "query": "@type:view @view.frozen_frame.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "cardinality",
-                                                        "order": "desc",
-                                                        "metric": "@view.id"
-                                                    },
-                                                    "should_exclude_missing": true
-                                                }
-                                            ],
-                                            "compute":
-                                            {
-                                                "aggregation": "cardinality",
-                                                "metric": "@view.id"
-                                            },
-                                            "storage": "hot"
-                                        },
-                                        {
-                                            "data_source": "rum",
-                                            "compute":
-                                            {
-                                                "aggregation": "cardinality",
-                                                "metric": "@view.id"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "version",
-                                                    "limit": 10,
-                                                    "sort":
-                                                    {
-                                                        "metric": "@view.id",
-                                                        "order": "desc",
-                                                        "aggregation": "cardinality"
-                                                    }
-                                                }
-                                            ],
-                                            "name": "query2",
-                                            "search":
-                                            {
-                                                "query": "@application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @type:view"
-                                            }
-                                        }
-                                    ],
-                                    "response_format": "scalar",
-                                    "sort":
-                                    {
-                                        "count": 10,
-                                        "order_by":
-                                        [
-                                            {
-                                                "type": "formula",
-                                                "index": 0,
-                                                "order": "desc"
-                                            }
-                                        ]
-                                    },
-                                    "formulas":
-                                    [
-                                        {
-                                            "cell_display_mode": "bar",
-                                            "formula": "100 * (query1 / query2)"
-                                        }
-                                    ]
-                                }
-                            ],
-                            "has_search_bar": "auto"
-                        },
-                        "layout":
-                        {
-                            "x": 0,
-                            "y": 12,
-                            "width": 4,
-                            "height": 2
-                        }
-                    },
-                    {
-                        "id": 3077574839378720,
-                        "definition":
-                        {
-                            "time":
-                            {
-                                "hide_incomplete_cost_data": true
-                            },
-                            "title": "iOS Build Action Loading Time (Version: $BUILD_NUMBER)",
-                            "type": "treemap",
-                            "requests":
-                            [
-                                {
-                                    "response_format": "scalar",
-                                    "queries":
-                                    [
-                                        {
-                                            "name": "a",
-                                            "data_source": "rum",
-                                            "compute":
-                                            {
-                                                "aggregation": "avg",
-                                                "metric": "@action.loading_time"
-                                            },
-                                            "search":
-                                            {
-                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS service:org.avalabs.corewallet -version:<$BUILD_NUMBER"
-                                            },
-                                            "indexes":
-                                            [
-                                                "*"
-                                            ],
-                                            "group_by":
-                                            [
-                                                {
-                                                    "facet": "@action.name",
-                                                    "limit": 10,
-                                                    "should_exclude_missing": true,
-                                                    "sort":
-                                                    {
-                                                        "aggregation": "avg",
-                                                        "order": "desc",
-                                                        "metric": "@action.loading_time"
-                                                    }
-                                                }
-                                            ],
-                                            "storage": "hot"
-                                        }
-                                    ],
-                                    "formulas":
-                                    [
-                                        {
-                                            "formula": "a"
-                                        }
-                                    ],
-                                    "sort":
-                                    {
-                                        "count": 10,
-                                        "order_by":
-                                        [
-                                            {
-                                                "type": "formula",
-                                                "index": 0,
-                                                "order": "desc"
-                                            }
-                                        ]
-                                    }
-                                }
-                            ]
-                        },
-                        "layout":
-                        {
-                            "x": 4,
-                            "y": 12,
-                            "width": 4,
-                            "height": 2
-                        }
                     }
                 ]
             },
@@ -1682,7 +1489,7 @@ curl -X PUT \
                 "x": 0,
                 "y": 14,
                 "width": 12,
-                "height": 1,
+                "height": 13,
                 "is_column_break": true
             }
         }
