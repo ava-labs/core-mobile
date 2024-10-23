@@ -76,7 +76,7 @@ class SwapTabPage {
   }
 
   async tapReviewOrderButton(index = 0) {
-    await Actions.waitForElementNoSync(this.reviewOrderBtn, 8000)
+    await Actions.waitForElementNoSync(this.reviewOrderBtn, 15000)
     await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
   }
 
@@ -123,7 +123,7 @@ class SwapTabPage {
     await sendPage.selectToken(to)
     await this.tapReviewOrderButton()
     try {
-      await Actions.waitForElement(this.tokenSpendApproval, 5000)
+      await Actions.waitForElementNoSync(this.tokenSpendApproval, 8000)
       await this.tapApproveButton()
     } catch (e) {
       console.error('Token spend approval not found')

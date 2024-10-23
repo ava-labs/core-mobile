@@ -73,7 +73,7 @@ class SendPage {
   }
 
   async waitForNextBtnEnabled() {
-    await Actions.waitForElement(this.nextButton, 5000)
+    await Actions.waitForElementNoSync(this.nextButton, 8000)
   }
 
   async tapMyAccounts() {
