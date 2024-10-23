@@ -392,7 +392,7 @@ curl -X PUT \
                         "id": 8608921316943666,
                         "definition":
                         {
-                            "title": "iOS Views with the most frozen frames",
+                            "title": "iOS Views with the most frozen frames (Version: $BUILD_NUMBER)",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "toplist",
@@ -437,7 +437,7 @@ curl -X PUT \
                                             ],
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\""
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet" 
                                             }
                                         },
                                         {
@@ -530,7 +530,7 @@ curl -X PUT \
                         "id": 527550427816688,
                         "definition":
                         {
-                            "title": "iOS views with the highest percentage of slow renders",
+                            "title": "iOS views with the highest percentage of slow renders (Version: $BUILD_NUMBER)",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "toplist",
@@ -567,7 +567,7 @@ curl -X PUT \
                                             ],
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @view.is_slow_rendered:true"
+                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @view.is_slow_rendered:true service:org.avalabs.corewallet @os.name:iOS -version:<$BUILD_NUMBER"
                                             }
                                         },
                                         {
@@ -660,7 +660,7 @@ curl -X PUT \
                         "id": 7403012191699538,
                         "definition":
                         {
-                            "title": "iOS Long Task Duration by View Name",
+                            "title": "iOS Long Task Duration by View Name (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -673,7 +673,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:long_task @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS"
+                                                "query": "@type:long_task @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS service:org.avalabs.corewallet -version:<$BUILD_NUMBER"
                                             },
                                             "indexes":
                                             [
@@ -1276,7 +1276,7 @@ curl -X PUT \
                         {
                             "time":
                             {},
-                            "title": "iOS Latest Internal Build Action Loading time by Action Type(Version: $BUILD_NUMBER)",
+                            "title": "iOS Latest External Build Action Loading time by Action Type(Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1289,7 +1289,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS -version:<$BUILD_NUMBER"
+                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
