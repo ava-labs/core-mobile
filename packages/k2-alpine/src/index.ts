@@ -1,8 +1,8 @@
 import Constants from 'expo-constants'
-import { init as initStorybook } from './storybook'
+import { registerRootComponent } from 'expo'
 
 if (Constants.expoConfig?.extra?.storybook === true) {
-  initStorybook()
+  registerRootComponent(require('../.storybook').default)
 } else {
   module.exports = require('./index.package.ts')
 }
