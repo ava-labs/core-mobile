@@ -1684,7 +1684,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156807630" \
 {
 	"name": "Click and Tap Actions are excessively slow",
 	"type": "rum alert",
-	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<3930 @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
+	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
 	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-data-platform-alerts",
 	"tags": [],
 	"options": {
