@@ -66,7 +66,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@type:action @action.type:application_start @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user -version:<$BUILD_NUMBER service:org.avalabs.corewallet @os.name:iOS"
+                                                "query": "@type:action @action.type:application_start @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
                                             }
                                         }
                                     ],
@@ -145,7 +145,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user -version:<$BUILD_NUMBER service:org.avalabs.corewallet @os.name:iOS"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
                                             }
                                         }
                                     ],
@@ -193,7 +193,7 @@ curl -X PUT \
                         "id": 8096566132414896,
                         "definition":
                         {
-                            "title": "Crash free Sessions for Version: $BUILD_NUMBER",
+                            "title": "Crash free Sessions",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "query_value",
@@ -219,7 +219,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @type:session -version:<$BUILD_NUMBER service:org.avalabs.corewallet" 
+                                                "query": "@session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @type:session"
                                             }
                                         },
                                         {
@@ -292,7 +292,7 @@ curl -X PUT \
                         "id": 6590797298281856,
                         "definition":
                         {
-                            "title": "Memory Average For Version: $BUILD_NUMBER",
+                            "title": "Memory Average",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "query_value",
@@ -323,7 +323,7 @@ curl -X PUT \
                                             [],
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user -version:<$BUILD_NUMBER service:org.avalabs.corewallet @os.name:iOS"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
                                             }
                                         }
                                     ],
@@ -392,7 +392,7 @@ curl -X PUT \
                         "id": 8608921316943666,
                         "definition":
                         {
-                            "title": "iOS Views with the most frozen frames (Version: $BUILD_NUMBER)",
+                            "title": "iOS Views with the most frozen frames",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "toplist",
@@ -437,7 +437,7 @@ curl -X PUT \
                                             ],
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet" 
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\""
                                             }
                                         },
                                         {
@@ -530,7 +530,7 @@ curl -X PUT \
                         "id": 527550427816688,
                         "definition":
                         {
-                            "title": "iOS views with the highest percentage of slow renders (Version: $BUILD_NUMBER)",
+                            "title": "iOS views with the highest percentage of slow renders",
                             "title_size": "16",
                             "title_align": "left",
                             "type": "toplist",
@@ -567,7 +567,7 @@ curl -X PUT \
                                             ],
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @view.is_slow_rendered:true service:org.avalabs.corewallet @os.name:iOS -version:<$BUILD_NUMBER"
+                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @view.is_slow_rendered:true"
                                             }
                                         },
                                         {
@@ -660,7 +660,7 @@ curl -X PUT \
                         "id": 7403012191699538,
                         "definition":
                         {
-                            "title": "iOS Long Task Duration by View Name (Version: $BUILD_NUMBER)",
+                            "title": "iOS Long Task Duration by View Name (All versions)",
                             "type": "treemap",
                             "requests":
                             [
@@ -673,7 +673,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:long_task @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS service:org.avalabs.corewallet -version:<$BUILD_NUMBER"
+                                                "query": "@type:long_task @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS"
                                             },
                                             "indexes":
                                             [
@@ -1209,12 +1209,12 @@ curl -X PUT \
                         }
                     },
                     {
-                        "id": 23574404906818,
+                        "id": 4466470907554154,
                         "definition":
                         {
                             "time":
                             {},
-                            "title": "iOS Latest External Build Action Loading time by Action Type(Version: $BUILD_NUMBER)",
+                            "title": "iOS average Click or Tap load time (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1227,7 +1227,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1236,7 +1236,7 @@ curl -X PUT \
                                             "group_by":
                                             [
                                                 {
-                                                    "facet": "@action.name",
+                                                    "facet": "version",
                                                     "limit": 10,
                                                     "sort":
                                                     {
@@ -1252,6 +1252,72 @@ curl -X PUT \
                                                 "aggregation": "avg",
                                                 "metric": "@action.loading_time"
                                             },
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "a"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 0,
+                            "y": 6,
+                            "width": 6,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "id": 3077574839378720,
+                        "definition":
+                        {
+                            "time":
+                            {
+                                "hide_incomplete_cost_data": true
+                            },
+                            "title": "iOS Build Action Loading Time (Version: $BUILD_NUMBER)",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "response_format": "scalar",
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "a",
+                                            "data_source": "rum",
+                                            "compute":
+                                            {
+                                                "aggregation": "avg",
+                                                "metric": "@action.loading_time"
+                                            },
+                                            "search":
+                                            {
+                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS service:org.avalabs.corewallet -version:<$BUILD_NUMBER"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "@action.name",
+                                                    "limit": 10,
+                                                    "should_exclude_missing": true,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "avg",
+                                                        "order": "desc",
+                                                        "metric": "@action.loading_time"
+                                                    }
+                                                }
+                                            ],
                                             "storage": "hot"
                                         }
                                     ],
@@ -1425,86 +1491,10 @@ curl -X PUT \
             "layout":
             {
                 "x": 0,
-                "y": 14,
+                "y": 0,
                 "width": 12,
                 "height": 13,
                 "is_column_break": true
-            }
-        },
-				{
-            "id": 6674831355259443,
-            "definition":
-            {
-                "time":
-                {},
-                "title": "Avg cpu ticks per view for version $BUILD_NUMBER",
-                "type": "treemap",
-                "requests":
-                [
-                    {
-                        "response_format": "scalar",
-                        "queries":
-                        [
-                            {
-                                "name": "a",
-                                "data_source": "rum",
-                                "search":
-                                {
-                                    "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @view.cpu_ticks_count:* @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
-                                },
-                                "indexes":
-                                [
-                                    "*"
-                                ],
-                                "group_by":
-                                [
-                                    {
-                                        "facet": "@view.name",
-                                        "limit": 10,
-                                        "sort":
-                                        {
-                                            "aggregation": "avg",
-                                            "order": "desc",
-                                            "metric": "@view.cpu_ticks_count"
-                                        },
-                                        "should_exclude_missing": true
-                                    }
-                                ],
-                                "compute":
-                                {
-                                    "aggregation": "avg",
-                                    "metric": "@view.cpu_ticks_count"
-                                },
-                                "storage": "hot"
-                            }
-                        ],
-                        "formulas":
-                        [
-                            {
-                                "formula": "a"
-                            }
-                        ],
-                        "sort":
-                        {
-                            "count": 10,
-                            "order_by":
-                            [
-                                {
-                                    "type": "formula",
-                                    "index": 0,
-                                    "order": "desc"
-                                }
-                            ]
-                        }
-                    }
-                ]
-            },
-            "layout":
-            {
-                "x": 0,
-                "y": 0,
-                "width": 12,
-                "height": 4
             }
         }
     ],
