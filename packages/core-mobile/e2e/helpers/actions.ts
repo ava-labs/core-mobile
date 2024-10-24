@@ -282,6 +282,16 @@ const getCurrentDateTime = () => {
   return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
 }
 
+const scrollToBottom = async (scrollView: Detox.NativeMatcher) => {
+  await waitForElement(scrollView)
+  await detox.element(scrollView).scrollTo('bottom')
+}
+
+const scrollToTop = async (scrollView: Detox.NativeMatcher) => {
+  await waitForElement(scrollView)
+  await detox.element(scrollView).scrollTo('top')
+}
+
 const scrollListUntil = async (
   scrollToItem: Detox.NativeMatcher,
   scrollList: Detox.NativeMatcher,
@@ -370,5 +380,7 @@ export default {
   clearTextInput,
   getElementTextNoSync,
   drag,
-  shuffleArray
+  shuffleArray,
+  scrollToBottom,
+  scrollToTop
 }

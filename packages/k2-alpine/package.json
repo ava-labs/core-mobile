@@ -3,6 +3,9 @@
   "license": "Limited Ecosystem License",
   "version": "1.0.0",
   "main": "src/index.ts",
+  "react-native": {
+    "main": "expo/AppEntry.js"
+  },
   "scripts": {
     "setup": "yarn allow-scripts",
     "start": "expo start",
@@ -10,7 +13,8 @@
     "ios": "expo start --ios",
     "lint": "eslint .",
     "storybook-generate": "sb-rn-get-stories",
-    "tsc": "tsc -p ."
+    "tsc": "tsc -p .",
+    "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
     "dripsy": "4.3.7",
@@ -45,6 +49,7 @@
     "eslint": "9.9.1",
     "eslint-plugin-avalabs-mobile": "workspace:*",
     "json-stringify-pretty-compact": "4.0.0",
+    "patch-package": "8.0.0",
     "react-dom": "18.3.1",
     "react-native-safe-area-context": "4.11.0",
     "tinycolor2": "1.6.0",

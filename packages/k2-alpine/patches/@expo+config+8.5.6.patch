@@ -1,0 +1,15 @@
+diff --git a/node_modules/@expo/config/build/paths/paths.js b/node_modules/@expo/config/build/paths/paths.js
+index c694a3252c3a7375463cb21f12122be1930b24f7..ff081439c8648abbdc47da32826838cc204d999d 100644
+--- a/node_modules/@expo/config/build/paths/paths.js
++++ b/node_modules/@expo/config/build/paths/paths.js
+@@ -75,9 +75,7 @@ function resolveEntryPoint(projectRoot, {
+   const extensions = (0, _extensions().getBareExtensions)(platforms);
+ 
+   // If the config doesn't define a custom entry then we want to look at the `package.json`s `main` field, and try again.
+-  const {
+-    main
+-  } = pkg;
++  const main = pkg["react-native"]?.main ?? pkg.main
+   if (main && typeof main === 'string') {
+     // Testing the main field against all of the provided extensions - for legacy reasons we can't use node module resolution as the package.json allows you to pass in a file without a relative path and expect it as a relative path.
+     let entry = getFileWithExtensions(projectRoot, main, extensions);
