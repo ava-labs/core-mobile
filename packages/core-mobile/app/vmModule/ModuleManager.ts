@@ -156,10 +156,6 @@ class ModuleManager {
   convertChainIdToCaip2 = (network: Network): string => {
     switch (network.vmName) {
       case NetworkVMType.BITCOIN: {
-        if (network.vmName !== NetworkVMType.BITCOIN) {
-          throw new Error('Unsupported network')
-        }
-
         return getBitcoinCaip2ChainId(!network.isTestnet)
       }
       case NetworkVMType.PVM:
