@@ -67,7 +67,7 @@ export default function SwapView(): JSX.Element {
   useEffect(applyOptimalRateFx, [optimalRate])
   useEffect(calculateMaxFx, [fromToken])
   useEffect(() => {
-    if (params?.initialTokenIdFrom) {
+    if (!fromToken && params?.initialTokenIdFrom) {
       const token = filteredTokenList.find(
         tk => tk.localId === params.initialTokenIdFrom
       )
@@ -75,7 +75,7 @@ export default function SwapView(): JSX.Element {
         setFromToken(token)
       }
     }
-    if (params?.initialTokenIdTo) {
+    if (!toToken && params?.initialTokenIdTo) {
       const token = filteredTokenList.find(
         tk => tk.localId === params.initialTokenIdTo
       )
@@ -83,7 +83,7 @@ export default function SwapView(): JSX.Element {
         setToToken(token)
       }
     }
-  }, [params, filteredTokenList, setFromToken, setToToken])
+  }, [params, filteredTokenList, setFromToken, setToToken, fromToken, toToken])
 
   function validateInputsFx(): void {
     if (fromTokenValue && fromTokenValue.bn === 0n) {
