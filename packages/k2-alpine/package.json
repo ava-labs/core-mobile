@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "dripsy": "4.3.7",
-    "expo": "50.0.20",
+    "expo": "50.0.21",
     "expo-font": "11.10.3",
     "expo-splash-screen": "0.27.6",
     "expo-status-bar": "1.12.1",
