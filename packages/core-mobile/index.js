@@ -7,6 +7,8 @@ import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
 import AppCheckService from 'services/fcm/AppCheckService'
 import Bootsplash from 'react-native-bootsplash'
+import { ExpoRoot } from 'expo-router'
+import React from 'react'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
@@ -30,7 +32,12 @@ Text.defaultProps.allowFontScaling = false
 TextInput.defaultProps = TextInput.defaultProps || {}
 TextInput.defaultProps.allowFontScaling = false
 
-let AppEntryPoint = ContextApp
+function ExpoApp() {
+  const ctx = require.context('./app/new/routes') //Path with src folder
+  return <ExpoRoot context={ctx} />
+}
+
+let AppEntryPoint = DevDebuggingConfig.K2_ALPINE ? ExpoApp : ContextApp
 
 if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   Bootsplash.hide()
