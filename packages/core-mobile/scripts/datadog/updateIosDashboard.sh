@@ -1671,3 +1671,37 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156721804" \
 		"bindings": []
 	}
 }
+EOF
+
+# Updates the monitor for Click or Tap actions
+echo "Updating monitor for click or tap actions"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156807630" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "Click and Tap Actions are excessively slow",
+	"type": "rum alert",
+	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<3930 @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
+	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-data-platform-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 15000000,
+			"warning": 10000000
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"include_tags": true,
+		"new_group_delay": 60,
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
