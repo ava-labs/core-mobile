@@ -435,6 +435,11 @@ workflows:
         - version_code_offset: ""
         - new_version_code: $BUILD_NUMBER
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |- 
+            APP_VERSION=$APP_VERSION
+            BUILD_NUMBER=$BUILD_NUMBER
   _upload-detox-artifacts:
     steps:
     - script-runner@0:
