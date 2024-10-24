@@ -320,7 +320,7 @@ __metadata:
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
     react-native-config: 1.5.3
-    react-native-device-info: 13.0.0
+    react-native-device-info: 13.1.0
     react-native-dialog: 8.2.0
     react-native-fast-image: 8.6.3
     react-native-fs: 2.20.0
@@ -25005,12 +25005,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-device-info@npm:13.0.0":
-  version: 13.0.0
-  resolution: "react-native-device-info@npm:13.0.0"
+"react-native-device-info@npm:13.1.0":
+  version: 13.1.0
+  resolution: "react-native-device-info@npm:13.1.0"
   peerDependencies:
     react-native: "*"
-  checksum: c86822bcdad1bb9d3b93bd750e199964c562d83e076df2f0984e24cadd19db7f8258e125ddede102be2314ed8349d2da2b671c998f70571027b84449773c583a
+  checksum: e05cd870981b8366bcb43f89d8565f123b1c3f727d399db03d7ac5e5cda6d06da3d326d06291e11d4920223dbd3db22631a50e2c3d58d8a8c62e196e59518e8e
   languageName: node
   linkType: hard
 
