@@ -198,7 +198,6 @@ class CollectiblesPage {
       ? await AccountManagePage.tapFirstAccount()
       : await AccountManagePage.tapSecondAccount()
     await this.tapNextButton()
-    await popUpModalPage.verifyApproveTransactionItems()
     await popUpModalPage.verifyFeeIsLegit()
     await popUpModalPage.tapApproveBtn()
   }

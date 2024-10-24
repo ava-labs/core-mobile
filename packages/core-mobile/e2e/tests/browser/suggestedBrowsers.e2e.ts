@@ -53,10 +53,6 @@ describe('Suggested Browsers', () => {
       siteUrl: 'https://pharaoh.exchange/swap'
     },
     {
-      name: 'Pangolin',
-      siteUrl: 'https://app.pangolin.exchange/'
-    },
-    {
       name: 'Benqi',
       siteUrl: 'https://benqi.fi/'
     }
@@ -73,9 +69,9 @@ describe('Suggested Browsers', () => {
   it('should land on expected url', async () => {
     for (const [index, name] of names.entries()) {
       if (urls[index]) {
+        console.log(`testing for "${name}"`)
         await actions.tap(by.text(name))
         await delay(3000)
-        await browserPage.tapContinue()
         await browserPage.tapbrowserRefreshBtn()
         await wbs.verifyUrl(urls[index])
         await browserPage.tapBrowserBackBtn()

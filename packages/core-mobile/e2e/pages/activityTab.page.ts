@@ -64,10 +64,6 @@ class ActivityTabPage {
     return by.id(activityTab.bridgeSVG)
   }
 
-  get headerBack() {
-    return by.id(activityTab.headerBack)
-  }
-
   get linkSVG() {
     return by.id(activityTab.linkIcon)
   }
@@ -94,10 +90,6 @@ class ActivityTabPage {
 
   async tapFilterDropdown() {
     await Action.tap(this.selectFilterDropdown)
-  }
-
-  async tapHeaderBack() {
-    await device.pressBack()
   }
 
   async tapBridgeFilterOption() {

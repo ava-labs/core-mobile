@@ -374,7 +374,9 @@ const ApprovalPopup = (): JSX.Element => {
         onClose={() => {
           rejectAndClose()
         }}>
-        <ScrollView contentContainerStyle={styles.scrollView}>
+        <ScrollView
+          contentContainerStyle={styles.scrollView}
+          testID="approve_popup_scroll_view">
           <Text variant="heading4">{displayData.title}</Text>
           <Space y={12} />
           {renderAlert()}

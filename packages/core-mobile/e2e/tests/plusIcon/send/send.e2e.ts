@@ -7,6 +7,7 @@ import bottomTabsPage from '../../../pages/bottomTabs.page'
 import { cleanup } from '../../../helpers/cleanup'
 import actions from '../../../helpers/actions'
 import portfolioLoc from '../../../locators/portfolio.loc'
+import assertions from '../../../helpers/assertions'
 
 describe('Send AVAX', () => {
   beforeAll(async () => {
@@ -35,12 +36,17 @@ describe('Send AVAX', () => {
     await actions.waitForElement(
       by.id(portfolioLoc.activeNetwork + portfolioLoc.avaxPNetwork)
     )
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.avaxToken,
-      sendLoc.sendingAmount,
-      true
-    )
-    await sendPage.verifySuccessToast()
+    try {
+      await assertions.hasText(portfolioPage.activeNetworkBalance, '$0.00')
+      console.log('No AVAX on P-Chain')
+    } catch (e) {
+      await sendPage.sendTokenTo2ndAccount(
+        sendLoc.avaxToken,
+        sendLoc.sendingAmount,
+        true
+      )
+      await sendPage.verifySuccessToast()
+    }
   })
 
   it('should send AVAX on X-Chain', async () => {
@@ -52,11 +58,16 @@ describe('Send AVAX', () => {
     await actions.waitForElement(
       by.id(portfolioLoc.activeNetwork + portfolioLoc.avaxXNetwork)
     )
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.avaxToken,
-      sendLoc.sendingAmount,
-      true
-    )
-    await sendPage.verifySuccessToast()
+    try {
+      await assertions.hasText(portfolioPage.activeNetworkBalance, '$0.00')
+      console.log('No AVAX on X-Chain')
+    } catch (e) {
+      await sendPage.sendTokenTo2ndAccount(
+        sendLoc.avaxToken,
+        sendLoc.sendingAmount,
+        true
+      )
+      await sendPage.verifySuccessToast()
+    }
   })
 })

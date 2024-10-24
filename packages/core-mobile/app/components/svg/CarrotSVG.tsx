@@ -10,12 +10,12 @@ interface Prop {
   testID?: string
 }
 
-function CarrotSVG({ color, size = 14, direction }: Prop) {
+function CarrotSVG({ color, size = 14, direction }: Prop): JSX.Element {
   const { theme } = useApplicationContext()
 
   const stroke = color || theme.colorIcon1
 
-  function getDegrees() {
+  function getDegrees(): number {
     let degrees = 0
     switch (direction) {
       case 'up':
@@ -41,7 +41,7 @@ function CarrotSVG({ color, size = 14, direction }: Prop) {
       size={size}
       stroke={stroke}
       rotation={getDegrees()}
-      testID="back_btn"
+      testID={direction === 'left' ? 'header_back' : 'carrot_svg'}
     />
   ) : (
     <Carrot size={size} stroke={stroke} testID="carrot_svg" />
@@ -58,7 +58,7 @@ const Carrot = ({
   stroke: string
   rotation?: number
   testID?: string
-}) => (
+}): JSX.Element => (
   <View style={{ transform: [{ rotate: `${rotation}deg` }] }}>
     <Svg
       width={size}

@@ -117,7 +117,9 @@ const ActiveNetworkCard = (): JSX.Element => {
             </Text>
           </View>
           <View sx={{ alignItems: 'flex-end' }}>
-            <Text variant="heading6">{balance}</Text>
+            <Text testID="active_network_balance" variant="heading6">
+              {balance}
+            </Text>
             <PriceChangeIndicator
               price={tokenPortfolioPriceChange}
               textVariant="buttonSmall"
