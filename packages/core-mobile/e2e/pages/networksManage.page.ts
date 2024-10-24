@@ -143,8 +143,8 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.starSvg, index)
   }
 
-  async tapStarSvgByNetwork(network: string) {
-    if (Action.platform() === 'ios') {
+  async tapStarSvgByNetwork(network: string, isKeyboardUp = true) {
+    if (isKeyboardUp && Action.platform() === 'ios') {
       await Action.dismissKeyboard(networksManage.searchBar)
     }
     await Action.waitForElement(by.id(`star_svg__${network}`))
