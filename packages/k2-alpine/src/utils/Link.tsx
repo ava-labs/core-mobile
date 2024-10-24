@@ -1,11 +1,12 @@
 import React from 'react'
-import { Linking, StyleProp, ViewStyle } from 'react-native'
+import { Linking, StyleProp, TextStyle } from 'react-native'
 import { Text } from '../components/Primitives'
 
 type Props = {
   title: string
   url: string
-  style?: StyleProp<ViewStyle>
+  style?: StyleProp<TextStyle>
+  color?: string
 }
 
 const Link = ({ title, url, style }: Props): JSX.Element => {
@@ -20,10 +21,7 @@ const Link = ({ title, url, style }: Props): JSX.Element => {
         {
           textDecorationLine: 'underline'
         }
-      ]}
-      sx={{
-        color: '$textPrimary'
-      }}>
+      ]}>
       {title}
     </Text>
   )
