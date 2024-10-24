@@ -1,8 +1,4 @@
-import Constants from 'expo-constants'
-import { registerRootComponent } from 'expo'
-
-if (Constants.expoConfig?.extra?.storybook === true) {
-  registerRootComponent(require('../.storybook').default)
-} else {
-  module.exports = require('./index.package.ts')
-}
+export { useDripsyTheme as useTheme } from 'dripsy'
+export * from './components'
+export * from './theme/ThemeProvider'
+export * from './utils'
