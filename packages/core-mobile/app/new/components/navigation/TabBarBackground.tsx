@@ -9,7 +9,7 @@ const TabBarBackground = (): JSX.Element => {
   const colorScheme = useColorScheme()
 
   return (
-    <View sx={{ overflow: 'hidden' }}>
+    <View sx={{ overflow: 'hidden', backgroundColor: 'transparent' }}>
       <BlurView
         blurType={colorScheme === 'dark' ? 'dark' : 'xlight'}
         style={{ height: bottom + BOTTOM_TAB_BAR_HEIGHT }}
