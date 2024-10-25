@@ -2,7 +2,6 @@ import React from 'react'
 import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
-import { useColorScheme } from 'react-native'
 import StorybookUI from './.storybook'
 import { K2AlpineThemeProvider } from './src'
 
@@ -16,7 +15,6 @@ export default function RootLayout(): React.JSX.Element | null {
     'Inter-Regular': require('./src/assets/fonts/Inter-Regular.ttf'),
     'Inter-SemiBold': require('./src/assets/fonts/Inter-SemiBold.ttf')
   })
-  const colorScheme = useColorScheme()
 
   useEffect(() => {
     if (loaded || error) {
@@ -29,7 +27,7 @@ export default function RootLayout(): React.JSX.Element | null {
   }
 
   return (
-    <K2AlpineThemeProvider colorScheme={colorScheme}>
+    <K2AlpineThemeProvider>
       <StorybookUI />
     </K2AlpineThemeProvider>
   )

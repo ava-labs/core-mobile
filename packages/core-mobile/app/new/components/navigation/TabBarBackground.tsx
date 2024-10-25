@@ -1,20 +1,17 @@
 import React from 'react'
-import { BlurView } from '@react-native-community/blur'
-import { View } from '@avalabs/k2-alpine'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Platform, useColorScheme } from 'react-native'
+import { Platform } from 'react-native'
+import BlurBackgroundView from '../BlurBackgroundView'
 
 const TabBarBackground = (): JSX.Element => {
   const { bottom } = useSafeAreaInsets()
-  const colorScheme = useColorScheme()
 
   return (
-    <View sx={{ overflow: 'hidden', backgroundColor: 'transparent' }}>
-      <BlurView
-        blurType={colorScheme === 'dark' ? 'dark' : 'xlight'}
-        style={{ height: bottom + BOTTOM_TAB_BAR_HEIGHT }}
-      />
-    </View>
+    <BlurBackgroundView
+      sx={{
+        height: bottom + BOTTOM_TAB_BAR_HEIGHT
+      }}
+    />
   )
 }
 

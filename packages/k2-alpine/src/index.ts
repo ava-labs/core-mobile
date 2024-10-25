@@ -1,5 +1,5 @@
 export { useDripsyTheme as useTheme } from 'dripsy'
+export type { SxProp, Sx } from 'dripsy'
 export * from './components'
 export * from './theme/ThemeProvider'
-export * from './theme/theme'
 export * from './utils'
