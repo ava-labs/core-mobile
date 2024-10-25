@@ -8,7 +8,7 @@ export default {
   saveButton: 'Save',
   securityAndPrivacy: 'Security & Privacy',
   showRecoveryPhrase: 'Show recovery phrase',
-  carrotSvg: 'carrot_svg',
+
   notifications: 'Notifications',
   deleteWalletBtn: 'Delete Wallet',
   iUnderstand: 'I understand, continue'

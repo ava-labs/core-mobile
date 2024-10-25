@@ -30,6 +30,11 @@ export default {
   completedStatusBtcAvaxMainnet: '6/6',
   completedStatusBtcAvaxTestnet: '4/4',
   bridgeTitle: 'Bridge',
-  bridgeBtn: 'transfer_btn',
-  receive: 'Receive'
+  bridgeBtn: 'bridge_btn',
+  receive: 'Receive',
+  bridgeToggleBtn: 'bridge_toggle_btn',
+  selectedToken: 'selected_token',
+  toNetwork: 'to_blockchain',
+  fromNetwork: 'from_blockchain',
+  error: 'bridge_error'
 }
