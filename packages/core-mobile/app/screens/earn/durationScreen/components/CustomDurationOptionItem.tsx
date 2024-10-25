@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import {
@@ -23,6 +23,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { differenceInMilliseconds } from 'date-fns'
 import { useNow } from 'hooks/time/useNow'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { UTCDate } from '@date-fns/utc'
 
 export const CustomDurationOptionItem = ({
   stakeAmount,
@@ -31,37 +32,45 @@ export const CustomDurationOptionItem = ({
   handleDateConfirm
 }: {
   stakeAmount: TokenUnit
-  stakeEndTime: Date
+  stakeEndTime: UTCDate
   onRadioSelect: (item: DurationOption) => void
-  handleDateConfirm: (dateInput: Date) => void
+  handleDateConfirm: (dateInput: UTCDate) => void
 }): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
-  const currentDate = useNow()
+  const currentUnix = useNow()
   const { theme } = useApplicationContext()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
+  const stakeEndTimeLocal = useMemo(
+    () => new Date(stakeEndTime.getTime()),
+    [stakeEndTime]
+  )
 
   const minimumStakeEndDate = getMinimumStakeEndTime(
     isDeveloperMode,
-    currentDate
+    new UTCDate(currentUnix)
   )
   const maximumStakeEndDate = getMaximumStakeEndDate()
 
-  const stakeDurationUnixMs = differenceInMilliseconds(
+  const stakeDurationMs = differenceInMilliseconds(
     stakeEndTime,
-    currentDate
+    new UTCDate(currentUnix)
   )
 
-  const stakeDurationUnixSec = convertToSeconds(
-    BigInt(stakeDurationUnixMs) as MilliSeconds
+  const stakeDurationSec = convertToSeconds(
+    BigInt(stakeDurationMs) as MilliSeconds
   )
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakeAmount,
-    duration: stakeDurationUnixSec,
+    duration: stakeDurationSec,
     delegationFee: 2
   })
 
   const estimatedRewardsInAvax = data?.estimatedTokenReward
+
+  function handleDateSelected(date: Date): void {
+    handleDateConfirm(new UTCDate(date.getTime()))
+  }
 
   return (
     <View
@@ -94,8 +103,8 @@ export const CustomDurationOptionItem = ({
         <Space x={8} />
       </Row>
       <CalendarInput
-        date={stakeEndTime}
-        onDateSelected={handleDateConfirm}
+        date={stakeEndTimeLocal}
+        onDateSelected={handleDateSelected}
         isDatePickerVisible={isDatePickerVisible}
         setIsDatePickerVisible={setIsDatePickerVisible}
         placeHolder="Select a date"
