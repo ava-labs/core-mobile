@@ -16,30 +16,31 @@ import { BackButton } from 'components/BackButton'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { UTCDate } from '@date-fns/utc'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
   [AppNavigation.StakeSetup.SmartStakeAmount]: undefined
   [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: Avax }
   [AppNavigation.StakeSetup.AdvancedStaking]: {
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     stakingAmount: Avax
     selectedDuration: string
   }
   [AppNavigation.StakeSetup.SelectNode]: {
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     stakingAmount: Avax
     minUpTime?: number
     maxFee?: number
   }
   [AppNavigation.StakeSetup.NodeSearch]: {
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     stakingAmount: Avax
   }
   [AppNavigation.StakeSetup.Confirmation]: {
     nodeId: string
     stakingAmount: Avax
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     onBack?: () => void
   }
   [AppNavigation.StakeSetup.Cancel]: undefined

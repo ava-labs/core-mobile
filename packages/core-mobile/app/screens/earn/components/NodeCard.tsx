@@ -23,6 +23,7 @@ import { Avax } from 'types/Avax'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { usePeers } from 'hooks/earn/usePeers'
+import { UTCDate } from '@date-fns/utc'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -36,7 +37,7 @@ export const NodeCard = ({
 }: {
   data: NodeValidator
   stakingAmount: Avax
-  stakingEndTime: Date
+  stakingEndTime: UTCDate
 }): JSX.Element => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)

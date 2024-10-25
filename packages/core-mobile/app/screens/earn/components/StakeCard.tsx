@@ -16,6 +16,7 @@ import { TabsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { estimatesTooltipText } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
+import { UTCDate } from '@date-fns/utc'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -60,7 +61,7 @@ export const StakeCard = (props: Props): JSX.Element => {
     switch (status) {
       case StakeStatus.Ongoing: {
         const remainingTime = getReadableDateDuration(
-          fromUnixTime(props.endTimestamp || 0)
+          new UTCDate(props.endTimestamp || 0)
         )
         return (
           <AvaText.Caption color={theme.colorText1}>

@@ -181,6 +181,7 @@ __metadata:
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
     "@datadog/mobile-react-native": 2.4.3
     "@datadog/mobile-react-navigation": 2.4.3
+    "@date-fns/utc": 2.1.0
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 4.4.0
     "@ethereumjs/tx": 5.4.0
@@ -266,7 +267,7 @@ __metadata:
     browserify-zlib: 0.2.0
     camelcase-keys: 9.1.3
     crypto-browserify: 3.12.0
-    date-fns: 2.28.0
+    date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
     detox: 20.27.0
     es6-promise: 4.2.8
@@ -3348,6 +3349,13 @@ __metadata:
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
   checksum: 90d7efd11664d23118521277980784da2c0a30f805df0c11fc3cda077f8347379af5862d5211b098ea21a2136f642b09e6e4546b2254e8aba27c62551becde08
+  languageName: node
+  linkType: hard
+
+"@date-fns/utc@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@date-fns/utc@npm:2.1.0"
+  checksum: 924ca45afa948a6f618ade184e490deb6d0cfdaab40ac833afd409cf5fc0b09cfab14e37c4503a790711178a5e27e2a68172f15208cd9e0542d635aa24ab4113
   languageName: node
   linkType: hard
 
@@ -14227,10 +14235,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:2.28.0":
-  version: 2.28.0
-  resolution: "date-fns@npm:2.28.0"
-  checksum: a0516b2e4f99b8bffc6cc5193349f185f195398385bdcaf07f17c2c4a24473c99d933eb0018be4142a86a6d46cb0b06be6440ad874f15e795acbedd6fd727a1f
+"date-fns@npm:4.1.0":
+  version: 4.1.0
+  resolution: "date-fns@npm:4.1.0"
+  checksum: fb681b242cccabed45494468f64282a7d375ea970e0adbcc5dcc92dcb7aba49b2081c2c9739d41bf71ce89ed68dd73bebfe06ca35129490704775d091895710b
   languageName: node
   linkType: hard
 

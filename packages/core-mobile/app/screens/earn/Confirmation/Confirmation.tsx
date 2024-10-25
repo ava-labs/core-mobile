@@ -81,8 +81,15 @@ export const Confirmation = (): JSX.Element | null => {
     deductedStakingAmount = stakingAmount
   }
 
+  const validatorEndTimeUnix = useMemo(() => {
+    if (validator?.endTime) {
+      return Number(validator?.endTime)
+    }
+    return 0
+  }, [validator?.endTime])
+
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
-    useValidateStakingEndTime(stakingEndTime, validator?.endTime ?? '')
+    useValidateStakingEndTime(stakingEndTime, validatorEndTimeUnix)
 
   const { data } = useEarnCalcEstimatedRewards({
     amount: deductedStakingAmount,
