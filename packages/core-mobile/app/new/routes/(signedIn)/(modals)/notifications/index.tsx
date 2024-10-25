@@ -10,9 +10,7 @@ const NotificationsScreen = (): JSX.Element => {
         justifyContent: 'center',
         gap: 16
       }}>
-      <Text variant="heading3" sx={{ color: 'black' }}>
-        Notifications
-      </Text>
+      <Text variant="heading3">Notifications</Text>
     </View>
   )
 }

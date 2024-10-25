@@ -1,4 +1,11 @@
-import { styled, Text as DripsyText } from 'dripsy'
+import {
+  styled,
+  Text as DripsyText,
+  ScrollView as DripsyScrollView,
+  View as DripsyView,
+  FlatList as DripsyFlatList,
+  SafeAreaView as DripsySafeAreaView
+} from 'dripsy'
 import {
   TouchableHighlight as RNTouchableHighlight,
   TouchableOpacity as RNTouchableOpacity
@@ -17,13 +24,32 @@ export const Text = styled(DripsyText, {
   color: '$textPrimary'
 })
 
-export {
-  View,
-  TextInput,
-  Image,
-  ScrollView,
-  Pressable,
-  FlatList,
-  SafeAreaView,
-  ActivityIndicator
-} from 'dripsy'
+export const ScrollView = styled(
+  DripsyScrollView,
+  {}
+)({
+  backgroundColor: '$surfacePrimary'
+})
+
+export const View = styled(
+  DripsyView,
+  {}
+)({
+  backgroundColor: '$surfacePrimary'
+})
+
+export const FlatList = styled(
+  DripsyFlatList,
+  {}
+)({
+  backgroundColor: '$surfacePrimary'
+})
+
+export const SafeAreaView = styled(
+  DripsySafeAreaView,
+  {}
+)({
+  backgroundColor: '$surfacePrimary'
+})
+
+export { TextInput, Image, Pressable, ActivityIndicator } from 'dripsy'
