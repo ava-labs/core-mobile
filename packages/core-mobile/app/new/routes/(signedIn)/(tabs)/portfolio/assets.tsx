@@ -17,9 +17,7 @@ const PortfolioAssetsScreen = (): JSX.Element => {
           gap: 16
         }}>
         <View>
-          <Text variant="heading3" sx={{ color: 'black' }}>
-            Assets
-          </Text>
+          <Text variant="heading3">Assets</Text>
         </View>
       </ScrollView>
     </BlurredBarsContentLayout>

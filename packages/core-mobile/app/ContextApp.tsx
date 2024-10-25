@@ -38,7 +38,7 @@ const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
       <PosthogContextProvider>
-        <K2AlpineThemeProvider>
+        <K2AlpineThemeProvider colorScheme={'dark'}>
           <K2ThemeProvider>
             <ApplicationContextProvider>
               <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
