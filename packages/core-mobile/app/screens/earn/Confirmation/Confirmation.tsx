@@ -90,6 +90,9 @@ export const Confirmation = (): JSX.Element | null => {
 
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakingEndTime, validatorEndTimeUnix)
+  const localValidatedStakingEndTime = useMemo(() => {
+    return new Date(validatedStakingEndTime.getTime())
+  }, [validatedStakingEndTime])
 
   const { data } = useEarnCalcEstimatedRewards({
     amount: deductedStakingAmount,
@@ -349,7 +352,7 @@ export const Confirmation = (): JSX.Element | null => {
             {getReadableDateDuration(validatedStakingEndTime)}
           </AvaText.Heading3>
           <AvaText.Body1>
-            {format(validatedStakingEndTime, 'MM/dd/yy  H:mm aa')}
+            {format(localValidatedStakingEndTime, 'MM/dd/yy  H:mm aa')}
           </AvaText.Body1>
         </Row>
       </View>
