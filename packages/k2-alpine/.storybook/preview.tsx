@@ -1,7 +1,6 @@
 import type { Preview } from '@storybook/react'
 import React from 'react'
 import { withBackgrounds } from '@storybook/addon-ondevice-backgrounds'
-import { K2AlpineThemeProvider } from '../src/theme/ThemeProvider'
 import { View } from 'react-native'
 
 const preview: Preview = {
@@ -32,9 +31,7 @@ const preview: Preview = {
       </View>
     ),
     Story => (
-      <K2AlpineThemeProvider>
-        <Story />
-      </K2AlpineThemeProvider>
+      <Story />
     ),
     withBackgrounds
   ]

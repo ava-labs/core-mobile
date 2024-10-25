@@ -12,9 +12,7 @@ const StakeHomeScreen = (): JSX.Element => {
           justifyContent: 'center',
           gap: 16
         }}>
-        <Text variant="heading3" sx={{ color: 'black' }}>
-          Stake
-        </Text>
+        <Text variant="heading3">Stake</Text>
       </View>
     </BlurredBarsContentLayout>
   )

@@ -10,9 +10,7 @@ const ReceiveScreen = (): JSX.Element => {
         justifyContent: 'center',
         gap: 16
       }}>
-      <Text variant="heading3" sx={{ color: 'black' }}>
-        Receive
-      </Text>
+      <Text variant="heading3">Receive</Text>
     </View>
   )
 }

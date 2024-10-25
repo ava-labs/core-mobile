@@ -14,10 +14,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
           gap: 16
         }}>
         <View sx={{ height: 100, width: 200, backgroundColor: 'orange' }} />
-        <Text variant="heading3" sx={{ color: 'black' }}>
-          Portfolio
-        </Text>
-        <Link href="/portfolio/assets">Go to Portfolio Assets</Link>
+        <Text variant="heading3">Portfolio</Text>
+        <Link href="/portfolio/assets">
+          <Text>Go to Portfolio Assets</Text>
+        </Link>
         <View sx={{ height: 800, width: 200, backgroundColor: 'blue' }} />
         <View />
       </ScrollView>
