@@ -9,7 +9,7 @@ import { Animated } from 'react-native'
 import Grabber from 'new/components/navigation/Grabber'
 import BackBarButton from 'new/components/navigation/BackBarButton'
 import HeaderBackground from 'new/components/navigation/HeaderBackground'
-import { View } from '@avalabs/k2-alpine'
+import { Text, View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
@@ -104,13 +104,19 @@ export const modalFirstScreenOptions: StackNavigationOptions = {
 export const homeScreenOptions: StackNavigationOptions = {
   headerLeft: () => (
     <View sx={{ marginLeft: 12 }}>
-      <Link href="/settings/">Account</Link>
+      <Link href="/settings/">
+        <Text>Account</Text>
+      </Link>
     </View>
   ),
   headerRight: () => (
     <View sx={{ flexDirection: 'row', gap: 12, marginRight: 12 }}>
-      <Link href="/receive/">Receive</Link>
-      <Link href="/notifications/">Notifications</Link>
+      <Link href="/receive/">
+        <Text>Receive</Text>
+      </Link>
+      <Link href="/notifications/">
+        <Text>Notifications</Text>
+      </Link>
     </View>
   )
 }

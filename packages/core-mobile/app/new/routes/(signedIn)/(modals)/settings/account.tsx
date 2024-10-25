@@ -6,10 +6,10 @@ const AccountScreen = (): JSX.Element => {
   return (
     <View
       sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-      <Text variant="heading3" sx={{ color: 'black' }}>
-        Account Settings
-      </Text>
-      <Link href="">Delete Wallet</Link>
+      <Text variant="heading3">Account Settings</Text>
+      <Link href="">
+        <Text>Delete Wallet</Text>
+      </Link>
     </View>
   )
 }

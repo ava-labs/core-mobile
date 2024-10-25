@@ -2,14 +2,18 @@ import React from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurView } from '@react-native-community/blur'
 import { View } from '@avalabs/k2-alpine'
-import { Platform } from 'react-native'
+import { Platform, useColorScheme } from 'react-native'
 
 const HeaderBackground = (): JSX.Element => {
   const { top } = useSafeAreaInsets()
+  const colorScheme = useColorScheme()
 
   return (
     <View sx={{ overflow: 'hidden' }}>
-      <BlurView blurType="xlight" style={{ height: top + HEADER_HEIGHT }} />
+      <BlurView
+        blurType={colorScheme === 'dark' ? 'dark' : 'xlight'}
+        style={{ height: top + HEADER_HEIGHT }}
+      />
     </View>
   )
 }
