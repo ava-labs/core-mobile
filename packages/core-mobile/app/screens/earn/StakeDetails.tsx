@@ -22,6 +22,7 @@ import { RewardType } from '@avalabs/glacier-sdk'
 import { isOnGoing } from 'utils/earn/status'
 import { estimatesTooltipText } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
+import { UTCDate } from '@date-fns/utc'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
@@ -79,7 +80,9 @@ const StakeDetails = (): JSX.Element | null => {
 
   const renderActiveDetails = (): JSX.Element => {
     const formattedEndDate = format(endDate, 'LLLL d, yyyy, H:mm aa')
-    const remainingTime = humanize(getReadableDateDuration(endDate))
+    const remainingTime = humanize(
+      getReadableDateDuration(new UTCDate(endDate.getTime()))
+    )
     const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxFormatter(
       stake.estimatedReward,
       true

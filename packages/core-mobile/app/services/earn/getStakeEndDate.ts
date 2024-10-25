@@ -1,24 +1,39 @@
-import { addDays, addMonths, addWeeks, addYears } from 'date-fns'
-import { UnixTimeMs } from 'services/earn/types'
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  addYears,
+  fromUnixTime,
+  getUnixTime
+} from 'date-fns'
+import { UnixTime, UnixTimeMs } from 'services/earn/types'
+import { utc } from '@date-fns/utc/utc'
+import { UTCDate } from '@date-fns/utc'
 import { getMinimumStakeEndTime } from './utils'
 
-export const getStakeEndDate = (
-  curentDate: Date,
-  stakeDurationFormat: StakeDurationFormat,
-  stakeDurationValue: number,
+export const getStakeEndDate = ({
+  startDateUnix,
+  stakeDurationFormat,
+  stakeDurationValue,
+  isDeveloperMode
+}: {
+  startDateUnix: UnixTime
+  stakeDurationFormat: StakeDurationFormat
+  stakeDurationValue: number
   isDeveloperMode: boolean
-) => {
+}): UnixTimeMs => {
+  const currentDate = fromUnixTime(startDateUnix, { in: utc })
   switch (stakeDurationFormat) {
     case StakeDurationFormat.Day:
-      return addDays(curentDate, stakeDurationValue)
+      return getUnixTime(addDays(currentDate, stakeDurationValue))
     case StakeDurationFormat.Week:
-      return addWeeks(curentDate, stakeDurationValue)
+      return getUnixTime(addWeeks(currentDate, stakeDurationValue))
     case StakeDurationFormat.Month:
-      return addMonths(curentDate, stakeDurationValue)
+      return getUnixTime(addMonths(currentDate, stakeDurationValue))
     case StakeDurationFormat.Year:
-      return addYears(curentDate, stakeDurationValue)
+      return getUnixTime(addYears(currentDate, stakeDurationValue))
     case StakeDurationFormat.Custom:
-      return getMinimumStakeEndTime(isDeveloperMode, curentDate)
+      return getUnixTime(getMinimumStakeEndTime(isDeveloperMode, currentDate))
   }
 }
 export const getStakeDuration = (
@@ -26,7 +41,7 @@ export const getStakeDuration = (
   stakeDurationValue: number,
   isDeveloperMode: boolean
 ): UnixTimeMs => {
-  const currentTime = new Date()
+  const currentTime = new UTCDate()
   const currentTimeUnix = currentTime.getTime()
   switch (stakeDurationFormat) {
     case StakeDurationFormat.Day:
