@@ -12,9 +12,7 @@ const BrowserHomeScreen = (): JSX.Element => {
           justifyContent: 'center',
           gap: 16
         }}>
-        <Text variant="heading3" sx={{ color: 'black' }}>
-          Browser
-        </Text>
+        <Text variant="heading3">Browser</Text>
       </View>
     </BlurredBarsContentLayout>
   )

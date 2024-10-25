@@ -12,9 +12,7 @@ const ContactsHomeScreen = (): JSX.Element => {
           justifyContent: 'center',
           gap: 16
         }}>
-        <Text variant="heading3" sx={{ color: 'black' }}>
-          Contacts
-        </Text>
+        <Text variant="heading3">Contacts</Text>
       </View>
     </BlurredBarsContentLayout>
   )

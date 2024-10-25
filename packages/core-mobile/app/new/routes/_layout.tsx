@@ -5,6 +5,7 @@ import Bootsplash from 'react-native-bootsplash'
 import React from 'react'
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { Stack } from 'new/components/navigation/Stack'
+import NavigationThemeProvider from 'new/utils/navigation/NavigationThemeProvider'
 
 export default function RootLayout(): JSX.Element | null {
   useEffect(() => {
@@ -13,11 +14,13 @@ export default function RootLayout(): JSX.Element | null {
 
   return (
     <K2AlpineThemeProvider>
-      <Stack screenOptions={{ headerShown: false, animationEnabled: false }}>
-        <Stack.Screen name="(signedIn)" />
-        <Stack.Screen name="signup" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <NavigationThemeProvider>
+        <Stack screenOptions={{ headerShown: false, animationEnabled: false }}>
+          <Stack.Screen name="(signedIn)" />
+          <Stack.Screen name="signup" />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </NavigationThemeProvider>
     </K2AlpineThemeProvider>
   )
 }

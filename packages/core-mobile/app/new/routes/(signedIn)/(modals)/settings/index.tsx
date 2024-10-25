@@ -11,11 +11,9 @@ const SettingsScreen = (): JSX.Element => {
         justifyContent: 'center',
         gap: 16
       }}>
-      <Text variant="heading3" sx={{ color: 'black' }}>
-        Settings
-      </Text>
+      <Text variant="heading3">Settings</Text>
       <Link href="/settings/account">
-        <Text sx={{ color: 'black' }}>Go to Account Setting</Text>
+        <Text>Go to Account Setting</Text>
       </Link>
     </View>
   )
