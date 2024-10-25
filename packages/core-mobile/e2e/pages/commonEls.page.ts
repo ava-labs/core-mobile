@@ -63,7 +63,6 @@ class CommonElsPage {
   }
 
   async tapCarrotSVG(index = 0) {
-    await Actions.getAttributes(this.carrotSVG)
     await Actions.tapElementAtIndex(this.carrotSVG, index)
   }
 

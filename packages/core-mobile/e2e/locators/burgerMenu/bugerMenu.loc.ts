@@ -8,7 +8,6 @@ export default {
   saveButton: 'Save',
   securityAndPrivacy: 'Security & Privacy',
   showRecoveryPhrase: 'Show recovery phrase',
-
   notifications: 'Notifications',
   deleteWalletBtn: 'Delete Wallet',
   iUnderstand: 'I understand, continue'
