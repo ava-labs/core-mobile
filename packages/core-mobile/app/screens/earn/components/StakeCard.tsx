@@ -21,6 +21,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { useSelector } from 'react-redux'
 import { getXPChainTokenUnit } from 'utils/units/knownTokens'
+import { UTCDate } from '@date-fns/utc'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -68,7 +69,7 @@ export const StakeCard = (props: Props): JSX.Element => {
     switch (status) {
       case StakeStatus.Ongoing: {
         const remainingTime = getReadableDateDuration(
-          fromUnixTime(props.endTimestamp || 0)
+          new UTCDate(props.endTimestamp || 0)
         )
         return (
           <AvaText.Caption color={theme.colorText1}>
