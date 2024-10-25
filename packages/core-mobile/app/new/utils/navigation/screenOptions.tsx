@@ -103,14 +103,20 @@ export const modalFirstScreenOptions: StackNavigationOptions = {
 
 export const homeScreenOptions: StackNavigationOptions = {
   headerLeft: () => (
-    <View sx={{ marginLeft: 12 }}>
+    <View sx={{ marginLeft: 12, backgroundColor: 'transparent' }}>
       <Link href="/settings/">
         <Text>Account</Text>
       </Link>
     </View>
   ),
   headerRight: () => (
-    <View sx={{ flexDirection: 'row', gap: 12, marginRight: 12 }}>
+    <View
+      sx={{
+        flexDirection: 'row',
+        gap: 12,
+        marginRight: 12,
+        backgroundColor: 'transparent'
+      }}>
       <Link href="/receive/">
         <Text>Receive</Text>
       </Link>
