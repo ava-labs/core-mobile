@@ -57,7 +57,7 @@ class DeviceInfoService {
     return manufacturer
   }
 
-  getDeviceModel = (): string | undefined => {
+  getDeviceModel = (): string => {
     if (this.deviceModel) return this.deviceModel
 
     const model = DeviceInfo.getDeviceId()
