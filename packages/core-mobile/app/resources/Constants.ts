@@ -114,7 +114,12 @@ export enum COLORS_NIGHT {
   blueLight = '#6AC0FF'
 }
 
-export const SECURE_ACCESS_SET = 'secureAccessSet'
+export enum StorageKey {
+  SECURE_ACCESS_SET = 'secureAccessSet',
+  POSTHOG_SUSPENDED = 'POSTHOG_SUSPENDED',
+  HAS_MIGRATED_FROM_ASYNC_STORAGE = 'hasMigratedFromAsyncStorage',
+  K2_ALPINE = 'k2Alpine'
+}
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
 

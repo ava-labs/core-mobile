@@ -14,6 +14,7 @@ export type AddDelegatorTransactionProps = {
 }
 
 export type UnixTimeMs = number
+export type UnixTime = number
 
 export type CollectTokensForStakingParams = {
   /**

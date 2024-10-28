@@ -16,30 +16,31 @@ import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { UTCDate } from '@date-fns/utc'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
   [AppNavigation.StakeSetup.SmartStakeAmount]: undefined
   [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: TokenUnit }
   [AppNavigation.StakeSetup.AdvancedStaking]: {
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     stakingAmount: TokenUnit
     selectedDuration: string
   }
   [AppNavigation.StakeSetup.SelectNode]: {
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     stakingAmount: TokenUnit
     minUpTime?: number
     maxFee?: number
   }
   [AppNavigation.StakeSetup.NodeSearch]: {
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     stakingAmount: TokenUnit
   }
   [AppNavigation.StakeSetup.Confirmation]: {
     nodeId: string
     stakingAmount: TokenUnit
-    stakingEndTime: Date
+    stakingEndTime: UTCDate
     onBack?: () => void
   }
   [AppNavigation.StakeSetup.Cancel]: undefined
