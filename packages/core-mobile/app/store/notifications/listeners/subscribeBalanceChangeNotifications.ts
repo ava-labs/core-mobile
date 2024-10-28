@@ -8,7 +8,7 @@ import { subscribeForBalanceChange } from 'services/notifications/balanceChange/
 import Logger from 'utils/Logger'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { selectHasPromptedForBalanceChange } from '../slice'
+import { selectNotificationSubscription } from '../slice'
 
 export async function subscribeBalanceChangeNotifications(
   listenerApi: AppListenerEffectAPI
@@ -16,10 +16,13 @@ export async function subscribeBalanceChangeNotifications(
   const { getState } = listenerApi
 
   const state = getState()
-  const hasPromptedForBalanceChange = selectHasPromptedForBalanceChange(state)
 
-  if (!hasPromptedForBalanceChange) {
-    // skip if user has not been prompted for balance change notifications
+  const userHasEnabledBalanceNotification = selectNotificationSubscription(
+    ChannelId.BALANCE_CHANGES
+  )(state)
+
+  if (!userHasEnabledBalanceNotification) {
+    // skip if user has not enabled balance change notifications
     return
   }
 
