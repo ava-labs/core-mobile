@@ -1579,7 +1579,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 -H "DD-APPLICATION-KEY: $DD_APP_KEY" \
 -d @- << EOF
 {
-	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold",
+	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on iOS",
 	"type": "rum alert",
 	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
 	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
@@ -1612,10 +1612,10 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156721804" \
 -H "DD-APPLICATION-KEY: $DD_APP_KEY" \
 -d @- << EOF
 {
-	"name": "Crash Free Sessions has dropped below 100%",
+	"name": "[core-mobile] Crash Free Sessions has dropped below 100% on iOS",
 	"type": "rum alert",
 	"query": "formula(\"(1 - query2 / query1) * 100\").last(\"5m\") < 99",
-	"message": "{{#is_alert}}Crash free sessions has dropped below 99% for version $BUILD_NUMBER! Please check test results and error reports to traceback this crash{{/is_alert}}\n\n{{#is_recovery}}Crash free sessions has returned to 100% for version $BUILD_NUMBER. Nice work!{{/is_recovery}}",
+	"message": "{{#is_alert}}Crash free sessions has dropped below 99% for version $BUILD_NUMBER! Please check test results and error reports to traceback this crash{{/is_alert}}\n\n{{#is_recovery}}Crash free sessions has returned to 100% for version $BUILD_NUMBER. Nice work!{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {
@@ -1682,10 +1682,10 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156807630" \
 -H "DD-APPLICATION-KEY: $DD_APP_KEY" \
 -d @- << EOF
 {
-	"name": "Click and Tap Actions are excessively slow",
+	"name": "[core-mobile] Click and Tap Actions are excessively slow on iOS",
 	"type": "rum alert",
 	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
-	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-data-platform-alerts",
+	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {

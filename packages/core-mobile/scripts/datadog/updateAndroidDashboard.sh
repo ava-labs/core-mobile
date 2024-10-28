@@ -28,6 +28,8 @@ curl -X PUT \
                             "title": " App Startup Time",
                             "title_size": "16",
                             "title_align": "left",
+                            "time":
+                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -35,7 +37,6 @@ curl -X PUT \
                                     "formulas":
                                     [
                                         {
-                                            "formula": "query2",
                                             "number_format":
                                             {
                                                 "unit":
@@ -43,29 +44,31 @@ curl -X PUT \
                                                     "type": "canonical_unit",
                                                     "unit_name": "nanosecond"
                                                 }
-                                            }
+                                            },
+                                            "formula": "query2"
                                         }
                                     ],
                                     "queries":
                                     [
                                         {
-                                            "data_source": "rum",
                                             "name": "query2",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:action @action.type:application_start @session.type:user service:org.avalabs.corewallet @os.name:Android"
+                                            },
                                             "indexes":
                                             [
                                                 "*"
                                             ],
+                                            "group_by":
+                                            [],
                                             "compute":
                                             {
                                                 "aggregation": "avg",
                                                 "metric": "@action.loading_time"
                                             },
-                                            "group_by":
-                                            [],
-                                            "search":
-                                            {
-                                                "query": "@type:action @action.type:application_start @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
-                                            }
+                                            "storage": "hot"
                                         }
                                     ],
                                     "conditional_formats":
@@ -115,6 +118,8 @@ curl -X PUT \
                             "title": "Refresh Rate",
                             "title_size": "16",
                             "title_align": "left",
+                            "time":
+                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -128,23 +133,24 @@ curl -X PUT \
                                     "queries":
                                     [
                                         {
-                                            "data_source": "rum",
                                             "name": "query2",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user service:org.avalabs.corewallet @os.name:Android"
+                                            },
                                             "indexes":
                                             [
                                                 "*"
                                             ],
+                                            "group_by":
+                                            [],
                                             "compute":
                                             {
                                                 "aggregation": "avg",
                                                 "metric": "@view.refresh_rate_average"
                                             },
-                                            "group_by":
-                                            [],
-                                            "search":
-                                            {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
-                                            }
+                                            "storage": "hot"
                                         }
                                     ],
                                     "conditional_formats":
@@ -194,6 +200,8 @@ curl -X PUT \
                             "title": "Crash free Sessions",
                             "title_size": "16",
                             "title_align": "left",
+                            "time":
+                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -202,23 +210,24 @@ curl -X PUT \
                                     "queries":
                                     [
                                         {
-                                            "data_source": "rum",
                                             "name": "query2",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:session @session.crash.count:>0 @session.type:user @os.name:Android service:org.avalabs.corewallet"
+                                            },
                                             "indexes":
                                             [
                                                 "*"
                                             ],
+                                            "group_by":
+                                            [],
                                             "compute":
                                             {
                                                 "aggregation": "cardinality",
                                                 "metric": "@session.id"
                                             },
-                                            "group_by":
-                                            [],
-                                            "search":
-                                            {
-                                                "query": "@session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @type:session"
-                                            }
+                                            "storage": "hot"
                                         },
                                         {
                                             "data_source": "rum",
@@ -243,6 +252,14 @@ curl -X PUT \
                                     "formulas":
                                     [
                                         {
+                                            "number_format":
+                                            {
+                                                "unit":
+                                                {
+                                                    "label": "%",
+                                                    "type": "custom_unit_label"
+                                                }
+                                            },
                                             "formula": "(1 - query2 / query1) * 100"
                                         }
                                     ],
@@ -267,15 +284,14 @@ curl -X PUT \
                                 }
                             ],
                             "autoscale": true,
-                            "custom_unit": "%",
                             "precision": 2,
                             "timeseries_background":
                             {
-                                "type": "area",
                                 "yaxis":
                                 {
                                     "include_zero": false
-                                }
+                                },
+                                "type": "area"
                             }
                         },
                         "layout":
@@ -293,6 +309,8 @@ curl -X PUT \
                             "title": "Memory Average",
                             "title_size": "16",
                             "title_align": "left",
+                            "time":
+                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -306,23 +324,24 @@ curl -X PUT \
                                     "queries":
                                     [
                                         {
-                                            "data_source": "rum",
                                             "name": "query2",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @os.name:Android service:org.avalabs.corewallet"
+                                            },
                                             "indexes":
                                             [
                                                 "*"
                                             ],
+                                            "group_by":
+                                            [],
                                             "compute":
                                             {
                                                 "aggregation": "avg",
                                                 "metric": "@view.memory_average"
                                             },
-                                            "group_by":
-                                            [],
-                                            "search":
-                                            {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
-                                            }
+                                            "storage": "hot"
                                         }
                                     ],
                                     "conditional_formats":
@@ -393,6 +412,8 @@ curl -X PUT \
                             "title": "Android Views with the most frozen frames",
                             "title_size": "16",
                             "title_align": "left",
+                            "time":
+                            {},
                             "type": "toplist",
                             "requests":
                             [
@@ -409,17 +430,16 @@ curl -X PUT \
                                     "queries":
                                     [
                                         {
-                                            "data_source": "rum",
                                             "name": "query1",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 service:org.avalabs.corewallet @os.name:Android"
+                                            },
                                             "indexes":
                                             [
                                                 "*"
                                             ],
-                                            "compute":
-                                            {
-                                                "aggregation": "cardinality",
-                                                "metric": "@view.id"
-                                            },
                                             "group_by":
                                             [
                                                 {
@@ -427,16 +447,19 @@ curl -X PUT \
                                                     "limit": 10,
                                                     "sort":
                                                     {
-                                                        "order": "desc",
                                                         "aggregation": "cardinality",
+                                                        "order": "desc",
                                                         "metric": "@view.id"
-                                                    }
+                                                    },
+                                                    "should_exclude_missing": true
                                                 }
                                             ],
-                                            "search":
+                                            "compute":
                                             {
-                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\""
-                                            }
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
                                         },
                                         {
                                             "data_source": "rum",
@@ -531,6 +554,8 @@ curl -X PUT \
                             "title": "Android views with the highest percentage of slow renders",
                             "title_size": "16",
                             "title_align": "left",
+                            "time":
+                            {},
                             "type": "toplist",
                             "requests":
                             [
@@ -539,17 +564,16 @@ curl -X PUT \
                                     "queries":
                                     [
                                         {
-                                            "data_source": "rum",
                                             "name": "query1",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @view.is_slow_rendered:true @os.name:Android service:org.avalabs.corewallet"
+                                            },
                                             "indexes":
                                             [
                                                 "*"
                                             ],
-                                            "compute":
-                                            {
-                                                "aggregation": "cardinality",
-                                                "metric": "@view.id"
-                                            },
                                             "group_by":
                                             [
                                                 {
@@ -557,16 +581,19 @@ curl -X PUT \
                                                     "limit": 10,
                                                     "sort":
                                                     {
-                                                        "order": "desc",
                                                         "aggregation": "cardinality",
+                                                        "order": "desc",
                                                         "metric": "@view.id"
-                                                    }
+                                                    },
+                                                    "should_exclude_missing": true
                                                 }
                                             ],
-                                            "search":
+                                            "compute":
                                             {
-                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @view.is_slow_rendered:true"
-                                            }
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
                                         },
                                         {
                                             "data_source": "rum",
@@ -658,7 +685,9 @@ curl -X PUT \
                         "id": 7403012191699538,
                         "definition":
                         {
-                            "title": "Android Long Task Duration by View Name (All versions)",
+                            "time":
+                            {},
+                            "title": "Android Long Task Duration by View Name (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -671,7 +700,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:long_task @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android"
+                                                "query": "@type:long_task @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android version:$BUILD_NUMBER"
                                             },
                                             "indexes":
                                             [
@@ -1420,6 +1449,8 @@ curl -X PUT \
                         "id": 2961425376476106,
                         "definition":
                         {
+                            "time":
+                            {},
                             "title": "Android Memory Consumption by View Name (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1438,7 +1469,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android version:>$BUILD_NUMBER service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1487,7 +1518,7 @@ curl -X PUT \
             "layout":
             {
                 "x": 0,
-                "y": 0,
+                "y": 16,
                 "width": 12,
                 "height": 16,
                 "is_column_break": true
@@ -1525,3 +1556,137 @@ curl -X PUT \
     [],
     "reflow_type": "fixed"
 }
+EOF
+
+# Updates the monitor for Click or Tap actions
+echo "Updating monitor for click or tap actions"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157020766" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core-mobile] Click and Tap Actions are excessively slow on Android",
+	"type": "rum alert",
+	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:Android service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
+	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 15000000,
+			"warning": 10000000
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"include_tags": true,
+		"new_group_delay": 60
+	},
+	"priority": null,
+	"restricted_roles": null
+}
+EOF
+
+# Updates the monitor for Crash Free Sessions
+echo "Updating monitor for Crash Free Sessions for Android"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157022810" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core-mobile] Crash Free Sessions has dropped below 100% for Android",
+	"type": "rum alert",
+	"query": "formula(\"(1 - query2 / query1) * 100\").last(\"5m\") < 99",
+	"message": "{{#is_alert}}Crash free sessions has dropped below 99% for version $BUILD_NUMBER! Please check test results and error reports to traceback this crash{{/is_alert}}\n\n{{#is_recovery}}Crash free sessions has returned to 100% for version $BUILD_NUMBER. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 99
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"variables": [
+			{
+				"data_source": "rum",
+				"name": "query2",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@session.id"
+				},
+				"group_by": [],
+				"search": {
+					"query": "@type:session @session.crash.count:>0 @session.type:user service:org.avalabs.corewallet @os.name:Android -version:<$BUILD_NUMBER"
+				},
+				"storage": "hot"
+			},
+			{
+				"data_source": "rum",
+				"name": "query1",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@session.id"
+				},
+				"group_by": [],
+				"search": {
+					"query": "@type:session @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
+				}
+			}
+		],
+		"include_tags": false,
+		"renotify_interval": 60,
+		"renotify_statuses": [
+			"alert"
+		],
+		"escalation_message": "",
+		"new_host_delay": 300,
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
+
+# Updates the monitor for memory use
+echo "Updating monitor for memory use"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157023465" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on Android",
+	"type": "rum alert",
+	"query": "rum(\"@type:view @os.name:Android -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
+	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 734000000,
+			"warning": 713030000
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"include_tags": true,
+		"new_group_delay": 60,
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
