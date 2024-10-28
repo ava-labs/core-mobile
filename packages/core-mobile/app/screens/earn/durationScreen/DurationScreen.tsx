@@ -26,6 +26,9 @@ import { BackButton } from 'components/BackButton'
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { fromUnixTime, getUnixTime } from 'date-fns'
+import { UTCDate } from '@date-fns/utc'
+import { UnixTime } from 'services/earn/types'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -35,35 +38,36 @@ type ScreenProps = StakeSetupScreenProps<
 
 export const StakingDuration = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const currentDate = useNow()
+  const currentUnix = useNow() / 1000
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
   const [selectedDuration, setSelectedDuration] =
     useState<DurationOption>(minDelegationTime)
-  const [stakeEndTime, setStakeEndTime] = useState<Date>(
-    getStakeEndDate(
-      currentDate,
-      minDelegationTime.stakeDurationFormat,
-      minDelegationTime.stakeDurationValue,
-      isDeveloperMode
-    )
+  const [stakeEndTime, setStakeEndTime] = useState<UnixTime>(
+    getStakeEndDate({
+      startDateUnix: currentUnix,
+      stakeDurationFormat: minDelegationTime.stakeDurationFormat,
+      stakeDurationValue: minDelegationTime.stakeDurationValue,
+      isDeveloperMode: isDeveloperMode
+    })
   )
   const { theme } = useApplicationContext()
   const { navigate, setOptions, goBack } =
     useNavigation<ScreenProps['navigation']>()
   const { stakingAmount } = useRoute<ScreenProps['route']>().params
   const isNextDisabled =
-    stakeEndTime === undefined || (stakeEndTime && stakeEndTime < new Date())
+    stakeEndTime === undefined ||
+    (!!stakeEndTime && stakeEndTime < UTCDate.now() / 1000)
 
   const selectMinDuration = useCallback(() => {
     setSelectedDuration(minDelegationTime)
-    const calculatedStakeEndTime = getStakeEndDate(
-      currentDate,
-      minDelegationTime.stakeDurationFormat,
-      minDelegationTime.stakeDurationValue,
-      isDeveloperMode
-    )
+    const calculatedStakeEndTime = getStakeEndDate({
+      startDateUnix: currentUnix,
+      stakeDurationFormat: minDelegationTime.stakeDurationFormat,
+      stakeDurationValue: minDelegationTime.stakeDurationValue,
+      isDeveloperMode: isDeveloperMode
+    })
     setStakeEndTime(calculatedStakeEndTime)
-  }, [currentDate, isDeveloperMode, minDelegationTime])
+  }, [currentUnix, isDeveloperMode, minDelegationTime])
 
   useLayoutEffect(() => {
     const isCustomSelected =
@@ -88,18 +92,18 @@ export const StakingDuration = (): JSX.Element => {
     }
 
     setSelectedDuration(durationOption)
-    const calculatedStakeEndTime = getStakeEndDate(
-      currentDate,
-      durationOption.stakeDurationFormat,
-      durationOption.stakeDurationValue,
-      isDeveloperMode
-    )
+    const calculatedStakeEndTime = getStakeEndDate({
+      startDateUnix: currentUnix,
+      stakeDurationFormat: durationOption.stakeDurationFormat,
+      stakeDurationValue: durationOption.stakeDurationValue,
+      isDeveloperMode: isDeveloperMode
+    })
     setStakeEndTime(calculatedStakeEndTime)
   }
 
   const handleDateConfirm = (dateInput: Date): void => {
     setSelectedDuration(CUSTOM)
-    setStakeEndTime(dateInput)
+    setStakeEndTime(getUnixTime(dateInput))
   }
 
   const navigateToNodeSearch = (): void => {
@@ -110,7 +114,7 @@ export const StakingDuration = (): JSX.Element => {
       })
       navigate(AppNavigation.StakeSetup.NodeSearch, {
         stakingAmount,
-        stakingEndTime: stakeEndTime
+        stakingEndTime: new UTCDate(stakeEndTime * 1000)
       })
     }
   }
@@ -120,7 +124,7 @@ export const StakingDuration = (): JSX.Element => {
       AnalyticsService.capture('StakeSelectAdvancedStaking')
       navigate(AppNavigation.StakeSetup.AdvancedStaking, {
         stakingAmount,
-        stakingEndTime: stakeEndTime,
+        stakingEndTime: new UTCDate(stakeEndTime * 1000),
         selectedDuration: selectedDuration.title
       })
     }
@@ -154,7 +158,7 @@ export const StakingDuration = (): JSX.Element => {
   const renderCustomOption = (): JSX.Element => (
     <CustomDurationOptionItem
       stakeAmount={stakingAmount}
-      stakeEndTime={stakeEndTime}
+      stakeEndTime={fromUnixTime(stakeEndTime)}
       onRadioSelect={onRadioSelect}
       handleDateConfirm={handleDateConfirm}
     />
