@@ -171,7 +171,7 @@ class PopUpModalPage {
   }
 
   async verifyFeeIsLegit(isPXChain = false, estimatedGasFee = 0.009) {
-    await actions.waitForElement(this.approveTransactionTitle, 10000)
+    await actions.waitForElement(this.popUpModalScrollView, 10000)
     await actions.scrollToBottom(this.popUpModalScrollView)
     let tokenGasFee
     if (isPXChain) {

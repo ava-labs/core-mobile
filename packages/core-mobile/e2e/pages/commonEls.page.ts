@@ -58,6 +58,14 @@ class CommonElsPage {
     return by.id(commonEls.reloadSVG)
   }
 
+  get carrotSVG() {
+    return by.id(commonEls.carrotSVG)
+  }
+
+  async tapCarrotSVG(index = 0) {
+    await Actions.tapElementAtIndex(this.carrotSVG, index)
+  }
+
   async typeSearchBar(text: string) {
     await Actions.waitForElement(this.searchBar)
     await Actions.setInputText(this.searchBar, text)
@@ -134,6 +142,11 @@ class CommonElsPage {
     } catch (e) {
       await Actions.tapElementAtIndex(this.backButton, 1)
     }
+  }
+
+  async tapDropdownItem(item: string, index = 0) {
+    await Actions.waitForElement(by.id(`dropdown_item__${item}`))
+    await Actions.tapElementAtIndex(by.id(`dropdown_item__${item}`), index)
   }
 
   async tapNotNow() {
