@@ -61,7 +61,7 @@ export const StakeCard = (props: Props): JSX.Element => {
     switch (status) {
       case StakeStatus.Ongoing: {
         const remainingTime = getReadableDateDuration(
-          new UTCDate(props.endTimestamp || 0)
+          new UTCDate((props.endTimestamp || 0) * 1000)
         )
         return (
           <AvaText.Caption color={theme.colorText1}>
