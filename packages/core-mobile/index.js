@@ -1,18 +1,44 @@
-/**
- * @format
- */
-import { AppRegistry, Text, TextInput } from 'react-native'
+import {
+  AppRegistry,
+  Text,
+  TextInput,
+  Platform,
+  UIManager,
+  LogBox
+} from 'react-native'
 import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
 import AppCheckService from 'services/fcm/AppCheckService'
 import Bootsplash from 'react-native-bootsplash'
-import { ExpoRoot } from 'expo-router'
-import React from 'react'
-import ContextApp from './app/ContextApp'
+import Logger, { LogLevel } from 'utils/Logger'
+import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import SentryService from 'services/sentry/SentryService'
+import { AppSwitcher } from './AppSwitcher'
 import { name as appName } from './app.json'
-import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
 import { server } from './tests/msw/native/server'
+
+if (__DEV__) {
+  require('./ReactotronConfig')
+
+  LogBox.ignoreLogs([
+    'Require cycle:',
+    "Can't perform",
+    'new',
+    'Non-serializable'
+  ])
+
+  // eslint-disable-next-line no-console
+  console.reportErrorsAsExceptions = false
+}
+
+SentryService.init()
+
+Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(false)
+
+Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
 // set Big properties globally to not use exponential notation
 Big.PE = 99
@@ -32,12 +58,7 @@ Text.defaultProps.allowFontScaling = false
 TextInput.defaultProps = TextInput.defaultProps || {}
 TextInput.defaultProps.allowFontScaling = false
 
-function ExpoApp() {
-  const ctx = require.context('./app/new/routes') //Path with src folder
-  return <ExpoRoot context={ctx} />
-}
-
-let AppEntryPoint = DevDebuggingConfig.K2_ALPINE ? ExpoApp : ContextApp
+let AppEntryPoint = AppSwitcher
 
 if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   Bootsplash.hide()

@@ -15,8 +15,9 @@ class DeviceInfoService {
   private operatingSystemName?: string
   private operatingSystemVersion?: string
   private timezone?: string
+  private bundleId?: string
 
-  getAppBuild = () => {
+  getAppBuild = (): string => {
     if (this.appBuild) return this.appBuild
 
     const build = DeviceInfo.getBuildNumber()
@@ -24,7 +25,7 @@ class DeviceInfoService {
     return build
   }
 
-  getAppName = () => {
+  getAppName = (): string => {
     if (this.appName) return this.appName
 
     const applicationName = DeviceInfo.getApplicationName()
@@ -32,7 +33,7 @@ class DeviceInfoService {
     return applicationName
   }
 
-  getAppNameSpace = () => {
+  getAppNameSpace = (): string => {
     if (this.appNamespace) return this.appNamespace
 
     const space = DeviceInfo.getBundleId()
@@ -40,7 +41,7 @@ class DeviceInfoService {
     return space
   }
 
-  getAppVersion = () => {
+  getAppVersion = (): string => {
     if (this.appVersion) return this.appVersion
 
     const version = DeviceInfo.getVersion()
@@ -48,7 +49,7 @@ class DeviceInfoService {
     return version
   }
 
-  getDeviceManufacturer = async () => {
+  getDeviceManufacturer = async (): Promise<string> => {
     if (this.deviceManufacturer) return this.deviceManufacturer
 
     const manufacturer = await DeviceInfo.getManufacturer()
@@ -56,7 +57,7 @@ class DeviceInfoService {
     return manufacturer
   }
 
-  getDeviceModel = () => {
+  getDeviceModel = (): string => {
     if (this.deviceModel) return this.deviceModel
 
     const model = DeviceInfo.getDeviceId()
@@ -64,7 +65,7 @@ class DeviceInfoService {
     return model
   }
 
-  getDeviceName = async () => {
+  getDeviceName = async (): Promise<string> => {
     if (this.deviceName) return this.deviceName
 
     const name = await DeviceInfo.getDeviceName()
@@ -72,7 +73,7 @@ class DeviceInfoService {
     return name
   }
 
-  getDeviceType = async () => {
+  getDeviceType = async (): Promise<string> => {
     if (this.deviceType) return this.deviceType
 
     const type = DeviceInfo.getSystemName()
@@ -80,7 +81,7 @@ class DeviceInfoService {
     return type
   }
 
-  getOperatingSystemName = async () => {
+  getOperatingSystemName = async (): Promise<string> => {
     if (this.operatingSystemName) return this.operatingSystemName
 
     const systemName = await DeviceInfo.getSystemName()
@@ -88,7 +89,7 @@ class DeviceInfoService {
     return systemName
   }
 
-  getOperatingSystemVersion = async () => {
+  getOperatingSystemVersion = async (): Promise<string> => {
     if (this.operatingSystemVersion) return this.operatingSystemVersion
 
     const systemVersion = await DeviceInfo.getSystemVersion()
@@ -96,7 +97,7 @@ class DeviceInfoService {
     return systemVersion
   }
 
-  getNetworkCarrier = async () => {
+  getNetworkCarrier = async (): Promise<string> => {
     if (this.networkCarrier) return this.networkCarrier
 
     const carrier = await DeviceInfo.getCarrier()
@@ -104,7 +105,7 @@ class DeviceInfoService {
     return carrier
   }
 
-  getLocale = () => {
+  getLocale = (): string | undefined => {
     if (this.locale) return this.locale
 
     const preferredLocal = getLocales()[0]?.languageTag
@@ -112,12 +113,21 @@ class DeviceInfoService {
     return preferredLocal
   }
 
-  getTimezone = () => {
+  getTimezone = (): string => {
     if (this.timezone) return this.timezone
 
     const time = getTimeZone()
     this.timezone = time
     return time
+  }
+
+  getBundleId = (): string => {
+    if (this.bundleId) return this.bundleId
+
+    const id = DeviceInfo.getBundleId()
+    this.bundleId = id
+
+    return id
   }
 }
 
