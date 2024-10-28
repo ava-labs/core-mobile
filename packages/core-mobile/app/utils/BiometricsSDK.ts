@@ -3,7 +3,7 @@ import Keychain, {
   Options,
   UserCredentials
 } from 'react-native-keychain'
-import { SECURE_ACCESS_SET } from 'resources/Constants'
+import { StorageKey } from 'resources/Constants'
 import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
 import Logger from './Logger'
@@ -55,7 +55,7 @@ class BiometricsSDK {
   }
 
   getAccessType(): string {
-    return commonStorage.getString(SECURE_ACCESS_SET) ?? 'PIN'
+    return commonStorage.getString(StorageKey.SECURE_ACCESS_SET) ?? 'PIN'
   }
 
   async storeWalletWithPin(
@@ -69,7 +69,7 @@ class BiometricsSDK {
     // to change the type back to PIN the need to toggle the switch in
     // security & privacy
     if (!isResetting) {
-      commonStorage.set(SECURE_ACCESS_SET, 'PIN')
+      commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
     }
     return Keychain.setGenericPassword(
       'wallet',
@@ -88,7 +88,7 @@ class BiometricsSDK {
    * @param key - mnemonic to store
    */
   async storeWalletWithBiometry(key: string): Promise<boolean> {
-    commonStorage.set(SECURE_ACCESS_SET, 'BIO')
+    commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'BIO')
     // try to store with biometry
     try {
       await Keychain.setGenericPassword(
@@ -126,7 +126,7 @@ class BiometricsSDK {
       .then(() =>
         Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
       )
-      .then(() => commonStorage.delete(SECURE_ACCESS_SET))
+      .then(() => commonStorage.delete(StorageKey.SECURE_ACCESS_SET))
       .catch(Logger.error)
   }
 

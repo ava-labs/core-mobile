@@ -1,6 +1,7 @@
 import Logger from 'utils/Logger'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { reduxStorage, reduxStorageKeys } from 'store/reduxStorage'
+import { StorageKey } from 'resources/Constants'
 import { commonStorage, commonStorageKeys } from './storages'
 
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
@@ -13,7 +14,7 @@ export async function migrateFromAsyncStorage(): Promise<void> {
   try {
     const keys = await AsyncStorage.getAllKeys()
     if (keys.length === 0) {
-      commonStorage.set('hasMigratedFromAsyncStorage', true)
+      commonStorage.set(StorageKey.HAS_MIGRATED_FROM_ASYNC_STORAGE, true)
       Logger.info(`Skip AsyncStorage Migration: No keys found in AsyncStorage!`)
       return
     }
@@ -23,7 +24,7 @@ export async function migrateFromAsyncStorage(): Promise<void> {
         const newValue = ['true', 'false'].includes(value)
           ? value === 'true'
           : value
-        if (commonStorageKeys.includes(key)) {
+        if (commonStorageKeys.includes(key as StorageKey)) {
           commonStorage.set(key, newValue)
           await AsyncStorage.removeItem(key).catch(error => {
             Logger.error(`Error removing key ${key} from AsyncStorage:`, error)
@@ -37,7 +38,7 @@ export async function migrateFromAsyncStorage(): Promise<void> {
         }
       }
     })
-    commonStorage.set('hasMigratedFromAsyncStorage', true)
+    commonStorage.set(StorageKey.HAS_MIGRATED_FROM_ASYNC_STORAGE, true)
     Logger.info(`Migration from AsyncStorage -> MMKV completed!`)
   } catch (error) {
     Logger.error('Error migrating from AsyncStorage to MMKV:', error)
