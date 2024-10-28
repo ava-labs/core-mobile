@@ -1,16 +1,17 @@
 import React from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { BlurView } from '@react-native-community/blur'
-import { View } from '@avalabs/k2-alpine'
 import { Platform } from 'react-native'
+import BlurBackgroundView from '../BlurBackgroundView'
 
 const HeaderBackground = (): JSX.Element => {
   const { top } = useSafeAreaInsets()
 
   return (
-    <View sx={{ overflow: 'hidden' }}>
-      <BlurView blurType="xlight" style={{ height: top + HEADER_HEIGHT }} />
-    </View>
+    <BlurBackgroundView
+      sx={{
+        height: top + HEADER_HEIGHT
+      }}
+    />
   )
 }
 

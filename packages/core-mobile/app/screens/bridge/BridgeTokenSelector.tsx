@@ -62,6 +62,7 @@ function BridgeTokenSelector({
 
     return (
       <AvaListItem.Base
+        testID={`token_selector__${token.symbol}`}
         title={title}
         leftComponent={tokenLogo()}
         rightComponentVerticalAlignment={'center'}
@@ -95,7 +96,11 @@ function BridgeTokenSelector({
 
   return (
     <View style={{ flex: 1, marginHorizontal: horizontalMargin }}>
-      <SearchBar onTextChanged={setSearchText} searchText={searchText} />
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        testID="search_bar__select_token"
+      />
       <Space y={16} />
       {!bridgeTokenList ? (
         <Loader />

@@ -24,6 +24,7 @@ import { Tooltip } from 'components/Tooltip'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { getXPChainTokenUnit } from 'utils/units/knownTokens'
+import { UTCDate } from '@date-fns/utc'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
@@ -83,7 +84,9 @@ const StakeDetails = (): JSX.Element | null => {
 
   const renderActiveDetails = (): JSX.Element => {
     const formattedEndDate = format(endDate, 'LLLL d, yyyy, H:mm aa')
-    const remainingTime = humanize(getReadableDateDuration(endDate))
+    const remainingTime = humanize(
+      getReadableDateDuration(new UTCDate(endDate.getTime()))
+    )
     const estimatedRewardInAvax = stake.estimatedReward
       ? new TokenUnit(
           stake.estimatedReward,

@@ -44,7 +44,7 @@ class BurgerMenuPage {
 
   async swipeLeft() {
     await Actions.swipeLeft(
-      by.id(burgerMenu.carrotSvg),
+      by.id(commonElsLoc.carrotSVG),
       'slow',
       0.5,
       platformIndex2

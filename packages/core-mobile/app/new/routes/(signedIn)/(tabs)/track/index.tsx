@@ -12,9 +12,7 @@ const TrackHomeScreen = (): JSX.Element => {
           alignItems: 'center',
           gap: 16
         }}>
-        <Text variant="heading3" sx={{ color: 'black' }}>
-          Track
-        </Text>
+        <Text variant="heading3">Track</Text>
       </ScrollView>
     </BlurredBarsContentLayout>
   )
