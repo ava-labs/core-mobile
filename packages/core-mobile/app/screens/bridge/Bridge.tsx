@@ -369,7 +369,8 @@ const Bridge: FC = () => {
 
   const renderBlockchain = (
     blockchain: Blockchain,
-    textVariant: 'buttonLarge' | 'buttonMedium'
+    textVariant: 'buttonLarge' | 'buttonMedium',
+    testID?: string
   ): JSX.Element => {
     const blockchainTitle = getBlockchainDisplayName(blockchain)
 
@@ -387,6 +388,7 @@ const Bridge: FC = () => {
         <Avatar.Custom name={blockchain ?? ''} symbol={symbol} />
         <Space x={8} />
         <Text
+          testID={testID}
           variant={textVariant}
           sx={{
             maxWidth: blockchainTitleMaxWidth,
@@ -410,7 +412,7 @@ const Bridge: FC = () => {
           justifyContent: 'flex-end',
           flex: 0
         }}>
-        {renderBlockchain(blockchain, 'buttonLarge')}
+        {renderBlockchain(blockchain, 'buttonLarge', 'to_blockchain')}
       </Row>
     )
   }
@@ -425,7 +427,7 @@ const Bridge: FC = () => {
           alignItems: 'center',
           justifyContent: 'flex-end'
         }}>
-        {renderBlockchain(blockchain, 'buttonLarge')}
+        {renderBlockchain(blockchain, 'buttonLarge', 'from_blockchain')}
       </Row>
     )
   }
@@ -449,7 +451,11 @@ const Bridge: FC = () => {
             alignItems: 'center',
             flex: 1
           }}>
-          {renderBlockchain(blockchain, 'buttonMedium')}
+          {renderBlockchain(
+            blockchain,
+            'buttonMedium',
+            `dropdown_item__${blockchain}`
+          )}
         </Row>
         {isSelected && (
           <View
@@ -531,7 +537,10 @@ const Bridge: FC = () => {
             <Space x={8} />
           </>
         )}
-        <Text variant="buttonMedium" style={styles.tokenSelectorText}>
+        <Text
+          testID="selected_token"
+          variant="buttonMedium"
+          style={styles.tokenSelectorText}>
           {selectedAsset ? selectedAssetSymbol : 'Select Token'}
         </Text>
         <CarrotSVG direction={'down'} size={12} />
@@ -593,6 +602,7 @@ const Bridge: FC = () => {
     if (isAmountTooLow)
       return (
         <Text
+          testID="bridge_error"
           variant="caption"
           sx={{
             color: '$dangerDark'
@@ -604,6 +614,7 @@ const Bridge: FC = () => {
     if (isAmountTooLarge)
       return (
         <Text
+          testID="bridge_error"
           variant="caption"
           sx={{
             color: '$dangerDark'
@@ -615,6 +626,7 @@ const Bridge: FC = () => {
     if (bridgeError)
       return (
         <Text
+          testID="bridge_error"
           variant="caption"
           sx={{
             color: '$dangerDark'
@@ -626,6 +638,7 @@ const Bridge: FC = () => {
     if (hasInvalidReceiveAmount)
       return (
         <Text
+          testID="bridge_error"
           variant="caption"
           sx={{
             color: '$dangerDark'
@@ -637,6 +650,7 @@ const Bridge: FC = () => {
     if (isNativeBalanceNotEnoughForNetworkFee)
       return (
         <Text
+          testID="bridge_error"
           variant="caption"
           sx={{
             color: '$dangerDark'
@@ -693,6 +707,7 @@ const Bridge: FC = () => {
   const renderToggleBtn = (): JSX.Element => {
     return (
       <AvaButton.Base
+        testID="bridge_toggle_btn"
         onPress={handleBlockchainToggle}
         style={[styles.toggleButton, { backgroundColor: theme.colors.$white }]}>
         <BridgeToggleIcon color={theme.colors.$black} />
@@ -756,7 +771,7 @@ const Bridge: FC = () => {
   const renderTransferBtn = (): JSX.Element => {
     return (
       <Button
-        testID="transfer_btn"
+        testID="bridge_btn"
         type="primary"
         size="xlarge"
         style={{ marginHorizontal: 16, marginBottom: 10, marginTop: 16 }}

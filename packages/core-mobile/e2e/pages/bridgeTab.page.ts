@@ -1,6 +1,7 @@
 import Actions from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import { Platform } from '../helpers/constants'
+import delay from '../helpers/waits'
 import bridgeTab from '../locators/bridgeTab.loc'
 import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from './plusMenu.page'
@@ -122,6 +123,35 @@ class BridgeTabPage {
     return by.text(bridgeTab.receive)
   }
 
+  get bridgeToggleBtn() {
+    return by.id(bridgeTab.bridgeToggleBtn)
+  }
+
+  get selectedToken() {
+    return by.id(bridgeTab.selectedToken)
+  }
+
+  get toNetwork() {
+    return by.id(bridgeTab.toNetwork)
+  }
+
+  get fromNetwork() {
+    return by.id(bridgeTab.fromNetwork)
+  }
+
+  get error() {
+    return by.id(bridgeTab.error)
+  }
+
+  async tapBridgeBtn() {
+    await delay(1000)
+    return Actions.tap(this.bridgeBtn)
+  }
+
+  async tapBridgeToggleBtn() {
+    return Actions.tap(this.bridgeToggleBtn)
+  }
+
   async tapAvalancheNetwork() {
     return Actions.tapElementAtIndex(this.avalancheNetwork, platformIndex2)
   }
@@ -238,19 +268,42 @@ class BridgeTabPage {
 
   async verifyBridgeScreen() {
     await Actions.waitForElement(this.bridgeTitle)
-    await Actions.waitForElement(this.bridgeBtn)
-    await Actions.waitForElement(this.fromText)
-    await Actions.waitForElement(this.receive)
+    await Assert.isVisible(this.bridgeBtn)
+    await Assert.isVisible(this.fromText)
+    await Assert.isVisible(this.receive)
+    await Assert.isVisible(this.bridgeToggleBtn)
   }
 
+  async tapFromNetwork() {
+    await Actions.tap(this.fromNetwork)
+  }
+
+  async tapSelectToken() {
+    await delay(1000)
+    await Actions.tap(this.selectedToken)
+  }
+
+  async verifyFromNetwork(network: string) {
+    await Assert.hasText(this.fromNetwork, network, 0)
+  }
+
+  async verifyNetworks(from: string, to: string) {
+    await this.verifyFromNetwork(from)
+    await this.verifyToNetwork(to)
+  }
+
+  async verifyToNetwork(network = '') {
+    await Assert.isVisible(this.toNetwork)
+    await Assert.hasText(this.toNetwork, network, 0)
+  }
   // eslint-disable-next-line max-params
   async verifyBridgeTransaction(
-    delay: number,
+    timeout: number,
     completedStatusIncomingNetwork: Detox.NativeMatcher,
     completedStatusOutgoingNetwork: Detox.NativeMatcher,
     successfullBridgeTransaction: Detox.NativeMatcher
   ) {
-    await Actions.waitForElementNoSync(this.closebutton, delay)
+    await Actions.waitForElementNoSync(this.closebutton, timeout)
     await Assert.isVisible(completedStatusIncomingNetwork)
     await Assert.isVisible(completedStatusOutgoingNetwork)
 
@@ -258,6 +311,11 @@ class BridgeTabPage {
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await Assert.isVisible(successfullBridgeTransaction)
+  }
+
+  async goToBridge() {
+    await BottomTabsPage.tapPlusIcon()
+    await PlusMenuPage.tapBridgeButton()
   }
 }
 

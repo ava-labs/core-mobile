@@ -60,6 +60,10 @@ class SendPage {
     return by.text(Send.sendTo)
   }
 
+  get max() {
+    return by.text(Send.max)
+  }
+
   async tapAddressBook() {
     await Actions.tap(this.addressBook)
   }
@@ -105,6 +109,10 @@ class SendPage {
     await Actions.setInputText(this.searchBarOnSelectToken, tokenName)
     await delay(1000)
     await Actions.tapElementAtIndex(by.id(`token_selector__${tokenName}`), 0)
+  }
+
+  async tapMax() {
+    await Actions.tap(this.max)
   }
 
   async enterAmount(amount: string) {
