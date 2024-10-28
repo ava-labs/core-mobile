@@ -82,10 +82,6 @@ class CollectiblesPage {
     return by.text(Collectibles.warningInsufficientFee)
   }
 
-  get warningGasLimitIsInvalid() {
-    return by.text(Collectibles.warningGasLimitIsInvalid)
-  }
-
   get listSvg() {
     return by.id(Collectibles.listSvg)
   }
@@ -202,7 +198,6 @@ class CollectiblesPage {
       ? await AccountManagePage.tapFirstAccount()
       : await AccountManagePage.tapSecondAccount()
     await this.tapNextButton()
-    await popUpModalPage.verifyApproveTransactionItems()
     await popUpModalPage.verifyFeeIsLegit()
     await popUpModalPage.tapApproveBtn()
   }

@@ -1,3 +1,5 @@
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
+
 # to prevent error "Unable to find a specification for `React-hermes` depended upon by `RNSentry`"
 ENV['USE_HERMES'] = '0'
 
@@ -29,7 +31,7 @@ setup_permissions([
   'FaceID',
   # 'LocationAccuracy',
   # 'LocationAlways',
-  'LocationWhenInUse',
+  # 'LocationWhenInUse',
   # 'MediaLibrary',
   # 'Microphone',
   # 'Motion',
@@ -51,6 +53,15 @@ if linkage != nil
 end
 
 abstract_target 'common' do
+  use_expo_modules!
+  post_integrate do |installer|
+    begin
+      expo_patch_react_imports!(installer)
+    rescue => e
+      Pod::UI.warn e
+    end
+  end
+  
   # put common target configuration here
   config = use_native_modules!
 

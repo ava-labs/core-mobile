@@ -97,6 +97,10 @@ class PopUpModalPage {
     return by.id(popUpModalLoc.messageDetail)
   }
 
+  get popUpModalScrollView() {
+    return by.id(popUpModalLoc.popUpModalScrollView)
+  }
+
   async tapApproveBtn() {
     await actions.tapElementAtIndex(this.approveBtn, 0)
   }
@@ -160,16 +164,15 @@ class PopUpModalPage {
 
   async verifyApproveTransactionScreen() {
     try {
-      await actions.waitForElement(this.approveBtn, 5000)
-    } catch (e) {
       await sendPage.tapNextButton()
+    } catch (e) {
+      await actions.waitForElement(this.approveBtn, 10000)
     }
-    await actions.waitForElement(this.approveBtn, 5000)
   }
 
   async verifyFeeIsLegit(isPXChain = false, estimatedGasFee = 0.009) {
-    await this.verifyApproveTransactionScreen()
-    await actions.swipeUp(this.feeAmount, 'fast', 0.25, 0)
+    await actions.waitForElement(this.approveTransactionTitle, 10000)
+    await actions.scrollToBottom(this.popUpModalScrollView)
     let tokenGasFee
     if (isPXChain) {
       tokenGasFee = await actions.getElementText(

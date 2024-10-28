@@ -1,14 +1,18 @@
 import React from 'react'
-import { Linking, StyleProp, ViewStyle } from 'react-native'
+import { Linking, StyleProp, TextStyle } from 'react-native'
 import { Text } from '../components/Primitives'
+import { useTheme } from '..'
 
 type Props = {
   title: string
   url: string
-  style?: StyleProp<ViewStyle>
+  style?: StyleProp<TextStyle>
+  color?: string
 }
 
-const Link = ({ title, url, style }: Props): JSX.Element => {
+const Link = ({ title, url, style, color }: Props): JSX.Element => {
+  const { theme } = useTheme()
+
   return (
     <Text
       variant="heading5"
@@ -18,12 +22,10 @@ const Link = ({ title, url, style }: Props): JSX.Element => {
       style={[
         style,
         {
+          color: color ?? theme.colors.$textPrimary,
           textDecorationLine: 'underline'
         }
-      ]}
-      sx={{
-        color: '$textPrimary'
-      }}>
+      ]}>
       {title}
     </Text>
   )

@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { SECURE_ACCESS_SET } from 'resources/Constants'
+import { StorageKey } from 'resources/Constants'
 import Switch from 'components/Switch'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -42,7 +42,7 @@ function SecurityPrivacy({
       })
       .catch(Logger.error)
 
-    const type = commonStorage.getString(SECURE_ACCESS_SET)
+    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
     if (type) {
       setIsBiometricSwitchEnabled(type === 'BIO')
     } else {
@@ -55,7 +55,7 @@ function SecurityPrivacy({
     if (value) {
       onTurnOnBiometrics()
     } else {
-      commonStorage.set(SECURE_ACCESS_SET, 'PIN')
+      commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
     }
   }
 
@@ -109,6 +109,11 @@ function SecurityPrivacy({
         background={theme.background}
         rightComponent={
           <Switch
+            testID={
+              coreAnalyticsConsent
+                ? 'analytics_enabled_switch'
+                : 'analytics_disabled_switch'
+            }
             value={coreAnalyticsConsent}
             onValueChange={handleAnalyticsSwitchChange}
           />

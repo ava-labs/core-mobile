@@ -43,7 +43,7 @@ const FlashList = <T,>({
   refreshControl,
   getItemType,
   estimatedItemSize
-}: AvaListProps<T>) => {
+}: AvaListProps<T>): JSX.Element => {
   return (
     <ShopifyFlashList
       data={data}

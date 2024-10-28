@@ -72,13 +72,18 @@ export const StakeCard = (props: Props): JSX.Element => {
           new UTCDate(props.endTimestamp || 0)
         )
         return (
-          <AvaText.Caption color={theme.colorText1}>
+          <AvaText.Caption testID="time_remaining" color={theme.colorText1}>
             {remainingTime} remaining
           </AvaText.Caption>
         )
       }
       case StakeStatus.Completed:
-        return <StatusChip status={StakeStatus.Completed} />
+        return (
+          <StatusChip
+            testID="Completed_status_chip"
+            status={StakeStatus.Completed}
+          />
+        )
     }
   }
 
@@ -118,7 +123,7 @@ export const StakeCard = (props: Props): JSX.Element => {
                 Staked Amount
               </AvaText.Body2>
               <View style={{ alignItems: 'flex-end' }}>
-                <AvaText.Heading6>
+                <AvaText.Heading6 testID="staked_amount">
                   {stakeAmountInAvax?.toDisplay() ?? '-'} AVAX
                 </AvaText.Heading6>
                 <AvaText.Overline>{stakeAmountInCurrency}</AvaText.Overline>
@@ -133,7 +138,9 @@ export const StakeCard = (props: Props): JSX.Element => {
                 Estimated Rewards
               </Tooltip>
               <View style={{ alignItems: 'flex-end' }}>
-                <AvaText.Heading6 color={theme.colorBgGreen}>
+                <AvaText.Heading6
+                  testID="estimated_rewards"
+                  color={theme.colorBgGreen}>
                   {estimatedRewardInAvax?.toDisplay() ?? '-'} AVAX
                 </AvaText.Heading6>
                 <AvaText.Overline>{estimatedRewardInCurrency}</AvaText.Overline>
@@ -169,7 +176,7 @@ export const StakeCard = (props: Props): JSX.Element => {
                 Amount Staked
               </AvaText.Body2>
               <View style={{ alignItems: 'flex-end' }}>
-                <AvaText.Heading6>
+                <AvaText.Heading6 testID="staked_amount">
                   {stakeAmountInAvax?.toDisplay() ?? '-'} AVAX
                 </AvaText.Heading6>
                 <AvaText.Overline>{stakeAmountInCurrency}</AvaText.Overline>
@@ -186,7 +193,9 @@ export const StakeCard = (props: Props): JSX.Element => {
                 Earned Rewards
               </AvaText.Body2>
               <View style={{ alignItems: 'flex-end' }}>
-                <AvaText.Heading6 color={theme.colorBgGreen}>
+                <AvaText.Heading6
+                  testID="earned_rewards"
+                  color={theme.colorBgGreen}>
                   {rewardAmountInAvax?.toDisplay() ?? '-'} AVAX
                 </AvaText.Heading6>
                 <AvaText.Overline>{rewardAmountInCurrency}</AvaText.Overline>
@@ -202,7 +211,7 @@ export const StakeCard = (props: Props): JSX.Element => {
                 textStyle={{ lineHeight: 20 }}>
                 End Date
               </AvaText.Body2>
-              <AvaText.Heading6>{endDate}</AvaText.Heading6>
+              <AvaText.Heading6 testID="end_date">{endDate}</AvaText.Heading6>
             </Row>
           </>
         )
@@ -221,7 +230,9 @@ export const StakeCard = (props: Props): JSX.Element => {
           <Row style={{ alignItems: 'center' }}>
             <StakeLogoSmallSVG />
             <Space x={16} />
-            <AvaText.Heading6>{'Stake #' + title}</AvaText.Heading6>
+            <AvaText.Heading6 testID="stake_card_title">
+              {'Stake #' + title}
+            </AvaText.Heading6>
           </Row>
           {renderStatus()}
         </Row>

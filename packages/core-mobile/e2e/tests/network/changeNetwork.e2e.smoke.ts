@@ -62,16 +62,19 @@ describe('Change Network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
-    await NetworksManagePage.tapStarSvgByNetwork(portfolio.arbitrumNetwork)
-    await commonElsPage.tapBackButton()
+    await NetworksManagePage.tapStarSvgByNetwork(
+      portfolio.arbitrumNetwork,
+      false
+    )
+    await commonElsPage.goBack()
     await PortfolioPage.verifyInactiveNetworks([portfolio.arbitrumNetwork])
   })
 
   it('should remove Bitcoin from favorite networks', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork)
-    await NetworksManagePage.tapHeaderBack()
+    await NetworksManagePage.tapStarSvgByNetwork(portfolio.btcNetwork, false)
+    await commonElsPage.goBack()
     await PortfolioPage.verifyNetworkRemoved(portfolio.btcNetwork)
   })
 })

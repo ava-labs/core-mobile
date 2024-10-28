@@ -100,34 +100,57 @@ const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
   }
 }
 
-// waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
-
+// waitForElementNoSync can be used to handle idle timeout error for Android AND to handle device.disableSynchronization()
 const waitForElementNoSync = async (
   item: Detox.NativeMatcher,
-  timeout = 2000
+  timeout = 2000,
+  index = 0
 ) => {
-  if (platform() === Platform.Android) {
-    const startTime = Date.now()
-    const endTime = startTime + timeout
-
-    while (Date.now() < endTime) {
-      try {
-        await waitFor(element(item)).toBeVisible().withTimeout(timeout)
-        return
-      } catch (error: any) {
-        if (error.message === Constants.idleTimeoutError) {
-          console.error(Constants.animatedConsoleError)
-        } else {
-          throw error
-        }
+  const startTime = Date.now()
+  const endTime = startTime + timeout
+  while (Date.now() < endTime) {
+    try {
+      await waitFor(element(item).atIndex(index))
+        .toBeVisible()
+        .withTimeout(timeout)
+      return
+    } catch (error: any) {
+      if (error.message === Constants.idleTimeoutError) {
+        console.error(Constants.animatedConsoleError)
+      } else {
+        throw error
       }
     }
-
-    console.error('Error: Element not visible within timeout')
-    throw new Error('Element not visible within timeout')
-  } else {
-    await waitFor(element(item)).toBeVisible().withTimeout(timeout)
   }
+  console.error('Error: Element not visible within timeout')
+  throw new Error('Element not visible within timeout')
+}
+
+const getElementTextNoSync = async (
+  item: Detox.NativeMatcher,
+  timeout = 2000,
+  index = 0
+) => {
+  const startTime = Date.now()
+  const endTime = startTime + timeout
+  while (Date.now() < endTime) {
+    try {
+      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+      const eleAttr = await element(item).getAttributes()
+      console.log('elements attributes: ', eleAttr)
+      if (!('elements' in eleAttr)) {
+        return eleAttr.text
+      } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
+    } catch (error: any) {
+      if (error.message === Constants.idleTimeoutError) {
+        console.error(Constants.animatedConsoleError)
+      } else {
+        throw error
+      }
+    }
+  }
+  console.error('Error: Element not visible within timeout')
+  throw new Error('Element not visible within timeout')
 }
 
 const waitForElementNotVisible = async (
@@ -259,6 +282,16 @@ const getCurrentDateTime = () => {
   return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
 }
 
+const scrollToBottom = async (scrollView: Detox.NativeMatcher) => {
+  await waitForElement(scrollView)
+  await detox.element(scrollView).scrollTo('bottom')
+}
+
+const scrollToTop = async (scrollView: Detox.NativeMatcher) => {
+  await waitForElement(scrollView)
+  await detox.element(scrollView).scrollTo('top')
+}
+
 const scrollListUntil = async (
   scrollToItem: Detox.NativeMatcher,
   scrollList: Detox.NativeMatcher,
@@ -281,6 +314,10 @@ async function writeQrCodeToFile(clipboardValue: string) {
   )
 }
 
+const clearTextInput = async (item: Detox.NativeMatcher, index = 0) => {
+  await element(item).atIndex(index).clearText()
+}
+
 async function waitForCondition(func: any, condition: any, timeout = 5000) {
   let isFulfilled = false
 
@@ -298,6 +335,18 @@ async function waitForCondition(func: any, condition: any, timeout = 5000) {
   }
   assert(isFulfilled)
 }
+
+const drag = async (
+  item: Detox.NativeMatcher,
+  direction: Detox.Direction = 'down',
+  index = 0
+) => {
+  await element(item).atIndex(index).longPress()
+  await element(item).atIndex(index).swipe(direction, 'fast', 0.2)
+}
+
+const shuffleArray = <T>(array: T[]): T[] =>
+  array.sort(() => Math.random() - 0.5)
 
 export default {
   balanceToNumber,
@@ -327,5 +376,11 @@ export default {
   getElementsByTestId,
   getElementsTextByTestId,
   dismissKeyboard,
-  getElementText
+  getElementText,
+  clearTextInput,
+  getElementTextNoSync,
+  drag,
+  shuffleArray,
+  scrollToBottom,
+  scrollToTop
 }

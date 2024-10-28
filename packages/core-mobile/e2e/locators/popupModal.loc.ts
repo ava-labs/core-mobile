@@ -23,5 +23,6 @@ export default {
   createContact: 'Create Contact?',
   messageDetail: 'message_detail',
   tokenGasFee: 'token_gas_fee',
-  tokenAmount: 'token_amount'
+  tokenAmount: 'token_amount',
+  popUpModalScrollView: 'approve_popup_scroll_view'
 }

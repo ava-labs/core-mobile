@@ -10,18 +10,6 @@ describe('DevDebuggingConfig', () => {
       expect(config.STORYBOOK_ENABLED).toBe(false)
     })
 
-    it('should not have logbox disabled', () => {
-      expect(config.LOGBOX_DISABLED).toBe(false)
-    })
-
-    it('should not have redscreen disabled', () => {
-      expect(config.REDSCREEN_DISABLED).toBe(false)
-    })
-
-    it('should not ignore any logbox warnings', () => {
-      expect(config.LOGBOX_IGNORED_WARNINGS).toStrictEqual([])
-    })
-
     it('should not show demo nfts', () => {
       expect(config.SHOW_DEMO_NFTS).toBe(false)
     })
@@ -32,6 +20,10 @@ describe('DevDebuggingConfig', () => {
 
     it('should not enable Sentry Spotlight', () => {
       expect(config.SENTRY_SPOTLIGHT).toBe(false)
+    })
+
+    it('should not enable new design', () => {
+      expect(config.K2_ALPINE).toBe(false)
     })
   })
 })

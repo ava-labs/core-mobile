@@ -1,4 +1,4 @@
-import { http } from 'msw'
+import { rest } from 'msw'
 import validators from 'tests/fixtures/pvm/validators.json'
 
 const endpoints = {
@@ -9,22 +9,16 @@ const endpoints = {
 
 export const handlers = [
   // pvm
-  http.post(`${endpoints.avalanche}/ext/bc/P`, async ({ request }) => {
-    const body = await request.json()
+  rest.post(`${endpoints.avalanche}/ext/bc/P`, async (req, res, ctx) => {
+    const body = await req.json()
 
-    // @ts-expect-error
-    const { method } = body
-
-    if (method === 'platform.getCurrentValidators') {
+    if (body.method === 'platform.getCurrentValidators') {
       const response = {
         jsonrpc: '2.0',
         result: validators
       }
 
-      return new Response(JSON.stringify(response), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200
-      })
+      return res(ctx.status(200), ctx.json(response))
     }
   })
 ]

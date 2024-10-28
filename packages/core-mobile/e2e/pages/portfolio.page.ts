@@ -5,6 +5,7 @@ import { Platform } from '../helpers/constants'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
+import accountManagePage from './accountManage.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
@@ -148,6 +149,10 @@ class PortfolioPage {
     return by.text(portfolio.benqi)
   }
 
+  get activeNetworkBalance() {
+    return by.id(portfolio.activeNetworkBalance)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -279,8 +284,8 @@ class PortfolioPage {
   }
 
   async tapPolygonNetwork() {
-    await Action.waitForElement(by.id('active_network__Polygon'), 60000)
-    await Action.tapElementAtIndex(by.id('active_network__Polygon'), 0)
+    await Action.waitForElement(by.id('active_network__Polygon Mainnet'), 60000)
+    await Action.tapElementAtIndex(by.id('active_network__Polygon Mainnet'), 0)
   }
 
   async verifyWatchListCarousel(tokens: string[]) {
@@ -346,6 +351,10 @@ class PortfolioPage {
     console.log(output)
     console.log('nothing?')
     return output
+  }
+
+  async verifyAccountName(name: string) {
+    await Assert.hasText(accountManagePage.accountDropdownTitle, name)
   }
 }
 

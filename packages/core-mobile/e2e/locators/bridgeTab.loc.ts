@@ -12,7 +12,6 @@ export default {
   ethereumTestNetwork: 'Ethereum Sepolia',
   ethBridgeTransaction: '0.055 WETH',
   hide: 'Hide',
-  headerBack: 'header_back',
   selectTokenDropdown: 'Select Token',
   wrappedEther: 'Wrapped Ether',
   inputTextField: 'input_text',

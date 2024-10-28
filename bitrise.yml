@@ -577,7 +577,7 @@ workflows:
     - PLATFORM: Android
       opts:
         is_expand: false
-    - ANDROID_BUILD_VARIANT: externale2e
+    - ANDROID_BUILD_VARIANT: externalE2e
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile

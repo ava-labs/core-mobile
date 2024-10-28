@@ -239,6 +239,7 @@ class BrowserPage {
 
   async tapContinue() {
     try {
+      await Actions.waitForElementNoSync(by.text('Continue'), 10000)
       await Actions.tap(by.text('Continue'))
     } catch (e) {
       console.log('The Continue button is not displayed')

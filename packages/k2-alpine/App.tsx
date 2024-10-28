@@ -3,6 +3,7 @@ import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
 import StorybookUI from './.storybook'
+import { K2AlpineThemeProvider } from './src'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -25,5 +26,9 @@ export default function RootLayout(): React.JSX.Element | null {
     return null
   }
 
-  return <StorybookUI />
+  return (
+    <K2AlpineThemeProvider>
+      <StorybookUI />
+    </K2AlpineThemeProvider>
+  )
 }

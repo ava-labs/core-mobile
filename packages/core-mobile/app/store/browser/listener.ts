@@ -1,7 +1,6 @@
 import { AppListenerEffectAPI } from 'store'
 import { AppStartListening } from 'store/middleware/listener'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
-import { historyAdapter } from 'store/browser/utils'
 import { History } from 'store/browser/types'
 import {
   goBackward,
@@ -9,7 +8,10 @@ import {
   selectActiveTab,
   updateActiveHistoryForTab
 } from './slices/tabs'
-import { updateMetadataForHistory } from './slices/globalHistory'
+import {
+  historyAdapterSelectors,
+  updateMetadataForHistory
+} from './slices/globalHistory'
 import { updateFavorite } from './slices/favorites'
 
 const updateActiveHistory = (
@@ -32,9 +34,10 @@ const updateActiveHistory = (
   if (newActiveHistoryIndex !== -1 && !historyId) return
   let history: History | undefined
   if (historyId) {
-    history = historyAdapter
-      .getSelectors()
-      .selectById(state.browser.globalHistory, historyId)
+    history = historyAdapterSelectors.selectById(
+      state.browser.globalHistory,
+      historyId
+    )
   }
 
   listenerApi.dispatch(

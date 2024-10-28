@@ -1,6 +1,5 @@
 export default {
   backButton: 'header_back',
-  backSecondaryButton: 'back_btn',
   inputTextField: 'input_text',
   simpleToastMsg: 'simple_toast_msg',
   jailbrokenWarning: 'jailbroken_warning__text',
@@ -9,5 +8,8 @@ export default {
   testnetBanner: 'testnet_banner',
   notNow: 'Not Now',
   turnOnNotifications: 'Turn on Notifications',
-  searchBar: 'search_bar__search'
+  searchBar: 'search_bar__search',
+  bitcoinSVG: 'bitcoin_svg',
+  avaSVG: 'ava_logo',
+  reloadSVG: 'reload_svg'
 }

@@ -1,9 +1,10 @@
 import React from 'react'
-
 import tinycolor from 'tinycolor2'
-import { View, Text, ScrollView, FlatList } from '../../components/Primitives'
+import { useColorScheme } from 'react-native'
+import { View, Text, FlatList } from '../../components/Primitives'
 import Link from '../../utils/Link'
-import { colors, lightModeColors, darkModeColors } from './colors'
+import { useTheme } from '../..'
+import { colors } from './colors'
 
 const FIGMA_LINK =
   'https://www.figma.com/design/opZ4C1UGzcoGRjxE4ZIE3J/K2-Alpine?node-id=781-3507&node-type=frame&t=J5mVaf37BsbqucdK-0'
@@ -24,9 +25,9 @@ const Color = ({
   return (
     <View
       style={{
+        padding: 12,
         flex: 1,
         backgroundColor: value,
-        height: 75,
         alignItems: 'center',
         justifyContent: 'center'
       }}>
@@ -40,79 +41,65 @@ const Color = ({
   )
 }
 
-export const Tokens = (): JSX.Element => {
+export const Theme = (): JSX.Element => {
+  const {
+    theme: { colors: themeColors }
+  } = useTheme()
+  const colorScheme = useColorScheme()
+
   return (
-    <ScrollView
-      style={{ width: '100%' }}
+    <FlatList
+      style={{ flex: 1, width: '100%' }}
       contentContainerStyle={{
-        top: '5%',
-        alignItems: 'center',
-        paddingBottom: '15%'
-      }}>
-      <Link
-        title="Figma Source"
-        url={FIGMA_LINK}
-        style={{ marginVertical: 20 }}
-      />
-      <Text variant="heading6">Light Mode</Text>
-      <FlatList
-        style={{
-          width: '100%',
-          paddingVertical: 10,
-          marginVertical: 20
-        }}
-        contentContainerStyle={{ gap: 10, marginHorizontal: 10 }}
-        columnWrapperStyle={{ gap: 10 }}
-        data={Object.entries(lightModeColors)}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        renderItem={({ item }: { item: any }) => (
-          <Color key={item[0]} name={item[0]} value={item[1]} />
-        )}
-        numColumns={2}
-      />
-      <Text variant="heading6">Dark Mode</Text>
-      <FlatList
-        style={{
-          width: '100%',
-          paddingVertical: 10,
-          marginVertical: 20
-        }}
-        contentContainerStyle={{ gap: 10, marginHorizontal: 10 }}
-        columnWrapperStyle={{ gap: 10 }}
-        data={Object.entries(darkModeColors)}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        renderItem={({ item }: { item: any }) => (
-          <Color key={item[0]} name={item[0]} value={item[1]} />
-        )}
-        numColumns={2}
-      />
-    </ScrollView>
+        gap: 12,
+        padding: 12
+      }}
+      data={Object.entries(themeColors)}
+      ListHeaderComponent={
+        <View style={{ alignItems: 'center' }}>
+          <Text variant="heading3" style={{ color: themeColors.$textPrimary }}>
+            {colorScheme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+          </Text>
+          <Link
+            title="Figma Source"
+            url={FIGMA_LINK}
+            style={{
+              marginVertical: 20,
+              color: themeColors.$textPrimary
+            }}
+          />
+        </View>
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      renderItem={({ item }: { item: any }) => (
+        <Color key={item[0]} name={item[0]} value={item[1]} />
+      )}
+    />
   )
 }
 
 export const Colors = (): JSX.Element => {
   return (
-    <ScrollView
-      style={{ width: '100%' }}
+    <FlatList
+      style={{ flex: 1, width: '100%' }}
       contentContainerStyle={{
-        top: '5%',
-        alignItems: 'center',
-        paddingBottom: '15%'
-      }}>
-      <Link
-        title="Figma Source"
-        url={FIGMA_LINK}
-        style={{ marginVertical: 20 }}
-      />
-      <FlatList
-        style={{ width: '100%', marginTop: 20 }}
-        contentContainerStyle={{ gap: 10, marginHorizontal: 10 }}
-        data={Object.entries(colors)}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        renderItem={({ item }: { item: any }) => (
-          <Color key={item[0]} name={item[0]} value={item[1]} />
-        )}
-      />
-    </ScrollView>
+        gap: 12,
+        padding: 12
+      }}
+      data={Object.entries(colors)}
+      ListHeaderComponent={
+        <View style={{ alignItems: 'center' }}>
+          <Link
+            title="Figma Source"
+            url={FIGMA_LINK}
+            style={{ marginVertical: 20 }}
+          />
+        </View>
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      renderItem={({ item }: { item: any }) => (
+        <Color key={item[0]} name={item[0]} value={item[1]} />
+      )}
+    />
   )
 }

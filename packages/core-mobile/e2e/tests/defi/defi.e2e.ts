@@ -2,6 +2,7 @@ import AccountManagePage from '../../pages/accountManage.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 import DefiPage from '../../pages/defi.page'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Defi Tab', () => {
   beforeAll(async () => {
@@ -16,7 +17,7 @@ describe('Defi Tab', () => {
   it('Should verify Defi Protocol Items', async () => {
     await DefiPage.tapDefiProtocol()
     await DefiPage.verifyDefiProtocolItems()
-    await DefiPage.tapHeaderBack()
+    await commonElsPage.goBack()
   })
 
   it('Should verify empty screen Defi Items', async () => {

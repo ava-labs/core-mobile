@@ -6,5 +6,7 @@ export default {
   copyPhraseButton: 'Copy Phrase',
   firstMnemonicWord: 'rebel',
   lastMnemonicWord: 'embark',
-  iWroteItDownButton: 'I wrote it down'
+  iWroteItDownButton: 'I wrote it down',
+  analyticsOn: 'analytics_enabled_switch',
+  analyticsOff: 'analytics_disabled_switch'
 }

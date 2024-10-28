@@ -50,5 +50,16 @@ export default {
   twentyFivePercentText: '25%',
   fiftyPercentText: '50%',
   maxText: 'Max',
-  stakeClaimButton: 'stake_claim_btn'
+  stakeClaimButton: 'stake_claim_btn',
+  stakeCardTitle: 'stake_card_title',
+  stakeDetailsTitle: 'stake_details_title',
+  completedStatusChip: 'Completed_status_chip',
+  activeStatusChip: 'Ongoing_status_chip',
+  timeRemaining: 'Time Remaining',
+  transactionIdText: 'Transaction ID',
+  estimatedRewardsId: 'estimated_rewards',
+  timeRemainingId: 'time_remaining',
+  stakedAmountId: 'staked_amount',
+  endDateId: 'end_date',
+  earnedRewardsId: 'earned_rewards'
 }

@@ -31,8 +31,8 @@ const isNotVisible = async (item: Detox.NativeMatcher, index = 0) => {
   await expect(element(item).atIndex(index)).not.toBeVisible()
 }
 
-const hasText = async (item: Detox.NativeMatcher, text: string) => {
-  await expect(element(item)).toHaveText(text)
+const hasText = async (item: Detox.NativeMatcher, text: string, index = 0) => {
+  await expect(element(item).atIndex(index)).toHaveText(text)
 }
 
 const hasValue = async (item: Detox.NativeMatcher, value: string) => {
@@ -50,9 +50,10 @@ const count = async (item: Detox.NativeMatcher, value: number) => {
 
 const hasPartialText = async (
   item: Detox.NativeMatcher,
-  expectedText: string
+  expectedText: string,
+  index = 0
 ) => {
-  const attri = await element(item).getAttributes()
+  const attri = await element(item).atIndex(index).getAttributes()
   if (!('elements' in attri)) {
     assert(
       attri.text?.toString().includes(expectedText),

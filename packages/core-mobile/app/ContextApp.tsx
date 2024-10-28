@@ -10,7 +10,6 @@ import Toast from 'react-native-toast-notifications'
 import JailMonkey from 'jail-monkey'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import { K2ThemeProvider } from '@avalabs/k2-mobile'
-import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { StatusBar, View } from 'react-native'
@@ -23,10 +22,6 @@ import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
 import { useMigrateFromAsyncStorage } from 'hooks/useMigrateFromAsyncStorage'
 
-if (__DEV__) {
-  require('../ReactotronConfig')
-}
-
 function setToast(toast: Toast): void {
   global.toast = toast
 }
@@ -38,13 +33,11 @@ const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
       <PosthogContextProvider>
-        <K2AlpineThemeProvider>
-          <K2ThemeProvider>
-            <ApplicationContextProvider>
-              <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
-            </ApplicationContextProvider>
-          </K2ThemeProvider>
-        </K2AlpineThemeProvider>
+        <K2ThemeProvider>
+          <ApplicationContextProvider>
+            <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
+          </ApplicationContextProvider>
+        </K2ThemeProvider>
       </PosthogContextProvider>
     </ReactQueryProvider>
   </EncryptedStoreProvider>

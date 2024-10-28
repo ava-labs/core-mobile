@@ -5,12 +5,10 @@
 const DevDebuggingConfig = {
   WDYR: false,
   STORYBOOK_ENABLED: false,
-  LOGBOX_DISABLED: false,
-  REDSCREEN_DISABLED: false,
-  LOGBOX_IGNORED_WARNINGS: [],
   SHOW_DEMO_NFTS: false,
   API_MOCKING: false,
-  SENTRY_SPOTLIGHT: false
+  SENTRY_SPOTLIGHT: false,
+  K2_ALPINE: false
 }
 
 export default DevDebuggingConfig
