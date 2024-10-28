@@ -17,6 +17,7 @@ import { valid, compare } from 'semver'
 import { Peer } from '@avalabs/avalanchejs/dist/info/model'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { UTCDate } from '@date-fns/utc'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
@@ -44,15 +45,15 @@ export const getMinimumStakeDurationMs = (isDeveloperMode: boolean): number => {
 
 export const getMinimumStakeEndTime = (
   isDeveloperMode: boolean,
-  stakeStartTime: Date
-): Date => {
+  stakeStartTime: UTCDate
+): UTCDate => {
   return isDeveloperMode
     ? add(stakeStartTime, { hours: 24 })
     : add(stakeStartTime, { weeks: 2 })
 }
 
-export const getMaximumStakeEndDate = (): Date => {
-  return addYears(new Date(), 1)
+export const getMaximumStakeEndDate = (): UTCDate => {
+  return addYears(new UTCDate(), 1)
 }
 
 /**
