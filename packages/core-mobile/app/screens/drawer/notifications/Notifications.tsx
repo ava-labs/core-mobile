@@ -73,11 +73,13 @@ const Notifications = (): JSX.Element => {
           />
         )
       })
-  }, [blockedChannels, isBalanceChangeNotificationsBlocked])
+  }, [blockedChannels, disabledChannels])
 
   return (
     <View style={{ marginTop: 20 }}>
-      {showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
+      {showAllowPushNotificationsCard && (
+        <AllowPushNotificationsCard disabledChannels={disabledChannels} />
+      )}
       {renderNotificationToggles()}
     </View>
   )
@@ -135,14 +137,23 @@ function NotificationToggle({
   )
 }
 
-function AllowPushNotificationsCard(): JSX.Element {
+function AllowPushNotificationsCard({
+  disabledChannels
+}: {
+  disabledChannels: Record<string, boolean>
+}): JSX.Element {
   const { theme } = useApplicationContext()
   const dispatch = useDispatch()
 
   function onEnterSettings(): void {
-    notificationChannels.forEach(channel => {
-      dispatch(setNotificationSubscriptions([channel.id, true]))
-    })
+    // enable all channels that are not disabled
+    notificationChannels
+      .filter(channel => {
+        return !disabledChannels[channel.id]
+      })
+      .forEach(channel => {
+        dispatch(setNotificationSubscriptions([channel.id, true]))
+      })
     NotificationsService.getAllPermissions().catch(Logger.error)
   }
 

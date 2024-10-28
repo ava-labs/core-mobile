@@ -9,10 +9,10 @@ import { ChannelId } from 'services/notifications/channels'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
 import { AppListenerEffectAPI } from 'store/index'
-import { selectHasPromptedForBalanceChange } from '../slice'
+import { selectNotificationSubscription } from '../slice'
 
 jest.mock('../slice', () => ({
-  selectHasPromptedForBalanceChange: jest.fn()
+  selectNotificationSubscription: jest.fn()
 }))
 
 jest.mock('store/account', () => ({
@@ -61,7 +61,7 @@ describe('subscribeBalanceChangeNotifications', () => {
     } as unknown as AppListenerEffectAPI
 
     jest.clearAllMocks()
-    ;(selectHasPromptedForBalanceChange as jest.Mock).mockReturnValue(true)
+    ;(selectNotificationSubscription as jest.Mock).mockReturnValue(() => true)
   })
 
   it('should skip subscription if there are no accounts', async () => {
@@ -74,8 +74,8 @@ describe('subscribeBalanceChangeNotifications', () => {
     expect(subscribeForBalanceChange).not.toHaveBeenCalled()
   })
 
-  it('should skip subscription if user has not been prompted before', async () => {
-    ;(selectHasPromptedForBalanceChange as jest.Mock).mockReturnValue(false)
+  it('should skip subscription if user has not enabled balance change notifications', async () => {
+    ;(selectNotificationSubscription as jest.Mock).mockReturnValue(() => false)
 
     await subscribeBalanceChangeNotifications(listenerApi)
 
