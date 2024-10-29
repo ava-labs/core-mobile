@@ -1669,7 +1669,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156523611" \
 }
 EOF
 
-# Updates the monitor for app start time
+# Updates the monitor for memory use
 echo "Updating monitor for memory use"
 curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 -H "Accept: application/json" \
@@ -1685,8 +1685,8 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 	"tags": [],
 	"options": {
 		"thresholds": {
-			"critical": 734000000,
-			"warning": 713030000
+			"critical": 1048580000,
+			"warning": 838860000
 		},
 		"enable_logs_sample": false,
 		"notify_audit": false,
