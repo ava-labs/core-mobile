@@ -1,4 +1,4 @@
-echo "This is the build number: $BUILD_NUMBER"
+echo "This is the build number: $BITRISE_BUILD_NUMBER"
 
 # Updates the dashboard to use the latest build number for the version
 curl -X PUT \
@@ -1010,7 +1010,7 @@ curl -X PUT \
                         "id": 7860422761109870,
                         "definition":
                         {
-                            "title": "iOS Application Start Time (Version: $BUILD_NUMBER)",
+                            "title": "iOS Application Start Time (Version: $BITRISE_BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1028,7 +1028,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BITRISE_BUILD_NUMBER service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1076,7 +1076,7 @@ curl -X PUT \
                         "id": 4656190487528324,
                         "definition":
                         {
-                            "title": "iOS Errors (Version: $BUILD_NUMBER)",
+                            "title": "iOS Errors (Version: $BITRISE_BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1094,7 +1094,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:error @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:error @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @os.name:iOS -version:<$BITRISE_BUILD_NUMBER service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1146,7 +1146,7 @@ curl -X PUT \
                             {
                                 "hide_incomplete_cost_data": true
                             },
-                            "title": "iOS Memory Consumption (Version: $BUILD_NUMBER)",
+                            "title": "iOS Memory Consumption (Version: $BITRISE_BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1164,7 +1164,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BITRISE_BUILD_NUMBER service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1214,7 +1214,7 @@ curl -X PUT \
                         {
                             "time":
                             {},
-                            "title": "iOS average Click or Tap load time (Version: $BUILD_NUMBER)",
+                            "title": "iOS average Click or Tap load time (Version: $BITRISE_BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1227,7 +1227,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
+                                                "query": "@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BITRISE_BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1280,7 +1280,7 @@ curl -X PUT \
                             {
                                 "hide_incomplete_cost_data": true
                             },
-                            "title": "iOS Build Action Loading Time (Version: $BUILD_NUMBER)",
+                            "title": "iOS Build Action Loading Time (Version: $BITRISE_BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1298,7 +1298,7 @@ curl -X PUT \
                                             },
                                             "search":
                                             {
-                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS service:org.avalabs.corewallet -version:<$BUILD_NUMBER"
+                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:iOS service:org.avalabs.corewallet -version:<$BITRISE_BUILD_NUMBER"
                                             },
                                             "indexes":
                                             [
@@ -1424,7 +1424,7 @@ curl -X PUT \
                         "id": 2961425376476106,
                         "definition":
                         {
-                            "title": "iOS Memory Consumption by View Name (Version: $BUILD_NUMBER)",
+                            "title": "iOS Memory Consumption by View Name (Version: $BITRISE_BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
                             [
@@ -1442,7 +1442,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BITRISE_BUILD_NUMBER service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1542,7 +1542,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156523611" \
 {
     "name": "[core-mobile] App startup time on iOS exceeds 4 seconds",
     "type": "rum alert",
-    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
+    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BITRISE_BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
     "message": "{{#is_alert}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is over the accepted threshold of 4 seconds.  Double check the changes made today and revert or update to decrease app start time{{/is_alert}}\n\n{{#is_warning}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is approaching the acceptable threshold of 4 seconds{{/is_warning}}\n\n{{#is_recovery}}Average app start time has recovered at {{rum.attributes.[action.loading_time]}} which is below the acceptable threshold of 4 seconds{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
     "tags":
     [],
@@ -1581,7 +1581,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 {
 	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on iOS",
 	"type": "rum alert",
-	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
+	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BITRISE_BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
 	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
@@ -1615,7 +1615,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156721804" \
 	"name": "[core-mobile] Crash Free Sessions has dropped below 100% on iOS",
 	"type": "rum alert",
 	"query": "formula(\"(1 - query2 / query1) * 100\").last(\"5m\") < 99",
-	"message": "{{#is_alert}}Crash free sessions has dropped below 99% for version $BUILD_NUMBER! Please check test results and error reports to traceback this crash{{/is_alert}}\n\n{{#is_recovery}}Crash free sessions has returned to 100% for version $BUILD_NUMBER. Nice work!{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+	"message": "{{#is_alert}}Crash free sessions has dropped below 99% for version $BITRISE_BUILD_NUMBER! Please check test results and error reports to traceback this crash{{/is_alert}}\n\n{{#is_recovery}}Crash free sessions has returned to 100% for version $BITRISE_BUILD_NUMBER. Nice work!{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {
@@ -1637,7 +1637,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156721804" \
 				},
 				"group_by": [],
 				"search": {
-					"query": "@type:session @session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user service:org.avalabs.corewallet @os.name:iOS -version:<$BUILD_NUMBER"
+					"query": "@type:session @session.crash.count:>0 @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user service:org.avalabs.corewallet @os.name:iOS -version:<$BITRISE_BUILD_NUMBER"
 				},
 				"storage": "hot"
 			},
@@ -1684,7 +1684,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156807630" \
 {
 	"name": "[core-mobile] Click and Tap Actions are excessively slow on iOS",
 	"type": "rum alert",
-	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
+	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BITRISE_BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
 	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
