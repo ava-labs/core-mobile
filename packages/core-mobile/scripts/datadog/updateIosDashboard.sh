@@ -1705,3 +1705,92 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156807630" \
 	}
 }
 EOF
+
+# Updates the monitor for frozen frames
+echo "Updating monitor for frozen frames"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157112517" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core-mobile] Percentage of frozen frames is above threshold for iOS and version $BUILD_NUMBER",
+	"type": "rum alert",
+	"query": "formula(\"100 * (query1 / query2)\").last(\"5m\") > 15",
+	"message": "{{#is_alert}}The percentage of frozen frames is above the set threshold of 15% for version {{version.name}}.  Please check your changes and optimize your code to dismiss this alert.{{/is_alert}}\n\n{{#is_alert_to_warning}}The percentage of frozen frames is above 13% for version {{version.name}}.  This is close to the acceptable threshold of 15%.{{/is_alert_to_warning}}\n\n{{#is_alert_recovery}}Percentage of frozen frames has recovered for {{version.name}}.  Nice work!{{/is_alert_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 15,
+			"warning": 13,
+			"critical_recovery": 13,
+			"warning_recovery": 12.5
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"variables": [
+			{
+				"data_source": "rum",
+				"name": "query1",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@view.id"
+				},
+				"group_by": [
+					{
+						"facet": "version",
+						"limit": 10,
+						"sort": {
+							"order": "desc",
+							"aggregation": "cardinality",
+							"metric": "@view.id"
+						}
+					}
+				],
+				"search": {
+					"query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" version:3970 @os.name:iOS"
+				},
+				"storage": "hot"
+			},
+			{
+				"data_source": "rum",
+				"name": "query2",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@view.id"
+				},
+				"group_by": [
+					{
+						"facet": "version",
+						"limit": 10,
+						"sort": {
+							"order": "desc",
+							"aggregation": "cardinality",
+							"metric": "@view.id"
+						}
+					}
+				],
+				"search": {
+					"query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:iOS version:3970"
+				}
+			}
+		],
+		"include_tags": true,
+		"new_group_delay": 60,
+		"notification_preset_name": "hide_query",
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
