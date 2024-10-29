@@ -1777,7 +1777,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157112708" \
 					}
 				],
 				"search": {
-					"query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" version:3970 @os.name:Android"
+					"query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" version:$BUILD_NUMBER @os.name:Android"
 				},
 				"storage": "hot"
 			},
@@ -1803,7 +1803,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157112708" \
 					}
 				],
 				"search": {
-					"query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:Android version:3970"
+					"query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:Android version:$BUILD_NUMBER"
 				}
 			}
 		],
