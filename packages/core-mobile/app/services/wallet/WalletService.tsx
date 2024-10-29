@@ -22,7 +22,7 @@ import { Account } from 'store/account/types'
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils } from '@avalabs/avalanchejs'
-import { getUnixTime } from 'date-fns'
+import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
@@ -533,7 +533,7 @@ class WalletService {
 
     const minimalStakeEndDate = getMinimumStakeEndTime(
       isDevMode,
-      new UTCDate(startDate * 1000)
+      new UTCDate(secondsToMilliseconds(startDate))
     )
 
     if (endDate < getUnixTime(minimalStakeEndDate)) {
