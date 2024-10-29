@@ -1802,3 +1802,73 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157112708" \
 	}
 }
 EOF
+
+# Updates the monitor for crash free sessions
+echo "Updating monitor for crash free sessions"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157022810" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core-mobile] Crash Free Sessions has dropped below 100% for Android",
+	"type": "rum alert",
+	"query": "formula(\"(1 - query2 / query1) * 100\").last(\"5m\") < 99",
+	"message": "{{#is_alert}}Crash free sessions has dropped below 99% for version $BUILD_NUMBER! Please check test results and error reports to traceback this crash{{/is_alert}}\n\n{{#is_recovery}}Crash free sessions has returned to 100% for version $BUILD_NUMBER. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 99
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"variables": [
+			{
+				"data_source": "rum",
+				"name": "query2",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@session.id"
+				},
+				"group_by": [],
+				"search": {
+					"query": "@type:session @session.crash.count:>0 @session.type:user service:org.avalabs.corewallet @os.name:Android -version:<$BUILD_NUMBER"
+				},
+				"storage": "hot"
+			},
+			{
+				"data_source": "rum",
+				"name": "query1",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@session.id"
+				},
+				"group_by": [],
+				"search": {
+					"query": "@type:session @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user"
+				}
+			}
+		],
+		"include_tags": false,
+		"renotify_interval": 60,
+		"renotify_statuses": [
+			"alert"
+		],
+		"escalation_message": "",
+		"new_host_delay": 300,
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
