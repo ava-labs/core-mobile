@@ -22,7 +22,7 @@ import { Account } from 'store/account/types'
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils } from '@avalabs/avalanchejs'
-import { fromUnixTime, getUnixTime } from 'date-fns'
+import { getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { Avax } from 'types/Avax'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
@@ -30,6 +30,7 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
+import { UTCDate } from '@date-fns/utc'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -533,7 +534,7 @@ class WalletService {
 
     const minimalStakeEndDate = getMinimumStakeEndTime(
       isDevMode,
-      fromUnixTime(startDate)
+      new UTCDate(startDate * 1000)
     )
 
     if (endDate < getUnixTime(minimalStakeEndDate)) {
