@@ -1681,7 +1681,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on iOS",
 	"type": "rum alert",
 	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
-	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+	"message": "{{#is_alert}}Memory use is over 1000mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 800mb which is approaching the acceptable threshold of 1000 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {
