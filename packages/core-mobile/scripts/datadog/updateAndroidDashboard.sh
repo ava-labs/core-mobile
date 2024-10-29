@@ -1690,3 +1690,42 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157023465" \
 	}
 }
 EOF
+
+# Updates the monitor for app start time
+echo "Updating monitor for app start time"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157091244" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+    "name": "[core-mobile] App startup time on Android exceeds 7 seconds",
+    "type": "rum alert",
+    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
+    "message": "{{#is_alert}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is over the accepted threshold of 7 seconds.  Double check the changes made today and revert or update to decrease app start time{{/is_alert}}\n\n{{#is_warning}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is approaching the acceptable threshold of 7 seconds{{/is_warning}}\n\n{{#is_recovery}}Average app start time has recovered at {{rum.attributes.[action.loading_time]}} which is below the acceptable threshold of 7 seconds{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+    "tags":
+    [],
+    "options":
+    {
+        "thresholds":
+        {
+            "critical": 4000000000,
+            "warning": 3500000000
+        },
+        "enable_logs_sample": false,
+        "notify_audit": false,
+        "on_missing_data": "default",
+        "include_tags": true,
+        "new_group_delay": 60,
+        "notification_preset_name": "hide_query",
+        "groupby_simple_monitor": false
+    },
+    "priority": null,
+    "restriction_policy":
+    {
+        "bindings":
+        []
+    }
+}
+EOF
