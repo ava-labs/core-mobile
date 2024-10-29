@@ -104,6 +104,7 @@
     "ethers": "6.8.1",
     "events": "3.3.0",
     "expo": "50.0.21",
+    "expo-blur": "12.9.2",
     "expo-constants": "15.4.6",
     "expo-linking": "6.2.2",
     "expo-router": "3.4.10",

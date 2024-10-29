@@ -285,6 +285,7 @@ __metadata:
     ethers: 6.8.1
     events: 3.3.0
     expo: 50.0.21
+    expo-blur: 12.9.2
     expo-constants: 15.4.6
     expo-linking: 6.2.2
     expo-router: 3.4.10
@@ -498,7 +499,9 @@ __metadata:
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 50.0.21
+    expo-blur: 12.9.2
     expo-font: 11.10.3
+    expo-linear-gradient: 12.7.2
     expo-splash-screen: 0.27.6
     expo-status-bar: 1.12.1
     json-stringify-pretty-compact: 4.0.0
@@ -508,6 +511,8 @@ __metadata:
     react-native: 0.73.7
     react-native-reanimated: 3.8.0
     react-native-safe-area-context: 4.11.0
+    react-native-svg: 15.7.1
+    react-native-svg-transformer: 1.5.0
     tinycolor2: 1.6.0
     typescript: 5.6.3
   peerDependencies:
@@ -16748,6 +16753,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:12.9.2":
+  version: 12.9.2
+  resolution: "expo-blur@npm:12.9.2"
+  peerDependencies:
+    expo: "*"
+  checksum: 56be7adc400d01a541ba92a8f35efa4295e57750f0736c73b2890a006ce873f646df3b08c822073fc7b34c984cb213aef135f133b0fc97a28c4eb89afb4676bd
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:15.4.6, expo-constants@npm:~15.4.0, expo-constants@npm:~15.4.3":
   version: 15.4.6
   resolution: "expo-constants@npm:15.4.6"
@@ -16785,6 +16799,15 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: d06b2e6b6e6b49d901546a93c6c39b8562ce313a7585cb118e67b8deca109d06abdf66e508d2a4be83528bee2e52762632b9e792031f39fed8e81ab2900fc8be
+  languageName: node
+  linkType: hard
+
+"expo-linear-gradient@npm:12.7.2":
+  version: 12.7.2
+  resolution: "expo-linear-gradient@npm:12.7.2"
+  peerDependencies:
+    expo: "*"
+  checksum: afe4daf423dcaa02900a1252eb670a75089b9c9837bff2bd7f76199b7ad76f4b48efadaeec773b4d328456d9e8e3d56f68f9f665312681e1537adadbd97b54ff
   languageName: node
   linkType: hard
 
@@ -25550,7 +25573,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d396f3dea807077e8789e1d463c87024e1633481d3dff53c0650c82a08d8b7d699db97ceab4e8d2c9de85c3d5378d192c968487254c62edadff77e82a9b8c929
+  checksum: a187edd718e1ea3a6b1e5da167744e6ee324bc3c3e492bcb0a9d028ab68a82907f053f37c23aa4229d6a9091541cee3c73549c3c850056e4cf5eb5b3cb2c9ffc
   languageName: node
   linkType: hard
 

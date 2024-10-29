@@ -1,0 +1,127 @@
+import React, { FC, PropsWithChildren, useState } from 'react'
+import { StyleSheet, Switch } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { ScrollView, Text, View } from '../Primitives'
+import Link from '../../utils/Link'
+import { useTheme } from '../..'
+import { Button, ButtonSize, ButtonType } from './Button'
+
+export default {
+  title: 'Button'
+}
+
+export const All = (): JSX.Element => {
+  const types: ButtonType[] = ['primary', 'secondary', 'tertiary']
+  const sizes: ButtonSize[] = ['large', 'medium', 'small']
+  const [isBlurTesting, setIsBlurTesting] = useState(false)
+  const { theme } = useTheme()
+
+  const renderRow = (type: ButtonType, disabled?: boolean): JSX.Element => {
+    return (
+      <View style={styles.row}>
+        {sizes.map((size, index) => (
+          <Button
+            type={type}
+            size={size}
+            key={index}
+            disabled={disabled}
+            style={{ marginRight: index !== sizes.length - 1 ? 10 : 0 }}>
+            {disabled ? 'disabled' : type}
+          </Button>
+        ))}
+      </View>
+    )
+  }
+
+  const BackgroundComponent = isBlurTesting ? BackgroundForBlur : View
+
+  return (
+    <BackgroundComponent
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: theme.colors.$surfacePrimary
+      }}>
+      <ScrollView
+        style={{ width: '100%', backgroundColor: 'transparent' }}
+        contentContainerStyle={{ padding: 16 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20
+          }}>
+          <Link title="Figma Source" url={FIGMA_LINK} />
+          <View
+            style={{
+              gap: 8,
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}>
+            <Text>Blur Test</Text>
+            <Switch value={isBlurTesting} onValueChange={setIsBlurTesting} />
+          </View>
+        </View>
+        {types.map((type, index) => (
+          <View
+            key={index}
+            style={{
+              marginBottom: 16
+            }}>
+            {renderRow(type)}
+          </View>
+        ))}
+        {renderRow('primary', true)}
+        <View style={{ height: 60 }} />
+        {types.map((type, index) => (
+          <Button
+            type={type}
+            size="large"
+            leftIcon="check"
+            rightIcon="expandMore"
+            style={{
+              marginBottom: 16,
+              width: 300
+            }}
+            key={index}>
+            {type}
+          </Button>
+        ))}
+        <Button
+          type={'primary'}
+          size="large"
+          leftIcon="check"
+          rightIcon="expandMore"
+          disabled={true}
+          style={{
+            width: 300
+          }}>
+          disabled
+        </Button>
+        <View style={{ height: 160 }} />
+      </ScrollView>
+    </BackgroundComponent>
+  )
+}
+
+const BackgroundForBlur: FC<PropsWithChildren> = ({ children }) => (
+  <LinearGradient
+    colors={['#ff4500', '#ff7f00', '#ffa500', '#ffd700', '#ffff00']}
+    style={{
+      width: '100%',
+      flex: 1
+    }}>
+    {children}
+  </LinearGradient>
+)
+
+const styles = StyleSheet.create({
+  row: {
+    alignItems: 'flex-start',
+    flexDirection: 'row'
+  }
+})
+
+const FIGMA_LINK =
+  'https://www.figma.com/design/opZ4C1UGzcoGRjxE4ZIE3J/K2-Alpine?node-id=7-1465&m=dev'
