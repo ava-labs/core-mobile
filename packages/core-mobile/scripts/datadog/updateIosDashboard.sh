@@ -14,6 +14,7 @@ curl -X PUT \
     "widgets":
     [
         {
+            "id": 5438560121823793,
             "definition":
             {
                 "title": "Overall Performance",
@@ -1073,6 +1074,106 @@ curl -X PUT \
                         }
                     },
                     {
+                        "id": 7507642501731692,
+                        "definition":
+                        {
+                            "time":
+                            {},
+                            "title": "iOS Percentage of Frozen Frames for Version: $BUILD_NUMBER",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "100 * (query1 / query2)"
+                                        }
+                                    ],
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "query1",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" @os.name:iOS version:$BUILD_NUMBER"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "cardinality",
+                                                        "order": "desc",
+                                                        "metric": "@view.id"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
+                                        },
+                                        {
+                                            "name": "query2",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:iOS"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "cardinality",
+                                                        "order": "desc",
+                                                        "metric": "@view.id"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "response_format": "scalar",
+                                    "style":
+                                    {
+                                        "palette": "datadog16"
+                                    }
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 0,
+                            "y": 3,
+                            "width": 12,
+                            "height": 3
+                        }
+                    },
+                    {
                         "id": 4656190487528324,
                         "definition":
                         {
@@ -1133,7 +1234,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 3,
+                            "y": 6,
                             "width": 6,
                             "height": 3
                         }
@@ -1203,7 +1304,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 3,
+                            "y": 6,
                             "width": 6,
                             "height": 3
                         }
@@ -1212,8 +1313,6 @@ curl -X PUT \
                         "id": 4466470907554154,
                         "definition":
                         {
-                            "time":
-                            {},
                             "title": "iOS average Click or Tap load time (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1267,7 +1366,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 6,
+                            "y": 9,
                             "width": 6,
                             "height": 3
                         }
@@ -1345,7 +1444,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 6,
+                            "y": 9,
                             "width": 6,
                             "height": 3
                         }
@@ -1415,7 +1514,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 9,
+                            "y": 12,
                             "width": 6,
                             "height": 3
                         }
@@ -1481,7 +1580,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 9,
+                            "y": 12,
                             "width": 6,
                             "height": 3
                         }
@@ -1491,9 +1590,9 @@ curl -X PUT \
             "layout":
             {
                 "x": 0,
-                "y": 0,
+                "y": 14,
                 "width": 12,
-                "height": 13,
+                "height": 16,
                 "is_column_break": true
             }
         }
