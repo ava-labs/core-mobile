@@ -1041,7 +1041,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER @os.name:Android service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1091,7 +1091,7 @@ curl -X PUT \
                         {
                             "time":
                             {},
-                            "title": "iOS Percentage of Frozen Frames for Version: $BUILD_NUMBER",
+                            "title": "Android Percentage of Frozen Frames for Version: $BUILD_NUMBER",
                             "type": "treemap",
                             "requests":
                             [
