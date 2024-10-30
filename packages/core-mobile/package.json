@@ -201,6 +201,7 @@
     "@babel/preset-env": "7.25.7",
     "@babel/preset-typescript": "7.25.7",
     "@babel/runtime": "7.25.7",
+    "@datadog/datadog-ci": "^2.44.0",
     "@dlenroc/testrail": "1.9.1",
     "@lavamoat/allow-scripts": "3.2.1",
     "@playwright/test": "1.48.0",
