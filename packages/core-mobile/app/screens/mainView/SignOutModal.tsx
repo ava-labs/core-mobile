@@ -1,8 +1,16 @@
 import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import WarningModal from 'components/WarningModal'
+import AvaText from 'components/AvaText'
+import { Button, View } from '@avalabs/k2-mobile'
+import { Space } from 'components/Space'
+import FlexSpacer from 'components/FlexSpacer'
+import SlideToConfirm from 'screens/earn/components/SlideToConfirm'
 
-const SignOutModal = ({ onConfirm }: { onConfirm: () => void }) => {
+const SignOutModal = ({
+  onConfirm
+}: {
+  onConfirm: () => void
+}): JSX.Element => {
   const { goBack, canGoBack } = useNavigation()
 
   const onClose = useCallback(() => {
@@ -12,16 +20,26 @@ const SignOutModal = ({ onConfirm }: { onConfirm: () => void }) => {
   }, [canGoBack, goBack])
 
   return (
-    <WarningModal
-      title={'Are you sure you want to delete your wallet?'}
-      message={
-        'This will remove all wallet related data from your device. This cannot be undone. \n\nYou can always recover this wallet with your recovery phrase. Core wallet does not store your recovery phrase.'
-      }
-      actionText={'I understand, continue'}
-      dismissText={'Cancel'}
-      onAction={onConfirm}
-      onDismiss={onClose}
-    />
+    <View style={{ flex: 1, padding: 16 }}>
+      <AvaText.LargeTitleBold>
+        {`Are you sure you\nwant to delete\nyour wallet?`}
+      </AvaText.LargeTitleBold>
+      <Space y={5} />
+      <AvaText.Body1>
+        If you continue, the current wallet session will be terminated and you
+        will need to recover your wallet using a social login or recovery
+        phrase.
+      </AvaText.Body1>
+      <FlexSpacer />
+      <SlideToConfirm onConfirm={onConfirm} text={'Slide to confirm'} />
+      <Button
+        type="tertiary"
+        size="xlarge"
+        style={{ marginTop: 16 }}
+        onPress={onClose}>
+        Cancel
+      </Button>
+    </View>
   )
 }
 
