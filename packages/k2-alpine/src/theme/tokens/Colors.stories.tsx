@@ -111,7 +111,18 @@ export const Glasses = (): JSX.Element => {
 
   return (
     <LinearGradient
-      colors={['#ff4500', '#ff7f00', '#ffa500', '#ffd700', '#ffff00']}
+      colors={[
+        '#ff4500', // Deep orange
+        '#ff7f00', // Lighter orange
+        '#ffcc00', // Gold
+        '#33cc33', // Green
+        '#0099ff', // Blue
+        '#663399', // Purple
+        '#ff66cc' // Pink
+      ]}
+      locations={[0, 0.15, 0.35, 0.55, 0.7, 0.85, 1]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={{
         width: '100%',
         flex: 1
