@@ -4,7 +4,7 @@ import { text } from './tokens/text'
 
 export const darkTheme = makeTheme({
   types: {
-    onlyAllowThemeValues: 'always',
+    onlyAllowThemeValues: 'never',
     reactNativeTypesOnly: true
   },
   colors: darkModeColors,
