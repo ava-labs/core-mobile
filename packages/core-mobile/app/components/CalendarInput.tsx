@@ -17,7 +17,7 @@ interface CalendarInputProps {
   maximumDate?: Date
 }
 
-const EmptyComponent = () => null
+const EmptyComponent: React.FC = () => null
 
 export const CalendarInput: React.FC<CalendarInputProps> = ({
   date,
@@ -32,7 +32,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
   const positionRef = useRef<View>(null)
   const [position, setPosition] = useState(0)
 
-  const handleDateConfirm = (dateInput: Date) => {
+  const handleDateConfirm = (dateInput: Date): void => {
     onDateSelected(dateInput)
 
     if (Platform.OS === 'android') {
@@ -41,15 +41,16 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
       setIsDatePickerVisible(false)
     }
   }
-  const showDatePicker = () => {
+  const showDatePicker = (): void => {
     setIsDatePickerVisible(true)
   }
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     setIsDatePickerVisible(false)
   }
 
-  const handlOnLayout = () => {
+  const handlOnLayout = (): void => {
+    // eslint-disable-next-line max-params
     positionRef.current?.measure((x, y, width, height, pageX, pageY) => {
       setPosition(pageY + height)
     })
@@ -74,6 +75,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
       </Pressable>
       <View>
         <DateTimePickerModal
+          testID="dateTimePicker"
           display="inline"
           isVisible={isDatePickerVisible}
           mode="date"
