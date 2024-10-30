@@ -3,7 +3,6 @@ enum Root {
   Onboard = 'Root.Onboard',
   RefreshToken = 'Root.RefreshToken',
   CopyPhraseWarning = 'Root.CopyPhraseWarning',
-  ForgotPin = 'Root.ForgotPin',
   VerifyTotpCode = 'Root.VerifyTotpCode',
   RecoveryMethods = 'Root.RecoveryMethods',
   SelectRecoveryMethods = 'Root.SelectRecoveryMethods'
@@ -44,7 +43,9 @@ enum LoginWithMnemonicStackScreens {
   CreatePin = 'LoginWithMnemonicStackScreens.CreatePin',
   BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin',
   TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions',
-  Loader = 'LoginWithMnemonicStackScreens.Loader'
+  Loader = 'LoginWithMnemonicStackScreens.Loader',
+  PinOrBiometry = 'LoginWithMnemonicStackScreens.PinOrBiometry',
+  ForgotPin = 'LoginWithMnemonicStackScreens.ForgotPin'
 }
 
 enum WalletScreens {
