@@ -28,8 +28,6 @@ curl -X PUT \
                             "title": " App Startup Time",
                             "title_size": "16",
                             "title_align": "left",
-                            "time":
-                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -118,8 +116,6 @@ curl -X PUT \
                             "title": "Refresh Rate",
                             "title_size": "16",
                             "title_align": "left",
-                            "time":
-                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -200,8 +196,6 @@ curl -X PUT \
                             "title": "Crash free Sessions",
                             "title_size": "16",
                             "title_align": "left",
-                            "time":
-                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -309,8 +303,6 @@ curl -X PUT \
                             "title": "Memory Average",
                             "title_size": "16",
                             "title_align": "left",
-                            "time":
-                            {},
                             "type": "query_value",
                             "requests":
                             [
@@ -412,8 +404,6 @@ curl -X PUT \
                             "title": "Android Views with the most frozen frames",
                             "title_size": "16",
                             "title_align": "left",
-                            "time":
-                            {},
                             "type": "toplist",
                             "requests":
                             [
@@ -554,8 +544,6 @@ curl -X PUT \
                             "title": "Android views with the highest percentage of slow renders",
                             "title_size": "16",
                             "title_align": "left",
-                            "time":
-                            {},
                             "type": "toplist",
                             "requests":
                             [
@@ -685,8 +673,6 @@ curl -X PUT \
                         "id": 7403012191699538,
                         "definition":
                         {
-                            "time":
-                            {},
                             "title": "Android Long Task Duration by View Name (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1055,7 +1041,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER @os.name:Android service:org.avalabs.corewallet"
                                             },
                                             "indexes":
                                             [
@@ -1095,6 +1081,106 @@ curl -X PUT \
                         {
                             "x": 0,
                             "y": 0,
+                            "width": 12,
+                            "height": 3
+                        }
+                    },
+                    {
+                        "id": 3399978578368796,
+                        "definition":
+                        {
+                            "time":
+                            {},
+                            "title": "Android Percentage of Frozen Frames for Version: $BUILD_NUMBER",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "100 * (query1 / query2)"
+                                        }
+                                    ],
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "query1",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" @os.name:Android version:$BUILD_NUMBER"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "cardinality",
+                                                        "order": "desc",
+                                                        "metric": "@view.id"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
+                                        },
+                                        {
+                                            "name": "query2",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:Android version:$BUILD_NUMBER"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "cardinality",
+                                                        "order": "desc",
+                                                        "metric": "@view.id"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "response_format": "scalar",
+                                    "style":
+                                    {
+                                        "palette": "datadog16"
+                                    }
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 0,
+                            "y": 3,
                             "width": 12,
                             "height": 3
                         }
@@ -1160,7 +1246,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 3,
+                            "y": 6,
                             "width": 6,
                             "height": 4
                         }
@@ -1230,7 +1316,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 3,
+                            "y": 6,
                             "width": 6,
                             "height": 4
                         }
@@ -1292,7 +1378,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 7,
+                            "y": 10,
                             "width": 6,
                             "height": 4
                         }
@@ -1370,7 +1456,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 7,
+                            "y": 10,
                             "width": 6,
                             "height": 4
                         }
@@ -1440,7 +1526,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 11,
+                            "y": 14,
                             "width": 6,
                             "height": 4
                         }
@@ -1449,8 +1535,6 @@ curl -X PUT \
                         "id": 2961425376476106,
                         "definition":
                         {
-                            "time":
-                            {},
                             "title": "Android Memory Consumption by View Name (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1508,7 +1592,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 11,
+                            "y": 14,
                             "width": 6,
                             "height": 4
                         }
@@ -1520,7 +1604,7 @@ curl -X PUT \
                 "x": 0,
                 "y": 16,
                 "width": 12,
-                "height": 16,
+                "height": 19,
                 "is_column_break": true
             }
         }
@@ -1558,38 +1642,169 @@ curl -X PUT \
 }
 EOF
 
-# Updates the monitor for Click or Tap actions
-echo "Updating monitor for click or tap actions"
-curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157020766" \
+# Updates the monitor for memory use
+echo "Updating monitor for memory use"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157023465" \
 -H "Accept: application/json" \
 -H "Content-Type: application/json" \
 -H "DD-API-KEY: $DD_API_KEY" \
 -H "DD-APPLICATION-KEY: $DD_APP_KEY" \
 -d @- << EOF
 {
-	"name": "[core-mobile] Click and Tap Actions are excessively slow on Android",
+	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on Android",
 	"type": "rum alert",
-	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:Android service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
-	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
+	"query": "rum(\"@type:view @os.name:Android -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
+	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {
-			"critical": 15000000,
-			"warning": 10000000
+			"critical": 734000000,
+			"warning": 713030000
 		},
 		"enable_logs_sample": false,
 		"notify_audit": false,
 		"on_missing_data": "default",
 		"include_tags": true,
-		"new_group_delay": 60
+		"new_group_delay": 60,
+		"groupby_simple_monitor": false
 	},
 	"priority": null,
-	"restricted_roles": null
+	"restriction_policy": {
+		"bindings": []
+	}
 }
 EOF
 
-# Updates the monitor for Crash Free Sessions
-echo "Updating monitor for Crash Free Sessions for Android"
+# Updates the monitor for app start time
+echo "Updating monitor for app start time"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157091244" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+    "name": "[core-mobile] App startup time on Android exceeds 7 seconds",
+    "type": "rum alert",
+    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
+    "message": "{{#is_alert}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is over the accepted threshold of 7 seconds.  Double check the changes made today and revert or update to decrease app start time{{/is_alert}}\n\n{{#is_warning}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is approaching the acceptable threshold of 7 seconds{{/is_warning}}\n\n{{#is_recovery}}Average app start time has recovered at {{rum.attributes.[action.loading_time]}} which is below the acceptable threshold of 7 seconds{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+    "tags":
+    [],
+    "options":
+    {
+        "thresholds":
+        {
+            "critical": 4000000000,
+            "warning": 3500000000
+        },
+        "enable_logs_sample": false,
+        "notify_audit": false,
+        "on_missing_data": "default",
+        "include_tags": true,
+        "new_group_delay": 60,
+        "notification_preset_name": "hide_query",
+        "groupby_simple_monitor": false
+    },
+    "priority": null,
+    "restriction_policy":
+    {
+        "bindings":
+        []
+    }
+}
+EOF
+
+# Updates the monitor for frozen frames
+echo "Updating monitor for frozen frames"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157112708" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core-mobile] Percentage of frozen frames is above threshold for Android",
+	"type": "rum alert",
+	"query": "formula(\"100 * (query1 / query2)\").last(\"5m\") > 15",
+	"message": "{{#is_alert}}The percentage of frozen frames is above the set threshold of 15% for version {{version.name}}.  Please check your changes and optimize your code to dismiss this alert.{{/is_alert}}\n\n{{#is_alert_to_warning}}The percentage of frozen frames is above 13% for version {{version.name}}.  This is close to the acceptable threshold of 15%.{{/is_alert_to_warning}}\n\n{{#is_alert_recovery}}Percentage of frozen frames has recovered for {{version.name}}.  Nice work!{{/is_alert_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 15,
+			"warning": 13,
+			"critical_recovery": 13,
+			"warning_recovery": 12.5
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"variables": [
+			{
+				"data_source": "rum",
+				"name": "query1",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@view.id"
+				},
+				"group_by": [
+					{
+						"facet": "version",
+						"limit": 10,
+						"sort": {
+							"order": "desc",
+							"aggregation": "cardinality",
+							"metric": "@view.id"
+						}
+					}
+				],
+				"search": {
+					"query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" version:$BUILD_NUMBER @os.name:Android"
+				},
+				"storage": "hot"
+			},
+			{
+				"data_source": "rum",
+				"name": "query2",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@view.id"
+				},
+				"group_by": [
+					{
+						"facet": "version",
+						"limit": 10,
+						"sort": {
+							"order": "desc",
+							"aggregation": "cardinality",
+							"metric": "@view.id"
+						}
+					}
+				],
+				"search": {
+					"query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:Android version:$BUILD_NUMBER"
+				}
+			}
+		],
+		"include_tags": true,
+		"new_group_delay": 60,
+		"notification_preset_name": "hide_query",
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
+
+# Updates the monitor for crash free sessions
+echo "Updating monitor for crash free sessions"
 curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157022810" \
 -H "Accept: application/json" \
 -H "Content-Type: application/json" \
@@ -1649,39 +1864,6 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157022810" \
 		],
 		"escalation_message": "",
 		"new_host_delay": 300,
-		"groupby_simple_monitor": false
-	},
-	"priority": null,
-	"restriction_policy": {
-		"bindings": []
-	}
-}
-EOF
-
-# Updates the monitor for memory use
-echo "Updating monitor for memory use"
-curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157023465" \
--H "Accept: application/json" \
--H "Content-Type: application/json" \
--H "DD-API-KEY: $DD_API_KEY" \
--H "DD-APPLICATION-KEY: $DD_APP_KEY" \
--d @- << EOF
-{
-	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on Android",
-	"type": "rum alert",
-	"query": "rum(\"@type:view @os.name:Android -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
-	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
-	"tags": [],
-	"options": {
-		"thresholds": {
-			"critical": 734000000,
-			"warning": 713030000
-		},
-		"enable_logs_sample": false,
-		"notify_audit": false,
-		"on_missing_data": "default",
-		"include_tags": true,
-		"new_group_delay": 60,
 		"groupby_simple_monitor": false
 	},
 	"priority": null,
