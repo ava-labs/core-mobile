@@ -153,6 +153,10 @@ class PortfolioPage {
     return by.id(portfolio.activeNetworkBalance)
   }
 
+  get tokensTabListView() {
+    return by.id(portfolio.tokensTabListView)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -319,20 +323,11 @@ class PortfolioPage {
   }
 
   async verifyInactiveNetworks(networks: string[]) {
-    await Action.scrollListUntil(
-      by.id(portfolio.inactiveNetwork + networks[networks.length - 1]),
-      by.id('tokens_tab_list_view'),
-      200
-    )
+    await Action.scrollToBottom(this.tokensTabListView)
     for (const network of networks) {
       await Action.waitForElement(by.id(portfolio.inactiveNetwork + network))
     }
-    await Action.scrollListUntil(
-      by.id('active_network'),
-      by.id('tokens_tab_list_view'),
-      200,
-      'up'
-    )
+    await Action.scrollToTop(this.tokensTabListView)
   }
 
   async verifyNetworkRemoved(network: string) {
