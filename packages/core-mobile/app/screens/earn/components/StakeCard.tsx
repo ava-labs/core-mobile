@@ -6,7 +6,7 @@ import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
 import Separator from 'components/Separator'
 import { Space } from 'components/Space'
-import { format, fromUnixTime } from 'date-fns'
+import { format, fromUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { StakeStatus } from 'types/earn'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
@@ -69,7 +69,7 @@ export const StakeCard = (props: Props): JSX.Element => {
     switch (status) {
       case StakeStatus.Ongoing: {
         const remainingTime = getReadableDateDuration(
-          new UTCDate(props.endTimestamp || 0)
+          new UTCDate(secondsToMilliseconds(props.endTimestamp || 0))
         )
         return (
           <AvaText.Caption testID="time_remaining" color={theme.colorText1}>
