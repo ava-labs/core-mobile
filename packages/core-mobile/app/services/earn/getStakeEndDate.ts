@@ -21,7 +21,7 @@ export const getStakeEndDate = ({
   stakeDurationFormat: StakeDurationFormat
   stakeDurationValue: number
   isDeveloperMode: boolean
-}): UnixTimeMs => {
+}): UnixTime => {
   const currentDate = fromUnixTime(startDateUnix, { in: utc })
   switch (stakeDurationFormat) {
     case StakeDurationFormat.Day:
