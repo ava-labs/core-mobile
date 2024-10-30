@@ -3,10 +3,6 @@
 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
 set -o pipefail
 
-echo "Here is the public IP address of the machine running the tests"
-
-curl -s http://ipecho.net/plain; echo
-
 npm rebuild detox
 
 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1 --max-workers 3; test_result=$?
