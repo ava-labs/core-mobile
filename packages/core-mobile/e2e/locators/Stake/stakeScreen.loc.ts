@@ -61,5 +61,7 @@ export default {
   timeRemainingId: 'time_remaining',
   stakedAmountId: 'staked_amount',
   endDateId: 'end_date',
-  earnedRewardsId: 'earned_rewards'
+  earnedRewardsId: 'earned_rewards',
+  stakingSuccessful: 'Staking successful!',
+  customRadio: 'Custom'
 }

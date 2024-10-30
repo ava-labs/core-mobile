@@ -62,6 +62,18 @@ class CommonElsPage {
     return by.id(commonEls.carrotSVG)
   }
 
+  get calendarSVG() {
+    return by.id(commonEls.calendarSVG)
+  }
+
+  get datePicker() {
+    return by.id(commonEls.datePicker)
+  }
+
+  get okBtn() {
+    return by.text(commonEls.okBtn)
+  }
+
   async tapCarrotSVG(index = 0) {
     await Actions.tapElementAtIndex(this.carrotSVG, index)
   }

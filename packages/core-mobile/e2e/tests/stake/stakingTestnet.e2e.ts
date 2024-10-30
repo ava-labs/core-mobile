@@ -3,15 +3,11 @@ import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import AccountManagePage from '../../pages/accountManage.page'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
-import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
-import DurationPage from '../../pages/Stake/duration.page'
 import { warmup } from '../../helpers/warmup'
-import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 import StakePage from '../../pages/Stake/stake.page'
 import ClaimPage from '../../pages/Stake/claim.page'
 import { cleanup } from '../../helpers/cleanup'
-import accountManagePage from '../../pages/accountManage.page'
 
 describe('Stake on Testnet', () => {
   beforeAll(async () => {
@@ -23,43 +19,50 @@ describe('Stake on Testnet', () => {
     await cleanup()
   })
 
-  it('should test a staking flow for a new account on testnet', async () => {
-    await BottomTabsPage.tapPortfolioTab()
-    await AccountManagePage.createNthAccountAndSwitchToNth(3)
+  it('should stake one day', async () => {
     await BottomTabsPage.tapStakeTab()
-    await StakePage.verifyNoActiveStakesScreenItems()
+    await StakePage.stake('1', '1 Day')
+    await StakePage.verifyStakeSuccessToast()
   })
 
-  it('should test a staking flow on testnet for an existing account', async () => {
-    await BottomTabsPage.tapPortfolioTab()
-    await accountManagePage.switchToFirstAccount()
+  it('should stake one month', async () => {
     await BottomTabsPage.tapStakeTab()
-    await StakePage.tapStakeButton()
-    await GetStartedScreenPage.verifyGetStartedScreenItems()
-    await GetStartedScreenPage.tapNextButton()
-    await StakePage.verifyStakingAmountScreenItems()
-    await StakePage.inputStakingAmount('1')
-    await StakePage.tapNextButton()
-    await DurationPage.verifyDurationScreenItems(true)
-    await StakePage.tapNextButton()
-    await Actions.waitForElement(
-      ConfirmStakingPage.confirmStakingTitle,
-      30000,
-      0
-    )
-    await ConfirmStakingPage.verifyConfirmStakingScreenItems()
+    await StakePage.stake('1', '1 Month')
+    await StakePage.verifyStakeSuccessToast()
   })
 
-  it('should complete the stake on testnet', async () => {
-    await StakePage.tapStakeNow()
-    await Actions.waitForElement(StakePage.notNowButton, 60000, 0)
-    await StakePage.tapNotNowButton()
-    await Actions.waitForElement(StakePage.newStakeTimeRemaining, 15000, 0)
-    await Assert.isVisible(StakePage.newStakeTimeRemaining)
-    await StakePage.verifyActiveTabItems()
+  it('should stake three months', async () => {
+    await BottomTabsPage.tapStakeTab()
+    await StakePage.stake('1', '3 Months')
+    await StakePage.verifyStakeSuccessToast()
   })
 
-  it('should claim the stake on testnet', async () => {
+  it('should stake six months', async () => {
+    await BottomTabsPage.tapStakeTab()
+    await StakePage.stake('1', '6 Months')
+    await StakePage.verifyStakeSuccessToast()
+  })
+
+  it('should stake one year', async () => {
+    await BottomTabsPage.tapStakeTab()
+    await StakePage.stake('1', '1 Year')
+    await StakePage.verifyStakeSuccessToast()
+  })
+
+  it('should stake custom duration', async () => {
+    await BottomTabsPage.tapStakeTab()
+    const maximumDuration = new Date(
+      new Date().setFullYear(new Date().getFullYear() + 2)
+    ).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+    await StakePage.stake('1', maximumDuration, true)
+    await StakePage.verifyStakeSuccessToast()
+  })
+
+  it('should claim the testnet stake', async () => {
     await BottomTabsPage.tapPortfolioTab()
     await BottomTabsPage.tapStakeTab()
     if (await Actions.isVisible(StakePage.stakeClaimButton, 0)) {
@@ -74,5 +77,12 @@ describe('Stake on Testnet', () => {
         jestExpect(newClaimableBalance).toBe(0)
       }
     }
+  })
+
+  it('should test a staking flow for a new account on testnet', async () => {
+    await BottomTabsPage.tapPortfolioTab()
+    await AccountManagePage.createNthAccountAndSwitchToNth(3)
+    await BottomTabsPage.tapStakeTab()
+    await StakePage.verifyNoActiveStakesScreenItems()
   })
 })
