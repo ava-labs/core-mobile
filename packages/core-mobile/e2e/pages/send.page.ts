@@ -6,6 +6,7 @@ import popUpModalPage from '../pages/popUpModal.page'
 import Send from '../locators/send.loc'
 import delay from '../helpers/waits'
 import assertions from '../helpers/assertions'
+import commonElsPage from './commonEls.page'
 
 class SendPage {
   get addressBook() {
@@ -132,20 +133,30 @@ class SendPage {
     await AccountManagePage.tapSecondAccountMenu()
     await this.tapTokenDropdown()
     await this.selectToken(token)
-    await this.enterAmount(sendingAmmount)
-    await this.waitForNextBtnEnabled()
-    await this.tapSendTitle()
-    await this.tapNextButton()
-    await popUpModalPage.verifyFeeIsLegit(isPXChain)
-    await this.tapApproveButton()
+    try {
+      await Actions.waitForElement(by.text(`Balance 0 ${token}`))
+      await commonElsPage.goBack()
+      console.log(`No ${token} on your wallet`)
+      return false
+    } catch (e) {
+      await this.enterAmount(sendingAmmount)
+      await this.waitForNextBtnEnabled()
+      await this.tapSendTitle()
+      await this.tapNextButton()
+      await popUpModalPage.verifyFeeIsLegit(isPXChain)
+      await this.tapApproveButton()
+      return true
+    }
   }
 
-  async verifySuccessToast() {
-    await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
-    await Actions.waitForElementNotVisible(
-      popUpModalPage.successfulToastMsg,
-      120000
-    )
+  async verifySuccessToast(hasBalance = true) {
+    if (hasBalance) {
+      await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
+      await Actions.waitForElementNotVisible(
+        popUpModalPage.successfulToastMsg,
+        120000
+      )
+    }
   }
 
   async verifySendScreen() {
