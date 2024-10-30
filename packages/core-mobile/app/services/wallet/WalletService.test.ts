@@ -113,12 +113,13 @@ describe('WalletService', () => {
       }).rejects.toThrow('Start date must be in future: ')
     })
     it('should throw if staking duration is less than 2 weeks for Mainnet', async () => {
-      const twoWeeks = add(new Date(), { weeks: 2 })
+      const twoWeeks = 14 * 24 * 60 * 60
+      const twoSeconds = 2
       const params = {
         nodeId: validNodeId,
         stakeAmount: BigInt(25e9),
         startDate: validStartDate,
-        endDate: getUnixTime(sub(twoWeeks, { seconds: 2 })),
+        endDate: validStartDate + twoWeeks - twoSeconds,
         isDevMode: false
       } as AddDelegatorProps
       await expect(async () => {

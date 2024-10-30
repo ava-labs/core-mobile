@@ -26,7 +26,12 @@ import { BackButton } from 'components/BackButton'
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { fromUnixTime, getUnixTime } from 'date-fns'
+import {
+  fromUnixTime,
+  getUnixTime,
+  millisecondsToSeconds,
+  secondsToMilliseconds
+} from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
 import { UnixTime } from 'services/earn/types'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
@@ -38,7 +43,7 @@ type ScreenProps = StakeSetupScreenProps<
 
 export const StakingDuration = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const currentUnix = useNow() / 1000
+  const currentUnix = millisecondsToSeconds(useNow())
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
   const [selectedDuration, setSelectedDuration] =
     useState<DurationOption>(minDelegationTime)
@@ -56,7 +61,7 @@ export const StakingDuration = (): JSX.Element => {
   const { stakingAmount } = useRoute<ScreenProps['route']>().params
   const isNextDisabled =
     stakeEndTime === undefined ||
-    (!!stakeEndTime && stakeEndTime < UTCDate.now() / 1000)
+    (!!stakeEndTime && stakeEndTime < millisecondsToSeconds(UTCDate.now()))
 
   const selectMinDuration = useCallback(() => {
     setSelectedDuration(minDelegationTime)
@@ -114,7 +119,7 @@ export const StakingDuration = (): JSX.Element => {
       })
       navigate(AppNavigation.StakeSetup.NodeSearch, {
         stakingAmount,
-        stakingEndTime: new UTCDate(stakeEndTime * 1000)
+        stakingEndTime: new UTCDate(secondsToMilliseconds(stakeEndTime))
       })
     }
   }
@@ -124,7 +129,7 @@ export const StakingDuration = (): JSX.Element => {
       AnalyticsService.capture('StakeSelectAdvancedStaking')
       navigate(AppNavigation.StakeSetup.AdvancedStaking, {
         stakingAmount,
-        stakingEndTime: new UTCDate(stakeEndTime * 1000),
+        stakingEndTime: new UTCDate(secondsToMilliseconds(stakeEndTime)),
         selectedDuration: selectedDuration.title
       })
     }
