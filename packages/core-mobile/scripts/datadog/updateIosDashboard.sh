@@ -1783,13 +1783,13 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156807630" \
 {
 	"name": "[core-mobile] Click and Tap Actions are excessively slow on iOS",
 	"type": "rum alert",
-	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 15000000",
+	"query": "rum(\"@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:iOS service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"5m\") > 150000000",
 	"message": "{{#is_alert}}The Click or Tap action average is above the acceptable threshold of 15ms. Please check recent changes.{{/is_alert}}\n\n{{#is_warning}}The Click or Tap action is above 10ms which is approaching the acceptable threshold{{/is_warning}}\n\n{{#is_recovery}}The Click or Tap action is now below the acceptable threshold of 15ms. Nice work!{{/is_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {
-			"critical": 15000000,
-			"warning": 10000000
+			"critical": 150000000,
+			"warning": 100000000
 		},
 		"enable_logs_sample": false,
 		"notify_audit": false,
