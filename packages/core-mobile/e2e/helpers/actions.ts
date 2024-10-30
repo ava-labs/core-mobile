@@ -18,6 +18,14 @@ const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
 }
 
+const tapAtXAndY = async (
+  item: Detox.NativeMatcher,
+  xOffset = 0,
+  yOffset = 0
+) => {
+  await element(item).tap({ x: xOffset, y: yOffset })
+}
+
 const multiTap = async (
   item: Detox.NativeMatcher,
   count: number,
@@ -351,6 +359,7 @@ const shuffleArray = <T>(array: T[]): T[] =>
 export default {
   balanceToNumber,
   tap,
+  tapAtXAndY,
   multiTap,
   longPress,
   waitForElement,

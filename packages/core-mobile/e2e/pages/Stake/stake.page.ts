@@ -2,6 +2,8 @@ import stakeScreenLoc from '../../locators/Stake/stakeScreen.loc'
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
 import { Platform } from '../../helpers/constants'
+import commonElsPage from '../commonEls.page'
+import confirmStakingPage from './confirmStaking.page'
 
 type StakeCard = {
   title: string
@@ -259,6 +261,14 @@ class StakePage {
     return by.id(stakeScreenLoc.earnedRewardsId)
   }
 
+  get stakingSuccessful() {
+    return by.text(stakeScreenLoc.stakingSuccessful)
+  }
+
+  get customRadio() {
+    return by.text(stakeScreenLoc.customRadio)
+  }
+
   async tapActiveTab() {
     await Actions.tap(this.activeTab)
   }
@@ -294,12 +304,12 @@ class StakePage {
 
   async tapStakeButton() {
     try {
-      await Actions.waitForElement(this.stakeSecondaryButton, 5000)
-      await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
-    } catch {
-      console.log('there is no claim button, tap primary button')
-      await Actions.waitForElement(this.stakePrimaryButton, 5000)
+      await Actions.waitForElement(this.stakePrimaryButton)
       await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
+      console.log('there is no claim button, tap primary button')
+    } catch {
+      await Actions.waitForElement(this.stakeSecondaryButton)
+      await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
     }
   }
 
@@ -471,6 +481,42 @@ class StakePage {
       rewards: rewards ?? '',
       amount: stakedAmount ?? '',
       time: time ?? ''
+    }
+  }
+
+  async stake(amount: string, duration: string, custom = false) {
+    await this.tapStakeButton()
+    await this.tapNextButton()
+    await this.inputStakingAmount(amount)
+    await this.tapNextButton()
+    if (custom) {
+      await Actions.tap(this.customRadio)
+      await Actions.tap(commonElsPage.calendarSVG)
+      const datePicker = element(commonElsPage.datePicker)
+      await datePicker.setDatePickerDate(duration, 'MMMM dd, yyyy')
+      if (Actions.platform() === Platform.Android) {
+        await Actions.tap(commonElsPage.okBtn)
+      } else {
+        await Actions.tapAtXAndY(commonElsPage.datePicker, 0, -20)
+      }
+    } else {
+      await Actions.tap(by.text(duration))
+    }
+    await this.tapNextButton()
+    await Actions.waitForElementNoSync(
+      confirmStakingPage.confirmStakingTitle,
+      30000,
+      0
+    )
+    await this.tapStakeNow()
+  }
+
+  async verifyStakeSuccessToast() {
+    await Actions.waitForElement(this.stakingSuccessful, 60000, 0)
+    try {
+      await this.tapNotNowButton()
+    } catch (e) {
+      console.log('No stake notification prompt is displayed')
     }
   }
 }

@@ -12,5 +12,8 @@ export default {
   bitcoinSVG: 'bitcoin_svg',
   avaSVG: 'ava_logo',
   reloadSVG: 'reload_svg',
-  carrotSVG: 'carrot_svg'
+  carrotSVG: 'carrot_svg',
+  calendarSVG: 'calendarSVG',
+  datePicker: 'dateTimePicker',
+  okBtn: 'OK'
 }
