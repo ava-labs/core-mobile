@@ -28,12 +28,25 @@ export const GlassView: FC<
     }
   }, [glassType])
 
+  const tint = useMemo(() => {
+    switch (glassType) {
+      case 'light':
+      case 'light2':
+        return 'light'
+      case 'dark':
+      case 'dark2':
+      case 'dark3':
+        return 'dark'
+    }
+  }, [glassType])
+
   return (
     <BlurView
       style={{
         ...style,
         ...(backgroundColor ? { backgroundColor } : {})
       }}
+      tint={tint}
       intensity={50}
       experimentalBlurMethod="dimezisBlurView">
       {children}
