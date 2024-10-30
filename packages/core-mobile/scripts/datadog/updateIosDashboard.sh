@@ -14,6 +14,7 @@ curl -X PUT \
     "widgets":
     [
         {
+            "id": 5438560121823793,
             "definition":
             {
                 "title": "Overall Performance",
@@ -1073,6 +1074,106 @@ curl -X PUT \
                         }
                     },
                     {
+                        "id": 7507642501731692,
+                        "definition":
+                        {
+                            "time":
+                            {},
+                            "title": "iOS Percentage of Frozen Frames for Version: $BUILD_NUMBER",
+                            "type": "treemap",
+                            "requests":
+                            [
+                                {
+                                    "formulas":
+                                    [
+                                        {
+                                            "formula": "100 * (query1 / query2)"
+                                        }
+                                    ],
+                                    "queries":
+                                    [
+                                        {
+                                            "name": "query1",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" @os.name:iOS version:$BUILD_NUMBER"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "cardinality",
+                                                        "order": "desc",
+                                                        "metric": "@view.id"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
+                                        },
+                                        {
+                                            "name": "query2",
+                                            "data_source": "rum",
+                                            "search":
+                                            {
+                                                "query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:iOS"
+                                            },
+                                            "indexes":
+                                            [
+                                                "*"
+                                            ],
+                                            "group_by":
+                                            [
+                                                {
+                                                    "facet": "version",
+                                                    "limit": 10,
+                                                    "sort":
+                                                    {
+                                                        "aggregation": "cardinality",
+                                                        "order": "desc",
+                                                        "metric": "@view.id"
+                                                    },
+                                                    "should_exclude_missing": true
+                                                }
+                                            ],
+                                            "compute":
+                                            {
+                                                "aggregation": "cardinality",
+                                                "metric": "@view.id"
+                                            },
+                                            "storage": "hot"
+                                        }
+                                    ],
+                                    "response_format": "scalar",
+                                    "style":
+                                    {
+                                        "palette": "datadog16"
+                                    }
+                                }
+                            ]
+                        },
+                        "layout":
+                        {
+                            "x": 0,
+                            "y": 3,
+                            "width": 12,
+                            "height": 3
+                        }
+                    },
+                    {
                         "id": 4656190487528324,
                         "definition":
                         {
@@ -1133,7 +1234,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 3,
+                            "y": 6,
                             "width": 6,
                             "height": 3
                         }
@@ -1203,7 +1304,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 3,
+                            "y": 6,
                             "width": 6,
                             "height": 3
                         }
@@ -1212,8 +1313,6 @@ curl -X PUT \
                         "id": 4466470907554154,
                         "definition":
                         {
-                            "time":
-                            {},
                             "title": "iOS average Click or Tap load time (Version: $BUILD_NUMBER)",
                             "type": "treemap",
                             "requests":
@@ -1267,7 +1366,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 6,
+                            "y": 9,
                             "width": 6,
                             "height": 3
                         }
@@ -1345,7 +1444,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 6,
+                            "y": 9,
                             "width": 6,
                             "height": 3
                         }
@@ -1415,7 +1514,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 0,
-                            "y": 9,
+                            "y": 12,
                             "width": 6,
                             "height": 3
                         }
@@ -1481,7 +1580,7 @@ curl -X PUT \
                         "layout":
                         {
                             "x": 6,
-                            "y": 9,
+                            "y": 12,
                             "width": 6,
                             "height": 3
                         }
@@ -1491,9 +1590,9 @@ curl -X PUT \
             "layout":
             {
                 "x": 0,
-                "y": 0,
+                "y": 14,
                 "width": 12,
-                "height": 13,
+                "height": 16,
                 "is_column_break": true
             }
         }
@@ -1570,7 +1669,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156523611" \
 }
 EOF
 
-# Updates the monitor for app start time
+# Updates the monitor for memory use
 echo "Updating monitor for memory use"
 curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 -H "Accept: application/json" \
@@ -1582,12 +1681,12 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156561219" \
 	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on iOS",
 	"type": "rum alert",
 	"query": "rum(\"@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:iOS -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
-	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
+	"message": "{{#is_alert}}Memory use is over 1000mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 800mb which is approaching the acceptable threshold of 1000 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
 		"thresholds": {
-			"critical": 734000000,
-			"warning": 713030000
+			"critical": 1048580000,
+			"warning": 838860000
 		},
 		"enable_logs_sample": false,
 		"notify_audit": false,
@@ -1697,6 +1796,95 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/156807630" \
 		"on_missing_data": "default",
 		"include_tags": true,
 		"new_group_delay": 60,
+		"groupby_simple_monitor": false
+	},
+	"priority": null,
+	"restriction_policy": {
+		"bindings": []
+	}
+}
+EOF
+
+# Updates the monitor for frozen frames
+echo "Updating monitor for frozen frames"
+curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157112517" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+-H "DD-API-KEY: $DD_API_KEY" \
+-H "DD-APPLICATION-KEY: $DD_APP_KEY" \
+-d @- << EOF
+{
+	"name": "[core-mobile] Percentage of frozen frames is above threshold for iOS and version $BUILD_NUMBER",
+	"type": "rum alert",
+	"query": "formula(\"100 * (query1 / query2)\").last(\"5m\") > 15",
+	"message": "{{#is_alert}}The percentage of frozen frames is above the set threshold of 15% for version {{version.name}}.  Please check your changes and optimize your code to dismiss this alert.{{/is_alert}}\n\n{{#is_alert_to_warning}}The percentage of frozen frames is above 13% for version {{version.name}}.  This is close to the acceptable threshold of 15%.{{/is_alert_to_warning}}\n\n{{#is_alert_recovery}}Percentage of frozen frames has recovered for {{version.name}}.  Nice work!{{/is_alert_recovery}}\n\n@slack-Avalanche-shared-services-qa-mobile-dd-alerts",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 15,
+			"warning": 13,
+			"critical_recovery": 13,
+			"warning_recovery": 12.5
+		},
+		"enable_logs_sample": false,
+		"notify_audit": false,
+		"on_missing_data": "default",
+		"variables": [
+			{
+				"data_source": "rum",
+				"name": "query1",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@view.id"
+				},
+				"group_by": [
+					{
+						"facet": "version",
+						"limit": 10,
+						"sort": {
+							"order": "desc",
+							"aggregation": "cardinality",
+							"metric": "@view.id"
+						}
+					}
+				],
+				"search": {
+					"query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" version:$BUILD_NUMBER @os.name:iOS"
+				},
+				"storage": "hot"
+			},
+			{
+				"data_source": "rum",
+				"name": "query2",
+				"indexes": [
+					"*"
+				],
+				"compute": {
+					"aggregation": "cardinality",
+					"metric": "@view.id"
+				},
+				"group_by": [
+					{
+						"facet": "version",
+						"limit": 10,
+						"sort": {
+							"order": "desc",
+							"aggregation": "cardinality",
+							"metric": "@view.id"
+						}
+					}
+				],
+				"search": {
+					"query": "@type:view @session.type:user @application.name:\"Core Mobile\" @os.name:iOS version:$BUILD_NUMBER"
+				}
+			}
+		],
+		"include_tags": true,
+		"new_group_delay": 60,
+		"notification_preset_name": "hide_query",
 		"groupby_simple_monitor": false
 	},
 	"priority": null,

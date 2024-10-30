@@ -28,6 +28,8 @@ if (__DEV__) {
     'Non-serializable'
   ])
 
+  DevDebuggingConfig.LOGBOX_DISABLED && LogBox.ignoreAllLogs(true)
+
   // eslint-disable-next-line no-console
   console.reportErrorsAsExceptions = false
 }
