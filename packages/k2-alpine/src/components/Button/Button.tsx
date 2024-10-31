@@ -9,11 +9,7 @@ import {
 import { useDripsyTheme as useTheme } from 'dripsy'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
-import {
-  colors,
-  darkModeColors,
-  lightModeColors
-} from '../../theme/tokens/colors'
+import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { TextVariant } from '../../theme/tokens/text'
 import { GlassView } from '../../components/GlassView/GlassView'
 import { alpha, overlayColor } from '../../utils/colors'
@@ -195,13 +191,21 @@ const getBackgroundColor = (
 ): string | undefined => {
   if (disabled) {
     return theme.isDark
-      ? overlayColor(alpha(colors.$neutralWhite, 0.3), colors.$neutral850)
-      : overlayColor(alpha(colors.$neutral850, 0.3), colors.$neutralWhite)
+      ? overlayColor(
+          alpha(lightModeColors.$surfacePrimary, 0.3),
+          darkModeColors.$surfacePrimary
+        )
+      : overlayColor(
+          alpha(darkModeColors.$surfaceSecondary, 0.3),
+          lightModeColors.$surfacePrimary
+        )
   }
 
   switch (type) {
     case 'primary':
-      return theme.isDark ? colors.$neutralWhite : colors.$neutral850
+      return theme.isDark
+        ? lightModeColors.$surfacePrimary
+        : darkModeColors.$surfacePrimary
     case 'secondary':
       return undefined
     case 'tertiary':
@@ -215,7 +219,9 @@ const getTintColor = (
   disabled: boolean | undefined
 ): string => {
   if (disabled) {
-    return theme.isDark ? colors.$neutral850 : colors.$neutralWhite
+    return theme.isDark
+      ? lightModeColors.$textPrimary
+      : darkModeColors.$textPrimary
   }
   switch (type) {
     case 'primary':
