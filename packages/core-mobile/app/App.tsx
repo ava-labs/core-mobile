@@ -1,22 +1,13 @@
 import React, { useState } from 'react'
 import { KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
-import { NavigationContainer, Route } from '@react-navigation/native'
+import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
-import {
-  DdRumReactNavigationTracking,
-  ViewNamePredicate
-} from '@datadog/mobile-react-navigation'
-
-const viewNamePredicate: ViewNamePredicate = (
-  route: Route<string, any | undefined>,
-  trackedName: string
-) => {
-  return `${route.name} ${trackedName}`
-}
+import DataDogService from 'services/datadog/DataDogService'
+import Logger from 'utils/Logger'
 
 function App(): JSX.Element {
   const context = useApplicationContext()
@@ -32,13 +23,10 @@ function App(): JSX.Element {
           theme={context.navContainerTheme}
           ref={navigationRef}
           onReady={() => {
-            DdRumReactNavigationTracking.startTrackingViews(
-              navigationRef.current,
-              viewNamePredicate
-            )
             SentryService.routingInstrumentation.registerNavigationContainer(
               navigationRef
             )
+            DataDogService.init(navigationRef).catch(Logger.error)
           }}>
           <RootScreenStack />
         </NavigationContainer>
