@@ -62,6 +62,21 @@ export const text = {
     fontFamily: 'DejaVuSansMono',
     fontSize: 12,
     lineHeight: 16
+  },
+  buttonLarge: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 18,
+    lineHeight: 18
+  },
+  buttonMedium: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 15,
+    lineHeight: 18
+  },
+  buttonSmall: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 12,
+    lineHeight: 14
   }
 }
 

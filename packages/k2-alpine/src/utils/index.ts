@@ -1,1 +1,1 @@
-export * from './alpha'
+export * from './colors'
