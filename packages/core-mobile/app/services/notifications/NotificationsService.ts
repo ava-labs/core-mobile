@@ -312,7 +312,11 @@ class NotificationsService {
         pressAction: {
           id: PressActionId.OPEN_PORTFOLIO,
           launchActivity: LAUNCH_ACTIVITY
-        }
+        },
+        sound: 'core_receive'
+      },
+      ios: {
+        sound: 'core_receive.wav'
       },
       data
     })
