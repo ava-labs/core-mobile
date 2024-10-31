@@ -2,7 +2,6 @@ import {
   styled,
   Text as DripsyText,
   ScrollView as DripsyScrollView,
-  View as DripsyView,
   FlatList as DripsyFlatList,
   SafeAreaView as DripsySafeAreaView
 } from 'dripsy'
@@ -31,13 +30,6 @@ export const ScrollView = styled(
   backgroundColor: '$surfacePrimary'
 })
 
-export const View = styled(
-  DripsyView,
-  {}
-)({
-  backgroundColor: '$surfacePrimary'
-})
-
 export const FlatList = styled(
   DripsyFlatList,
   {}
@@ -52,4 +44,4 @@ export const SafeAreaView = styled(
   backgroundColor: '$surfacePrimary'
 })
 
-export { TextInput, Image, Pressable, ActivityIndicator } from 'dripsy'
+export { View, TextInput, Image, Pressable, ActivityIndicator } from 'dripsy'

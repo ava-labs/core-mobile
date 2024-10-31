@@ -1,5 +1,5 @@
 import { Link } from 'expo-router'
-import { View, Text } from '@avalabs/k2-alpine'
+import { View, Button } from '@avalabs/k2-alpine'
 import React from 'react'
 
 export default function Index(): JSX.Element {
@@ -11,11 +11,15 @@ export default function Index(): JSX.Element {
         justifyContent: 'center',
         gap: 16
       }}>
-      <Link href="/portfolio/">
-        <Text>Sign in</Text>
+      <Link href="/portfolio/" asChild>
+        <Button type="primary" size="medium">
+          Sign in
+        </Button>
       </Link>
-      <Link href="/signup/">
-        <Text>Sign up</Text>
+      <Link href="/signup/" asChild>
+        <Button type="primary" size="medium">
+          Sign up
+        </Button>
       </Link>
     </View>
   )
