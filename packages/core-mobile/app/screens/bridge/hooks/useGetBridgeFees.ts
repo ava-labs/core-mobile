@@ -55,7 +55,7 @@ export const useGetBridgeFees = ({
     })
 
     if (gasLimit) {
-      return networkFeeRate.low.maxFeePerGas.mul(gasLimit).toSubUnit()
+      return networkFeeRate.low.maxFeePerGas * gasLimit
     }
   }, [
     activeAccount,
