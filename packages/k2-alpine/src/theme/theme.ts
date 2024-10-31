@@ -8,12 +8,14 @@ export const darkTheme = makeTheme({
     reactNativeTypesOnly: true
   },
   colors: darkModeColors,
-  text
+  text,
+  isDark: true
 })
 
 export const lightTheme = {
   ...darkTheme,
-  colors: lightModeColors
+  colors: lightModeColors,
+  isDark: false
 }
 
 export type K2AlpineTheme = typeof darkTheme

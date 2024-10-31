@@ -1,9 +1,9 @@
-import TabBarBackground from 'new/components/navigation/TabBarBackground'
 import { Tabs } from 'expo-router'
 import React, { useCallback } from 'react'
+import BlurredBackgroundView from 'new/components/navigation/BlurredBackgroundView'
 
 export default function TabLayout(): JSX.Element {
-  const tabBarBackground = useCallback(() => <TabBarBackground />, [])
+  const tabBarBackground = useCallback(() => <BlurredBackgroundView />, [])
 
   return (
     <Tabs

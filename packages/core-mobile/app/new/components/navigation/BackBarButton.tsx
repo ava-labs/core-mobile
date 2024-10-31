@@ -1,11 +1,15 @@
 import React from 'react'
-import { View, Text } from '@avalabs/k2-alpine'
+import { Icons, View, useTheme } from '@avalabs/k2-alpine'
 
 const BackBarButton = (): JSX.Element => {
+  const { theme } = useTheme()
+
   return (
-    // todo: use k2-alpine icon
-    <View style={{ paddingLeft: 18, backgroundColor: 'transparent' }}>
-      <Text>{'<<'}</Text>
+    <View sx={{ padding: 16 }}>
+      {/* todo: please remove the ts-expect-error comments after we address this issue
+        https://ava-labs.atlassian.net/browse/CP-9297
+        @ts-expect-error */}
+      <Icons.Custom.BackArrowCustom color={theme.colors.$textPrimary} />
     </View>
   )
 }

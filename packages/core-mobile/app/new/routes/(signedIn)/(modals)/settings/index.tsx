@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, View } from '@avalabs/k2-alpine'
+import { Button, Text, View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
 
 const SettingsScreen = (): JSX.Element => {
@@ -12,8 +12,10 @@ const SettingsScreen = (): JSX.Element => {
         gap: 16
       }}>
       <Text variant="heading3">Settings</Text>
-      <Link href="/settings/account">
-        <Text>Go to Account Setting</Text>
+      <Link href="/settings/account" asChild>
+        <Button type="secondary" size="medium">
+          Go to Account Setting
+        </Button>
       </Link>
     </View>
   )
