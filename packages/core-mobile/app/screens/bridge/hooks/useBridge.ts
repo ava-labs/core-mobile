@@ -1,16 +1,18 @@
-import { Blockchain } from '@avalabs/core-bridge-sdk'
 import { useEffect, useMemo, useState } from 'react'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import Big from 'big.js'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
-import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
-import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
 import { getAssetBalance, unwrapAssetSymbol } from '../utils/bridgeUtils'
+import { useAssetBalances } from './useAssetBalances'
 import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
-import { useAssetBalancesEVM } from './useAssetBalancesEVM'
-import { useGetBridgeFees } from './useGetBridgeFees'
+import {
+  useGetBridgeFees,
+  useGetMinimumTransferAmount
+} from './useGetBridgeFees'
 import { useBridgeAssetPrice } from './useBridgeAssetPrice'
 import { useBridgeType } from './useBridgeType'
 import { useBridgeTransfer } from './useBridgeTransfer'
@@ -18,6 +20,7 @@ import {
   useBridgeSourceNetworks,
   useBridgeTargetNetworks
 } from './useBridgeNetworks'
+import { useUnifiedBridge } from './useUnifiedBridge'
 
 interface Bridge {
   assetBalance?: AssetBalance
@@ -53,29 +56,30 @@ interface Bridge {
   price: Big | undefined
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function useBridge(): Bridge {
   const [sourceNetwork, setSourceNetwork] = useState<Network>()
   const [targetNetwork, setTargetNetwork] = useState<Network>()
   const [selectedBridgeAsset, setSelectedBridgeAsset] = useState<BridgeAsset>()
-  const { bridgeAssets } = useUnifiedBridgeAssets()
+  const isTestnet = useSelector(selectIsDeveloperMode)
+  const { data: unifiedBridge } = useUnifiedBridge(isTestnet)
+  const { data: unifiedBridgeAssets } = useUnifiedBridgeAssets(unifiedBridge)
+  const bridgeAssets = useMemo(
+    () => unifiedBridgeAssets?.bridgeAssets ?? [],
+    [unifiedBridgeAssets]
+  )
   const [bridgeError, setBridgeError] = useState<Error>()
   const [minimum, setMinimum] = useState<bigint>()
   const [bridgeFee, setBridgeFee] = useState<bigint>(0n)
   const [inputAmount, setInputAmount] = useState<bigint>()
   const amount = useMemo(() => inputAmount ?? 0n, [inputAmount])
-  const { assetsWithBalances, loading } = useAssetBalancesEVM(
-    sourceNetwork && isEthereumNetwork(sourceNetwork)
-      ? Blockchain.ETHEREUM
-      : Blockchain.AVALANCHE
-  )
+  const { assetsWithBalances, loading } = useAssetBalances(unifiedBridge)
 
   const assetBalance = useMemo(
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
     [selectedBridgeAsset, assetsWithBalances]
   )
 
-  const sourceNetworks = useBridgeSourceNetworks()
+  const sourceNetworks = useBridgeSourceNetworks(unifiedBridge)
   const targetNetworks = useBridgeTargetNetworks(selectedBridgeAsset)
 
   const [networkFee, setNetworkFee] = useState<bigint>()
@@ -83,6 +87,7 @@ export default function useBridge(): Bridge {
   const price = useBridgeAssetPrice(selectedBridgeAsset)
 
   const transfer = useBridgeTransfer({
+    unifiedBridge,
     amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
@@ -95,7 +100,16 @@ export default function useBridge(): Bridge {
     amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
-    targetNetwork
+    targetNetwork,
+    unifiedBridge
+  })
+
+  const getMinimumTransferAmount = useGetMinimumTransferAmount({
+    amount,
+    bridgeAsset: selectedBridgeAsset,
+    sourceNetwork,
+    targetNetwork,
+    unifiedBridge
   })
 
   useEffect(() => {
@@ -128,18 +142,19 @@ export default function useBridge(): Bridge {
       return
     }
 
-    UnifiedBridgeService.getMinimumTransferAmount({
-      amount,
-      asset: selectedBridgeAsset,
-      sourceNetwork,
-      targetNetwork
-    })
+    getMinimumTransferAmount()
       .then(minimumAmount => setMinimum(minimumAmount))
       .catch(error => {
         Logger.error('Failed to get minimum transfer amount', error)
         setMinimum(undefined)
       })
-  }, [selectedBridgeAsset, sourceNetwork, targetNetwork, amount])
+  }, [
+    selectedBridgeAsset,
+    sourceNetwork,
+    targetNetwork,
+    amount,
+    getMinimumTransferAmount
+  ])
 
   useEffect(() => {
     if (targetNetworks.length === 0) {

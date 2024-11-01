@@ -1,20 +1,22 @@
-import { BridgeAsset } from '@avalabs/bridge-unified'
+import { BridgeAsset, UnifiedBridgeService } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
-import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import { setPendingTransfer } from 'store/unifiedBridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
+import { noop } from '@avalabs/core-utils-sdk'
+import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
+import { buildChain, isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 
 export const useBridgeTransfer = ({
+  unifiedBridge,
   amount,
   bridgeAsset,
   sourceNetwork,
   targetNetwork
 }: {
+  unifiedBridge: UnifiedBridgeService | undefined
   amount: bigint
   bridgeAsset: BridgeAsset | undefined
   sourceNetwork: Network | undefined
@@ -22,7 +24,6 @@ export const useBridgeTransfer = ({
 }): (() => Promise<string | undefined>) => {
   const activeAccount = useSelector(selectActiveAccount)
   const dispatch = useDispatch()
-  const { request } = useInAppRequest()
 
   return useCallback(async () => {
     if (!bridgeAsset) {
@@ -45,16 +46,34 @@ export const useBridgeTransfer = ({
       throw new Error('No active account')
     }
 
-    const pendingTransfer = await UnifiedBridgeService.transfer({
+    if (!unifiedBridge) {
+      throw new Error('No bridge service')
+    }
+
+    const sourceChain = buildChain(sourceNetwork)
+    const targetChain = buildChain(targetNetwork)
+    const fromAddress = isBitcoinNetwork(sourceNetwork)
+      ? activeAccount.addressBTC
+      : activeAccount.addressC
+    const toAddress = isBitcoinNetwork(targetNetwork)
+      ? activeAccount.addressBTC
+      : activeAccount.addressC
+
+    const pendingTransfer = await unifiedBridge.transferAsset({
       asset: bridgeAsset,
+      fromAddress,
+      toAddress,
       amount,
-      targetNetwork,
-      sourceNetwork,
-      activeAccount,
+      sourceChain,
+      targetChain,
+      onStepChange: noop
+    })
+
+    unifiedBridge.trackTransfer({
+      bridgeTransfer: pendingTransfer,
       updateListener: updatedTransfer => {
         dispatch(setPendingTransfer(updatedTransfer))
-      },
-      request
+      }
     })
 
     AnalyticsService.capture('UnifedBridgeTransferStarted', {
@@ -80,6 +99,6 @@ export const useBridgeTransfer = ({
     amount,
     sourceNetwork,
     dispatch,
-    request
+    unifiedBridge
   ])
 }

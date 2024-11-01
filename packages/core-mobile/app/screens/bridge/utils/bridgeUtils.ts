@@ -8,11 +8,17 @@ import {
 import { Transaction } from 'store/transaction'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Networks } from 'store/network'
-import { BridgeAsset, BridgeTransfer, Chain } from '@avalabs/bridge-unified'
+import {
+  BridgeAsset,
+  BridgeTransfer,
+  Chain,
+  TokenType
+} from '@avalabs/bridge-unified'
 import {
   Transaction as InternalTransaction,
   TxToken
 } from '@avalabs/vm-module-types'
+import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { AssetBalance } from './types'
 
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -195,4 +201,19 @@ export const unwrapAssetSymbol = (symbol: string): string => {
 
 export const wrapAssetSymbol = (symbol: string): string => {
   return `${symbol}.e` // add .e
+}
+
+export const buildChain = (network: Network): Chain => {
+  return {
+    chainId: addNamespaceToChain(network.chainId), // ictt todo: bitcoin?
+    chainName: network.chainName,
+    rpcUrl: network.rpcUrl,
+    networkToken: {
+      ...network.networkToken,
+      type: TokenType.NATIVE
+    },
+    utilityAddresses: {
+      multicall: network.utilityAddresses?.multicall as `0x${string}`
+    }
+  }
 }
