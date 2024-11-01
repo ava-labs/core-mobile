@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "*.d.ts",
+    "../../../k2-alpine/src/theme.d.ts"
+  ]
+}
