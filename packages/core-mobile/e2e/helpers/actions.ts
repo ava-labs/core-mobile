@@ -230,11 +230,12 @@ const getAndroidAttributesArray = async (
 
 const isVisible = async (
   item: Detox.NativeMatcher,
-  index: number
+  index: number,
+  timeout = 2000
 ): Promise<boolean> => {
   return await waitFor(element(item).atIndex(index))
     .toBeVisible()
-    .withTimeout(2000)
+    .withTimeout(timeout)
     .then(() => true)
     .catch(() => false)
 }

@@ -13,7 +13,7 @@ describe('Swap', () => {
   })
 
   it('Should swap ERC20 to AVAX', async () => {
-    await SwapTabPage.swap('USDC', 'AVAX', '0.001')
+    await SwapTabPage.swap('USDC', 'AVAX', '0.0001')
     await SendPage.verifySuccessToast()
   })
 
