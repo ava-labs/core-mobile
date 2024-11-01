@@ -12,6 +12,8 @@ const isInternalBuild =
   bundleId === 'org.avalabs.avaxwallet.internal' ||
   bundleId === 'com.avaxwallet.internal'
 
+const APP_SWITCH_NUMBER_OF_TOUCHES = 2
+
 export const AppSwitcher = (): React.JSX.Element => {
   const [isNewApp, setIsNewApp] = useState(
     commonStorage.getBoolean(StorageKey.K2_ALPINE)
@@ -27,7 +29,14 @@ export const AppSwitcher = (): React.JSX.Element => {
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: (evt, gestureState) => {
-          if (gestureState.numberActiveTouches === 2) {
+          return (
+            gestureState.numberActiveTouches === APP_SWITCH_NUMBER_OF_TOUCHES
+          )
+        },
+        onPanResponderGrant: (evt, gestureState) => {
+          if (
+            gestureState.numberActiveTouches === APP_SWITCH_NUMBER_OF_TOUCHES
+          ) {
             Alert.alert('Switch App Experience?', '', [
               {
                 text: 'Cancel',
@@ -44,7 +53,7 @@ export const AppSwitcher = (): React.JSX.Element => {
   )
 
   // only allow switching to new app on internal builds
-  if (!isInternalBuild) return <OldApp />
+  if (!isInternalBuild && !__DEV__) return <OldApp />
 
   return (
     <View style={{ flex: 1 }} {...panResponder.panHandlers}>

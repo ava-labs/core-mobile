@@ -8,7 +8,7 @@ import {
 import { Animated } from 'react-native'
 import Grabber from 'new/components/navigation/Grabber'
 import BackBarButton from 'new/components/navigation/BackBarButton'
-import HeaderBackground from 'new/components/navigation/HeaderBackground'
+import BlurredBackgroundView from 'new/components/navigation/BlurredBackgroundView'
 import { Text, View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
 
@@ -24,7 +24,7 @@ const commonNavigatorScreenOptions: StackNavigationOptions = {
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   headerTransparent: true,
-  headerBackground: () => <HeaderBackground />
+  headerBackground: () => <BlurredBackgroundView />
 }
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
