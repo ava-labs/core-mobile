@@ -382,7 +382,7 @@ __metadata:
     typechain: 8.3.2
     typescript: 5.6.3
     url: 0.11.4
-    viem: 2.21.21
+    viem: 2.21.38
     vm-browserify: 1.1.2
     web3: 1.7.5
     xss: 1.0.15
@@ -29605,9 +29605,9 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"viem@npm:2.21.21":
-  version: 2.21.21
-  resolution: "viem@npm:2.21.21"
+"viem@npm:2.21.38":
+  version: 2.21.38
+  resolution: "viem@npm:2.21.38"
   dependencies:
     "@adraffy/ens-normalize": 1.11.0
     "@noble/curves": 1.6.0
@@ -29623,7 +29623,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 71100fbbbf09ef743c7a2b3cfea94c0647c864856d2119cbdbf6abd3bd467310d02263492ec45f88dac20acfbdbd50c6eeea21e76f9e42ab5274245f11c975cf
+  checksum: 41914ec9045f9065de01459644f60fab9f165e2834c9b943b12416876d3b416a58af3b124e5fc3a74308eb9d2d300814e19837edc9f1e2b537d766f50109f9cf
   languageName: node
   linkType: hard
 
