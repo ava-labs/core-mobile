@@ -53,7 +53,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @action.type:application_start @session.type:user service:org.avalabs.corewallet @os.name:Android"
+                                                "query": "@type:action @action.type:application_start @session.type:user service:com.avaxwallet @os.name:Android"
                                             },
                                             "indexes":
                                             [
@@ -133,7 +133,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user service:org.avalabs.corewallet @os.name:Android"
+                                                "query": "@type:view @session.type:user service:com.avaxwallet @os.name:Android"
                                             },
                                             "indexes":
                                             [
@@ -208,7 +208,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:session @session.crash.count:>0 @session.type:user @os.name:Android service:org.avalabs.corewallet"
+                                                "query": "@type:session @session.crash.count:>0 @session.type:user @os.name:Android service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
@@ -320,7 +320,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @os.name:Android service:org.avalabs.corewallet"
+                                                "query": "@type:view @session.type:user @os.name:Android service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
@@ -424,7 +424,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 service:org.avalabs.corewallet @os.name:Android"
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 service:com.avaxwallet @os.name:Android"
                                             },
                                             "indexes":
                                             [
@@ -556,7 +556,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @view.is_slow_rendered:true @os.name:Android service:org.avalabs.corewallet"
+                                                "query": "@type:view @session.type:user @view.is_slow_rendered:true @os.name:Android service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
@@ -1041,7 +1041,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER @os.name:Android service:org.avalabs.corewallet"
+                                                "query": "@type:action @session.type:user @action.type:application_start -version:<$BUILD_NUMBER @os.name:Android"
                                             },
                                             "indexes":
                                             [
@@ -1109,7 +1109,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @application.name:\"Core Mobile\" @os.name:Android version:$BUILD_NUMBER"
+                                                "query": "@type:view @session.type:user @view.frozen_frame.count:>0 @os.name:Android version:$BUILD_NUMBER"
                                             },
                                             "indexes":
                                             [
@@ -1207,7 +1207,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:error @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @os.name:Android -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:error @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @os.name:Android -version:<$BUILD_NUMBER service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
@@ -1277,7 +1277,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android -version:<$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android -version:<$BUILD_NUMBER service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
@@ -1338,7 +1338,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:Android service:org.avalabs.corewallet"
+                                                "query": "@type:action @device.type:Mobile @action.type:(click OR tap) -version:<$BUILD_NUMBER @os.name:Android service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
@@ -1409,7 +1409,7 @@ curl -X PUT \
                                             },
                                             "search":
                                             {
-                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:Android service:org.avalabs.corewallet -version:<$BUILD_NUMBER"
+                                                "query": "@type:action @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @session.type:user @action.type:tap @os.name:Android service:com.avaxwallet -version:<$BUILD_NUMBER"
                                             },
                                             "indexes":
                                             [
@@ -1553,7 +1553,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android version:>$BUILD_NUMBER service:org.avalabs.corewallet"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android version:>$BUILD_NUMBER service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
@@ -1653,7 +1653,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157023465" \
 {
 	"name": "[core mobile] Memory Use Exceeds the Recommended Threshold on Android",
 	"type": "rum alert",
-	"query": "rum(\"@type:view @os.name:Android -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
+	"query": "rum(\"@type:view @os.name:Android -version:<$BUILD_NUMBER service:com.avaxwallet\").rollup(\"avg\", \"@view.memory_average\").by(\"version\").last(\"1d\") > 734000000",
 	"message": "{{#is_alert}}Memory use is over 700mb.  Double check the changes made today and revert or update to decrease memory usage.{{/is_alert}}\n\n{{#is_warning}}Memory use is over 680mb which is approaching the acceptable threshold of 700 MB{{/is_warning}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
 	"tags": [],
 	"options": {
@@ -1686,7 +1686,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157091244" \
 {
     "name": "[core-mobile] App startup time on Android exceeds 7 seconds",
     "type": "rum alert",
-    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:org.avalabs.corewallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
+    "query": "rum(\"@type:action @session.type:user @action.type:application_start @application.name:\"Core Mobile\" -version:<$BUILD_NUMBER service:com.avaxwallet\").rollup(\"avg\", \"@action.loading_time\").by(\"version\").last(\"1d\") > 4000000000",
     "message": "{{#is_alert}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is over the accepted threshold of 7 seconds.  Double check the changes made today and revert or update to decrease app start time{{/is_alert}}\n\n{{#is_warning}}Average app start time is {{rum.attributes.[action.loading_time]}} nanoseconds which is approaching the acceptable threshold of 7 seconds{{/is_warning}}\n\n{{#is_recovery}}Average app start time has recovered at {{rum.attributes.[action.loading_time]}} which is below the acceptable threshold of 7 seconds{{/is_recovery}}\n\n@slack-shared-services-qa-mobile-dd-alerts",
     "tags":
     [],
@@ -1837,7 +1837,7 @@ curl -X PUT "https://api.datadoghq.com/api/v1/monitor/157022810" \
 				},
 				"group_by": [],
 				"search": {
-					"query": "@type:session @session.crash.count:>0 @session.type:user service:org.avalabs.corewallet @os.name:Android -version:<$BUILD_NUMBER"
+					"query": "@type:session @session.crash.count:>0 @session.type:user service:com.avaxwallet @os.name:Android -version:<$BUILD_NUMBER"
 				},
 				"storage": "hot"
 			},
