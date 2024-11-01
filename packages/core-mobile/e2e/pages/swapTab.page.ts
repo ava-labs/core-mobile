@@ -111,6 +111,7 @@ class SwapTabPage {
   }
 
   async inputTokenAmount(amount: string) {
+    await Actions.clearTextInput(this.amountField, 0)
     await Actions.setInputText(this.amountField, amount, 0)
     await Actions.tap(this.fromText)
   }
@@ -120,7 +121,11 @@ class SwapTabPage {
     await Assert.isVisible(this.linkSvg)
   }
 
-  async swap(from: string, to: string, amount = '0.00001') {
+  async adjustAmount(amount: string) {
+    return (parseFloat(amount) * 10).toFixed(10).replace(/\.?0+$/, '')
+  }
+
+  async swap(from: string, to: string, amount = '0.000001') {
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapSwapButton()
     if (from !== 'AVAX') {
@@ -132,6 +137,31 @@ class SwapTabPage {
       await sendPage.selectToken(to)
     }
     await this.inputTokenAmount(amount)
+    let newAmount = amount
+    while (
+      (await Actions.isVisible(
+        by.text('No routes found with enough liquidity'),
+        0,
+        500
+      )) ||
+      (await Actions.isVisible(
+        by.text('ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT'),
+        0,
+        500
+      )) ||
+      (await Actions.isVisible(
+        by.text('Amount 1 is too small to proceed'),
+        0,
+        500
+      ))
+    ) {
+      newAmount = await this.adjustAmount(newAmount)
+      console.log(newAmount)
+      await this.inputTokenAmount(newAmount)
+      if (await Actions.isVisible(this.reviewOrderBtn, 0, 1000)) {
+        break
+      }
+    }
     await this.tapReviewOrderButton()
     try {
       await Actions.waitForElementNoSync(this.tokenSpendApproval, 8000)
