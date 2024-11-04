@@ -6,11 +6,7 @@ import { Space } from 'components/Space'
 import FlexSpacer from 'components/FlexSpacer'
 import SlideToConfirm from 'screens/earn/components/SlideToConfirm'
 
-const SignOutModal = ({
-  onConfirm
-}: {
-  onConfirm: () => void
-}): JSX.Element => {
+const ForgotPin = ({ onConfirm }: { onConfirm: () => void }): JSX.Element => {
   const { goBack, canGoBack } = useNavigation()
 
   const onClose = useCallback(() => {
@@ -22,7 +18,7 @@ const SignOutModal = ({
   return (
     <View style={{ flex: 1, padding: 16 }}>
       <AvaText.LargeTitleBold>
-        {`Are you sure you\nwant to delete\nyour wallet?`}
+        {`Do you want to\nreset your PIN?`}
       </AvaText.LargeTitleBold>
       <Space y={5} />
       <AvaText.Body1>
@@ -43,4 +39,4 @@ const SignOutModal = ({
   )
 }
 
-export default SignOutModal
+export default ForgotPin
