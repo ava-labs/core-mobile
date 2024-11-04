@@ -6,9 +6,6 @@ const BackBarButton = (): JSX.Element => {
 
   return (
     <View sx={{ padding: 16 }}>
-      {/* todo: please remove the ts-expect-error comments after we address this issue
-        https://ava-labs.atlassian.net/browse/CP-9297
-        @ts-expect-error */}
       <Icons.Custom.BackArrowCustom color={theme.colors.$textPrimary} />
     </View>
   )

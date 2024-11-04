@@ -27,8 +27,7 @@ export enum FeatureGates {
   LOG_ERRORS_TO_SENTRY = 'log-errors-to-sentry',
   BLOCKAID_TRANSACTION_VALIDATION = 'blockaid-transaction-validation',
   BLOCKAID_DAPP_SCAN = 'blockaid-dapp-scan',
-  BALANCE_CHANGE_NOTIFICATIONS = 'balance-change-notifications',
-  K2_ALPINE = 'k2-alpine'
+  BALANCE_CHANGE_NOTIFICATIONS = 'balance-change-notifications'
 }
 
 export enum FeatureVars {

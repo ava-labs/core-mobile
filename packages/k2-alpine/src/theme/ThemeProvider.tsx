@@ -1,4 +1,3 @@
-// @ts-nocheck - we need to ignore this for now until https://ava-labs.atlassian.net/browse/CP-9297 is done
 import React, { PropsWithChildren, type FC } from 'react'
 import { DripsyProvider } from 'dripsy'
 import { ColorSchemeName, useColorScheme } from 'react-native'

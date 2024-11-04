@@ -2,7 +2,7 @@ import React from 'react'
 
 import { ScrollView, Text } from '../../components/Primitives'
 import Link from '../../utils/Link'
-import { text } from './text'
+import { text, TextVariant } from './text'
 
 const FIGMA_LINK =
   'https://www.figma.com/design/opZ4C1UGzcoGRjxE4ZIE3J/K2-Alpine?node-id=14-4148&node-type=canvas&t=n6EXyTJUG0nuv3Fv-0'
@@ -27,8 +27,7 @@ export const All = (): JSX.Element => {
         style={{ marginBottom: 20 }}
       />
       {Object.keys(text).map((variant, index) => (
-        // @ts-expect-error
-        <Text key={index} variant={variant}>
+        <Text key={index} variant={variant as TextVariant}>
           {variant}
         </Text>
       ))}
