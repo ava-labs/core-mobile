@@ -445,7 +445,7 @@ workflows:
     - script-runner@0:
         title: Update Android Datadog Dashboard
         inputs:
-        - file_path: scripts/bitrise/updateAndroidDatadogDashboard.sh
+        - file_path: scripts/datadog/updateAndroidDatadogDashboard.sh
   _upload-detox-artifacts:
     steps:
     - script-runner@0:
