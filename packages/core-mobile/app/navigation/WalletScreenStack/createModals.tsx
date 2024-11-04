@@ -33,6 +33,7 @@ import EditSpendLimit from 'components/EditSpendLimit'
 import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScreen'
 import EnableNotificationsModal from 'screens/notifications/EnableNotificationsModal'
 import QRScannerScreen from 'screens/shared/QRScannerScreen'
+import { MainHeaderOptions } from 'navigation/NavUtils'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -159,6 +160,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={AccountBottomSheet}
       />
       <WalletScreenS.Screen
+        options={{
+          presentation: 'card',
+          ...MainHeaderOptions()
+        }}
         name={AppNavigation.Modal.SignOut}
         component={SignOutModalScreen}
       />
