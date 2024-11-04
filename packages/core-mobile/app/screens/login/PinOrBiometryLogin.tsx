@@ -18,12 +18,6 @@ import ReAnimated, {
 } from 'react-native-reanimated'
 import Logger from 'utils/Logger'
 import { Text, useTheme, View } from '@avalabs/k2-mobile'
-import { selectWalletType } from 'store/app'
-import { useSelector } from 'react-redux'
-import { WalletType } from 'services/wallet/types'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
-import { noop } from '@avalabs/core-utils-sdk'
 import { isIphoneSE } from 'utils/device/isIphoneSE'
 import { PinDots } from 'screens/login/PinDots'
 import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
@@ -51,9 +45,8 @@ const LOGO_ANIMATION_DURATION = 500
 const TOP_SPACE = isIphoneSE() ? 24 : 64
 
 type Props = {
-  onSignInWithRecoveryPhrase?: () => void
-  onSignOut?: () => void
   onLoginSuccess: (mnemonic: string) => void
+  onForgotPin?: () => void
   isResettingPin?: boolean
   hideLoginWithMnemonic?: boolean
   testID?: string
@@ -63,9 +56,8 @@ type Props = {
  * This screen will select appropriate login method (pin or biometry) and call onLoginSuccess upon successful login.
  */
 export default function PinOrBiometryLogin({
-  onSignInWithRecoveryPhrase,
-  onSignOut,
   onLoginSuccess,
+  onForgotPin,
   isResettingPin,
   hideLoginWithMnemonic = false
 }: Props | Readonly<Props>): JSX.Element {
@@ -79,8 +71,6 @@ export default function PinOrBiometryLogin({
     disableKeypad,
     timeRemaining
   } = usePinOrBiometryLogin()
-  const walletType = useSelector(selectWalletType)
-  const navigation = useNavigation()
 
   const logoTranslateY = useSharedValue(0)
   const opacity = useSharedValue(1)
@@ -149,21 +139,7 @@ export default function PinOrBiometryLogin({
   }
 
   const handleForgotPin = (): void => {
-    if (walletType === WalletType.MNEMONIC) {
-      navigation.navigate(AppNavigation.Root.ForgotPin, {
-        title: 'Have you written down your recovery phrase?',
-        message:
-          'This will terminate this session, without your phrase you will not be able to access the current wallet.',
-        onConfirm: onSignInWithRecoveryPhrase || noop
-      })
-    } else if (walletType === WalletType.SEEDLESS) {
-      navigation.navigate(AppNavigation.Root.ForgotPin, {
-        title: 'Reset PIN?',
-        message:
-          'By clicking Continue, you will need to reset your PIN and recover your wallet.',
-        onConfirm: onSignOut || noop
-      })
-    }
+    onForgotPin?.()
   }
 
   return (

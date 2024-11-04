@@ -23,11 +23,6 @@ import WarningModal from 'components/WarningModal'
 import RefreshTokenScreenStack, {
   RefreshTokenScreenStackParamList
 } from 'navigation/RefreshTokenScreenStack'
-import ForgotPinModal from 'screens/shared/ForgotPinModal'
-import { useWallet } from 'hooks/useWallet'
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
-import Logger from 'utils/Logger'
-import { setPinRecovery } from 'utils/Navigation'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
 import VerifyTotpCodeScreen from 'screens/shared/VerifyTotpCodeScreen'
@@ -35,6 +30,7 @@ import { MFA } from 'seedless/types'
 import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { CubeSignerResponse } from '@cubist-labs/cubesigner-sdk'
+import LoginScreenStack from 'screens/login/LoginScreenStack'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
 import RecoveryMethodsStack, {
   RecoveryMethodsStackParamList
@@ -50,11 +46,6 @@ export type RootScreenStackParamList = {
   [AppNavigation.Root.Wallet]: NavigatorScreenParams<WalletScreenStackParams>
   [AppNavigation.Root.CopyPhraseWarning]: {
     copy: () => void
-  }
-  [AppNavigation.Root.ForgotPin]: {
-    onConfirm: () => void
-    title: string
-    message: string
   }
   [AppNavigation.Root.VerifyTotpCode]: {
     onVerifyCode: <T>(
@@ -125,7 +116,7 @@ const WalletScreenStackWithContext: FC = () => {
   // if we haven't determined what to render yet, render nothing
   if (shouldRenderOnlyPinScreen === null) return null
   if (shouldRenderOnlyPinScreen === true) {
-    return <LoginWithPinOrBiometryScreen />
+    return <LoginScreenStack />
   }
 
   // we only render the wallet stack once user has unlocked the wallet
@@ -133,7 +124,7 @@ const WalletScreenStackWithContext: FC = () => {
     <>
       <WalletScreenStack onExit={doExit} />
 
-      {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
+      {walletState === WalletState.INACTIVE && <LoginScreenStack />}
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}
@@ -198,39 +189,12 @@ const RootScreenStack: FC = () => {
           component={CopyPhraseWarningModal}
         />
         <RootStack.Screen
-          name={AppNavigation.Root.ForgotPin}
-          component={ForgotPinModal}
-        />
-        <RootStack.Screen
           options={{ presentation: 'modal' }}
           name={AppNavigation.Root.VerifyTotpCode}
           component={VerifyTotpCodeScreen}
         />
       </RootStack.Group>
     </RootStack.Navigator>
-  )
-}
-
-const LoginWithPinOrBiometryScreen = (): JSX.Element => {
-  const { unlock } = useWallet()
-  const { signOut } = useApplicationContext().appHook
-
-  const handleLoginSuccess = useCallback(
-    (mnemonic: string) => {
-      unlock({ mnemonic }).catch(Logger.error)
-    },
-    [unlock]
-  )
-
-  return (
-    <PinOrBiometryLogin
-      onSignOut={signOut}
-      onSignInWithRecoveryPhrase={() => {
-        setPinRecovery(true)
-        signOut()
-      }}
-      onLoginSuccess={handleLoginSuccess}
-    />
   )
 }
 
