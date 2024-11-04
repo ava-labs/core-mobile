@@ -46,8 +46,6 @@ else
   fi
 fi
 
-./scripts/datadog/updateAndroidDashboard.sh && sleep 5
-
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
 
 if ((test_result != 0)); then

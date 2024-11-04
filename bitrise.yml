@@ -440,6 +440,12 @@ workflows:
         - variables: |- 
             APP_VERSION=$APP_VERSION
             BUILD_NUMBER=$BUILD_NUMBER
+  _update-android-datadog-dashboard:
+    steps:
+    - script-runner@0:
+        title: Update Android Datadog Dashboard
+        inputs:
+        - file_path: scripts/datadog/updateAndroidDashboard.sh
   _upload-detox-artifacts:
     steps:
     - script-runner@0:
@@ -573,6 +579,7 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-external-for-testing
+    - _update-android-datadog-dashboard
     after_run:
       - _pull_external_app_files
     envs:
