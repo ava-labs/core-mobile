@@ -495,7 +495,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-external-for-testing
-    - _update-android-datadog-dashboard
     envs:
     - ENVIRONMENT: production
       opts:
@@ -580,6 +579,7 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-external-for-testing
+    - _update-android-datadog-dashboard
     after_run:
       - _pull_external_app_files
     envs:
