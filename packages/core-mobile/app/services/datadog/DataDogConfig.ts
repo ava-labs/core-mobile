@@ -1,4 +1,7 @@
-import { DdSdkReactNativeConfiguration } from '@datadog/mobile-react-native'
+import {
+  DdSdkReactNativeConfiguration,
+  TrackingConsent
+} from '@datadog/mobile-react-native'
 import Config from 'react-native-config'
 import DeviceInfo from 'react-native-device-info'
 
@@ -17,14 +20,15 @@ if (
     Config.DD_APPLICATION_ID,
     true,
     true,
-    true
+    true,
+    TrackingConsent.GRANTED
   )
 
   DataDogConfig.site = Config.DD_SITE
   DataDogConfig.nativeCrashReportEnabled = true
   DataDogConfig.nativeViewTracking = true
-  DataDogConfig.sessionSamplingRate = 80
-  DataDogConfig.resourceTracingSamplingRate = 80
+  DataDogConfig.sessionSamplingRate = 100
+  DataDogConfig.resourceTracingSamplingRate = 100
   DataDogConfig.version = DeviceInfo.getBuildNumber()
 }
 
