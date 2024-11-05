@@ -30,7 +30,6 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
 import {
   getDenomination,
-  isUnifiedBridgeAsset,
   unwrapAssetSymbol,
   wrapAssetSymbol
 } from 'screens/bridge/utils/bridgeUtils'
@@ -182,10 +181,6 @@ const Bridge: FC = () => {
 
   const handleSelect = useCallback(
     (token: AssetBalance): void => {
-      if (!isUnifiedBridgeAsset(token.asset)) {
-        return
-      }
-
       setSelectedBridgeAsset(token.asset)
     },
     [setSelectedBridgeAsset]
@@ -217,6 +212,12 @@ const Bridge: FC = () => {
       ),
     [assetsWithBalances, bridgeAssets]
   )
+
+  useEffect(() => {
+    if (bridgeTokenList.length === 1 && bridgeTokenList[0]?.asset) {
+      setSelectedBridgeAsset(bridgeTokenList[0].asset)
+    }
+  }, [bridgeTokenList, setSelectedBridgeAsset])
 
   /**
    * Opens token selection modal

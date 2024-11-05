@@ -2,15 +2,15 @@ import { AppListenerEffectAPI } from 'store'
 import { WalletState, onAppUnlocked, selectWalletState } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import {
-  selectIsDeveloperMode,
+  // selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { isAnyOf } from '@reduxjs/toolkit'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import {
-  BridgeTransfer,
-  BridgeType,
-  Environment
+  BridgeTransfer
+  // BridgeType,
+  // Environment
 } from '@avalabs/bridge-unified'
 import {
   selectIsUnifiedBridgeCCTPBlocked,
@@ -84,12 +84,12 @@ const initUnifiedBridgeService = async (
     if (cctpBlocked === prevCctpBlocked) return
   }
 
-  const isDeveloperMode = selectIsDeveloperMode(state)
-  const environment = isDeveloperMode ? Environment.TEST : Environment.PROD
+  // const isDeveloperMode = selectIsDeveloperMode(state)
+  // const environment = isDeveloperMode ? Environment.TEST : Environment.PROD
 
-  const disabledBridgeTypes = [...(cctpBlocked ? [BridgeType.CCTP] : [])]
+  // const disabledBridgeTypes = [...(cctpBlocked ? [BridgeType.CCTP] : [])]
 
-  await UnifiedBridgeService.init({ environment, disabledBridgeTypes })
+  // await UnifiedBridgeService.init({ environment, disabledBridgeTypes })
 
   trackPendingTransfers(listenerApi)
 }

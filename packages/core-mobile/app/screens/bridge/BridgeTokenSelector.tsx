@@ -3,7 +3,7 @@ import { ListRenderItemInfo, View } from 'react-native'
 import { Text } from '@avalabs/k2-mobile'
 import Loader from 'components/Loader'
 import { Space } from 'components/Space'
-import { Asset, useTokenInfoContext } from '@avalabs/core-bridge-sdk'
+import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { formatTokenAmount } from 'utils/Utils'
@@ -13,7 +13,7 @@ import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { isUnifiedBridgeAsset, unwrapAssetSymbol } from './utils/bridgeUtils'
+import { unwrapAssetSymbol } from './utils/bridgeUtils'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -30,8 +30,8 @@ interface TokenSelectorProps {
   selectMode: SelectTokenMode
 }
 
-const getTokenName = (asset: Asset | BridgeAsset): string => {
-  return isUnifiedBridgeAsset(asset) ? asset.name : asset.tokenName
+const getTokenName = (asset: BridgeAsset): string => {
+  return asset.name
 }
 
 function BridgeTokenSelector({
@@ -61,9 +61,7 @@ function BridgeTokenSelector({
       )
     }
 
-    const denomination = isUnifiedBridgeAsset(token.asset)
-      ? token.asset.decimals
-      : token.asset.denomination
+    const denomination = token.asset.decimals
 
     return (
       <AvaListItem.Base
