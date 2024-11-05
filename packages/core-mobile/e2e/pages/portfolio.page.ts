@@ -157,6 +157,10 @@ class PortfolioPage {
     return by.id(portfolio.tokensTabListView)
   }
 
+  get portfolioTokenList() {
+    return by.id(portfolio.portfolioTokenList)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -309,7 +313,12 @@ class PortfolioPage {
   }
 
   async tapToken(token: string) {
-    await Action.waitForElement(by.id(`${token}_portfolio_list_item`))
+    await Action.waitForElement(this.portfolioTokenList)
+    await Action.scrollListUntil(
+      by.id(`${token}_portfolio_list_item`),
+      this.portfolioTokenList,
+      100
+    )
     await Action.tap(by.id(`${token}_portfolio_list_item`))
   }
 

@@ -84,7 +84,10 @@ class SwapTabPage {
 
   async tapReviewOrderButton(index = 0) {
     await Actions.waitForElementNoSync(this.reviewOrderBtn, 15000)
-    await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
+    while (await Actions.isVisible(this.reviewOrderBtn, index)) {
+      await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
+      await delay(3000)
+    }
   }
 
   async tapApproveButton() {
@@ -126,34 +129,30 @@ class SwapTabPage {
   }
 
   async swap(from: string, to: string, amount = '0.000001') {
+    // Go to swap form
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapSwapButton()
+
+    // Select From Token
     if (from !== 'AVAX') {
       await this.tapFromTokenSelector()
       await sendPage.selectToken(from)
     }
+
+    // Select To Token
     if (to !== 'USDC') {
       await this.tapToTokenSelector()
       await sendPage.selectToken(to)
     }
+
+    // Enter input
     await this.inputTokenAmount(amount)
     let newAmount = amount
+
+    // Update input if error message is displayed
     while (
-      (await Actions.isVisible(
-        by.text('No routes found with enough liquidity'),
-        0,
-        500
-      )) ||
-      (await Actions.isVisible(
-        by.text('ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT'),
-        0,
-        500
-      )) ||
-      (await Actions.isVisible(
-        by.text('Amount 1 is too small to proceed'),
-        0,
-        500
-      ))
+      (await Actions.isVisible(by.id('error_msg'), 0, 500)) ||
+      (await Actions.hasText(this.amountField, ''))
     ) {
       newAmount = await this.adjustAmount(newAmount)
       console.log(newAmount)
@@ -162,6 +161,7 @@ class SwapTabPage {
         break
       }
     }
+    // Tap Review Order
     await this.tapReviewOrderButton()
     try {
       await Actions.waitForElementNoSync(this.tokenSpendApproval, 8000)
@@ -169,6 +169,8 @@ class SwapTabPage {
     } catch (e) {
       console.error('Token spend approval not found')
     }
+
+    // Verify fee and approve
     await popUpModalPage.verifyFeeIsLegit(false, 0.2)
     await this.tapApproveButton()
   }
