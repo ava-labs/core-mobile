@@ -14,18 +14,16 @@ describe('earn/exportC', () => {
       status: 'Accepted'
     })
     jest.mock('services/network/NetworkService')
-    jest
-      .spyOn(NetworkService, 'getAvalancheProviderXP')
-      .mockImplementation(() => {
-        return {
-          getApiC: () => {
-            return {
-              getBaseFee: baseFeeMockFn,
-              getAtomicTxStatus: getAtomicTxStatusMockFn
-            }
+    jest.spyOn(NetworkService, 'getAvalancheProviderXP').mockResolvedValue(
+      Promise.resolve({
+        getApiC: () => {
+          return {
+            getBaseFee: baseFeeMockFn,
+            getAtomicTxStatus: getAtomicTxStatusMockFn
           }
-        } as unknown as Avalanche.JsonRpcProvider
-      })
+        }
+      }) as unknown as Avalanche.JsonRpcProvider
+    )
     jest.spyOn(NetworkService, 'sendTransaction').mockImplementation(() => {
       return Promise.resolve('mockTxHash')
     })

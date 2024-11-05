@@ -35,7 +35,7 @@ export async function exportC({
     ]
   assertNotUndefined(cChainNetwork)
 
-  const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   const baseFeeAvax = AvaxC.fromWei(await avaxProvider.getApiC().getBaseFee())
   const instantBaseFeeAvax = WalletService.getInstantBaseFee(baseFeeAvax)

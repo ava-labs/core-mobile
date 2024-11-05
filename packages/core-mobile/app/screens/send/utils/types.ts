@@ -1,10 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  Avalanche,
-  BitcoinProvider,
-  JsonRpcBatchInternal
-} from '@avalabs/core-wallets-sdk'
-import {
   NetworkTokenWithBalance,
   TokenWithBalanceAVM,
   TokenWithBalanceBTC,
@@ -26,11 +21,11 @@ export enum SendErrorMessage {
   UNKNOWN_ERROR = 'Unknown error'
 }
 
-type CommonAdapterOptions<Provider, Token> = {
+type CommonAdapterOptions<Token> = {
   fromAddress: string
-  provider: Provider
   maxFee: bigint
   nativeToken: Token
+  network: Network
 }
 
 export type AdapterOptionsEVM = {
@@ -52,46 +47,29 @@ export type PvmCapableAccount = EnsureDefined<
 >
 
 export type AdapterOptionsP = {
-  network: Network
   account: PvmCapableAccount
 }
 
 export type AdapterOptionsX = {
-  network: Network
   account: AvmCapableAccount
 }
 
-type SendAdapter<
-  Provider = unknown,
-  CustomOptions = unknown,
-  Token = NetworkTokenWithBalance
-> = (options: CommonAdapterOptions<Provider, Token> & CustomOptions) => {
+type SendAdapter<CustomOptions = unknown, Token = NetworkTokenWithBalance> = (
+  options: CommonAdapterOptions<Token> & CustomOptions
+) => {
   send(): Promise<string>
 }
 
 export type SendAdapterEVM = SendAdapter<
-  JsonRpcBatchInternal,
   AdapterOptionsEVM,
   NetworkTokenWithBalance
 >
 
-export type SendAdapterBTC = SendAdapter<
-  BitcoinProvider,
-  AdapterOptionsBTC,
-  TokenWithBalanceBTC
->
+export type SendAdapterBTC = SendAdapter<AdapterOptionsBTC, TokenWithBalanceBTC>
 
-export type SendAdapterPVM = SendAdapter<
-  Avalanche.JsonRpcProvider,
-  AdapterOptionsP,
-  TokenWithBalancePVM
->
+export type SendAdapterPVM = SendAdapter<AdapterOptionsP, TokenWithBalancePVM>
 
-export type SendAdapterAVM = SendAdapter<
-  Avalanche.JsonRpcProvider,
-  AdapterOptionsX,
-  TokenWithBalanceAVM
->
+export type SendAdapterAVM = SendAdapter<AdapterOptionsX, TokenWithBalanceAVM>
 
 // A helper generic that turns only given keys (K) of type T
 // from optional to required.

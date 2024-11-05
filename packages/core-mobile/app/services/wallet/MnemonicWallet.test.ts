@@ -91,6 +91,14 @@ jest.mock('@metamask/eth-sig-util', () => ({
   signTypedData: jest.fn()
 }))
 
+jest
+  .spyOn(Avalanche.AbstractProvider.prototype, 'getInfo')
+  .mockImplementation(() => {
+    return {
+      getUpgradesInfo: jest.fn()
+    }
+  })
+
 describe('MnemonicWallet', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -116,12 +124,12 @@ describe('MnemonicWallet', () => {
       const wallet = MnemonicWallet.getEvmSigner(0, {})
       expect(wallet).toBeInstanceOf(BaseWallet)
     })
-    it('should have returned Avalanche.StaticSigner', () => {
-      const wallet = MnemonicWallet.getAvaSigner(0, {})
+    it('should have returned Avalanche.StaticSigner', async () => {
+      const wallet = await MnemonicWallet.getAvaSigner(0, {})
       expect(wallet).toBeInstanceOf(Avalanche.StaticSigner)
     })
-    it('should have returned Avalanche.SimpleSigner', () => {
-      const wallet = MnemonicWallet.getAvaSigner(0)
+    it('should have returned Avalanche.SimpleSigner', async () => {
+      const wallet = await MnemonicWallet.getAvaSigner(0)
       expect(wallet).toBeInstanceOf(Avalanche.SimpleSigner)
     })
     it('should have called getEvmSigner for EVM network', async () => {

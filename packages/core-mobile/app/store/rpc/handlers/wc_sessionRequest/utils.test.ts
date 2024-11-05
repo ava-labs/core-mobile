@@ -6,7 +6,8 @@ describe('isCoreMethod', () => {
       'avalanche_sendTransaction',
       'avalanche_signTransaction',
       'avalanche_signMessage',
-      'bitcoin_sendTransaction'
+      'bitcoin_sendTransaction',
+      'bitcoin_signTransaction'
     ]
 
     for (const method of methods) {

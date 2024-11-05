@@ -118,8 +118,11 @@ export class BridgeService {
 
       return BigInt(byteLength)
     } else {
-      const avalancheProvider = getAvalancheEvmProvider(allNetworks, isTestnet)
-      const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
+      const avalancheProvider = await getAvalancheEvmProvider(
+        allNetworks,
+        isTestnet
+      )
+      const ethereumProvider = await getEthereumProvider(allNetworks, isTestnet)
 
       if (!avalancheProvider || !ethereumProvider) {
         throw new Error('no providers available')
@@ -191,9 +194,12 @@ export class BridgeService {
       throw new Error('Invalid blockchain')
     }
 
-    const avalancheProvider = getAvalancheEvmProvider(allNetworks, isTestnet)
+    const avalancheProvider = await getAvalancheEvmProvider(
+      allNetworks,
+      isTestnet
+    )
 
-    const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
+    const ethereumProvider = await getEthereumProvider(allNetworks, isTestnet)
 
     if (!avalancheProvider || !ethereumProvider) {
       throw new Error('No providers available')

@@ -1,9 +1,15 @@
 import React from 'react'
 import { Text, TouchableOpacity, View } from '@avalabs/k2-mobile'
 import {
+  AddressItem,
+  CurrencyItem,
+  DataItem,
+  DateItem,
   DetailItemType,
   DetailSection,
+  FundsRecipientItem,
   LinkItem,
+  NodeIDItem,
   TextItem
 } from '@avalabs/vm-module-types'
 import { Row } from 'components/Row'
@@ -63,24 +69,12 @@ export const DetailSectionView = ({
     </Row>
   )
 
-  const renderAddressValue = (address: string): JSX.Element => (
-    <TokenAddress address={address} />
-  )
-
-  const renderNodeIDValue = (nodeID: string): JSX.Element => (
-    <NodeID nodeID={nodeID} />
-  )
-
   const renderDataValue = (data: string): JSX.Element => (
     <TouchableOpacity hitSlop={12} onPress={() => onPressDataItem(data)}>
       <Text variant="buttonSmall" sx={{ color: '$blueDark' }}>
         View
       </Text>
     </TouchableOpacity>
-  )
-
-  const renderDateValue = (date: string): JSX.Element => (
-    <Text variant="buttonSmall">{getDateInMmmDdYyyyHhMmA(parseInt(date))}</Text>
   )
 
   const renderCurrencyValue = (
@@ -103,6 +97,32 @@ export const DetailSectionView = ({
           </Text>
         )}
       </View>
+    )
+  }
+
+  const renderValue = (
+    item:
+      | AddressItem
+      | NodeIDItem
+      | CurrencyItem
+      | DataItem
+      | DateItem
+      | FundsRecipientItem
+  ): JSX.Element => {
+    return item.type === DetailItemType.ADDRESS ? (
+      <TokenAddress address={item.value} />
+    ) : item.type === DetailItemType.NODE_ID ? (
+      <NodeID nodeID={item.value} />
+    ) : item.type === DetailItemType.DATA ? (
+      renderDataValue(item.value)
+    ) : item.type === DetailItemType.DATE ? (
+      <Text variant="buttonSmall">
+        {getDateInMmmDdYyyyHhMmA(parseInt(item.value))}
+      </Text>
+    ) : item.type === DetailItemType.CURRENCY ? (
+      renderCurrencyValue(item.value, item.maxDecimals, item.symbol)
+    ) : (
+      renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)
     )
   }
 
@@ -143,19 +163,7 @@ export const DetailSectionView = ({
               }}
               key={index}>
               <Text variant="caption">{item.label}</Text>
-              {item.type === DetailItemType.ADDRESS
-                ? renderAddressValue(item.value)
-                : item.type === DetailItemType.NODE_ID
-                ? renderNodeIDValue(item.value)
-                : item.type === DetailItemType.DATA
-                ? renderDataValue(item.value)
-                : item.type === DetailItemType.DATE
-                ? renderDateValue(item.value)
-                : renderCurrencyValue(
-                    item.value,
-                    item.maxDecimals,
-                    item.symbol
-                  )}
+              {renderValue(item)}
             </Row>
           )
         })}

@@ -1,7 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import {
   ApprovalResponse,
-  BitcoinTransactionData
+  BitcoinExecuteTxData
 } from '@avalabs/vm-module-types'
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
@@ -17,7 +17,7 @@ export const btcSendTransaction = async ({
   finalFeeRate,
   resolve
 }: {
-  transactionData: BitcoinTransactionData
+  transactionData: BitcoinExecuteTxData
   network: Network
   account: Account
   finalFeeRate: number
@@ -30,7 +30,7 @@ export const btcSendTransaction = async ({
 
     // we need to re-create the transaction when fee rate has changed
     if (finalFeeRate !== 0 && finalFeeRate !== feeRate) {
-      const provider = ModuleManager.bitcoinModule.getProvider(network)
+      const provider = await ModuleManager.bitcoinModule.getProvider(network)
       const updatedTx = createTransferTx(
         to,
         account.addressBTC,

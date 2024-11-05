@@ -1,9 +1,9 @@
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useAvalancheXpProvider } from './networks/networkProviderHooks'
 
 const REFETCH_INTERVAL = 10000 // 10 seconds
 
@@ -18,17 +18,18 @@ export const useCChainBaseFee = (): UseQueryResult<
   Error
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxProvider = NetworkService.getAvalancheProviderXP(isDeveloperMode)
   const cChainNetwork = useCChainNetwork()
+  const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
 
   return useQuery({
     // no need to retry failed request as we are already doing interval fetching
     retry: false,
     refetchInterval: REFETCH_INTERVAL,
-    queryKey: ['cChainBaseFee', isDeveloperMode, cChainNetwork],
+    queryKey: ['cChainBaseFee', isDeveloperMode, cChainNetwork, avaxProvider],
     queryFn: async () => {
+      if (!cChainNetwork || !avaxProvider) return undefined
       const baseFeeWei = await avaxProvider.getApiC().getBaseFee()
-      if (!cChainNetwork) return undefined
+
       return new TokenUnit(
         baseFeeWei,
         cChainNetwork.networkToken.decimals,

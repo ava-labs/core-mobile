@@ -47,7 +47,14 @@ describe('WalletService', () => {
     const getUTXOsMock = jest.fn().mockReturnValue(getUTXOsMockValue)
     const mockWallet = jest.fn().mockReturnValue({
       getUTXOs: getUTXOsMock,
-      addPermissionlessDelegator: addPermissionlessDelegatorMock
+      addPermissionlessDelegator: addPermissionlessDelegatorMock,
+      getProvider: jest.fn().mockImplementation(() => {
+        return {
+          getApiP: jest.fn().mockImplementation(() => {
+            return { getFeeState: jest.fn().mockResolvedValue('test') }
+          })
+        }
+      })
     })
 
     beforeAll(() => {
@@ -205,16 +212,16 @@ describe('WalletService', () => {
       } as AddDelegatorProps
       const unsignedTx = await WalletService.createAddDelegatorTx(params)
       expect(getUTXOsMock).toHaveBeenCalled()
-      expect(addPermissionlessDelegatorMock).toHaveBeenCalledWith(
-        getUTXOsMockValue,
-        validNodeId,
-        BigInt(validStartDate),
-        BigInt(validEndDateFuji),
-        fujiValidStakeAmount,
-        PChainId._11111111111111111111111111111111LPO_YY,
-        undefined,
-        [validRewardAddress]
-      )
+      expect(addPermissionlessDelegatorMock).toHaveBeenCalledWith({
+        utxoSet: getUTXOsMockValue,
+        nodeId: validNodeId,
+        start: BigInt(validStartDate),
+        end: BigInt(validEndDateFuji),
+        weight: fujiValidStakeAmount,
+        subnetId: PChainId._11111111111111111111111111111111LPO_YY,
+        rewardAddresses: [validRewardAddress],
+        feeState: 'test'
+      })
       expect(unsignedTx).toStrictEqual(mockUnsignedTx)
     })
   })

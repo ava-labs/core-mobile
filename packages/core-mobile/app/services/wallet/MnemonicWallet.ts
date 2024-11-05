@@ -80,10 +80,10 @@ export class MnemonicWallet implements Wallet {
     return wallet
   }
 
-  private getAvaSigner(
+  private async getAvaSigner(
     accountIndex: number,
     provider?: Avalanche.JsonRpcProvider
-  ): Avalanche.StaticSigner | Avalanche.SimpleSigner {
+  ): Promise<Avalanche.StaticSigner | Avalanche.SimpleSigner> {
     if (provider) {
       return Avalanche.StaticSigner.fromMnemonic(
         this.mnemonic,
@@ -121,7 +121,7 @@ export class MnemonicWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return this.getAvaSigner(accountIndex) as Avalanche.SimpleSigner
+        return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
       default:
         throw new Error('Unable to get signer: network not supported')
     }
@@ -383,14 +383,17 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  public getReadOnlyAvaSigner({
+  public async getReadOnlyAvaSigner({
     accountIndex,
     provXP
   }: {
     accountIndex: number
     provXP: Avalanche.JsonRpcProvider
-  }): Avalanche.StaticSigner {
-    return this.getAvaSigner(accountIndex, provXP) as Avalanche.StaticSigner
+  }): Promise<Avalanche.StaticSigner> {
+    return (await this.getAvaSigner(
+      accountIndex,
+      provXP
+    )) as Avalanche.StaticSigner
   }
 
   private signAvalancheMessage = async (
@@ -400,7 +403,9 @@ export class MnemonicWallet implements Wallet {
     chainAlias: Avalanche.ChainIDAlias
   ): Promise<string> => {
     const message = toUtf8(data)
-    const signer = this.getAvaSigner(accountIndex) as Avalanche.SimpleSigner
+    const signer = (await this.getAvaSigner(
+      accountIndex
+    )) as Avalanche.SimpleSigner
     const buffer = await signer.signMessage({
       message,
       chain: chainAlias

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import { Text, Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
@@ -24,7 +24,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
 import useEVMSend from 'screens/send/hooks/useEVMSend'
-import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance'
 import { NetworkTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
@@ -61,7 +60,6 @@ export default function NftSend({
     isValidating
   } = useSendContext()
   const { activeNetwork } = useNetworks()
-  const provider = useMemo(() => getEvmProvider(activeNetwork), [activeNetwork])
   const activeAccount = useSelector(selectActiveAccount)
   const fromAddress = activeAccount?.addressC ?? ''
   const tokens = useSelector(selectTokensWithBalance)
@@ -73,7 +71,7 @@ export default function NftSend({
   const { send } = useEVMSend({
     chainId: activeNetwork.chainId,
     fromAddress,
-    provider,
+    network: activeNetwork,
     maxFee,
     nativeToken
   })

@@ -61,6 +61,7 @@ export enum RpcMethod {
   AVALANCHE_SIGN_TRANSACTION = 'avalanche_signTransaction',
   AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange',
   BITCOIN_SEND_TRANSACTION = 'bitcoin_sendTransaction',
+  BITCOIN_SIGN_TRANSACTION = 'bitcoin_signTransaction',
   AVALANCHE_SIGN_MESSAGE = 'avalanche_signMessage',
   AVALANCHE_RENAME_ACCOUNT = 'avalanche_renameAccount',
 
@@ -89,7 +90,10 @@ export const CORE_AVAX_METHODS = [
   RpcMethod.AVALANCHE_SIGN_MESSAGE
 ]
 
-export const CORE_BTC_METHODS = [RpcMethod.BITCOIN_SEND_TRANSACTION]
+export const CORE_BTC_METHODS = [
+  RpcMethod.BITCOIN_SEND_TRANSACTION,
+  RpcMethod.BITCOIN_SIGN_TRANSACTION
+]
 
 export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
 

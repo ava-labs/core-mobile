@@ -24,7 +24,7 @@ export async function importC({
 }: ImportCParams): Promise<void> {
   Logger.info('importing C started')
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
-  const avaxProvider = NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
   const baseFeeAvax = new TokenUnit(
