@@ -10,5 +10,6 @@ export default {
   showRecoveryPhrase: 'Show recovery phrase',
   notifications: 'Notifications',
   deleteWalletBtn: 'Delete Wallet',
-  iUnderstand: 'I understand, continue'
+  slideBtn: 'slide',
+  cancel: 'cancel_btn'
 }

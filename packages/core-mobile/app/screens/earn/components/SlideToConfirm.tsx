@@ -69,7 +69,7 @@ const SlideToConfirm = ({
         <Animated.View
           {...panResponder.panHandlers}
           style={[styles.slider, { width: sliderWidth }]}>
-          <Animated.View style={{ opacity: iconOpacityAnim }}>
+          <Animated.View testID="slide" style={{ opacity: iconOpacityAnim }}>
             <Icons.Navigation.ArrowForwardIOS color={colors.$neutral900} />
           </Animated.View>
         </Animated.View>

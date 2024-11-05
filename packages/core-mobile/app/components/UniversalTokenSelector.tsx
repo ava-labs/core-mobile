@@ -181,7 +181,10 @@ const UniversalTokenSelector: FC<Props> = ({
       <Space y={8} />
       <Row>
         {hasError && (
-          <Text variant="body2" sx={{ color: '$dangerMain' }}>
+          <Text
+            testID="error_msg"
+            variant="body2"
+            sx={{ color: '$dangerMain' }}>
             {error}
           </Text>
         )}

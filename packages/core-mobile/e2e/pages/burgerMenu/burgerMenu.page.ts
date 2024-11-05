@@ -38,8 +38,12 @@ class BurgerMenuPage {
     return by.text(burgerMenu.deleteWalletBtn)
   }
 
-  get iUnderstand() {
-    return by.text(burgerMenu.iUnderstand)
+  get slideBtn() {
+    return by.id(burgerMenu.slideBtn)
+  }
+
+  get cancel() {
+    return by.id(burgerMenu.cancel)
   }
 
   async swipeLeft() {
@@ -90,7 +94,14 @@ class BurgerMenuPage {
 
   async deleteWallet() {
     await Actions.tapElementAtIndex(this.deleteWalletBtn, 0)
-    await Actions.tapElementAtIndex(this.iUnderstand, 0)
+    await this.swipeToLogout()
+  }
+  async swipeToLogout() {
+    if (Actions.platform() === Platform.iOS) {
+      await Actions.dragTo(this.slideBtn, this.cancel, [1, 0])
+    } else {
+      await Actions.drag(this.slideBtn, 'right', 1)
+    }
   }
 }
 
