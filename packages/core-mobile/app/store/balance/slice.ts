@@ -18,6 +18,7 @@ import {
   Balance,
   Balances,
   BalanceState,
+  LocalTokenId,
   LocalTokenWithBalance,
   QueryStatus
 } from './types'
@@ -194,13 +195,15 @@ export const selectTokensWithBalanceForAccount = createSelector(
 )
 
 export const selectBalanceTotalInCurrencyForAccount =
-  (accountIndex: number) => (state: RootState) => {
+  (accountIndex: number, blacklist: LocalTokenId[]) => (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
 
-    return tokens.reduce((total, token) => {
-      total += token.balanceInCurrency ?? 0
-      return total
-    }, 0)
+    return tokens
+      .filter(token => !blacklist.includes(token.localId))
+      .reduce((total, token) => {
+        total += token.balanceInCurrency ?? 0
+        return total
+      }, 0)
   }
 export const selectBalanceForAccountIsAccurate =
   (accountIndex: number) => (state: RootState) => {
@@ -212,7 +215,12 @@ export const selectBalanceForAccountIsAccurate =
   }
 
 export const selectBalanceTotalInCurrencyForNetworkAndAccount =
-  (chainId: number, accountIndex: number | undefined) => (state: RootState) => {
+  (
+    chainId: number,
+    accountIndex: number | undefined,
+    blacklist: LocalTokenId[]
+  ) =>
+  (state: RootState) => {
     if (accountIndex === undefined) return 0
 
     const balances = Object.values(state.balance.balances).filter(
@@ -224,6 +232,7 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
     for (const balance of balances) {
       for (const token of balance.tokens) {
+        if (blacklist.includes(token.localId)) continue
         totalInCurrency += token.balanceInCurrency ?? 0
       }
     }
