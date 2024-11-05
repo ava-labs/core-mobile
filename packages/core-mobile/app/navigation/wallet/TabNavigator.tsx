@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { lazy } from 'react'
 import AppNavigation, { Tabs } from 'navigation/AppNavigation'
 import HomeSVG from 'components/svg/HomeSVG'
 import WatchlistSVG from 'components/svg/WatchlistSVG'
@@ -18,13 +17,8 @@ import { Fab } from 'components/Fab'
 import { addTab, selectActiveTab, selectAllTabs } from 'store/browser'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { withK2Alpine } from 'utils/withK2Alpine'
+import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
-
-const WatchlistTab = withK2Alpine(
-  lazy(() => import('screens/watchlist/WatchlistTabView')),
-  lazy(() => import('screens/watchlist/WatchlistTabViewK2Alpine'))
-)
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }

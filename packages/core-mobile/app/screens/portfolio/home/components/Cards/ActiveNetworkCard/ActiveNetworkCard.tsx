@@ -25,6 +25,7 @@ import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPri
 import { Space } from 'components/Space'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
+import { selectTokenBlacklist } from 'store/portfolio/slice'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 import { PChainAssetList } from './PChainAssetList'
@@ -38,10 +39,12 @@ const ActiveNetworkCard = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
   const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
+  const tokenBlacklist = useSelector(selectTokenBlacklist)
   const totalBalanceInCurrency = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
       activeNetwork.chainId,
-      account?.index
+      account?.index,
+      tokenBlacklist
     )
   )
   const { navigate } = useNavigation<NavigationProp>()

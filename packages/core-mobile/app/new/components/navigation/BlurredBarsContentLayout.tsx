@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, ReactElement } from 'react'
 import { View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { useBottomTabBarHeight } from 'expo-router/node_modules/@react-navigation/bottom-tabs'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 const BlurredBarsContentLayout: React.FC<PropsWithChildren> = ({
   children

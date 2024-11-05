@@ -21,6 +21,7 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { selectTokenBlacklist } from 'store/portfolio/slice'
 
 type Props = {
   account: Account
@@ -40,8 +41,9 @@ function AccountItem({
   const { activeNetwork } = useNetworks()
   const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
+  const tokenBlacklist = useSelector(selectTokenBlacklist)
   const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account.index)
+    selectBalanceTotalInCurrencyForAccount(account.index, tokenBlacklist)
   )
   const isBalanceLoaded = useSelector(
     selectIsBalanceLoadedForAddress(account.index, activeNetwork.chainId)
