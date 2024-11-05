@@ -1,7 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import {
   ApprovalResponse,
-  BitcoinTransactionData
+  BitcoinExecuteTxData
 } from '@avalabs/vm-module-types'
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
@@ -17,7 +17,7 @@ export const btcSendTransaction = async ({
   finalFeeRate,
   resolve
 }: {
-  transactionData: BitcoinTransactionData
+  transactionData: BitcoinExecuteTxData
   network: Network
   account: Account
   finalFeeRate: number
