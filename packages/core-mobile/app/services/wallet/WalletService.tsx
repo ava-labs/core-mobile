@@ -214,7 +214,7 @@ class WalletService {
       throw reason
     })
 
-    const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
+    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
     return wallet.getAddresses({ accountIndex, isTestnet, provXP })
   }
@@ -251,7 +251,7 @@ class WalletService {
     }
 
     if (this.walletType === WalletType.MNEMONIC) {
-      const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
+      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
       return indices.map(index =>
         Avalanche.getAddressFromXpub(
@@ -347,12 +347,14 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('P', sourceChain)
-
-    const unsignedTx = readOnlySigner.importP(
+    const apiP = readOnlySigner.getProvider().getApiP()
+    const feeState = await apiP.getFeeState().catch(() => undefined)
+    const unsignedTx = readOnlySigner.importP({
       utxoSet,
       sourceChain,
-      destinationAddress
-    )
+      toAddress: destinationAddress,
+      feeState
+    })
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
@@ -377,13 +379,15 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-
-    const unsignedTx = readOnlySigner.exportP(
+    const apiP = readOnlySigner.getProvider().getApiP()
+    const feeState = await apiP.getFeeState().catch(() => undefined)
+    const unsignedTx = readOnlySigner.exportP({
       amount,
       utxoSet,
-      destinationChain,
-      destinationAddress
-    )
+      destination: destinationChain,
+      toAddress: destinationAddress,
+      feeState
+    })
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
@@ -414,26 +418,31 @@ class WalletService {
 
     // P-chain has a tx size limit of 64KB
     let utxoSet = await readOnlySigner.getUTXOs('P')
-    const filteredUtxos = Avalanche.getMaximumUtxoSet(
-      readOnlySigner,
-      utxoSet.getUTXOs(),
-      Avalanche.SizeSupportedTx.BaseP
-    )
+    const apiP = readOnlySigner.getProvider().getApiP()
+    const feeState = await apiP.getFeeState().catch(() => undefined)
+    const filteredUtxos = Avalanche.getMaximumUtxoSet({
+      wallet: readOnlySigner,
+      utxos: utxoSet.getUTXOs(),
+      sizeSupportedTx: Avalanche.SizeSupportedTx.BaseP,
+      feeState
+    })
     utxoSet = new utils.UtxoSet(filteredUtxos)
     const changeAddress = utils.parse(sourceAddress)[2]
-    return readOnlySigner.baseTX(
+
+    return readOnlySigner.baseTX({
       utxoSet,
-      'P',
-      destinationAddress,
-      {
+      chain: 'P',
+      toAddress: destinationAddress,
+      amountsPerAsset: {
         [avaxXPNetwork.isTestnet
           ? TESTNET_AVAX_ASSET_ID
           : MAINNET_AVAX_ASSET_ID]: amount
       },
-      {
+      options: {
         changeAddresses: [changeAddress]
-      }
-    )
+      },
+      feeState
+    })
   }
 
   /**
@@ -457,19 +466,22 @@ class WalletService {
     // P-chain has a tx size limit of 64KB
     const utxoSet = await readOnlySigner.getUTXOs('X')
     const changeAddress = utils.parse(sourceAddress)[2]
-    return readOnlySigner.baseTX(
+    const apiP = readOnlySigner.getProvider().getApiP()
+    const feeState = await apiP.getFeeState().catch(() => undefined)
+    return readOnlySigner.baseTX({
       utxoSet,
-      'X',
-      destinationAddress,
-      {
+      chain: 'X',
+      toAddress: destinationAddress,
+      amountsPerAsset: {
         [avaxXPNetwork.isTestnet
           ? TESTNET_AVAX_ASSET_ID
           : MAINNET_AVAX_ASSET_ID]: amount
       },
-      {
+      options: {
         changeAddresses: [changeAddress]
-      }
-    )
+      },
+      feeState
+    })
   }
 
   public async createImportCTx({
@@ -553,17 +565,19 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
+    const apiP = readOnlySigner.getProvider().getApiP()
+    const feeState = await apiP.getFeeState().catch(() => undefined)
     const network = NetworkService.getAvalancheNetworkP(isDevMode)
-    const unsignedTx = readOnlySigner.addPermissionlessDelegator(
+    const unsignedTx = readOnlySigner.addPermissionlessDelegator({
       utxoSet,
       nodeId,
-      BigInt(startDate),
-      BigInt(endDate),
-      stakeAmount,
-      PChainId._11111111111111111111111111111111LPO_YY,
-      undefined,
-      [rewardAddress]
-    )
+      start: BigInt(startDate),
+      end: BigInt(endDate),
+      weight: stakeAmount,
+      subnetId: PChainId._11111111111111111111111111111111LPO_YY,
+      rewardAddresses: [rewardAddress],
+      feeState
+    })
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
@@ -583,7 +597,7 @@ class WalletService {
     this.#walletType = walletType
   }
 
-  private validateAvalancheFee({
+  private async validateAvalancheFee({
     network,
     unsignedTx,
     evmBaseFeeWei
@@ -591,7 +605,7 @@ class WalletService {
     network: Network
     unsignedTx: UnsignedTx
     evmBaseFeeWei?: bigint
-  }): void {
+  }): Promise<void> {
     if (
       network.vmName !== NetworkVMType.AVM &&
       network.vmName !== NetworkVMType.PVM
@@ -599,17 +613,21 @@ class WalletService {
       throw new Error('Wrong network')
     }
 
+    if (evmBaseFeeWei === undefined) {
+      throw new Error('Missing evm fee data')
+    }
+
     Logger.info('validating burned amount')
 
-    const avalancheProvider = NetworkService.getAvalancheProviderXP(
+    const avalancheProvider = await NetworkService.getAvalancheProviderXP(
       Boolean(network.isTestnet)
     )
 
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
-      evmBaseFee: evmBaseFeeWei,
-      evmFeeTolerance: EVM_FEE_TOLERANCE
+      baseFee: evmBaseFeeWei,
+      feeTolerance: EVM_FEE_TOLERANCE
     })
 
     if (!isValid) {
@@ -628,7 +646,7 @@ class WalletService {
       accountIndex,
       this.walletType
     )
-    const provXP = NetworkService.getAvalancheProviderXP(
+    const provXP = await NetworkService.getAvalancheProviderXP(
       Boolean(network.isTestnet)
     )
     return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })

@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { Network } from '@avalabs/core-chains-sdk'
-import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { TokenWithBalanceBTC } from '@avalabs/vm-module-types'
 import { Contact, CorePrimaryAccount } from '@avalabs/types'
 import useBTCSend from '../hooks/useBTCSend'
@@ -34,17 +33,13 @@ const SendBTC = ({
     isSending,
     maxFee
   } = useSendContext()
-  const provider = useMemo(
-    () => getBitcoinProvider(network.isTestnet),
-    [network]
-  )
 
   const fromAddress = account?.addressBTC ?? ''
 
   const { send } = useBTCSend({
     fromAddress,
     isMainnet: !network.isTestnet,
-    provider,
+    network,
     maxFee,
     nativeToken
   })

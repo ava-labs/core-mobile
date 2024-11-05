@@ -227,5 +227,5 @@ export interface Wallet {
   }: {
     accountIndex: number
     provXP: Avalanche.JsonRpcProvider
-  }): Avalanche.WalletVoid | Avalanche.StaticSigner
+  }): Promise<Avalanche.WalletVoid | Avalanche.StaticSigner>
 }

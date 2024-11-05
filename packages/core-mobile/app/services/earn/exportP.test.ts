@@ -14,17 +14,15 @@ describe('earn/exportP', () => {
       status: 'Committed'
     })
     jest.mock('services/network/NetworkService')
-    jest
-      .spyOn(NetworkService, 'getAvalancheProviderXP')
-      .mockImplementation(() => {
-        return {
-          getApiP: () => {
-            return {
-              getTxStatus: getTxStatusMockFn
-            }
+    jest.spyOn(NetworkService, 'getAvalancheProviderXP').mockResolvedValue(
+      Promise.resolve({
+        getApiP: () => {
+          return {
+            getTxStatus: getTxStatusMockFn
           }
-        } as unknown as Avalanche.JsonRpcProvider
-      })
+        }
+      }) as unknown as Avalanche.JsonRpcProvider
+    )
     jest.spyOn(NetworkService, 'sendTransaction').mockImplementation(() => {
       return Promise.resolve('mockTxHash')
     })

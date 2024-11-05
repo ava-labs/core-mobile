@@ -318,11 +318,11 @@ export default class SeedlessWallet implements Wallet {
     }
   }
 
-  public getReadOnlyAvaSigner({
+  public async getReadOnlyAvaSigner({
     provXP
   }: {
     provXP: Avalanche.JsonRpcProvider
-  }): Avalanche.WalletVoid {
+  }): Promise<Avalanche.WalletVoid> {
     const pubKeyBufferC = this.getPubKeyBufferC()
     const pubKeyBufferXP = this.getPubKeyBufferXP()
 

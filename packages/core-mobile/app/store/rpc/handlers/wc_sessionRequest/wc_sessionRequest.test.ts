@@ -113,7 +113,10 @@ const testNonEVMNamespacesToApprove = {
       'bip122:000000000019d6689c085ae165831e93',
       'bip122:000000000933ea01ad0ee984209779ba'
     ],
-    methods: [RpcMethod.BITCOIN_SEND_TRANSACTION],
+    methods: [
+      RpcMethod.BITCOIN_SEND_TRANSACTION,
+      RpcMethod.BITCOIN_SIGN_TRANSACTION
+    ],
     events: [
       'chainChanged',
       'accountsChanged',
@@ -641,7 +644,7 @@ describe('session_request handler', () => {
             'disconnect',
             'connect'
           ],
-          methods: ['bitcoin_sendTransaction']
+          methods: ['bitcoin_sendTransaction', 'bitcoin_signTransaction']
         }
       }
 

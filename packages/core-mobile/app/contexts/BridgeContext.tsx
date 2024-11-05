@@ -142,7 +142,8 @@ function LocalBridgeProvider({
         config &&
         !TrackerSubscriptions.has(trackedTransaction.sourceTxHash) &&
         avalancheProvider &&
-        ethereumProvider
+        ethereumProvider &&
+        bitcoinProvider
       ) {
         // Start transaction tracking process (no need to await)
         try {
