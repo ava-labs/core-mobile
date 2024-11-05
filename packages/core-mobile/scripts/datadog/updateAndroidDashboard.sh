@@ -1553,7 +1553,7 @@ curl -X PUT \
                                             "data_source": "rum",
                                             "search":
                                             {
-                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android version:>$BUILD_NUMBER service:com.avaxwallet"
+                                                "query": "@type:view @application.id:4deaf0a2-6489-4a26-b05c-deb1f3673bbb @os.name:Android version:$BUILD_NUMBER service:com.avaxwallet"
                                             },
                                             "indexes":
                                             [
