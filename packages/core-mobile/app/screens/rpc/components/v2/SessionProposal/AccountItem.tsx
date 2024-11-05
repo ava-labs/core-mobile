@@ -19,6 +19,7 @@ import {
   selectIsBalanceLoadedForAddress
 } from 'store/balance/slice'
 import { QueryStatus } from 'store/balance/types'
+import { selectTokenBlacklist } from 'store/portfolio/slice'
 
 type Props = {
   account: Account
@@ -29,8 +30,9 @@ type Props = {
 const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
   const { theme } = useApplicationContext()
   const { activeNetwork } = useNetworks()
+  const tokenBlacklist = useSelector(selectTokenBlacklist)
   const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account.index)
+    selectBalanceTotalInCurrencyForAccount(account.index, tokenBlacklist)
   )
 
   const isBalanceLoaded = useSelector(
