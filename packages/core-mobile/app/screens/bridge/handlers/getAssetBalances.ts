@@ -7,7 +7,7 @@ import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
  * @param assets
  * @param tokens
  */
-export function getEVMAssetBalances(
+export function getAssetBalances(
   assets: Array<BridgeAsset>,
   tokens: TokenWithBalance[]
 ): AssetBalance[] {

@@ -5,8 +5,7 @@ import { selectTokensWithBalance } from 'store/balance/slice'
 import { uniqBy } from 'lodash'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { UnifiedBridgeService } from '@avalabs/bridge-unified'
-import { getDenomination } from '../utils/bridgeUtils'
-import { getEVMAssetBalances } from '../handlers/getEVMAssetBalances'
+import { getAssetBalances } from '../handlers/getAssetBalances'
 import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
 
 /**
@@ -51,7 +50,7 @@ export function useAssetBalances(
 
   const assetsWithBalances = useMemo(
     () =>
-      getEVMAssetBalances(allAssets, tokens).map(token => {
+      getAssetBalances(allAssets, tokens).map(token => {
         return {
           ...token,
           symbolOnNetwork: token.asset.symbol
@@ -63,11 +62,11 @@ export function useAssetBalances(
   const sortedAssetsWithBalances = assetsWithBalances.sort((asset1, asset2) => {
     const asset1Balance = bigintToBig(
       asset1.balance || 0n,
-      getDenomination(asset1.asset)
+      asset1.asset.decimals
     )
     const asset2Balance = bigintToBig(
       asset2.balance || 0n,
-      getDenomination(asset2.asset)
+      asset2.asset.decimals
     )
 
     return asset2Balance.cmp(asset1Balance)

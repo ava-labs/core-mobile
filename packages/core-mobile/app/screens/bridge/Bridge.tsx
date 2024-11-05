@@ -29,7 +29,6 @@ import Big from 'big.js'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
 import {
-  getDenomination,
   unwrapAssetSymbol,
   wrapAssetSymbol
 } from 'screens/bridge/utils/bridgeUtils'
@@ -127,7 +126,7 @@ const Bridge: FC = () => {
       return 0
     }
 
-    return getDenomination(assetBalance.asset)
+    return assetBalance.asset.decimals
   }, [assetBalance])
 
   const hasValidAmount = !isAmountTooLow && amount > 0n

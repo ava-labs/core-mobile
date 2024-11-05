@@ -7,7 +7,7 @@ import { setPendingTransfer } from 'store/unifiedBridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { noop } from '@avalabs/core-utils-sdk'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
-import { buildChain, isUnifiedBridgeAsset } from '../utils/bridgeUtils'
+import { buildChain } from '../utils/bridgeUtils'
 
 export const useBridgeTransfer = ({
   unifiedBridge,
@@ -28,10 +28,6 @@ export const useBridgeTransfer = ({
   return useCallback(async () => {
     if (!bridgeAsset) {
       throw new Error('No asset chosen')
-    }
-
-    if (!isUnifiedBridgeAsset(bridgeAsset)) {
-      throw new Error('Asset is not supported ')
     }
 
     if (!sourceNetwork) {

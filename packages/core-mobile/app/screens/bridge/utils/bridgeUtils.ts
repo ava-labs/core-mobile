@@ -1,5 +1,4 @@
 import {
-  Asset,
   Blockchain,
   BridgeTransaction,
   CriticalConfig,
@@ -8,12 +7,7 @@ import {
 import { Transaction } from 'store/transaction'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Networks } from 'store/network'
-import {
-  BridgeAsset,
-  BridgeTransfer,
-  Chain,
-  TokenType
-} from '@avalabs/bridge-unified'
+import { BridgeTransfer, Chain, TokenType } from '@avalabs/bridge-unified'
 import {
   Transaction as InternalTransaction,
   TxToken
@@ -153,10 +147,6 @@ export const networkToBlockchain = (
   }
 }
 
-export const isUnifiedBridgeAsset = (asset: unknown): asset is BridgeAsset => {
-  return asset !== null && typeof asset === 'object' && 'destinations' in asset
-}
-
 export const isUnifiedBridgeTransfer = (
   transfer?: BridgeTransaction | BridgeTransfer | Transaction
 ): transfer is BridgeTransfer => {
@@ -187,9 +177,6 @@ export const getAssetBalance = (
     return asset.symbol === symbol
   })
 }
-
-export const getDenomination = (asset: BridgeAsset | Asset): number =>
-  isUnifiedBridgeAsset(asset) ? asset.decimals : asset.denomination
 
 export const unwrapAssetSymbol = (symbol: string): string => {
   if (symbol.endsWith('.e')) {
