@@ -52,17 +52,11 @@ export const Button = forwardRef<
     const { theme } = useTheme()
 
     const tintColor = useMemo(
-      // todo: please remove the ts-ignore comments after we address this issue
-      // https://ava-labs.atlassian.net/browse/CP-9297
-      // @ts-ignore
       () => getTintColor(type, theme, disabled),
       [disabled, type, theme]
     )
 
     const backgroundColor = useMemo(
-      // todo: please remove the ts-ignore comments after we address this issue
-      // https://ava-labs.atlassian.net/browse/CP-9297
-      // @ts-ignore
       () => getBackgroundColor(type, theme, disabled),
       [type, theme, disabled]
     )
@@ -122,9 +116,6 @@ export const Button = forwardRef<
               ) : null}
               <Text
                 numberOfLines={1}
-                // todo: please remove the ts-ignore comments after we address this issue
-                // https://ava-labs.atlassian.net/browse/CP-9297
-                // @ts-ignore
                 variant={textVariant}
                 adjustsFontSizeToFit={Platform.OS === 'ios'}
                 style={{

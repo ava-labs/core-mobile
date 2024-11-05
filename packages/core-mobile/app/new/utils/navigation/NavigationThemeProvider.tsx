@@ -19,19 +19,11 @@ const NavigationThemeProvider = ({
     return {
       dark: isDark,
       colors: {
-        // todo: please remove the ts-expect-error comments after we address this issue
-        // https://ava-labs.atlassian.net/browse/CP-9297
-        // @ts-expect-error
         primary: colors.$textPrimary,
-        // @ts-expect-error
         background: colors.$surfacePrimary,
-        // @ts-expect-error
         card: colors.$surfaceSecondary,
-        // @ts-expect-error
         text: colors.$textPrimary,
-        // @ts-expect-error
         border: colors.$borderPrimary,
-        // @ts-expect-error
         notification: colors.$textSuccess
       }
     }
