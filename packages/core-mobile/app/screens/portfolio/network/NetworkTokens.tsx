@@ -151,6 +151,7 @@ const NetworkTokens = (): JSX.Element => {
 
   const renderTokens = (): JSX.Element => (
     <FlatList
+      testID="portfolio_token_list"
       contentContainerStyle={{
         paddingHorizontal: 16,
         paddingBottom: 100,
