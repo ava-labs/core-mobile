@@ -203,12 +203,6 @@ class BrowserPage {
   }
 
   async sendRpcCall(rpcCall: string) {
-    await bottomTabsPage.tapBrowserTab()
-    try {
-      await this.reconnectRpc()
-    } catch (e) {
-      console.log('No need to reconnect RPC Playground')
-    }
     await this.goToRpcCallPage()
     await this.enterRpcCall(rpcCall)
     await this.tapSend()

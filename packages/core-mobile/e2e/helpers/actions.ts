@@ -240,6 +240,19 @@ const isVisible = async (
     .catch(() => false)
 }
 
+const hasText = async (
+  item: Detox.NativeMatcher,
+  text: string,
+  index = 1,
+  timeout = 2000
+): Promise<boolean> => {
+  return await waitFor(element(item).atIndex(index))
+    .toHaveText(text)
+    .withTimeout(timeout)
+    .then(() => true)
+    .catch(() => false)
+}
+
 const swipeUp = async (
   item: Detox.NativeMatcher,
   speed: Detox.Speed,
@@ -348,10 +361,28 @@ async function waitForCondition(func: any, condition: any, timeout = 5000) {
 const drag = async (
   item: Detox.NativeMatcher,
   direction: Detox.Direction = 'down',
+  percentage = 0.2,
   index = 0
 ) => {
   await element(item).atIndex(index).longPress()
-  await element(item).atIndex(index).swipe(direction, 'fast', 0.2)
+  await element(item).atIndex(index).swipe(direction, 'fast', percentage)
+}
+
+const dragTo = async (
+  fromEle: Detox.NativeMatcher,
+  targetEle: Detox.NativeMatcher,
+  targetOffset: [number, number] // [targetOffsetX, targetOffsetY]
+) => {
+  await element(fromEle).longPressAndDrag(
+    500,
+    NaN,
+    NaN,
+    element(targetEle),
+    targetOffset[0],
+    targetOffset[1],
+    'fast',
+    0
+  )
 }
 
 const shuffleArray = <T>(array: T[]): T[] =>
@@ -390,7 +421,9 @@ export default {
   clearTextInput,
   getElementTextNoSync,
   drag,
+  dragTo,
   shuffleArray,
   scrollToBottom,
-  scrollToTop
+  scrollToTop,
+  hasText
 }

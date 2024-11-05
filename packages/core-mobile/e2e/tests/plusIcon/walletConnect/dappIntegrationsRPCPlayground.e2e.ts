@@ -2,8 +2,7 @@
 /**
  * @jest-environment ./environment.ts
  */
-import actions from '../../../helpers/actions'
-import assertions from '../../../helpers/assertions'
+// import assertions from '../../../helpers/assertions'
 import { warmup } from '../../../helpers/warmup'
 import popUpModalPage from '../../../pages/popUpModal.page'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
@@ -14,10 +13,14 @@ import connectToSitePage from '../../../pages/connectToSite.page'
 import plusMenuPage from '../../../pages/plusMenu.page'
 import portfolioPage from '../../../pages/portfolio.page'
 import sendPage from '../../../pages/send.page'
+import assertions from '../../../helpers/assertions'
 
 describe('Dapp - Core Playground', () => {
   beforeAll(async () => {
     await warmup()
+  })
+
+  it('should connect to Core Playground', async () => {
     await browserPage.connectTo(
       'https://ava-labs.github.io/extension-avalanche-playground/',
       false,
@@ -29,12 +32,8 @@ describe('Dapp - Core Playground', () => {
     await bottomTabsPage.tapPortfolioTab()
   })
 
-  beforeEach(async () => {
-    const newInstance = actions.platform() === 'android' ? true : false
-    await warmup(newInstance)
-  })
-
   it('should handle eth_sendTransaction', async () => {
+    await bottomTabsPage.tapBrowserTab()
     await browserPage.sendRpcCall('eth_sendTransaction')
     await popUpModalPage.verifyApproveTransactionItems()
     await popUpModalPage.tapApproveBtn()
@@ -89,6 +88,7 @@ describe('Dapp - Core Playground', () => {
   })
 
   it('should handle wallet_switchEthereumChain', async () => {
+    await bottomTabsPage.tapBrowserTab()
     await browserPage.sendRpcCall('wallet_switchEthereumChain')
     await popUpModalPage.verifySwitchToFujiNetworkModal()
     await popUpModalPage.tapApproveBtn()
