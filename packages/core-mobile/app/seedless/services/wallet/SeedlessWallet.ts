@@ -325,13 +325,11 @@ export default class SeedlessWallet implements Wallet {
   }): Promise<Avalanche.WalletVoid> {
     const pubKeyBufferC = this.getPubKeyBufferC()
     const pubKeyBufferXP = this.getPubKeyBufferXP()
-    const upgradesInfo = await provXP.getInfo().getUpgradesInfo()
 
     return Avalanche.WalletVoid.fromPublicKey(
       pubKeyBufferXP,
       pubKeyBufferC,
-      provXP,
-      upgradesInfo
+      provXP
     )
   }
 

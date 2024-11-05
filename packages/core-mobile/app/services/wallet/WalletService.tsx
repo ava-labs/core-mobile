@@ -347,7 +347,11 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('P', sourceChain)
-    const feeState = await readOnlySigner.getProvider().getApiP().getFeeState()
+    const feeState = await readOnlySigner
+      .getProvider()
+      .getApiP()
+      .getFeeState()
+      .catch(() => undefined)
     const unsignedTx = readOnlySigner.importP({
       utxoSet,
       sourceChain,
@@ -378,7 +382,11 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-    const feeState = await readOnlySigner.getProvider().getApiP().getFeeState()
+    const feeState = await readOnlySigner
+      .getProvider()
+      .getApiP()
+      .getFeeState()
+      .catch(() => undefined)
     const unsignedTx = readOnlySigner.exportP({
       amount,
       utxoSet,
@@ -416,7 +424,11 @@ class WalletService {
 
     // P-chain has a tx size limit of 64KB
     let utxoSet = await readOnlySigner.getUTXOs('P')
-    const feeState = await readOnlySigner.getProvider().getApiP().getFeeState()
+    const feeState = await readOnlySigner
+      .getProvider()
+      .getApiP()
+      .getFeeState()
+      .catch(() => undefined)
     const filteredUtxos = Avalanche.getMaximumUtxoSet({
       wallet: readOnlySigner,
       utxos: utxoSet.getUTXOs(),
@@ -463,7 +475,10 @@ class WalletService {
     // P-chain has a tx size limit of 64KB
     const utxoSet = await readOnlySigner.getUTXOs('X')
     const changeAddress = utils.parse(sourceAddress)[2]
-    const feeState = await readOnlySigner.getProvider().getApiP().getFeeState()
+    const feeState = await readOnlySigner
+      .getProvider()
+      .getApiP()
+      .catch(() => undefined)
     return readOnlySigner.baseTX({
       utxoSet,
       chain: 'X',
@@ -561,7 +576,11 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-    const feeState = await readOnlySigner.getProvider().getApiP().getFeeState()
+    const feeState = await readOnlySigner
+      .getProvider()
+      .getApiP()
+      .getFeeState()
+      .catch(() => undefined)
     const network = NetworkService.getAvalancheNetworkP(isDevMode)
     const unsignedTx = readOnlySigner.addPermissionlessDelegator({
       utxoSet,
