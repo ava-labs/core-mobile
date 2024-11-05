@@ -8,7 +8,7 @@ import {
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
 } from 'store/balance/slice'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { Icons, Text, useTheme, View } from '@avalabs/k2-mobile'
@@ -16,6 +16,7 @@ import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPri
 import { Tooltip } from 'components/Tooltip'
 import { Space } from 'components/Space'
 import { RootState } from 'store'
+import { selectTokenBlacklist } from 'store/portfolio/slice'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
 function PortfolioHeader(): JSX.Element {
@@ -26,8 +27,12 @@ function PortfolioHeader(): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+  const tokenBlacklist = useSelector(selectTokenBlacklist)
   const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(activeAccount?.index ?? 0)
+    selectBalanceTotalInCurrencyForAccount(
+      activeAccount?.index ?? 0,
+      tokenBlacklist
+    )
   )
   const balanceAccurate = useSelector(
     selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
