@@ -95,7 +95,10 @@ const PortfolioListItem: FC<Props> = ({
                 alignItems: 'flex-end',
                 marginLeft: 8
               }}>
-              <Text variant="heading6" ellipsizeMode={'tail'}>
+              <Text
+                testID={`portfolio_list_item__${symbol}_balance`}
+                variant="heading6"
+                ellipsizeMode={'tail'}>
                 {currencyFormatter(tokenPriceInCurrency)}
               </Text>
               {priceChange !== undefined && (

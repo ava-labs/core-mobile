@@ -92,7 +92,7 @@ function PortfolioHeader(): JSX.Element {
               <Space x={6} />
             </>
           )}
-          <Text variant="heading3">
+          <Text variant="heading3" testID="portfolio_balance__total">
             {currencyBalance.replace(selectedCurrency, '')}
           </Text>
           <Text

@@ -66,7 +66,10 @@ const NetworkTokensHeader = (): JSX.Element => {
         {isBalanceLoading ? (
           <ActivityIndicator style={{ alignSelf: 'flex-start' }} size="small" />
         ) : (
-          <Text variant="heading4" ellipsizeMode={'tail'}>
+          <Text
+            testID={`network_tokens_header_balance__${chainName}`}
+            variant="heading4"
+            ellipsizeMode={'tail'}>
             {formattedTotalBalance}
           </Text>
         )}
