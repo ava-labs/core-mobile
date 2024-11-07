@@ -387,7 +387,7 @@ const dragTo = async (
 
 const getAmount = (amount: string | undefined): number => {
   if (amount) {
-    return parseFloat(amount.replace('$', '').replace(/,/g, ''))
+    return parseFloat(amount.replace(/\$/g, '').replace(/,/g, ''))
   } else return 0
 }
 
