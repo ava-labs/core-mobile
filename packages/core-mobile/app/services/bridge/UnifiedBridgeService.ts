@@ -2,30 +2,32 @@ import {
   createUnifiedBridgeService,
   Environment,
   BridgeTransfer,
-  BridgeType
-  // BridgeAsset,
-  // ChainAssetMap,
-  // Chain,
-  // TokenType,
-  // Signer,
-  // getEnabledBridgeServices
-  // isErc20Asset,
-  // isNativeAsset
+  BridgeType,
+  ChainAssetMap,
+  getEnabledBridgeServices,
+  EvmSigner,
+  BtcSigner,
+  EvmBridgeInitializer,
+  AvaToBtcBridgeInitializer,
+  BtcToAvaBridgeInitializer,
+  Hex,
+  BridgeAsset,
+  Chain,
+  TokenType,
+  isNativeAsset,
+  isErc20Asset
 } from '@avalabs/bridge-unified'
-// import { Network } from '@avalabs/core-chains-sdk'
-// import { rpcErrors } from '@metamask/rpc-errors'
-// import { chainIdToCaip } from 'utils/data/caip'
-// import { Account } from 'store/account/types'
-// import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
+import { getBitcoinProvider } from 'services/network/utils/providerUtils'
+import { Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-// import { noop } from '@avalabs/core-utils-sdk'
-// import { isUnifiedBridgeAsset } from 'screens/bridge/utils/bridgeUtils'
-// import { Asset } from '@avalabs/core-bridge-sdk'
-// import { Request } from 'store/rpc/utils/createInAppRequest'
-// import { RpcMethod } from 'store/rpc/types'
-// import { TransactionParams } from '@avalabs/evm-module'
-// import { getEvmCaip2ChainId } from 'temp/caip2ChainIds'
+import { noop } from '@avalabs/core-utils-sdk'
+import { TransactionParams } from '@avalabs/evm-module'
+import { AppListenerEffectAPI } from 'store'
+import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
+import { RpcMethod } from '@avalabs/vm-module-types'
+import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
+import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -34,26 +36,87 @@ export class UnifiedBridgeService {
 
   // init and fetch configs
   async init({
-    environment,
-    disabledBridgeTypes
+    isTest,
+    disabledBridgeTypes,
+    listenerApi
   }: {
-    environment: Environment
+    isTest: boolean
     disabledBridgeTypes: BridgeType[]
+    listenerApi: AppListenerEffectAPI
   }): Promise<void> {
+    const environment = isTest ? Environment.TEST : Environment.PROD
+    const request = createInAppRequest(listenerApi.dispatch)
+
     Logger.info('initializing unified bridge service', {
       environment,
       disabledBridgeTypes
     })
 
-    // const enabledBridgeServices = await getEnabledBridgeServices(
-    //   environment,
-    //   disabledBridgeTypes
-    // )
+    const bitcoinProvider = await getBitcoinProvider(isTest)
 
-    // this.service = createUnifiedBridgeService({
-    //   environment,
-    //   enabledBridgeServices
-    // })
+    const evmSigner: EvmSigner = {
+      sign: async ({ data, from, to, chainId }) => {
+        if (typeof to !== 'string') throw new Error('invalid to field')
+        const txParams: [TransactionParams] = [
+          {
+            from,
+            to,
+            data: data ?? undefined
+          }
+        ]
+
+        return request({
+          method: RpcMethod.ETH_SEND_TRANSACTION,
+          params: txParams,
+          chainId: getEvmCaip2ChainId(Number(chainId))
+        }) as Promise<Hex>
+      }
+    }
+
+    const btcSigner: BtcSigner = {
+      sign: async txData => {
+        return request({
+          method: RpcMethod.BITCOIN_SIGN_TRANSACTION,
+          params: txData,
+          chainId: getBitcoinCaip2ChainId(!isTest)
+        })
+      }
+    }
+    const cctpInitializer: EvmBridgeInitializer = {
+      type: BridgeType.CCTP,
+      signer: evmSigner
+    }
+    const icttErc20Initializer: EvmBridgeInitializer = {
+      type: BridgeType.ICTT_ERC20_ERC20,
+      signer: evmSigner
+    }
+    const avalancheEvmInitializer: EvmBridgeInitializer = {
+      type: BridgeType.AVALANCHE_EVM,
+      signer: evmSigner
+    }
+    const avalancheBtcInitializer: AvaToBtcBridgeInitializer = {
+      type: BridgeType.AVALANCHE_AVA_BTC,
+      signer: evmSigner,
+      bitcoinFunctions: bitcoinProvider
+    }
+    const bitcoinAvaInitializer: BtcToAvaBridgeInitializer = {
+      type: BridgeType.AVALANCHE_BTC_AVA,
+      signer: btcSigner,
+      bitcoinFunctions: bitcoinProvider
+    }
+
+    const enabledBridgeServices = await getEnabledBridgeServices(environment, [
+      cctpInitializer,
+      icttErc20Initializer,
+      avalancheEvmInitializer,
+      avalancheBtcInitializer,
+      bitcoinAvaInitializer
+    ])
+
+    this.service = createUnifiedBridgeService({
+      environment,
+      enabledBridgeServices
+    })
   }
 
   isInitialized(): boolean {
@@ -76,107 +139,73 @@ export class UnifiedBridgeService {
     return addresses
   }
 
-  // async getAssets(): Promise<ChainAssetMap> {
-  //   return this.service.getAssets()
-  // }
+  async getAssets(): Promise<ChainAssetMap> {
+    return this.service.getAssets()
+  }
 
-  // async getFee({
-  //   asset,
-  //   amount,
-  //   sourceNetwork,
-  //   targetNetwork
-  // }: {
-  //   asset: BridgeAsset
-  //   amount: bigint
-  //   sourceNetwork: Network
-  //   targetNetwork: Network
-  // }): Promise<bigint> {
-  //   const feeMap = await this.service.getFees({
-  //     asset,
-  //     amount,
-  //     targetChain: await this.buildChain(targetNetwork),
-  //     sourceChain: await this.buildChain(sourceNetwork)
-  //   })
+  async getFee({
+    asset,
+    amount,
+    sourceNetwork,
+    targetNetwork
+  }: {
+    asset: BridgeAsset
+    amount: bigint
+    sourceNetwork: Network
+    targetNetwork: Network
+  }): Promise<bigint> {
+    const feeMap = await this.service.getFees({
+      asset,
+      amount,
+      targetChain: await this.buildChain(targetNetwork),
+      sourceChain: await this.buildChain(sourceNetwork)
+    })
 
-  //   if (isNativeAsset(asset)) {
-  //     // todo: handle this properly
-  //     return 0n
-  //   } else if (isErc20Asset(asset) && asset.address) {
-  //     const address = asset.address.toLowerCase() as `0x${string}`
-  //     const fee = feeMap[address]
+    if (isNativeAsset(asset)) {
+      // todo: handle this properly
+      return 0n
+    } else if (isErc20Asset(asset) && asset.address) {
+      const address = asset.address.toLowerCase() as `0x${string}`
+      return feeMap[address] ?? 0n
+    } else {
+      throw new Error('invalid asset')
+    }
+  }
 
-  //     if (!fee) {
-  //       // todo: handle this properly
-  //       return 0n
-  //       // throw new Error('invalid fee')
-  //     }
+  async transfer({
+    asset,
+    amount,
+    targetNetwork,
+    sourceNetwork,
+    fromAddress,
+    toAddress,
+    updateListener
+  }: {
+    asset: BridgeAsset
+    amount: bigint
+    targetNetwork: Network
+    sourceNetwork: Network
+    fromAddress: string
+    toAddress: string
+    updateListener: (transfer: BridgeTransfer) => void
+  }): Promise<BridgeTransfer> {
+    const sourceChain = await this.buildChain(sourceNetwork)
+    const targetChain = await this.buildChain(targetNetwork)
 
-  //     return fee
-  //   } else {
-  //     throw new Error('invalid asset')
-  //   }
-  // }
+    const bridgeTransfer = await this.service.transferAsset({
+      asset,
+      fromAddress,
+      toAddress,
+      amount,
+      sourceChain,
+      targetChain,
+      onStepChange: noop
+    })
 
-  // async transfer({
-  //   asset,
-  //   amount,
-  //   targetNetwork,
-  //   sourceNetwork,
-  //   activeAccount,
-  //   updateListener,
-  //   request
-  // }: {
-  //   asset: BridgeAsset
-  //   amount: bigint
-  //   targetNetwork: Network
-  //   sourceNetwork: Network
-  //   activeAccount: Account
-  //   updateListener: (transfer: BridgeTransfer) => void
-  //   request: Request
-  // }): Promise<BridgeTransfer> {
-  //   if (isBitcoinNetwork(sourceNetwork)) {
-  //     throw rpcErrors.invalidParams({
-  //       data: {
-  //         reason: 'unsupported network'
-  //       }
-  //     })
-  //   }
+    this.trackTransfer(bridgeTransfer, updateListener)
 
-  //   const sourceChain = await this.buildChain(sourceNetwork)
-  //   const targetChain = await this.buildChain(targetNetwork)
-
-  //   const sign: Signer = async ({ from, to, data }) => {
-  //     if (typeof to !== 'string') throw new Error('invalid to field')
-
-  //     const txParams: [TransactionParams] = [
-  //       {
-  //         from,
-  //         to,
-  //         data: data ?? undefined
-  //       }
-  //     ]
-
-  //     return request({
-  //       method: RpcMethod.ETH_SEND_TRANSACTION,
-  //       params: txParams,
-  //       chainId: getEvmCaip2ChainId(sourceNetwork.chainId)
-  //     }) as Promise<`0x${string}`>
-  //   }
-
-  //   const bridgeTransfer = await this.service.transferAsset({
-  //     asset,
-  //     fromAddress: activeAccount.addressC,
-  //     amount,
-  //     sourceChain,
-  //     targetChain,
-  //     onStepChange: noop,
-  //     sign
-  //   })
-
-  //   this.trackTransfer(bridgeTransfer, updateListener)
-
-  //   return bridgeTransfer
-  // }
+    return bridgeTransfer
+  }
 
   trackTransfer(
     bridgeTransfer: BridgeTransfer,
@@ -188,89 +217,71 @@ export class UnifiedBridgeService {
     })
   }
 
-  // async estimateGas({
-  //   asset,
-  //   amount,
-  //   activeAccount,
-  //   sourceNetwork,
-  //   targetNetwork
-  // }: {
-  //   asset: Asset | BridgeAsset
-  //   amount: bigint
-  //   activeAccount: Account
-  //   sourceNetwork: Network
-  //   targetNetwork?: Network
-  // }): Promise<bigint> {
-  //   if (!activeAccount) {
-  //     throw new Error('no active account found')
-  //   }
+  async estimateGas({
+    asset,
+    amount,
+    fromAddress,
+    sourceNetwork,
+    targetNetwork
+  }: {
+    asset: BridgeAsset
+    amount: bigint
+    fromAddress: string
+    sourceNetwork: Network
+    targetNetwork?: Network
+  }): Promise<bigint> {
+    if (!targetNetwork) {
+      throw new Error('no target network found')
+    }
 
-  //   if (!targetNetwork) {
-  //     throw new Error('no target network found')
-  //   }
+    const sourceChain = await this.buildChain(sourceNetwork)
+    const targetChain = await this.buildChain(targetNetwork)
 
-  //   if (isBitcoinNetwork(sourceNetwork)) {
-  //     throw rpcErrors.invalidParams({
-  //       data: {
-  //         reason: 'unsupported network'
-  //       }
-  //     })
-  //   }
+    return await this.service.estimateGas({
+      asset,
+      fromAddress,
+      amount,
+      sourceChain,
+      targetChain
+    })
+  }
 
-  //   if (!isUnifiedBridgeAsset(asset)) {
-  //     throw new Error('Asset is not supported ')
-  //   }
+  async getMinimumTransferAmount({
+    asset,
+    amount,
+    sourceNetwork,
+    targetNetwork
+  }: {
+    asset: BridgeAsset
+    amount: bigint
+    sourceNetwork: Network
+    targetNetwork: Network
+  }): Promise<bigint> {
+    const sourceChain = await this.buildChain(sourceNetwork)
+    const targetChain = await this.buildChain(targetNetwork)
 
-  //   const sourceChain = await this.buildChain(sourceNetwork)
-  //   const targetChain = await this.buildChain(targetNetwork)
+    return this.service.getMinimumTransferAmount({
+      asset,
+      amount,
+      sourceChain,
+      targetChain
+    })
+  }
 
-  //   const fromAddress = activeAccount.addressC as `0x${string}`
-
-  //   return await this.service.estimateGas({
-  //     asset,
-  //     fromAddress,
-  //     amount,
-  //     sourceChain,
-  //     targetChain
-  //   })
-  // }
-
-  // async getMinimumTransferAmount({
-  //   asset,
-  //   amount,
-  //   sourceNetwork,
-  //   targetNetwork
-  // }: {
-  //   asset: BridgeAsset
-  //   amount: bigint
-  //   sourceNetwork: Network
-  //   targetNetwork: Network
-  // }): Promise<bigint> {
-  //   const sourceChain = await this.buildChain(sourceNetwork)
-  //   const targetChain = await this.buildChain(targetNetwork)
-
-  //   return this.service.getMinimumTransferAmount({
-  //     asset,
-  //     amount,
-  //     sourceChain,
-  //     targetChain
-  //   })
-  // }
-
-  // private async buildChain(network: Network): Promise<Chain> {
-  //   return {
-  //     chainId: chainIdToCaip(network.chainId),
-  //     chainName: network.chainName,
-  //     rpcUrl: network.rpcUrl,
-  //     networkToken: {
-  //       ...network.networkToken,
-  //       type: TokenType.NATIVE
-  //     },
-  //     utilityAddresses: {
-  //       multicall: network.utilityAddresses?.multicall as `0x${string}`
-  //     }
-  //   }
-  // }
+  private async buildChain(network: Network): Promise<Chain> {
+    return {
+      chainId: addNamespaceToChain(network.chainId),
+      chainName: network.chainName,
+      rpcUrl: network.rpcUrl,
+      networkToken: {
+        ...network.networkToken,
+        type: TokenType.NATIVE
+      },
+      utilityAddresses: {
+        multicall: network.utilityAddresses?.multicall as `0x${string}`
+      }
+    }
+  }
 
   private get service(): BridgeService {
     assertNotUndefined(this.#service, 'brige service is not initialized')

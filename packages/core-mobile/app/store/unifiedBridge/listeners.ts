@@ -2,16 +2,12 @@ import { AppListenerEffectAPI } from 'store'
 import { WalletState, onAppUnlocked, selectWalletState } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import {
-  // selectIsDeveloperMode,
+  selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { isAnyOf } from '@reduxjs/toolkit'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
-import {
-  BridgeTransfer
-  // BridgeType,
-  // Environment
-} from '@avalabs/bridge-unified'
+import { BridgeTransfer, BridgeType } from '@avalabs/bridge-unified'
 import {
   selectIsUnifiedBridgeCCTPBlocked,
   setFeatureFlags
@@ -74,22 +70,29 @@ const initUnifiedBridgeService = async (
   if (walletState !== WalletState.ACTIVE) return
 
   const cctpBlocked = selectIsUnifiedBridgeCCTPBlocked(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
 
   if (UnifiedBridgeService.isInitialized()) {
     // if the service is already initialized
-    // we only re-init it if the unified bridge cctp flag has changed
+    // we only re-init it if the unified bridge cctp flag has changed or the developer mode has changed
     const prevState = listenerApi.getOriginalState()
     const prevCctpBlocked = selectIsUnifiedBridgeCCTPBlocked(prevState)
+    const prevDeveloperMode = selectIsDeveloperMode(prevState)
 
-    if (cctpBlocked === prevCctpBlocked) return
+    if (
+      cctpBlocked === prevCctpBlocked &&
+      isDeveloperMode === prevDeveloperMode
+    )
+      return
   }
 
-  // const isDeveloperMode = selectIsDeveloperMode(state)
-  // const environment = isDeveloperMode ? Environment.TEST : Environment.PROD
+  const disabledBridgeTypes = [...(cctpBlocked ? [BridgeType.CCTP] : [])]
 
-  // const disabledBridgeTypes = [...(cctpBlocked ? [BridgeType.CCTP] : [])]
-
-  // await UnifiedBridgeService.init({ environment, disabledBridgeTypes })
+  await UnifiedBridgeService.init({
+    isTest: isDeveloperMode,
+    disabledBridgeTypes,
+    listenerApi
+  })
 
   trackPendingTransfers(listenerApi)
 }

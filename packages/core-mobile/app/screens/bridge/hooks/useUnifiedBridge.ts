@@ -8,12 +8,12 @@ import {
   type AvaToBtcBridgeInitializer,
   type BtcToAvaBridgeInitializer,
   type BtcSigner,
-  UnifiedBridgeService
+  UnifiedBridgeService,
+  Hex
 } from '@avalabs/bridge-unified'
 import { TransactionParams } from '@avalabs/evm-module'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSelector } from 'react-redux'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
@@ -24,7 +24,6 @@ export const useUnifiedBridge = (
   isTest: boolean
 ): UseQueryResult<UnifiedBridgeService | undefined, Error> => {
   const activeAccount = useSelector(selectActiveAccount)
-  const { activeNetwork } = useNetworks()
   const environment = isTest ? Environment.TEST : Environment.PROD
   const { request } = useInAppRequest()
 
@@ -35,10 +34,10 @@ export const useUnifiedBridge = (
         return undefined
       }
 
-      const bitcoinProvider = getBitcoinProvider(isTest)
+      const bitcoinProvider = await getBitcoinProvider(isTest)
 
       const evmSigner: EvmSigner = {
-        sign: async ({ data, from, to }) => {
+        sign: async ({ data, from, to, chainId }) => {
           if (typeof to !== 'string') throw new Error('invalid to field')
           const txParams: [TransactionParams] = [
             {
@@ -51,15 +50,15 @@ export const useUnifiedBridge = (
           return request({
             method: RpcMethod.ETH_SEND_TRANSACTION,
             params: txParams,
-            chainId: getEvmCaip2ChainId(activeNetwork.chainId)
-          }) as Promise<`0x${string}`>
+            chainId: getEvmCaip2ChainId(Number(chainId))
+          }) as Promise<Hex>
         }
       }
 
       const btcSigner: BtcSigner = {
         sign: async txData => {
           return request({
-            method: RpcMethod.BITCOIN_SEND_TRANSACTION,
+            method: RpcMethod.BITCOIN_SIGN_TRANSACTION,
             params: txData,
             chainId: getBitcoinCaip2ChainId(!isTest)
           })

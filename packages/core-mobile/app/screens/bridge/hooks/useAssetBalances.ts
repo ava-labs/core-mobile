@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance/slice'
 import { uniqBy } from 'lodash'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { UnifiedBridgeService } from '@avalabs/bridge-unified'
 import { getAssetBalances } from '../handlers/getAssetBalances'
 import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
 
@@ -13,15 +12,12 @@ import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
  * Get a list of bridge supported assets with the balances of the current blockchain.
  * The list is sorted by balance.
  */
-export function useAssetBalances(
-  unifiedBridge: UnifiedBridgeService | undefined
-): {
+export function useAssetBalances(): {
   assetsWithBalances: AssetBalance[]
   loading: boolean
 } {
   const tokens = useSelector(selectTokensWithBalance)
-  const { data } = useUnifiedBridgeAssets(unifiedBridge)
-  const bridgeAssets = useMemo(() => data?.bridgeAssets ?? [], [data])
+  const { bridgeAssets } = useUnifiedBridgeAssets()
 
   // const isAvalanche = network !== undefined && isAvalancheNetwork(network)
 

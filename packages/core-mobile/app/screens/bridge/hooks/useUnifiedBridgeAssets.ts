@@ -1,34 +1,28 @@
-import {
-  BridgeAsset,
-  ChainAssetMap,
-  UnifiedBridgeService
-} from '@avalabs/bridge-unified'
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { BridgeAsset, ChainAssetMap } from '@avalabs/bridge-unified'
+import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
+import Logger from 'utils/Logger'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 
-export const useUnifiedBridgeAssets = (
-  unifiedBridge: UnifiedBridgeService | undefined
-): UseQueryResult<
-  { chainAssetMap: ChainAssetMap; bridgeAssets: BridgeAsset[] },
-  Error
-> => {
+export const useUnifiedBridgeAssets = (): {
+  chainAssetMap: ChainAssetMap
+  bridgeAssets: BridgeAsset[]
+} => {
+  const [bridgeAssets, setBridgeAssets] = useState<BridgeAsset[]>([])
+  const [chainAssetMap, setChainAssetMap] = useState<ChainAssetMap>({})
   const { activeNetwork } = useNetworks()
 
-  return useQuery({
-    queryKey: [unifiedBridge, activeNetwork, 'unifiedBridgeAssets'],
-    queryFn: async () => {
-      if (!unifiedBridge) {
-        throw new Error('Fail to get assets for unified bridge')
-      }
+  useEffect(() => {
+    UnifiedBridgeService.getAssets()
+      .then(allAssets => {
+        setChainAssetMap(allAssets)
+        const caipChainId = addNamespaceToChain(activeNetwork.chainId)
 
-      const caipChainId = addNamespaceToChain(activeNetwork.chainId)
+        setBridgeAssets(allAssets[caipChainId] ?? [])
+      })
+      .catch(Logger.error)
+  }, [activeNetwork.chainId])
 
-      const chainAssetMap = unifiedBridge.getAssets()
-      const bridgeAssets = chainAssetMap?.[caipChainId] ?? []
-
-      return { chainAssetMap, bridgeAssets }
-    },
-    enabled: !!unifiedBridge
-  })
+  return { bridgeAssets, chainAssetMap }
 }

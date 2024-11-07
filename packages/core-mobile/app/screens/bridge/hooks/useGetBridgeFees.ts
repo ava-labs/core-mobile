@@ -1,24 +1,18 @@
-import {
-  BridgeAsset,
-  isErc20Asset,
-  isNativeAsset,
-  UnifiedBridgeService
-} from '@avalabs/bridge-unified'
+import { BridgeAsset } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
+import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import { selectActiveAccount } from 'store/account'
-import { buildChain } from '../utils/bridgeUtils'
+import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 
 export const useGetBridgeFees = ({
-  unifiedBridge,
   amount,
   bridgeAsset,
   sourceNetwork,
   targetNetwork
 }: {
-  unifiedBridge: UnifiedBridgeService | undefined
   amount: bigint
   bridgeAsset: BridgeAsset | undefined
   sourceNetwork: Network | undefined
@@ -31,33 +25,17 @@ export const useGetBridgeFees = ({
   const activeAccount = useSelector(selectActiveAccount)
 
   const getBridgeFee = useCallback(async () => {
-    if (
-      !bridgeAsset ||
-      !targetNetwork ||
-      !sourceNetwork ||
-      amount === 0n ||
-      !unifiedBridge
-    ) {
+    if (!bridgeAsset || !targetNetwork || !sourceNetwork || amount === 0n) {
       return undefined
     }
 
-    const feeMap = await unifiedBridge.getFees({
+    return await UnifiedBridgeService.getFee({
       asset: bridgeAsset,
       amount,
-      sourceChain: buildChain(sourceNetwork),
-      targetChain: buildChain(targetNetwork)
+      sourceNetwork,
+      targetNetwork
     })
-
-    if (isNativeAsset(bridgeAsset)) {
-      // todo: handle this properly
-      return 0n
-    } else if (isErc20Asset(bridgeAsset) && bridgeAsset.address) {
-      const address = bridgeAsset.address.toLowerCase() as `0x${string}`
-      return feeMap[address] ?? 0n
-    } else {
-      throw new Error('invalid asset')
-    }
-  }, [amount, bridgeAsset, sourceNetwork, targetNetwork, unifiedBridge])
+  }, [amount, bridgeAsset, sourceNetwork, targetNetwork])
 
   const getNetworkFee = useCallback(async () => {
     if (
@@ -65,8 +43,7 @@ export const useGetBridgeFees = ({
       !activeAccount ||
       !bridgeAsset ||
       !sourceNetwork ||
-      amount === 0n ||
-      !unifiedBridge
+      amount === 0n
     )
       return
 
@@ -78,17 +55,16 @@ export const useGetBridgeFees = ({
       throw new Error('no target network found')
     }
 
-    const sourceChain = buildChain(sourceNetwork)
-    const targetChain = buildChain(targetNetwork)
+    const fromAddress = isBitcoinNetwork(sourceNetwork)
+      ? activeAccount.addressBTC
+      : activeAccount.addressC
 
-    const fromAddress = activeAccount.addressC as `0x${string}`
-
-    const gasLimit = await unifiedBridge.estimateGas({
+    const gasLimit = await UnifiedBridgeService.estimateGas({
       asset: bridgeAsset,
       fromAddress,
       amount,
-      sourceChain,
-      targetChain
+      sourceNetwork,
+      targetNetwork
     })
 
     if (gasLimit) {
@@ -100,39 +76,33 @@ export const useGetBridgeFees = ({
     bridgeAsset,
     networkFeeRate,
     sourceNetwork,
-    targetNetwork,
-    unifiedBridge
+    targetNetwork
   ])
 
   return { getBridgeFee, getNetworkFee }
 }
 
 export const useGetMinimumTransferAmount = ({
-  unifiedBridge,
   amount,
   bridgeAsset,
   sourceNetwork,
   targetNetwork
 }: {
-  unifiedBridge: UnifiedBridgeService | undefined
   amount: bigint
   bridgeAsset: BridgeAsset | undefined
   sourceNetwork: Network | undefined
   targetNetwork: Network | undefined
 }): (() => Promise<bigint | undefined>) => {
   return useCallback(async () => {
-    if (!bridgeAsset || !targetNetwork || !sourceNetwork || !unifiedBridge) {
+    if (!bridgeAsset || !targetNetwork || !sourceNetwork) {
       return undefined
     }
 
-    const sourceChain = buildChain(sourceNetwork)
-    const targetChain = buildChain(targetNetwork)
-
-    return await unifiedBridge.getMinimumTransferAmount({
+    return await UnifiedBridgeService.getMinimumTransferAmount({
       asset: bridgeAsset,
       amount,
-      sourceChain,
-      targetChain
+      sourceNetwork,
+      targetNetwork
     })
-  }, [amount, bridgeAsset, sourceNetwork, targetNetwork, unifiedBridge])
+  }, [amount, bridgeAsset, sourceNetwork, targetNetwork])
 }

@@ -4,8 +4,6 @@ import Big from 'big.js'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useSelector } from 'react-redux'
 import { getAssetBalance, unwrapAssetSymbol } from '../utils/bridgeUtils'
 import { useAssetBalances } from './useAssetBalances'
 import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
@@ -20,7 +18,6 @@ import {
   useBridgeSourceNetworks,
   useBridgeTargetNetworks
 } from './useBridgeNetworks'
-import { useUnifiedBridge } from './useUnifiedBridge'
 
 interface Bridge {
   assetBalance?: AssetBalance
@@ -60,26 +57,20 @@ export default function useBridge(): Bridge {
   const [sourceNetwork, setSourceNetwork] = useState<Network>()
   const [targetNetwork, setTargetNetwork] = useState<Network>()
   const [selectedBridgeAsset, setSelectedBridgeAsset] = useState<BridgeAsset>()
-  const isTestnet = useSelector(selectIsDeveloperMode)
-  const { data: unifiedBridge } = useUnifiedBridge(isTestnet)
-  const { data: unifiedBridgeAssets } = useUnifiedBridgeAssets(unifiedBridge)
-  const bridgeAssets = useMemo(
-    () => unifiedBridgeAssets?.bridgeAssets ?? [],
-    [unifiedBridgeAssets]
-  )
+  const { bridgeAssets } = useUnifiedBridgeAssets()
   const [bridgeError, setBridgeError] = useState<Error>()
   const [minimum, setMinimum] = useState<bigint>()
   const [bridgeFee, setBridgeFee] = useState<bigint>(0n)
   const [inputAmount, setInputAmount] = useState<bigint>()
   const amount = useMemo(() => inputAmount ?? 0n, [inputAmount])
-  const { assetsWithBalances, loading } = useAssetBalances(unifiedBridge)
+  const { assetsWithBalances, loading } = useAssetBalances()
 
   const assetBalance = useMemo(
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
     [selectedBridgeAsset, assetsWithBalances]
   )
 
-  const sourceNetworks = useBridgeSourceNetworks(unifiedBridge)
+  const sourceNetworks = useBridgeSourceNetworks()
   const targetNetworks = useBridgeTargetNetworks(selectedBridgeAsset)
 
   const [networkFee, setNetworkFee] = useState<bigint>()
@@ -87,7 +78,6 @@ export default function useBridge(): Bridge {
   const price = useBridgeAssetPrice(selectedBridgeAsset)
 
   const transfer = useBridgeTransfer({
-    unifiedBridge,
     amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
@@ -100,16 +90,14 @@ export default function useBridge(): Bridge {
     amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
-    targetNetwork,
-    unifiedBridge
+    targetNetwork
   })
 
   const getMinimumTransferAmount = useGetMinimumTransferAmount({
     amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
-    targetNetwork,
-    unifiedBridge
+    targetNetwork
   })
 
   useEffect(() => {
