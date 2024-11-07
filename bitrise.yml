@@ -101,6 +101,12 @@ workflows:
         - keystore_password: $ANDROID_STORE_PASSWORD
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
+    - bitrise-step-export-universal-apk@0:
+        inputs:
+        - keystore_password: $ANDROID_STORE_PASSWORD
+        - keystore_alias: $ANDROID_KEY_ALIAS
+        - private_key_password: $ANDROID_KEY_PASSWORD
+        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
