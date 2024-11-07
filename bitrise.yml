@@ -110,7 +110,7 @@ workflows:
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
-            $BITRISE_SIGNED_APK_PATH
+            $BITRISE_SIGNED_APK_PATH:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
     - script-runner@0:
         title: Create Tests To Run Arrays
