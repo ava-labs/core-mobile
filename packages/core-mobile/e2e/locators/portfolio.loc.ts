@@ -41,6 +41,5 @@ export default {
   benqi: 'BENQI',
   activeNetworkBalance: 'active_network_balance',
   tokensTabListView: 'tokens_tab_list_view',
-  portfolioTokenList: 'portfolio_token_list',
-  activeNetworkView: 'active_network'
+  portfolioTokenList: 'portfolio_token_list'
 }

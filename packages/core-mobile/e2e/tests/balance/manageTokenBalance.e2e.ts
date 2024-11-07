@@ -7,8 +7,7 @@ import manageTokensPage from '../../pages/manageTokens.page'
 import networksManagePage from '../../pages/networksManage.page'
 import portfolioPage from '../../pages/portfolio.page'
 
-// If you hide a token, the balance should be hidden.
-describe('Manage Token Balance', () => {
+describe('Balance After Managing Token', () => {
   beforeAll(async () => {
     await warmup()
   })

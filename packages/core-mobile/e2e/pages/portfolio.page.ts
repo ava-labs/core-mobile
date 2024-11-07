@@ -2,7 +2,6 @@ import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
-import actions from '../helpers/actions'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
@@ -365,24 +364,24 @@ class PortfolioPage {
   async getTotalBalance(): Promise<number> {
     // The total balance on Portfolio header
     const bal = await Action.getElementText(by.id('portfolio_balance__total'))
-    return actions.getAmount(bal)
+    return Action.getAmount(bal)
   }
 
   async getActiveNetworkBalance(): Promise<number> {
     // Balance of the active network on Portfolio tab
     const bal = await Action.getElementText(this.activeNetworkBalance)
-    return actions.getAmount(bal)
+    return Action.getAmount(bal)
   }
 
   async getNetworkTokensBalance(
     network = 'Avalanche (C-Chain)'
   ): Promise<number> {
-    // The selected network token's balances (e.g. Avalanche (C-Chain) tokens balance)
+    // The selected network tokens' balance (e.g. Avalanche (C-Chain) tokens' balance)
     await Action.waitForElement(this.portfolioTokenList)
     const bal = await Action.getElementText(
       by.id(`network_tokens_header_balance__${network}`)
     )
-    return actions.getAmount(bal)
+    return Action.getAmount(bal)
   }
 
   async getTokenBalance(token: string): Promise<number> {
@@ -395,7 +394,7 @@ class PortfolioPage {
     const bal = await Action.getElementText(
       by.id(`portfolio_list_item__${token}_balance`)
     )
-    return actions.getAmount(bal)
+    return Action.getAmount(bal)
   }
 }
 
