@@ -7,15 +7,15 @@ import {
   getEnabledBridgeServices,
   EvmSigner,
   BtcSigner,
-  EvmBridgeInitializer,
-  AvaToBtcBridgeInitializer,
-  BtcToAvaBridgeInitializer,
   Hex,
   BridgeAsset,
   Chain,
   TokenType,
   isNativeAsset,
-  isErc20Asset
+  isErc20Asset,
+  AnalyzeTxResult,
+  AnalyzeTxParams,
+  BridgeInitializer
 } from '@avalabs/bridge-unified'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -28,6 +28,7 @@ import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
+import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -37,19 +38,18 @@ export class UnifiedBridgeService {
   // init and fetch configs
   async init({
     isTest,
-    disabledBridgeTypes,
+    enabledBridgeTypes,
     listenerApi
   }: {
     isTest: boolean
-    disabledBridgeTypes: BridgeType[]
+    enabledBridgeTypes: BridgeType[]
     listenerApi: AppListenerEffectAPI
   }): Promise<void> {
     const environment = isTest ? Environment.TEST : Environment.PROD
     const request = createInAppRequest(listenerApi.dispatch)
 
     Logger.info('initializing unified bridge service', {
-      environment,
-      disabledBridgeTypes
+      environment
     })
 
     const bitcoinProvider = await getBitcoinProvider(isTest)
@@ -82,36 +82,18 @@ export class UnifiedBridgeService {
         })
       }
     }
-    const cctpInitializer: EvmBridgeInitializer = {
-      type: BridgeType.CCTP,
-      signer: evmSigner
-    }
-    const icttErc20Initializer: EvmBridgeInitializer = {
-      type: BridgeType.ICTT_ERC20_ERC20,
-      signer: evmSigner
-    }
-    const avalancheEvmInitializer: EvmBridgeInitializer = {
-      type: BridgeType.AVALANCHE_EVM,
-      signer: evmSigner
-    }
-    const avalancheBtcInitializer: AvaToBtcBridgeInitializer = {
-      type: BridgeType.AVALANCHE_AVA_BTC,
-      signer: evmSigner,
-      bitcoinFunctions: bitcoinProvider
-    }
-    const bitcoinAvaInitializer: BtcToAvaBridgeInitializer = {
-      type: BridgeType.AVALANCHE_BTC_AVA,
-      signer: btcSigner,
-      bitcoinFunctions: bitcoinProvider
-    }
 
-    const enabledBridgeServices = await getEnabledBridgeServices(environment, [
-      cctpInitializer,
-      icttErc20Initializer,
-      avalancheEvmInitializer,
-      avalancheBtcInitializer,
-      bitcoinAvaInitializer
-    ])
+    const initializers = this.getBridgeInitializers({
+      enabledBridgeTypes,
+      evmSigner,
+      btcSigner,
+      bitcoinFunctions: bitcoinProvider
+    })
+
+    const enabledBridgeServices = await getEnabledBridgeServices(
+      environment,
+      initializers
+    )
 
     this.service = createUnifiedBridgeService({
       environment,
@@ -123,20 +105,8 @@ export class UnifiedBridgeService {
     return this.#service !== undefined
   }
 
-  getBridgeAddresses(): string[] {
-    const addresses: string[] = []
-
-    // this.service.bridges.forEach(bridge => {
-    //   if (bridge.config) {
-    //     addresses.push(
-    //       ...bridge.config.map(
-    //         ({ tokenRouterAddress }) => tokenRouterAddress as string
-    //       )
-    //     )
-    //   }
-    // })
-
-    return addresses
+  analyzeTx(params: AnalyzeTxParams): AnalyzeTxResult {
+    return this.service.analyzeTx(params)
   }
 
   async getAssets(): Promise<ChainAssetMap> {
@@ -290,6 +260,44 @@ export class UnifiedBridgeService {
 
   private set service(service: BridgeService) {
     this.#service = service
+  }
+
+  private getBridgeInitializers({
+    enabledBridgeTypes,
+    evmSigner,
+    btcSigner,
+    bitcoinFunctions
+  }: {
+    enabledBridgeTypes: BridgeType[]
+    evmSigner: EvmSigner
+    btcSigner: BtcSigner
+    bitcoinFunctions: BitcoinProvider
+  }): BridgeInitializer[] {
+    return enabledBridgeTypes.map(type => {
+      switch (type) {
+        case BridgeType.CCTP:
+        case BridgeType.ICTT_ERC20_ERC20:
+        case BridgeType.AVALANCHE_EVM:
+          return {
+            type,
+            signer: evmSigner
+          }
+
+        case BridgeType.AVALANCHE_AVA_BTC:
+          return {
+            type,
+            signer: evmSigner,
+            bitcoinFunctions
+          }
+
+        case BridgeType.AVALANCHE_BTC_AVA:
+          return {
+            type,
+            signer: btcSigner,
+            bitcoinFunctions
+          }
+      }
+    })
   }
 }
 

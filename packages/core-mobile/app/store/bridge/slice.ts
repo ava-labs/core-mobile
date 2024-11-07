@@ -1,10 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import {
-  AppConfig,
-  BridgeConfig,
-  CriticalConfig
-} from '@avalabs/core-bridge-sdk'
+import { AppConfig, BridgeConfig } from '@avalabs/core-bridge-sdk'
 import { initialState } from 'store/bridge/types'
 
 export const reducerName = 'bridge'
@@ -30,17 +26,6 @@ export const selectBridgeConfig = (
 export const selectBridgeAppConfig = (
   state: RootState
 ): AppConfig | undefined => state.bridge.config?.config
-
-export const selectBridgeCriticalConfig = (
-  state: RootState
-): CriticalConfig | undefined => {
-  if (state.bridge.config && state.bridge.config.config) {
-    return {
-      critical: state.bridge.config.config.critical,
-      criticalBitcoin: state.bridge.config.config.criticalBitcoin
-    }
-  }
-}
 
 export const { popBridgeTransaction, setConfig } = bridgeSlice.actions
 

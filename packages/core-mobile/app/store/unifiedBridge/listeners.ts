@@ -86,11 +86,17 @@ const initUnifiedBridgeService = async (
       return
   }
 
-  const disabledBridgeTypes = [...(cctpBlocked ? [BridgeType.CCTP] : [])]
+  const enabledBridgeTypes = [
+    ...(cctpBlocked ? [] : [BridgeType.CCTP]),
+    BridgeType.ICTT_ERC20_ERC20,
+    BridgeType.AVALANCHE_EVM,
+    BridgeType.AVALANCHE_AVA_BTC,
+    BridgeType.AVALANCHE_BTC_AVA
+  ]
 
   await UnifiedBridgeService.init({
     isTest: isDeveloperMode,
-    disabledBridgeTypes,
+    enabledBridgeTypes,
     listenerApi
   })
 

@@ -2,7 +2,9 @@ import { Network } from '@avalabs/core-chains-sdk'
 
 export type ChainID = number
 
-export type Networks = { [chainId: ChainID]: Network }
+export type NetworkWithCaipId = Network & { caipId?: string }
+
+export type Networks = { [chainId: ChainID]: NetworkWithCaipId }
 
 export type NetworkState = {
   customNetworks: Networks

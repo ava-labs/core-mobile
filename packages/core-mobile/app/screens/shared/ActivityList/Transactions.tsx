@@ -57,7 +57,7 @@ const Transactions: FC<Props> = ({
   const combinedData = useMemo(() => {
     function isPendingBridge(tx: Transaction): boolean {
       return (
-        tx.isBridge &&
+        tx.bridgeAnalysis.isBridgeTx &&
         pendingBridgeTxs.some(
           bridge =>
             (bridge.sourceTxHash === tx.hash ||
@@ -140,7 +140,7 @@ const Transactions: FC<Props> = ({
 
       return (
         <View key={item.hash}>
-          {item.isBridge ? (
+          {item.bridgeAnalysis.isBridgeTx ? (
             <BridgeTransactionItem item={item} onPress={onPress} />
           ) : (
             <ActivityListItem tx={item} onPress={onPress} />

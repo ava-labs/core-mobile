@@ -1,9 +1,4 @@
-import { Blockchain, useBridgeSDK } from '@avalabs/core-bridge-sdk'
-import {
-  getBlockchainDisplayName,
-  isPendingBridgeTransaction
-} from 'screens/bridge/utils/bridgeUtils'
-import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
+import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -13,12 +8,11 @@ import { useNetworks } from 'hooks/networks/useNetworks'
  * @param tx Assumed to be a Bridge transaction for the active network
  */
 export function useBlockchainNames(tx: Transaction | BridgeTransfer): {
-  sourceBlockchain: string
-  targetBlockchain: string
+  sourceBlockchain: string | undefined
+  targetBlockchain: string | undefined
 } {
-  const { activeNetwork } = useNetworks()
+  const { getNetworkByCaipId } = useNetworks()
   const pending = isPendingBridgeTransaction(tx)
-  const { avalancheAssets } = useBridgeSDK()
 
   if (pending) {
     return {
@@ -35,18 +29,22 @@ export function useBlockchainNames(tx: Transaction | BridgeTransfer): {
     }
   }
 
-  const symbol = (tx.tokens[0]?.symbol ?? '').split('.')[0] ?? ''
+  if (!tx.bridgeAnalysis.isBridgeTx) {
+    return {
+      sourceBlockchain: undefined,
+      targetBlockchain: undefined
+    }
+  }
 
-  const txBlockchain = avalancheAssets[symbol]?.nativeNetwork
-  const isBridgeToAvalanche = isAvalancheNetwork(activeNetwork)
-    ? tx.isIncoming
-    : tx.isOutgoing
-  const chainDisplayName = getBlockchainDisplayName(txBlockchain) || 'N/A'
-  const avalancheDisplay = getBlockchainDisplayName(Blockchain.AVALANCHE)
+  const { sourceChainId, targetChainId } = tx.bridgeAnalysis
 
   return {
-    sourceBlockchain: isBridgeToAvalanche ? chainDisplayName : avalancheDisplay,
-    targetBlockchain: isBridgeToAvalanche ? avalancheDisplay : chainDisplayName
+    sourceBlockchain: sourceChainId
+      ? getNetworkByCaipId(sourceChainId)?.chainName ?? sourceChainId
+      : undefined,
+    targetBlockchain: targetChainId
+      ? getNetworkByCaipId(targetChainId)?.chainName ?? targetChainId
+      : undefined
   }
 }
 
