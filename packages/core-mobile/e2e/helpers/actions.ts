@@ -385,6 +385,12 @@ const dragTo = async (
   )
 }
 
+const getAmount = (amount: string | undefined): number => {
+  if (amount) {
+    return parseFloat(amount.replace('$', '').replace(/,/g, ''))
+  } else return 0
+}
+
 const shuffleArray = <T>(array: T[]): T[] =>
   array.sort(() => Math.random() - 0.5)
 
@@ -425,5 +431,6 @@ export default {
   shuffleArray,
   scrollToBottom,
   scrollToTop,
-  hasText
+  hasText,
+  getAmount
 }

@@ -2,6 +2,7 @@ import actions from '../../../helpers/actions'
 import PortfolioPage from '../../../pages/portfolio.page'
 import { warmup } from '../../../helpers/warmup'
 import commonElsPage from '../../../pages/commonEls.page'
+import manageTokensPage from '../../../pages/manageTokens.page'
 
 describe('Manage Token', () => {
   beforeAll(async () => {
@@ -19,37 +20,17 @@ describe('Manage Token', () => {
   })
 
   it('should hide token via manage token', async () => {
-    await commonElsPage.typeSearchBar('TetherToken')
-    // TryCatch Phrase is for test requirment
-    try {
-      await actions.waitForElement(by.id('TetherToken_blocked'))
-      await actions.tap(by.id('TetherToken_blocked'))
-      console.log("Display the token if it's already hidden")
-    } catch (e) {
-      console.log("It's already displayed on token list")
-    }
-    // Hide the token
-    await actions.tap(by.id(`TetherToken_displayed`))
-    await commonElsPage.goBack()
-    // Verify the token is NOT available
+    // Hide Tether Token
+    await manageTokensPage.hideToken('TetherToken')
+    // Verify the token is hidden
     await actions.waitForElementNotVisible(by.text('TetherToken'))
   })
 
   it('should show token via manage token', async () => {
+    // Show Tether Token
     await PortfolioPage.tapManageTokens()
-    await commonElsPage.typeSearchBar('TetherToken')
-    // TryCatch Phrase is for test requirment
-    try {
-      await actions.waitForElement(by.id('TetherToken_display'))
-      await actions.tap(by.id('TetherToken_blocked'))
-      console.log("Block the token if it's already displayed")
-    } catch (e) {
-      console.log("It's already blocked")
-    }
-    // Display the token
-    await actions.tap(by.id(`TetherToken_blocked`))
-    await commonElsPage.goBack()
-    // Verify the token is available
+    await manageTokensPage.showToken('TetherToken')
+    // Verify the token is shown
     await actions.waitForElement(by.text('TetherToken'))
   })
 })

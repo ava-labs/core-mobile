@@ -2,6 +2,7 @@ import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import networksManage from '../locators/networksManage.loc'
 import { Platform } from '../helpers/constants'
+import portfolioLoc from '../locators/portfolio.loc'
 import PortfolioPage from './portfolio.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
@@ -293,6 +294,15 @@ class NetworksPage {
       by.id(`network_dropdown__${network}`),
       platformIndex
     )
+  }
+
+  async switchActiveNetwork(network = 'Avalanche (C-Chain)') {
+    await Action.scrollToTop(by.id(portfolioLoc.tokensTabListView))
+    if (
+      !(await Action.isVisible(by.id(portfolioLoc.activeNetwork + network), 0))
+    ) {
+      await this.switchNetwork(network)
+    }
   }
 
   async switchToBitcoinTestNet() {
