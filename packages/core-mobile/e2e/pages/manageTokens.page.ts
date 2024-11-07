@@ -39,33 +39,24 @@ class ManageTokensPage {
     await Action.setInputText(this.inputContractAddress, address, 0)
   }
 
-  async hideToken(token: string) {
+  async showToken(token: string, isOn = true) {
     await commonElsPage.typeSearchBar(token)
-    // TryCatch Phrase is for test requirment
+    // Set `isOn` false if you want to hide token.
+    // Toggle it if it's already displayed or blocked
+    const oppositeStatus = isOn ? 'displayed' : 'blocked'
+    const expectedStatus = isOn ? 'blocked' : 'displayed'
     try {
-      await Action.waitForElement(by.id(`${token}_blocked`))
-      await Action.tap(by.id(`${token}_blocked`))
-      console.log("Display the token if it's already hidden")
+      await Action.waitForElement(by.id(`${token}_${oppositeStatus}`))
+      await Action.tap(by.id(`${token}_${oppositeStatus}`))
+      console.log(
+        `The token was ${oppositeStatus} and now it's ${expectedStatus}`
+      )
     } catch (e) {
-      console.log("It's already displayed on token list")
-    }
-    // Hide the token
-    await Action.tap(by.id(`${token}_displayed`))
-    await commonElsPage.goBack()
-  }
-
-  async showToken(token: string) {
-    await commonElsPage.typeSearchBar(token)
-    // TryCatch Phrase is for test requirment
-    try {
-      await Action.waitForElement(by.id(`${token}_display`))
-      await Action.tap(by.id(`${token}_blocked`))
-      console.log("Block the token if it's already displayed")
-    } catch (e) {
-      console.log("It's already blocked")
+      console.log(`The token is currently ${expectedStatus}`)
     }
     // Display the token
-    await Action.tap(by.id(`${token}_blocked`))
+    await Action.tap(by.id(`${token}_${expectedStatus}`))
+    console.log(`The token is now ${oppositeStatus}`)
     await commonElsPage.goBack()
   }
 }

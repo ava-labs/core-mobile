@@ -23,7 +23,7 @@ describe('Balance After Managing Token', () => {
     // Hide token
     await actions.scrollToTop(portfolioPage.portfolioTokenList)
     await portfolioPage.tapManageTokens()
-    await manageTokensPage.hideToken('Bitcoin')
+    await manageTokensPage.showToken('Bitcoin', false)
 
     // Get balances after hiding token
     const newNetworkTokensBal = await portfolioPage.getNetworkTokensBalance()
@@ -73,7 +73,7 @@ describe('Balance After Managing Token', () => {
     // Hide token
     await actions.scrollToTop(portfolioPage.portfolioTokenList)
     await portfolioPage.tapManageTokens()
-    await manageTokensPage.hideToken('Wrapped Ether')
+    await manageTokensPage.showToken('Wrapped Ether', false)
 
     // Get balances after hiding token
     const newNetworkTokensBal = await portfolioPage.getNetworkTokensBalance(

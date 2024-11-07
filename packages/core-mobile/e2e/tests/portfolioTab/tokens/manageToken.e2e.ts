@@ -21,7 +21,7 @@ describe('Manage Token', () => {
 
   it('should hide token via manage token', async () => {
     // Hide Tether Token
-    await manageTokensPage.hideToken('TetherToken')
+    await manageTokensPage.showToken('TetherToken', false)
     // Verify the token is hidden
     await actions.waitForElementNotVisible(by.text('TetherToken'))
   })
