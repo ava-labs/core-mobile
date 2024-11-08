@@ -44,6 +44,8 @@ export default function NetworkDetails({
 
   function connect(): void {
     dispatch(setActive(chainId))
+    goBack()
+    goBack()
   }
 
   return (
