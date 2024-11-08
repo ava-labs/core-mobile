@@ -6,7 +6,7 @@ import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { assetPDisplayNames } from 'store/balance/types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getCChainTokenUnit } from 'utils/units/knownTokens'
+import { getXPChainTokenUnit } from 'utils/units/knownTokens'
 
 type ChainBalanceType = keyof PChainBalance
 
@@ -48,8 +48,8 @@ export const PChainAssetList = ({
     const balanceInAvax = balance
       ? new TokenUnit(
           balance,
-          getCChainTokenUnit().getMaxDecimals(),
-          getCChainTokenUnit().getSymbol()
+          getXPChainTokenUnit().getMaxDecimals(),
+          getXPChainTokenUnit().getSymbol()
         )
       : undefined
 
