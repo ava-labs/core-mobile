@@ -1,6 +1,5 @@
 import {
   Blockchain,
-  BridgeTransaction,
   CriticalConfig,
   getNativeSymbol
 } from '@avalabs/core-bridge-sdk'
@@ -8,97 +7,12 @@ import { Transaction } from 'store/transaction'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Networks } from 'store/network'
 import { BridgeTransfer, Chain } from '@avalabs/bridge-unified'
-import {
-  Transaction as InternalTransaction,
-  TxToken
-} from '@avalabs/vm-module-types'
 import { AssetBalance } from './types'
-
-export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
-
-/**
- * Checking if the transaction is a bridge transaction with Ethereum
- */
-export function isBridgeTransactionEthereum({
-  transaction,
-  criticalConfig,
-  bridgeAddresses
-}: {
-  transaction: InternalTransaction
-  network: Network
-  criticalConfig: CriticalConfig | undefined
-  bridgeAddresses: string[]
-}): boolean {
-  const addressesToCheck = [
-    transaction.to.toLowerCase(),
-    transaction.from.toLowerCase()
-  ]
-
-  const ethBridgeAddress = criticalConfig?.critical.walletAddresses.ethereum
-
-  if (ethBridgeAddress === undefined) return false
-
-  const smartContractAddresses = [ethBridgeAddress, ...bridgeAddresses]
-
-  return addressesToCheck.some(address =>
-    smartContractAddresses.includes(address)
-  )
-}
-
-export function isBridgeTransactionERC20({
-  token,
-  bridgeAddresses
-}: {
-  token: TxToken
-  bridgeAddresses: string[]
-}): boolean {
-  return [
-    token.to?.address.toLowerCase(),
-    token.from?.address.toLowerCase()
-  ].some(item => item && [...bridgeAddresses, NULL_ADDRESS].includes(item))
-}
-
-/**
- * Checking if the transaction is a bridge transaction with Bitcoin
- */
-export const isBridgeTransactionBTC = (
-  transaction: InternalTransaction,
-  bitcoinWalletAddresses:
-    | {
-        avalanche: string
-        btc: string
-      }
-    | undefined
-): boolean => {
-  if (!bitcoinWalletAddresses) {
-    return false
-  }
-
-  const addresses = transaction.isSender ? [transaction.to] : [transaction.from]
-  return addresses.some(address => {
-    return [bitcoinWalletAddresses.btc, bitcoinWalletAddresses.avalanche].some(
-      walletAddress => address.toLowerCase() === walletAddress.toLowerCase()
-    )
-  })
-}
 
 export function isPendingBridgeTransaction(
   item: Transaction | BridgeTransfer
 ): item is BridgeTransfer {
   return 'addressBTC' in item || 'sourceChain' in item
-}
-
-const blockchainDisplayNameMap = new Map([
-  [Blockchain.AVALANCHE, 'Avalanche C-Chain'],
-  [Blockchain.ETHEREUM, 'Ethereum'],
-  [Blockchain.BITCOIN, 'Bitcoin'],
-  [Blockchain.UNKNOWN, '']
-])
-
-export function getBlockchainDisplayName(
-  chain: Blockchain | undefined
-): string {
-  return blockchainDisplayNameMap.get(chain ?? Blockchain.UNKNOWN) ?? ''
 }
 
 export const blockchainToNetwork = (
@@ -147,12 +61,12 @@ export const networkToBlockchain = (
 }
 
 export const isUnifiedBridgeTransfer = (
-  transfer?: BridgeTransaction | BridgeTransfer | Transaction
+  transfer?: BridgeTransfer | Transaction
 ): transfer is BridgeTransfer => {
   return transfer !== undefined && 'type' in transfer
 }
 
-export const getNativeTokenSymbol = (chain: Blockchain | Chain): string => {
+export const getNativeTokenSymbol = (chain: Chain): string => {
   if (typeof chain === 'object') {
     return chain.networkToken.symbol
   }

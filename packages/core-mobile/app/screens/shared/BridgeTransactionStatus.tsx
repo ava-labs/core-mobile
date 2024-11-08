@@ -2,7 +2,6 @@ import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import { Blockchain } from '@avalabs/core-bridge-sdk'
 import DotSVG from 'components/svg/DotSVG'
 import Avatar from 'components/Avatar'
 import AvaListItem from 'components/AvaListItem'
@@ -143,7 +142,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   }
 
   const renderNetworkFeeRightComponent = (): React.JSX.Element => {
-    if (sourceNetworkFee === undefined) {
+    if (sourceNetworkFee === undefined || bridgeTransaction === undefined) {
       return <AvaText.Heading3>Pending</AvaText.Heading3>
     }
 
@@ -151,10 +150,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
       <View style={{ alignItems: 'flex-end' }}>
         <Row>
           <AvaText.Heading3>
-            {sourceNetworkFee?.toNumber().toFixed(6)}{' '}
-            {getNativeTokenSymbol(
-              bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN
-            )}
+            {sourceNetworkFee.toNumber().toFixed(6)}{' '}
+            {getNativeTokenSymbol(bridgeTransaction.sourceChain)}
           </AvaText.Heading3>
         </Row>
         <AvaText.Body3 color={theme.colorText1}>
