@@ -8,6 +8,7 @@ import { UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { getCChainTokenUnit } from 'utils/units/knownTokens'
+import { weiToNano } from 'utils/units/converter'
 import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
@@ -36,7 +37,7 @@ export async function importC({
 
   const unsignedTx = await WalletService.createImportCTx({
     accountIndex: activeAccount.index,
-    baseFee: instantBaseFee.toSubUnit(),
+    baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
     avaxXPNetwork,
     sourceChain: 'P',
     destinationAddress: activeAccount.addressC

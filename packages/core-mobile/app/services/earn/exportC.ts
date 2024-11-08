@@ -10,11 +10,13 @@ import { UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { AvaxC } from 'types/AvaxC'
+import { weiToNano } from 'utils/units/converter'
+import { AvaxXP } from 'types/AvaxXP'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
   cChainBalance: bigint
-  requiredAmount: bigint
+  requiredAmount: bigint // in nAvax
   activeAccount: Account
   isDevMode: boolean
 }
@@ -38,11 +40,14 @@ export async function exportC({
   const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   const baseFeeAvax = AvaxC.fromWei(await avaxProvider.getApiC().getBaseFee())
+
   const instantBaseFeeAvax = WalletService.getInstantBaseFee(baseFeeAvax)
 
   const cChainBalanceAvax = AvaxC.fromWei(cChainBalance)
-  const requiredAmountAvax = AvaxC.fromWei(requiredAmount)
+  const requiredAmountAvax = AvaxXP.fromNanoAvax(requiredAmount)
+
   const pChainFeeAvax = calculatePChainFee()
+
   const amountAvax = requiredAmountAvax.add(pChainFeeAvax)
 
   if (cChainBalanceAvax.lt(amountAvax)) {
@@ -50,8 +55,8 @@ export async function exportC({
   }
 
   const unsignedTxWithFee = await WalletService.createExportCTx({
-    amount: amountAvax.toSubUnit(),
-    baseFee: instantBaseFeeAvax.toSubUnit(),
+    amountInNAvax: amountAvax.toSubUnit(),
+    baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
     accountIndex: activeAccount.index,
     avaxXPNetwork,
     destinationChain: 'P',
@@ -69,6 +74,7 @@ export async function exportC({
     signedTx: signedTxWithFee,
     network: avaxXPNetwork
   })
+
   Logger.trace('txID', txID)
 
   try {

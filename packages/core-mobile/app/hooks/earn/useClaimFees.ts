@@ -11,6 +11,7 @@ import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { weiToNano } from 'utils/units/converter'
 
 const exportPFee = calculatePChainFee()
 
@@ -45,7 +46,7 @@ export const useClaimFees = (): {
 
       const unsignedTx = await WalletService.createImportCTx({
         accountIndex: activeAccount.index,
-        baseFee: instantBaseFee.toSubUnit(),
+        baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
         avaxXPNetwork,
         sourceChain: 'P',
         destinationAddress: activeAccount.addressC,

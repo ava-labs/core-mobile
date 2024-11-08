@@ -12,7 +12,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import { assertNotUndefined } from 'utils/assertions'
 import NetworkService from 'services/network/NetworkService'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -61,7 +60,7 @@ export const useIssueDelegation = (
         return Promise.reject('no active account')
       }
       if (!cChainBalanceWei) {
-        return Promise.reject('no C chain balance')
+        return Promise.reject('no C-Chain balance')
       }
 
       Logger.trace('importAnyStuckFunds...')
@@ -71,7 +70,6 @@ export const useIssueDelegation = (
         selectedCurrency
       })
       Logger.trace('getPChainBalance...')
-      assertNotUndefined(pAddress)
 
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
       const balancesResponse = await ModuleManager.avalancheModule.getBalances({
@@ -84,7 +82,7 @@ export const useIssueDelegation = (
       const pChainBalanceResponse = balancesResponse[pAddress]
       if (!pChainBalanceResponse || 'error' in pChainBalanceResponse) {
         return Promise.reject(
-          `Failed to fetch cChain balance. ${pChainBalanceResponse?.error}`
+          `failed to fetch C-Chain balance. ${pChainBalanceResponse?.error}`
         )
       }
       const pChainBalance = pChainBalanceResponse[network.networkToken.symbol]
@@ -95,19 +93,19 @@ export const useIssueDelegation = (
       ) {
         return Promise.reject('invalid balance type.')
       }
-      if (!pChainBalance.balancePerType.unlockedUnstaked) {
-        return Promise.reject('unlocked unstaked not defined')
-      }
+
       const claimableBalance = new TokenUnit(
-        pChainBalance.balancePerType.unlockedUnstaked,
+        pChainBalance.balancePerType.unlockedUnstaked || 0,
         pChainNetworkToken.decimals,
         pChainNetworkToken.symbol
       )
+
       Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
       const cChainRequiredAmountAvax = calculateAmountForCrossChainTransfer(
         data.stakingAmount,
         claimableBalance
       )
+
       Logger.trace(
         'cChainRequiredAmount: ',
         cChainRequiredAmountAvax.toDisplay()
@@ -120,6 +118,7 @@ export const useIssueDelegation = (
         requiredAmount: cChainRequiredAmountAvax.toSubUnit(),
         selectedCurrency
       })
+
       return EarnService.issueAddDelegatorTransaction({
         activeAccount,
         endDate: data.endDate,

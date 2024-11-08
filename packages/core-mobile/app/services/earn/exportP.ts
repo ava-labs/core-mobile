@@ -30,7 +30,7 @@ export async function exportP({
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const unsignedTx = await WalletService.createExportPTx({
-    amount: requiredAmount.toSubUnit(),
+    amountInNAvax: requiredAmount.toSubUnit(),
     accountIndex: activeAccount.index,
     avaxXPNetwork,
     destinationChain: 'C',

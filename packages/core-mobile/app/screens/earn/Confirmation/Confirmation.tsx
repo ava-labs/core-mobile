@@ -43,18 +43,24 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showTransactionSuccessToast } from 'utils/toast'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
+
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
 
 export const Confirmation = (): JSX.Element | null => {
+  const {
+    appHook: { tokenInCurrencyFormatter }
+  } = useApplicationContext()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFocused = useIsFocused()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
   const { nodeId, stakingAmount, stakingEndTime, onBack } =
     useRoute<ScreenProps['route']>().params
@@ -241,7 +247,9 @@ export const Confirmation = (): JSX.Element | null => {
             {stakingAmountInAvax + ' ' + tokenSymbol}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
-            {stakingAmountInCurrency}
+            {`${tokenInCurrencyFormatter(
+              stakingAmountInCurrency
+            )} ${selectedCurrency}`}
           </AvaText.Heading3>
           <Space x={4} />
         </View>
@@ -266,7 +274,9 @@ export const Confirmation = (): JSX.Element | null => {
           </AvaText.Heading2>
           <AvaText.Body3
             textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
-            {estimatedRewardInCurrency}
+            {`${tokenInCurrencyFormatter(
+              estimatedRewardInCurrency
+            )} ${selectedCurrency}`}
           </AvaText.Body3>
         </View>
       )

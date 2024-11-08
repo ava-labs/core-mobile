@@ -46,7 +46,7 @@ export type AddDelegatorProps = {
   // Id of the node to delegate. starts with “NodeID-”
   nodeId: string
   //Amount to be delegated in nAVAX
-  stakeAmount: bigint
+  stakeAmountInNAvax: bigint
   // The Unix time when the delegation starts.
   startDate: number
   // The Unix time when the delegation ends.
@@ -66,13 +66,13 @@ export interface CommonAvalancheTxParamsBase {
 
 export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {
   /**
-   * In `Wei`
+   * In `Nano Avax`
    */
-  amount: bigint
+  amountInNAvax: bigint
   /**
-   * In `Wei`
+   * In `Nano Avax`
    */
-  baseFee: bigint
+  baseFeeInNAvax: bigint
   destinationChain: 'P' | 'X'
 }
 
@@ -81,15 +81,15 @@ export type CreateImportPTxParams = CommonAvalancheTxParamsBase & {
 }
 
 export type CreateExportPTxParams = CommonAvalancheTxParamsBase & {
-  amount: bigint
+  amountInNAvax: bigint
   destinationChain: 'C' | 'X'
 }
 
 export type CreateImportCTxParams = CommonAvalancheTxParamsBase & {
   /**
-   * In `Wei`
+   * In `Nano Avax`
    */
-  baseFee: bigint
+  baseFeeInNAvax: bigint
   sourceChain: 'P' | 'X'
 }
 
@@ -97,7 +97,7 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
   /**
    * In `nAvax`
    */
-  amount: bigint
+  amountInNAvax: bigint
   sourceAddress: string
 }
 

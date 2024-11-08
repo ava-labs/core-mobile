@@ -25,19 +25,25 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { getXPChainTokenUnit } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { useSelector } from 'react-redux'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDetails>
 
 const StakeDetails = (): JSX.Element | null => {
-  const { theme } = useApplicationContext()
+  const {
+    theme,
+    appHook: { tokenInCurrencyFormatter }
+  } = useApplicationContext()
   const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const {
     params: { txHash, stakeTitle }
   } = useRoute<ScreenProps['route']>()
   const stake = useStake(txHash)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const isActive = useMemo(() => {
     if (!stake) return false
@@ -87,15 +93,14 @@ const StakeDetails = (): JSX.Element | null => {
     const remainingTime = humanize(
       getReadableDateDuration(new UTCDate(endDate.getTime()))
     )
-    const estimatedRewardInAvax = stake.estimatedReward
-      ? new TokenUnit(
-          stake.estimatedReward,
-          getXPChainTokenUnit().getMaxDecimals(),
-          getXPChainTokenUnit().getSymbol()
-        )
-      : undefined
-    const estimatedRewardInCurrency =
-      estimatedRewardInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
+    const estimatedRewardInAvax = new TokenUnit(
+      stake.estimatedReward || 0,
+      getXPChainTokenUnit().getMaxDecimals(),
+      getXPChainTokenUnit().getSymbol()
+    )
+    const estimatedRewardInCurrency = estimatedRewardInAvax
+      .mul(avaxPrice)
+      .toDisplay({ fixedDp: 2 })
 
     return (
       <>
@@ -109,10 +114,14 @@ const StakeDetails = (): JSX.Element | null => {
           </Tooltip>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading4 color={theme.colorBgGreen}>
-              {estimatedRewardInAvax?.toDisplay() ?? '-'} AVAX
+              {estimatedRewardInAvax.toDisplay()} AVAX
             </AvaText.Heading4>
             <Space y={2} />
-            <AvaText.Body2>{estimatedRewardInCurrency}</AvaText.Body2>
+            <AvaText.Body2>
+              {`${tokenInCurrencyFormatter(
+                estimatedRewardInCurrency
+              )} ${selectedCurrency}`}
+            </AvaText.Body2>
           </View>
         </Row>
         <Separator style={styles.line} />
@@ -139,16 +148,15 @@ const StakeDetails = (): JSX.Element | null => {
         utxo.rewardType === RewardType.DELEGATOR ||
         utxo.rewardType === RewardType.VALIDATOR
     )
-    const rewardUtxoTxHash = rewardUtxo?.txHash
-    const rewardAmountInAvax = rewardUtxo?.asset.amount
-      ? new TokenUnit(
-          rewardUtxo.asset.amount,
-          getXPChainTokenUnit().getMaxDecimals(),
-          getXPChainTokenUnit().getSymbol()
-        )
-      : undefined
-    const rewardAmountInCurrency =
-      rewardAmountInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
+    const rewardUtxoTxHash = rewardUtxo?.txHash || ''
+    const rewardAmountInAvax = new TokenUnit(
+      rewardUtxo?.asset.amount || 0,
+      getXPChainTokenUnit().getMaxDecimals(),
+      getXPChainTokenUnit().getSymbol()
+    )
+    const rewardAmountInCurrency = rewardAmountInAvax
+      .mul(avaxPrice)
+      .toDisplay({ fixedDp: 2 })
 
     return (
       <>
@@ -160,10 +168,14 @@ const StakeDetails = (): JSX.Element | null => {
           </AvaText.Body2>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading4 color={theme.colorBgGreen}>
-              {rewardAmountInAvax?.toDisplay() ?? '-'} AVAX
+              {rewardAmountInAvax.toDisplay()} AVAX
             </AvaText.Heading4>
             <Space y={2} />
-            <AvaText.Body2>{rewardAmountInCurrency}</AvaText.Body2>
+            <AvaText.Body2>
+              {`${tokenInCurrencyFormatter(
+                rewardAmountInCurrency
+              )} ${selectedCurrency}`}
+            </AvaText.Body2>
           </View>
         </Row>
         <Separator style={styles.line} />
@@ -174,7 +186,7 @@ const StakeDetails = (): JSX.Element | null => {
             Transaction ID
           </AvaText.Body2>
           <TokenAddress
-            address={rewardUtxoTxHash ?? ''}
+            address={rewardUtxoTxHash}
             textColor={theme.colorText1}
             textType="Body1"
             copyIconEnd
@@ -194,15 +206,14 @@ const StakeDetails = (): JSX.Element | null => {
   }
   const renderBody = (): JSX.Element => {
     const stakeAmount = stake.amountStaked?.[0]?.amount
-    const stakeAmountInAvax = stakeAmount
-      ? new TokenUnit(
-          stakeAmount,
-          getXPChainTokenUnit().getMaxDecimals(),
-          getXPChainTokenUnit().getSymbol()
-        )
-      : undefined
-    const stakeAmountInCurrency =
-      stakeAmountInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
+    const stakeAmountInAvax = new TokenUnit(
+      stakeAmount || 0,
+      getXPChainTokenUnit().getMaxDecimals(),
+      getXPChainTokenUnit().getSymbol()
+    )
+    const stakeAmountInCurrency = stakeAmountInAvax
+      .mul(avaxPrice)
+      .toDisplay({ fixedDp: 2 })
 
     return (
       <View>
@@ -214,10 +225,14 @@ const StakeDetails = (): JSX.Element | null => {
           </AvaText.Body2>
           <View style={styles.value}>
             <AvaText.Heading4>
-              {stakeAmountInAvax?.toDisplay() ?? '-'} AVAX
+              {stakeAmountInAvax.toDisplay()} AVAX
             </AvaText.Heading4>
             <Space y={4} />
-            <AvaText.Body2>{stakeAmountInCurrency}</AvaText.Body2>
+            <AvaText.Body2>
+              {`${tokenInCurrencyFormatter(
+                stakeAmountInCurrency
+              )} ${selectedCurrency}`}
+            </AvaText.Body2>
           </View>
         </Row>
         <Separator style={styles.line} />
