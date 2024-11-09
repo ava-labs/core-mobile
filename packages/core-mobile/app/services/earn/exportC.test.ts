@@ -63,7 +63,8 @@ describe('earn/exportC', () => {
           cChainBalance: BigInt(1e18),
           requiredAmount: BigInt(10e9),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
       }).rejects.toThrow('Not enough balance on C chain')
     })
@@ -73,7 +74,8 @@ describe('earn/exportC', () => {
         cChainBalance: BigInt(10e18),
         requiredAmount: BigInt(1e9),
         isDevMode: false,
-        activeAccount: {} as Account
+        activeAccount: {} as Account,
+        isDevnet: false
       })
       expect(baseFeeMockFn).toHaveBeenCalled()
     })
@@ -84,13 +86,14 @@ describe('earn/exportC', () => {
           cChainBalance: BigInt(10e18),
           requiredAmount: BigInt(1e9),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
         expect(WalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1001000000n,
           baseFeeInNAvax: 0n,
           accountIndex: undefined,
-          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
+          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false, false),
           destinationChain: 'P',
           destinationAddress: undefined
         })
@@ -103,7 +106,8 @@ describe('earn/exportC', () => {
           cChainBalance: BigInt(10e18),
           requiredAmount: BigInt(1e9),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -115,7 +119,8 @@ describe('earn/exportC', () => {
           cChainBalance: BigInt(10e18),
           requiredAmount: BigInt(1e9),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

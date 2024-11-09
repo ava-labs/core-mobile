@@ -21,7 +21,7 @@ import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
-import { UnsignedTx, utils } from '@avalabs/avalanchejs'
+import { info, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
@@ -31,6 +31,7 @@ import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
+import { isDevnet } from 'utils/isDevnet'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -49,6 +50,7 @@ const BASE_FEE_MULTIPLIER = 0.2
 
 const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
 const TESTNET_AVAX_ASSET_ID = Avalanche.FujiContext.avaxAssetID
+const DEVNET_AVAX_ASSET_ID = Avalanche.DevnetContext.avaxAssetID
 
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
@@ -172,7 +174,8 @@ class WalletService {
 
   public async addAddress(
     accountIndex: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    devnet: boolean
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
       const pubKeysStorage = new SeedlessPubKeysStorage()
@@ -197,7 +200,7 @@ class WalletService {
       }
     }
 
-    return this.getAddresses(accountIndex, isTestnet)
+    return this.getAddresses(accountIndex, isTestnet, devnet)
   }
 
   /**
@@ -205,7 +208,8 @@ class WalletService {
    */
   public async getAddresses(
     accountIndex: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    devnet: boolean
   ): Promise<Record<NetworkVMType, string>> {
     const wallet = await WalletFactory.createWallet(
       accountIndex,
@@ -215,9 +219,17 @@ class WalletService {
       throw reason
     })
 
-    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+    const provXP = await NetworkService.getAvalancheProviderXP(
+      isTestnet,
+      devnet
+    )
 
-    return wallet.getAddresses({ accountIndex, isTestnet, provXP })
+    return wallet.getAddresses({
+      accountIndex,
+      isTestnet,
+      provXP,
+      isDevnet: devnet
+    })
   }
 
   /**
@@ -237,12 +249,14 @@ class WalletService {
     indices,
     chainAlias,
     isChange,
-    isTestnet
+    isTestnet,
+    isDevnet: devnet
   }: {
     indices: number[]
     chainAlias: 'X' | 'P'
     isChange: boolean
     isTestnet: boolean
+    isDevnet: boolean
   }): Promise<string[]> {
     if (
       this.walletType === WalletType.SEEDLESS ||
@@ -252,7 +266,10 @@ class WalletService {
     }
 
     if (this.walletType === WalletType.MNEMONIC) {
-      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+      const provXP = await NetworkService.getAvalancheProviderXP(
+        isTestnet,
+        devnet
+      )
 
       return indices.map(index =>
         Avalanche.getAddressFromXpub(
@@ -407,7 +424,8 @@ class WalletService {
     accountIndex,
     avaxXPNetwork,
     destinationAddress,
-    sourceAddress
+    sourceAddress,
+    feeState
   }: CreateSendPTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
@@ -419,8 +437,6 @@ class WalletService {
 
     // P-chain has a tx size limit of 64KB
     let utxoSet = await readOnlySigner.getUTXOs('P')
-    const apiP = readOnlySigner.getProvider().getApiP()
-    const feeState = await apiP.getFeeState().catch(() => undefined)
     const filteredUtxos = Avalanche.getMaximumUtxoSet({
       wallet: readOnlySigner,
       utxos: utxoSet.getUTXOs(),
@@ -435,7 +451,9 @@ class WalletService {
       chain: 'P',
       toAddress: destinationAddress,
       amountsPerAsset: {
-        [avaxXPNetwork.isTestnet
+        [isDevnet(avaxXPNetwork)
+          ? DEVNET_AVAX_ASSET_ID
+          : avaxXPNetwork.isTestnet
           ? TESTNET_AVAX_ASSET_ID
           : MAINNET_AVAX_ASSET_ID]: amountInNAvax
       },
@@ -527,7 +545,8 @@ class WalletService {
     endDate,
     rewardAddress,
     isDevMode,
-    shouldValidateBurnedAmount = true
+    shouldValidateBurnedAmount = true,
+    isDevnet: devnet
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -568,8 +587,7 @@ class WalletService {
     const utxoSet = await readOnlySigner.getUTXOs('P')
     const apiP = readOnlySigner.getProvider().getApiP()
     const feeState = await apiP.getFeeState().catch(() => undefined)
-    const network = NetworkService.getAvalancheNetworkP(isDevMode)
-
+    const network = NetworkService.getAvalancheNetworkP(isDevMode, devnet)
     const unsignedTx = readOnlySigner.addPermissionlessDelegator({
       utxoSet,
       nodeId,
@@ -622,14 +640,20 @@ class WalletService {
     Logger.info('validating burned amount')
 
     const avalancheProvider = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet)
+      Boolean(network.isTestnet),
+      isDevnet(network)
     )
 
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
       baseFee: evmBaseFeeInNAvax,
-      feeTolerance: EVM_FEE_TOLERANCE
+      feeTolerance: EVM_FEE_TOLERANCE,
+      upgradesInfo: isDevnet(network)
+        ? await new info.InfoApi(network.rpcUrl)
+            .getUpgradesInfo()
+            .catch(() => undefined)
+        : undefined
     })
 
     if (!isValid) {
@@ -649,7 +673,8 @@ class WalletService {
       this.walletType
     )
     const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet)
+      Boolean(network.isTestnet),
+      isDevnet(network)
     )
     return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
   }

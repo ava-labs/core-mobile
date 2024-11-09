@@ -11,6 +11,8 @@ import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork, setActive } from 'store/network'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -26,6 +28,7 @@ const initAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
@@ -36,7 +39,8 @@ const initAccounts = async (
       isTestnet: isDeveloperMode,
       index: 0,
       activeAccountIndex,
-      walletType
+      walletType,
+      isDevnet: isDevnet(activeNetwork)
     })
 
     const title = await SeedlessService.getAccountName(0)
@@ -59,7 +63,8 @@ const initAccounts = async (
       isTestnet: isDeveloperMode,
       index: 0,
       activeAccountIndex,
-      walletType
+      walletType,
+      isDevnet: isDevnet(activeNetwork)
     })
 
     const accountTitle =
@@ -99,6 +104,8 @@ const fetchingRemainingAccounts = async ({
    * adding accounts cannot be parallelized, they need to be added one-by-one.
    * otherwise race conditions occur and addresses get mixed up.
    */
+  const state = listenerApi.getState()
+  const activeNetwork = selectActiveNetwork(state)
   const pubKeysStorage = new SeedlessPubKeysStorage()
   const pubKeys = await pubKeysStorage.retrieve()
   const accounts: AccountCollection = {}
@@ -108,7 +115,8 @@ const fetchingRemainingAccounts = async ({
       isTestnet: isDeveloperMode,
       index: i,
       activeAccountIndex,
-      walletType
+      walletType,
+      isDevnet: isDevnet(activeNetwork)
     })
     const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
@@ -137,11 +145,13 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const activeNetwork = selectActiveNetwork(state)
   const accounts = selectAccounts(state)
 
   const reloadedAccounts = await accountService.reloadAccounts(
     isDeveloperMode,
-    accounts
+    accounts,
+    isDevnet(activeNetwork)
   )
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))
@@ -156,7 +166,7 @@ export const addAccountListeners = (
   })
 
   startListening({
-    matcher: isAnyOf(toggleDeveloperMode),
+    matcher: isAnyOf(toggleDeveloperMode, setActive),
     effect: reloadAccounts
   })
 }

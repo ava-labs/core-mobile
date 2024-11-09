@@ -359,18 +359,21 @@ export class MnemonicWallet implements Wallet {
   public async getAddresses({
     accountIndex,
     isTestnet,
-    provXP
+    provXP,
+    isDevnet
   }: {
     accountIndex: number
     isTestnet: boolean
     provXP: Avalanche.JsonRpcProvider
+    isDevnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
     const addresses = await ModuleManager.getAddresses({
       walletType: WalletType.Mnemonic,
       accountIndex,
       xpub: this.xpub,
       xpubXP: this.xpubXP,
-      isTestnet
+      isTestnet,
+      isDevnet
     })
 
     // C-avax... this address uses the same public key as EVM

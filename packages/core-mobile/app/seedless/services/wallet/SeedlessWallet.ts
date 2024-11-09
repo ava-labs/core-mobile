@@ -35,6 +35,7 @@ import {
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
+import { isDevnet } from 'utils/isDevnet'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
@@ -170,7 +171,8 @@ export default class SeedlessWallet implements Wallet {
           message: data,
           chainAlias,
           isTestnet: !!network.isTestnet,
-          provider
+          provider,
+          isDevnet: isDevnet(network)
         })
       }
       case RpcMethod.ETH_SIGN:
@@ -299,17 +301,20 @@ export default class SeedlessWallet implements Wallet {
 
   public async getAddresses({
     isTestnet,
-    provXP
+    provXP,
+    isDevnet: devnet
   }: {
     isTestnet: boolean
     provXP: Avalanche.JsonRpcProvider
+    isDevnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
     const addresses = await ModuleManager.getAddresses({
       walletType: WalletType.Seedless,
       accountIndex: 0,
       xpub: this.#addressPublicKey.evm,
       xpubXP: this.#addressPublicKey.xp,
-      isTestnet
+      isTestnet,
+      isDevnet: devnet
     })
     const pubKeyBufferC = this.getPubKeyBufferC()
     return {
@@ -337,14 +342,20 @@ export default class SeedlessWallet implements Wallet {
     message,
     isTestnet,
     chainAlias,
-    provider
+    provider,
+    isDevnet: devnet
   }: {
     message: string
     isTestnet: boolean
     chainAlias: Avalanche.ChainIDAlias
     provider: Avalanche.JsonRpcProvider
+    isDevnet: boolean
   }): Promise<string> => {
-    const addresses = await this.getAddresses({ isTestnet, provXP: provider })
+    const addresses = await this.getAddresses({
+      isTestnet,
+      provXP: provider,
+      isDevnet: devnet
+    })
     const address = addresses[Avalanche.getVmByChainAlias(chainAlias)]
     const buffer = Buffer.from(
       strip0x(

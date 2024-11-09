@@ -14,6 +14,8 @@ export const defaultNetwork = BITCOIN_NETWORK
 export const noActiveNetwork = 0
 
 export const alwaysFavoriteNetworks = [
+  ChainsSDKChainId.AVALANCHE_DEVNET_ID,
+  ChainsSDKChainId.AVALANCHE_DEVNET_P,
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
   ChainsSDKChainId.AVALANCHE_TESTNET_ID
 ]

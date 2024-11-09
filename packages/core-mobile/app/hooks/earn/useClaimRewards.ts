@@ -12,6 +12,8 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { AvaxXP } from 'types/AvaxXP'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 import { useClaimFees } from './useClaimFees'
 import { usePChainBalance } from './usePChainBalance'
 
@@ -30,6 +32,7 @@ export const useClaimRewards = (
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pChainBalance = usePChainBalance()
   const { totalFees, exportPFee } = useClaimFees()
@@ -42,7 +45,7 @@ export const useClaimRewards = (
         throw Error('no active account')
       }
 
-      if (!totalFees) {
+      if (!totalFees || !exportPFee) {
         throw Error('unable to calculate fees')
       }
 
@@ -63,7 +66,8 @@ export const useClaimRewards = (
         totalClaimable,
         amountToTransfer,
         activeAccount,
-        isDeveloperMode
+        isDeveloperMode,
+        isDevnet(activeNetwork)
       )
     },
     onSuccess: () => {

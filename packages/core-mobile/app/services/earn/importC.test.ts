@@ -59,12 +59,13 @@ describe('earn/importC', () => {
       ) as jest.Mock
       await importC({
         activeAccount: {} as Account,
-        isDevMode: false
+        isDevMode: false,
+        isDevnet: false
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith({
         accountIndex: undefined,
         baseFeeInNAvax: BigInt(0.0003 * 10 ** 9),
-        avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
+        avaxXPNetwork: NetworkService.getAvalancheNetworkP(false, false),
         sourceChain: 'P',
         destinationAddress: undefined
       })
@@ -73,7 +74,8 @@ describe('earn/importC', () => {
     it('should call walletService.signAvaxTx', async () => {
       await importC({
         activeAccount: {} as Account,
-        isDevMode: false
+        isDevMode: false,
+        isDevnet: false
       })
       expect(WalletService.sign).toHaveBeenCalled()
     })
@@ -81,7 +83,8 @@ describe('earn/importC', () => {
     it('should call networkService.sendTransaction', async () => {
       await importC({
         activeAccount: {} as Account,
-        isDevMode: false
+        isDevMode: false,
+        isDevnet: false
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
     })

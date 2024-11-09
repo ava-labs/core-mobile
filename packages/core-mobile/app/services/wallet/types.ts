@@ -6,7 +6,7 @@ import {
   BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
@@ -55,6 +55,7 @@ export type AddDelegatorProps = {
   rewardAddress: string
   isDevMode: boolean
   shouldValidateBurnedAmount?: boolean
+  isDevnet: boolean
 }
 
 export interface CommonAvalancheTxParamsBase {
@@ -99,6 +100,7 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
    */
   amountInNAvax: bigint
   sourceAddress: string
+  feeState?: pvm.FeeState
 }
 
 export enum WalletType {
@@ -206,10 +208,12 @@ export interface Wallet {
   getAddresses({
     accountIndex,
     isTestnet,
-    provXP
+    provXP,
+    isDevnet
   }: {
     accountIndex: number
     isTestnet: boolean
+    isDevnet: boolean
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Record<NetworkVMType, string>>
 

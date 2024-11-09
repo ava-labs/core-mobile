@@ -10,13 +10,18 @@ import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 class AccountsService {
   async reloadAccounts(
     isTestnet: boolean,
-    accounts: AccountCollection
+    accounts: AccountCollection,
+    isDevnet = false
   ): Promise<AccountCollection> {
     const reloadedAccounts: AccountCollection = {}
 
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
-      const addresses = await WalletService.getAddresses(key, isTestnet)
+      const addresses = await WalletService.getAddresses(
+        key,
+        isTestnet,
+        isDevnet
+      )
       const title = await SeedlessService.getAccountName(key)
 
       const account = accounts[key]
@@ -46,16 +51,18 @@ class AccountsService {
     isTestnet,
     index,
     activeAccountIndex,
-    walletType
+    walletType,
+    isDevnet
   }: {
     isTestnet: boolean
     index: number
     activeAccountIndex: number
     walletType: WalletType
+    isDevnet: boolean
   }): Promise<Account> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
-    const addresses = await WalletService.addAddress(index, isTestnet)
+    const addresses = await WalletService.addAddress(index, isTestnet, isDevnet)
 
     return {
       index,

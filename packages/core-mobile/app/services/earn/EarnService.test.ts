@@ -8,7 +8,7 @@ import EarnService from './EarnService'
 describe('EarnService', () => {
   describe('getCurrentValidators', () => {
     it('should return valid validators', async () => {
-      const validators = await EarnService.getCurrentValidators(true)
+      const validators = await EarnService.getCurrentValidators(true, false)
       expect(validators).toEqual(testValidators)
     })
   })
@@ -24,7 +24,8 @@ describe('EarnService', () => {
             'AVAX'
           ),
           2,
-          true
+          true,
+          false
         )
       ).toEqual(zeroAvaxPChain())
     })
@@ -35,7 +36,8 @@ describe('EarnService', () => {
           Seconds(7 * 24 * Hour),
           new TokenUnit(400_000_000 * 10 ** 9, 9, 'AVAX'),
           2,
-          true
+          true,
+          false
         ).toDisplay()
       ).toEqual('3,018.66')
     })

@@ -10,6 +10,7 @@ import { utils } from '@avalabs/avalanchejs'
 import { Transaction } from '@sentry/react'
 import { Network } from '@avalabs/core-chains-sdk'
 import { CorePrimaryAccount } from '@avalabs/types'
+import { isDevnet } from 'utils/isDevnet'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -101,11 +102,12 @@ const getTransactionRequest = ({
         utxos: unsignedTx.utxos.map(utxo =>
           utils.bufferToHex(utxo.toBytes(codec))
         ),
-        ...getInternalExternalAddrs(
-          unsignedTx.utxos,
-          { [fromAddress]: { space: 'e', index: 0 } },
-          network.isTestnet === true
-        )
+        ...getInternalExternalAddrs({
+          utxos: unsignedTx.utxos,
+          xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
+          isTestnet: network.isTestnet === true,
+          isDevnet: isDevnet(network)
+        })
       }
     })
 }

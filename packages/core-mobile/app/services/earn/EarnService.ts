@@ -52,9 +52,10 @@ class EarnService {
    * @param isTestnet is testnet mode enabled
    */
   getCurrentValidators = (
-    isTestnet: boolean
+    isTestnet: boolean,
+    isDevnet: boolean
   ): Promise<GetCurrentValidatorsResponse> => {
-    return getPvmApi(isTestnet).getCurrentValidators()
+    return getPvmApi(isTestnet, isDevnet).getCurrentValidators()
   }
 
   /**
@@ -68,15 +69,20 @@ class EarnService {
     activeAccount,
     isDevMode,
     selectedCurrency,
-    progressEvents
+    progressEvents,
+    isDevnet
   }: {
     activeAccount: Account
     isDevMode: boolean
     selectedCurrency: string
     progressEvents?: (events: RecoveryEvents) => void
+    isDevnet: boolean
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
+      isDevMode,
+      isDevnet
+    )
 
     const { pChainUtxo, cChainUtxo } = await retry({
       operation: retryIndex => {
@@ -98,7 +104,8 @@ class EarnService {
       await importPWithBalanceCheck({
         activeAccount,
         isDevMode,
-        selectedCurrency
+        selectedCurrency,
+        isDevnet
       })
       progressEvents?.(RecoveryEvents.ImportPFinish)
     }
@@ -107,7 +114,8 @@ class EarnService {
       progressEvents?.(RecoveryEvents.ImportCStart)
       await importC({
         activeAccount,
-        isDevMode
+        isDevMode,
+        isDevnet
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -122,8 +130,9 @@ class EarnService {
     requiredAmount,
     activeAccount,
     isDevMode,
-    selectedCurrency
-  }: CollectTokensForStakingParams): Promise<void> {
+    selectedCurrency,
+    isDevnet
+  }: CollectTokensForStakingParams & { isDevnet: boolean }): Promise<void> {
     if (requiredAmount === 0n) {
       Logger.info('no need to cross chain')
       return
@@ -132,12 +141,14 @@ class EarnService {
       cChainBalance,
       requiredAmount,
       activeAccount,
-      isDevMode
+      isDevMode,
+      isDevnet
     })
     await importP({
       activeAccount,
       isDevMode,
-      selectedCurrency
+      selectedCurrency,
+      isDevnet
     })
   }
 
@@ -154,17 +165,20 @@ class EarnService {
     pChainBalance: TokenUnit,
     requiredAmount: TokenUnit,
     activeAccount: Account,
-    isDevMode: boolean
+    isDevMode: boolean,
+    isDevnet: boolean
   ): Promise<void> {
     await exportP({
       pChainBalance,
       requiredAmount,
       activeAccount,
-      isDevMode
+      isDevMode,
+      isDevnet
     })
     await importC({
       activeAccount,
-      isDevMode
+      isDevMode,
+      isDevnet
     })
   }
 
@@ -182,9 +196,13 @@ class EarnService {
     duration: Seconds,
     currentSupply: TokenUnit,
     delegationFee: number,
-    isDeveloperMode: boolean
+    isDeveloperMode: boolean,
+    isDevnet: boolean
   ): TokenUnit {
-    const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+    const avaxPNetwork = NetworkService.getAvalancheNetworkP(
+      isDeveloperMode,
+      isDevnet
+    )
     const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
     const minConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
@@ -206,7 +224,10 @@ class EarnService {
       avaxPNetwork.networkToken.decimals,
       avaxPNetwork.networkToken.symbol
     )
-    const unmintedSupply = supplyCap.sub(currentSupply)
+    let unmintedSupply = supplyCap.sub(currentSupply)
+    if (unmintedSupply.lt(0)) {
+      unmintedSupply = unmintedSupply.mul(-1)
+    }
     const fullReward = unmintedSupply
       .mul(stakeOverSupply)
       .mul(stakingPeriodOverMintingPeriod)
@@ -222,11 +243,15 @@ class EarnService {
     stakeAmount,
     startDate,
     endDate,
-    isDevMode
-  }: AddDelegatorTransactionProps): Promise<string> {
+    isDevMode,
+    isDevnet
+  }: AddDelegatorTransactionProps & { isDevnet: boolean }): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
+      isDevMode,
+      isDevnet
+    )
     const rewardAddress = activeAccount.addressPVM
 
     const unsignedTx = await WalletService.createAddDelegatorTx({
@@ -237,7 +262,8 @@ class EarnService {
       startDate: startDateUnix,
       endDate: endDateUnix,
       stakeAmountInNAvax: stakeAmount,
-      isDevMode
+      isDevMode,
+      isDevnet
     } as AddDelegatorProps)
 
     const signedTxJson = await WalletService.sign({
@@ -258,7 +284,10 @@ class EarnService {
     })
     Logger.trace('txID', txID)
 
-    const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+    const avaxProvider = await NetworkService.getAvalancheProviderXP(
+      isDevMode,
+      isDevnet
+    )
 
     try {
       await retry({
@@ -277,8 +306,11 @@ class EarnService {
    * Retrieve the upper bound on the number of tokens that exist in P-chain
    * This is an upper bound because it does not account for burnt tokens, including transaction fees.
    */
-  getCurrentSupply(isTestnet: boolean): Promise<GetCurrentSupplyResponse> {
-    return getPvmApi(isTestnet).getCurrentSupply()
+  getCurrentSupply(
+    isTestnet: boolean,
+    isDevnet: boolean
+  ): Promise<GetCurrentSupplyResponse> {
+    return getPvmApi(isTestnet, isDevnet).getCurrentSupply()
   }
 
   /**
@@ -322,10 +354,12 @@ class EarnService {
 
   getTransformedStakesForAllAccounts = async ({
     isDeveloperMode,
-    accounts
+    accounts,
+    isDevnet
   }: {
     isDeveloperMode: boolean
     accounts: AccountCollection
+    isDevnet: boolean
   }): Promise<
     | {
         txHash: string
@@ -350,7 +384,11 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(account.index, !isDeveloperMode)
+            WalletService.getAddresses(
+              account.index,
+              !isDeveloperMode,
+              isDevnet
+            )
           )
         )
       ).map(address => address.PVM)
@@ -382,9 +420,10 @@ class EarnService {
    */
   getPeers = (
     isTestnet: boolean,
+    isDevnet: boolean,
     nodeIds?: string[]
   ): Promise<GetPeersResponse> => {
-    return getInfoApi(isTestnet).peers(nodeIds)
+    return getInfoApi(isTestnet, isDevnet).peers(nodeIds)
   }
 }
 

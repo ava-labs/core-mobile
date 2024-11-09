@@ -18,6 +18,8 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -38,13 +40,17 @@ export const useIssueDelegation = (
   >
 } => {
   const queryClient = useQueryClient()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data: cChainBalanceRes } = useCChainBalance()
   const cChainBalanceWei = cChainBalanceRes?.balance
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDeveloperMode)
+    NetworkService.getAvalancheNetworkP(
+      isDeveloperMode,
+      isDevnet(activeNetwork)
+    )
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
@@ -67,11 +73,15 @@ export const useIssueDelegation = (
       await EarnService.importAnyStuckFunds({
         activeAccount,
         isDevMode: isDeveloperMode,
-        selectedCurrency
+        selectedCurrency,
+        isDevnet: isDevnet(activeNetwork)
       })
       Logger.trace('getPChainBalance...')
 
-      const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+      const network = NetworkService.getAvalancheNetworkP(
+        isDeveloperMode,
+        isDevnet(activeNetwork)
+      )
       const balancesResponse = await ModuleManager.avalancheModule.getBalances({
         addresses: [pAddress],
         currency: selectedCurrency,
@@ -93,7 +103,9 @@ export const useIssueDelegation = (
       ) {
         return Promise.reject('invalid balance type.')
       }
-
+      if (pChainBalance.balancePerType.unlockedUnstaked === undefined) {
+        return Promise.reject('unlocked unstaked not defined')
+      }
       const claimableBalance = new TokenUnit(
         pChainBalance.balancePerType.unlockedUnstaked || 0,
         pChainNetworkToken.decimals,
@@ -116,7 +128,8 @@ export const useIssueDelegation = (
         cChainBalance: cChainBalanceWei,
         isDevMode: isDeveloperMode,
         requiredAmount: cChainRequiredAmountAvax.toSubUnit(),
-        selectedCurrency
+        selectedCurrency,
+        isDevnet: isDevnet(activeNetwork)
       })
 
       return EarnService.issueAddDelegatorTransaction({
@@ -125,7 +138,8 @@ export const useIssueDelegation = (
         isDevMode: isDeveloperMode,
         nodeId: data.nodeId,
         stakeAmount: data.stakingAmount.toSubUnit(),
-        startDate: data.startDate
+        startDate: data.startDate,
+        isDevnet: isDevnet(activeNetwork)
       })
     },
     onSuccess: txId => {

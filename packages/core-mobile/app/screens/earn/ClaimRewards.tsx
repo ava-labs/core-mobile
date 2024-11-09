@@ -27,6 +27,8 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
@@ -39,7 +41,11 @@ const ClaimRewards = (): JSX.Element | null => {
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const { networkToken } = NetworkService.getAvalancheNetworkP(
+    isDeveloperMode,
+    isDevnet(activeNetwork)
+  )
 
   const { getNetwork } = useNetworks()
   const selectedCurrency = useSelector(selectSelectedCurrency)

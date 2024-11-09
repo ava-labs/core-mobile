@@ -123,7 +123,9 @@ export const getAvailableDelegationWeight = (
   const nAvax = getStakingConfig(isDeveloperMode).MaxValidatorStake
   const maxValidatorStake = new TokenUnit(nAvax, 9, 'AVAX')
   const maxWeight = calculateMaxWeight(maxValidatorStake, validatorWeight)
-
+  if (maxWeight.lt(validatorWeight)) {
+    return maxWeight.sub(delegatorWeight)
+  }
   return maxWeight.sub(validatorWeight).sub(delegatorWeight)
 }
 

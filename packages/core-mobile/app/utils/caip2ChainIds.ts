@@ -33,6 +33,8 @@ function updateChainIdIfNeeded(original: number): string {
     return BlockchainId.X_CHAIN
   } else if (original === ChainId.AVALANCHE_TEST_X) {
     return BlockchainId.X_CHAIN_TESTNET
+  } else if (original === ChainId.AVALANCHE_DEVNET_P) {
+    return BlockchainId.P_CHAIN_DEVNET
   }
   return original.toString()
 }
@@ -42,13 +44,15 @@ enum BlockchainId {
   P_CHAIN = `${BlockchainNamespace.AVAX}:11111111111111111111111111111111LpoYY`,
   P_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:fuji-11111111111111111111111111111111LpoYY`,
   X_CHAIN = `${BlockchainNamespace.AVAX}:2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM`,
-  X_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm`
+  X_CHAIN_TESTNET = `${BlockchainNamespace.AVAX}:2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm`,
+  P_CHAIN_DEVNET = `${BlockchainNamespace.AVAX}:custom11111111111111111111111111111111LpoYY`
 }
 
 export const isPChainId = (caip2ChainId: string): boolean => {
   return (
     caip2ChainId === AvalancheCaip2ChainId.P ||
-    caip2ChainId === AvalancheCaip2ChainId.P_TESTNET
+    caip2ChainId === AvalancheCaip2ChainId.P_TESTNET ||
+    caip2ChainId === 'avax:N5PeRoKwDDREF0awn2GPsb9sHnGRzdEX'
   )
 }
 
@@ -84,6 +88,8 @@ export const getAvalancheCaip2ChainId = (
     return AvalancheCaip2ChainId.X
   } else if (chainId === ChainId.AVALANCHE_TEST_X) {
     return AvalancheCaip2ChainId.X_TESTNET
+  } else if (chainId === ChainId.AVALANCHE_DEVNET_P) {
+    return 'avax:N5PeRoKwDDREF0awn2GPsb9sHnGRzdEX'
   }
   return undefined
 }
@@ -103,8 +109,9 @@ export const getAvalancheChainId = (
     return ChainId.AVALANCHE_MAINNET_ID
   } else if (caip2ChainId === AvalancheCaip2ChainId.C_TESTNET) {
     return ChainId.AVALANCHE_TESTNET_ID
+  } else if (caip2ChainId === 'avax:N5PeRoKwDDREF0awn2GPsb9sHnGRzdEX') {
+    return ChainId.AVALANCHE_DEVNET_P
   }
-
   return undefined
 }
 

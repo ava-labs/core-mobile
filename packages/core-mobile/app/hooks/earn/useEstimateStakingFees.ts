@@ -13,9 +13,9 @@ import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 import { weiToNano } from 'utils/units/converter'
-
-const importFee = calculatePChainFee()
 
 /**
  * useEstimateStakingFee estimates fee by making dummy Export C transaction and
@@ -26,8 +26,12 @@ const importFee = calculatePChainFee()
 export const useEstimateStakingFees = (
   stakingAmount: TokenUnit
 ): TokenUnit | undefined => {
+  const activeNetwork = useSelector(selectActiveNetwork)
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
+    isDevMode,
+    isDevnet(activeNetwork)
+  )
   const activeAccount = useSelector(selectActiveAccount)
   const amountForCrossChainTransfer =
     useGetAmountForCrossChainTransfer(stakingAmount)
@@ -54,6 +58,7 @@ export const useEstimateStakingFees = (
         setEstimatedStakingFee(undefined)
         return
       }
+      const importFee = await calculatePChainFee(activeNetwork)
 
       const totalAmount = amountForCrossChainTransfer.add(importFee) // we need to include import fee
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
@@ -71,10 +76,17 @@ export const useEstimateStakingFees = (
       })
 
       const exportFee = calculateCChainFee(instantBaseFee, unsignedTx)
+
       setEstimatedStakingFee(exportFee.add(importFee))
     }
     calculateEstimatedStakingFee().catch(Logger.error)
-  }, [activeAccount, amountForCrossChainTransfer, avaxXPNetwork, baseFee])
+  }, [
+    activeAccount,
+    activeNetwork,
+    amountForCrossChainTransfer,
+    avaxXPNetwork,
+    baseFee
+  ])
 
   return estimatedStakingFee
 }

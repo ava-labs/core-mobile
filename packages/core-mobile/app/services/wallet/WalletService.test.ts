@@ -29,7 +29,7 @@ describe('WalletService', () => {
   })
 
   describe('createAddDelegatorTx', () => {
-    const network = NetworkService.getAvalancheNetworkP(false)
+    const network = NetworkService.getAvalancheNetworkP(false, false)
     const validNodeId = 'NodeID-23420390293d9j09v'
     const invalidNodeId = 'InvalidNodeID-23420390293d9j09v'
     const fujiValidStakeAmount = BigInt(2e9)

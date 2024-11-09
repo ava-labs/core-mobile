@@ -4,8 +4,12 @@ type SearchSpace = 'i' | 'e'
 type XPAddressData = { index: number; space: SearchSpace }
 type XPAddressDictionary = Record<string, XPAddressData>
 
-const getHrp = (isTestnet: boolean): string =>
-  isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
+const getHrp = (isTestnet: boolean, isDevnet: boolean): string =>
+  isDevnet
+    ? networkIDs.FallbackHRP
+    : isTestnet
+    ? networkIDs.FujiHRP
+    : networkIDs.MainnetHRP
 
 /**
  * Formats an `avax…` or `fuji…` style Avalanche address for the correct network.
@@ -13,20 +17,27 @@ const getHrp = (isTestnet: boolean): string =>
  */
 const formatAvalancheAddress = (
   addressString: string,
-  isTestnet: boolean
+  isTestnet: boolean,
+  isDevnet: boolean
 ): string => {
   const [, bytes] = utils.parseBech32(addressString)
-  const hrp = getHrp(isTestnet)
+  const hrp = getHrp(isTestnet, isDevnet)
 
   // Safe cast because otherwise the parse above would throw.
   return utils.formatBech32(hrp, bytes)
 }
 
-export const getInternalExternalAddrs = (
-  utxos: readonly Utxo[],
-  xpAddressDict: XPAddressDictionary,
+export const getInternalExternalAddrs = ({
+  utxos,
+  xpAddressDict,
+  isTestnet,
+  isDevnet
+}: {
+  utxos: readonly Utxo[]
+  xpAddressDict: XPAddressDictionary
   isTestnet: boolean
-): {
+  isDevnet: boolean
+}): {
   externalIndices: number[]
   internalIndices: number[]
 } => {
@@ -35,7 +46,9 @@ export const getInternalExternalAddrs = (
       utxo
         .getOutputOwners()
         .addrs.map(String)
-        .map(addressString => formatAvalancheAddress(addressString, isTestnet))
+        .map(addressString =>
+          formatAvalancheAddress(addressString, isTestnet, isDevnet)
+        )
     )
   )
 

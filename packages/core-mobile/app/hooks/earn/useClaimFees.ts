@@ -11,9 +11,9 @@ import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 import { weiToNano } from 'utils/units/converter'
-
-const exportPFee = calculatePChainFee()
 
 /**
  * a hook to calculate the fees needed to do a cross chain transfer from P to C chain
@@ -26,11 +26,14 @@ const exportPFee = calculatePChainFee()
  */
 export const useClaimFees = (): {
   totalFees: TokenUnit | undefined
-  exportPFee: TokenUnit
+  exportPFee: TokenUnit | undefined
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
+  const activeNetwork = useSelector(selectActiveNetwork)
   const [totalFees, setTotalFees] = useState<TokenUnit | undefined>(undefined)
+  const [exportFee, setExportFee] = useState<TokenUnit | undefined>(undefined)
+
   const cChainBaseFee = useCChainBaseFee()
 
   useEffect(() => {
@@ -40,7 +43,10 @@ export const useClaimFees = (): {
 
       if (!activeAccount) throw new Error('no active account')
 
-      const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+      const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
+        isDevMode,
+        isDevnet(activeNetwork)
+      )
 
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
@@ -56,16 +62,18 @@ export const useClaimFees = (): {
       })
 
       const importCFee = calculateCChainFee(instantBaseFee, unsignedTx)
+      const exportPFee = await calculatePChainFee(activeNetwork)
 
       Logger.info('importCFee', importCFee.toDisplay())
       Logger.info('exportPFee', exportPFee.toDisplay())
       setTotalFees(importCFee.add(exportPFee))
+      setExportFee(exportPFee)
     }
 
     calculateFees().catch(err => {
       Logger.error(err)
     })
-  }, [activeAccount, isDevMode, cChainBaseFee?.data])
+  }, [activeAccount, isDevMode, cChainBaseFee?.data, activeNetwork])
 
-  return { totalFees: totalFees, exportPFee }
+  return { totalFees, exportPFee: exportFee }
 }

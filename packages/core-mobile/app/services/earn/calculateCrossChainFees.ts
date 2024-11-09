@@ -1,6 +1,7 @@
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { AvaxXP } from 'types/AvaxXP'
+import { Network } from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
 
 /**
  * Calculate the fee needed to perform C-Chain atomic transactions (imports + exports from/to other chains)
@@ -23,6 +24,11 @@ export function calculateCChainFee(
 /**
  * https://docs.avax.network/quickstart/transaction-fees#fee-schedule
  */
-export function calculatePChainFee(): AvaxXP {
-  return AvaxXP.fromNanoAvax(1e6)
+export async function calculatePChainFee(network: Network): Promise<TokenUnit> {
+  const networkFees = await ModuleManager.avalancheModule.getNetworkFee(network)
+  return new TokenUnit(
+    networkFees.low.maxFeePerGas,
+    network.networkToken.decimals,
+    network.networkToken.symbol
+  )
 }
