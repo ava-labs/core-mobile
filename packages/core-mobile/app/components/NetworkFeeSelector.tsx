@@ -59,13 +59,15 @@ const NetworkFeeSelector = ({
   gasLimit,
   onFeesChange,
   isGasLimitEditable = true,
-  noGasLimitError
+  noGasLimitError,
+  supportsAvalancheDynamicFee = false
 }: {
   chainId?: number
   gasLimit: number
   onFeesChange?(fees: Eip1559Fees, feePreset: FeePreset): void
   isGasLimitEditable?: boolean
   noGasLimitError?: string
+  supportsAvalancheDynamicFee?: boolean
 }): JSX.Element => {
   const {
     appHook: { currencyFormatter }
@@ -84,6 +86,7 @@ const NetworkFeeSelector = ({
   )
 
   const isBtcNetwork = network ? isBitcoinNetwork(network) : false
+  const isSimpleFeeRate = isBtcNetwork || supportsAvalancheDynamicFee
   const isPVM = isPvmNetwork(network)
   const isAVM = isAvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
@@ -105,11 +108,21 @@ const NetworkFeeSelector = ({
         maxFeePerGas: fee.low.maxFeePerGas,
         maxPriorityFeePerGas: fee.low.maxPriorityFeePerGas ?? 0n,
         tokenPrice: nativeTokenPrice,
-        gasLimit: isPVM || isAVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit,
+        gasLimit:
+          (isPVM && !supportsAvalancheDynamicFee) || isAVM
+            ? GAS_LIMIT_FOR_XP_CHAIN
+            : gasLimit,
         networkToken
       })
     },
-    [nativeTokenPrice, isPVM, isAVM, gasLimit, networkToken]
+    [
+      nativeTokenPrice,
+      isPVM,
+      supportsAvalancheDynamicFee,
+      isAVM,
+      gasLimit,
+      networkToken
+    ]
   )
 
   // customFees init value.
@@ -166,19 +179,19 @@ const NetworkFeeSelector = ({
     return {
       [FeePreset.Normal]: bigIntToFeeDenomination(
         networkFee.low.maxFeePerGas,
-        isBtcNetwork
+        isSimpleFeeRate
       ),
       [FeePreset.Fast]: bigIntToFeeDenomination(
         networkFee.medium.maxFeePerGas,
-        isBtcNetwork
+        isSimpleFeeRate
       ),
       [FeePreset.Instant]: bigIntToFeeDenomination(
         networkFee.high.maxFeePerGas,
-        isBtcNetwork
+        isSimpleFeeRate
       ),
-      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isBtcNetwork)
+      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isSimpleFeeRate)
     }
-  }, [customFees?.maxFeePerGas, isBtcNetwork, networkFee])
+  }, [customFees?.maxFeePerGas, networkFee, isSimpleFeeRate])
 
   const goToEditGasLimit = (n?: Network): void => {
     if (networkFee === undefined || n === undefined) return
@@ -193,7 +206,7 @@ const NetworkFeeSelector = ({
         0n,
       gasLimit,
       isGasLimitEditable,
-      isBtcNetwork,
+      isSimpleFeeRate,
       noGasLimitError
     })
   }
@@ -217,13 +230,14 @@ const NetworkFeeSelector = ({
             <Text variant="buttonMedium">Maximum Network Fee</Text>
           </Tooltip>
         )}
-        {!isPVM && !isAVM && (
-          <TouchableOpacity
-            sx={{ marginTop: 8 }}
-            onPress={() => goToEditGasLimit(network)}>
-            <Settings />
-          </TouchableOpacity>
-        )}
+        {(!isPVM && supportsAvalancheDynamicFee) ||
+          (!isAVM && (
+            <TouchableOpacity
+              sx={{ marginTop: 8 }}
+              onPress={() => goToEditGasLimit(network)}>
+              <Settings />
+            </TouchableOpacity>
+          ))}
       </Row>
       <Space y={4} />
 

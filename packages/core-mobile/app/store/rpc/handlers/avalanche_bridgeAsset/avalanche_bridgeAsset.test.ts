@@ -44,7 +44,8 @@ jest.mock('store/network/slice', () => {
   const actual = jest.requireActual('store/network/slice')
   return {
     ...actual,
-    selectNetworks: () => mockNetworks
+    selectNetworks: () => mockNetworks,
+    selectActiveNetwork: () => mockNetworks[43114]
   }
 })
 
@@ -381,7 +382,8 @@ describe('avalanche_bridgeAsset handler', () => {
         isTestnet: mockIsDeveloperMode,
         onStatusChange: undefined,
         onTxHashChange: undefined,
-        request: mockRequest
+        request: mockRequest,
+        activeNetwork: mockNetworks[43114]
       })
 
       expect(result).toEqual({ success: true, value: { hash: mockTxHash } })
@@ -438,7 +440,8 @@ describe('avalanche_bridgeAsset handler', () => {
         isTestnet: mockIsDeveloperMode,
         onStatusChange: undefined,
         onTxHashChange: undefined,
-        request: mockRequest
+        request: mockRequest,
+        activeNetwork: mockNetworks[43114]
       })
 
       expect(mockCaptureException).toHaveBeenCalledWith(testError, {

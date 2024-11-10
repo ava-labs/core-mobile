@@ -2,6 +2,7 @@ import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { rpcErrors } from '@metamask/rpc-errors'
 import WalletService from 'services/wallet/WalletService'
+import mockNetworks from 'tests/fixtures/networks.json'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange'
 import { AvalancheGetAddressesInRangeRpcRequest } from './types'
 
@@ -12,6 +13,14 @@ jest
     ({ indices }: { indices: number[] }): Promise<string[]> =>
       Promise.resolve(indices.map(index => `X-avax${index}`))
   )
+
+jest.mock('store/settings/advanced/slice', () => {
+  const actual = jest.requireActual('store/settings/advanced/slice')
+  return {
+    ...actual,
+    selectIsDeveloperMode: () => true
+  }
+})
 
 const createRequest = (
   params: unknown
@@ -35,6 +44,15 @@ const createRequest = (
 }
 
 describe('avalanche_getAddressesInRange.ts', () => {
+  const mockListenerApi = {
+    getState: () => ({
+      network: { active: 43114, customNetworks: mockNetworks },
+      settings: { advanced: { developerMode: false } }
+    }),
+    dispatch: jest.fn()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any
+
   describe('handle', () => {
     it('returns error if request params do not meet zod validation rules', async () => {
       const requests = [
@@ -43,13 +61,6 @@ describe('avalanche_getAddressesInRange.ts', () => {
         createRequest(['1', 2, 3, 4]),
         createRequest([])
       ]
-      const mockListenerApi = {
-        getState: () => ({
-          settings: { advanced: { developerMode: false } }
-        }),
-        dispatch: jest.fn()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any
 
       for (const request of requests) {
         const result = await avalancheGetAddressesInRangeHandler.handle(
@@ -67,13 +78,6 @@ describe('avalanche_getAddressesInRange.ts', () => {
 
     it('returns x/p addresses', async () => {
       const request = createRequest([0, 1, 1, 3])
-      const mockListenerApi = {
-        getState: () => ({
-          settings: { advanced: { developerMode: false } }
-        }),
-        dispatch: jest.fn()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any
 
       const result = await avalancheGetAddressesInRangeHandler.handle(
         request,
@@ -88,13 +92,6 @@ describe('avalanche_getAddressesInRange.ts', () => {
 
   it('returns maximum of 100 x/p addresses', async () => {
     const request = createRequest([0, 1, 101, 203])
-    const mockListenerApi = {
-      getState: () => ({
-        settings: { advanced: { developerMode: false } }
-      }),
-      dispatch: jest.fn()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any
 
     const result = await avalancheGetAddressesInRangeHandler.handle(
       request,

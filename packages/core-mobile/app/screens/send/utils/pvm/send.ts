@@ -4,29 +4,22 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
-import { stripChainAddress } from 'store/account/utils'
-import WalletService from 'services/wallet/WalletService'
-import { utils } from '@avalabs/avalanchejs'
+import { UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Transaction } from '@sentry/react'
 import { Network } from '@avalabs/core-chains-sdk'
-import { CorePrimaryAccount } from '@avalabs/types'
 import { isDevnet } from 'utils/isDevnet'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
   request,
-  fromAddress,
-  account,
   network,
-  toAddress,
-  amount
+  fromAddress,
+  unsignedTx
 }: {
   request: Request
-  fromAddress: string
-  account: CorePrimaryAccount
   network: Network
-  toAddress: string
-  amount: bigint
+  fromAddress: string
+  unsignedTx: UnsignedTx
 }): Promise<string> => {
   const sentryTrx = SentryWrapper.startTransaction('send-token')
 
@@ -34,12 +27,10 @@ export const send = async ({
     .setContext('svc.send.send')
     .executeAsync(async () => {
       const txRequest = await getTransactionRequest({
-        toAddress,
-        amount,
-        network,
+        unsignedTx,
         fromAddress,
-        sentryTrx,
-        accountIndex: account.index
+        network,
+        sentryTrx
       })
 
       const [txHash, txError] = await resolve(
@@ -66,16 +57,12 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
-  accountIndex,
-  toAddress,
+  unsignedTx,
   fromAddress,
-  amount,
   network,
   sentryTrx
 }: {
-  accountIndex: number
-  amount: bigint
-  toAddress: string
+  unsignedTx: UnsignedTx
   fromAddress: string
   network: Network
   sentryTrx: Transaction
@@ -83,15 +70,6 @@ const getTransactionRequest = ({
   return SentryWrapper.createSpanFor(sentryTrx)
     .setContext('svc.send.pvm.get_trx_request')
     .executeAsync(async () => {
-      const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
-      const unsignedTx = await WalletService.createSendPTx({
-        accountIndex,
-        amountInNAvax: amount,
-        avaxXPNetwork: network,
-        destinationAddress: destinationAddress,
-        sourceAddress: fromAddress
-      })
-
       const manager = utils.getManagerForVM(unsignedTx.getVM())
       const unsignedTxBytes = unsignedTx.toBytes()
       const [codec] = manager.getCodecFromBuffer(unsignedTxBytes)

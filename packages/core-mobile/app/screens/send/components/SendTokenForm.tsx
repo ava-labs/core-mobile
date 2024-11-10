@@ -18,6 +18,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { Amount } from 'types'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
+import { Eip1559Fees } from 'utils/Utils'
 
 const SendTokenForm = ({
   network,
@@ -29,7 +31,10 @@ const SendTokenForm = ({
   onOpenQRScanner,
   onOpenAddressBook,
   onSelectContact,
-  onSend
+  onSend,
+  handleFeesChange,
+  estimatedFee,
+  supportsAvalancheDynamicFee = false
 }: {
   network: Network
   maxAmount: Amount | undefined
@@ -41,6 +46,9 @@ const SendTokenForm = ({
   onOpenAddressBook: () => void
   onSelectContact: (item: Contact | CorePrimaryAccount) => void
   onSend: () => void
+  handleFeesChange?(fees: Eip1559Fees, feePreset: FeePreset): void
+  estimatedFee?: bigint
+  supportsAvalancheDynamicFee?: boolean
 }): JSX.Element => {
   const {
     setToken,
@@ -192,6 +200,22 @@ const SendTokenForm = ({
             hideErrorMessage
             error={isAllFieldsTouched && error ? error : undefined}
           />
+
+          {supportsAvalancheDynamicFee && (
+            <>
+              <Space y={20} />
+              <View sx={{ marginHorizontal: 16 }}>
+                <NetworkFeeSelector
+                  chainId={network.chainId}
+                  gasLimit={Number(estimatedFee)}
+                  onFeesChange={handleFeesChange}
+                  isGasLimitEditable={false}
+                  supportsAvalancheDynamicFee
+                />
+              </View>
+            </>
+          )}
+
           <FlexSpacer />
         </>
       )}

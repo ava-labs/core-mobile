@@ -1,13 +1,13 @@
 export function feeDenominationToBigint(
   fee: string,
-  isBtcNetwork: boolean
+  isSimpleFeeRate: boolean
 ): bigint {
-  return isBtcNetwork ? BigInt(fee) : BigInt(fee) * BigInt(1e9)
+  return isSimpleFeeRate ? BigInt(fee) : BigInt(fee) * BigInt(1e9)
 }
 
 export function bigIntToFeeDenomination(
   fee: bigint,
-  isBtcNetwork: boolean
+  isSimpleFeeRate: boolean
 ): string {
-  return isBtcNetwork ? fee.toString() : (fee / BigInt(1e9)).toString()
+  return isSimpleFeeRate ? fee.toString() : (fee / BigInt(1e9)).toString()
 }
