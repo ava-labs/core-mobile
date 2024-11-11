@@ -28,8 +28,14 @@ if (!Config.PROXY_URL)
 
 class NetworkService {
   async getNetworks(): Promise<Networks> {
-    const erc20Networks = await this.fetchERC20Networks()
-    const deBankNetworks = await this.fetchDeBankNetworks()
+    const erc20Networks = await this.fetchERC20Networks().catch(reason => {
+      Logger.error(`[NetworkService][fetchERC20Networks]${reason}`)
+      return {} as Networks
+    })
+    const deBankNetworks = await this.fetchDeBankNetworks().catch(reason => {
+      Logger.error(`[NetworkService][fetchDeBankNetworks]${reason}`)
+      return {} as Networks
+    })
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 
