@@ -1,4 +1,3 @@
-import { getPvmApi } from 'utils/network/pvm'
 import { Account, AccountCollection } from 'store/account/types'
 import { exportC } from 'services/earn/exportC'
 import { importP, importPWithBalanceCheck } from 'services/earn/importP'
@@ -34,12 +33,12 @@ import {
   PChainTransactionType,
   SortOrder
 } from '@avalabs/glacier-sdk'
-import { getInfoApi } from 'utils/network/info'
 import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -49,13 +48,12 @@ import {
 class EarnService {
   /**
    * Get all available nodes
-   * @param isTestnet is testnet mode enabled
+   * @param provider
    */
   getCurrentValidators = (
-    isTestnet: boolean,
-    isDevnet: boolean
+    provider: Avalanche.JsonRpcProvider
   ): Promise<GetCurrentValidatorsResponse> => {
-    return getPvmApi(isTestnet, isDevnet).getCurrentValidators()
+    return provider.getApiP().getCurrentValidators()
   }
 
   /**
@@ -307,10 +305,9 @@ class EarnService {
    * This is an upper bound because it does not account for burnt tokens, including transaction fees.
    */
   getCurrentSupply(
-    isTestnet: boolean,
-    isDevnet: boolean
+    provider: Avalanche.JsonRpcProvider
   ): Promise<GetCurrentSupplyResponse> {
-    return getPvmApi(isTestnet, isDevnet).getCurrentSupply()
+    return provider.getApiP().getCurrentSupply()
   }
 
   /**
@@ -416,14 +413,14 @@ class EarnService {
 
   /**
    * Get a description of peer connections.
+   * @param provider
    * @param nodeIds
    */
   getPeers = (
-    isTestnet: boolean,
-    isDevnet: boolean,
+    provider: Avalanche.JsonRpcProvider,
     nodeIds?: string[]
   ): Promise<GetPeersResponse> => {
-    return getInfoApi(isTestnet, isDevnet).peers(nodeIds)
+    return provider.getInfo().peers(nodeIds)
   }
 }
 

@@ -1,21 +1,24 @@
 import { pvm } from '@avalabs/avalanchejs'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
-import { selectActiveNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isDevnet } from 'utils/isDevnet'
 
 export const useNodes = (): UseQueryResult<
   pvm.GetCurrentValidatorsResponse,
   Error
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  return useQuery({
-    queryKey: ['nodes', isDeveloperMode, activeNetwork],
+  const provider = useAvalancheXpProvider(isDeveloperMode)
 
-    queryFn: () =>
-      EarnService.getCurrentValidators(isDeveloperMode, isDevnet(activeNetwork))
+  return useQuery({
+    queryKey: ['nodes', provider],
+    queryFn: () => {
+      if (!provider) {
+        return Promise.reject('Avalanche provider is not available')
+      }
+      return EarnService.getCurrentValidators(provider)
+    }
   })
 }
