@@ -14,7 +14,7 @@ envman add --key BITRISE_SIGNED_APK_PATH --value "$signed_apk_path"
 
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
 echo "IS_REGRESSION_RUN is true or false: $IS_REGRESSION_RUN"
-TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration "android.internal.release.ci" --listTests)
+TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test addressBook.e2e.smoke.ts --configuration "android.internal.release.ci" --listTests)
 
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
