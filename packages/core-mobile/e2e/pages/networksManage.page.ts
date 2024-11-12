@@ -228,11 +228,7 @@ class NetworksPage {
   }
 
   async tapSaveButton() {
-    await Action.scrollListUntil(
-      this.saveButton,
-      by.id('addEditNetwork_scroll_view'),
-      30
-    )
+    await Action.scrollToBottom(by.id('addEditNetwork_scroll_view'))
     while (await Action.isVisible(this.saveButton, 0)) {
       await Action.tapElementAtIndex(this.saveButton, 0)
     }

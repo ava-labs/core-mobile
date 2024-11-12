@@ -29,6 +29,7 @@ const ForgotPin = ({ onConfirm }: { onConfirm: () => void }): JSX.Element => {
       <FlexSpacer />
       <SlideToConfirm onConfirm={onConfirm} text={'Slide to confirm'} />
       <Button
+        testID="cancel_btn"
         type="tertiary"
         size="xlarge"
         style={{ marginTop: 16 }}
