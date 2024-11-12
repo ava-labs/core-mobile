@@ -47,14 +47,7 @@ describe('WalletService', () => {
     const getUTXOsMock = jest.fn().mockReturnValue(getUTXOsMockValue)
     const mockWallet = jest.fn().mockReturnValue({
       getUTXOs: getUTXOsMock,
-      addPermissionlessDelegator: addPermissionlessDelegatorMock,
-      getProvider: jest.fn().mockImplementation(() => {
-        return {
-          getApiP: jest.fn().mockImplementation(() => {
-            return { getFeeState: jest.fn().mockResolvedValue('test') }
-          })
-        }
-      })
+      addPermissionlessDelegator: addPermissionlessDelegatorMock
     })
 
     beforeAll(() => {
@@ -219,8 +212,7 @@ describe('WalletService', () => {
         end: BigInt(validEndDateFuji),
         weight: fujiValidStakeAmount,
         subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-        rewardAddresses: [validRewardAddress],
-        feeState: 'test'
+        rewardAddresses: [validRewardAddress]
       })
       expect(unsignedTx).toStrictEqual(mockUnsignedTx)
     })

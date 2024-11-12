@@ -47,9 +47,12 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { Text, View } from '@avalabs/k2-mobile'
-import { selectActiveNetwork } from 'store/network'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { SendErrorMessage } from 'screens/send/utils/types'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
+import NetworkService from 'services/network/NetworkService'
+import { useGetFeeState } from 'hooks/earn/useGetFeeState'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -78,6 +81,10 @@ export const Confirmation = (): JSX.Element | null => {
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
+  const pNetwork = NetworkService.getAvalancheNetworkP(
+    isDeveloperMode,
+    isDevnet(activeNetwork)
+  )
   const network = useCChainNetwork()
   const tokenSymbol = network?.networkToken?.symbol
   const { issueDelegationMutation } = useIssueDelegation(
@@ -88,11 +95,14 @@ export const Confirmation = (): JSX.Element | null => {
   const claimableBalance = useGetClaimableBalance()
   const [gasPrice, setGasPrice] = useState<bigint>()
   const xpProvider = useAvalancheXpProvider()
-  const {
-    estimatedStakingFee: networkFees,
-    defaultTxFee,
-    defaultGasPrice
-  } = useEstimateStakingFees({ stakingAmount, gasPrice, xpProvider })
+  const { getFeeState } = useGetFeeState()
+  const { estimatedStakingFee: networkFees, defaultTxFee } =
+    useEstimateStakingFees({
+      stakingAmount,
+      gasPrice,
+      xpProvider,
+      getFeeState
+    })
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
 
   let deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
@@ -119,8 +129,9 @@ export const Confirmation = (): JSX.Element | null => {
     delegationFee: Number(validator?.delegationFee)
   })
 
+  const feeState = getFeeState()
   const excessiveNetworkFee =
-    !!defaultGasPrice && !!gasPrice && gasPrice > defaultGasPrice * 2n
+    !!feeState?.price && !!gasPrice && gasPrice > feeState.price * 2n
   const unableToGetNetworkFees = networkFees === undefined
   const showNetworkFeeError = useTimeElapsed(
     isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
@@ -179,7 +190,8 @@ export const Confirmation = (): JSX.Element | null => {
       stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
-      nodeId
+      nodeId,
+      feeState: getFeeState(gasPrice)
     })
   }
 
@@ -439,7 +451,7 @@ export const Confirmation = (): JSX.Element | null => {
         {xpProvider && xpProvider.isEtnaEnabled() && (
           <>
             <NetworkFeeSelector
-              chainId={activeNetwork.chainId}
+              chainId={pNetwork.chainId}
               gasLimit={Number(defaultTxFee?.toSubUnit())}
               onFeesChange={handleFeesChange}
               isGasLimitEditable={false}

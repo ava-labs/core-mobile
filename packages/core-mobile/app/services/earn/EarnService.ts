@@ -11,7 +11,7 @@ import {
   AvalancheTransactionRequest
 } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
@@ -129,7 +129,8 @@ class EarnService {
     activeAccount,
     isDevMode,
     selectedCurrency,
-    isDevnet
+    isDevnet,
+    feeState
   }: CollectTokensForStakingParams & { isDevnet: boolean }): Promise<void> {
     if (requiredAmount === 0n) {
       Logger.info('no need to cross chain')
@@ -146,7 +147,8 @@ class EarnService {
       activeAccount,
       isDevMode,
       selectedCurrency,
-      isDevnet
+      isDevnet,
+      feeState
     })
   }
 
@@ -164,14 +166,16 @@ class EarnService {
     requiredAmount: TokenUnit,
     activeAccount: Account,
     isDevMode: boolean,
-    isDevnet: boolean
+    isDevnet: boolean,
+    feeState?: pvm.FeeState
   ): Promise<void> {
     await exportP({
       pChainBalance,
       requiredAmount,
       activeAccount,
       isDevMode,
-      isDevnet
+      isDevnet,
+      feeState
     })
     await importC({
       activeAccount,
@@ -242,8 +246,9 @@ class EarnService {
     startDate,
     endDate,
     isDevMode,
-    isDevnet
-  }: AddDelegatorTransactionProps & { isDevnet: boolean }): Promise<string> {
+    isDevnet,
+    feeState
+  }: AddDelegatorTransactionProps): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
@@ -261,7 +266,7 @@ class EarnService {
       endDate: endDateUnix,
       stakeAmountInNAvax: stakeAmount,
       isDevMode,
-      isDevnet
+      feeState
     } as AddDelegatorProps)
 
     const signedTxJson = await WalletService.sign({

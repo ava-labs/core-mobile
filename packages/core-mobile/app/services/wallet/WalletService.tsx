@@ -357,7 +357,8 @@ class WalletService {
     avaxXPNetwork,
     sourceChain,
     destinationAddress,
-    shouldValidateBurnedAmount = true
+    shouldValidateBurnedAmount = true,
+    feeState
   }: CreateImportPTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
       accountIndex,
@@ -365,8 +366,6 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('P', sourceChain)
-    const apiP = readOnlySigner.getProvider().getApiP()
-    const feeState = await apiP.getFeeState().catch(() => undefined)
     const unsignedTx = readOnlySigner.importP({
       utxoSet,
       sourceChain,
@@ -389,7 +388,8 @@ class WalletService {
     avaxXPNetwork,
     destinationChain,
     destinationAddress,
-    shouldValidateBurnedAmount = true
+    shouldValidateBurnedAmount = true,
+    feeState
   }: CreateExportPTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
       accountIndex,
@@ -397,8 +397,6 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-    const apiP = readOnlySigner.getProvider().getApiP()
-    const feeState = await apiP.getFeeState().catch(() => undefined)
     const unsignedTx = readOnlySigner.exportP({
       amount: amountInNAvax,
       utxoSet,
@@ -485,8 +483,6 @@ class WalletService {
     // P-chain has a tx size limit of 64KB
     const utxoSet = await readOnlySigner.getUTXOs('X')
     const changeAddress = utils.parse(sourceAddress)[2]
-    const apiP = readOnlySigner.getProvider().getApiP()
-    const feeState = await apiP.getFeeState().catch(() => undefined)
     return readOnlySigner.baseTX({
       utxoSet,
       chain: 'X',
@@ -498,8 +494,7 @@ class WalletService {
       },
       options: {
         changeAddresses: [changeAddress]
-      },
-      feeState
+      }
     })
   }
 
@@ -546,7 +541,7 @@ class WalletService {
     rewardAddress,
     isDevMode,
     shouldValidateBurnedAmount = true,
-    isDevnet: devnet
+    feeState
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -585,9 +580,6 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-    const apiP = readOnlySigner.getProvider().getApiP()
-    const feeState = await apiP.getFeeState().catch(() => undefined)
-    const network = NetworkService.getAvalancheNetworkP(isDevMode, devnet)
     const unsignedTx = readOnlySigner.addPermissionlessDelegator({
       utxoSet,
       nodeId,
@@ -601,7 +593,7 @@ class WalletService {
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
-        network,
+        network: avaxXPNetwork,
         unsignedTx
       })
 

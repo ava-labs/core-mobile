@@ -55,7 +55,7 @@ export type AddDelegatorProps = {
   rewardAddress: string
   isDevMode: boolean
   shouldValidateBurnedAmount?: boolean
-  isDevnet: boolean
+  feeState?: pvm.FeeState
 }
 
 export interface CommonAvalancheTxParamsBase {
@@ -63,6 +63,7 @@ export interface CommonAvalancheTxParamsBase {
   avaxXPNetwork: Network
   destinationAddress: string | undefined
   shouldValidateBurnedAmount?: boolean
+  feeState?: pvm.FeeState
 }
 
 export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {

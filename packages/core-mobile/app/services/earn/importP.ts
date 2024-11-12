@@ -4,7 +4,7 @@ import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { assertNotUndefined } from 'utils/assertions'
 import ModuleManager from 'vmModule/ModuleManager'
@@ -23,22 +23,24 @@ export type ImportPParams = {
   isDevMode: boolean
   selectedCurrency: string
   isDevnet: boolean
+  feeState?: pvm.FeeState
 }
 
 export async function importP({
   activeAccount,
   isDevMode,
-  isDevnet
+  isDevnet,
+  feeState
 }: ImportPParams): Promise<void> {
   Logger.info('importing P started')
 
   const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
-
   const unsignedTx = await WalletService.createImportPTx({
     accountIndex: activeAccount.index,
     avaxXPNetwork: avaxPNetwork,
     sourceChain: 'C',
-    destinationAddress: activeAccount.addressPVM
+    destinationAddress: activeAccount.addressPVM,
+    feeState
   })
 
   const signedTxJson = await WalletService.sign({

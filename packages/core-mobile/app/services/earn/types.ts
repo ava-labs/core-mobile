@@ -1,3 +1,4 @@
+import { pvm } from '@avalabs/avalanchejs'
 import { Account } from 'store/account'
 
 export type AddDelegatorTransactionProps = {
@@ -11,6 +12,8 @@ export type AddDelegatorTransactionProps = {
   // The Date time when the delegation ends.
   endDate: Date
   isDevMode: boolean
+  isDevnet: boolean
+  feeState?: pvm.FeeState
 }
 
 export type UnixTimeMs = number
@@ -28,6 +31,7 @@ export type CollectTokensForStakingParams = {
   activeAccount: Account
   isDevMode: boolean
   selectedCurrency: string
+  feeState?: pvm.FeeState
 }
 
 export type GetAllStakesParams = {

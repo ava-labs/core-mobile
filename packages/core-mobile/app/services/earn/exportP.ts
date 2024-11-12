@@ -3,7 +3,7 @@ import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -15,6 +15,7 @@ export type ExportPParams = {
   activeAccount: Account
   isDevMode: boolean
   isDevnet: boolean
+  feeState?: pvm.FeeState
 }
 
 export async function exportP({
@@ -22,7 +23,8 @@ export async function exportP({
   requiredAmount,
   activeAccount,
   isDevMode,
-  isDevnet
+  isDevnet,
+  feeState
 }: ExportPParams): Promise<void> {
   Logger.info('exporting P started')
 
@@ -36,7 +38,8 @@ export async function exportP({
     accountIndex: activeAccount.index,
     avaxXPNetwork,
     destinationChain: 'C',
-    destinationAddress: activeAccount.addressCoreEth
+    destinationAddress: activeAccount.addressCoreEth,
+    feeState
   })
 
   const signedTxJson = await WalletService.sign({

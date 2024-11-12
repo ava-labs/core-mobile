@@ -20,6 +20,7 @@ import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork } from 'store/network'
+import { pvm } from '@avalabs/avalanchejs'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -35,6 +36,7 @@ export const useIssueDelegation = (
       stakingAmount: TokenUnit
       startDate: Date
       endDate: Date
+      feeState?: pvm.FeeState
     },
     unknown
   >
@@ -61,6 +63,7 @@ export const useIssueDelegation = (
       stakingAmount: TokenUnit
       startDate: Date
       endDate: Date
+      feeState?: pvm.FeeState
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
@@ -129,7 +132,8 @@ export const useIssueDelegation = (
         isDevMode: isDeveloperMode,
         requiredAmount: cChainRequiredAmountAvax.toSubUnit(),
         selectedCurrency,
-        isDevnet: isDevnet(activeNetwork)
+        isDevnet: isDevnet(activeNetwork),
+        feeState: data.feeState
       })
 
       return EarnService.issueAddDelegatorTransaction({
@@ -139,7 +143,8 @@ export const useIssueDelegation = (
         nodeId: data.nodeId,
         stakeAmount: data.stakingAmount.toSubUnit(),
         startDate: data.startDate,
-        isDevnet: isDevnet(activeNetwork)
+        isDevnet: isDevnet(activeNetwork),
+        feeState: data.feeState
       })
     },
     onSuccess: txId => {
