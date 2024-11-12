@@ -91,7 +91,7 @@ describe('WalletService', () => {
     it('should throw if staking amount is less than 1Avax on Fuji', async () => {
       const params = {
         nodeId: validNodeId,
-        stakeAmount: BigInt(1e8),
+        stakeAmountInNAvax: BigInt(1e8),
         isDevMode: true
       } as AddDelegatorProps
       await expect(async () => {
@@ -101,7 +101,7 @@ describe('WalletService', () => {
     it('should throw if staking amount is less than 25Avax on Mainnet', async () => {
       const params = {
         nodeId: validNodeId,
-        stakeAmount: BigInt(24e9),
+        stakeAmountInNAvax: BigInt(24e9),
         isDevMode: false
       } as AddDelegatorProps
       await expect(async () => {
@@ -111,7 +111,7 @@ describe('WalletService', () => {
     it('should throw if staking date is in past', async () => {
       const params = {
         nodeId: validNodeId,
-        stakeAmount: fujiValidStakeAmount,
+        stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: getUnixTime(sub(new Date(), { minutes: 1 })),
         isDevMode: true
       } as AddDelegatorProps
@@ -124,7 +124,7 @@ describe('WalletService', () => {
       const twoSeconds = 2
       const params = {
         nodeId: validNodeId,
-        stakeAmount: BigInt(25e9),
+        stakeAmountInNAvax: BigInt(25e9),
         startDate: validStartDate,
         endDate: validStartDate + twoWeeks - twoSeconds,
         isDevMode: false
@@ -136,7 +136,7 @@ describe('WalletService', () => {
     it('should throw if staking duration is less than 24 hours for Fuji', async () => {
       const params = {
         nodeId: validNodeId,
-        stakeAmount: fujiValidStakeAmount,
+        stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: getUnixTime(sub(day, { seconds: 2 })),
         isDevMode: true
@@ -148,7 +148,7 @@ describe('WalletService', () => {
     it('should throw if reward address is not from P chain', async () => {
       const params = {
         nodeId: validNodeId,
-        stakeAmount: fujiValidStakeAmount,
+        stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: getUnixTime(day),
         rewardAddress: 'invalid address',
@@ -163,7 +163,7 @@ describe('WalletService', () => {
       const params = {
         avaxXPNetwork: network,
         nodeId: validNodeId,
-        stakeAmount: fujiValidStakeAmount,
+        stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: validEndDateFuji,
         rewardAddress: validRewardAddress,
@@ -183,7 +183,7 @@ describe('WalletService', () => {
       const params = {
         avaxXPNetwork: network,
         nodeId: validNodeId,
-        stakeAmount: fujiValidStakeAmount,
+        stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: validEndDateFuji,
         rewardAddress: validRewardAddress,
@@ -204,7 +204,7 @@ describe('WalletService', () => {
       const params = {
         avaxXPNetwork: network,
         nodeId: validNodeId,
-        stakeAmount: fujiValidStakeAmount,
+        stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: validEndDateFuji,
         rewardAddress: validRewardAddress,

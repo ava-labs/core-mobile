@@ -6,7 +6,10 @@ import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { assetPDisplayNames } from 'store/balance/types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getXPChainTokenUnit } from 'utils/units/knownTokens'
+import { xpChainToken } from 'utils/units/knownTokens'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 type ChainBalanceType = keyof PChainBalance
 
@@ -22,7 +25,7 @@ export const PChainAssetList = ({
   ItemSeparator?: React.ComponentType | null
 }): React.JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
-
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const token = tokens.find(t => isTokenWithBalancePVM(t))
 
   const assetTypes = useMemo(() => {
@@ -46,17 +49,13 @@ export const PChainAssetList = ({
         ? token.balancePerType[assetType as ChainBalanceType]
         : 0
     const balanceInAvax = balance
-      ? new TokenUnit(
-          balance,
-          getXPChainTokenUnit().getMaxDecimals(),
-          getXPChainTokenUnit().getSymbol()
-        )
+      ? new TokenUnit(balance, xpChainToken.maxDecimals, xpChainToken.symbol)
       : undefined
 
     const formattedBalance =
       balanceInAvax
         ?.mul(token?.priceInCurrency ?? 0)
-        .toDisplay({ fixedDp: 2 }) ?? '-'
+        .toDisplay({ fixedDp: 2 }) ?? UNKNOWN_AMOUNT
 
     const assetName = assetPDisplayNames[assetType]
 
@@ -87,7 +86,7 @@ export const PChainAssetList = ({
                 variant="overline"
                 sx={{ color: '$neutral50' }}
                 ellipsizeMode="tail">
-                {balanceInAvax?.toDisplay() ?? '-'}
+                {balanceInAvax?.toDisplay() ?? UNKNOWN_AMOUNT}
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">
@@ -100,7 +99,7 @@ export const PChainAssetList = ({
               alignSelf: 'center'
             }}>
             <Text variant="buttonMedium" numberOfLines={1}>
-              {formattedBalance}
+              {`${formattedBalance} ${selectedCurrency}`}
             </Text>
           </View>
         </View>

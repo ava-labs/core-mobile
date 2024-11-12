@@ -9,7 +9,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 
 describe('earn/exportC', () => {
   describe('exportC', () => {
-    const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(25e9))
+    const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(0.003 * 1e9))
     const getAtomicTxStatusMockFn = jest.fn().mockReturnValue({
       status: 'Accepted'
     })
@@ -61,7 +61,7 @@ describe('earn/exportC', () => {
       await expect(async () => {
         await exportC({
           cChainBalance: BigInt(1e18),
-          requiredAmount: BigInt(10e18),
+          requiredAmount: BigInt(10e9),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -70,8 +70,8 @@ describe('earn/exportC', () => {
 
     it('should call avaxProvider.getApiC().getBaseFee()', async () => {
       await exportC({
-        cChainBalance: BigInt(1e18),
-        requiredAmount: BigInt(0.1e18),
+        cChainBalance: BigInt(10e18),
+        requiredAmount: BigInt(1e9),
         isDevMode: false,
         activeAccount: {} as Account
       })
@@ -81,14 +81,14 @@ describe('earn/exportC', () => {
     it('should call walletService.createExportCTx', async () => {
       expect(async () => {
         await exportC({
-          cChainBalance: BigInt(1e18),
-          requiredAmount: BigInt(0.1e18),
+          cChainBalance: BigInt(10e18),
+          requiredAmount: BigInt(1e9),
           isDevMode: false,
           activeAccount: {} as Account
         })
         expect(WalletService.createExportCTx).toHaveBeenCalledWith({
-          amount: BigInt(0.101e18),
-          baseFee: BigInt(30e9),
+          amountInNAvax: 1001000000n,
+          baseFeeInNAvax: 0n,
           accountIndex: undefined,
           avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'P',
@@ -100,8 +100,8 @@ describe('earn/exportC', () => {
     it('should call walletService.signAvaxTx', async () => {
       expect(async () => {
         await exportC({
-          cChainBalance: BigInt(1e18),
-          requiredAmount: BigInt(0.1e18),
+          cChainBalance: BigInt(10e18),
+          requiredAmount: BigInt(1e9),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -112,8 +112,8 @@ describe('earn/exportC', () => {
     it('should call networkService.sendTransaction', async () => {
       expect(async () => {
         await exportC({
-          cChainBalance: BigInt(1e18),
-          requiredAmount: BigInt(0.1e18),
+          cChainBalance: BigInt(10e18),
+          requiredAmount: BigInt(1e9),
           isDevMode: false,
           activeAccount: {} as Account
         })
