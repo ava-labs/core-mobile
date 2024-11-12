@@ -92,13 +92,13 @@ export const getAssetBalance = (
 }
 
 export const unwrapAssetSymbol = (symbol: string): string => {
-  if (symbol.endsWith('.e')) {
+  if (symbol.endsWith('.e') || symbol.endsWith('.b')) {
     return symbol.slice(0, -2) // remove .e
   }
 
   return symbol
 }
 
-export const wrapAssetSymbol = (symbol: string): string => {
-  return `${symbol}.e` // add .e
+export const wrapAssetSymbol = (symbol: string, postfix: string): string => {
+  return `${symbol}${postfix}`
 }

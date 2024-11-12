@@ -33,6 +33,6 @@ export function getAssetBalances(
       ]
 
     const balance = (token && token.balance) || 0n
-    return { symbol, asset, balance }
+    return { symbol, asset, balance, logoUri: token?.logoUri }
   })
 }

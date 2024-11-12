@@ -8,10 +8,7 @@ import { Row } from 'components/Row'
 import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
-import {
-  formatTokenAmount,
-  useTokenInfoContext
-} from '@avalabs/core-bridge-sdk'
+import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import useBridge from 'screens/bridge/hooks/useBridge'
@@ -49,7 +46,7 @@ import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { Network } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { BridgeAsset, BridgeType, TokenType } from '@avalabs/bridge-unified'
 import { AssetBalance } from './utils/types'
@@ -104,7 +101,6 @@ const Bridge: FC = () => {
   const activeAccount = useSelector(selectActiveAccount)
   const [bridgeError, setBridgeError] = useState('')
   const [isPending, setIsPending] = useState(false)
-  const tokenInfoData = useTokenInfoContext()
   const nativeTokenBalance = useSelector((state: RootState) =>
     selectAvailableNativeTokenBalanceForNetworkAndAccount(
       state,
@@ -258,22 +254,22 @@ const Bridge: FC = () => {
         previousConfig.bridgeAsset.symbol
       )
 
+      const postfix =
+        previousConfig.sourceNetwork.vmName === NetworkVMType.BITCOIN
+          ? '.b'
+          : '.e'
+
       const bridgeAsset =
         bridgeAssets.find(asset => asset.symbol === bridgeAssetSymbol) ??
         bridgeAssets.find(
-          asset => asset.symbol === wrapAssetSymbol(bridgeAssetSymbol)
+          asset => asset.symbol === wrapAssetSymbol(bridgeAssetSymbol, postfix)
         )
 
       if (bridgeAsset) {
         setSelectedBridgeAsset(bridgeAsset)
       }
     }
-  }, [
-    previousConfig?.bridgeAsset,
-    setSelectedBridgeAsset,
-    bridgeAssets,
-    setInputAmount
-  ])
+  }, [previousConfig, setSelectedBridgeAsset, bridgeAssets, setInputAmount])
 
   useEffect(() => {
     if (
@@ -522,7 +518,9 @@ const Bridge: FC = () => {
               symbol={selectedAssetSymbol}
               logoUri={
                 selectedAssetSymbol &&
-                tokenInfoData?.[unwrapAssetSymbol(selectedAssetSymbol)]?.logo
+                assetsWithBalances?.find(
+                  asset => asset.symbol === selectedAssetSymbol
+                )?.logoUri
               }
             />
             <Space x={8} />

@@ -2,14 +2,14 @@ import { useMemo } from 'react'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance/slice'
-import { uniqBy } from 'lodash'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { getAssetBalances } from '../handlers/getAssetBalances'
+import { unwrapAssetSymbol } from '../utils/bridgeUtils'
 import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
 
 /**
- * Get for the current chain.
- * Get a list of bridge supported assets with the balances of the current blockchain.
+ * Get a list of bridge supported assets with the balances.
  * The list is sorted by balance.
  */
 export function useAssetBalances(): {
@@ -17,42 +17,21 @@ export function useAssetBalances(): {
   loading: boolean
 } {
   const tokens = useSelector(selectTokensWithBalance)
+  const tokenInfoData = useTokenInfoContext()
   const { bridgeAssets } = useUnifiedBridgeAssets()
-
-  // const isAvalanche = network !== undefined && isAvalancheNetwork(network)
-
-  // const getFilteredEthereumAssets = useCallback((): EthereumAssets => {
-  //   const filteredEthereumAssets: EthereumAssets = Object.keys(ethereumAssets)
-  //     .filter(
-  //       key =>
-  //         ethereumAssets[key]?.symbol !== 'BUSD' && // do not allow BUSD.e onboardings
-  //         ethereumAssets[key]?.symbol !== 'USDC' // do not use Legacy Bridge for USDC onboardings
-  //     )
-  //     .reduce<EthereumAssets>((obj, key) => {
-  //       const asset = ethereumAssets[key]
-  //       if (asset) obj[key] = asset
-  //       return obj
-  //     }, {})
-
-  //   return filteredEthereumAssets
-  // }, [ethereumAssets])
-
-  // Deduplicate the assets since both Unified & legacy SDKs could allow bridging the same assets.
-  // unifiedBridgeAssets go first so that they're not the ones removed (we prefer Unified bridge over legacy)
-  const allAssets = useMemo(
-    () => uniqBy([...bridgeAssets], asset => asset.symbol),
-    [bridgeAssets]
-  )
 
   const assetsWithBalances = useMemo(
     () =>
-      getAssetBalances(allAssets, tokens).map(token => {
+      getAssetBalances(bridgeAssets, tokens).map(token => {
         return {
           ...token,
+          logoUri:
+            token.logoUri ??
+            tokenInfoData?.[unwrapAssetSymbol(token.asset.symbol)]?.logo,
           symbolOnNetwork: token.asset.symbol
         }
       }),
-    [allAssets, tokens]
+    [bridgeAssets, tokens, tokenInfoData]
   )
 
   const sortedAssetsWithBalances = assetsWithBalances.sort((asset1, asset2) => {
