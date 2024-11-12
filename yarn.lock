@@ -196,7 +196,7 @@ __metadata:
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.0
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
@@ -483,7 +483,7 @@ __metadata:
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.0
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.3
@@ -529,7 +529,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
     "@babel/runtime": 7.25.7
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.3
@@ -6955,9 +6955,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lavamoat/allow-scripts@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@lavamoat/allow-scripts@npm:3.2.1"
+"@lavamoat/allow-scripts@npm:3.3.0":
+  version: 3.3.0
+  resolution: "@lavamoat/allow-scripts@npm:3.3.0"
   dependencies:
     "@lavamoat/aa": ^4.3.0
     "@npmcli/run-script": 8.1.0
@@ -6968,7 +6968,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "*"
   bin:
     allow-scripts: src/cli.js
-  checksum: e3a619845cac89b0553b89ef2f4a642e5203efbb0615ba06b87b0ebd48f291cc943b372ca3115b9efec762e4afb371836300762b9851470f7b9bf578d7678bcb
+  checksum: 566b2810decce7e2a3d47fe29cc1ddcb6ba70c90b41b09f8b2bd994a942c1b09201e3df7635d57cf0eb4d07cc14014f2f3595b6f1f7a63d1e1d032fa9941bf34
   languageName: node
   linkType: hard
 
@@ -16906,7 +16906,7 @@ __metadata:
   resolution: "eslint-plugin-avalabs-mobile@workspace:packages/eslint-mobile"
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.0
     "@react-native-community/eslint-config": 3.0.3
     "@tanstack/eslint-plugin-query": 5.59.7
     "@types/node": 22.7.5
