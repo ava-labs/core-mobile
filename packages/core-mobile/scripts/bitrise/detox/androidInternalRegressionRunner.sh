@@ -7,6 +7,9 @@ yarn start &
 
 npm rebuild detox
 
+echo $BITRISE_SIGNED_APK_PATH
+echo $BITRISE_TEST_APK_PATH
+
 if [ "$IS_INTERNAL_BUILD" = true ]; then
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c android.internal.release.regression.ci --headless --retries 1 --reuse; test_result=$?
 else
