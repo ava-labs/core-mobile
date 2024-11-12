@@ -7,6 +7,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import { assetPDisplayNames } from 'store/balance/types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { xpChainToken } from 'utils/units/knownTokens'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 type ChainBalanceType = keyof PChainBalance
 
@@ -52,7 +53,7 @@ export const PChainAssetList = ({
     const formattedBalance =
       balanceInAvax
         ?.mul(token?.priceInCurrency ?? 0)
-        .toDisplay({ fixedDp: 2 }) ?? '-'
+        .toDisplay({ fixedDp: 2 }) ?? UNKNOWN_AMOUNT
 
     const assetName = assetPDisplayNames[assetType]
 
@@ -83,7 +84,7 @@ export const PChainAssetList = ({
                 variant="overline"
                 sx={{ color: '$neutral50' }}
                 ellipsizeMode="tail">
-                {balanceInAvax?.toDisplay() ?? '-'}
+                {balanceInAvax?.toDisplay() ?? UNKNOWN_AMOUNT}
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">

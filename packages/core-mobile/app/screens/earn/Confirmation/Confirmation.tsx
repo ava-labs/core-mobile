@@ -44,6 +44,7 @@ import { showTransactionSuccessToast } from 'utils/toast'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -301,7 +302,7 @@ export const Confirmation = (): JSX.Element | null => {
       return <Spinner size={22} />
     }
 
-    const networkFeesInAvax = networkFees?.toDisplay() ?? '-'
+    const networkFeesInAvax = networkFees?.toDisplay() ?? UNKNOWN_AMOUNT
 
     return (
       <AvaText.Heading6 testID="network_fee">

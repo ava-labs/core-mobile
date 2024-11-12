@@ -23,6 +23,7 @@ import { useSelector } from 'react-redux'
 import { xpChainToken } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -92,26 +93,47 @@ export const StakeCard = (props: Props): JSX.Element => {
     }
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const renderContents = (): JSX.Element => {
-    const stakeAmountInAvax = new TokenUnit(
-      stakeAmount || 0,
-      pChainNetworkToken.decimals,
-      pChainNetworkToken.symbol
-    )
-    const stakeAmountInCurrency = stakeAmountInAvax
-      .mul(avaxPrice)
-      .toDisplay({ fixedDp: 2 })
-
-    switch (status) {
-      case StakeStatus.Ongoing: {
-        const estimatedRewardInAvax = new TokenUnit(
-          props.estimatedReward || 0,
+    const stakeAmountInAvax = stakeAmount
+      ? new TokenUnit(
+          stakeAmount,
           pChainNetworkToken.decimals,
           pChainNetworkToken.symbol
         )
-        const estimatedRewardInCurrency = estimatedRewardInAvax
-          .mul(avaxPrice)
-          .toDisplay({ fixedDp: 2 })
+      : undefined
+
+    const stakeAmountInAvaxDisplay =
+      stakeAmountInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+
+    const stakeAmountInCurrency = stakeAmountInAvax?.mul(avaxPrice)
+
+    const stakeAmountInCurrencyDisplay = stakeAmountInCurrency
+      ? tokenInCurrencyFormatter(
+          stakeAmountInCurrency.toDisplay({ fixedDp: 2 })
+        )
+      : UNKNOWN_AMOUNT
+
+    switch (status) {
+      case StakeStatus.Ongoing: {
+        const estimatedRewardInAvax = props.estimatedReward
+          ? new TokenUnit(
+              props.estimatedReward,
+              pChainNetworkToken.decimals,
+              pChainNetworkToken.symbol
+            )
+          : undefined
+
+        const estimatedRewardInAvaxDisplay =
+          estimatedRewardInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+
+        const estimatedRewardInCurrency = estimatedRewardInAvax?.mul(avaxPrice)
+
+        const estimatedRewardInCurrencyDisplay = estimatedRewardInCurrency
+          ? tokenInCurrencyFormatter(
+              estimatedRewardInCurrency.toDisplay({ fixedDp: 2 })
+            )
+          : UNKNOWN_AMOUNT
 
         return (
           <>
@@ -127,12 +149,10 @@ export const StakeCard = (props: Props): JSX.Element => {
               </AvaText.Body2>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading6 testID="staked_amount">
-                  {stakeAmountInAvax.toDisplay()} AVAX
+                  {stakeAmountInAvaxDisplay} AVAX
                 </AvaText.Heading6>
                 <AvaText.Overline>
-                  {`${tokenInCurrencyFormatter(
-                    stakeAmountInCurrency
-                  )} ${selectedCurrency}`}
+                  {`${stakeAmountInCurrencyDisplay} ${selectedCurrency}`}
                 </AvaText.Overline>
               </View>
             </Row>
@@ -148,12 +168,10 @@ export const StakeCard = (props: Props): JSX.Element => {
                 <AvaText.Heading6
                   testID="estimated_rewards"
                   color={theme.colorBgGreen}>
-                  {estimatedRewardInAvax.toDisplay()} AVAX
+                  {estimatedRewardInAvaxDisplay} AVAX
                 </AvaText.Heading6>
                 <AvaText.Overline>
-                  {`${tokenInCurrencyFormatter(
-                    estimatedRewardInCurrency
-                  )} ${selectedCurrency}`}
+                  {`${estimatedRewardInCurrencyDisplay} ${selectedCurrency}`}
                 </AvaText.Overline>
               </View>
             </Row>
@@ -164,14 +182,24 @@ export const StakeCard = (props: Props): JSX.Element => {
         const endDate = props.endTimestamp
           ? format(fromUnixTime(props.endTimestamp), 'MM/dd/yyyy')
           : 'N/A'
-        const rewardAmountInAvax = new TokenUnit(
-          props.rewardAmount || 0,
-          xpChainToken.maxDecimals,
-          xpChainToken.symbol
-        )
-        const rewardAmountInCurrency = rewardAmountInAvax
-          .mul(avaxPrice)
-          .toDisplay({ fixedDp: 2 })
+        const rewardAmountInAvax = props.rewardAmount
+          ? new TokenUnit(
+              props.rewardAmount,
+              xpChainToken.maxDecimals,
+              xpChainToken.symbol
+            )
+          : undefined
+
+        const rewardAmountInAvaxDisplay =
+          rewardAmountInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+
+        const rewardAmountInCurrency = rewardAmountInAvax?.mul(avaxPrice)
+
+        const rewardAmountInCurrencyDisplay = rewardAmountInCurrency
+          ? tokenInCurrencyFormatter(
+              rewardAmountInCurrency.toDisplay({ fixedDp: 2 })
+            )
+          : UNKNOWN_AMOUNT
 
         return (
           <>
@@ -187,9 +215,11 @@ export const StakeCard = (props: Props): JSX.Element => {
               </AvaText.Body2>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading6 testID="staked_amount">
-                  {stakeAmountInAvax.toDisplay()} AVAX
+                  {stakeAmountInAvaxDisplay} AVAX
                 </AvaText.Heading6>
-                <AvaText.Overline>{stakeAmountInCurrency}</AvaText.Overline>
+                <AvaText.Overline>
+                  {`${stakeAmountInCurrencyDisplay} ${selectedCurrency}`}
+                </AvaText.Overline>
               </View>
             </Row>
             <Space y={8} />
@@ -206,9 +236,11 @@ export const StakeCard = (props: Props): JSX.Element => {
                 <AvaText.Heading6
                   testID="earned_rewards"
                   color={theme.colorBgGreen}>
-                  {rewardAmountInAvax.toDisplay()} AVAX
+                  {rewardAmountInAvaxDisplay} AVAX
                 </AvaText.Heading6>
-                <AvaText.Overline>{rewardAmountInCurrency}</AvaText.Overline>
+                <AvaText.Overline>
+                  {`${rewardAmountInCurrencyDisplay} ${selectedCurrency}`}
+                </AvaText.Overline>
               </View>
             </Row>
             <Space y={8} />

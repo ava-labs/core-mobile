@@ -41,7 +41,7 @@ export enum StakeTypeEnum {
   Claimable = 'Claimable'
 }
 
-export type StakingBalanceType = { type: StakeTypeEnum; amount: number }
+export type StakingBalanceType = { type: StakeTypeEnum; amount?: number }
 
 export enum RecoveryEvents {
   Idle,

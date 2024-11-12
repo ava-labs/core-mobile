@@ -27,6 +27,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import { cChainToken } from 'utils/units/knownTokens'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -82,7 +83,7 @@ export default function StakingAmount(): JSX.Element {
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
 
-  const balanceInAvax = cumulativeBalance?.toDisplay() ?? '-'
+  const balanceInAvax = cumulativeBalance?.toDisplay() ?? UNKNOWN_AMOUNT
 
   function handleAmountChange(amount: TokenUnit): void {
     setInputAmount(amount)
