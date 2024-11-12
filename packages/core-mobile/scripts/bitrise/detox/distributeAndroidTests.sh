@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+echo $BITRISE_SIGNED_APK_PATH
+echo $BITRISE_TEST_APK_PATH
+echo $BITRISE_APK_PATH
+
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
 echo "IS_REGRESSION_RUN is true or false: $IS_REGRESSION_RUN"
 TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration "android.internal.release.ci" --listTests)
