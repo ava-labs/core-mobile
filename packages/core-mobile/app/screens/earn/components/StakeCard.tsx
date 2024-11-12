@@ -20,8 +20,10 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { useSelector } from 'react-redux'
-import { getXPChainTokenUnit } from 'utils/units/knownTokens'
+import { xpChainToken } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -48,10 +50,14 @@ type NavigationProp = TabsScreenProps<
 >['navigation']
 
 export const StakeCard = (props: Props): JSX.Element => {
-  const { theme } = useApplicationContext()
+  const {
+    theme,
+    appHook: { tokenInCurrencyFormatter }
+  } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const { txHash, status, title, stakeAmount } = props
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const isDevMode = useSelector(selectIsDeveloperMode)
   const { networkToken: pChainNetworkToken } =
     NetworkService.getAvalancheNetworkP(isDevMode)
@@ -87,6 +93,7 @@ export const StakeCard = (props: Props): JSX.Element => {
     }
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const renderContents = (): JSX.Element => {
     const stakeAmountInAvax = stakeAmount
       ? new TokenUnit(
@@ -95,8 +102,17 @@ export const StakeCard = (props: Props): JSX.Element => {
           pChainNetworkToken.symbol
         )
       : undefined
-    const stakeAmountInCurrency =
-      stakeAmountInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
+
+    const stakeAmountInAvaxDisplay =
+      stakeAmountInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+
+    const stakeAmountInCurrency = stakeAmountInAvax?.mul(avaxPrice)
+
+    const stakeAmountInCurrencyDisplay = stakeAmountInCurrency
+      ? tokenInCurrencyFormatter(
+          stakeAmountInCurrency.toDisplay({ fixedDp: 2 })
+        )
+      : UNKNOWN_AMOUNT
 
     switch (status) {
       case StakeStatus.Ongoing: {
@@ -107,8 +123,17 @@ export const StakeCard = (props: Props): JSX.Element => {
               pChainNetworkToken.symbol
             )
           : undefined
-        const estimatedRewardInCurrency =
-          estimatedRewardInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
+
+        const estimatedRewardInAvaxDisplay =
+          estimatedRewardInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+
+        const estimatedRewardInCurrency = estimatedRewardInAvax?.mul(avaxPrice)
+
+        const estimatedRewardInCurrencyDisplay = estimatedRewardInCurrency
+          ? tokenInCurrencyFormatter(
+              estimatedRewardInCurrency.toDisplay({ fixedDp: 2 })
+            )
+          : UNKNOWN_AMOUNT
 
         return (
           <>
@@ -124,9 +149,11 @@ export const StakeCard = (props: Props): JSX.Element => {
               </AvaText.Body2>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading6 testID="staked_amount">
-                  {stakeAmountInAvax?.toDisplay() ?? '-'} AVAX
+                  {stakeAmountInAvaxDisplay} AVAX
                 </AvaText.Heading6>
-                <AvaText.Overline>{stakeAmountInCurrency}</AvaText.Overline>
+                <AvaText.Overline>
+                  {`${stakeAmountInCurrencyDisplay} ${selectedCurrency}`}
+                </AvaText.Overline>
               </View>
             </Row>
             <Space y={8} />
@@ -141,9 +168,11 @@ export const StakeCard = (props: Props): JSX.Element => {
                 <AvaText.Heading6
                   testID="estimated_rewards"
                   color={theme.colorBgGreen}>
-                  {estimatedRewardInAvax?.toDisplay() ?? '-'} AVAX
+                  {estimatedRewardInAvaxDisplay} AVAX
                 </AvaText.Heading6>
-                <AvaText.Overline>{estimatedRewardInCurrency}</AvaText.Overline>
+                <AvaText.Overline>
+                  {`${estimatedRewardInCurrencyDisplay} ${selectedCurrency}`}
+                </AvaText.Overline>
               </View>
             </Row>
           </>
@@ -156,12 +185,21 @@ export const StakeCard = (props: Props): JSX.Element => {
         const rewardAmountInAvax = props.rewardAmount
           ? new TokenUnit(
               props.rewardAmount,
-              getXPChainTokenUnit().getMaxDecimals(),
-              getXPChainTokenUnit().getSymbol()
+              xpChainToken.maxDecimals,
+              xpChainToken.symbol
             )
           : undefined
-        const rewardAmountInCurrency =
-          rewardAmountInAvax?.mul(avaxPrice).toDisplay({ fixedDp: 2 }) ?? '-'
+
+        const rewardAmountInAvaxDisplay =
+          rewardAmountInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+
+        const rewardAmountInCurrency = rewardAmountInAvax?.mul(avaxPrice)
+
+        const rewardAmountInCurrencyDisplay = rewardAmountInCurrency
+          ? tokenInCurrencyFormatter(
+              rewardAmountInCurrency.toDisplay({ fixedDp: 2 })
+            )
+          : UNKNOWN_AMOUNT
 
         return (
           <>
@@ -177,9 +215,11 @@ export const StakeCard = (props: Props): JSX.Element => {
               </AvaText.Body2>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading6 testID="staked_amount">
-                  {stakeAmountInAvax?.toDisplay() ?? '-'} AVAX
+                  {stakeAmountInAvaxDisplay} AVAX
                 </AvaText.Heading6>
-                <AvaText.Overline>{stakeAmountInCurrency}</AvaText.Overline>
+                <AvaText.Overline>
+                  {`${stakeAmountInCurrencyDisplay} ${selectedCurrency}`}
+                </AvaText.Overline>
               </View>
             </Row>
             <Space y={8} />
@@ -196,9 +236,11 @@ export const StakeCard = (props: Props): JSX.Element => {
                 <AvaText.Heading6
                   testID="earned_rewards"
                   color={theme.colorBgGreen}>
-                  {rewardAmountInAvax?.toDisplay() ?? '-'} AVAX
+                  {rewardAmountInAvaxDisplay} AVAX
                 </AvaText.Heading6>
-                <AvaText.Overline>{rewardAmountInCurrency}</AvaText.Overline>
+                <AvaText.Overline>
+                  {`${rewardAmountInCurrencyDisplay} ${selectedCurrency}`}
+                </AvaText.Overline>
               </View>
             </Row>
             <Space y={8} />

@@ -59,6 +59,7 @@ import { Audios, audioFeedback } from 'utils/AudioFeedback'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -72,7 +73,7 @@ const sourceBlockchains = [
 
 const TRANSFER_ERROR = 'There was a problem with the transfer.'
 
-const NO_AMOUNT = '-'
+const NO_AMOUNT = UNKNOWN_AMOUNT
 
 const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)

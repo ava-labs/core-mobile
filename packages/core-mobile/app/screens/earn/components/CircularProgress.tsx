@@ -27,7 +27,7 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
   let end = 0
   const total = useMemo(() => {
     return data.reduce((item, acc) => {
-      item += acc.amount
+      item += acc.amount ?? 0
       return item
     }, 0)
   }, [data])
@@ -38,7 +38,7 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
         {data.map((item, index) => {
           const strokeColor = getStakePrimaryColor(item.type, theme)
           const shadowColor = getStakeShadowColor(item.type, theme)
-          const amountPercent = item.amount / total
+          const amountPercent = item.amount ?? 0 / total
 
           // This will calculate the start and end of each section of the the circular path
           if (index !== 0) {

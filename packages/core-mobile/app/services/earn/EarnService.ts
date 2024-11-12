@@ -228,6 +228,7 @@ class EarnService {
     const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
     const rewardAddress = activeAccount.addressPVM
+
     const unsignedTx = await WalletService.createAddDelegatorTx({
       accountIndex: activeAccount.index,
       avaxXPNetwork,
@@ -235,7 +236,7 @@ class EarnService {
       nodeId,
       startDate: startDateUnix,
       endDate: endDateUnix,
-      stakeAmount,
+      stakeAmountInNAvax: stakeAmount,
       isDevMode
     } as AddDelegatorProps)
 

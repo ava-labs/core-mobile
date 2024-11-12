@@ -13,6 +13,7 @@ import AvaText from 'components/AvaText'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 export const DurationOptionItem = ({
   stakeAmount,
@@ -54,7 +55,7 @@ export const DurationOptionItem = ({
           <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
             {item.title !== StakeDurationTitle.CUSTOM
               ? `Estimated Rewards: ${
-                  estimatedRewardsInAvax?.toDisplay() ?? '-'
+                  estimatedRewardsInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
                 } AVAX`
               : 'Enter your desired end date'}
           </AvaText.Caption>

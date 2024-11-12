@@ -30,6 +30,7 @@ import { PChainId } from '@avalabs/glacier-sdk'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
+import { nanoToWei } from 'utils/units/converter'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -301,8 +302,8 @@ class WalletService {
   }
 
   public async createExportCTx({
-    amount,
-    baseFee,
+    amountInNAvax,
+    baseFeeInNAvax,
     accountIndex,
     avaxXPNetwork,
     destinationChain,
@@ -317,10 +318,10 @@ class WalletService {
     const nonce = await readOnlySigner.getNonce()
 
     const unsignedTx = readOnlySigner.exportC(
-      amount,
+      amountInNAvax,
       destinationChain,
       BigInt(nonce),
-      baseFee,
+      nanoToWei(baseFeeInNAvax),
       destinationAddress
     )
 
@@ -328,7 +329,7 @@ class WalletService {
       this.validateAvalancheFee({
         network: avaxXPNetwork,
         unsignedTx,
-        evmBaseFeeWei: baseFee
+        evmBaseFeeInNAvax: baseFeeInNAvax
       })
 
     return unsignedTx
@@ -366,7 +367,7 @@ class WalletService {
   }
 
   public async createExportPTx({
-    amount,
+    amountInNAvax,
     accountIndex,
     avaxXPNetwork,
     destinationChain,
@@ -382,7 +383,7 @@ class WalletService {
     const apiP = readOnlySigner.getProvider().getApiP()
     const feeState = await apiP.getFeeState().catch(() => undefined)
     const unsignedTx = readOnlySigner.exportP({
-      amount,
+      amount: amountInNAvax,
       utxoSet,
       destination: destinationChain,
       toAddress: destinationAddress,
@@ -402,7 +403,7 @@ class WalletService {
    * Create UnsignedTx for sending on P-chain
    */
   public async createSendPTx({
-    amount,
+    amountInNAvax,
     accountIndex,
     avaxXPNetwork,
     destinationAddress,
@@ -436,7 +437,7 @@ class WalletService {
       amountsPerAsset: {
         [avaxXPNetwork.isTestnet
           ? TESTNET_AVAX_ASSET_ID
-          : MAINNET_AVAX_ASSET_ID]: amount
+          : MAINNET_AVAX_ASSET_ID]: amountInNAvax
       },
       options: {
         changeAddresses: [changeAddress]
@@ -449,7 +450,7 @@ class WalletService {
    * Create UnsignedTx for sending on X-chain
    */
   public async createSendXTx({
-    amount,
+    amountInNAvax,
     accountIndex,
     avaxXPNetwork,
     destinationAddress,
@@ -475,7 +476,7 @@ class WalletService {
       amountsPerAsset: {
         [avaxXPNetwork.isTestnet
           ? TESTNET_AVAX_ASSET_ID
-          : MAINNET_AVAX_ASSET_ID]: amount
+          : MAINNET_AVAX_ASSET_ID]: amountInNAvax
       },
       options: {
         changeAddresses: [changeAddress]
@@ -486,7 +487,7 @@ class WalletService {
 
   public async createImportCTx({
     accountIndex,
-    baseFee,
+    baseFeeInNAvax,
     avaxXPNetwork,
     sourceChain,
     destinationAddress,
@@ -502,7 +503,7 @@ class WalletService {
     const unsignedTx = readOnlySigner.importC(
       utxoSet,
       sourceChain,
-      baseFee,
+      baseFeeInNAvax,
       undefined,
       destinationAddress
     )
@@ -511,7 +512,7 @@ class WalletService {
       this.validateAvalancheFee({
         network: avaxXPNetwork,
         unsignedTx,
-        evmBaseFeeWei: baseFee
+        evmBaseFeeInNAvax: baseFeeInNAvax
       })
 
     return unsignedTx
@@ -521,7 +522,7 @@ class WalletService {
     accountIndex,
     avaxXPNetwork,
     nodeId,
-    stakeAmount,
+    stakeAmountInNAvax,
     startDate,
     endDate,
     rewardAddress,
@@ -534,7 +535,7 @@ class WalletService {
 
     const oneAvax = BigInt(1e9)
     const minStakingAmount = isDevMode ? oneAvax : BigInt(25) * oneAvax
-    if (stakeAmount < minStakingAmount) {
+    if (stakeAmountInNAvax < minStakingAmount) {
       throw Error('Staking amount less than minimum')
     }
 
@@ -568,12 +569,13 @@ class WalletService {
     const apiP = readOnlySigner.getProvider().getApiP()
     const feeState = await apiP.getFeeState().catch(() => undefined)
     const network = NetworkService.getAvalancheNetworkP(isDevMode)
+
     const unsignedTx = readOnlySigner.addPermissionlessDelegator({
       utxoSet,
       nodeId,
       start: BigInt(startDate),
       end: BigInt(endDate),
-      weight: stakeAmount,
+      weight: stakeAmountInNAvax,
       subnetId: PChainId._11111111111111111111111111111111LPO_YY,
       rewardAddresses: [rewardAddress],
       feeState
@@ -600,11 +602,11 @@ class WalletService {
   private async validateAvalancheFee({
     network,
     unsignedTx,
-    evmBaseFeeWei
+    evmBaseFeeInNAvax
   }: {
     network: Network
     unsignedTx: UnsignedTx
-    evmBaseFeeWei?: bigint
+    evmBaseFeeInNAvax?: bigint
   }): Promise<void> {
     if (
       network.vmName !== NetworkVMType.AVM &&
@@ -613,7 +615,7 @@ class WalletService {
       throw new Error('Wrong network')
     }
 
-    if (evmBaseFeeWei === undefined) {
+    if (evmBaseFeeInNAvax === undefined) {
       throw new Error('Missing evm fee data')
     }
 
@@ -626,7 +628,7 @@ class WalletService {
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
-      baseFee: evmBaseFeeWei,
+      baseFee: evmBaseFeeInNAvax,
       feeTolerance: EVM_FEE_TOLERANCE
     })
 
