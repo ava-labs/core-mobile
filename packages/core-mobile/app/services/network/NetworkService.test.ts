@@ -4,12 +4,17 @@ import {
   ChainId,
   Network,
   BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK
+  BITCOIN_TEST_NETWORK,
+  AVALANCHE_P_DEV_NETWORK
 } from '@avalabs/core-chains-sdk'
 import { Networks } from 'store/network/types'
 
 import Logger from 'utils/Logger'
 import { noop } from '@avalabs/core-utils-sdk'
+
+type TNetworks = {
+  [chainId: number]: { chainName: string }
+}
 
 const mockERC20Networks = {
   1: {
@@ -25,14 +30,27 @@ const mockDeBankNetworks = {
   }
 }
 
+type TNetworkService = {
+  fetchERC20Networks: () => Promise<TNetworks>
+  fetchDeBankNetworks: () => Promise<TNetworks>
+  getAvalancheNetworkP: (isDevMode: boolean, isDevnet: boolean) => Network
+  getAvalancheNetworkX: (isDevMode: boolean, isDevnet: boolean) => Network
+}
+
 describe('NetworkService', () => {
   describe('getNetworks', () => {
     it('should fetch ERC20 and DeBank networks and return combined network data', async () => {
       jest
-        .spyOn(NetworkService as any, 'fetchERC20Networks')
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchERC20Networks'
+        )
         .mockResolvedValue(mockERC20Networks)
       jest
-        .spyOn(NetworkService as any, 'fetchDeBankNetworks')
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchDeBankNetworks'
+        )
         .mockResolvedValue(mockDeBankNetworks)
       jest
         .spyOn(NetworkService, 'getAvalancheNetworkP')
@@ -52,16 +70,23 @@ describe('NetworkService', () => {
         [ChainId.AVALANCHE_P]: { chainName: 'Avalanche P' },
         [ChainId.AVALANCHE_TEST_P]: { chainName: 'Avalanche P' },
         [ChainId.AVALANCHE_X]: { chainName: 'Avalanche X' },
-        [ChainId.AVALANCHE_TEST_X]: { chainName: 'Avalanche X' }
+        [ChainId.AVALANCHE_TEST_X]: { chainName: 'Avalanche X' },
+        [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
       })
     })
 
     it('should handle errors in fetchERC20Networks and fetchDeBankNetworks gracefully', async () => {
       jest
-        .spyOn(NetworkService as any, 'fetchERC20Networks')
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchERC20Networks'
+        )
         .mockRejectedValue('ERC20 fetch error')
       jest
-        .spyOn(NetworkService as any, 'fetchDeBankNetworks')
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchDeBankNetworks'
+        )
         .mockRejectedValue('DeBank fetch error')
       jest.spyOn(Logger, 'error').mockImplementation(noop)
       jest
@@ -88,16 +113,23 @@ describe('NetworkService', () => {
         [ChainId.AVALANCHE_P]: { chainName: 'Avalanche P' },
         [ChainId.AVALANCHE_TEST_P]: { chainName: 'Avalanche P' },
         [ChainId.AVALANCHE_X]: { chainName: 'Avalanche X' },
-        [ChainId.AVALANCHE_TEST_X]: { chainName: 'Avalanche X' }
+        [ChainId.AVALANCHE_TEST_X]: { chainName: 'Avalanche X' },
+        [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
       })
     })
 
     it('should exclude ChainId.AVALANCHE_LOCAL_ID from the final network data', async () => {
       jest
-        .spyOn(NetworkService as any, 'fetchERC20Networks')
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchERC20Networks'
+        )
         .mockResolvedValue(mockERC20Networks)
       jest
-        .spyOn(NetworkService as any, 'fetchDeBankNetworks')
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchDeBankNetworks'
+        )
         .mockResolvedValue({} as Networks)
       jest
         .spyOn(NetworkService, 'getAvalancheNetworkP')

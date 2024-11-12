@@ -76,7 +76,7 @@ export const useClaimFees = (
         return
       }
       const txFee = await getExportPFee({
-        amount: totalClaimable,
+        amountInNAvax: totalClaimable,
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
@@ -111,7 +111,7 @@ export const useClaimFees = (
 
       const importCFee = calculateCChainFee(instantBaseFee, unsignedTx)
       const exportPFee = await getExportPFee({
-        amount: totalClaimable,
+        amountInNAvax: totalClaimable,
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
@@ -147,13 +147,13 @@ export const useClaimFees = (
 }
 
 const getExportPFee = async ({
-  amount,
+  amountInNAvax,
   activeAccount,
   avaxXPNetwork,
   provider,
   feeState
 }: {
-  amount: TokenUnit
+  amountInNAvax: TokenUnit
   activeAccount: CorePrimaryAccount
   avaxXPNetwork: Network
   provider: Avalanche.JsonRpcProvider
@@ -161,7 +161,7 @@ const getExportPFee = async ({
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled()) {
     const unsignedTxP = await WalletService.createExportPTx({
-      amount: amount.toSubUnit(),
+      amountInNAvax: amountInNAvax.toSubUnit(),
       accountIndex: activeAccount.index,
       avaxXPNetwork,
       destinationAddress: activeAccount.addressCoreEth,
