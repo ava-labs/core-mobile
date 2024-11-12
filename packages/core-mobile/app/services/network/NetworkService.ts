@@ -224,13 +224,6 @@ class NetworkService {
 
     return networksWithToken
   }
-
-  async isEtnaEnabled(network: Network): Promise<boolean> {
-    const provider = await this.getProviderForNetwork(network)
-    return (
-      provider instanceof Avalanche.JsonRpcProvider && provider.isEtnaEnabled()
-    )
-  }
 }
 
 export default new NetworkService()
