@@ -187,7 +187,7 @@ __metadata:
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.3.29
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
-    "@datadog/mobile-react-native": 2.4.3
+    "@datadog/mobile-react-native": 2.4.4
     "@datadog/mobile-react-navigation": 2.4.3
     "@date-fns/utc": 2.1.0
     "@dlenroc/testrail": 1.9.1
@@ -4415,13 +4415,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/mobile-react-native@npm:2.4.3":
-  version: 2.4.3
-  resolution: "@datadog/mobile-react-native@npm:2.4.3"
+"@datadog/mobile-react-native@npm:2.4.4":
+  version: 2.4.4
+  resolution: "@datadog/mobile-react-native@npm:2.4.4"
   peerDependencies:
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
-  checksum: c1baa070ce4ebc88c6e0e5237704a7cf16df343cf735cbe04494b32b9de9bdacdb93d0c218cad8bc074f29709d54a356b5bdd09573c9343c242f7093698bd100
+  checksum: 09a50e367755e3e17faef02b0e72eef497f7665e1390d3fd304969dbca0fa4f94a6b57980217a66d04a5ae6d15787d2e5227274851eedde011afe5df039ece6e
   languageName: node
   linkType: hard
 
