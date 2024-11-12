@@ -1,17 +1,11 @@
 import { AppListenerEffectAPI } from 'store'
 import { WalletState, onAppUnlocked, selectWalletState } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
-import {
-  selectIsDeveloperMode,
-  toggleDeveloperMode
-} from 'store/settings/advanced'
+import { toggleDeveloperMode } from 'store/settings/advanced'
 import { isAnyOf } from '@reduxjs/toolkit'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
-import { BridgeTransfer, BridgeType } from '@avalabs/bridge-unified'
-import {
-  selectIsUnifiedBridgeCCTPBlocked,
-  setFeatureFlags
-} from 'store/posthog'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { setFeatureFlags } from 'store/posthog'
 import { showTransactionSuccessToast } from 'utils/toast'
 import Logger from 'utils/Logger'
 import {
@@ -58,49 +52,23 @@ const trackPendingTransfers = (listenerApi: AppListenerEffectAPI): void => {
   })
 }
 
-const initUnifiedBridgeService = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: any,
+export const initUnifiedBridgeService = async (
+  action: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
   const walletState = selectWalletState(state)
 
-  // if wallet is not unlocked yet, no need to do anything
+  // No need to proceed if the wallet is not unlocked
   if (walletState !== WalletState.ACTIVE) return
 
-  const cctpBlocked = selectIsUnifiedBridgeCCTPBlocked(state)
-  const isDeveloperMode = selectIsDeveloperMode(state)
-
-  if (UnifiedBridgeService.isInitialized()) {
-    // if the service is already initialized
-    // we only re-init it if the unified bridge cctp flag has changed or the developer mode has changed
-    const prevState = listenerApi.getOriginalState()
-    const prevCctpBlocked = selectIsUnifiedBridgeCCTPBlocked(prevState)
-    const prevDeveloperMode = selectIsDeveloperMode(prevState)
-
-    if (
-      cctpBlocked === prevCctpBlocked &&
-      isDeveloperMode === prevDeveloperMode
-    )
-      return
-  }
-
-  const enabledBridgeTypes = [
-    ...(cctpBlocked ? [] : [BridgeType.CCTP]),
-    BridgeType.ICTT_ERC20_ERC20,
-    BridgeType.AVALANCHE_EVM,
-    BridgeType.AVALANCHE_AVA_BTC,
-    BridgeType.AVALANCHE_BTC_AVA
-  ]
-
-  await UnifiedBridgeService.init({
-    isTest: isDeveloperMode,
-    enabledBridgeTypes,
+  const initialized = await UnifiedBridgeService.init({
     listenerApi
   })
 
-  trackPendingTransfers(listenerApi)
+  if (initialized) {
+    trackPendingTransfers(listenerApi)
+  }
 }
 
 const checkTransferStatus = async (

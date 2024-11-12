@@ -23,12 +23,15 @@ import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import { noop } from '@avalabs/core-utils-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, RootState } from 'store'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
+import { selectIsFeatureBlocked } from 'store/posthog'
+import { FeatureGates } from 'services/posthog/types'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -37,14 +40,22 @@ export class UnifiedBridgeService {
 
   // init and fetch configs
   async init({
-    isTest,
-    enabledBridgeTypes,
     listenerApi
   }: {
-    isTest: boolean
-    enabledBridgeTypes: BridgeType[]
     listenerApi: AppListenerEffectAPI
-  }): Promise<void> {
+  }): Promise<boolean> {
+    const state = listenerApi.getState()
+
+    if (this.isInitialized()) {
+      const prevState = listenerApi.getOriginalState()
+
+      if (!this.shouldReinitializeBridge(prevState, state)) return false
+    }
+
+    const featureGates = this.getFeatureGateStates(state)
+    const isTest = featureGates.isDeveloperMode
+    const enabledBridgeTypes = this.getEnabledBridgeTypes(featureGates)
+
     const environment = isTest ? Environment.TEST : Environment.PROD
     const request = createInAppRequest(listenerApi.dispatch)
 
@@ -99,10 +110,8 @@ export class UnifiedBridgeService {
       environment,
       enabledBridgeServices
     })
-  }
 
-  isInitialized(): boolean {
-    return this.#service !== undefined
+    return true
   }
 
   analyzeTx(params: AnalyzeTxParams): AnalyzeTxResult {
@@ -238,6 +247,10 @@ export class UnifiedBridgeService {
     })
   }
 
+  private isInitialized(): boolean {
+    return this.#service !== undefined
+  }
+
   private async buildChain(network: Network): Promise<Chain> {
     return {
       chainId: addNamespaceToChain(network.chainId),
@@ -298,6 +311,88 @@ export class UnifiedBridgeService {
           }
       }
     })
+  }
+
+  // Check if any of the feature gate states or developer mode has changed
+  private shouldReinitializeBridge = (
+    prevState: RootState,
+    currState: RootState
+  ): boolean => {
+    const prevGates = this.getFeatureGateStates(prevState)
+    const currGates = this.getFeatureGateStates(currState)
+
+    return (
+      prevGates.isCctpBlocked !== currGates.isCctpBlocked ||
+      prevGates.isIcttBlocked !== currGates.isIcttBlocked ||
+      prevGates.isAbEvmBlocked !== currGates.isAbEvmBlocked ||
+      prevGates.isAbAvaToBtc !== currGates.isAbAvaToBtc ||
+      prevGates.isAbBtcToAva !== currGates.isAbBtcToAva ||
+      prevGates.isDeveloperMode !== currGates.isDeveloperMode
+    )
+  }
+
+  // Helper function to get the blocked status of feature gates
+  private getFeatureGateStates = (
+    state: RootState
+  ): {
+    isCctpBlocked: boolean
+    isIcttBlocked: boolean
+    isAbEvmBlocked: boolean
+    isAbAvaToBtc: boolean
+    isAbBtcToAva: boolean
+    isDeveloperMode: boolean
+  } => ({
+    isCctpBlocked: selectIsFeatureBlocked(
+      state,
+      FeatureGates.UNIFIED_BRIDGE_CCTP
+    ),
+    isIcttBlocked: selectIsFeatureBlocked(
+      state,
+      FeatureGates.UNIFIED_BRIDGE_ICTT
+    ),
+    isAbEvmBlocked: selectIsFeatureBlocked(
+      state,
+      FeatureGates.UNIFIED_BRIDGE_AB_EVM
+    ),
+    isAbAvaToBtc: selectIsFeatureBlocked(
+      state,
+      FeatureGates.UNIFIED_BRIDGE_AB_AVA_TO_BTC
+    ),
+    isAbBtcToAva: selectIsFeatureBlocked(
+      state,
+      FeatureGates.UNIFIED_BRIDGE_AB_BTC_TO_AVA
+    ),
+    isDeveloperMode: selectIsDeveloperMode(state)
+  })
+
+  // Get enabled bridge types based on feature gates
+  private getEnabledBridgeTypes = (featureGates: {
+    isCctpBlocked: boolean
+    isIcttBlocked: boolean
+    isAbEvmBlocked: boolean
+    isAbAvaToBtc: boolean
+    isAbBtcToAva: boolean
+    isDeveloperMode: boolean
+  }): BridgeType[] => {
+    const enabledBridgeTypes: BridgeType[] = []
+
+    if (!featureGates.isCctpBlocked) {
+      enabledBridgeTypes.push(BridgeType.CCTP)
+    }
+    if (!featureGates.isIcttBlocked) {
+      enabledBridgeTypes.push(BridgeType.ICTT_ERC20_ERC20)
+    }
+    if (!featureGates.isAbEvmBlocked) {
+      enabledBridgeTypes.push(BridgeType.AVALANCHE_EVM)
+    }
+    if (!featureGates.isAbAvaToBtc) {
+      enabledBridgeTypes.push(BridgeType.AVALANCHE_AVA_BTC)
+    }
+    if (!featureGates.isAbBtcToAva) {
+      enabledBridgeTypes.push(BridgeType.AVALANCHE_BTC_AVA)
+    }
+
+    return enabledBridgeTypes
   }
 }
 
