@@ -5,7 +5,7 @@ echo $BITRISE_TEST_APK_PATH
 echo $BITRISE_APK_PATH
 
 IFS='|'
-read -4ra newarray <<< "$paths"
+read -ra newarray <<< "$paths"
 signed_apk_path="${newarray[0]}"
 
 echo "Signed APK path: $signed_apk_path"
