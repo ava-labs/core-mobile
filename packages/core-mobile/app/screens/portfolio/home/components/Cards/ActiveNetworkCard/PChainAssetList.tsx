@@ -8,6 +8,8 @@ import { assetPDisplayNames } from 'store/balance/types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { xpChainToken } from 'utils/units/knownTokens'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 type ChainBalanceType = keyof PChainBalance
 
@@ -23,7 +25,7 @@ export const PChainAssetList = ({
   ItemSeparator?: React.ComponentType | null
 }): React.JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
-
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const token = tokens.find(t => isTokenWithBalancePVM(t))
 
   const assetTypes = useMemo(() => {
@@ -97,7 +99,7 @@ export const PChainAssetList = ({
               alignSelf: 'center'
             }}>
             <Text variant="buttonMedium" numberOfLines={1}>
-              {formattedBalance}
+              {`${formattedBalance} ${selectedCurrency}`}
             </Text>
           </View>
         </View>

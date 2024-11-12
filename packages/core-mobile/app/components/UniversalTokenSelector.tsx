@@ -21,6 +21,8 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -57,6 +59,7 @@ const UniversalTokenSelector: FC<Props> = ({
 }) => {
   const theme = useApplicationContext().theme
   const navigation = useNavigation<NavigationProp>()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const hasError = !!error
 
   const openTokenSelectorBottomSheet = (): void => {
@@ -190,7 +193,9 @@ const UniversalTokenSelector: FC<Props> = ({
         )}
         <FlexSpacer />
         <AvaText.Body2>
-          {selectedToken && amountInCurrency ? amountInCurrency : '$0.00 USD'}
+          {`${
+            selectedToken && amountInCurrency ? amountInCurrency : '-'
+          } ${selectedCurrency}`}
         </AvaText.Body2>
       </Row>
     </View>
