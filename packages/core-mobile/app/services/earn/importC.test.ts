@@ -63,7 +63,7 @@ describe('earn/importC', () => {
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith({
         accountIndex: undefined,
-        baseFee: BigInt(0.0003 * 10 ** 18),
+        baseFeeInNAvax: BigInt(0.0003 * 10 ** 9),
         avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
         sourceChain: 'P',
         destinationAddress: undefined

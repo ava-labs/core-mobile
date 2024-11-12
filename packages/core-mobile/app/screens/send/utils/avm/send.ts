@@ -85,7 +85,7 @@ const getTransactionRequest = ({
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendXTx({
         accountIndex,
-        amount,
+        amountInNAvax: amount,
         avaxXPNetwork: network,
         destinationAddress: destinationAddress,
         sourceAddress: fromAddress
