@@ -7,7 +7,7 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { getCChainTokenUnit } from 'utils/units/knownTokens'
+import { cChainToken } from 'utils/units/knownTokens'
 import { weiToNano } from 'utils/units/converter'
 import {
   maxTransactionCreationRetries,
@@ -30,8 +30,8 @@ export async function importC({
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
   const baseFeeAvax = new TokenUnit(
     baseFee,
-    getCChainTokenUnit().getMaxDecimals(),
-    getCChainTokenUnit().getSymbol()
+    cChainToken.maxDecimals,
+    cChainToken.symbol
   )
   const instantBaseFee = WalletService.getInstantBaseFee(baseFeeAvax)
 

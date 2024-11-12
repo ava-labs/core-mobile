@@ -20,7 +20,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { useSelector } from 'react-redux'
-import { getXPChainTokenUnit } from 'utils/units/knownTokens'
+import { xpChainToken } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { StatusChip } from './StatusChip'
@@ -166,8 +166,8 @@ export const StakeCard = (props: Props): JSX.Element => {
           : 'N/A'
         const rewardAmountInAvax = new TokenUnit(
           props.rewardAmount || 0,
-          getXPChainTokenUnit().getMaxDecimals(),
-          getXPChainTokenUnit().getSymbol()
+          xpChainToken.maxDecimals,
+          xpChainToken.symbol
         )
         const rewardAmountInCurrency = rewardAmountInAvax
           .mul(avaxPrice)

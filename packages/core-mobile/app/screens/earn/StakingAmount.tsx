@@ -26,7 +26,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
-import { getCChainTokenUnit } from 'utils/units/knownTokens'
+import { cChainToken } from 'utils/units/knownTokens'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -43,8 +43,8 @@ export default function StakingAmount(): JSX.Element {
       cChainBalance?.data?.balance
         ? new TokenUnit(
             cChainBalance?.data?.balance || 0,
-            getCChainTokenUnit().getMaxDecimals(),
-            getCChainTokenUnit().getSymbol()
+            cChainToken.maxDecimals,
+            cChainToken.symbol
           )
         : undefined,
     [cChainBalance?.data?.balance]

@@ -23,7 +23,7 @@ import { estimatesTooltipText } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
-import { getXPChainTokenUnit } from 'utils/units/knownTokens'
+import { xpChainToken } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { useSelector } from 'react-redux'
@@ -95,8 +95,8 @@ const StakeDetails = (): JSX.Element | null => {
     )
     const estimatedRewardInAvax = new TokenUnit(
       stake.estimatedReward || 0,
-      getXPChainTokenUnit().getMaxDecimals(),
-      getXPChainTokenUnit().getSymbol()
+      xpChainToken.maxDecimals,
+      xpChainToken.symbol
     )
     const estimatedRewardInCurrency = estimatedRewardInAvax
       .mul(avaxPrice)
@@ -151,8 +151,8 @@ const StakeDetails = (): JSX.Element | null => {
     const rewardUtxoTxHash = rewardUtxo?.txHash || ''
     const rewardAmountInAvax = new TokenUnit(
       rewardUtxo?.asset.amount || 0,
-      getXPChainTokenUnit().getMaxDecimals(),
-      getXPChainTokenUnit().getSymbol()
+      xpChainToken.maxDecimals,
+      xpChainToken.symbol
     )
     const rewardAmountInCurrency = rewardAmountInAvax
       .mul(avaxPrice)
@@ -208,8 +208,8 @@ const StakeDetails = (): JSX.Element | null => {
     const stakeAmount = stake.amountStaked?.[0]?.amount
     const stakeAmountInAvax = new TokenUnit(
       stakeAmount || 0,
-      getXPChainTokenUnit().getMaxDecimals(),
-      getXPChainTokenUnit().getSymbol()
+      xpChainToken.maxDecimals,
+      xpChainToken.symbol
     )
     const stakeAmountInCurrency = stakeAmountInAvax
       .mul(avaxPrice)
