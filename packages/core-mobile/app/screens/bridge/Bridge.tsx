@@ -51,7 +51,7 @@ import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Network } from '@avalabs/core-chains-sdk'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
+import { BridgeAsset, BridgeType, TokenType } from '@avalabs/bridge-unified'
 import { AssetBalance } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -118,7 +118,11 @@ const Bridge: FC = () => {
   const isAmountTooLow = amount !== 0n && minimum && amount < minimum
   const isAmountTooLarge = amount !== 0n && maximum && amount > maximum
   const isNativeBalanceNotEnoughForNetworkFee = Boolean(
-    amount !== 0n && networkFee && nativeTokenBalance < networkFee
+    amount !== 0n &&
+      networkFee &&
+      nativeTokenBalance <
+        networkFee +
+          (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
   )
 
   const denomination = useMemo(() => {

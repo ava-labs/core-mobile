@@ -7,6 +7,7 @@ import { setPendingTransfer } from 'store/unifiedBridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 
 export const useBridgeTransfer = ({
   amount,
@@ -21,6 +22,7 @@ export const useBridgeTransfer = ({
 }): (() => Promise<string | undefined>) => {
   const activeAccount = useSelector(selectActiveAccount)
   const dispatch = useDispatch()
+  const { data: networkFeeRate } = useNetworkFee()
 
   return useCallback(async () => {
     if (!bridgeAsset) {
@@ -53,6 +55,10 @@ export const useBridgeTransfer = ({
       amount,
       sourceNetwork,
       targetNetwork,
+      gasSettings:
+        sourceNetwork && networkFeeRate && isBitcoinNetwork(sourceNetwork)
+          ? { price: networkFeeRate.low.maxFeePerGas }
+          : undefined,
       updateListener: updatedTransfer => {
         dispatch(setPendingTransfer(updatedTransfer))
       }
@@ -80,6 +86,7 @@ export const useBridgeTransfer = ({
     activeAccount,
     amount,
     sourceNetwork,
+    networkFeeRate,
     dispatch
   ])
 }

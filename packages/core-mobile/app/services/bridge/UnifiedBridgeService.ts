@@ -15,13 +15,13 @@ import {
   isErc20Asset,
   AnalyzeTxResult,
   AnalyzeTxParams,
-  BridgeInitializer
+  BridgeInitializer,
+  GasSettings
 } from '@avalabs/bridge-unified'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { noop } from '@avalabs/core-utils-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import { AppListenerEffectAPI, RootState } from 'store'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
@@ -158,6 +158,7 @@ export class UnifiedBridgeService {
     sourceNetwork,
     fromAddress,
     toAddress,
+    gasSettings,
     updateListener
   }: {
     asset: BridgeAsset
@@ -166,6 +167,7 @@ export class UnifiedBridgeService {
     sourceNetwork: Network
     fromAddress: string
     toAddress: string
+    gasSettings?: GasSettings
     updateListener: (transfer: BridgeTransfer) => void
   }): Promise<BridgeTransfer> {
     const sourceChain = await this.buildChain(sourceNetwork)
@@ -178,7 +180,7 @@ export class UnifiedBridgeService {
       amount,
       sourceChain,
       targetChain,
-      onStepChange: noop
+      gasSettings
     })
 
     this.trackTransfer(bridgeTransfer, updateListener)
