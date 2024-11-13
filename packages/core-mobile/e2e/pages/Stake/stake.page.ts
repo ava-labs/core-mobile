@@ -3,6 +3,7 @@ import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
 import { Platform } from '../../helpers/constants'
 import commonElsPage from '../commonEls.page'
+import delay from '../../helpers/waits'
 import confirmStakingPage from './confirmStaking.page'
 
 type StakeCard = {
@@ -304,11 +305,10 @@ class StakePage {
 
   async tapStakeButton() {
     try {
-      await Actions.waitForElement(this.stakePrimaryButton)
+      await Actions.waitForElement(this.stakePrimaryButton, 3000)
       await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
-      console.log('there is no claim button, tap primary button')
     } catch {
-      await Actions.waitForElement(this.stakeSecondaryButton)
+      await Actions.waitForElement(this.stakeSecondaryButton, 3000)
       await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
     }
   }
@@ -518,6 +518,7 @@ class StakePage {
     } catch (e) {
       console.log('No stake notification prompt is displayed')
     }
+    await delay(3000)
   }
 }
 

@@ -95,35 +95,42 @@ class BrowserPage {
   }
 
   async connectCore() {
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
-  }
-
-  async getQrUriViaAllWallets() {
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_ALL_WALLETS)
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_QR_BUTTON)
-    const output = await Wbs.waitAndRunScript(
-      'w3m-modal',
-      WebScripts.GET_WC_URI
-    )
-    console.log(`QR URI - ${output}`)
-    return output
+    if (Actions.platform() === 'ios') {
+      await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
+    } else {
+      while (
+        await Wbs.isVisibleByRunScript('w3m-modal', WebScripts.EXIST_WC_CORE)
+      ) {
+        await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
+      }
+    }
   }
 
   async getQrUri() {
-    await delay(2000)
+    await delay(3000)
     if (Actions.platform() === 'ios') {
       await Wbs.waitAndRunScript('wcm-modal', WebScripts.CLICK_WCM_IOS_MODAL)
+      await Wbs.waitAndRunScript('wcm-modal', WebScripts.CLICK_WCM_IOS_MODAL)
     } else {
-      await Wbs.waitAndRunScript(
-        'wcm-modal',
-        WebScripts.CLICK_WCM_ANDROID_MODAL
-      )
+      while (
+        await Wbs.isVisibleByRunScript(
+          'wcm-modal',
+          WebScripts.EXIST_WCM_ANDROID_MODAL
+        )
+      ) {
+        await Wbs.waitAndRunScript(
+          'wcm-modal',
+          WebScripts.CLICK_WCM_ANDROID_MODAL
+        )
+      }
     }
-    const output = await Wbs.waitAndRunScript(
+    const output = await Wbs.getElementTextByRunScript(
       'wcm-modal',
-      WebScripts.GET_WCM_URI
+      WebScripts.GET_WCM_URI,
+      10000
     )
     console.log(`QR URI - ${output}`)
+    if (!output.length) throw Error("I couldn't get QR URI")
     return output
   }
 
@@ -192,14 +199,6 @@ class BrowserPage {
     await Wbs.scrollToText('RPC Calls')
     await Wbs.tapByText('Home')
     await Wbs.tapByText('RPC Calls')
-  }
-
-  async reconnectRpc() {
-    await this.tapConnectWallet(
-      'https://ava-labs.github.io/extension-avalanche-playground/'
-    )
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_ALL_WALLETS)
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_QR_BUTTON)
   }
 
   async sendRpcCall(rpcCall: string) {

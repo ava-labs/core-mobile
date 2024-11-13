@@ -12,13 +12,51 @@ const wb =
 
 // scripts in JavaScript to run on the web
 export enum WebScripts {
-  CLICK_WC_ALL_WALLETS = "(element) => { element.shadowRoot.querySelector('w3m-router').shadowRoot.querySelector('w3m-connect-view').shadowRoot.querySelector('wui-list-wallet[name=\"All Wallets\"]').click()}",
-  CLICK_WC_QR_BUTTON = "(element) => { element.shadowRoot.querySelector('w3m-router').shadowRoot.querySelector('w3m-all-wallets-view').shadowRoot.querySelector('wui-icon-box').click()}",
-  GET_WC_URI = "(element) => { return element.shadowRoot.querySelector('w3m-router').shadowRoot.querySelector('w3m-connecting-wc-view').shadowRoot.querySelector('w3m-connecting-wc-qrcode').shadowRoot.querySelector('wui-qr-code').getAttribute('uri')}",
-  CLICK_WCM_IOS_MODAL = "(element) => { element.shadowRoot.querySelector('wcm-modal-router').shadowRoot.querySelector('wcm-connect-wallet-view').shadowRoot.querySelector('wcm-mobile-wallet-selection').shadowRoot.querySelector('wcm-modal-header').shadowRoot.querySelector('button').click()}",
-  CLICK_WCM_ANDROID_MODAL = "(element) => { element.shadowRoot.querySelector('wcm-modal-router').shadowRoot.querySelector('wcm-connect-wallet-view').shadowRoot.querySelector('wcm-android-wallet-selection').shadowRoot.querySelector('wcm-modal-header').shadowRoot.querySelector('button').click()}",
-  GET_WCM_URI = "(element) => { return element.shadowRoot.querySelector('wcm-modal-router').shadowRoot.querySelector('wcm-qrcode-view').shadowRoot.querySelector('wcm-walletconnect-qr').shadowRoot.querySelector('wcm-qrcode').getAttribute('uri')}",
-  CLICK_WC_CORE = "(element) => { element.shadowRoot.querySelector('wui-flex > wui-card > w3m-router').shadowRoot.querySelector('w3m-connect-view').shadowRoot.querySelector('wui-list-wallet[name=\"Core\"]').click()}"
+  CLICK_WCM_IOS_MODAL = `(element) => {
+    element.shadowRoot.querySelector('wcm-modal-router')
+      .shadowRoot.querySelector('wcm-connect-wallet-view')
+      .shadowRoot.querySelector('wcm-mobile-wallet-selection')
+      .shadowRoot.querySelector('wcm-modal-header')
+      .shadowRoot.querySelector('button').click();
+  }`,
+  EXIST_WCM_IOS_MODAL = `(element) => { 
+    return element.shadowRoot.querySelector('wcm-modal-router')
+      .shadowRoot.querySelector('wcm-connect-wallet-view')
+      .shadowRoot.querySelector('wcm-mobile-wallet-selection')
+      .shadowRoot.querySelector('wcm-modal-header')
+      .shadowRoot.querySelector('button') !== null;
+  }`,
+  CLICK_WCM_ANDROID_MODAL = `(element) => {
+    element.shadowRoot.querySelector('wcm-modal-router')
+      .shadowRoot.querySelector('wcm-connect-wallet-view')
+      .shadowRoot.querySelector('wcm-android-wallet-selection')
+      .shadowRoot.querySelector('wcm-modal-header')
+      .shadowRoot.querySelector('button').click();
+  }`,
+  EXIST_WCM_ANDROID_MODAL = `(element) => {
+    return element.shadowRoot.querySelector('wcm-modal-router')
+      .shadowRoot.querySelector('wcm-connect-wallet-view')
+      .shadowRoot.querySelector('wcm-android-wallet-selection')
+      .shadowRoot.querySelector('wcm-modal-header')
+      .shadowRoot.querySelector('button') !== null;
+  }`,
+  GET_WCM_URI = `(element) => {
+    return element.shadowRoot.querySelector('wcm-modal-router')
+      .shadowRoot.querySelector('wcm-qrcode-view')
+      .shadowRoot.querySelector('wcm-walletconnect-qr')
+      .shadowRoot.querySelector('wcm-qrcode')
+      .getAttribute('uri');
+  }`,
+  CLICK_WC_CORE = `(element) => {
+    element.shadowRoot.querySelector('wui-flex > wui-card > w3m-router')
+      .shadowRoot.querySelector('w3m-connect-view')
+      .shadowRoot.querySelector('wui-list-wallet[name="Core"]').click();
+  }`,
+  EXIST_WC_CORE = `(element) => {
+    return element.shadowRoot.querySelector('wui-flex > wui-card > w3m-router')
+      .shadowRoot.querySelector('w3m-connect-view')
+      .shadowRoot.querySelector('wui-list-wallet[name="Core"]') !== null;
+  }`
 }
 
 const tap = async (item: Detox.WebMatcher) => {
@@ -73,25 +111,65 @@ const waitForWebElement = async (
   throw new Error(errorMessage)
 }
 
+const isVisibleByRunScript = async (
+  header: string,
+  func: string,
+  timeout = 5000
+) => {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+    try {
+      const visible = await wb
+        .element(by.web.tag(header))
+        .runScript(func, [func])
+      if (visible) {
+        console.log(`Element ${header} is visible`)
+        return true
+      }
+    } catch (e) {
+      console.error(`Waiting for element ${header} to be visible`)
+    }
+  }
+  console.error(`Timeout reached: Element ${header} not visible`)
+  return false
+}
+
 const waitAndRunScript = async (
   header: string,
   func: string,
   timeout = 5000
 ) => {
-  let errorMessage = ''
   const start = Date.now()
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      return await wb.element(by.web.tag(header)).runScript(func, [func])
+      await wb.element(by.web.tag(header)).runScript(func, [func])
+      return
     } catch (e: any) {
-      if (e.message.includes(Constants.webViewWError)) {
-        errorMessage = e.message
-      }
+      console.error(`Element ${header} not visible`)
     }
   }
-  console.error('Error: Element not visible within timeout')
-  throw new Error(errorMessage)
+  throw Error(`Timeout: waitAndRunScript for Element ${header} and not visible`)
+}
+
+const getElementTextByRunScript = async (
+  header: string,
+  func: string,
+  timeout = 5000
+) => {
+  let output = ''
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+    try {
+      output = await wb.element(by.web.tag(header)).runScript(func, [func])
+      if (output) break
+    } catch (e: any) {
+      console.error(`Element ${header} not visible`)
+    }
+  }
+  return output
 }
 
 const verifyUrl = async (url: string, timeout = 5000) => {
@@ -131,5 +209,7 @@ export default {
   waitForEleByTextToBeVisible,
   waitForWebElement,
   waitAndRunScript,
+  getElementTextByRunScript,
+  isVisibleByRunScript,
   verifyUrl
 }
