@@ -34,9 +34,9 @@ export const LoginWithPinOrBiometryScreen = (): JSX.Element => {
     },
     [unlock]
   )
-  const handleForgotPin = useCallback(() => {
+  const handleForgotPin = (): void => {
     setForgotPin(true)
-  }, [])
+  }
 
   return forgotPin ? (
     <ForgotPin
