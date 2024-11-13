@@ -57,7 +57,11 @@ const UniversalTokenSelector: FC<Props> = ({
   hideZeroBalanceTokens = false,
   testID
 }) => {
-  const theme = useApplicationContext().theme
+  const {
+    theme,
+    appHook: { tokenInCurrencyFormatter }
+  } = useApplicationContext()
+
   const navigation = useNavigation<NavigationProp>()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const hasError = !!error
@@ -194,7 +198,9 @@ const UniversalTokenSelector: FC<Props> = ({
         <FlexSpacer />
         <AvaText.Body2>
           {`${
-            selectedToken && amountInCurrency ? amountInCurrency : '-'
+            selectedToken && amountInCurrency
+              ? tokenInCurrencyFormatter(amountInCurrency)
+              : '-'
           } ${selectedCurrency}`}
         </AvaText.Body2>
       </Row>
