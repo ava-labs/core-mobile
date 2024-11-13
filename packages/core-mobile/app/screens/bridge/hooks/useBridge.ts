@@ -6,7 +6,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
 import { getAssetBalance, unwrapAssetSymbol } from '../utils/bridgeUtils'
 import { useAssetBalances } from './useAssetBalances'
-import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
+import { useBridgeAssets } from './useBridgeAssets'
 import {
   useGetBridgeFees,
   useGetMinimumTransferAmount
@@ -57,7 +57,7 @@ export default function useBridge(): Bridge {
   const [sourceNetwork, setSourceNetwork] = useState<Network>()
   const [targetNetwork, setTargetNetwork] = useState<Network>()
   const [selectedBridgeAsset, setSelectedBridgeAsset] = useState<BridgeAsset>()
-  const { bridgeAssets } = useUnifiedBridgeAssets()
+  const { bridgeAssets } = useBridgeAssets()
   const [bridgeError, setBridgeError] = useState<Error>()
   const [minimum, setMinimum] = useState<bigint>()
   const [bridgeFee, setBridgeFee] = useState<bigint>(0n)

@@ -60,7 +60,7 @@ export const networkToBlockchain = (
   }
 }
 
-export const isUnifiedBridgeTransfer = (
+export const isBridgeTransfer = (
   transfer?: BridgeTransfer | Transaction
 ): transfer is BridgeTransfer => {
   return transfer !== undefined && 'type' in transfer

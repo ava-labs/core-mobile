@@ -2,10 +2,10 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
-import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
+import { useBridgeAssets } from './useBridgeAssets'
 
 export const useBridgeSourceNetworks = (): Network[] => {
-  const data = useUnifiedBridgeAssets()
+  const data = useBridgeAssets()
 
   return useNetworksFromCaip2ChainIds(Object.keys(data?.chainAssetMap ?? []))
 }

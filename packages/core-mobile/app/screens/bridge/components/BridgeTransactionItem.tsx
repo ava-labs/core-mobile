@@ -10,7 +10,7 @@ import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import {
   isPendingBridgeTransaction,
-  isUnifiedBridgeTransfer
+  isBridgeTransfer
 } from 'screens/bridge/utils/bridgeUtils'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
@@ -33,7 +33,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
   const amount = useMemo(() => {
     if (!pending) return item.tokens[0]?.amount
 
-    if (isUnifiedBridgeTransfer(item)) {
+    if (isBridgeTransfer(item)) {
       return bigintToBig(item.amount, item.asset.decimals).toString()
     }
 

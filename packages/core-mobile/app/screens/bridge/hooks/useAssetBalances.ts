@@ -6,7 +6,7 @@ import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { getAssetBalances } from '../handlers/getAssetBalances'
 import { unwrapAssetSymbol } from '../utils/bridgeUtils'
-import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
+import { useBridgeAssets } from './useBridgeAssets'
 
 /**
  * Get a list of bridge supported assets with the balances.
@@ -18,7 +18,7 @@ export function useAssetBalances(): {
 } {
   const tokens = useSelector(selectTokensWithBalance)
   const tokenInfoData = useTokenInfoContext()
-  const { bridgeAssets } = useUnifiedBridgeAssets()
+  const { bridgeAssets } = useBridgeAssets()
 
   const assetsWithBalances = useMemo(
     () =>

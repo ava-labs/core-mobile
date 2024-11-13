@@ -5,7 +5,7 @@ import Logger from 'utils/Logger'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 
-export const useUnifiedBridgeAssets = (): {
+export const useBridgeAssets = (): {
   chainAssetMap: ChainAssetMap
   bridgeAssets: BridgeAsset[]
 } => {
