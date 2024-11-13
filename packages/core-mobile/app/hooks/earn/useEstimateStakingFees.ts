@@ -67,7 +67,8 @@ export const useEstimateStakingFees = ({
       ) {
         return
       }
-      const txFee = await getImportFee({
+      const txFee = await getImportFeeFromDummyTx({
+        stakingAmount,
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
@@ -77,6 +78,7 @@ export const useEstimateStakingFees = ({
     }
     getDefaultTxFee().catch(Logger.error)
   }, [
+    stakingAmount,
     activeAccount,
     avaxXPNetwork,
     amountForCrossChainTransfer,
@@ -86,7 +88,7 @@ export const useEstimateStakingFees = ({
 
   useEffect(() => {
     const calculateEstimatedStakingFee = async (): Promise<void> => {
-      if (xpProvider === undefined || defaultTxFee === undefined) return
+      if (xpProvider === undefined) return
 
       if (amountForCrossChainTransfer === undefined) {
         setEstimatedStakingFee(undefined)
@@ -107,12 +109,14 @@ export const useEstimateStakingFees = ({
         return
       }
 
-      const importFee = await getImportFee({
+      const importFee = await getImportFeeFromDummyTx({
+        stakingAmount,
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
         feeState: getFeeState(gasPrice)
       })
+
       const totalAmount = amountForCrossChainTransfer.add(importFee) // we need to include import fee
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
@@ -137,7 +141,6 @@ export const useEstimateStakingFees = ({
     amountForCrossChainTransfer,
     avaxXPNetwork,
     baseFee,
-    defaultTxFee,
     gasPrice,
     getFeeState,
     isDevMode,
@@ -151,19 +154,22 @@ export const useEstimateStakingFees = ({
   }
 }
 
-const getImportFee = async ({
+const getImportFeeFromDummyTx = async ({
+  stakingAmount,
   activeAccount,
   avaxXPNetwork,
   provider,
   feeState
 }: {
+  stakingAmount: TokenUnit
   activeAccount: CorePrimaryAccount
   avaxXPNetwork: Network
   provider: Avalanche.JsonRpcProvider
   feeState?: pvm.FeeState
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled()) {
-    const unsignedTxP = await WalletService.createImportPTx({
+    const unsignedTxP = await WalletService.createDummyImportPTx({
+      stakingAmount: stakingAmount.toSubUnit(),
       accountIndex: activeAccount.index,
       sourceChain: 'C',
       avaxXPNetwork,
@@ -175,7 +181,11 @@ const getImportFee = async ({
       provider,
       activeAccount.addressPVM
     )
-    return new TokenUnit(tx.txFee, 9, 'AVAX')
+    return new TokenUnit(
+      tx.txFee,
+      avaxXPNetwork.networkToken.decimals,
+      avaxXPNetwork.networkToken.symbol
+    )
   }
   return calculatePChainFee(avaxXPNetwork)
 }

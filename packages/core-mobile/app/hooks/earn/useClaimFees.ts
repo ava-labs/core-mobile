@@ -75,7 +75,7 @@ export const useClaimFees = (
       ) {
         return
       }
-      const txFee = await getExportPFee({
+      const txFee = await getExportFeeFromDummyTx({
         amountInNAvax: totalClaimable,
         activeAccount,
         avaxXPNetwork,
@@ -110,7 +110,7 @@ export const useClaimFees = (
       })
 
       const importCFee = calculateCChainFee(instantBaseFee, unsignedTx)
-      const exportPFee = await getExportPFee({
+      const exportPFee = await getExportFeeFromDummyTx({
         amountInNAvax: totalClaimable,
         activeAccount,
         avaxXPNetwork,
@@ -146,7 +146,7 @@ export const useClaimFees = (
   }
 }
 
-const getExportPFee = async ({
+const getExportFeeFromDummyTx = async ({
   amountInNAvax,
   activeAccount,
   avaxXPNetwork,
@@ -160,20 +160,24 @@ const getExportPFee = async ({
   feeState?: pvm.FeeState
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled()) {
-    const unsignedTxP = await WalletService.createExportPTx({
+    const unsignedTxP = await WalletService.createDummyExportPTx({
       amountInNAvax: amountInNAvax.toSubUnit(),
       accountIndex: activeAccount.index,
       avaxXPNetwork,
-      destinationAddress: activeAccount.addressCoreEth,
-      feeState,
-      destinationChain: 'C'
+      destinationAddress: activeAccount.addressPVM,
+      destinationChain: 'C',
+      feeState
     })
     const tx = await Avalanche.parseAvalancheTx(
       unsignedTxP,
       provider,
       activeAccount.addressPVM
     )
-    return new TokenUnit(tx.txFee, 9, 'AVAX')
+    return new TokenUnit(
+      tx.txFee,
+      avaxXPNetwork.networkToken.decimals,
+      avaxXPNetwork.networkToken.symbol
+    )
   }
   return calculatePChainFee(avaxXPNetwork)
 }

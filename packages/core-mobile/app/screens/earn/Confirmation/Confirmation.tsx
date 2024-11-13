@@ -452,7 +452,7 @@ export const Confirmation = (): JSX.Element | null => {
           <>
             <NetworkFeeSelector
               chainId={pNetwork.chainId}
-              gasLimit={Number(defaultTxFee?.toSubUnit())}
+              gasLimit={Number(defaultTxFee?.toSubUnit() ?? 1n)}
               onFeesChange={handleFeesChange}
               isGasLimitEditable={false}
               supportsAvalancheDynamicFee={

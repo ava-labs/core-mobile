@@ -32,7 +32,12 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { isDevnet } from 'utils/isDevnet'
-import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
+import {
+  getExportPUtxos,
+  getImportPUtxos,
+  isAvalancheTransactionRequest,
+  isBtcTransactionRequest
+} from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
 import MnemonicWalletInstance from './MnemonicWallet'
@@ -42,6 +47,10 @@ type InitProps = {
   walletType: WalletType
   isLoggingIn: boolean
 }
+
+// Dummy UTXO ID to construct the unsignedTx to get the estimated tx fee
+const DUMMY_UTXO_ID = 'dummy'
+
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
 
@@ -669,6 +678,68 @@ class WalletService {
       isDevnet(network)
     )
     return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
+  }
+
+  public async createDummyImportPTx({
+    stakingAmount,
+    accountIndex,
+    avaxXPNetwork,
+    sourceChain,
+    destinationAddress,
+    feeState
+  }: CreateImportPTxParams & { stakingAmount: bigint }): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+    const assetId = isDevnet(avaxXPNetwork)
+      ? DEVNET_AVAX_ASSET_ID
+      : avaxXPNetwork.isTestnet
+      ? TESTNET_AVAX_ASSET_ID
+      : MAINNET_AVAX_ASSET_ID
+
+    const utxos = getImportPUtxos(
+      stakingAmount,
+      assetId,
+      destinationAddress ?? '',
+      DUMMY_UTXO_ID
+    )
+    const utxoSet = new utils.UtxoSet([utxos])
+    return readOnlySigner.importP({
+      utxoSet,
+      sourceChain,
+      toAddress: destinationAddress,
+      feeState
+    })
+  }
+
+  public async createDummyExportPTx({
+    amountInNAvax,
+    accountIndex,
+    avaxXPNetwork,
+    destinationChain,
+    destinationAddress,
+    feeState
+  }: CreateExportPTxParams): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+    const provider = await NetworkService.getAvalancheProviderXP(
+      !!avaxXPNetwork.isTestnet,
+      isDevnet(avaxXPNetwork)
+    )
+    const assetId = provider.getAvaxID()
+
+    const utxos = getExportPUtxos(amountInNAvax, assetId, DUMMY_UTXO_ID)
+    const utxoSet = new utils.UtxoSet([utxos])
+    return readOnlySigner.exportP({
+      amount: amountInNAvax,
+      utxoSet,
+      destination: destinationChain,
+      toAddress: destinationAddress,
+      feeState
+    })
   }
 }
 
