@@ -43,9 +43,7 @@ enum LoginWithMnemonicStackScreens {
   CreatePin = 'LoginWithMnemonicStackScreens.CreatePin',
   BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin',
   TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions',
-  Loader = 'LoginWithMnemonicStackScreens.Loader',
-  PinOrBiometry = 'LoginWithMnemonicStackScreens.PinOrBiometry',
-  ForgotPin = 'LoginWithMnemonicStackScreens.ForgotPin'
+  Loader = 'LoginWithMnemonicStackScreens.Loader'
 }
 
 enum WalletScreens {
