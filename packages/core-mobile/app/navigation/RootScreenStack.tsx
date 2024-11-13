@@ -30,7 +30,7 @@ import { MFA } from 'seedless/types'
 import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { CubeSignerResponse } from '@cubist-labs/cubesigner-sdk'
-import LoginScreenStack from 'screens/login/LoginScreenStack'
+import { LoginWithPinOrBiometryScreen } from 'screens/login/LoginWithPinOrBiometryScreen'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
 import RecoveryMethodsStack, {
   RecoveryMethodsStackParamList
@@ -116,17 +116,14 @@ const WalletScreenStackWithContext: FC = () => {
   // if we haven't determined what to render yet, render nothing
   if (shouldRenderOnlyPinScreen === null) return null
   if (shouldRenderOnlyPinScreen === true) {
-    return <LoginScreenStack />
+    return <LoginWithPinOrBiometryScreen />
   }
 
   // we only render the wallet stack once user has unlocked the wallet
   return (
     <>
-      {walletState === WalletState.INACTIVE ? (
-        <LoginScreenStack />
-      ) : (
-        <WalletScreenStack onExit={doExit} />
-      )}
+      <WalletScreenStack onExit={doExit} />
+      {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}
