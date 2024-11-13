@@ -8,7 +8,6 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionRequest } from 'ethers'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { buildTx } from './buildEVMSendTx'
-import { getGasLimit } from './getGasLimit'
 
 export const send = async ({
   request,
@@ -93,18 +92,10 @@ const getTransactionRequest = ({
         toAddress,
         amount
       })
-      const gasLimit = await getGasLimit({
-        fromAddress,
-        provider,
-        token,
-        toAddress,
-        amount: amount ?? 0n
-      })
 
       return {
         ...txRequest,
-        chainId,
-        gasLimit
+        chainId
       }
     })
 }
