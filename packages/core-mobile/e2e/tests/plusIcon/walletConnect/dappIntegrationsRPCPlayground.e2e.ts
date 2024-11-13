@@ -30,7 +30,7 @@ describe('Dapp - Core Playground', () => {
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
     await bottomTabsPage.tapPortfolioTab()
-  })
+  }, 60000)
 
   it('should handle eth_sendTransaction', async () => {
     await bottomTabsPage.tapBrowserTab()

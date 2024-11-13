@@ -10,6 +10,7 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import nameWalletPage from '../../pages/nameWallet.page'
 import commonElsPage from '../../pages/commonEls.page'
 import analyticsConsentPage from '../../pages/analyticsConsent.page'
+import burgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 
 describe('Login with Mnemonic wallet', () => {
   beforeAll(async () => {
@@ -20,7 +21,7 @@ describe('Login with Mnemonic wallet', () => {
   it('should login with recovery phrase', async () => {
     await device.launchApp({ newInstance: true })
     await ExistingRecoveryPhrasePage.tapForgotPinBtn()
-    await ExistingRecoveryPhrasePage.tapContinueBtn()
+    await burgerMenuPage.swipeToLogout()
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await ExistingRecoveryPhrasePage.tapSignInBtn()

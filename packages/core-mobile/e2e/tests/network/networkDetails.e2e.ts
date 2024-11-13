@@ -55,11 +55,6 @@ describe('Network Details', () => {
       0
     )
     await NetworksManagePage.tapConnect()
-    await commonElsPage.goBack()
-    await commonElsPage.goBack()
-  })
-
-  it('should verify network connection', async () => {
     await PortfolioPage.verifyActiveNetwork(portfolioLoc.ethNetwork)
   })
 })

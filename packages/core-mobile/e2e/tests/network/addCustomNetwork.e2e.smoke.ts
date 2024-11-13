@@ -9,6 +9,7 @@ import NetworksManagePage from '../../pages/networksManage.page'
 import NetworksManageLoc from '../../locators/networksManage.loc'
 import { warmup } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
+import accountManagePage from '../../pages/accountManage.page'
 
 describe('Add custom network', () => {
   beforeAll(async () => {
@@ -51,16 +52,22 @@ describe('Add custom network', () => {
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapEditNetwork()
     await NetworksManagePage.inputNetworkName(NetworksManageLoc.celoNetworkName)
-    await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
-    await commonElsPage.goBack()
     await Assert.isVisible(NetworksManagePage.celoNetworkName)
   })
 
-  it('should change active network to custom', async () => {
-    await NetworksManagePage.tapNetworksTab()
-    await NetworksManagePage.tapArbCustomNetwork()
-    await PortfolioPage.verifyActiveNetwork('Arbitrum One')
+  it('should switch to custom network', async () => {
+    await NetworksManagePage.tapConnect()
+    await PortfolioPage.verifyActiveNetwork(NetworksManageLoc.celoNetworkName)
+  })
+
+  it('should verify empty assets on custom network', async () => {
+    await accountManagePage.createNthAccountAndSwitchToNth(2)
+    await PortfolioPage.tapActiveNetwork(NetworksManageLoc.celoNetworkName)
+    await Assert.isVisible(PortfolioPage.noAssetsHeader)
+    await Assert.isVisible(PortfolioPage.noAssetsHeader)
+    await Assert.isVisible(PortfolioPage.addAssetsMessage)
+    await Assert.isVisible(PortfolioPage.addAssetsButton)
   })
 
   it('should delete custom network', async () => {
