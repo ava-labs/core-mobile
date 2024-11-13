@@ -55,7 +55,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     injectCoreAsRecent,
     injectGetDescriptionAndFavicon,
     coreConnectInterceptor,
-    injectCustomWindowOpen
+    injectCustomWindowOpen,
+    injectCustomPrompt
   } = useInjectedJavascript()
   const activeTab = useSelector(selectTab(tabId))
   const activeHistory = activeTab?.activeHistory
@@ -256,11 +257,13 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         testID="myWebview"
         ref={webViewRef}
         pullToRefreshEnabled={true}
+        injectedJavaScriptForMainFrameOnly={false}
         injectedJavaScript={
           injectGetDescriptionAndFavicon +
           injectCoreAsRecent +
           coreConnectInterceptor +
-          injectCustomWindowOpen
+          injectCustomWindowOpen +
+          injectCustomPrompt
         }
         source={{ uri: urlToLoad }}
         setSupportMultipleWindows={false}
