@@ -10,6 +10,7 @@ export type InjectedJavascripts = {
   injectGetDescriptionAndFavicon: string
   coreConnectInterceptor: string
   injectCustomWindowOpen: string
+  injectCustomPrompt: string
 }
 
 export type InjectedJsMessageWrapper = {
@@ -172,11 +173,62 @@ export function useInjectedJavascript(): InjectedJavascripts {
     }
   })();`
 
+  const injectCustomPrompt = `(async function(){
+    var focused = false;
+    Object.freeze(Object);
+    window.onfocus = function(){
+      focused = true;
+    };
+    window.onblur = function(){
+      focused = false;
+    };
+    const origPrompt = window.prompt;
+    const customPrompt = function(message){
+      if (focused){
+        return origPrompt(message);
+      } else {
+        return '';
+      }
+    };
+    const origAlert = window.alert;
+    const customAlert = function(message){
+      if (focused){
+        return origAlert(message);
+      } else {
+        return;
+      }
+    };
+    const origConfirm = window.confirm;
+    const customConfirm = function(message){
+      if (focused){
+        return origConfirm(message);
+      } else {
+        return false;
+      }
+    };
+    Object.defineProperty(window, 'prompt', {
+      value: customPrompt,
+      writable: false,
+      configurable: false
+    });
+    Object.defineProperty(window, 'alert', {
+      value: customPrompt,
+      writable: false,
+      configurable: false
+    });
+    Object.defineProperty(window, 'confirm', {
+      value: customPrompt,
+      writable: false,
+      configurable: false
+    });
+  })();`
+
   return {
     injectCoreAsRecent,
     injectLogRecentWallet,
     injectGetDescriptionAndFavicon,
     coreConnectInterceptor,
-    injectCustomWindowOpen
+    injectCustomWindowOpen,
+    injectCustomPrompt
   }
 }
