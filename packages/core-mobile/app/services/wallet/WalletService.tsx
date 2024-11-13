@@ -33,8 +33,7 @@ import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { isDevnet } from 'utils/isDevnet'
 import {
-  getExportPUtxos,
-  getImportPUtxos,
+  getImportExportPUtxos,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest
 } from './utils'
@@ -698,7 +697,7 @@ class WalletService {
       ? TESTNET_AVAX_ASSET_ID
       : MAINNET_AVAX_ASSET_ID
 
-    const utxos = getImportPUtxos(
+    const utxos = getImportExportPUtxos(
       stakingAmount,
       assetId,
       destinationAddress ?? '',
@@ -730,8 +729,12 @@ class WalletService {
       isDevnet(avaxXPNetwork)
     )
     const assetId = provider.getAvaxID()
-
-    const utxos = getExportPUtxos(amountInNAvax, assetId, DUMMY_UTXO_ID)
+    const utxos = getImportExportPUtxos(
+      amountInNAvax * 2n, // 2x the amount to cover the fee
+      assetId,
+      destinationAddress ?? '',
+      DUMMY_UTXO_ID
+    )
     const utxoSet = new utils.UtxoSet([utxos])
     return readOnlySigner.exportP({
       amount: amountInNAvax,

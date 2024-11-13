@@ -15,6 +15,7 @@ import { selectActiveNetwork } from 'store/network'
 import { isDevnet } from 'utils/isDevnet'
 import { pvm } from '@avalabs/avalanchejs'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useMemo } from 'react'
 import { useClaimFees } from './useClaimFees'
 
 /**
@@ -33,6 +34,7 @@ export const useClaimRewards = (
 ): {
   mutation: UseMutationResult<void, Error, void, unknown>
   defaultTxFee?: TokenUnit
+  totalFees?: TokenUnit
   // eslint-disable-next-line max-params
 } => {
   const queryClient = useQueryClient()
@@ -40,8 +42,11 @@ export const useClaimRewards = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const feeState = useMemo(() => getFeeState(), [getFeeState])
+
   const { totalFees, exportPFee, totalClaimable, defaultTxFee } = useClaimFees(
-    getFeeState()
+    feeState,
+    gasPrice
   )
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
@@ -60,8 +65,8 @@ export const useClaimRewards = (
         throw Error('not enough balance to cover fee')
       }
 
-      // maximum amount that we can transfer = max claimable amount - export P fee
-      const amountToTransfer = totalClaimable.sub(exportPFee)
+      // maximum amount that we can transfer = max claimable amount - export P fee * 2n (to add some padding)
+      const amountToTransfer = totalClaimable.sub(exportPFee.mul(2n))
 
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
@@ -94,7 +99,7 @@ export const useClaimRewards = (
       }
     }
   })
-  return { mutation, defaultTxFee }
+  return { mutation, defaultTxFee, totalFees }
 }
 
 /**

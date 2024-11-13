@@ -31,7 +31,8 @@ import { usePChainBalance } from './usePChainBalance'
  * https://docs.avax.network/quickstart/transaction-fees
  */
 export const useClaimFees = (
-  feeState?: pvm.FeeState
+  feeState?: pvm.FeeState,
+  gasPrice?: bigint
 ): {
   totalFees?: TokenUnit
   exportPFee?: TokenUnit
@@ -85,11 +86,11 @@ export const useClaimFees = (
       setDefaultTxFee(txFee)
     }
     getDefaultTxFee().catch(Logger.error)
-  }, [activeAccount, avaxXPNetwork, xpProvider, feeState, totalClaimable])
+  }, [activeAccount, avaxXPNetwork, xpProvider, totalClaimable, feeState])
 
   useEffect(() => {
     const calculateFees = async (): Promise<void> => {
-      if (defaultTxFee === undefined || xpProvider === undefined) return
+      if (xpProvider === undefined) return
 
       const baseFee = cChainBaseFee?.data
       if (!baseFee) throw new Error('no base fee available')
@@ -115,7 +116,9 @@ export const useClaimFees = (
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState
+        feeState: feeState
+          ? { ...feeState, price: gasPrice ?? feeState.price }
+          : undefined
       })
 
       Logger.info('importCFee', importCFee.toDisplay())
@@ -135,7 +138,7 @@ export const useClaimFees = (
     totalClaimable,
     xpProvider,
     feeState,
-    defaultTxFee
+    gasPrice
   ])
 
   return {

@@ -3,10 +3,8 @@ import {
   avaxSerial,
   BigIntPr,
   Id,
-  Input,
   Int,
   OutputOwners,
-  TransferInput,
   TransferOutput,
   Utxo
 } from '@avalabs/avalanchejs'
@@ -28,7 +26,7 @@ export const isAvalancheTransactionRequest = (
   return 'tx' in request
 }
 
-export const getImportPUtxos = (
+export const getImportExportPUtxos = (
   amt: bigint,
   assetId: string,
   address: string,
@@ -42,15 +40,4 @@ export const getImportPUtxos = (
       new BigIntPr(amt),
       OutputOwners.fromNative([Address.fromString(address).toBytes()])
     )
-  )
-
-export const getExportPUtxos = (
-  amt: bigint,
-  assetId: string,
-  utxoId: string
-): Utxo<TransferInput> =>
-  new Utxo(
-    new avaxSerial.UTXOID(Id.fromString(utxoId), new Int(0)),
-    Id.fromString(assetId),
-    new TransferInput(new BigIntPr(amt), Input.fromNative([0, 1]))
   )

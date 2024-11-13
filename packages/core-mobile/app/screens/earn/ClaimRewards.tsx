@@ -11,7 +11,6 @@ import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { showSimpleToast } from 'components/Snackbar'
-import { useClaimFees } from 'hooks/earn/useClaimFees'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
@@ -45,7 +44,6 @@ const ClaimRewards = (): JSX.Element | null => {
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
-  const { totalFees } = useClaimFees()
   const xpProvider = useAvalancheXpProvider()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -63,7 +61,11 @@ const ClaimRewards = (): JSX.Element | null => {
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
 
-  const { mutation: claimRewardsMutation, defaultTxFee } = useClaimRewards(
+  const {
+    mutation: claimRewardsMutation,
+    defaultTxFee,
+    totalFees
+  } = useClaimRewards(
     onClaimSuccess,
     onClaimError,
     onFundsStuck,
@@ -184,7 +186,7 @@ const ClaimRewards = (): JSX.Element | null => {
       header="Claim Rewards"
       confirmBtnTitle="Claim Now"
       cancelBtnTitle="Cancel"
-      confirmBtnDisabled={unableToGetFees}>
+      confirmBtnDisabled={unableToGetFees || excessiveNetworkFee}>
       <View style={styles.verticalPadding}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Claimable Amount</AvaText.Body2>
@@ -221,7 +223,7 @@ const ClaimRewards = (): JSX.Element | null => {
         <>
           <NetworkFeeSelector
             chainId={pNetwork.chainId}
-            gasLimit={Number(defaultTxFee?.toSubUnit())}
+            gasLimit={Number(defaultTxFee?.toSubUnit() ?? 1n)}
             onFeesChange={handleFeesChange}
             isGasLimitEditable={false}
             supportsAvalancheDynamicFee={
