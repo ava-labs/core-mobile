@@ -236,7 +236,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@tanstack/query-sync-storage-persister": 5.59.6
-    "@tanstack/react-query": 5.59.8
+    "@tanstack/react-query": 5.59.20
     "@tanstack/react-query-persist-client": 5.59.6
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
@@ -10695,6 +10695,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.59.20":
+  version: 5.59.20
+  resolution: "@tanstack/query-core@npm:5.59.20"
+  checksum: ed836033c7f34a61e7f152da1067ec170e36e861dc591e2a068f73918bcc641bb50ce90dc3b8d12e047f63f70b2842f72e3328d649c841f5c4ea51fdb95e454b
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.59.6":
   version: 5.59.6
   resolution: "@tanstack/query-core@npm:5.59.6"
@@ -10733,14 +10740,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:5.59.8":
-  version: 5.59.8
-  resolution: "@tanstack/react-query@npm:5.59.8"
+"@tanstack/react-query@npm:5.59.20":
+  version: 5.59.20
+  resolution: "@tanstack/react-query@npm:5.59.20"
   dependencies:
-    "@tanstack/query-core": 5.59.6
+    "@tanstack/query-core": 5.59.20
   peerDependencies:
     react: ^18 || ^19
-  checksum: 584fa340f197d3afd8dc9639ab5fa0238eea41050b2ddd642f3be94d5c8a16cb7773da3fc6e90b3c1b473c9170fb4eedd83460270ce014a004cf97df3ab36f15
+  checksum: 2f4740f13dc9cbbf3c4175ac2e4e2788d2df8643940dfd9cc62c8c3d7c8842b2aeda0f58b99cdd2d525c0c78d759a1adfb3118599ab64bd3ce7ce4f027ee6f6b
   languageName: node
   linkType: hard
 
