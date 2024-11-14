@@ -14,7 +14,7 @@ import Bootsplash from 'react-native-bootsplash'
 import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
-import { AppSwitcher } from './AppSwitcher'
+import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
 import { server } from './tests/msw/native/server'
 
@@ -60,7 +60,7 @@ Text.defaultProps.allowFontScaling = false
 TextInput.defaultProps = TextInput.defaultProps || {}
 TextInput.defaultProps.allowFontScaling = false
 
-let AppEntryPoint = AppSwitcher
+let AppEntryPoint = ContextApp
 
 if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   Bootsplash.hide()
