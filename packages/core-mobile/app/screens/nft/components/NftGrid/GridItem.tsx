@@ -7,7 +7,7 @@ import AvaText from 'components/AvaText'
 import { SvgXml } from 'react-native-svg'
 import OvalTagBg from 'components/OvalTagBg'
 import { getNftImage, getNftTitle, isErc1155 } from 'services/nft/utils'
-import { Image } from 'expo-image'
+import { FastImage } from 'react-native-fast-image'
 import { NftItem } from 'services/nft/types'
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width
@@ -84,7 +84,7 @@ export const GridItem = ({
       />
     ) : (
       <Animated.View style={{ opacity: opacity }}>
-        <Image
+        <FastImage
           style={{
             width: GRID_ITEM_WIDTH,
             height: imageHeight,
