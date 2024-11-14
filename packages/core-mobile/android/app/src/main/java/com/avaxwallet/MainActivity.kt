@@ -1,6 +1,5 @@
 package com.avaxwallet
 
-import expo.modules.ReactActivityDelegateWrapper
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
@@ -24,7 +23,7 @@ class MainActivity : ReactActivity() {
      * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
      */
     override fun createReactActivityDelegate(): ReactActivityDelegate =
-        ReactActivityDelegateWrapper(this, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED, DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled))
+        DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
     private var privacyView: View? = null
     private var isPrivacyViewOn = false

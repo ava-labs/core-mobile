@@ -30,9 +30,16 @@
   @org.greenrobot.eventbus.Subscribe <methods>;
 }
 
-# expo-image
--keep public class com.bumptech.glide.** { *; }
--keep @com.bumptech.glide.annotation.GlideModule class *
+# react-native-fast-image
+-keep enum org.greenrobot.eventbus.ThreadMode { *; }
+-keep public class com.dylanvann.fastimage.* {*;}
+-keep public class com.dylanvann.fastimage.** {*;}
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public class * extends com.bumptech.glide.module.AppGlideModule
+-keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}
 
 # react-native-skia
 -keep class com.shopify.reactnative.skia.** { *; }

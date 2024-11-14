@@ -19,7 +19,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Icons, Pressable, useTheme } from '@avalabs/k2-mobile'
 import Loader from 'components/Loader'
 import { Tooltip } from 'components/Tooltip'
-import { Image } from 'expo-image'
+import FastImage from 'react-native-fast-image'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNft } from './hooks/useNft'
@@ -173,7 +173,7 @@ const NftDetailsScreen = (): JSX.Element => {
           </View>
         )}
         {shouldRenderFastImage && (
-          <Image
+          <FastImage
             onError={() => setImgLoadFailed(true)}
             style={[
               styles.imageStyle,

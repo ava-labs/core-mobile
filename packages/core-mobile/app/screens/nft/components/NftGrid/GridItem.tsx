@@ -8,7 +8,7 @@ import { NFTItem } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import OvalTagBg from 'components/OvalTagBg'
 import { isErc1155 } from 'services/nft/utils'
-import { Image } from 'expo-image'
+import { FastImage } from 'react-native-fast-image'
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width
 const GRID_ITEM_MARGIN = 8
@@ -95,7 +95,7 @@ export const GridItem = React.memo(
         />
       ) : (
         <Animated.View style={{ opacity: opacity }}>
-          <Image
+          <FastImage
             style={{
               width: GRID_ITEM_WIDTH,
               height: GRID_ITEM_WIDTH * (item.imageData.aspect ?? 1),
