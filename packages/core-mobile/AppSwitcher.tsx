@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Alert, View, PanResponder } from 'react-native'
 import OldApp from 'ContextApp'
-import NewApp from 'new/ContextApp'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+
+const NewApp = React.lazy(() => import('new/ContextApp'))
 
 const bundleId = DeviceInfoService.getBundleId()
 const isInternalBuild =
@@ -27,36 +28,40 @@ export const AppSwitcher = (): React.JSX.Element => {
 
   const panResponder = useMemo(
     () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: (evt, gestureState) => {
-          return (
-            gestureState.numberActiveTouches === APP_SWITCH_NUMBER_OF_TOUCHES
-          )
-        },
-        onPanResponderGrant: (evt, gestureState) => {
-          if (
-            gestureState.numberActiveTouches === APP_SWITCH_NUMBER_OF_TOUCHES
-          ) {
-            Alert.alert('Switch App Experience?', '', [
-              {
-                text: 'Cancel',
-                style: 'cancel'
-              },
-              { text: 'OK', onPress: switchApp }
-            ])
-          }
+      isNewApp
+        ? PanResponder.create({
+            onStartShouldSetPanResponder: (evt, gestureState) => {
+              return (
+                gestureState.numberActiveTouches ===
+                APP_SWITCH_NUMBER_OF_TOUCHES
+              )
+            },
+            onPanResponderGrant: (evt, gestureState) => {
+              if (
+                gestureState.numberActiveTouches ===
+                APP_SWITCH_NUMBER_OF_TOUCHES
+              ) {
+                Alert.alert('Switch App Experience?', '', [
+                  {
+                    text: 'Cancel',
+                    style: 'cancel'
+                  },
+                  { text: 'OK', onPress: switchApp }
+                ])
+              }
 
-          return true
-        }
-      }),
-    [switchApp]
+              return true
+            }
+          })
+        : undefined,
+    [switchApp, isNewApp]
   )
 
   // only allow switching to new app on internal builds
   if (!isInternalBuild && !__DEV__) return <OldApp />
 
   return (
-    <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+    <View style={{ flex: 1 }} {...panResponder?.panHandlers}>
       {DevDebuggingConfig.K2_ALPINE || isNewApp ? <NewApp /> : <OldApp />}
     </View>
   )
