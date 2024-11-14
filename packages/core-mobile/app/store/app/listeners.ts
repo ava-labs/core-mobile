@@ -51,17 +51,10 @@ const init = async (
   AnalyticsService.capture('ApplicationOpened')
   listenToAppState(listenerApi)
 
-  const start = new Date().getTime()
-
   if (Platform.OS === 'android') {
     await BiometricsSDK.warmup()
   }
 
-  const end = new Date().getTime()
-  const time = end - start
-  // @ts-expect-error sds
-  // eslint-disable-next-line no-alert
-  alert(`setIsReady in listener ${time}`)
   dispatch(setIsReady(true))
 }
 
