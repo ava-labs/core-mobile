@@ -6,6 +6,11 @@ module.exports = {
         android: null // disable Android platform, other platforms will still autolink
       }
     },
+    expo: {
+      platforms: {
+        android: null // disable Android platform, other platforms will still autolink
+      }
+    },
     'react-native-performance': {
       platforms: {
         ios: null,
