@@ -134,7 +134,8 @@ export async function importPWithBalanceCheck({
   activeAccount,
   isDevMode,
   selectedCurrency,
-  isDevnet
+  isDevnet,
+  feeState
 }: ImportPParams): Promise<void> {
   //get P balance now then compare it later to check if balance changed after import
   const addressPVM = activeAccount.addressPVM
@@ -153,7 +154,8 @@ export async function importPWithBalanceCheck({
     activeAccount,
     isDevMode,
     selectedCurrency,
-    isDevnet
+    isDevnet,
+    feeState
   })
 
   await retry({

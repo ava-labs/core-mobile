@@ -68,13 +68,15 @@ class EarnService {
     isDevMode,
     selectedCurrency,
     progressEvents,
-    isDevnet
+    isDevnet,
+    feeState
   }: {
     activeAccount: Account
     isDevMode: boolean
     selectedCurrency: string
     progressEvents?: (events: RecoveryEvents) => void
     isDevnet: boolean
+    feeState?: pvm.FeeState
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
@@ -103,7 +105,8 @@ class EarnService {
         activeAccount,
         isDevMode,
         selectedCurrency,
-        isDevnet
+        isDevnet,
+        feeState
       })
       progressEvents?.(RecoveryEvents.ImportPFinish)
     }

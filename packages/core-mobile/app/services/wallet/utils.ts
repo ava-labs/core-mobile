@@ -5,6 +5,7 @@ import {
   Id,
   Int,
   OutputOwners,
+  pvmSerial,
   TransferOutput,
   Utxo
 } from '@avalabs/avalanchejs'
@@ -26,7 +27,7 @@ export const isAvalancheTransactionRequest = (
   return 'tx' in request
 }
 
-export const getImportExportPUtxos = (
+export const getTransferOutputUtxos = (
   amt: bigint,
   assetId: string,
   address: string,
@@ -39,5 +40,24 @@ export const getImportExportPUtxos = (
     new TransferOutput(
       new BigIntPr(amt),
       OutputOwners.fromNative([Address.fromString(address).toBytes()])
+    )
+  )
+
+export const getStakeableOutUtxos = (
+  amt: bigint,
+  assetId: string,
+  address: string,
+  utxoId: string
+  // eslint-disable-next-line max-params
+): Utxo<pvmSerial.StakeableLockOut> =>
+  new Utxo(
+    new avaxSerial.UTXOID(Id.fromString(utxoId), new Int(0)),
+    Id.fromString(assetId),
+    new pvmSerial.StakeableLockOut(
+      new BigIntPr(0n),
+      new TransferOutput(
+        new BigIntPr(amt),
+        OutputOwners.fromNative([Address.fromString(address).toBytes()])
+      )
     )
   )

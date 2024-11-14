@@ -96,13 +96,16 @@ export const Confirmation = (): JSX.Element | null => {
   const [gasPrice, setGasPrice] = useState<bigint>()
   const xpProvider = useAvalancheXpProvider()
   const { getFeeState } = useGetFeeState()
-  const { estimatedStakingFee: networkFees, defaultTxFee } =
-    useEstimateStakingFees({
-      stakingAmount,
-      gasPrice,
-      xpProvider,
-      getFeeState
-    })
+  const {
+    estimatedStakingFee: networkFees,
+    defaultTxFee,
+    requiredPFee
+  } = useEstimateStakingFees({
+    stakingAmount,
+    gasPrice,
+    xpProvider,
+    getFeeState
+  })
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
 
   let deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
@@ -191,7 +194,8 @@ export const Confirmation = (): JSX.Element | null => {
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
       nodeId,
-      feeState: getFeeState(gasPrice)
+      feeState: getFeeState(gasPrice),
+      requiredPFee
     })
   }
 

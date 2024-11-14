@@ -33,7 +33,8 @@ import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { isDevnet } from 'utils/isDevnet'
 import {
-  getImportExportPUtxos,
+  getStakeableOutUtxos,
+  getTransferOutputUtxos,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest
 } from './utils'
@@ -697,7 +698,7 @@ class WalletService {
       ? TESTNET_AVAX_ASSET_ID
       : MAINNET_AVAX_ASSET_ID
 
-    const utxos = getImportExportPUtxos(
+    const utxos = getTransferOutputUtxos(
       stakingAmount,
       assetId,
       destinationAddress ?? '',
@@ -729,8 +730,8 @@ class WalletService {
       isDevnet(avaxXPNetwork)
     )
     const assetId = provider.getAvaxID()
-    const utxos = getImportExportPUtxos(
-      amountInNAvax * 2n, // 2x the amount to cover the fee
+    const utxos = getTransferOutputUtxos(
+      amountInNAvax * 2n,
       assetId,
       destinationAddress ?? '',
       DUMMY_UTXO_ID
@@ -741,6 +742,43 @@ class WalletService {
       utxoSet,
       destination: destinationChain,
       toAddress: destinationAddress,
+      feeState
+    })
+  }
+
+  public async createDummyAddPermissionlessDelegatorTx({
+    amountInNAvax,
+    accountIndex,
+    avaxXPNetwork,
+    destinationAddress,
+    feeState
+  }: CreateExportPTxParams): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+    const provider = await NetworkService.getAvalancheProviderXP(
+      !!avaxXPNetwork.isTestnet,
+      isDevnet(avaxXPNetwork)
+    )
+    const assetId = provider.getAvaxID()
+    const utxos = getStakeableOutUtxos(
+      amountInNAvax * 2n,
+      assetId,
+      destinationAddress ?? '',
+      DUMMY_UTXO_ID
+    )
+    const utxoSet = new utils.UtxoSet([utxos])
+    return readOnlySigner.addPermissionlessDelegator({
+      weight: amountInNAvax,
+      nodeId: 'NodeID-1',
+      subnetId: PChainId._11111111111111111111111111111111LPO_YY,
+      fromAddresses: [destinationAddress ?? ''],
+      rewardAddresses: [destinationAddress ?? ''],
+      start: BigInt(getUnixTime(new Date())),
+      // get the end date 1 month from now
+      end: BigInt(getUnixTime(new Date()) + 60 * 60 * 24 * 30),
+      utxoSet,
       feeState
     })
   }

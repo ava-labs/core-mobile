@@ -37,6 +37,7 @@ export const useIssueDelegation = (
       startDate: Date
       endDate: Date
       feeState?: pvm.FeeState
+      requiredPFee?: TokenUnit
     },
     unknown
   >
@@ -64,6 +65,7 @@ export const useIssueDelegation = (
       startDate: Date
       endDate: Date
       feeState?: pvm.FeeState
+      requiredPFee?: TokenUnit
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
@@ -77,7 +79,8 @@ export const useIssueDelegation = (
         activeAccount,
         isDevMode: isDeveloperMode,
         selectedCurrency,
-        isDevnet: isDevnet(activeNetwork)
+        isDevnet: isDevnet(activeNetwork),
+        feeState: data.feeState
       })
       Logger.trace('getPChainBalance...')
 
@@ -117,7 +120,7 @@ export const useIssueDelegation = (
 
       Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
       const cChainRequiredAmountAvax = calculateAmountForCrossChainTransfer(
-        data.stakingAmount,
+        data.stakingAmount.add(data.requiredPFee ?? 0),
         claimableBalance
       )
 
