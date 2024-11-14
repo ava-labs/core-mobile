@@ -1,6 +1,6 @@
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
-import { AppState, AppStateStatus, Platform } from 'react-native'
+import { AppState, AppStateStatus } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
 import {
   onRehydrationComplete,
@@ -50,10 +50,6 @@ const init = async (
   AnalyticsService.capture('ApplicationLaunched', { FontScale: fontScale })
   AnalyticsService.capture('ApplicationOpened')
   listenToAppState(listenerApi)
-
-  if (Platform.OS === 'android') {
-    BiometricsSDK.warmup()
-  }
 
   dispatch(setIsReady(true))
 }
