@@ -35,36 +35,6 @@ PODS:
   - DatadogWebViewTracking (2.14.2):
     - DatadogInternal (= 2.14.2)
   - DoubleConversion (1.1.6)
-  - EXConstants (15.4.6):
-    - ExpoModulesCore
-  - EXFont (11.10.3):
-    - ExpoModulesCore
-  - Expo (50.0.21):
-    - ExpoModulesCore
-  - ExpoAdapterGoogleSignIn (13.1.0):
-    - ExpoModulesCore
-    - GoogleSignIn (~> 7.1)
-    - React-Core
-  - ExpoBlur (12.9.2):
-    - ExpoModulesCore
-  - ExpoFileSystem (16.0.9):
-    - ExpoModulesCore
-  - ExpoHead (3.4.10):
-    - ExpoModulesCore
-  - ExpoKeepAwake (12.8.2):
-    - ExpoModulesCore
-  - ExpoModulesCore (1.11.14):
-    - glog
-    - RCT-Folly (= 2022.05.16.00)
-    - React-Core
-    - React-NativeModulesApple
-    - React-RCTAppDelegate
-    - ReactCommon/turbomodule/core
-  - EXSplashScreen (0.26.5):
-    - ExpoModulesCore
-    - glog
-    - RCT-Folly (= 2022.05.16.00)
-    - React-Core
   - FBLazyVector (0.73.7)
   - FBReactNativeSpec (0.73.7):
     - RCT-Folly (= 2022.05.16.00)
@@ -1350,16 +1320,6 @@ DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - "DatadogSDKReactNative (from `../node_modules/@datadog/mobile-react-native`)"
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
-  - EXConstants (from `../node_modules/expo-constants/ios`)
-  - EXFont (from `../node_modules/expo-font/ios`)
-  - Expo (from `../node_modules/expo`)
-  - "ExpoAdapterGoogleSignIn (from `../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
-  - ExpoBlur (from `../node_modules/expo-blur/ios`)
-  - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
-  - ExpoHead (from `../node_modules/expo-router/ios`)
-  - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
-  - ExpoModulesCore (from `../node_modules/expo-modules-core`)
-  - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
@@ -1506,26 +1466,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@datadog/mobile-react-native"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
-  EXConstants:
-    :path: "../node_modules/expo-constants/ios"
-  EXFont:
-    :path: "../node_modules/expo-font/ios"
-  Expo:
-    :path: "../node_modules/expo"
-  ExpoAdapterGoogleSignIn:
-    :path: "../node_modules/@react-native-google-signin/google-signin/expo/ios"
-  ExpoBlur:
-    :path: "../node_modules/expo-blur/ios"
-  ExpoFileSystem:
-    :path: "../node_modules/expo-file-system/ios"
-  ExpoHead:
-    :path: "../node_modules/expo-router/ios"
-  ExpoKeepAwake:
-    :path: "../node_modules/expo-keep-awake/ios"
-  ExpoModulesCore:
-    :path: "../node_modules/expo-modules-core"
-  EXSplashScreen:
-    :path: "../node_modules/expo-splash-screen/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
@@ -1731,16 +1671,6 @@ SPEC CHECKSUMS:
   DatadogTrace: 5687191622d91152f10616e206500fe5acd8a342
   DatadogWebViewTracking: cb818ee5943de63940b4f536320361c17af0f7b1
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
-  EXConstants: a5f6276e565d98f9eb4280f81241fc342d641590
-  EXFont: f20669cb266ef48b004f1eb1f2b20db96cd1df9f
-  Expo: 7b9976a9b2be116a701b233d6655b229a3c9316e
-  ExpoAdapterGoogleSignIn: da10ae7e7c1d73a10c2facebcdfe5ebea8e073ce
-  ExpoBlur: e832d874bd94afc0645daddbd3162ec1ce172080
-  ExpoFileSystem: 74cc0fae916f9f044248433971dcfc8c3befd057
-  ExpoHead: 89ffd324e60520751c2c285233fe45e875c91874
-  ExpoKeepAwake: 0f5cad99603a3268e50af9a6eb8b76d0d9ac956c
-  ExpoModulesCore: 421e9c6bcb63baf153a5ec22b2b4319addfe331c
-  EXSplashScreen: fb4d80520d2348d57879e7a272415438bbcdffd3
   FBLazyVector: 9f533d5a4c75ca77c8ed774aced1a91a0701781e
   FBReactNativeSpec: 40b791f4a1df779e7e4aa12c000319f4f216d40a
   Firebase: 98e6bf5278170668a7983e12971a66b2cd57fc8c
@@ -1864,6 +1794,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 47d399a73c0c0caa9ff824e5c657eae31215bfee
 
-PODFILE CHECKSUM: 7b294288cd9e52fc7b311fb37d36067c4737a798
+PODFILE CHECKSUM: 35eaa8c89754e725bcf40feaa254d20ea17545ab
 
 COCOAPODS: 1.15.2
