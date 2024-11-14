@@ -52,8 +52,9 @@ const init = async (
   listenToAppState(listenerApi)
 
   if (Platform.OS === 'android') {
-    await BiometricsSDK.warmup()
+    BiometricsSDK.warmup()
   }
+
   dispatch(setIsReady(true))
 }
 
