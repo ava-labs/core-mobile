@@ -34,6 +34,7 @@ import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { bigIntToFeeDenomination } from 'utils/units/fees'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Tooltip } from './Tooltip'
 
 export enum FeePreset {
@@ -88,7 +89,7 @@ const NetworkFeeSelector = ({
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] = useState<GasAndFees>()
   const calculatedMaxTotalFeeDisplayed = useMemo(() => {
-    if (!calculatedFees?.maxTotalFee) return '0'
+    if (!calculatedFees?.maxTotalFee) return UNKNOWN_AMOUNT
     const unit = new TokenUnit(
       calculatedFees.maxTotalFee,
       networkToken.decimals,
@@ -290,9 +291,9 @@ const NetworkFeeSelector = ({
         </Row>
         <Row style={{ justifyContent: 'flex-end' }}>
           <Text variant="caption" sx={{ color: '$neutral400', lineHeight: 15 }}>
-            {currencyFormatter(calculatedFees?.maxTotalFeeInCurrency ?? 0) +
-              ' ' +
-              selectedCurrency}
+            {calculatedFees?.maxTotalFeeInCurrency
+              ? currencyFormatter(calculatedFees.maxTotalFeeInCurrency)
+              : UNKNOWN_AMOUNT + ' ' + selectedCurrency}
           </Text>
         </Row>
       </View>
