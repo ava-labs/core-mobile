@@ -63,9 +63,19 @@ export default function NftSend({
   const activeAccount = useSelector(selectActiveAccount)
   const fromAddress = activeAccount?.addressC ?? ''
   const tokens = useSelector(selectTokensWithBalance)
-  const nativeToken = tokens.find(
-    t => t.type === TokenType.NATIVE
-  ) as NetworkTokenWithBalance
+  const [nativeToken, setNativeToken] = useState<NetworkTokenWithBalance>(
+    tokens.find(t => t.type === TokenType.NATIVE) as NetworkTokenWithBalance
+  )
+  // in production, balance fetching occurs every two seconds, so update native token only when balance changes to avoid unnecessary re-renders
+  useEffect(() => {
+    const updatedNativeToken = tokens.find(
+      t => t.type === TokenType.NATIVE
+    ) as NetworkTokenWithBalance
+    if (!nativeToken || updatedNativeToken?.balance !== nativeToken.balance) {
+      setNativeToken(updatedNativeToken)
+    }
+  }, [tokens, nativeToken])
+
   const [touched, setTouched] = useState(false)
 
   const { send } = useEVMSend({
