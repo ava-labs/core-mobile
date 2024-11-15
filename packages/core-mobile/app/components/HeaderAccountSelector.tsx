@@ -29,6 +29,7 @@ export default function HeaderAccountSelector({
             testID="account_dropdown_title"
             variant="subtitle1"
             ellipsizeMode={'middle'}
+            numberOfLines={1}
             sx={{
               marginRight: 11,
               lineHeight: 22,
