@@ -26,13 +26,12 @@
     "expo-status-bar": "1.12.1",
     "react": "18.3.1",
     "react-native": "0.73.7",
-    "react-native-reanimated": "3.8.0",
+    "react-native-reanimated": "3.6.2",
     "react-native-svg": "15.7.1"
   },
   "peerDependencies": {
     "react": "18.3.1",
-    "react-native": "0.73.7",
-    "react-native-reanimated": "3.8.0"
+    "react-native": "0.73.7"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",

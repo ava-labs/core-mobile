@@ -1,18 +1,15 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef
-} from 'react'
-import {
-  Animated,
-  Platform,
-  TextInput,
-  Vibration,
-  ViewStyle
-} from 'react-native'
+import React, { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
+import { Platform, TextInput, Vibration, ViewStyle } from 'react-native'
+import Reanimated, {
+  cancelAnimation,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming
+} from 'react-native-reanimated'
 import { TouchableOpacity } from '../Primitives'
 import { useTheme } from '../..'
 
@@ -20,87 +17,169 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   ({ value, onChangePin, length = 6, style }, ref) => {
     const { theme } = useTheme()
     const textInputRef = useRef<TextInput>(null)
-    const wrongPinAnimation = useRef(new Animated.Value(0)).current
+    const wrongPinAnimation = useSharedValue(0)
 
-    const wrongPinAnimationSequence = useMemo(() => {
-      const animationValues = [
-        { toValue: 12, duration: 80 },
-        { toValue: -12, duration: 80 },
-        { toValue: 8, duration: 70 },
-        { toValue: -8, duration: 70 },
-        { toValue: 4, duration: 60 },
-        { toValue: -4, duration: 60 }
+    const loadingDotAnimation1 = useSharedValue(0)
+    const animatedStyle1 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation1.value
+        }
       ]
+    }))
 
-      // Create the animation sequence
-      return Animated.sequence([
-        ...animationValues.map(({ toValue, duration }) =>
-          Animated.timing(wrongPinAnimation, {
-            toValue,
-            duration,
-            useNativeDriver: true
-          })
-        ),
-        Animated.spring(wrongPinAnimation, {
-          toValue: 0,
-          useNativeDriver: true
-        })
-      ])
-    }, [wrongPinAnimation])
+    const loadingDotAnimation2 = useSharedValue(0)
+    const animatedStyle2 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation2.value
+        }
+      ]
+    }))
 
-    const loadingDotAnimations = useRef(
-      Array.from({ length }, () => new Animated.Value(0))
+    const loadingDotAnimation3 = useSharedValue(0)
+    const animatedStyle3 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation3.value
+        }
+      ]
+    }))
+
+    const loadingDotAnimation4 = useSharedValue(0)
+    const animatedStyle4 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation4.value
+        }
+      ]
+    }))
+
+    const loadingDotAnimation5 = useSharedValue(0)
+    const animatedStyle5 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation5.value
+        }
+      ]
+    }))
+
+    const loadingDotAnimation6 = useSharedValue(0)
+    const animatedStyle6 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation6.value
+        }
+      ]
+    }))
+
+    const loadingDotAnimation7 = useSharedValue(0)
+    const animatedStyle7 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation7.value
+        }
+      ]
+    }))
+
+    const loadingDotAnimation8 = useSharedValue(0)
+    const animatedStyle8 = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY: loadingDotAnimation8.value
+        }
+      ]
+    }))
+
+    const animatedStyles = [
+      animatedStyle1,
+      animatedStyle2,
+      animatedStyle3,
+      animatedStyle4,
+      animatedStyle5,
+      animatedStyle6,
+      animatedStyle7,
+      animatedStyle8
+    ]
+
+    const animations = useMemo(
+      () => [
+        loadingDotAnimation1,
+        loadingDotAnimation2,
+        loadingDotAnimation3,
+        loadingDotAnimation4,
+        loadingDotAnimation5,
+        loadingDotAnimation6,
+        loadingDotAnimation7,
+        loadingDotAnimation8
+      ],
+      [
+        loadingDotAnimation1,
+        loadingDotAnimation2,
+        loadingDotAnimation3,
+        loadingDotAnimation4,
+        loadingDotAnimation5,
+        loadingDotAnimation6,
+        loadingDotAnimation7,
+        loadingDotAnimation8
+      ]
     )
 
-    useEffect(() => {
-      loadingDotAnimations.current = Array.from(
-        { length },
-        () => new Animated.Value(0)
-      )
-    }, [loadingDotAnimations, length])
-
-    const loadingAnimationSequence = Animated.loop(
-      Animated.parallel(
-        loadingDotAnimations.current.map((anim, index) => {
-          return Animated.sequence([
-            Animated.delay(index * 50),
-            Animated.timing(anim, {
-              toValue: -15, // Move up
-              duration: 200,
-              useNativeDriver: true
-            }),
-            Animated.timing(anim, {
-              toValue: 0, // Move back down
-              duration: 200,
-              useNativeDriver: true
-            })
-          ])
-        })
-      )
-    )
+    const isLoading = useSharedValue(false)
 
     const startLoadingAnimation = (): void => {
-      loadingAnimationSequence.start()
+      const triggerAnimations = async (): Promise<void> => {
+        const animationPromises = animations.map(
+          (sharedValue, index) =>
+            new Promise<void>(resolve => {
+              sharedValue.value = withSequence(
+                withDelay(index * 50, withTiming(-15, { duration: 200 })),
+                withTiming(0, { duration: 200 })
+              )
+
+              setTimeout(() => {
+                runOnJS(resolve)()
+              }, index * 50 + 400)
+            })
+        )
+
+        return Promise.all(animationPromises).then(() => {
+          if (isLoading.value) {
+            runOnJS(triggerAnimations)()
+          }
+        })
+      }
+
+      isLoading.value = true
+      triggerAnimations()
     }
 
     const stopLoadingAnimation = (onComplete: () => void): void => {
-      loadingAnimationSequence.stop()
+      isLoading.value = false
+      animations.forEach(sharedValue => {
+        cancelAnimation(sharedValue)
+        sharedValue.value = 0
+      })
 
-      loadingDotAnimations.current.forEach(anim => anim.setValue(0)) // Reset animation values
-      onComplete()
+      runOnJS(onComplete)()
     }
 
-    const fireWrongPinAnimation = useCallback(
-      (onComplete: () => void) => {
-        wrongPinAnimationSequence.start(() => {
-          wrongPinAnimationSequence.reset()
-          wrongPinAnimation.setValue(0) // Reset jiggle animation value after the animation is done
-          onComplete() // Call onComplete callback when animation is finished
+    const fireWrongPinAnimation = (onComplete: () => void): void => {
+      wrongPinAnimation.value = withSequence(
+        withTiming(12, { duration: 80 }),
+        withTiming(-12, { duration: 80 }),
+        withTiming(8, { duration: 70 }),
+        withTiming(-8, { duration: 70 }),
+        withTiming(4, { duration: 60 }),
+        withTiming(-4, { duration: 60 }),
+        withSpring(0, {}, isFinished => {
+          if (isFinished) {
+            runOnJS(onComplete)()
+            runOnJS(vibratePhone)()
+          }
         })
-        vibratePhone()
-      },
-      [wrongPinAnimation, wrongPinAnimationSequence]
-    )
+      )
+    }
 
     function vibratePhone(): void {
       Vibration.vibrate(
@@ -114,6 +193,14 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       const numericInput = text.replace(/[^0-9]/g, '').slice(0, length)
       onChangePin(numericInput)
     }
+
+    const wrongPinAnimatedStyle = useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateX: wrongPinAnimation.value
+        }
+      ]
+    }))
 
     useImperativeHandle(ref, () => ({
       focus: () => textInputRef.current?.focus(),
@@ -137,7 +224,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           maxLength={length}
         />
         {/* Display for input dots */}
-        <Animated.View
+        <Reanimated.View
           style={[
             {
               gap: 15,
@@ -145,20 +232,14 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
               padding: 15,
               justifyContent: 'center'
             },
-            {
-              transform: [
-                {
-                  translateX: wrongPinAnimation
-                }
-              ]
-            },
+            wrongPinAnimatedStyle,
             style
           ]}>
           {Array.from({ length }).map((_, index) => {
             const shouldFill = index < value.length
 
             return (
-              <Animated.View
+              <Reanimated.View
                 key={index}
                 style={[
                   {
@@ -173,18 +254,12 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
                       ? theme.colors.$textPrimary
                       : 'transparent'
                   },
-                  loadingDotAnimations.current[index]
-                    ? {
-                        transform: [
-                          { translateY: loadingDotAnimations.current[index] }
-                        ]
-                      }
-                    : {}
+                  animatedStyles[index]
                 ]}
               />
             )
           })}
-        </Animated.View>
+        </Reanimated.View>
       </TouchableOpacity>
     )
   }
