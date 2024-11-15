@@ -106,7 +106,7 @@ const StakeDetails = (): JSX.Element | null => {
     const estimatedRewardInCurrency = estimatedRewardInAvax?.mul(avaxPrice)
     const estimatedRewardInCurrencyDisplay = estimatedRewardInCurrency
       ? tokenInCurrencyFormatter(
-          estimatedRewardInCurrency.toDisplay({ fixedDp: 2 })
+          estimatedRewardInCurrency.toDisplay({ fixedDp: 2, asNumber: true })
         )
       : UNKNOWN_AMOUNT
 
@@ -166,7 +166,7 @@ const StakeDetails = (): JSX.Element | null => {
 
     const rewardAmountInCurrencyDisplay = rewardAmountInCurrency
       ? tokenInCurrencyFormatter(
-          rewardAmountInCurrency.toDisplay({ fixedDp: 2 })
+          rewardAmountInCurrency.toDisplay({ fixedDp: 2, asNumber: true })
         )
       : UNKNOWN_AMOUNT
 
@@ -229,7 +229,7 @@ const StakeDetails = (): JSX.Element | null => {
 
     const stakeAmountInCurrencyDisplay = stakeAmountInCurrency
       ? tokenInCurrencyFormatter(
-          stakeAmountInCurrency.toDisplay({ fixedDp: 2 })
+          stakeAmountInCurrency.toDisplay({ fixedDp: 2, asNumber: true })
         )
       : UNKNOWN_AMOUNT
 
