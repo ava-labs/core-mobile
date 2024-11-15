@@ -25,6 +25,8 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import useBridge from 'screens/bridge/hooks/useBridge'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { toNumber } from 'utils/string/toNumber'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import OwnedTokenActionButtons from './components/OwnedTokenActionButtons'
 
 type ScreenProps = WalletScreenProps<
@@ -158,7 +160,11 @@ const OwnedTokenDetail: FC = () => {
           rightComponent={
             <View sx={{ alignItems: 'flex-end' }}>
               <Text variant="heading5" ellipsizeMode={'tail'}>
-                {currencyFormatter(token?.balanceCurrencyDisplayValue ?? '0')}
+                {token?.balanceCurrencyDisplayValue !== undefined
+                  ? currencyFormatter(
+                      toNumber(token.balanceCurrencyDisplayValue)
+                    )
+                  : UNKNOWN_AMOUNT}
               </Text>
               {token?.symbol && token?.balanceInCurrency
                 ? renderMarketTrend(token.balanceInCurrency, token.symbol)
