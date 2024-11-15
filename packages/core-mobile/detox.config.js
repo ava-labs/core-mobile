@@ -68,12 +68,26 @@ module.exports = {
       binaryPath: process.env.BITRISE_SIGNED_APK_PATH,
       testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
-    'android.internal.e2e': {
+    'android.external.latest.e2e': {
       type: 'android.apk',
       binaryPath:
-        'android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk',
+        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apkk',
       testBinaryPath:
-        'android/app/build/outputs/apk/androidTest/internal/debug/app-internal-e2e-androidTest.apk'
+        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+    },
+    'android.external.old.e2e': {
+      type: 'android.apk',
+      binaryPath:
+        'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
+      testBinaryPath:
+        'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+    },
+    'android.external.local.e2e': {
+      type: 'android.apk',
+      binaryPath:
+        '/Users/tyler.hackett/Desktop/app-external-e2e-bitrise-signed.apk',
+      testBinaryPath:
+        '/Users/tyler.hackett/Desktop/app-external-e2e-androidTest-bitrise-signed.apk'
     }
   },
   artifacts: {
@@ -488,6 +502,18 @@ module.exports = {
     'android.internal.e2e': {
       device: 'emulator',
       app: 'android.internal.e2e'
+    },
+    'android.external.latest.e2e': {
+      device: 'emulator',
+      app: 'android.external.latest.e2e'
+    },
+    'android.external.old.e2e': {
+      device: 'emulator',
+      app: 'android.external.old.e2e'
+    },
+    'android.external.local.e2e': {
+      device: 'emulator',
+      app: 'android.external.local.e2e'
     }
   }
 }
