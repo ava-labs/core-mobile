@@ -20,7 +20,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   ({ value, onChangePin, length = 6, style }, ref) => {
     const { theme } = useTheme()
     const textInputRef = useRef<TextInput>(null)
-    const jiggleAnimationValue = useRef(new Animated.Value(0)).current
+    const wrongPinAnimation = useRef(new Animated.Value(0)).current
 
     const wrongPinAnimationSequence = useMemo(() => {
       const animationValues = [
@@ -35,18 +35,18 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       // Create the animation sequence
       return Animated.sequence([
         ...animationValues.map(({ toValue, duration }) =>
-          Animated.timing(jiggleAnimationValue, {
+          Animated.timing(wrongPinAnimation, {
             toValue,
             duration,
             useNativeDriver: true
           })
         ),
-        Animated.spring(jiggleAnimationValue, {
+        Animated.spring(wrongPinAnimation, {
           toValue: 0,
           useNativeDriver: true
         })
       ])
-    }, [jiggleAnimationValue])
+    }, [wrongPinAnimation])
 
     const loadingDotAnimations = useRef(
       Array.from({ length }, () => new Animated.Value(0))
@@ -94,12 +94,12 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       (onComplete: () => void) => {
         wrongPinAnimationSequence.start(() => {
           wrongPinAnimationSequence.reset()
-          jiggleAnimationValue.setValue(0) // Reset jiggle animation value after the animation is done
+          wrongPinAnimation.setValue(0) // Reset jiggle animation value after the animation is done
           onComplete() // Call onComplete callback when animation is finished
         })
         vibratePhone()
       },
-      [jiggleAnimationValue, wrongPinAnimationSequence]
+      [wrongPinAnimation, wrongPinAnimationSequence]
     )
 
     function vibratePhone(): void {
@@ -148,7 +148,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
             {
               transform: [
                 {
-                  translateX: jiggleAnimationValue
+                  translateX: wrongPinAnimation
                 }
               ]
             },
