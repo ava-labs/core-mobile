@@ -89,7 +89,7 @@ const NetworkFeeSelector = ({
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] = useState<GasAndFees>()
   const calculatedMaxTotalFeeDisplayed = useMemo(() => {
-    if (!calculatedFees?.maxTotalFee) return '-'
+    if (!calculatedFees?.maxTotalFee) return UNKNOWN_AMOUNT
     const unit = new TokenUnit(
       calculatedFees.maxTotalFee,
       networkToken.decimals,
