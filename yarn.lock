@@ -237,7 +237,7 @@ __metadata:
     "@storybook/react-native": 7.6.20
     "@tanstack/query-sync-storage-persister": 5.59.6
     "@tanstack/react-query": 5.59.8
-    "@tanstack/react-query-persist-client": 5.59.6
+    "@tanstack/react-query-persist-client": 5.60.2
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
     "@types/big.js": 6.2.2
@@ -10695,10 +10695,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.59.20":
+  version: 5.59.20
+  resolution: "@tanstack/query-core@npm:5.59.20"
+  checksum: ed836033c7f34a61e7f152da1067ec170e36e861dc591e2a068f73918bcc641bb50ce90dc3b8d12e047f63f70b2842f72e3328d649c841f5c4ea51fdb95e454b
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.59.6":
   version: 5.59.6
   resolution: "@tanstack/query-core@npm:5.59.6"
   checksum: 3c26faf5db0dfbacdf258f1cdad27410e905394c9a4987115acb4e1afecaaf95ec60bde27a69a12beb5ef3978a16f9f5c30bf51f7d1f7646d74ad9a17383e157
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-persist-client-core@npm:5.59.20":
+  version: 5.59.20
+  resolution: "@tanstack/query-persist-client-core@npm:5.59.20"
+  dependencies:
+    "@tanstack/query-core": 5.59.20
+  checksum: f0b369283ecc45cbf94f621b6371098d48f9b435c753e509f450f3431615f1bab7cb93c1bc4281c5682d8d57db582235a918383fe2bc2dc490af009518fa8a10
   languageName: node
   linkType: hard
 
@@ -10721,15 +10737,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-query-persist-client@npm:5.59.6":
-  version: 5.59.6
-  resolution: "@tanstack/react-query-persist-client@npm:5.59.6"
+"@tanstack/react-query-persist-client@npm:5.60.2":
+  version: 5.60.2
+  resolution: "@tanstack/react-query-persist-client@npm:5.60.2"
   dependencies:
-    "@tanstack/query-persist-client-core": 5.59.6
+    "@tanstack/query-persist-client-core": 5.59.20
   peerDependencies:
-    "@tanstack/react-query": ^5.59.6
+    "@tanstack/react-query": ^5.60.2
     react: ^18 || ^19
-  checksum: 48de12c5fe7c07e6ee8becff2fb3f63ace8657242d6b01da07bd66142b8d348f95651ff31b1b85e12abc5d8583e1c03d61ffac4924697d9df081d96535b3f435
+  checksum: c11eda48c2867a9ec970cd0c68eace87223928db87859f8b86eb3abf2a654e732e0a25740ab13b890e9b36b52d545b8e639c59a4c4ec161071705749546abae7
   languageName: node
   linkType: hard
 
