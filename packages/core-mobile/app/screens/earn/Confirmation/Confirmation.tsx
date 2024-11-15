@@ -236,7 +236,7 @@ export const Confirmation = (): JSX.Element | null => {
     const stakingAmountInAvax = deductedStakingAmount.toDisplay()
     const stakingAmountInCurrency = deductedStakingAmount
       .mul(avaxPrice)
-      .toDisplay({ fixedDp: 2 })
+      .toDisplay({ fixedDp: 2, asNumber: true })
 
     return (
       <Row style={{ justifyContent: 'space-between' }}>
@@ -263,7 +263,7 @@ export const Confirmation = (): JSX.Element | null => {
       const estimatedRewardInAvax = data.estimatedTokenReward.toDisplay()
       const estimatedRewardInCurrency = data.estimatedTokenReward
         .mul(avaxPrice)
-        .toDisplay({ fixedDp: 2 })
+        .toDisplay({ fixedDp: 2, asNumber: true })
 
       return (
         <View
