@@ -7,6 +7,7 @@ import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
+import { toNumber } from 'utils/string/toNumber'
 import React from 'react'
 
 export const SpendLimits = ({
@@ -89,7 +90,9 @@ export const SpendLimits = ({
                 {spendLimit.tokenApproval.usdPrice !== undefined &&
                   spendLimit.limitType === Limit.DEFAULT && (
                     <Text variant="body2">
-                      {currencyFormatter(spendLimit.tokenApproval.usdPrice)}
+                      {currencyFormatter(
+                        toNumber(spendLimit.tokenApproval.usdPrice)
+                      )}
                     </Text>
                   )}
               </View>
