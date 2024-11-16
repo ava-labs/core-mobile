@@ -4,6 +4,8 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSendContext } from 'contexts/SendContext'
 import { assertNotUndefined } from 'utils/assertions'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
+import { bigIntToString } from '@avalabs/core-utils-sdk'
+import Logger from 'utils/Logger'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -111,8 +113,7 @@ const useEVMSend: SendAdapterEVM = ({
           amount: amount?.bn,
           token,
           maxFee,
-          nativeToken,
-          onCalculateMaxAmount: setMaxAmount
+          nativeToken
         })
       }
 
@@ -129,17 +130,57 @@ const useEVMSend: SendAdapterEVM = ({
     handleError,
     setError,
     maxFee,
-    setMaxAmount,
     token,
     toAddress,
     amount
   ])
+
+  const getMaxAmount = useCallback(async () => {
+    if (!provider || !toAddress || !token) {
+      return
+    }
+
+    const gasLimit = await getGasLimit({
+      fromAddress,
+      provider,
+      toAddress,
+      amount: amount?.bn ?? 0n,
+      token
+    })
+
+    const totalFee = gasLimit * maxFee
+    const maxAmountValue = nativeToken.balance - totalFee
+
+    if (token.type === TokenType.NATIVE) {
+      return {
+        bn: maxAmountValue ?? 0n,
+        amount: maxAmountValue
+          ? bigIntToString(maxAmountValue, nativeToken.decimals)
+          : ''
+      }
+    } else if (token.type === TokenType.ERC20) {
+      return {
+        bn: token.balance,
+        amount: bigIntToString(token.balance, token.decimals)
+      }
+    }
+  }, [amount, fromAddress, maxFee, nativeToken, provider, toAddress, token])
 
   useEffect(() => {
     if (canValidate) {
       validate()
     }
   }, [validate, canValidate])
+
+  useEffect(() => {
+    getMaxAmount()
+      .then(maxAmount => {
+        if (maxAmount) {
+          setMaxAmount(maxAmount)
+        }
+      })
+      .catch(Logger.error)
+  }, [getMaxAmount, setMaxAmount])
 
   return {
     send
