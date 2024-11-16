@@ -22,7 +22,7 @@ export const validate = ({
 
   const fee = maxFee ? BigInt(GAS_LIMIT_FOR_XP_CHAIN) * maxFee : 0n
 
-  const balance = token.balance
+  const balance = token.available ?? 0n
   const maxAmountValue = balance - fee
   const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
 

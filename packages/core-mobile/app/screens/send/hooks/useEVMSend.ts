@@ -28,10 +28,10 @@ const useEVMSend: SendAdapterEVM = ({
     setMaxAmount,
     setError,
     setIsSending,
-    setIsValidating,
     token,
     toAddress,
-    amount
+    amount,
+    canValidate
   } = useSendContext()
   const provider = useEVMProvider(network)
 
@@ -78,9 +78,6 @@ const useEVMSend: SendAdapterEVM = ({
   )
 
   const validate = useCallback(async () => {
-    setIsValidating(true)
-    setError(undefined)
-
     try {
       validateBasicInputs(token, toAddress, maxFee)
 
@@ -120,10 +117,10 @@ const useEVMSend: SendAdapterEVM = ({
       }
 
       validateGasLimit(gasLimit)
+
+      setError(undefined)
     } catch (err) {
       handleError(err)
-    } finally {
-      setIsValidating(false)
     }
   }, [
     nativeToken,
@@ -131,7 +128,6 @@ const useEVMSend: SendAdapterEVM = ({
     provider,
     handleError,
     setError,
-    setIsValidating,
     maxFee,
     setMaxAmount,
     token,
@@ -140,8 +136,10 @@ const useEVMSend: SendAdapterEVM = ({
   ])
 
   useEffect(() => {
-    validate()
-  }, [validate])
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
 
   return {
     send

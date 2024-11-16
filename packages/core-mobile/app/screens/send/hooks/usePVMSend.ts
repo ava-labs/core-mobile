@@ -18,10 +18,10 @@ const usePVMSend: SendAdapterPVM = ({
     setMaxAmount,
     setError,
     setIsSending,
-    setIsValidating,
     token,
     toAddress,
-    amount
+    amount,
+    canValidate
   } = useSendContext()
 
   const send = useCallback(async () => {
@@ -66,9 +66,6 @@ const usePVMSend: SendAdapterPVM = ({
   )
 
   const validate = useCallback(async () => {
-    setIsValidating(true)
-    setError(undefined)
-
     try {
       validatePVMSend({
         amount: amount?.bn ?? 0n,
@@ -77,25 +74,18 @@ const usePVMSend: SendAdapterPVM = ({
         token: token as TokenWithBalancePVM,
         onCalculateMaxAmount: setMaxAmount
       })
+
+      setError(undefined)
     } catch (err) {
       handleError(err)
-    } finally {
-      setIsValidating(false)
     }
-  }, [
-    maxFee,
-    setMaxAmount,
-    setError,
-    handleError,
-    setIsValidating,
-    token,
-    toAddress,
-    amount
-  ])
+  }, [maxFee, setMaxAmount, setError, handleError, token, toAddress, amount])
 
   useEffect(() => {
-    validate()
-  }, [validate])
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
 
   return {
     send

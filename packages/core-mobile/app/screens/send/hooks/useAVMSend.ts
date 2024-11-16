@@ -17,11 +17,11 @@ const useAVMSend: SendAdapterAVM = ({
   const {
     setMaxAmount,
     setError,
-    setIsValidating,
     setIsSending,
     amount,
     token,
-    toAddress
+    toAddress,
+    canValidate
   } = useSendContext()
 
   const send = useCallback(async () => {
@@ -56,9 +56,6 @@ const useAVMSend: SendAdapterAVM = ({
   )
 
   const validate = useCallback(async () => {
-    setIsValidating(true)
-    setError(undefined)
-
     try {
       validateAVMSend({
         amount: amount?.bn,
@@ -67,25 +64,18 @@ const useAVMSend: SendAdapterAVM = ({
         token: token as TokenWithBalanceAVM,
         onCalculateMaxAmount: setMaxAmount
       })
+
+      setError(undefined)
     } catch (err) {
       handleError(err)
-    } finally {
-      setIsValidating(false)
     }
-  }, [
-    maxFee,
-    setMaxAmount,
-    setError,
-    handleError,
-    setIsValidating,
-    toAddress,
-    amount,
-    token
-  ])
+  }, [maxFee, setMaxAmount, setError, handleError, toAddress, amount, token])
 
   useEffect(() => {
-    validate()
-  }, [validate])
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
 
   return {
     send

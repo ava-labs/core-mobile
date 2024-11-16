@@ -57,7 +57,7 @@ export default function NftSend({
     error,
     isSending,
     isValid,
-    isValidating
+    setCanValidate
   } = useSendContext()
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
@@ -87,7 +87,7 @@ export default function NftSend({
   })
 
   const canSubmit =
-    !isValidating && !isSending && isValid && !!toAddress && error === undefined
+    !isSending && isValid && !!toAddress && error === undefined && touched
 
   const {
     saveRecentContact,
@@ -143,7 +143,11 @@ export default function NftSend({
     if (touched === false && toAddress) {
       setTouched(true)
     }
-  }, [toAddress, token, touched])
+  }, [toAddress, touched, setCanValidate])
+
+  useEffect(() => {
+    setCanValidate(touched)
+  }, [touched, setCanValidate])
 
   const onContactSelected = (
     item: Contact | Account,

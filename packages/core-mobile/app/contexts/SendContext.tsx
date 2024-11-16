@@ -26,8 +26,8 @@ interface SendContextState {
   setError: Dispatch<string | undefined>
   isSending: boolean
   setIsSending: Dispatch<boolean>
-  isValidating: boolean
-  setIsValidating: Dispatch<boolean>
+  canValidate: boolean
+  setCanValidate: Dispatch<boolean>
   isValid: boolean
 }
 
@@ -53,7 +53,7 @@ export const SendContextProvider = ({
   const { data: networkFee } = useNetworkFee(activeNetwork)
   const [error, setError] = useState<string | undefined>()
   const [isSending, setIsSending] = useState(false)
-  const [isValidating, setIsValidating] = useState(false)
+  const [canValidate, setCanValidate] = useState(false)
 
   const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] = useState<bigint>(0n)
 
@@ -88,8 +88,8 @@ export const SendContextProvider = ({
     setError,
     isSending,
     setIsSending,
-    isValidating,
-    setIsValidating,
+    canValidate,
+    setCanValidate,
     isValid: error === undefined
   }
   return <SendContext.Provider value={state}>{children}</SendContext.Provider>
