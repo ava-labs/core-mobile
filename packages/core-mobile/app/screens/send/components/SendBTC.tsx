@@ -29,7 +29,6 @@ const SendBTC = ({
     maxAmount,
     error,
     isValid,
-    isValidating,
     isSending,
     maxFee
   } = useSendContext()
@@ -70,7 +69,6 @@ const SendBTC = ({
       error={error}
       isValid={isValid}
       isSending={isSending}
-      isValidating={isValidating}
       onOpenQRScanner={onOpenQRScanner}
       onOpenAddressBook={onOpenAddressBook}
       onSelectContact={handleSelectContact}

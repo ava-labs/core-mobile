@@ -24,16 +24,8 @@ const SendEVM = ({
   onSuccess: (txHash: string) => void
   onFailure: (txError: unknown) => void
 }): JSX.Element => {
-  const {
-    setToAddress,
-    token,
-    maxAmount,
-    error,
-    isValid,
-    isValidating,
-    isSending,
-    maxFee
-  } = useSendContext()
+  const { setToAddress, token, maxAmount, error, isValid, isSending, maxFee } =
+    useSendContext()
   const fromAddress = account?.addressC ?? ''
 
   const { send } = useEVMSend({
@@ -70,7 +62,6 @@ const SendEVM = ({
       error={error}
       isValid={isValid}
       isSending={isSending}
-      isValidating={isValidating}
       onOpenQRScanner={onOpenQRScanner}
       onOpenAddressBook={onOpenAddressBook}
       onSelectContact={handleSelectContact}
