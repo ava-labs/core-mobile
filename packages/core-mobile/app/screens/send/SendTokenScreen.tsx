@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect } from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -10,11 +10,9 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
-import { LocalTokenWithBalance, selectTokensWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import {
   NetworkTokenWithBalance,
-  TokenType,
   TokenWithBalanceAVM,
   TokenWithBalanceBTC,
   TokenWithBalancePVM
@@ -26,6 +24,7 @@ import SendEVM from './components/SendEVM'
 import SendBTC from './components/SendBTC'
 import SendAVM from './components/SendAVM'
 import SendPVM from './components/SendPVM'
+import { useNativeTokenWithBalance } from './hooks/useNativeTokenWithBalance'
 
 type SendTokenScreenNavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Send
@@ -40,15 +39,7 @@ const SendTokenScreen: FC = () => {
   const { setToken, setToAddress } = useSendContext()
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const tokens = useSelector(selectTokensWithBalance)
-  // in production, balance fetching occurs every two seconds, so update native token only when balance changes to avoid unnecessary re-renders
-  const [nativeToken, setNativeToken] = useState<LocalTokenWithBalance>()
-  useEffect(() => {
-    const updatedNativeToken = tokens.find(t => t.type === TokenType.NATIVE)
-    if (!nativeToken || updatedNativeToken?.balance !== nativeToken.balance) {
-      setNativeToken(updatedNativeToken)
-    }
-  }, [tokens, nativeToken])
+  const nativeToken = useNativeTokenWithBalance()
 
   useEffect(() => {
     if (params?.token) {

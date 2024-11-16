@@ -25,14 +25,13 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
 import useEVMSend from 'screens/send/hooks/useEVMSend'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalance } from 'store/balance'
-import { NetworkTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 import { useSendContext } from 'contexts/SendContext'
 import QRScanSVG from 'components/svg/QRScanSVG'
+import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
 
 type NftSendScreenProps = {
   onOpenAddressBook: () => void
@@ -62,20 +61,7 @@ export default function NftSend({
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const fromAddress = activeAccount?.addressC ?? ''
-  const tokens = useSelector(selectTokensWithBalance)
-  const [nativeToken, setNativeToken] = useState<NetworkTokenWithBalance>(
-    tokens.find(t => t.type === TokenType.NATIVE) as NetworkTokenWithBalance
-  )
-  // in production, balance fetching occurs every two seconds, so update native token only when balance changes to avoid unnecessary re-renders
-  useEffect(() => {
-    const updatedNativeToken = tokens.find(
-      t => t.type === TokenType.NATIVE
-    ) as NetworkTokenWithBalance
-    if (!nativeToken || updatedNativeToken?.balance !== nativeToken.balance) {
-      setNativeToken(updatedNativeToken)
-    }
-  }, [tokens, nativeToken])
-
+  const nativeToken = useNativeTokenWithBalance()
   const [touched, setTouched] = useState(false)
 
   const { send } = useEVMSend({
