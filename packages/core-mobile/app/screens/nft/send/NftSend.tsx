@@ -25,14 +25,13 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
 import useEVMSend from 'screens/send/hooks/useEVMSend'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalance } from 'store/balance'
-import { NetworkTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 import { useSendContext } from 'contexts/SendContext'
 import QRScanSVG from 'components/svg/QRScanSVG'
+import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
 
 type NftSendScreenProps = {
   onOpenAddressBook: () => void
@@ -57,15 +56,12 @@ export default function NftSend({
     error,
     isSending,
     isValid,
-    isValidating
+    setCanValidate
   } = useSendContext()
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const fromAddress = activeAccount?.addressC ?? ''
-  const tokens = useSelector(selectTokensWithBalance)
-  const nativeToken = tokens.find(
-    t => t.type === TokenType.NATIVE
-  ) as NetworkTokenWithBalance
+  const nativeToken = useNativeTokenWithBalance()
   const [touched, setTouched] = useState(false)
 
   const { send } = useEVMSend({
@@ -77,7 +73,7 @@ export default function NftSend({
   })
 
   const canSubmit =
-    !isValidating && !isSending && isValid && !!toAddress && error === undefined
+    !isSending && isValid && !!toAddress && error === undefined && touched
 
   const {
     saveRecentContact,
@@ -133,7 +129,11 @@ export default function NftSend({
     if (touched === false && toAddress) {
       setTouched(true)
     }
-  }, [toAddress, token, touched])
+  }, [toAddress, touched, setCanValidate])
+
+  useEffect(() => {
+    setCanValidate(touched)
+  }, [touched, setCanValidate])
 
   const onContactSelected = (
     item: Contact | Account,

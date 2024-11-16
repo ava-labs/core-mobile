@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
@@ -26,17 +26,8 @@ const SendPVM = ({
   onSuccess: (txHash: string) => void
   onFailure: (txError: unknown) => void
 }): JSX.Element => {
-  const {
-    setToAddress,
-    token,
-    setToken,
-    maxAmount,
-    error,
-    isValid,
-    isValidating,
-    isSending,
-    maxFee
-  } = useSendContext()
+  const { setToAddress, token, maxAmount, error, isValid, isSending, maxFee } =
+    useSendContext()
   const activeAccount = useSelector(selectActiveAccount)
 
   const fromAddress = activeAccount?.addressPVM ?? ''
@@ -48,10 +39,6 @@ const SendPVM = ({
     nativeToken,
     account
   })
-
-  useEffect(() => {
-    setToken(nativeToken)
-  }, [nativeToken, setToken])
 
   const handleSend = async (): Promise<void> => {
     if (token === undefined) {
@@ -79,7 +66,6 @@ const SendPVM = ({
       error={error}
       isValid={isValid}
       isSending={isSending}
-      isValidating={isValidating}
       onOpenQRScanner={onOpenQRScanner}
       onOpenAddressBook={onOpenAddressBook}
       onSelectContact={handleSelectContact}

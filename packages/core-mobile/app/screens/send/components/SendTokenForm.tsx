@@ -25,7 +25,6 @@ const SendTokenForm = ({
   addressPlaceholder,
   error,
   isValid,
-  isValidating,
   isSending,
   onOpenQRScanner,
   onOpenAddressBook,
@@ -37,15 +36,21 @@ const SendTokenForm = ({
   addressPlaceholder: string
   error: string | undefined
   isValid: boolean
-  isValidating: boolean
   isSending: boolean
   onOpenQRScanner: () => void
   onOpenAddressBook: () => void
   onSelectContact: (item: Contact | CorePrimaryAccount) => void
   onSend: () => void
 }): JSX.Element => {
-  const { setToken, token, setAmount, amount, toAddress, setToAddress } =
-    useSendContext()
+  const {
+    setToken,
+    token,
+    setAmount,
+    amount,
+    toAddress,
+    setToAddress,
+    setCanValidate
+  } = useSendContext()
   const [isAddressTouched, setIsAddressTouched] = useState(false)
   const [isTokenTouched, setIsTokenTouched] = useState(false)
   const [isAmountTouched, setIsAmountTouched] = useState(false)
@@ -108,7 +113,11 @@ const SendTokenForm = ({
     [isAddressTouched, isTokenTouched, isAmountTouched]
   )
 
-  const canSubmit = !isValidating && !isSending && isValid
+  useEffect(() => {
+    setCanValidate(isAllFieldsTouched)
+  }, [isAllFieldsTouched, setCanValidate])
+
+  const canSubmit = !isSending && isValid && isAllFieldsTouched
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>

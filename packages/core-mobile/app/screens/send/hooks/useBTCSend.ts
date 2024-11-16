@@ -26,11 +26,11 @@ const useBTCSend: SendAdapterBTC = ({
   const {
     setMaxAmount,
     setError,
-    setIsValidating,
     setIsSending,
     toAddress,
     token,
-    amount
+    amount,
+    canValidate
   } = useSendContext()
   const provider = useBitcoinProvider(!!network.isTestnet)
 
@@ -63,9 +63,6 @@ const useBTCSend: SendAdapterBTC = ({
       return
     }
 
-    setIsValidating(true)
-    setError(undefined)
-
     try {
       const maxAmountValue = BigInt(
         Math.max(
@@ -88,13 +85,13 @@ const useBTCSend: SendAdapterBTC = ({
         maxFee,
         isMainnet
       })
+
+      setError(undefined)
     } catch (e) {
       if (e instanceof Error) {
         setError(e.message)
         Logger.error('failed to validate send', e)
       }
-    } finally {
-      setIsValidating(false)
     }
   }, [
     fromAddress,
@@ -104,7 +101,6 @@ const useBTCSend: SendAdapterBTC = ({
     isMainnet,
     setMaxAmount,
     setError,
-    setIsValidating,
     toAddress,
     token,
     amount
@@ -131,8 +127,10 @@ const useBTCSend: SendAdapterBTC = ({
   }, [isMainnet, maxFee, fromAddress, request, setIsSending, toAddress, amount])
 
   useEffect(() => {
-    validate()
-  }, [validate])
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
 
   return {
     send
