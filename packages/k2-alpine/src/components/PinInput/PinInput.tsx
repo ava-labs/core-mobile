@@ -18,46 +18,12 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   ({ value, onChangePin, length = 6, style }, ref) => {
     const textInputRef = useRef<TextInput>(null)
     const wrongPinAnimation = useSharedValue(0)
-
-    const loadingDotAnimation1 = useSharedValue(0)
-    const loadingDotAnimation2 = useSharedValue(0)
-    const loadingDotAnimation3 = useSharedValue(0)
-    const loadingDotAnimation4 = useSharedValue(0)
-    const loadingDotAnimation5 = useSharedValue(0)
-    const loadingDotAnimation6 = useSharedValue(0)
-    const loadingDotAnimation7 = useSharedValue(0)
-    const loadingDotAnimation8 = useSharedValue(0)
-
-    const animations = useMemo(
-      () =>
-        [
-          loadingDotAnimation1,
-          loadingDotAnimation2,
-          loadingDotAnimation3,
-          loadingDotAnimation4,
-          loadingDotAnimation5,
-          loadingDotAnimation6,
-          loadingDotAnimation7,
-          loadingDotAnimation8
-        ].slice(0, length),
-      [
-        loadingDotAnimation1,
-        loadingDotAnimation2,
-        loadingDotAnimation3,
-        loadingDotAnimation4,
-        loadingDotAnimation5,
-        loadingDotAnimation6,
-        loadingDotAnimation7,
-        loadingDotAnimation8,
-        length
-      ]
-    )
-
+    const loadingDotAnimations = useLoadingDotAnimations(length)
     const isLoading = useSharedValue(false)
 
     const startLoadingAnimation = (): void => {
       const triggerAnimations = async (): Promise<void> => {
-        const animationPromises = animations.map(
+        const animationPromises = loadingDotAnimations.map(
           (sharedValue, index) =>
             new Promise<void>(resolve => {
               sharedValue.value = withSequence(
@@ -84,9 +50,9 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
 
     const stopLoadingAnimation = (onComplete: () => void): void => {
       isLoading.value = false
-      animations.forEach(sharedValue => {
-        cancelAnimation(sharedValue)
-        sharedValue.value = 0
+      loadingDotAnimations.forEach(animation => {
+        cancelAnimation(animation)
+        animation.value = 0
       })
 
       runOnJS(onComplete)()
@@ -163,7 +129,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
             wrongPinAnimatedStyle,
             style
           ]}>
-          {animations.map((animation, index) => {
+          {loadingDotAnimations.map((animation, index) => {
             const shouldFill = index < value.length
 
             return (
@@ -226,5 +192,41 @@ const AnimatedDot = ({
         animatedStyle
       ]}
     />
+  )
+}
+
+const useLoadingDotAnimations = (length: number): SharedValue<number>[] => {
+  const loadingDotAnimation1 = useSharedValue(0)
+  const loadingDotAnimation2 = useSharedValue(0)
+  const loadingDotAnimation3 = useSharedValue(0)
+  const loadingDotAnimation4 = useSharedValue(0)
+  const loadingDotAnimation5 = useSharedValue(0)
+  const loadingDotAnimation6 = useSharedValue(0)
+  const loadingDotAnimation7 = useSharedValue(0)
+  const loadingDotAnimation8 = useSharedValue(0)
+
+  return useMemo(
+    () =>
+      [
+        loadingDotAnimation1,
+        loadingDotAnimation2,
+        loadingDotAnimation3,
+        loadingDotAnimation4,
+        loadingDotAnimation5,
+        loadingDotAnimation6,
+        loadingDotAnimation7,
+        loadingDotAnimation8
+      ].slice(0, length),
+    [
+      loadingDotAnimation1,
+      loadingDotAnimation2,
+      loadingDotAnimation3,
+      loadingDotAnimation4,
+      loadingDotAnimation5,
+      loadingDotAnimation6,
+      loadingDotAnimation7,
+      loadingDotAnimation8,
+      length
+    ]
   )
 }
