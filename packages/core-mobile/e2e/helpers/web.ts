@@ -140,7 +140,7 @@ const waitAndRunScript = async (
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      await wb.element(by.web.tag(header)).runScript(func)
+      await wb.element(by.web.cssSelector(header)).runScript(func)
       return
     } catch (e: any) {
       console.error(`waitAndRunScript - ${header} is NOT visible yet`)

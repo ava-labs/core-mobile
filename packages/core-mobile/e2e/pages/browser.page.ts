@@ -239,53 +239,29 @@ class BrowserPage {
     await connectToSitePage.selectAccountAndconnect()
   }
 
-  async swapPancakeSwap() {
-    await bottomTabsPage.tapBrowserTab()
-    await Wbs.setInputText("//input[@title='Token Amount'][1]", '0.0000001')
-    let num = 0
-    for (let i = 0; i <= 2; i++) {
-      try {
-        console.log(`i: ${i} num: ${num}`)
-        await element(by.label(num.toString())).atIndex(i).tap()
-        console.log(`i: ${i} num: ${num} passed!!!`)
-      } catch (e) {
-        console.log('testing')
-      }
-      if (i === 2 && num <= 9) {
-        num += 1
-        i = -1
-      }
-      if (num >= 9) {
-        i = 3
-      }
-    }
-    // await element(by.label('1')).atIndex(1).tap()
-    await Actions.dismissKeyboard()
-    await Wbs.tapByXpath(
-      "//button[@data-cy='actionButton' and text()='Switch' and not(@disabled)]"
-    )
-  }
-
-  async setUniSwapAmount(amount: string) {
+  async setDappSwapAmount(selector: string, amount = '0.00001') {
     await delay(2000)
-    await Wbs.setInputText('//input[1]', '')
     await Wbs.waitAndRunScript(
-      '[data-testid="amount-input-in"]',
-      `(element) => element.value = ${amount}`
+      selector,
+      `function type (element) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+        nativeInputValueSetter.call(element, ${amount});
+        element.dispatchEvent(new Event('input', { bubbles: true}));
+      }`
     )
-    await element(by.label('5')).atIndex(0).tap()
-    await Actions.dismissKeyboard()
     await delay(3000)
   }
 
   async swapUniSwap() {
     await bottomTabsPage.tapBrowserTab()
     await Wbs.tapByXpath('//div[@data-testid="token-logo"]')
+    await delay(1000)
     await Wbs.tapByXpath('//div[@data-testid="token-option-43114-AVAX"]')
+    await delay(1000)
     await Wbs.tapByXpath('//span[@data-testid="choose-output-token-label"]')
-
+    await delay(1000)
     await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
-    await this.setUniSwapAmount('0.0001')
+    await this.setDappSwapAmount('[data-testid="amount-input-in"]')
     await Wbs.tapByXpath(
       '//div[not(@aria-disabled="true")]/span[text()="Review"]'
     )
@@ -309,12 +285,7 @@ class BrowserPage {
       'JOE token'
     )
     await Wbs.tapByXpath("//p[text()='JOE']")
-    await Wbs.setInputText(
-      "//input[@data-cy='trade-currency-input']",
-      '0.00001'
-    )
-    await element(by.label('1')).atIndex(1).tap()
-    await Actions.dismissKeyboard()
+    await this.setDappSwapAmount('[data-cy="trade-currency-input"]')
     await Wbs.tapByXpath(
       "//button[@data-cy='swap-button' and text()='Swap' and not(@disabled)]"
     )
