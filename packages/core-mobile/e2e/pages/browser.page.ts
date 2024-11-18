@@ -4,6 +4,8 @@ import Wbs, { WebScripts } from '../helpers/web'
 import delay from '../helpers/waits'
 import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
+import connectToSitePage from './connectToSite.page'
+import plusMenuPage from './plusMenu.page'
 
 class BrowserPage {
   get searchBar() {
@@ -55,7 +57,7 @@ class BrowserPage {
       case 'https://app.aave.com/': // Aave
         xpath = '//*[text()="Connect wallet"]'
         break
-      case 'https://traderjoexyz.com/avalanche': // TraderJoe
+      case 'https://lfj.gg/avalanche': // TraderJoe
         xpath = '//button[@aria-label="connect-wallet"]'
         break
       case 'https://opensea.io/': // OpenSea
@@ -63,6 +65,12 @@ class BrowserPage {
         break
       case 'https://ava-labs.github.io/extension-avalanche-playground/': // Core Playground
         xpath = '//button[text()="Connect via Wallet Connect - Wagmi"]'
+        break
+      case 'https://app.uniswap.org/': // UniSwap
+        xpath = '//button[@data-testid="navbar-connect-wallet"]'
+        break
+      case 'https://pancakeswap.finance/?chain=eth': // PancakeSwap
+        xpath = '//div[text()="Connect"]'
         break
       default: // core app
         xpath = '//*[text()="WalletConnect"]'
@@ -95,40 +103,25 @@ class BrowserPage {
   }
 
   async connectCore() {
-    if (Actions.platform() === 'ios') {
-      await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
-    } else {
-      while (
-        await Wbs.isVisibleByRunScript('w3m-modal', WebScripts.EXIST_WC_CORE)
-      ) {
-        await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
-      }
-    }
+    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
   }
 
   async getQrUri() {
     await delay(3000)
-    if (Actions.platform() === 'ios') {
-      await Wbs.waitAndRunScript('wcm-modal', WebScripts.CLICK_WCM_IOS_MODAL)
-      await Wbs.waitAndRunScript('wcm-modal', WebScripts.CLICK_WCM_IOS_MODAL)
-    } else {
-      while (
-        await Wbs.isVisibleByRunScript(
-          'wcm-modal',
-          WebScripts.EXIST_WCM_ANDROID_MODAL
-        )
-      ) {
-        await Wbs.waitAndRunScript(
-          'wcm-modal',
-          WebScripts.CLICK_WCM_ANDROID_MODAL
-        )
-      }
-    }
+    const clickModal =
+      Actions.platform() === 'ios'
+        ? WebScripts.CLICK_WCM_IOS_MODAL
+        : WebScripts.CLICK_WCM_ANDROID_MODAL
+
+    await device.disableSynchronization()
+    await Wbs.waitAndRunScript('wcm-modal', clickModal)
+    await delay(1000)
     const output = await Wbs.getElementTextByRunScript(
       'wcm-modal',
       WebScripts.GET_WCM_URI,
       10000
     )
+    await device.enableSynchronization()
     console.log(`QR URI - ${output}`)
     if (!output.length) throw Error("I couldn't get QR URI")
     return output
@@ -237,6 +230,101 @@ class BrowserPage {
     } catch (e) {
       console.log('The Continue button is not displayed')
     }
+  }
+
+  async connect(dapp: string) {
+    await this.connectTo(dapp)
+    const qrUri = await this.getQrUri()
+    await plusMenuPage.connectWallet(qrUri)
+    await connectToSitePage.selectAccountAndconnect()
+  }
+
+  async swapPancakeSwap() {
+    await bottomTabsPage.tapBrowserTab()
+    await Wbs.setInputText("//input[@title='Token Amount'][1]", '0.0000001')
+    let num = 0
+    for (let i = 0; i <= 2; i++) {
+      try {
+        console.log(`i: ${i} num: ${num}`)
+        await element(by.label(num.toString())).atIndex(i).tap()
+        console.log(`i: ${i} num: ${num} passed!!!`)
+      } catch (e) {
+        console.log('testing')
+      }
+      if (i === 2 && num <= 9) {
+        num += 1
+        i = -1
+      }
+      if (num >= 9) {
+        i = 3
+      }
+    }
+    // await element(by.label('1')).atIndex(1).tap()
+    await Actions.dismissKeyboard()
+    await Wbs.tapByXpath(
+      "//button[@data-cy='actionButton' and text()='Switch' and not(@disabled)]"
+    )
+  }
+
+  async swapUniSwap() {
+    await bottomTabsPage.tapBrowserTab()
+    await Wbs.tapByXpath('//div[@data-testid="token-logo"]')
+    await delay(2000)
+    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-AVAX"]')
+    await delay(2000)
+    await Wbs.tapByXpath('//span[@data-testid="choose-output-token-label"]')
+    await delay(2000)
+    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
+    await delay(2000)
+    await Wbs.tapByXpath('//input[@data-testid="amount-input-in"]')
+    // await Wbs.setInputText('//input[@data-testid="amount-input-in"]', '0.00001')
+    try {
+      await Wbs.tapByXpath('//input[@data-testid="amount-input-in"]')
+      await delay(2000)
+      await element(by.label('0')).atIndex(1).tap()
+      console.log('YO')
+    } catch (e) {
+      await Wbs.tapByXpath('//input[@data-testid="amount-input-in"]')
+      await delay(2000)
+      await element(by.type('UIKeyboard')).typeText('0.00001')
+    }
+    await element(by.label('0')).tap()
+    await element(by.label('.')).tap()
+    await element(by.label('0')).tap()
+    await element(by.label('0')).tap()
+    await element(by.label('0')).tap()
+    await element(by.label('1')).atIndex(1).tap()
+    await element(by.type('UIKeyboard')).typeText('123')
+
+    await Actions.dismissKeyboard()
+    await delay(3000)
+    await Wbs.tapByXpath(
+      '//div[not(@aria-disabled="true")]/span[text()="Review"]'
+    )
+    await delay(3000)
+    await Wbs.tapByXpath(
+      '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
+    )
+  }
+
+  async swapLFJ() {
+    await bottomTabsPage.tapBrowserTab()
+    await Wbs.tapByXpath("//a[@href='/avalanche/trade']")
+    await Wbs.tapByXpath("//button[contains(text(), 'Select token')]")
+    await Wbs.setInputText(
+      "//input[@data-cy='currency-picker-search-bar']",
+      'JOE token'
+    )
+    await Wbs.tapByXpath("//p[text()='JOE']")
+    await Wbs.setInputText(
+      "//input[@data-cy='trade-currency-input']",
+      '0.00001'
+    )
+    await element(by.label('1')).atIndex(1).tap()
+    await Actions.dismissKeyboard()
+    await Wbs.tapByXpath(
+      "//button[@data-cy='swap-button' and text()='Swap' and not(@disabled)]"
+    )
   }
 }
 
