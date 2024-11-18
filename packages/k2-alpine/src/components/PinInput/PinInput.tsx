@@ -27,13 +27,18 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           (sharedValue, index) =>
             new Promise<void>(resolve => {
               sharedValue.value = withSequence(
-                withDelay(index * 50, withTiming(-15, { duration: 200 })),
-                withTiming(0, { duration: 200 })
+                withDelay(
+                  index * LoadingDotAnimationConfig.delayPerDot,
+                  withTiming(-LoadingDotAnimationConfig.translationDistance, {
+                    duration: LoadingDotAnimationConfig.duration
+                  })
+                ),
+                withTiming(0, { duration: LoadingDotAnimationConfig.duration })
               )
 
               setTimeout(() => {
                 runOnJS(resolve)()
-              }, index * 50 + 400)
+              }, index * LoadingDotAnimationConfig.delayPerDot + LoadingDotAnimationConfig.duration * 2)
             })
         )
 
@@ -60,12 +65,52 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
 
     const fireWrongPinAnimation = (onComplete: () => void): void => {
       wrongPinAnimation.value = withSequence(
-        withTiming(12, { duration: 80 }),
-        withTiming(-12, { duration: 80 }),
-        withTiming(8, { duration: 70 }),
-        withTiming(-8, { duration: 70 }),
-        withTiming(4, { duration: 60 }),
-        withTiming(-4, { duration: 60 }),
+        withTiming(WrongPinAnimationConfig.maxTranslationDistance, {
+          duration: WrongPinAnimationConfig.maxDuration
+        }),
+        withTiming(-WrongPinAnimationConfig.maxTranslationDistance, {
+          duration: WrongPinAnimationConfig.maxDuration
+        }),
+        withTiming(
+          WrongPinAnimationConfig.maxTranslationDistance -
+            WrongPinAnimationConfig.translationDelta,
+          {
+            duration:
+              WrongPinAnimationConfig.maxDuration -
+              WrongPinAnimationConfig.durationDelta
+          }
+        ),
+        withTiming(
+          -(
+            WrongPinAnimationConfig.maxTranslationDistance -
+            WrongPinAnimationConfig.translationDelta
+          ),
+          {
+            duration:
+              WrongPinAnimationConfig.maxDuration -
+              WrongPinAnimationConfig.durationDelta
+          }
+        ),
+        withTiming(
+          WrongPinAnimationConfig.maxTranslationDistance -
+            WrongPinAnimationConfig.translationDelta * 2,
+          {
+            duration:
+              WrongPinAnimationConfig.maxDuration -
+              WrongPinAnimationConfig.durationDelta * 2
+          }
+        ),
+        withTiming(
+          -(
+            WrongPinAnimationConfig.maxTranslationDistance -
+            WrongPinAnimationConfig.translationDelta * 2
+          ),
+          {
+            duration:
+              WrongPinAnimationConfig.maxDuration -
+              WrongPinAnimationConfig.durationDelta * 2
+          }
+        ),
         withSpring(0, {}, isFinished => {
           if (isFinished) {
             runOnJS(onComplete)()
@@ -229,4 +274,17 @@ const useLoadingDotAnimations = (length: number): SharedValue<number>[] => {
       length
     ]
   )
+}
+
+const WrongPinAnimationConfig = {
+  maxDuration: 80,
+  durationDelta: 10,
+  maxTranslationDistance: 12,
+  translationDelta: 4
+}
+
+const LoadingDotAnimationConfig = {
+  duration: 200,
+  delayPerDot: 50,
+  translationDistance: 15
 }
