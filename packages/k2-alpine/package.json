@@ -31,7 +31,8 @@
   },
   "peerDependencies": {
     "react": "18.3.1",
-    "react-native": "0.73.7"
+    "react-native": "0.73.7",
+    "react-native-reanimated": "3.6.2"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
