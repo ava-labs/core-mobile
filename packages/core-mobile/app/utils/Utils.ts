@@ -120,7 +120,7 @@ export function titleToInitials(title: string): string {
 
 export type GasAndFees = {
   maxTotalFee: bigint
-  maxTotalFeeInCurrency: string
+  maxTotalFeeInCurrency: number
 } & Eip1559Fees
 
 export type Eip1559Fees = {
@@ -150,7 +150,9 @@ export function calculateGasAndFees({
     maxPriorityFeePerGas,
     gasLimit,
     maxTotalFee,
-    maxTotalFeeInCurrency: maxFeeInUnit.mul(tokenPrice).toDisplay()
+    maxTotalFeeInCurrency: maxFeeInUnit
+      .mul(tokenPrice)
+      .toDisplay({ asNumber: true })
   }
 }
 
