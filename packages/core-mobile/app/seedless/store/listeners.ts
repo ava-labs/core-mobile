@@ -54,8 +54,15 @@ const registerSeedlessErrorHandler = async (
     // an example url https://prod.signer.cubist.dev/v1/org/Org%23db7f2cac-7bd0-4e5f-b7c2-b5881a4bb4e7/eth1/sign/0xD0E99cEa490Cdb54ba555922bf325952F0DE38bd
     Logger.error('seedless error', JSON.stringify({ ...e, url: '' }))
 
-    // handle re-auth for expired token
-    if (e.isSessionExpiredError()) {
+    // the following check is what cubist does internally for GlobalEvents.onSessionExpired
+    //
+    // if status is 403 and error matches one of the "invalid session" error codes
+    // or when "signerSessionRefresh" fails (errors returned by the authorizer lambda are not forwarded to the client)
+    // we will prompt user to re-authenticate
+    if (
+      e.status === 403 &&
+      (e.isSessionExpiredError() || e.operation === 'signerSessionRefresh')
+    ) {
       dispatch(onTokenExpired)
     }
   }

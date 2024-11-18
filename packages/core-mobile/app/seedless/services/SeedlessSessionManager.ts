@@ -160,6 +160,7 @@ class SeedlessSessionManager {
       operation: async _ => {
         return await sessionMgr.refresh().catch(err => {
           //if status is 403 means the token has expired and we need to refresh it
+          Logger.error('sessionMgr.refresh() failed', err)
 
           if ('status' in err && err.status === 403) {
             return {
