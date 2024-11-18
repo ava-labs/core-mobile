@@ -84,7 +84,11 @@ const setInputText = async (
 
 const dismissKeyboard = async (searchBarId = 'search_bar__search') => {
   if (platform() === Platform.iOS) {
-    await element(by.id(searchBarId)).tapReturnKey()
+    try {
+      await element(by.label('Done')).atIndex(0).tap()
+    } catch (e) {
+      await element(by.id(searchBarId)).tapReturnKey()
+    }
   } else {
     await device.pressBack()
   }
