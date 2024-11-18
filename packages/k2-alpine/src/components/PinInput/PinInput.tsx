@@ -45,7 +45,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       }
 
       isLoading.value = true
-      triggerAnimations()
+      runOnJS(triggerAnimations)()
     }
 
     const stopLoadingAnimation = (onComplete: () => void): void => {
