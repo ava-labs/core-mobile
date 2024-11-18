@@ -116,7 +116,7 @@ class SeedlessSessionManager {
         // Sessions expire either if the session lifetime expires or if a refresh token expires before a new one is generated
         refresh_lifetime: hoursToSeconds(90 * 24),
         // How long till the user absolutely must sign in again
-        session_lifetime: hoursToSeconds(365 * 24)
+        session_lifetime: 60
       },
       mfaReceipt
     )
