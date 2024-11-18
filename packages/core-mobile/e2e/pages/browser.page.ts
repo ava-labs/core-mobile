@@ -266,45 +266,38 @@ class BrowserPage {
     )
   }
 
+  async setUniSwapAmount(amount: string) {
+    await delay(2000)
+    await Wbs.setInputText('//input[1]', '')
+    await Wbs.waitAndRunScript(
+      '[data-testid="amount-input-in"]',
+      `(element) => element.value = ${amount}`
+    )
+    await element(by.label('5')).atIndex(0).tap()
+    await Actions.dismissKeyboard()
+    await delay(3000)
+  }
+
   async swapUniSwap() {
     await bottomTabsPage.tapBrowserTab()
     await Wbs.tapByXpath('//div[@data-testid="token-logo"]')
-    await delay(2000)
     await Wbs.tapByXpath('//div[@data-testid="token-option-43114-AVAX"]')
-    await delay(2000)
     await Wbs.tapByXpath('//span[@data-testid="choose-output-token-label"]')
-    await delay(2000)
-    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
-    await delay(2000)
-    await Wbs.tapByXpath('//input[@data-testid="amount-input-in"]')
-    // await Wbs.setInputText('//input[@data-testid="amount-input-in"]', '0.00001')
-    try {
-      await Wbs.tapByXpath('//input[@data-testid="amount-input-in"]')
-      await delay(2000)
-      await element(by.label('0')).atIndex(1).tap()
-      console.log('YO')
-    } catch (e) {
-      await Wbs.tapByXpath('//input[@data-testid="amount-input-in"]')
-      await delay(2000)
-      await element(by.type('UIKeyboard')).typeText('0.00001')
-    }
-    await element(by.label('0')).tap()
-    await element(by.label('.')).tap()
-    await element(by.label('0')).tap()
-    await element(by.label('0')).tap()
-    await element(by.label('0')).tap()
-    await element(by.label('1')).atIndex(1).tap()
-    await element(by.type('UIKeyboard')).typeText('123')
 
-    await Actions.dismissKeyboard()
-    await delay(3000)
+    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
+    await this.setUniSwapAmount('0.0001')
     await Wbs.tapByXpath(
       '//div[not(@aria-disabled="true")]/span[text()="Review"]'
     )
-    await delay(3000)
-    await Wbs.tapByXpath(
-      '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
-    )
+    while (
+      await Wbs.isVisibleByXpath(
+        '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
+      )
+    ) {
+      await Wbs.tapByXpath(
+        '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
+      )
+    }
   }
 
   async swapLFJ() {

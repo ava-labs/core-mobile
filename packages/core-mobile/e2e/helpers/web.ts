@@ -116,6 +116,21 @@ const isVisibleByRunScript = async (
   return false
 }
 
+const isVisibleByXpath = async (xpath: string, timeout = 5000) => {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+    try {
+      await expect(wb.element(by.web.xpath(xpath))).toExist()
+      return true
+    } catch (e) {
+      console.error(`isVisibleByXpath - ${xpath} is NOT visible yet`)
+    }
+  }
+  console.error(`Timeout: isVisibleByXpath - ${xpath} is NOT visible`)
+  return false
+}
+
 const waitAndRunScript = async (
   header: string,
   func: string,
@@ -180,7 +195,7 @@ const waitForEleByTextToBeVisible = async (text: string, timeout = 5000) => {
 
 const setInputText = async (xpath: string, text: string) => {
   await waitForEleByXpathToBeVisible(xpath)
-  await wb.element(by.web.xpath(xpath)).typeText(text, false)
+  await wb.element(by.web.xpath(xpath)).replaceText(text)
 }
 
 export default {
@@ -198,5 +213,6 @@ export default {
   getElementTextByRunScript,
   isVisibleByRunScript,
   verifyUrl,
-  setInputText
+  setInputText,
+  isVisibleByXpath
 }
