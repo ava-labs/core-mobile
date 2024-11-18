@@ -1,8 +1,9 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
 import { Platform, TextInput, Vibration, ViewStyle } from 'react-native'
-import Reanimated, {
+import Animated, {
   cancelAnimation,
   runOnJS,
+  SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -15,104 +16,30 @@ import { useTheme } from '../..'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   ({ value, onChangePin, length = 6, style }, ref) => {
-    const { theme } = useTheme()
     const textInputRef = useRef<TextInput>(null)
     const wrongPinAnimation = useSharedValue(0)
 
     const loadingDotAnimation1 = useSharedValue(0)
-    const animatedStyle1 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation1.value
-        }
-      ]
-    }))
-
     const loadingDotAnimation2 = useSharedValue(0)
-    const animatedStyle2 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation2.value
-        }
-      ]
-    }))
-
     const loadingDotAnimation3 = useSharedValue(0)
-    const animatedStyle3 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation3.value
-        }
-      ]
-    }))
-
     const loadingDotAnimation4 = useSharedValue(0)
-    const animatedStyle4 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation4.value
-        }
-      ]
-    }))
-
     const loadingDotAnimation5 = useSharedValue(0)
-    const animatedStyle5 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation5.value
-        }
-      ]
-    }))
-
     const loadingDotAnimation6 = useSharedValue(0)
-    const animatedStyle6 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation6.value
-        }
-      ]
-    }))
-
     const loadingDotAnimation7 = useSharedValue(0)
-    const animatedStyle7 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation7.value
-        }
-      ]
-    }))
-
     const loadingDotAnimation8 = useSharedValue(0)
-    const animatedStyle8 = useAnimatedStyle(() => ({
-      transform: [
-        {
-          translateY: loadingDotAnimation8.value
-        }
-      ]
-    }))
-
-    const animatedStyles = [
-      animatedStyle1,
-      animatedStyle2,
-      animatedStyle3,
-      animatedStyle4,
-      animatedStyle5,
-      animatedStyle6,
-      animatedStyle7,
-      animatedStyle8
-    ]
 
     const animations = useMemo(
-      () => [
-        loadingDotAnimation1,
-        loadingDotAnimation2,
-        loadingDotAnimation3,
-        loadingDotAnimation4,
-        loadingDotAnimation5,
-        loadingDotAnimation6,
-        loadingDotAnimation7,
-        loadingDotAnimation8
-      ],
+      () =>
+        [
+          loadingDotAnimation1,
+          loadingDotAnimation2,
+          loadingDotAnimation3,
+          loadingDotAnimation4,
+          loadingDotAnimation5,
+          loadingDotAnimation6,
+          loadingDotAnimation7,
+          loadingDotAnimation8
+        ].slice(0, length),
       [
         loadingDotAnimation1,
         loadingDotAnimation2,
@@ -121,7 +48,8 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         loadingDotAnimation5,
         loadingDotAnimation6,
         loadingDotAnimation7,
-        loadingDotAnimation8
+        loadingDotAnimation8,
+        length
       ]
     )
 
@@ -224,7 +152,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           maxLength={length}
         />
         {/* Display for input dots */}
-        <Reanimated.View
+        <Animated.View
           style={[
             {
               gap: 15,
@@ -235,31 +163,18 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
             wrongPinAnimatedStyle,
             style
           ]}>
-          {Array.from({ length }).map((_, index) => {
+          {animations.map((animation, index) => {
             const shouldFill = index < value.length
 
             return (
-              <Reanimated.View
+              <AnimatedDot
                 key={index}
-                style={[
-                  {
-                    width: 16,
-                    height: 16,
-                    borderRadius: 8,
-                    borderWidth: 2,
-                    borderColor: shouldFill
-                      ? 'transparent'
-                      : theme.colors.$borderPrimary,
-                    backgroundColor: shouldFill
-                      ? theme.colors.$textPrimary
-                      : 'transparent'
-                  },
-                  animatedStyles[index]
-                ]}
+                shouldFill={shouldFill}
+                sharedValue={animation}
               />
             )
           })}
-        </Reanimated.View>
+        </Animated.View>
       </TouchableOpacity>
     )
   }
@@ -280,4 +195,36 @@ type PinInputProps = {
   onChangePin: (pin: string) => void
   length?: 6 | 8
   style?: ViewStyle
+}
+
+const AnimatedDot = ({
+  shouldFill,
+  sharedValue
+}: {
+  shouldFill: boolean
+  sharedValue: SharedValue<number>
+}): JSX.Element => {
+  const { theme } = useTheme()
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: sharedValue.value }]
+  }))
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width: 16,
+          height: 16,
+          borderRadius: 8,
+          borderWidth: 2,
+          borderColor: shouldFill ? 'transparent' : theme.colors.$borderPrimary,
+          backgroundColor: shouldFill
+            ? theme.colors.$textPrimary
+            : 'transparent'
+        },
+        animatedStyle
+      ]}
+    />
+  )
 }
