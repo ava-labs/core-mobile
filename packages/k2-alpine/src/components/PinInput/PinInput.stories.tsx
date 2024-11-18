@@ -30,12 +30,12 @@ export const All = (): JSX.Element => {
   useEffect(() => {
     if (pinCode.length !== pinLength) return
 
+    pinInputRef.current?.blur()
     pinInputRef.current?.startLoadingAnimation()
 
     setTimeout(() => {
       pinInputRef.current?.stopLoadingAnimation(() => {
         if (pinCode === PIN_CODE) {
-          pinInputRef.current?.blur()
           Alert.alert('Pincode is correct', undefined, [
             {
               text: 'OK',
