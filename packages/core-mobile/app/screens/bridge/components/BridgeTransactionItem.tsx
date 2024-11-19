@@ -60,7 +60,9 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
           )}
         </View>
       }
-      subtitle={`${sourceBlockchain} → ${targetBlockchain}`}
+      subtitle={`${sourceBlockchain ?? 'Unknown'} → ${
+        targetBlockchain ?? 'Unknown'
+      }`}
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
