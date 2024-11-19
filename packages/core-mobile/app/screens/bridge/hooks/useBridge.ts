@@ -4,6 +4,7 @@ import Big from 'big.js'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 import { getAssetBalance, unwrapAssetSymbol } from '../utils/bridgeUtils'
 import { useAssetBalances } from './useAssetBalances'
 import { useBridgeAssets } from './useBridgeAssets'
@@ -33,7 +34,7 @@ interface Bridge {
    * Transfer funds to the target network
    * @returns the transaction hash
    */
-  transfer: () => Promise<string | undefined>
+  transfer: (bridgeType: BridgeType) => Promise<string | undefined>
 
   sourceNetworks: Network[]
   targetNetworks: Network[]
@@ -64,6 +65,7 @@ export default function useBridge(): Bridge {
   const [inputAmount, setInputAmount] = useState<bigint>()
   const amount = useMemo(() => inputAmount ?? 0n, [inputAmount])
   const { assetsWithBalances, loading } = useAssetBalances()
+  const { data: networkFeeRate } = useNetworkFee()
 
   const assetBalance = useMemo(
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
@@ -73,7 +75,12 @@ export default function useBridge(): Bridge {
   const sourceNetworks = useBridgeSourceNetworks()
   const targetNetworks = useBridgeTargetNetworks(selectedBridgeAsset)
 
-  const [networkFee, setNetworkFee] = useState<bigint>()
+  const [gasLimit, setGasLimit] = useState<bigint>()
+  const networkFee = useMemo(() => {
+    if (!networkFeeRate || !gasLimit) return
+
+    return networkFeeRate.low.maxFeePerGas * gasLimit
+  }, [gasLimit, networkFeeRate])
 
   const price = useBridgeAssetPrice(selectedBridgeAsset)
 
@@ -86,7 +93,7 @@ export default function useBridge(): Bridge {
 
   const bridgeType = useBridgeType(selectedBridgeAsset, targetNetwork?.chainId)
 
-  const { getBridgeFee, getNetworkFee } = useGetBridgeFees({
+  const { getBridgeFee, getEstimatedGas } = useGetBridgeFees({
     amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
@@ -101,16 +108,16 @@ export default function useBridge(): Bridge {
   })
 
   useEffect(() => {
-    getNetworkFee()
-      .then(fee => {
-        if (fee) {
-          setNetworkFee(fee)
+    getEstimatedGas()
+      .then(estimatedGas => {
+        if (estimatedGas) {
+          setGasLimit(estimatedGas)
         }
       })
       .catch(e => {
-        Logger.error('Failed to get network fee', e)
+        Logger.error('Failed to get estimated gas', e)
       })
-  }, [getNetworkFee])
+  }, [getEstimatedGas])
 
   useEffect(() => {
     getBridgeFee()

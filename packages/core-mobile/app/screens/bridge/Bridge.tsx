@@ -302,7 +302,7 @@ const Bridge: FC = () => {
   }
 
   const handleTransfer = async (): Promise<void> => {
-    if (amount === 0n || !sourceNetwork || !targetNetwork) {
+    if (amount === 0n || !sourceNetwork || !targetNetwork || !bridgeType) {
       return
     }
 
@@ -313,7 +313,7 @@ const Bridge: FC = () => {
 
     try {
       setIsPending(true)
-      const [hash, transferError] = await resolve(transfer())
+      const [hash, transferError] = await resolve(transfer(bridgeType))
       setIsPending(false)
 
       if (transferError || !hash) {

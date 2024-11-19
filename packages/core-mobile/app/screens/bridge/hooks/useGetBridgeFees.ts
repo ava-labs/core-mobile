@@ -1,6 +1,5 @@
 import { BridgeAsset } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
@@ -19,9 +18,8 @@ export const useGetBridgeFees = ({
   targetNetwork: Network | undefined
 }): {
   getBridgeFee: () => Promise<bigint | undefined>
-  getNetworkFee: () => Promise<bigint | undefined>
+  getEstimatedGas: () => Promise<bigint | undefined>
 } => {
-  const { data: networkFeeRate } = useNetworkFee()
   const activeAccount = useSelector(selectActiveAccount)
 
   const getBridgeFee = useCallback(async () => {
@@ -37,14 +35,8 @@ export const useGetBridgeFees = ({
     })
   }, [amount, bridgeAsset, sourceNetwork, targetNetwork])
 
-  const getNetworkFee = useCallback(async () => {
-    if (
-      !networkFeeRate ||
-      !activeAccount ||
-      !bridgeAsset ||
-      !sourceNetwork ||
-      amount === 0n
-    )
+  const getEstimatedGas = useCallback(async () => {
+    if (!activeAccount || !bridgeAsset || !sourceNetwork || amount === 0n)
       return
 
     if (!activeAccount) {
@@ -68,18 +60,11 @@ export const useGetBridgeFees = ({
     })
 
     if (gasLimit) {
-      return networkFeeRate.low.maxFeePerGas * gasLimit
+      return gasLimit
     }
-  }, [
-    activeAccount,
-    amount,
-    bridgeAsset,
-    networkFeeRate,
-    sourceNetwork,
-    targetNetwork
-  ])
+  }, [activeAccount, amount, bridgeAsset, sourceNetwork, targetNetwork])
 
-  return { getBridgeFee, getNetworkFee }
+  return { getBridgeFee, getEstimatedGas }
 }
 
 export const useGetMinimumTransferAmount = ({
