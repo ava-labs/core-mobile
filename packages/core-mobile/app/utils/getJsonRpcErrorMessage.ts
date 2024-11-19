@@ -10,6 +10,10 @@ export const getJsonRpcErrorMessage = (error: unknown): string => {
   }
 
   if (error instanceof Error) {
+    if ('details' in error && typeof error.details === 'string') {
+      return error.details
+    }
+
     return error.message
   }
 
