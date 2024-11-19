@@ -54,8 +54,6 @@ const dropdownWidth = Dimensions.get('window').width * 0.6
 
 const TRANSFER_ERROR = 'There was a problem with the transfer.'
 
-const NO_AMOUNT = UNKNOWN_AMOUNT
-
 const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)
 }
@@ -142,18 +140,18 @@ const Bridge: FC = () => {
       ? currencyFormatter(
           price.mul(bigintToBig(amount, denomination)).toNumber()
         )
-      : NO_AMOUNT
+      : UNKNOWN_AMOUNT
 
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount
       ? bigToLocaleString(bigintToBig(receiveAmount, denomination))
-      : NO_AMOUNT
+      : UNKNOWN_AMOUNT
   const formattedReceiveAmountCurrency =
     hasValidAmount && price && receiveAmount
       ? currencyFormatter(
           price.mul(bigintToBig(receiveAmount, denomination)).toNumber()
         )
-      : NO_AMOUNT
+      : UNKNOWN_AMOUNT
 
   const transferDisabled =
     loading ||
@@ -211,10 +209,14 @@ const Bridge: FC = () => {
   )
 
   useEffect(() => {
-    if (bridgeTokenList.length === 1 && bridgeTokenList[0]?.asset) {
+    if (
+      bridgeTokenList.length === 1 &&
+      bridgeTokenList[0]?.asset &&
+      selectedBridgeAsset === undefined
+    ) {
       setSelectedBridgeAsset(bridgeTokenList[0].asset)
     }
-  }, [bridgeTokenList, setSelectedBridgeAsset])
+  }, [bridgeTokenList, setSelectedBridgeAsset, selectedBridgeAsset])
 
   /**
    * Opens token selection modal
@@ -697,7 +699,7 @@ const Bridge: FC = () => {
                 numberOfLines={1}>
                 {formattedAmountCurrency}
               </Text>
-              {formattedAmountCurrency !== NO_AMOUNT && (
+              {formattedAmountCurrency !== UNKNOWN_AMOUNT && (
                 <Text variant="caption" sx={{ color: '$neutral300' }}>
                   {selectedCurrency}
                 </Text>
@@ -800,7 +802,7 @@ const Bridge: FC = () => {
             <Text variant="body1" numberOfLines={1} sx={{ marginRight: 4 }}>
               {formattedReceiveAmount}
             </Text>
-            {formattedReceiveAmount !== NO_AMOUNT && (
+            {formattedReceiveAmount !== UNKNOWN_AMOUNT && (
               <Text variant="body1">{selectedAssetSymbol}</Text>
             )}
           </Row>
@@ -812,7 +814,7 @@ const Bridge: FC = () => {
               sx={{ marginTop: 4, color: '$neutral400', marginRight: 4 }}>
               {formattedReceiveAmountCurrency}
             </Text>
-            {formattedReceiveAmountCurrency !== NO_AMOUNT && (
+            {formattedReceiveAmountCurrency !== UNKNOWN_AMOUNT && (
               <Text
                 variant="caption"
                 numberOfLines={1}
