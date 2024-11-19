@@ -5,7 +5,7 @@ import {
   useBridgeSDK
 } from '@avalabs/core-bridge-sdk'
 import { useSelector } from 'react-redux'
-import { selectBridgeConfig } from 'store/bridge'
+import { selectBridgeConfig } from 'store/bridge/slice'
 import { isEqual } from 'lodash'
 import BridgeService from 'services/bridge/BridgeService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'

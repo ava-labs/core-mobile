@@ -27,7 +27,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEEDLESS_SIGNING]: true,
   [FeatureGates.BLOCKAID_TRANSACTION_VALIDATION]: true,
   [FeatureGates.BLOCKAID_DAPP_SCAN]: true,
-  [FeatureGates.BALANCE_CHANGE_NOTIFICATIONS]: false,
+  [FeatureGates.BALANCE_CHANGE_NOTIFICATIONS]: true,
   [FeatureGates.UNIFIED_BRIDGE_CCTP]: true,
   [FeatureGates.UNIFIED_BRIDGE_ICTT]: true,
   [FeatureGates.UNIFIED_BRIDGE_AB_EVM]: true,
