@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, Dimensions, Linking, Pressable, StyleSheet } from 'react-native'
+import { Alert, Dimensions, Pressable, StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import BridgeToggleIcon from 'assets/icons/BridgeToggleIcon.svg'
@@ -33,9 +33,6 @@ import { BNInput } from 'components/BNInput'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View, useTheme, ScrollView } from '@avalabs/k2-mobile'
-import CircleLogo from 'assets/icons/circle_logo.svg'
-import { Tooltip } from 'components/Tooltip'
-import { DOCS_BRIDGE_FAQS } from 'resources/Constants'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
@@ -48,8 +45,9 @@ import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { BridgeAsset, BridgeType, TokenType } from '@avalabs/bridge-unified'
+import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
 import { AssetBalance } from './utils/types'
+import BridgeTypeFootnote from './components/BridgeTypeFootnote'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWidth = Dimensions.get('window').width * 0.6
@@ -850,56 +848,6 @@ const Bridge: FC = () => {
     )
   }
 
-  const handleBridgeFaqs = (): void => {
-    Linking.openURL(DOCS_BRIDGE_FAQS).catch(e => {
-      Logger.error(DOCS_BRIDGE_FAQS, e)
-    })
-  }
-
-  const renderCCTPPopoverInfoText = (): JSX.Element => (
-    <View
-      sx={{
-        backgroundColor: '$neutral100',
-        marginHorizontal: 8,
-        marginVertical: 4
-      }}>
-      <Text
-        variant="buttonSmall"
-        sx={{ color: '$neutral900', fontWeight: '400' }}>
-        USDC is routed through Circle's Cross-Chain Transfer Protocol.
-      </Text>
-      <Text
-        variant="buttonSmall"
-        onPress={handleBridgeFaqs}
-        sx={{ color: '$blueDark' }}>
-        Bridge FAQs
-      </Text>
-    </View>
-  )
-
-  const renderCircleBadge = (): JSX.Element => {
-    return (
-      <View
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'row',
-          marginBottom: 10
-        }}>
-        <Text variant="caption">Powered by </Text>
-        <CircleLogo width={50} height={'100%'} style={{ marginTop: 1 }} />
-        <Tooltip
-          iconColor={theme.colors.$neutral50}
-          content={renderCCTPPopoverInfoText()}
-          position="top"
-          style={{
-            width: 200
-          }}
-        />
-      </View>
-    )
-  }
-
   return (
     <SafeAreaProvider>
       <ScrollView
@@ -936,7 +884,7 @@ const Bridge: FC = () => {
         </View>
       </ScrollView>
       {renderTransferBtn()}
-      {bridgeType === BridgeType.CCTP && renderCircleBadge()}
+      {bridgeType && <BridgeTypeFootnote bridgeType={bridgeType} />}
     </SafeAreaProvider>
   )
 }
