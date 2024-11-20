@@ -56,6 +56,7 @@ async function downloadExternalApk(buildIndex, apkName, testApkName) {
   const artifacts = await getAndroidArtifacts(buildIndex)
   const apkSlug = artifacts.slug
   const url = artifacts.url
+  process.env.BUILD_INDEX = buildIndex
   const apkResponse = await axios.get(`${url}/${apkSlug}`, {
     headers: { Authorization: `${artifactsToken}` }
   })
@@ -72,21 +73,29 @@ async function downloadExternalApk(buildIndex, apkName, testApkName) {
   })
   apkFile.data.pipe(writer)
   testApkFile.data.pipe(testApkWriter)
+
+  if (buildIndex > 0) {
+    process.env.PREVIOUS_VERSION_APK_PATH = apkName
+    process.env.PREVIOUS_VERSION_TEST_APK_PATH = testApkName
+  } else {
+    process.env.NEW_VERSION_APK_PATH = apkName
+    process.env.NEW_VERSION_TEST_APK_PATH = testApkName
+  }
 }
 
 // Downloads the latest and old versions of the external signed and test apks
 async function setupApksForTesting() {
   downloadExternalApk(
     6,
-    './oldVersionApk/app-external-e2e-bitrise-signed.apk',
-    './oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+    './e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
+    './e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
   )
   // Short delay to avoid possible rate limiting
   await delay(2000)
   downloadExternalApk(
     0,
-    './latestVersionApk/app-external-e2e-bitrise-signed.apk',
-    './latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+    './e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apk',
+    './e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
   )
 }
 

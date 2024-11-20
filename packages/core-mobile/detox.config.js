@@ -39,6 +39,11 @@ module.exports = {
       binaryPath:
         'ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
     },
+
+    'ios.external.release': {
+      type: 'ios.app',
+      binaryPath: 'e2e/tests/updateAppVersion/latestVersionApk/AvaxWallet.app'
+    },
     'ios.internal.release': {
       type: 'ios.app',
       binaryPath: 'binaries/AvaxWalletInternal.app'
@@ -68,19 +73,21 @@ module.exports = {
       binaryPath: process.env.BITRISE_SIGNED_APK_PATH,
       testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
+    // This apk is for the updateAppVersion test
     'android.external.latest.e2e': {
       type: 'android.apk',
-      binaryPath:
-        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apkk',
-      testBinaryPath:
-        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+      binaryPath: process.env.NEW_VERSION_APK_PATH,
+      // 'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apkk',
+      testBinaryPath: process.env.NEW_VERSION_TEST_APK_PATH
+      // 'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
     },
+    // This apk is for the updateAppVersion test
     'android.external.old.e2e': {
       type: 'android.apk',
-      binaryPath:
-        'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
-      testBinaryPath:
-        'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+      binaryPath: process.env.PREVIOUS_VERSION_APK_PATH,
+      // 'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
+      testBinaryPath: process.env.PREVIOUS_VERSION_TEST_APK_PATH
+      // 'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
     },
     'android.external.local.e2e': {
       type: 'android.apk',
@@ -124,6 +131,26 @@ module.exports = {
     'ios.internal.debug': {
       device: 'simulator',
       app: 'ios.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/reuseStateConfig.json'
+        },
+        jest: {
+          setupTimeout: 300000,
+          testTimeout: 300000
+        }
+      }
+    },
+    'ios.external.release': {
+      device: 'simulator',
+      app: 'ios.external.release',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
         plugins: {
@@ -505,15 +532,51 @@ module.exports = {
     },
     'android.external.latest.e2e': {
       device: 'emulator',
-      app: 'android.external.latest.e2e'
+      app: 'android.external.latest.e2e',
+      artifacts: {
+        rootDir: './e2e/artifacts/android',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/reuseStateConfig.json'
+        }
+      }
     },
     'android.external.old.e2e': {
       device: 'emulator',
-      app: 'android.external.old.e2e'
+      app: 'android.external.old.e2e',
+      artifacts: {
+        rootDir: './e2e/artifacts/android',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/reuseStateConfig.json'
+        }
+      }
     },
     'android.external.local.e2e': {
       device: 'emulator',
-      app: 'android.external.local.e2e'
+      app: 'android.external.local.e2e',
+      artifacts: {
+        rootDir: './e2e/artifacts/android',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/reuseStateConfig.json'
+        }
+      }
     }
   }
 }

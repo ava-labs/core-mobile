@@ -358,6 +358,13 @@ workflows:
         no_output_timeout: 450
         inputs:
         - file_path: scripts/bitrise/detox/androidE2ENoReuseAppState.sh
+  _run_android_update_app_version_test:
+    steps:
+    - script-runner@0:
+        title: Detox
+        no_output_timeout: 450
+        inputs:
+        - file_path: e2e/tests/updateAppVersion/runUpdateTest.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -818,6 +825,7 @@ workflows:
     - _pull_external_app_files
     after_run:
     - _run_android_detox_tests
+    - _run_android_update_app_version_test
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
