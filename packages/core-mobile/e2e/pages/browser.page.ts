@@ -4,6 +4,8 @@ import Wbs, { WebScripts } from '../helpers/web'
 import delay from '../helpers/waits'
 import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
+import connectToSitePage from './connectToSite.page'
+import plusMenuPage from './plusMenu.page'
 
 class BrowserPage {
   get searchBar() {
@@ -55,7 +57,7 @@ class BrowserPage {
       case 'https://app.aave.com/': // Aave
         xpath = '//*[text()="Connect wallet"]'
         break
-      case 'https://traderjoexyz.com/avalanche': // TraderJoe
+      case 'https://lfj.gg/avalanche': // TraderJoe
         xpath = '//button[@aria-label="connect-wallet"]'
         break
       case 'https://opensea.io/': // OpenSea
@@ -63,6 +65,12 @@ class BrowserPage {
         break
       case 'https://ava-labs.github.io/extension-avalanche-playground/': // Core Playground
         xpath = '//button[text()="Connect via Wallet Connect - Wagmi"]'
+        break
+      case 'https://app.uniswap.org/': // UniSwap
+        xpath = '//button[@data-testid="navbar-connect-wallet"]'
+        break
+      case 'https://pancakeswap.finance/?chain=eth': // PancakeSwap
+        xpath = '//div[text()="Connect"]'
         break
       default: // core app
         xpath = '//*[text()="WalletConnect"]'
@@ -98,32 +106,24 @@ class BrowserPage {
     await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_CORE)
   }
 
-  async getQrUriViaAllWallets() {
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_ALL_WALLETS)
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_QR_BUTTON)
-    const output = await Wbs.waitAndRunScript(
-      'w3m-modal',
-      WebScripts.GET_WC_URI
-    )
-    console.log(`QR URI - ${output}`)
-    return output
-  }
-
   async getQrUri() {
-    await delay(2000)
-    if (Actions.platform() === 'ios') {
-      await Wbs.waitAndRunScript('wcm-modal', WebScripts.CLICK_WCM_IOS_MODAL)
-    } else {
-      await Wbs.waitAndRunScript(
-        'wcm-modal',
-        WebScripts.CLICK_WCM_ANDROID_MODAL
-      )
-    }
-    const output = await Wbs.waitAndRunScript(
+    await delay(3000)
+    const clickModal =
+      Actions.platform() === 'ios'
+        ? WebScripts.CLICK_WCM_IOS_MODAL
+        : WebScripts.CLICK_WCM_ANDROID_MODAL
+
+    await device.disableSynchronization()
+    await Wbs.waitAndRunScript('wcm-modal', clickModal)
+    await delay(1000)
+    const output = await Wbs.getElementTextByRunScript(
       'wcm-modal',
-      WebScripts.GET_WCM_URI
+      WebScripts.GET_WCM_URI,
+      10000
     )
+    await device.enableSynchronization()
     console.log(`QR URI - ${output}`)
+    if (!output.length) throw Error("I couldn't get QR URI")
     return output
   }
 
@@ -194,14 +194,6 @@ class BrowserPage {
     await Wbs.tapByText('RPC Calls')
   }
 
-  async reconnectRpc() {
-    await this.tapConnectWallet(
-      'https://ava-labs.github.io/extension-avalanche-playground/'
-    )
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_ALL_WALLETS)
-    await Wbs.waitAndRunScript('w3m-modal', WebScripts.CLICK_WC_QR_BUTTON)
-  }
-
   async sendRpcCall(rpcCall: string) {
     await this.goToRpcCallPage()
     await this.enterRpcCall(rpcCall)
@@ -238,6 +230,65 @@ class BrowserPage {
     } catch (e) {
       console.log('The Continue button is not displayed')
     }
+  }
+
+  async connect(dapp: string) {
+    await this.connectTo(dapp)
+    const qrUri = await this.getQrUri()
+    await plusMenuPage.connectWallet(qrUri)
+    await connectToSitePage.selectAccountAndconnect()
+  }
+
+  async setDappSwapAmount(selector: string, amount = '0.00001') {
+    await delay(2000)
+    await Wbs.waitAndRunScript(
+      selector,
+      `function type (element) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+        nativeInputValueSetter.call(element, ${amount});
+        element.dispatchEvent(new Event('input', { bubbles: true}));
+      }`
+    )
+    await delay(3000)
+  }
+
+  async swapUniSwap() {
+    await bottomTabsPage.tapBrowserTab()
+    await Wbs.tapByXpath('//div[@data-testid="token-logo"]')
+    await delay(1000)
+    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-AVAX"]')
+    await delay(1000)
+    await Wbs.tapByXpath('//span[@data-testid="choose-output-token-label"]')
+    await delay(1000)
+    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
+    await this.setDappSwapAmount('[data-testid="amount-input-in"]')
+    await Wbs.tapByXpath(
+      '//div[not(@aria-disabled="true")]/span[text()="Review"]'
+    )
+    while (
+      await Wbs.isVisibleByXpath(
+        '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
+      )
+    ) {
+      await Wbs.tapByXpath(
+        '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
+      )
+    }
+  }
+
+  async swapLFJ() {
+    await bottomTabsPage.tapBrowserTab()
+    await Wbs.tapByXpath("//a[@href='/avalanche/trade']")
+    await Wbs.tapByXpath("//button[contains(text(), 'Select token')]")
+    await Wbs.setInputText(
+      "//input[@data-cy='currency-picker-search-bar']",
+      'JOE token'
+    )
+    await Wbs.tapByXpath("//p[text()='JOE']")
+    await this.setDappSwapAmount('[data-cy="trade-currency-input"]')
+    await Wbs.tapByXpath(
+      "//button[@data-cy='swap-button' and text()='Swap' and not(@disabled)]"
+    )
   }
 }
 

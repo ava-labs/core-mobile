@@ -3,7 +3,9 @@ import { useCallback, useEffect } from 'react'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSendContext } from 'contexts/SendContext'
 import { assertNotUndefined } from 'utils/assertions'
-import { useEthereumProvider } from 'hooks/networks/networkProviderHooks'
+import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
+import { bigIntToString } from '@avalabs/core-utils-sdk'
+import Logger from 'utils/Logger'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -28,12 +30,12 @@ const useEVMSend: SendAdapterEVM = ({
     setMaxAmount,
     setError,
     setIsSending,
-    setIsValidating,
     token,
     toAddress,
-    amount
+    amount,
+    canValidate
   } = useSendContext()
-  const provider = useEthereumProvider(!!network.isTestnet)
+  const provider = useEVMProvider(network)
 
   const send = useCallback(async () => {
     try {
@@ -78,9 +80,6 @@ const useEVMSend: SendAdapterEVM = ({
   )
 
   const validate = useCallback(async () => {
-    setIsValidating(true)
-    setError(undefined)
-
     try {
       validateBasicInputs(token, toAddress, maxFee)
 
@@ -114,16 +113,15 @@ const useEVMSend: SendAdapterEVM = ({
           amount: amount?.bn,
           token,
           maxFee,
-          nativeToken,
-          onCalculateMaxAmount: setMaxAmount
+          nativeToken
         })
       }
 
       validateGasLimit(gasLimit)
+
+      setError(undefined)
     } catch (err) {
       handleError(err)
-    } finally {
-      setIsValidating(false)
     }
   }, [
     nativeToken,
@@ -131,17 +129,58 @@ const useEVMSend: SendAdapterEVM = ({
     provider,
     handleError,
     setError,
-    setIsValidating,
     maxFee,
-    setMaxAmount,
     token,
     toAddress,
     amount
   ])
 
+  const getMaxAmount = useCallback(async () => {
+    if (!provider || !toAddress || !token) {
+      return
+    }
+
+    const gasLimit = await getGasLimit({
+      fromAddress,
+      provider,
+      toAddress,
+      amount: amount?.bn ?? 0n,
+      token
+    })
+
+    const totalFee = gasLimit * maxFee
+    const maxAmountValue = nativeToken.balance - totalFee
+
+    if (token.type === TokenType.NATIVE) {
+      return {
+        bn: maxAmountValue ?? 0n,
+        amount: maxAmountValue
+          ? bigIntToString(maxAmountValue, nativeToken.decimals)
+          : ''
+      }
+    } else if (token.type === TokenType.ERC20) {
+      return {
+        bn: token.balance,
+        amount: bigIntToString(token.balance, token.decimals)
+      }
+    }
+  }, [amount, fromAddress, maxFee, nativeToken, provider, toAddress, token])
+
   useEffect(() => {
-    validate()
-  }, [validate])
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
+
+  useEffect(() => {
+    getMaxAmount()
+      .then(maxAmount => {
+        if (maxAmount) {
+          setMaxAmount(maxAmount)
+        }
+      })
+      .catch(Logger.error)
+  }, [getMaxAmount, setMaxAmount])
 
   return {
     send

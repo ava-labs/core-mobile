@@ -6,6 +6,9 @@ import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { assetXDisplayNames } from 'store/balance/types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 type ChainBalanceType = keyof XChainBalances
 
@@ -19,7 +22,7 @@ export const XChainAssetList = ({
   ItemSeparator?: React.ComponentType | null
 }): React.JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
-
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const token = tokens.find(t => isTokenWithBalanceAVM(t))
 
   const assetTypes = useMemo(() => {
@@ -48,7 +51,7 @@ export const XChainAssetList = ({
     const formattedBalance =
       token?.priceInCurrency && balanceInAvax
         ? balanceInAvax.mul(token.priceInCurrency).toDisplay({ fixedDp: 2 })
-        : '-'
+        : UNKNOWN_AMOUNT
 
     const assetName = assetXDisplayNames[assetType]
 
@@ -81,7 +84,7 @@ export const XChainAssetList = ({
                 variant="overline"
                 sx={{ color: '$neutral50' }}
                 ellipsizeMode="tail">
-                {balanceInAvax?.toDisplay() ?? '-'}
+                {balanceInAvax?.toDisplay() ?? UNKNOWN_AMOUNT}
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">
@@ -94,7 +97,7 @@ export const XChainAssetList = ({
               alignSelf: 'center'
             }}>
             <Text variant="buttonMedium" numberOfLines={1}>
-              {formattedBalance}
+              {`${formattedBalance} ${selectedCurrency}`}
             </Text>
           </View>
         </View>

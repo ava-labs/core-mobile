@@ -360,6 +360,42 @@ class PortfolioPage {
   async verifyAccountName(name: string) {
     await Assert.hasText(accountManagePage.accountDropdownTitle, name)
   }
+
+  async getTotalBalance(): Promise<number> {
+    // The total balance on Portfolio header
+    const bal = await Action.getElementText(by.id('portfolio_balance__total'))
+    return Action.getAmount(bal)
+  }
+
+  async getActiveNetworkBalance(): Promise<number> {
+    // Balance of the active network on Portfolio tab
+    const bal = await Action.getElementText(this.activeNetworkBalance)
+    return Action.getAmount(bal)
+  }
+
+  async getNetworkTokensBalance(
+    network = 'Avalanche (C-Chain)'
+  ): Promise<number> {
+    // The selected network tokens' balance (e.g. Avalanche (C-Chain) tokens' balance)
+    await Action.waitForElement(this.portfolioTokenList)
+    const bal = await Action.getElementText(
+      by.id(`network_tokens_header_balance__${network}`)
+    )
+    return Action.getAmount(bal)
+  }
+
+  async getTokenBalance(token: string): Promise<number> {
+    await Action.waitForElement(this.portfolioTokenList)
+    await Action.scrollListUntil(
+      by.id(`portfolio_list_item__${token}_balance`),
+      this.portfolioTokenList,
+      100
+    )
+    const bal = await Action.getElementText(
+      by.id(`portfolio_list_item__${token}_balance`)
+    )
+    return Action.getAmount(bal)
+  }
 }
 
 export default new PortfolioPage()

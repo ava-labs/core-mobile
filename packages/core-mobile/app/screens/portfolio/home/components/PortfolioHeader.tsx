@@ -17,6 +17,7 @@ import { Tooltip } from 'components/Tooltip'
 import { Space } from 'components/Space'
 import { RootState } from 'store'
 import { selectTokenBlacklist } from 'store/portfolio/slice'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
 function PortfolioHeader(): JSX.Element {
@@ -40,7 +41,7 @@ function PortfolioHeader(): JSX.Element {
   const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance =
     !balanceAccurate && balanceTotalInCurrency === 0
-      ? '-'
+      ? UNKNOWN_AMOUNT
       : currencyFormatter(balanceTotalInCurrency)
 
   const tokens = useSelector((state: RootState) =>
@@ -92,7 +93,7 @@ function PortfolioHeader(): JSX.Element {
               <Space x={6} />
             </>
           )}
-          <Text variant="heading3">
+          <Text variant="heading3" testID="portfolio_balance__total">
             {currencyBalance.replace(selectedCurrency, '')}
           </Text>
           <Text

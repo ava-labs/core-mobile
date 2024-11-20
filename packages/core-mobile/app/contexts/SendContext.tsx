@@ -26,8 +26,8 @@ interface SendContextState {
   setError: Dispatch<string | undefined>
   isSending: boolean
   setIsSending: Dispatch<boolean>
-  isValidating: boolean
-  setIsValidating: Dispatch<boolean>
+  canValidate: boolean
+  setCanValidate: Dispatch<boolean>
   isValid: boolean
 }
 
@@ -51,9 +51,9 @@ export const SendContextProvider = ({
   const [toAddress, setToAddress] = useState<string>()
 
   const { data: networkFee } = useNetworkFee(activeNetwork)
-  const [error, setError] = useState<string | undefined>()
+  const [error, setError] = useState<string | undefined>(NOT_TOUCHED_ERROR)
   const [isSending, setIsSending] = useState(false)
-  const [isValidating, setIsValidating] = useState(false)
+  const [canValidate, setCanValidate] = useState(false)
 
   const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] = useState<bigint>(0n)
 
@@ -88,8 +88,8 @@ export const SendContextProvider = ({
     setError,
     isSending,
     setIsSending,
-    isValidating,
-    setIsValidating,
+    canValidate,
+    setCanValidate,
     isValid: error === undefined
   }
   return <SendContext.Provider value={state}>{children}</SendContext.Provider>
@@ -98,3 +98,5 @@ export const SendContextProvider = ({
 export function useSendContext(): SendContextState {
   return useContext(SendContext)
 }
+
+const NOT_TOUCHED_ERROR = ''

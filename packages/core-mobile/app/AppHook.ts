@@ -18,8 +18,8 @@ export type AppHook = {
   selectedCurrency: string
   deleteWallet: () => void
   signOut: () => void
-  currencyFormatter(num: number | string, notation?: NotationTypes): string
-  tokenInCurrencyFormatter(num: number | string): string
+  currencyFormatter(num: number, notation?: NotationTypes): string
+  tokenInCurrencyFormatter(num: number): string
 }
 
 export function useApp(): AppHook {

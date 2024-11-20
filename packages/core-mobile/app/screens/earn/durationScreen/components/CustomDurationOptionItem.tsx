@@ -24,6 +24,7 @@ import { differenceInMilliseconds } from 'date-fns'
 import { useNow } from 'hooks/time/useNow'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 export const CustomDurationOptionItem = ({
   stakeAmount,
@@ -89,7 +90,7 @@ export const CustomDurationOptionItem = ({
             </AvaText.Body1>
             <AvaText.Caption textStyle={{ color: theme.colorText1 }}>
               {`Estimated Rewards: ${
-                estimatedRewardsInAvax?.toDisplay() ?? '-'
+                estimatedRewardsInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
               } AVAX`}
             </AvaText.Caption>
           </View>

@@ -3,16 +3,31 @@ import {
   BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { useEffect, useState } from 'react'
 import {
   getAvalancheEvmProvider,
   getAvalancheXpProvider,
   getBitcoinProvider,
-  getEthereumProvider
+  getEthereumProvider,
+  getEvmProvider
 } from 'services/network/utils/providerUtils'
 import Logger from 'utils/Logger'
 import { useNetworks } from './useNetworks'
 
+// this will return an EVM provider (that uses the network.rpcUrl)
+export function useEVMProvider(
+  network: Network
+): JsonRpcBatchInternal | undefined {
+  const [evmProvider, setEVMProvider] = useState<JsonRpcBatchInternal>()
+  useEffect(() => {
+    getEvmProvider(network).then(setEVMProvider).catch(Logger.error)
+  }, [network])
+
+  return evmProvider
+}
+
+// this will always return an ethereum provider (infura)
 export function useEthereumProvider(
   isTestnet?: boolean
 ): JsonRpcBatchInternal | undefined {

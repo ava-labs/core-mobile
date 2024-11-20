@@ -13,6 +13,7 @@ import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
+import { weiToNano } from 'utils/units/converter'
 
 const importFee = calculatePChainFee()
 
@@ -58,8 +59,8 @@ export const useEstimateStakingFees = (
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
       const unsignedTx = await WalletService.createExportCTx({
-        amount: totalAmount.toSubUnit(),
-        baseFee: instantBaseFee.toSubUnit(),
+        amountInNAvax: weiToNano(totalAmount.toSubUnit()),
+        baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
         accountIndex: activeAccount.index,
         avaxXPNetwork,
         destinationChain: 'P',

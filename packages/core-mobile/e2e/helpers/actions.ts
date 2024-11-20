@@ -84,7 +84,11 @@ const setInputText = async (
 
 const dismissKeyboard = async (searchBarId = 'search_bar__search') => {
   if (platform() === Platform.iOS) {
-    await element(by.id(searchBarId)).tapReturnKey()
+    try {
+      await element(by.label('Done')).atIndex(0).tap()
+    } catch (e) {
+      await element(by.id(searchBarId)).tapReturnKey()
+    }
   } else {
     await device.pressBack()
   }
@@ -385,6 +389,12 @@ const dragTo = async (
   )
 }
 
+const getAmount = (amount: string | undefined): number => {
+  if (amount) {
+    return parseFloat(amount.replace(/\$/g, '').replace(/,/g, ''))
+  } else return 0
+}
+
 const shuffleArray = <T>(array: T[]): T[] =>
   array.sort(() => Math.random() - 0.5)
 
@@ -425,5 +435,6 @@ export default {
   shuffleArray,
   scrollToBottom,
   scrollToTop,
-  hasText
+  hasText,
+  getAmount
 }

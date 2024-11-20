@@ -26,6 +26,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
@@ -77,7 +78,7 @@ const ClaimRewards = (): JSX.Element | null => {
         unlockedInUnit.mul(avaxPrice).toDisplay()
       ]
     }
-    return ['-', '-']
+    return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
   }, [avaxPrice, data, networkToken.decimals, networkToken.symbol])
 
   const [feesInAvax, feesInCurrency] = useMemo(() => {
@@ -117,7 +118,7 @@ const ClaimRewards = (): JSX.Element | null => {
         </AvaText.Heading6>
         <Space y={4} />
         <AvaText.Body3 testID="network_fee_currency" color={theme.colorText2}>
-          {feesInCurrency}
+          {`${feesInCurrency} ${selectedCurrency}`}
         </AvaText.Body3>
       </View>
     )
@@ -166,7 +167,7 @@ const ClaimRewards = (): JSX.Element | null => {
         <AvaText.Heading3
           textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}
           testID="claimable_balance_currency">
-          {claimableAmountInCurrency}
+          {`${claimableAmountInCurrency} ${selectedCurrency}`}
         </AvaText.Heading3>
       </View>
       <Separator />

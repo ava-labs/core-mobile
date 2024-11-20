@@ -43,18 +43,25 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showTransactionSuccessToast } from 'utils/toast'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
+
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
 
 export const Confirmation = (): JSX.Element | null => {
+  const {
+    appHook: { tokenInCurrencyFormatter }
+  } = useApplicationContext()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFocused = useIsFocused()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
   const { nodeId, stakingAmount, stakingEndTime, onBack } =
     useRoute<ScreenProps['route']>().params
@@ -229,7 +236,7 @@ export const Confirmation = (): JSX.Element | null => {
     const stakingAmountInAvax = deductedStakingAmount.toDisplay()
     const stakingAmountInCurrency = deductedStakingAmount
       .mul(avaxPrice)
-      .toDisplay({ fixedDp: 2 })
+      .toDisplay({ fixedDp: 2, asNumber: true })
 
     return (
       <Row style={{ justifyContent: 'space-between' }}>
@@ -241,7 +248,9 @@ export const Confirmation = (): JSX.Element | null => {
             {stakingAmountInAvax + ' ' + tokenSymbol}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
-            {stakingAmountInCurrency}
+            {`${tokenInCurrencyFormatter(
+              stakingAmountInCurrency
+            )} ${selectedCurrency}`}
           </AvaText.Heading3>
           <Space x={4} />
         </View>
@@ -254,7 +263,7 @@ export const Confirmation = (): JSX.Element | null => {
       const estimatedRewardInAvax = data.estimatedTokenReward.toDisplay()
       const estimatedRewardInCurrency = data.estimatedTokenReward
         .mul(avaxPrice)
-        .toDisplay({ fixedDp: 2 })
+        .toDisplay({ fixedDp: 2, asNumber: true })
 
       return (
         <View
@@ -266,7 +275,9 @@ export const Confirmation = (): JSX.Element | null => {
           </AvaText.Heading2>
           <AvaText.Body3
             textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
-            {estimatedRewardInCurrency}
+            {`${tokenInCurrencyFormatter(
+              estimatedRewardInCurrency
+            )} ${selectedCurrency}`}
           </AvaText.Body3>
         </View>
       )
@@ -291,7 +302,7 @@ export const Confirmation = (): JSX.Element | null => {
       return <Spinner size={22} />
     }
 
-    const networkFeesInAvax = networkFees?.toDisplay() ?? '-'
+    const networkFeesInAvax = networkFees?.toDisplay() ?? UNKNOWN_AMOUNT
 
     return (
       <AvaText.Heading6 testID="network_fee">

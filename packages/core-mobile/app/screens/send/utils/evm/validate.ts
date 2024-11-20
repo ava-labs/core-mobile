@@ -5,8 +5,6 @@ import {
   TokenWithBalanceEVM
 } from '@avalabs/vm-module-types'
 import { isAddress } from 'ethers'
-import { Amount } from 'types'
-import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { SendErrorMessage } from '../types'
 
 export const validateBasicInputs = (
@@ -46,15 +44,13 @@ export const validateAmount = ({
   amount,
   token,
   maxFee,
-  nativeToken,
-  onCalculateMaxAmount
+  nativeToken
 }: {
   gasLimit: bigint
   amount: bigint | undefined
   token: TokenWithBalanceERC20 | NetworkTokenWithBalance
   maxFee: bigint
   nativeToken: NetworkTokenWithBalance
-  onCalculateMaxAmount?: (maxAmount: Amount) => void
 }): void => {
   if (amount && token.balance < amount) {
     throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
@@ -62,24 +58,9 @@ export const validateAmount = ({
 
   const totalFee = gasLimit * maxFee
   const remainingBalance = nativeToken.balance - (amount ?? 0n)
-  const maxAmountValue = nativeToken.balance - totalFee
 
-  if (token.type === TokenType.NATIVE) {
-    onCalculateMaxAmount?.({
-      bn: maxAmountValue ?? 0n,
-      amount: maxAmountValue
-        ? bigIntToString(maxAmountValue, nativeToken.decimals)
-        : ''
-    })
-
-    if (remainingBalance < totalFee) {
-      throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
-    }
-  } else if (token.type === TokenType.ERC20) {
-    onCalculateMaxAmount?.({
-      bn: token.balance,
-      amount: bigIntToString(token.balance, token.decimals)
-    })
+  if (token.type === TokenType.NATIVE && remainingBalance < totalFee) {
+    throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
   }
 
   if (!amount || (amount && amount <= 0n)) {

@@ -76,7 +76,7 @@ describe('earn/exportP', () => {
           activeAccount: {} as Account
         })
         expect(WalletService.createExportPTx).toHaveBeenCalledWith({
-          amount: BigInt(10000000000),
+          amountInNAvax: BigInt(10000000000),
           accountIndex: undefined,
           avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'C',

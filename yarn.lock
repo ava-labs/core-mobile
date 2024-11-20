@@ -48,9 +48,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.11.5":
-  version: 0.11.5
-  resolution: "@avalabs/avalanche-module@npm:0.11.5"
+"@avalabs/avalanche-module@npm:0.11.9":
+  version: 0.11.9
+  resolution: "@avalabs/avalanche-module@npm:0.11.9"
   dependencies:
     "@avalabs/avalanchejs": 4.1.0-alpha.15
     "@avalabs/core-chains-sdk": 3.1.0-alpha.11
@@ -60,12 +60,12 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.11
     "@avalabs/glacier-sdk": 3.1.0-alpha.11
     "@avalabs/types": 3.1.0-alpha.11
-    "@avalabs/vm-module-types": 0.11.5
+    "@avalabs/vm-module-types": 0.11.9
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: 1b17c04a00071310942dd8968dea9b7aa78dbbbee45334f2922fe82c83b247c24d17a88180f68259c292e5d983b672bae4c699d80be7f6e95e323fb55bacaaaa
+  checksum: 3630d18c46f74afdb1b87775024c95a6fe64fc34b2d2938922ff7ae84ffcbf7e03a903ae0152e06a601f60123869fe9bce7896b9619d93c85c21502273740519
   languageName: node
   linkType: hard
 
@@ -82,20 +82,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:0.11.5":
-  version: 0.11.5
-  resolution: "@avalabs/bitcoin-module@npm:0.11.5"
+"@avalabs/bitcoin-module@npm:0.11.9":
+  version: 0.11.9
+  resolution: "@avalabs/bitcoin-module@npm:0.11.9"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.11
     "@avalabs/core-utils-sdk": 3.1.0-alpha.11
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.11
-    "@avalabs/vm-module-types": 0.11.5
+    "@avalabs/vm-module-types": 0.11.9
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: d4d1accc2a14b357edb569d77070b4d274740b3b11f9cc91e2f17307fc770fa7c04d4510f986b99a4a5a9dc6001248049d6aa910e3ef3d2b424b3a6fc62491a9
+  checksum: a7cde96cb1752a6647619b7b82a89dd012d5604253e37aa2b8bf0accc9bc98cfb8d6972c77c2966773f055bfb529a5e671784abbeaf4cf38242d27d09e85dbc6
   languageName: node
   linkType: hard
 
@@ -158,22 +158,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.11.5
+    "@avalabs/avalanche-module": 0.11.9
     "@avalabs/avalanchejs": 4.1.0-alpha.15
-    "@avalabs/bitcoin-module": 0.11.5
+    "@avalabs/bitcoin-module": 0.11.9
     "@avalabs/bridge-unified": 2.1.0
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.11
     "@avalabs/core-chains-sdk": 3.1.0-alpha.11
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.11
     "@avalabs/core-utils-sdk": 3.1.0-alpha.11
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.11
-    "@avalabs/evm-module": 0.11.5
+    "@avalabs/evm-module": 0.11.9
     "@avalabs/glacier-sdk": 3.1.0-alpha.11
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.11
-    "@avalabs/vm-module-types": 0.11.5
+    "@avalabs/vm-module-types": 0.11.9
     "@babel/core": 7.25.7
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -345,7 +345,7 @@ __metadata:
     react-native-qrcode-svg: 6.3.2
     react-native-quick-base64: 2.1.2
     react-native-quick-crypto: 0.6.1
-    react-native-reanimated: 3.8.0
+    react-native-reanimated: 3.6.2
     react-native-redash: 18.1.3
     react-native-restart: 0.0.27
     react-native-root-siblings: 5.0.1
@@ -433,9 +433,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.11.5":
-  version: 0.11.5
-  resolution: "@avalabs/evm-module@npm:0.11.5"
+"@avalabs/evm-module@npm:0.11.9":
+  version: 0.11.9
+  resolution: "@avalabs/evm-module@npm:0.11.9"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.11
     "@avalabs/core-etherscan-sdk": 3.1.0-alpha.11
@@ -443,7 +443,7 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.11
     "@avalabs/glacier-sdk": 3.1.0-alpha.11
     "@avalabs/types": 3.1.0-alpha.11
-    "@avalabs/vm-module-types": 0.11.5
+    "@avalabs/vm-module-types": 0.11.9
     "@blockaid/client": 0.11.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
@@ -453,7 +453,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.8.1
-  checksum: 706eaa319dfb36bf128ccbf15ae49aab6a398b5d020b9ca6499c9b5dbf79d56ec6156ac058c32e2638b7646a1266b4e018216ae3fcd3c7a62eba1f053f63b9b0
+  checksum: 49ce7d5b2d5f9b11559acad84a4c0bf7a0b75004333303f6011d7f5d715fb12cbc56dc85adbf97b830766eda30454b19635d05824ae9f5885877667b49e813a1
   languageName: node
   linkType: hard
 
@@ -509,7 +509,7 @@ __metadata:
     react: 18.3.1
     react-dom: 18.3.1
     react-native: 0.73.7
-    react-native-reanimated: 3.8.0
+    react-native-reanimated: 3.6.2
     react-native-safe-area-context: 4.11.0
     react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
@@ -518,7 +518,7 @@ __metadata:
   peerDependencies:
     react: 18.3.1
     react-native: 0.73.7
-    react-native-reanimated: 3.8.0
+    react-native-reanimated: 3.6.2
   languageName: unknown
   linkType: soft
 
@@ -583,9 +583,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.11.5":
-  version: 0.11.5
-  resolution: "@avalabs/vm-module-types@npm:0.11.5"
+"@avalabs/vm-module-types@npm:0.11.9":
+  version: 0.11.9
+  resolution: "@avalabs/vm-module-types@npm:0.11.9"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.11
     "@avalabs/glacier-sdk": 3.1.0-alpha.11
@@ -594,7 +594,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.8.1
-  checksum: 8a9f531ee926f5897b3f980da15ec693e8a5fa14f145afb05b451dc74521ce41d3ebd45f042b73793d43997576369e12ed5c67e7de9636852d75a9e82e42fcfa
+  checksum: d9d0d49a55f1760ff9b41df3de3475fa3c8e27f66b7376e7ccb8af5c0e34114048e24d2a3153fd2beea6362a9c2e25c08a11af2b2464b164d09d598c80e0d58c
   languageName: node
   linkType: hard
 
@@ -1214,6 +1214,13 @@ __metadata:
   version: 7.25.7
   resolution: "@babel/helper-plugin-utils@npm:7.25.7"
   checksum: eef4450361e597f11247d252e69207324dfe0431df9b8bcecc8bef1204358e93fa7776a659c3c4f439e9ee71cd967aeca6c4d6034ebc17a7ae48143bbb580f2f
+  languageName: node
+  linkType: hard
+
+"@babel/helper-plugin-utils@npm:^7.25.9":
+  version: 7.25.9
+  resolution: "@babel/helper-plugin-utils@npm:7.25.9"
+  checksum: e19ec8acf0b696756e6d84531f532c5fe508dce57aa68c75572a77798bd04587a844a9a6c8ea7d62d673e21fdc174d091c9097fb29aea1c1b49f9c6eaa80f022
   languageName: node
   linkType: hard
 
@@ -2197,17 +2204,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-arrow-functions@npm:^7.0.0-0":
-  version: 7.23.3
-  resolution: "@babel/plugin-transform-arrow-functions@npm:7.23.3"
-  dependencies:
-    "@babel/helper-plugin-utils": ^7.22.5
-  peerDependencies:
-    "@babel/core": ^7.0.0-0
-  checksum: 1e99118176e5366c2636064d09477016ab5272b2a92e78b8edb571d20bc3eaa881789a905b20042942c3c2d04efc530726cf703f937226db5ebc495f5d067e66
-  languageName: node
-  linkType: hard
-
 "@babel/plugin-transform-arrow-functions@npm:^7.24.7":
   version: 7.24.7
   resolution: "@babel/plugin-transform-arrow-functions@npm:7.24.7"
@@ -3039,18 +3035,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-nullish-coalescing-operator@npm:^7.0.0-0":
-  version: 7.23.4
-  resolution: "@babel/plugin-transform-nullish-coalescing-operator@npm:7.23.4"
-  dependencies:
-    "@babel/helper-plugin-utils": ^7.22.5
-    "@babel/plugin-syntax-nullish-coalescing-operator": ^7.8.3
-  peerDependencies:
-    "@babel/core": ^7.0.0-0
-  checksum: a27d73ea134d3d9560a6b2e26ab60012fba15f1db95865aa0153c18f5ec82cfef6a7b3d8df74e3c2fca81534fa5efeb6cacaf7b08bdb7d123e3dafdd079886a3
-  languageName: node
-  linkType: hard
-
 "@babel/plugin-transform-nullish-coalescing-operator@npm:^7.24.7":
   version: 7.24.7
   resolution: "@babel/plugin-transform-nullish-coalescing-operator@npm:7.24.7"
@@ -3096,6 +3080,17 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: 689cbfe89a2294b2fa2516a2732e5b49905043a50ac3423b957709d24baefb4e8f5df1a736f0704b9e5f1f2eb0ab7a34e579c928eb658e0cc3b3a4e9461e2042
+  languageName: node
+  linkType: hard
+
+"@babel/plugin-transform-object-assign@npm:^7.16.7":
+  version: 7.25.9
+  resolution: "@babel/plugin-transform-object-assign@npm:7.25.9"
+  dependencies:
+    "@babel/helper-plugin-utils": ^7.25.9
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: d2664884b1e0ec7245adfb5b511f994304271cc3f0fa41a2e2f0e8a096151227c67595c65351ae7f2561928de5c3b9fe13b53ac2267597833ef32e3cb0e0f327
   languageName: node
   linkType: hard
 
@@ -3172,19 +3167,6 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: 48db9f683c376d4e419d367ce3a9e5e503d17f8fbdf3db5782c13a06e176f76efd7cd3c9c81a3861e462afeae7083f34b6eed7fbfdcbf08b95495a9095141c70
-  languageName: node
-  linkType: hard
-
-"@babel/plugin-transform-optional-chaining@npm:^7.0.0-0":
-  version: 7.23.4
-  resolution: "@babel/plugin-transform-optional-chaining@npm:7.23.4"
-  dependencies:
-    "@babel/helper-plugin-utils": ^7.22.5
-    "@babel/helper-skip-transparent-expression-wrappers": ^7.22.5
-    "@babel/plugin-syntax-optional-chaining": ^7.8.3
-  peerDependencies:
-    "@babel/core": ^7.0.0-0
-  checksum: e7a4c08038288057b7a08d68c4d55396ada9278095509ca51ed8dfb72a7f13f26bdd7c5185de21079fe0a9d60d22c227cb32e300d266c1bda40f70eee9f4bc1e
   languageName: node
   linkType: hard
 
@@ -3517,17 +3499,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-shorthand-properties@npm:^7.0.0-0":
-  version: 7.23.3
-  resolution: "@babel/plugin-transform-shorthand-properties@npm:7.23.3"
-  dependencies:
-    "@babel/helper-plugin-utils": ^7.22.5
-  peerDependencies:
-    "@babel/core": ^7.0.0-0
-  checksum: 5d677a03676f9fff969b0246c423d64d77502e90a832665dc872a5a5e05e5708161ce1effd56bb3c0f2c20a1112fca874be57c8a759d8b08152755519281f326
-  languageName: node
-  linkType: hard
-
 "@babel/plugin-transform-shorthand-properties@npm:^7.24.7":
   version: 7.24.7
   resolution: "@babel/plugin-transform-shorthand-properties@npm:7.24.7"
@@ -3627,17 +3598,6 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: ad44e5826f5a98c1575832dbdbd033adfe683cdff195e178528ead62507564bf02f479b282976cfd3caebad8b06d5fd7349c1cdb880dec3c56daea4f1f179619
-  languageName: node
-  linkType: hard
-
-"@babel/plugin-transform-template-literals@npm:^7.0.0-0":
-  version: 7.23.3
-  resolution: "@babel/plugin-transform-template-literals@npm:7.23.3"
-  dependencies:
-    "@babel/helper-plugin-utils": ^7.22.5
-  peerDependencies:
-    "@babel/core": ^7.0.0-0
-  checksum: b16c5cb0b8796be0118e9c144d15bdc0d20a7f3f59009c6303a6e9a8b74c146eceb3f05186f5b97afcba7cfa87e34c1585a22186e3d5b22f2fd3d27d959d92b2
   languageName: node
   linkType: hard
 
@@ -26167,23 +26127,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:3.8.0":
-  version: 3.8.0
-  resolution: "react-native-reanimated@npm:3.8.0"
+"react-native-reanimated@npm:3.6.2":
+  version: 3.6.2
+  resolution: "react-native-reanimated@npm:3.6.2"
   dependencies:
-    "@babel/plugin-transform-arrow-functions": ^7.0.0-0
-    "@babel/plugin-transform-nullish-coalescing-operator": ^7.0.0-0
-    "@babel/plugin-transform-optional-chaining": ^7.0.0-0
-    "@babel/plugin-transform-shorthand-properties": ^7.0.0-0
-    "@babel/plugin-transform-template-literals": ^7.0.0-0
+    "@babel/plugin-transform-object-assign": ^7.16.7
     "@babel/preset-typescript": ^7.16.7
     convert-source-map: ^2.0.0
     invariant: ^2.2.4
   peerDependencies:
     "@babel/core": ^7.0.0-0
+    "@babel/plugin-proposal-nullish-coalescing-operator": ^7.0.0-0
+    "@babel/plugin-proposal-optional-chaining": ^7.0.0-0
+    "@babel/plugin-transform-arrow-functions": ^7.0.0-0
+    "@babel/plugin-transform-shorthand-properties": ^7.0.0-0
+    "@babel/plugin-transform-template-literals": ^7.0.0-0
     react: "*"
     react-native: "*"
-  checksum: 21dbd21c9c722e97e3d7ebbfe09576882f2b8ee2c55e87764bcf1f1b13410193066df8b2598fede9fa583c0145e3269b82ab7fcc80ca0eff51012d21cac57837
+  checksum: 0a5030ec7d66603bdb1777fb9a37f6621c7c329b47101596d882d0dd526fe1ed34f4088635aacb9d44988bdbc6fe5b792145fc44eafaceb080b7a8c7ddd69eff
   languageName: node
   linkType: hard
 

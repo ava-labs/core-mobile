@@ -1,7 +1,5 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
-import { Amount } from 'types'
-import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { SendErrorMessage } from '../types'
 
@@ -9,27 +7,19 @@ export const validate = ({
   amount,
   address,
   maxFee,
-  token,
-  onCalculateMaxAmount
+  token
 }: {
   amount: bigint
   address: string | undefined
   maxFee: bigint
   token: TokenWithBalancePVM
-  onCalculateMaxAmount?: (maxAmount: Amount) => void
 }): void => {
   if (!address) throw new Error(SendErrorMessage.ADDRESS_REQUIRED)
 
   const fee = maxFee ? BigInt(GAS_LIMIT_FOR_XP_CHAIN) * maxFee : 0n
 
-  const balance = token.balance
+  const balance = token.available ?? 0n
   const maxAmountValue = balance - fee
-  const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
-
-  onCalculateMaxAmount?.({
-    bn: maxAmount,
-    amount: bigIntToString(maxAmount, token.decimals)
-  })
 
   if (
     !Avalanche.isBech32Address(address, false) &&
