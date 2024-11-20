@@ -71,7 +71,7 @@ describe('Bridge Screen', () => {
       } catch (e) {
         // Verify approve modal with legit fee > Reject
         await bridgeTabPage.tapBridgeBtn()
-        await popUpModalPage.verifyFeeIsLegit(false, 0.02)
+        await popUpModalPage.verifyFeeIsLegit(true, false, 0.02)
         await popUpModalPage.tapRejectBtn()
       }
       // Exit bridge screen
@@ -96,7 +96,7 @@ describe('Bridge Screen', () => {
       } catch (e) {
         // Verify approve modal with legit fee > Reject
         await bridgeTabPage.tapBridgeBtn()
-        await popUpModalPage.verifyFeeIsLegit(false, 0.02)
+        await popUpModalPage.verifyFeeIsLegit(false, false, 0.02)
         await popUpModalPage.tapRejectBtn()
       }
       // Exit bridge screen
