@@ -9,10 +9,15 @@ npm rebuild detox
 
 node ./e2e/tests/updateAppVersion/getAndroidArtifacts.js && sleep 5
 
+echo 'previous version apk path'
+echo $PREVIOUS_VERSION_APK_PATH
+echo 'latest version apk path'
+echo $LATEST_VERSION_APK_PATH
+
 ./e2e/tests/updateAppVersion/oldVersionApk/installOldApk.sh  && sleep 5
 
-.QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.old.e2e --reuse; test_result=$?
+./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.old.e2e --reuse; test_result=$?
 
 ./e2e/tests/updateAppVersion/latestVersionApk/installLatestApk.sh && sleep 5
 
-.QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.latest.e2e --reuse; test_result=$?
+./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.latest.e2e --reuse; test_result=$?
