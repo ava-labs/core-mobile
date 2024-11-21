@@ -65,11 +65,12 @@ export const NodeCard = ({
     pChainNetworkToken.symbol
   )
 
-  const availableDelegationWeight = getAvailableDelegationWeight(
+  const availableDelegationWeight = getAvailableDelegationWeight({
+    isDevnet: isDevnet(activeNetwork),
     isDeveloperMode,
     validatorWeight,
     delegatorWeight
-  )
+  })
 
   const gradientColors = useMemo(() => generateGradient(), [])
   const { data: peers } = usePeers()

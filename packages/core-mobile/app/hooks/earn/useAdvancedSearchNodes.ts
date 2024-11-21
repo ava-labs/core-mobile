@@ -9,6 +9,8 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import Logger from 'utils/Logger'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
 import { usePeers } from './usePeers'
 
 export type useAdvancedSearchNodesProps = {
@@ -40,15 +42,29 @@ export const useAdvancedSearchNodes = ({
   validators,
   sortFilter,
   searchText
-}: useAdvancedSearchNodesProps) => {
+}: useAdvancedSearchNodesProps):
+  | {
+      validators: NodeValidators | undefined
+      error: undefined
+    }
+  | {
+      validators: never[]
+      error: Error
+    } => {
   const { data: peers } = usePeers()
-
+  const activeNetwork = useSelector(selectActiveNetwork)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
   const noMatchError = new Error(
     `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: ${minUpTime}`
   )
   const noValidatorsError = new Error(`no validators found.`)
+
+  // TODO: remove this after Etna activation
+  // simply return all nodes for devnet
+  if (isDevnet(activeNetwork)) {
+    return { validators, error: undefined }
+  }
 
   if (validators && validators.length > 0) {
     const filteredValidators = getFilteredValidators({
@@ -59,7 +75,8 @@ export const useAdvancedSearchNodes = ({
       minUpTime,
       maxFee,
       searchText,
-      isEndTimeOverOneYear
+      isEndTimeOverOneYear,
+      isDevnet: isDevnet(activeNetwork)
     })
     if (filteredValidators.length === 0) {
       Logger.info(noMatchError.message)

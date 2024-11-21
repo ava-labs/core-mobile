@@ -230,10 +230,14 @@ class EarnService {
       avaxPNetwork.networkToken.decimals,
       avaxPNetwork.networkToken.symbol
     )
+
+    // TODO: remove this after Etna activiation
+    // this is needed for devent to work
     let unmintedSupply = supplyCap.sub(currentSupply)
-    if (unmintedSupply.lt(0)) {
+    if (unmintedSupply.lt(0) && isDevnet) {
       unmintedSupply = unmintedSupply.mul(-1)
     }
+
     const fullReward = unmintedSupply
       .mul(stakeOverSupply)
       .mul(stakingPeriodOverMintingPeriod)
