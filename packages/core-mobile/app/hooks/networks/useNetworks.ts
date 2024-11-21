@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux'
 import {
+  NetworkWithCaip2ChainId,
   Networks,
   selectCustomNetworks as customNetworksSelector,
   defaultNetwork,
@@ -10,6 +11,7 @@ import { useCallback, useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { type Network } from '@avalabs/core-chains-sdk'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { useGetNetworks } from './useGetNetworks'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -22,7 +24,12 @@ export const useNetworks = () => {
 
   // all networks, including custom networks
   const allNetworks = useMemo((): Networks => {
-    return { ...rawNetworks, ..._customNetworks }
+    const enhancedRawNetworks = rawNetworks
+      ? decorateWithCaip2ChainId(rawNetworks)
+      : {}
+    const enhancedCustomNetworks = decorateWithCaip2ChainId(_customNetworks)
+
+    return { ...enhancedRawNetworks, ...enhancedCustomNetworks }
   }, [rawNetworks, _customNetworks])
 
   // all networks that match the current developer mode
@@ -51,7 +58,7 @@ export const useNetworks = () => {
         }
         return reducedNetworks
       },
-      {} as Record<number, Network>
+      {} as Record<number, NetworkWithCaip2ChainId>
     )
     return { ...populatedNetworks, ...populatedCustomNetworks }
   }, [rawNetworks, _customNetworks, isDeveloperMode])
@@ -132,6 +139,15 @@ export const useNetworks = () => {
     [allNetworks]
   )
 
+  const getNetworkByCaip2ChainId = useCallback(
+    (caip2ChainId: string) => {
+      return Object.values(allNetworks).find(
+        n => n.caip2ChainId === caip2ChainId
+      )
+    },
+    [allNetworks]
+  )
+
   const getFromPopulatedNetwork = useCallback(
     (chainId?: number) => {
       if (chainId === undefined || networks === undefined) return
@@ -151,6 +167,14 @@ export const useNetworks = () => {
     getIsCustomNetwork,
     getSomeNetworks,
     getNetwork,
+    getNetworkByCaip2ChainId,
     getFromPopulatedNetwork
   }
 }
+
+const decorateWithCaip2ChainId = (networks: Networks): Networks =>
+  Object.entries(networks).reduce((acc, [key, network]) => {
+    const chainId = parseInt(key)
+    acc[chainId] = { ...network, caip2ChainId: addNamespaceToChain(chainId) }
+    return acc
+  }, {} as Networks)

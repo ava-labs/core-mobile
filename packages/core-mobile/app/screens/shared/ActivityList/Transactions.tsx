@@ -14,7 +14,6 @@ import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { Transaction } from 'store/transaction'
 import ZeroState from 'components/ZeroState'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
 import FlashList from 'components/FlashList'
@@ -24,6 +23,7 @@ import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeT
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -58,7 +58,7 @@ const Transactions: FC<Props> = ({
   const combinedData = useMemo(() => {
     function isPendingBridge(tx: Transaction): boolean {
       return (
-        tx.isBridge &&
+        tx.bridgeAnalysis.isBridgeTx &&
         pendingBridgeTxs.some(
           bridge =>
             (bridge.sourceTxHash === tx.hash ||
@@ -143,7 +143,7 @@ const Transactions: FC<Props> = ({
 
       return (
         <View key={item.hash}>
-          {item.isBridge ? (
+          {item.bridgeAnalysis.isBridgeTx ? (
             <BridgeTransactionItem item={item} onPress={onPress} />
           ) : (
             <ActivityListItem tx={item} onPress={onPress} />

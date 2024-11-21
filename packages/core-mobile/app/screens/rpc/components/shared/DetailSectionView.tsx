@@ -159,10 +159,17 @@ export const DetailSectionView = ({
                 alignItems:
                   item.type === DetailItemType.CURRENCY
                     ? 'flex-start'
-                    : 'center'
+                    : 'center',
+                gap: 12
               }}
               key={index}>
-              <Text variant="caption">{item.label}</Text>
+              <Text
+                sx={{ flexShrink: 1 }}
+                numberOfLines={1}
+                ellipsizeMode="middle"
+                variant="caption">
+                {item.label}
+              </Text>
               {renderValue(item)}
             </Row>
           )

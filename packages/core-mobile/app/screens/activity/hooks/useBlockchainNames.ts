@@ -1,16 +1,8 @@
-import {
-  Blockchain,
-  BridgeTransaction,
-  useBridgeSDK
-} from '@avalabs/core-bridge-sdk'
-import {
-  getBlockchainDisplayName,
-  isPendingBridgeTransaction
-} from 'screens/bridge/utils/bridgeUtils'
-import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
+import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 
 /**
  * Get the source and target blockchain names to display a Bridge transaction.
@@ -19,12 +11,11 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 export function useBlockchainNames(
   tx: Transaction | BridgeTransaction | BridgeTransfer
 ): {
-  sourceBlockchain: string
-  targetBlockchain: string
+  sourceBlockchain: string | undefined
+  targetBlockchain: string | undefined
 } {
-  const { activeNetwork } = useNetworks()
+  const { getNetworkByCaip2ChainId, getNetwork } = useNetworks()
   const pending = isPendingBridgeTransaction(tx)
-  const { avalancheAssets } = useBridgeSDK()
 
   if (pending) {
     return {
@@ -41,18 +32,26 @@ export function useBlockchainNames(
     }
   }
 
-  const symbol = (tx.tokens[0]?.symbol ?? '').split('.')[0] ?? ''
+  if (!tx.bridgeAnalysis.isBridgeTx) {
+    return {
+      sourceBlockchain: undefined,
+      targetBlockchain: undefined
+    }
+  }
 
-  const txBlockchain = avalancheAssets[symbol]?.nativeNetwork
-  const isBridgeToAvalanche = isAvalancheNetwork(activeNetwork)
-    ? tx.isIncoming
-    : tx.isOutgoing
-  const chainDisplayName = getBlockchainDisplayName(txBlockchain) || 'N/A'
-  const avalancheDisplay = getBlockchainDisplayName(Blockchain.AVALANCHE)
+  const { sourceChainId, targetChainId } = tx.bridgeAnalysis
 
   return {
-    sourceBlockchain: isBridgeToAvalanche ? chainDisplayName : avalancheDisplay,
-    targetBlockchain: isBridgeToAvalanche ? avalancheDisplay : chainDisplayName
+    sourceBlockchain: sourceChainId
+      ? getNetworkByCaip2ChainId(sourceChainId)?.chainName ??
+        getNetwork(Number(sourceChainId))?.chainName ??
+        sourceChainId
+      : undefined,
+    targetBlockchain: targetChainId
+      ? getNetworkByCaip2ChainId(targetChainId)?.chainName ??
+        getNetwork(Number(targetChainId))?.chainName ??
+        targetChainId
+      : undefined
   }
 }
 

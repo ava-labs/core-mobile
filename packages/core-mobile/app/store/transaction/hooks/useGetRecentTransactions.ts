@@ -5,10 +5,7 @@ import { selectActiveAccount } from 'store/account/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
-import {
-  popBridgeTransaction,
-  selectBridgeCriticalConfig
-} from 'store/bridge/slice'
+import { popBridgeTransaction } from 'store/bridge/slice'
 import { selectIsLocked } from 'store/app/slice'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGetRecentsTransactionsQuery } from '../api'
@@ -46,7 +43,6 @@ export const useGetRecentTransactions = (): {
   const account = useSelector(selectActiveAccount)
   const isAppLocked = useSelector(selectIsLocked)
   const isFocused = useIsFocused()
-  const criticalConfig = useSelector(selectBridgeCriticalConfig)
   const {
     currentData: data,
     isFetching,
@@ -54,8 +50,7 @@ export const useGetRecentTransactions = (): {
   } = useGetRecentsTransactionsQuery(
     {
       network: activeNetwork,
-      account,
-      criticalConfig
+      account
     },
     { skip: isAppLocked || !isFocused, pollingInterval: POLLING_INTERVAL_IN_MS }
   )

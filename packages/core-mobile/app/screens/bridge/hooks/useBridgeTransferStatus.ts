@@ -1,5 +1,5 @@
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
 
 const defaultValues = {
@@ -29,15 +29,15 @@ export const useBridgeTransferStatus = (
       // cap the current confirmations so we don't go over
       sourceCurrentConfirmations: Math.min(
         bridgeTx.sourceConfirmationCount,
-        bridgeTx.requiredSourceConfirmationCount
+        bridgeTx.sourceRequiredConfirmationCount
       ),
       targetCurrentConfirmations: Math.min(
         bridgeTx.targetConfirmationCount,
-        bridgeTx.requiredTargetConfirmationCount
+        bridgeTx.targetRequiredConfirmationCount
       ),
       // with Unified Bridge, the SDK provides info about the target confirmations
-      sourceRequiredConfirmations: bridgeTx.requiredSourceConfirmationCount,
-      targetRequiredConfirmations: bridgeTx.requiredTargetConfirmationCount
+      sourceRequiredConfirmations: bridgeTx.sourceRequiredConfirmationCount,
+      targetRequiredConfirmations: bridgeTx.targetRequiredConfirmationCount
     }
   }
 

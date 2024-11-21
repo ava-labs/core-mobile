@@ -250,12 +250,12 @@ export const selectIsSeedlessMfaYubikeyBlocked = (
   )
 }
 
-export const selectIsUnifiedBridgeCCTPBlocked = (state: RootState): boolean => {
+export const selectIsFeatureBlocked = (
+  state: RootState,
+  feature: FeatureGates
+): boolean => {
   const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.UNIFIED_BRIDGE_CCTP] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
+  return !featureFlags[feature] || !featureFlags[FeatureGates.EVERYTHING]
 }
 
 export const selectIsLogErrorsWithSentryBlocked = (
