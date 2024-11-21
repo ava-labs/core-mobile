@@ -134,10 +134,8 @@ class SwapTabPage {
     await plusMenuPage.tapSwapButton()
 
     // Select From Token
-    if (from !== 'AVAX') {
-      await this.tapFromTokenSelector()
-      await sendPage.selectToken(from)
-    }
+    await this.tapFromTokenSelector()
+    await sendPage.selectToken(from)
 
     // Select To Token
     await this.tapToTokenSelector()
