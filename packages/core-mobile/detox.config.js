@@ -76,18 +76,18 @@ module.exports = {
     // This apk is for the updateAppVersion test
     'android.external.latest.e2e': {
       type: 'android.apk',
-      binaryPath: process.env.LATEST_VERSION_APK_PATH,
-      // 'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apkk',
-      testBinaryPath: process.env.LATEST_VERSION_TEST_APK_PATH
-      // 'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+      binaryPath:
+        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apkk',
+      testBinaryPath:
+        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
     },
     // This apk is for the updateAppVersion test
     'android.external.old.e2e': {
       type: 'android.apk',
-      binaryPath: process.env.PREVIOUS_VERSION_APK_PATH,
-      // 'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
-      testBinaryPath: process.env.PREVIOUS_VERSION_TEST_APK_PATH
-      // 'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
+      binaryPath:
+        'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
+      testBinaryPath:
+        'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
     },
     'android.external.local.e2e': {
       type: 'android.apk',
