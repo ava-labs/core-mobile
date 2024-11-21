@@ -10,8 +10,5 @@ describe('Change Pin', () => {
   it('Should verify Defi Items', async () => {
     await device.disableSynchronization()
     await assertions.isVisible(PortfolioPage.colectiblesTab)
-    if (process.env.BUILD_INDEX === '0') {
-      await device.terminateApp()
-    }
   })
 })
