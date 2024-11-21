@@ -9,7 +9,7 @@ import { useMemo } from 'react'
 import { getNetworkContractTokens } from './utils/getNetworkContractTokens'
 
 export const useNetworkContractTokens = (
-  network: Network
+  network: Network | undefined
 ): NetworkContractToken[] => {
   const allCustomTokens = useSelector(selectAllCustomTokens)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)

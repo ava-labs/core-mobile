@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
 
 export const useBridgeAmounts = (
@@ -27,7 +27,7 @@ export const useBridgeAmounts = (
 
   return {
     amount: isUnifiedBridgeTransfer(bridgeTx)
-      ? bigintToBig(bridgeTx.amount, bridgeTx.amountDecimals)
+      ? bigintToBig(bridgeTx.amount, bridgeTx.asset.decimals)
       : bridgeTx?.amount,
     sourceNetworkFee
   }

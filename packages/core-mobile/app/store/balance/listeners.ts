@@ -350,8 +350,7 @@ const addPChainToFavoritesIfNeeded = async (
   }
   const activities = await ActivityService.getActivities({
     network: avalancheNetworkP,
-    account: activeAccount,
-    criticalConfig: undefined
+    account: activeAccount
   })
   if (activities.transactions.length === 0) {
     Logger.trace('No activities, skipping add for P-chain')
@@ -401,8 +400,7 @@ const addXChainToFavoritesIfNeeded = async (
   }
   const activities = await ActivityService.getActivities({
     network: avalancheNetworkX,
-    account: activeAccount,
-    criticalConfig: undefined
+    account: activeAccount
   })
 
   if (activities.transactions.length === 0) {

@@ -2,7 +2,6 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { useInfiniteScroll } from 'store/utils/useInfiniteScroll'
 import { ActivityResponse } from 'services/activity/types'
-import { selectBridgeCriticalConfig } from 'store/bridge'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { GetTransactionsArgs, Transaction } from '../types'
 import { useGetTransactionsQuery } from '../api'
@@ -18,12 +17,11 @@ export const useGetTransactions = (): {
 } => {
   const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
-  const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
   const { data, fetchNext, refresh, isLoading, isRefreshing, isFirstPage } =
     useInfiniteScroll<GetTransactionsArgs, ActivityResponse, Transaction>({
       useQuery: useGetTransactionsQuery,
-      queryParams: { network: activeNetwork, account, criticalConfig },
+      queryParams: { network: activeNetwork, account },
       dataKey: 'transactions'
     })
 

@@ -46,13 +46,13 @@ const ActivityList = ({
             case ActivityFilter.Contract:
               return tx.isContractCall
             case ActivityFilter.Incoming:
-              return tx.isIncoming && !tx.isBridge
+              return tx.isIncoming && !tx.bridgeAnalysis.isBridgeTx
             case ActivityFilter.Outgoing:
               return tx.isOutgoing
             case ActivityFilter.All:
               return true
             case ActivityFilter.Bridge:
-              return tx.isBridge
+              return tx.bridgeAnalysis.isBridgeTx
             default:
               return false
           }
