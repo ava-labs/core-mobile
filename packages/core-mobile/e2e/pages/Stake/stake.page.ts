@@ -4,7 +4,6 @@ import Actions from '../../helpers/actions'
 import { Platform } from '../../helpers/constants'
 import commonElsPage from '../commonEls.page'
 import delay from '../../helpers/waits'
-import confirmStakingPage from './confirmStaking.page'
 
 type StakeCard = {
   title: string
@@ -503,11 +502,7 @@ class StakePage {
       await Actions.tap(by.text(duration))
     }
     await this.tapNextButton()
-    await Actions.waitForElementNoSync(
-      confirmStakingPage.confirmStakingTitle,
-      30000,
-      0
-    )
+    await Actions.waitForElementNoSync(this.stakeNow, 30000)
     await this.tapStakeNow()
   }
 
