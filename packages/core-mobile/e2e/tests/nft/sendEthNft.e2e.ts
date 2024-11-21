@@ -23,7 +23,7 @@ describe('Send NFT', () => {
     await CollectiblesPage.scrollToNFT()
     await CollectiblesPage.tapNFT()
     await CollectiblesPage.verifyNftDetailsItems()
-    await CollectiblesPage.sendNft('first')
+    await CollectiblesPage.sendNft('first', false)
     await sendPage.verifySuccessToast()
   }, 200000)
 })
