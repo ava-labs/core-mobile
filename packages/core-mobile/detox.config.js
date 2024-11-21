@@ -531,7 +531,7 @@ module.exports = {
       app: 'android.internal.e2e'
     },
     'android.external.latest.e2e': {
-      device: 'emulator',
+      device: 'emulator_ci',
       app: 'android.external.latest.e2e',
       artifacts: {
         rootDir: './e2e/artifacts/android',
@@ -547,7 +547,7 @@ module.exports = {
       }
     },
     'android.external.old.e2e': {
-      device: 'emulator',
+      device: 'emulator_ci',
       app: 'android.external.old.e2e',
       artifacts: {
         rootDir: './e2e/artifacts/android',
