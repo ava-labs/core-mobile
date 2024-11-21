@@ -4,16 +4,17 @@ import Big from 'big.js'
 import TokenService from 'services/token/TokenService'
 import Logger from 'utils/Logger'
 
-const BIG_ZERO = new Big(0)
-
 export const useSimplePrice = (
   coinId: string | undefined,
   currency: VsCurrencyType
-): Big => {
-  const [price, setPrice] = useState<Big>(BIG_ZERO)
+): Big | undefined => {
+  const [price, setPrice] = useState<Big>()
 
   useEffect(() => {
-    if (!coinId) return
+    if (!coinId) {
+      setPrice(undefined)
+      return
+    }
 
     TokenService.getSimplePrice({
       coinIds: [coinId],

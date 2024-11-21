@@ -35,7 +35,7 @@ export type AnalyticsEvents = {
 
   // UNIFIED BRIDGE
   UnifedBridgeTransferStarted: {
-    bridgeType: 'CCTP'
+    bridgeType: string
     activeChainId: number
     targetChainId: number
   }
