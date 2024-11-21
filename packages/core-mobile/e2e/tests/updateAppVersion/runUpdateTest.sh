@@ -23,6 +23,7 @@ echo "Installing old version test apk on device"
 adb install -r $PREVIOUS_VERSION_TEST_APK_PATH && sleep 5
 
 # Run a simple login test
+echo "Running login test on old version"
 ./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.old.e2e --reuse; test_result=$?
 
 # install latest apk on test device
@@ -34,4 +35,5 @@ echo "Installing latest version test apk on device"
 adb install -r $LATEST_VERSION_TEST_APK_PATH && sleep 5
 
 # Run same login test on latest version to test for a crash
+echo "Running login test on latest version"
 ./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.latest.e2e --reuse; test_result=$?
