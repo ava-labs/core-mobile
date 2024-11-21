@@ -8,6 +8,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectActiveNetwork } from 'store/network'
 import { isDevnet } from 'utils/isDevnet'
+import { useGetFeeState } from './useGetFeeState'
 
 const REFETCH_INTERVAL = 2 * 60 * 1000 // 2 minutes
 
@@ -23,6 +24,8 @@ export const useImportAnyStuckFunds = (
   const isDevMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const activeNetwork = useSelector(selectActiveNetwork)
+  const { getFeeState } = useGetFeeState()
+  const feeState = getFeeState()
 
   return useQuery({
     // no need to retry failed request as we are already doing interval fetching
@@ -30,7 +33,13 @@ export const useImportAnyStuckFunds = (
     enabled,
     refetchInterval: REFETCH_INTERVAL,
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: ['ImportAnyStuckFunds', activeAccount, isDevMode, activeNetwork],
+    queryKey: [
+      'ImportAnyStuckFunds',
+      activeAccount,
+      isDevMode,
+      activeNetwork,
+      feeState
+    ],
     queryFn: async () => {
       assertNotUndefined(activeAccount)
       await EarnService.importAnyStuckFunds({
@@ -38,6 +47,7 @@ export const useImportAnyStuckFunds = (
         isDevMode,
         selectedCurrency,
         progressEvents: handleRecoveryEvent,
+        feeState,
         isDevnet: isDevnet(activeNetwork)
       })
       return true

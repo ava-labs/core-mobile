@@ -35,7 +35,6 @@ import {
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
-import { isDevnet } from 'utils/isDevnet'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
@@ -170,9 +169,8 @@ export default class SeedlessWallet implements Wallet {
         return this.signAvalancheMessage({
           message: data,
           chainAlias,
-          isTestnet: !!network.isTestnet,
-          provider,
-          isDevnet: isDevnet(network)
+          network,
+          provider
         })
       }
       case RpcMethod.ETH_SIGN:
@@ -300,21 +298,18 @@ export default class SeedlessWallet implements Wallet {
   }
 
   public async getAddresses({
-    isTestnet,
     provXP,
-    isDevnet: devnet
+    network
   }: {
-    isTestnet: boolean
+    network: Network
     provXP: Avalanche.JsonRpcProvider
-    isDevnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
     const addresses = await ModuleManager.getAddresses({
       walletType: WalletType.Seedless,
       accountIndex: 0,
       xpub: this.#addressPublicKey.evm,
       xpubXP: this.#addressPublicKey.xp,
-      isTestnet,
-      isDevnet: devnet
+      network
     })
     const pubKeyBufferC = this.getPubKeyBufferC()
     return {
@@ -340,21 +335,18 @@ export default class SeedlessWallet implements Wallet {
 
   private signAvalancheMessage = async ({
     message,
-    isTestnet,
+    network,
     chainAlias,
-    provider,
-    isDevnet: devnet
+    provider
   }: {
     message: string
-    isTestnet: boolean
     chainAlias: Avalanche.ChainIDAlias
     provider: Avalanche.JsonRpcProvider
-    isDevnet: boolean
+    network: Network
   }): Promise<string> => {
     const addresses = await this.getAddresses({
-      isTestnet,
       provXP: provider,
-      isDevnet: devnet
+      network
     })
     const address = addresses[Avalanche.getVmByChainAlias(chainAlias)]
     const buffer = Buffer.from(

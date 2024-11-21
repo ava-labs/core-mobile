@@ -203,18 +203,16 @@ export interface Wallet {
   /**
    * Retrieves addresses for a specific account on various networks.
    * @param accountIndex - The index of the account.
-   * @param isTestnet - A boolean indicating whether the network is a testnet.
+   * @param network
    * @param provXP - The Avalanche JSON RPC provider.
    */
   getAddresses({
     accountIndex,
-    isTestnet,
     provXP,
-    isDevnet
+    network
   }: {
     accountIndex: number
-    isTestnet: boolean
-    isDevnet: boolean
+    network: Network
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Record<NetworkVMType, string>>
 

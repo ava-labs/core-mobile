@@ -28,7 +28,7 @@ import {
 import { Seconds } from 'types/siUnits'
 import {
   BlockchainId,
-  Network,
+  Network as GlacierNetwork,
   PChainTransaction,
   PChainTransactionType,
   SortOrder
@@ -39,6 +39,7 @@ import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -335,7 +336,7 @@ class EarnService {
     do {
       const response = await glacierApi.listLatestPrimaryNetworkTransactions({
         params: {
-          network: isTestnet ? Network.FUJI : Network.MAINNET,
+          network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
           blockchainId: BlockchainId.P_CHAIN
         },
         queries: {
@@ -358,13 +359,11 @@ class EarnService {
   }
 
   getTransformedStakesForAllAccounts = async ({
-    isDeveloperMode,
     accounts,
-    isDevnet
+    network
   }: {
-    isDeveloperMode: boolean
     accounts: AccountCollection
-    isDevnet: boolean
+    network: Network
   }): Promise<
     | {
         txHash: string
@@ -375,6 +374,7 @@ class EarnService {
       }[]
     | undefined
   > => {
+    const isDeveloperMode = Boolean(network.isTestnet)
     const accountsArray = Object.values(accounts)
 
     try {
@@ -389,11 +389,7 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(
-              account.index,
-              !isDeveloperMode,
-              isDevnet
-            )
+            WalletService.getAddresses(account.index, network)
           )
         )
       ).map(address => address.PVM)

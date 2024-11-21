@@ -183,8 +183,7 @@ class WalletService {
 
   public async addAddress(
     accountIndex: number,
-    isTestnet: boolean,
-    devnet: boolean
+    network: Network
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
       const pubKeysStorage = new SeedlessPubKeysStorage()
@@ -209,7 +208,7 @@ class WalletService {
       }
     }
 
-    return this.getAddresses(accountIndex, isTestnet, devnet)
+    return this.getAddresses(accountIndex, network)
   }
 
   /**
@@ -217,8 +216,7 @@ class WalletService {
    */
   public async getAddresses(
     accountIndex: number,
-    isTestnet: boolean,
-    devnet: boolean
+    network: Network
   ): Promise<Record<NetworkVMType, string>> {
     const wallet = await WalletFactory.createWallet(
       accountIndex,
@@ -229,15 +227,14 @@ class WalletService {
     })
 
     const provXP = await NetworkService.getAvalancheProviderXP(
-      isTestnet,
-      devnet
+      Boolean(network.isTestnet),
+      isDevnet(network)
     )
 
     return wallet.getAddresses({
       accountIndex,
-      isTestnet,
-      provXP,
-      isDevnet: devnet
+      network,
+      provXP
     })
   }
 
@@ -375,6 +372,7 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('P', sourceChain)
+
     const unsignedTx = readOnlySigner.importP({
       utxoSet,
       sourceChain,

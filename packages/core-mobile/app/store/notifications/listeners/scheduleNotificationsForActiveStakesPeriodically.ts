@@ -2,7 +2,6 @@ import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import { selectIsEarnBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAccounts } from 'store/account'
 import EarnService from 'services/earn/EarnService'
 import NotificationsService from 'services/notifications/NotificationsService'
@@ -10,7 +9,6 @@ import { WalletState, selectWalletState } from 'store/app'
 import { ChannelId } from 'services/notifications/channels'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -78,16 +76,14 @@ const scheduleNotificationsForActiveStakes = async (
   }
 
   setTimeout(async () => {
-    const isDeveloperMode = selectIsDeveloperMode(state)
     const accounts = selectAccounts(state)
     const activeNetwork = selectActiveNetwork(state)
 
     Logger.info('fetching stakes for all accounts')
     const transformedTransactions =
       await EarnService.getTransformedStakesForAllAccounts({
-        isDeveloperMode,
         accounts,
-        isDevnet: isDevnet(activeNetwork)
+        network: activeNetwork
       })
 
     const onGoingTransactions =

@@ -5,7 +5,6 @@ import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app/slice'
 import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import {
   reducerName,
   selectAccounts,
@@ -26,11 +25,10 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     const accounts = selectAccounts(state)
     const accIndex = Object.keys(accounts).length
     const acc = await AccountsService.createNextAccount({
-      isTestnet: isDeveloperMode,
       index: accIndex,
       activeAccountIndex,
       walletType,
-      isDevnet: isDevnet(activeNetwork)
+      network: activeNetwork
     })
 
     thunkApi.dispatch(setAccount(acc))

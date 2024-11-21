@@ -11,7 +11,6 @@ import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork, setActive } from 'store/network'
 import {
   selectAccounts,
@@ -36,11 +35,10 @@ const initAccounts = async (
 
   if (walletType === WalletType.SEEDLESS) {
     const acc = await accountService.createNextAccount({
-      isTestnet: isDeveloperMode,
       index: 0,
       activeAccountIndex,
       walletType,
-      isDevnet: isDevnet(activeNetwork)
+      network: activeNetwork
     })
 
     const title = await SeedlessService.getAccountName(0)
@@ -60,11 +58,10 @@ const initAccounts = async (
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount({
-      isTestnet: isDeveloperMode,
       index: 0,
       activeAccountIndex,
       walletType,
-      isDevnet: isDevnet(activeNetwork)
+      network: activeNetwork
     })
 
     const accountTitle =
@@ -112,11 +109,10 @@ const fetchingRemainingAccounts = async ({
   // fetch the remaining accounts in the background
   for (let i = 1; i < pubKeys.length; i++) {
     const acc = await accountService.createNextAccount({
-      isTestnet: isDeveloperMode,
       index: i,
       activeAccountIndex,
       walletType,
-      isDevnet: isDevnet(activeNetwork)
+      network: activeNetwork
     })
     const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
@@ -144,14 +140,12 @@ const reloadAccounts = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const isDeveloperMode = selectIsDeveloperMode(state)
   const activeNetwork = selectActiveNetwork(state)
   const accounts = selectAccounts(state)
 
   const reloadedAccounts = await accountService.reloadAccounts(
-    isDeveloperMode,
     accounts,
-    isDevnet(activeNetwork)
+    activeNetwork
   )
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))

@@ -100,8 +100,7 @@ class ModuleManager {
     accountIndex,
     xpub,
     xpubXP,
-    isTestnet,
-    isDevnet
+    network
   }: GetAddressParams): Promise<Record<string, string>> => {
     return Promise.allSettled(
       this.modules.map(async module =>
@@ -110,8 +109,7 @@ class ModuleManager {
           accountIndex,
           xpub,
           xpubXP,
-          isTestnet,
-          isDevnet
+          network
         })
       )
     ).then(results => {
