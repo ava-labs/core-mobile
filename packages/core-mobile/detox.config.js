@@ -76,9 +76,9 @@ module.exports = {
     // This apk is for the updateAppVersion test
     'android.external.latest.e2e': {
       type: 'android.apk',
-      binaryPath: process.env.NEW_VERSION_APK_PATH,
+      binaryPath: process.env.LATEST_VERSION_APK_PATH,
       // 'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apkk',
-      testBinaryPath: process.env.NEW_VERSION_TEST_APK_PATH
+      testBinaryPath: process.env.LATEST_VERSION_TEST_APK_PATH
       // 'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
     },
     // This apk is for the updateAppVersion test
