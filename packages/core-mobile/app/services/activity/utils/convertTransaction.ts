@@ -1,49 +1,30 @@
-import { CriticalConfig } from '@avalabs/core-bridge-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 import {
   Transaction as InternalTransaction,
-  TransactionType,
-  TokenType
+  TransactionType
 } from '@avalabs/vm-module-types'
-import {
-  isBridgeTransactionBTC,
-  isBridgeTransactionEthereum,
-  isBridgeTransactionERC20
-} from 'screens/bridge/utils/bridgeUtils'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
-import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { Transaction } from 'store/transaction'
-import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 
 export const convertTransaction = (
-  transaction: InternalTransaction,
-  network: Network,
-  criticalConfig: CriticalConfig | undefined
+  transaction: InternalTransaction
 ): Transaction => {
-  const bridgeAddresses = UnifiedBridgeService.getBridgeAddresses()
-  const isBridge = isEthereumNetwork(network)
-    ? isBridgeTransactionEthereum({
-        transaction,
-        network,
-        criticalConfig,
-        bridgeAddresses
-      })
-    : isBitcoinNetwork(network)
-    ? isBridgeTransactionBTC(
-        transaction,
-        criticalConfig?.criticalBitcoin?.walletAddresses
-      )
-    : transaction.tokens[0]?.type === TokenType.ERC20
-    ? isBridgeTransactionERC20({
-        token: transaction.tokens[0],
-        bridgeAddresses
-      })
-    : false
+  const bridgeAnalysis = UnifiedBridgeService.analyzeTx({
+    chainId: transaction.chainId,
+    from: transaction.from,
+    to: transaction.to,
+    tokenTransfers: transaction.tokens.map(token => {
+      return {
+        from: token.from?.address,
+        to: token.to?.address,
+        symbol: token.symbol
+      }
+    })
+  })
 
   return {
     ...transaction,
-    isBridge,
-    txType: isBridge
+    bridgeAnalysis,
+    txType: bridgeAnalysis.isBridgeTx
       ? TransactionType.BRIDGE
       : transaction.txType
       ? transaction.txType

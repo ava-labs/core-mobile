@@ -1,6 +1,5 @@
 import React, { FC, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import BridgeSVG from 'components/svg/BridgeSVG'
@@ -17,6 +16,7 @@ import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 
 interface BridgeTransactionItemProps {
   item: Transaction | BridgeTransaction | BridgeTransfer
@@ -35,10 +35,10 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
     if (!pending) return item.tokens[0]?.amount
 
     if (isUnifiedBridgeTransfer(item)) {
-      return bigintToBig(item.amount, item.amountDecimals).toString()
+      return bigintToBig(item.amount, item.asset.decimals).toString()
     }
 
-    return item.amount.toString()
+    return undefined
   }, [item, pending])
 
   return (
@@ -61,11 +61,18 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
           )}
         </View>
       }
-      subtitle={`${sourceBlockchain} → ${targetBlockchain}`}
+      subtitle={`${sourceBlockchain ?? 'Unknown'} → ${
+        targetBlockchain ?? 'Unknown'
+      }`}
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {amount} {pending ? item.symbol : item.tokens[0]?.symbol}
+            {amount}{' '}
+            {pending
+              ? isUnifiedBridgeTransfer(item)
+                ? item.asset.symbol
+                : item.symbol
+              : item.tokens[0]?.symbol}
           </AvaText.ActivityTotal>
           {'explorerLink' in item && item?.explorerLink && (
             <>
