@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux'
 import {
-  NetworkWithCaipId,
+  NetworkWithCaip2ChainId,
   Networks,
   selectCustomNetworks as customNetworksSelector,
   defaultNetwork,
@@ -25,9 +25,9 @@ export const useNetworks = () => {
   // all networks, including custom networks
   const allNetworks = useMemo((): Networks => {
     const enhancedRawNetworks = rawNetworks
-      ? decorateWithCaipId(rawNetworks)
+      ? decorateWithCaip2ChainId(rawNetworks)
       : {}
-    const enhancedCustomNetworks = decorateWithCaipId(_customNetworks)
+    const enhancedCustomNetworks = decorateWithCaip2ChainId(_customNetworks)
 
     return { ...enhancedRawNetworks, ...enhancedCustomNetworks }
   }, [rawNetworks, _customNetworks])
@@ -58,7 +58,7 @@ export const useNetworks = () => {
         }
         return reducedNetworks
       },
-      {} as Record<number, NetworkWithCaipId>
+      {} as Record<number, NetworkWithCaip2ChainId>
     )
     return { ...populatedNetworks, ...populatedCustomNetworks }
   }, [rawNetworks, _customNetworks, isDeveloperMode])
@@ -139,9 +139,11 @@ export const useNetworks = () => {
     [allNetworks]
   )
 
-  const getNetworkByCaipId = useCallback(
-    (caipId: string) => {
-      return Object.values(allNetworks).find(n => n.caipId === caipId)
+  const getNetworkByCaip2ChainId = useCallback(
+    (caip2ChainId: string) => {
+      return Object.values(allNetworks).find(
+        n => n.caip2ChainId === caip2ChainId
+      )
     },
     [allNetworks]
   )
@@ -165,14 +167,14 @@ export const useNetworks = () => {
     getIsCustomNetwork,
     getSomeNetworks,
     getNetwork,
-    getNetworkByCaipId,
+    getNetworkByCaip2ChainId,
     getFromPopulatedNetwork
   }
 }
 
-const decorateWithCaipId = (networks: Networks): Networks =>
+const decorateWithCaip2ChainId = (networks: Networks): Networks =>
   Object.entries(networks).reduce((acc, [key, network]) => {
     const chainId = parseInt(key)
-    acc[chainId] = { ...network, caipId: addNamespaceToChain(chainId) }
+    acc[chainId] = { ...network, caip2ChainId: addNamespaceToChain(chainId) }
     return acc
   }, {} as Networks)

@@ -11,7 +11,7 @@ export function useBlockchainNames(tx: Transaction | BridgeTransfer): {
   sourceBlockchain: string | undefined
   targetBlockchain: string | undefined
 } {
-  const { getNetworkByCaipId, getNetwork } = useNetworks()
+  const { getNetworkByCaip2ChainId, getNetwork } = useNetworks()
   const pending = isPendingBridgeTransaction(tx)
 
   if (pending) {
@@ -40,12 +40,12 @@ export function useBlockchainNames(tx: Transaction | BridgeTransfer): {
 
   return {
     sourceBlockchain: sourceChainId
-      ? getNetworkByCaipId(sourceChainId)?.chainName ??
+      ? getNetworkByCaip2ChainId(sourceChainId)?.chainName ??
         getNetwork(Number(sourceChainId))?.chainName ??
         sourceChainId
       : undefined,
     targetBlockchain: targetChainId
-      ? getNetworkByCaipId(targetChainId)?.chainName ??
+      ? getNetworkByCaip2ChainId(targetChainId)?.chainName ??
         getNetwork(Number(targetChainId))?.chainName ??
         targetChainId
       : undefined
