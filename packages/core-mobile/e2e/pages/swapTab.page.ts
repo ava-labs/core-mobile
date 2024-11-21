@@ -140,10 +140,8 @@ class SwapTabPage {
     }
 
     // Select To Token
-    if (to !== 'USDC') {
-      await this.tapToTokenSelector()
-      await sendPage.selectToken(to)
-    }
+    await this.tapToTokenSelector()
+    await sendPage.selectToken(to)
 
     // Enter input
     await this.inputTokenAmount(amount)
@@ -171,7 +169,7 @@ class SwapTabPage {
     }
 
     // Verify fee and approve
-    await popUpModalPage.verifyFeeIsLegit(false, 0.2)
+    await popUpModalPage.verifyFeeIsLegit(true, false, 0.2)
     await this.tapApproveButton()
   }
 
