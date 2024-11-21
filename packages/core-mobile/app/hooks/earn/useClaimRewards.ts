@@ -65,8 +65,8 @@ export const useClaimRewards = (
         throw Error('not enough balance to cover fee')
       }
 
-      // maximum amount that we can transfer = max claimable amount - export P fee * 2n (to add some padding)
-      const amountToTransfer = totalClaimable.sub(exportPFee.mul(2n))
+      // maximum amount that we can transfer = max claimable amount - total fee (exportP + importC)
+      const amountToTransfer = totalClaimable.sub(totalFees)
 
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
