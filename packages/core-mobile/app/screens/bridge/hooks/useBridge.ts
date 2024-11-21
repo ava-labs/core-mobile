@@ -24,7 +24,6 @@ interface Bridge {
   assetBalance?: AssetBalance
   assetsWithBalances?: AssetBalance[]
   networkFee?: bigint
-  loading?: boolean
   bridgeFee: bigint
   /** Maximum transfer amount */
   maximum?: bigint
@@ -34,7 +33,7 @@ interface Bridge {
    * Transfer funds to the target network
    * @returns the transaction hash
    */
-  transfer: (bridgeType: BridgeType) => Promise<string | undefined>
+  transfer: () => Promise<string | undefined>
 
   sourceNetworks: Network[]
   targetNetworks: Network[]
@@ -64,7 +63,7 @@ export default function useBridge(): Bridge {
   const [bridgeFee, setBridgeFee] = useState<bigint>(0n)
   const [inputAmount, setInputAmount] = useState<bigint>()
   const amount = useMemo(() => inputAmount ?? 0n, [inputAmount])
-  const { assetsWithBalances, loading } = useAssetBalances()
+  const { assetsWithBalances } = useAssetBalances()
   const { data: networkFeeRate } = useNetworkFee()
 
   const assetBalance = useMemo(
@@ -81,17 +80,15 @@ export default function useBridge(): Bridge {
 
     return networkFeeRate.low.maxFeePerGas * gasLimit
   }, [gasLimit, networkFeeRate])
-
   const price = useBridgeAssetPrice(selectedBridgeAsset)
-
+  const bridgeType = useBridgeType(selectedBridgeAsset, targetNetwork?.chainId)
   const transfer = useBridgeTransfer({
     amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
-    targetNetwork
+    targetNetwork,
+    bridgeType
   })
-
-  const bridgeType = useBridgeType(selectedBridgeAsset, targetNetwork?.chainId)
 
   const { getBridgeFee, getEstimatedGas } = useGetBridgeFees({
     amount,
@@ -188,7 +185,6 @@ export default function useBridge(): Bridge {
 
   return {
     assetBalance,
-    loading,
     assetsWithBalances,
     bridgeFee,
     maximum: assetBalance?.balance,

@@ -81,7 +81,7 @@ export class UnifiedBridgeService {
     amount: bigint
     sourceNetwork: Network
     targetNetwork: Network
-  }): Promise<bigint> {
+  }): Promise<bigint | undefined> {
     const feeMap = lowerCaseKeys(
       await this.service.getFees({
         asset,
@@ -98,7 +98,7 @@ export class UnifiedBridgeService {
       throw new Error('invalid asset')
     }
 
-    return feeMap[identifier.toLowerCase()] ?? 0n
+    return feeMap[identifier.toLowerCase()] ?? undefined
   }
 
   async transfer({

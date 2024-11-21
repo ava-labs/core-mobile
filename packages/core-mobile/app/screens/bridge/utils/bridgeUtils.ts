@@ -75,6 +75,7 @@ export const getNativeTokenSymbol = (chain: Chain): string => {
 }
 
 export function getOriginalSymbol(symbol: string): string {
+  // get the original symbol without the postfix for network(i.e.: USDC.e -> USDC, BTC.b -> BTC)
   return symbol.replace(/\.(e|b|p)$/i, '')
 }
 

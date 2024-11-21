@@ -48,14 +48,8 @@ export function useTokenForBridgeTransaction(
 
     if (symbol === BITCOIN_NETWORK.networkToken.symbol) {
       return BITCOIN_NETWORK.networkToken
-    } else if (
-      chainId &&
-      isEthereumChainId(chainId) &&
-      network?.networkToken.symbol === symbol
-    ) {
-      return network?.networkToken
     }
 
-    return undefined
-  }, [tokens, symbol, network, chainId])
+    return network?.networkToken
+  }, [tokens, symbol, network])
 }

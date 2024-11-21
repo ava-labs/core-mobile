@@ -32,7 +32,7 @@ export function getAssetBalances(
           : asset.symbol.toLowerCase()
       ]
 
-    const balance = (token && token.balance) || 0n
+    const balance = token && token.balance
     return { symbol, asset, balance, logoUri: token?.logoUri }
   })
 }

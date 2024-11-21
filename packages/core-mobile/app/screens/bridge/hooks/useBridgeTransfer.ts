@@ -13,83 +13,83 @@ export const useBridgeTransfer = ({
   amount,
   bridgeAsset,
   sourceNetwork,
-  targetNetwork
+  targetNetwork,
+  bridgeType
 }: {
   amount: bigint
   bridgeAsset: BridgeAsset | undefined
   sourceNetwork: Network | undefined
   targetNetwork: Network | undefined
-}): ((bridgeType: BridgeType) => Promise<string | undefined>) => {
+  bridgeType: BridgeType | undefined
+}): (() => Promise<string | undefined>) => {
   const activeAccount = useSelector(selectActiveAccount)
   const dispatch = useDispatch()
   const { data: networkFeeRate } = useNetworkFee()
 
-  return useCallback(
-    async bridgeType => {
-      if (!bridgeAsset) {
-        throw new Error('No asset chosen')
-      }
+  return useCallback(async () => {
+    if (!bridgeAsset || !bridgeType) {
+      throw new Error('No asset chosen')
+    }
 
-      if (!sourceNetwork) {
-        throw new Error('Invalid source network')
-      }
+    if (!sourceNetwork) {
+      throw new Error('Invalid source network')
+    }
 
-      if (!targetNetwork) {
-        throw new Error('Invalid target network')
-      }
+    if (!targetNetwork) {
+      throw new Error('Invalid target network')
+    }
 
-      if (!activeAccount) {
-        throw new Error('No active account')
-      }
+    if (!activeAccount) {
+      throw new Error('No active account')
+    }
 
-      const fromAddress = isBitcoinNetwork(sourceNetwork)
-        ? activeAccount.addressBTC
-        : activeAccount.addressC
-      const toAddress = isBitcoinNetwork(targetNetwork)
-        ? activeAccount.addressBTC
-        : activeAccount.addressC
+    const fromAddress = isBitcoinNetwork(sourceNetwork)
+      ? activeAccount.addressBTC
+      : activeAccount.addressC
+    const toAddress = isBitcoinNetwork(targetNetwork)
+      ? activeAccount.addressBTC
+      : activeAccount.addressC
 
-      const pendingTransfer = await UnifiedBridgeService.transfer({
-        asset: bridgeAsset,
-        fromAddress,
-        toAddress,
-        amount,
-        sourceNetwork,
-        targetNetwork,
-        gasSettings:
-          sourceNetwork && networkFeeRate && isBitcoinNetwork(sourceNetwork)
-            ? { price: networkFeeRate.low.maxFeePerGas }
-            : undefined,
-        updateListener: updatedTransfer => {
-          dispatch(setPendingTransfer(updatedTransfer))
-        }
-      })
-
-      AnalyticsService.capture('UnifedBridgeTransferStarted', {
-        bridgeType,
-        activeChainId: sourceNetwork.chainId,
-        targetChainId: targetNetwork.chainId
-      })
-
-      AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
-        chainId: sourceNetwork.chainId,
-        sourceTxHash: pendingTransfer.sourceTxHash,
-        fromAddress: pendingTransfer.fromAddress,
-        toAddress: pendingTransfer.toAddress
-      })
-
-      dispatch(setPendingTransfer(pendingTransfer))
-
-      return pendingTransfer.sourceTxHash
-    },
-    [
-      bridgeAsset,
-      targetNetwork,
-      activeAccount,
+    const pendingTransfer = await UnifiedBridgeService.transfer({
+      asset: bridgeAsset,
+      fromAddress,
+      toAddress,
       amount,
       sourceNetwork,
-      networkFeeRate,
-      dispatch
-    ]
-  )
+      targetNetwork,
+      gasSettings:
+        sourceNetwork && networkFeeRate && isBitcoinNetwork(sourceNetwork)
+          ? { price: networkFeeRate.low.maxFeePerGas }
+          : undefined,
+      updateListener: updatedTransfer => {
+        dispatch(setPendingTransfer(updatedTransfer))
+      }
+    })
+
+    AnalyticsService.capture('UnifedBridgeTransferStarted', {
+      bridgeType,
+      activeChainId: sourceNetwork.chainId,
+      targetChainId: targetNetwork.chainId
+    })
+
+    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+      chainId: sourceNetwork.chainId,
+      sourceTxHash: pendingTransfer.sourceTxHash,
+      fromAddress: pendingTransfer.fromAddress,
+      toAddress: pendingTransfer.toAddress
+    })
+
+    dispatch(setPendingTransfer(pendingTransfer))
+
+    return pendingTransfer.sourceTxHash
+  }, [
+    bridgeAsset,
+    targetNetwork,
+    activeAccount,
+    amount,
+    sourceNetwork,
+    networkFeeRate,
+    dispatch,
+    bridgeType
+  ])
 }

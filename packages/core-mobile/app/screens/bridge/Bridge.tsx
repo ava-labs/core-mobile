@@ -74,7 +74,6 @@ const Bridge: FC = () => {
     setInputAmount,
     assetsWithBalances,
     networkFee,
-    loading,
     price,
     maximum,
     minimum,
@@ -117,14 +116,6 @@ const Bridge: FC = () => {
           (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
   )
 
-  const denomination = useMemo(() => {
-    if (!assetBalance) {
-      return 0
-    }
-
-    return assetBalance.asset.decimals
-  }, [assetBalance])
-
   const hasValidAmount = !isAmountTooLow && amount > 0n
 
   const receiveAmount = useMemo(
@@ -136,25 +127,30 @@ const Bridge: FC = () => {
     hasValidAmount && receiveAmount !== undefined && receiveAmount === 0n
 
   const formattedAmountCurrency =
-    hasValidAmount && price
+    hasValidAmount && price && selectedBridgeAsset
       ? currencyFormatter(
-          price.mul(bigintToBig(amount, denomination)).toNumber()
+          price
+            .mul(bigintToBig(amount, selectedBridgeAsset.decimals))
+            .toNumber()
         )
       : UNKNOWN_AMOUNT
 
   const formattedReceiveAmount =
-    hasValidAmount && receiveAmount
-      ? bigToLocaleString(bigintToBig(receiveAmount, denomination))
+    hasValidAmount && receiveAmount && selectedBridgeAsset
+      ? bigToLocaleString(
+          bigintToBig(receiveAmount, selectedBridgeAsset.decimals)
+        )
       : UNKNOWN_AMOUNT
   const formattedReceiveAmountCurrency =
-    hasValidAmount && price && receiveAmount
+    hasValidAmount && price && receiveAmount && selectedBridgeAsset
       ? currencyFormatter(
-          price.mul(bigintToBig(receiveAmount, denomination)).toNumber()
+          price
+            .mul(bigintToBig(receiveAmount, selectedBridgeAsset.decimals))
+            .toNumber()
         )
       : UNKNOWN_AMOUNT
 
   const transferDisabled =
-    loading ||
     isPending ||
     isAmountTooLow ||
     isAmountTooLarge ||
@@ -302,7 +298,12 @@ const Bridge: FC = () => {
   }
 
   const handleTransfer = async (): Promise<void> => {
-    if (amount === 0n || !sourceNetwork || !targetNetwork || !bridgeType) {
+    if (
+      amount === 0n ||
+      !sourceNetwork ||
+      !targetNetwork ||
+      !selectedBridgeAsset
+    ) {
       return
     }
 
@@ -313,7 +314,7 @@ const Bridge: FC = () => {
 
     try {
       setIsPending(true)
-      const [hash, transferError] = await resolve(transfer(bridgeType))
+      const [hash, transferError] = await resolve(transfer())
       setIsPending(false)
 
       if (transferError || !hash) {
@@ -323,7 +324,7 @@ const Bridge: FC = () => {
           AnalyticsService.capture('BridgeTransferRequestUserRejectedError', {
             sourceBlockchain: sourceNetwork.chainName,
             targetBlockchain: targetNetwork.chainName,
-            fee: bigintToBig(bridgeFee, denomination).toNumber()
+            fee: bigintToBig(bridgeFee, selectedBridgeAsset.decimals).toNumber()
           })
           return
         }
@@ -498,14 +499,14 @@ const Bridge: FC = () => {
         {`Balance: `}
         {selectedBridgeAsset && assetBalance?.balance !== undefined
           ? `${formatBalance(
-              bigintToBig(assetBalance.balance, denomination)
+              bigintToBig(assetBalance.balance, selectedBridgeAsset.decimals)
             )}  ${selectedAssetSymbol}`
           : selectedBridgeAsset && <ActivityIndicator size={'small'} />}
       </Text>
     )
   }
   const renderTokenSelectInput = (): JSX.Element => (
-    <Pressable disabled={loading} onPress={() => navigateToTokenSelector()}>
+    <Pressable onPress={() => navigateToTokenSelector()}>
       <Row
         style={{
           justifyContent: 'center',
@@ -543,21 +544,24 @@ const Bridge: FC = () => {
   )
 
   const handleMax = useCallback(() => {
-    if (!maximum) {
+    if (!maximum || !selectedBridgeAsset) {
       return
     }
     handleAmountChanged({
       bn: maximum,
-      amount: bigToLocaleString(bigintToBig(maximum, denomination), 4)
+      amount: bigToLocaleString(
+        bigintToBig(maximum, selectedBridgeAsset.decimals),
+        4
+      )
     })
-  }, [denomination, handleAmountChanged, maximum])
+  }, [selectedBridgeAsset, handleAmountChanged, maximum])
 
-  const renderAmountInput = (): JSX.Element => (
-    <View>
-      <>
+  const renderAmountInput = (): JSX.Element | undefined => {
+    return (
+      <View>
         <BNInput
           value={inputAmount}
-          denomination={denomination}
+          denomination={selectedBridgeAsset?.decimals ?? 0}
           onMax={handleMax}
           placeholder={'0.0'}
           onChange={handleAmountChanged}
@@ -568,30 +572,18 @@ const Bridge: FC = () => {
             paddingRight: 8
           }}
         />
-        {loading && (
-          <ActivityIndicator
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: -12
-            }}
-            size="small"
+        {!selectedBridgeAsset && (
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => navigateToTokenSelector()}
           />
         )}
-      </>
-      {!selectedBridgeAsset && (
-        <Pressable
-          disabled={loading}
-          style={StyleSheet.absoluteFill}
-          onPress={() => navigateToTokenSelector()}
-        />
-      )}
-    </View>
-  )
+      </View>
+    )
+  }
 
   const renderError = (): JSX.Element | null => {
-    if (amount === 0n) return null
+    if (amount === 0n || !selectedBridgeAsset) return null
 
     if (isAmountTooLow)
       return (
@@ -603,7 +595,7 @@ const Bridge: FC = () => {
           }}>
           {`Amount too low -- minimum is ${bigintToBig(
             minimum,
-            denomination
+            selectedBridgeAsset.decimals
           )?.toFixed(9)}`}
         </Text>
       )

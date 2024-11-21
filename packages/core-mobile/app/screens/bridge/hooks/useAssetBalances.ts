@@ -14,7 +14,6 @@ import { useBridgeAssets } from './useBridgeAssets'
  */
 export function useAssetBalances(): {
   assetsWithBalances: AssetBalance[]
-  loading: boolean
 } {
   const tokens = useSelector(selectTokensWithBalance)
   const tokenInfoData = useTokenInfoContext()
@@ -22,15 +21,17 @@ export function useAssetBalances(): {
 
   const assetsWithBalances = useMemo(
     () =>
-      getAssetBalances(bridgeAssets, tokens).map(token => {
-        return {
-          ...token,
-          logoUri:
-            token.logoUri ??
-            tokenInfoData?.[unwrapAssetSymbol(token.asset.symbol)]?.logo,
-          symbolOnNetwork: token.asset.symbol
-        }
-      }),
+      getAssetBalances(bridgeAssets, tokens)
+        .map(token => {
+          return {
+            ...token,
+            logoUri:
+              token.logoUri ??
+              tokenInfoData?.[unwrapAssetSymbol(token.asset.symbol)]?.logo,
+            symbolOnNetwork: token.asset.symbol
+          }
+        })
+        .filter(token => token.balance !== undefined),
     [bridgeAssets, tokens, tokenInfoData]
   )
 
@@ -47,5 +48,5 @@ export function useAssetBalances(): {
     return asset2Balance.cmp(asset1Balance)
   })
 
-  return { assetsWithBalances: sortedAssetsWithBalances, loading: false }
+  return { assetsWithBalances: sortedAssetsWithBalances }
 }

@@ -12,6 +12,7 @@ import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -64,10 +65,9 @@ function BridgeTokenSelector({
         rightComponentVerticalAlignment={'center'}
         rightComponent={
           <Text variant="body1" style={{ marginLeft: 12 }}>
-            {formatTokenAmount(
-              bigintToBig(token.balance || 0n, denomination),
-              6
-            )}{' '}
+            {token.balance !== undefined
+              ? formatTokenAmount(bigintToBig(token.balance, denomination), 6)
+              : UNKNOWN_AMOUNT}{' '}
             {token.symbol}
           </Text>
         }
