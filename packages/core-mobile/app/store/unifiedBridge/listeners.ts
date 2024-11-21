@@ -133,7 +133,7 @@ export const initUnifiedBridgeService = async (
   trackPendingTransfers(listenerApi)
 }
 
-const checkTransferStatus = async (
+export const checkTransferStatus = async (
   action: ReturnType<typeof setPendingTransfer>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
@@ -198,7 +198,7 @@ const getFeatureGateStates = (
 })
 
 // Check if any of the feature gate states or developer mode has changed
-const shouldReinitializeBridge = (
+export const shouldReinitializeBridge = (
   prevState: RootState,
   currState: RootState
 ): boolean => {
