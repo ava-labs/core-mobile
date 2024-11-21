@@ -22,6 +22,9 @@ adb install -r $PREVIOUS_VERSION_APK_PATH && sleep 5
 echo "Installing old version test apk on device"
 adb install -r $PREVIOUS_VERSION_TEST_APK_PATH && sleep 5
 
+envman add --key PREVIOUS_VERSION_APK_PATH --value "$PREVIOUS_VERSION_APK_PATH"
+envman add --key PREVIOUS_VERSION_TEST_APK_PATH --value "$PREVIOUS_VERSION_TEST_APK_PATH"
+
 # Run a simple login test
 echo "Running login test on old version"
 ./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.old.e2e --reuse; test_result=$?
@@ -33,6 +36,9 @@ LATEST_VERSION_TEST_APK_PATH="./e2e/tests/updateAppVersion/latestVersionApk/app-
 adb install -r $LATEST_VERSION_APK_PATH && sleep 5
 echo "Installing latest version test apk on device"
 adb install -r $LATEST_VERSION_TEST_APK_PATH && sleep 5
+
+envman add --key LATEST_VERSION_APK_PATH --value "$LATEST_VERSION_APK_PATH"
+envman add --key LATEST_VERSION_TEST_APK_PATH --value "$LATEST_VERSION_TEST_APK_PATH"
 
 # Run same login test on latest version to test for a crash
 echo "Running login test on latest version"
