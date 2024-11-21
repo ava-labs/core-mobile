@@ -57,6 +57,7 @@ async function downloadExternalApk(buildIndex, apkName, testApkName) {
   const apkSlug = artifacts.slug
   const url = artifacts.url
   process.env.BUILD_INDEX = buildIndex
+
   const apkResponse = await axios.get(`${url}/${apkSlug}`, {
     headers: { Authorization: `${artifactsToken}` }
   })

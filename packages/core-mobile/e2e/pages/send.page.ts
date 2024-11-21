@@ -120,9 +120,11 @@ class SendPage {
     await Actions.setInputText(this.amountToSendInput, amount, 0)
   }
 
+  // eslint-disable-next-line max-params
   async sendTokenTo2ndAccount(
     token: string,
     sendingAmmount: string,
+    isCChain = true,
     isPXChain = false
   ) {
     await Actions.waitForElement(BottomTabsPage.plusIcon)
@@ -143,7 +145,7 @@ class SendPage {
       await this.waitForNextBtnEnabled()
       await this.tapSendTitle()
       await this.tapNextButton()
-      await popUpModalPage.verifyFeeIsLegit(isPXChain)
+      await popUpModalPage.verifyFeeIsLegit(isCChain, isPXChain)
       await this.tapApproveButton()
       return true
     }

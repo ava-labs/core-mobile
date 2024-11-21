@@ -24,7 +24,8 @@ describe('Send ETH', () => {
     await portfolioPage.tapNetworksDropdownETH()
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
-      sendLoc.sendingAmount
+      sendLoc.sendingAmount,
+      false
     )
     await sendPage.verifySuccessToast()
   })
@@ -39,7 +40,8 @@ describe('Send ETH', () => {
   it('Should send Sepolia Eth on TestNet', async () => {
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
-      sendLoc.sendingAmount
+      sendLoc.sendingAmount,
+      false
     )
     await sendPage.verifySuccessToast()
   })
