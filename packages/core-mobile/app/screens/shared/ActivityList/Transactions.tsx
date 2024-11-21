@@ -23,16 +23,17 @@ import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeT
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
 
 type Section = {
   title: string
-  data: Transaction[] | Array<BridgeTransfer>
+  data: Transaction[] | Array<BridgeTransaction | BridgeTransfer>
 }
 
-type Item = string | Transaction | BridgeTransfer
+type Item = string | Transaction | BridgeTransaction | BridgeTransfer
 
 interface Props {
   isRefreshing: boolean
@@ -109,7 +110,9 @@ const Transactions: FC<Props> = ({
     return flatListData
   }, [bridgeDisabled, data, pendingBridgeTxs])
 
-  const renderPendingBridgeTransaction = (tx: BridgeTransfer): JSX.Element => {
+  const renderPendingBridgeTransaction = (
+    tx: BridgeTransaction | BridgeTransfer
+  ): JSX.Element => {
     return (
       <BridgeTransactionItem
         key={tx.sourceTxHash}
@@ -159,7 +162,7 @@ const Transactions: FC<Props> = ({
   }
 
   const keyExtractor = (
-    item: string | Transaction | BridgeTransfer
+    item: string | Transaction | BridgeTransaction | BridgeTransfer
   ): string => {
     if (typeof item === 'string') return item
 

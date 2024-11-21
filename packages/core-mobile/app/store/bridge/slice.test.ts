@@ -3,6 +3,7 @@ import Big from 'big.js'
 import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import {
+  addBridgeTransaction,
   bridgeReducer as reducer,
   popBridgeTransaction,
   setConfig
@@ -71,6 +72,47 @@ describe('bridge - reducer', () => {
       expect(state).toStrictEqual({
         bridgeTransactions: {},
         config: newConfig
+      })
+    })
+  })
+
+  describe('addBridgeTransaction', () => {
+    it('should save new transaction', () => {
+      const currentState = {
+        bridgeTransactions: {
+          [bridgeTx1.sourceTxHash]: bridgeTx1
+        },
+        config: undefined
+      }
+      const state = reducer(currentState, addBridgeTransaction(bridgeTx2))
+
+      expect(state).toStrictEqual({
+        bridgeTransactions: {
+          [bridgeTx1.sourceTxHash]: bridgeTx1,
+          [bridgeTx2.sourceTxHash]: bridgeTx2
+        },
+        config: undefined
+      })
+    })
+
+    it('should update existing transaction', () => {
+      const newBridgeTx = {
+        ...bridgeTx1,
+        confirmationCount: 55
+      }
+      const currentState = {
+        bridgeTransactions: {
+          [bridgeTx1.sourceTxHash]: bridgeTx1
+        },
+        config: undefined
+      }
+      const state = reducer(currentState, addBridgeTransaction(newBridgeTx))
+
+      expect(state).toStrictEqual({
+        bridgeTransactions: {
+          [bridgeTx1.sourceTxHash]: newBridgeTx
+        },
+        config: undefined
       })
     })
   })

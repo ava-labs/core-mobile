@@ -1,5 +1,6 @@
 import {
   Blockchain,
+  BridgeTransaction,
   CriticalConfig,
   getNativeSymbol
 } from '@avalabs/core-bridge-sdk'
@@ -10,9 +11,22 @@ import { BridgeTransfer, Chain } from '@avalabs/bridge-unified'
 import { AssetBalance } from './types'
 
 export function isPendingBridgeTransaction(
-  item: Transaction | BridgeTransfer
-): item is BridgeTransfer {
+  item: Transaction | BridgeTransaction | BridgeTransfer
+): item is BridgeTransaction | BridgeTransfer {
   return 'addressBTC' in item || 'sourceChain' in item
+}
+
+const blockchainDisplayNameMap = new Map([
+  [Blockchain.AVALANCHE, 'Avalanche C-Chain'],
+  [Blockchain.ETHEREUM, 'Ethereum'],
+  [Blockchain.BITCOIN, 'Bitcoin'],
+  [Blockchain.UNKNOWN, '']
+])
+
+export function getBlockchainDisplayName(
+  chain: Blockchain | undefined
+): string {
+  return blockchainDisplayNameMap.get(chain ?? Blockchain.UNKNOWN) ?? ''
 }
 
 export const blockchainToNetwork = (
@@ -60,13 +74,13 @@ export const networkToBlockchain = (
   }
 }
 
-export const isBridgeTransfer = (
-  transfer?: BridgeTransfer | Transaction
+export const isUnifiedBridgeTransfer = (
+  transfer?: BridgeTransaction | BridgeTransfer | Transaction
 ): transfer is BridgeTransfer => {
   return transfer !== undefined && 'type' in transfer
 }
 
-export const getNativeTokenSymbol = (chain: Chain): string => {
+export const getNativeTokenSymbol = (chain: Blockchain | Chain): string => {
   if (typeof chain === 'object') {
     return chain.networkToken.symbol
   }

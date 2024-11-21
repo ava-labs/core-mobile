@@ -10,15 +10,16 @@ import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import {
   isPendingBridgeTransaction,
-  isBridgeTransfer
+  isUnifiedBridgeTransfer
 } from 'screens/bridge/utils/bridgeUtils'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 
 interface BridgeTransactionItemProps {
-  item: Transaction | BridgeTransfer
+  item: Transaction | BridgeTransaction | BridgeTransfer
   onPress: () => void
 }
 
@@ -33,7 +34,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
   const amount = useMemo(() => {
     if (!pending) return item.tokens[0]?.amount
 
-    if (isBridgeTransfer(item)) {
+    if (isUnifiedBridgeTransfer(item)) {
       return bigintToBig(item.amount, item.asset.decimals).toString()
     }
 
@@ -66,7 +67,12 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {amount} {pending ? item.asset.symbol : item.tokens[0]?.symbol}
+            {amount}{' '}
+            {pending
+              ? isUnifiedBridgeTransfer(item)
+                ? item.asset.symbol
+                : item.symbol
+              : item.tokens[0]?.symbol}
           </AvaText.ActivityTotal>
           {'explorerLink' in item && item?.explorerLink && (
             <>

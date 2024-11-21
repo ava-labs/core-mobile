@@ -13,7 +13,11 @@ import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
-import { getNativeTokenSymbol } from 'screens/bridge/utils/bridgeUtils'
+import {
+  getBlockchainDisplayName,
+  getNativeTokenSymbol,
+  isUnifiedBridgeTransfer
+} from 'screens/bridge/utils/bridgeUtils'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { useTokenForBridgeTransaction } from 'screens/bridge/hooks/useTokenForBridgeTransaction'
@@ -25,6 +29,7 @@ import { useBridgeAmounts } from 'screens/bridge/hooks/useBridgeAmounts'
 import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPrice'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSimplePrice } from 'hooks/useSimplePrice'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 
 type Props = {
   txHash: string
@@ -32,7 +37,9 @@ type Props = {
 }
 
 const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
-  const [bridgeTransaction, setBridgeTransaction] = useState<BridgeTransfer>()
+  const [bridgeTransaction, setBridgeTransaction] = useState<
+    BridgeTransaction | BridgeTransfer
+  >()
   const { activeNetwork } = useNetworks()
   const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
@@ -45,7 +52,9 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
-  const symbol = bridgeTransaction?.asset.symbol
+  const symbol = isUnifiedBridgeTransfer(bridgeTransaction)
+    ? bridgeTransaction?.asset.symbol
+    : bridgeTransaction?.symbol
 
   const coingeckoId = useCoinGeckoId(symbol)
 
@@ -133,7 +142,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
         <Avatar.Custom
-          name={bridgeTransaction?.asset.symbol ?? ''}
+          name={symbol ?? ''}
           logoUri={tokenInfo?.logoUri ?? ''}
           size={55}
         />
@@ -198,11 +207,11 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           title={<AvaText.Body2>From</AvaText.Body2>}
           titleAlignment="flex-start"
           rightComponent={
-            bridgeTransaction && (
-              <AvaText.Heading3>
-                {humanize(bridgeTransaction.sourceChain.chainName)}
-              </AvaText.Heading3>
-            )
+            <AvaText.Heading3>
+              {isUnifiedBridgeTransfer(bridgeTransaction)
+                ? humanize(bridgeTransaction.sourceChain.chainName)
+                : getBlockchainDisplayName(bridgeTransaction?.sourceChain)}
+            </AvaText.Heading3>
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
@@ -228,11 +237,11 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           title={<AvaText.Body2>To</AvaText.Body2>}
           titleAlignment="flex-start"
           rightComponent={
-            bridgeTransaction && (
-              <AvaText.Heading3>
-                {humanize(bridgeTransaction.targetChain.chainName)}
-              </AvaText.Heading3>
-            )
+            <AvaText.Heading3>
+              {isUnifiedBridgeTransfer(bridgeTransaction)
+                ? humanize(bridgeTransaction.targetChain.chainName)
+                : getBlockchainDisplayName(bridgeTransaction?.targetChain)}
+            </AvaText.Heading3>
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
