@@ -38,6 +38,7 @@ describe('Send AVAX', () => {
     const hasBalance = await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount,
+      false,
       true
     )
     await sendPage.verifySuccessToast(hasBalance)
@@ -55,6 +56,7 @@ describe('Send AVAX', () => {
     const hasBalance = await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount,
+      false,
       true
     )
     await sendPage.verifySuccessToast(hasBalance)

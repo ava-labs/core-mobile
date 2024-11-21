@@ -246,6 +246,7 @@ const NetworkFeeSelector = ({
                 selected={selectedPreset === FeePreset.Normal}
                 onSelect={() => handleSelectedPreset(FeePreset.Normal)}
                 value={displayGasValues?.[FeePreset.Normal]}
+                testID="slow_base_fee"
               />
               <FeeSelector
                 label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
@@ -271,6 +272,7 @@ const NetworkFeeSelector = ({
                     ? displayGasValues?.[FeePreset.Normal]
                     : displayGasValues?.[FeePreset.Custom]
                 }
+                testID="custom_base_fee"
               />
             </Row>
             <Space y={20} />
@@ -305,8 +307,9 @@ export const FeeSelector: FC<{
   label: string
   value?: string
   selected: boolean
+  testID?: string
   onSelect: (value: string) => void
-}> = ({ label, selected, onSelect, value }) => {
+}> = ({ label, selected, onSelect, value, testID }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -335,18 +338,20 @@ export const FeeSelector: FC<{
           alignItems: 'center'
         }}>
         <ButtonText selected={selected}>{label}</ButtonText>
-        <ButtonText selected={selected}>{value}</ButtonText>
+        <ButtonText selected={selected} testID={testID}>
+          {value}
+        </ButtonText>
       </View>
     </TouchableOpacity>
   )
 }
 
-const ButtonText: FC<{ selected: boolean } & PropsWithChildren> = ({
-  children,
-  selected
-}) => {
+const ButtonText: FC<
+  { selected: boolean; testID?: string } & PropsWithChildren
+> = ({ children, selected, testID }) => {
   return (
     <Text
+      testID={testID}
       variant="buttonSmall"
       numberOfLines={1}
       sx={{

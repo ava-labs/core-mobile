@@ -190,7 +190,7 @@ class CollectiblesPage {
     await Assert.isVisible(this.floorPriceTitle)
   }
 
-  async sendNft(account: string) {
+  async sendNft(account: string, isCChain = true) {
     await this.tapSendButton()
     await this.tapAddressBook()
     await this.tapMyAccounts()
@@ -198,7 +198,7 @@ class CollectiblesPage {
       ? await AccountManagePage.tapFirstAccount()
       : await AccountManagePage.tapSecondAccount()
     await this.tapNextButton()
-    await popUpModalPage.verifyFeeIsLegit()
+    await popUpModalPage.verifyFeeIsLegit(isCChain)
     await popUpModalPage.tapApproveBtn()
   }
 

@@ -2,6 +2,7 @@ import assert from 'assert'
 import actions from '../helpers/actions'
 import asserts from '../helpers/assertions'
 import popUpModalLoc from '../locators/popupModal.loc'
+import { fetchCChainBaseFee } from '../helpers/networksFee'
 import sendPage from './send.page'
 
 class PopUpModalPage {
@@ -170,9 +171,16 @@ class PopUpModalPage {
     }
   }
 
-  async verifyFeeIsLegit(isPXChain = false, estimatedGasFee = 0.009) {
+  async verifyFeeIsLegit(
+    isCChain = true,
+    isPXChain = false,
+    estimatedGasFee = 0.009
+  ) {
+    // Wait for pop up modal displayed and scroll to bottom
     await actions.waitForElement(this.popUpModalScrollView, 10000)
     await actions.scrollToBottom(this.popUpModalScrollView)
+
+    // Get token network fee
     let tokenGasFee
     if (isPXChain) {
       tokenGasFee = await actions.getElementText(
@@ -184,13 +192,48 @@ class PopUpModalPage {
         by.id(popUpModalLoc.tokenGasFee)
       )
     }
-    console.log(`Current gas fee: ${tokenGasFee}`)
+
+    // Verify network fee is not over the estimated gas fee
+    console.log(`Current network fee: ${tokenGasFee}`)
     const tokenMatch = tokenGasFee?.match(/[\d.]+/)
     const token = tokenMatch ? parseFloat(tokenMatch[0]) : 0
     assert(
       token > 0 && token <= estimatedGasFee,
       `currVal: ${token} !<= expectedVal: ${estimatedGasFee}`
     )
+
+    // Verify base fee for C-Chain
+    if (isCChain) {
+      const tolerance = 0.15 // 15% tolerance
+      const baseFeeByApi = parseFloat(await fetchCChainBaseFee())
+      const slowBaseFeeUI = parseFloat(
+        (await actions.getElementText(by.id(popUpModalLoc.slowBaseFee))) || '0'
+      )
+      const customBaseFeeUI = parseFloat(
+        (await actions.getElementText(by.id(popUpModalLoc.customBaseFee))) ||
+          '0'
+      )
+
+      // Calculate percentage differences
+      const diffSlowPercentage =
+        Math.abs(baseFeeByApi - slowBaseFeeUI) / baseFeeByApi
+      const diffCustomPercentage =
+        Math.abs(baseFeeByApi - customBaseFeeUI) / baseFeeByApi
+
+      console.log(
+        `Current base fee for C-Chain: API - ${baseFeeByApi} UI - ${slowBaseFeeUI}, DiffPergentage - ${diffSlowPercentage}`
+      )
+      // BaseFee by API should be within the tolerance of the slow and custom base fee
+      assert(
+        diffSlowPercentage <= tolerance,
+        `API Base Fee: ${baseFeeByApi}, Slow Base Fee: ${slowBaseFeeUI} - Percentage difference ${diffSlowPercentage} > ${tolerance})`
+      )
+
+      assert(
+        diffCustomPercentage <= tolerance,
+        `API Base Fee: ${baseFeeByApi}, Custom Base Fee: ${customBaseFeeUI} - Percentage difference ${diffCustomPercentage} > ${tolerance}`
+      )
+    }
   }
 }
 
