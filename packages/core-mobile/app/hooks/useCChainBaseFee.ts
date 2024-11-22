@@ -27,7 +27,9 @@ export const useCChainBaseFee = (): UseQueryResult<
     refetchInterval: REFETCH_INTERVAL,
     queryKey: ['cChainBaseFee', isDeveloperMode, cChainNetwork, avaxProvider],
     queryFn: async () => {
-      if (!cChainNetwork || !avaxProvider) return undefined
+      if (!cChainNetwork || !avaxProvider) {
+        return Promise.reject('cChainNetwork or avaxProvider is not available')
+      }
       const baseFeeWei = await avaxProvider.getApiC().getBaseFee()
 
       return new TokenUnit(

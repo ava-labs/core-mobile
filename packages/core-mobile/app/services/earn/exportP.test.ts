@@ -62,7 +62,8 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(13 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
       }).rejects.toThrow('Not enough balance on P chain')
     })
@@ -73,12 +74,13 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
         expect(WalletService.createExportPTx).toHaveBeenCalledWith({
           amountInNAvax: BigInt(10000000000),
           accountIndex: undefined,
-          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
+          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false, false),
           destinationChain: 'C',
           destinationAddress: undefined
         })
@@ -91,7 +93,8 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -103,7 +106,8 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
-          activeAccount: {} as Account
+          activeAccount: {} as Account,
+          isDevnet: false
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

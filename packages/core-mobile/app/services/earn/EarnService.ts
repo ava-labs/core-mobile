@@ -1,4 +1,3 @@
-import { getPvmApi } from 'utils/network/pvm'
 import { Account, AccountCollection } from 'store/account/types'
 import { exportC } from 'services/earn/exportC'
 import { importP, importPWithBalanceCheck } from 'services/earn/importP'
@@ -12,7 +11,7 @@ import {
   AvalancheTransactionRequest
 } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
@@ -29,17 +28,18 @@ import {
 import { Seconds } from 'types/siUnits'
 import {
   BlockchainId,
-  Network,
+  Network as GlacierNetwork,
   PChainTransaction,
   PChainTransactionType,
   SortOrder
 } from '@avalabs/glacier-sdk'
-import { getInfoApi } from 'utils/network/info'
 import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -49,12 +49,12 @@ import {
 class EarnService {
   /**
    * Get all available nodes
-   * @param isTestnet is testnet mode enabled
+   * @param provider
    */
   getCurrentValidators = (
-    isTestnet: boolean
+    provider: Avalanche.JsonRpcProvider
   ): Promise<GetCurrentValidatorsResponse> => {
-    return getPvmApi(isTestnet).getCurrentValidators()
+    return provider.getApiP().getCurrentValidators()
   }
 
   /**
@@ -68,15 +68,22 @@ class EarnService {
     activeAccount,
     isDevMode,
     selectedCurrency,
-    progressEvents
+    progressEvents,
+    isDevnet,
+    feeState
   }: {
     activeAccount: Account
     isDevMode: boolean
     selectedCurrency: string
     progressEvents?: (events: RecoveryEvents) => void
+    isDevnet: boolean
+    feeState?: pvm.FeeState
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
+      isDevMode,
+      isDevnet
+    )
 
     const { pChainUtxo, cChainUtxo } = await retry({
       operation: retryIndex => {
@@ -98,7 +105,9 @@ class EarnService {
       await importPWithBalanceCheck({
         activeAccount,
         isDevMode,
-        selectedCurrency
+        selectedCurrency,
+        isDevnet,
+        feeState
       })
       progressEvents?.(RecoveryEvents.ImportPFinish)
     }
@@ -107,7 +116,8 @@ class EarnService {
       progressEvents?.(RecoveryEvents.ImportCStart)
       await importC({
         activeAccount,
-        isDevMode
+        isDevMode,
+        isDevnet
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -122,8 +132,10 @@ class EarnService {
     requiredAmount,
     activeAccount,
     isDevMode,
-    selectedCurrency
-  }: CollectTokensForStakingParams): Promise<void> {
+    selectedCurrency,
+    isDevnet,
+    feeState
+  }: CollectTokensForStakingParams & { isDevnet: boolean }): Promise<void> {
     if (requiredAmount === 0n) {
       Logger.info('no need to cross chain')
       return
@@ -132,12 +144,15 @@ class EarnService {
       cChainBalance,
       requiredAmount,
       activeAccount,
-      isDevMode
+      isDevMode,
+      isDevnet
     })
     await importP({
       activeAccount,
       isDevMode,
-      selectedCurrency
+      selectedCurrency,
+      isDevnet,
+      feeState
     })
   }
 
@@ -154,17 +169,22 @@ class EarnService {
     pChainBalance: TokenUnit,
     requiredAmount: TokenUnit,
     activeAccount: Account,
-    isDevMode: boolean
+    isDevMode: boolean,
+    isDevnet: boolean,
+    feeState?: pvm.FeeState
   ): Promise<void> {
     await exportP({
       pChainBalance,
       requiredAmount,
       activeAccount,
-      isDevMode
+      isDevMode,
+      isDevnet,
+      feeState
     })
     await importC({
       activeAccount,
-      isDevMode
+      isDevMode,
+      isDevnet
     })
   }
 
@@ -182,9 +202,13 @@ class EarnService {
     duration: Seconds,
     currentSupply: TokenUnit,
     delegationFee: number,
-    isDeveloperMode: boolean
+    isDeveloperMode: boolean,
+    isDevnet: boolean
   ): TokenUnit {
-    const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+    const avaxPNetwork = NetworkService.getAvalancheNetworkP(
+      isDeveloperMode,
+      isDevnet
+    )
     const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
     const minConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
@@ -206,7 +230,14 @@ class EarnService {
       avaxPNetwork.networkToken.decimals,
       avaxPNetwork.networkToken.symbol
     )
-    const unmintedSupply = supplyCap.sub(currentSupply)
+
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
+    // this is needed for devent to work
+    let unmintedSupply = supplyCap.sub(currentSupply)
+    if (unmintedSupply.lt(0) && isDevnet) {
+      unmintedSupply = unmintedSupply.mul(-1)
+    }
+
     const fullReward = unmintedSupply
       .mul(stakeOverSupply)
       .mul(stakingPeriodOverMintingPeriod)
@@ -222,11 +253,16 @@ class EarnService {
     stakeAmount,
     startDate,
     endDate,
-    isDevMode
+    isDevMode,
+    isDevnet,
+    feeState
   }: AddDelegatorTransactionProps): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
+      isDevMode,
+      isDevnet
+    )
     const rewardAddress = activeAccount.addressPVM
 
     const unsignedTx = await WalletService.createAddDelegatorTx({
@@ -237,7 +273,8 @@ class EarnService {
       startDate: startDateUnix,
       endDate: endDateUnix,
       stakeAmountInNAvax: stakeAmount,
-      isDevMode
+      isDevMode,
+      feeState
     } as AddDelegatorProps)
 
     const signedTxJson = await WalletService.sign({
@@ -258,7 +295,10 @@ class EarnService {
     })
     Logger.trace('txID', txID)
 
-    const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+    const avaxProvider = await NetworkService.getAvalancheProviderXP(
+      isDevMode,
+      isDevnet
+    )
 
     try {
       await retry({
@@ -277,8 +317,10 @@ class EarnService {
    * Retrieve the upper bound on the number of tokens that exist in P-chain
    * This is an upper bound because it does not account for burnt tokens, including transaction fees.
    */
-  getCurrentSupply(isTestnet: boolean): Promise<GetCurrentSupplyResponse> {
-    return getPvmApi(isTestnet).getCurrentSupply()
+  getCurrentSupply(
+    provider: Avalanche.JsonRpcProvider
+  ): Promise<GetCurrentSupplyResponse> {
+    return provider.getApiP().getCurrentSupply()
   }
 
   /**
@@ -298,7 +340,7 @@ class EarnService {
     do {
       const response = await glacierApi.listLatestPrimaryNetworkTransactions({
         params: {
-          network: isTestnet ? Network.FUJI : Network.MAINNET,
+          network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
           blockchainId: BlockchainId.P_CHAIN
         },
         queries: {
@@ -321,11 +363,11 @@ class EarnService {
   }
 
   getTransformedStakesForAllAccounts = async ({
-    isDeveloperMode,
-    accounts
+    accounts,
+    network
   }: {
-    isDeveloperMode: boolean
     accounts: AccountCollection
+    network: Network
   }): Promise<
     | {
         txHash: string
@@ -336,6 +378,7 @@ class EarnService {
       }[]
     | undefined
   > => {
+    const isDeveloperMode = Boolean(network.isTestnet)
     const accountsArray = Object.values(accounts)
 
     try {
@@ -350,7 +393,7 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(account.index, !isDeveloperMode)
+            WalletService.getAddresses(account.index, network)
           )
         )
       ).map(address => address.PVM)
@@ -378,13 +421,14 @@ class EarnService {
 
   /**
    * Get a description of peer connections.
+   * @param provider
    * @param nodeIds
    */
   getPeers = (
-    isTestnet: boolean,
+    provider: Avalanche.JsonRpcProvider,
     nodeIds?: string[]
   ): Promise<GetPeersResponse> => {
-    return getInfoApi(isTestnet).peers(nodeIds)
+    return provider.getInfo().peers(nodeIds)
   }
 }
 

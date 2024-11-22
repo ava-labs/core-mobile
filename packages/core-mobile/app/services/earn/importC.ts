@@ -17,15 +17,20 @@ import {
 export type ImportCParams = {
   activeAccount: Account
   isDevMode: boolean
+  isDevnet: boolean
 }
 
 export async function importC({
   activeAccount,
-  isDevMode
+  isDevMode,
+  isDevnet
 }: ImportCParams): Promise<void> {
   Logger.info('importing C started')
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(
+    isDevMode,
+    isDevnet
+  )
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
   const baseFeeAvax = new TokenUnit(
