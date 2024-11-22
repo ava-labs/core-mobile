@@ -7,6 +7,7 @@ export type GetActivitiesForAccountParams = {
   account: Account
   nextPageToken?: string
   pageSize?: number
+  shouldAnalyzeBridgeTxs?: boolean
 }
 
 export type ActivityResponse = {

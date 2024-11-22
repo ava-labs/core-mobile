@@ -9,6 +9,7 @@ export class ActivityService {
     network,
     account,
     nextPageToken,
+    shouldAnalyzeBridgeTxs = true,
     pageSize = 30
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
@@ -21,7 +22,7 @@ export class ActivityService {
     })
 
     const transactions = rawTxHistory.transactions.map(tx =>
-      convertTransaction(tx)
+      convertTransaction(tx, shouldAnalyzeBridgeTxs)
     )
 
     return {

@@ -23,7 +23,7 @@ export type GetRecentTransactionsArgs = {
 
 export type Transaction = Omit<InternalTransaction, 'txType'> & {
   txType: ActivityTransactionType
-  bridgeAnalysis: AnalyzeTxResult
+  bridgeAnalysis?: AnalyzeTxResult
 }
 
 export type ActivityTransactionType =
