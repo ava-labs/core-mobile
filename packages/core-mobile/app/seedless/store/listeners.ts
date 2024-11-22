@@ -5,6 +5,7 @@ import {
   onLogOut,
   onRehydrationComplete,
   selectWalletState,
+  selectWalletType,
   WalletState
 } from 'store/app'
 import * as Navigation from 'utils/Navigation'
@@ -45,7 +46,7 @@ const registerSeedlessErrorHandler = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const { dispatch } = listenerApi
+  const { dispatch, getState } = listenerApi
 
   const onErrorHandler = async (e: ErrResponse): Promise<void> => {
     // log error
@@ -54,12 +55,15 @@ const registerSeedlessErrorHandler = async (
     // an example url https://prod.signer.cubist.dev/v1/org/Org%23db7f2cac-7bd0-4e5f-b7c2-b5881a4bb4e7/eth1/sign/0xD0E99cEa490Cdb54ba555922bf325952F0DE38bd
     Logger.error('seedless error', JSON.stringify({ ...e, url: '' }))
 
+    const walletType = selectWalletType(getState())
+
     // the following check is what cubist does internally for GlobalEvents.onSessionExpired
     //
     // if status is 403 and error matches one of the "invalid session" error codes
     // or when "signerSessionRefresh" fails (errors returned by the authorizer lambda are not forwarded to the client)
     // we will prompt user to re-authenticate
     if (
+      walletType === WalletType.SEEDLESS &&
       e.status === 403 &&
       (e.isSessionExpiredError() || e.operation === 'signerSessionRefresh')
     ) {
