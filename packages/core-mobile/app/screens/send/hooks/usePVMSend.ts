@@ -87,13 +87,14 @@ const usePVMSend: SendAdapterPVM = ({
 
     try {
       setIsSending(true)
-      const unsignedTx = await createSendPTx(amount.bn, gasPrice)
-
       return await sendPVM({
         request,
         network,
         fromAddress,
-        unsignedTx
+        accountIndex: account.index,
+        amountInNAvax: amount.bn,
+        toAddress,
+        feeState: getFeeState(gasPrice)
       })
     } finally {
       setIsSending(false)
@@ -103,11 +104,12 @@ const usePVMSend: SendAdapterPVM = ({
     token,
     amount,
     setIsSending,
-    createSendPTx,
-    gasPrice,
     request,
     network,
-    fromAddress
+    fromAddress,
+    account.index,
+    getFeeState,
+    gasPrice
   ])
 
   const handleError = useCallback(
