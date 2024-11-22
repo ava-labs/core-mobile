@@ -12,7 +12,6 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectActiveNetwork, setActive } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -140,14 +139,7 @@ const reloadAccounts = async (
   _action: unknown,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const originalState = listenerApi.getOriginalState()
-  const originalNetwork = selectActiveNetwork(originalState)
   const state = listenerApi.getState()
-  const newNetwork = selectActiveNetwork(state)
-
-  // only reload accounts if the network has changed to or changed from devnet
-  if (!(isDevnet(originalNetwork) || isDevnet(newNetwork))) return
-
   const activeNetwork = selectActiveNetwork(state)
   const accounts = selectAccounts(state)
 
