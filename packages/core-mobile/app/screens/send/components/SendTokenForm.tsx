@@ -201,7 +201,7 @@ const SendTokenForm = ({
             error={isAllFieldsTouched && error ? error : undefined}
           />
 
-          {supportsAvalancheDynamicFee && (
+          {supportsAvalancheDynamicFee && estimatedFee !== undefined && (
             <>
               <Space y={20} />
               <View sx={{ marginHorizontal: 16 }}>
