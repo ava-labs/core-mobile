@@ -245,8 +245,6 @@
 		6493DFA96F0295D04CEC5E67 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				ECCB1DEF911D4FA6ABECADCA /* AvaxWallet */,
-				C404B8FC20C759E8C006A159 /* AvaxWalletInternal */,
 			);
 			name = ExpoModulesProviders;
 			sourceTree = "<group>";
