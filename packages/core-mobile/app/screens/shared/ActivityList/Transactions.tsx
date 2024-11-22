@@ -24,6 +24,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { TransactionType } from '@avalabs/vm-module-types'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -58,7 +59,7 @@ const Transactions: FC<Props> = ({
   const combinedData = useMemo(() => {
     function isPendingBridge(tx: Transaction): boolean {
       return (
-        tx.bridgeAnalysis.isBridgeTx &&
+        tx.txType === TransactionType.BRIDGE &&
         pendingBridgeTxs.some(
           bridge =>
             (bridge.sourceTxHash === tx.hash ||
@@ -143,7 +144,7 @@ const Transactions: FC<Props> = ({
 
       return (
         <View key={item.hash}>
-          {item.bridgeAnalysis.isBridgeTx ? (
+          {item.txType === TransactionType.BRIDGE ? (
             <BridgeTransactionItem item={item} onPress={onPress} />
           ) : (
             <ActivityListItem tx={item} onPress={onPress} />
