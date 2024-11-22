@@ -1,5 +1,5 @@
 export default {
-  avalancheNetwork: 'Avalanche C-Chain',
+  avalancheNetwork: 'Avalanche (C-Chain)',
   avaxEthBridgeTransaction: '0.055 WETH.e',
   avaxBtcBridgeTransaction: '0.0024 BTC.b',
   amountToLowBtcAvaxMessage: 'Amount too low -- minimum is 0.002400000',
