@@ -6,7 +6,7 @@ import {
   BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
@@ -55,6 +55,7 @@ export type AddDelegatorProps = {
   rewardAddress: string
   isDevMode: boolean
   shouldValidateBurnedAmount?: boolean
+  feeState?: pvm.FeeState
 }
 
 export interface CommonAvalancheTxParamsBase {
@@ -62,6 +63,7 @@ export interface CommonAvalancheTxParamsBase {
   avaxXPNetwork: Network
   destinationAddress: string | undefined
   shouldValidateBurnedAmount?: boolean
+  feeState?: pvm.FeeState
 }
 
 export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {
@@ -99,6 +101,7 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
    */
   amountInNAvax: bigint
   sourceAddress: string
+  feeState?: pvm.FeeState
 }
 
 export enum WalletType {
@@ -200,16 +203,16 @@ export interface Wallet {
   /**
    * Retrieves addresses for a specific account on various networks.
    * @param accountIndex - The index of the account.
-   * @param isTestnet - A boolean indicating whether the network is a testnet.
+   * @param network
    * @param provXP - The Avalanche JSON RPC provider.
    */
   getAddresses({
     accountIndex,
-    isTestnet,
-    provXP
+    provXP,
+    network
   }: {
     accountIndex: number
-    isTestnet: boolean
+    network: Network
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Record<NetworkVMType, string>>
 

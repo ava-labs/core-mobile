@@ -11,6 +11,8 @@ import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
 
 export const usePChainBalance = (): UseQueryResult<
   TokenWithBalancePVM | undefined,
@@ -19,7 +21,11 @@ export const usePChainBalance = (): UseQueryResult<
   const addressPVM = useSelector(selectActiveAccount)?.addressPVM
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const network = NetworkService.getAvalancheNetworkP(
+    isDeveloperMode,
+    isDevnet(activeNetwork)
+  )
 
   return useQuery({
     refetchInterval: refetchIntervals.balance,

@@ -5,6 +5,7 @@ import {
   TokenWithBalanceBTC,
   TokenWithBalancePVM
 } from '@avalabs/vm-module-types'
+import { Dispatch } from 'react'
 import { Account } from 'store/account'
 
 export enum SendErrorMessage {
@@ -18,7 +19,8 @@ export enum SendErrorMessage {
   TOKEN_REQUIRED = 'Token is required',
   UNSUPPORTED_TOKEN = 'Unsupported token',
   INVALID_GAS_LIMIT = 'Unable to send token, invalid gas limit.',
-  UNKNOWN_ERROR = 'Unknown error'
+  UNKNOWN_ERROR = 'Unknown error',
+  EXCESSIVE_NETWORK_FEE = 'Selected fee is too high'
 }
 
 type CommonAdapterOptions<Token> = {
@@ -58,6 +60,8 @@ type SendAdapter<CustomOptions = unknown, Token = NetworkTokenWithBalance> = (
   options: CommonAdapterOptions<Token> & CustomOptions
 ) => {
   send(): Promise<string>
+  estimatedFee?: bigint
+  setGasPrice?: Dispatch<bigint>
 }
 
 export type SendAdapterEVM = SendAdapter<

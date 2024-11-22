@@ -1,5 +1,5 @@
 import { useGetAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   calculateCChainFee,
   calculatePChainFee
@@ -13,9 +13,14 @@ import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 import { weiToNano } from 'utils/units/converter'
-
-const importFee = calculatePChainFee()
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
+import { CorePrimaryAccount } from '@avalabs/types'
+import { pvm } from '@avalabs/avalanchejs'
+import { useGetFeeState } from './useGetFeeState'
 
 /**
  * useEstimateStakingFee estimates fee by making dummy Export C transaction and
@@ -23,29 +28,82 @@ const importFee = calculatePChainFee()
  * some amount to be transferred from C to P chain, which is determined by
  * using useGetAmountForCrossChainTransfer.
  */
-export const useEstimateStakingFees = (
+export const useEstimateStakingFees = ({
+  stakingAmount,
+  xpProvider,
+  gasPrice
+}: {
   stakingAmount: TokenUnit
-): TokenUnit | undefined => {
+  xpProvider?: Avalanche.JsonRpcProvider
+  gasPrice?: bigint
+}): {
+  estimatedStakingFee?: TokenUnit
+  defaultTxFee?: TokenUnit
+  requiredPFee?: TokenUnit
+} => {
+  const activeNetwork = useSelector(selectActiveNetwork)
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
+    isDevMode,
+    isDevnet(activeNetwork)
+  )
   const activeAccount = useSelector(selectActiveAccount)
   const amountForCrossChainTransfer =
     useGetAmountForCrossChainTransfer(stakingAmount)
   const [estimatedStakingFee, setEstimatedStakingFee] = useState<
     TokenUnit | undefined
   >(undefined)
+  const [defaultTxFee, setDefaultTxFee] = useState<TokenUnit>()
+  const [requiredPFee, setRequiredPFee] = useState<TokenUnit>()
   const baseFee = useCChainBaseFee().data
+
+  const { getFeeState, defaultFeeState } = useGetFeeState()
+
+  const feeState = useMemo(() => getFeeState(gasPrice), [gasPrice, getFeeState])
+
+  useEffect(() => {
+    const getDefaultTxFee = async (): Promise<void> => {
+      if (
+        amountForCrossChainTransfer === undefined ||
+        activeAccount === undefined ||
+        xpProvider === undefined ||
+        defaultFeeState === undefined
+      ) {
+        return
+      }
+      const txFee = await getStakingFeeFromDummyTx({
+        stakingAmount,
+        activeAccount,
+        avaxXPNetwork,
+        provider: xpProvider,
+        feeState: defaultFeeState
+      })
+      setDefaultTxFee(txFee)
+    }
+    getDefaultTxFee().catch(Logger.error)
+  }, [
+    stakingAmount,
+    activeAccount,
+    avaxXPNetwork,
+    amountForCrossChainTransfer,
+    defaultFeeState,
+    xpProvider
+  ])
 
   useEffect(() => {
     const calculateEstimatedStakingFee = async (): Promise<void> => {
+      if (xpProvider === undefined) return
+
       if (amountForCrossChainTransfer === undefined) {
         setEstimatedStakingFee(undefined)
         return
       }
-      if (amountForCrossChainTransfer.isZero()) {
+
+      if (amountForCrossChainTransfer.isZero() && !xpProvider.isEtnaEnabled()) {
         setEstimatedStakingFee(zeroAvaxPChain())
         return
       }
+
       if (
         baseFee === undefined ||
         activeAccount === undefined ||
@@ -55,7 +113,15 @@ export const useEstimateStakingFees = (
         return
       }
 
-      const totalAmount = amountForCrossChainTransfer.add(importFee) // we need to include import fee
+      const stakingFee = await getStakingFeeFromDummyTx({
+        stakingAmount,
+        activeAccount,
+        avaxXPNetwork,
+        provider: xpProvider,
+        feeState
+      })
+
+      const totalAmount = amountForCrossChainTransfer.add(stakingFee) // we need to include import + addPermissionlessDelegator fee
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
       const unsignedTx = await WalletService.createExportCTx({
@@ -71,10 +137,76 @@ export const useEstimateStakingFees = (
       })
 
       const exportFee = calculateCChainFee(instantBaseFee, unsignedTx)
-      setEstimatedStakingFee(exportFee.add(importFee))
+      setRequiredPFee(stakingFee)
+      setEstimatedStakingFee(exportFee.add(stakingFee))
     }
     calculateEstimatedStakingFee().catch(Logger.error)
-  }, [activeAccount, amountForCrossChainTransfer, avaxXPNetwork, baseFee])
+  }, [
+    activeAccount,
+    amountForCrossChainTransfer,
+    avaxXPNetwork,
+    baseFee,
+    feeState,
+    isDevMode,
+    stakingAmount,
+    xpProvider
+  ])
 
-  return estimatedStakingFee
+  return {
+    estimatedStakingFee,
+    defaultTxFee,
+    requiredPFee
+  }
+}
+
+const getStakingFeeFromDummyTx = async ({
+  stakingAmount,
+  activeAccount,
+  avaxXPNetwork,
+  provider,
+  feeState
+}: {
+  stakingAmount: TokenUnit
+  activeAccount: CorePrimaryAccount
+  avaxXPNetwork: Network
+  provider: Avalanche.JsonRpcProvider
+  feeState?: pvm.FeeState
+}): Promise<TokenUnit> => {
+  if (provider.isEtnaEnabled() && feeState) {
+    const unsignedImportTx = await WalletService.createDummyImportPTx({
+      stakingAmount: stakingAmount.toSubUnit(),
+      accountIndex: activeAccount.index,
+      sourceChain: 'C',
+      avaxXPNetwork,
+      destinationAddress: activeAccount.addressPVM,
+      feeState
+    })
+
+    const importTx = await Avalanche.parseAvalancheTx(
+      unsignedImportTx,
+      provider,
+      activeAccount.addressPVM
+    )
+    const unsignedAddPermissionlessDelegatorTx =
+      await WalletService.createDummyAddPermissionlessDelegatorTx({
+        amountInNAvax: stakingAmount.toSubUnit(),
+        accountIndex: activeAccount.index,
+        destinationChain: 'C',
+        avaxXPNetwork,
+        destinationAddress: activeAccount.addressPVM,
+        feeState
+      })
+
+    const addPermissionlessDelegatorTx = await Avalanche.parseAvalancheTx(
+      unsignedAddPermissionlessDelegatorTx,
+      provider,
+      activeAccount.addressPVM
+    )
+    return new TokenUnit(
+      importTx.txFee + addPermissionlessDelegatorTx.txFee,
+      avaxXPNetwork.networkToken.decimals,
+      avaxXPNetwork.networkToken.symbol
+    )
+  }
+  return calculatePChainFee(avaxXPNetwork)
 }

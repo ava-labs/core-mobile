@@ -24,11 +24,13 @@ export const useGetAmountForCrossChainTransfer = (
  */
 export const calculateAmountForCrossChainTransfer = (
   stakingAmount: TokenUnit,
-  claimableBalance: TokenUnit
+  claimableBalance?: TokenUnit
 ): TokenUnit => {
-  if (claimableBalance.gt(stakingAmount)) {
+  if (claimableBalance?.gt(stakingAmount)) {
     return zeroAvaxPChain()
   } else {
-    return stakingAmount.sub(claimableBalance)
+    return claimableBalance
+      ? stakingAmount.sub(claimableBalance)
+      : stakingAmount
   }
 }

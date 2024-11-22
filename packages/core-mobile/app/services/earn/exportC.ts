@@ -19,25 +19,34 @@ export type ExportCParams = {
   requiredAmount: bigint // in nAvax
   activeAccount: Account
   isDevMode: boolean
+  isDevnet: boolean
 }
 
 export async function exportC({
   cChainBalance,
   requiredAmount,
   activeAccount,
-  isDevMode
+  isDevMode,
+  isDevnet
 }: ExportCParams): Promise<void> {
   Logger.info('exporting C started')
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
   const chains = await NetworkService.getNetworks()
   const cChainNetwork =
     chains[
-      isDevMode ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID
+      isDevnet
+        ? ChainId.AVALANCHE_DEVNET_ID
+        : isDevMode
+        ? ChainId.AVALANCHE_TESTNET_ID
+        : ChainId.AVALANCHE_MAINNET_ID
     ]
   assertNotUndefined(cChainNetwork)
 
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(
+    isDevMode,
+    isDevnet
+  )
 
   const baseFeeAvax = AvaxC.fromWei(await avaxProvider.getApiC().getBaseFee())
 
@@ -45,9 +54,7 @@ export async function exportC({
 
   const cChainBalanceAvax = AvaxC.fromWei(cChainBalance)
   const requiredAmountAvax = AvaxXP.fromNanoAvax(requiredAmount)
-
-  const pChainFeeAvax = calculatePChainFee()
-
+  const pChainFeeAvax = await calculatePChainFee(avaxXPNetwork)
   const amountAvax = requiredAmountAvax.add(pChainFeeAvax)
 
   if (cChainBalanceAvax.lt(amountAvax)) {

@@ -9,6 +9,8 @@ import { useSelector } from 'react-redux'
 import Logger from 'utils/Logger'
 import { NodeValidator, NodeValidators } from 'types/earn'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 import { usePeers } from './usePeers'
 
 type useSearchNodeProps = {
@@ -24,6 +26,7 @@ export const useSearchNode = ({
 }: useSearchNodeProps): { validator?: NodeValidator; error?: Error } => {
   const { data: peers } = usePeers()
 
+  const activeNetwork = useSelector(selectActiveNetwork)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
   const noMatchError = new Error(
@@ -33,6 +36,7 @@ export const useSearchNode = ({
 
   if (validators && validators.length > 0) {
     const filteredValidators = getFilteredValidators({
+      isDevnet: isDevnet(activeNetwork),
       isDeveloperMode,
       validators,
       stakingAmount,
