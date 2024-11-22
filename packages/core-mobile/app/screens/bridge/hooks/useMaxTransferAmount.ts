@@ -41,7 +41,7 @@ const useMaxTransferAmount = ({
 
   useEffect(() => {
     if (assetBalance?.balance !== undefined) {
-      getEstimatedGas(assetBalance?.balance)
+      getEstimatedGas(assetBalance.balance)
         .then(estimatedGas => {
           if (estimatedGas) {
             setGasLimit(estimatedGas)

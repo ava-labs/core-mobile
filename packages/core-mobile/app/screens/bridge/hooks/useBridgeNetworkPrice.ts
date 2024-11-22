@@ -16,12 +16,12 @@ export const useBridgeNetworkPrice = (chain?: Blockchain | Chain): Big => {
     }
 
     if (typeof chain === 'object') {
-      const caip2ChainId = getChainIdFromCaip2(chain.chainId)
-      if (!caip2ChainId) {
+      const chainId = getChainIdFromCaip2(chain.chainId)
+      if (!chainId) {
         return undefined
       }
 
-      const network = networks[caip2ChainId]
+      const network = networks[chainId]
 
       if (!network) {
         return undefined
