@@ -174,6 +174,9 @@ const getExportFeeFromDummyTx = async ({
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled()) {
     const unsignedTxP = await WalletService.createExportPTx({
+      // intentionally dividing the amount by 2 to make sure
+      // the export fee is not greater than the available balance in p-chain,
+      // so we can get the correct txFee for the export
       amountInNAvax: amountInNAvax.div(2n).toSubUnit(),
       accountIndex: activeAccount.index,
       avaxXPNetwork,

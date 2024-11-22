@@ -82,7 +82,7 @@ export const useIssueDelegation = (
         selectedCurrency,
         isDevnet: isDevnet(activeNetwork),
         feeState: getFeeState(data.gasPrice)
-      })
+      }).catch(Logger.error)
       Logger.trace('getPChainBalance...')
 
       const network = NetworkService.getAvalancheNetworkP(
