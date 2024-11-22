@@ -88,7 +88,7 @@ const NetworkFeeSelector = ({
   )
 
   const isBtcNetwork = network ? isBitcoinNetwork(network) : false
-  const isSimpleFeeRate = isBtcNetwork || supportsAvalancheDynamicFee
+  const isBaseUnitRate = isBtcNetwork || supportsAvalancheDynamicFee
   const isPVM = isPvmNetwork(network)
   const isAVM = isAvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
@@ -181,19 +181,19 @@ const NetworkFeeSelector = ({
     return {
       [FeePreset.Normal]: bigIntToFeeDenomination(
         networkFee.low.maxFeePerGas,
-        isSimpleFeeRate
+        isBaseUnitRate
       ),
       [FeePreset.Fast]: bigIntToFeeDenomination(
         networkFee.medium.maxFeePerGas,
-        isSimpleFeeRate
+        isBaseUnitRate
       ),
       [FeePreset.Instant]: bigIntToFeeDenomination(
         networkFee.high.maxFeePerGas,
-        isSimpleFeeRate
+        isBaseUnitRate
       ),
-      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isSimpleFeeRate)
+      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isBaseUnitRate)
     }
-  }, [customFees?.maxFeePerGas, networkFee, isSimpleFeeRate])
+  }, [customFees?.maxFeePerGas, networkFee, isBaseUnitRate])
 
   const goToEditGasLimit = (n?: Network): void => {
     if (networkFee === undefined || n === undefined) return
@@ -208,7 +208,7 @@ const NetworkFeeSelector = ({
         0n,
       gasLimit,
       isGasLimitEditable,
-      isSimpleFeeRate,
+      isBaseUnitRate,
       noGasLimitError
     })
   }

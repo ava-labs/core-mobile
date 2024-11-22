@@ -1,13 +1,13 @@
 export function feeDenominationToBigint(
   fee: string,
-  isSimpleFeeRate: boolean
+  isBaseUnitRate: boolean
 ): bigint {
-  return isSimpleFeeRate ? BigInt(fee) : BigInt(fee) * BigInt(1e9)
+  return isBaseUnitRate ? BigInt(fee) : BigInt(fee) * BigInt(1e9)
 }
 
 export function bigIntToFeeDenomination(
   fee: bigint,
-  isSimpleFeeRate: boolean
+  isBaseUnitRate: boolean
 ): string {
-  return isSimpleFeeRate ? fee.toString() : (fee / BigInt(1e9)).toString()
+  return isBaseUnitRate ? fee.toString() : (fee / BigInt(1e9)).toString()
 }

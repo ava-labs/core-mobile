@@ -130,7 +130,7 @@ export const getAvailableDelegationWeight = ({
   const maxValidatorStake = new TokenUnit(nAvax, 9, 'AVAX')
   const maxWeight = calculateMaxWeight(maxValidatorStake, validatorWeight)
 
-  // TODO: remove this after Etna activiation
+  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
   // this is needed for devent to work
   if (maxWeight.lt(validatorWeight) && isDevnet) {
     return maxWeight.sub(delegatorWeight)

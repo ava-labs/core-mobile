@@ -231,7 +231,7 @@ class EarnService {
       avaxPNetwork.networkToken.symbol
     )
 
-    // TODO: remove this after Etna activiation
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
     // this is needed for devent to work
     let unmintedSupply = supplyCap.sub(currentSupply)
     if (unmintedSupply.lt(0) && isDevnet) {

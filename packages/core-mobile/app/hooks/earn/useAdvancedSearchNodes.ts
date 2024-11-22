@@ -60,7 +60,7 @@ export const useAdvancedSearchNodes = ({
   )
   const noValidatorsError = new Error(`no validators found.`)
 
-  // TODO: remove this after Etna activation
+  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
   // simply return all nodes for devnet
   if (isDevnet(activeNetwork)) {
     return { validators, error: undefined }

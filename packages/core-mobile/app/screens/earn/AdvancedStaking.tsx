@@ -54,7 +54,7 @@ const AdvancedStaking = (): JSX.Element => {
 
   const activeNetwork = useSelector(selectActiveNetwork)
 
-  // TODO: remove isDevnet check after Etna activation
+  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
   const minimumUptimeCaption = isDevnet(activeNetwork)
     ? 'Enter a value between 0-99%'
     : 'Enter a value between 1-99%'
@@ -64,7 +64,7 @@ const AdvancedStaking = (): JSX.Element => {
     handleSubmit,
     formState: { errors, dirtyFields }
   } = useForm<TFormProps>({
-    // TODO: remove isDevnet check after Etna activation
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
     // this is needed to find the node with 0% uptime in devnet
     resolver: zodResolver(isDevnet(activeNetwork) ? devnetSchema : schema),
     mode: 'onChange',

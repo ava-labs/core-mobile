@@ -36,6 +36,7 @@ export function getAvalancheEvmProvider(
   isTest: boolean | undefined,
   devnet: boolean
 ): Promise<JsonRpcBatchInternal | undefined> {
+  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
   const network = getAvalancheNetwork(networks, isTest, devnet)
   if (!network) return Promise.resolve(undefined)
   return getEvmProvider(network)
@@ -55,6 +56,7 @@ export function getAvalancheNetwork(
   isTest: boolean | undefined,
   devnet: boolean
 ): Network | undefined {
+  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
   return devnet
     ? networks[ChainId.AVALANCHE_DEVNET_ID]
     : isTest

@@ -32,7 +32,7 @@ type EditFeesProps = {
   onClose?: () => void
   lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isSimpleFeeRate: boolean
+  isBaseUnitRate: boolean
   noGasLimitError?: string
 } & Eip1559Fees
 
@@ -62,7 +62,7 @@ const EditFees = ({
   onSave,
   onClose,
   isGasLimitEditable,
-  isSimpleFeeRate,
+  isBaseUnitRate,
   noGasLimitError
 }: EditFeesProps): JSX.Element => {
   const _gasLimitError = noGasLimitError ?? 'Please enter a valid gas limit'
@@ -91,7 +91,7 @@ const EditFees = ({
    * EVM - gWei
    */
   const [newMaxFeePerGas, setNewMaxFeePerGas] = useState<string>(
-    bigIntToFeeDenomination(initMaxFeePerGas, isSimpleFeeRate)
+    bigIntToFeeDenomination(initMaxFeePerGas, isBaseUnitRate)
   )
   /**
    * Denominated depending of network:
@@ -101,7 +101,7 @@ const EditFees = ({
    */
   const [newMaxPriorityFeePerGas, setNewMaxPriorityFeePerGas] =
     useState<string>(
-      bigIntToFeeDenomination(initMaxPriorityFeePerGas, isSimpleFeeRate)
+      bigIntToFeeDenomination(initMaxPriorityFeePerGas, isBaseUnitRate)
     )
   const tokenPrice = useNativeTokenPriceForNetwork(network).nativeTokenPrice
   const [feeError, setFeeError] = useState('')
@@ -133,10 +133,10 @@ const EditFees = ({
     try {
       const fees = calculateGasAndFees({
         tokenPrice,
-        maxFeePerGas: feeDenominationToBigint(newMaxFeePerGas, isSimpleFeeRate),
+        maxFeePerGas: feeDenominationToBigint(newMaxFeePerGas, isBaseUnitRate),
         maxPriorityFeePerGas: feeDenominationToBigint(
           newMaxPriorityFeePerGas,
-          isSimpleFeeRate
+          isBaseUnitRate
         ),
         gasLimit: isNaN(parseInt(newGasLimit)) ? 0 : parseInt(newGasLimit),
         networkToken: network.networkToken
@@ -160,7 +160,7 @@ const EditFees = ({
     typeCreator,
     lowMaxFeePerGas,
     _gasLimitError,
-    isSimpleFeeRate,
+    isBaseUnitRate,
     network.networkToken
   ])
 
@@ -175,8 +175,7 @@ const EditFees = ({
     }
   }
 
-  const saveDisabled =
-    !!feeError || (newFees.gasLimit === 0 && !isSimpleFeeRate)
+  const saveDisabled = !!feeError || (newFees.gasLimit === 0 && !isBaseUnitRate)
 
   const sanitized = (text: string): string => text.replace(/[^0-9]/g, '')
 
@@ -190,15 +189,15 @@ const EditFees = ({
         </Text>
         <Space y={24} />
         <InputText
-          label={isSimpleFeeRate ? 'Network Fee' : 'Max Base Fee'}
+          label={isBaseUnitRate ? 'Network Fee' : 'Max Base Fee'}
           mode={'amount'}
           text={newMaxFeePerGas}
           keyboardType="numeric"
-          popOverInfoText={isSimpleFeeRate ? undefined : maxBaseFeeInfoMessage}
+          popOverInfoText={isBaseUnitRate ? undefined : maxBaseFeeInfoMessage}
           onChangeText={text => setNewMaxFeePerGas(sanitized(text))}
           errorText={feeError}
         />
-        {!isSimpleFeeRate && (
+        {!isBaseUnitRate && (
           <>
             <InputText
               label={'Max Priority Fee'}
@@ -230,7 +229,7 @@ const EditFees = ({
           <DividerLine />
         </View>
         <Row style={{ marginHorizontal: 12, alignItems: 'baseline' }}>
-          {isSimpleFeeRate ? (
+          {isBaseUnitRate ? (
             <TotalNetworkFeeText />
           ) : (
             <Tooltip
