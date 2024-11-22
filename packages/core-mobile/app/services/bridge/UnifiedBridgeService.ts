@@ -13,7 +13,8 @@ import {
   AnalyzeTxResult,
   AnalyzeTxParams,
   BridgeInitializer,
-  GasSettings
+  GasSettings,
+  Asset
 } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
@@ -99,6 +100,34 @@ export class UnifiedBridgeService {
     }
 
     return feeMap[identifier.toLowerCase()] ?? undefined
+  }
+
+  async estimateReceiveAmount({
+    asset,
+    amount,
+    targetNetwork,
+    sourceNetwork,
+    fromAddress,
+    gasSettings
+  }: {
+    asset: BridgeAsset
+    amount: bigint
+    targetNetwork: Network
+    sourceNetwork: Network
+    fromAddress: string
+    gasSettings?: GasSettings
+  }): Promise<{ asset: Asset; amount: bigint }> {
+    const sourceChain = await this.buildChain(sourceNetwork)
+    const targetChain = await this.buildChain(targetNetwork)
+
+    return await this.service.estimateReceiveAmount({
+      asset,
+      fromAddress,
+      amount,
+      sourceChain,
+      targetChain,
+      gasSettings
+    })
   }
 
   async transfer({
