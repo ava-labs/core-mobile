@@ -53,11 +53,20 @@ const useMaxTransferAmount = ({
     }
   }, [getEstimatedGas, assetBalance])
 
-  return assetBalance?.balance && networkFee
-    ? assetBalance.asset.type === TokenType.NATIVE
-      ? assetBalance.balance - networkFee
-      : assetBalance.balance
-    : undefined
+  const maxAmount =
+    assetBalance?.balance && networkFee
+      ? assetBalance.asset.type === TokenType.NATIVE
+        ? assetBalance.balance - networkFee
+        : assetBalance.balance
+      : undefined
+
+  if (maxAmount !== undefined && maxAmount < 0n) {
+    // we set the calculated max amount only when it is greater than 0.
+    // otherwise we return the asset balance to show the user that they don't have enough balance
+    return assetBalance?.balance
+  }
+
+  return maxAmount
 }
 
 export default useMaxTransferAmount
