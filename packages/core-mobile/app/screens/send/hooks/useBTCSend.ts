@@ -2,7 +2,7 @@ import {
   BitcoinInputUTXO,
   getMaxTransferAmount
 } from '@avalabs/core-wallets-sdk'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Logger from 'utils/Logger'
 import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -58,26 +58,25 @@ const useBTCSend: SendAdapterBTC = ({
     }
   }, [nativeToken, maxFee, provider])
 
+  const maxAmountValue = useMemo(() => {
+    if (!toAddress) {
+      return
+    }
+
+    return BigInt(
+      Math.max(
+        getMaxTransferAmount(utxos, toAddress, fromAddress, Number(maxFee)),
+        0
+      )
+    )
+  }, [toAddress, fromAddress, utxos, maxFee])
+
   const validate = useCallback(async () => {
-    if (!toAddress || !token) {
+    if (!toAddress || !token || maxAmountValue === undefined) {
       return
     }
 
     try {
-      const maxAmountValue = BigInt(
-        Math.max(
-          getMaxTransferAmount(utxos, toAddress, fromAddress, Number(maxFee)),
-          0
-        )
-      )
-
-      setMaxAmount({
-        bn: maxAmountValue ?? 0n,
-        amount: maxAmountValue
-          ? bigIntToString(maxAmountValue, nativeToken.decimals)
-          : ''
-      })
-
       validateBTCSend({
         toAddress,
         amount: amount?.bn ?? 0n,
@@ -93,18 +92,7 @@ const useBTCSend: SendAdapterBTC = ({
         Logger.error('failed to validate send', e)
       }
     }
-  }, [
-    fromAddress,
-    maxFee,
-    nativeToken,
-    utxos,
-    isMainnet,
-    setMaxAmount,
-    setError,
-    toAddress,
-    token,
-    amount
-  ])
+  }, [maxFee, isMainnet, setError, toAddress, token, amount, maxAmountValue])
 
   const send = useCallback(async () => {
     try {
@@ -131,6 +119,17 @@ const useBTCSend: SendAdapterBTC = ({
       validate()
     }
   }, [validate, canValidate])
+
+  useEffect(() => {
+    if (maxAmountValue !== undefined) {
+      setMaxAmount({
+        bn: maxAmountValue ?? 0n,
+        amount: maxAmountValue
+          ? bigIntToString(maxAmountValue, nativeToken.decimals)
+          : ''
+      })
+    }
+  }, [maxAmountValue, setMaxAmount, nativeToken.decimals])
 
   return {
     send
