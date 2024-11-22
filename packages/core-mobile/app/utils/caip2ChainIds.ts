@@ -147,3 +147,17 @@ export const getChainIdFromCaip2 = (
     ? getBitcoinChainId(caip2ChainId)
     : Number(caip2ChainId.split(':')[1])
 }
+
+// get caip2 chain id from chain id
+// '1' -> 'eip155:1'
+export const getCaip2ChainId = (chainId: number): string => {
+  const caip2ChainId =
+    getAvalancheCaip2ChainId(chainId) ||
+    getBitcoinCaip2ChainIdByChainId(chainId)
+
+  if (caip2ChainId) {
+    return caip2ChainId
+  }
+
+  return `${BlockchainNamespace.EIP155}:${chainId}`
+}

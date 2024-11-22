@@ -11,7 +11,7 @@ import { useCallback, useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { type Network } from '@avalabs/core-chains-sdk'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
-import { addNamespaceToChain } from 'services/walletconnectv2/utils'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useGetNetworks } from './useGetNetworks'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -175,6 +175,6 @@ export const useNetworks = () => {
 const decorateWithCaip2ChainId = (networks: Networks): Networks =>
   Object.entries(networks).reduce((acc, [key, network]) => {
     const chainId = parseInt(key)
-    acc[chainId] = { ...network, caip2ChainId: addNamespaceToChain(chainId) }
+    acc[chainId] = { ...network, caip2ChainId: getCaip2ChainId(chainId) }
     return acc
   }, {} as Networks)

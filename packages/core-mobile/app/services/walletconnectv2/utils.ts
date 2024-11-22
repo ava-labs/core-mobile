@@ -1,25 +1,6 @@
 import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
-import {
-  getAvalancheCaip2ChainId,
-  getBitcoinCaip2ChainIdByChainId,
-  isXChainId,
-  isPChainId
-} from 'temp/caip2ChainIds'
+import { isXChainId, isPChainId } from 'utils/caip2ChainIds'
 import { CorePrimaryAccount } from '@avalabs/types'
-
-// prefix correct namespace to a chainId
-// '1' -> 'eip155:1'
-export const addNamespaceToChain = (chainId: number): string => {
-  const caip2ChainId =
-    getAvalancheCaip2ChainId(chainId) ||
-    getBitcoinCaip2ChainIdByChainId(chainId)
-
-  if (caip2ChainId) {
-    return caip2ChainId
-  }
-
-  return `${BlockchainNamespace.EIP155}:${chainId}`
-}
 
 // generate full address with caip2 chain ID based on the blockchain namespace
 // an example result 'eip155:1:0x241b0073b66bfc19FCB54308861f604F5Eb8f51b'

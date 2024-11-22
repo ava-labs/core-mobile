@@ -9,7 +9,7 @@ import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractToken
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
