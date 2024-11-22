@@ -27,13 +27,17 @@ export const isAvalancheTransactionRequest = (
   return 'tx' in request
 }
 
-export const getTransferOutputUtxos = (
-  amt: bigint,
-  assetId: string,
-  address: string,
+export const getTransferOutputUtxos = ({
+  amt,
+  assetId,
+  address,
+  utxoId
+}: {
+  amt: bigint
+  assetId: string
+  address: string
   utxoId: string
-  // eslint-disable-next-line max-params
-): Utxo<TransferOutput> =>
+}): Utxo<TransferOutput> =>
   new Utxo(
     new avaxSerial.UTXOID(Id.fromString(utxoId), new Int(0)),
     Id.fromString(assetId),

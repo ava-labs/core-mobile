@@ -173,8 +173,8 @@ const getExportFeeFromDummyTx = async ({
   feeState?: pvm.FeeState
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled()) {
-    const unsignedTxP = await WalletService.createDummyExportPTx({
-      amountInNAvax: amountInNAvax.toSubUnit(),
+    const unsignedTxP = await WalletService.createExportPTx({
+      amountInNAvax: amountInNAvax.div(2n).toSubUnit(),
       accountIndex: activeAccount.index,
       avaxXPNetwork,
       destinationAddress: activeAccount.addressPVM,
@@ -186,6 +186,7 @@ const getExportFeeFromDummyTx = async ({
       provider,
       activeAccount.addressPVM
     )
+
     return new TokenUnit(
       tx.txFee,
       avaxXPNetwork.networkToken.decimals,

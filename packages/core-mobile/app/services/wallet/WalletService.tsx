@@ -404,6 +404,7 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
+
     const unsignedTx = readOnlySigner.exportP({
       amount: amountInNAvax,
       utxoSet,
@@ -698,50 +699,16 @@ class WalletService {
       ? TESTNET_AVAX_ASSET_ID
       : MAINNET_AVAX_ASSET_ID
 
-    const utxos = getTransferOutputUtxos(
-      stakingAmount,
+    const utxos = getTransferOutputUtxos({
+      amt: stakingAmount,
       assetId,
-      destinationAddress ?? '',
-      DUMMY_UTXO_ID
-    )
+      address: destinationAddress ?? '',
+      utxoId: DUMMY_UTXO_ID
+    })
     const utxoSet = new utils.UtxoSet([utxos])
     return readOnlySigner.importP({
       utxoSet,
       sourceChain,
-      toAddress: destinationAddress,
-      feeState
-    })
-  }
-
-  public async createDummyExportPTx({
-    amountInNAvax,
-    accountIndex,
-    avaxXPNetwork,
-    destinationChain,
-    destinationAddress,
-    feeState
-  }: CreateExportPTxParams): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      accountIndex,
-      avaxXPNetwork
-    )
-    const provider = await NetworkService.getAvalancheProviderXP(
-      !!avaxXPNetwork.isTestnet,
-      isDevnet(avaxXPNetwork)
-    )
-    const assetId = provider.getAvaxID()
-    // simply setting the utxo amount to be twice more to guarrantee the tx is constructed successfully and return the txFee.
-    const utxos = getTransferOutputUtxos(
-      amountInNAvax * 2n,
-      assetId,
-      destinationAddress ?? '',
-      DUMMY_UTXO_ID
-    )
-    const utxoSet = new utils.UtxoSet([utxos])
-    return readOnlySigner.exportP({
-      amount: amountInNAvax,
-      utxoSet,
-      destination: destinationChain,
       toAddress: destinationAddress,
       feeState
     })
