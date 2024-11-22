@@ -61,11 +61,14 @@ const registerSeedlessErrorHandler = async (
     //
     // if status is 403 and error matches one of the "invalid session" error codes
     // or when "signerSessionRefresh" fails (errors returned by the authorizer lambda are not forwarded to the client)
+    // or when e.errorCode is undefined, it means that the error came from the authorizer, which is currently the only place cubist cannot set errorCode
     // we will prompt user to re-authenticate
     if (
       walletType === WalletType.SEEDLESS &&
       e.status === 403 &&
-      (e.isSessionExpiredError() || e.operation === 'signerSessionRefresh')
+      (e.isSessionExpiredError() ||
+        e.operation === 'signerSessionRefresh' ||
+        e.errorCode === undefined)
     ) {
       dispatch(onTokenExpired)
     }
