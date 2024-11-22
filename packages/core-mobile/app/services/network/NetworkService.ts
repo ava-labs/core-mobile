@@ -4,6 +4,7 @@ import {
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
+  AVALANCHE_P_DEV_NETWORK,
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
   ChainId,
@@ -44,10 +45,11 @@ class NetworkService {
       ...deBankNetworks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-      [ChainId.AVALANCHE_P]: this.getAvalancheNetworkP(false),
-      [ChainId.AVALANCHE_TEST_P]: this.getAvalancheNetworkP(true),
-      [ChainId.AVALANCHE_X]: this.getAvalancheNetworkX(false),
-      [ChainId.AVALANCHE_TEST_X]: this.getAvalancheNetworkX(true)
+      [ChainId.AVALANCHE_P]: NETWORK_P,
+      [ChainId.AVALANCHE_TEST_P]: NETWORK_P_TEST,
+      [ChainId.AVALANCHE_X]: NETWORK_X,
+      [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST,
+      [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
     }
   }
 
@@ -107,8 +109,12 @@ class NetworkService {
   /**
    * Returns the network object for Avalanche P Chain
    */
-  getAvalancheNetworkP(isDeveloperMode: boolean): Network {
-    return isDeveloperMode ? NETWORK_P_TEST : NETWORK_P
+  getAvalancheNetworkP(isDeveloperMode: boolean, isDevnet: boolean): Network {
+    return isDevnet
+      ? AVALANCHE_P_DEV_NETWORK
+      : isDeveloperMode
+      ? NETWORK_P_TEST
+      : NETWORK_P
   }
 
   /**
@@ -118,14 +124,19 @@ class NetworkService {
     return isDeveloperMode ? NETWORK_X_TEST : NETWORK_X
   }
 
+  getAvalancheNetworkPDevnet(): Network {
+    return AVALANCHE_P_DEV_NETWORK
+  }
+
   /**
    * Returns the provider used by Avalanche X/P/CoreEth chains.
    * Using either X or P Network will result in same provider.
    */
   async getAvalancheProviderXP(
-    isDeveloperMode: boolean
+    isDeveloperMode: boolean,
+    isDevnet: boolean
   ): Promise<Avalanche.JsonRpcProvider> {
-    const network = this.getAvalancheNetworkP(isDeveloperMode)
+    const network = this.getAvalancheNetworkP(isDeveloperMode, isDevnet)
     return ModuleManager.avalancheModule.getProvider(network)
   }
 

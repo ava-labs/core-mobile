@@ -80,7 +80,7 @@ const SelectNode = (): JSX.Element => {
     )
 
   if (
-    (error || useAdvancedSearchNodesError || validators.length === 0) &&
+    (error || useAdvancedSearchNodesError || validators?.length === 0) &&
     searchText.length === 0
   ) {
     return <NoMatchFound />

@@ -3,7 +3,7 @@ import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -14,27 +14,32 @@ export type ExportPParams = {
   requiredAmount: TokenUnit
   activeAccount: Account
   isDevMode: boolean
+  isDevnet: boolean
+  feeState?: pvm.FeeState
 }
 
 export async function exportP({
   pChainBalance,
   requiredAmount,
   activeAccount,
-  isDevMode
+  isDevMode,
+  isDevnet,
+  feeState
 }: ExportPParams): Promise<void> {
   Logger.info('exporting P started')
 
   if (pChainBalance.lt(requiredAmount)) {
     throw Error('Not enough balance on P chain')
   }
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
 
   const unsignedTx = await WalletService.createExportPTx({
     amountInNAvax: requiredAmount.toSubUnit(),
     accountIndex: activeAccount.index,
     avaxXPNetwork,
     destinationChain: 'C',
-    destinationAddress: activeAccount.addressCoreEth
+    destinationAddress: activeAccount.addressCoreEth,
+    feeState
   })
 
   const signedTxJson = await WalletService.sign({
@@ -50,7 +55,10 @@ export async function exportP({
   })
   Logger.trace('txID', txID)
 
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(
+    isDevMode,
+    isDevnet
+  )
 
   try {
     await retry({

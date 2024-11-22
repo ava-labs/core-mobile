@@ -115,15 +115,26 @@ const hasMinimumStakingTime = (
  * @param delegatorWeight weight of deligator (delegator stake) in nAvax
  * @returns the available delegation weight in nAvax
  */
-export const getAvailableDelegationWeight = (
-  isDeveloperMode: boolean,
-  validatorWeight: TokenUnit,
+export const getAvailableDelegationWeight = ({
+  isDeveloperMode,
+  isDevnet,
+  validatorWeight,
+  delegatorWeight
+}: {
+  isDeveloperMode: boolean
+  isDevnet: boolean
+  validatorWeight: TokenUnit
   delegatorWeight: TokenUnit
-): TokenUnit => {
+}): TokenUnit => {
   const nAvax = getStakingConfig(isDeveloperMode).MaxValidatorStake
   const maxValidatorStake = new TokenUnit(nAvax, 9, 'AVAX')
   const maxWeight = calculateMaxWeight(maxValidatorStake, validatorWeight)
 
+  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
+  // this is needed for devent to work
+  if (maxWeight.lt(validatorWeight) && isDevnet) {
+    return maxWeight.sub(delegatorWeight)
+  }
   return maxWeight.sub(validatorWeight).sub(delegatorWeight)
 }
 
@@ -136,6 +147,7 @@ type getFilteredValidatorsProps = {
   maxFee?: number
   searchText?: string
   isEndTimeOverOneYear?: boolean
+  isDevnet: boolean
 }
 /**
  *
@@ -161,7 +173,8 @@ export const getFilteredValidators = ({
   minUpTime = 0,
   maxFee,
   searchText,
-  isEndTimeOverOneYear = false
+  isEndTimeOverOneYear = false,
+  isDevnet = false
 }: getFilteredValidatorsProps): NodeValidators => {
   const lowerCasedSearchText = searchText?.toLocaleLowerCase()
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
@@ -177,11 +190,12 @@ export const getFilteredValidators = ({
       connected,
       startTime
     }) => {
-      const availableDelegationWeight = getAvailableDelegationWeight(
+      const availableDelegationWeight = getAvailableDelegationWeight({
+        isDevnet,
         isDeveloperMode,
-        new TokenUnit(weight, 9, 'AVAX'),
-        new TokenUnit(delegatorWeight, 9, 'AVAX')
-      )
+        validatorWeight: new TokenUnit(weight, 9, 'AVAX'),
+        delegatorWeight: new TokenUnit(delegatorWeight, 9, 'AVAX')
+      })
       const filterByMinimumStakingTime = (): boolean => {
         if (isEndTimeOverOneYear) {
           // if chosen duration is over one year,

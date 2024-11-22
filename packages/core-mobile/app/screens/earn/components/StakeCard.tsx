@@ -24,6 +24,8 @@ import { xpChainToken } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -59,8 +61,9 @@ export const StakeCard = (props: Props): JSX.Element => {
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const isDevMode = useSelector(selectIsDeveloperMode)
+  const activeNetwork = useSelector(selectActiveNetwork)
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDevMode)
+    NetworkService.getAvalancheNetworkP(isDevMode, isDevnet(activeNetwork))
 
   const cardHighLightColor = getCardHighLightColor(theme)
 
