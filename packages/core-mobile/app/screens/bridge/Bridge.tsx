@@ -90,7 +90,8 @@ const Bridge: FC = () => {
     bridgeAssets,
     selectedBridgeAsset,
     setSelectedBridgeAsset,
-    error
+    error,
+    estimatedReceiveAmount
   } = useBridge()
 
   const activeAccount = useSelector(selectActiveAccount)
@@ -118,13 +119,10 @@ const Bridge: FC = () => {
 
   const hasValidAmount = !isAmountTooLow && amount > 0n
 
-  const receiveAmount = useMemo(
-    () => (bridgeFee !== undefined ? amount - bridgeFee : undefined),
-    [amount, bridgeFee]
-  )
-
   const hasInvalidReceiveAmount =
-    hasValidAmount && receiveAmount !== undefined && receiveAmount === 0n
+    hasValidAmount &&
+    estimatedReceiveAmount !== undefined &&
+    estimatedReceiveAmount === 0n
 
   const formattedAmountCurrency =
     hasValidAmount && price && selectedBridgeAsset
@@ -136,16 +134,18 @@ const Bridge: FC = () => {
       : UNKNOWN_AMOUNT
 
   const formattedReceiveAmount =
-    hasValidAmount && receiveAmount && selectedBridgeAsset
+    hasValidAmount && estimatedReceiveAmount && selectedBridgeAsset
       ? bigToLocaleString(
-          bigintToBig(receiveAmount, selectedBridgeAsset.decimals)
+          bigintToBig(estimatedReceiveAmount, selectedBridgeAsset.decimals)
         )
       : UNKNOWN_AMOUNT
   const formattedReceiveAmountCurrency =
-    hasValidAmount && price && receiveAmount && selectedBridgeAsset
+    hasValidAmount && price && estimatedReceiveAmount && selectedBridgeAsset
       ? currencyFormatter(
           price
-            .mul(bigintToBig(receiveAmount, selectedBridgeAsset.decimals))
+            .mul(
+              bigintToBig(estimatedReceiveAmount, selectedBridgeAsset.decimals)
+            )
             .toNumber()
         )
       : UNKNOWN_AMOUNT
