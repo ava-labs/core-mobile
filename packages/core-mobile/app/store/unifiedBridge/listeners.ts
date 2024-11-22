@@ -22,7 +22,7 @@ import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { FeatureGates } from 'services/posthog/types'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
+import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { TransactionParams } from '@avalabs/evm-module'
 import {
   removePendingTransfer,

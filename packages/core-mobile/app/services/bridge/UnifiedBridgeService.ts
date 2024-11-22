@@ -18,9 +18,9 @@ import {
 import { Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
 import { lowerCaseKeys } from 'utils/lowerCaseKeys'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -205,7 +205,7 @@ export class UnifiedBridgeService {
 
   private async buildChain(network: Network): Promise<Chain> {
     return {
-      chainId: addNamespaceToChain(network.chainId),
+      chainId: getCaip2ChainId(network.chainId),
       chainName: network.chainName,
       rpcUrl: network.rpcUrl,
       networkToken: {

@@ -3,7 +3,7 @@ import { BridgeAsset, ChainAssetMap } from '@avalabs/bridge-unified'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import Logger from 'utils/Logger'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { addNamespaceToChain } from 'services/walletconnectv2/utils'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 export const useBridgeAssets = (): {
   chainAssetMap: ChainAssetMap
@@ -17,7 +17,7 @@ export const useBridgeAssets = (): {
     UnifiedBridgeService.getAssets()
       .then(allAssets => {
         setChainAssetMap(allAssets)
-        const caipChainId = addNamespaceToChain(activeNetwork.chainId)
+        const caipChainId = getCaip2ChainId(activeNetwork.chainId)
 
         setBridgeAssets(allAssets[caipChainId] ?? [])
       })
