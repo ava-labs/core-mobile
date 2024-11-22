@@ -108,7 +108,7 @@ const Bridge: FC = () => {
 
   const { currencyFormatter } = useApplicationContext().appHook
   const isAmountTooLow = amount !== 0n && minimum && amount < minimum
-  const isAmountTooLarge = false //amount !== 0n && maximum && amount > maximum
+  const isAmountTooLarge = amount !== 0n && maximum && amount > maximum
   const isNativeBalanceNotEnoughForNetworkFee = Boolean(
     amount !== 0n &&
       networkFee &&
