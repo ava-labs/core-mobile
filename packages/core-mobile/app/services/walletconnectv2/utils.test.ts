@@ -4,7 +4,8 @@ import {
   AvalancheCaip2ChainId,
   BitcoinCaip2ChainId
 } from '@avalabs/core-chains-sdk'
-import { addNamespaceToChain, getAddressWithCaip2ChainId } from './utils'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { getAddressWithCaip2ChainId } from './utils'
 
 // Mock data
 const mockAccount: CorePrimaryAccount = {
@@ -23,10 +24,10 @@ const mockAccount: CorePrimaryAccount = {
   addressCoreEth: 'CoreEthAddress'
 }
 
-describe('addNamespaceToChain', () => {
+describe('getCaip2ChainId', () => {
   it('should add eip155 namespace to a chainId', () => {
     const chainId = 1
-    const result = addNamespaceToChain(chainId)
+    const result = getCaip2ChainId(chainId)
     expect(result).toBe('eip155:1')
   })
 })

@@ -1,6 +1,6 @@
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
 import { useMemo } from 'react'
-import { getEvmCaip2ChainId } from 'temp/caip2ChainIds'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 export const useBridgeType = (
   bridgeAsset: BridgeAsset | undefined,
@@ -11,6 +11,6 @@ export const useBridgeType = (
       return undefined
     }
 
-    return bridgeAsset.destinations[getEvmCaip2ChainId(targetChainId)]?.[0]
+    return bridgeAsset.destinations[getCaip2ChainId(targetChainId)]?.[0]
   }, [bridgeAsset, targetChainId])
 }

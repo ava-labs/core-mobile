@@ -3,7 +3,7 @@ import { resolve } from '@avalabs/core-utils-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { BitcoinSendTransactionParams } from '@avalabs/bitcoin-module'
-import { getBitcoinCaip2ChainId } from 'temp/caip2ChainIds'
+import { getBitcoinCaip2ChainId } from 'utils/caip2ChainIds'
 
 export const send = async ({
   request,
