@@ -6,15 +6,15 @@ export const useGetFeeState = (): {
   defaultFeeState: pvm.FeeState | undefined
   getFeeState: (gasPrice?: bigint) => pvm.FeeState | undefined
 } => {
-  const { data: defaultFeeState } = useDefaultFeeState()
+  const { data: defaultFeeState, error } = useDefaultFeeState()
 
   const getFeeState = useCallback(
     (gasPrice?: bigint) => {
-      return defaultFeeState
+      return defaultFeeState && !error
         ? { ...defaultFeeState, price: gasPrice ?? defaultFeeState.price }
         : undefined
     },
-    [defaultFeeState]
+    [defaultFeeState, error]
   )
 
   return { getFeeState, defaultFeeState }

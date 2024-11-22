@@ -1,27 +1,31 @@
 import { pvm } from '@avalabs/avalanchejs'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
+import NetworkService from 'services/network/NetworkService'
+import { selectActiveNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isDevnet } from 'utils/isDevnet'
 
 export const useDefaultFeeState = (): UseQueryResult<
   pvm.FeeState | undefined,
   Error
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
+  const network = useSelector(selectActiveNetwork)
+  const devnet = isDevnet(network)
 
   return useQuery({
     retry: false,
-    queryKey: ['defaultFeeState', isDeveloperMode, avaxProvider],
+    queryKey: ['defaultFeeState', isDeveloperMode, devnet],
     queryFn: async () => {
-      if (!avaxProvider) {
-        return Promise.reject('avaxProvider is not available')
+      const provider = await NetworkService.getAvalancheProviderXP(
+        isDeveloperMode,
+        devnet
+      )
+      if (provider.isEtnaEnabled()) {
+        return provider.getApiP().getFeeState()
       }
-      return avaxProvider
-        .getApiP()
-        .getFeeState()
-        .catch(() => undefined)
+      return undefined
     }
   })
 }
