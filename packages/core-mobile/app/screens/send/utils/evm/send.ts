@@ -1,6 +1,6 @@
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
-import { getEvmCaip2ChainId } from 'temp/caip2ChainIds'
+import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { Transaction } from '@sentry/react'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 import { RpcMethod, TokenWithBalanceEVM } from '@avalabs/vm-module-types'

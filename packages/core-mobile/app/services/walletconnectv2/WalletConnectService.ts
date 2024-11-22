@@ -14,13 +14,13 @@ import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import { CorePrimaryAccount } from '@avalabs/types'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import {
   CLIENT_METADATA,
   WalletConnectCallbacks,
   WalletConnectServiceInterface
 } from './types'
 import {
-  addNamespaceToChain,
   getAddressWithCaip2ChainId,
   updateAccountListInNamespace,
   updateChainListInNamespace
@@ -205,7 +205,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
     account: CorePrimaryAccount
   }): Promise<void> => {
     const topic = session.topic
-    const caip2ChainId = addNamespaceToChain(chainId)
+    const caip2ChainId = getCaip2ChainId(chainId)
 
     const blockchainNamespace = caip2ChainId.split(':')[0]
 
