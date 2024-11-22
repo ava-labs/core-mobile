@@ -32,7 +32,7 @@ export function useBlockchainNames(
     }
   }
 
-  if (!tx.bridgeAnalysis.isBridgeTx) {
+  if (!tx.bridgeAnalysis?.isBridgeTx) {
     return {
       sourceBlockchain: undefined,
       targetBlockchain: undefined
