@@ -19,6 +19,8 @@ import {
   useBridgeSourceNetworks,
   useBridgeTargetNetworks
 } from './useBridgeNetworks'
+import useMaxTransferAmount from './useMaxTransferAmount'
+import { useEstimatedReceiveAmount } from './useEstimatedReceiveAmount'
 
 interface Bridge {
   assetBalance?: AssetBalance
@@ -51,6 +53,7 @@ interface Bridge {
   setInputAmount: (amount: bigint | undefined) => void
   amount: bigint
   price: Big | undefined
+  estimatedReceiveAmount: bigint | undefined
 }
 
 export default function useBridge(): Bridge {
@@ -90,8 +93,15 @@ export default function useBridge(): Bridge {
     bridgeType
   })
 
+  const maximum = useMaxTransferAmount({
+    assetsWithBalances,
+    selectedBridgeAsset,
+    networkFeeRate,
+    sourceNetwork,
+    targetNetwork
+  })
+
   const { getBridgeFee, getEstimatedGas } = useGetBridgeFees({
-    amount,
     bridgeAsset: selectedBridgeAsset,
     sourceNetwork,
     targetNetwork
@@ -104,8 +114,15 @@ export default function useBridge(): Bridge {
     targetNetwork
   })
 
+  const estimatedReceiveAmount = useEstimatedReceiveAmount({
+    amount,
+    bridgeAsset: selectedBridgeAsset,
+    sourceNetwork,
+    targetNetwork
+  })
+
   useEffect(() => {
-    getEstimatedGas()
+    getEstimatedGas(amount)
       .then(estimatedGas => {
         if (estimatedGas) {
           setGasLimit(estimatedGas)
@@ -114,10 +131,10 @@ export default function useBridge(): Bridge {
       .catch(e => {
         Logger.error('Failed to get estimated gas', e)
       })
-  }, [getEstimatedGas])
+  }, [getEstimatedGas, amount])
 
   useEffect(() => {
-    getBridgeFee()
+    getBridgeFee(amount)
       .then(fee => {
         if (fee !== undefined) {
           setBridgeFee(fee)
@@ -187,7 +204,7 @@ export default function useBridge(): Bridge {
     assetBalance,
     assetsWithBalances,
     bridgeFee,
-    maximum: assetBalance?.balance,
+    maximum,
     minimum,
     transfer,
     sourceNetworks,
@@ -205,6 +222,7 @@ export default function useBridge(): Bridge {
     setInputAmount,
     amount,
     networkFee,
-    price
+    price,
+    estimatedReceiveAmount
   }
 }

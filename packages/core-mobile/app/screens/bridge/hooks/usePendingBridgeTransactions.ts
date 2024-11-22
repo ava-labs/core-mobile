@@ -7,8 +7,8 @@ import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { selectBridgeTransactions } from 'store/bridge'
 import { selectPendingTransfers } from 'store/unifiedBridge/slice'
-import { caipToChainId } from 'utils/data/caip'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 
 const usePendingLegacyBridgeTransactions = (
   network?: Network
@@ -49,8 +49,8 @@ const usePendingUnifiedBridgeTransactions = (
       ...Object.values(pendingTransfer).filter(
         tx =>
           // filter pending transactions that don't belong to the given network
-          network?.chainId === caipToChainId(tx.sourceChain.chainId) ||
-          network?.chainId === caipToChainId(tx.targetChain.chainId)
+          network?.chainId === getChainIdFromCaip2(tx.sourceChain.chainId) ||
+          network?.chainId === getChainIdFromCaip2(tx.targetChain.chainId)
       )
     ]
   }, [pendingTransfer, network?.chainId])
