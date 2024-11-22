@@ -54,7 +54,12 @@ describe('getAvailableDelegationWeight', () => {
       )
 
       expect(
-        getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
+        getAvailableDelegationWeight({
+          isDevnet: false,
+          isDeveloperMode: true,
+          validatorWeight,
+          delegatorWeight
+        })
       ).toStrictEqual(expectedAvailableDelegationWeight)
     })
 
@@ -69,7 +74,12 @@ describe('getAvailableDelegationWeight', () => {
       )
 
       expect(
-        getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
+        getAvailableDelegationWeight({
+          isDevnet: false,
+          isDeveloperMode: true,
+          validatorWeight,
+          delegatorWeight
+        })
       ).toStrictEqual(expectedAvailableDelegationWeight)
     })
   })
@@ -86,7 +96,12 @@ describe('getAvailableDelegationWeight', () => {
       )
 
       expect(
-        getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
+        getAvailableDelegationWeight({
+          isDevnet: false,
+          isDeveloperMode: true,
+          validatorWeight,
+          delegatorWeight
+        })
       ).toStrictEqual(expectedAvailableDelegationWeight)
     })
 
@@ -101,7 +116,12 @@ describe('getAvailableDelegationWeight', () => {
       )
 
       expect(
-        getAvailableDelegationWeight(true, validatorWeight, delegatorWeight)
+        getAvailableDelegationWeight({
+          isDevnet: false,
+          isDeveloperMode: true,
+          validatorWeight,
+          delegatorWeight
+        })
       ).toStrictEqual(expectedAvailableDelegationWeight)
     })
   })
@@ -114,7 +134,8 @@ describe('getFilteredValidators function', () => {
       stakingAmount: new TokenUnit(1_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
-      minUpTime: 99.9999
+      minUpTime: 99.9999,
+      isDevnet: false
     })
     expect(result.length).toBe(0)
   })
@@ -124,7 +145,8 @@ describe('getFilteredValidators function', () => {
       stakingAmount: new TokenUnit(1_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
-      minUpTime: 99.9999
+      minUpTime: 99.9999,
+      isDevnet: false
     })
 
     expect(result.length).toBe(5)
@@ -135,7 +157,8 @@ describe('getFilteredValidators function', () => {
       validators: mockValidators.validators as unknown as NodeValidators,
       stakingAmount: new TokenUnit(1_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
-      stakingEndTime: new Date('2122-07-05T16:57:10.140Z')
+      stakingEndTime: new Date('2122-07-05T16:57:10.140Z'),
+      isDevnet: false
     })
     expect(result.length).toBe(1)
   })
@@ -145,7 +168,8 @@ describe('getFilteredValidators function', () => {
       validators: mockValidators.validators as unknown as NodeValidators,
       stakingAmount: new TokenUnit(150_000_000_000, 9, 'AVAX'),
       isDeveloperMode: true,
-      stakingEndTime: new Date('2023-08-01T16:57:10.140Z')
+      stakingEndTime: new Date('2023-08-01T16:57:10.140Z'),
+      isDevnet: false
     })
     expect(result.length).toBe(25)
   })

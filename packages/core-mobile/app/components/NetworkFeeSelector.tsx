@@ -59,13 +59,17 @@ const NetworkFeeSelector = ({
   gasLimit,
   onFeesChange,
   isGasLimitEditable = true,
-  noGasLimitError
+  noGasLimitError,
+  supportsAvalancheDynamicFee = false,
+  showOnlyFeeSelection = false
 }: {
   chainId?: number
   gasLimit: number
   onFeesChange?(fees: Eip1559Fees, feePreset: FeePreset): void
   isGasLimitEditable?: boolean
   noGasLimitError?: string
+  supportsAvalancheDynamicFee?: boolean
+  showOnlyFeeSelection?: boolean
 }): JSX.Element => {
   const {
     appHook: { currencyFormatter }
@@ -84,6 +88,7 @@ const NetworkFeeSelector = ({
   )
 
   const isBtcNetwork = network ? isBitcoinNetwork(network) : false
+  const isBaseUnitRate = isBtcNetwork || supportsAvalancheDynamicFee
   const isPVM = isPvmNetwork(network)
   const isAVM = isAvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
@@ -105,11 +110,21 @@ const NetworkFeeSelector = ({
         maxFeePerGas: fee.low.maxFeePerGas,
         maxPriorityFeePerGas: fee.low.maxPriorityFeePerGas ?? 0n,
         tokenPrice: nativeTokenPrice,
-        gasLimit: isPVM || isAVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit,
+        gasLimit:
+          (isPVM && !supportsAvalancheDynamicFee) || isAVM
+            ? GAS_LIMIT_FOR_XP_CHAIN
+            : gasLimit,
         networkToken
       })
     },
-    [nativeTokenPrice, isPVM, isAVM, gasLimit, networkToken]
+    [
+      nativeTokenPrice,
+      isPVM,
+      supportsAvalancheDynamicFee,
+      isAVM,
+      gasLimit,
+      networkToken
+    ]
   )
 
   // customFees init value.
@@ -166,19 +181,19 @@ const NetworkFeeSelector = ({
     return {
       [FeePreset.Normal]: bigIntToFeeDenomination(
         networkFee.low.maxFeePerGas,
-        isBtcNetwork
+        isBaseUnitRate
       ),
       [FeePreset.Fast]: bigIntToFeeDenomination(
         networkFee.medium.maxFeePerGas,
-        isBtcNetwork
+        isBaseUnitRate
       ),
       [FeePreset.Instant]: bigIntToFeeDenomination(
         networkFee.high.maxFeePerGas,
-        isBtcNetwork
+        isBaseUnitRate
       ),
-      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isBtcNetwork)
+      [FeePreset.Custom]: bigIntToFeeDenomination(customFee, isBaseUnitRate)
     }
-  }, [customFees?.maxFeePerGas, isBtcNetwork, networkFee])
+  }, [customFees?.maxFeePerGas, networkFee, isBaseUnitRate])
 
   const goToEditGasLimit = (n?: Network): void => {
     if (networkFee === undefined || n === undefined) return
@@ -193,38 +208,44 @@ const NetworkFeeSelector = ({
         0n,
       gasLimit,
       isGasLimitEditable,
-      isBtcNetwork,
+      isBaseUnitRate,
       noGasLimitError
     })
   }
 
   return (
     <>
-      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        {isBtcNetwork || isPVM || isAVM ? (
-          <View sx={{ paddingVertical: 12 }}>
-            <Text variant="body2" sx={{ color: '$neutral50' }}>
-              Network Fee
-            </Text>
-          </View>
-        ) : (
-          <Tooltip
-            content={
-              'Core estimates the maximum gas (maxFeePerGas) a transaction could consume based on network conditions. This transaction will likely consume less gas than estimated.'
-            }
-            position={'right'}
-            style={{ width: 200 }}>
-            <Text variant="buttonMedium">Maximum Network Fee</Text>
-          </Tooltip>
-        )}
-        {!isPVM && !isAVM && (
-          <TouchableOpacity
-            sx={{ marginTop: 8 }}
-            onPress={() => goToEditGasLimit(network)}>
-            <Settings />
-          </TouchableOpacity>
-        )}
-      </Row>
+      {!showOnlyFeeSelection && (
+        <>
+          <Row
+            style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            {isBtcNetwork || isPVM || isAVM ? (
+              <View sx={{ paddingVertical: 12 }}>
+                <Text variant="body2" sx={{ color: '$neutral50' }}>
+                  Network Fee
+                </Text>
+              </View>
+            ) : (
+              <Tooltip
+                content={
+                  'Core estimates the maximum gas (maxFeePerGas) a transaction could consume based on network conditions. This transaction will likely consume less gas than estimated.'
+                }
+                position={'right'}
+                style={{ width: 200 }}>
+                <Text variant="buttonMedium">Maximum Network Fee</Text>
+              </Tooltip>
+            )}
+            {(!isPVM && supportsAvalancheDynamicFee) ||
+              (!isAVM && (
+                <TouchableOpacity
+                  sx={{ marginTop: 8 }}
+                  onPress={() => goToEditGasLimit(network)}>
+                  <Settings />
+                </TouchableOpacity>
+              ))}
+          </Row>
+        </>
+      )}
       <Space y={4} />
 
       <View
@@ -232,7 +253,7 @@ const NetworkFeeSelector = ({
           backgroundColor: '$neutral900',
           padding: 16,
           borderRadius: 8,
-          marginBottom: 16
+          marginBottom: showOnlyFeeSelection ? 0 : 16
         }}>
         {!networkFee?.isFixedFee && (
           <>
@@ -275,29 +296,36 @@ const NetworkFeeSelector = ({
                 testID="custom_base_fee"
               />
             </Row>
-            <Space y={20} />
+            {!showOnlyFeeSelection && <Space y={20} />}
           </>
         )}
-        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text variant="body2" sx={{ color: '$neutral400' }}>
-            Fee Amount
-          </Text>
-          <View sx={{ flexDirection: 'row' }}>
-            <Text testID="token_gas_fee" sx={{ color: '$neutral50' }}>
-              {`${calculatedMaxTotalFeeDisplayed} `}
-            </Text>
-            <Text variant="body1" sx={{ color: '$neutral400' }}>
-              {network?.networkToken?.symbol}
-            </Text>
-          </View>
-        </Row>
-        <Row style={{ justifyContent: 'flex-end' }}>
-          <Text variant="caption" sx={{ color: '$neutral400', lineHeight: 15 }}>
-            {calculatedFees?.maxTotalFeeInCurrency
-              ? currencyFormatter(calculatedFees.maxTotalFeeInCurrency)
-              : UNKNOWN_AMOUNT + ' ' + selectedCurrency}
-          </Text>
-        </Row>
+        {!showOnlyFeeSelection && (
+          <>
+            <Row
+              style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text variant="body2" sx={{ color: '$neutral400' }}>
+                Fee Amount
+              </Text>
+              <View sx={{ flexDirection: 'row' }}>
+                <Text testID="token_gas_fee" sx={{ color: '$neutral50' }}>
+                  {`${calculatedMaxTotalFeeDisplayed} `}
+                </Text>
+                <Text variant="body1" sx={{ color: '$neutral400' }}>
+                  {network?.networkToken?.symbol}
+                </Text>
+              </View>
+            </Row>
+            <Row style={{ justifyContent: 'flex-end' }}>
+              <Text
+                variant="caption"
+                sx={{ color: '$neutral400', lineHeight: 15 }}>
+                {calculatedFees?.maxTotalFeeInCurrency
+                  ? currencyFormatter(calculatedFees.maxTotalFeeInCurrency)
+                  : UNKNOWN_AMOUNT + ' ' + selectedCurrency}
+              </Text>
+            </Row>
+          </>
+        )}
       </View>
     </>
   )
