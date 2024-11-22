@@ -37,7 +37,6 @@ export const useImportAnyStuckFunds = (
       'ImportAnyStuckFunds',
       activeAccount,
       isDevMode,
-      activeNetwork,
       defaultFeeState,
       devnet
     ],

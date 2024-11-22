@@ -122,8 +122,6 @@ const usePVMSend: SendAdapterPVM = ({
   )
 
   const validate = useCallback(async () => {
-    if (!provider) return
-
     try {
       validatePVMSend({
         amount: amount?.bn ?? 0n,
@@ -139,7 +137,6 @@ const usePVMSend: SendAdapterPVM = ({
       handleError(err)
     }
   }, [
-    provider,
     setError,
     maxFee,
     amount?.bn,

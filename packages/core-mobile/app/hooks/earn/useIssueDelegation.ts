@@ -111,13 +111,15 @@ export const useIssueDelegation = (
         return Promise.reject('invalid balance type.')
       }
 
-      const claimableBalance = new TokenUnit(
-        pChainBalance.balancePerType.unlockedUnstaked || 0,
-        pChainNetworkToken.decimals,
-        pChainNetworkToken.symbol
-      )
+      const claimableBalance = pChainBalance.balancePerType.unlockedUnstaked
+        ? new TokenUnit(
+            pChainBalance.balancePerType.unlockedUnstaked,
+            pChainNetworkToken.decimals,
+            pChainNetworkToken.symbol
+          )
+        : undefined
 
-      Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
+      Logger.trace('getPChainBalance: ', claimableBalance?.toDisplay())
       const cChainRequiredAmountAvax = calculateAmountForCrossChainTransfer(
         data.stakingAmount.add(data.requiredPFee ?? 0),
         claimableBalance

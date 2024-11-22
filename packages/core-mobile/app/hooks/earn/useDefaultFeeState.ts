@@ -6,6 +6,8 @@ import { selectActiveNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isDevnet } from 'utils/isDevnet'
 
+const REFETCH_INTERVAL = 1000 * 60 * 2 // 2 minutes
+
 export const useDefaultFeeState = (): UseQueryResult<
   pvm.FeeState | undefined,
   Error
@@ -16,6 +18,7 @@ export const useDefaultFeeState = (): UseQueryResult<
 
   return useQuery({
     retry: false,
+    refetchInterval: REFETCH_INTERVAL,
     queryKey: ['defaultFeeState', isDeveloperMode, devnet],
     queryFn: async () => {
       const provider = await NetworkService.getAvalancheProviderXP(

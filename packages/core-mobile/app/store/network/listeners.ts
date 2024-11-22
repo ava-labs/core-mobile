@@ -9,12 +9,7 @@ import {
 } from 'store/settings/advanced'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { isDevnet } from 'utils/isDevnet'
-import {
-  selectActiveNetwork,
-  selectCustomNetworks,
-  selectFavorites
-} from './slice'
+import { selectCustomNetworks, selectFavorites } from './slice'
 
 const adjustActiveNetwork = (
   _: AnyAction,
@@ -22,12 +17,9 @@ const adjustActiveNetwork = (
 ): void => {
   const { dispatch, getState } = listenerApi
   const state = getState()
-  const activeNetwork = selectActiveNetwork(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
 
-  const chainId = isDevnet(activeNetwork)
-    ? ChainId.AVALANCHE_DEVNET_ID
-    : isDeveloperMode
+  const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
 
