@@ -59,8 +59,8 @@ const useBTCSend: SendAdapterBTC = ({
   }, [nativeToken, maxFee, provider])
 
   const maxAmountValue = useMemo(() => {
-    if (toAddress === undefined) {
-      return undefined
+    if (!toAddress) {
+      return
     }
 
     return BigInt(
