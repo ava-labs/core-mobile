@@ -1,5 +1,4 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
 import {
   NetworkTokenWithBalance,
   TokenWithBalanceAVM,
@@ -61,7 +60,6 @@ type SendAdapter<CustomOptions = unknown, Token = NetworkTokenWithBalance> = (
   options: CommonAdapterOptions<Token> & CustomOptions
 ) => {
   send(): Promise<string>
-  provider?: Avalanche.JsonRpcProvider
   estimatedFee?: bigint
   setGasPrice?: Dispatch<bigint>
 }

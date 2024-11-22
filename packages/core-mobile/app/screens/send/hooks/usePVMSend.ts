@@ -7,11 +7,11 @@ import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { bigIntToString } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import NetworkService from 'services/network/NetworkService'
-import { isDevnet } from 'utils/isDevnet'
-import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
+import { UnsignedTx } from '@avalabs/avalanchejs'
 import WalletService from 'services/wallet/WalletService'
 import { stripChainAddress } from 'store/account/utils'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
+import { useGetFeeState } from 'hooks/earn/useGetFeeState'
 import { SendAdapterPVM, SendErrorMessage } from '../utils/types'
 import { send as sendPVM } from '../utils/pvm/send'
 import { validate as validatePVMSend } from '../utils/pvm/validate'
@@ -33,77 +33,61 @@ const usePVMSend: SendAdapterPVM = ({
     canValidate
   } = useSendContext()
   const [gasPrice, setGasPrice] = useState<bigint>()
-  const [feeState, setFeeState] = useState<pvm.FeeState>()
-
+  const { getFeeState } = useGetFeeState()
   const [estimatedFee, setEstimatedFee] = useState<bigint>()
 
-  const [provider, setProvider] = useState<Avalanche.JsonRpcProvider>()
-
-  useEffect(() => {
-    const getProvider = async (): Promise<void> => {
-      const p = await NetworkService.getAvalancheProviderXP(
-        !!network.isTestnet,
-        isDevnet(network)
-      )
-      setProvider(p)
-    }
-    getProvider()
-  }, [network])
-
-  useEffect(() => {
-    if (provider && provider.isEtnaEnabled()) {
-      provider
-        .getApiP()
-        .getFeeState()
-        .then(state => {
-          setFeeState(state)
-        })
-        .catch(() => {
-          setError(SendErrorMessage.INVALID_NETWORK_FEE)
-        })
-    } else {
-      setFeeState(undefined)
-    }
-  }, [provider, setError])
-
-  const getFeeState = useCallback(
-    (p?: bigint) => {
-      if (p && feeState) {
-        return {
-          ...feeState,
-          price: p
-        }
-      }
-      if (p === undefined && feeState) {
-        return feeState
-      }
-      return undefined
-    },
-    [feeState]
-  )
+  const provider = useAvalancheXpProvider()
 
   const createSendPTx = useCallback(
-    async (price?: bigint): Promise<UnsignedTx> => {
-      if (!toAddress || !token || !amount) {
-        return Promise.reject('missing required fields')
-      }
+    async (amountInNAvax: bigint, price?: bigint): Promise<UnsignedTx> => {
       const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
       return await WalletService.createSendPTx({
         accountIndex: account.index,
-        amountInNAvax: amount.bn,
+        amountInNAvax,
         avaxXPNetwork: network,
         destinationAddress: destinationAddress,
         sourceAddress: fromAddress,
         feeState: getFeeState(price)
       })
     },
-    [toAddress, token, amount, account.index, network, fromAddress, getFeeState]
+    [toAddress, account.index, network, fromAddress, getFeeState]
   )
 
+  useEffect(() => {
+    const getEstimatedFee = async (): Promise<void> => {
+      if (!toAddress || !token || !amount) {
+        return Promise.reject('missing required fields')
+      }
+      if (provider && provider.isEtnaEnabled()) {
+        const unsignedTx = await createSendPTx(amount.bn, maxFee)
+        const tx = await Avalanche.parseAvalancheTx(
+          unsignedTx,
+          provider,
+          fromAddress
+        )
+        setEstimatedFee(tx.txFee)
+      }
+    }
+    getEstimatedFee().catch(Logger.error)
+  }, [
+    amount,
+    createSendPTx,
+    fromAddress,
+    maxFee,
+    provider,
+    setError,
+    toAddress,
+    token
+  ])
+
   const send = useCallback(async () => {
+    if (!toAddress || !token || !amount) {
+      return Promise.reject('missing required fields')
+    }
+
     try {
       setIsSending(true)
-      const unsignedTx = await createSendPTx(gasPrice)
+      const unsignedTx = await createSendPTx(amount.bn, gasPrice)
 
       return await sendPVM({
         request,
@@ -114,7 +98,17 @@ const usePVMSend: SendAdapterPVM = ({
     } finally {
       setIsSending(false)
     }
-  }, [setIsSending, createSendPTx, gasPrice, request, network, fromAddress])
+  }, [
+    toAddress,
+    token,
+    amount,
+    setIsSending,
+    createSendPTx,
+    gasPrice,
+    request,
+    network,
+    fromAddress
+  ])
 
   const handleError = useCallback(
     (err: unknown): void => {
@@ -129,16 +123,8 @@ const usePVMSend: SendAdapterPVM = ({
 
   const validate = useCallback(async () => {
     if (!provider) return
-    setError(undefined)
 
     try {
-      const unsignedTx = await createSendPTx(maxFee)
-      const tx = await Avalanche.parseAvalancheTx(
-        unsignedTx,
-        provider,
-        fromAddress
-      )
-      setEstimatedFee(tx.txFee)
       validatePVMSend({
         amount: amount?.bn ?? 0n,
         address: toAddress,
@@ -155,9 +141,7 @@ const usePVMSend: SendAdapterPVM = ({
   }, [
     provider,
     setError,
-    createSendPTx,
     maxFee,
-    fromAddress,
     amount?.bn,
     toAddress,
     token,

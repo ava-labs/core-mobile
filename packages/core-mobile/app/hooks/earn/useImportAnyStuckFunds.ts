@@ -24,8 +24,8 @@ export const useImportAnyStuckFunds = (
   const isDevMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { getFeeState } = useGetFeeState()
-  const feeState = getFeeState()
+  const { defaultFeeState } = useGetFeeState()
+  const devnet = isDevnet(activeNetwork)
 
   return useQuery({
     // no need to retry failed request as we are already doing interval fetching
@@ -38,7 +38,8 @@ export const useImportAnyStuckFunds = (
       activeAccount,
       isDevMode,
       activeNetwork,
-      feeState
+      defaultFeeState,
+      devnet
     ],
     queryFn: async () => {
       assertNotUndefined(activeAccount)
@@ -47,8 +48,8 @@ export const useImportAnyStuckFunds = (
         isDevMode,
         selectedCurrency,
         progressEvents: handleRecoveryEvent,
-        feeState,
-        isDevnet: isDevnet(activeNetwork)
+        feeState: defaultFeeState,
+        isDevnet: devnet
       })
       return true
     }

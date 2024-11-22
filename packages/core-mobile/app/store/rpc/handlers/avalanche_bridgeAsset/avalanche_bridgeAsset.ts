@@ -10,7 +10,7 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { Blockchain, Asset } from '@avalabs/core-bridge-sdk'
-import { selectActiveNetwork, selectNetworks } from 'store/network/slice'
+import { selectNetworks } from 'store/network/slice'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod, RpcRequest } from '../../types'
 import {
@@ -79,7 +79,6 @@ class AvalancheBridgeAssetHandler
     const state = listenerApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
-    const activeNetwork = selectActiveNetwork(state)
     const allNetworks = selectNetworks(state)
     const bridgeAppConfig = selectBridgeAppConfig(state)
     const request = createInAppRequest(listenerApi.dispatch)
@@ -132,8 +131,7 @@ class AvalancheBridgeAssetHandler
           isTestnet: isDeveloperMode,
           onStatusChange: noop,
           onTxHashChange: noop,
-          request,
-          activeNetwork
+          request
         })
       }
 

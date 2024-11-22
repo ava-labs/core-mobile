@@ -43,13 +43,17 @@ export const getTransferOutputUtxos = (
     )
   )
 
-export const getStakeableOutUtxos = (
-  amt: bigint,
-  assetId: string,
-  address: string,
+export const getStakeableOutUtxos = ({
+  amt,
+  address,
+  assetId,
+  utxoId
+}: {
+  amt: bigint
+  assetId: string
+  address: string
   utxoId: string
-  // eslint-disable-next-line max-params
-): Utxo<pvmSerial.StakeableLockOut> =>
+}): Utxo<pvmSerial.StakeableLockOut> =>
   new Utxo(
     new avaxSerial.UTXOID(Id.fromString(utxoId), new Int(0)),
     Id.fromString(assetId),

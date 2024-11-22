@@ -1,20 +1,24 @@
 import { Peer } from '@avalabs/avalanchejs/dist/info/model'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
-import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
+import NetworkService from 'services/network/NetworkService'
+import { selectActiveNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isDevnet } from 'utils/isDevnet'
 
 export const usePeers = (): UseQueryResult<Record<string, Peer>, Error> => {
+  const network = useSelector(selectActiveNetwork)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const provider = useAvalancheXpProvider(isDeveloperMode)
+  const devnet = isDevnet(network)
 
   return useQuery({
-    queryKey: ['peers', provider],
-    queryFn: () => {
-      if (provider === undefined) {
-        throw new Error('Avalanche provider is not available')
-      }
+    queryKey: ['peers', isDeveloperMode, devnet],
+    queryFn: async () => {
+      const provider = await NetworkService.getAvalancheProviderXP(
+        isDeveloperMode,
+        devnet
+      )
       return EarnService.getPeers(provider)
     },
     select: data => {

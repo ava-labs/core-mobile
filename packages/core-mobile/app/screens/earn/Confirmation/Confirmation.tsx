@@ -52,7 +52,7 @@ import { SendErrorMessage } from 'screens/send/utils/types'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork } from 'store/network'
 import NetworkService from 'services/network/NetworkService'
-import { useGetFeeState } from 'hooks/earn/useGetFeeState'
+import { useIsNetworkFeeExcessive } from 'hooks/earn/useIsNetworkFeeExcessive'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -95,16 +95,15 @@ export const Confirmation = (): JSX.Element | null => {
   const claimableBalance = useGetClaimableBalance()
   const [gasPrice, setGasPrice] = useState<bigint>()
   const xpProvider = useAvalancheXpProvider()
-  const { getFeeState } = useGetFeeState()
+
   const {
     estimatedStakingFee: networkFees,
     defaultTxFee,
     requiredPFee
   } = useEstimateStakingFees({
     stakingAmount,
-    gasPrice,
     xpProvider,
-    getFeeState
+    gasPrice
   })
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
 
@@ -132,9 +131,7 @@ export const Confirmation = (): JSX.Element | null => {
     delegationFee: Number(validator?.delegationFee)
   })
 
-  const feeState = getFeeState()
-  const excessiveNetworkFee =
-    !!feeState?.price && !!gasPrice && gasPrice > feeState.price * 2n
+  const excessiveNetworkFee = useIsNetworkFeeExcessive(gasPrice)
   const unableToGetNetworkFees = networkFees === undefined
   const showNetworkFeeError = useTimeElapsed(
     isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
@@ -194,7 +191,7 @@ export const Confirmation = (): JSX.Element | null => {
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
       nodeId,
-      feeState: getFeeState(gasPrice),
+      gasPrice,
       requiredPFee
     })
   }
@@ -343,7 +340,7 @@ export const Confirmation = (): JSX.Element | null => {
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees) => {
-      setGasPrice?.(fees.maxFeePerGas)
+      setGasPrice(fees.maxFeePerGas)
     },
     [setGasPrice]
   )
@@ -452,15 +449,15 @@ export const Confirmation = (): JSX.Element | null => {
           </Tooltip>
           {renderNetworkFee()}
         </Row>
-        {xpProvider && xpProvider.isEtnaEnabled() && (
+        {xpProvider && xpProvider.isEtnaEnabled() && defaultTxFee && (
           <>
             <NetworkFeeSelector
               chainId={pNetwork.chainId}
-              gasLimit={Number(defaultTxFee?.toSubUnit() ?? 1n)}
+              gasLimit={Number(defaultTxFee.toSubUnit())}
               onFeesChange={handleFeesChange}
               isGasLimitEditable={false}
               supportsAvalancheDynamicFee={
-                xpProvider && xpProvider.isEtnaEnabled()
+                xpProvider ? xpProvider.isEtnaEnabled() : false
               }
               showOnlyFeeSelection={true}
             />

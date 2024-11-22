@@ -28,6 +28,7 @@ function updateChainIdIfNeeded(original: number): string {
   if (original === ChainId.AVALANCHE_P) {
     return BlockchainId.P_CHAIN
   } else if (original === ChainId.AVALANCHE_TEST_P) {
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
     return BlockchainId.P_CHAIN_TESTNET
   } else if (original === ChainId.AVALANCHE_X) {
     return BlockchainId.X_CHAIN
@@ -52,6 +53,7 @@ export const isPChainId = (caip2ChainId: string): boolean => {
   return (
     caip2ChainId === AvalancheCaip2ChainId.P ||
     caip2ChainId === AvalancheCaip2ChainId.P_TESTNET ||
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
     caip2ChainId === 'avax:N5PeRoKwDDREF0awn2GPsb9sHnGRzdEX'
   )
 }
@@ -89,6 +91,7 @@ export const getAvalancheCaip2ChainId = (
   } else if (chainId === ChainId.AVALANCHE_TEST_X) {
     return AvalancheCaip2ChainId.X_TESTNET
   } else if (chainId === ChainId.AVALANCHE_DEVNET_P) {
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
     return 'avax:N5PeRoKwDDREF0awn2GPsb9sHnGRzdEX'
   }
   return undefined
@@ -110,6 +113,7 @@ export const getAvalancheChainId = (
   } else if (caip2ChainId === AvalancheCaip2ChainId.C_TESTNET) {
     return ChainId.AVALANCHE_TESTNET_ID
   } else if (caip2ChainId === 'avax:N5PeRoKwDDREF0awn2GPsb9sHnGRzdEX') {
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
     return ChainId.AVALANCHE_DEVNET_P
   }
   return undefined

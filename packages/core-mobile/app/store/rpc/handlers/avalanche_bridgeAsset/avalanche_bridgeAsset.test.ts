@@ -382,8 +382,7 @@ describe('avalanche_bridgeAsset handler', () => {
         isTestnet: mockIsDeveloperMode,
         onStatusChange: undefined,
         onTxHashChange: undefined,
-        request: mockRequest,
-        activeNetwork: mockNetworks[43114]
+        request: mockRequest
       })
 
       expect(result).toEqual({ success: true, value: { hash: mockTxHash } })
@@ -440,8 +439,7 @@ describe('avalanche_bridgeAsset handler', () => {
         isTestnet: mockIsDeveloperMode,
         onStatusChange: undefined,
         onTxHashChange: undefined,
-        request: mockRequest,
-        activeNetwork: mockNetworks[43114]
+        request: mockRequest
       })
 
       expect(mockCaptureException).toHaveBeenCalledWith(testError, {

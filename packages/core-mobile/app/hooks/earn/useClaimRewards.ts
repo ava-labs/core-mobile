@@ -13,10 +13,10 @@ import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { selectActiveNetwork } from 'store/network'
 import { isDevnet } from 'utils/isDevnet'
-import { pvm } from '@avalabs/avalanchejs'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useMemo } from 'react'
 import { useClaimFees } from './useClaimFees'
+import { useGetFeeState } from './useGetFeeState'
 
 /**
  * a hook to claim rewards by doing a cross chain transfer from P to C chain
@@ -29,7 +29,6 @@ export const useClaimRewards = (
   onSuccess: () => void,
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void,
-  getFeeState: (gasPrice?: bigint) => pvm.FeeState | undefined,
   gasPrice?: bigint
 ): {
   mutation: UseMutationResult<void, Error, void, unknown>
@@ -42,12 +41,12 @@ export const useClaimRewards = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const feeState = useMemo(() => getFeeState(), [getFeeState])
+  const { getFeeState } = useGetFeeState()
+  const { totalFees, exportPFee, totalClaimable, defaultTxFee } =
+    useClaimFees(gasPrice)
 
-  const { totalFees, exportPFee, totalClaimable, defaultTxFee } = useClaimFees(
-    feeState,
-    gasPrice
-  )
+  const feeState = useMemo(() => getFeeState(gasPrice), [getFeeState, gasPrice])
+
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
 
@@ -76,7 +75,7 @@ export const useClaimRewards = (
         activeAccount,
         isDeveloperMode,
         isDevnet(activeNetwork),
-        getFeeState(gasPrice)
+        feeState
       )
     },
     onSuccess: () => {

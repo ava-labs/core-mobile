@@ -45,11 +45,11 @@ class NetworkService {
       ...deBankNetworks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-      [ChainId.AVALANCHE_P]: this.getAvalancheNetworkP(false, false),
-      [ChainId.AVALANCHE_TEST_P]: this.getAvalancheNetworkP(true, false),
-      [ChainId.AVALANCHE_X]: this.getAvalancheNetworkX(false),
-      [ChainId.AVALANCHE_TEST_X]: this.getAvalancheNetworkX(true),
-      [ChainId.AVALANCHE_DEVNET_P]: this.getAvalancheNetworkPDevnet()
+      [ChainId.AVALANCHE_P]: NETWORK_P,
+      [ChainId.AVALANCHE_TEST_P]: NETWORK_P_TEST,
+      [ChainId.AVALANCHE_X]: NETWORK_X,
+      [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST,
+      [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
     }
   }
 

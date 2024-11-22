@@ -11,7 +11,6 @@ import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
-import { useGetFeeState } from 'hooks/earn/useGetFeeState'
 import NotEnoughAvax from './NotEnoughAvax'
 import StakingAmount from './StakingAmount'
 
@@ -32,11 +31,9 @@ const SmartStakeAmount = (): React.JSX.Element => {
   const [balanceState, setBalanceState] = useState(BalanceStates.UNKNOWN)
   const claimableBalance = useGetClaimableBalance()
   const xpProvider = useAvalancheXpProvider()
-  const { getFeeState } = useGetFeeState()
   const { estimatedStakingFee: networkFees } = useEstimateStakingFees({
     stakingAmount: minStakeAmount,
-    xpProvider,
-    getFeeState
+    xpProvider
   })
   const cChainNetwork = useCChainNetwork()
   const cChainNetworkToken = cChainNetwork?.networkToken

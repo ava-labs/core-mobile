@@ -20,8 +20,8 @@ import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork } from 'store/network'
-import { pvm } from '@avalabs/avalanchejs'
 import { useCChainBalance } from './useCChainBalance'
+import { useGetFeeState } from './useGetFeeState'
 
 export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
@@ -36,7 +36,7 @@ export const useIssueDelegation = (
       stakingAmount: TokenUnit
       startDate: Date
       endDate: Date
-      feeState?: pvm.FeeState
+      gasPrice?: bigint
       requiredPFee?: TokenUnit
     },
     unknown
@@ -48,6 +48,7 @@ export const useIssueDelegation = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data: cChainBalanceRes } = useCChainBalance()
+  const { getFeeState } = useGetFeeState()
   const cChainBalanceWei = cChainBalanceRes?.balance
   const { networkToken: pChainNetworkToken } =
     NetworkService.getAvalancheNetworkP(
@@ -64,7 +65,7 @@ export const useIssueDelegation = (
       stakingAmount: TokenUnit
       startDate: Date
       endDate: Date
-      feeState?: pvm.FeeState
+      gasPrice?: bigint
       requiredPFee?: TokenUnit
     }) => {
       if (!activeAccount) {
@@ -80,7 +81,7 @@ export const useIssueDelegation = (
         isDevMode: isDeveloperMode,
         selectedCurrency,
         isDevnet: isDevnet(activeNetwork),
-        feeState: data.feeState
+        feeState: getFeeState(data.gasPrice)
       })
       Logger.trace('getPChainBalance...')
 
@@ -109,9 +110,7 @@ export const useIssueDelegation = (
       ) {
         return Promise.reject('invalid balance type.')
       }
-      if (pChainBalance.balancePerType.unlockedUnstaked === undefined) {
-        return Promise.reject('unlocked unstaked not defined')
-      }
+
       const claimableBalance = new TokenUnit(
         pChainBalance.balancePerType.unlockedUnstaked || 0,
         pChainNetworkToken.decimals,
@@ -136,7 +135,7 @@ export const useIssueDelegation = (
         requiredAmount: cChainRequiredAmountAvax.toSubUnit(),
         selectedCurrency,
         isDevnet: isDevnet(activeNetwork),
-        feeState: data.feeState
+        feeState: getFeeState(data.gasPrice)
       })
 
       return EarnService.issueAddDelegatorTransaction({
@@ -147,7 +146,7 @@ export const useIssueDelegation = (
         stakeAmount: data.stakingAmount.toSubUnit(),
         startDate: data.startDate,
         isDevnet: isDevnet(activeNetwork),
-        feeState: data.feeState
+        feeState: getFeeState(data.gasPrice)
       })
     },
     onSuccess: txId => {

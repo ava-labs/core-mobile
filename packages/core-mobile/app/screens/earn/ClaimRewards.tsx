@@ -32,8 +32,8 @@ import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { Eip1559Fees } from 'utils/Utils'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { SendErrorMessage } from 'screens/send/utils/types'
-import { useGetFeeState } from 'hooks/earn/useGetFeeState'
 import { Text } from '@avalabs/k2-mobile'
+import { useIsNetworkFeeExcessive } from 'hooks/earn/useIsNetworkFeeExcessive'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
@@ -52,7 +52,6 @@ const ClaimRewards = (): JSX.Element | null => {
     isDevnet(activeNetwork)
   )
   const [gasPrice, setGasPrice] = useState<bigint>()
-  const { getFeeState } = useGetFeeState()
   const { getNetwork } = useNetworks()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const avaxNetwork = getNetwork(ChainId.AVALANCHE_MAINNET_ID)
@@ -65,18 +64,10 @@ const ClaimRewards = (): JSX.Element | null => {
     mutation: claimRewardsMutation,
     defaultTxFee,
     totalFees
-  } = useClaimRewards(
-    onClaimSuccess,
-    onClaimError,
-    onFundsStuck,
-    getFeeState,
-    gasPrice
-  )
+  } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck, gasPrice)
   const isFocused = useIsFocused()
   const unableToGetFees = totalFees === undefined
-  const feeState = getFeeState()
-  const excessiveNetworkFee =
-    !!feeState?.price && !!gasPrice && gasPrice > feeState.price * 2n
+  const excessiveNetworkFee = useIsNetworkFeeExcessive(gasPrice)
   const showFeeError = useTimeElapsed(
     isFocused && unableToGetFees, // re-enable this checking whenever this screen is focused
     timeToShowNetworkFeeError
@@ -219,15 +210,15 @@ const ClaimRewards = (): JSX.Element | null => {
         </Tooltip>
         {renderFees()}
       </Row>
-      {xpProvider && xpProvider.isEtnaEnabled() && (
+      {xpProvider && xpProvider.isEtnaEnabled() && defaultTxFee && (
         <>
           <NetworkFeeSelector
             chainId={pNetwork.chainId}
-            gasLimit={Number(defaultTxFee?.toSubUnit() ?? 1n)}
+            gasLimit={Number(defaultTxFee.toSubUnit())}
             onFeesChange={handleFeesChange}
             isGasLimitEditable={false}
             supportsAvalancheDynamicFee={
-              xpProvider && xpProvider.isEtnaEnabled()
+              xpProvider ? xpProvider.isEtnaEnabled() : false
             }
             showOnlyFeeSelection={true}
           />

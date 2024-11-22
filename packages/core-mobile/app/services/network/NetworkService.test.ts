@@ -11,6 +11,7 @@ import { Networks } from 'store/network/types'
 
 import Logger from 'utils/Logger'
 import { noop } from '@avalabs/core-utils-sdk'
+import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 type TNetworks = {
   [chainId: number]: { chainName: string }
@@ -67,10 +68,10 @@ describe('NetworkService', () => {
         56: { chainName: 'Binance Smart Chain' },
         [ChainId.BITCOIN]: BITCOIN_NETWORK,
         [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-        [ChainId.AVALANCHE_P]: { chainName: 'Avalanche P' },
-        [ChainId.AVALANCHE_TEST_P]: { chainName: 'Avalanche P' },
-        [ChainId.AVALANCHE_X]: { chainName: 'Avalanche X' },
-        [ChainId.AVALANCHE_TEST_X]: { chainName: 'Avalanche X' },
+        [ChainId.AVALANCHE_P]: NETWORK_P,
+        [ChainId.AVALANCHE_TEST_P]: NETWORK_P_TEST,
+        [ChainId.AVALANCHE_X]: NETWORK_X,
+        [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST,
         [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
       })
     })
@@ -110,10 +111,10 @@ describe('NetworkService', () => {
       expect(result).toEqual({
         [ChainId.BITCOIN]: BITCOIN_NETWORK,
         [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-        [ChainId.AVALANCHE_P]: { chainName: 'Avalanche P' },
-        [ChainId.AVALANCHE_TEST_P]: { chainName: 'Avalanche P' },
-        [ChainId.AVALANCHE_X]: { chainName: 'Avalanche X' },
-        [ChainId.AVALANCHE_TEST_X]: { chainName: 'Avalanche X' },
+        [ChainId.AVALANCHE_P]: NETWORK_P,
+        [ChainId.AVALANCHE_TEST_P]: NETWORK_P_TEST,
+        [ChainId.AVALANCHE_X]: NETWORK_X,
+        [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST,
         [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
       })
     })
@@ -141,9 +142,7 @@ describe('NetworkService', () => {
       const result = await NetworkService.getNetworks()
 
       expect(result[ChainId.AVALANCHE_LOCAL_ID]).toBeUndefined()
-      expect(result).toEqual(
-        expect.objectContaining({ 1: { chainName: 'Ethereum' } })
-      )
+      expect(result[1]?.chainName).toEqual('Ethereum')
     })
   })
 })

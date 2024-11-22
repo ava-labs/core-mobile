@@ -643,16 +643,18 @@ class WalletService {
       isDevnet(network)
     )
 
+    const upgradesInfo = isDevnet(network)
+      ? await new info.InfoApi(network.rpcUrl)
+          .getUpgradesInfo()
+          .catch(() => undefined)
+      : undefined
+
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
       baseFee: evmBaseFeeInNAvax,
       feeTolerance: EVM_FEE_TOLERANCE,
-      upgradesInfo: isDevnet(network)
-        ? await new info.InfoApi(network.rpcUrl)
-            .getUpgradesInfo()
-            .catch(() => undefined)
-        : undefined
+      upgradesInfo
     })
 
     if (!isValid) {
@@ -728,6 +730,7 @@ class WalletService {
       isDevnet(avaxXPNetwork)
     )
     const assetId = provider.getAvaxID()
+    // simply setting the utxo amount to be twice more to guarrantee the tx is constructed successfully and return the txFee.
     const utxos = getTransferOutputUtxos(
       amountInNAvax * 2n,
       assetId,
@@ -760,12 +763,12 @@ class WalletService {
       isDevnet(avaxXPNetwork)
     )
     const assetId = provider.getAvaxID()
-    const utxos = getStakeableOutUtxos(
-      amountInNAvax * 2n,
+    const utxos = getStakeableOutUtxos({
+      amt: amountInNAvax * 2n,
       assetId,
-      destinationAddress ?? '',
-      DUMMY_UTXO_ID
-    )
+      address: destinationAddress ?? '',
+      utxoId: DUMMY_UTXO_ID
+    })
     const utxoSet = new utils.UtxoSet([utxos])
     return readOnlySigner.addPermissionlessDelegator({
       weight: amountInNAvax,
@@ -774,6 +777,7 @@ class WalletService {
       fromAddresses: [destinationAddress ?? ''],
       rewardAddresses: [destinationAddress ?? ''],
       start: BigInt(getUnixTime(new Date())),
+      // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
       // get the end date 1 month from now
       end: BigInt(getUnixTime(new Date()) + 60 * 60 * 24 * 30),
       utxoSet,

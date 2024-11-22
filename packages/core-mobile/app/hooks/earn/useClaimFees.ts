@@ -20,6 +20,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { usePChainBalance } from './usePChainBalance'
+import { useGetFeeState } from './useGetFeeState'
 
 /**
  * a hook to calculate the fees needed to do a cross chain transfer from P to C chain
@@ -31,7 +32,6 @@ import { usePChainBalance } from './usePChainBalance'
  * https://docs.avax.network/quickstart/transaction-fees
  */
 export const useClaimFees = (
-  feeState?: pvm.FeeState,
   gasPrice?: bigint
 ): {
   totalFees?: TokenUnit
@@ -45,7 +45,7 @@ export const useClaimFees = (
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [exportFee, setExportFee] = useState<TokenUnit>()
   const [defaultTxFee, setDefaultTxFee] = useState<TokenUnit>()
-
+  const { getFeeState, defaultFeeState } = useGetFeeState()
   const pChainBalance = usePChainBalance()
   const xpProvider = useAvalancheXpProvider()
   const cChainBaseFee = useCChainBaseFee()
@@ -55,12 +55,16 @@ export const useClaimFees = (
     isDevnet(activeNetwork)
   )
 
+  const feeState = useMemo(() => getFeeState(gasPrice), [getFeeState, gasPrice])
+
   const totalClaimable = useMemo(() => {
-    return new TokenUnit(
-      pChainBalance?.data?.balancePerType.unlockedUnstaked ?? 0,
-      avaxXPNetwork.networkToken.decimals,
-      avaxXPNetwork.networkToken.symbol
-    )
+    return pChainBalance?.data?.balancePerType.unlockedUnstaked
+      ? new TokenUnit(
+          pChainBalance.data.balancePerType.unlockedUnstaked,
+          avaxXPNetwork.networkToken.decimals,
+          avaxXPNetwork.networkToken.symbol
+        )
+      : undefined
   }, [
     avaxXPNetwork.networkToken.decimals,
     avaxXPNetwork.networkToken.symbol,
@@ -72,7 +76,8 @@ export const useClaimFees = (
       if (
         activeAccount === undefined ||
         xpProvider === undefined ||
-        feeState === undefined
+        defaultFeeState === undefined ||
+        totalClaimable === undefined
       ) {
         return
       }
@@ -81,16 +86,24 @@ export const useClaimFees = (
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState
+        feeState: defaultFeeState
       })
       setDefaultTxFee(txFee)
     }
     getDefaultTxFee().catch(Logger.error)
-  }, [activeAccount, avaxXPNetwork, xpProvider, totalClaimable, feeState])
+  }, [
+    activeAccount,
+    avaxXPNetwork,
+    xpProvider,
+    totalClaimable,
+    defaultFeeState
+  ])
 
   useEffect(() => {
     const calculateFees = async (): Promise<void> => {
       if (xpProvider === undefined) return
+
+      if (totalClaimable === undefined) throw new Error('no claimable balance')
 
       const baseFee = cChainBaseFee?.data
       if (!baseFee) throw new Error('no base fee available')
@@ -116,9 +129,7 @@ export const useClaimFees = (
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState: feeState
-          ? { ...feeState, price: gasPrice ?? feeState.price }
-          : undefined
+        feeState
       })
 
       Logger.info('importCFee', importCFee.toDisplay())
@@ -137,8 +148,7 @@ export const useClaimFees = (
     avaxXPNetwork,
     totalClaimable,
     xpProvider,
-    feeState,
-    gasPrice
+    feeState
   ])
 
   return {

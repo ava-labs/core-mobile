@@ -1,5 +1,5 @@
 import { useGetAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   calculateCChainFee,
   calculatePChainFee
@@ -20,6 +20,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { pvm } from '@avalabs/avalanchejs'
+import { useGetFeeState } from './useGetFeeState'
 
 /**
  * useEstimateStakingFee estimates fee by making dummy Export C transaction and
@@ -29,14 +30,12 @@ import { pvm } from '@avalabs/avalanchejs'
  */
 export const useEstimateStakingFees = ({
   stakingAmount,
-  gasPrice,
   xpProvider,
-  getFeeState
+  gasPrice
 }: {
   stakingAmount: TokenUnit
-  gasPrice?: bigint
   xpProvider?: Avalanche.JsonRpcProvider
-  getFeeState: (gasPrice?: bigint) => pvm.FeeState | undefined
+  gasPrice?: bigint
 }): {
   estimatedStakingFee?: TokenUnit
   defaultTxFee?: TokenUnit
@@ -58,13 +57,17 @@ export const useEstimateStakingFees = ({
   const [requiredPFee, setRequiredPFee] = useState<TokenUnit>()
   const baseFee = useCChainBaseFee().data
 
+  const { getFeeState, defaultFeeState } = useGetFeeState()
+
+  const feeState = useMemo(() => getFeeState(gasPrice), [gasPrice, getFeeState])
+
   useEffect(() => {
     const getDefaultTxFee = async (): Promise<void> => {
       if (
         amountForCrossChainTransfer === undefined ||
         activeAccount === undefined ||
         xpProvider === undefined ||
-        getFeeState() === undefined
+        defaultFeeState === undefined
       ) {
         return
       }
@@ -73,7 +76,7 @@ export const useEstimateStakingFees = ({
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState: getFeeState()
+        feeState: defaultFeeState
       })
       setDefaultTxFee(txFee)
     }
@@ -83,7 +86,7 @@ export const useEstimateStakingFees = ({
     activeAccount,
     avaxXPNetwork,
     amountForCrossChainTransfer,
-    getFeeState,
+    defaultFeeState,
     xpProvider
   ])
 
@@ -115,7 +118,7 @@ export const useEstimateStakingFees = ({
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState: getFeeState(gasPrice)
+        feeState
       })
 
       const totalAmount = amountForCrossChainTransfer.add(stakingFee) // we need to include import + addPermissionlessDelegator fee
@@ -143,8 +146,7 @@ export const useEstimateStakingFees = ({
     amountForCrossChainTransfer,
     avaxXPNetwork,
     baseFee,
-    gasPrice,
-    getFeeState,
+    feeState,
     isDevMode,
     stakingAmount,
     xpProvider
