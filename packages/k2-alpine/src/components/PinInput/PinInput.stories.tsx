@@ -69,7 +69,7 @@ export const All = (): JSX.Element => {
           marginBottom: 20,
           justifyContent: 'space-between'
         }}>
-        <View sx={{}}>
+        <View>
           <Text>Your Pincode: {PIN_CODE}</Text>
         </View>
         <View
