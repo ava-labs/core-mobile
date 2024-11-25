@@ -228,7 +228,7 @@ const ClaimRewards = (): JSX.Element | null => {
           />
           {excessiveNetworkFee && (
             <Text
-              testID="error_msg"
+              testID="excessive_fee_error_msg"
               variant="body2"
               sx={{ color: '$dangerMain' }}>
               {SendErrorMessage.EXCESSIVE_NETWORK_FEE}
@@ -239,7 +239,7 @@ const ClaimRewards = (): JSX.Element | null => {
               .toLowerCase()
               .includes('insufficient funds: provided utxos need') && (
               <Text
-                testID="error_msg"
+                testID="insufficent_balance_error_msg"
                 variant="body2"
                 sx={{ color: '$dangerMain' }}>
                 {SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE}
