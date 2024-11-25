@@ -186,8 +186,10 @@ export async function performSwap({
     {
       from: userAddress,
       to: txBuildData.to,
-      // @ts-ignore
-      gas: bigIntToHex(txBuildData.gas), //gas property is not defined in Transaction@paraswap type but api does return this prop
+      gas:
+        txBuildData.gas !== undefined
+          ? bigIntToHex(BigInt(txBuildData.gas))
+          : undefined,
       data: txBuildData.data,
       value: isSrcTokenNative ? bigIntToHex(BigInt(sourceAmount)) : undefined // AVAX value needs to be sent with the transaction
     }
