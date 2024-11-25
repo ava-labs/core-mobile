@@ -1,5 +1,5 @@
 import React, { FC, PropsWithChildren, useState } from 'react'
-import { StyleSheet, Switch } from 'react-native'
+import { Switch } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ScrollView, Text, View } from '../Primitives'
 import Link from '../../utils/Link'
@@ -18,7 +18,11 @@ export const All = (): JSX.Element => {
 
   const renderRow = (type: ButtonType, disabled?: boolean): JSX.Element => {
     return (
-      <View style={styles.row}>
+      <View
+        sx={{
+          alignItems: 'flex-start',
+          flexDirection: 'row'
+        }}>
         {sizes.map((size, index) => (
           <Button
             type={type}
@@ -126,13 +130,6 @@ const BackgroundForBlur: FC<PropsWithChildren> = ({ children }) => (
     {children}
   </LinearGradient>
 )
-
-const styles = StyleSheet.create({
-  row: {
-    alignItems: 'flex-start',
-    flexDirection: 'row'
-  }
-})
 
 const FIGMA_LINK =
   'https://www.figma.com/design/opZ4C1UGzcoGRjxE4ZIE3J/K2-Alpine?node-id=7-1465&m=dev'
