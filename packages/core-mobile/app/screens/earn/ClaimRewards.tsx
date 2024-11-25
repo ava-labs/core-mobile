@@ -63,7 +63,8 @@ const ClaimRewards = (): JSX.Element | null => {
   const {
     mutation: claimRewardsMutation,
     defaultTxFee,
-    totalFees
+    totalFees,
+    feeCalculationError
   } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck, gasPrice)
   const isFocused = useIsFocused()
   const unableToGetFees = totalFees === undefined
@@ -72,6 +73,9 @@ const ClaimRewards = (): JSX.Element | null => {
     isFocused && unableToGetFees, // re-enable this checking whenever this screen is focused
     timeToShowNetworkFeeError
   )
+
+  const shouldDisableClaimButton =
+    unableToGetFees || excessiveNetworkFee || Boolean(feeCalculationError)
 
   useEffect(() => {
     if (showFeeError) {
@@ -177,7 +181,7 @@ const ClaimRewards = (): JSX.Element | null => {
       header="Claim Rewards"
       confirmBtnTitle="Claim Now"
       cancelBtnTitle="Cancel"
-      confirmBtnDisabled={unableToGetFees || excessiveNetworkFee}>
+      confirmBtnDisabled={shouldDisableClaimButton}>
       <View style={styles.verticalPadding}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Claimable Amount</AvaText.Body2>
@@ -230,6 +234,17 @@ const ClaimRewards = (): JSX.Element | null => {
               {SendErrorMessage.EXCESSIVE_NETWORK_FEE}
             </Text>
           )}
+          {feeCalculationError &&
+            feeCalculationError.message
+              .toLowerCase()
+              .includes('insufficient funds: provided utxos need') && (
+              <Text
+                testID="error_msg"
+                variant="body2"
+                sx={{ color: '$dangerMain' }}>
+                {SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE}
+              </Text>
+            )}
         </>
       )}
     </ConfirmScreen>

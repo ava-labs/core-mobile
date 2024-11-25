@@ -38,6 +38,7 @@ export const useClaimFees = (
   exportPFee?: TokenUnit
   totalClaimable?: TokenUnit
   defaultTxFee?: TokenUnit
+  feeCalculationError?: Error
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
@@ -45,6 +46,7 @@ export const useClaimFees = (
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [exportFee, setExportFee] = useState<TokenUnit>()
   const [defaultTxFee, setDefaultTxFee] = useState<TokenUnit>()
+  const [feeCalculationError, setFeeCalculationError] = useState<Error>()
   const { getFeeState, defaultFeeState } = useGetFeeState()
   const pChainBalance = usePChainBalance()
   const xpProvider = useAvalancheXpProvider()
@@ -138,9 +140,14 @@ export const useClaimFees = (
       setExportFee(exportPFee)
     }
 
-    calculateFees().catch(err => {
-      Logger.error(err)
-    })
+    calculateFees()
+      .then(() => {
+        setFeeCalculationError(undefined)
+      })
+      .catch(err => {
+        setFeeCalculationError(err)
+        Logger.warn(err)
+      })
   }, [
     activeAccount,
     isDevMode,
@@ -155,7 +162,8 @@ export const useClaimFees = (
     totalFees,
     exportPFee: exportFee,
     totalClaimable,
-    defaultTxFee
+    defaultTxFee,
+    feeCalculationError
   }
 }
 

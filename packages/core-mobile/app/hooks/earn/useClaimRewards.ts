@@ -34,6 +34,7 @@ export const useClaimRewards = (
   mutation: UseMutationResult<void, Error, void, unknown>
   defaultTxFee?: TokenUnit
   totalFees?: TokenUnit
+  feeCalculationError?: Error
   // eslint-disable-next-line max-params
 } => {
   const queryClient = useQueryClient()
@@ -42,8 +43,13 @@ export const useClaimRewards = (
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { getFeeState } = useGetFeeState()
-  const { totalFees, exportPFee, totalClaimable, defaultTxFee } =
-    useClaimFees(gasPrice)
+  const {
+    totalFees,
+    exportPFee,
+    totalClaimable,
+    defaultTxFee,
+    feeCalculationError
+  } = useClaimFees(gasPrice)
 
   const feeState = useMemo(() => getFeeState(gasPrice), [getFeeState, gasPrice])
 
@@ -98,7 +104,7 @@ export const useClaimRewards = (
       }
     }
   })
-  return { mutation, defaultTxFee, totalFees }
+  return { mutation, defaultTxFee, totalFees, feeCalculationError }
 }
 
 /**
