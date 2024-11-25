@@ -36,17 +36,17 @@ export const useAlert = ({
               }
             />
           ))}
-        {buttons.map(action => {
-          const disabled = action.shouldDisable && action.shouldDisable(values)
+        {buttons.map((button, index) => {
+          const disabled = button.shouldDisable && button.shouldDisable(values)
 
           return (
             <Dialog.Button
-              key={action.title}
-              label={action.title}
-              color={disabled ? 'gray' : action.destructive ? 'red' : undefined}
-              bold={action.bold}
+              key={index.toString()}
+              label={button.text}
+              color={disabled ? 'gray' : button.destructive ? 'red' : undefined}
+              bold={button.bold}
               onPress={() => {
-                action.onAction(values)
+                button.onAction(values)
               }}
               disabled={disabled}
             />
@@ -73,7 +73,7 @@ type AlertProps = {
     secureTextEntry?: boolean
   }[]
   buttons: {
-    title: string
+    text: string
     destructive?: boolean
     bold?: boolean
     onAction: (values: Record<string, string>) => void
