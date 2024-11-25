@@ -28,11 +28,12 @@ describe('Dapp - Core', () => {
       await wbs.waitForEleByTextToBeVisible('Error:')
       console.log('Unable to load `core.app` website')
     } catch (e) {
+      await device.disableSynchronization()
       await browserPage.tapAccept()
       await browserPage.tapCoreConnectWallet()
-      await browserPage.tapConnectWallet()
       await browserPage.connectTermAndContinue()
       await browserPage.connectCore()
+      await device.enableSynchronization()
       await connectToSitePage.selectAccountAndconnect()
       await securityAndPrivacyPage.goToConnectedSites()
       await connectedSitesPage.verifyDapp('Core')
