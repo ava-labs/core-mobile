@@ -15,6 +15,7 @@ import { selectActiveNetwork } from 'store/network'
 import { isDevnet } from 'utils/isDevnet'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useMemo } from 'react'
+import { SendErrorMessage } from 'screens/send/utils/types'
 import { useClaimFees } from './useClaimFees'
 import { useGetFeeState } from './useGetFeeState'
 
@@ -34,6 +35,7 @@ export const useClaimRewards = (
   mutation: UseMutationResult<void, Error, void, unknown>
   defaultTxFee?: TokenUnit
   totalFees?: TokenUnit
+  feeCalculationError?: SendErrorMessage
   // eslint-disable-next-line max-params
 } => {
   const queryClient = useQueryClient()
@@ -42,8 +44,13 @@ export const useClaimRewards = (
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { getFeeState } = useGetFeeState()
-  const { totalFees, exportPFee, totalClaimable, defaultTxFee } =
-    useClaimFees(gasPrice)
+  const {
+    totalFees,
+    exportPFee,
+    totalClaimable,
+    defaultTxFee,
+    feeCalculationError
+  } = useClaimFees(gasPrice)
 
   const feeState = useMemo(() => getFeeState(gasPrice), [getFeeState, gasPrice])
 
@@ -98,7 +105,7 @@ export const useClaimRewards = (
       }
     }
   })
-  return { mutation, defaultTxFee, totalFees }
+  return { mutation, defaultTxFee, totalFees, feeCalculationError }
 }
 
 /**
