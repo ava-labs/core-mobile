@@ -60,8 +60,8 @@ describe('earn/exportC', () => {
     it('should fail if cChainBalance is less than required amount', async () => {
       await expect(async () => {
         await exportC({
-          cChainBalance: BigInt(1e18),
-          requiredAmount: BigInt(10e9),
+          cChainBalanceWei: BigInt(1e18),
+          requiredAmountWei: BigInt(10e18),
           isDevMode: false,
           activeAccount: {} as Account,
           isDevnet: false
@@ -71,8 +71,8 @@ describe('earn/exportC', () => {
 
     it('should call avaxProvider.getApiC().getBaseFee()', async () => {
       await exportC({
-        cChainBalance: BigInt(10e18),
-        requiredAmount: BigInt(1e9),
+        cChainBalanceWei: BigInt(10e18),
+        requiredAmountWei: BigInt(1e18),
         isDevMode: false,
         activeAccount: {} as Account,
         isDevnet: false
@@ -83,8 +83,8 @@ describe('earn/exportC', () => {
     it('should call walletService.createExportCTx', async () => {
       expect(async () => {
         await exportC({
-          cChainBalance: BigInt(10e18),
-          requiredAmount: BigInt(1e9),
+          cChainBalanceWei: BigInt(10e18),
+          requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
           isDevnet: false
@@ -103,8 +103,8 @@ describe('earn/exportC', () => {
     it('should call walletService.signAvaxTx', async () => {
       expect(async () => {
         await exportC({
-          cChainBalance: BigInt(10e18),
-          requiredAmount: BigInt(1e9),
+          cChainBalanceWei: BigInt(10e18),
+          requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
           isDevnet: false
@@ -116,8 +116,8 @@ describe('earn/exportC', () => {
     it('should call networkService.sendTransaction', async () => {
       expect(async () => {
         await exportC({
-          cChainBalance: BigInt(10e18),
-          requiredAmount: BigInt(1e9),
+          cChainBalanceWei: BigInt(10e18),
+          requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
           isDevnet: false

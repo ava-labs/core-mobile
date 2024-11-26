@@ -27,7 +27,7 @@ describe('EarnService', () => {
     it('should return zero if current supply is max', () => {
       expect(
         EarnService.calcReward(
-          new TokenUnit(25 * 10 ** 9, 9, 'AVAX'),
+          BigInt(25 * 10 ** 9),
           Seconds(7 * 24 * Hour),
           new TokenUnit(
             MainnetParams.stakingConfig.RewardConfig.SupplyCap,
@@ -43,7 +43,7 @@ describe('EarnService', () => {
     it('should return non zero if current supply is less than max', () => {
       expect(
         EarnService.calcReward(
-          new TokenUnit(2000000 * 10 ** 9, 9, 'AVAX'),
+          BigInt(2000000 * 10 ** 9),
           Seconds(7 * 24 * Hour),
           new TokenUnit(400_000_000 * 10 ** 9, 9, 'AVAX'),
           2,

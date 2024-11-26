@@ -40,6 +40,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
+import { AvaxXP } from 'types/AvaxXP'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -128,21 +129,21 @@ class EarnService {
    * Collect tokens for staking by moving Avax from C to P-chain
    */
   async collectTokensForStaking({
-    cChainBalance,
-    requiredAmount,
+    cChainBalanceWei,
+    requiredAmountWei,
     activeAccount,
     isDevMode,
     selectedCurrency,
     isDevnet,
     feeState
   }: CollectTokensForStakingParams & { isDevnet: boolean }): Promise<void> {
-    if (requiredAmount === 0n) {
+    if (requiredAmountWei === 0n) {
       Logger.info('no need to cross chain')
       return
     }
     await exportC({
-      cChainBalance,
-      requiredAmount,
+      cChainBalanceWei,
+      requiredAmountWei,
       activeAccount,
       isDevMode,
       isDevnet
@@ -190,7 +191,7 @@ class EarnService {
 
   /**
    *
-   * @param amount
+   * @param amountNanoAvax in nAvax
    * @param duration in s
    * @param currentSupply
    * @param delegationFee in percent
@@ -198,13 +199,15 @@ class EarnService {
    */
   // eslint-disable-next-line max-params
   calcReward(
-    amount: TokenUnit,
+    amountNanoAvax: bigint,
     duration: Seconds,
     currentSupply: TokenUnit,
     delegationFee: number,
     isDeveloperMode: boolean,
     isDevnet: boolean
   ): TokenUnit {
+    const amount = AvaxXP.fromNanoAvax(amountNanoAvax)
+
     const avaxPNetwork = NetworkService.getAvalancheNetworkP(
       isDeveloperMode,
       isDevnet
@@ -250,7 +253,7 @@ class EarnService {
   async issueAddDelegatorTransaction({
     activeAccount,
     nodeId,
-    stakeAmount,
+    stakeAmountNanoAvax,
     startDate,
     endDate,
     isDevMode,
@@ -272,7 +275,7 @@ class EarnService {
       nodeId,
       startDate: startDateUnix,
       endDate: endDateUnix,
-      stakeAmountInNAvax: stakeAmount,
+      stakeAmountInNAvax: stakeAmountNanoAvax,
       isDevMode,
       feeState
     } as AddDelegatorProps)
