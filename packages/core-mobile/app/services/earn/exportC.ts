@@ -11,20 +11,19 @@ import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { AvaxC } from 'types/AvaxC'
 import { weiToNano } from 'utils/units/converter'
-import { AvaxXP } from 'types/AvaxXP'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
-  cChainBalance: bigint
-  requiredAmount: bigint // in nAvax
+  cChainBalanceWei: bigint
+  requiredAmountWei: bigint
   activeAccount: Account
   isDevMode: boolean
   isDevnet: boolean
 }
 
 export async function exportC({
-  cChainBalance,
-  requiredAmount,
+  cChainBalanceWei,
+  requiredAmountWei,
   activeAccount,
   isDevMode,
   isDevnet
@@ -52,8 +51,8 @@ export async function exportC({
 
   const instantBaseFeeAvax = WalletService.getInstantBaseFee(baseFeeAvax)
 
-  const cChainBalanceAvax = AvaxC.fromWei(cChainBalance)
-  const requiredAmountAvax = AvaxXP.fromNanoAvax(requiredAmount)
+  const cChainBalanceAvax = AvaxC.fromWei(cChainBalanceWei)
+  const requiredAmountAvax = AvaxC.fromWei(requiredAmountWei)
   const pChainFeeAvax = await calculatePChainFee(avaxXPNetwork)
   const amountAvax = requiredAmountAvax.add(pChainFeeAvax)
 
@@ -62,7 +61,7 @@ export async function exportC({
   }
 
   const unsignedTxWithFee = await WalletService.createExportCTx({
-    amountInNAvax: amountAvax.toSubUnit(),
+    amountInNAvax: weiToNano(amountAvax.toSubUnit()),
     baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
     accountIndex: activeAccount.index,
     avaxXPNetwork,

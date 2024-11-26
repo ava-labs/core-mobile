@@ -12,16 +12,15 @@ import { RadioButton } from 'components/RadioButton'
 import AvaText from 'components/AvaText'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 export const DurationOptionItem = ({
-  stakeAmount,
+  stakingAmountNanoAvax,
   item,
   onRadioSelect,
   isSelected
 }: {
-  stakeAmount: TokenUnit
+  stakingAmountNanoAvax: bigint
   item: DurationOption
   onRadioSelect: (item: DurationOption) => void
   isSelected: boolean
@@ -38,7 +37,7 @@ export const DurationOptionItem = ({
     BigInt(stakeDurationUnixMs) as MilliSeconds
   )
   const { data } = useEarnCalcEstimatedRewards({
-    amount: stakeAmount,
+    amountNanoAvax: stakingAmountNanoAvax,
     duration: stakeDurationUnixSec,
     delegationFee: 2
   })

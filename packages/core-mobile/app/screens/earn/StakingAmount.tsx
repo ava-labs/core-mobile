@@ -99,7 +99,7 @@ export default function StakingAmount(): JSX.Element {
       percent: (100 / factor).toString()
     })
     if (!cumulativeBalance) return
-    setInputAmount(cumulativeBalance.div(factor))
+    setInputAmount(zeroAvaxPChain().add(cumulativeBalance.div(factor)))
   }
 
   return (
@@ -161,7 +161,7 @@ export default function StakingAmount(): JSX.Element {
           onPress={() => {
             AnalyticsService.capture('StakeOpenDurationSelect')
             navigate(AppNavigation.StakeSetup.StakingDuration, {
-              stakingAmount: inputAmount
+              stakingAmountNanoAvax: inputAmount.toSubUnit()
             })
           }}>
           Next

@@ -12,20 +12,20 @@ import { isDevnet } from 'utils/isDevnet'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 
 export type useEarnCalcEstimatedRewardsProps = {
-  amount: TokenUnit
+  amountNanoAvax: bigint
   duration: Seconds
   delegationFee: number
 }
 
 /**
  *
- * @param amount nAVAX
+ * @param amountNanoAvax nAVAX
  * @param duration between current datetime to validator end time
  * @param delegationFee
  * @returns
  */
 export const useEarnCalcEstimatedRewards = ({
-  amount,
+  amountNanoAvax,
   duration,
   delegationFee
 }: useEarnCalcEstimatedRewardsProps): UseQueryResult<
@@ -54,7 +54,7 @@ export const useEarnCalcEstimatedRewards = ({
     },
     select: ({ supply: currentSupply }: pvm.GetCurrentSupplyResponse) => {
       const reward = EarnService.calcReward(
-        amount,
+        amountNanoAvax,
         duration,
         new TokenUnit(
           currentSupply,
