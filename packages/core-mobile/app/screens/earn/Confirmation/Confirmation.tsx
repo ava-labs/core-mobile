@@ -127,7 +127,7 @@ export const Confirmation = (): JSX.Element | null => {
   }, [validatedStakingEndTime])
 
   const { data } = useEarnCalcEstimatedRewards({
-    amountNanoAvax: weiToNano(deductedStakingAmount.toSubUnit()),
+    amountNanoAvax: deductedStakingAmount.toSubUnit(),
     duration: validatedStakingDuration,
     delegationFee: Number(validator?.delegationFee)
   })
@@ -188,7 +188,7 @@ export const Confirmation = (): JSX.Element | null => {
     }
     AnalyticsService.capture('StakeIssueDelegation')
     issueDelegationMutation.mutate({
-      stakingAmountNanoAvax: weiToNano(deductedStakingAmount.toSubUnit()),
+      stakingAmountNanoAvax: deductedStakingAmount.toSubUnit(),
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
       nodeId,
