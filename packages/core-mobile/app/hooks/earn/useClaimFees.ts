@@ -19,8 +19,11 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
+import { getAssetId } from 'services/wallet/utils'
+import { SendErrorMessage } from 'screens/send/utils/types'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
+import { extractNeededAmount } from './utils/extractNeededAmount'
 
 /**
  * a hook to calculate the fees needed to do a cross chain transfer from P to C chain
@@ -38,7 +41,7 @@ export const useClaimFees = (
   exportPFee?: TokenUnit
   totalClaimable?: TokenUnit
   defaultTxFee?: TokenUnit
-  feeCalculationError?: Error
+  feeCalculationError?: SendErrorMessage
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
@@ -46,7 +49,8 @@ export const useClaimFees = (
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [exportFee, setExportFee] = useState<TokenUnit>()
   const [defaultTxFee, setDefaultTxFee] = useState<TokenUnit>()
-  const [feeCalculationError, setFeeCalculationError] = useState<Error>()
+  const [feeCalculationError, setFeeCalculationError] =
+    useState<SendErrorMessage>()
   const { getFeeState, defaultFeeState } = useGetFeeState()
   const pChainBalance = usePChainBalance()
   const xpProvider = useAvalancheXpProvider()
@@ -83,7 +87,7 @@ export const useClaimFees = (
       ) {
         return
       }
-      const txFee = await getExportFeeFromDummyTx({
+      const txFee = await getExportPFee({
         amountInNAvax: totalClaimable,
         activeAccount,
         avaxXPNetwork,
@@ -126,7 +130,8 @@ export const useClaimFees = (
       })
 
       const importCFee = calculateCChainFee(instantBaseFee, unsignedTx)
-      const exportPFee = await getExportFeeFromDummyTx({
+
+      const exportPFee = await getExportPFee({
         amountInNAvax: totalClaimable,
         activeAccount,
         avaxXPNetwork,
@@ -136,7 +141,14 @@ export const useClaimFees = (
 
       Logger.info('importCFee', importCFee.toDisplay())
       Logger.info('exportPFee', exportPFee.toDisplay())
-      setTotalFees(importCFee.add(exportPFee))
+
+      const allFees = importCFee.add(exportPFee)
+
+      if (allFees.gt(totalClaimable)) {
+        throw SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+      }
+
+      setTotalFees(allFees)
       setExportFee(exportPFee)
     }
 
@@ -145,8 +157,16 @@ export const useClaimFees = (
         setFeeCalculationError(undefined)
       })
       .catch(err => {
-        setFeeCalculationError(err)
         Logger.warn(err)
+        if (
+          (err instanceof Error &&
+            err.message
+              .toLowerCase()
+              .includes('insufficient funds: provided utxos need')) ||
+          err === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+        ) {
+          setFeeCalculationError(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
+        }
       })
   }, [
     activeAccount,
@@ -167,7 +187,7 @@ export const useClaimFees = (
   }
 }
 
-const getExportFeeFromDummyTx = async ({
+const getExportPFee = async ({
   amountInNAvax,
   activeAccount,
   avaxXPNetwork,
@@ -179,19 +199,49 @@ const getExportFeeFromDummyTx = async ({
   avaxXPNetwork: Network
   provider: Avalanche.JsonRpcProvider
   feeState?: pvm.FeeState
+  missingAvax?: bigint
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled()) {
-    const unsignedTxP = await WalletService.createExportPTx({
-      // intentionally dividing the amount by 2 to make sure
-      // the export fee is not greater than the available balance in p-chain,
-      // so we can get the correct txFee for the export
-      amountInNAvax: amountInNAvax.div(2n).toSubUnit(),
-      accountIndex: activeAccount.index,
-      avaxXPNetwork,
-      destinationAddress: activeAccount.addressPVM,
-      destinationChain: 'C',
-      feeState
-    })
+    let unsignedTxP
+    try {
+      unsignedTxP = await WalletService.createExportPTx({
+        amountInNAvax: amountInNAvax.toSubUnit(),
+        accountIndex: activeAccount.index,
+        avaxXPNetwork,
+        destinationAddress: activeAccount.addressPVM,
+        destinationChain: 'C',
+        feeState
+      })
+    } catch (error) {
+      Logger.warn('unable to create export p tx', error)
+
+      const missingAmount = extractNeededAmount(
+        (error as Error).message,
+        getAssetId(avaxXPNetwork)
+      )
+
+      if (missingAmount) {
+        const amountAvailableToClaim = amountInNAvax.toSubUnit() - missingAmount
+
+        if (amountAvailableToClaim <= 0) {
+          // rethrow insufficient funds error when balance is not enough to cover fee
+          throw error
+        }
+
+        unsignedTxP = await WalletService.createExportPTx({
+          amountInNAvax: amountAvailableToClaim,
+          accountIndex: activeAccount.index,
+          avaxXPNetwork,
+          destinationAddress: activeAccount.addressPVM,
+          destinationChain: 'C',
+          feeState
+        })
+      } else {
+        // rethrow error if it's not an insufficient funds error
+        throw error
+      }
+    }
+
     const tx = await Avalanche.parseAvalancheTx(
       unsignedTxP,
       provider,

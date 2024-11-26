@@ -73,15 +73,18 @@ const ClaimRewards = (): JSX.Element | null => {
     isFocused && unableToGetFees, // re-enable this checking whenever this screen is focused
     timeToShowNetworkFeeError
   )
+  const insufficientBalanceForFee =
+    feeCalculationError === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
 
   const shouldDisableClaimButton =
-    unableToGetFees || excessiveNetworkFee || Boolean(feeCalculationError)
+    unableToGetFees || excessiveNetworkFee || insufficientBalanceForFee
 
   useEffect(() => {
-    if (showFeeError) {
+    if (showFeeError && !insufficientBalanceForFee) {
       navigate(AppNavigation.Earn.FeeUnavailable)
     }
-  }, [navigate, showFeeError])
+  }, [navigate, showFeeError, insufficientBalanceForFee])
+
   const [claimableAmountInAvax, claimableAmountInCurrency] = useMemo(() => {
     if (data?.balancePerType.unlockedUnstaked) {
       const unlockedInUnit = new TokenUnit(
@@ -234,18 +237,15 @@ const ClaimRewards = (): JSX.Element | null => {
               {SendErrorMessage.EXCESSIVE_NETWORK_FEE}
             </Text>
           )}
-          {feeCalculationError &&
-            feeCalculationError.message
-              .toLowerCase()
-              .includes('insufficient funds: provided utxos need') && (
-              <Text
-                testID="insufficent_balance_error_msg"
-                variant="body2"
-                sx={{ color: '$dangerMain' }}>
-                {SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE}
-              </Text>
-            )}
         </>
+      )}
+      {insufficientBalanceForFee && (
+        <Text
+          testID="insufficent_balance_error_msg"
+          variant="body2"
+          sx={{ color: '$dangerMain' }}>
+          {SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE}
+        </Text>
       )}
     </ConfirmScreen>
   )
