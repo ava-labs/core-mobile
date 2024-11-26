@@ -41,6 +41,11 @@ import {
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
 import MnemonicWalletInstance from './MnemonicWallet'
+import {
+  getAssetId,
+  TESTNET_AVAX_ASSET_ID,
+  MAINNET_AVAX_ASSET_ID
+} from './utils'
 
 type InitProps = {
   mnemonic: string
@@ -56,10 +61,6 @@ const EVM_FEE_TOLERANCE = 50
 
 // We increase C chain base fee by 20% for instant speed
 const BASE_FEE_MULTIPLIER = 0.2
-
-const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
-const TESTNET_AVAX_ASSET_ID = Avalanche.FujiContext.avaxAssetID
-const DEVNET_AVAX_ASSET_ID = Avalanche.DevnetContext.avaxAssetID
 
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
@@ -457,11 +458,7 @@ class WalletService {
       chain: 'P',
       toAddress: destinationAddress,
       amountsPerAsset: {
-        [isDevnet(avaxXPNetwork)
-          ? DEVNET_AVAX_ASSET_ID
-          : avaxXPNetwork.isTestnet
-          ? TESTNET_AVAX_ASSET_ID
-          : MAINNET_AVAX_ASSET_ID]: amountInNAvax
+        [getAssetId(avaxXPNetwork)]: amountInNAvax
       },
       options: {
         changeAddresses: [changeAddress]
@@ -693,11 +690,7 @@ class WalletService {
       accountIndex,
       avaxXPNetwork
     )
-    const assetId = isDevnet(avaxXPNetwork)
-      ? DEVNET_AVAX_ASSET_ID
-      : avaxXPNetwork.isTestnet
-      ? TESTNET_AVAX_ASSET_ID
-      : MAINNET_AVAX_ASSET_ID
+    const assetId = getAssetId(avaxXPNetwork)
 
     const utxos = getTransferOutputUtxos({
       amt: stakingAmount,
