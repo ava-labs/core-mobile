@@ -9,7 +9,7 @@ import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
+import { calculateAmountForCrossChainTransferBigint } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import NetworkService from 'services/network/NetworkService'
@@ -20,6 +20,7 @@ import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork } from 'store/network'
+import { nanoToWei } from 'utils/units/converter'
 import { useCChainBalance } from './useCChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 
@@ -33,11 +34,11 @@ export const useIssueDelegation = (
     Error,
     {
       nodeId: string
-      stakingAmount: TokenUnit
+      stakingAmountNanoAvax: bigint
       startDate: Date
       endDate: Date
       gasPrice?: bigint
-      requiredPFee?: TokenUnit
+      requiredPFeeNanoAvax?: bigint
     },
     unknown
   >
@@ -62,11 +63,11 @@ export const useIssueDelegation = (
   const issueDelegationMutation = useMutation({
     mutationFn: async (data: {
       nodeId: string
-      stakingAmount: TokenUnit
+      stakingAmountNanoAvax: bigint
       startDate: Date
       endDate: Date
       gasPrice?: bigint
-      requiredPFee?: TokenUnit
+      requiredPFeeNanoAvax?: bigint
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
@@ -120,21 +121,19 @@ export const useIssueDelegation = (
         : undefined
 
       Logger.trace('getPChainBalance: ', claimableBalance?.toDisplay())
-      const cChainRequiredAmountAvax = calculateAmountForCrossChainTransfer(
-        data.stakingAmount.add(data.requiredPFee ?? 0),
-        claimableBalance
-      )
+      const cChainRequiredAmountNanoAvax =
+        calculateAmountForCrossChainTransferBigint(
+          data.stakingAmountNanoAvax + (data.requiredPFeeNanoAvax ?? 0n),
+          claimableBalance?.toSubUnit()
+        )
 
-      Logger.trace(
-        'cChainRequiredAmount: ',
-        cChainRequiredAmountAvax.toDisplay()
-      )
+      Logger.trace('cChainRequiredAmount: ', cChainRequiredAmountNanoAvax)
       Logger.trace('collectTokensForStaking...')
       await EarnService.collectTokensForStaking({
         activeAccount,
         cChainBalanceWei,
         isDevMode: isDeveloperMode,
-        requiredAmountWei: cChainRequiredAmountAvax.toSubUnit(),
+        requiredAmountWei: nanoToWei(cChainRequiredAmountNanoAvax),
         selectedCurrency,
         isDevnet: isDevnet(activeNetwork),
         feeState: getFeeState(data.gasPrice)
@@ -145,7 +144,7 @@ export const useIssueDelegation = (
         endDate: data.endDate,
         isDevMode: isDeveloperMode,
         nodeId: data.nodeId,
-        stakeAmount: data.stakingAmount.toSubUnit(),
+        stakeAmountNanoAvax: data.stakingAmountNanoAvax,
         startDate: data.startDate,
         isDevnet: isDevnet(activeNetwork),
         feeState: getFeeState(data.gasPrice)

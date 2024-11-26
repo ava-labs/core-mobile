@@ -161,7 +161,7 @@ export default function StakingAmount(): JSX.Element {
           onPress={() => {
             AnalyticsService.capture('StakeOpenDurationSelect')
             navigate(AppNavigation.StakeSetup.StakingDuration, {
-              stakingAmount: inputAmount
+              stakingAmountNanoAvax: inputAmount.toSubUnit()
             })
           }}>
           Next

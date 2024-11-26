@@ -53,6 +53,7 @@ import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork } from 'store/network'
 import NetworkService from 'services/network/NetworkService'
 import { useIsNetworkFeeExcessive } from 'hooks/earn/useIsNetworkFeeExcessive'
+import { weiToNano } from 'utils/units/converter'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -126,7 +127,7 @@ export const Confirmation = (): JSX.Element | null => {
   }, [validatedStakingEndTime])
 
   const { data } = useEarnCalcEstimatedRewards({
-    amount: deductedStakingAmount,
+    amountNanoAvax: weiToNano(deductedStakingAmount.toSubUnit()),
     duration: validatedStakingDuration,
     delegationFee: Number(validator?.delegationFee)
   })
@@ -187,12 +188,12 @@ export const Confirmation = (): JSX.Element | null => {
     }
     AnalyticsService.capture('StakeIssueDelegation')
     issueDelegationMutation.mutate({
-      stakingAmount: deductedStakingAmount,
+      stakingAmountNanoAvax: weiToNano(deductedStakingAmount.toSubUnit()),
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
       nodeId,
       gasPrice,
-      requiredPFee
+      requiredPFeeNanoAvax: requiredPFee?.toSubUnit()
     })
   }
 

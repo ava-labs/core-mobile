@@ -34,3 +34,18 @@ export const calculateAmountForCrossChainTransfer = (
       : stakingAmount
   }
 }
+/**
+ * Calculates how much Avax we need to transfer from C to P
+ */
+export const calculateAmountForCrossChainTransferBigint = (
+  stakingAmount: bigint,
+  claimableBalance?: bigint
+): bigint => {
+  if (claimableBalance !== undefined && claimableBalance > stakingAmount) {
+    return 0n
+  } else {
+    return claimableBalance !== undefined
+      ? stakingAmount - claimableBalance
+      : stakingAmount
+  }
+}
