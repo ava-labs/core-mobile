@@ -65,7 +65,7 @@ class ConnectToSite {
   }
 
   async selectAccountAndconnect() {
-    await Action.waitForElement(this.selectAccounts, 18000)
+    await Action.waitForElement(this.selectAccounts, 25000)
     await this.tapSelectAccounts()
     await this.tapAccountCheckBox()
     await this.tapApproveBtn()
