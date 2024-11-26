@@ -255,7 +255,7 @@ __metadata:
     "@storybook/react-native": 7.6.20
     "@tanstack/query-sync-storage-persister": 5.59.6
     "@tanstack/react-query": 5.59.8
-    "@tanstack/react-query-persist-client": 5.59.6
+    "@tanstack/react-query-persist-client": 5.61.4
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
     "@types/big.js": 6.2.2
@@ -10707,12 +10707,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.61.4":
+  version: 5.61.4
+  resolution: "@tanstack/query-core@npm:5.61.4"
+  checksum: f9c3f715298abee9e2c0feec55b6848432c1672ea894cf662549e7262c06807849c194c709de7161de5e0809aae97a469d6165956c31b844d47e59eb43044c00
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-persist-client-core@npm:5.59.6":
   version: 5.59.6
   resolution: "@tanstack/query-persist-client-core@npm:5.59.6"
   dependencies:
     "@tanstack/query-core": 5.59.6
   checksum: 3c074f8fc274e9b34505f67d82deb56f488cd1490a91fcfea2d1ad0319855c259c3c23ec1f2c9aafce8980691486ccf7059d3a4c91eccd16ed177cc516ebbb8d
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-persist-client-core@npm:5.61.4":
+  version: 5.61.4
+  resolution: "@tanstack/query-persist-client-core@npm:5.61.4"
+  dependencies:
+    "@tanstack/query-core": 5.61.4
+  checksum: fe205e283ac0f668eab4096fa33279a0d9dc43a5e315e7dc2e88f2deb03ced19157ac76c513345afcc074b95b294d57b5fc0b0117777972656d45126a63749b3
   languageName: node
   linkType: hard
 
@@ -10726,15 +10742,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-query-persist-client@npm:5.59.6":
-  version: 5.59.6
-  resolution: "@tanstack/react-query-persist-client@npm:5.59.6"
+"@tanstack/react-query-persist-client@npm:5.61.4":
+  version: 5.61.4
+  resolution: "@tanstack/react-query-persist-client@npm:5.61.4"
   dependencies:
-    "@tanstack/query-persist-client-core": 5.59.6
+    "@tanstack/query-persist-client-core": 5.61.4
   peerDependencies:
-    "@tanstack/react-query": ^5.59.6
+    "@tanstack/react-query": ^5.61.4
     react: ^18 || ^19
-  checksum: 48de12c5fe7c07e6ee8becff2fb3f63ace8657242d6b01da07bd66142b8d348f95651ff31b1b85e12abc5d8583e1c03d61ffac4924697d9df081d96535b3f435
+  checksum: ee5e908be613833d6b96f689652ccbf29fdf68e488a74ff02396eaafee5972a3567ad155aa9aab110e126e39f5ef3d1c8cd217937c79d73032ff643b9a2b4c38
   languageName: node
   linkType: hard
 
