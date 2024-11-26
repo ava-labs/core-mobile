@@ -33,7 +33,7 @@ export enum WebScripts {
       .getAttribute('uri');
   }`,
   CLICK_WC_CORE = `(element) => {
-    element.shadowRoot.querySelector('wui-flex > wui-card > w3m-router')
+    element.shadowRoot.querySelector('w3m-router')
       .shadowRoot.querySelector('w3m-connect-view')
       .shadowRoot.querySelector('wui-list-wallet[name="Core"]').click();
   }`,
