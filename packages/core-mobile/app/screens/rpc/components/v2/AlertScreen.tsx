@@ -54,7 +54,11 @@ const AlertScreen = (): JSX.Element => {
         </Text>
       </View>
       <View sx={{ gap: 16, padding: 16 }}>
-        <Button type="primary" size="xlarge" onPress={handleReject}>
+        <Button
+          testID="reject_button"
+          type="primary"
+          size="xlarge"
+          onPress={handleReject}>
           {params.alert.details.actionTitles?.reject}
         </Button>
         <Button type="tertiary" size="xlarge" onPress={handleProceed}>
