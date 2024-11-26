@@ -20,14 +20,8 @@ export type UnixTimeMs = number
 export type UnixTime = number
 
 export type CollectTokensForStakingParams = {
-  /**
-   * In `Wei`
-   */
-  cChainBalance: bigint
-  /**
-   * In `Wei`
-   */
-  requiredAmount: bigint
+  cChainBalanceWei: bigint
+  requiredAmountWei: bigint
   activeAccount: Account
   isDevMode: boolean
   selectedCurrency: string

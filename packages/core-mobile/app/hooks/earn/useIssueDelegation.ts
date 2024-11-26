@@ -132,9 +132,9 @@ export const useIssueDelegation = (
       Logger.trace('collectTokensForStaking...')
       await EarnService.collectTokensForStaking({
         activeAccount,
-        cChainBalance: cChainBalanceWei,
+        cChainBalanceWei,
         isDevMode: isDeveloperMode,
-        requiredAmount: cChainRequiredAmountAvax.toSubUnit(),
+        requiredAmountWei: cChainRequiredAmountAvax.toSubUnit(),
         selectedCurrency,
         isDevnet: isDevnet(activeNetwork),
         feeState: getFeeState(data.gasPrice)

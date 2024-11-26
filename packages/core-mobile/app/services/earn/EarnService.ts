@@ -128,21 +128,21 @@ class EarnService {
    * Collect tokens for staking by moving Avax from C to P-chain
    */
   async collectTokensForStaking({
-    cChainBalance,
-    requiredAmount,
+    cChainBalanceWei,
+    requiredAmountWei,
     activeAccount,
     isDevMode,
     selectedCurrency,
     isDevnet,
     feeState
   }: CollectTokensForStakingParams & { isDevnet: boolean }): Promise<void> {
-    if (requiredAmount === 0n) {
+    if (requiredAmountWei === 0n) {
       Logger.info('no need to cross chain')
       return
     }
     await exportC({
-      cChainBalance,
-      requiredAmount,
+      cChainBalanceWei,
+      requiredAmountWei,
       activeAccount,
       isDevMode,
       isDevnet
