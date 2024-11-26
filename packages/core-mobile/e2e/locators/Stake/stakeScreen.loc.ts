@@ -63,5 +63,11 @@ export default {
   endDateId: 'end_date',
   earnedRewardsId: 'earned_rewards',
   stakingSuccessful: 'Staking successful!',
-  customRadio: 'Custom'
+  customRadio: 'Custom',
+  customInput: 'custom_network_fee_input',
+  customSaveBtn: 'custom_network_fee_save_btn',
+  customBaseFee: 'custom_base_fee',
+  slowBaseFee: 'slow_base_fee',
+  fastBaseFee: 'fast_base_fee',
+  instantBaseFee: 'instant_base_fee'
 }
