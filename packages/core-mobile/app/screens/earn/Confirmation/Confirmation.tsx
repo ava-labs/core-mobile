@@ -126,7 +126,7 @@ export const Confirmation = (): JSX.Element | null => {
   }, [validatedStakingEndTime])
 
   const { data } = useEarnCalcEstimatedRewards({
-    amount: deductedStakingAmount,
+    amountNanoAvax: deductedStakingAmount.toSubUnit(),
     duration: validatedStakingDuration,
     delegationFee: Number(validator?.delegationFee)
   })
@@ -187,12 +187,12 @@ export const Confirmation = (): JSX.Element | null => {
     }
     AnalyticsService.capture('StakeIssueDelegation')
     issueDelegationMutation.mutate({
-      stakingAmount: deductedStakingAmount,
+      stakingAmountNanoAvax: deductedStakingAmount.toSubUnit(),
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
       nodeId,
       gasPrice,
-      requiredPFee
+      requiredPFeeNanoAvax: requiredPFee?.toSubUnit()
     })
   }
 
