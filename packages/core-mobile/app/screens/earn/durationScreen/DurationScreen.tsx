@@ -34,6 +34,7 @@ import {
 } from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
 import { UnixTime } from 'services/earn/types'
+import { AvaxXP } from 'types/AvaxXP'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -58,7 +59,8 @@ export const StakingDuration = (): JSX.Element => {
   const { theme } = useApplicationContext()
   const { navigate, setOptions, goBack } =
     useNavigation<ScreenProps['navigation']>()
-  const { stakingAmount } = useRoute<ScreenProps['route']>().params
+  const { stakingAmountNanoAvax } = useRoute<ScreenProps['route']>().params
+  const stakingAmount = AvaxXP.fromNanoAvax(stakingAmountNanoAvax)
   const isNextDisabled =
     stakeEndTime === undefined ||
     (!!stakeEndTime && stakeEndTime < millisecondsToSeconds(UTCDate.now()))
@@ -151,7 +153,7 @@ export const StakingDuration = (): JSX.Element => {
       return (
         <DurationOptionItem
           key={item.title}
-          stakeAmount={stakingAmount}
+          stakingAmountNanoAvax={stakingAmountNanoAvax}
           item={item}
           isSelected={selectedDuration?.title === item.title}
           onRadioSelect={onRadioSelect}
@@ -162,7 +164,7 @@ export const StakingDuration = (): JSX.Element => {
 
   const renderCustomOption = (): JSX.Element => (
     <CustomDurationOptionItem
-      stakeAmount={stakingAmount}
+      stakingAmountNanoAvax={stakingAmountNanoAvax}
       stakeEndTime={fromUnixTime(stakeEndTime)}
       onRadioSelect={onRadioSelect}
       handleDateConfirm={handleDateConfirm}
