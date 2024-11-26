@@ -43,7 +43,8 @@ class BrowserPage {
   }
 
   async tapCoreConnectWallet() {
-    await Wbs.tapByText('Connect Wallet')
+    await Wbs.tapByText('Connect')
+    await Wbs.tapByXpath('//div[@data-testid="connect-core-mobile"]')
   }
 
   async connectTermAndContinue() {
