@@ -4,6 +4,7 @@ import accountManage from '../locators/accountManage.loc'
 import { Platform } from '../helpers/constants'
 import Assert from '../helpers/assertions'
 import commonElsLoc from '../locators/commonEls.loc'
+import delay from '../helpers/waits'
 
 class AccountManagePage {
   get account() {
@@ -116,15 +117,20 @@ class AccountManagePage {
   async createNthAccountAndSwitchToNth(account: number) {
     await this.tapAccountDropdownTitle()
     await this.tapAddEditAccounts()
+    await device.disableSynchronization()
+    await delay(1000)
     for (let i = 1; i < account; i++) {
       await this.tapAddAccountButton()
+      await delay(1000)
     }
     await this.tapNthAccount(account)
     await this.tapDoneButton()
+    await device.enableSynchronization()
   }
 
   async tapNthAccount(account: number) {
     try {
+      await Action.waitForElementNoSync(by.text(`Account ${account}`))
       await Action.tap(by.text(`Account ${account}`))
     } catch (e) {
       console.log('Unable to tap Nth account')
@@ -185,6 +191,7 @@ class AccountManagePage {
   }
 
   async tapAddAccountButton() {
+    await Action.waitForElementNoSync(this.addAccountButton)
     await Action.tapElementAtIndex(this.addAccountButton, 0)
   }
 
