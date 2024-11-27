@@ -234,7 +234,7 @@ const getExportPFee = async ({
 
         if (ratio > pFeeAdjustmentThreshold) {
           // rethrow insufficient funds error when missing fee is too much compared to total token amount
-          Logger.error('Transaction rejected due to excessive fees.', {
+          Logger.error('Failed to simulate export p due to excessive fees', {
             missingAmount,
             ratio
           })
@@ -244,7 +244,7 @@ const getExportPFee = async ({
         const amountAvailableToClaim = amountAvailable - missingAmount
 
         if (amountAvailableToClaim <= 0) {
-          Logger.error('Transaction rejected due to excessive fees.', {
+          Logger.error('Failed to simulate export p due to excessive fees', {
             missingAmount
           })
           // rethrow insufficient funds error when balance is not enough to cover fee
