@@ -3,6 +3,7 @@ export default {
   linkSvg: 'link_svg',
   approveBtn: 'approve_button',
   rejectBtn: 'reject_button',
+  rejectTextBtn: 'Reject',
   type: 'Type',
   account: 'Account:',
   approveTransactionTitle: 'Approve Transaction',
