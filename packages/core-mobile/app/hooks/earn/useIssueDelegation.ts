@@ -6,9 +6,10 @@ import {
 } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
-import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveAccount } from 'store/account/slice'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { selectPFeeAdjustmentThreshold } from 'store/posthog/slice'
 import { calculateAmountForCrossChainTransferBigint } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -19,7 +20,7 @@ import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
+import { selectActiveNetwork } from 'store/network/slice'
 import { nanoToWei } from 'utils/units/converter'
 import { useCChainBalance } from './useCChainBalance'
 import { useGetFeeState } from './useGetFeeState'
@@ -56,6 +57,7 @@ export const useIssueDelegation = (
       isDeveloperMode,
       isDevnet(activeNetwork)
     )
+  const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
@@ -147,7 +149,8 @@ export const useIssueDelegation = (
         stakeAmountNanoAvax: data.stakingAmountNanoAvax,
         startDate: data.startDate,
         isDevnet: isDevnet(activeNetwork),
-        feeState: getFeeState(data.gasPrice)
+        feeState: getFeeState(data.gasPrice),
+        pFeeAdjustmentThreshold
       })
     },
     onSuccess: txId => {
