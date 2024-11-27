@@ -274,12 +274,14 @@ const NetworkFeeSelector = ({
                 selected={selectedPreset === FeePreset.Fast}
                 onSelect={() => handleSelectedPreset(FeePreset.Fast)}
                 value={displayGasValues?.[FeePreset.Fast]}
+                testID="fast_base_fee"
               />
               <FeeSelector
                 label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
                 selected={selectedPreset === FeePreset.Instant}
                 onSelect={() => handleSelectedPreset(FeePreset.Instant)}
                 value={displayGasValues?.[FeePreset.Instant]}
+                testID="instant_base_fee"
               />
               <FeeSelector
                 label={FeePreset.Custom}
