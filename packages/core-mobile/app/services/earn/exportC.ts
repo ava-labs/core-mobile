@@ -2,7 +2,6 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
-import { calculatePChainFee } from 'services/earn/calculateCrossChainFees'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account/types'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
@@ -15,7 +14,7 @@ import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
   cChainBalanceWei: bigint
-  requiredAmountWei: bigint
+  requiredAmountWei: bigint // this amount should already include the fee to export
   activeAccount: Account
   isDevMode: boolean
   isDevnet: boolean
@@ -53,15 +52,13 @@ export async function exportC({
 
   const cChainBalanceAvax = AvaxC.fromWei(cChainBalanceWei)
   const requiredAmountAvax = AvaxC.fromWei(requiredAmountWei)
-  const pChainFeeAvax = await calculatePChainFee(avaxXPNetwork)
-  const amountAvax = requiredAmountAvax.add(pChainFeeAvax)
 
-  if (cChainBalanceAvax.lt(amountAvax)) {
+  if (cChainBalanceAvax.lt(requiredAmountAvax)) {
     throw Error('Not enough balance on C chain')
   }
 
   const unsignedTxWithFee = await WalletService.createExportCTx({
-    amountInNAvax: weiToNano(amountAvax.toSubUnit()),
+    amountInNAvax: weiToNano(requiredAmountAvax.toSubUnit()),
     baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
     accountIndex: activeAccount.index,
     avaxXPNetwork,
