@@ -519,6 +519,7 @@ __metadata:
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.3
+    "@react-native-masked-view/masked-view": 0.3.0
     "@rushstack/eslint-patch": 1.5.1
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
@@ -8887,6 +8888,16 @@ __metadata:
     react-dom:
       optional: true
   checksum: 777bb338ce1ce1b9581f1e3c67d04a1d8eb2486745868e170455b3485c26a6dcbeb202acfb949bf45817b7d7f9c8c7259342c1a0f237aa03eef2965e69b90f12
+  languageName: node
+  linkType: hard
+
+"@react-native-masked-view/masked-view@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@react-native-masked-view/masked-view@npm:0.3.0"
+  peerDependencies:
+    react: ">=16"
+    react-native: ">=0.57"
+  checksum: 77cf06947640abf5e7bf8c63ba6ee79f7cb409f4a40d3a0242790ff3f61d1b08c4f51373668b0e0e0bb2f60ffe3e4d2e4ea26c7358874f94ac9317841fce1751
   languageName: node
   linkType: hard
 

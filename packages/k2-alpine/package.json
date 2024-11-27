@@ -17,6 +17,7 @@
     "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
+    "@react-native-masked-view/masked-view": "0.3.0",
     "dripsy": "4.3.7",
     "expo": "50.0.21",
     "expo-blur": "12.9.2",
