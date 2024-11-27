@@ -56,6 +56,7 @@ export type AddDelegatorProps = {
   isDevMode: boolean
   shouldValidateBurnedAmount?: boolean
   feeState?: pvm.FeeState
+  pFeeAdjustmentThreshold: number
 }
 
 export interface CommonAvalancheTxParamsBase {

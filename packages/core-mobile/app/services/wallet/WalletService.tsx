@@ -32,6 +32,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { isDevnet } from 'utils/isDevnet'
+import { extractNeededAmount } from 'hooks/earn/utils/extractNeededAmount'
 import {
   getStakeableOutUtxos,
   getTransferOutputUtxos,
@@ -536,6 +537,7 @@ class WalletService {
     return unsignedTx
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async createAddDelegatorTx({
     accountIndex,
     avaxXPNetwork,
@@ -546,7 +548,8 @@ class WalletService {
     rewardAddress,
     isDevMode,
     shouldValidateBurnedAmount = true,
-    feeState
+    feeState,
+    pFeeAdjustmentThreshold
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -585,16 +588,82 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-    const unsignedTx = readOnlySigner.addPermissionlessDelegator({
-      utxoSet,
-      nodeId,
-      start: BigInt(startDate),
-      end: BigInt(endDate),
-      weight: stakeAmountInNAvax,
-      subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      rewardAddresses: [rewardAddress],
-      feeState
-    })
+
+    let unsignedTx
+
+    try {
+      unsignedTx = readOnlySigner.addPermissionlessDelegator({
+        utxoSet,
+        nodeId,
+        start: BigInt(startDate),
+        end: BigInt(endDate),
+        weight: stakeAmountInNAvax,
+        subnetId: PChainId._11111111111111111111111111111111LPO_YY,
+        rewardAddresses: [rewardAddress],
+        feeState
+      })
+    } catch (error) {
+      Logger.warn('unable to create add delegator tx', error)
+
+      const provider = await NetworkService.getAvalancheProviderXP(
+        Boolean(avaxXPNetwork.isTestnet),
+        isDevnet(avaxXPNetwork)
+      )
+
+      if (!provider.isEtnaEnabled()) {
+        // rethrow error if the network is not Etna enabled
+        throw error
+      }
+
+      const missingAmount = extractNeededAmount(
+        (error as Error).message,
+        getAssetId(avaxXPNetwork)
+      )
+
+      if (!missingAmount) {
+        // rethrow error if it's not an insufficient funds error
+        throw error
+      }
+
+      const amountToStake = stakeAmountInNAvax
+      const ratio = Number(missingAmount) / Number(amountToStake)
+
+      if (ratio > pFeeAdjustmentThreshold) {
+        // rethrow insufficient funds error when missing fee is too much compared to total token amount
+        Logger.error(
+          'Failed to create add delegator transaction due to excessive fees',
+          {
+            missingAmount,
+            ratio
+          }
+        )
+        throw error
+      }
+
+      const amountAvailableToStake = amountToStake - missingAmount
+
+      if (amountAvailableToStake <= 0) {
+        Logger.error(
+          'Failed to create add delegator transaction due to excessive fees',
+          {
+            missingAmount
+          }
+        )
+        // rethrow insufficient funds error when balance is not enough to cover fee
+        throw error
+      }
+
+      unsignedTx = readOnlySigner.addPermissionlessDelegator({
+        utxoSet,
+        nodeId,
+        start: BigInt(startDate),
+        end: BigInt(endDate),
+        weight: amountAvailableToStake,
+        subnetId: PChainId._11111111111111111111111111111111LPO_YY,
+        rewardAddresses: [rewardAddress],
+        feeState
+      })
+    }
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
@@ -678,7 +747,7 @@ class WalletService {
     return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
   }
 
-  public async createDummyImportPTx({
+  public async simulateImportPTx({
     stakingAmount,
     accountIndex,
     avaxXPNetwork,
@@ -707,7 +776,7 @@ class WalletService {
     })
   }
 
-  public async createDummyAddPermissionlessDelegatorTx({
+  public async simulateAddPermissionlessDelegatorTx({
     amountInNAvax,
     accountIndex,
     avaxXPNetwork,

@@ -4,14 +4,15 @@ import {
   calculatePChainFee
 } from 'services/earn/calculateCrossChainFees'
 import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectPFeeAdjustmentThreshold } from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { selectActiveNetwork } from 'store/network'
+import { selectActiveNetwork } from 'store/network/slice'
 import { isDevnet } from 'utils/isDevnet'
 import { weiToNano } from 'utils/units/converter'
 import { CorePrimaryAccount } from '@avalabs/types'
@@ -46,6 +47,7 @@ export const useClaimFees = (
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
+  const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [exportFee, setExportFee] = useState<TokenUnit>()
   const [defaultTxFee, setDefaultTxFee] = useState<TokenUnit>()
@@ -92,7 +94,8 @@ export const useClaimFees = (
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState: defaultFeeState
+        feeState: defaultFeeState,
+        pFeeAdjustmentThreshold
       })
       setDefaultTxFee(txFee)
     }
@@ -102,7 +105,8 @@ export const useClaimFees = (
     avaxXPNetwork,
     xpProvider,
     totalClaimable,
-    defaultFeeState
+    defaultFeeState,
+    pFeeAdjustmentThreshold
   ])
 
   useEffect(() => {
@@ -136,7 +140,8 @@ export const useClaimFees = (
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState
+        feeState,
+        pFeeAdjustmentThreshold
       })
 
       Logger.info('importCFee', importCFee.toDisplay())
@@ -175,7 +180,8 @@ export const useClaimFees = (
     avaxXPNetwork,
     totalClaimable,
     xpProvider,
-    feeState
+    feeState,
+    pFeeAdjustmentThreshold
   ])
 
   return {
@@ -192,7 +198,8 @@ const getExportPFee = async ({
   activeAccount,
   avaxXPNetwork,
   provider,
-  feeState
+  feeState,
+  pFeeAdjustmentThreshold
 }: {
   amountInNAvax: TokenUnit
   activeAccount: CorePrimaryAccount
@@ -200,6 +207,7 @@ const getExportPFee = async ({
   provider: Avalanche.JsonRpcProvider
   feeState?: pvm.FeeState
   missingAvax?: bigint
+  pFeeAdjustmentThreshold: number
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled()) {
     let unsignedTxP
@@ -220,26 +228,41 @@ const getExportPFee = async ({
         getAssetId(avaxXPNetwork)
       )
 
-      if (missingAmount) {
-        const amountAvailableToClaim = amountInNAvax.toSubUnit() - missingAmount
-
-        if (amountAvailableToClaim <= 0) {
-          // rethrow insufficient funds error when balance is not enough to cover fee
-          throw error
-        }
-
-        unsignedTxP = await WalletService.createExportPTx({
-          amountInNAvax: amountAvailableToClaim,
-          accountIndex: activeAccount.index,
-          avaxXPNetwork,
-          destinationAddress: activeAccount.addressPVM,
-          destinationChain: 'C',
-          feeState
-        })
-      } else {
+      if (!missingAmount) {
         // rethrow error if it's not an insufficient funds error
         throw error
       }
+
+      const amountAvailable = amountInNAvax.toSubUnit()
+      const ratio = Number(missingAmount) / Number(amountAvailable)
+
+      if (ratio > pFeeAdjustmentThreshold) {
+        // rethrow insufficient funds error when missing fee is too much compared to total token amount
+        Logger.error('Failed to simulate export p due to excessive fees', {
+          missingAmount,
+          ratio
+        })
+        throw error
+      }
+
+      const amountAvailableToClaim = amountAvailable - missingAmount
+
+      if (amountAvailableToClaim <= 0) {
+        Logger.error('Failed to simulate export p due to excessive fees', {
+          missingAmount
+        })
+        // rethrow insufficient funds error when balance is not enough to cover fee
+        throw error
+      }
+
+      unsignedTxP = await WalletService.createExportPTx({
+        amountInNAvax: amountAvailableToClaim,
+        accountIndex: activeAccount.index,
+        avaxXPNetwork,
+        destinationAddress: activeAccount.addressPVM,
+        destinationChain: 'C',
+        feeState
+      })
     }
 
     const tx = await Avalanche.parseAvalancheTx(
