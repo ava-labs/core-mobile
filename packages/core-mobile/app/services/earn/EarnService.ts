@@ -258,7 +258,8 @@ class EarnService {
     endDate,
     isDevMode,
     isDevnet,
-    feeState
+    feeState,
+    pFeeAdjustmentThreshold
   }: AddDelegatorTransactionProps): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
@@ -277,7 +278,8 @@ class EarnService {
       endDate: endDateUnix,
       stakeAmountInNAvax: stakeAmountNanoAvax,
       isDevMode,
-      feeState
+      feeState,
+      pFeeAdjustmentThreshold
     } as AddDelegatorProps)
 
     const signedTxJson = await WalletService.sign({

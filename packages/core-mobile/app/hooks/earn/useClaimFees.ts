@@ -228,41 +228,41 @@ const getExportPFee = async ({
         getAssetId(avaxXPNetwork)
       )
 
-      if (missingAmount) {
-        const amountAvailable = amountInNAvax.toSubUnit()
-        const ratio = Number(missingAmount) / Number(amountAvailable)
-
-        if (ratio > pFeeAdjustmentThreshold) {
-          // rethrow insufficient funds error when missing fee is too much compared to total token amount
-          Logger.error('Failed to simulate export p due to excessive fees', {
-            missingAmount,
-            ratio
-          })
-          throw error
-        }
-
-        const amountAvailableToClaim = amountAvailable - missingAmount
-
-        if (amountAvailableToClaim <= 0) {
-          Logger.error('Failed to simulate export p due to excessive fees', {
-            missingAmount
-          })
-          // rethrow insufficient funds error when balance is not enough to cover fee
-          throw error
-        }
-
-        unsignedTxP = await WalletService.createExportPTx({
-          amountInNAvax: amountAvailableToClaim,
-          accountIndex: activeAccount.index,
-          avaxXPNetwork,
-          destinationAddress: activeAccount.addressPVM,
-          destinationChain: 'C',
-          feeState
-        })
-      } else {
+      if (!missingAmount) {
         // rethrow error if it's not an insufficient funds error
         throw error
       }
+
+      const amountAvailable = amountInNAvax.toSubUnit()
+      const ratio = Number(missingAmount) / Number(amountAvailable)
+
+      if (ratio > pFeeAdjustmentThreshold) {
+        // rethrow insufficient funds error when missing fee is too much compared to total token amount
+        Logger.error('Failed to simulate export p due to excessive fees', {
+          missingAmount,
+          ratio
+        })
+        throw error
+      }
+
+      const amountAvailableToClaim = amountAvailable - missingAmount
+
+      if (amountAvailableToClaim <= 0) {
+        Logger.error('Failed to simulate export p due to excessive fees', {
+          missingAmount
+        })
+        // rethrow insufficient funds error when balance is not enough to cover fee
+        throw error
+      }
+
+      unsignedTxP = await WalletService.createExportPTx({
+        amountInNAvax: amountAvailableToClaim,
+        accountIndex: activeAccount.index,
+        avaxXPNetwork,
+        destinationAddress: activeAccount.addressPVM,
+        destinationChain: 'C',
+        feeState
+      })
     }
 
     const tx = await Avalanche.parseAvalancheTx(

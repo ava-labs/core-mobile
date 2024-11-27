@@ -173,7 +173,7 @@ const getStakingFeeFromDummyTx = async ({
   feeState?: pvm.FeeState
 }): Promise<TokenUnit> => {
   if (provider.isEtnaEnabled() && feeState) {
-    const unsignedImportTx = await WalletService.createDummyImportPTx({
+    const unsignedImportTx = await WalletService.simulateImportPTx({
       stakingAmount: stakingAmount.toSubUnit(),
       accountIndex: activeAccount.index,
       sourceChain: 'C',
@@ -188,7 +188,7 @@ const getStakingFeeFromDummyTx = async ({
       activeAccount.addressPVM
     )
     const unsignedAddPermissionlessDelegatorTx =
-      await WalletService.createDummyAddPermissionlessDelegatorTx({
+      await WalletService.simulateAddPermissionlessDelegatorTx({
         amountInNAvax: stakingAmount.toSubUnit(),
         accountIndex: activeAccount.index,
         destinationChain: 'C',
