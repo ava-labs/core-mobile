@@ -43,7 +43,7 @@ const RpcRequestBottomSheet: React.FC<Props> = ({
             type="secondary"
             size="xlarge"
             onPress={onReject}
-            testID="reject_btn">
+            testID="reject_button">
             Reject
           </Button>
         </View>

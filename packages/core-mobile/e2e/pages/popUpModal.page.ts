@@ -102,12 +102,20 @@ class PopUpModalPage {
     return by.id(popUpModalLoc.popUpModalScrollView)
   }
 
+  get rejectTextBtn() {
+    return by.text(popUpModalLoc.rejectTextBtn)
+  }
+
   async tapApproveBtn() {
     await actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
   async tapRejectBtn() {
-    await actions.tapElementAtIndex(this.rejectBtn, 0)
+    try {
+      await actions.tap(this.rejectBtn)
+    } catch (e) {
+      await actions.tap(this.rejectTextBtn)
+    }
   }
 
   async verifySignMessageModal() {

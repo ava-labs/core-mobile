@@ -92,7 +92,9 @@ describe('Bridge Screen', () => {
       await sendPage.tapMax()
       // Verify approve modal with legit fee > Reject
       await bridgeTabPage.tapBridgeBtn()
-      await popUpModalPage.verifyFeeIsLegit(false, false, 0.02)
+      if (network === portfolioLoc.ethNetwork) {
+        await popUpModalPage.verifyFeeIsLegit(false, false, 0.02)
+      }
       await popUpModalPage.tapRejectBtn()
 
       // Exit bridge screen

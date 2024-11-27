@@ -190,6 +190,7 @@ const EditFees = ({
         <Space y={24} />
         <InputText
           label={isBaseUnitRate ? 'Network Fee' : 'Max Base Fee'}
+          testID="custom_network_fee_input"
           mode={'amount'}
           text={newMaxFeePerGas}
           keyboardType="numeric"
@@ -255,6 +256,7 @@ const EditFees = ({
         />
       </ScrollView>
       <Button
+        testID="custom_network_fee_save_btn"
         type={'primary'}
         size={'xlarge'}
         disabled={saveDisabled}
