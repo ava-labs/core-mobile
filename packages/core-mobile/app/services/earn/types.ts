@@ -14,6 +14,7 @@ export type AddDelegatorTransactionProps = {
   isDevMode: boolean
   isDevnet: boolean
   feeState?: pvm.FeeState
+  pFeeAdjustmentThreshold: number
 }
 
 export type UnixTimeMs = number
