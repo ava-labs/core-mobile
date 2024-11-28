@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Switch } from 'react-native'
 import { ScrollView, Text, View } from '../Primitives'
 import { useTheme } from '../..'
-import AvatarList, { Configuration } from './AvatarList'
+import AvatarList from './AvatarList'
 import { Avatar } from './Avatar'
 
 export default {
@@ -38,11 +38,7 @@ export const All = (): JSX.Element => {
     // }
   ]
 
-  const [selectedAvatarIndex, setSelectedAvatarIndex] = useState<number>(
-    AVATARS.length > Configuration.defaultCenterIndex
-      ? Configuration.defaultCenterIndex
-      : 0
-  )
+  const [selectedAvatarIndex, setSelectedAvatarIndex] = useState<number>(0)
 
   const handleSelect = (index: number): void => {
     setSelectedAvatarIndex(index)
