@@ -1,12 +1,14 @@
 import { FlatList, ImageSourcePropType, StyleSheet } from 'react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming
 } from 'react-native-reanimated'
-import { Pressable } from '../Primitives'
+import Carousel from 'react-native-reanimated-carousel'
+import { Pressable, View } from '../Primitives'
+import { alpha } from '../../utils'
 import { Avatar } from './Avatar'
 
 const AvatarList = ({
@@ -20,6 +22,20 @@ const AvatarList = ({
 }): JSX.Element => {
   const [pressedIndex, setPressedIndex] = useState<number>()
   const [isCentered, setIsCentered] = useState<boolean>(false)
+  const data: { bottom: ImageSourcePropType; top: ImageSourcePropType }[] =
+    useMemo(() => {
+      const pairs: { bottom: ImageSourcePropType; top: ImageSourcePropType }[] =
+        []
+
+      for (let i = 0; i < avatars.length - 1; i += 2) {
+        pairs.push({
+          bottom: avatars[i] as ImageSourcePropType,
+          top: avatars[i + 1] as ImageSourcePropType
+        })
+      }
+
+      return pairs
+    }, [avatars])
 
   const handlePressIn = (index: number): void => {
     setPressedIndex(index)
@@ -39,23 +55,53 @@ const AvatarList = ({
     item,
     index
   }: {
-    item: ImageSourcePropType
+    item: { bottom: ImageSourcePropType; top: ImageSourcePropType }
     index: number
   }): JSX.Element => {
     return (
-      <Pressable
-        style={[styles.item, index % 2 === 0 && styles.evenItem]}
-        onPressIn={() => handlePressIn(index)}
-        onPressOut={() => handlePressOut(index)}
-        onPress={() => handleSelect(index)}>
-        <Avatar
-          key={index}
-          source={item}
-          size={Configuration.avatarWidth}
-          isSelected={selectedIndex === index}
-          isPressed={pressedIndex === index}
-        />
-      </Pressable>
+      <View>
+        <Pressable
+          style={[
+            styles.item,
+            {
+              marginLeft: -(
+                Configuration.avatarWidth / 2 +
+                Configuration.spacing
+              ),
+              zIndex: index * 2
+              // transform: [
+              //   {
+              //     translateX:
+              //       Configuration.avatarWidth / 2 + Configuration.spacing
+              //   }
+              // ]
+            }
+          ]}
+          onPressIn={() => handlePressIn(index * 2)}
+          onPressOut={() => handlePressOut(index * 2)}
+          onPress={() => handleSelect(index * 2)}>
+          <Avatar
+            key={index * 2}
+            source={item.top}
+            size={Configuration.avatarWidth}
+            isSelected={selectedIndex === index * 2}
+            isPressed={pressedIndex === index * 2}
+          />
+        </Pressable>
+        <Pressable
+          style={[styles.item, styles.evenItem, { zIndex: index * 2 + 1 }]}
+          onPressIn={() => handlePressIn(index * 2 + 1)}
+          onPressOut={() => handlePressOut(index * 2 + 1)}
+          onPress={() => handleSelect(index * 2 + 1)}>
+          <Avatar
+            key={index * 2 + 1}
+            source={item.bottom}
+            size={Configuration.avatarWidth}
+            isSelected={selectedIndex === index * 2 + 1}
+            isPressed={pressedIndex === index * 2 + 1}
+          />
+        </Pressable>
+      </View>
     )
   }
 
@@ -103,17 +149,21 @@ const AvatarList = ({
   }, [avatars])
 
   return (
-    <Animated.FlatList
-      style={[fadeInAnimatedStyle]}
-      ref={ref}
-      data={avatars}
-      keyExtractor={(_, index) => index.toString()}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-      renderItem={renderItem}
-      onScrollToIndexFailed={handleScrollToIndexFailed}
-    />
+    <Animated.View
+      style={[
+        fadeInAnimatedStyle,
+        { paddingVertical: Configuration.spacing * 2 }
+      ]}>
+      <Carousel
+        width={Configuration.avatarWidth + Configuration.spacing * 2}
+        height={Configuration.avatarWidth * 2 + Configuration.spacing}
+        data={data}
+        renderItem={renderItem}
+        pagingEnabled={false}
+        snapEnabled={false}
+        style={{ width: '100%', marginLeft: 40, overflow: 'visible' }}
+      />
+    </Animated.View>
   )
 }
 
@@ -126,23 +176,18 @@ export const Configuration = {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: Configuration.spacing * 3,
-    paddingHorizontal: Configuration.avatarWidth / 2 - Configuration.spacing * 2
+    // paddingVertical: Configuration.spacing * 3,
+    // paddingHorizontal: Configuration.avatarWidth / 2 - Configuration.spacing * 2
   },
   item: {
-    width: Configuration.avatarWidth / 2,
-    height: Configuration.avatarWidth,
-    marginHorizontal: Configuration.spacing - 2,
-    alignItems: 'center',
-    overflow: 'visible'
+    // width: Configuration.avatarWidth / 2,
+    // height: Configuration.avatarWidth,
+    // marginHorizontal: Configuration.spacing - 2,
+    // alignItems: 'center',
+    // overflow: 'visible'
   },
   evenItem: {
-    marginTop: Configuration.avatarWidth - 1
-  },
-  avatar: {
-    width: Configuration.avatarWidth - Configuration.spacing * 2,
-    height: Configuration.avatarWidth - Configuration.spacing * 2,
-    borderRadius: Configuration.avatarWidth / 2
+    // marginTop: Configuration.avatarWidth - 1
   }
 })
 

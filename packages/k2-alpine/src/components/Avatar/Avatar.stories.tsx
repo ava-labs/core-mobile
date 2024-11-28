@@ -32,10 +32,10 @@ export const All = (): JSX.Element => {
     },
     {
       uri: 'https://i.seadn.io/s/raw/files/a9cb8c2298a64819a3036083818d0447.jpg?auto=format&dpr=1&w=1000'
-    },
-    {
-      uri: 'https://i.seadn.io/gcs/files/441e674e79460fc975d976465bb3634d.png?auto=format&dpr=1&w=1000'
     }
+    // {
+    //   uri: 'https://i.seadn.io/gcs/files/441e674e79460fc975d976465bb3634d.png?auto=format&dpr=1&w=1000'
+    // }
   ]
 
   const [selectedAvatarIndex, setSelectedAvatarIndex] = useState<number>(
