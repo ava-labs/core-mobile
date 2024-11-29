@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Switch } from 'react-native'
 import { ScrollView, Text, View } from '../Primitives'
 import { useTheme } from '../..'
-import AvatarList from './AvatarList'
+import AvatarSelector from './AvatarSelector'
 import { Avatar } from './Avatar'
 
 export default {
@@ -32,16 +32,20 @@ export const All = (): JSX.Element => {
     },
     {
       uri: 'https://i.seadn.io/s/raw/files/a9cb8c2298a64819a3036083818d0447.jpg?auto=format&dpr=1&w=1000'
+    },
+    {
+      uri: 'https://i.seadn.io/gcs/files/441e674e79460fc975d976465bb3634d.png?auto=format&dpr=1&w=1000'
     }
-    // {
-    //   uri: 'https://i.seadn.io/gcs/files/441e674e79460fc975d976465bb3634d.png?auto=format&dpr=1&w=1000'
-    // }
-  ]
+  ].map((avatar, index) => {
+    return { id: index.toString(), source: avatar }
+  })
 
-  const [selectedAvatarIndex, setSelectedAvatarIndex] = useState<number>(0)
+  const [selectedAvatarId, setSelectedAvatarId] = useState<string | undefined>(
+    AVATARS[0]?.id
+  )
 
-  const handleSelect = (index: number): void => {
-    setSelectedAvatarIndex(index)
+  const handleSelect = (id: string): void => {
+    setSelectedAvatarId(id)
   }
 
   return (
@@ -63,13 +67,15 @@ export const All = (): JSX.Element => {
       </View>
       <View sx={{ alignItems: 'center', padding: 100 }}>
         <Avatar
-          source={AVATARS[selectedAvatarIndex]}
+          source={
+            AVATARS.find(avatar => avatar.id === selectedAvatarId)?.source
+          }
           size="large"
           hasBlur={hasBlur}
         />
       </View>
-      <AvatarList
-        selectedIndex={selectedAvatarIndex}
+      <AvatarSelector
+        selectedId={selectedAvatarId}
         avatars={AVATARS}
         onSelect={handleSelect}
       />

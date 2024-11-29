@@ -1,18 +1,26 @@
 import { Dimensions, ImageSourcePropType } from 'react-native'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Carousel from 'react-native-reanimated-carousel'
 import { Pressable } from '../Primitives'
 import { Avatar } from './Avatar'
 
-const AvatarList = ({
+const AvatarSelector = ({
   avatars,
-  selectedIndex,
+  selectedId,
   onSelect
 }: {
-  avatars: ImageSourcePropType[]
-  selectedIndex?: number
-  onSelect?: (index: number) => void
+  avatars: { id: string; source: ImageSourcePropType }[]
+  selectedId?: string
+  onSelect?: (id: string) => void
 }): JSX.Element => {
+  const data = useMemo(() => {
+    // we should always have an even number of avatars, due to infinite scrolling + two avatars per column
+    if (avatars.length % 2 === 0) {
+      return avatars
+    } else {
+      return [...avatars, ...avatars]
+    }
+  }, [avatars])
   const [pressedIndex, setPressedIndex] = useState<number>()
 
   const handlePressIn = (index: number): void => {
@@ -26,7 +34,11 @@ const AvatarList = ({
   }
 
   const handleSelect = (index: number): void => {
-    onSelect?.(index)
+    if (data[index]?.id === undefined) {
+      return
+    }
+
+    onSelect?.(data[index].id)
   }
 
   const renderItem = ({
@@ -46,7 +58,7 @@ const AvatarList = ({
         <Avatar
           source={item}
           size={Configuration.avatarWidth}
-          isSelected={selectedIndex === index}
+          isSelected={data[index]?.id === selectedId}
           isPressed={pressedIndex === index}
         />
       </Pressable>
@@ -57,7 +69,7 @@ const AvatarList = ({
     <Carousel
       width={Configuration.avatarWidth / 2 + Configuration.spacing}
       height={Configuration.avatarWidth * 2}
-      data={avatars}
+      data={data.map(avatar => avatar.source)}
       renderItem={renderItem}
       pagingEnabled={false}
       snapEnabled={false}
@@ -78,4 +90,4 @@ export const Configuration = {
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
-export default AvatarList
+export default AvatarSelector
