@@ -545,7 +545,7 @@ __metadata:
     react-native-dialog: 9.3.0
     react-native-gesture-handler: 2.14.1
     react-native-reanimated: 3.6.2
-    react-native-reanimated-carousel: "github:onghwan/react-native-reanimated-carousel#item-layout-pointerEvents"
+    react-native-reanimated-carousel: v4.0.0-canary.22
     react-native-safe-area-context: 4.11.0
     react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
@@ -26178,15 +26178,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated-carousel@github:onghwan/react-native-reanimated-carousel#item-layout-pointerEvents":
-  version: 4.0.0-canary.19
-  resolution: "react-native-reanimated-carousel@https://github.com/onghwan/react-native-reanimated-carousel.git#commit=d620c397801199c1fccf471efec3bf464e94a366"
+"react-native-reanimated-carousel@npm:v4.0.0-canary.22":
+  version: 4.0.0-canary.22
+  resolution: "react-native-reanimated-carousel@npm:4.0.0-canary.22"
   peerDependencies:
     react: ">=18.0.0"
     react-native: ">=0.70.3"
     react-native-gesture-handler: ">=2.9.0"
     react-native-reanimated: ">=3.0.0"
-  checksum: 96a3d3cc751b56d5fe0cdb42bd6c3d2a9674ca96af53cb7c93e9b361b67eb3fbd29b1b894f5a484b9f8f85d9bd289beda01b19716473d7231e0efd6bb491d341
+  checksum: 52d4f3c66ea46b6309518bb98547b48302d9852d6ffd7db3f470e3edf342cc289d206c015cf9ba0c31b768e1a15b48f5170b4de678bdcb5f7a29791ef948bd0a
   languageName: node
   linkType: hard
 

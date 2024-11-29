@@ -30,7 +30,7 @@
     "react-native-dialog": "9.3.0",
     "react-native-gesture-handler": "2.14.1",
     "react-native-reanimated": "3.6.2",
-    "react-native-reanimated-carousel": "github:onghwan/react-native-reanimated-carousel#item-layout-pointerEvents",
+    "react-native-reanimated-carousel": "v4.0.0-canary.22",
     "react-native-svg": "15.7.1"
   },
   "peerDependencies": {

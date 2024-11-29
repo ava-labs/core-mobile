@@ -41,7 +41,6 @@ export const HexagonImageView = ({
 
   return (
     <MaskedView
-      style={{ flex: 1 }}
       maskElement={
         <Svg width={height} height={height} viewBox={hexagonPath.viewBox}>
           <Path d={hexagonPath.path} fill="black" />
@@ -70,7 +69,7 @@ export const HexagonImageView = ({
           },
           selectedAnimatedStyle
         ]}>
-        <Arrow isSelected={isSelected} />
+        <Arrow key={theme.isDark ? 'dark' : 'light'} isSelected={isSelected} />
       </Animated.View>
     </MaskedView>
   )
@@ -88,7 +87,7 @@ export const HexagonBorder = ({ height }: { height: number }): JSX.Element => {
       <Path
         d={hexagonPath.path}
         fill="none"
-        stroke={theme.isDark ? 'white' : 'black'}
+        stroke={theme.isDark ? colors.$neutralWhite : 'black'}
         strokeOpacity={0.1}
         strokeWidth="1"
       />

@@ -6,8 +6,9 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { BlurView } from 'expo-blur'
 import { View } from '../Primitives'
-import { GlassView } from '../GlassView/GlassView'
+import { useTheme } from '../..'
 import { HexagonImageView, HexagonBorder } from './HexagonImageView'
 
 export const Avatar = ({
@@ -25,6 +26,7 @@ export const Avatar = ({
   hasBlur?: boolean
   style?: ViewStyle
 }): JSX.Element => {
+  const { theme } = useTheme()
   const blurAreaInset = 50
 
   const height = typeof size === 'number' ? size : size === 'small' ? 90 : 150
@@ -33,6 +35,7 @@ export const Avatar = ({
   const pressedAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pressedAnimation.value }]
   }))
+  const surfacePrimaryBlurBg = theme.isDark ? '#050506' : undefined // to cancel out the blur effect on the $surfacePrimary, we need to use a darker background color for the blur view, only for dark mode
 
   useEffect(() => {
     pressedAnimation.value = withTiming(isPressed ? 0.95 : 1, {
@@ -51,23 +54,29 @@ export const Avatar = ({
       {hasBlur === true && (
         <View
           sx={{
+            backgroundColor: surfacePrimaryBlurBg,
             position: 'absolute',
-            top: 10,
-            left: 0,
+            top: -blurAreaInset + 10,
+            left: -blurAreaInset,
             right: 0,
-            bottom: 0
+            bottom: 0,
+            width: height + blurAreaInset * 2,
+            height: height + blurAreaInset * 2,
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
           <HexagonImageView source={source} height={height} />
-          <GlassView
+          <BlurView
             style={{
               position: 'absolute',
-              top: -blurAreaInset,
-              left: -blurAreaInset,
+              top: 0,
+              left: 0,
               right: 0,
-              bottom: 0,
-              width: height + blurAreaInset * 2,
-              height: height + blurAreaInset * 2
+              bottom: 0
             }}
+            tint={theme.isDark ? 'dark' : undefined}
+            intensity={75}
+            experimentalBlurMethod="dimezisBlurView"
           />
         </View>
       )}
