@@ -47,7 +47,7 @@ export const GlassView: FC<
         ...(backgroundColor ? { backgroundColor } : {})
       }}
       tint={tint}
-      intensity={75}
+      intensity={50}
       experimentalBlurMethod="dimezisBlurView">
       {children}
     </BlurView>
