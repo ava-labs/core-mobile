@@ -306,7 +306,7 @@ class NotificationsService {
     sound,
     data
   }: {
-    channelId: ChannelId
+    channelId?: ChannelId
     title: string
     body?: string
     sound?: string

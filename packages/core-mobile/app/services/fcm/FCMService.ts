@@ -7,7 +7,6 @@ import {
   NotificationsBalanceChangeSchema
 } from 'services/fcm/types'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { ChannelId } from 'services/notifications/channels'
 import { Platform } from 'react-native'
 
 type UnsubscribeFunc = () => void
@@ -61,9 +60,7 @@ class FCMService {
         body: result.data.notification.body,
         data,
         sound: iOSSoundNotification,
-        channelId:
-          result.data.notification.android?.channelId ??
-          ChannelId.BALANCE_CHANGES
+        channelId: result.data.notification.android?.channelId
       }).catch(Logger.error)
     })
   }
@@ -89,9 +86,7 @@ class FCMService {
         url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
       }
       await NotificationsService.displayNotification({
-        channelId:
-          result.data.notification.android?.channelId ??
-          ChannelId.BALANCE_CHANGES,
+        channelId: result.data.notification.android?.channelId,
         title: result.data.notification.title,
         body: result.data.notification.body,
         sound: result.data.notification.sound,
