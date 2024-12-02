@@ -4,7 +4,6 @@ import PortfolioPage from '../pages/portfolio.page'
 import commonElsPage from '../pages/commonEls.page'
 import nameWalletPage from '../pages/nameWallet.page'
 import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
-import accountManagePage from '../pages/accountManage.page'
 import existingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import Actions from '../helpers/actions'
 
