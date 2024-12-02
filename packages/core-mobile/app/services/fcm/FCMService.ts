@@ -6,8 +6,6 @@ import {
   BalanceChangeEvents,
   NotificationsBalanceChangeSchema
 } from 'services/fcm/types'
-import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { Platform } from 'react-native'
 
 type UnsubscribeFunc = () => void
 
@@ -35,19 +33,9 @@ class FCMService {
         )
         return
       }
-      let iOSSoundNotification: string | undefined
-      switch (result.data.data.event) {
-        case BalanceChangeEvents.BALANCES_SPENT:
-          // skip showing notification if user just spent balance in app
-          return
-        case BalanceChangeEvents.BALANCES_RECEIVED:
-          if (Platform.OS === 'ios') {
-            audioFeedback(Audios.Receive)
-          }
-          break
-        default:
-          iOSSoundNotification = 'default'
-          break
+      if (result.data.data.event === BalanceChangeEvents.BALANCES_SPENT) {
+        // skip showing notification if user just spent balance in app
+        return
       }
       const data = {
         accountAddress: result.data.data.accountAddress,
@@ -59,7 +47,7 @@ class FCMService {
         title: result.data.notification.title,
         body: result.data.notification.body,
         data,
-        sound: iOSSoundNotification,
+        sound: result.data.notification.sound,
         channelId: result.data.notification.android?.channelId
       }).catch(Logger.error)
     })
