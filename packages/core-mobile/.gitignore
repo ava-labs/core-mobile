@@ -87,3 +87,4 @@ GoogleService-Info.plist*
 
 # Expo
 .expo/
+/blob-report/

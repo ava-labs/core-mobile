@@ -782,6 +782,7 @@ workflows:
     - _pull_app_files
     - _pull_external_app_files
     after_run:
+    - _run_android_update_app_version_test
     - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -824,7 +825,6 @@ workflows:
     - _pull_app_files
     - _pull_external_app_files
     after_run:
-    - _run_android_update_app_version_test
     - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
