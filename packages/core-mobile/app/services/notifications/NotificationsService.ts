@@ -328,8 +328,8 @@ class NotificationsService {
     if (sound) {
       notification.ios = { sound: sound }
     }
-    if (channelId) {
-      notification.android = { channelId: channelId }
+    if (channelId && notification.android) {
+      notification.android.channelId = channelId
     }
     await notifee.displayNotification(notification).catch(Logger.error)
   }
