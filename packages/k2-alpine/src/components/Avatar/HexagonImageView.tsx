@@ -41,6 +41,14 @@ export const HexagonImageView = ({
   }))
   const [isLoading, setIsLoading] = useState(false)
 
+  const handleLoadStart = (): void => {
+    setIsLoading(true)
+  }
+
+  const handleLoadEnd = (): void => {
+    setIsLoading(false)
+  }
+
   useEffect(() => {
     selectedAnimation.value = withTiming(isSelected ? 1 : 0, {
       duration: 200,
@@ -60,12 +68,8 @@ export const HexagonImageView = ({
         resizeMode="cover"
         source={source}
         style={{ width: height, height: height, backgroundColor }}
-        onLoadStart={() => {
-          if (hasLoading) setIsLoading(true)
-        }}
-        onLoadEnd={() => {
-          if (hasLoading) setIsLoading(false)
-        }}
+        onLoadStart={hasLoading ? handleLoadStart : undefined}
+        onLoadEnd={hasLoading ? handleLoadEnd : undefined}
       />
       {isLoading && (
         <LoadingView
