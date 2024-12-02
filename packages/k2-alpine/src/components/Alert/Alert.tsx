@@ -27,7 +27,7 @@ export const AlertWithTextInputs = ({
             secureTextEntry={input.secureTextEntry ?? false}
             blurOnSubmit
             onChangeText={(text: string) =>
-              setValues({ ...values, [input.key]: text })
+              setValues(current => ({ ...current, [input.key]: text }))
             }
           />
         ))}
