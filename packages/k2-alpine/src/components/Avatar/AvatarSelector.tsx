@@ -45,19 +45,19 @@ const AvatarSelector = ({
     item,
     index
   }: {
-    item: ImageSourcePropType
+    item: { id: string; source: ImageSourcePropType }
     index: number
   }): JSX.Element => {
     return (
       <Pressable
         key={index}
-        style={{ marginTop: index % 2 === 0 ? Configuration.avatarWidth : 0 }}
+        style={{ marginTop: index % 2 === 0 ? configuration.avatarWidth : 0 }}
         onPressIn={() => handlePressIn(index)}
         onPressOut={() => handlePressOut(index)}
         onPress={() => handleSelect(index)}>
         <Avatar
-          source={item}
-          size={Configuration.avatarWidth}
+          source={item.source}
+          size={configuration.avatarWidth}
           isSelected={data[index]?.id === selectedId}
           isPressed={pressedIndex === index}
         />
@@ -67,23 +67,23 @@ const AvatarSelector = ({
 
   return (
     <Carousel
-      width={Configuration.avatarWidth / 2 + Configuration.spacing}
-      height={Configuration.avatarWidth * 2}
-      data={data.map(avatar => avatar.source)}
+      width={configuration.avatarWidth / 2 + configuration.spacing}
+      height={configuration.avatarWidth * 2}
+      data={data}
       renderItem={renderItem}
       pagingEnabled={false}
       snapEnabled={false}
       style={{
         width: '100%',
         overflow: 'visible',
-        paddingVertical: Configuration.spacing * 2,
-        marginLeft: SCREEN_WIDTH / 2 - Configuration.avatarWidth / 2
+        paddingVertical: configuration.spacing * 2,
+        marginLeft: SCREEN_WIDTH / 2 - configuration.avatarWidth / 2
       }}
     />
   )
 }
 
-export const Configuration = {
+const configuration = {
   avatarWidth: 90,
   spacing: 6
 }

@@ -27,7 +27,6 @@ export const Avatar = ({
   style?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
-  const blurAreaInset = 50
 
   const height = typeof size === 'number' ? size : size === 'small' ? 90 : 150
 
@@ -56,12 +55,12 @@ export const Avatar = ({
           sx={{
             backgroundColor: surfacePrimaryBlurBg,
             position: 'absolute',
-            top: -blurAreaInset + 10,
-            left: -blurAreaInset,
+            top: -BLURAREA_INSET + 10,
+            left: -BLURAREA_INSET,
             right: 0,
             bottom: 0,
-            width: height + blurAreaInset * 2,
-            height: height + blurAreaInset * 2,
+            width: height + BLURAREA_INSET * 2,
+            height: height + BLURAREA_INSET * 2,
             alignItems: 'center',
             justifyContent: 'center'
           }}>
@@ -89,3 +88,5 @@ export const Avatar = ({
     </Animated.View>
   )
 }
+
+const BLURAREA_INSET = 50

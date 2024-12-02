@@ -105,6 +105,7 @@ const Arrow = ({ isSelected }: { isSelected?: boolean }): JSX.Element => {
   }))
 
   useEffect(() => {
+    // arrowAnimimation doesn't work on Android
     if (Platform.OS === 'ios') {
       arrowAnimation.value = isSelected
         ? withTiming(0, {
