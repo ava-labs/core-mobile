@@ -236,7 +236,7 @@ __metadata:
     "@react-native-menu/menu": 1.1.3
     "@react-native/babel-preset": 0.73.21
     "@react-native/metro-config": 0.73.5
-    "@react-navigation/bottom-tabs": 6.6.1
+    "@react-navigation/bottom-tabs": 6.5.20
     "@react-navigation/drawer": 6.7.2
     "@react-navigation/elements": 1.3.31
     "@react-navigation/native": 6.1.18
@@ -341,7 +341,6 @@ __metadata:
     react-native-collapsible: 1.6.2
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
-    react-native-dialog: 8.2.0
     react-native-fast-image: 8.6.3
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.20.0
@@ -542,6 +541,7 @@ __metadata:
     react: 18.3.1
     react-dom: 18.3.1
     react-native: 0.73.7
+    react-native-dialog: 9.3.0
     react-native-reanimated: 3.6.2
     react-native-safe-area-context: 4.11.0
     react-native-svg: 15.7.1
@@ -9103,24 +9103,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/bottom-tabs@npm:6.6.1":
-  version: 6.6.1
-  resolution: "@react-navigation/bottom-tabs@npm:6.6.1"
-  dependencies:
-    "@react-navigation/elements": ^1.3.31
-    color: ^4.2.3
-    warn-once: ^0.1.0
-  peerDependencies:
-    "@react-navigation/native": ^6.0.0
-    react: "*"
-    react-native: "*"
-    react-native-safe-area-context: ">= 3.0.0"
-    react-native-screens: ">= 3.0.0"
-  checksum: 07d6da4b91d7f372b67bcb9f1ff97fba96f1fe226bd95d43d7877362ce71d99c6eebe9ca41d84ea8828f055713386262e089a8207a6c849f33bae49b4df4b196
-  languageName: node
-  linkType: hard
-
-"@react-navigation/bottom-tabs@npm:~6.5.7":
+"@react-navigation/bottom-tabs@npm:6.5.20, @react-navigation/bottom-tabs@npm:~6.5.7":
   version: 6.5.20
   resolution: "@react-navigation/bottom-tabs@npm:6.5.20"
   dependencies:
@@ -25858,12 +25841,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-dialog@npm:8.2.0":
-  version: 8.2.0
-  resolution: "react-native-dialog@npm:8.2.0"
+"react-native-dialog@npm:9.3.0":
+  version: 9.3.0
+  resolution: "react-native-dialog@npm:9.3.0"
   peerDependencies:
     react-native: ">=0.63.0"
-  checksum: f54e795796eee8accce727bdf724d60da4b3bfce6276a526bc6609c0d725874b2537f4c755b0ab530708f6b0a8690af61a283606b3e34eb6ca40c3398af9af01
+  checksum: 148fcd9e4cb3001a8bbed02f465833329a83bc60efbf763a9bf227ec81208a41e03055e8bc213aea838933878f3cc7c3ca18a15446e819c17509cad75362d7ca
   languageName: node
   linkType: hard
 
@@ -26385,7 +26368,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d396f3dea807077e8789e1d463c87024e1633481d3dff53c0650c82a08d8b7d699db97ceab4e8d2c9de85c3d5378d192c968487254c62edadff77e82a9b8c929
+  checksum: a187edd718e1ea3a6b1e5da167744e6ee324bc3c3e492bcb0a9d028ab68a82907f053f37c23aa4229d6a9091541cee3c73549c3c850056e4cf5eb5b3cb2c9ffc
   languageName: node
   linkType: hard
 
