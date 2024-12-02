@@ -35,6 +35,9 @@ export const All = (): JSX.Element => {
     },
     {
       uri: 'https://i.seadn.io/gcs/files/441e674e79460fc975d976465bb3634d.png?auto=format&dpr=1&w=1000'
+    },
+    {
+      uri: 'https://www.svgrepo.com/show/19461/url-link.svg'
     }
   ].map((avatar, index) => {
     return { id: index.toString(), source: avatar }
@@ -48,11 +51,13 @@ export const All = (): JSX.Element => {
     setSelectedAvatarId(id)
   }
 
+  const backgroundColor = theme.colors.$surfacePrimary
+
   return (
     <ScrollView
       style={{
         width: '100%',
-        backgroundColor: theme.colors.$surfacePrimary
+        backgroundColor
       }}>
       <View sx={{ alignItems: 'flex-end', padding: 12 }}>
         <View
@@ -67,6 +72,7 @@ export const All = (): JSX.Element => {
       </View>
       <View sx={{ alignItems: 'center', padding: 100 }}>
         <Avatar
+          backgroundColor={backgroundColor}
           source={
             AVATARS.find(avatar => avatar.id === selectedAvatarId)?.source
           }
@@ -75,6 +81,7 @@ export const All = (): JSX.Element => {
         />
       </View>
       <AvatarSelector
+        backgroundColor={backgroundColor}
         selectedId={selectedAvatarId}
         avatars={AVATARS}
         onSelect={handleSelect}

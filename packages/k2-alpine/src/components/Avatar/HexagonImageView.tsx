@@ -1,14 +1,18 @@
 import MaskedView from '@react-native-masked-view/masked-view'
-import React, { useEffect } from 'react'
-import { ImageSourcePropType, Image, Platform } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
+  interpolateColor,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
+  withRepeat,
   withTiming
 } from 'react-native-reanimated'
 import Svg, { Path } from 'react-native-svg'
+import { Image } from 'expo-image'
 import { alpha } from '../../utils'
 import {
   colors,
@@ -20,17 +24,20 @@ import { useTheme } from '../..'
 export const HexagonImageView = ({
   source,
   height,
-  isSelected
+  isSelected,
+  hasLoading = false
 }: {
   source: ImageSourcePropType
   height: number
   isSelected?: boolean
+  hasLoading?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const selectedAnimation = useSharedValue(0)
   const selectedAnimatedStyle = useAnimatedStyle(() => ({
     opacity: selectedAnimation.value
   }))
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     selectedAnimation.value = withTiming(isSelected ? 1 : 0, {
@@ -51,7 +58,24 @@ export const HexagonImageView = ({
         resizeMode="cover"
         source={source}
         style={{ width: height, height: height }}
+        onLoadStart={() => {
+          if (hasLoading) setIsLoading(true)
+        }}
+        onLoadEnd={() => {
+          if (hasLoading) setIsLoading(false)
+        }}
       />
+      {isLoading && (
+        <LoadingView
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+        />
+      )}
       <Animated.View
         style={[
           {
@@ -154,4 +178,30 @@ const hexagonPath = {
   M53 3.9282C60.4256 -0.358983 69.5744 -0.358984 77 3.9282L117.952 27.5718C125.378 31.859 129.952 39.782 129.952 48.3564V95.6436C129.952 104.218 125.378 112.141 117.952 116.428L77 140.072C69.5744 144.359 60.4256 144.359 53 140.072L12.0481 116.428C4.62247 112.141 0.0480957 104.218 0.0480957 95.6436V48.3564C0.0480957 39.782 4.62247 31.859 12.0481 27.5718L53 3.9282Z
 `,
   viewBox: '0 0 130 144'
+}
+
+const LoadingView = ({ style }: { style: ViewStyle }): JSX.Element => {
+  const backgroundAnimation = useSharedValue(0)
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    backgroundAnimation.value = withDelay(
+      Math.random() * 1000,
+      withRepeat(withTiming(1, { duration: 1000 }), -1, true)
+    )
+  }, [backgroundAnimation])
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      backgroundAnimation.value,
+      [0, 1],
+      [theme.colors.$surfacePrimary, theme.colors.$surfaceSecondary]
+    )
+
+    return {
+      backgroundColor
+    }
+  })
+
+  return <Animated.View style={[style, animatedStyle]} />
 }

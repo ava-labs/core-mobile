@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { ImageSourcePropType, ViewStyle } from 'react-native'
+import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -17,10 +17,12 @@ export const Avatar = ({
   isSelected,
   isPressed,
   hasBlur,
-  style
+  style,
+  backgroundColor
 }: {
   source: ImageSourcePropType
   size: number | 'small' | 'large'
+  backgroundColor: string
   isSelected?: boolean
   isPressed?: boolean
   hasBlur?: boolean
@@ -34,7 +36,22 @@ export const Avatar = ({
   const pressedAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pressedAnimation.value }]
   }))
-  const surfacePrimaryBlurBg = theme.isDark ? '#050506' : undefined // to cancel out the blur effect on the $surfacePrimary, we need to use a darker background color for the blur view, only for dark mode
+  // to cancel out the blur effect on the backgroundColor, we need to use a darker background color for the blur view
+  const surfacePrimaryBlurBgMap = theme.isDark
+    ? {
+        [theme.colors.$surfacePrimary]:
+          Platform.OS === 'ios' ? '#050506' : '#0a0a0b',
+        [theme.colors.$surfaceSecondary]:
+          Platform.OS === 'ios' ? '#37373f' : '#373743',
+        [theme.colors.$surfaceTertiary]:
+          Platform.OS === 'ios' ? '#1A1A1C' : '#1C1C1F'
+      }
+    : {
+        [theme.colors.$surfacePrimary]: undefined,
+        [theme.colors.$surfaceSecondary]: undefined,
+        [theme.colors.$surfaceTertiary]:
+          Platform.OS === 'ios' ? '#8b8b8c' : '#79797c'
+      }
 
   useEffect(() => {
     pressedAnimation.value = withTiming(isPressed ? 0.95 : 1, {
@@ -53,7 +70,7 @@ export const Avatar = ({
       {hasBlur === true && (
         <View
           sx={{
-            backgroundColor: surfacePrimaryBlurBg,
+            backgroundColor: surfacePrimaryBlurBgMap[backgroundColor],
             position: 'absolute',
             top: -BLURAREA_INSET + 10,
             left: -BLURAREA_INSET,
@@ -83,6 +100,7 @@ export const Avatar = ({
         source={source}
         height={height}
         isSelected={isSelected}
+        hasLoading={true}
       />
       <HexagonBorder height={height} />
     </Animated.View>
