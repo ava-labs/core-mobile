@@ -81,7 +81,11 @@ export const Avatar = ({
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-          <HexagonImageView source={source} height={height} />
+          <HexagonImageView
+            backgroundColor={backgroundColor}
+            source={source}
+            height={height}
+          />
           <BlurView
             style={{
               position: 'absolute',
@@ -99,6 +103,7 @@ export const Avatar = ({
       <HexagonImageView
         source={source}
         height={height}
+        backgroundColor={backgroundColor}
         isSelected={isSelected}
         hasLoading={true}
       />

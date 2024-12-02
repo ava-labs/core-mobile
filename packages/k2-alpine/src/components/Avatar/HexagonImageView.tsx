@@ -24,11 +24,13 @@ import { useTheme } from '../..'
 export const HexagonImageView = ({
   source,
   height,
+  backgroundColor,
   isSelected,
   hasLoading = false
 }: {
   source: ImageSourcePropType
   height: number
+  backgroundColor: string
   isSelected?: boolean
   hasLoading?: boolean
 }): JSX.Element => {
@@ -57,7 +59,7 @@ export const HexagonImageView = ({
         key={`image-${source}`}
         resizeMode="cover"
         source={source}
-        style={{ width: height, height: height }}
+        style={{ width: height, height: height, backgroundColor }}
         onLoadStart={() => {
           if (hasLoading) setIsLoading(true)
         }}
