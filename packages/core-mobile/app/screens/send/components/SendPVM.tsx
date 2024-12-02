@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
@@ -6,6 +6,9 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { Contact, CorePrimaryAccount } from '@avalabs/types'
 import { getAddressXP } from 'store/utils/account&contactGetters'
+import { Eip1559Fees } from 'utils/Utils'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import usePVMSend from '../hooks/usePVMSend'
 import SendTokenForm from './SendTokenForm'
 
@@ -29,10 +32,10 @@ const SendPVM = ({
   const { setToAddress, token, maxAmount, error, isValid, isSending, maxFee } =
     useSendContext()
   const activeAccount = useSelector(selectActiveAccount)
-
   const fromAddress = activeAccount?.addressPVM ?? ''
+  const provider = useAvalancheXpProvider()
 
-  const { send } = usePVMSend({
+  const { send, estimatedFee, setGasPrice } = usePVMSend({
     network,
     fromAddress,
     maxFee,
@@ -58,6 +61,13 @@ const SendPVM = ({
     setToAddress(getAddressXP(item) ?? '')
   }
 
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees) => {
+      setGasPrice?.(fees.maxFeePerGas)
+    },
+    [setGasPrice]
+  )
+
   return (
     <SendTokenForm
       network={network}
@@ -70,6 +80,12 @@ const SendPVM = ({
       onOpenAddressBook={onOpenAddressBook}
       onSelectContact={handleSelectContact}
       onSend={handleSend}
+      handleFeesChange={handleFeesChange}
+      estimatedFee={estimatedFee}
+      supportsAvalancheDynamicFee={
+        provider instanceof Avalanche.JsonRpcProvider &&
+        provider.isEtnaEnabled()
+      }
     />
   )
 }

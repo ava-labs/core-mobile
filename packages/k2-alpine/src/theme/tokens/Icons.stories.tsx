@@ -59,3 +59,10 @@ export const Navigation = (): JSX.Element =>
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
   })
+
+export const Custom = (): JSX.Element =>
+  Template({
+    icons: [Icons.Custom.FaceID, Icons.Custom.TouchID, Icons.Custom.Pin],
+    resourceURL:
+      'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
+  })

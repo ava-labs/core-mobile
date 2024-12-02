@@ -13,12 +13,23 @@ import { FormInputText } from 'components/form/FormInputText'
 import { isEmpty } from 'lodash'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveNetwork } from 'store/network'
+import { useSelector } from 'react-redux'
+import { isDevnet } from 'utils/isDevnet'
 import { Opacity50 } from '../../resources/Constants'
 
 type TFormProps = {
   minUpTime: string
   maxFee: string
 }
+
+const devnetSchema = z.object({
+  minUpTime: z.string().transform(Number).pipe(z.number().int().gte(0).lte(99)),
+  maxFee: z
+    .string()
+    .transform(Number)
+    .pipe(z.number().positive().int().gte(2).lte(20))
+})
 
 const schema = z.object({
   minUpTime: z
@@ -41,12 +52,21 @@ const AdvancedStaking = (): JSX.Element => {
   const { stakingAmount, stakingEndTime, selectedDuration } =
     useRoute<ScreenProps['route']>().params
 
+  const activeNetwork = useSelector(selectActiveNetwork)
+
+  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
+  const minimumUptimeCaption = isDevnet(activeNetwork)
+    ? 'Enter a value between 0-99%'
+    : 'Enter a value between 1-99%'
+
   const {
     control,
     handleSubmit,
     formState: { errors, dirtyFields }
   } = useForm<TFormProps>({
-    resolver: zodResolver(schema),
+    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
+    // this is needed to find the node with 0% uptime in devnet
+    resolver: zodResolver(isDevnet(activeNetwork) ? devnetSchema : schema),
     mode: 'onChange',
     defaultValues: {
       minUpTime: '',
@@ -100,7 +120,7 @@ const AdvancedStaking = (): JSX.Element => {
             />
             <AvaText.Caption
               color={errors.minUpTime ? theme.colorError : theme.neutral300}>
-              Enter a value between 1-99%
+              {minimumUptimeCaption}
             </AvaText.Caption>
           </View>
           <View>

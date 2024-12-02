@@ -11,9 +11,13 @@ import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import { AvaxXP } from 'types/AvaxXP'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useMemo } from 'react'
+import { SendErrorMessage } from 'screens/send/utils/types'
 import { useClaimFees } from './useClaimFees'
-import { usePChainBalance } from './usePChainBalance'
+import { useGetFeeState } from './useGetFeeState'
 
 /**
  * a hook to claim rewards by doing a cross chain transfer from P to C chain
@@ -25,37 +29,50 @@ import { usePChainBalance } from './usePChainBalance'
 export const useClaimRewards = (
   onSuccess: () => void,
   onError: (error: Error) => void,
-  onFundsStuck: (error: Error) => void
-): UseMutationResult<void, Error, void, unknown> => {
+  onFundsStuck: (error: Error) => void,
+  gasPrice?: bigint
+): {
+  mutation: UseMutationResult<void, Error, void, unknown>
+  defaultTxFee?: TokenUnit
+  totalFees?: TokenUnit
+  feeCalculationError?: SendErrorMessage
+  // eslint-disable-next-line max-params
+} => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const pChainBalance = usePChainBalance()
-  const { totalFees, exportPFee } = useClaimFees()
+  const { getFeeState } = useGetFeeState()
+  const {
+    totalFees,
+    exportPFee,
+    totalClaimable,
+    defaultTxFee,
+    feeCalculationError
+  } = useClaimFees(gasPrice)
+
+  const feeState = useMemo(() => getFeeState(gasPrice), [getFeeState, gasPrice])
+
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: () => {
       if (!activeAccount) {
         throw Error('no active account')
       }
 
-      if (!totalFees) {
+      if (!totalFees || !exportPFee || !totalClaimable) {
         throw Error('unable to calculate fees')
       }
-
-      const totalClaimable = AvaxXP.fromNanoAvax(
-        pChainBalance?.data?.balancePerType.unlockedUnstaked ?? 0
-      )
 
       if (totalFees.gt(totalClaimable)) {
         throw Error('not enough balance to cover fee')
       }
 
-      // maximum amount that we can transfer = max claimable amount - export P fee
-      const amountToTransfer = totalClaimable.sub(exportPFee)
+      // maximum amount that we can transfer = max claimable amount - total fee (exportP + importC)
+      const amountToTransfer = totalClaimable.sub(totalFees)
 
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
@@ -63,7 +80,9 @@ export const useClaimRewards = (
         totalClaimable,
         amountToTransfer,
         activeAccount,
-        isDeveloperMode
+        isDeveloperMode,
+        isDevnet(activeNetwork),
+        feeState
       )
     },
     onSuccess: () => {
@@ -86,6 +105,7 @@ export const useClaimRewards = (
       }
     }
   })
+  return { mutation, defaultTxFee, totalFees, feeCalculationError }
 }
 
 /**

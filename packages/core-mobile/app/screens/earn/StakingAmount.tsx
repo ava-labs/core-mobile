@@ -28,6 +28,8 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import { cChainToken } from 'utils/units/knownTokens'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -39,6 +41,7 @@ export default function StakingAmount(): JSX.Element {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const cChainBalanceAvax = useMemo(
     () =>
       cChainBalance?.data?.balance
@@ -54,7 +57,9 @@ export default function StakingAmount(): JSX.Element {
   const claimableBalance = useGetClaimableBalance()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const chainId = isDeveloperMode
+  const chainId = isDevnet(activeNetwork)
+    ? ChainId.AVALANCHE_DEVNET_ID
+    : isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
   const avaxNetwork = getNetwork(chainId)
@@ -94,7 +99,7 @@ export default function StakingAmount(): JSX.Element {
       percent: (100 / factor).toString()
     })
     if (!cumulativeBalance) return
-    setInputAmount(cumulativeBalance.div(factor))
+    setInputAmount(zeroAvaxPChain().add(cumulativeBalance.div(factor)))
   }
 
   return (
@@ -156,7 +161,7 @@ export default function StakingAmount(): JSX.Element {
           onPress={() => {
             AnalyticsService.capture('StakeOpenDurationSelect')
             navigate(AppNavigation.StakeSetup.StakingDuration, {
-              stakingAmount: inputAmount
+              stakingAmountNanoAvax: inputAmount.toSubUnit()
             })
           }}>
           Next

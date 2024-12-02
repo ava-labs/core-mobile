@@ -16,7 +16,7 @@ describe('Dapp Wallet Connect - Others', () => {
   })
 
   it('should connect TraderJoe via Wallet Connect', async () => {
-    await browserPage.connectTo('https://traderjoexyz.com/avalanche')
+    await browserPage.connectTo('https://lfj.gg/avalanche')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()

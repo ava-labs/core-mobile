@@ -4,7 +4,6 @@ import Actions from '../../helpers/actions'
 import { Platform } from '../../helpers/constants'
 import commonElsPage from '../commonEls.page'
 import delay from '../../helpers/waits'
-import confirmStakingPage from './confirmStaking.page'
 
 type StakeCard = {
   title: string
@@ -270,6 +269,30 @@ class StakePage {
     return by.text(stakeScreenLoc.customRadio)
   }
 
+  get customFeeInput() {
+    return by.id(stakeScreenLoc.customInput)
+  }
+
+  get customSaveBtn() {
+    return by.id(stakeScreenLoc.customSaveBtn)
+  }
+
+  get slowBaseFee() {
+    return by.id(stakeScreenLoc.slowBaseFee)
+  }
+
+  get fastBaseFee() {
+    return by.id(stakeScreenLoc.fastBaseFee)
+  }
+
+  get instantBaseFee() {
+    return by.id(stakeScreenLoc.instantBaseFee)
+  }
+
+  get customBaseFee() {
+    return by.id(stakeScreenLoc.customBaseFee)
+  }
+
   async tapActiveTab() {
     await Actions.tap(this.activeTab)
   }
@@ -314,6 +337,7 @@ class StakePage {
   }
 
   async tapStakeNow() {
+    await Actions.waitForElementNoSync(this.stakeNow, 5000)
     await Actions.tapElementAtIndex(this.stakeNow, 0)
   }
 
@@ -503,12 +527,32 @@ class StakePage {
       await Actions.tap(by.text(duration))
     }
     await this.tapNextButton()
-    await Actions.waitForElementNoSync(
-      confirmStakingPage.confirmStakingTitle,
-      30000,
-      0
-    )
+    await Actions.waitForElementNoSync(this.stakeNow, 30000)
+    await this.selectRandomDynamicFee()
     await this.tapStakeNow()
+  }
+
+  async selectRandomDynamicFee() {
+    const feeOptions = [
+      this.slowBaseFee,
+      this.fastBaseFee,
+      this.instantBaseFee,
+      this.customBaseFee
+    ]
+    const randomIndex = Math.floor(Math.random() * feeOptions.length)
+    const selectedFeeOption = feeOptions[randomIndex] as Detox.NativeMatcher
+
+    await Actions.tap(selectedFeeOption)
+
+    // If the selected fee option is custom, set the fee to the instant fee
+    if (randomIndex === 3) {
+      const instantFeeText = (await Actions.getElementText(
+        this.instantBaseFee
+      )) as string
+      await Actions.waitForElementNoSync(this.instantBaseFee)
+      await Actions.setInputText(this.customFeeInput, instantFeeText)
+      await Actions.tap(this.customSaveBtn)
+    }
   }
 
   async verifyStakeSuccessToast() {
@@ -518,7 +562,7 @@ class StakePage {
     } catch (e) {
       console.log('No stake notification prompt is displayed')
     }
-    await delay(3000)
+    await delay(5000)
   }
 }
 

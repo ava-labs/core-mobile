@@ -7,22 +7,25 @@ import { pvm } from '@avalabs/avalanchejs'
 import { Seconds } from 'types/siUnits'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 
 export type useEarnCalcEstimatedRewardsProps = {
-  amount: TokenUnit
+  amountNanoAvax: bigint
   duration: Seconds
   delegationFee: number
 }
 
 /**
  *
- * @param amount nAVAX
+ * @param amountNanoAvax nAVAX
  * @param duration between current datetime to validator end time
  * @param delegationFee
  * @returns
  */
 export const useEarnCalcEstimatedRewards = ({
-  amount,
+  amountNanoAvax,
   duration,
   delegationFee
 }: useEarnCalcEstimatedRewardsProps): UseQueryResult<
@@ -34,14 +37,24 @@ export const useEarnCalcEstimatedRewards = ({
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useSelector(selectAvaxPrice)
-  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const provider = useAvalancheXpProvider(isDeveloperMode)
+  const { networkToken } = NetworkService.getAvalancheNetworkP(
+    isDeveloperMode,
+    isDevnet(activeNetwork)
+  )
 
   return useQuery({
-    queryKey: ['currentSupply', isDeveloperMode],
-    queryFn: async () => EarnService.getCurrentSupply(isDeveloperMode),
+    queryKey: ['currentSupply', provider],
+    queryFn: async () => {
+      if (provider === undefined) {
+        throw new Error('Avalanche provider is not available')
+      }
+      return EarnService.getCurrentSupply(provider)
+    },
     select: ({ supply: currentSupply }: pvm.GetCurrentSupplyResponse) => {
       const reward = EarnService.calcReward(
-        amount,
+        amountNanoAvax,
         duration,
         new TokenUnit(
           currentSupply,
@@ -49,7 +62,8 @@ export const useEarnCalcEstimatedRewards = ({
           networkToken.symbol
         ),
         delegationFee,
-        isDeveloperMode
+        isDeveloperMode,
+        isDevnet(activeNetwork)
       )
       return {
         estimatedTokenReward: reward,

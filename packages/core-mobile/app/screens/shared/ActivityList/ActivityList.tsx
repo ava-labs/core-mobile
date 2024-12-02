@@ -6,6 +6,7 @@ import { Row } from 'components/Row'
 import DropDown, { OptionsItemInfo } from 'components/Dropdown'
 import { Space } from 'components/Space'
 import { useGetRecentTransactions } from 'store/transaction/hooks'
+import { TransactionType } from '@avalabs/vm-module-types'
 import { ActivityLoader } from './ActivityLoader'
 import Transactions from './Transactions'
 
@@ -46,13 +47,13 @@ const ActivityList = ({
             case ActivityFilter.Contract:
               return tx.isContractCall
             case ActivityFilter.Incoming:
-              return tx.isIncoming && !tx.isBridge
+              return tx.isIncoming && tx.txType !== TransactionType.BRIDGE
             case ActivityFilter.Outgoing:
               return tx.isOutgoing
             case ActivityFilter.All:
               return true
             case ActivityFilter.Bridge:
-              return tx.isBridge
+              return tx.txType === TransactionType.BRIDGE
             default:
               return false
           }

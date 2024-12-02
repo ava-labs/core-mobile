@@ -21,7 +21,9 @@ import { UTCDate } from '@date-fns/utc'
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
   [AppNavigation.StakeSetup.SmartStakeAmount]: undefined
-  [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: TokenUnit }
+  [AppNavigation.StakeSetup.StakingDuration]: {
+    stakingAmountNanoAvax: bigint
+  }
   [AppNavigation.StakeSetup.AdvancedStaking]: {
     stakingEndTime: UTCDate
     stakingAmount: TokenUnit

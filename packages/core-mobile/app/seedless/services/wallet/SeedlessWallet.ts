@@ -169,7 +169,7 @@ export default class SeedlessWallet implements Wallet {
         return this.signAvalancheMessage({
           message: data,
           chainAlias,
-          isTestnet: !!network.isTestnet,
+          network,
           provider
         })
       }
@@ -298,10 +298,10 @@ export default class SeedlessWallet implements Wallet {
   }
 
   public async getAddresses({
-    isTestnet,
-    provXP
+    provXP,
+    network
   }: {
-    isTestnet: boolean
+    network: Network
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Record<NetworkVMType, string>> {
     const addresses = await ModuleManager.getAddresses({
@@ -309,7 +309,7 @@ export default class SeedlessWallet implements Wallet {
       accountIndex: 0,
       xpub: this.#addressPublicKey.evm,
       xpubXP: this.#addressPublicKey.xp,
-      isTestnet
+      network
     })
     const pubKeyBufferC = this.getPubKeyBufferC()
     return {
@@ -335,16 +335,19 @@ export default class SeedlessWallet implements Wallet {
 
   private signAvalancheMessage = async ({
     message,
-    isTestnet,
+    network,
     chainAlias,
     provider
   }: {
     message: string
-    isTestnet: boolean
     chainAlias: Avalanche.ChainIDAlias
     provider: Avalanche.JsonRpcProvider
+    network: Network
   }): Promise<string> => {
-    const addresses = await this.getAddresses({ isTestnet, provXP: provider })
+    const addresses = await this.getAddresses({
+      provXP: provider,
+      network
+    })
     const address = addresses[Avalanche.getVmByChainAlias(chainAlias)]
     const buffer = Buffer.from(
       strip0x(

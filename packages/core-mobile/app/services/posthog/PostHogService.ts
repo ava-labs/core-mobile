@@ -2,7 +2,7 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
-import { applyTempChainIdConversion } from 'temp/caip2ChainIds'
+import { applyTempChainIdConversion } from 'utils/caip2ChainIds'
 import { PostHogServiceNoop } from 'services/posthog/PostHogServiceNoop'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 import {

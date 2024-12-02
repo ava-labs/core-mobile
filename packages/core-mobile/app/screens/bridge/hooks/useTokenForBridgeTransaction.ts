@@ -1,4 +1,3 @@
-import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import {
   BITCOIN_NETWORK,
@@ -9,43 +8,99 @@ import { NetworkContractToken } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
-  isTestnet: boolean
+  isTestnet: boolean,
+  isDevnet: boolean
 ): NetworkContractToken | NetworkToken | undefined {
   const chainId = useMemo(() => {
-    switch (bridgeTransaction?.sourceChain) {
-      case Blockchain.BITCOIN:
-        return isTestnet ? ChainId.BITCOIN_TESTNET : ChainId.BITCOIN
-      case Blockchain.ETHEREUM:
-        // ETHEREUM_SEPOLIA doesn't have contract tokens, so always use ETHEREUM_HOMESTEAD chainid.
-        return ChainId.ETHEREUM_HOMESTEAD
-      case Blockchain.AVALANCHE:
-      default:
-        return isTestnet
-          ? ChainId.AVALANCHE_TESTNET_ID
-          : ChainId.AVALANCHE_MAINNET_ID
-    }
+    return getSourceChainId(bridgeTransaction, isTestnet, isDevnet)
   }, [bridgeTransaction, isTestnet])
 
   const { getNetwork } = useNetworks()
   const network = getNetwork(chainId)
-  if (!network) {
-    throw new Error(`Network not found for chainId: ${chainId}`)
-  }
-
   const tokens = useNetworkContractTokens(network)
+  const symbol = isUnifiedBridgeTransfer(bridgeTransaction)
+    ? bridgeTransaction?.asset.symbol
+    : bridgeTransaction?.symbol
 
   return useMemo(() => {
-    const token = tokens.find(t => t.symbol === bridgeTransaction?.symbol)
+    const token = tokens.find(t => t.symbol === symbol)
 
     if (token) return token
 
-    if (bridgeTransaction?.symbol === BITCOIN_NETWORK.networkToken.symbol) {
+    if (symbol === BITCOIN_NETWORK.networkToken.symbol) {
       return BITCOIN_NETWORK.networkToken
     }
 
-    return undefined
-  }, [tokens, bridgeTransaction])
+    return network?.networkToken
+  }, [tokens, symbol, network])
+}
+
+function getSourceChainId(
+  bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
+  isTestnet: boolean,
+  isDevnet: boolean
+): number | undefined {
+  if (isUnifiedBridgeTransfer(bridgeTransaction)) {
+    return getSourceChainIdForUnifiedBridgeTransaction(
+      bridgeTransaction,
+      isTestnet
+    )
+  } else {
+    return getSourceChainIdForLegacyBridgeTransaction(
+      bridgeTransaction,
+      isTestnet,
+      isDevnet
+    )
+  }
+}
+
+function getSourceChainIdForLegacyBridgeTransaction(
+  bridgeTransaction: BridgeTransaction | undefined,
+  isTestnet: boolean,
+  isDevnet: boolean
+): number {
+  switch (bridgeTransaction?.sourceChain) {
+    case Blockchain.BITCOIN:
+      return isTestnet ? ChainId.BITCOIN_TESTNET : ChainId.BITCOIN
+    case Blockchain.ETHEREUM:
+      // ETHEREUM_SEPOLIA doesn't have contract tokens, so always use ETHEREUM_HOMESTEAD chainid.
+      return ChainId.ETHEREUM_HOMESTEAD
+    case Blockchain.AVALANCHE:
+    default:
+      return isDevnet
+        ? ChainId.AVALANCHE_DEVNET_ID
+        : isTestnet
+        ? ChainId.AVALANCHE_TESTNET_ID
+        : ChainId.AVALANCHE_MAINNET_ID
+  }
+}
+
+function getSourceChainIdForUnifiedBridgeTransaction(
+  bridgeTransaction: BridgeTransfer,
+  isTestnet: boolean
+): number | undefined {
+  const sourceChainId = bridgeTransaction?.sourceChain.chainId
+    ? getChainIdFromCaip2(bridgeTransaction.sourceChain.chainId)
+    : undefined
+
+  if (!sourceChainId) return undefined
+
+  if (isBitcoinChainId(sourceChainId)) {
+    return isTestnet ? ChainId.BITCOIN_TESTNET : ChainId.BITCOIN
+  }
+
+  if (isEthereumChainId(sourceChainId)) {
+    return ChainId.ETHEREUM_HOMESTEAD
+  }
+
+  return isTestnet ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID
 }

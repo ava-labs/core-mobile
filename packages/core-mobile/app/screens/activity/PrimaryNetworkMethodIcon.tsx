@@ -73,11 +73,11 @@ const METHOD_NAME_TO_ICON: Record<
   Unwrap: undefined,
   UNKNOWN: undefined,
 
-  ConvertSubnetTx: undefined,
-  RegisterSubnetValidatorTx: undefined,
-  SetSubnetValidatorWeightTx: undefined,
-  DisableSubnetValidatorTx: undefined,
-  IncreaseBalanceTx: undefined
+  ConvertSubnetToL1Tx: undefined,
+  RegisterL1ValidatorTx: undefined,
+  SetL1ValidatorWeightTx: undefined,
+  DisableL1ValidatorTx: undefined,
+  IncreaseL1ValidatorBalanceTx: undefined
 }
 
 export const PrimaryNetworkMethodIcon = ({

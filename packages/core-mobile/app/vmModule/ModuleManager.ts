@@ -15,7 +15,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
-import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'temp/caip2ChainIds'
+import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
@@ -100,7 +100,7 @@ class ModuleManager {
     accountIndex,
     xpub,
     xpubXP,
-    isTestnet
+    network
   }: GetAddressParams): Promise<Record<string, string>> => {
     return Promise.allSettled(
       this.modules.map(async module =>
@@ -109,7 +109,7 @@ class ModuleManager {
           accountIndex,
           xpub,
           xpubXP,
-          isTestnet
+          network
         })
       )
     ).then(results => {

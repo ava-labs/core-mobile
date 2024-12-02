@@ -6,10 +6,11 @@ import {
 } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveAccount } from 'store/account/slice'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { selectPFeeAdjustmentThreshold } from 'store/posthog/slice'
+import { calculateAmountForCrossChainTransferBigint } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import NetworkService from 'services/network/NetworkService'
@@ -18,7 +19,11 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network/slice'
+import { nanoToWei } from 'utils/units/converter'
 import { useCChainBalance } from './useCChainBalance'
+import { useGetFeeState } from './useGetFeeState'
 
 export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
@@ -30,21 +35,29 @@ export const useIssueDelegation = (
     Error,
     {
       nodeId: string
-      stakingAmount: TokenUnit
+      stakingAmountNanoAvax: bigint
       startDate: Date
       endDate: Date
+      gasPrice?: bigint
+      requiredPFeeNanoAvax?: bigint
     },
     unknown
   >
 } => {
   const queryClient = useQueryClient()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data: cChainBalanceRes } = useCChainBalance()
+  const { getFeeState } = useGetFeeState()
   const cChainBalanceWei = cChainBalanceRes?.balance
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDeveloperMode)
+    NetworkService.getAvalancheNetworkP(
+      isDeveloperMode,
+      isDevnet(activeNetwork)
+    )
+  const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
@@ -52,9 +65,11 @@ export const useIssueDelegation = (
   const issueDelegationMutation = useMutation({
     mutationFn: async (data: {
       nodeId: string
-      stakingAmount: TokenUnit
+      stakingAmountNanoAvax: bigint
       startDate: Date
       endDate: Date
+      gasPrice?: bigint
+      requiredPFeeNanoAvax?: bigint
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
@@ -67,11 +82,16 @@ export const useIssueDelegation = (
       await EarnService.importAnyStuckFunds({
         activeAccount,
         isDevMode: isDeveloperMode,
-        selectedCurrency
-      })
+        selectedCurrency,
+        isDevnet: isDevnet(activeNetwork),
+        feeState: getFeeState(data.gasPrice)
+      }).catch(Logger.error)
       Logger.trace('getPChainBalance...')
 
-      const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+      const network = NetworkService.getAvalancheNetworkP(
+        isDeveloperMode,
+        isDevnet(activeNetwork)
+      )
       const balancesResponse = await ModuleManager.avalancheModule.getBalances({
         addresses: [pAddress],
         currency: selectedCurrency,
@@ -94,29 +114,31 @@ export const useIssueDelegation = (
         return Promise.reject('invalid balance type.')
       }
 
-      const claimableBalance = new TokenUnit(
-        pChainBalance.balancePerType.unlockedUnstaked || 0,
-        pChainNetworkToken.decimals,
-        pChainNetworkToken.symbol
-      )
+      const claimableBalance = pChainBalance.balancePerType.unlockedUnstaked
+        ? new TokenUnit(
+            pChainBalance.balancePerType.unlockedUnstaked,
+            pChainNetworkToken.decimals,
+            pChainNetworkToken.symbol
+          )
+        : undefined
 
-      Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
-      const cChainRequiredAmountAvax = calculateAmountForCrossChainTransfer(
-        data.stakingAmount,
-        claimableBalance
-      )
+      Logger.trace('getPChainBalance: ', claimableBalance?.toDisplay())
+      const cChainRequiredAmountNanoAvax =
+        calculateAmountForCrossChainTransferBigint(
+          data.stakingAmountNanoAvax + (data.requiredPFeeNanoAvax ?? 0n),
+          claimableBalance?.toSubUnit()
+        )
 
-      Logger.trace(
-        'cChainRequiredAmount: ',
-        cChainRequiredAmountAvax.toDisplay()
-      )
+      Logger.trace('cChainRequiredAmount: ', cChainRequiredAmountNanoAvax)
       Logger.trace('collectTokensForStaking...')
       await EarnService.collectTokensForStaking({
         activeAccount,
-        cChainBalance: cChainBalanceWei,
+        cChainBalanceWei,
         isDevMode: isDeveloperMode,
-        requiredAmount: cChainRequiredAmountAvax.toSubUnit(),
-        selectedCurrency
+        requiredAmountWei: nanoToWei(cChainRequiredAmountNanoAvax),
+        selectedCurrency,
+        isDevnet: isDevnet(activeNetwork),
+        feeState: getFeeState(data.gasPrice)
       })
 
       return EarnService.issueAddDelegatorTransaction({
@@ -124,8 +146,11 @@ export const useIssueDelegation = (
         endDate: data.endDate,
         isDevMode: isDeveloperMode,
         nodeId: data.nodeId,
-        stakeAmount: data.stakingAmount.toSubUnit(),
-        startDate: data.startDate
+        stakeAmountNanoAvax: data.stakingAmountNanoAvax,
+        startDate: data.startDate,
+        isDevnet: isDevnet(activeNetwork),
+        feeState: getFeeState(data.gasPrice),
+        pFeeAdjustmentThreshold
       })
     },
     onSuccess: txId => {

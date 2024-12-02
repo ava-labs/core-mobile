@@ -13,6 +13,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND_NFT_IOS]: true,
   [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
+  [FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]: '1e-3', // 0.1%
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.DEFI]: true,
   [FeatureGates.BROWSER]: true,
@@ -27,7 +28,12 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEEDLESS_SIGNING]: true,
   [FeatureGates.BLOCKAID_TRANSACTION_VALIDATION]: true,
   [FeatureGates.BLOCKAID_DAPP_SCAN]: true,
-  [FeatureGates.BALANCE_CHANGE_NOTIFICATIONS]: false
+  [FeatureGates.BALANCE_CHANGE_NOTIFICATIONS]: true,
+  [FeatureGates.UNIFIED_BRIDGE_CCTP]: true,
+  [FeatureGates.UNIFIED_BRIDGE_ICTT]: true,
+  [FeatureGates.UNIFIED_BRIDGE_AB_EVM]: true,
+  [FeatureGates.UNIFIED_BRIDGE_AB_AVA_TO_BTC]: true,
+  [FeatureGates.UNIFIED_BRIDGE_AB_BTC_TO_AVA]: true
 }
 
 export const initialState = {

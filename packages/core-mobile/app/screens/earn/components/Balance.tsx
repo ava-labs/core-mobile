@@ -20,6 +20,8 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -31,11 +33,15 @@ export const Balance = (): JSX.Element | null => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
   const cChainBalance = useCChainBalance()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const cChainNetwork = useCChainNetwork()
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDeveloperMode)
+    NetworkService.getAvalancheNetworkP(
+      isDeveloperMode,
+      isDevnet(activeNetwork)
+    )
 
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
   const isFocused = useIsFocused()
@@ -214,7 +220,9 @@ export const Balance = (): JSX.Element | null => {
             <BalanceItem
               balanceType={StakeTypeEnum.Claimable}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Claimable, theme)}
-              balance={claimableInAvax?.toDisplay() ?? UNKNOWN_AMOUNT}
+              balance={
+                claimableInAvax?.toDisplay({ fixedDp: 4 }) ?? UNKNOWN_AMOUNT
+              }
               poppableItem={
                 [
                   RecoveryEvents.ImportPStart,
@@ -226,7 +234,7 @@ export const Balance = (): JSX.Element | null => {
         </Row>
       </View>
       <View>
-        {claimableInAvax?.gt(0)
+        {claimableInAvax?.gt(0.05)
           ? renderStakeAndClaimButton()
           : renderStakeButton()}
       </View>

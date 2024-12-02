@@ -30,7 +30,7 @@ export const handleStakeConfirmationGoBack = (
       .params?.stakingAmount
     if (stakingAmount) {
       return navigate(AppNavigation.StakeSetup.StakingDuration, {
-        stakingAmount
+        stakingAmountNanoAvax: stakingAmount.toSubUnit()
       })
     }
     return navigate(AppNavigation.StakeSetup.SmartStakeAmount)

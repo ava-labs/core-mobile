@@ -11,7 +11,7 @@ import {
 } from 'store/network/slice'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
-import { getChainIdFromCaip2 } from 'temp/caip2ChainIds'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
