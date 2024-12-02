@@ -51,7 +51,7 @@ class LoginRecoverWallet {
 
     if (isVisibleNo) {
       await this.enterPin()
-      await accountManagePage.switchToFirstAccount()
+      // await accountManagePage.switchToFirstAccount()
     } else {
       await this.recoverMnemonicWallet(
         isBalanceNotificationOn,
