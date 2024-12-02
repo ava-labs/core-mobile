@@ -112,8 +112,10 @@ class PopUpModalPage {
 
   async tapRejectBtn() {
     try {
+      await actions.waitForElementNoSync(this.rejectBtn, 5000)
       await actions.tap(this.rejectBtn)
     } catch (e) {
+      await actions.waitForElementNoSync(this.rejectTextBtn, 5000)
       await actions.tap(this.rejectTextBtn)
     }
   }
