@@ -4,11 +4,8 @@ describe('Install older version of app and login', () => {
   beforeAll(async () => {
     await warmup()
     await device.disableSynchronization()
-    try {
-      fail('not supposed to pass, dont worry about it...')
-    } catch (e) {
-      console.log('Test is supposed to fail and this makes it pass!')
-    }
+    console.log('Test is supposed to fail and this makes it pass!')
+    fail('not supposed to pass, dont worry about it...')
   })
 
   it('Should not reach this section', async () => {
