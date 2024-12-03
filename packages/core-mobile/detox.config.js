@@ -77,7 +77,7 @@ module.exports = {
     'android.external.latest.e2e': {
       type: 'android.apk',
       binaryPath:
-        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apkk',
+        'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apk',
       testBinaryPath:
         'e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
     },
