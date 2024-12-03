@@ -172,6 +172,13 @@ export const selectSentrySampleRate = (state: RootState): number => {
   )
 }
 
+export const selectPFeeAdjustmentThreshold = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseFloat(
+    featureFlags[FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD] as string
+  )
+}
+
 export const selectUseLeftFab = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
@@ -250,12 +257,12 @@ export const selectIsSeedlessMfaYubikeyBlocked = (
   )
 }
 
-export const selectIsUnifiedBridgeCCTPBlocked = (state: RootState): boolean => {
+export const selectIsFeatureBlocked = (
+  state: RootState,
+  feature: FeatureGates
+): boolean => {
   const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.UNIFIED_BRIDGE_CCTP] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
+  return !featureFlags[feature] || !featureFlags[FeatureGates.EVERYTHING]
 }
 
 export const selectIsLogErrorsWithSentryBlocked = (

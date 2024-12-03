@@ -1,8 +1,17 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSendContext } from 'contexts/SendContext'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
-import { assertNotUndefined } from 'utils/assertions'
+import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
+import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { bigIntToString } from '@avalabs/core-utils-sdk'
+import Logger from 'utils/Logger'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { UnsignedTx } from '@avalabs/avalanchejs'
+import WalletService from 'services/wallet/WalletService'
+import { stripChainAddress } from 'store/account/utils'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
+import { useGetFeeState } from 'hooks/earn/useGetFeeState'
 import { SendAdapterPVM, SendErrorMessage } from '../utils/types'
 import { send as sendPVM } from '../utils/pvm/send'
 import { validate as validatePVMSend } from '../utils/pvm/validate'
@@ -18,40 +27,89 @@ const usePVMSend: SendAdapterPVM = ({
     setMaxAmount,
     setError,
     setIsSending,
-    setIsValidating,
     token,
     toAddress,
-    amount
+    amount,
+    canValidate
   } = useSendContext()
+  const [gasPrice, setGasPrice] = useState<bigint>()
+  const { getFeeState } = useGetFeeState()
+  const [estimatedFee, setEstimatedFee] = useState<bigint>()
+
+  const provider = useAvalancheXpProvider()
+
+  const createSendPTx = useCallback(
+    async (amountInNAvax: bigint, price?: bigint): Promise<UnsignedTx> => {
+      const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
+      return await WalletService.createSendPTx({
+        accountIndex: account.index,
+        amountInNAvax,
+        avaxXPNetwork: network,
+        destinationAddress: destinationAddress,
+        sourceAddress: fromAddress,
+        feeState: getFeeState(price)
+      })
+    },
+    [toAddress, account.index, network, fromAddress, getFeeState]
+  )
+
+  useEffect(() => {
+    const getEstimatedFee = async (): Promise<void> => {
+      if (!toAddress || !token || !amount) {
+        return Promise.reject('missing required fields')
+      }
+      if (provider && provider.isEtnaEnabled()) {
+        const unsignedTx = await createSendPTx(amount.bn, maxFee)
+        const tx = await Avalanche.parseAvalancheTx(
+          unsignedTx,
+          provider,
+          fromAddress
+        )
+        setEstimatedFee(tx.txFee)
+      }
+    }
+    getEstimatedFee().catch(Logger.error)
+  }, [
+    amount,
+    createSendPTx,
+    fromAddress,
+    maxFee,
+    provider,
+    setError,
+    toAddress,
+    token
+  ])
 
   const send = useCallback(async () => {
+    if (!toAddress || !token || !amount) {
+      return Promise.reject('missing required fields')
+    }
+
     try {
-      assertNotUndefined(toAddress)
-      assertNotUndefined(token)
-      assertNotUndefined(amount)
-
       setIsSending(true)
-
       return await sendPVM({
         request,
-        fromAddress,
-        account,
         network,
+        fromAddress,
+        accountIndex: account.index,
+        amountInNAvax: amount.bn,
         toAddress,
-        amount: amount.bn
+        feeState: getFeeState(gasPrice)
       })
     } finally {
       setIsSending(false)
     }
   }, [
-    request,
-    fromAddress,
-    network,
-    account,
-    setIsSending,
     toAddress,
+    token,
     amount,
-    token
+    setIsSending,
+    request,
+    network,
+    fromAddress,
+    account.index,
+    getFeeState,
+    gasPrice
   ])
 
   const handleError = useCallback(
@@ -66,39 +124,69 @@ const usePVMSend: SendAdapterPVM = ({
   )
 
   const validate = useCallback(async () => {
-    setIsValidating(true)
-    setError(undefined)
-
     try {
       validatePVMSend({
         amount: amount?.bn ?? 0n,
         address: toAddress,
         maxFee,
         token: token as TokenWithBalancePVM,
-        onCalculateMaxAmount: setMaxAmount
+        gasPrice,
+        estimatedFee
       })
+
+      setError(undefined)
     } catch (err) {
       handleError(err)
-    } finally {
-      setIsValidating(false)
     }
   }, [
-    maxFee,
-    setMaxAmount,
     setError,
-    handleError,
-    setIsValidating,
-    token,
+    maxFee,
+    amount?.bn,
     toAddress,
-    amount
+    token,
+    gasPrice,
+    estimatedFee,
+    handleError
   ])
 
+  const getMaxAmount = useCallback(async () => {
+    if (!token || !isTokenWithBalancePVM(token)) {
+      return
+    }
+
+    const fee = maxFee ? BigInt(GAS_LIMIT_FOR_XP_CHAIN) * maxFee : 0n
+
+    const balance = token.available ?? 0n
+    const maxAmountValue = balance - fee
+    const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
+
+    return {
+      bn: maxAmount,
+      amount: bigIntToString(maxAmount, token.decimals)
+    }
+  }, [maxFee, token])
+
   useEffect(() => {
-    validate()
-  }, [validate])
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
+
+  useEffect(() => {
+    getMaxAmount()
+      .then(maxAmount => {
+        if (maxAmount) {
+          setMaxAmount(maxAmount)
+        }
+      })
+      .catch(Logger.error)
+  }, [getMaxAmount, setMaxAmount])
 
   return {
-    send
+    send,
+    provider,
+    estimatedFee,
+    setGasPrice
   }
 }
 

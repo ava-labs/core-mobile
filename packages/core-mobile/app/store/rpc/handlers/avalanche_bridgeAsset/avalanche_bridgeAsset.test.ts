@@ -44,7 +44,8 @@ jest.mock('store/network/slice', () => {
   const actual = jest.requireActual('store/network/slice')
   return {
     ...actual,
-    selectNetworks: () => mockNetworks
+    selectNetworks: () => mockNetworks,
+    selectActiveNetwork: () => mockNetworks[43114]
   }
 })
 

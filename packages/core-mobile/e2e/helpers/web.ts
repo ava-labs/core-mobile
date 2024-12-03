@@ -2,7 +2,6 @@
 /*eslint max-params: ["error", 4]*/
 
 import { expect } from 'detox'
-import Constants from './constants'
 import actions from './actions'
 
 const wb =
@@ -19,26 +18,12 @@ export enum WebScripts {
       .shadowRoot.querySelector('wcm-modal-header')
       .shadowRoot.querySelector('button').click();
   }`,
-  EXIST_WCM_IOS_MODAL = `(element) => { 
-    return element.shadowRoot.querySelector('wcm-modal-router')
-      .shadowRoot.querySelector('wcm-connect-wallet-view')
-      .shadowRoot.querySelector('wcm-mobile-wallet-selection')
-      .shadowRoot.querySelector('wcm-modal-header')
-      .shadowRoot.querySelector('button') !== null;
-  }`,
   CLICK_WCM_ANDROID_MODAL = `(element) => {
     element.shadowRoot.querySelector('wcm-modal-router')
       .shadowRoot.querySelector('wcm-connect-wallet-view')
       .shadowRoot.querySelector('wcm-android-wallet-selection')
       .shadowRoot.querySelector('wcm-modal-header')
       .shadowRoot.querySelector('button').click();
-  }`,
-  EXIST_WCM_ANDROID_MODAL = `(element) => {
-    return element.shadowRoot.querySelector('wcm-modal-router')
-      .shadowRoot.querySelector('wcm-connect-wallet-view')
-      .shadowRoot.querySelector('wcm-android-wallet-selection')
-      .shadowRoot.querySelector('wcm-modal-header')
-      .shadowRoot.querySelector('button') !== null;
   }`,
   GET_WCM_URI = `(element) => {
     return element.shadowRoot.querySelector('wcm-modal-router')
@@ -48,7 +33,7 @@ export enum WebScripts {
       .getAttribute('uri');
   }`,
   CLICK_WC_CORE = `(element) => {
-    element.shadowRoot.querySelector('wui-flex > wui-card > w3m-router')
+    element.shadowRoot.querySelector('w3m-router')
       .shadowRoot.querySelector('w3m-connect-view')
       .shadowRoot.querySelector('wui-list-wallet[name="Core"]').click();
   }`,
@@ -88,7 +73,6 @@ const waitForWebElement = async (
   text?: string,
   timeout = 5000
 ) => {
-  let errorMessage = ''
   const start = Date.now()
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -102,13 +86,11 @@ const waitForWebElement = async (
       }
       return
     } catch (e: any) {
-      if (e.message.includes(Constants.webViewWError)) {
-        errorMessage = e.message
-      }
+      console.log(`waitForWebElement - ${xpath || text} is NOT visible yet`)
     }
   }
   console.error('Error: Element not visible within timeout')
-  throw new Error(errorMessage)
+  throw new Error(`waitForWebElement - ${xpath || text} is NOT visible yet`)
 }
 
 const isVisibleByRunScript = async (
@@ -120,18 +102,32 @@ const isVisibleByRunScript = async (
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      const visible = await wb
-        .element(by.web.tag(header))
-        .runScript(func, [func])
-      if (visible) {
+      const ele = wb.element(by.web.tag(header))
+      const output = await ele.runScript(func)
+      if (output) {
         console.log(`Element ${header} is visible`)
         return true
       }
     } catch (e) {
-      console.error(`Waiting for element ${header} to be visible`)
+      console.error(`isVisibleByRunScript - ${header} is NOT visible yet`)
     }
   }
-  console.error(`Timeout reached: Element ${header} not visible`)
+  console.error(`Timeout: isVisibleByRunScript - ${header} is NOT visible`)
+  return false
+}
+
+const isVisibleByXpath = async (xpath: string, timeout = 5000) => {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+    try {
+      await expect(wb.element(by.web.xpath(xpath))).toExist()
+      return true
+    } catch (e) {
+      console.error(`isVisibleByXpath - ${xpath} is NOT visible yet`)
+    }
+  }
+  console.error(`Timeout: isVisibleByXpath - ${xpath} is NOT visible`)
   return false
 }
 
@@ -144,13 +140,13 @@ const waitAndRunScript = async (
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      await wb.element(by.web.tag(header)).runScript(func, [func])
+      await wb.element(by.web.cssSelector(header)).runScript(func)
       return
     } catch (e: any) {
-      console.error(`Element ${header} not visible`)
+      console.error(`waitAndRunScript - ${header} is NOT visible yet`)
     }
   }
-  throw Error(`Timeout: waitAndRunScript for Element ${header} and not visible`)
+  throw Error(`Timeout: waitAndRunScript - ${header} is NOT visible`)
 }
 
 const getElementTextByRunScript = async (
@@ -163,7 +159,7 @@ const getElementTextByRunScript = async (
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      output = await wb.element(by.web.tag(header)).runScript(func, [func])
+      output = await wb.element(by.web.tag(header)).runScript(func)
       if (output) break
     } catch (e: any) {
       console.error(`Element ${header} not visible`)
@@ -197,6 +193,11 @@ const waitForEleByTextToBeVisible = async (text: string, timeout = 5000) => {
   await waitForWebElement(undefined, text, timeout)
 }
 
+const setInputText = async (xpath: string, text: string) => {
+  await waitForEleByXpathToBeVisible(xpath)
+  await wb.element(by.web.xpath(xpath)).replaceText(text)
+}
+
 export default {
   tap,
   tapByText,
@@ -211,5 +212,7 @@ export default {
   waitAndRunScript,
   getElementTextByRunScript,
   isVisibleByRunScript,
-  verifyUrl
+  verifyUrl,
+  setInputText,
+  isVisibleByXpath
 }

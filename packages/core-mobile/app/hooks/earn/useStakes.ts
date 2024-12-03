@@ -24,7 +24,16 @@ export const useStakes = (): UseStakesReturnType => {
   // otherwise, it will be fetching even when the wallet is locked
   // and on some Android devices, it can continue running even if app
   // is in the background, which can lead to getting rate limited by glacier
-  const enabled = Boolean(pAddress) && walletState === WalletState.ACTIVE
+  const isWalletActive = walletState === WalletState.ACTIVE
+
+  // when we toggle developer mode, it will take a brief moment for the address to update
+  // in that brief moment, we don't want to fetch the stakes as the address will still be the old one
+  // this check is to ensure that the address is of the correct developer mode before fetching the stakes
+  const isAddressValid = isDeveloperMode
+    ? Boolean(pAddress) && pAddress.includes('fuji')
+    : Boolean(pAddress) && !pAddress.includes('fuji')
+
+  const enabled = isWalletActive && isAddressValid
 
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.stakes,

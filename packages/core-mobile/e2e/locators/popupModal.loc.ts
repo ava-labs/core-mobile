@@ -3,6 +3,7 @@ export default {
   linkSvg: 'link_svg',
   approveBtn: 'approve_button',
   rejectBtn: 'reject_button',
+  rejectTextBtn: 'Reject',
   type: 'Type',
   account: 'Account:',
   approveTransactionTitle: 'Approve Transaction',
@@ -24,5 +25,7 @@ export default {
   messageDetail: 'message_detail',
   tokenGasFee: 'token_gas_fee',
   tokenAmount: 'token_amount',
-  popUpModalScrollView: 'approve_popup_scroll_view'
+  popUpModalScrollView: 'approve_popup_scroll_view',
+  slowBaseFee: 'slow_base_fee',
+  customBaseFee: 'custom_base_fee'
 }

@@ -24,7 +24,7 @@ import {
   isCChainId,
   isPChainId,
   isBtcChainId
-} from 'temp/caip2ChainIds'
+} from 'utils/caip2ChainIds'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',

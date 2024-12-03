@@ -26,7 +26,7 @@ import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
   price: PriceData,
-  currencyFormatter: (num: number | string) => string
+  currencyFormatter: (num: number) => string
 ): string => {
   const priceInCurrency = price.priceInCurrency
   return currencyFormatter(priceInCurrency)

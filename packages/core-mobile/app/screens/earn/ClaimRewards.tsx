@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -11,7 +11,6 @@ import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { showSimpleToast } from 'components/Snackbar'
-import { useClaimFees } from 'hooks/earn/useClaimFees'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
@@ -27,6 +26,14 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
+import { Eip1559Fees } from 'utils/Utils'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { SendErrorMessage } from 'screens/send/utils/types'
+import { Text } from '@avalabs/k2-mobile'
+import { useIsNetworkFeeExcessive } from 'hooks/earn/useIsNetworkFeeExcessive'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
@@ -37,10 +44,14 @@ const ClaimRewards = (): JSX.Element | null => {
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
-  const { totalFees } = useClaimFees()
+  const xpProvider = useAvalancheXpProvider()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const pNetwork = NetworkService.getAvalancheNetworkP(
+    isDeveloperMode,
+    isDevnet(activeNetwork)
+  )
+  const [gasPrice, setGasPrice] = useState<bigint>()
   const { getNetwork } = useNetworks()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const avaxNetwork = getNetwork(ChainId.AVALANCHE_MAINNET_ID)
@@ -49,29 +60,37 @@ const ClaimRewards = (): JSX.Element | null => {
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
 
-  const claimRewardsMutation = useClaimRewards(
-    onClaimSuccess,
-    onClaimError,
-    onFundsStuck
-  )
+  const {
+    mutation: claimRewardsMutation,
+    defaultTxFee,
+    totalFees,
+    feeCalculationError
+  } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck, gasPrice)
   const isFocused = useIsFocused()
   const unableToGetFees = totalFees === undefined
+  const excessiveNetworkFee = useIsNetworkFeeExcessive(gasPrice)
   const showFeeError = useTimeElapsed(
     isFocused && unableToGetFees, // re-enable this checking whenever this screen is focused
     timeToShowNetworkFeeError
   )
+  const insufficientBalanceForFee =
+    feeCalculationError === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+
+  const shouldDisableClaimButton =
+    unableToGetFees || excessiveNetworkFee || insufficientBalanceForFee
 
   useEffect(() => {
-    if (showFeeError) {
+    if (showFeeError && !insufficientBalanceForFee) {
       navigate(AppNavigation.Earn.FeeUnavailable)
     }
-  }, [navigate, showFeeError])
+  }, [navigate, showFeeError, insufficientBalanceForFee])
+
   const [claimableAmountInAvax, claimableAmountInCurrency] = useMemo(() => {
     if (data?.balancePerType.unlockedUnstaked) {
       const unlockedInUnit = new TokenUnit(
         data.balancePerType.unlockedUnstaked,
-        networkToken.decimals,
-        networkToken.symbol
+        pNetwork.networkToken.decimals,
+        pNetwork.networkToken.symbol
       )
       return [
         unlockedInUnit.toDisplay(),
@@ -79,19 +98,16 @@ const ClaimRewards = (): JSX.Element | null => {
       ]
     }
     return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
-  }, [avaxPrice, data, networkToken.decimals, networkToken.symbol])
+  }, [
+    avaxPrice,
+    data?.balancePerType.unlockedUnstaked,
+    pNetwork.networkToken.decimals,
+    pNetwork.networkToken.symbol
+  ])
 
   const [feesInAvax, feesInCurrency] = useMemo(() => {
     return [totalFees?.toDisplay(), totalFees?.mul(avaxPrice).toDisplay()]
   }, [avaxPrice, totalFees])
-
-  if (!data) {
-    return null
-  }
-
-  if (data.balancePerType.unlockedUnstaked === undefined) {
-    return <EmptyClaimRewards />
-  }
 
   const cancelClaim = (): void => {
     AnalyticsService.capture('StakeCancelClaim')
@@ -145,6 +161,21 @@ const ClaimRewards = (): JSX.Element | null => {
     showSimpleToast(error.message)
   }
 
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees) => {
+      setGasPrice(fees.maxFeePerGas)
+    },
+    [setGasPrice]
+  )
+
+  if (!data) {
+    return null
+  }
+
+  if (data.balancePerType.unlockedUnstaked === undefined) {
+    return <EmptyClaimRewards />
+  }
+
   return (
     <ConfirmScreen
       isConfirming={claimRewardsMutation.isPending}
@@ -153,7 +184,7 @@ const ClaimRewards = (): JSX.Element | null => {
       header="Claim Rewards"
       confirmBtnTitle="Claim Now"
       cancelBtnTitle="Cancel"
-      confirmBtnDisabled={unableToGetFees}>
+      confirmBtnDisabled={shouldDisableClaimButton}>
       <View style={styles.verticalPadding}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Claimable Amount</AvaText.Body2>
@@ -186,6 +217,36 @@ const ClaimRewards = (): JSX.Element | null => {
         </Tooltip>
         {renderFees()}
       </Row>
+      {xpProvider && xpProvider.isEtnaEnabled() && defaultTxFee && (
+        <>
+          <NetworkFeeSelector
+            chainId={pNetwork.chainId}
+            gasLimit={Number(defaultTxFee.toSubUnit())}
+            onFeesChange={handleFeesChange}
+            isGasLimitEditable={false}
+            supportsAvalancheDynamicFee={
+              xpProvider ? xpProvider.isEtnaEnabled() : false
+            }
+            showOnlyFeeSelection={true}
+          />
+          {excessiveNetworkFee && (
+            <Text
+              testID="excessive_fee_error_msg"
+              variant="body2"
+              sx={{ color: '$dangerMain' }}>
+              {SendErrorMessage.EXCESSIVE_NETWORK_FEE}
+            </Text>
+          )}
+        </>
+      )}
+      {insufficientBalanceForFee && (
+        <Text
+          testID="insufficent_balance_error_msg"
+          variant="body2"
+          sx={{ color: '$dangerMain' }}>
+          {SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE}
+        </Text>
+      )}
     </ConfirmScreen>
   )
 }

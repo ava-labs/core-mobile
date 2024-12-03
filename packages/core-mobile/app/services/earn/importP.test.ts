@@ -53,7 +53,8 @@ describe('earn/importP', () => {
       await importP({
         activeAccount: {} as Account,
         isDevMode: false,
-        selectedCurrency: VsCurrencyType.USD
+        selectedCurrency: VsCurrencyType.USD,
+        isDevnet: false
       })
       expect(WalletService.createImportPTx).toHaveBeenCalled()
     })
@@ -62,7 +63,8 @@ describe('earn/importP', () => {
       await importP({
         activeAccount: {} as Account,
         isDevMode: false,
-        selectedCurrency: VsCurrencyType.USD
+        selectedCurrency: VsCurrencyType.USD,
+        isDevnet: false
       })
       expect(WalletService.sign).toHaveBeenCalled()
     })
@@ -71,7 +73,8 @@ describe('earn/importP', () => {
       await importP({
         activeAccount: {} as Account,
         isDevMode: false,
-        selectedCurrency: VsCurrencyType.USD
+        selectedCurrency: VsCurrencyType.USD,
+        isDevnet: false
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
     })

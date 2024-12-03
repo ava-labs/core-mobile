@@ -15,6 +15,7 @@ import {
   showTransactionErrorToast,
   showTransactionSuccessToast
 } from 'utils/toast'
+import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -57,6 +58,16 @@ class ApprovalController implements VmModuleApprovalController {
             btcSendTransaction({
               transactionData: signingData.data,
               finalFeeRate: Number(maxFeePerGas || 0),
+              account,
+              network,
+              resolve
+            })
+
+            break
+          }
+          case RpcMethod.BITCOIN_SIGN_TRANSACTION: {
+            btcSignTransaction({
+              transactionData: signingData.data,
               account,
               network,
               resolve

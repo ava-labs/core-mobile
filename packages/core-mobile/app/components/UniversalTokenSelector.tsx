@@ -80,7 +80,7 @@ const UniversalTokenSelector: FC<Props> = ({
 
   const amountInCurrency = useMemo(() => {
     if (!inputAmount || !selectedTokenDecimals) {
-      return ''
+      return undefined
     }
     const inputInTokenUnit = new TokenUnit(
       inputAmount,
@@ -90,7 +90,7 @@ const UniversalTokenSelector: FC<Props> = ({
     return selectedToken?.priceInCurrency
       ? inputInTokenUnit
           .mul(selectedToken.priceInCurrency)
-          .toDisplay({ fixedDp: 2 })
+          .toDisplay({ fixedDp: 2, asNumber: true })
       : undefined
   }, [inputAmount, selectedToken, selectedTokenDecimals])
 

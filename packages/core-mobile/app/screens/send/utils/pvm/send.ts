@@ -2,43 +2,53 @@ import { resolve } from '@avalabs/core-utils-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
-import { getAvalancheCaip2ChainId } from 'temp/caip2ChainIds'
+import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
-import { stripChainAddress } from 'store/account/utils'
-import WalletService from 'services/wallet/WalletService'
-import { utils } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Transaction } from '@sentry/react'
 import { Network } from '@avalabs/core-chains-sdk'
-import { CorePrimaryAccount } from '@avalabs/types'
+import { isDevnet } from 'utils/isDevnet'
+import WalletService from 'services/wallet/WalletService'
+import { stripChainAddress } from 'store/account/utils'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
   request,
-  fromAddress,
-  account,
   network,
+  fromAddress,
   toAddress,
-  amount
+  amountInNAvax,
+  feeState,
+  accountIndex
 }: {
   request: Request
-  fromAddress: string
-  account: CorePrimaryAccount
   network: Network
+  fromAddress: string
   toAddress: string
-  amount: bigint
+  amountInNAvax: bigint
+  feeState?: pvm.FeeState
+  accountIndex: number
 }): Promise<string> => {
   const sentryTrx = SentryWrapper.startTransaction('send-token')
 
   return SentryWrapper.createSpanFor(sentryTrx)
     .setContext('svc.send.send')
     .executeAsync(async () => {
+      const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
+      const unsignedTx = await WalletService.createSendPTx({
+        accountIndex: accountIndex,
+        amountInNAvax,
+        avaxXPNetwork: network,
+        destinationAddress: destinationAddress,
+        sourceAddress: fromAddress,
+        feeState
+      })
+
       const txRequest = await getTransactionRequest({
-        toAddress,
-        amount,
-        network,
+        unsignedTx,
         fromAddress,
-        sentryTrx,
-        accountIndex: account.index
+        network,
+        sentryTrx
       })
 
       const [txHash, txError] = await resolve(
@@ -65,16 +75,12 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
-  accountIndex,
-  toAddress,
+  unsignedTx,
   fromAddress,
-  amount,
   network,
   sentryTrx
 }: {
-  accountIndex: number
-  amount: bigint
-  toAddress: string
+  unsignedTx: UnsignedTx
   fromAddress: string
   network: Network
   sentryTrx: Transaction
@@ -82,15 +88,6 @@ const getTransactionRequest = ({
   return SentryWrapper.createSpanFor(sentryTrx)
     .setContext('svc.send.pvm.get_trx_request')
     .executeAsync(async () => {
-      const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
-      const unsignedTx = await WalletService.createSendPTx({
-        accountIndex,
-        amountInNAvax: amount,
-        avaxXPNetwork: network,
-        destinationAddress: destinationAddress,
-        sourceAddress: fromAddress
-      })
-
       const manager = utils.getManagerForVM(unsignedTx.getVM())
       const unsignedTxBytes = unsignedTx.toBytes()
       const [codec] = manager.getCodecFromBuffer(unsignedTxBytes)
@@ -101,11 +98,12 @@ const getTransactionRequest = ({
         utxos: unsignedTx.utxos.map(utxo =>
           utils.bufferToHex(utxo.toBytes(codec))
         ),
-        ...getInternalExternalAddrs(
-          unsignedTx.utxos,
-          { [fromAddress]: { space: 'e', index: 0 } },
-          network.isTestnet === true
-        )
+        ...getInternalExternalAddrs({
+          utxos: unsignedTx.utxos,
+          xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
+          isTestnet: network.isTestnet === true,
+          isDevnet: isDevnet(network)
+        })
       }
     })
 }

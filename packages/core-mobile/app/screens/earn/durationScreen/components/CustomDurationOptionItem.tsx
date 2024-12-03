@@ -22,17 +22,16 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { differenceInMilliseconds } from 'date-fns'
 import { useNow } from 'hooks/time/useNow'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 export const CustomDurationOptionItem = ({
-  stakeAmount,
+  stakingAmountNanoAvax,
   stakeEndTime,
   onRadioSelect,
   handleDateConfirm
 }: {
-  stakeAmount: TokenUnit
+  stakingAmountNanoAvax: bigint
   stakeEndTime: UTCDate
   onRadioSelect: (item: DurationOption) => void
   handleDateConfirm: (dateInput: UTCDate) => void
@@ -62,7 +61,7 @@ export const CustomDurationOptionItem = ({
     BigInt(stakeDurationMs) as MilliSeconds
   )
   const { data } = useEarnCalcEstimatedRewards({
-    amount: stakeAmount,
+    amountNanoAvax: stakingAmountNanoAvax,
     duration: stakeDurationSec,
     delegationFee: 2
   })

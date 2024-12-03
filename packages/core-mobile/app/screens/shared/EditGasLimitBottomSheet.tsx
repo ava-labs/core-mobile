@@ -11,7 +11,7 @@ type Props = {
   network: Network
   lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isBtcNetwork: boolean
+  isBaseUnitRate: boolean
   noGasLimitError?: string
 } & Eip1559Fees
 
@@ -24,7 +24,7 @@ const EditGasLimitBottomSheet = ({
   network,
   lowMaxFeePerGas,
   isGasLimitEditable,
-  isBtcNetwork,
+  isBaseUnitRate,
   noGasLimitError
 }: Props): JSX.Element => {
   return (
@@ -40,7 +40,7 @@ const EditGasLimitBottomSheet = ({
         maxPriorityFeePerGas={maxPriorityFeePerGas}
         lowMaxFeePerGas={lowMaxFeePerGas}
         isGasLimitEditable={isGasLimitEditable}
-        isBtcNetwork={isBtcNetwork}
+        isBaseUnitRate={isBaseUnitRate}
         noGasLimitError={noGasLimitError}
       />
     </Sheet>

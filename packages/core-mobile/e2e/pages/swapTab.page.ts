@@ -134,16 +134,12 @@ class SwapTabPage {
     await plusMenuPage.tapSwapButton()
 
     // Select From Token
-    if (from !== 'AVAX') {
-      await this.tapFromTokenSelector()
-      await sendPage.selectToken(from)
-    }
+    await this.tapFromTokenSelector()
+    await sendPage.selectToken(from)
 
     // Select To Token
-    if (to !== 'USDC') {
-      await this.tapToTokenSelector()
-      await sendPage.selectToken(to)
-    }
+    await this.tapToTokenSelector()
+    await sendPage.selectToken(to)
 
     // Enter input
     await this.inputTokenAmount(amount)
@@ -171,7 +167,7 @@ class SwapTabPage {
     }
 
     // Verify fee and approve
-    await popUpModalPage.verifyFeeIsLegit(false, 0.2)
+    await popUpModalPage.verifyFeeIsLegit(true, false, 0.2)
     await this.tapApproveButton()
   }
 

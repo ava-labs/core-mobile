@@ -39,12 +39,12 @@ describe('Bridge Screen', () => {
 
       // select dropdown item > verify `from` and `to` networks updated
       await bridgeTabPage.tapFromNetwork()
-      await commonElsPage.tapDropdownItem(network.toLowerCase(), platformIndex)
-      await bridgeTabPage.verifyNetworks(network, bridgeTabLoc.avalancheNetwork)
+      await commonElsPage.tapDropdownItem(network, platformIndex)
 
       // Add token before toggling
       await bridgeTabPage.tapSelectToken()
       await sendPage.selectToken(token)
+      await bridgeTabPage.verifyNetworks(network, bridgeTabLoc.avalancheNetwork)
 
       // Toggle > verify `from` and `to` networks updated
       await bridgeTabPage.tapBridgeToggleBtn()
@@ -62,18 +62,17 @@ describe('Bridge Screen', () => {
   networks.forEach(({ network, token }) => {
     it(`should show Bridge Approval Modal for Avalanche to ${network}`, async () => {
       // Avalanche > Select token with Max amount
+      if (token === 'BTC') token = 'BTC.b'
       await bridgeTabPage.goToBridge()
       await bridgeTabPage.tapSelectToken()
       await sendPage.selectToken(token)
       await sendPage.tapMax()
-      try {
-        await actions.waitForElement(bridgeTabPage.error)
-      } catch (e) {
-        // Verify approve modal with legit fee > Reject
-        await bridgeTabPage.tapBridgeBtn()
-        await popUpModalPage.verifyFeeIsLegit(false, 0.02)
-        await popUpModalPage.tapRejectBtn()
-      }
+
+      // Verify approve modal with legit fee > Reject
+      await bridgeTabPage.tapBridgeBtn()
+      await popUpModalPage.verifyFeeIsLegit(true, false, 0.02)
+      await popUpModalPage.tapRejectBtn()
+
       // Exit bridge screen
       await commonElsPage.goBack()
     })
@@ -84,21 +83,20 @@ describe('Bridge Screen', () => {
       // Select Ethereum network
       await bridgeTabPage.goToBridge()
       await bridgeTabPage.tapFromNetwork()
-      await commonElsPage.tapDropdownItem(network.toLowerCase(), platformIndex)
+      await commonElsPage.tapDropdownItem(network, platformIndex)
 
       // Select token. If Ethereum, update token to `ETH`
       await bridgeTabPage.tapSelectToken()
       token = network === portfolioLoc.ethNetwork ? 'ETH' : token
       await sendPage.selectToken(token)
       await sendPage.tapMax()
-      try {
-        await actions.waitForElement(bridgeTabPage.error)
-      } catch (e) {
-        // Verify approve modal with legit fee > Reject
-        await bridgeTabPage.tapBridgeBtn()
-        await popUpModalPage.verifyFeeIsLegit(false, 0.02)
-        await popUpModalPage.tapRejectBtn()
+      // Verify approve modal with legit fee > Reject
+      await bridgeTabPage.tapBridgeBtn()
+      if (network === portfolioLoc.ethNetwork) {
+        await popUpModalPage.verifyFeeIsLegit(false, false, 0.02)
       }
+      await popUpModalPage.tapRejectBtn()
+
       // Exit bridge screen
       await commonElsPage.goBack()
     })

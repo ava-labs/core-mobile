@@ -2,7 +2,6 @@ import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import DotSVG from 'components/svg/DotSVG'
 import Avatar from 'components/Avatar'
 import AvaListItem from 'components/AvaListItem'
@@ -30,6 +29,8 @@ import { useBridgeAmounts } from 'screens/bridge/hooks/useBridgeAmounts'
 import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPrice'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSimplePrice } from 'hooks/useSimplePrice'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { isDevnet } from 'utils/isDevnet'
 
 type Props = {
   txHash: string
@@ -43,7 +44,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const { activeNetwork } = useNetworks()
   const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
-    activeNetwork.isTestnet === true
+    activeNetwork.isTestnet === true,
+    isDevnet(activeNetwork)
   )
 
   const bridgeTransactions = usePendingBridgeTransactions(activeNetwork)
@@ -52,7 +54,11 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
-  const coingeckoId = useCoinGeckoId(bridgeTransaction?.symbol)
+  const symbol = isUnifiedBridgeTransfer(bridgeTransaction)
+    ? bridgeTransaction?.asset.symbol
+    : bridgeTransaction?.symbol
+
+  const coingeckoId = useCoinGeckoId(symbol)
 
   const assetPrice = useSimplePrice(
     coingeckoId,
@@ -129,21 +135,25 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
     [bridgeTransaction, isComplete, sourceCurrentConfirmations]
   )
 
-  const tokenLogo = (
-    <View style={styles.logoContainer}>
-      <View style={{ position: 'absolute' }}>
-        <DotSVG fillColor={theme.colorBg1} size={72} />
+  const renderTokenLogo = (): JSX.Element | undefined => {
+    if (!bridgeTransaction) return undefined
+
+    return (
+      <View style={styles.logoContainer}>
+        <View style={{ position: 'absolute' }}>
+          <DotSVG fillColor={theme.colorBg1} size={72} />
+        </View>
+        <Avatar.Custom
+          name={symbol ?? ''}
+          logoUri={tokenInfo?.logoUri ?? ''}
+          size={55}
+        />
       </View>
-      <Avatar.Custom
-        name={tokenInfo?.symbol ?? ''}
-        logoUri={tokenInfo?.logoUri}
-        size={55}
-      />
-    </View>
-  )
+    )
+  }
 
   const renderNetworkFeeRightComponent = (): React.JSX.Element => {
-    if (sourceNetworkFee === undefined) {
+    if (sourceNetworkFee === undefined || bridgeTransaction === undefined) {
       return <AvaText.Heading3>Pending</AvaText.Heading3>
     }
 
@@ -151,10 +161,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
       <View style={{ alignItems: 'flex-end' }}>
         <Row>
           <AvaText.Heading3>
-            {sourceNetworkFee?.toNumber().toFixed(6)}{' '}
-            {getNativeTokenSymbol(
-              bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN
-            )}
+            {sourceNetworkFee.toNumber().toFixed(6)}{' '}
+            {getNativeTokenSymbol(bridgeTransaction.sourceChain)}
           </AvaText.Heading3>
         </Row>
         <AvaText.Body3 color={theme.colorText1}>
@@ -167,7 +175,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   return (
     <View style={{ flex: 1 }}>
       <View style={[styles.infoContainer, { backgroundColor: theme.colorBg2 }]}>
-        {tokenLogo}
+        {renderTokenLogo()}
         {bridgeTransaction && (
           <View>
             <AvaListItem.Base
@@ -178,17 +186,17 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
                 <View style={{ alignItems: 'flex-end' }}>
                   <Row>
                     <AvaText.Heading3>
-                      {isUnifiedBridgeTransfer(bridgeTransaction)
-                        ? amount?.toNumber().toFixed(6)
-                        : bridgeTransaction.amount.toNumber().toFixed(6)}
+                      {amount?.toNumber().toFixed(6)}
                     </AvaText.Heading3>
                     <AvaText.Heading3 color={theme.colorText3}>
-                      {' ' + bridgeTransaction.symbol}
+                      {' ' + symbol}
                     </AvaText.Heading3>
                   </Row>
-                  <AvaText.Body3 currency color={theme.colorText1}>
-                    {amount && assetPrice.mul(amount).toNumber()}
-                  </AvaText.Body3>
+                  {assetPrice !== undefined && (
+                    <AvaText.Body3 currency color={theme.colorText1}>
+                      {amount && assetPrice.mul(amount).toNumber()}
+                    </AvaText.Body3>
+                  )}
                 </View>
               }
             />

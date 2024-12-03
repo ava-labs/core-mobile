@@ -18,6 +18,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { Amount } from 'types'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
+import { Eip1559Fees } from 'utils/Utils'
 
 const SendTokenForm = ({
   network,
@@ -25,27 +27,38 @@ const SendTokenForm = ({
   addressPlaceholder,
   error,
   isValid,
-  isValidating,
   isSending,
   onOpenQRScanner,
   onOpenAddressBook,
   onSelectContact,
-  onSend
+  onSend,
+  handleFeesChange,
+  estimatedFee,
+  supportsAvalancheDynamicFee = false
 }: {
   network: Network
   maxAmount: Amount | undefined
   addressPlaceholder: string
   error: string | undefined
   isValid: boolean
-  isValidating: boolean
   isSending: boolean
   onOpenQRScanner: () => void
   onOpenAddressBook: () => void
   onSelectContact: (item: Contact | CorePrimaryAccount) => void
   onSend: () => void
+  handleFeesChange?(fees: Eip1559Fees, feePreset: FeePreset): void
+  estimatedFee?: bigint
+  supportsAvalancheDynamicFee?: boolean
 }): JSX.Element => {
-  const { setToken, token, setAmount, amount, toAddress, setToAddress } =
-    useSendContext()
+  const {
+    setToken,
+    token,
+    setAmount,
+    amount,
+    toAddress,
+    setToAddress,
+    setCanValidate
+  } = useSendContext()
   const [isAddressTouched, setIsAddressTouched] = useState(false)
   const [isTokenTouched, setIsTokenTouched] = useState(false)
   const [isAmountTouched, setIsAmountTouched] = useState(false)
@@ -108,7 +121,11 @@ const SendTokenForm = ({
     [isAddressTouched, isTokenTouched, isAmountTouched]
   )
 
-  const canSubmit = !isValidating && !isSending && isValid
+  useEffect(() => {
+    setCanValidate(isAllFieldsTouched)
+  }, [isAllFieldsTouched, setCanValidate])
+
+  const canSubmit = !isSending && isValid && isAllFieldsTouched
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -183,6 +200,22 @@ const SendTokenForm = ({
             hideErrorMessage
             error={isAllFieldsTouched && error ? error : undefined}
           />
+
+          {supportsAvalancheDynamicFee && estimatedFee !== undefined && (
+            <>
+              <Space y={20} />
+              <View sx={{ marginHorizontal: 16 }}>
+                <NetworkFeeSelector
+                  chainId={network.chainId}
+                  gasLimit={Number(estimatedFee)}
+                  onFeesChange={handleFeesChange}
+                  isGasLimitEditable={false}
+                  supportsAvalancheDynamicFee
+                />
+              </View>
+            </>
+          )}
+
           <FlexSpacer />
         </>
       )}

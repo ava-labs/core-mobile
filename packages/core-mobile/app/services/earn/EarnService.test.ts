@@ -3,12 +3,23 @@ import { Hour, MainnetParams } from 'utils/NetworkParams'
 import { Seconds } from 'types/siUnits'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import EarnService from './EarnService'
+
+const mockProvider = {
+  getApiP: () => {
+    return {
+      getCurrentValidators: jest.fn().mockResolvedValue(testValidators)
+    }
+  }
+}
 
 describe('EarnService', () => {
   describe('getCurrentValidators', () => {
     it('should return valid validators', async () => {
-      const validators = await EarnService.getCurrentValidators(true)
+      const validators = await EarnService.getCurrentValidators(
+        mockProvider as unknown as Avalanche.JsonRpcProvider
+      )
       expect(validators).toEqual(testValidators)
     })
   })
@@ -16,7 +27,7 @@ describe('EarnService', () => {
     it('should return zero if current supply is max', () => {
       expect(
         EarnService.calcReward(
-          new TokenUnit(25 * 10 ** 9, 9, 'AVAX'),
+          BigInt(25 * 10 ** 9),
           Seconds(7 * 24 * Hour),
           new TokenUnit(
             MainnetParams.stakingConfig.RewardConfig.SupplyCap,
@@ -24,18 +35,20 @@ describe('EarnService', () => {
             'AVAX'
           ),
           2,
-          true
+          true,
+          false
         )
       ).toEqual(zeroAvaxPChain())
     })
     it('should return non zero if current supply is less than max', () => {
       expect(
         EarnService.calcReward(
-          new TokenUnit(2000000 * 10 ** 9, 9, 'AVAX'),
+          BigInt(2000000 * 10 ** 9),
           Seconds(7 * 24 * Hour),
           new TokenUnit(400_000_000 * 10 ** 9, 9, 'AVAX'),
           2,
-          true
+          true,
+          false
         ).toDisplay()
       ).toEqual('3,018.66')
     })

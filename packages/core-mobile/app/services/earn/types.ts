@@ -1,3 +1,4 @@
+import { pvm } from '@avalabs/avalanchejs'
 import { Account } from 'store/account'
 
 export type AddDelegatorTransactionProps = {
@@ -5,29 +6,27 @@ export type AddDelegatorTransactionProps = {
   // Id of the node to delegate. starts with “NodeID-”
   nodeId: string
   //Amount to be delegated in nAVAX
-  stakeAmount: bigint
+  stakeAmountNanoAvax: bigint
   // The Date time when the delegation starts.
   startDate: Date
   // The Date time when the delegation ends.
   endDate: Date
   isDevMode: boolean
+  isDevnet: boolean
+  feeState?: pvm.FeeState
+  pFeeAdjustmentThreshold: number
 }
 
 export type UnixTimeMs = number
 export type UnixTime = number
 
 export type CollectTokensForStakingParams = {
-  /**
-   * In `Wei`
-   */
-  cChainBalance: bigint
-  /**
-   * In `Wei`
-   */
-  requiredAmount: bigint
+  cChainBalanceWei: bigint
+  requiredAmountWei: bigint
   activeAccount: Account
   isDevMode: boolean
   selectedCurrency: string
+  feeState?: pvm.FeeState
 }
 
 export type GetAllStakesParams = {

@@ -2,7 +2,7 @@ import {
   BitcoinInputUTXO,
   getMaxTransferAmount
 } from '@avalabs/core-wallets-sdk'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Logger from 'utils/Logger'
 import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -26,11 +26,11 @@ const useBTCSend: SendAdapterBTC = ({
   const {
     setMaxAmount,
     setError,
-    setIsValidating,
     setIsSending,
     toAddress,
     token,
-    amount
+    amount,
+    canValidate
   } = useSendContext()
   const provider = useBitcoinProvider(!!network.isTestnet)
 
@@ -58,29 +58,25 @@ const useBTCSend: SendAdapterBTC = ({
     }
   }, [nativeToken, maxFee, provider])
 
-  const validate = useCallback(async () => {
-    if (!toAddress || !token) {
+  const maxAmountValue = useMemo(() => {
+    if (!toAddress) {
       return
     }
 
-    setIsValidating(true)
-    setError(undefined)
+    return BigInt(
+      Math.max(
+        getMaxTransferAmount(utxos, toAddress, fromAddress, Number(maxFee)),
+        0
+      )
+    )
+  }, [toAddress, fromAddress, utxos, maxFee])
+
+  const validate = useCallback(async () => {
+    if (!toAddress || !token || maxAmountValue === undefined) {
+      return
+    }
 
     try {
-      const maxAmountValue = BigInt(
-        Math.max(
-          getMaxTransferAmount(utxos, toAddress, fromAddress, Number(maxFee)),
-          0
-        )
-      )
-
-      setMaxAmount({
-        bn: maxAmountValue ?? 0n,
-        amount: maxAmountValue
-          ? bigIntToString(maxAmountValue, nativeToken.decimals)
-          : ''
-      })
-
       validateBTCSend({
         toAddress,
         amount: amount?.bn ?? 0n,
@@ -88,27 +84,15 @@ const useBTCSend: SendAdapterBTC = ({
         maxFee,
         isMainnet
       })
+
+      setError(undefined)
     } catch (e) {
       if (e instanceof Error) {
         setError(e.message)
         Logger.error('failed to validate send', e)
       }
-    } finally {
-      setIsValidating(false)
     }
-  }, [
-    fromAddress,
-    maxFee,
-    nativeToken,
-    utxos,
-    isMainnet,
-    setMaxAmount,
-    setError,
-    setIsValidating,
-    toAddress,
-    token,
-    amount
-  ])
+  }, [maxFee, isMainnet, setError, toAddress, token, amount, maxAmountValue])
 
   const send = useCallback(async () => {
     try {
@@ -131,8 +115,21 @@ const useBTCSend: SendAdapterBTC = ({
   }, [isMainnet, maxFee, fromAddress, request, setIsSending, toAddress, amount])
 
   useEffect(() => {
-    validate()
-  }, [validate])
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
+
+  useEffect(() => {
+    if (maxAmountValue !== undefined) {
+      setMaxAmount({
+        bn: maxAmountValue ?? 0n,
+        amount: maxAmountValue
+          ? bigIntToString(maxAmountValue, nativeToken.decimals)
+          : ''
+      })
+    }
+  }, [maxAmountValue, setMaxAmount, nativeToken.decimals])
 
   return {
     send

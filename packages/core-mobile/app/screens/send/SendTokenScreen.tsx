@@ -10,11 +10,9 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showTransactionErrorToast } from 'utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
-import { selectTokensWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import {
   NetworkTokenWithBalance,
-  TokenType,
   TokenWithBalanceAVM,
   TokenWithBalanceBTC,
   TokenWithBalancePVM
@@ -26,6 +24,7 @@ import SendEVM from './components/SendEVM'
 import SendBTC from './components/SendBTC'
 import SendAVM from './components/SendAVM'
 import SendPVM from './components/SendPVM'
+import { useNativeTokenWithBalance } from './hooks/useNativeTokenWithBalance'
 
 type SendTokenScreenNavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Send
@@ -40,8 +39,7 @@ const SendTokenScreen: FC = () => {
   const { setToken, setToAddress } = useSendContext()
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const tokens = useSelector(selectTokensWithBalance)
-  const nativeToken = tokens.find(t => t.type === TokenType.NATIVE)
+  const nativeToken = useNativeTokenWithBalance()
 
   useEffect(() => {
     if (params?.token) {

@@ -34,6 +34,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
+import { isDevnet } from 'utils/isDevnet'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -319,7 +320,7 @@ const addPChainToFavoritesIfNeeded = async (
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
-
+  const activeNetwork = selectActiveNetwork(state)
   //check if we've added P chain before
   const hadAddedPChainToFavorites = selectHasBeenViewedOnce(
     ViewOnceKey.P_CHAIN_FAVORITE
@@ -330,7 +331,10 @@ const addPChainToFavoritesIfNeeded = async (
   }
   //check if P chain already in favorites list
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const avalancheNetworkP = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+  const avalancheNetworkP = NetworkService.getAvalancheNetworkP(
+    isDeveloperMode,
+    isDevnet(activeNetwork)
+  )
   const favoriteNetworks = selectFavoriteNetworks(state)
   if (
     favoriteNetworks.find(
@@ -351,7 +355,7 @@ const addPChainToFavoritesIfNeeded = async (
   const activities = await ActivityService.getActivities({
     network: avalancheNetworkP,
     account: activeAccount,
-    criticalConfig: undefined
+    shouldAnalyzeBridgeTxs: false
   })
   if (activities.transactions.length === 0) {
     Logger.trace('No activities, skipping add for P-chain')
@@ -402,7 +406,7 @@ const addXChainToFavoritesIfNeeded = async (
   const activities = await ActivityService.getActivities({
     network: avalancheNetworkX,
     account: activeAccount,
-    criticalConfig: undefined
+    shouldAnalyzeBridgeTxs: false
   })
 
   if (activities.transactions.length === 0) {

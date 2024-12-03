@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
@@ -6,6 +6,9 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { Contact, CorePrimaryAccount } from '@avalabs/types'
 import { getAddressXP } from 'store/utils/account&contactGetters'
+import { Eip1559Fees } from 'utils/Utils'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import usePVMSend from '../hooks/usePVMSend'
 import SendTokenForm from './SendTokenForm'
 
@@ -26,32 +29,19 @@ const SendPVM = ({
   onSuccess: (txHash: string) => void
   onFailure: (txError: unknown) => void
 }): JSX.Element => {
-  const {
-    setToAddress,
-    token,
-    setToken,
-    maxAmount,
-    error,
-    isValid,
-    isValidating,
-    isSending,
-    maxFee
-  } = useSendContext()
+  const { setToAddress, token, maxAmount, error, isValid, isSending, maxFee } =
+    useSendContext()
   const activeAccount = useSelector(selectActiveAccount)
-
   const fromAddress = activeAccount?.addressPVM ?? ''
+  const provider = useAvalancheXpProvider()
 
-  const { send } = usePVMSend({
+  const { send, estimatedFee, setGasPrice } = usePVMSend({
     network,
     fromAddress,
     maxFee,
     nativeToken,
     account
   })
-
-  useEffect(() => {
-    setToken(nativeToken)
-  }, [nativeToken, setToken])
 
   const handleSend = async (): Promise<void> => {
     if (token === undefined) {
@@ -71,6 +61,13 @@ const SendPVM = ({
     setToAddress(getAddressXP(item) ?? '')
   }
 
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees) => {
+      setGasPrice?.(fees.maxFeePerGas)
+    },
+    [setGasPrice]
+  )
+
   return (
     <SendTokenForm
       network={network}
@@ -79,11 +76,16 @@ const SendPVM = ({
       error={error}
       isValid={isValid}
       isSending={isSending}
-      isValidating={isValidating}
       onOpenQRScanner={onOpenQRScanner}
       onOpenAddressBook={onOpenAddressBook}
       onSelectContact={handleSelectContact}
       onSend={handleSend}
+      handleFeesChange={handleFeesChange}
+      estimatedFee={estimatedFee}
+      supportsAvalancheDynamicFee={
+        provider instanceof Avalanche.JsonRpcProvider &&
+        provider.isEtnaEnabled()
+      }
     />
   )
 }

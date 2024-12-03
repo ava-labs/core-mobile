@@ -4,6 +4,8 @@ import { RpcMethod } from 'store/rpc/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
+import { selectActiveNetwork } from 'store/network'
+import { isDevnet } from 'utils/isDevnet'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { getCorrectedLimit, parseRequestParams } from './utils'
 import { RequestParams, AvalancheGetAddressesInRangeRpcRequest } from './types'
@@ -20,7 +22,7 @@ class AvalancheGetAddressesInRangeHandler
     const { getState } = listenerApi
     const state = getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-
+    const activeNetwork = selectActiveNetwork(state)
     const result = parseRequestParams(request.data.params.request.params)
     if (!result.success) {
       Logger.error('Invalid param', result.error)
@@ -53,7 +55,8 @@ class AvalancheGetAddressesInRangeHandler
           indices: externalIndices ?? [],
           chainAlias: 'X',
           isChange: false,
-          isTestnet: isDeveloperMode
+          isTestnet: isDeveloperMode,
+          isDevnet: isDevnet(activeNetwork)
         })
       ).map(address => address.split('-')[1] as string)
 
@@ -67,7 +70,8 @@ class AvalancheGetAddressesInRangeHandler
           indices: internalIndices ?? [],
           chainAlias: 'X',
           isChange: true,
-          isTestnet: isDeveloperMode
+          isTestnet: isDeveloperMode,
+          isDevnet: isDevnet(activeNetwork)
         })
       ).map(address => address.split('-')[1] as string)
     } catch (e) {

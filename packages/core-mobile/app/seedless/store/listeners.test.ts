@@ -1,7 +1,13 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { noop } from 'lodash'
 import { AppStartListening } from 'store/middleware/listener'
-import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
+import {
+  onAppUnlocked,
+  onLogOut,
+  onRehydrationComplete,
+  selectWalletType
+} from 'store/app'
+import { WalletType } from 'services/wallet/types'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { ErrorEvent, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import * as Navigation from 'utils/Navigation'
@@ -13,6 +19,15 @@ import { onTokenExpired, reducerName } from './slice'
 jest.mock('services/wallet/WalletService', () => ({
   walletType: 'SEEDLESS'
 }))
+
+jest.mock('store/app', () => {
+  const actual = jest.requireActual('store/app')
+  return {
+    ...actual,
+    selectWalletType: jest.fn()
+  }
+})
+
 jest.mock('seedless/services/SeedlessService', () => ({
   sessionManager: {
     refreshToken: jest.fn()
@@ -62,6 +77,12 @@ describe('seedless - listeners', () => {
     expect(SeedlessService.sessionManager.refreshToken).toHaveBeenCalled()
   })
   it('should have dispatched onTokenExpired action', async () => {
+    const mockSelectWalletType =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      selectWalletType as jest.MockedFunction<any>
+    mockSelectWalletType.mockImplementationOnce(() => {
+      return WalletType.SEEDLESS
+    })
     store.dispatch(onRehydrationComplete())
     GlobalEvents.triggerErrorEvent({
       status: 403,
@@ -72,7 +93,24 @@ describe('seedless - listeners', () => {
       params: expect.anything()
     })
   })
-  it('should have signed  out', async () => {
+  it('should have not dispatched onTokenExpired action when wallet is not seedless', async () => {
+    const mockSelectWalletType =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      selectWalletType as jest.MockedFunction<any>
+    mockSelectWalletType.mockImplementationOnce(() => {
+      return WalletType.MNEMONIC
+    })
+    store.dispatch(onRehydrationComplete())
+    GlobalEvents.triggerErrorEvent({
+      status: 403,
+      isSessionExpiredError: () => true
+    } as ErrorEvent)
+    expect(mockNavigate).not.toHaveBeenCalledWith({
+      name: 'Root.RefreshToken',
+      params: expect.anything()
+    })
+  })
+  it('should have signed out', async () => {
     store.dispatch(onLogOut())
     expect(GoogleSigninService.signOut).toHaveBeenCalled()
   })

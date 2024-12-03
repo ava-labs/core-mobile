@@ -13,15 +13,14 @@ export const transactionApi = createApi({
   baseQuery: fakeBaseQuery(),
   endpoints: builder => ({
     getTransactions: builder.query<ActivityResponse, GetTransactionsArgs>({
-      queryFn: async ({ network, account, nextPageToken, criticalConfig }) => {
+      queryFn: async ({ network, account, nextPageToken }) => {
         if (!account) return { error: 'unable to get transactions' }
 
         try {
           const transactions = await ActivityService.getActivities({
             network,
             account,
-            nextPageToken,
-            criticalConfig
+            nextPageToken
           })
 
           return { data: transactions }
@@ -38,7 +37,7 @@ export const transactionApi = createApi({
       Transaction[],
       GetRecentTransactionsArgs
     >({
-      queryFn: async ({ network, account, criticalConfig }) => {
+      queryFn: async ({ network, account }) => {
         if (!account) return { error: 'unable to get transactions' }
 
         try {
@@ -46,8 +45,7 @@ export const transactionApi = createApi({
             network,
             account,
             nextPageToken: undefined,
-            pageSize: 100,
-            criticalConfig
+            pageSize: 100
           })
 
           return { data: data.transactions }

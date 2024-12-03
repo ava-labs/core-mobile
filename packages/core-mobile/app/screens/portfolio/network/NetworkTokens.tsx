@@ -169,14 +169,26 @@ const NetworkTokens = (): JSX.Element => {
 
   const renderZeroState = (): JSX.Element => {
     return (
-      <View style={{ paddingHorizontal: 16, flex: 1, marginTop: -160 }}>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          flex: 1,
+          marginTop: -160,
+          zIndex: -100
+        }}>
         <ZeroState.NetworkTokens goToReceive={goToReceive} />
       </View>
     )
   }
 
   const renderTokenTab = (): JSX.Element => {
-    if (tokenList.length === 0) return renderZeroState()
+    if (tokenList.length === 0)
+      return (
+        <>
+          {renderManageButton()}
+          {renderZeroState()}
+        </>
+      )
 
     if (isPvmNetwork(activeNetwork)) {
       return (

@@ -19,7 +19,7 @@ const mockNativeTokenWithBalance: TokenWithBalancePVM = {
   coingeckoId: '1',
   description: 'description',
   logoUri: 'logoUri',
-  balance: 10000n,
+  available: 10000n,
   balancePerType: {
     lockedStaked: 0n,
     lockedStakeable: 0n,
@@ -83,7 +83,7 @@ describe('validate pvm send', () => {
         maxFee: 1n,
         token: {
           ...mockNativeTokenWithBalance,
-          balance: 100n
+          available: 100n
         }
       })
     ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)

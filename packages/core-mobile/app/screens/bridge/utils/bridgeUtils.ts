@@ -7,79 +7,8 @@ import {
 import { Transaction } from 'store/transaction'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Networks } from 'store/network'
-import { BridgeAsset, BridgeTransfer, Chain } from '@avalabs/bridge-unified'
-import {
-  Transaction as InternalTransaction,
-  TxToken
-} from '@avalabs/vm-module-types'
-
-export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
-
-/**
- * Checking if the transaction is a bridge transaction with Ethereum
- */
-export function isBridgeTransactionEthereum({
-  transaction,
-  criticalConfig,
-  bridgeAddresses
-}: {
-  transaction: InternalTransaction
-  network: Network
-  criticalConfig: CriticalConfig | undefined
-  bridgeAddresses: string[]
-}): boolean {
-  const addressesToCheck = [
-    transaction.to.toLowerCase(),
-    transaction.from.toLowerCase()
-  ]
-
-  const ethBridgeAddress = criticalConfig?.critical.walletAddresses.ethereum
-
-  if (ethBridgeAddress === undefined) return false
-
-  const smartContractAddresses = [ethBridgeAddress, ...bridgeAddresses]
-
-  return addressesToCheck.some(address =>
-    smartContractAddresses.includes(address)
-  )
-}
-
-export function isBridgeTransactionERC20({
-  token,
-  bridgeAddresses
-}: {
-  token: TxToken
-  bridgeAddresses: string[]
-}): boolean {
-  return [
-    token.to?.address.toLowerCase(),
-    token.from?.address.toLowerCase()
-  ].some(item => item && [...bridgeAddresses, NULL_ADDRESS].includes(item))
-}
-
-/**
- * Checking if the transaction is a bridge transaction with Bitcoin
- */
-export const isBridgeTransactionBTC = (
-  transaction: InternalTransaction,
-  bitcoinWalletAddresses:
-    | {
-        avalanche: string
-        btc: string
-      }
-    | undefined
-): boolean => {
-  if (!bitcoinWalletAddresses) {
-    return false
-  }
-
-  const addresses = transaction.isSender ? [transaction.to] : [transaction.from]
-  return addresses.some(address => {
-    return [bitcoinWalletAddresses.btc, bitcoinWalletAddresses.avalanche].some(
-      walletAddress => address.toLowerCase() === walletAddress.toLowerCase()
-    )
-  })
-}
+import { BridgeTransfer, Chain } from '@avalabs/bridge-unified'
+import { AssetBalance } from './types'
 
 export function isPendingBridgeTransaction(
   item: Transaction | BridgeTransaction | BridgeTransfer
@@ -131,6 +60,7 @@ export const networkToBlockchain = (
     case ChainId.AVALANCHE_MAINNET_ID:
     case ChainId.AVALANCHE_LOCAL_ID:
     case ChainId.AVALANCHE_TESTNET_ID:
+    case ChainId.AVALANCHE_DEVNET_ID:
       return Blockchain.AVALANCHE
     case ChainId.ETHEREUM_HOMESTEAD:
     case ChainId.ETHEREUM_TEST_GOERLY:
@@ -145,10 +75,6 @@ export const networkToBlockchain = (
   }
 }
 
-export const isUnifiedBridgeAsset = (asset: unknown): asset is BridgeAsset => {
-  return asset !== null && typeof asset === 'object' && 'destinations' in asset
-}
-
 export const isUnifiedBridgeTransfer = (
   transfer?: BridgeTransaction | BridgeTransfer | Transaction
 ): transfer is BridgeTransfer => {
@@ -161,4 +87,34 @@ export const getNativeTokenSymbol = (chain: Blockchain | Chain): string => {
   }
 
   return getNativeSymbol(chain)
+}
+
+export function getOriginalSymbol(symbol: string): string {
+  // get the original symbol without the postfix for network(i.e.: USDC.e -> USDC, BTC.b -> BTC)
+  return symbol.replace(/\.(e|b|p)$/i, '')
+}
+
+export const getAssetBalance = (
+  symbol: string | undefined,
+  assetsWithBalances: AssetBalance[]
+): AssetBalance | undefined => {
+  if (!symbol) {
+    return undefined
+  }
+
+  return assetsWithBalances.find(({ asset }) => {
+    return asset.symbol === symbol
+  })
+}
+
+export const unwrapAssetSymbol = (symbol: string): string => {
+  if (symbol.endsWith('.e') || symbol.endsWith('.b')) {
+    return symbol.slice(0, -2) // remove .e
+  }
+
+  return symbol
+}
+
+export const wrapAssetSymbol = (symbol: string, postfix: string): string => {
+  return `${symbol}${postfix}`
 }

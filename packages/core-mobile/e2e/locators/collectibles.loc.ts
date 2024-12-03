@@ -20,7 +20,7 @@ export default {
   type: 'Type',
   nftlogo: 'avatar__logo_avatar',
   warningAddressRequired: 'Address required',
-  warningInsufficientFee: 'Insufficient balance for fee.',
+  warningInsufficientFee: 'Insufficient balance for fee',
   nftItem: 'nft_item',
   listSvg: 'list_svg',
   nftListView: 'nft_list_view',

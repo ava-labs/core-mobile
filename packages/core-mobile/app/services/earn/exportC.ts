@@ -2,7 +2,6 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
-import { calculatePChainFee } from 'services/earn/calculateCrossChainFees'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account/types'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
@@ -11,51 +10,55 @@ import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { AvaxC } from 'types/AvaxC'
 import { weiToNano } from 'utils/units/converter'
-import { AvaxXP } from 'types/AvaxXP'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
-  cChainBalance: bigint
-  requiredAmount: bigint // in nAvax
+  cChainBalanceWei: bigint
+  requiredAmountWei: bigint // this amount should already include the fee to export
   activeAccount: Account
   isDevMode: boolean
+  isDevnet: boolean
 }
 
 export async function exportC({
-  cChainBalance,
-  requiredAmount,
+  cChainBalanceWei,
+  requiredAmountWei,
   activeAccount,
-  isDevMode
+  isDevMode,
+  isDevnet
 }: ExportCParams): Promise<void> {
   Logger.info('exporting C started')
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
   const chains = await NetworkService.getNetworks()
   const cChainNetwork =
     chains[
-      isDevMode ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID
+      isDevnet
+        ? ChainId.AVALANCHE_DEVNET_ID
+        : isDevMode
+        ? ChainId.AVALANCHE_TESTNET_ID
+        : ChainId.AVALANCHE_MAINNET_ID
     ]
   assertNotUndefined(cChainNetwork)
 
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(
+    isDevMode,
+    isDevnet
+  )
 
   const baseFeeAvax = AvaxC.fromWei(await avaxProvider.getApiC().getBaseFee())
 
   const instantBaseFeeAvax = WalletService.getInstantBaseFee(baseFeeAvax)
 
-  const cChainBalanceAvax = AvaxC.fromWei(cChainBalance)
-  const requiredAmountAvax = AvaxXP.fromNanoAvax(requiredAmount)
+  const cChainBalanceAvax = AvaxC.fromWei(cChainBalanceWei)
+  const requiredAmountAvax = AvaxC.fromWei(requiredAmountWei)
 
-  const pChainFeeAvax = calculatePChainFee()
-
-  const amountAvax = requiredAmountAvax.add(pChainFeeAvax)
-
-  if (cChainBalanceAvax.lt(amountAvax)) {
+  if (cChainBalanceAvax.lt(requiredAmountAvax)) {
     throw Error('Not enough balance on C chain')
   }
 
   const unsignedTxWithFee = await WalletService.createExportCTx({
-    amountInNAvax: amountAvax.toSubUnit(),
+    amountInNAvax: weiToNano(requiredAmountAvax.toSubUnit()),
     baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
     accountIndex: activeAccount.index,
     avaxXPNetwork,

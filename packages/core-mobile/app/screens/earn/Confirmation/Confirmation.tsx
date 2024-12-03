@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
-import { BackHandler, Linking, StyleSheet, View } from 'react-native'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { BackHandler, Linking, StyleSheet } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -14,7 +14,7 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { truncateNodeId } from 'utils/Utils'
+import { Eip1559Fees, truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { format, getUnixTime } from 'date-fns'
@@ -45,6 +45,14 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { Text, View } from '@avalabs/k2-mobile'
+import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
+import { SendErrorMessage } from 'screens/send/utils/types'
+import { isDevnet } from 'utils/isDevnet'
+import { selectActiveNetwork } from 'store/network'
+import NetworkService from 'services/network/NetworkService'
+import { useIsNetworkFeeExcessive } from 'hooks/earn/useIsNetworkFeeExcessive'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -72,6 +80,11 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const pNetwork = NetworkService.getAvalancheNetworkP(
+    isDeveloperMode,
+    isDevnet(activeNetwork)
+  )
   const network = useCChainNetwork()
   const tokenSymbol = network?.networkToken?.symbol
   const { issueDelegationMutation } = useIssueDelegation(
@@ -80,7 +93,18 @@ export const Confirmation = (): JSX.Element | null => {
     onFundsStuck
   )
   const claimableBalance = useGetClaimableBalance()
-  const networkFees = useEstimateStakingFees(stakingAmount)
+  const [gasPrice, setGasPrice] = useState<bigint>()
+  const xpProvider = useAvalancheXpProvider()
+
+  const {
+    estimatedStakingFee: networkFees,
+    defaultTxFee,
+    requiredPFee
+  } = useEstimateStakingFees({
+    stakingAmount,
+    xpProvider,
+    gasPrice
+  })
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
 
   let deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
@@ -102,11 +126,12 @@ export const Confirmation = (): JSX.Element | null => {
   }, [validatedStakingEndTime])
 
   const { data } = useEarnCalcEstimatedRewards({
-    amount: deductedStakingAmount,
+    amountNanoAvax: deductedStakingAmount.toSubUnit(),
     duration: validatedStakingDuration,
     delegationFee: Number(validator?.delegationFee)
   })
 
+  const excessiveNetworkFee = useIsNetworkFeeExcessive(gasPrice)
   const unableToGetNetworkFees = networkFees === undefined
   const showNetworkFeeError = useTimeElapsed(
     isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
@@ -162,10 +187,12 @@ export const Confirmation = (): JSX.Element | null => {
     }
     AnalyticsService.capture('StakeIssueDelegation')
     issueDelegationMutation.mutate({
-      stakingAmount: deductedStakingAmount,
+      stakingAmountNanoAvax: deductedStakingAmount.toSubUnit(),
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
-      nodeId
+      nodeId,
+      gasPrice,
+      requiredPFeeNanoAvax: requiredPFee?.toSubUnit()
     })
   }
 
@@ -236,7 +263,7 @@ export const Confirmation = (): JSX.Element | null => {
     const stakingAmountInAvax = deductedStakingAmount.toDisplay()
     const stakingAmountInCurrency = deductedStakingAmount
       .mul(avaxPrice)
-      .toDisplay({ fixedDp: 2 })
+      .toDisplay({ fixedDp: 2, asNumber: true })
 
     return (
       <Row style={{ justifyContent: 'space-between' }}>
@@ -263,7 +290,7 @@ export const Confirmation = (): JSX.Element | null => {
       const estimatedRewardInAvax = data.estimatedTokenReward.toDisplay()
       const estimatedRewardInCurrency = data.estimatedTokenReward
         .mul(avaxPrice)
-        .toDisplay({ fixedDp: 2 })
+        .toDisplay({ fixedDp: 2, asNumber: true })
 
       return (
         <View
@@ -311,6 +338,13 @@ export const Confirmation = (): JSX.Element | null => {
     )
   }
 
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees) => {
+      setGasPrice(fees.maxFeePerGas)
+    },
+    [setGasPrice]
+  )
+
   if (!validator) return null
 
   return (
@@ -322,7 +356,7 @@ export const Confirmation = (): JSX.Element | null => {
       confirmBtnTitle="Stake Now"
       cancelBtnTitle="Cancel"
       disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected."
-      confirmBtnDisabled={unableToGetNetworkFees}>
+      confirmBtnDisabled={unableToGetNetworkFees || excessiveNetworkFee}>
       <Space y={4} />
       {renderStakedAmount()}
       <Space y={16} />
@@ -415,6 +449,28 @@ export const Confirmation = (): JSX.Element | null => {
           </Tooltip>
           {renderNetworkFee()}
         </Row>
+        {xpProvider && xpProvider.isEtnaEnabled() && defaultTxFee && (
+          <>
+            <NetworkFeeSelector
+              chainId={pNetwork.chainId}
+              gasLimit={Number(defaultTxFee.toSubUnit())}
+              onFeesChange={handleFeesChange}
+              isGasLimitEditable={false}
+              supportsAvalancheDynamicFee={
+                xpProvider ? xpProvider.isEtnaEnabled() : false
+              }
+              showOnlyFeeSelection={true}
+            />
+            {excessiveNetworkFee && (
+              <Text
+                testID="error_msg"
+                variant="body2"
+                sx={{ color: '$dangerMain' }}>
+                {SendErrorMessage.EXCESSIVE_NETWORK_FEE}
+              </Text>
+            )}
+          </>
+        )}
       </View>
       <Separator />
       <View style={styles.verticalPadding}>
