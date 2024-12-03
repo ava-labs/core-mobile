@@ -1,4 +1,5 @@
-import { object, string } from 'zod'
+import { object, string, nativeEnum } from 'zod'
+import { ChannelId } from 'services/notifications/channels'
 
 export const NotificationsBalanceChangeSchema = object({
   data: object({
@@ -9,7 +10,11 @@ export const NotificationsBalanceChangeSchema = object({
   }),
   notification: object({
     title: string(),
-    body: string()
+    body: string(),
+    sound: string().optional(),
+    android: object({
+      channelId: nativeEnum(ChannelId).optional()
+    }).optional()
   })
 })
 
