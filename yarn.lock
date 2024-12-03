@@ -343,7 +343,7 @@ __metadata:
     react-native-device-info: 13.0.0
     react-native-fast-image: 8.6.3
     react-native-fs: 2.20.0
-    react-native-gesture-handler: 2.20.0
+    react-native-gesture-handler: 2.14.1
     react-native-graph: 1.1.0
     react-native-haptic-feedback: 2.0.3
     react-native-inappbrowser-reborn: 3.7.0
@@ -519,6 +519,7 @@ __metadata:
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.3
+    "@react-native-masked-view/masked-view": 0.3.0
     "@rushstack/eslint-patch": 1.5.1
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
@@ -533,6 +534,7 @@ __metadata:
     expo: 50.0.21
     expo-blur: 12.9.2
     expo-font: 11.10.3
+    expo-image: 1.10.6
     expo-linear-gradient: 12.7.2
     expo-splash-screen: 0.27.6
     expo-status-bar: 1.12.1
@@ -542,7 +544,9 @@ __metadata:
     react-dom: 18.3.1
     react-native: 0.73.7
     react-native-dialog: 9.3.0
+    react-native-gesture-handler: 2.14.1
     react-native-reanimated: 3.6.2
+    react-native-reanimated-carousel: v4.0.0-canary.22
     react-native-safe-area-context: 4.11.0
     react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
@@ -8887,6 +8891,16 @@ __metadata:
     react-dom:
       optional: true
   checksum: 777bb338ce1ce1b9581f1e3c67d04a1d8eb2486745868e170455b3485c26a6dcbeb202acfb949bf45817b7d7f9c8c7259342c1a0f237aa03eef2965e69b90f12
+  languageName: node
+  linkType: hard
+
+"@react-native-masked-view/masked-view@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@react-native-masked-view/masked-view@npm:0.3.0"
+  peerDependencies:
+    react: ">=16"
+    react-native: ">=0.57"
+  checksum: 77cf06947640abf5e7bf8c63ba6ee79f7cb409f4a40d3a0242790ff3f61d1b08c4f51373668b0e0e0bb2f60ffe3e4d2e4ea26c7358874f94ac9317841fce1751
   languageName: node
   linkType: hard
 
@@ -17578,6 +17592,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-image@npm:1.10.6":
+  version: 1.10.6
+  resolution: "expo-image@npm:1.10.6"
+  dependencies:
+    "@react-native/assets-registry": ~0.73.1
+  peerDependencies:
+    expo: "*"
+  checksum: c847caf52e507d75a8d66a2f1f56d0c05669fe565510a9c24e4a5644e521a638e7171cfa67a4af89cc2db20f6d6a9cb25ee75471a9b2a4e167b91eb48d8eed35
+  languageName: node
+  linkType: hard
+
 "expo-keep-awake@npm:~12.8.2":
   version: 12.8.2
   resolution: "expo-keep-awake@npm:12.8.2"
@@ -25886,18 +25911,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:2.20.0":
-  version: 2.20.0
-  resolution: "react-native-gesture-handler@npm:2.20.0"
+"react-native-gesture-handler@npm:2.14.1":
+  version: 2.14.1
+  resolution: "react-native-gesture-handler@npm:2.14.1"
   dependencies:
     "@egjs/hammerjs": ^2.0.17
     hoist-non-react-statics: ^3.3.0
     invariant: ^2.2.4
+    lodash: ^4.17.21
     prop-types: ^15.7.2
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: f573bc3717ae0209ff30bf62b95b3c7f11bd97f4797090211bce416c250388f55d1995aac0a7f1bbc99b06223ea64cbeae8d4ef88dcb8c877201b49163ea0e4b
+  checksum: a037e8c5a88a9fc79c283f3064d7653ec8615cb05fc62622eaccb5f3db489ede9c3a0685b7aad210c7efabfd8f5aa34e4f19204318dfda64c8829266d78e0cae
   languageName: node
   linkType: hard
 
@@ -26161,6 +26187,18 @@ __metadata:
     react: "*"
     react-native: ">=0.71.0"
   checksum: 47b227c74cef0c9630ce7e91fe2153bcf2492f3fae175352818ca2278779f28c2932611df44cb8a18cb290da6d73aa3a927bcea56c3a9a4a51db6a7f4f72ac4d
+  languageName: node
+  linkType: hard
+
+"react-native-reanimated-carousel@npm:v4.0.0-canary.22":
+  version: 4.0.0-canary.22
+  resolution: "react-native-reanimated-carousel@npm:4.0.0-canary.22"
+  peerDependencies:
+    react: ">=18.0.0"
+    react-native: ">=0.70.3"
+    react-native-gesture-handler: ">=2.9.0"
+    react-native-reanimated: ">=3.0.0"
+  checksum: 52d4f3c66ea46b6309518bb98547b48302d9852d6ffd7db3f470e3edf342cc289d206c015cf9ba0c31b768e1a15b48f5170b4de678bdcb5f7a29791ef948bd0a
   languageName: node
   linkType: hard
 
