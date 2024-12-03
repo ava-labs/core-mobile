@@ -1,6 +1,4 @@
-import assertions from '../../helpers/assertions'
 import { warmup } from '../../helpers/warmup'
-import PortfolioPage from '../../pages/portfolio.page'
 
 describe('Verify version update', () => {
   beforeAll(async () => {
@@ -9,6 +7,6 @@ describe('Verify version update', () => {
   })
 
   it('Should verify Defi Items', async () => {
-    await assertions.isVisible(PortfolioPage.colectiblesTab)
+    fail('not supposed to pass, dont worry about it...')
   })
 })
