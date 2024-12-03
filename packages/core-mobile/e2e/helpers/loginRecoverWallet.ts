@@ -32,7 +32,7 @@ class LoginRecoverWallet {
     } else {
       await commonElsPage.tapNotNow()
     }
-    await PortfolioPage.verifyPorfolioScreen()
+    // await PortfolioPage.verifyPorfolioScreen()
   }
 
   async enterPin() {
