@@ -40,6 +40,6 @@ adb install -r $LATEST_VERSION_TEST_APK_PATH && sleep 5
 envman add --key LATEST_VERSION_APK_PATH --value "$LATEST_VERSION_APK_PATH"
 envman add --key LATEST_VERSION_TEST_APK_PATH --value "$LATEST_VERSION_TEST_APK_PATH"
 
-# Run same login test on latest version to test for a crash
+# Run login test on latest version to test for a crash
 echo "Running login test on latest version"
-./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.latest.e2e --reuse --loglevel trace; test_result=$?
+./node_modules/.bin/detox test loginAfterVersionUpdate.e2e.ts -c android.external.latest.e2e --reuse --loglevel trace; test_result=$?
