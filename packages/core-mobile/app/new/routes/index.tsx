@@ -1,7 +1,7 @@
-import { Link, useRouter } from 'expo-router'
-import { View, Button } from '@avalabs/k2-alpine'
+import { useRouter } from 'expo-router'
+import { View, Button, NotificationAlertType } from '@avalabs/k2-alpine'
 import React from 'react'
-import { showSnackbar } from 'new/utils/snackbar'
+import { showNotificationAlert, showSnackbar } from 'new/utils/toast'
 
 export default function Index(): JSX.Element {
   const { navigate } = useRouter()
@@ -9,7 +9,16 @@ export default function Index(): JSX.Element {
   const handleSignIn = (): void => {
     navigate('/portfolio/')
 
-    showSnackbar('Code copied')
+    showSnackbar({ message: 'Welcome back!' })
+  }
+
+  const handleSignUp = (): void => {
+    navigate('/signup/')
+
+    showNotificationAlert({
+      type: NotificationAlertType.Info,
+      title: 'Sign up pressed'
+    })
   }
 
   return (
@@ -23,11 +32,9 @@ export default function Index(): JSX.Element {
       <Button type="primary" size="medium" onPress={handleSignIn}>
         Sign in
       </Button>
-      <Link href="/signup/" asChild>
-        <Button type="primary" size="medium">
-          Sign up
-        </Button>
-      </Link>
+      <Button type="primary" size="medium" onPress={handleSignUp}>
+        Sign up
+      </Button>
     </View>
   )
 }
