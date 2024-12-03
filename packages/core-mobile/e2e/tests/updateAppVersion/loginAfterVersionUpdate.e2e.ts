@@ -17,10 +17,14 @@ const initialArgs: DeviceLaunchAppConfig = {
 }
 
 describe('Verify version update', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await device.launchApp(initialArgs)
     await handleJailbrokenWarning()
     await loginRecoverWallet.enterPin()
+    await device.disableSynchronization()
+  })
+
+  it('should verify version update', async () => {
     await assertions.isVisible(portfolioPage.collectiblesTab)
   })
 })
