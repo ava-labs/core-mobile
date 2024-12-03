@@ -3,7 +3,6 @@ import AnalyticsConsentPage from '../pages/analyticsConsent.page'
 import commonElsPage from '../pages/commonEls.page'
 import nameWalletPage from '../pages/nameWallet.page'
 import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
-import existingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import Actions from '../helpers/actions'
 
 class LoginRecoverWallet {
@@ -44,7 +43,7 @@ class LoginRecoverWallet {
     isCoreAnalyticsOn = false
   ) {
     const isVisibleNo = await Actions.expectToBeVisible(
-      existingRecoveryPhrasePage.forgotPinBtn
+      ExistingRecoveryPhrasePage.forgotPinBtn
     )
 
     if (isVisibleNo) {

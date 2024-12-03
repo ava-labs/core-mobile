@@ -1,14 +1,13 @@
 import assertions from '../../helpers/assertions'
-import { warmup } from '../../helpers/warmup'
-import PortfolioPage from '../../pages/portfolio.page'
+import { handleJailbrokenWarning } from '../../helpers/warmup'
+import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 
 describe('Verify version update', () => {
   beforeAll(async () => {
-    await warmup()
-    await device.disableSynchronization()
+    await handleJailbrokenWarning()
   })
 
-  it('Should verify Defi Items', async () => {
-    await assertions.isVisible(PortfolioPage.colectiblesTab)
+  it('Should verify pin screen is shown', async () => {
+    await assertions.isVisible(ExistingRecoveryPhrasePage.forgotPinBtn)
   })
 })
