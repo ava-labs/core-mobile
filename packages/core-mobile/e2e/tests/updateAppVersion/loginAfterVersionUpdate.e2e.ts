@@ -1,7 +1,8 @@
 import { DeviceLaunchAppConfig, DevicePermissions } from 'detox/detox'
 import assertions from '../../helpers/assertions'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
-import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
+import loginRecoverWallet from '../../helpers/loginRecoverWallet'
+import portfolioPage from '../../pages/portfolio.page'
 
 const permissions: DevicePermissions = { notifications: 'YES', camera: 'YES' }
 const initialArgs: DeviceLaunchAppConfig = {
@@ -19,9 +20,7 @@ describe('Verify version update', () => {
   beforeAll(async () => {
     await device.launchApp(initialArgs)
     await handleJailbrokenWarning()
-  })
-
-  it('Should verify pin screen is shown', async () => {
-    await assertions.isVisible(ExistingRecoveryPhrasePage.forgotPinBtn)
+    await loginRecoverWallet.enterPin()
+    await assertions.isVisible(portfolioPage.collectiblesTab)
   })
 })
