@@ -131,7 +131,7 @@ export const CoinsContractInfoResponseSchema = object({
   platforms: record(string(), string().nullable()).nullable().optional(),
   links: object({
     homepage: string().array().nullable().optional(),
-    blockchain_site: string().array().nullable().optional(),
+    blockchain_site: string().nullable().array().nullable().optional(),
     official_forum_url: string().array().nullable().optional(),
     chat_url: string().array().nullable().optional(),
     announcement_url: string().array().nullable().optional(),
