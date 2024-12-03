@@ -29,6 +29,7 @@ interface ButtonProps {
   size: ButtonSize
   leftIcon?: ButtonIconType
   rightIcon?: ButtonIconType
+  activeOpacity?: number
 }
 
 export const Button = forwardRef<
