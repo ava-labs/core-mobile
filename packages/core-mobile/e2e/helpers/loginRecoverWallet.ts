@@ -34,8 +34,9 @@ class LoginRecoverWallet {
   }
 
   async enterPin() {
+    await Actions.waitForElementNoSync(CreatePinPage.numpadZero, 20000)
     await CreatePinPage.tapNumpadZero6Times()
-    await commonElsPage.checkIfMainnet()
+    // await commonElsPage.checkIfMainnet()
   }
 
   async recoverWalletLogin(

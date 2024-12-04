@@ -24,11 +24,10 @@ describe('Verify version update', () => {
     await device.launchApp(initialArgs)
     await handleJailbrokenWarning()
     await loginRecoverWallet.enterPin()
-    await device.disableSynchronization()
   })
 
   it('should verify version update', async () => {
-    await delay(10000)
+    await delay(30000)
     await assertions.isVisible(portfolioPage.collectiblesTab)
   })
 })
