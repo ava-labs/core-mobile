@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
-import { View, Button, NotificationAlertType } from '@avalabs/k2-alpine'
+import { View, Button } from '@avalabs/k2-alpine'
 import React from 'react'
-import { showNotificationAlert, showSnackbar } from 'new/utils/toast'
+import { showToast } from 'new/utils/toast'
 
 export default function Index(): JSX.Element {
   const { navigate } = useRouter()
@@ -9,15 +9,24 @@ export default function Index(): JSX.Element {
   const handleSignIn = (): void => {
     navigate('/portfolio/')
 
-    showSnackbar({ message: 'Welcome back!' })
+    showToast({
+      toastType: 'snackbar',
+      content: {
+        message: 'Welcome back!'
+      }
+    })
   }
 
   const handleSignUp = (): void => {
-    navigate('/signup/')
+    // navigate('/signup/')
 
-    showNotificationAlert({
-      type: NotificationAlertType.Info,
-      title: 'Sign up pressed'
+    showToast({
+      toastType: 'notificationAlert',
+      content: {
+        type: 'success',
+        title: 'Sign up',
+        message: 'Sign up button pressed'
+      }
     })
   }
 

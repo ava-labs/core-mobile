@@ -1,5 +1,5 @@
 import React from 'react'
-import { TouchableWithoutFeedback } from 'react-native'
+import { TouchableWithoutFeedback, ViewStyle } from 'react-native'
 import { useDripsyTheme as useTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
@@ -7,25 +7,30 @@ import { Text, View } from '../Primitives'
 export const Snackbar = ({
   message,
   testID,
-  onPress
+  onPress,
+  style
 }: {
   message: string
   testID?: string
   onPress?: () => void
+  style?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
   const backgroundColor = theme.isDark
     ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfacePrimary
+    : darkModeColors.$surfaceSecondary
   const textColor = theme.isDark
     ? lightModeColors.$textPrimary
     : darkModeColors.$textPrimary
 
   return (
     <TouchableWithoutFeedback
-      style={{
-        alignSelf: 'flex-start'
-      }}
+      style={[
+        {
+          alignSelf: 'flex-start'
+        },
+        style
+      ]}
       testID={testID}
       onPress={onPress}>
       <View
