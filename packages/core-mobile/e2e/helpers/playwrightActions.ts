@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/*eslint max-params: ["error", 4]*/
 import { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 const fs = require('fs')
@@ -22,7 +20,7 @@ async function writeQrCodeToFile(clipboardValue: string) {
   fs.writeFile(
     './e2e/tests/playwright/qr_codes.txt',
     clipboardValue,
-    (err: any) => {
+    (err: NodeJS.ErrnoException | null) => {
       if (err) throw err
     }
   )

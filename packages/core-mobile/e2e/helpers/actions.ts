@@ -290,7 +290,6 @@ const swipeLeft = async (
 
 const openPage = async (page: Page, url: string) => {
   await page.goto(url)
-  await page.setViewportSize({ width: 2080, height: 1080 })
 }
 
 const platform = () => {

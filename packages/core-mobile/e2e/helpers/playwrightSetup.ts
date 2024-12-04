@@ -20,14 +20,14 @@ export const playwrightSetup = () => {
     console.log('Starting Playwright test...')
   })
 
-  // test.afterAll(async () => {
-  //   if (browser) {
-  //     await browser.close()
-  //     browser = null
-  //     page = null
-  //   }
-  //   console.log('Closing Playwright test...')
-  // })
+  test.afterAll(async () => {
+    if (browser) {
+      await browser.close()
+      browser = null
+      page = null
+    }
+    console.log('Closing Playwright test...')
+  })
 
   return () => {
     if (page !== null) {
@@ -37,5 +37,3 @@ export const playwrightSetup = () => {
     }
   }
 }
-
-// export const warmupWeb = async () => {}
