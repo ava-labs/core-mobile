@@ -3,12 +3,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Install older version of app and login', () => {
   beforeAll(async () => {
     await warmup()
-    await device.disableSynchronization()
-
-    throw new Error('Test is supposed to fail!')
+    console.log('warmup is done!')
   })
 
   it('should fail', async () => {
-    console.log('Test is supposed to fail and you should not see this message!')
+    console.log('Test is supposed to pass and you should see this message!')
   })
 })

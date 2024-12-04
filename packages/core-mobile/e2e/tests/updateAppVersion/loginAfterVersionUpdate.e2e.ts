@@ -29,5 +29,6 @@ describe('Verify version update', () => {
   it('should verify version update', async () => {
     await delay(30000)
     await assertions.isVisible(portfolioPage.collectiblesTab)
+    console.log('Test passed if you see this message!')
   })
 })

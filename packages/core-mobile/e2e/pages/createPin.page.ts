@@ -63,9 +63,10 @@ class CreatePinPage {
   }
 
   async tapAgreeAndContinueBtn() {
-    if (await Action.isVisible(this.fingerprint, 0)) {
-      await this.tapSkipBtn()
-    }
+    // if (await Action.isVisible(this.fingerprint, 0)) {
+    //   await this.tapSkipBtn()
+    // }
+    await Action.waitForElementNoSync(this.agreeAndContinueBtn, 20000, 0)
     await Action.tapElementAtIndex(this.agreeAndContinueBtn, 0)
   }
 
