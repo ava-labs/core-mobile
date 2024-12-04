@@ -1,13 +1,13 @@
 import { Page } from '@playwright/test'
 
-class CoreAppPage {
+class CoreApp {
   page: Page
 
   constructor(page: Page) {
     this.page = page
   }
 
-  get coreAppHomepage() {
+  get coreUrl() {
     return 'https://core.app/'
   }
 
@@ -19,21 +19,13 @@ class CoreAppPage {
     return this.page.locator('[data-testid="connect-terms-continue-btn"]')
   }
 
-  get connectWalletBtn() {
+  get connect() {
     return this.page.locator('[data-testid="connect-wallet-button"]')
   }
 
-  async clickConnectWalletBtn() {
-    await this.connectWalletBtn.click()
-  }
-
-  async clickAcceptTermsCheckbox() {
-    await this.termsCheckBox.click()
-  }
-
-  async clickContinueBtn() {
-    await this.continueBtn.click()
+  get coreMobile() {
+    return this.page.locator('[data-testid="connect-core-mobile"]')
   }
 }
 
-export default CoreAppPage
+export default CoreApp
