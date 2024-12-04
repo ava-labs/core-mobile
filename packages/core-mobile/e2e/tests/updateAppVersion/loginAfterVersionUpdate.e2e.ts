@@ -3,6 +3,7 @@ import assertions from '../../helpers/assertions'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
 import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 import portfolioPage from '../../pages/portfolio.page'
+import delay from '../../helpers/waits'
 
 const permissions: DevicePermissions = { notifications: 'YES', camera: 'YES' }
 const initialArgs: DeviceLaunchAppConfig = {
@@ -27,6 +28,7 @@ describe('Verify version update', () => {
   })
 
   it('should verify version update', async () => {
+    await delay(10000)
     await assertions.isVisible(portfolioPage.collectiblesTab)
   })
 })
