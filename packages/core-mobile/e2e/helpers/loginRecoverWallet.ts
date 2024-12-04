@@ -30,6 +30,9 @@ class LoginRecoverWallet {
     } else {
       await commonElsPage.tapNotNow()
     }
+    await device.launchApp({
+      newInstance: false
+    })
     // await PortfolioPage.verifyPorfolioScreen()
   }
 
