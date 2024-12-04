@@ -42,7 +42,7 @@ envman add --key LATEST_VERSION_TEST_APK_PATH --value "$LATEST_VERSION_TEST_APK_
 
 # Run login test on latest version to test for a crash
 echo "Running login test on latest version"
-./node_modules/.bin/detox test loginAfterVersionUpdate.e2e.ts -c android.external.latest.e2e --reuse --loglevel trace --detox-enable-synchronization=false; test_result_new=$?
+./node_modules/.bin/detox test loginAfterVersionUpdate.e2e.ts -c android.external.latest.e2e --reuse --loglevel trace --headless --take-screenshots none --record-videos none; test_result_new=$?
 
 if ((test_result != 0)); then
   exit 0
