@@ -65,7 +65,7 @@ export const HexagonImageView = ({
       }>
       <Image
         key={`image-${source}`}
-        resizeMode="cover"
+        contentFit="cover"
         source={source}
         style={{ width: height, height: height, backgroundColor }}
         onLoadStart={hasLoading ? handleLoadStart : undefined}

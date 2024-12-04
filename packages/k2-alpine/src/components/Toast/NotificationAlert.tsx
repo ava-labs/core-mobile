@@ -1,5 +1,5 @@
 import React from 'react'
-import { TouchableWithoutFeedback } from 'react-native'
+import { Dimensions, TouchableWithoutFeedback, ViewStyle } from 'react-native'
 import { useDripsyTheme as useTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
@@ -10,18 +10,20 @@ export const NotificationAlert = ({
   title,
   message,
   testID,
-  onPress
+  onPress,
+  style
 }: {
   type: NotificationAlertType
   title: string
   message?: string
   testID?: string
   onPress?: () => void
+  style?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
   const backgroundColor = theme.isDark
     ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfacePrimary
+    : darkModeColors.$surfaceSecondary
   const titleColor = theme.isDark
     ? lightModeColors.$textPrimary
     : darkModeColors.$textPrimary
@@ -37,17 +39,17 @@ export const NotificationAlert = ({
 
   const renderIcon = (): JSX.Element | undefined => {
     switch (type) {
-      case NotificationAlertType.Info:
+      case 'info':
         return <Icons.Action.Info color={titleColor} />
-      case NotificationAlertType.Success:
+      case 'success':
         return <Icons.Action.CheckCircleOutline color={successColor} />
-      case NotificationAlertType.CriticalError:
+      case 'criticalError':
         return <Icons.Alert.IconErrorOutline color={errorColor} />
-      case NotificationAlertType.Error:
+      case 'error':
         return <Icons.Custom.Error color={titleColor} />
-      case NotificationAlertType.Suspicious:
+      case 'suspicious':
         return <Icons.Device.IconGPPMaybe color={errorColor} />
-      case NotificationAlertType.Scam:
+      case 'scam':
         return <Icons.Social.RemoveModerator color={errorColor} />
     }
   }
@@ -55,7 +57,7 @@ export const NotificationAlert = ({
   const hasMessage = !!message
 
   return (
-    <TouchableWithoutFeedback testID={testID} onPress={onPress}>
+    <TouchableWithoutFeedback style={style} testID={testID} onPress={onPress}>
       <View
         sx={{
           backgroundColor,
@@ -64,8 +66,8 @@ export const NotificationAlert = ({
           borderRadius: 18,
           flexDirection: 'row',
           gap: 16,
-          width: '100%',
-          alignItems: 'center'
+          alignItems: 'center',
+          width: windowWidth - 24
         }}>
         <View>{renderIcon()}</View>
         <View sx={{ flexShrink: 1 }}>
@@ -92,11 +94,12 @@ export const NotificationAlert = ({
   )
 }
 
-export enum NotificationAlertType {
-  Info = 'info',
-  Success = 'success',
-  CriticalError = 'criticalError',
-  Error = 'error',
-  Suspicious = 'suspicious',
-  Scam = 'scam'
-}
+export type NotificationAlertType =
+  | 'info'
+  | 'success'
+  | 'criticalError'
+  | 'error'
+  | 'suspicious'
+  | 'scam'
+
+const windowWidth = Dimensions.get('window').width

@@ -81,7 +81,6 @@ export const All = (): JSX.Element => {
         />
       </View>
       <AvatarSelector
-        backgroundColor={backgroundColor}
         selectedId={selectedAvatarId}
         avatars={AVATARS}
         onSelect={handleSelect}
