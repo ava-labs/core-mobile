@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test'
 import commonEls from '../locators/commonPlaywrightEls.loc'
+import playwrightActions from '../helpers/playwrightActions'
 class CommonElsPage {
   page: Page
 
@@ -27,10 +28,12 @@ class CommonElsPage {
     return this.page.getByText('Connect to a wallet')
   }
 
-  async qrUriValue(locator = 'wcm') {
+  async qrUriValue(locator = 'wcm', timeout = 5000) {
     if (locator === 'wcm') {
+      await playwrightActions.waitFor(this.wcmWalletUri, timeout)
       return await this.wcmWalletUri.getAttribute('uri')
     } else {
+      await playwrightActions.waitFor(this.wuiQrCodeUri, timeout)
       return await this.wuiQrCodeUri.getAttribute('uri')
     }
   }
