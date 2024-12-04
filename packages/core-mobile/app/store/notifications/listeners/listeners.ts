@@ -43,7 +43,10 @@ export const addNotificationsListeners = (
   startListening({
     actionCreator: turnOnNotificationsFor,
     effect: async (action: AnyAction, listenerApi) => {
-      await handleTurnOnNotificationsFor(listenerApi, action.payload.channelId)
+      await handleTurnOnNotificationsFor(
+        listenerApi,
+        action.payload.channelId
+      ).catch(Logger.error)
     }
   })
 

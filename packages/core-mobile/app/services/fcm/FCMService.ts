@@ -1,13 +1,11 @@
 import messaging from '@react-native-firebase/messaging'
 import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { ChannelId } from 'services/notifications/channels'
 import { ACTIONS, PROTOCOLS } from 'contexts/DeeplinkContext/types'
 import {
   BalanceChangeEvents,
   NotificationsBalanceChangeSchema
 } from 'services/fcm/types'
-import { audioFeedback, Audios } from 'utils/AudioFeedback'
 
 type UnsubscribeFunc = () => void
 
@@ -39,9 +37,6 @@ class FCMService {
         // skip showing notification if user just spent balance in app
         return
       }
-      if (result.data.data.event === BalanceChangeEvents.BALANCES_RECEIVED) {
-        audioFeedback(Audios.Receive)
-      }
       const data = {
         accountAddress: result.data.data.accountAddress,
         chainId: result.data.data.chainId,
@@ -49,11 +44,12 @@ class FCMService {
         url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
       }
       await NotificationsService.displayNotification({
-        channelId: ChannelId.BALANCE_CHANGES,
         title: result.data.notification.title,
         body: result.data.notification.body,
-        data
-      })
+        data,
+        sound: result.data.notification.sound,
+        channelId: result.data.notification.android?.channelId
+      }).catch(Logger.error)
     })
   }
   /**
@@ -63,9 +59,7 @@ class FCMService {
   listenForMessagesBackground = (): void => {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       Logger.info('A new FCM message arrived in background', remoteMessage)
-      const result = NotificationsBalanceChangeSchema.safeParse(
-        remoteMessage.data
-      )
+      const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
       if (!result.success) {
         Logger.error(
           `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
@@ -80,9 +74,10 @@ class FCMService {
         url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
       }
       await NotificationsService.displayNotification({
-        channelId: ChannelId.BALANCE_CHANGES,
+        channelId: result.data.notification.android?.channelId,
         title: result.data.notification.title,
         body: result.data.notification.body,
+        sound: result.data.notification.sound,
         data
       })
     })
