@@ -18,7 +18,7 @@ export default function Index(): JSX.Element {
   }
 
   const handleSignUp = (): void => {
-    // navigate('/signup/')
+    navigate('/signup/')
 
     showToast({
       toastType: 'notificationAlert',
