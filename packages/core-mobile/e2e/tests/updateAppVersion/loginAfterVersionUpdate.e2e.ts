@@ -12,7 +12,9 @@ const initialArgs: DeviceLaunchAppConfig = {
       '.*cloudflare-ipfs.*',
       '.*[ipfs.io/ipfs].*',
       '.*[amazonaws.com].*'
-    ]
+    ],
+    newInstance: true,
+    detoxEnableSynchronization: 'NO'
   }
 }
 
