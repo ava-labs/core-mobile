@@ -324,9 +324,9 @@ __metadata:
     node-fetch: 3.3.2
     patch-package: 8.0.0
     path-browserify: 1.0.1
-    playwright-extra: ^4.3.6
+    playwright-extra: 4.3.6
     postinstall-postinstall: 2.1.0
-    puppeteer-extra-plugin-stealth: ^2.11.2
+    puppeteer-extra-plugin-stealth: 2.11.2
     qrcode-reader: 1.0.4
     react: 18.3.1
     react-content-loader: 6.2.0
@@ -25070,7 +25070,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-extra@npm:^4.3.6":
+"playwright-extra@npm:4.3.6":
   version: 4.3.6
   resolution: "playwright-extra@npm:4.3.6"
   dependencies:
@@ -25509,7 +25509,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"puppeteer-extra-plugin-stealth@npm:^2.11.2":
+"puppeteer-extra-plugin-stealth@npm:2.11.2":
   version: 2.11.2
   resolution: "puppeteer-extra-plugin-stealth@npm:2.11.2"
   dependencies:
