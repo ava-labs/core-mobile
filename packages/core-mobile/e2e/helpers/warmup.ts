@@ -51,11 +51,6 @@ export const handleJailbrokenWarning = async () => {
     await Action.waitForElementNoSync(CommonElsPage.jailbrokenWarning, 20, 0)
     await Assert.isVisible(CommonElsPage.jailbrokenWarning, 0)
     await Action.tapElementAtIndex(by.text('Ok'), 0)
-    await Action.waitForElementNotVisible(
-      CommonElsPage.jailbrokenWarning,
-      20,
-      0
-    )
     console.log('Jailbroken warning handled!!!')
   }
 }

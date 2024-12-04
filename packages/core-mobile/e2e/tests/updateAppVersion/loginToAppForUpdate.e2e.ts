@@ -17,6 +17,7 @@ describe('Install older version of app and login', () => {
     })
     await handleJailbrokenWarning()
     await loginRecoverWallet.recoverMnemonicWallet()
+    console.log('Logged in successfully!')
   })
 
   it('should fail', async () => {
