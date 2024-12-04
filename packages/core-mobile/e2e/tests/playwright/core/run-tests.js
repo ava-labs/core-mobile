@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+const { execSync } = require('child_process')
 
 const runTests = () => {
   const testFile = 'e2e/tests/playwright/core/core.spec.ts'
