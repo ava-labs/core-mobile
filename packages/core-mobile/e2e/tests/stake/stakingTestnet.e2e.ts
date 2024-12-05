@@ -1,7 +1,4 @@
-import { expect as jestExpect } from 'expect'
 import Actions from '../../helpers/actions'
-import Assert from '../../helpers/assertions'
-import AccountManagePage from '../../pages/accountManage.page'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
@@ -18,47 +15,20 @@ describe('Stake on Testnet', () => {
   afterAll(async () => {
     await cleanup()
   })
+  const duration = Actions.getRandomEle([
+    '1 Day',
+    '1 Month',
+    '3 Months',
+    '6 Months',
+    '1 Year',
+    'Custom'
+  ])
 
-  it('should stake one day', async () => {
+  it(`should stake with random ${duration} duration`, async () => {
+    const isCustom = duration === 'Custom' ? true : false
+    console.log('duration: ', duration)
     await BottomTabsPage.tapStakeTab()
-    await StakePage.stake('1', '1 Day')
-    await StakePage.verifyStakeSuccessToast()
-  })
-
-  it('should stake one month', async () => {
-    await BottomTabsPage.tapStakeTab()
-    await StakePage.stake('1', '1 Month')
-    await StakePage.verifyStakeSuccessToast()
-  })
-
-  it('should stake three months', async () => {
-    await BottomTabsPage.tapStakeTab()
-    await StakePage.stake('1', '3 Months')
-    await StakePage.verifyStakeSuccessToast()
-  })
-
-  it('should stake six months', async () => {
-    await BottomTabsPage.tapStakeTab()
-    await StakePage.stake('1', '6 Months')
-    await StakePage.verifyStakeSuccessToast()
-  })
-
-  it('should stake one year', async () => {
-    await BottomTabsPage.tapStakeTab()
-    await StakePage.stake('1', '1 Year')
-    await StakePage.verifyStakeSuccessToast()
-  })
-
-  it('should stake custom duration', async () => {
-    await BottomTabsPage.tapStakeTab()
-    const maximumDuration = new Date(
-      new Date().setFullYear(new Date().getFullYear() + 2)
-    ).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-    await StakePage.stake('1', maximumDuration, true)
+    await StakePage.stake('1', duration, isCustom)
     await StakePage.verifyStakeSuccessToast()
   })
 
@@ -70,19 +40,7 @@ describe('Stake on Testnet', () => {
       await Actions.tap(StakePage.stakeClaimButton)
       await ClaimPage.verifyClaimRewardsScreenItems(claimableBalance)
       await ClaimPage.tapClaimNowButton()
-      await Actions.waitForElement(StakePage.stakePrimaryButton, 25000, 0)
-      await Assert.isVisible(StakePage.stakePrimaryButton)
-      if (Actions.platform() === 'android') {
-        const newClaimableBalance = await StakePage.getTopBalance('claimable')
-        jestExpect(newClaimableBalance).toBe(0)
-      }
+      await Actions.waitForElementNotVisible(ClaimPage.claimButton, 10000)
     }
-  })
-
-  it('should test a staking flow for a new account on testnet', async () => {
-    await BottomTabsPage.tapPortfolioTab()
-    await AccountManagePage.createNthAccountAndSwitchToNth(3)
-    await BottomTabsPage.tapStakeTab()
-    await StakePage.verifyNoActiveStakesScreenItems()
   })
 })

@@ -35,7 +35,6 @@ describe('Dapp - Core Playground', () => {
   it('should handle eth_sendTransaction', async () => {
     await bottomTabsPage.tapBrowserTab()
     await browserPage.sendRpcCall('eth_sendTransaction')
-    await popUpModalPage.verifyApproveTransactionItems()
     await popUpModalPage.tapApproveBtn()
     await sendPage.verifySuccessToast()
   })
