@@ -106,6 +106,7 @@ workflows:
         - pipeline_intermediate_files: |-
             BITRISE_SIGNED_APK_PATH
             $BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
+            $BITRISE_APK_PATH:BITRISE_APK_PATH
     - script-runner@0:
         title: Create Tests To Run Arrays
         inputs:
@@ -120,6 +121,7 @@ workflows:
             TESTS_TO_RUN_GROUP_3=$TESTS_3
             TESTS_TO_RUN_GROUP_4=$TESTS_4
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
+            BITRISE_APK_PATH=$BITRISE_APK_PATH
             BITRISE_SIGNED_APK_PATH=$BITRISE_SIGNED_APK_PATH
             IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
         - api_level: "28"
@@ -365,6 +367,11 @@ workflows:
         no_output_timeout: 450
         inputs:
         - file_path: e2e/tests/updateAppVersion/runUpdateTest.sh
+    - script-runner@0:
+        title: Detox
+        no_output_timeout: 450
+        inputs:
+        - file_path: e2e/tests/updateAppVersion/androidExternalE2eUpdateApp.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -742,7 +749,6 @@ workflows:
     - _pull_app_files
     - _pull_external_app_files
     after_run:
-    - _run_android_update_app_version_test
     - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -760,6 +766,45 @@ workflows:
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "34"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_5
+    - wait-for-android-emulator@1: {}
+  android-e2e-run-pixel5-update-app-version:
+    before_run:
+    - _install-and-set-env
+    - _pull_app_files
+    - _pull_external_app_files
+    after_run:
+    - _run_android_update_app_version_test
+    - _upload-detox-artifacts
+    - _send-test-result-notification-slack
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: externalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
       opts:
         is_expand: false
     - E2E: "true"

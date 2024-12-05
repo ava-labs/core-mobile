@@ -82,14 +82,6 @@ async function setupApksForTesting() {
     './e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
     './e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
   )
-  // Short delay to avoid possible rate limiting
-  await delay(2000)
-  console.log('Downloading latest version external apks for testing')
-  downloadExternalApk(
-    0,
-    './e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-bitrise-signed.apk',
-    './e2e/tests/updateAppVersion/latestVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
-  )
 }
 
 setupApksForTesting()

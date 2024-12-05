@@ -7,7 +7,7 @@ yarn start &
 
 npm rebuild detox
 
-adb install -r "$BITRISE_SIGNED_APK_PATH"
+adb install -r "$BITRISE_APK_PATH"
 adb install -r "$BITRISE_TEST_APK_PATH"
 
 echo "IS_REGRESSION_RUN should be true: $IS_REGRESSION_RUN"
@@ -45,7 +45,7 @@ else
     test_result=$?
   elif [ "$IS_EXTERNAL_BUILD" = true ]; then
     echo "Smoke, External, NON Parameterized Test"
-    QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless --reuse
+    QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless
     test_result=$?
   fi
 fi
