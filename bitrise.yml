@@ -106,7 +106,6 @@ workflows:
         - pipeline_intermediate_files: |-
             BITRISE_SIGNED_APK_PATH
             $BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-            $BITRISE_APK_PATH:BITRISE_APK_PATH
     - script-runner@0:
         title: Create Tests To Run Arrays
         inputs:
@@ -121,7 +120,6 @@ workflows:
             TESTS_TO_RUN_GROUP_3=$TESTS_3
             TESTS_TO_RUN_GROUP_4=$TESTS_4
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
-            BITRISE_APK_PATH=$BITRISE_APK_PATH
             BITRISE_SIGNED_APK_PATH=$BITRISE_SIGNED_APK_PATH
             IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
         - api_level: "28"
