@@ -107,6 +107,7 @@ class PopUpModalPage {
   }
 
   async tapApproveBtn() {
+    await actions.waitForElement(this.popUpModalScrollView, 10000)
     await actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
