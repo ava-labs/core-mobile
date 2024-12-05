@@ -1,6 +1,5 @@
 import { DeviceLaunchAppConfig, DevicePermissions } from 'detox/detox'
 import assertions from '../../helpers/assertions'
-import { handleJailbrokenWarning } from '../../helpers/warmup'
 import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 import portfolioPage from '../../pages/portfolio.page'
 import delay from '../../helpers/waits'
@@ -22,7 +21,6 @@ const initialArgs: DeviceLaunchAppConfig = {
 describe('Verify version update', () => {
   beforeEach(async () => {
     await device.launchApp(initialArgs)
-    await handleJailbrokenWarning()
     await loginRecoverWallet.enterPin()
   })
 

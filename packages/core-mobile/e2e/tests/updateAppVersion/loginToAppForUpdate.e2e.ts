@@ -1,4 +1,3 @@
-import { handleJailbrokenWarning } from '../../helpers/warmup'
 import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 import createPinPage from '../../pages/createPin.page'
 
@@ -16,7 +15,6 @@ describe('Install older version of app and login', () => {
         detoxEnableSynchronization: 0
       }
     })
-    await handleJailbrokenWarning()
     await loginRecoverWallet.recoverMnemonicWallet()
     console.log('Logged in successfully!')
   })
