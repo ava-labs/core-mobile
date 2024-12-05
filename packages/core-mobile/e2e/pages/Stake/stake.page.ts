@@ -517,6 +517,13 @@ class StakePage {
       await Actions.tap(this.customRadio)
       await Actions.tap(commonElsPage.calendarSVG)
       const datePicker = element(commonElsPage.datePicker)
+      duration = new Date(
+        new Date().setFullYear(new Date().getFullYear() + 2)
+      ).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
       await datePicker.setDatePickerDate(duration, 'MMMM dd, yyyy')
       if (Actions.platform() === Platform.Android) {
         await Actions.tap(commonElsPage.okBtn)
@@ -539,7 +546,7 @@ class StakePage {
       this.instantBaseFee,
       this.customBaseFee
     ]
-    const randomIndex = Math.floor(Math.random() * feeOptions.length)
+    const randomIndex = Actions.getRandomIndex(feeOptions.length)
     const selectedFeeOption = feeOptions[randomIndex] as Detox.NativeMatcher
 
     await Actions.tap(selectedFeeOption)

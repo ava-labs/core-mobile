@@ -34,7 +34,7 @@ describe('Sub tabs on Portfolio', () => {
 
   it('should navigate sub tabs fine', async () => {
     for (let i = 0; i < 5; i++) {
-      const randomIndex = Math.floor(Math.random() * subTabs.length)
+      const randomIndex = Actions.getRandomIndex(subTabs.length)
       if (subTabs[randomIndex]) {
         await Actions.tapElementAtIndex(by.text(subTabs[randomIndex]), 0)
         await portfolioPage.verifySubTab(subTabs[randomIndex])
