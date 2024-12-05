@@ -19,8 +19,7 @@ export const warmup = async (
         '.*cloudflare-ipfs.*',
         '.*[ipfs.io/ipfs].*',
         '.*[amazonaws.com].*'
-      ],
-      detoxEnableSynchronization: 'NO'
+      ]
     }
   }
   if (newInstance) {
@@ -48,7 +47,6 @@ export const warmup = async (
 export const handleJailbrokenWarning = async () => {
   if (process.env.E2E === 'true' && Action.platform() === Platform.Android) {
     console.log('Handling Jailbroken warning...', process.env.E2E)
-    await Action.waitForElementNoSync(CommonElsPage.jailbrokenWarning, 20, 0)
     await Assert.isVisible(CommonElsPage.jailbrokenWarning, 0)
     await Action.tapElementAtIndex(by.text('Ok'), 0)
     console.log('Jailbroken warning handled!!!')
