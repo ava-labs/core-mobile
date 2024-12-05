@@ -39,11 +39,11 @@ else
   if [ "$PARAMETERIZED_TESTS" = true ]; then
     echo "Smoke, Internal, Parameterized Test"
     exit 0  # We don't run parameterized tests on smoke run
-  else if [ "$IS_INTERNAL_BUILD" = true ]; then
+  elif [ "$IS_INTERNAL_BUILD" = true ]; then
     echo "Smoke, Internal, NON Parameterized Test"
     QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
     test_result=$?
-  else if [ "$IS_EXTERNAL_BUILD" = true ]; then
+  elif [ "$IS_EXTERNAL_BUILD" = true ]; then
     echo "Smoke, External, NON Parameterized Test"
     QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless --reuse
     test_result=$?
