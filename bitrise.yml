@@ -605,7 +605,7 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
-    - IS_REGRESSION_RUN: "true"
+    - IS_REGRESSION_RUN: "false"
       opts:
         is_expand: false
     - IS_EXTERNAL_BUILD: "true"
