@@ -661,7 +661,6 @@ workflows:
     - _pull_app_files
     - _pull_external_app_files
     after_run:
-    - _run_android_update_app_version_test
     - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -704,7 +703,6 @@ workflows:
     - _pull_app_files
     - _pull_external_app_files
     after_run:
-    - _run_android_update_app_version_test
     - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -783,7 +781,7 @@ workflows:
         - abi: x86_64
         - profile: pixel_5
     - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel5-update-app-version:
+  android-e2e-run-pixel6-update-app-version:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -820,7 +818,7 @@ workflows:
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_5
+        - profile: pixel_6
     - wait-for-android-emulator@1: {}
   android-e2e-run-pixel6:
     before_run:
@@ -828,7 +826,6 @@ workflows:
     - _pull_app_files
     - _pull_external_app_files
     after_run:
-    - _run_android_update_app_version_test
     - _run_android_detox_tests
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
