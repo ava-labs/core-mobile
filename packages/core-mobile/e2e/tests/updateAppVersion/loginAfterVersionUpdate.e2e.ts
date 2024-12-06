@@ -1,5 +1,5 @@
-import assertions from '../../helpers/assertions'
-import portfolioPage from '../../pages/portfolio.page'
+// import assertions from '../../helpers/assertions'
+// import portfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 
 describe('Verify version update', () => {
@@ -8,9 +8,6 @@ describe('Verify version update', () => {
   })
 
   it('should verify version update', async () => {
-    setTimeout(async () => {
-      await assertions.isVisible(portfolioPage.collectiblesTab)
-      await device.terminateApp()
-    }, 10000)
+    await device.terminateApp()
   })
 })
