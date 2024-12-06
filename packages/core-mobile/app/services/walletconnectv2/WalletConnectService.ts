@@ -1,6 +1,7 @@
 import { Core } from '@walletconnect/core'
 import { EngineTypes, SessionTypes } from '@walletconnect/types'
-import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
+import { IWalletKit, WalletKit } from '@reown/walletkit'
+
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from '@avalabs/vm-module-types'
@@ -39,14 +40,14 @@ if (!Config.WALLET_CONNECT_PROJECT_ID) {
 class WalletConnectService implements WalletConnectServiceInterface {
   constructor(private walletConnectProjectId: string) {}
 
-  #client: IWeb3Wallet | undefined
+  #client: IWalletKit | undefined
 
-  private get client(): IWeb3Wallet {
+  private get client(): IWalletKit {
     assertNotUndefined(this.#client)
     return this.#client
   }
 
-  private set client(client: IWeb3Wallet) {
+  private set client(client: IWalletKit) {
     this.#client = client
   }
 
@@ -61,7 +62,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
       projectId: this.walletConnectProjectId
     })
 
-    this.client = await Web3Wallet.init({
+    this.client = await WalletKit.init({
       core,
       metadata: CLIENT_METADATA
     })
