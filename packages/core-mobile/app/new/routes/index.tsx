@@ -1,8 +1,35 @@
-import { Link } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { View, Button } from '@avalabs/k2-alpine'
 import React from 'react'
+import { showToast } from 'new/utils/toast'
 
 export default function Index(): JSX.Element {
+  const { navigate } = useRouter()
+
+  const handleSignIn = (): void => {
+    navigate('/portfolio/')
+
+    showToast({
+      toastType: 'snackbar',
+      content: {
+        message: 'Welcome back!'
+      }
+    })
+  }
+
+  const handleSignUp = (): void => {
+    navigate('/signup/')
+
+    showToast({
+      toastType: 'notificationAlert',
+      content: {
+        type: 'success',
+        title: 'Sign up',
+        message: 'Sign up button pressed'
+      }
+    })
+  }
+
   return (
     <View
       style={{
@@ -11,16 +38,12 @@ export default function Index(): JSX.Element {
         justifyContent: 'center',
         gap: 16
       }}>
-      <Link href="/portfolio/" asChild>
-        <Button type="primary" size="medium">
-          Sign in
-        </Button>
-      </Link>
-      <Link href="/signup/" asChild>
-        <Button type="primary" size="medium">
-          Sign up
-        </Button>
-      </Link>
+      <Button type="primary" size="medium" onPress={handleSignIn}>
+        Sign in
+      </Button>
+      <Button type="primary" size="medium" onPress={handleSignUp}>
+        Sign up
+      </Button>
     </View>
   )
 }

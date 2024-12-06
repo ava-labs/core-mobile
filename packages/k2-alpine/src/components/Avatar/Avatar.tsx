@@ -103,7 +103,7 @@ export const Avatar = ({
       <HexagonImageView
         source={source}
         height={height}
-        backgroundColor={backgroundColor}
+        backgroundColor={'white'}
         isSelected={isSelected}
         hasLoading={true}
       />

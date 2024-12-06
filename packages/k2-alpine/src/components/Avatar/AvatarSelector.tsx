@@ -7,13 +7,11 @@ import { Avatar } from './Avatar'
 const AvatarSelector = ({
   avatars,
   selectedId,
-  onSelect,
-  backgroundColor
+  onSelect
 }: {
   avatars: { id: string; source: ImageSourcePropType }[]
   selectedId?: string
   onSelect?: (id: string) => void
-  backgroundColor: string
 }): JSX.Element => {
   const data = useMemo(() => {
     // we should always have an even number of avatars, due to infinite scrolling + two avatars per column
@@ -62,7 +60,7 @@ const AvatarSelector = ({
           size={configuration.avatarWidth}
           isSelected={data[index]?.id === selectedId}
           isPressed={pressedIndex === index}
-          backgroundColor={backgroundColor}
+          backgroundColor={'white'}
         />
       </Pressable>
     )
