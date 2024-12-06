@@ -4,10 +4,10 @@ yarn start &
 
 npm rebuild detox
 
-adb install -r "$BITRISE_SIGNED_APK_PATH"
-adb install -r "$BITRISE_TEST_APK_PATH"
+adb install -r "e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk"
+adb install -r "e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk"
 
-QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginAfterVersionUpdate.e2e.ts --configuration android.external.release.smoke.ci --headless --reuse; test_result=$?
+QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginAfterVersionUpdate.e2e.ts --configuration android.external.old.e2e --headless --reuse; test_result=$?
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
 
