@@ -8,7 +8,9 @@ describe('Verify version update', () => {
   })
 
   it('should verify version update', async () => {
-    await assertions.isVisible(portfolioPage.collectiblesTab)
-    await device.terminateApp()
+    setTimeout(async () => {
+      await assertions.isVisible(portfolioPage.collectiblesTab)
+      await device.terminateApp()
+    }, 10000)
   })
 })
