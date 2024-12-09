@@ -63,6 +63,7 @@ describe('Add custom network', () => {
 
   it('should verify empty assets on custom network', async () => {
     await accountManagePage.createNthAccountAndSwitchToNth(4)
+    await PortfolioPage.verifyActiveNetwork(NetworksManageLoc.celoNetworkName)
     await PortfolioPage.tapActiveNetwork(NetworksManageLoc.celoNetworkName)
     await Assert.isVisible(PortfolioPage.noAssetsHeader)
     await Assert.isVisible(PortfolioPage.noAssetsHeader)
