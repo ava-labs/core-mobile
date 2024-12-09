@@ -11,7 +11,7 @@ describe('Verify version update', () => {
 
   it('should verify version update', async () => {
     await device.installApp(
-      'e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk'
+      './e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk'
     )
     await warmup()
     await assertions.isVisible(portfolioPage.colectiblesTab)
