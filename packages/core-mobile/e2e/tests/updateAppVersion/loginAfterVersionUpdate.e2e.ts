@@ -8,6 +8,8 @@ describe('Verify version update', () => {
   })
 
   it('should verify version update', async () => {
-    await device.terminateApp()
+    setInterval(async () => {
+      await device.terminateApp()
+    }, 100)
   })
 })
