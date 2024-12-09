@@ -1,25 +1,23 @@
-import { test, expect } from '@playwright/test'
-import actions from '../../helpers/actions'
+import { test } from '@playwright/test'
 import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import BalancerPage from '../../pages/balancer.page'
+import actions from '../../helpers/playwrightActions'
+import { playwrightSetup } from '../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
 
-test('check wallet connect button', async ({ page }) => {
-  const commonEls = new CommonPlaywrightPage(page)
-  const balancerPage = new BalancerPage(page)
+const getContext = playwrightSetup()
 
-  await actions.openPage(balancerPage.page, balancerPage.balancerHomepage)
-  await expect(balancerPage.connectWalletBtn).toBeVisible()
-  await balancerPage.clickConnectWalletBtn()
-  await expect(balancerPage.tosCheckbox).toBeVisible()
-  await balancerPage.clickTosCheckbox()
-  await expect(balancerPage.walletConnectBtn).toBeVisible()
-  await balancerPage.clickWalletConnectBtn()
-  await expect(commonEls.wcmWalletUri).toBeVisible()
-  const qrUri = await commonEls.qrUriValue('wcm')
+test('Connect Balancer', async () => {
+  const { page } = getContext()
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
 
+  await actions.open(dapps.balancerUrl, dapps.page)
+  await common.tapConnectWallet()
+  await common.tapWalletConnect()
+  await common.tapOpen()
+  const qrUri = await common.qrUriValue('wcm')
   if (qrUri) {
     await actions.writeQrCodeToFile(qrUri)
   }
-
   console.log('URI: ', qrUri)
 })

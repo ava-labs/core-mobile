@@ -1,23 +1,23 @@
-import { test, expect } from '@playwright/test'
-import actions from '../../helpers/actions'
+import { test } from '@playwright/test'
 import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import GmxPage from '../../pages/gmx.page'
+import actions from '../../helpers/playwrightActions'
+import { playwrightSetup } from '../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
 
-test('check wallet connect button', async ({ page }) => {
-  const commonEls = new CommonPlaywrightPage(page)
-  const gmxPage = new GmxPage(page)
+const getContext = playwrightSetup()
 
-  await actions.openPage(gmxPage.page, gmxPage.gmxHomepage)
-  await expect(commonEls.connectWalletBtn).toBeVisible()
-  await commonEls.clickConnectWalletBtn()
-  await expect(commonEls.walletConnectBtn).toBeVisible()
-  await commonEls.clickWalletConnectBtn()
-  await expect(commonEls.wcmWalletUri).toBeVisible()
-  const qrUri = await commonEls.qrUriValue('wcm')
+test('Connect GMX', async () => {
+  const { page } = getContext()
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
 
+  await actions.open(dapps.gmxUrl, dapps.page)
+  await common.tapConnectWallet(1)
+  await common.tapWalletConnect()
+  await common.tapOpen()
+  const qrUri = await common.qrUriValue()
   if (qrUri) {
     await actions.writeQrCodeToFile(qrUri)
   }
-
   console.log('URI: ', qrUri)
 })

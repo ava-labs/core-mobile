@@ -3,8 +3,8 @@ import { expect } from '@playwright/test'
 const fs = require('fs')
 
 const tap = async (item: Locator, timeout = 5000) => {
-  await expect(item.first()).toBeEnabled({ timeout })
-  await item.first().click()
+  await expect(item).toBeEnabled({ timeout })
+  await item.click()
 }
 
 const open = async (url: string, page: Page) => {
