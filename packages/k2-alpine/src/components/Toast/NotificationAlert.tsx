@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dimensions, TouchableWithoutFeedback, ViewStyle } from 'react-native'
+import { Dimensions, Pressable, ViewStyle } from 'react-native'
 import { useDripsyTheme as useTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
@@ -57,7 +57,7 @@ export const NotificationAlert = ({
   const hasMessage = !!message
 
   return (
-    <TouchableWithoutFeedback style={style} testID={testID} onPress={onPress}>
+    <Pressable style={style} testID={testID} onPress={onPress}>
       <View
         sx={{
           backgroundColor,
@@ -90,7 +90,7 @@ export const NotificationAlert = ({
           )}
         </View>
       </View>
-    </TouchableWithoutFeedback>
+    </Pressable>
   )
 }
 
