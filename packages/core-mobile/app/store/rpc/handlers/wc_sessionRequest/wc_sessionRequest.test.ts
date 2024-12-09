@@ -137,6 +137,7 @@ const createRequest = (
     data: {
       id: 1678303290160528,
       params: {
+        expiryTimestamp: 1678303596,
         id: 1678303290160528,
         pairingTopic:
           '73af283605154f5a8643286042e6671df51a180ecebc88d6715a7b86cfae5fb3',
