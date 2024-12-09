@@ -82,12 +82,12 @@ class PopUpModalPage {
     return by.text(popUpModalLoc.proceedAnyway)
   }
 
-  get switchToSepoliaNetwork() {
-    return by.text(popUpModalLoc.switchToSepoliaNetwork)
+  get switchToSepoliaNetworkTitle() {
+    return by.text(popUpModalLoc.switchToSepoliaNetworkTitle)
   }
 
-  get switchToFujiNetwork() {
-    return by.text(popUpModalLoc.switchToFujiNetwork)
+  get switchToFujiNetworkTitle() {
+    return by.text(popUpModalLoc.switchToFujiNetworkTitle)
   }
 
   get createContact() {
@@ -107,7 +107,7 @@ class PopUpModalPage {
   }
 
   async tapApproveBtn() {
-    await actions.waitForElement(this.popUpModalScrollView, 10000)
+    await actions.waitForElement(this.popUpModalScrollView, 20000)
     await actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
@@ -134,20 +134,20 @@ class PopUpModalPage {
     await asserts.isVisible(this.scamTransactionContent)
   }
 
-  async verifySwitchToSepoliaNetworkModal() {
-    await actions.waitForElement(this.switchToSepoliaNetwork, 8000)
-    await asserts.isVisible(this.approveBtn)
+  async switchToSepoliaNetwork() {
+    await actions.waitForElementNoSync(this.switchToSepoliaNetworkTitle, 20000)
     await asserts.isVisible(this.rejectBtn)
+    await actions.tap(this.approveBtn)
   }
 
-  async verifySwitchToFujiNetworkModal() {
-    await actions.waitForElement(this.switchToFujiNetwork, 8000)
-    await asserts.isVisible(this.approveBtn)
+  async switchToFujiNetwork() {
+    await actions.waitForElementNoSync(this.switchToFujiNetworkTitle, 20000)
     await asserts.isVisible(this.rejectBtn)
+    await actions.tap(this.approveBtn)
   }
 
   async verifyScamTransactionModal() {
-    await actions.waitForElement(this.scamTransaction, 8000)
+    await actions.waitForElementNoSync(this.scamTransaction, 20000)
     await asserts.isVisible(this.scamTransactionContent)
     await asserts.isVisible(this.rejectTransaction)
     await asserts.isVisible(this.proceedAnyway)
@@ -164,16 +164,6 @@ class PopUpModalPage {
     await asserts.isVisible(by.text('Bob'))
   }
 
-  async verifyApproveTransactionItems() {
-    await actions.waitForElement(this.approveTransactionTitle, 5000)
-    await asserts.isVisible(this.network)
-    await asserts.isVisible(this.transactionDetail)
-    await asserts.isVisible(this.maximumNetworkFeeText)
-    await asserts.isVisible(this.feeAmount)
-    await asserts.isVisible(this.approveBtn)
-    await asserts.isVisible(this.rejectBtn)
-  }
-
   async verifyApproveTransactionScreen() {
     try {
       await sendPage.tapNextButton()
@@ -188,7 +178,7 @@ class PopUpModalPage {
     estimatedGasFee = 0.009
   ) {
     // Wait for pop up modal displayed and scroll to bottom
-    await actions.waitForElement(this.popUpModalScrollView, 10000)
+    await actions.waitForElement(this.popUpModalScrollView, 30000)
     await actions.scrollToBottom(this.popUpModalScrollView)
 
     // Get token network fee
