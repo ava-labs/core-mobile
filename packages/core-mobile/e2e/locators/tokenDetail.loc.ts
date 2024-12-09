@@ -20,5 +20,6 @@ export default {
   swapBtn: 'swap_token_action_btn',
   holdAndDrag: 'Hold and Drag',
   holdAndDragContent: 'Hold and drag over chart for precise price and date',
-  gotItBtn: 'Got it'
+  gotItBtn: 'Got it',
+  lineGraph: 'line_graph'
 }
