@@ -71,7 +71,7 @@ module.exports = {
     'android.external.release.ci': {
       type: 'android.apk',
       binaryPath: process.env.BITRISE_SIGNED_APK_PATH,
-      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
+      testBinaryPath: process.env.BITRISE_TEST_SIGNED_APK_PATH
     },
     // This apk is for the updateAppVersion test
     'android.external.latest.e2e': {
