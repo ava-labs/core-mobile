@@ -17,7 +17,7 @@ test('Connect Core', async () => {
   await playwrightActions.tap(core.termsCheckBox)
   await playwrightActions.tap(core.continueBtn)
   await playwrightActions.tap(common.walletConnectBtn)
-  const uri = await common.qrUriValue('w3m')
+  const uri = await common.qrUriValue('wui')
   console.log('URI: ', uri)
   if (uri) {
     await playwrightActions.writeQrCodeToFile(uri)

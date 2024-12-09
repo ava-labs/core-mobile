@@ -1,26 +1,22 @@
-import { test, expect } from '@playwright/test'
-import actions from '../../helpers/actions'
+import { test } from '@playwright/test'
 import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import ConvexFinancePage from '../../pages/convexFinance.page'
+import actions from '../../helpers/playwrightActions'
+import { playwrightSetup } from '../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
 
-test('check wallet connect button', async ({ page }) => {
-  const commonEls = new CommonPlaywrightPage(page)
-  const convexFinancePage = new ConvexFinancePage(page)
+const getContext = playwrightSetup()
 
-  await actions.openPage(
-    convexFinancePage.page,
-    convexFinancePage.convexFinanceHomepage
-  )
-  await expect(commonEls.connectWalletBtn).toBeVisible()
-  await commonEls.clickConnectWalletBtn()
-  await expect(convexFinancePage.walletConnectV2Btn).toBeVisible()
-  await convexFinancePage.clickWalletConnectV2Btn()
-  await expect(commonEls.wcmWalletUri).toBeVisible()
-  const qrUri = await commonEls.qrUriValue('wcm')
+test('Connect ConvexFinance', async () => {
+  const { page } = getContext()
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
 
+  await actions.open(dapps.convexFinanceUrl, dapps.page)
+  await common.tapConnectWallet()
+  await common.tapWalletConnectV2()
+  const qrUri = await common.qrUriValue()
   if (qrUri) {
     await actions.writeQrCodeToFile(qrUri)
   }
-
   console.log('URI: ', qrUri)
 })
