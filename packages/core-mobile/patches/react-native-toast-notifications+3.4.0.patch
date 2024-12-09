@@ -1,0 +1,85 @@
+diff --git a/node_modules/react-native-toast-notifications/src/toast.tsx b/node_modules/react-native-toast-notifications/src/toast.tsx
+index bbabca6..72936a4 100644
+--- a/node_modules/react-native-toast-notifications/src/toast.tsx
++++ b/node_modules/react-native-toast-notifications/src/toast.tsx
+@@ -151,7 +151,6 @@ const Toast: FC<ToastProps> = (props) => {
+   const containerRef = useRef<View>(null);
+   const [animation] = useState(new Animated.Value(0));
+   const panResponderRef = useRef<PanResponderInstance>();
+-  const panResponderAnimRef = useRef<Animated.ValueXY>();
+   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+   const dims = useDimensions();
+ 
+@@ -191,22 +190,6 @@ const Toast: FC<ToastProps> = (props) => {
+     }).start(() => onDestroy());
+   };
+ 
+-  const panReleaseToLeft = (gestureState: PanResponderGestureState) => {
+-    Animated.timing(getPanResponderAnim(), {
+-      toValue: { x: (-dims.width / 10) * 9, y: gestureState.dy },
+-      useNativeDriver: Platform.OS !== "web",
+-      duration: 250,
+-    }).start(() => onDestroy());
+-  };
+-
+-  const panReleaseToRight = (gestureState: PanResponderGestureState) => {
+-    Animated.timing(getPanResponderAnim(), {
+-      toValue: { x: (dims.width / 10) * 9, y: gestureState.dy },
+-      useNativeDriver: Platform.OS !== "web",
+-      duration: 250,
+-    }).start(() => onDestroy());
+-  };
+-
+   const getPanResponder = () => {
+     if (panResponderRef.current) return panResponderRef.current;
+     const swipeThreshold = Platform.OS === "android" ? 10 : 0;
+@@ -218,34 +201,15 @@ const Toast: FC<ToastProps> = (props) => {
+           Math.abs(gestureState.dy) > swipeThreshold
+         );
+       },
+-      onPanResponderMove: (_, gestureState) => {
+-        getPanResponderAnim()?.setValue({
+-          x: gestureState.dx,
+-          y: gestureState.dy,
+-        });
+-      },
+       onPanResponderRelease: (_, gestureState) => {
+-        if (gestureState.dx > 50) {
+-          panReleaseToRight(gestureState);
+-        } else if (gestureState.dx < -50) {
+-          panReleaseToLeft(gestureState);
+-        } else {
+-          Animated.spring(getPanResponderAnim(), {
+-            toValue: { x: 0, y: 0 },
+-            useNativeDriver: Platform.OS !== "web",
+-          }).start();
++        if (gestureState.dy < -20) {
++          handleClose();
+         }
+       },
+     });
+     return panResponderRef.current;
+   };
+ 
+-  const getPanResponderAnim = () => {
+-    if (panResponderAnimRef.current) return panResponderAnimRef.current;
+-    panResponderAnimRef.current = new Animated.ValueXY({ x: 0, y: 0 });
+-    return panResponderAnimRef.current;
+-  };
+-
+   if (icon === undefined) {
+     switch (type) {
+       case "success": {
+@@ -297,12 +261,6 @@ const Toast: FC<ToastProps> = (props) => {
+     ],
+   };
+ 
+-  if (swipeEnabled) {
+-    animationStyle.transform?.push(
+-      getPanResponderAnim().getTranslateTransform()[0]
+-    );
+-  }
+-
+   if (animationType === "zoom-in") {
+     animationStyle.transform?.push({
+       scale: animation.interpolate({

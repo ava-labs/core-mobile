@@ -344,7 +344,7 @@ __metadata:
     react-native-device-info: 13.0.0
     react-native-fast-image: 8.6.3
     react-native-fs: 2.20.0
-    react-native-gesture-handler: 2.14.1
+    react-native-gesture-handler: 2.20.0
     react-native-graph: 1.1.0
     react-native-haptic-feedback: 2.0.3
     react-native-inappbrowser-reborn: 3.7.0
@@ -374,7 +374,7 @@ __metadata:
     react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
     react-native-tab-view: 3.5.1
-    react-native-toast-notifications: 3.3.0
+    react-native-toast-notifications: 3.4.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 3.8.0
     react-native-webview: ava-labs/react-native-webview
@@ -26146,6 +26146,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-gesture-handler@npm:2.20.0":
+  version: 2.20.0
+  resolution: "react-native-gesture-handler@npm:2.20.0"
+  dependencies:
+    "@egjs/hammerjs": ^2.0.17
+    hoist-non-react-statics: ^3.3.0
+    invariant: ^2.2.4
+    prop-types: ^15.7.2
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: f573bc3717ae0209ff30bf62b95b3c7f11bd97f4797090211bce416c250388f55d1995aac0a7f1bbc99b06223ea64cbeae8d4ef88dcb8c877201b49163ea0e4b
+  languageName: node
+  linkType: hard
+
 "react-native-graph@npm:1.1.0":
   version: 1.1.0
   resolution: "react-native-graph@npm:1.1.0"
@@ -26568,13 +26583,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-toast-notifications@npm:3.3.0":
-  version: 3.3.0
-  resolution: "react-native-toast-notifications@npm:3.3.0"
+"react-native-toast-notifications@npm:3.4.0":
+  version: 3.4.0
+  resolution: "react-native-toast-notifications@npm:3.4.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e82ae6bf88766618f09f87b74045a5ec7f1ed698df599af740674eaed456e412fc33a9c84422783738e194ac6268d8835ebcd0539bff46377eaa3380094e9089
+  checksum: 734a54111e3657859d3cca9505a197bc6eb486e473e655d8aa087157de8f5e8b819083963f28e5e9155110be9a17774296bbfd721749f670c5f4e093557bd88f
   languageName: node
   linkType: hard
 
@@ -26625,7 +26640,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 6e268fad7aa8b8e56fd28cc95f94f35a33fdac4cec0085ae71a766d092760e3f9af35218706113ff7ae99a74baabc5112d32005dce9e66bdf4fda676fad9aa4e
+  checksum: a187edd718e1ea3a6b1e5da167744e6ee324bc3c3e492bcb0a9d028ab68a82907f053f37c23aa4229d6a9091541cee3c73549c3c850056e4cf5eb5b3cb2c9ffc
   languageName: node
   linkType: hard
 
