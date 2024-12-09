@@ -65,7 +65,7 @@ type NotificationAlertToast = {
   content: { type: NotificationAlertType; title: string; message?: string }
 }
 
-export function showToast(props: SnackbarToast | NotificationAlertToast): void {
+function showToast(props: SnackbarToast | NotificationAlertToast): void {
   global.toast?.hideAll()
 
   const _toastId = props.toastId ?? uuid()
@@ -78,6 +78,28 @@ export function showToast(props: SnackbarToast | NotificationAlertToast): void {
   })
 }
 
-export function dismissToast(toastId: string): void {
+function dismissToast(toastId: string): void {
   global?.toast?.hide(toastId)
+}
+
+export function showSnackbar(message: string): void {
+  showToast({
+    toastType: 'snackbar',
+    content: { message }
+  })
+}
+
+export function showNotificationAlert({
+  type,
+  title,
+  message
+}: {
+  type: NotificationAlertType
+  title: string
+  message?: string
+}): void {
+  showToast({
+    toastType: 'notificationAlert',
+    content: { type, title, message }
+  })
 }
