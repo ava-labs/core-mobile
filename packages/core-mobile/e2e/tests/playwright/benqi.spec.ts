@@ -10,6 +10,7 @@ test('Connect Benqi', async () => {
   const { page } = getContext()
   const common = new CommonPlaywrightPage(page)
   const dapps = new DappsPlaywrightPage(page)
+
   await actions.open(dapps.benqiUrl, dapps.page)
   await common.tapConnectWallet(1)
   await common.tapWalletConnect()

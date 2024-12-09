@@ -10,6 +10,7 @@ test('Connect Balancer', async () => {
   const { page } = getContext()
   const common = new CommonPlaywrightPage(page)
   const dapps = new DappsPlaywrightPage(page)
+
   await actions.open(dapps.balancerUrl, dapps.page)
   await common.tapConnectWallet()
   await common.tapWalletConnect()
