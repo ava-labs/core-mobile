@@ -1,21 +1,22 @@
-import { test, expect } from '@playwright/test'
-import actions from '../../helpers/actions'
-import UniswapPage from '../../pages/uniswap.page'
-import CommonElsPage from '../../pages/commonPlaywrightEls.page'
+import { test } from '@playwright/test'
+import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
+import actions from '../../helpers/playwrightActions'
+import { playwrightSetup } from '../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
 
-test('check wallet connect button', async ({ page }) => {
-  const uniswapPage = new UniswapPage(page)
-  const commonElsPage = new CommonElsPage(page)
+const getContext = playwrightSetup()
 
-  await actions.openPage(uniswapPage.page, uniswapPage.uniswapHomePage)
-  await expect(uniswapPage.connectWalletBtn).toBeVisible()
-  await uniswapPage.clickConnectBtn()
-  await expect(commonElsPage.walletConnectBtn).toBeVisible()
-  await commonElsPage.clickWalletConnectBtn()
-  const qrCode = await commonElsPage.qrUriValue()
+test('Connect UniSwap', async () => {
+  const { page } = getContext()
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
 
-  if (qrCode) {
-    await actions.writeQrCodeToFile(qrCode)
+  await actions.open(dapps.uniswapUrl, dapps.page)
+  await common.tapConnectWallet()
+  await common.tapWalletConnect()
+  const qrUri = await common.qrUriValue()
+  if (qrUri) {
+    await actions.writeQrCodeToFile(qrUri)
   }
-  console.log('Clipboard value:', qrCode)
+  console.log('URI: ', qrUri)
 })
