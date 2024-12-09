@@ -2,6 +2,8 @@ set -o pipefail
 
 yarn start &
 
+node ./e2e/tests/updateAppVersion/getAndroidArtifacts.js && sleep 5
+
 npm rebuild detox
 
 QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginAfterVersionUpdate.e2e.ts --configuration android.external.release.ci --headless --reuse; test_result=$? && sleep 5
