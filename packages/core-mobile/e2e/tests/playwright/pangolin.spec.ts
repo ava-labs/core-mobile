@@ -1,20 +1,26 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import PangolinPage from '../../pages/pangolin.page'
-import actions from '../../helpers/actions'
+import actions from '../../helpers/playwrightActions'
+import { playwrightSetup } from '../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
 
-test('check wallet connect button', async ({ page }) => {
-  const commonEls = new CommonPlaywrightPage(page)
-  const pangolinPage = new PangolinPage(page)
+const getContext = playwrightSetup()
 
-  await actions.openPage(pangolinPage.page, pangolinPage.pangolinHomepage)
+test('Connect Pangolin', async () => {
+  const { page } = getContext()
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
 
-  await expect(commonEls.connectToAWalletBtn).toBeVisible()
-  await commonEls.clickConnectToAWalletBtn()
-  await expect(commonEls.walletConnectBtn).toBeVisible()
-  await commonEls.clickWalletConnectBtn()
-  await expect(commonEls.connectWalletBtn).toBeVisible()
-  await commonEls.clickConnectWalletBtn()
+  await actions.open(dapps.pangolinUrl, dapps.page)
+  await common.tapConnectToAWallet()
+  await actions.tap(dapps.pangolinAgree)
+  await common.tapConnectToAWallet(2)
+  await common.tapWalletConnect()
+  await common.tapOpen()
 
-  await pangolinPage.decodeQrCode()
+  const qrUri = await common.qrUriValue()
+  if (qrUri) {
+    await actions.writeQrCodeToFile(qrUri)
+  }
+  console.log('URI: ', qrUri)
 })
