@@ -159,13 +159,13 @@ class SwapTabPage {
     }
     // Tap Review Order
     await this.tapReviewOrderButton()
-    try {
-      await Actions.waitForElementNoSync(this.tokenSpendApproval, 8000)
-      await this.tapApproveButton()
-    } catch (e) {
-      console.error('Token spend approval not found')
-    }
 
+    // Approve token spend approval
+    await Actions.waitForElement(popUpModalPage.popUpModalScrollView, 30000)
+    if (await Actions.isVisible(this.tokenSpendApproval, 0)) {
+      await popUpModalPage.verifyFeeIsLegit(true, false, 0.2)
+      await this.tapApproveButton()
+    }
     // Verify fee and approve
     await popUpModalPage.verifyFeeIsLegit(true, false, 0.2)
     await this.tapApproveButton()

@@ -99,6 +99,10 @@ class TokenDetailsPage {
     return by.id(tokenDetail.price)
   }
 
+  get lineGraph() {
+    return by.id(tokenDetail.lineGraph)
+  }
+
   async verifyTokenDetailScreen() {
     await Assert.isVisible(this.totalSupply)
     await Assert.isVisible(this.rank)
@@ -268,15 +272,14 @@ class TokenDetailsPage {
   async navigatePriceTimelines() {
     const tabs = ['24H', '1W', '1M', '3M', '1Y']
     for (const tab of tabs) {
-      await delay(300)
       await Action.tap(by.text(tab))
+      await delay(500)
     }
   }
 
   async holdAndDragSparklineChart(direction: Detox.Direction = 'right') {
-    await delay(1000)
-    await element(by.id('line_graph')).longPress()
-    await element(by.id('line_graph')).swipe(direction, 'slow', 0.75, 0.2)
+    await delay(2000)
+    await element(this.lineGraph).swipe(direction, 'slow', 0.75, 0.2)
   }
 }
 
