@@ -6,13 +6,14 @@ import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
 
 const getContext = playwrightSetup()
 
-test('Connect YieldYak', async () => {
+test('Connect LFJ', async () => {
   const { page } = getContext()
   const common = new CommonPlaywrightPage(page)
   const dapps = new DappsPlaywrightPage(page)
 
-  await actions.open(dapps.yieldYakUrl, dapps.page)
+  await actions.open(dapps.lfjUrl, dapps.page)
   await common.tapConnectWallet()
+  await actions.tap(dapps.lfjAgree)
   await common.tapWalletConnect()
   await common.tapOpen()
   const qrUri = await common.qrUriValue()

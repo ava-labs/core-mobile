@@ -1,16 +1,19 @@
-import { test, Page } from '@playwright/test'
+import { test, Page, Browser } from '@playwright/test'
 const { chromium } = require('playwright-extra')
 const stealth = require('puppeteer-extra-plugin-stealth')()
 chromium.use(stealth)
 
 export const warmupWeb = async () => {
-  const browser = await chromium.launch({ headless: false })
-  const page = await browser.newPage()
+  const browser = await chromium.launch({ headless: true })
+  const context = await browser.newContext({
+    permissions: ['clipboard-read']
+  })
+  const page = await context.newPage()
   return { browser, page }
 }
 
 export const playwrightSetup = () => {
-  let browser: { close: () => Promise<void> } | null = null
+  let browser: Browser | null = null
   let page: Page | null = null
 
   test.beforeAll(async () => {
@@ -30,7 +33,7 @@ export const playwrightSetup = () => {
   })
 
   return () => {
-    if (page !== null) {
+    if (page !== null && browser !== null) {
       return { browser, page }
     } else {
       throw new Error('Page is not initialized or invalid type.')

@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test'
 import commonEls from '../locators/commonPlaywrightEls.loc'
-import playwrightActions from '../helpers/playwrightActions'
+import actions from '../helpers/playwrightActions'
+
 class CommonElsPage {
   page: Page
 
@@ -12,54 +13,83 @@ class CommonElsPage {
     return this.page.getByText(commonEls.connectWallet).first()
   }
 
+  get connectwalletBtn() {
+    return this.page.getByText(commonEls.connectwallet).first()
+  }
+
   get walletConnectBtn() {
     return this.page.getByText(commonEls.walletConnectBtn).first()
+  }
+
+  get walletConnectV2Btn() {
+    return this.page.locator('text="WalletConnect V2"')
   }
 
   get wuiQrCodeUri() {
     return this.page.locator(commonEls.wuiQrCode)
   }
 
-  get wcmWalletUri() {
-    return this.page.locator(commonEls.wcmUri).first()
+  get w3mQrCodeUri() {
+    return this.page.locator(commonEls.w3mQrCode)
+  }
+
+  get wcmQrCode() {
+    return this.page.locator(commonEls.wcmQrCode).first()
   }
 
   get connectToAWalletBtn() {
-    return this.page.getByText('Connect to a wallet')
+    return this.page.locator('text="Connect to a wallet"')
+  }
+
+  get open() {
+    return this.page.locator('text="OPEN"')
   }
 
   async qrUriValue(locator = 'wcm', timeout = 5000) {
     if (locator === 'wcm') {
-      await playwrightActions.waitFor(this.wcmWalletUri, timeout)
-      return await this.wcmWalletUri.getAttribute('uri')
+      await actions.waitFor(this.wcmQrCode, timeout)
+      return await this.wcmQrCode.getAttribute('uri')
+    } else if (locator === 'w3m') {
+      await actions.waitFor(this.w3mQrCodeUri, timeout)
+      return await this.w3mQrCodeUri.getAttribute('uri')
     } else {
-      await playwrightActions.waitFor(this.wuiQrCodeUri, timeout)
+      await actions.waitFor(this.wuiQrCodeUri, timeout)
       return await this.wuiQrCodeUri.getAttribute('uri')
     }
   }
 
-  async clickConnectWalletBtn() {
-    await this.connectWalletBtn.click()
+  async tapConnectWallet(index = 0) {
+    const connectWallet = this.page.locator(
+      `text=/connect wallet/i >> nth=${index}`
+    )
+    await actions.waitFor(connectWallet)
+    await connectWallet.click()
   }
 
   // Some sites have multiple wallet connect buttons so adjust the index as needed in order to click the correct one
-  async clickWalletConnectBtn(index = 0) {
+  async tapWalletConnect(index = 0) {
     const walletConnectBtn = this.page.locator(
-      `text=WalletConnect >> nth=${index}`
+      `text="WalletConnect" >> nth=${index}`
     )
+    await actions.waitFor(walletConnectBtn)
     await walletConnectBtn.click()
   }
 
-  get walletConnectUri() {
-    return this.page.getByText('Copy to clipboard')
+  async tapCopy() {
+    return actions.tap(this.page.getByText('Copy'))
   }
 
-  async walletConnectUriValue() {
-    await this.walletConnectUri.click()
+  async tapWalletConnectV2() {
+    await actions.waitFor(this.walletConnectV2Btn)
+    await actions.tap(this.walletConnectV2Btn)
   }
 
-  async clickConnectToAWalletBtn() {
-    await this.connectToAWalletBtn.click()
+  async tapOpen() {
+    await actions.tap(this.open, 20000)
+  }
+
+  async tapConnectToAWallet(index = 0) {
+    await this.connectToAWalletBtn.nth(index).click()
   }
 }
 

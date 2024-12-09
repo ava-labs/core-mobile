@@ -1,23 +1,22 @@
-import { test, expect } from '@playwright/test'
-import actions from '../../helpers/actions'
+import { test } from '@playwright/test'
 import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import AavePage from '../../pages/aave.page'
+import actions from '../../helpers/playwrightActions'
+import { playwrightSetup } from '../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
 
-test('check wallet connect button', async ({ page }) => {
-  const commonEls = new CommonPlaywrightPage(page)
-  const aavePage = new AavePage(page)
+const getContext = playwrightSetup()
 
-  await actions.openPage(aavePage.page, aavePage.aaveHomepage)
-  await expect(commonEls.connectWalletBtn).toBeVisible()
-  await commonEls.clickConnectWalletBtn()
-  await expect(commonEls.walletConnectBtn).toBeVisible()
-  await commonEls.clickWalletConnectBtn(1)
-  await expect(commonEls.wcmWalletUri).toBeVisible({ timeout: 1000000 })
-  const qrUri = await commonEls.qrUriValue('wcm')
+test('Connect Aave', async () => {
+  const { page } = getContext()
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
 
+  await actions.open(dapps.aaveUrl, dapps.page)
+  await common.tapConnectWallet()
+  await common.tapWalletConnect(1)
+  const qrUri = await common.qrUriValue('wcm')
   if (qrUri) {
     await actions.writeQrCodeToFile(qrUri)
   }
-
   console.log('URI: ', qrUri)
 })
