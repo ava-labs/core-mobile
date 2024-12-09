@@ -221,7 +221,7 @@ __metadata:
     "@noble/secp256k1": 2.1.0
     "@notifee/react-native": 9.1.1
     "@openzeppelin/contracts": 5.0.2
-    "@paraswap/sdk": 6.10.0
+    "@paraswap/sdk": 7.2.1
     "@playwright/test": 1.48.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.14.2
@@ -7678,32 +7678,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@paraswap/core@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@paraswap/core@npm:2.2.0"
-  checksum: b481e4b0d0590cafe3a2f0991391fabeb967339a25c11da3769215e95c9495a7b73728b39483ef00f2e1dd6e9dc33ca2467bf0c5b8cc0b5c5f77564d60093ea0
+"@paraswap/core@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@paraswap/core@npm:2.4.0"
+  checksum: 8b0dc13163caff38bfed4238f478c6315a5c1a0b126865effc217d7acd2cd959978638d92aea7eec16134e12599252c840eae515faa821103297ba665d7bef7e
   languageName: node
   linkType: hard
 
-"@paraswap/sdk@npm:6.10.0":
-  version: 6.10.0
-  resolution: "@paraswap/sdk@npm:6.10.0"
+"@paraswap/sdk@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@paraswap/sdk@npm:7.2.1"
   dependencies:
-    "@paraswap/core": 2.2.0
-    bignumber.js: ^9.0.2
-    ts-essentials: ^9.1.2
+    "@paraswap/core": 2.4.0
+    ts-essentials: ^10.0.3
   peerDependencies:
     axios: ">=0.25.0 <2.0.0"
-    ethers: ^5.5.0
-    web3: ^1.7.1
+    ethers: ^5.5.0 || ^6.0.0
+    viem: ^2.21.0
+    web3: ^4.14.0
   peerDependenciesMeta:
     axios:
       optional: true
     ethers:
       optional: true
+    viem:
+      optional: true
     web3:
       optional: true
-  checksum: 4e50e3f658c638405bf728911846af63b46ab35e5d57fcc2378eb98e294f803b3af96db262221f6074e8c94db4c4465c7544fa78ab30e1734c11e6958db5d425
+  checksum: bd29510537964f871c75c67d44112cc51efac8c2194538546288873f09ae53d01ad5376a80d420f13ec6bb2b02e61d8401b087100b8ab8c4067477c8edea768c
   languageName: node
   linkType: hard
 
@@ -13554,7 +13556,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.0, bignumber.js@npm:^9.0.2, bignumber.js@npm:^9.1.1, bignumber.js@npm:^9.1.2":
+"bignumber.js@npm:^9.0.0, bignumber.js@npm:^9.1.1, bignumber.js@npm:^9.1.2":
   version: 9.1.2
   resolution: "bignumber.js@npm:9.1.2"
   checksum: 582c03af77ec9cb0ebd682a373ee6c66475db94a4325f92299621d544aa4bd45cb45fd60001610e94aef8ae98a0905fa538241d9638d4422d57abbeeac6fadaf
@@ -26595,7 +26597,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 871333b155b3899238428ee071c7cce31f668ba2e4ef70f08c14432c76fad42f0a2d460ca278d6d5149e632e83f544c77555937a0d6cf7e9d726f7d6b06c1d0b
+  checksum: d396f3dea807077e8789e1d463c87024e1633481d3dff53c0650c82a08d8b7d699db97ceab4e8d2c9de85c3d5378d192c968487254c62edadff77e82a9b8c929
   languageName: node
   linkType: hard
 
@@ -29499,24 +29501,24 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"ts-essentials@npm:^10.0.3":
+  version: 10.0.3
+  resolution: "ts-essentials@npm:10.0.3"
+  peerDependencies:
+    typescript: ">=4.5.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 7919df8b46be0dcfaade3ddbc98c0fd5236585ea0b8a46c898eda1a7229c17673e0286179c6bece41c26e16e62037f0fda38f4f5246a61026698022427806354
+  languageName: node
+  linkType: hard
+
 "ts-essentials@npm:^7.0.1":
   version: 7.0.3
   resolution: "ts-essentials@npm:7.0.3"
   peerDependencies:
     typescript: ">=3.7.0"
   checksum: 74d75868acf7f8b95e447d8b3b7442ca21738c6894e576df9917a352423fde5eb43c5651da5f78997da6061458160ae1f6b279150b42f47ccc58b73e55acaa2f
-  languageName: node
-  linkType: hard
-
-"ts-essentials@npm:^9.1.2":
-  version: 9.4.2
-  resolution: "ts-essentials@npm:9.4.2"
-  peerDependencies:
-    typescript: ">=4.1.0"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: ef9a15cef66e4c23942cd6a64ab1aa15108cabea187904ba8345bab309f5b5d8f4fc076950391af8fd3914df0349ce11dc716930949f7f5d24ec3a5851ccfe73
   languageName: node
   linkType: hard
 
