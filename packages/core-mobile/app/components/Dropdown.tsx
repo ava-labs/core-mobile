@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react'
 import {
+  Dimensions,
   Platform,
   Pressable,
   StyleProp,
@@ -17,9 +18,11 @@ import { BlurView } from '@react-native-community/blur'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import Separator from 'components/Separator'
+import { FlatList } from 'react-native-gesture-handler'
 
 const BORDER_RADIUS = 8
 const BACKGROUND = '#252525'
+const WINDOW_HEIGHT = Dimensions.get('window').height * 0.75
 
 interface Props<ItemT> {
   data: ItemT[]
@@ -178,14 +181,15 @@ function DropDown<ItemT>({
     return (
       <>
         {blurBackground}
-        {data.map((item, index) => {
-          return (
-            <View key={index}>
-              {optionsRenderItem ? renderCustomItem(item) : renderItem(item)}
-              {index < data.length - 1 && <Separator />}
-            </View>
-          )
-        })}
+        <FlatList
+          style={{ height: WINDOW_HEIGHT }}
+          data={data}
+          renderItem={({ item }) =>
+            optionsRenderItem ? renderCustomItem(item) : renderItem(item)
+          }
+          keyExtractor={(_, index) => index.toString()}
+          ItemSeparatorComponent={Separator}
+        />
       </>
     )
   }
