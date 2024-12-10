@@ -45,10 +45,6 @@ class CommonElsPage {
     return this.page.locator('text="OPEN"')
   }
 
-  get login() {
-    return this.page.locator('text="Login"')
-  }
-
   async qrUriValue(locator = 'wcm', timeout = 5000) {
     if (locator === 'wcm') {
       await actions.waitFor(this.wcmQrCode, timeout)
@@ -68,10 +64,6 @@ class CommonElsPage {
     )
     await actions.waitFor(connectWallet)
     await connectWallet.click()
-  }
-
-  async tapLogin() {
-    await actions.tap(this.login)
   }
 
   // Some sites have multiple wallet connect buttons so adjust the index as needed in order to click the correct one

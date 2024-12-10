@@ -8,12 +8,6 @@ describe('PlayWright Integration', () => {
   it(`should connect ${process.env.DAPP_NAME}`, async () => {
     await warmup()
     await plusMenuPage.connectWallet()
-    // convex need to be switched to ethereum on this line
-    // gmx need to be switched to C-Chain on this line
-    // multichain
-    // oasis
-    // openSea
-    // StakeLido
     try {
       await actions.waitForElementNoSync(popUpModalPage.approveBtn, 10000)
       await actions.tap(popUpModalPage.approveBtn)
@@ -21,6 +15,6 @@ describe('PlayWright Integration', () => {
       console.log('No approve button is displayed')
     }
     await connectToSitePage.selectAccountAndconnect()
-    // Switch to C-Chain if not on this line
+    await popUpModalPage.verifySuccessToast()
   })
 })
