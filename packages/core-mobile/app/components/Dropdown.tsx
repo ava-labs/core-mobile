@@ -18,7 +18,7 @@ import { BlurView } from '@react-native-community/blur'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import Separator from 'components/Separator'
-import { FlatList } from 'react-native-gesture-handler'
+import { FlatList } from 'react-native'
 
 const BORDER_RADIUS = 8
 const BACKGROUND = '#252525'
