@@ -9,7 +9,7 @@ export const darkTheme = makeTheme({
   },
   colors: darkModeColors,
   text,
-  isDark: true as boolean
+  isDark: true
 })
 
 export const lightTheme = {
