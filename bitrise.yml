@@ -365,11 +365,6 @@ workflows:
         no_output_timeout: 450
         inputs:
         - file_path: e2e/tests/updateAppVersion/runUpdateTest.sh
-    - script-runner@0:
-        title: Detox
-        no_output_timeout: 450
-        inputs:
-        - file_path: e2e/tests/updateAppVersion/androidExternalE2eUpdateApp.sh
   _send-notification-slack:
     steps:
     - slack@3:

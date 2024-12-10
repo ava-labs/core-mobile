@@ -29,7 +29,13 @@ envman add --key PREVIOUS_VERSION_TEST_APK_PATH --value "$PREVIOUS_VERSION_TEST_
 echo "Running login test on old version"
 ./node_modules/.bin/detox test loginToAppForUpdate.e2e.ts -c android.external.old.e2e --reuse --loglevel trace --headless; test_result_old=$?
 
-killall node
+adb uninstall com.avaxwallet
+
+adb install -r "$BITRISE_SIGNED_APK_PATH"
+adb install -r "$BITRISE_TEST_APK_PATH"
+
+QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginAfterVersionUpdate.e2e.ts --configuration android.external.old.e2e --headless --reuse; test_result=$? && sleep 5
+
 
 if ((test_result != 0)); then
   exit 0
