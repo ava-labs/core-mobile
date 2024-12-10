@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react'
 import {
-  Dimensions,
   Platform,
   Pressable,
   StyleProp,
@@ -22,7 +21,6 @@ import { FlatList } from 'react-native'
 
 const BORDER_RADIUS = 8
 const BACKGROUND = '#252525'
-const WINDOW_HEIGHT = Dimensions.get('window').height * 0.75
 
 interface Props<ItemT> {
   data: ItemT[]
@@ -181,15 +179,26 @@ function DropDown<ItemT>({
     return (
       <>
         {blurBackground}
-        <FlatList
-          style={{ height: WINDOW_HEIGHT }}
-          data={data}
-          renderItem={({ item }) =>
-            optionsRenderItem ? renderCustomItem(item) : renderItem(item)
-          }
-          keyExtractor={(_, index) => index.toString()}
-          ItemSeparatorComponent={Separator}
-        />
+        {data.length <= 6 ? (
+          data.map((item, index) => {
+            return (
+              <View key={index}>
+                {optionsRenderItem ? renderCustomItem(item) : renderItem(item)}
+                {index < data.length - 1 && <Separator />}
+              </View>
+            )
+          })
+        ) : (
+          <FlatList
+            style={{ height: 270 }}
+            data={data}
+            renderItem={({ item }) =>
+              optionsRenderItem ? renderCustomItem(item) : renderItem(item)
+            }
+            keyExtractor={(_, index) => index.toString()}
+            ItemSeparatorComponent={Separator}
+          />
+        )}
       </>
     )
   }
