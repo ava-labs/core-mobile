@@ -66,7 +66,7 @@ const Success = ({
   message: string
 }): JSX.Element => {
   return (
-    <View style={{ backgroundColor: 'transparent' }}>
+    <View testID="success_toast" style={{ backgroundColor: 'transparent' }}>
       <Text
         variant="buttonSmall"
         sx={{ width: '80%', color: '$successMain' }}
