@@ -1032,10 +1032,6 @@ PODS:
     - React-Core
   - react-native-camera/RN (4.2.1):
     - React-Core
-  - react-native-compat (2.11.0):
-    - glog
-    - RCT-Folly (= 2022.05.16.00)
-    - React-Core
   - react-native-config (1.5.3):
     - react-native-config/App (= 1.5.3)
   - react-native-config/App (1.5.3):
@@ -1288,7 +1284,7 @@ PODS:
     - React-Core
   - RNFS (2.20.0):
     - React-Core
-  - RNGestureHandler (2.14.1):
+  - RNGestureHandler (2.20.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1392,7 +1388,6 @@ DEPENDENCIES:
   - react-native-aes (from `../node_modules/react-native-aes-crypto`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-camera (from `../node_modules/react-native-camera`)
-  - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - react-native-mmkv (from `../node_modules/react-native-mmkv`)
@@ -1584,8 +1579,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/blur"
   react-native-camera:
     :path: "../node_modules/react-native-camera"
-  react-native-compat:
-    :path: "../node_modules/@walletconnect/react-native-compat"
   react-native-config:
     :path: "../node_modules/react-native-config"
   react-native-menu:
@@ -1793,7 +1786,6 @@ SPEC CHECKSUMS:
   react-native-aes: c6e4e3ffcff410535e31e161fca95d50e608d4ee
   react-native-blur: 4568dd93d1d82748c180df8beb2d929c97b13b47
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
-  react-native-compat: 5a5b7a043bec932a7814dc35f0649712bc10324e
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-menu: c30eb7a85d7b04d51945f61ea8a8986ed366ac5c
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2
@@ -1843,7 +1835,7 @@ SPEC CHECKSUMS:
   RNFBMessaging: 2dd7ef3e3eca8ec62599f0f11b739e6f75c57cd2
   RNFlashList: 83a272ae1c35b08a02490f4d1503631fb64b3dd8
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
-  RNGestureHandler: 15c6ef51acba34c49ff03003806cf5dd6098f383
+  RNGestureHandler: bb81850add626ddd265294323310fec6e861c96b
   RNGoogleSignin: 9e68b9bcc3888219357924e32ee563624745647d
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333

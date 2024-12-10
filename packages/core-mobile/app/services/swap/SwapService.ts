@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
@@ -17,6 +18,18 @@ import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
 
 export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+
+const txResponseSchema = z
+  .object({
+    to: z.string(),
+    from: z.string(),
+    value: z.string(),
+    data: z.string(),
+    chainId: z.number(),
+    gas: z.string().optional(),
+    gasPrice: z.string().optional()
+  })
+  .passthrough() // allows unknown fields
 
 const TESTNET_NETWORK_UNSUPPORTED_ERROR = new Error(
   'Testnet network is not supported by Paraswap'
@@ -170,7 +183,10 @@ class SwapService {
         if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
           throw new Error(`${network.chainName} is not supported by Paraswap`)
         }
-        return await this.getParaSwapSDK(network.chainId).swap.buildTx({
+
+        const response = await this.getParaSwapSDK(
+          network.chainId
+        ).swap.buildTx({
           srcToken,
           destToken,
           srcAmount,
@@ -186,6 +202,14 @@ class SwapService {
           permit,
           deadline
         })
+
+        const result = txResponseSchema.safeParse(response)
+
+        if (!result.success) {
+          throw new Error('Invalid transaction params')
+        }
+
+        return result.data
       })
   }
 }
