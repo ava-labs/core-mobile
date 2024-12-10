@@ -32,21 +32,14 @@ export const All = (): JSX.Element => {
           </Text>
         </Card>
 
-        <Card sx={{ width: '100%', height: 150 }} shouldCenterAlign>
+        <Card sx={{ width: '100%', height: 150 }}>
           <Text>
             Lorem Ipsum is simply dummy text of the printing and typesetting
             industry.
           </Text>
         </Card>
 
-        <Card sx={{ width: 100, height: 100 }} shouldCenterAlign>
-          <CheckIcon />
-        </Card>
-
-        <Card
-          sx={{ width: 100, height: 100 }}
-          shouldCenterAlign
-          backgroundColorOverride={{ light: 'green', dark: 'blue' }}>
+        <Card sx={{ width: 100, height: 100 }}>
           <CheckIcon />
         </Card>
       </ScrollView>

@@ -5,36 +5,22 @@ import { useTheme } from '../..'
 
 export const Card = ({
   sx,
-  children,
-  shouldCenterAlign = false,
-  backgroundColorOverride
+  children
 }: {
   sx?: SxProp
-  shouldCenterAlign?: boolean
-  backgroundColorOverride?: {
-    light: string
-    dark: string
-  }
 } & PropsWithChildren): React.JSX.Element => {
-  const { theme } = useTheme()
-
-  const getBackgroundColor = (): string => {
-    if (backgroundColorOverride) {
-      return theme.isDark
-        ? backgroundColorOverride.dark
-        : backgroundColorOverride?.light
-    }
-    return theme.isDark ? '#3B3B3D' : '#F2F2F3'
-  }
+  const {
+    theme: { colors }
+  } = useTheme()
 
   return (
     <View
       sx={{
         borderRadius: 18,
         padding: 17,
-        backgroundColor: getBackgroundColor(),
-        justifyContent: shouldCenterAlign ? 'center' : undefined,
-        alignItems: shouldCenterAlign ? 'center' : undefined,
+        backgroundColor: colors.$surfaceSecondary,
+        justifyContent: 'center',
+        alignItems: 'center',
         ...sx
       }}>
       {children}
