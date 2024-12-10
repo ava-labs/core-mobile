@@ -4,6 +4,7 @@ import { warmup } from '../../helpers/warmup'
 
 describe('Verify version update', () => {
   beforeAll(async () => {
+    await device.launchApp({ newInstance: false })
     await device.disableSynchronization()
   })
 
