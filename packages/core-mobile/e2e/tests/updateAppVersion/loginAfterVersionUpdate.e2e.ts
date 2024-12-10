@@ -15,6 +15,6 @@ describe('Verify version update', () => {
     )
     await warmup()
     await assertions.isVisible(portfolioPage.colectiblesTab)
-    await device.installApp(process.env.BITRISE_APK_PATH)
+    await device.installApp(process.env.BITRISE_SIGNED_APK_PATH)
   })
 })
