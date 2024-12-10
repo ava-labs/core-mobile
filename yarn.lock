@@ -271,7 +271,7 @@ __metadata:
     "@types/react-dom": 18.3.0
     "@types/react-test-renderer": 18.3.0
     "@types/semver": 7.5.4
-    "@walletconnect/react-native-compat": 2.17.2
+    "@walletconnect/react-native-compat": 2.11.0
     "@walletconnect/types": 2.17.2
     "@walletconnect/utils": 2.17.2
     "@welldone-software/why-did-you-render": 8.0.3
@@ -12122,23 +12122,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@walletconnect/react-native-compat@npm:2.17.2":
-  version: 2.17.2
-  resolution: "@walletconnect/react-native-compat@npm:2.17.2"
+"@walletconnect/react-native-compat@npm:2.11.0":
+  version: 2.11.0
+  resolution: "@walletconnect/react-native-compat@npm:2.11.0"
   dependencies:
     events: 3.3.0
-    fast-text-encoding: 1.0.6
-    react-native-url-polyfill: 2.0.0
+    fast-text-encoding: ^1.0.6
+    react-native-url-polyfill: ^2.0.0
   peerDependencies:
     "@react-native-async-storage/async-storage": "*"
     "@react-native-community/netinfo": "*"
     expo-application: "*"
-    react-native: "*"
     react-native-get-random-values: "*"
   peerDependenciesMeta:
     expo-application:
       optional: true
-  checksum: a038f29cc4e77a4493b735e14c4227f7883728845ad49ba5583e0598f0b3aaddfe5cf2a1550869d478e138d9b089ec177a5e28952c320b9c2f7e7fd84987d8cb
+  checksum: fea0720cfc3bb0479eb02dd4baeb49b2a311b99d3ca95108e47cade3e21bb95394b27bbf05a96e42acd135e4a1530858f092baf13a7dffdb652e3800cf699838
   languageName: node
   linkType: hard
 
@@ -18025,7 +18024,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-text-encoding@npm:1.0.6":
+"fast-text-encoding@npm:^1.0.6":
   version: 1.0.6
   resolution: "fast-text-encoding@npm:1.0.6"
   checksum: 9d58f694314b3283e785bf61954902536da228607ad246905e30256f9ab8331f780ac987e7222c9f5eafd04168d07e12b8054c85cedb76a2c05af0e82387a903
@@ -26621,7 +26620,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-url-polyfill@npm:2.0.0":
+"react-native-url-polyfill@npm:2.0.0, react-native-url-polyfill@npm:^2.0.0":
   version: 2.0.0
   resolution: "react-native-url-polyfill@npm:2.0.0"
   dependencies:

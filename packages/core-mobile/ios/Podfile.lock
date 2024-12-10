@@ -1032,7 +1032,7 @@ PODS:
     - React-Core
   - react-native-camera/RN (4.2.1):
     - React-Core
-  - react-native-compat (2.17.2):
+  - react-native-compat (2.11.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1793,7 +1793,7 @@ SPEC CHECKSUMS:
   react-native-aes: c6e4e3ffcff410535e31e161fca95d50e608d4ee
   react-native-blur: 4568dd93d1d82748c180df8beb2d929c97b13b47
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
-  react-native-compat: 6ac0ab0d47351dbf56342cf817f6659af8db59d2
+  react-native-compat: 5a5b7a043bec932a7814dc35f0649712bc10324e
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-menu: c30eb7a85d7b04d51945f61ea8a8986ed366ac5c
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2
