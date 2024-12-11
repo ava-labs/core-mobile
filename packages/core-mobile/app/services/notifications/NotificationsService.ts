@@ -4,6 +4,7 @@ import notifee, {
   Event,
   EventDetail,
   EventType,
+  Notification,
   TimestampTrigger,
   TriggerNotification,
   TriggerType
@@ -291,23 +292,31 @@ class NotificationsService {
     return notifee.createChannel(channel)
   }
 
+  /**
+   * @param channelId For Android only
+   * @param title
+   * @param body
+   * @param sound For iOS only
+   * @param data
+   */
   displayNotification = async ({
     channelId,
     title,
     body,
+    sound,
     data
   }: {
-    channelId: ChannelId
+    channelId?: ChannelId
     title: string
     body?: string
+    sound?: string
     data?: NotificationData
   }): Promise<void> => {
-    await notifee.displayNotification({
+    const notification: Notification = {
       title,
       body,
       android: {
         smallIcon: 'notification_icon',
-        channelId,
         // pressAction is needed if you want the notification to open the app when pressed
         pressAction: {
           id: PressActionId.OPEN_PORTFOLIO,
@@ -315,7 +324,14 @@ class NotificationsService {
         }
       },
       data
-    })
+    }
+    if (sound) {
+      notification.ios = { sound: sound }
+    }
+    if (channelId && notification.android) {
+      notification.android.channelId = channelId
+    }
+    await notifee.displayNotification(notification).catch(Logger.error)
   }
 }
 

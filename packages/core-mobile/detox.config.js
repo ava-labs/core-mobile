@@ -343,6 +343,16 @@ module.exports = {
       app: 'android.internal.debug',
       artifacts: {
         rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/reuseStateConfig.json'
+        },
+        jest: {
+          setupTimeout: 300000,
+          testTimeout: 300000
+        }
       }
     },
     'android.internal.debug.reuse_state': {

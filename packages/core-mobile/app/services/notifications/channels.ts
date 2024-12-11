@@ -32,6 +32,7 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Balance',
-    subtitle: 'Notifications when your balance changes'
+    subtitle: 'Notifications when your balance changes',
+    sound: 'core_receive'
   } as AvaxAndroidChannel
 ]

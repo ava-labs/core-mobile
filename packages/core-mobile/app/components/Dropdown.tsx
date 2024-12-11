@@ -17,6 +17,7 @@ import { BlurView } from '@react-native-community/blur'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import Separator from 'components/Separator'
+import { FlatList } from 'react-native'
 
 const BORDER_RADIUS = 8
 const BACKGROUND = '#252525'
@@ -178,14 +179,26 @@ function DropDown<ItemT>({
     return (
       <>
         {blurBackground}
-        {data.map((item, index) => {
-          return (
-            <View key={index}>
-              {optionsRenderItem ? renderCustomItem(item) : renderItem(item)}
-              {index < data.length - 1 && <Separator />}
-            </View>
-          )
-        })}
+        {data.length <= 6 ? (
+          data.map((item, index) => {
+            return (
+              <View key={index}>
+                {optionsRenderItem ? renderCustomItem(item) : renderItem(item)}
+                {index < data.length - 1 && <Separator />}
+              </View>
+            )
+          })
+        ) : (
+          <FlatList
+            style={{ height: 270 }}
+            data={data}
+            renderItem={({ item }) =>
+              optionsRenderItem ? renderCustomItem(item) : renderItem(item)
+            }
+            keyExtractor={(_, index) => index.toString()}
+            ItemSeparatorComponent={Separator}
+          />
+        )}
       </>
     )
   }

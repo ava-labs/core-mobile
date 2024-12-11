@@ -19,13 +19,14 @@ export default {
   scamTransactionContent: 'This transaction is malicious, do not proceed.',
   rejectTransaction: 'Reject Transaction',
   proceedAnyway: 'Proceed Anyway',
-  switchToSepoliaNetwork: 'Switch to Sepolia Network?',
-  switchToFujiNetwork: 'Switch to Avalanche (C-Chain) Network?',
+  switchToSepoliaNetworkTitle: 'Switch to Sepolia Network?',
+  switchToFujiNetworkTitle: 'Switch to Avalanche (C-Chain) Network?',
   createContact: 'Create Contact?',
   messageDetail: 'message_detail',
   tokenGasFee: 'token_gas_fee',
   tokenAmount: 'token_amount',
   popUpModalScrollView: 'approve_popup_scroll_view',
   slowBaseFee: 'slow_base_fee',
-  customBaseFee: 'custom_base_fee'
+  customBaseFee: 'custom_base_fee',
+  successToast: 'success_toast'
 }

@@ -53,11 +53,15 @@ class PlusMenuPage {
     await Actions.tap(this.buyButton)
   }
 
-  async connectWallet(qrUri: string) {
+  async connectWallet(qrUri = '') {
     await bottomTabsPage.tapPortfolioTab()
     await bottomTabsPage.tapPlusIcon()
     await this.tapWalletConnectButton()
-    await scanQrCodePage.setQrCode(qrUri.toString())
+    if (qrUri) {
+      await scanQrCodePage.setQrCode(qrUri.toString())
+    } else {
+      await scanQrCodePage.enterQrCode()
+    }
   }
 
   async tapBridgeButton() {

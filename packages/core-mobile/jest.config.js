@@ -5,7 +5,7 @@ module.exports = {
   moduleNameMapper: {
     '^react-native$': '<rootDir>/node_modules/react-native'
   },
-  testPathIgnorePatterns: ['<rootDir>/e2e/tests/playwright/'],
+  testPathIgnorePatterns: ['<rootDir>/e2e/tests/dapps/playwright/'],
   setupFilesAfterEnv: [
     '<rootDir>/tests/msw/jestSetup.js',
     '<rootDir>/tests/firebase/jestSetup.js',

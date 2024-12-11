@@ -21,7 +21,6 @@ updates:
       - dependency-name: "@walletconnect/react-native-compat"
       - dependency-name: "@walletconnect/types"
       - dependency-name: "@walletconnect/utils"
-      - dependency-name: "@walletconnect/web3wallet"
       - dependency-name: "@avalabs/*"
       - dependency-name: "ethers" # we should be using ethers 6.8.1 (please refer to dependencies_resolutions.md)
       - dependency-name: "web3" # we should be using web3 1.7.5 (please refer to dependencies_resolutions.md)

@@ -138,6 +138,14 @@ const waitForElementNoSync = async (
   throw new Error('Element not visible within timeout')
 }
 
+const getRandomEle = (items: any[]): any => {
+  return items[Math.floor(Math.random() * items.length)]
+}
+
+const getRandomIndex = (itemsLength: number): number => {
+  return Math.floor(Math.random() * itemsLength)
+}
+
 const getElementTextNoSync = async (
   item: Detox.NativeMatcher,
   timeout = 2000,
@@ -332,7 +340,7 @@ const scrollListUntil = async (
 
 async function writeQrCodeToFile(clipboardValue: string) {
   fs.writeFile(
-    './e2e/tests/playwright/qr_codes.txt',
+    './e2e/tests/dapps/playwright/qr_codes.txt',
     clipboardValue,
     (err: any) => {
       if (err) throw err
@@ -436,5 +444,7 @@ export default {
   scrollToBottom,
   scrollToTop,
   hasText,
-  getAmount
+  getAmount,
+  getRandomEle,
+  getRandomIndex
 }
