@@ -1,19 +1,19 @@
 import { test } from '@playwright/test'
-import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import actions from '../../helpers/playwrightActions'
-import { playwrightSetup } from '../../helpers/playwrightSetup'
-import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
+import CommonPlaywrightPage from '../../../pages/commonPlaywrightEls.page'
+import actions from '../../../helpers/playwrightActions'
+import { playwrightSetup } from '../../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../../pages/dappsPlaywright.page'
 
 const getContext = playwrightSetup()
 
-test('Connect LFJ', async () => {
+test('Connect SteakHut', async () => {
   const { page } = getContext()
   const common = new CommonPlaywrightPage(page)
   const dapps = new DappsPlaywrightPage(page)
 
-  await actions.open(dapps.lfjUrl, dapps.page)
+  await actions.open(dapps.steakHutUrl, dapps.page)
+  await actions.tap(dapps.steakHutXBtn)
   await common.tapConnectWallet()
-  await actions.tap(dapps.lfjAgree)
   await common.tapWalletConnect()
   await common.tapOpen()
   const qrUri = await common.qrUriValue()
