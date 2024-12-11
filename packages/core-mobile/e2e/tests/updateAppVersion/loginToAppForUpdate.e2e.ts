@@ -1,15 +1,16 @@
+import assertions from '../../helpers/assertions'
 import { warmup } from '../../helpers/warmup'
-import createPinPage from '../../pages/createPin.page'
+import portfolioPage from '../../pages/portfolio.page'
 
 describe('Install older version of app and login', () => {
   beforeAll(async () => {
     await warmup()
     console.log('Logged in successfully!')
-    throw new Error('Test failed on purpose!')
+    device.reloadReactNative()
   })
 
   it('should fail', async () => {
-    await createPinPage.enterCurrentPin()
-    console.log('Test is supposed to fail and you should NOT see this message!')
+    console.log('verifying collectibles tab is visible...')
+    assertions.isVisible(portfolioPage.colectiblesTab)
   })
 })
