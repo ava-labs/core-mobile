@@ -87,7 +87,7 @@ export const RecoveryMethodList = ({
             )}
           </View>
           {!isLastItem && (
-            <View sx={{ marginVertical: 8 }}>
+            <View sx={{ marginVertical: 12 }}>
               <Separator />
             </View>
           )}
