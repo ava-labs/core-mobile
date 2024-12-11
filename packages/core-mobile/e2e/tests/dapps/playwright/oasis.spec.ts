@@ -1,19 +1,18 @@
 import { test } from '@playwright/test'
-import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import actions from '../../helpers/playwrightActions'
-import { playwrightSetup } from '../../helpers/playwrightSetup'
-import DappsPlaywrightPage from '../../pages/dappsPlaywright.page'
+import CommonPlaywrightPage from '../../../pages/commonPlaywrightEls.page'
+import actions from '../../../helpers/playwrightActions'
+import { playwrightSetup } from '../../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../../pages/dappsPlaywright.page'
 
 const getContext = playwrightSetup()
 
-test('Connect StakeLido', async () => {
+test('Connect Oasis', async () => {
   const { page } = getContext()
   const common = new CommonPlaywrightPage(page)
   const dapps = new DappsPlaywrightPage(page)
 
-  await actions.open(dapps.stakeLidoUrl, dapps.page)
+  await actions.open(dapps.oasisUrl, dapps.page)
   await common.tapConnectWallet()
-  await actions.tap(dapps.lidoAgree)
   await common.tapWalletConnect()
   const qrUri = await common.qrUriValue()
   if (qrUri) {

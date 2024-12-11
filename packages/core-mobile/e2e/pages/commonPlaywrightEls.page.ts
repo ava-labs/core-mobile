@@ -75,6 +75,11 @@ class CommonElsPage {
     await walletConnectBtn.click()
   }
 
+  async tapWallet_Connect() {
+    await actions.waitFor(this.page.locator('text="Wallet Connect"'))
+    await this.page.locator('text="Wallet Connect"').click()
+  }
+
   async tapCopy() {
     return actions.tap(this.page.getByText('Copy'))
   }
