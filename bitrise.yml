@@ -437,6 +437,7 @@ workflows:
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
     - share-pipeline-variable@1:
         inputs:
+        - is_skippable: true
         - variables: |- 
             APP_VERSION=$APP_VERSION
             BUILD_NUMBER=$BUILD_NUMBER
