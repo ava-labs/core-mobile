@@ -35,8 +35,8 @@ class DappsPlaywrightPage {
     return 'https://lite.instadapp.io/'
   }
 
-  get multichainUrl() {
-    return 'https://app.multichain.org/#/router'
+  get gogoPoolUrl() {
+    return 'https://app.gogopool.com/liquid-staking/'
   }
 
   get oasisUrl() {
@@ -49,10 +49,6 @@ class DappsPlaywrightPage {
 
   get pangolinUrl() {
     return 'https://beta.pangolin.exchange/swap'
-  }
-
-  get pangolinAgree() {
-    return this.page.locator('#agree')
   }
 
   get stakeLidoUrl() {
@@ -71,10 +67,34 @@ class DappsPlaywrightPage {
     return 'https://www.yieldyak.com/'
   }
 
+  get salvorUrl() {
+    return 'https://salvor.io/'
+  }
+
+  get steakHutUrl() {
+    return 'https://app.steakhut.finance/liquidity'
+  }
+
+  get pharaohUrl() {
+    return 'https://pharaoh.exchange/swap'
+  }
+
+  get salvorXbtn() {
+    return this.page.locator('div[class="close-modal"]')
+  }
+
+  get steakHutXBtn() {
+    return this.page.locator('text="Enter SteakHut"')
+  }
+
   get lidoAgree() {
     return this.page.getByText(
       'I certify that I have read and accept the updated'
     )
+  }
+
+  get pangolinAgree() {
+    return this.page.locator('#agree')
   }
 
   get lfjAgree() {
