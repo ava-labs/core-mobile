@@ -340,7 +340,7 @@ const scrollListUntil = async (
 
 async function writeQrCodeToFile(clipboardValue: string) {
   fs.writeFile(
-    './e2e/tests/playwright/qr_codes.txt',
+    './e2e/tests/dapps/playwright/qr_codes.txt',
     clipboardValue,
     (err: any) => {
       if (err) throw err
