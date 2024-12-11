@@ -10,12 +10,10 @@ import { RecoveryMethod, RecoveryMethodData } from './types'
 export const RecoveryMethodList = ({
   data,
   sx,
-  shouldShowSelected,
   onPress
 }: {
   data: RecoveryMethodData[]
   sx?: SxProp
-  shouldShowSelected?: boolean
   onPress: (type: RecoveryMethod) => void
 }): React.JSX.Element => {
   const {
@@ -24,12 +22,12 @@ export const RecoveryMethodList = ({
   const [selectedId, setSelectedId] = useState<string>()
 
   const renderItem = (item: RecoveryMethodData): React.JSX.Element => {
-    const isSelected = shouldShowSelected && selectedId === item.type
+    const isSelected = selectedId === item.type
     const isLastItem = data.indexOf(item) === data.length - 1
     const Icon = item.icon
 
     const handleOnPress = (): void => {
-      shouldShowSelected && setSelectedId(item.type)
+      setSelectedId(item.type)
       onPress(item.type)
     }
 

@@ -52,11 +52,7 @@ export const All = (): JSX.Element => {
         backgroundColor: colors.$surfacePrimary,
         padding: 16
       }}>
-      <RecoveryMethodList
-        data={DATA}
-        shouldShowSelected
-        onPress={handleOnPress}
-      />
+      <RecoveryMethodList data={DATA} onPress={handleOnPress} />
     </View>
   )
 }
