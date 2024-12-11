@@ -1,36 +1,37 @@
 import { Pressable, SxProp, View } from 'dripsy'
-import React, { FC, useState } from 'react'
+import React, { useState } from 'react'
 import { useDripsyTheme as useTheme } from 'dripsy'
-import { SvgProps } from 'react-native-svg'
 import { FlatList, Text } from '../Primitives'
 import Check from '../../assets/icons/check.svg'
 import { Card } from '../../components/Card/Card'
 import { Separator } from '../Separator/Separator'
-
-type Data = {
-  title: string
-  description: string
-  icon: FC<SvgProps>
-}
+import { RecoveryMethod, RecoveryMethodData } from './types'
 
 export const RecoveryMethodList = ({
   data,
   sx,
-  shouldShowSelected
+  shouldShowSelected,
+  onPress
 }: {
-  data: Data[]
+  data: RecoveryMethodData[]
   sx?: SxProp
   shouldShowSelected?: boolean
+  onPress: (type: RecoveryMethod) => void
 }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const [selectedId, setSelectedId] = useState<string>()
 
-  const renderItem = (item: Data): React.JSX.Element => {
-    const isSelected = shouldShowSelected && selectedId === item.title
+  const renderItem = (item: RecoveryMethodData): React.JSX.Element => {
+    const isSelected = shouldShowSelected && selectedId === item.type
     const isLastItem = data.indexOf(item) === data.length - 1
     const Icon = item.icon
+
+    const handleOnPress = (): void => {
+      shouldShowSelected && setSelectedId(item.type)
+      onPress(item.type)
+    }
 
     return (
       <Pressable
@@ -40,7 +41,7 @@ export const RecoveryMethodList = ({
           marginVertical: 1,
           borderRadius: 12
         }}
-        onPress={() => setSelectedId(item.title)}>
+        onPress={handleOnPress}>
         <View
           sx={{
             marginRight: 16,
@@ -103,8 +104,8 @@ export const RecoveryMethodList = ({
       <FlatList
         sx={{ width: '100%', backgroundColor: '$surfaceSecondary' }}
         data={data}
-        renderItem={item => renderItem(item.item as Data)}
-        keyExtractor={item => (item as Data).title}
+        renderItem={item => renderItem(item.item as RecoveryMethodData)}
+        keyExtractor={item => (item as RecoveryMethodData).type}
       />
     </Card>
   )
