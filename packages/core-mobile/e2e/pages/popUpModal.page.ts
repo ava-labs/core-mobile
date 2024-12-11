@@ -106,6 +106,10 @@ class PopUpModalPage {
     return by.text(popUpModalLoc.rejectTextBtn)
   }
 
+  get successToast() {
+    return by.id(popUpModalLoc.successToast)
+  }
+
   async tapApproveBtn() {
     await actions.waitForElement(this.popUpModalScrollView, 20000)
     await actions.tapElementAtIndex(this.approveBtn, 0)
@@ -170,6 +174,10 @@ class PopUpModalPage {
     } catch (e) {
       await actions.waitForElement(this.approveBtn, 10000)
     }
+  }
+
+  async verifySuccessToast() {
+    await actions.waitForElement(this.successToast, 20000)
   }
 
   async verifyFeeIsLegit(
