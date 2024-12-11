@@ -15,10 +15,12 @@ type Data = {
 
 export const RecoveryMethodList = ({
   data,
-  sx
+  sx,
+  shouldShowSelected
 }: {
   data: Data[]
   sx?: SxProp
+  shouldShowSelected?: boolean
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -26,7 +28,7 @@ export const RecoveryMethodList = ({
   const [selectedId, setSelectedId] = useState<string>()
 
   const renderItem = (item: Data): React.JSX.Element => {
-    const isSelected = selectedId === item.title
+    const isSelected = shouldShowSelected && selectedId === item.title
     const isLastItem = data.indexOf(item) === data.length - 1
     const Icon = item.icon
 

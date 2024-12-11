@@ -1,5 +1,5 @@
 import React from 'react'
-import { View } from '../Primitives'
+import { Text, View } from '../Primitives'
 import { useTheme } from '../..'
 import { Icons } from '../../theme/tokens/Icons'
 import { RecoveryMethodList } from './RecoveryMethodList'
@@ -42,7 +42,7 @@ export const All = (): JSX.Element => {
         backgroundColor: colors.$surfacePrimary,
         padding: 16
       }}>
-      <RecoveryMethodList data={DATA} />
+      <RecoveryMethodList data={DATA} shouldShowSelected />
     </View>
   )
 }
