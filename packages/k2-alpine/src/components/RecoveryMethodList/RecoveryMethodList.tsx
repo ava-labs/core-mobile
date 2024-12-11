@@ -65,8 +65,7 @@ export const RecoveryMethodList = ({
                   fontSize: 16,
                   fontWeight: '500',
                   lineHeight: 16,
-                  color: colors.$textPrimary,
-                  fontFamily: 'Inter'
+                  color: colors.$textPrimary
                 }}>
                 {item.title}
               </Text>
@@ -76,8 +75,7 @@ export const RecoveryMethodList = ({
                   fontWeight: '500',
                   lineHeight: 15,
                   color: colors.$textSecondary,
-                  marginTop: 3,
-                  fontFamily: 'Inter'
+                  marginTop: 3
                 }}>
                 {item.description}
               </Text>
