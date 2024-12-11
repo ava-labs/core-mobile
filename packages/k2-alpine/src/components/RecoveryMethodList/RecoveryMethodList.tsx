@@ -99,7 +99,7 @@ export const RecoveryMethodList = ({
   return (
     <Card sx={{ paddingRight: 0, ...sx }}>
       <FlatList
-        sx={{ width: '100%' }}
+        sx={{ width: '100%', backgroundColor: '$surfaceSecondary' }}
         data={data}
         renderItem={item => renderItem(item.item as Data)}
         keyExtractor={item => (item as Data).title}
