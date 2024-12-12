@@ -237,8 +237,8 @@ export const getSimpleSortedValidators = (
   }
   return [...validators].sort(
     (a, b): number =>
-      Number(b.uptime) - Number(a.uptime) ||
       Number(a.delegationFee) - Number(b.delegationFee) ||
+      Number(b.uptime) - Number(a.uptime) ||
       (peers === undefined
         ? 0
         : comparePeerVersion(
@@ -262,9 +262,23 @@ export const getRandomValidator = (
     // get the first item in the array sorted by end time
     return validators.at(0) as NodeValidator
   }
-  const endIndex = validators.length >= 5 ? 4 : validators.length - 1
+
+  // get the validators with lowest delegation fee
+  const validatorsWithLowestFee = validators.filter(
+    validator => validator.delegationFee === validators[0]?.delegationFee
+  )
+
+  // if there is only one validator with the lowest fee, return it
+  if (validatorsWithLowestFee.length === 1) {
+    return validatorsWithLowestFee[0] as NodeValidator
+  }
+
+  // if there are more than 2 validators with the lowest fee, return a random one between the 2-5th validators
+  const endIndex =
+    validatorsWithLowestFee.length >= 5 ? 4 : validators.length - 1
   const randomIndex = random(0, endIndex)
   const matchedValidator = validators.at(randomIndex)
+
   return matchedValidator as NodeValidator
 }
 
