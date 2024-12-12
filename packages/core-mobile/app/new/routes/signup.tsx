@@ -12,10 +12,10 @@ import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { OidcProviders } from 'seedless/consts'
-import { showSimpleToast } from 'components/Snackbar'
 import { hideCoreLogoModal, showCoreLogoModal } from 'new/components/CoreLoader'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { showSnackbar } from 'new/utils/toast'
 
 export default function Index(): JSX.Element {
   const { theme } = useTheme()
@@ -137,7 +137,7 @@ export default function Index(): JSX.Element {
       onVerifyMfaMethod: handleVerifyMfaMethod,
       onAccountVerified: handleAccountVerified
     }).catch(() => {
-      showSimpleToast('Unable to sign up with Google')
+      showSnackbar('Unable to sign up with Google')
     })
   }
 
@@ -149,7 +149,7 @@ export default function Index(): JSX.Element {
       onVerifyMfaMethod: handleVerifyMfaMethod,
       onAccountVerified: handleAccountVerified
     }).catch(() => {
-      showSimpleToast('Unable to sign up with Apple')
+      showSnackbar('Unable to sign up with Apple')
     })
   }
 
