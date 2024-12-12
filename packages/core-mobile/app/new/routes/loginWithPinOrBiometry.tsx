@@ -137,6 +137,9 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   useEffect(() => {
+    // When the hide keyboard button is pressed on Android, it doesn’t update the isEnteringPin state,
+    // causing the keyboard to close and leading to UI bugs.
+    // That’s why we only add the event listener for Android.
     const keyboardHideListener =
       Platform.OS === 'android'
         ? Keyboard.addListener('keyboardDidHide', () => {
