@@ -503,7 +503,7 @@ module.exports = {
       }
     },
     'android.internal.e2e': {
-      device: 'emulator',
+      device: 'emulator_ci',
       app: 'android.internal.e2e'
     },
     'android.external.e2e.old_version': {
