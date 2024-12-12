@@ -5,7 +5,7 @@ if [$IS_REGRESSION_RUN = true]; then
   adb install -r $BITRISE_APK_PATH
   adb install -r $BITRISE_TEST_APK_PATH
 
-  QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginWithLatestVersion.e2e.smoke.ts --configuration android.external.release.ci --reuse; test_result=$? && sleep 5
+  QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginWithLatestVersion.e2e.ts --configuration android.external.release.ci --reuse; test_result=$? && sleep 5
 
   npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts
 

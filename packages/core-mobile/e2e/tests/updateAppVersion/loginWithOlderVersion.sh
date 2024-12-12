@@ -8,7 +8,7 @@ if [ $IS_REGRESSION_RUN = true ]; then
   adb install -r "./e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk"
   adb install -r "./e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk"
 
-  QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginWithOlderVersion.e2e.smoke.ts --configuration android.external.e2e.old_version; test_result=$? && sleep 5
+  QT_QPA_PLATFORM=xcb ./node_modules/.bin/detox test loginWithOlderVersion.e2e.ts --configuration android.external.e2e.old_version; test_result=$? && sleep 5
 
   if ((test_result != 0)); then
     exit 1
