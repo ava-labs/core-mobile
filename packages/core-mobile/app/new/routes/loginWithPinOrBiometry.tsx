@@ -78,14 +78,18 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     }
   })
 
-  const avatarContainerMarginTop = useSharedValue(40)
+  const avatarContainerMarginTop = useSharedValue(
+    configuration.avatarContainerMarginTop.from
+  )
   const avatarContainerStyle = useAnimatedStyle(() => {
     return {
       marginTop: avatarContainerMarginTop.value
     }
   })
 
-  const buttonContainerPaddingBottom = useSharedValue(40)
+  const buttonContainerPaddingBottom = useSharedValue(
+    configuration.buttonContainerPaddingBottom.from
+  )
   const buttonContainerStyle = useAnimatedStyle(() => {
     return {
       paddingBottom: buttonContainerPaddingBottom.value
@@ -172,27 +176,26 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }, [mnemonic, handleLoginSuccess])
 
   useEffect(() => {
-    if (isEnteringPin) {
-      pinInputOpacity.value = withTiming(1, {
+    const pinInputOpacityValue = isEnteringPin ? 1 : 0
+    const buttonContainerPaddingBottomValue = isEnteringPin
+      ? configuration.buttonContainerPaddingBottom.to
+      : configuration.buttonContainerPaddingBottom.from
+    const avatarContainerMarginTopValue = isEnteringPin
+      ? configuration.avatarContainerMarginTop.to
+      : configuration.avatarContainerMarginTop.from
+
+    pinInputOpacity.value = withTiming(pinInputOpacityValue, {
+      duration: configuration.animationDuration
+    })
+    buttonContainerPaddingBottom.value = withTiming(
+      buttonContainerPaddingBottomValue,
+      {
         duration: configuration.animationDuration
-      })
-      buttonContainerPaddingBottom.value = withTiming(20, {
-        duration: configuration.animationDuration
-      })
-      avatarContainerMarginTop.value = withTiming(10, {
-        duration: configuration.animationDuration
-      })
-    } else {
-      pinInputOpacity.value = withTiming(0, {
-        duration: configuration.animationDuration
-      })
-      buttonContainerPaddingBottom.value = withTiming(40, {
-        duration: configuration.animationDuration
-      })
-      avatarContainerMarginTop.value = withTiming(40, {
-        duration: configuration.animationDuration
-      })
-    }
+      }
+    )
+    avatarContainerMarginTop.value = withTiming(avatarContainerMarginTopValue, {
+      duration: configuration.animationDuration
+    })
   }, [
     isEnteringPin,
     pinInputOpacity,
@@ -242,10 +245,11 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   backgroundColor={theme.colors.$surfacePrimary}
                 />
               </Reanimated.View>
-              <View>
-                <Reanimated.View
-                  pointerEvents={isEnteringPin ? 'auto' : 'none'}
-                  style={[pinInputOpacityStyle]}>
+              <View
+                pointerEvents={
+                  isEnteringPin || disableKeypad ? 'auto' : 'none'
+                }>
+                <Reanimated.View style={[pinInputOpacityStyle]}>
                   {disableKeypad === false && (
                     <PinInput
                       ref={pinInputRef}
@@ -303,7 +307,15 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 }
 
 const configuration = {
-  animationDuration: 300
+  animationDuration: 300,
+  buttonContainerPaddingBottom: {
+    from: 40,
+    to: 20
+  },
+  avatarContainerMarginTop: {
+    from: 40,
+    to: 10
+  }
 }
 
 export default LoginWithPinOrBiometry

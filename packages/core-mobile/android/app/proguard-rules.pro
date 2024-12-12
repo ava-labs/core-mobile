@@ -30,7 +30,7 @@
   @org.greenrobot.eventbus.Subscribe <methods>;
 }
 
-# Keep Glide's required classes
+# expo-image
 -keep public class com.bumptech.glide.** { *; }
 -keep @com.bumptech.glide.annotation.GlideModule class *
 
