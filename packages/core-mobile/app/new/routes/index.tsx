@@ -2,7 +2,7 @@ import { useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
 import { View } from 'react-native'
 
-function BlankScreen(): JSX.Element {
+function IndexScreen(): JSX.Element {
   const { theme } = useTheme()
 
   return (
@@ -19,4 +19,4 @@ function BlankScreen(): JSX.Element {
   )
 }
 
-export default BlankScreen
+export default IndexScreen
