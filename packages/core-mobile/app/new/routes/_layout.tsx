@@ -19,8 +19,8 @@ import {
 } from 'expo-router'
 import { Platform } from 'react-native'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
-import { PrivacyScreen } from 'new/components/PrivacyScreen'
 import { StackActions } from '@react-navigation/native'
+import { LogoModal } from 'new/components/LogoModal'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -105,7 +105,7 @@ export default function RootLayout(): JSX.Element | null {
             <Stack.Screen name="forgotPin" />
             <Stack.Screen name="+not-found" />
           </Stack>
-          {enabledPrivacyScreen && <PrivacyScreen />}
+          {enabledPrivacyScreen && <LogoModal />}
         </NavigationThemeProvider>
       </ApplicationContextProvider>
       <GlobalToast />

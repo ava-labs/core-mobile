@@ -12,7 +12,7 @@ import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { OidcProviders } from 'seedless/consts'
-import { hideCoreLogoModal, showCoreLogoModal } from 'new/components/CoreLoader'
+import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'new/utils/toast'
@@ -27,7 +27,7 @@ export default function Index(): JSX.Element {
   const { register, isRegistering, verify } = useSeedlessRegister()
 
   useEffect(() => {
-    isRegistering ? showCoreLogoModal() : hideCoreLogoModal()
+    isRegistering ? showLogoModal() : hideLogoModal()
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
@@ -47,9 +47,9 @@ export default function Index(): JSX.Element {
   }
 
   const handleAccountVerified = async (): Promise<void> => {
-    showCoreLogoModal()
+    showLogoModal()
     const walletName = await SeedlessService.getAccountName()
-    hideCoreLogoModal()
+    hideLogoModal()
     if (walletName) {
       // navigate(AppNavigation.Root.Onboard, {
       //   screen: AppNavigation.Onboard.Welcome,

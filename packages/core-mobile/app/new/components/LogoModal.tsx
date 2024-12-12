@@ -5,34 +5,34 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import React from 'react'
-import { StyleSheet } from 'react-native'
 import { hideModal, showModal } from 'utils/modal'
 
-export const CoreLoader = (): JSX.Element => {
+export const LogoModal = (): JSX.Element => {
   const { theme } = useTheme()
 
   return (
     <View
-      sx={{
-        ...StyleSheet.absoluteFillObject,
-        height: '100',
-        justifyContent: 'center',
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: theme.colors.$surfacePrimary,
         alignItems: 'center',
-        backgroundColor: '$surfacePrimary'
+        justifyContent: 'center',
+        position: 'absolute'
       }}>
       <Logos.Core color={theme.colors.$textPrimary} />
     </View>
   )
 }
 
-export const showCoreLogoModal = (): void => {
+export const showLogoModal = (): void => {
   showModal(
     <K2AlpineThemeProvider>
-      <CoreLoader />
+      <LogoModal />
     </K2AlpineThemeProvider>
   )
 }
 
-export const hideCoreLogoModal = (): void => {
+export const hideLogoModal = (): void => {
   hideModal()
 }
