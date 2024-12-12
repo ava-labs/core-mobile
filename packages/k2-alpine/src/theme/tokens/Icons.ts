@@ -16,6 +16,7 @@ import IconYubikey from '../../assets/icons/yubikey.svg'
 import IconApple from '../../assets/icons/apple.svg'
 import IconGoogle from '../../assets/icons/google.svg'
 import IconAdd from '../../assets/icons/add.svg'
+import IconArrowForwardIOS from '../../assets/icons/arrow_forward_ios.svg'
 
 export const Icons = {
   Action: {
@@ -29,6 +30,7 @@ export const Icons = {
     IconGPPMaybe: IconGPPMaybe
   },
   Navigation: {
+    ArrowForwardIOS: IconArrowForwardIOS,
     Check: IconCheck,
     ExpandMore: IconExpandMore
   },

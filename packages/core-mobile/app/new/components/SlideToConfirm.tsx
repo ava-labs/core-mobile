@@ -1,7 +1,6 @@
 import React, { useRef } from 'react'
 import { PanResponder, Animated, Dimensions } from 'react-native'
-import { Icons } from '@avalabs/k2-mobile'
-import { useTheme, View } from '@avalabs/k2-alpine'
+import { useTheme, View, Icons } from '@avalabs/k2-alpine'
 
 const { width } = Dimensions.get('window')
 const _sliderWidth = 64
