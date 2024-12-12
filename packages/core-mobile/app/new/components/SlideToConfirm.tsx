@@ -1,13 +1,7 @@
 import React, { useRef } from 'react'
-import {
-  View,
-  PanResponder,
-  Animated,
-  StyleSheet,
-  Dimensions
-} from 'react-native'
+import { PanResponder, Animated, Dimensions } from 'react-native'
 import { Icons } from '@avalabs/k2-mobile'
-import { useTheme } from '@avalabs/k2-alpine'
+import { useTheme, View } from '@avalabs/k2-alpine'
 
 const { width } = Dimensions.get('window')
 const _sliderWidth = 64
@@ -65,14 +59,31 @@ const SlideToConfirm = ({
   })
 
   return (
-    <View style={styles.container}>
-      <View style={styles.sliderContainer}>
+    <View
+      sx={{
+        alignItems: 'center'
+      }}>
+      <View
+        sx={{
+          width: width - 40, // Full width
+          height: _sliderHeight,
+          borderRadius: 32,
+          backgroundColor: '#A1A1AA40',
+          justifyContent: 'center',
+          position: 'relative'
+        }}>
         <Animated.View
           {...panResponder.panHandlers}
-          style={[
-            styles.slider,
-            { width: sliderWidth, backgroundColor: theme.colors.$textPrimary }
-          ]}>
+          style={{
+            height: _sliderHeight,
+            borderRadius: 32,
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'absolute',
+            left: 0,
+            width: sliderWidth,
+            backgroundColor: theme.colors.$textPrimary
+          }}>
           <Animated.View testID="slide" style={{ opacity: iconOpacityAnim }}>
             <Icons.Navigation.ArrowForwardIOS
               color={theme.colors.$surfacePrimary}
@@ -80,41 +91,19 @@ const SlideToConfirm = ({
           </Animated.View>
         </Animated.View>
         <Animated.Text
-          style={[styles.instructionText, { color: textColorAnim }]}>
+          style={[
+            {
+              fontSize: 15,
+              fontWeight: '600',
+              color: textColorAnim,
+              alignSelf: 'center'
+            }
+          ]}>
           {text}
         </Animated.Text>
       </View>
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center'
-  },
-  instructionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#ffffff',
-    alignSelf: 'center'
-  },
-  sliderContainer: {
-    width: width - 40, // Full width
-    height: _sliderHeight,
-    borderRadius: 32,
-    backgroundColor: '#A1A1AA40',
-    justifyContent: 'center',
-    position: 'relative'
-  },
-  slider: {
-    height: _sliderHeight,
-    borderRadius: 32,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    left: 0
-  }
-})
 
 export default SlideToConfirm

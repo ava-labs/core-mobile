@@ -133,14 +133,17 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   useEffect(() => {
-    const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      if (pinInputRef.current?.isFocused()) {
-        blurPinInput()
-      }
-    })
+    const keyboardHideListener =
+      Platform.OS === 'android'
+        ? Keyboard.addListener('keyboardDidHide', () => {
+            if (pinInputRef.current?.isFocused()) {
+              blurPinInput()
+            }
+          })
+        : undefined
 
     return () => {
-      keyboardHideListener.remove()
+      keyboardHideListener?.remove()
     }
   }, [])
 
