@@ -74,6 +74,13 @@ module.exports = {
         'android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk',
       testBinaryPath:
         'android/app/build/outputs/apk/androidTest/internal/debug/app-internal-e2e-androidTest.apk'
+    },
+    'android.external.e2e.old_version': {
+      type: 'android.apk',
+      binaryPath:
+        './e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-bitrise-signed.apk',
+      testBinaryPath:
+        './e2e/tests/updateAppVersion/oldVersionApk/app-external-e2e-androidTest-bitrise-signed.apk'
     }
   },
   artifacts: {
@@ -498,6 +505,19 @@ module.exports = {
     'android.internal.e2e': {
       device: 'emulator',
       app: 'android.internal.e2e'
+    },
+    'android.external.e2e.old_version': {
+      device: 'emulator',
+      app: 'android.external.e2e.old_version',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/smokeTestConfig.json'
+        }
+      }
     }
   }
 }
