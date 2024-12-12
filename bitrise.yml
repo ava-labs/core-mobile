@@ -211,13 +211,13 @@ workflows:
     - script-runner@0:
         title: Update Android Test
         inputs:
-        - file_path: ./e2e/tests/updateAppVersion/loginWithOlderVersion.sh
+        - file_path: e2e/tests/updateAppVersion/loginWithOlderVersion.sh
   _install-latest-android-version:
     steps:
     - script-runner@0:
         title: Update Android Test
         inputs:
-        - file_path: ./e2e/tests/updateAppVersion/updateToLatestVersion.sh
+        - file_path: e2e/tests/updateAppVersion/updateToLatestVersion.sh
   _pull_app_files:
     steps:
     - pull-intermediate-files@1:
