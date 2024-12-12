@@ -1,8 +1,8 @@
-import { useTheme } from '@avalabs/k2-alpine'
+import { Logos, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
 import { View } from 'react-native'
 
-function BlankScreen(): JSX.Element {
+export function PrivacyScreen(): JSX.Element {
   const { theme } = useTheme()
 
   return (
@@ -14,9 +14,8 @@ function BlankScreen(): JSX.Element {
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute'
-      }}
-    />
+      }}>
+      <Logos.Core color={theme.colors.$textPrimary} />
+    </View>
   )
 }
-
-export default BlankScreen

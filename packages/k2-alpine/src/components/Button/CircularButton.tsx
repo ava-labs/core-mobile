@@ -42,10 +42,11 @@ export const CircularButton = forwardRef<
           {
             borderRadius: 1000,
             alignItems: 'center',
-            width: 60,
-            height: 60,
+            width: CIRCULAR_BUTTON_WIDTH,
+            height: CIRCULAR_BUTTON_WIDTH,
             backgroundColor,
-            justifyContent: 'center'
+            justifyContent: 'center',
+            overflow: 'hidden'
           },
           style
         ]}>
@@ -88,3 +89,5 @@ const getTintColor = (
 }
 
 CircularButton.displayName = 'Button'
+
+export const CIRCULAR_BUTTON_WIDTH = 60

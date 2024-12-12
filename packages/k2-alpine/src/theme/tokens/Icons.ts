@@ -13,6 +13,9 @@ import IconGPPMaybe from '../../assets/icons/gpp_maybe.svg'
 import IconPasskey from '../../assets/icons/passkey.svg'
 import IconAuthenticator from '../../assets/icons/authenticator.svg'
 import IconYubikey from '../../assets/icons/yubikey.svg'
+import IconApple from '../../assets/icons/apple.svg'
+import IconGoogle from '../../assets/icons/google.svg'
+import IconAdd from '../../assets/icons/add.svg'
 
 export const Icons = {
   Action: {
@@ -32,6 +35,9 @@ export const Icons = {
   Social: {
     RemoveModerator: IconRemoveModerator
   },
+  Content: {
+    Add: IconAdd
+  },
   Custom: {
     BackArrowCustom: IconBackArrowCustom,
     FaceID: IconFaceID,
@@ -43,5 +49,9 @@ export const Icons = {
     Passkey: IconPasskey,
     Authenticator: IconAuthenticator,
     Yubikey: IconYubikey
+  },
+  Logos: {
+    Apple: IconApple,
+    Google: IconGoogle
   }
 }
