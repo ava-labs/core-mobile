@@ -42,7 +42,7 @@ export const useSearchNode = ({
       stakingAmount,
       stakingEndTime,
       minUpTime: 98,
-      maxFee: 20,
+      maxFee: 4,
       isEndTimeOverOneYear
     })
 
