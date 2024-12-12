@@ -273,7 +273,7 @@ export const getRandomValidator = (
     return validatorsWithLowestFee[0] as NodeValidator
   }
 
-  // if there are more than 2 validators with the lowest fee, return a random one between the 2-5th validators
+  // if there are more than 2 validators with the lowest fee, return a random one between the 2-5 validators
   const endIndex =
     validatorsWithLowestFee.length >= 5 ? 4 : validators.length - 1
   const randomIndex = random(0, endIndex)
