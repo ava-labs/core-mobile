@@ -449,7 +449,7 @@ module.exports = {
       }
     },
     'android.external.release.ci': {
-      device: 'emulator_ci',
+      device: 'emulator',
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
@@ -463,7 +463,7 @@ module.exports = {
       }
     },
     'android.external.release.smoke.ci': {
-      device: 'emulator_ci',
+      device: 'emulator',
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
@@ -476,7 +476,7 @@ module.exports = {
       }
     },
     'android.external.release.regression.ci': {
-      device: 'emulator_ci',
+      device: 'emulator',
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
@@ -503,11 +503,11 @@ module.exports = {
       }
     },
     'android.internal.e2e': {
-      device: 'emulator_ci',
+      device: 'emulator',
       app: 'android.internal.e2e'
     },
     'android.external.e2e.old_version': {
-      device: 'emulator_ci',
+      device: 'emulator',
       app: 'android.external.e2e.old_version',
       artifacts: {
         rootDir: './e2e/artifacts/android'
