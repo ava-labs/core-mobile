@@ -1,5 +1,5 @@
 set -o pipefail
-if [$IS_REGRESSION_RUN = true]; then
+if ["$IS_REGRESSION_RUN" = true]; then
   npm rebuild detox
 
   adb install -r $BITRISE_APK_PATH
