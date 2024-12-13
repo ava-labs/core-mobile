@@ -210,6 +210,36 @@ describe('getRandomValidator function', () => {
     const result = getRandomValidator([])
     expect(result).toBe(undefined)
   })
+
+  it('should return first item by end time if staking end time is over one year', () => {
+    const result = getRandomValidator(
+      mockValidators.validators as unknown as NodeValidators,
+      true
+    )
+    expect(result).toBe(mockValidators.validators[0])
+  })
+
+  it('should return first item if only one validator matches the lowest delegation fee', () => {
+    const validators = mockValidators.validators.map((validator, index) => {
+      if (index === 0) {
+        return { ...validator, delegationFee: '1.0000' }
+      }
+      return validator
+    })
+    const result = getRandomValidator(validators as unknown as NodeValidators)
+    expect(result).toBe(validators[0])
+  })
+  it('should return random validator from ones that matches the lowest delegation fee', () => {
+    const validators = mockValidators.validators.map((validator, index) => {
+      if (index <= 1) {
+        return { ...validator, delegationFee: '1.0000' }
+      }
+      return validator
+    })
+    const result = getRandomValidator(validators as unknown as NodeValidators)
+    const nodeIds = validators.map(validator => validator.nodeID)
+    expect(nodeIds.includes(result.nodeID)).toBeTruthy()
+  })
 })
 
 describe('getAdvancedSortedValidators function', () => {

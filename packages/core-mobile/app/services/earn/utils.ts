@@ -250,7 +250,7 @@ export const getSimpleSortedValidators = (
 
 /**
  *
- * @param validators input to take random item from,
+ * @param validators input sorted by delegationFee, uptime and node version to take random item from,
  * @param isEndTimeOverOneYear boolean indicating if the stake end time is over one year
  * @returns random item from either top 5 items in the array or all of the items in the array
  */
