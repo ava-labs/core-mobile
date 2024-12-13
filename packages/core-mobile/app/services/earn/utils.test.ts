@@ -240,6 +240,18 @@ describe('getRandomValidator function', () => {
     const nodeIds = validators.map(validator => validator.nodeID)
     expect(nodeIds.includes(result.nodeID)).toBeTruthy()
   })
+
+  it('should return random validator from top five of ones that matches the lowest delegation fee', () => {
+    const validators = mockValidators.validators.map((validator, index) => {
+      if (index <= 10) {
+        return { ...validator, delegationFee: '1.0000' }
+      }
+      return validator
+    })
+    const result = getRandomValidator(validators as unknown as NodeValidators)
+    const topFive = validators.slice(0, 5).map(validator => validator.nodeID)
+    expect(topFive.includes(result.nodeID)).toBeTruthy()
+  })
 })
 
 describe('getAdvancedSortedValidators function', () => {
