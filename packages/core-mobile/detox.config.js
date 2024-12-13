@@ -449,7 +449,7 @@ module.exports = {
       }
     },
     'android.external.release.ci': {
-      device: 'emulator',
+      device: 'emulator_ci',
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
