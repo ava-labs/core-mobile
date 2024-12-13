@@ -463,7 +463,7 @@ module.exports = {
       }
     },
     'android.external.release.smoke.ci': {
-      device: 'emulator',
+      device: 'emulator_ci',
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
@@ -476,7 +476,7 @@ module.exports = {
       }
     },
     'android.external.release.regression.ci': {
-      device: 'emulator',
+      device: 'emulator_ci',
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
