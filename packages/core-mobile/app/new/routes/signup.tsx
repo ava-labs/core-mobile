@@ -17,7 +17,7 @@ import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'new/utils/toast'
 
-export default function Index(): JSX.Element {
+export default function Signup(): JSX.Element {
   const { theme } = useTheme()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked

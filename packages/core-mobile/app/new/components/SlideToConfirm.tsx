@@ -20,9 +20,7 @@ const SlideToConfirm = ({
 
   const textColorAnim = sliderWidth.interpolate({
     inputRange: [0, unlockThreshold],
-    outputRange: theme.isDark
-      ? [theme.colors.$textPrimary, '#000000']
-      : [theme.colors.$textPrimary, '#FFFFFF'],
+    outputRange: [theme.colors.$textPrimary, theme.colors.$surfacePrimary],
     extrapolate: 'clamp'
   })
   const iconOpacityAnim = sliderWidth.interpolate({
