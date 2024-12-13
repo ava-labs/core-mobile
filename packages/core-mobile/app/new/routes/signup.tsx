@@ -42,7 +42,7 @@ export default function Signup(): JSX.Element {
   }
 
   const handleAccessExistingWallet = (): void => {
-    router.navigate('./accessWallet/')
+    router.navigate('./accessWallet')
     AnalyticsService.capture('AccessExistingWalletClicked')
   }
 
