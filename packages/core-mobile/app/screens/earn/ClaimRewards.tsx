@@ -96,7 +96,7 @@ const ClaimRewards = (): JSX.Element | null => {
         return [
           unlockedInUnit.toDisplay(),
           appHook.tokenInCurrencyFormatter(
-            Number(unlockedInUnit.mul(avaxPrice).toString())
+            unlockedInUnit.mul(avaxPrice).toDisplay({ asNumber: true })
           )
         ]
       }
@@ -117,7 +117,7 @@ const ClaimRewards = (): JSX.Element | null => {
     return [
       totalFees.toDisplay(),
       appHook.tokenInCurrencyFormatter(
-        Number(totalFees.mul(avaxPrice).toString())
+        totalFees.mul(avaxPrice).toDisplay({ asNumber: true })
       )
     ]
   }, [avaxPrice, totalFees, appHook])
