@@ -18,7 +18,7 @@ import { K2AlpineTheme } from '../../theme/theme'
 export type ButtonType = 'primary' | 'secondary' | 'tertiary'
 export type ButtonSize = 'small' | 'medium' | 'large'
 
-type ButtonIconType = 'check' | 'expandMore'
+type ButtonIconType = 'check' | 'expandMore' | 'google' | 'apple'
 
 interface ButtonProps {
   onPress?: () => void
@@ -159,7 +159,9 @@ const sizeStyles = StyleSheet.create({
 
 const iconComponents = {
   check: Icons.Navigation.Check,
-  expandMore: Icons.Navigation.ExpandMore
+  expandMore: Icons.Navigation.ExpandMore,
+  google: Icons.Logos.Google,
+  apple: Icons.Logos.Apple
 }
 
 const getIcon = (

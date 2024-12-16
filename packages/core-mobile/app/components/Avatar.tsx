@@ -5,7 +5,7 @@ import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import { Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
 import { SuggestedSiteName } from 'store/browser/const'
@@ -104,11 +104,7 @@ const AvatarBase: FC<AvatarBaseProps> = ({
       testID="avatar__logo_avatar"
     />
   ) : (
-    <FastImage
-      // TODO: remove this workaround when we have a proper solution
-      // workaround for images not appearing
-      // https://github.com/DylanVann/react-native-fast-image/issues/974
-      fallback={true}
+    <Image
       style={{
         borderRadius: size,
         width: size,
