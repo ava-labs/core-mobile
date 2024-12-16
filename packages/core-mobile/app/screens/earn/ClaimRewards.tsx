@@ -40,7 +40,7 @@ import { ConfirmScreen } from './components/ConfirmScreen'
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
 const ClaimRewards = (): JSX.Element | null => {
-  const { theme } = useApplicationContext()
+  const { theme, appHook } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
@@ -85,29 +85,42 @@ const ClaimRewards = (): JSX.Element | null => {
     }
   }, [navigate, showFeeError, insufficientBalanceForFee])
 
-  const [claimableAmountInAvax, claimableAmountInCurrency] = useMemo(() => {
-    if (data?.balancePerType.unlockedUnstaked) {
-      const unlockedInUnit = new TokenUnit(
-        data.balancePerType.unlockedUnstaked,
-        pNetwork.networkToken.decimals,
-        pNetwork.networkToken.symbol
-      )
-      return [
-        unlockedInUnit.toDisplay(),
-        unlockedInUnit.mul(avaxPrice).toDisplay()
-      ]
-    }
-    return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
-  }, [
-    avaxPrice,
-    data?.balancePerType.unlockedUnstaked,
-    pNetwork.networkToken.decimals,
-    pNetwork.networkToken.symbol
-  ])
+  const [claimableAmountInAvax, formattedClaimableAmountInCurrency] =
+    useMemo(() => {
+      if (data?.balancePerType.unlockedUnstaked) {
+        const unlockedInUnit = new TokenUnit(
+          data.balancePerType.unlockedUnstaked,
+          pNetwork.networkToken.decimals,
+          pNetwork.networkToken.symbol
+        )
+        return [
+          unlockedInUnit.toDisplay(),
+          appHook.tokenInCurrencyFormatter(
+            Number(unlockedInUnit.mul(avaxPrice).toString())
+          )
+        ]
+      }
+      return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
+    }, [
+      avaxPrice,
+      data?.balancePerType.unlockedUnstaked,
+      pNetwork.networkToken.decimals,
+      pNetwork.networkToken.symbol,
+      appHook
+    ])
 
-  const [feesInAvax, feesInCurrency] = useMemo(() => {
-    return [totalFees?.toDisplay(), totalFees?.mul(avaxPrice).toDisplay()]
-  }, [avaxPrice, totalFees])
+  const [feesInAvax, formattedFeesInCurrency] = useMemo(() => {
+    if (totalFees === undefined) {
+      return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
+    }
+
+    return [
+      totalFees.toDisplay(),
+      appHook.tokenInCurrencyFormatter(
+        Number(totalFees.mul(avaxPrice).toString())
+      )
+    ]
+  }, [avaxPrice, totalFees, appHook])
 
   const cancelClaim = (): void => {
     AnalyticsService.capture('StakeCancelClaim')
@@ -134,7 +147,7 @@ const ClaimRewards = (): JSX.Element | null => {
         </AvaText.Heading6>
         <Space y={4} />
         <AvaText.Body3 testID="network_fee_currency" color={theme.colorText2}>
-          {`${feesInCurrency} ${selectedCurrency}`}
+          {formattedFeesInCurrency}
         </AvaText.Body3>
       </View>
     )
@@ -198,7 +211,7 @@ const ClaimRewards = (): JSX.Element | null => {
         <AvaText.Heading3
           textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}
           testID="claimable_balance_currency">
-          {`${claimableAmountInCurrency} ${selectedCurrency}`}
+          {formattedClaimableAmountInCurrency}
         </AvaText.Heading3>
       </View>
       <Separator />
