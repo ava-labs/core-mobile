@@ -124,5 +124,6 @@ export const homeScreenOptions: StackNavigationOptions = {
         <Text>Notifications</Text>
       </Link>
     </View>
-  )
+  ),
+  animationEnabled: false
 }

@@ -60,7 +60,7 @@ export const HexagonImageView = ({
     <MaskedView
       maskElement={
         <Svg width={height} height={height} viewBox={hexagonPath.viewBox}>
-          <Path d={hexagonPath.path} fill="black" />
+          <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
         </Svg>
       }>
       <Image
