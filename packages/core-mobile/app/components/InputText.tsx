@@ -199,8 +199,6 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       onChangeText?.(txt)
     }
 
-    const secureTextEntry = mode === 'private' && !showInput ? true : undefined
-
     return (
       <View style={[{ margin: 12 }, style]}>
         {label && (
@@ -228,7 +226,9 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             autoCapitalize="none"
             placeholder={placeholder}
             placeholderTextColor={colors.$neutral400}
-            secureTextEntry={secureTextEntry}
+            secureTextEntry={
+              mode === 'private' && !showInput ? true : undefined
+            }
             onSubmitEditing={submit}
             returnKeyType={onSubmit && 'go'}
             enablesReturnKeyAutomatically={true}
