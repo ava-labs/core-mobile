@@ -27,7 +27,8 @@ export const ScrollView = styled(
   DripsyScrollView,
   {}
 )({
-  backgroundColor: '$surfacePrimary'
+  backgroundColor: '$surfacePrimary',
+  overflow: 'visible'
 })
 
 export const FlatList = styled(
