@@ -227,6 +227,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             placeholder={placeholder}
             placeholderTextColor={colors.$neutral400}
             secureTextEntry={
+              // On Android, setting secureText to false causes the keyboardType to be ignored.
+              // To avoid this issue, secureText is set to undefined instead of false.
               mode === 'private' && !showInput ? true : undefined
             }
             onSubmitEditing={submit}
