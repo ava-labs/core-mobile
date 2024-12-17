@@ -98,6 +98,7 @@ const LeftComponent = ({
         size={32}
         testID={`${name}`}
         backgroundColor="white"
+        showBorder
       />
     </View>
   )
