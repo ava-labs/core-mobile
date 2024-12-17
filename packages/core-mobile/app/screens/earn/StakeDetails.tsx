@@ -25,8 +25,6 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { xpChainToken } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
-import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { useSelector } from 'react-redux'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
@@ -44,7 +42,6 @@ const StakeDetails = (): JSX.Element | null => {
   } = useRoute<ScreenProps['route']>()
   const stake = useStake(txHash)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const isActive = useMemo(() => {
     if (!stake) return false
@@ -106,7 +103,7 @@ const StakeDetails = (): JSX.Element | null => {
     const estimatedRewardInCurrency = estimatedRewardInAvax?.mul(avaxPrice)
     const estimatedRewardInCurrencyDisplay = estimatedRewardInCurrency
       ? tokenInCurrencyFormatter(
-          estimatedRewardInCurrency.toDisplay({ fixedDp: 2, asNumber: true })
+          estimatedRewardInCurrency.toDisplay({ asNumber: true })
         )
       : UNKNOWN_AMOUNT
 
@@ -125,7 +122,7 @@ const StakeDetails = (): JSX.Element | null => {
               {estimatedRewardInAvaxDisplay} AVAX
             </AvaText.Heading4>
             <Space y={2} />
-            <AvaText.Body2>{`${estimatedRewardInCurrencyDisplay} ${selectedCurrency}`}</AvaText.Body2>
+            <AvaText.Body2>{estimatedRewardInCurrencyDisplay}</AvaText.Body2>
           </View>
         </Row>
         <Separator style={styles.line} />
@@ -166,7 +163,7 @@ const StakeDetails = (): JSX.Element | null => {
 
     const rewardAmountInCurrencyDisplay = rewardAmountInCurrency
       ? tokenInCurrencyFormatter(
-          rewardAmountInCurrency.toDisplay({ fixedDp: 2, asNumber: true })
+          rewardAmountInCurrency.toDisplay({ asNumber: true })
         )
       : UNKNOWN_AMOUNT
 
@@ -183,7 +180,7 @@ const StakeDetails = (): JSX.Element | null => {
               {rewardAmountInAvaxDisplay} AVAX
             </AvaText.Heading4>
             <Space y={2} />
-            <AvaText.Body2>{`${rewardAmountInCurrencyDisplay} ${selectedCurrency}`}</AvaText.Body2>
+            <AvaText.Body2>{rewardAmountInCurrencyDisplay}</AvaText.Body2>
           </View>
         </Row>
         <Separator style={styles.line} />
@@ -229,7 +226,7 @@ const StakeDetails = (): JSX.Element | null => {
 
     const stakeAmountInCurrencyDisplay = stakeAmountInCurrency
       ? tokenInCurrencyFormatter(
-          stakeAmountInCurrency.toDisplay({ fixedDp: 2, asNumber: true })
+          stakeAmountInCurrency.toDisplay({ asNumber: true })
         )
       : UNKNOWN_AMOUNT
 
@@ -244,9 +241,7 @@ const StakeDetails = (): JSX.Element | null => {
           <View style={styles.value}>
             <AvaText.Heading4>{stakeAmountInAvaxDisplay} AVAX</AvaText.Heading4>
             <Space y={4} />
-            <AvaText.Body2>
-              {`${stakeAmountInCurrencyDisplay} ${selectedCurrency}`}
-            </AvaText.Body2>
+            <AvaText.Body2>{stakeAmountInCurrencyDisplay}</AvaText.Body2>
           </View>
         </Row>
         <Separator style={styles.line} />
