@@ -45,7 +45,7 @@ function useSeedlessManageMFA(): {
       }
     } catch (e) {
       Logger.error('totpResetInit error', e)
-      showSimpleToast('Unable to reset totp. Please try again.')
+      // showSimpleToast('Unable to reset totp. Please try again.')
     }
   }
 

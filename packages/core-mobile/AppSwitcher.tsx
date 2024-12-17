@@ -51,6 +51,11 @@ export const AppSwitcher = (): React.JSX.Element => {
       }),
     [switchApp]
   )
+  return (
+    <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+      <NewApp />
+    </View>
+  )
 
   // only allow switching to new app on internal builds
   if (!isInternalBuild && !__DEV__) return <OldApp />

@@ -77,6 +77,7 @@ export const useSeedlessRegister = (): ReturnType => {
 
     try {
       const { oidcToken } = await getOidcToken()
+      console.log('oidcToken', oidcToken)
       const identity = await SeedlessService.sessionManager.oidcProveIdentity(
         oidcToken
       )

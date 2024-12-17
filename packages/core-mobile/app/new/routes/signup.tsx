@@ -16,15 +16,17 @@ import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'new/utils/toast'
+import { useSeedlessOidcContext } from 'new/contexts/SeedlessOidcProvider'
+// import { useSeedlessSignupContext } from '../../contexts/SeedlessSignupProvider'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
+  const { setOidcAuth } = useSeedlessOidcContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { register, isRegistering, verify } = useSeedlessRegister()
+  const { register, isRegistering } = useSeedlessRegister()
 
   useEffect(() => {
     isRegistering ? showLogoModal() : hideLogoModal()
@@ -65,19 +67,12 @@ export default function Signup(): JSX.Element {
     // navigate(AppNavigation.Onboard.NameYourWallet)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRegisterMfaMethods = (oidcAuth?: {
     oidcToken: string
     mfaId: string
   }): void => {
-    // navigate(AppNavigation.Root.RecoveryMethods, {
-    //   screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-    //   params: {
-    //     oidcAuth,
-    //     onAccountVerified: handleAccountVerified,
-    //     allowsUserToAddLater: true
-    //   }
-    // })
+    setOidcAuth(oidcAuth)
+    router.navigate('./addRecoveryMethods')
   }
 
   const handleVerifyMfaMethod = (
@@ -130,15 +125,18 @@ export default function Signup(): JSX.Element {
     !isSeedlessOnboardingAppleBlocked && AppleSignInService.isSupported()
 
   const handleGoogleSignin = (): void => {
-    register({
-      getOidcToken: GoogleSigninService.signin,
-      oidcProvider: OidcProviders.GOOGLE,
-      onRegisterMfaMethods: handleRegisterMfaMethods,
-      onVerifyMfaMethod: handleVerifyMfaMethod,
-      onAccountVerified: handleAccountVerified
-    }).catch(() => {
-      showSnackbar('Unable to sign up with Google')
-    })
+    // register({
+    //   getOidcToken: GoogleSigninService.signin,
+    //   oidcProvider: OidcProviders.GOOGLE,
+    //   onRegisterMfaMethods: handleRegisterMfaMethods,
+    //   onVerifyMfaMethod: handleVerifyMfaMethod,
+    //   onAccountVerified: handleAccountVerified
+    // }).catch(() => {
+    //   showSnackbar('Unable to sign up with Google')
+    // })
+
+    // setOidcAuth(oidcAuth)
+    router.navigate('./addRecoveryMethods')
   }
 
   const handleAppleSignin = (): void => {
