@@ -90,6 +90,9 @@ const AvatarBase: FC<AvatarBaseProps> = ({
     )
   }
 
+  const borderWidth = showBorder ? 0.5 : 0
+  const borderColor = showBorder ? '$neutral800' : 'unset'
+
   return logoUri?.endsWith('svg') && !isContentfulImageUri(logoUri) ? (
     <SvgUri
       uri={logoUri}
@@ -97,7 +100,9 @@ const AvatarBase: FC<AvatarBaseProps> = ({
       height={size}
       style={{
         borderRadius: size,
-        backgroundColor: backgroundColor
+        backgroundColor: backgroundColor,
+        borderWidth,
+        borderColor
       }}
       onLoad={() => setFailedToLoad(false)}
       onError={() => setFailedToLoad(true)}
@@ -109,7 +114,9 @@ const AvatarBase: FC<AvatarBaseProps> = ({
         borderRadius: size,
         width: size,
         height: size,
-        backgroundColor: backgroundColor
+        backgroundColor: backgroundColor,
+        borderWidth,
+        borderColor
       }}
       source={{
         uri: isContentfulImageUri(logoUri)
@@ -131,6 +138,7 @@ interface TokenAvatarProps {
   size?: number
   testID?: string
   backgroundColor?: string
+  showBorder?: boolean
 }
 
 const TokenAvatar: FC<TokenAvatarProps> = props => {
@@ -141,6 +149,7 @@ const TokenAvatar: FC<TokenAvatarProps> = props => {
       tokenSymbol={props.symbol}
       testID={props.symbol}
       backgroundColor={props.backgroundColor}
+      showBorder={props.showBorder}
     />
   )
 }
