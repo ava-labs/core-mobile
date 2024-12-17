@@ -2,40 +2,30 @@ import React, { useState } from 'react'
 import { View, Text, Button } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
-import {
-  selectIsSeedlessMfaAuthenticatorBlocked,
-  selectIsSeedlessMfaPasskeyBlocked,
-  selectIsSeedlessMfaYubikeyBlocked
-} from 'store/posthog'
-import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSeedlessOidcContext } from 'new/contexts/SeedlessOidcProvider'
-import { RecoveryMethod } from './onboarding/addRecoveryMethods/types'
-import { RecoveryMethodList } from './onboarding/addRecoveryMethods/conponents/RecoveryMethodList'
-import { RECOVERY_METHODS } from './onboarding/addRecoveryMethods/consts'
+import {
+  RecoveryMethods,
+  useAvailableRecoveryMethods
+} from 'new/hooks/useAvailableRecoveryMethods'
+import { RecoveryMethodList } from '../components/RecoveryMethodList'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { onAccountVerified, allowsUserToAddLater } = useSeedlessOidcContext()
+  const { oidcAuth, onAccountVerified, allowsUserToAddLater } =
+    useSeedlessOidcContext()
+  const availableRecoveryMethods = useAvailableRecoveryMethods()
 
-  const isSeedlessMfaPasskeyBlocked = useSelector(
-    selectIsSeedlessMfaPasskeyBlocked
+  const [selectedMethod, setSelectedMethod] = useState(
+    availableRecoveryMethods.length > 0
+      ? availableRecoveryMethods[0]?.type
+      : undefined
   )
-  const isSeedlessMfaAuthenticatorBlocked = useSelector(
-    selectIsSeedlessMfaAuthenticatorBlocked
-  )
-  const isSeedlessMfaYubikeyBlocked = useSelector(
-    selectIsSeedlessMfaYubikeyBlocked
-  )
-
-  // const defaultRecoveryMethod = !isSeedlessMfaPasskeyBlocked ? RecoveryMethod.Passkey : !isSeedlessMfaAuthenticatorBlocked ? RecoveryMethod.Authenticator : !isSeedlessMfaYubikeyBlocked ? RecoveryMethod.Yubikey : undefined
-
-  const [selectedMethod, setSelectedMethod] = useState(RecoveryMethod.Passkey)
 
   const handleOnPress = (): void => {
-    if (selectedMethod === RecoveryMethod.Passkey) {
+    if (selectedMethod === RecoveryMethods.Passkey) {
       // navigate({
-      //   pathname: '/signup/onboarding/addRecoveryMethods/fidoNameInput',
+      //   pathname: './fidoNameInput',
       //   params: {
       //     title: 'How would you like to name your passkey?',
       //     description: 'Add a Passkey name, so it’s easier to find later',
@@ -45,9 +35,9 @@ const AddRecoveryMethods = (): JSX.Element => {
       // })
       return
     }
-    if (selectedMethod === RecoveryMethod.Yubikey) {
+    if (selectedMethod === RecoveryMethods.Yubikey) {
       // navigate({
-      //   pathname: '/signup/onboarding/addRecoveryMethods/fidoNameInput',
+      //   pathname: './fidoNameInput',
       //   params: {
       //     title: 'How would you like to name your YubiKey?',
       //     description: 'Add a YubiKey name, so it’s easier to find later',
@@ -57,8 +47,8 @@ const AddRecoveryMethods = (): JSX.Element => {
       // })
       return
     }
-    if (selectedMethod === RecoveryMethod.Authenticator) {
-      navigate('./authenticatorSetup')
+    if (selectedMethod === RecoveryMethods.Authenticator) {
+      navigate('./authenticator/setup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
   }
@@ -82,15 +72,19 @@ const AddRecoveryMethods = (): JSX.Element => {
           </Text>
           <RecoveryMethodList
             selectedMethod={selectedMethod}
-            data={RECOVERY_METHODS}
+            data={availableRecoveryMethods}
             onPress={setSelectedMethod}
           />
         </View>
         <View sx={{ gap: 16, marginBottom: 36 }}>
-          <Button type="primary" size="large" onPress={handleOnPress}>
+          <Button
+            type="primary"
+            size="large"
+            onPress={handleOnPress}
+            disabled={availableRecoveryMethods.length === 0}>
             Next
           </Button>
-          {allowsUserToAddLater && (
+          {oidcAuth === undefined && allowsUserToAddLater === true && (
             <Button type="tertiary" size="large" onPress={onAccountVerified}>
               Skip
             </Button>

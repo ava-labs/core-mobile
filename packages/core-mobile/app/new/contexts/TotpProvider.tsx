@@ -10,8 +10,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import useSeedlessManageMFA from 'seedless/hooks/useSeedlessManageMFA'
-import useVerifyMFA from 'seedless/hooks/useVerifyMFA'
 import SeedlessService from 'seedless/services/SeedlessService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
@@ -19,6 +17,7 @@ import { useRouter } from 'expo-router'
 import { copyToClipboard } from 'new/utils/clipboard'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
+import useSeedlessManageMFA from 'new/hooks/useSeedlessManageMFA'
 import { useSeedlessOidcContext } from './SeedlessOidcProvider'
 
 export interface TotpContextState {
@@ -85,7 +84,7 @@ export const TotpProvider = ({
   }
 
   const goToVerifyCode = (): void => {
-    router.navigate('./authenticatorSetup/verifyCode')
+    router.push('./verifyCode')
   }
 
   const onVerifyCode = useCallback(

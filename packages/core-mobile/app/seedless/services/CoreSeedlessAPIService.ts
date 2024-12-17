@@ -4,9 +4,9 @@ import Logger from 'utils/Logger'
 import { CoreSeedlessAPIServiceNoop } from 'seedless/services/CoreSeedlessAPIServiceNoop'
 import { CoreSeedlessApiInterface } from 'seedless/services/types'
 
-// if (!Config.SEEDLESS_URL) {
-//   Logger.warn('SEEDLESS_URL is missing in env file. Seedless is disabled.')
-// }
+if (!Config.SEEDLESS_URL) {
+  Logger.warn('SEEDLESS_URL is missing in env file. Seedless is disabled.')
+}
 
 if (!Config.SEEDLESS_API_KEY) {
   Logger.warn('SEEDLESS_API_KEY is missing in env file. Seedless is disabled.')
@@ -30,7 +30,7 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
   ): Promise<SeedlessUserRegistrationResult> {
     try {
       const response = await fetch(
-        'http://localhost:3000' + '/v1/register?mfa-required=false',
+        Config.SEEDLESS_URL + '/v1/register?mfa-required=false',
         {
           method: 'POST',
           body: JSON.stringify(identityProof),

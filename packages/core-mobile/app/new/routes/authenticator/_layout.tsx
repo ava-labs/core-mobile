@@ -6,7 +6,7 @@ export default function AuthenticatorSetupLayout(): JSX.Element {
   return (
     <TotpProvider>
       <Stack>
-        <Stack.Screen name="authenticatorSetup" />
+        <Stack.Screen name="setup" />
         <Stack.Screen name="scanQrCode" />
         <Stack.Screen name="copyCode" />
         <Stack.Screen name="verifyCode" />

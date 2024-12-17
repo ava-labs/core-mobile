@@ -10,7 +10,10 @@ import {
   Icons,
   Separator
 } from '@avalabs/k2-alpine'
-import { RecoveryMethod, RecoveryMethodData } from '../types'
+import {
+  RecoveryMethod,
+  RecoveryMethods
+} from 'new/hooks/useAvailableRecoveryMethods'
 
 export const RecoveryMethodList = ({
   selectedMethod,
@@ -18,15 +21,15 @@ export const RecoveryMethodList = ({
   sx,
   onPress
 }: {
-  selectedMethod: RecoveryMethod
-  data: RecoveryMethodData[]
+  selectedMethod?: RecoveryMethods
+  data: RecoveryMethod[]
   sx?: SxProp
-  onPress: (type: RecoveryMethod) => void
-}): React.JSX.Element => {
+  onPress: (type: RecoveryMethods) => void
+}): React.JSX.Element | undefined => {
   const {
     theme: { colors }
   } = useTheme()
-  const renderItem = (item: RecoveryMethodData): React.JSX.Element => {
+  const renderItem = (item: RecoveryMethod): React.JSX.Element => {
     const isSelected = selectedMethod === item.type
     const isLastItem = data.indexOf(item) === data.length - 1
     const Icon = item.icon
@@ -101,14 +104,18 @@ export const RecoveryMethodList = ({
     )
   }
 
+  if (data.length === 0) {
+    return undefined
+  }
+
   return (
     <Card sx={{ paddingRight: 0, ...sx }}>
       <FlatList
         scrollEnabled={false}
         sx={{ width: '100%', backgroundColor: '$surfaceSecondary' }}
         data={data}
-        renderItem={item => renderItem(item.item as RecoveryMethodData)}
-        keyExtractor={item => (item as RecoveryMethodData).type}
+        renderItem={item => renderItem(item.item as RecoveryMethod)}
+        keyExtractor={item => (item as RecoveryMethod).type}
       />
     </Card>
   )

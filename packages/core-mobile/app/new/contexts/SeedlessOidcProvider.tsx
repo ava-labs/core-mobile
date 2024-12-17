@@ -22,7 +22,6 @@ export const SeedlessOidcProvider = ({
 }: {
   children: ReactNode
 }): React.JSX.Element => {
-  // const [totpChallenge, setTotpChallenge] = useState<TotpChallenge>()
   const router = useRouter()
   const [oidcAuth, setOidcAuth] = useState<OidcAuth>()
   const [allowsUserToAddLater, setAllowsUserToAddLater] = useState(true)
@@ -32,7 +31,6 @@ export const SeedlessOidcProvider = ({
     const walletName = await SeedlessService.getAccountName()
     hideLogoModal()
 
-    console.log('onAccountVerified', withMfa)
     if (withMfa) {
       showSnackbar('Recovery methods added successfully')
     }

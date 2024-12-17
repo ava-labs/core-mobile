@@ -92,7 +92,7 @@ export default function RootLayout(): JSX.Element | null {
                 name="signup"
                 options={{ animationEnabled: false }}
               />
-              {/* <Stack.Screen name="accessWallet" /> */}
+              <Stack.Screen name="accessWallet" />
               <Stack.Screen
                 name="(signedIn)"
                 options={{
