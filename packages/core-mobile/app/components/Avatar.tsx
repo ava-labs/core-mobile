@@ -119,6 +119,7 @@ const AvatarBase: FC<AvatarBaseProps> = ({
       onLoad={() => setFailedToLoad(false)}
       onError={() => setFailedToLoad(true)}
       testID="avatar__logo_avatar"
+      contentFit="contain"
     />
   )
 }
@@ -129,6 +130,7 @@ interface TokenAvatarProps {
   logoUri: string | undefined
   size?: number
   testID?: string
+  backgroundColor?: string
 }
 
 const TokenAvatar: FC<TokenAvatarProps> = props => {
@@ -138,6 +140,7 @@ const TokenAvatar: FC<TokenAvatarProps> = props => {
       title={props.name}
       tokenSymbol={props.symbol}
       testID={props.symbol}
+      backgroundColor={props.backgroundColor}
     />
   )
 }

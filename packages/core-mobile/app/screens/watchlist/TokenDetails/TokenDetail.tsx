@@ -180,6 +180,7 @@ const TokenDetail: FC = () => {
                 symbol={symbol}
                 logoUri={logoUri}
                 size={48}
+                backgroundColor="white"
               />
             )
           }
