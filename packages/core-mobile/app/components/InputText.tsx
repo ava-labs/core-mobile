@@ -9,7 +9,8 @@ import {
   TextInputFocusEventData,
   TextStyle,
   ViewStyle,
-  LayoutChangeEvent
+  LayoutChangeEvent,
+  KeyboardTypeOptions
 } from 'react-native'
 import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
@@ -60,7 +61,7 @@ export type InputTextProps = {
   // Private - Hides input, shows toggle button to show input, neon color border. Will disable multiline.
   mode?: Mode
   // Set keyboard type (numeric, text)
-  keyboardType?: 'numeric'
+  keyboardType?: KeyboardTypeOptions
   // shows popover info if provided
   popOverInfoText?: string | React.ReactElement
   popOverPosition?: 'left' | 'right' | 'top' | 'bottom'
@@ -126,6 +127,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       testID
     },
     ref
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ) => {
     const [showInput, setShowInput] = useState(false)
     const [toggleShowText, setToggleShowText] = useState('Show')
@@ -224,8 +226,11 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             autoCapitalize="none"
             placeholder={placeholder}
             placeholderTextColor={colors.$neutral400}
-            blurOnSubmit={true}
-            secureTextEntry={mode === 'private' && !showInput}
+            secureTextEntry={
+              // On Android, setting secureText to false causes the keyboardType to be ignored.
+              // To avoid this issue, secureText is set to undefined instead of false.
+              mode === 'private' && !showInput ? true : undefined
+            }
             onSubmitEditing={submit}
             returnKeyType={onSubmit && 'go'}
             enablesReturnKeyAutomatically={true}

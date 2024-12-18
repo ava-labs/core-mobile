@@ -28,7 +28,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
-import { LayoutAnimation } from 'react-native'
+import { LayoutAnimation, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import {
@@ -206,6 +206,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         <InputText
           mode={'url'}
           onRefresh={handleRefresh}
+          keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
           text={urlEntry}
           autoCorrect={false}
           onChangeText={setUrlEntry}
