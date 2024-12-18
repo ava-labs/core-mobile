@@ -3,6 +3,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { GraphPoint, LineGraph } from 'react-native-graph'
 import { SelectionDot } from 'screens/watchlist/SelectionDot'
 import { hapticFeedback } from 'utils/HapticFeedback'
+import { Platform } from 'react-native'
 import { AxisLabel } from './AxisLabel'
 import {
   NEGATIVE_GRADIENT_FILL_COLORS,
@@ -98,7 +99,7 @@ const SparklineChart: FC<Props> = ({
         width: width,
         height: height
       }}
-      animated={false}
+      animated={Platform.OS === 'ios'}
       color={color}
       lineThickness={lineThickness}
       points={data}

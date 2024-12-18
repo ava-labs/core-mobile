@@ -122,7 +122,8 @@ const RightComponent = ({
   const { dataPoints, ranges } = chartData
 
   const renderMiddleComponent = (): JSX.Element | null => {
-    if (dataPoints.length === 0) return null
+    // If there are less than 2 data points, don't render the sparkline
+    if (dataPoints.length < 2) return null
 
     return <MiddleComponent dataPoints={dataPoints} ranges={ranges} />
   }
