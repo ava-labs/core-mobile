@@ -5,5 +5,6 @@ export default {
   plusButton: 'add_svg',
   signMessage: 'Sign Message',
   accountCheckBox: 'account_check_box',
-  selectAccounts: 'Select Accounts'
+  selectAccounts: 'Select Accounts',
+  selectAccountsId: 'select_accounts'
 }

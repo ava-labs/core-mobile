@@ -1,42 +1,40 @@
-import { test, Page, Browser } from '@playwright/test'
+import { Page, Browser, BrowserContext } from '@playwright/test'
+import PlaygroundPlaywrightPage from '../pages/playgroundPlaywright.page'
+import CommonPlaywrightPage from '../pages/commonPlaywrightEls.page'
+import DappsPlaywrightPage from '../pages/dappsPlaywright.page'
 const { chromium } = require('playwright-extra')
 const stealth = require('puppeteer-extra-plugin-stealth')()
 chromium.use(stealth)
 
-export const warmupWeb = async () => {
-  const browser = await chromium.launch({ headless: false })
-  const context = await browser.newContext({
+let sharedContext: BrowserContext | null = null
+
+export const playwrightSetup = async (saveContext = false) => {
+  const browser: Browser = await chromium.launch({ headless: false })
+  const context: BrowserContext = await browser.newContext({
     permissions: ['clipboard-read']
   })
-  const page = await context.newPage()
-  return { browser, page }
+  const page: Page = await context.newPage()
+  if (saveContext) {
+    sharedContext = context
+  }
+  const playground = new PlaygroundPlaywrightPage(page)
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
+  return { browser, page, sharedContext, playground, common, dapps }
 }
 
-export const playwrightSetup = () => {
-  let browser: Browser | null = null
-  let page: Page | null = null
-
-  test.beforeAll(async () => {
-    const context = await warmupWeb()
-    browser = context.browser
-    page = context.page
-    console.log('Starting Playwright test...')
-  })
-
-  test.afterAll(async () => {
-    if (browser) {
-      await browser.close()
-      browser = null
-      page = null
-    }
-    console.log('Closing Playwright test...')
-  })
-
-  return () => {
-    if (page !== null && browser !== null) {
-      return { browser, page }
-    } else {
-      throw new Error('Page is not initialized or invalid type.')
-    }
+export const getCurrentContext = async () => {
+  if (!sharedContext) {
+    throw new Error(
+      'sharedContext is not initialized. Ensure it is set before calling getCurrentContext.'
+    )
   }
+  const page = await sharedContext.newPage()
+  if (!page) {
+    throw new Error('Failed to create a new page.')
+  }
+  const playground = new PlaygroundPlaywrightPage(page)
+  const common = new CommonPlaywrightPage(page)
+  const dapps = new DappsPlaywrightPage(page)
+  return { sharedContext, page, playground, common, dapps }
 }

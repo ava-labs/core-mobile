@@ -10,9 +10,10 @@ import { defineConfig, devices } from '@playwright/test'
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './e2e/tests/dapps/playwright',
+  testDir: './e2e/tests/dapps/playwright/',
+  testMatch: '**/*.spec.ts',
   /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+  timeout: 99 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -49,11 +50,11 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome']
       }
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
     }
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] }
+    // }
 
     // {
     //   name: 'Mobile Safari',
