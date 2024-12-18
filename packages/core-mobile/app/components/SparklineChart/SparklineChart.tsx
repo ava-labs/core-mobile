@@ -3,7 +3,6 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { GraphPoint, LineGraph } from 'react-native-graph'
 import { SelectionDot } from 'screens/watchlist/SelectionDot'
 import { hapticFeedback } from 'utils/HapticFeedback'
-import { Platform } from 'react-native'
 import { AxisLabel } from './AxisLabel'
 import {
   NEGATIVE_GRADIENT_FILL_COLORS,
@@ -99,13 +98,10 @@ const SparklineChart: FC<Props> = ({
         width: width,
         height: height
       }}
-      // The graph rendering too small appears to be an iOS-specific issue.
-      // Adjusting the layout didn't fix the bug, but setting animated to true seems to resolve it based on experiments.
-      animated={Platform.OS === 'ios'}
+      animated={false}
       color={color}
       lineThickness={lineThickness}
       points={data}
-      gradientFillColors={gradientFillColors}
       testID="line_graph"
     />
   )
