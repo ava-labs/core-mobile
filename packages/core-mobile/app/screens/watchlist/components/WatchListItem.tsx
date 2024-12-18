@@ -91,12 +91,14 @@ const LeftComponent = ({
           <Space x={9} />
         </>
       )}
-      <Avatar.Custom
+      <Avatar.Token
         name={name}
         symbol={symbol}
         logoUri={logoUri}
         size={32}
         testID={`${name}`}
+        backgroundColor="white"
+        showBorder
       />
     </View>
   )

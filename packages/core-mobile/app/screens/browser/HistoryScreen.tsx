@@ -7,6 +7,7 @@ import React from 'react'
 import { History } from 'store/browser'
 import SearchBar from 'components/SearchBar'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
+import { Platform } from 'react-native'
 import { HistoryListItem } from './components/HistoryListItem'
 import { NoHistory } from './components/NoHistory'
 import { SearchNotFound } from './components/SearchNotFound'
@@ -40,6 +41,7 @@ export const HistoryScreen = (): JSX.Element => {
           searchText={searchText}
           placeholder="Search or Type URL"
           textColor={colors.$white}
+          keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
         />
         {hasSearchResult ? (
           <>

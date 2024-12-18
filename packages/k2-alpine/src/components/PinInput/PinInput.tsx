@@ -15,7 +15,7 @@ import { TouchableOpacity } from '../Primitives'
 import { useTheme } from '../..'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
-  ({ value, onChangePin, length = 6, style }, ref) => {
+  ({ value, onChangePin, length = 6, disabled, style }, ref) => {
     const textInputRef = useRef<TextInput>(null)
     const wrongPinAnimation = useSharedValue(0)
     const loadingDotAnimations = useLoadingDotAnimations(length)
@@ -53,14 +53,16 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       runOnJS(triggerAnimations)()
     }
 
-    const stopLoadingAnimation = (onComplete: () => void): void => {
+    const stopLoadingAnimation = (onComplete?: () => void): void => {
       isLoading.value = false
       loadingDotAnimations.forEach(animation => {
         cancelAnimation(animation)
         animation.value = 0
       })
 
-      runOnJS(onComplete)()
+      if (onComplete) {
+        runOnJS(onComplete)()
+      }
     }
 
     const fireWrongPinAnimation = (onComplete: () => void): void => {
@@ -144,6 +146,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
     useImperativeHandle(ref, () => ({
       focus: () => textInputRef.current?.focus(),
       blur: () => textInputRef.current?.blur(),
+      isFocused: () => textInputRef.current?.isFocused() ?? false,
       fireWrongPinAnimation,
       startLoadingAnimation,
       stopLoadingAnimation
@@ -151,6 +154,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
 
     return (
       <TouchableOpacity
+        disabled={disabled}
         onPress={() => textInputRef.current?.focus()}
         activeOpacity={1}>
         {/* Hidden TextInput for capturing input */}
@@ -196,9 +200,10 @@ PinInput.displayName = 'PinInput'
 export type PinInputActions = {
   focus: () => void
   blur: () => void
+  isFocused: () => boolean
   fireWrongPinAnimation: (onComplete: () => void) => void
   startLoadingAnimation: () => void
-  stopLoadingAnimation: (onComplete: () => void) => void
+  stopLoadingAnimation: (onComplete?: () => void) => void
 }
 
 type PinInputProps = {
@@ -206,6 +211,7 @@ type PinInputProps = {
   onChangePin: (pin: string) => void
   length?: 6 | 8
   style?: ViewStyle
+  disabled?: boolean
 }
 
 const AnimatedDot = ({

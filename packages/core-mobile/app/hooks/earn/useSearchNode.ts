@@ -42,8 +42,10 @@ export const useSearchNode = ({
       stakingAmount,
       stakingEndTime,
       minUpTime: 98,
+      maxFee: 4,
       isEndTimeOverOneYear
     })
+
     if (filteredValidators.length === 0) {
       Logger.info(noMatchError.message)
       return { validator: undefined, error: noMatchError }
