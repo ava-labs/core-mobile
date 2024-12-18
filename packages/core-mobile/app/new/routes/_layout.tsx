@@ -112,6 +112,7 @@ export default function RootLayout(): JSX.Element | null {
               />
               <Stack.Screen name="forgotPin" />
               <Stack.Screen name="+not-found" />
+              <Stack.Screen name="(totp)" />
             </Stack>
             {enabledPrivacyScreen && <LogoModal />}
           </SignupProvider>

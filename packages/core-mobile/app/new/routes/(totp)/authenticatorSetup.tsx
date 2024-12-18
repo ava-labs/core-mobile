@@ -3,20 +3,23 @@ import { useSignupContext } from 'new/contexts/SignupProvider'
 import useSeedlessManageMFA from 'new/hooks/useSeedlessManageMFA'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
-import { AuthenticatorSetup as AuthenticatorSetupComponent } from '../components/AuthenticatorSetup'
-import { Loader } from '../components/Loader'
+import { useRouter } from 'expo-router'
+import { AuthenticatorSetup as AuthenticatorSetupComponent } from '../../components/totp/AuthenticatorSetup'
+import { Loader } from '../../components/totp/Loader'
 
 export default function AuthenticatorSetup(): JSX.Element {
-  const {
-    totpKey,
-    goToScanQrCode,
-    handleCopyCode,
-    goToVerifyCode,
-    totpChallenge,
-    setTotpChallenge
-  } = useSignupContext()
-
+  const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =
+    useSignupContext()
+  const router = useRouter()
   const { totpResetInit } = useSeedlessManageMFA()
+
+  const goToVerifyCode = (): void => {
+    router.push('./verifyCode')
+  }
+
+  const goToScanQrCode = (): void => {
+    router.navigate('./scanQrCode')
+  }
 
   useEffect(() => {
     const initChallenge = async (): Promise<void> => {

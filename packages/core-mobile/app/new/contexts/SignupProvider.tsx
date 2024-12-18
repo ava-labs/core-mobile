@@ -20,13 +20,9 @@ import { OidcAuth } from 'new/types'
 
 export interface SignupContextState {
   handleAccountVerified: () => Promise<void>
-  handleBack: () => void
   handleCopyCode: () => void
   onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
   onVerifySuccess: () => void
-  goToEnterCodeManually: () => void
-  goToScanQrCode: () => void
-  goToVerifyCode: () => void
   totpKey?: string
   totpChallenge?: TotpChallenge
   setTotpChallenge: Dispatch<SetStateAction<TotpChallenge | undefined>>
@@ -59,22 +55,6 @@ export const SignupProvider = ({
   const handleCopyCode = useCallback((): void => {
     totpKey && copyToClipboard(totpKey, 'Code copied')
   }, [totpKey])
-
-  const handleBack = useCallback((): void => {
-    router.canGoBack() && router.back()
-  }, [router])
-
-  const goToEnterCodeManually = (): void => {
-    router.navigate('./copyCode')
-  }
-
-  const goToScanQrCode = (): void => {
-    router.navigate('./scanQrCode')
-  }
-
-  const goToVerifyCode = (): void => {
-    router.push('./verifyCode')
-  }
 
   const onVerifyCode = useCallback(
     async (code: string): Promise<Result<undefined, TotpErrors>> => {
@@ -116,13 +96,9 @@ export const SignupProvider = ({
 
   const state: SignupContextState = {
     handleAccountVerified,
-    handleBack,
     handleCopyCode,
     onVerifyCode,
     onVerifySuccess,
-    goToEnterCodeManually,
-    goToScanQrCode,
-    goToVerifyCode,
     totpKey,
     totpChallenge,
     setTotpChallenge,

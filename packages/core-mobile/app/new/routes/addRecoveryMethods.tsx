@@ -48,7 +48,7 @@ const AddRecoveryMethods = (): JSX.Element => {
       return
     }
     if (selectedMethod === RecoveryMethods.Authenticator) {
-      navigate('./totp/authenticatorSetup')
+      navigate('./authenticatorSetup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
   }
