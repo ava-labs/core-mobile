@@ -1,13 +1,13 @@
-import React, { PropsWithChildren, ReactElement } from 'react'
+import React, { PropsWithChildren, ReactElement, useContext } from 'react'
 import { View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs'
 
 const BlurredBarsContentLayout: React.FC<PropsWithChildren> = ({
   children
 }): JSX.Element => {
   const headerHeight = useHeaderHeight()
-  const bottomTabBarHeight = useBottomTabBarHeight()
+  const bottomTabBarHeight = useContext(BottomTabBarHeightContext)
 
   const styledChildren = React.Children.map(children, child => {
     if (React.isValidElement(child)) {

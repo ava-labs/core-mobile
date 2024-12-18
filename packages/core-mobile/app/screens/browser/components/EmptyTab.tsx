@@ -20,7 +20,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
-import { Dimensions } from 'react-native'
+import { Dimensions, Platform } from 'react-native'
 import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
@@ -160,7 +160,7 @@ export const EmptyTab = (): JSX.Element => {
       }}>
       <View style={{ flexDirection: 'row' }}>
         <SearchBar
-          returnKeyType="done"
+          keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
           setSearchBarFocused={setIsFocused}
           onTextChanged={setSearchText}
           searchText={searchText}

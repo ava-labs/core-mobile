@@ -1,41 +1,25 @@
-import { useRouter } from 'expo-router'
-import { View, Button } from '@avalabs/k2-alpine'
+import { useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
-import { showNotificationAlert, showSnackbar } from 'new/utils/toast'
+import { View } from 'react-native'
 
-export default function Index(): JSX.Element {
-  const { navigate } = useRouter()
-
-  const handleSignIn = (): void => {
-    navigate('/portfolio/')
-
-    showSnackbar('Welcome back!')
-  }
-
-  const handleSignUp = (): void => {
-    navigate('/signup/')
-
-    showNotificationAlert({
-      type: 'success',
-      title: 'Sign up',
-      message: 'Sign up button pressed'
-    })
-  }
+// Added a blank screen at the top level to address a flicker issue during walletState-based navigation.
+// The flicker (brief on Android, hardly noticeable on iOS) couldn't be eliminated entirely,
+// so the blank screen serves as a workaround.
+function IndexScreen(): JSX.Element {
+  const { theme } = useTheme()
 
   return (
     <View
       style={{
-        flex: 1,
+        width: '100%',
+        height: '100%',
+        backgroundColor: theme.colors.$surfacePrimary,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 16
-      }}>
-      <Button type="primary" size="medium" onPress={handleSignIn}>
-        Sign in
-      </Button>
-      <Button type="primary" size="medium" onPress={handleSignUp}>
-        Sign up
-      </Button>
-    </View>
+        position: 'absolute'
+      }}
+    />
   )
 }
+
+export default IndexScreen

@@ -233,6 +233,7 @@ __metadata:
     "@react-native-firebase/app-check": 21.0.0
     "@react-native-firebase/messaging": 21.0.0
     "@react-native-google-signin/google-signin": 13.1.0
+    "@react-native-masked-view/masked-view": 0.3.0
     "@react-native-menu/menu": 1.1.3
     "@react-native/babel-preset": 0.73.21
     "@react-native/metro-config": 0.73.5
@@ -305,6 +306,7 @@ __metadata:
     expo: 50.0.21
     expo-blur: 12.9.2
     expo-constants: 15.4.6
+    expo-image: 1.10.6
     expo-linking: 6.2.2
     expo-router: 3.4.10
     expo-status-bar: 1.11.1
@@ -343,7 +345,6 @@ __metadata:
     react-native-collapsible: 1.6.2
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
-    react-native-fast-image: 8.6.3
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.20.0
     react-native-graph: 1.1.0
@@ -555,6 +556,8 @@ __metadata:
     tinycolor2: 1.6.0
     typescript: 5.6.3
   peerDependencies:
+    "@react-native-masked-view/masked-view": 0.3.0
+    expo-image: 1.10.6
     react: 18.3.1
     react-native: 0.73.7
     react-native-reanimated: 3.6.2
@@ -26121,16 +26124,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-fast-image@npm:8.6.3":
-  version: 8.6.3
-  resolution: "react-native-fast-image@npm:8.6.3"
-  peerDependencies:
-    react: ^17 || ^18
-    react-native: ">=0.60.0"
-  checksum: 29289cb6b2eae0983c8922b22e2d9de3be07322bb7991c5def19f95eadefaedb0e308ff0b38cc1d0444e8bd4fe94a7621a99a2d3d9298100bcb60b3144677234
-  languageName: node
-  linkType: hard
-
 "react-native-flipper@npm:^0.164.0":
   version: 0.164.0
   resolution: "react-native-flipper@npm:0.164.0"
@@ -26667,7 +26660,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 6e268fad7aa8b8e56fd28cc95f94f35a33fdac4cec0085ae71a766d092760e3f9af35218706113ff7ae99a74baabc5112d32005dce9e66bdf4fda676fad9aa4e
+  checksum: 0efa24aa4da8f418f515b6be88e91948284856000fe5fde7026fa63ee814d84e7b7fbc1e8b8d98bc1833c05c9740a9fe2edf15b0909b77b4d012db22b75f5370
   languageName: node
   linkType: hard
 

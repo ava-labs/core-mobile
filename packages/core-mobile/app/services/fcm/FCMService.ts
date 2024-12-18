@@ -6,6 +6,7 @@ import {
   BalanceChangeEvents,
   NotificationsBalanceChangeSchema
 } from 'services/fcm/types'
+import { Platform } from 'react-native'
 
 type UnsubscribeFunc = () => void
 
@@ -59,6 +60,10 @@ class FCMService {
   listenForMessagesBackground = (): void => {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       Logger.info('A new FCM message arrived in background', remoteMessage)
+      if (Platform.OS === 'android') {
+        //skip for android, FCM sdk handles this already
+        return
+      }
       const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
       if (!result.success) {
         Logger.error(

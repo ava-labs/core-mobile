@@ -206,6 +206,20 @@ workflows:
         - tag: default
         - abi: x86_64
         - profile: pixel_4
+  _install-old-android-version:
+    steps:
+    - script-runner@0:
+        title: Update Android Test
+        is_always_run: true
+        inputs:
+        - file_path: e2e/tests/updateAppVersion/loginWithOlderVersion.sh
+  _install-latest-android-version:
+    steps:
+    - script-runner@0:
+        title: Update Android Test
+        is_always_run: true
+        inputs:
+        - file_path: e2e/tests/updateAppVersion/updateToLatestVersion.sh
   _pull_app_files:
     steps:
     - pull-intermediate-files@1:
@@ -437,6 +451,7 @@ workflows:
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
     - share-pipeline-variable@1:
         inputs:
+        - is_skippable: true
         - variables: |- 
             APP_VERSION=$APP_VERSION
             BUILD_NUMBER=$BUILD_NUMBER
@@ -776,6 +791,8 @@ workflows:
     - _pull_external_app_files
     after_run:
     - _run_android_detox_tests
+    - _install-old-android-version
+    - _install-latest-android-version
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
