@@ -99,6 +99,8 @@ const SparklineChart: FC<Props> = ({
         width: width,
         height: height
       }}
+      // The graph rendering too small appears to be an iOS-specific issue.
+      // Adjusting the layout didn't fix the bug, but setting animated to true seems to resolve it based on experiments.
       animated={Platform.OS === 'ios'}
       color={color}
       lineThickness={lineThickness}
