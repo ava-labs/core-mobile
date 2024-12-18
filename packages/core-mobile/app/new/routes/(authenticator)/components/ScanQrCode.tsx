@@ -2,14 +2,20 @@ import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsConte
 import React from 'react'
 import { View, Text, Button, useTheme } from '@avalabs/k2-alpine'
 import QRCode from 'react-native-qrcode-svg'
-import { useTotpContext } from 'new/contexts/TotpProvider'
+import { TotpChallenge } from '@cubist-labs/cubesigner-sdk'
 
 const qrCodeContainerSize = 260
 const qrCodeSize = qrCodeContainerSize - 40
 
-export default function ScanQrCode(): JSX.Element {
-  const { goToVerifyCode, goToEnterCodeManually, totpChallenge } =
-    useTotpContext()
+export const ScanQrCode = ({
+  totpChallenge,
+  onEnterCodeManually,
+  onVerifyCode
+}: {
+  totpChallenge?: TotpChallenge
+  onEnterCodeManually: () => void
+  onVerifyCode: () => void
+}): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
@@ -54,12 +60,12 @@ export default function ScanQrCode(): JSX.Element {
             type="secondary"
             size="medium"
             style={{ width: 220, alignSelf: 'center' }}
-            onPress={goToEnterCodeManually}>
+            onPress={onEnterCodeManually}>
             Enter code manually
           </Button>
         </View>
         <View sx={{ gap: 16, marginBottom: 36 }}>
-          <Button type="primary" size="large" onPress={goToVerifyCode}>
+          <Button type="primary" size="large" onPress={onVerifyCode}>
             Next
           </Button>
         </View>

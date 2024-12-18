@@ -15,11 +15,11 @@ import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'new/utils/toast'
-import { useSeedlessOidcContext } from 'new/contexts/SeedlessOidcProvider'
+import { useSignupContext } from 'new/contexts/SignupProvider'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
-  const { setOidcAuth, onAccountVerified } = useSeedlessOidcContext()
+  const { setOidcAuth, handleAccountVerified } = useSignupContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -109,7 +109,7 @@ export default function Signup(): JSX.Element {
       oidcProvider: OidcProviders.GOOGLE,
       onRegisterMfaMethods: handleRegisterMfaMethods,
       onVerifyMfaMethod: handleVerifyMfaMethod,
-      onAccountVerified
+      onAccountVerified: handleAccountVerified
     }).catch(() => {
       showSnackbar('Unable to sign up with Google')
     })
@@ -121,7 +121,7 @@ export default function Signup(): JSX.Element {
       oidcProvider: OidcProviders.APPLE,
       onRegisterMfaMethods: handleRegisterMfaMethods,
       onVerifyMfaMethod: handleVerifyMfaMethod,
-      onAccountVerified
+      onAccountVerified: handleAccountVerified
     }).catch(() => {
       showSnackbar('Unable to sign up with Apple')
     })

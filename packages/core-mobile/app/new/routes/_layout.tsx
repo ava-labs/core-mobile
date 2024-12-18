@@ -21,7 +21,7 @@ import { Platform } from 'react-native'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import { StackActions } from '@react-navigation/native'
 import { LogoModal } from 'new/components/LogoModal'
-import { SeedlessOidcProvider } from 'new/contexts/SeedlessOidcProvider'
+import { SignupProvider } from 'new/contexts/SignupProvider'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -82,7 +82,7 @@ export default function RootLayout(): JSX.Element | null {
     <K2AlpineThemeProvider>
       <ApplicationContextProvider>
         <NavigationThemeProvider>
-          <SeedlessOidcProvider>
+          <SignupProvider>
             <Stack screenOptions={stackNavigatorScreenOptions}>
               <Stack.Screen
                 name="index"
@@ -114,7 +114,7 @@ export default function RootLayout(): JSX.Element | null {
               <Stack.Screen name="+not-found" />
             </Stack>
             {enabledPrivacyScreen && <LogoModal />}
-          </SeedlessOidcProvider>
+          </SignupProvider>
         </NavigationThemeProvider>
       </ApplicationContextProvider>
       <GlobalToast />

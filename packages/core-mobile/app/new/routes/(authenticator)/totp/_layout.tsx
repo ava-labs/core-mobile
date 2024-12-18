@@ -1,16 +1,16 @@
 import React from 'react'
 import { Stack } from 'new/components/navigation/Stack'
-import { TotpProvider } from 'new/contexts/TotpProvider'
+import { SignupProvider } from 'new/contexts/SignupProvider'
 
-export default function AuthenticatorSetupLayout(): JSX.Element {
+export default function TotpLayout(): JSX.Element {
   return (
-    <TotpProvider>
+    <SignupProvider>
       <Stack>
-        <Stack.Screen name="setup" />
+        <Stack.Screen name="authenticatorSetup" />
         <Stack.Screen name="scanQrCode" />
         <Stack.Screen name="copyCode" />
         <Stack.Screen name="verifyCode" />
       </Stack>
-    </TotpProvider>
+    </SignupProvider>
   )
 }

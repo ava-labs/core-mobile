@@ -11,11 +11,18 @@ import {
   TouchableOpacity,
   ActivityIndicator
 } from '@avalabs/k2-alpine'
-import { useTotpContext } from 'new/contexts/TotpProvider'
 
-export default function AuthenticatorSetup(): JSX.Element {
-  const { totpKey, goToScanQrCode, handleCopyCode, goToVerifyCode } =
-    useTotpContext()
+export const AuthenticatorSetup = ({
+  totpKey,
+  onScanQrCode,
+  onCopyCode,
+  onVerifyCode
+}: {
+  totpKey: string
+  onScanQrCode: () => void
+  onCopyCode: () => void
+  onVerifyCode: () => void
+}): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
@@ -38,7 +45,7 @@ export default function AuthenticatorSetup(): JSX.Element {
           </Text>
           <Card sx={{ paddingRight: 0, marginTop: 34 }}>
             <TouchableOpacity
-              onPress={handleCopyCode}
+              onPress={onCopyCode}
               sx={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -87,7 +94,7 @@ export default function AuthenticatorSetup(): JSX.Element {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={goToScanQrCode}
+              onPress={onScanQrCode}
               sx={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -126,7 +133,7 @@ export default function AuthenticatorSetup(): JSX.Element {
           </Card>
         </View>
         <View sx={{ marginBottom: 36 }}>
-          <Button type="primary" size="large" onPress={goToVerifyCode}>
+          <Button type="primary" size="large" onPress={onVerifyCode}>
             Next
           </Button>
         </View>

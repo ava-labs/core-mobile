@@ -3,17 +3,17 @@ import { View, Text, Button } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useSeedlessOidcContext } from 'new/contexts/SeedlessOidcProvider'
 import {
   RecoveryMethods,
   useAvailableRecoveryMethods
 } from 'new/hooks/useAvailableRecoveryMethods'
+import { useSignupContext } from 'new/contexts/SignupProvider'
 import { RecoveryMethodList } from '../components/RecoveryMethodList'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { oidcAuth, onAccountVerified, allowsUserToAddLater } =
-    useSeedlessOidcContext()
+  const { oidcAuth, handleAccountVerified, allowsUserToAddLater } =
+    useSignupContext()
   const availableRecoveryMethods = useAvailableRecoveryMethods()
 
   const [selectedMethod, setSelectedMethod] = useState(
@@ -48,7 +48,7 @@ const AddRecoveryMethods = (): JSX.Element => {
       return
     }
     if (selectedMethod === RecoveryMethods.Authenticator) {
-      navigate('./authenticator/setup')
+      navigate('./totp/authenticatorSetup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
   }
@@ -85,7 +85,10 @@ const AddRecoveryMethods = (): JSX.Element => {
             Next
           </Button>
           {oidcAuth === undefined && allowsUserToAddLater === true && (
-            <Button type="tertiary" size="large" onPress={onAccountVerified}>
+            <Button
+              type="tertiary"
+              size="large"
+              onPress={handleAccountVerified}>
               Skip
             </Button>
           )}

@@ -1,20 +1,19 @@
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import React from 'react'
 import { View, Text, Button, useTheme, Card, Icons } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
-import { useTotpContext } from 'new/contexts/TotpProvider'
+import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 
-export default function CopyCode(): JSX.Element {
-  const { totpKey } = useTotpContext()
-  const { handleCopyCode } = useTotpContext()
-  const { canGoBack, back } = useRouter()
+export const CopyCode = ({
+  totpKey,
+  onCopyCode,
+  onBack
+}: {
+  totpKey: string
+  onCopyCode: () => void
+  onBack: () => void
+}): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-
-  const handleBack = (): void => {
-    canGoBack() && back()
-  }
 
   return (
     <BlurredBarsContentLayout>
@@ -50,7 +49,7 @@ export default function CopyCode(): JSX.Element {
               </Text>
             </View>
 
-            <Button type="secondary" size="small" onPress={handleCopyCode}>
+            <Button type="secondary" size="small" onPress={onCopyCode}>
               copy
             </Button>
           </Card>
@@ -121,7 +120,7 @@ export default function CopyCode(): JSX.Element {
           </View>
         </View>
         <View sx={{ gap: 16, marginBottom: 36 }}>
-          <Button type="primary" size="large" onPress={handleBack}>
+          <Button type="primary" size="large" onPress={onBack}>
             Back
           </Button>
         </View>

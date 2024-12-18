@@ -11,10 +11,16 @@ import {
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import { TextInput as RNTextInput } from 'react-native'
-import { useTotpContext } from 'new/contexts/TotpProvider'
+import { Result } from 'types/result'
+import { TotpErrors } from 'seedless/errors'
 
-export default function VerifyCode(): JSX.Element {
-  const { onVerifyCode, onVerifySuccess } = useTotpContext()
+export const VerifyCode = ({
+  onVerifyCode,
+  onVerifySuccess
+}: {
+  onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
+  onVerifySuccess: () => void
+}): React.JSX.Element => {
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState('')
   const [showError, setShowError] = useState(false)

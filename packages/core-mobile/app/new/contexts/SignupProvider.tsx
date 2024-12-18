@@ -6,21 +6,21 @@ import React, {
   SetStateAction,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState
 } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import Logger from 'utils/Logger'
 import { useRouter } from 'expo-router'
 import { copyToClipboard } from 'new/utils/clipboard'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
-import useSeedlessManageMFA from 'new/hooks/useSeedlessManageMFA'
-import { useSeedlessOidcContext } from './SeedlessOidcProvider'
+import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
+import { OidcAuth } from 'new/types'
 
-export interface TotpContextState {
+export interface SignupContextState {
+  handleAccountVerified: () => Promise<void>
+  handleBack: () => void
   handleCopyCode: () => void
   onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
   onVerifySuccess: () => void
@@ -30,38 +30,23 @@ export interface TotpContextState {
   totpKey?: string
   totpChallenge?: TotpChallenge
   setTotpChallenge: Dispatch<SetStateAction<TotpChallenge | undefined>>
+  oidcAuth?: OidcAuth
+  setOidcAuth: Dispatch<SetStateAction<OidcAuth | undefined>>
+  allowsUserToAddLater: boolean
 }
 
-export const TotpContext = createContext<TotpContextState>(
-  {} as TotpContextState
+export const SignupContext = createContext<SignupContextState>(
+  {} as SignupContextState
 )
 
-export const TotpProvider = ({
+export const SignupProvider = ({
   children
 }: {
   children: ReactNode
 }): React.JSX.Element => {
   const router = useRouter()
-  const { oidcAuth, onAccountVerified } = useSeedlessOidcContext()
+  const [oidcAuth, setOidcAuth] = useState<OidcAuth>()
   const [totpChallenge, setTotpChallenge] = useState<TotpChallenge>()
-  const { totpResetInit } = useSeedlessManageMFA()
-
-  useEffect(() => {
-    const initChallenge = async (): Promise<void> => {
-      try {
-        totpResetInit(challenge => {
-          setTotpChallenge(challenge)
-        })
-      } catch (e) {
-        Logger.error('registerTotp error', e)
-        AnalyticsService.capture('SeedlessRegisterTOTPStartFailed')
-      }
-    }
-
-    if (totpChallenge === undefined) {
-      initChallenge()
-    }
-  }, [totpResetInit, totpChallenge])
 
   const totpKey = useMemo(() => {
     if (totpChallenge?.totpUrl) {
@@ -74,6 +59,10 @@ export const TotpProvider = ({
   const handleCopyCode = useCallback((): void => {
     totpKey && copyToClipboard(totpKey, 'Code copied')
   }, [totpKey])
+
+  const handleBack = useCallback((): void => {
+    router.canGoBack() && router.back()
+  }, [router])
 
   const goToEnterCodeManually = (): void => {
     router.navigate('./copyCode')
@@ -104,15 +93,30 @@ export const TotpProvider = ({
     [oidcAuth, totpChallenge]
   )
 
+  const handleAccountVerified = useCallback(async (): Promise<void> => {
+    showLogoModal()
+    const walletName = await SeedlessService.getAccountName()
+    hideLogoModal()
+
+    if (walletName) {
+      router.navigate('./createPin')
+      return
+    }
+    router.navigate('./nameYourWallet')
+  }, [router])
+
   const onVerifySuccess = useCallback((): void => {
+    router.dismissAll()
     router.back()
-    onAccountVerified(true)
+    handleAccountVerified()
     AnalyticsService.capture('SeedlessMfaVerified', {
       type: 'Authenticator'
     })
-  }, [router, onAccountVerified])
+  }, [router, handleAccountVerified])
 
-  const state: TotpContextState = {
+  const state: SignupContextState = {
+    handleAccountVerified,
+    handleBack,
     handleCopyCode,
     onVerifyCode,
     onVerifySuccess,
@@ -121,12 +125,17 @@ export const TotpProvider = ({
     goToVerifyCode,
     totpKey,
     totpChallenge,
-    setTotpChallenge
+    setTotpChallenge,
+    oidcAuth,
+    setOidcAuth,
+    allowsUserToAddLater: true
   }
 
-  return <TotpContext.Provider value={state}>{children}</TotpContext.Provider>
+  return (
+    <SignupContext.Provider value={state}>{children}</SignupContext.Provider>
+  )
 }
 
-export function useTotpContext(): TotpContextState {
-  return useContext(TotpContext)
+export function useSignupContext(): SignupContextState {
+  return useContext(SignupContext)
 }
