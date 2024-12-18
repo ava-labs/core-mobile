@@ -102,6 +102,7 @@ const SparklineChart: FC<Props> = ({
       color={color}
       lineThickness={lineThickness}
       points={data}
+      gradientFillColors={gradientFillColors}
       testID="line_graph"
     />
   )
