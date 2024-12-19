@@ -121,7 +121,6 @@ class AccountManagePage {
     await delay(1000)
     for (let i = 1; i < account; i++) {
       await this.tapAddAccountButton()
-      await delay(1000)
     }
     await this.tapNthAccount(account)
     await this.tapDoneButton()
@@ -131,7 +130,7 @@ class AccountManagePage {
   async tapNthAccount(account: number) {
     try {
       await Action.waitForElementNoSync(by.text(`Account ${account}`))
-      await Action.tap(by.text(`Account ${account}`))
+      await Action.tap(by.id(`account__Account ${account}`))
     } catch (e) {
       console.log('Unable to tap Nth account')
     }
@@ -191,8 +190,9 @@ class AccountManagePage {
   }
 
   async tapAddAccountButton() {
-    await Action.waitForElementNoSync(this.addAccountButton)
+    await Action.waitForElementNoSync(this.addAccountButton, 5000)
     await Action.tapElementAtIndex(this.addAccountButton, 0)
+    await delay(1000)
   }
 
   async tapAddEditAccounts() {

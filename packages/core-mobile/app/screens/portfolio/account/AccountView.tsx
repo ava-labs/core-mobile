@@ -101,6 +101,7 @@ function AccountItemRenderer({
   const activeAccount = useSelector(selectActiveAccount)
   return (
     <AccountItem
+      testID={`account__${account.name}`}
       key={account.name}
       account={account}
       editable
