@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { View, Text, Button } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
@@ -12,8 +12,10 @@ import { RecoveryMethodList } from '../components/RecoveryMethodList'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { oidcAuth, handleAccountVerified, allowsUserToAddLater } =
-    useSignupContext()
+  const { oidcAuth, handleAccountVerified } = useSignupContext()
+  const { allowsUserToAddLater } = useLocalSearchParams<{
+    allowsUserToAddLater: string
+  }>()
   const availableRecoveryMethods = useAvailableRecoveryMethods()
 
   const [selectedMethod, setSelectedMethod] = useState(
@@ -84,14 +86,15 @@ const AddRecoveryMethods = (): JSX.Element => {
             disabled={availableRecoveryMethods.length === 0}>
             Next
           </Button>
-          {oidcAuth === undefined && allowsUserToAddLater === true && (
-            <Button
-              type="tertiary"
-              size="large"
-              onPress={handleAccountVerified}>
-              Skip
-            </Button>
-          )}
+          {oidcAuth === undefined &&
+            allowsUserToAddLater?.toLowerCase() === 'true' && (
+              <Button
+                type="tertiary"
+                size="large"
+                onPress={handleAccountVerified}>
+                Skip
+              </Button>
+            )}
         </View>
       </View>
     </BlurredBarsContentLayout>

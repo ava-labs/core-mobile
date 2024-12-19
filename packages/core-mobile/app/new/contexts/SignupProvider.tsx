@@ -10,7 +10,6 @@ import React, {
   useState
 } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useRouter } from 'expo-router'
 import { copyToClipboard } from 'new/utils/clipboard'
 import { TotpErrors } from 'seedless/errors'
@@ -22,13 +21,11 @@ export interface SignupContextState {
   handleAccountVerified: () => Promise<void>
   handleCopyCode: () => void
   onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
-  onVerifySuccess: () => void
   totpKey?: string
   totpChallenge?: TotpChallenge
   setTotpChallenge: Dispatch<SetStateAction<TotpChallenge | undefined>>
   oidcAuth?: OidcAuth
   setOidcAuth: Dispatch<SetStateAction<OidcAuth | undefined>>
-  allowsUserToAddLater: boolean
 }
 
 export const SignupContext = createContext<SignupContextState>(
@@ -85,26 +82,15 @@ export const SignupProvider = ({
     router.navigate('./nameYourWallet')
   }, [router])
 
-  const onVerifySuccess = useCallback((): void => {
-    router.dismissAll()
-    router.back()
-    handleAccountVerified()
-    AnalyticsService.capture('SeedlessMfaVerified', {
-      type: 'Authenticator'
-    })
-  }, [router, handleAccountVerified])
-
   const state: SignupContextState = {
     handleAccountVerified,
     handleCopyCode,
     onVerifyCode,
-    onVerifySuccess,
     totpKey,
     totpChallenge,
     setTotpChallenge,
     oidcAuth,
-    setOidcAuth,
-    allowsUserToAddLater: true
+    setOidcAuth
   }
 
   return (

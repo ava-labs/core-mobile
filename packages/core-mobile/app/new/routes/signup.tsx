@@ -51,7 +51,10 @@ export default function Signup(): JSX.Element {
     mfaId: string
   }): void => {
     setOidcAuth(oidcAuth)
-    router.navigate('./addRecoveryMethods')
+    router.navigate({
+      pathname: './addRecoveryMethods',
+      params: { allowsUserToAddLater: 'true' }
+    })
   }
 
   const handleVerifyMfaMethod = (
