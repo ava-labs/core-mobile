@@ -7,7 +7,6 @@ import {
   selectIsSeedlessOnboardingGoogleBlocked
 } from 'store/posthog'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
-import SeedlessService from 'seedless/services/SeedlessService'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
@@ -16,15 +15,16 @@ import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'new/utils/toast'
+import { useSignupContext } from 'new/contexts/SignupProvider'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
+  const { setOidcAuth, handleAccountVerified } = useSignupContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { register, isRegistering, verify } = useSeedlessRegister()
+  const { register, isRegistering } = useSeedlessRegister()
 
   useEffect(() => {
     isRegistering ? showLogoModal() : hideLogoModal()
@@ -46,38 +46,15 @@ export default function Signup(): JSX.Element {
     AnalyticsService.capture('AccessExistingWalletClicked')
   }
 
-  const handleAccountVerified = async (): Promise<void> => {
-    showLogoModal()
-    const walletName = await SeedlessService.getAccountName()
-    hideLogoModal()
-    if (walletName) {
-      // navigate(AppNavigation.Root.Onboard, {
-      //   screen: AppNavigation.Onboard.Welcome,
-      //   params: {
-      //     screen: AppNavigation.Onboard.AnalyticsConsent,
-      //     params: {
-      //       nextScreen: AppNavigation.Onboard.CreatePin
-      //     }
-      //   }
-      // })
-      // return
-    }
-    // navigate(AppNavigation.Onboard.NameYourWallet)
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRegisterMfaMethods = (oidcAuth?: {
     oidcToken: string
     mfaId: string
   }): void => {
-    // navigate(AppNavigation.Root.RecoveryMethods, {
-    //   screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-    //   params: {
-    //     oidcAuth,
-    //     onAccountVerified: handleAccountVerified,
-    //     allowsUserToAddLater: true
-    //   }
-    // })
+    setOidcAuth(oidcAuth)
+    router.navigate({
+      pathname: './addRecoveryMethods',
+      params: { allowsUserToAddLater: 'true' }
+    })
   }
 
   const handleVerifyMfaMethod = (
