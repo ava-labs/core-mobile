@@ -44,12 +44,13 @@ describe('Bridge Screen', () => {
       // Add token before toggling
       await bridgeTabPage.tapSelectToken()
       await sendPage.selectToken(token)
-      console.log('hey1')
       await bridgeTabPage.verifyNetworks(network, bridgeTabLoc.avalancheNetwork)
 
       // Toggle > verify `from` and `to` networks updated
       await bridgeTabPage.tapBridgeToggleBtn()
       await bridgeTabPage.verifyNetworks(bridgeTabLoc.avalancheNetwork, network)
+
+      // Toggle > verify `from` and `to` networks updated
       await bridgeTabPage.tapBridgeToggleBtn()
       await bridgeTabPage.verifyNetworks(network, bridgeTabLoc.avalancheNetwork)
 
