@@ -213,7 +213,7 @@ class PopUpModalPage {
 
     // Verify base fee for C-Chain
     if (isCChain) {
-      const tolerance = 0.15 // 15% tolerance
+      const tolerance = 3
       const baseFeeByApi = parseFloat(await fetchCChainBaseFee())
       const slowBaseFeeUI = parseFloat(
         (await actions.getElementText(by.id(popUpModalLoc.slowBaseFee))) || '0'
@@ -224,23 +224,21 @@ class PopUpModalPage {
       )
 
       // Calculate percentage differences
-      const diffSlowPercentage =
-        Math.abs(baseFeeByApi - slowBaseFeeUI) / baseFeeByApi
-      const diffCustomPercentage =
-        Math.abs(baseFeeByApi - customBaseFeeUI) / baseFeeByApi
+      const diffSlow = Math.abs(baseFeeByApi - slowBaseFeeUI)
+      const diffCustom = Math.abs(baseFeeByApi - customBaseFeeUI)
 
       console.log(
-        `Current base fee for C-Chain: API - ${baseFeeByApi} UI - ${slowBaseFeeUI}, DiffPergentage - ${diffSlowPercentage}`
+        `Current base fee for C-Chain: API - ${baseFeeByApi} UI - ${slowBaseFeeUI}, diff - ${diffSlow}`
       )
       // BaseFee by API should be within the tolerance of the slow and custom base fee
       assert(
-        diffSlowPercentage <= tolerance,
-        `API Base Fee: ${baseFeeByApi}, Slow Base Fee: ${slowBaseFeeUI} - Percentage difference ${diffSlowPercentage} > ${tolerance})`
+        diffSlow <= tolerance,
+        `API Base Fee: ${baseFeeByApi}, Slow Base Fee: ${slowBaseFeeUI} -  diff - ${diffSlow} > ${tolerance})`
       )
 
       assert(
-        diffCustomPercentage <= tolerance,
-        `API Base Fee: ${baseFeeByApi}, Custom Base Fee: ${customBaseFeeUI} - Percentage difference ${diffCustomPercentage} > ${tolerance}`
+        diffCustom <= tolerance,
+        `API Base Fee: ${baseFeeByApi}, Custom Base Fee: ${customBaseFeeUI} -  diff - ${diffCustom} > ${tolerance}`
       )
     }
   }

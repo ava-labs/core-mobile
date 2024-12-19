@@ -145,35 +145,35 @@ class BridgeTabPage {
 
   async tapBridgeBtn() {
     await delay(1000)
-    return Actions.tap(this.bridgeBtn)
+    await Actions.tap(this.bridgeBtn)
   }
 
   async tapBridgeToggleBtn() {
-    return Actions.tap(this.bridgeToggleBtn)
+    await Actions.tap(this.bridgeToggleBtn)
   }
 
   async tapAvalancheNetwork() {
-    return Actions.tapElementAtIndex(this.avalancheNetwork, platformIndex2)
+    await Actions.tapElementAtIndex(this.avalancheNetwork, platformIndex2)
   }
 
   async tapBitcoinNetwork() {
-    return Actions.tapElementAtIndex(this.bitcoinNetwork, platformIndex)
+    await Actions.tapElementAtIndex(this.bitcoinNetwork, platformIndex)
   }
 
   async tapClose() {
-    return Actions.tap(this.closebutton)
+    await Actions.tap(this.closebutton)
   }
 
   async tapBtcToken() {
-    return Actions.tapElementAtIndex(this.btcToken, platformIndex)
+    await Actions.tapElementAtIndex(this.btcToken, platformIndex)
   }
 
   async tapEthereumNetwork() {
-    return Actions.tapElementAtIndex(this.ethereumNetwork, platformIndex)
+    await Actions.tapElementAtIndex(this.ethereumNetwork, platformIndex)
   }
 
   async tapEthBridgeTransaction() {
-    return Actions.tapElementAtIndex(this.ethBridgeTransaction, 0)
+    await Actions.tapElementAtIndex(this.ethBridgeTransaction, 0)
   }
 
   async tapHide() {

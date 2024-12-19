@@ -746,7 +746,9 @@ const Bridge: FC = () => {
               optionsRenderItem={item =>
                 renderDropdownItem(item.item, targetNetwork)
               }
-              selectionRenderItem={() => renderNetwork(targetNetwork)}
+              selectionRenderItem={() =>
+                renderNetwork(targetNetwork, 'to_blockchain')
+              }
               style={{
                 top: 22
               }}

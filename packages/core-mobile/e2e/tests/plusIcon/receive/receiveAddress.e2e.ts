@@ -21,6 +21,7 @@ describe('Receive Address', () => {
     await ReceivePage.tapReceiveAddress()
     await Assert.isVisible(ReceivePage.copiedToastMsg)
     await Assert.isVisible(ReceivePage.receiveAddress)
+    await actions.waitForElementNotVisible(ReceivePage.copiedToastMsg)
   })
 
   it('should show bitcoin logo', async () => {
