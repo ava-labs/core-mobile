@@ -29,6 +29,7 @@ describe('Add custom token', () => {
     await Actions.waitForElementNotVisible(
       ManageTokensPage.inputContractAddress
     )
-    await Actions.waitForElement(ManageTokensPage.manageTokenList)
+    await Actions.waitForElement(ManageTokensPage.added)
+    await Actions.waitForElement(ManageTokensPage.addcustomToken)
   })
 })
