@@ -17,11 +17,18 @@ import IconApple from '../../assets/icons/apple.svg'
 import IconGoogle from '../../assets/icons/google.svg'
 import IconAdd from '../../assets/icons/add.svg'
 import IconArrowForwardIOS from '../../assets/icons/arrow_forward_ios.svg'
+import IconClear from '../../assets/icons/clear.svg'
+import IconCopy from '../../assets/icons/copy.svg'
+import IconQrCode from '../../assets/icons/qr_code.svg'
+import IconGoogleAuthenticator from '../../assets/icons/google_authenticator.svg'
+import IconMicrosoftAuthenticator from '../../assets/icons/microsoft_authenticator.svg'
+import IconAuthenticatorApp from '../../assets/icons/authenticator_app.svg'
 
 export const Icons = {
   Action: {
     Info: IconInfo,
-    CheckCircleOutline: IconCheckCircleOutline
+    CheckCircleOutline: IconCheckCircleOutline,
+    Clear: IconClear
   },
   Alert: {
     IconErrorOutline: IconErrorOutline
@@ -50,10 +57,15 @@ export const Icons = {
   RecoveryMethod: {
     Passkey: IconPasskey,
     Authenticator: IconAuthenticator,
-    Yubikey: IconYubikey
+    Yubikey: IconYubikey,
+    Copy: IconCopy,
+    QrCode: IconQrCode
   },
   Logos: {
     Apple: IconApple,
-    Google: IconGoogle
+    Google: IconGoogle,
+    GoogleAuthenticator: IconGoogleAuthenticator,
+    MicrosoftAuthenticator: IconMicrosoftAuthenticator,
+    AuthenticatorApp: IconAuthenticatorApp
   }
 }
