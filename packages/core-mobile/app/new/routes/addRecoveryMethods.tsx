@@ -8,6 +8,7 @@ import {
   useAvailableRecoveryMethods
 } from 'new/hooks/useAvailableRecoveryMethods'
 import { useSignupContext } from 'new/contexts/SignupProvider'
+import { FidoType } from 'services/passkey/types'
 import { RecoveryMethodList } from '../components/RecoveryMethodList'
 
 const AddRecoveryMethods = (): JSX.Element => {
@@ -24,27 +25,27 @@ const AddRecoveryMethods = (): JSX.Element => {
 
   const handleOnPress = (): void => {
     if (selectedMethod === RecoveryMethods.Passkey) {
-      // navigate({
-      //   pathname: './fidoNameInput',
-      //   params: {
-      //     title: 'How would you like to name your passkey?',
-      //     description: 'Add a Passkey name, so it’s easier to find later',
-      //     textInputPlaceholder: 'Passkey name',
-      //     fidoType: FidoType.PASS_KEY
-      //   }
-      // })
+      navigate({
+        pathname: './fidoNameInput',
+        params: {
+          title: 'How would you like to name your passkey?',
+          description: 'Add a Passkey name, so it’s easier to find later',
+          textInputPlaceholder: 'Passkey name',
+          fidoType: FidoType.PASS_KEY
+        }
+      })
       return
     }
     if (selectedMethod === RecoveryMethods.Yubikey) {
-      // navigate({
-      //   pathname: './fidoNameInput',
-      //   params: {
-      //     title: 'How would you like to name your YubiKey?',
-      //     description: 'Add a YubiKey name, so it’s easier to find later',
-      //     textInputPlaceholder: 'YubiKey name',
-      //     fidoType: FidoType.YUBI_KEY
-      //   }
-      // })
+      navigate({
+        pathname: './fidoNameInput',
+        params: {
+          title: 'How would you like to name your YubiKey?',
+          description: 'Add a YubiKey name, so it’s easier to find later',
+          textInputPlaceholder: 'YubiKey name',
+          fidoType: FidoType.YUBI_KEY
+        }
+      })
       return
     }
     if (selectedMethod === RecoveryMethods.Authenticator) {

@@ -76,7 +76,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       const withSecurityKey = fidoType === FidoType.YUBI_KEY
 
       fidoRegisterInit(passkeyName, async challenge => {
-        const credential = await PasskeyService.register(
+        const credential = await PasskeyService.create(
           challenge.options,
           withSecurityKey
         )

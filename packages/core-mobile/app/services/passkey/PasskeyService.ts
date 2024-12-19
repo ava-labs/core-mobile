@@ -1,11 +1,11 @@
 import { Platform } from 'react-native'
-import { Passkey } from 'react-native-passkey'
 import {
-  PasskeyAuthenticationRequest,
-  PasskeyAuthenticationResult,
-  PasskeyRegistrationRequest,
-  PasskeyRegistrationResult
-} from 'react-native-passkey/lib/typescript/Passkey'
+  Passkey,
+  PasskeyCreateRequest,
+  PasskeyCreateResult,
+  PasskeyGetRequest,
+  PasskeyGetResult
+} from 'react-native-passkey'
 import {
   FIDOAuthenticationResult,
   FIDOAuthenticationRequest,
@@ -21,31 +21,34 @@ class PasskeyService implements PasskeyServiceInterface {
     return Passkey.isSupported() && Platform.OS === 'ios'
   }
 
-  async register(
+  async create(
     challengeOptions: FIDORegistrationRequest,
     withSecurityKey: boolean
   ): Promise<FIDORegistrationResult> {
     const request = this.prepareRegistrationRequest(challengeOptions)
-    const result = await Passkey.register(request, { withSecurityKey })
+    const result = await Passkey.create({
+      ...request,
+      authenticatorSelection: {
+        authenticatorAttachment: withSecurityKey ? 'cross-platform' : undefined
+      }
+    })
     return this.convertRegistrationResult(result)
   }
 
-  async authenticate(
+  async get(
     challengeOptions: FIDOAuthenticationRequest,
-    withSecurityKey: boolean
+    _: boolean
   ): Promise<FIDOAuthenticationResult> {
     const request = this.prepareAuthenticationRequest(challengeOptions)
 
-    const result = await Passkey.authenticate(request, {
-      withSecurityKey
-    })
+    const result = await Passkey.get(request)
 
     return this.convertAuthenticationResult(result)
   }
 
   private prepareRegistrationRequest(
     request: FIDORegistrationRequest
-  ): PasskeyRegistrationRequest {
+  ): PasskeyCreateRequest {
     return {
       ...request,
       challenge: request.challenge.toString('base64'),
@@ -61,6 +64,7 @@ class PasskeyService implements PasskeyServiceInterface {
       timeout: FIDO_TIMEOUT,
       excludeCredentials: (request.excludeCredentials ?? []).map(cred => ({
         ...cred,
+        transports: cred.transports as [],
         id: cred.id.toString('base64')
       }))
     }
@@ -68,7 +72,7 @@ class PasskeyService implements PasskeyServiceInterface {
 
   private prepareAuthenticationRequest(
     request: FIDOAuthenticationRequest
-  ): PasskeyAuthenticationRequest {
+  ): PasskeyGetRequest {
     return {
       ...request,
       challenge: request.challenge.toString('base64'),
@@ -76,13 +80,14 @@ class PasskeyService implements PasskeyServiceInterface {
       timeout: FIDO_TIMEOUT,
       allowCredentials: (request.allowCredentials ?? []).map(cred => ({
         ...cred,
+        transports: cred.transports as [],
         id: cred.id.toString('base64')
       }))
     }
   }
 
   private convertRegistrationResult(
-    result: PasskeyRegistrationResult
+    result: PasskeyCreateResult
   ): FIDORegistrationResult {
     return {
       ...result,
@@ -100,7 +105,7 @@ class PasskeyService implements PasskeyServiceInterface {
   }
 
   private convertAuthenticationResult(
-    result: PasskeyAuthenticationResult
+    result: PasskeyGetResult
   ): FIDOAuthenticationResult {
     return {
       ...result,
