@@ -29,6 +29,7 @@ type Props = {
   editable?: boolean
   selected?: boolean
   blurred?: boolean
+  testID?: string
 }
 
 function AccountItem({
@@ -36,7 +37,8 @@ function AccountItem({
   onSelectAccount,
   editable,
   selected,
-  blurred
+  blurred,
+  testID
 }: Props): JSX.Element {
   const { activeNetwork } = useNetworks()
   const walletType = useSelector(selectWalletType)
@@ -99,6 +101,7 @@ function AccountItem({
   return (
     <>
       <AvaButton.Base
+        testID={testID}
         onPress={() => onSelectAccount?.(account.index)}
         style={[
           {
