@@ -9,7 +9,6 @@ const tap = async (item: Locator, timeout = 5000) => {
 
 const open = async (url: string, page: Page) => {
   await page.goto(url)
-  await page.setViewportSize({ width: 2080, height: 1080 })
 }
 
 const waitFor = async (item: Locator, timeout = 5000) => {
@@ -26,9 +25,29 @@ async function writeQrCodeToFile(clipboardValue: string) {
   )
 }
 
+// eslint-disable-next-line max-params
+function addTestResultToFile(
+  testName: string,
+  result: string,
+  framework: string,
+  path: string
+) {
+  const resultData = {
+    testName,
+    result,
+    framework
+  }
+  const currentResults = fs.existsSync(path)
+    ? JSON.parse(fs.readFileSync(path))
+    : []
+  currentResults.push(resultData)
+  fs.writeFileSync(path, JSON.stringify(currentResults, null, 2))
+}
+
 export default {
   tap,
   open,
   waitFor,
-  writeQrCodeToFile
+  writeQrCodeToFile,
+  addTestResultToFile
 }
