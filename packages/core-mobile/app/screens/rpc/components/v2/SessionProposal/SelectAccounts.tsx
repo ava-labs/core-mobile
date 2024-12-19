@@ -74,7 +74,9 @@ const SelectAccounts = ({
               borderRadius: 8,
               justifyContent: 'space-between'
             }}>
-            <AvaText.Heading3>{title}</AvaText.Heading3>
+            <AvaText.Heading3 testID="select_accounts">
+              {title}
+            </AvaText.Heading3>
             <CarrotSVG direction={showAccounts ? 'up' : 'down'} />
           </Row>
         </View>

@@ -1,13 +1,11 @@
 import { test } from '@playwright/test'
-import CoreApp from '../../../pages/coreApp.page'
-import CommonPlaywrightPage from '../../../pages/commonPlaywrightEls.page'
-import playwrightActions from '../../../helpers/playwrightActions'
-import { playwrightSetup } from '../../../helpers/playwrightSetup'
-
-const getContext = playwrightSetup()
+import CoreApp from '../../../../pages/coreApp.page'
+import CommonPlaywrightPage from '../../../../pages/commonPlaywrightEls.page'
+import playwrightActions from '../../../../helpers/playwrightActions'
+import { playwrightSetup } from '../../../../helpers/playwrightSetup'
 
 test('Connect Core', async () => {
-  const { page } = getContext()
+  const { page } = await playwrightSetup()
   const common = new CommonPlaywrightPage(page)
   const core = new CoreApp(page)
 

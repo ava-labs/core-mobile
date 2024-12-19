@@ -59,7 +59,7 @@ function printResult(results) {
 }
 
 function runFullTests() {
-  const playwrightDir = 'e2e/tests/dapps/playwright/'
+  const playwrightDir = 'e2e/tests/dapps/playwright/connect/'
   const playwrightTests = fs
     .readdirSync(playwrightDir)
     .filter(file => file.endsWith('.spec.ts'))
