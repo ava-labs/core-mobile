@@ -293,7 +293,7 @@ class BridgeTabPage {
   }
 
   async verifyToNetwork(network = '') {
-    // await Actions.waitForElement(this.toNetwork)
+    await Assert.isVisible(this.toNetwork)
     await Assert.hasText(this.toNetwork, network, 0)
   }
   // eslint-disable-next-line max-params
