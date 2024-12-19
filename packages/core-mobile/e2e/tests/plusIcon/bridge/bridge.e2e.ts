@@ -49,6 +49,7 @@ describe('Bridge Screen', () => {
       // Toggle > verify `from` and `to` networks updated
       await bridgeTabPage.tapBridgeToggleBtn()
       await bridgeTabPage.verifyNetworks(bridgeTabLoc.avalancheNetwork, network)
+
       // Toggle > verify `from` and `to` networks updated
       await bridgeTabPage.tapBridgeToggleBtn()
       await bridgeTabPage.verifyNetworks(network, bridgeTabLoc.avalancheNetwork)

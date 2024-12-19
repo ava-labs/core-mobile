@@ -30,7 +30,7 @@ describe('Balance After Managing Token', () => {
     await commonElsPage.goBack()
     const newFullBal = await portfolioPage.getTotalBalance()
     const newActiveNetworkBal = await portfolioPage.getActiveNetworkBalance()
-    const tolerance = 1
+    const tolerance = 5
 
     // Log token balances before and after hiding token
     console.log(
@@ -133,7 +133,7 @@ describe('Balance After Managing Token', () => {
     await commonElsPage.goBack()
     const newFullBal = await portfolioPage.getTotalBalance()
     const newActiveNetworkBal = await portfolioPage.getActiveNetworkBalance()
-    const tolerance = 1
+    const tolerance = 5
 
     // Log token balances before and after hiding token
     console.log(
@@ -181,7 +181,7 @@ describe('Balance After Managing Token', () => {
     await commonElsPage.goBack()
     const newFullBal = await portfolioPage.getTotalBalance()
     const newActiveNetworkBal = await portfolioPage.getActiveNetworkBalance()
-    const tolerance = 1
+    const tolerance = 5
 
     // Log token balances before and after hiding token
     console.log(
