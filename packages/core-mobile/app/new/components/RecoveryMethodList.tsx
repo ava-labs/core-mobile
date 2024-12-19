@@ -1,33 +1,40 @@
-import { Pressable, SxProp, View } from 'dripsy'
-import React, { useState } from 'react'
-import { useDripsyTheme as useTheme } from 'dripsy'
-import { FlatList, Text } from '../Primitives'
-import Check from '../../assets/icons/check.svg'
-import { Card } from '../../components/Card/Card'
-import { Separator } from '../Separator/Separator'
-import { RecoveryMethod, RecoveryMethodData } from './types'
+import React from 'react'
+import {
+  Card,
+  FlatList,
+  Pressable,
+  SxProp,
+  Text,
+  useTheme,
+  View,
+  Icons,
+  Separator
+} from '@avalabs/k2-alpine'
+import {
+  RecoveryMethod,
+  RecoveryMethods
+} from 'new/hooks/useAvailableRecoveryMethods'
 
 export const RecoveryMethodList = ({
+  selectedMethod,
   data,
   sx,
   onPress
 }: {
-  data: RecoveryMethodData[]
+  selectedMethod?: RecoveryMethods
+  data: RecoveryMethod[]
   sx?: SxProp
-  onPress: (type: RecoveryMethod) => void
-}): React.JSX.Element => {
+  onPress: (type: RecoveryMethods) => void
+}): React.JSX.Element | undefined => {
   const {
     theme: { colors }
   } = useTheme()
-  const [selectedId, setSelectedId] = useState<string>()
-
-  const renderItem = (item: RecoveryMethodData): React.JSX.Element => {
-    const isSelected = selectedId === item.type
+  const renderItem = (item: RecoveryMethod): React.JSX.Element => {
+    const isSelected = selectedMethod === item.type
     const isLastItem = data.indexOf(item) === data.length - 1
     const Icon = item.icon
 
     const handleOnPress = (): void => {
-      setSelectedId(item.type)
       onPress(item.type)
     }
 
@@ -73,7 +80,7 @@ export const RecoveryMethodList = ({
               <Text
                 sx={{
                   fontSize: 12,
-                  fontWeight: '500',
+                  fontWeight: '400',
                   lineHeight: 15,
                   color: colors.$textSecondary,
                   marginTop: 3
@@ -82,7 +89,7 @@ export const RecoveryMethodList = ({
               </Text>
             </View>
             {isSelected ? (
-              <Check width={15} color={colors.$textPrimary} />
+              <Icons.Navigation.Check width={15} color={colors.$textPrimary} />
             ) : (
               <View sx={{ width: 15 }} />
             )}
@@ -97,13 +104,18 @@ export const RecoveryMethodList = ({
     )
   }
 
+  if (data.length === 0) {
+    return undefined
+  }
+
   return (
     <Card sx={{ paddingRight: 0, ...sx }}>
       <FlatList
+        scrollEnabled={false}
         sx={{ width: '100%', backgroundColor: '$surfaceSecondary' }}
         data={data}
-        renderItem={item => renderItem(item.item as RecoveryMethodData)}
-        keyExtractor={item => (item as RecoveryMethodData).type}
+        renderItem={item => renderItem(item.item as RecoveryMethod)}
+        keyExtractor={item => (item as RecoveryMethod).type}
       />
     </Card>
   )
