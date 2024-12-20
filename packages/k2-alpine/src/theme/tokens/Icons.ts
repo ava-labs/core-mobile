@@ -23,6 +23,7 @@ import IconQrCode from '../../assets/icons/qr_code.svg'
 import IconGoogleAuthenticator from '../../assets/icons/google_authenticator.svg'
 import IconMicrosoftAuthenticator from '../../assets/icons/microsoft_authenticator.svg'
 import IconAuthenticatorApp from '../../assets/icons/authenticator_app.svg'
+import IconChevronRight from '../../assets/icons/chevron_right.svg'
 
 export const Icons = {
   Action: {
@@ -38,6 +39,7 @@ export const Icons = {
   },
   Navigation: {
     ArrowForwardIOS: IconArrowForwardIOS,
+    ChevronRight: IconChevronRight,
     Check: IconCheck,
     ExpandMore: IconExpandMore
   },
