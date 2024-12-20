@@ -31,14 +31,8 @@ export default function Signup(): JSX.Element {
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
-    // todo: CP-9604
-    // navigate(AppNavigation.Onboard.Welcome, {
-    //   screen: AppNavigation.Onboard.AnalyticsConsent,
-    //   params: {
-    //     nextScreen: AppNavigation.Onboard.CreateWalletStack
-    //   }
-    // })
-    // AnalyticsService.capture('RecoveryPhraseClicked')
+    router.navigate('onboarding')
+    AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
   const handleAccessExistingWallet = (): void => {
