@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 export type UseCreatePinProps = {
-  title: string
   onEnterChosenPin: (pinKey: string) => void
   onEnterConfirmedPin: (pinKey: string) => void
   chosenPinEntered: boolean
@@ -11,26 +10,15 @@ export type UseCreatePinProps = {
 }
 
 export function useCreatePin({
-  isResettingPin = false,
   onError
 }: {
-  isResettingPin?: boolean
   onError: () => Promise<void>
 }): UseCreatePinProps {
-  const [title, setTitle] = useState('Create Pin')
   const [chosenPin, setChosenPin] = useState('')
   const [confirmedPin, setConfirmedPin] = useState('')
   const [chosenPinEntered, setChosenPinEntered] = useState(false)
   const [confirmedPinEntered, setConfirmedPinEntered] = useState(false)
   const [validPin, setValidPin] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    if (isResettingPin) {
-      setTitle(chosenPinEntered ? 'Confirm new Pin' : 'Create new Pin')
-    } else {
-      setTitle(chosenPinEntered ? 'Confirm Pin' : 'Create Pin')
-    }
-  }, [chosenPinEntered, isResettingPin])
 
   function resetConfirmPinProcess(): void {
     setValidPin(undefined)
@@ -58,6 +46,7 @@ export function useCreatePin({
     if (chosenPin.length === 6) {
       return
     }
+
     setChosenPin(pinValue)
     if (pinValue.length === 6) {
       //   setTimeout(() => {
@@ -77,7 +66,6 @@ export function useCreatePin({
   }
 
   return {
-    title,
     onEnterChosenPin,
     onEnterConfirmedPin,
     chosenPinEntered,

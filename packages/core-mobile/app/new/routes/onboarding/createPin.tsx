@@ -1,22 +1,22 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import {
-  Button,
-  Card,
+  GroupList,
   PinInput,
   PinInputActions,
   SafeAreaView,
   ScrollView,
-  Text,
   View
 } from '@avalabs/k2-alpine'
 import { useCreatePin } from 'new/hooks/useCreatePin'
-import { Platform } from 'react-native'
+import { Platform, Switch } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native'
+import ScreenHeader from 'new/components/ScreenHeader'
 
 export default function CreatePin(): JSX.Element {
   const ref = useRef<PinInputActions>(null)
+  const [useBiometrics, setUseBiometrics] = useState(true)
 
   const {
     onEnterChosenPin,
@@ -35,13 +35,15 @@ export default function CreatePin(): JSX.Element {
     }
   })
 
-  function handleNext(): void {
-    router.navigate('')
-  }
-
   useFocusEffect(() => {
     ref.current?.focus()
   })
+
+  useEffect(() => {
+    if (validPin) {
+      router.navigate('')
+    }
+  }, [validPin])
 
   return (
     <BlurredBarsContentLayout>
@@ -50,18 +52,27 @@ export default function CreatePin(): JSX.Element {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView sx={{ flex: 1 }}>
           <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-            <Text
-              sx={{ marginRight: 10, marginTop: 8, marginBottom: 10 }}
-              variant="heading2">
-              Secure your wallet with a PIN
-            </Text>
-            <View sx={{ marginTop: 8, gap: 16 }}>
-              <Text testID="anlaysticsContent" variant="subtitle1">
-                For extra security, avoid choosing a PIN that contains repeating
-                digits in a sequential order
-              </Text>
-            </View>
-            <View sx={{ paddingVertical: 48 }}>
+            <ScreenHeader
+              title={
+                chosenPinEntered
+                  ? 'Confirm your PIN code'
+                  : 'Secure your wallet with a PIN'
+              }
+              description={
+                chosenPinEntered
+                  ? undefined
+                  : 'For extra security, avoid choosing a PIN that contains repeating digits in a sequential order'
+              }
+            />
+            <View
+              sx={{
+                position: 'absolute',
+                alignItems: 'center',
+                left: 0,
+                right: 0,
+                top: 180,
+                padding: 20
+              }}>
               <PinInput
                 ref={ref}
                 length={6}
@@ -71,9 +82,6 @@ export default function CreatePin(): JSX.Element {
                 }
               />
             </View>
-            <Card>
-              <Text>asdf</Text>
-            </Card>
           </ScrollView>
           <View
             sx={{
@@ -82,13 +90,19 @@ export default function CreatePin(): JSX.Element {
               backgroundColor: '$surfacePrimary',
               gap: 16
             }}>
-            <Button
-              size="large"
-              type="primary"
-              onPress={handleNext}
-              disabled={!validPin}>
-              Next
-            </Button>
+            <GroupList
+              data={[
+                {
+                  title: 'Unlock with Face ID',
+                  accessory: (
+                    <Switch
+                      value={useBiometrics}
+                      onValueChange={setUseBiometrics}
+                    />
+                  )
+                }
+              ]}
+            />
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>

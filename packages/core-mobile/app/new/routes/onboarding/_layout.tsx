@@ -34,6 +34,7 @@ export default function OnboardingLayout(): JSX.Element {
       <Stack.Screen name="index" />
       <Stack.Screen name="analyticsConsent" />
       <Stack.Screen name="recoveryPhrase" />
+      <Stack.Screen name="verifyRecoveryPhrase" />
       <Stack.Screen name="createPin" />
     </Stack>
   )

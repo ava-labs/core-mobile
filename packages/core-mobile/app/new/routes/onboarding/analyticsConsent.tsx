@@ -11,6 +11,7 @@ import {
 import { useDispatch } from 'react-redux'
 import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
+import ScreenHeader from 'new/components/ScreenHeader'
 
 export default function AnalyticsConsent(): JSX.Element {
   const router = useRouter()
@@ -40,26 +41,26 @@ export default function AnalyticsConsent(): JSX.Element {
     <BlurredBarsContentLayout>
       <SafeAreaView sx={{ flex: 1 }}>
         <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-          <Text
-            sx={{ marginRight: 10, marginTop: 8, marginBottom: 10 }}
-            variant="heading2">
-            Unlock airdrops
-          </Text>
-          <View sx={{ marginTop: 8, gap: 20 }}>
-            <Text testID="anlaysticsContent" variant="subtitle1">
-              As a Core user, you have the option to opt-in for{' '}
-              <Text variant="body1" sx={{ fontWeight: '700' }}>
-                airdrop rewards
-              </Text>{' '}
-              based on your activity and engagement. Core will collect anonymous
-              interaction data to power this feature.
-            </Text>
-            <Text testID="anlaysticsContent" variant="subtitle1">
-              Core is committed to protecting your privacy. We will never sell
-              or share your data. If you wish, you can disable this at any time
-              in the settings menu.
-            </Text>
-          </View>
+          <ScreenHeader
+            title="Unlock airdrops"
+            description={
+              <View sx={{ gap: 20 }}>
+                <Text testID="anlaysticsContent" variant="subtitle1">
+                  As a Core user, you have the option to opt-in for{' '}
+                  <Text variant="body1" sx={{ fontWeight: '700' }}>
+                    airdrop rewards
+                  </Text>{' '}
+                  based on your activity and engagement. Core will collect
+                  anonymous interaction data to power this feature.
+                </Text>
+                <Text testID="anlaysticsContent" variant="subtitle1">
+                  Core is committed to protecting your privacy. We will never
+                  sell or share your data. If you wish, you can disable this at
+                  any time in the settings menu.
+                </Text>
+              </View>
+            }
+          />
         </ScrollView>
         <View
           sx={{

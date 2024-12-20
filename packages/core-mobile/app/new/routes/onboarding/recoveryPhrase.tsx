@@ -14,6 +14,7 @@ import {
 import { InteractionManager } from 'react-native'
 import WalletSDK from 'utils/WalletSDK'
 import MnemonicScreen from 'new/components/MnemonicPhrase'
+import ScreenHeader from 'new/components/ScreenHeader'
 
 export default function RecoveryPhrase(): JSX.Element {
   const router = useRouter()
@@ -31,7 +32,10 @@ export default function RecoveryPhrase(): JSX.Element {
           text: 'Dismiss',
           style: 'cancel',
           onPress: () => {
-            router.navigate('./createPin')
+            router.navigate({
+              pathname: './verifyRecoveryPhrase',
+              params: { mnemonic: localMnemonic }
+            })
           }
         }
       ]
@@ -52,16 +56,12 @@ export default function RecoveryPhrase(): JSX.Element {
     <BlurredBarsContentLayout>
       <SafeAreaView sx={{ flex: 1 }}>
         <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-          <Text
-            sx={{ marginRight: 10, marginTop: 8, marginBottom: 10 }}
-            variant="heading2">
-            Here is your wallet's recovery phrase
-          </Text>
-          <View sx={{ marginTop: 8, gap: 16 }}>
-            <Text variant="subtitle1">
-              This phrase is your access key to your wallet. Carefully write it
-              down and store it in a safe location
-            </Text>
+          <ScreenHeader
+            title="Here is your wallet's recovery phrase"
+            description="This phrase is your access key to your wallet. Carefully write it
+              down and store it in a safe location"
+          />
+          <View sx={{ marginTop: 16, gap: 16 }}>
             <View sx={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
               <Icons.Alert.IconErrorOutline color={theme.colors.$textDanger} />
               <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
