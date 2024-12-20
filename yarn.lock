@@ -307,6 +307,7 @@ __metadata:
     expo-blur: 12.9.2
     expo-constants: 15.4.6
     expo-image: 1.10.6
+    expo-linear-gradient: 12.7.2
     expo-linking: 6.2.2
     expo-router: 3.4.10
     expo-status-bar: 1.11.1
@@ -26660,7 +26661,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 0efa24aa4da8f418f515b6be88e91948284856000fe5fde7026fa63ee814d84e7b7fbc1e8b8d98bc1833c05c9740a9fe2edf15b0909b77b4d012db22b75f5370
+  checksum: a187edd718e1ea3a6b1e5da167744e6ee324bc3c3e492bcb0a9d028ab68a82907f053f37c23aa4229d6a9091541cee3c73549c3c850056e4cf5eb5b3cb2c9ffc
   languageName: node
   linkType: hard
 
