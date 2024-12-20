@@ -132,7 +132,7 @@ export function useInjectedJavascript(): InjectedJavascripts {
     setTimeout(() => {
       let notified = false;
       const request = async function (json) {
-        if (!notified) {
+        if (!notified && window.hasInteracted) {
           const message = {
             method: 'window_ethereum_used',
             payload: json
@@ -173,11 +173,15 @@ export function useInjectedJavascript(): InjectedJavascripts {
     }
   })();`
 
+  /**
+   * Caution, the coreConnectInterceptor function depends on window.hasInteracted which is manipulated here
+   */
   const injectCustomPrompt = `(async function(){
     var focused = false;
     Object.freeze(Object);
     window.onfocus = function(){
       focused = true;
+      window.hasInteracted = true;
     };
     window.onblur = function(){
       focused = false;
