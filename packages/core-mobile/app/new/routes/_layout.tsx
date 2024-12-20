@@ -7,7 +7,6 @@ import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { Stack } from 'new/components/navigation/Stack'
 import NavigationThemeProvider from 'new/utils/navigation/NavigationThemeProvider'
 import { GlobalToast } from 'new/utils/toast'
-import { stackNavigatorScreenOptions } from 'new/utils/navigation/screenOptions'
 import { selectIsReady, selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
 import { useBgDetect } from 'navigation/useBgDetect'
@@ -22,6 +21,7 @@ import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import { StackActions } from '@react-navigation/native'
 import { LogoModal } from 'new/components/LogoModal'
 import { SignupProvider } from 'new/contexts/SignupProvider'
+import { stackNavigatorScreenOptions } from 'new/utils/navigation/screenOptions'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -83,7 +83,11 @@ export default function RootLayout(): JSX.Element | null {
       <ApplicationContextProvider>
         <NavigationThemeProvider>
           <SignupProvider>
-            <Stack screenOptions={stackNavigatorScreenOptions}>
+            <Stack
+              screenOptions={{
+                ...stackNavigatorScreenOptions,
+                headerShown: false
+              }}>
               <Stack.Screen
                 name="index"
                 options={{ animationEnabled: false }}
@@ -92,7 +96,10 @@ export default function RootLayout(): JSX.Element | null {
                 name="signup"
                 options={{ animationEnabled: false }}
               />
-              <Stack.Screen name="accessWallet" />
+              <Stack.Screen
+                name="accessWallet"
+                options={{ headerShown: true }}
+              />
               <Stack.Screen
                 name="(signedIn)"
                 options={{
@@ -112,6 +119,7 @@ export default function RootLayout(): JSX.Element | null {
               />
               <Stack.Screen name="forgotPin" />
               <Stack.Screen name="+not-found" />
+              <Stack.Screen name="onboarding" />
               <Stack.Screen name="(totp)" />
             </Stack>
             {enabledPrivacyScreen && <LogoModal />}
