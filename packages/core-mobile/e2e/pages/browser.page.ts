@@ -65,7 +65,8 @@ class BrowserPage {
         xpath = '//button[@data-id="UnstyledButton"]//div[text()="Login"]'
         break
       case 'https://ava-labs.github.io/extension-avalanche-playground/': // Core Playground
-        xpath = '//button[text()="Connect via Wallet Connect - Wagmi"]'
+        xpath =
+          '//button[text()="Connect via Wallet Connect - Universal Provider"]'
         break
       case 'https://app.uniswap.org/': // UniSwap
         xpath = '//button[@data-testid="navbar-connect-wallet"]'
@@ -158,6 +159,7 @@ class BrowserPage {
     if (showModal) {
       await this.dismissConnectWalletModal()
     }
+    await delay(1000)
     await this.tapConnectWallet(dapp)
     if (visibleWalletConnectButton) {
       await this.tapWalletConnect()
@@ -290,6 +292,13 @@ class BrowserPage {
     await Wbs.tapByXpath(
       "//button[@data-cy='swap-button' and text()='Swap' and not(@disabled)]"
     )
+  }
+
+  async getPlaygroundUri() {
+    await Wbs.waitForEleByXpathToBeVisible(
+      "//input[contains(@class, 'ant-input')]"
+    )
+    return await Wbs.getTextByXpath("//input[contains(@class, 'ant-input')]")
   }
 }
 
