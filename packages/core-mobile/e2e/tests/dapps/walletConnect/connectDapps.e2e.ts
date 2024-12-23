@@ -23,7 +23,7 @@ describe('Dapp Wallet Connect - Others', () => {
   })
 
   it('should connect OpenSea via Wallet Connect', async () => {
-    await browserPage.connectTo('https://opensea.io/', true)
+    await browserPage.connectTo('https://opensea.io/')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
