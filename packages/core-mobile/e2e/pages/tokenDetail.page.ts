@@ -233,21 +233,19 @@ class TokenDetailsPage {
   }
 
   async isPriceValid(expectedPrice: number, currentPrice: string) {
-    // Remove non-numeric characters (dollar signs, commas, etc.)
-    const updatedCurrentPrice = currentPrice.replace(/[^0-9]/g, '')
+    const updatedCurrentPrice = parseFloat(currentPrice.replace(/[$,]/g, ''))
 
-    // If the updated price is empty or '0', return false
-    if (!updatedCurrentPrice || updatedCurrentPrice === '0') {
+    // return false if the price UI shows 0
+    if (updatedCurrentPrice === 0) {
       return false
     } else {
-      // Get the first two digits from the cleaned currentPrice
-      const currentPriceFirstTwoDigits = updatedCurrentPrice.slice(0, 2)
-
-      // Get the first two digits from expectedPrice
-      const expectedPriceFirstTwoDigits = String(expectedPrice).slice(0, 2)
-
-      // Compare the first two digits
-      return currentPriceFirstTwoDigits === expectedPriceFirstTwoDigits
+      const tolerance = 0.1
+      const diffPercentage =
+        Math.abs(expectedPrice - updatedCurrentPrice) / expectedPrice
+      console.log(`Diff Percentage: ${diffPercentage}`)
+      console.log(`Price on UI: ${updatedCurrentPrice}`)
+      console.log(`Price on API: ${expectedPrice}`)
+      return diffPercentage <= tolerance
     }
   }
 

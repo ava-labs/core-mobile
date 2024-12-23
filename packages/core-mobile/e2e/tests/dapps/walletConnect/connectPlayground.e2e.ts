@@ -2,7 +2,6 @@
 /**
  * @jest-environment ./environment.ts
  */
-// import assertions from '../../../helpers/assertions'
 import { warmup } from '../../../helpers/warmup'
 import popUpModalPage from '../../../pages/popUpModal.page'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
@@ -16,21 +15,19 @@ import sendPage from '../../../pages/send.page'
 import assertions from '../../../helpers/assertions'
 
 describe('Dapp - Core Playground', () => {
-  beforeAll(async () => {
+  it('should connect playground', async () => {
     await warmup()
-  })
-
-  it('should connect to Core Playground', async () => {
     await browserPage.connectTo(
       'https://ava-labs.github.io/extension-avalanche-playground/',
       false,
       false
     )
-    const qrUri = await browserPage.getQrUri()
+    const qrUri = await browserPage.getPlaygroundUri()
+    console.log(qrUri)
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
     await bottomTabsPage.tapPortfolioTab()
-  }, 60000)
+  })
 
   it('should handle eth_sendTransaction', async () => {
     await bottomTabsPage.tapBrowserTab()
