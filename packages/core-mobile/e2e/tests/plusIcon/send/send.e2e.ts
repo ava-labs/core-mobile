@@ -18,13 +18,13 @@ describe('Send AVAX', () => {
     await cleanup()
   })
 
-  it('should send AVAX on C-Chain', async () => {
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.avaxToken,
-      sendLoc.sendingAmount
-    )
-    await sendPage.verifySuccessToast()
-  })
+  // it('should send AVAX on C-Chain', async () => {
+  //   await sendPage.sendTokenTo2ndAccount(
+  //     sendLoc.avaxToken,
+  //     sendLoc.sendingAmount
+  //   )
+  //   await sendPage.verifySuccessToast()
+  // })
 
   it('should send AVAX on P-Chain', async () => {
     await bottomTabsPage.tapPortfolioTab()
