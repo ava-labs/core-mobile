@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'expo-router'
+import React from 'react'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import {
   Button,
@@ -11,16 +10,19 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { InteractionManager } from 'react-native'
-import WalletSDK from 'utils/WalletSDK'
 import MnemonicScreen from 'new/components/MnemonicPhrase'
 import ScreenHeader from 'new/components/ScreenHeader'
 
-export default function RecoveryPhrase(): JSX.Element {
-  const router = useRouter()
+export const RecoveryPhrase = ({
+  onNext,
+  mnemonic,
+  isLoading
+}: {
+  onNext: () => void
+  mnemonic: string
+  isLoading: boolean
+}): React.JSX.Element => {
   const { theme } = useTheme()
-  const [localMnemonic, setLocalMnemonic] = useState<string>('')
-  const [isLoading, setIsLoading] = useState(true)
 
   function handleNext(): void {
     showAlert({
@@ -31,26 +33,11 @@ export default function RecoveryPhrase(): JSX.Element {
         {
           text: 'Dismiss',
           style: 'cancel',
-          onPress: () => {
-            router.navigate({
-              pathname: './verifyRecoveryPhrase',
-              params: { mnemonic: localMnemonic }
-            })
-          }
+          onPress: onNext
         }
       ]
     })
   }
-
-  useEffect(() => {
-    InteractionManager.runAfterInteractions(() => {
-      ;(async () => {
-        const newPhrase = await WalletSDK.generateMnemonic()
-        setLocalMnemonic(newPhrase)
-        setIsLoading(false)
-      })()
-    })
-  }, [])
 
   return (
     <BlurredBarsContentLayout>
@@ -68,7 +55,7 @@ export default function RecoveryPhrase(): JSX.Element {
                 Losing this phrase will result in lost funds
               </Text>
             </View>
-            <MnemonicScreen isLoading={isLoading} mnemonic={localMnemonic} />
+            <MnemonicScreen isLoading={isLoading} mnemonic={mnemonic} />
           </View>
         </ScrollView>
         <View

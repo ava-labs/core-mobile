@@ -1,11 +1,11 @@
 import React from 'react'
-import { useSignupContext } from 'new/contexts/SignupProvider'
+import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
 import { useRouter } from 'expo-router'
-import { CopyCode as CopyCodeComponent } from '../../components/totp/CopyCode'
-import { Loader } from '../../components/totp/Loader'
+import { CopyCode as CopyCodeComponent } from '../../../components/totp/CopyCode'
+import { Loader } from '../../../components/totp/Loader'
 
 export default function CopyCode(): JSX.Element {
-  const { handleCopyCode, totpKey } = useSignupContext()
+  const { handleCopyCode, totpKey } = useRecoveryMethodContext()
   const router = useRouter()
 
   const handleBack = (): void => {

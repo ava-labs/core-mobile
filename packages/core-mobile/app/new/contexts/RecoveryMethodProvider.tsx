@@ -10,15 +10,12 @@ import React, {
   useState
 } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { useRouter } from 'expo-router'
 import { copyToClipboard } from 'new/utils/clipboard'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
-import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
 import { OidcAuth } from 'new/types'
 
-export interface SignupContextState {
-  handleAccountVerified: () => Promise<void>
+export interface RecoveryMethodContextState {
   handleCopyCode: () => void
   onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
   totpKey?: string
@@ -28,16 +25,15 @@ export interface SignupContextState {
   setOidcAuth: Dispatch<SetStateAction<OidcAuth | undefined>>
 }
 
-export const SignupContext = createContext<SignupContextState>(
-  {} as SignupContextState
+export const RecoveryMethodContext = createContext<RecoveryMethodContextState>(
+  {} as RecoveryMethodContextState
 )
 
-export const SignupProvider = ({
+export const RecoveryMethodProvider = ({
   children
 }: {
   children: ReactNode
 }): React.JSX.Element => {
-  const router = useRouter()
   const [oidcAuth, setOidcAuth] = useState<OidcAuth>()
   const [totpChallenge, setTotpChallenge] = useState<TotpChallenge>()
 
@@ -70,20 +66,7 @@ export const SignupProvider = ({
     [oidcAuth, totpChallenge]
   )
 
-  const handleAccountVerified = useCallback(async (): Promise<void> => {
-    showLogoModal()
-    const walletName = await SeedlessService.getAccountName()
-    hideLogoModal()
-
-    if (walletName) {
-      router.navigate('./createPin')
-      return
-    }
-    router.navigate('./nameYourWallet')
-  }, [router])
-
-  const state: SignupContextState = {
-    handleAccountVerified,
+  const state: RecoveryMethodContextState = {
     handleCopyCode,
     onVerifyCode,
     totpKey,
@@ -94,10 +77,12 @@ export const SignupProvider = ({
   }
 
   return (
-    <SignupContext.Provider value={state}>{children}</SignupContext.Provider>
+    <RecoveryMethodContext.Provider value={state}>
+      {children}
+    </RecoveryMethodContext.Provider>
   )
 }
 
-export function useSignupContext(): SignupContextState {
-  return useContext(SignupContext)
+export function useRecoveryMethodContext(): RecoveryMethodContextState {
+  return useContext(RecoveryMethodContext)
 }

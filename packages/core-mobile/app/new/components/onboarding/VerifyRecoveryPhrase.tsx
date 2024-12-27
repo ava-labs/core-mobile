@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import {
   Button,
@@ -18,9 +17,13 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useCheckMnemonic } from 'new/hooks/useCheckMnemonic'
 
-export default function VerifyRecoveryPhrase(): JSX.Element {
-  const router = useRouter()
-  const { mnemonic } = useGlobalSearchParams<{ mnemonic: string }>()
+export const VerifyRecoveryPhrase = ({
+  mnemonic,
+  onVerified
+}: {
+  mnemonic?: string
+  onVerified: () => void
+}): React.JSX.Element => {
   const mnemonics = useMemo(
     () => (mnemonic ? mnemonic.split(' ') : []),
     [mnemonic]
@@ -59,7 +62,7 @@ export default function VerifyRecoveryPhrase(): JSX.Element {
 
     if (verify(selectedWord1, selectedWord2, selectedWord3)) {
       AnalyticsService.capture('OnboardingMnemonicVerified')
-      router.navigate('./createPin')
+      onVerified()
     } else {
       showAlert({
         title: 'Invalid phrase',

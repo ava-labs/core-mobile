@@ -15,11 +15,11 @@ import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'new/utils/toast'
-import { useSignupContext } from 'new/contexts/SignupProvider'
+import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
-  const { setOidcAuth, handleAccountVerified } = useSignupContext()
+  const { setOidcAuth } = useRecoveryMethodContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -31,7 +31,7 @@ export default function Signup(): JSX.Element {
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
-    router.navigate('onboarding')
+    router.navigate('./mnemonicOnboarding/termsAndConditions')
     AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
@@ -45,10 +45,11 @@ export default function Signup(): JSX.Element {
     mfaId: string
   }): void => {
     setOidcAuth(oidcAuth)
-    router.navigate({
-      pathname: './addRecoveryMethods',
-      params: { allowsUserToAddLater: 'true' }
-    })
+    router.navigate('./seedlessOnboarding/termsAndConditions')
+  }
+
+  const handleAccountVerified = (): void => {
+    router.navigate('./seedlessOnboarding/termsAndConditions')
   }
 
   const handleVerifyMfaMethod = (

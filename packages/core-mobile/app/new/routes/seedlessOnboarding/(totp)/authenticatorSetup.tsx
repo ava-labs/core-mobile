@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react'
-import { useSignupContext } from 'new/contexts/SignupProvider'
+import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
 import useSeedlessManageMFA from 'new/hooks/useSeedlessManageMFA'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import { useRouter } from 'expo-router'
-import { AuthenticatorSetup as AuthenticatorSetupComponent } from '../../components/totp/AuthenticatorSetup'
-import { Loader } from '../../components/totp/Loader'
+import { AuthenticatorSetup as AuthenticatorSetupComponent } from '../../../components/totp/AuthenticatorSetup'
+import { Loader } from '../../../components/totp/Loader'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =
-    useSignupContext()
+    useRecoveryMethodContext()
   const router = useRouter()
   const { totpResetInit } = useSeedlessManageMFA()
 

@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { useRouter } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import {
   Button,
@@ -9,27 +8,17 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useDispatch } from 'react-redux'
-import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 import ScreenHeader from 'new/components/ScreenHeader'
 
-export default function AnalyticsConsent(): JSX.Element {
-  const router = useRouter()
-
+export const AnalyticsConsent = ({
+  onAcceptAnalytics,
+  onRejectAnalytics
+}: {
+  onAcceptAnalytics: () => void
+  onRejectAnalytics: () => void
+}): JSX.Element => {
   const dispatch = useDispatch()
-  const { accept, reject } = useAnalyticsConsent()
-
-  function handleAcceptAnalytics(): void {
-    accept()
-
-    router.navigate('./recoveryPhrase')
-  }
-
-  function handleRejectAnalytics(): void {
-    reject()
-
-    router.navigate('./recoveryPhrase')
-  }
 
   useEffect(() => {
     return () => {
@@ -68,10 +57,10 @@ export default function AnalyticsConsent(): JSX.Element {
             backgroundColor: '$surfacePrimary',
             gap: 16
           }}>
-          <Button size="large" type="primary" onPress={handleAcceptAnalytics}>
+          <Button size="large" type="primary" onPress={onAcceptAnalytics}>
             Unlock
           </Button>
-          <Button size="large" type="tertiary" onPress={handleRejectAnalytics}>
+          <Button size="large" type="tertiary" onPress={onRejectAnalytics}>
             No thanks
           </Button>
         </View>

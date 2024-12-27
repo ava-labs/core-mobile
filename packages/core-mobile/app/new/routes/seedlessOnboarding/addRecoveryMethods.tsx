@@ -1,0 +1,70 @@
+import React, { useState } from 'react'
+import { useRouter } from 'expo-router'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import {
+  RecoveryMethods,
+  useAvailableRecoveryMethods
+} from 'new/hooks/useAvailableRecoveryMethods'
+import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
+import { AddRecoveryMethods as Component } from 'new/components/onboarding/AddRecoveryMethods'
+
+const AddRecoveryMethods = (): JSX.Element => {
+  const { navigate } = useRouter()
+  const { oidcAuth } = useRecoveryMethodContext()
+  const availableRecoveryMethods = useAvailableRecoveryMethods()
+
+  const [selectedMethod, setSelectedMethod] = useState(
+    availableRecoveryMethods.length > 0
+      ? availableRecoveryMethods[0]?.type
+      : undefined
+  )
+
+  const handleOnNext = (): void => {
+    if (selectedMethod === RecoveryMethods.Passkey) {
+      // navigate({
+      //   pathname: './fidoNameInput',
+      //   params: {
+      //     title: 'How would you like to name your passkey?',
+      //     description: 'Add a Passkey name, so it’s easier to find later',
+      //     textInputPlaceholder: 'Passkey name',
+      //     fidoType: FidoType.PASS_KEY
+      //   }
+      // })
+      return
+    }
+    if (selectedMethod === RecoveryMethods.Yubikey) {
+      // navigate({
+      //   pathname: './fidoNameInput',
+      //   params: {
+      //     title: 'How would you like to name your YubiKey?',
+      //     description: 'Add a YubiKey name, so it’s easier to find later',
+      //     textInputPlaceholder: 'YubiKey name',
+      //     fidoType: FidoType.YUBI_KEY
+      //   }
+      // })
+      return
+    }
+    if (selectedMethod === RecoveryMethods.Authenticator) {
+      navigate('./(totp)/authenticatorSetup')
+      AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
+    }
+  }
+
+  const handleOnSkip = (): void => {
+    navigate('./analyticsConsent')
+  }
+
+  return (
+    <Component
+      onNext={handleOnNext}
+      onSkip={handleOnSkip}
+      allowsUserToAddLater={true}
+      oidcAuth={oidcAuth}
+      availableRecoveryMethods={availableRecoveryMethods}
+      selectedMethod={selectedMethod}
+      setSelectedMethod={setSelectedMethod}
+    />
+  )
+}
+
+export default AddRecoveryMethods

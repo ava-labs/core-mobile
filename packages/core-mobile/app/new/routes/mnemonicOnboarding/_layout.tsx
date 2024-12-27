@@ -2,25 +2,24 @@ import React, { useEffect, useState } from 'react'
 import { Stack } from 'new/components/navigation/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
 import { stackNavigatorScreenOptions } from 'new/utils/navigation/screenOptions'
-import { useRootNavigationState } from 'expo-router'
+import { useNavigationContainerRef } from 'expo-router'
 
-export default function OnboardingLayout(): JSX.Element {
+export default function MnemonicOnboardingLayout(): JSX.Element {
   const [currentPage, setCurrentPage] = useState(0)
-
-  const navigationState = useRootNavigationState()
+  const rootState = useNavigationContainerRef().getRootState()
 
   useEffect(() => {
-    const onboardingRoute = navigationState.routes.find(
-      route => route.name === 'onboarding'
+    const onboardingRoute = rootState.routes.find(
+      route => route.name === 'mnemonicOnboarding'
     )
     if (onboardingRoute?.state?.index !== undefined) {
       setCurrentPage(onboardingRoute.state.index)
     }
-  }, [navigationState])
+  }, [rootState])
 
   const renderPageControl = (): React.ReactNode => (
     <PageControl
-      numberOfPage={NUMBER_OF_ONBOARDING_PAGES}
+      numberOfPage={MNEMONIC_ONBOARDING_SCREENS.length}
       currentPage={currentPage}
     />
   )
@@ -31,13 +30,20 @@ export default function OnboardingLayout(): JSX.Element {
         ...stackNavigatorScreenOptions,
         headerTitle: renderPageControl
       }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="analyticsConsent" />
-      <Stack.Screen name="recoveryPhrase" />
-      <Stack.Screen name="verifyRecoveryPhrase" />
-      <Stack.Screen name="createPin" />
+      {MNEMONIC_ONBOARDING_SCREENS.map(screen => {
+        return <Stack.Screen key={screen} name={screen} />
+      })}
     </Stack>
   )
 }
 
-const NUMBER_OF_ONBOARDING_PAGES = 5
+const MNEMONIC_ONBOARDING_SCREENS = [
+  'termsAndConditions',
+  'analyticsConsent',
+  'recoveryPhrase',
+  'verifyRecoveryPhrase',
+  'createPin',
+  'setWalletName',
+  'selectAvatar',
+  'confirmation'
+]

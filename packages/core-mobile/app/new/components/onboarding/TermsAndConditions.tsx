@@ -1,5 +1,4 @@
 import React from 'react'
-import { useRouter } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import {
   alpha,
@@ -12,14 +11,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 
-export default function Index(): JSX.Element {
+export const TermsAndConditions = ({
+  onAgreeAndContinue
+}: {
+  onAgreeAndContinue: () => void
+}): JSX.Element => {
   const { bottom } = useSafeAreaInsets()
-  const router = useRouter()
   const { theme } = useTheme()
-
-  const handleAgreeAndContinue = (): void => {
-    router.navigate('./onboarding/analyticsConsent')
-  }
 
   return (
     <BlurredBarsContentLayout>
@@ -108,7 +106,7 @@ export default function Index(): JSX.Element {
             paddingBottom: 16 + bottom,
             backgroundColor: '$surfacePrimary'
           }}>
-          <Button size="large" type="primary" onPress={handleAgreeAndContinue}>
+          <Button size="large" type="primary" onPress={onAgreeAndContinue}>
             Agree and continue
           </Button>
         </View>

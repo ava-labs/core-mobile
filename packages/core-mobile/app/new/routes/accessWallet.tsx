@@ -9,9 +9,11 @@ import {
 } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import { useRouter } from 'expo-router'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const { navigate } = useRouter()
 
   const handleEnterRecoveryPhrase = (): void => {
     // navigate(AppNavigation.Onboard.Welcome, {
@@ -23,12 +25,7 @@ const AccessWalletScreen = (): JSX.Element => {
   }
 
   const handleCreateMnemonicWallet = (): void => {
-    // navigate(AppNavigation.Onboard.Welcome, {
-    //   screen: AppNavigation.Onboard.AnalyticsConsent,
-    //   params: {
-    //     nextScreen: AppNavigation.Onboard.CreateWalletStack
-    //   }
-    // })
+    navigate('./mnemonicOnboarding/termsAndConditions')
   }
 
   return (

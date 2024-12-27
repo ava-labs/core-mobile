@@ -1,12 +1,13 @@
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View,
   Text,
   useTheme,
   Card,
   TextInput,
-  Pressable
+  Pressable,
+  showAlert
 } from '@avalabs/k2-alpine'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
@@ -40,48 +41,74 @@ export const VerifyCode = ({
     return cleanedInput.replace(/(\d{3})(?=\d)/g, '$1 ')
   }, [cleanedInput])
 
-  const handleVerifyCode = async (changedText: string): Promise<void> => {
-    const numericText = changedText.replace(/[^0-9]/g, '')
-    const cleanChangedText = numericText.replace(/\s/g, '')
-    setCode(cleanChangedText)
-    if (cleanChangedText.length < 6) {
-      setShowError(false)
-      return
-    }
-
-    setIsVerifying(true)
-
-    try {
-      const result = await onVerifyCode(cleanChangedText)
-      if (result.success === false) {
-        throw new Error(result.error.message)
+  const handleVerifyCode = useCallback(
+    async (changedText: string): Promise<void> => {
+      const numericText = changedText.replace(/[^0-9]/g, '')
+      const cleanChangedText = numericText.replace(/\s/g, '')
+      setCode(cleanChangedText)
+      if (cleanChangedText.length < 6) {
+        setShowError(false)
+        return
       }
-      setIsVerifying(false)
-      onVerifySuccess()
-      AnalyticsService.capture('TotpValidationSuccess')
-    } catch (error) {
-      setShowError(true)
-      setIsVerifying(false)
-      AnalyticsService.capture('TotpValidationFailed', {
-        error: error as string
-      })
-    }
-  }
+
+      setIsVerifying(true)
+
+      try {
+        const result = await onVerifyCode(cleanChangedText)
+        if (result.success === false) {
+          throw new Error(result.error.message)
+        }
+        setIsVerifying(false)
+        onVerifySuccess()
+        AnalyticsService.capture('TotpValidationSuccess')
+      } catch (error) {
+        setShowError(true)
+        setIsVerifying(false)
+        AnalyticsService.capture('TotpValidationFailed', {
+          error: error as string
+        })
+      }
+    },
+    [onVerifyCode, onVerifySuccess]
+  )
 
   const handleTextInputFocus = (): void => {
     inputRef.current?.focus()
   }
 
-  const textInputStyle = showError
-    ? {
-        borderColor: colors.$textDanger,
-        borderWidth: 1
-      }
-    : undefined
-
   useEffect(() => {
     handleTextInputFocus()
   }, [])
+
+  const handleRetry = useCallback((): void => {
+    setShowError(false)
+    handleVerifyCode(code).catch(Logger.error)
+  }, [code, handleVerifyCode])
+
+  const handleCancel = (): void => {
+    setShowError(false)
+  }
+
+  useEffect(() => {
+    if (showError) {
+      showAlert({
+        title: 'Incorrect code',
+        description: 'The code you entered is incorrect.  please try again',
+        buttons: [
+          {
+            text: 'Retry',
+            style: 'default',
+            onPress: handleRetry
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: handleCancel
+          }
+        ]
+      })
+    }
+  }, [handleRetry, showError])
 
   return (
     <BlurredBarsContentLayout>
@@ -100,8 +127,7 @@ export const VerifyCode = ({
           <Card
             sx={{
               marginTop: 34,
-              height: 150,
-              ...textInputStyle
+              height: 150
             }}>
             <Pressable
               onPress={handleTextInputFocus}
@@ -134,13 +160,6 @@ export const VerifyCode = ({
               />
             </Pressable>
           </Card>
-          {showError && (
-            <Text
-              variant="body1"
-              sx={{ color: colors.$textDanger, marginTop: 8 }}>
-              Incorrect code. Try again.
-            </Text>
-          )}
         </View>
       </View>
     </BlurredBarsContentLayout>

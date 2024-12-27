@@ -1,21 +1,20 @@
 import React, { useCallback } from 'react'
-import { useSignupContext } from 'new/contexts/SignupProvider'
+import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
 import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { VerifyCode as VerifyCodeComponent } from '../../components/totp/VerifyCode'
+import { VerifyCode as VerifyCodeComponent } from '../../../components/totp/VerifyCode'
 
 export default function VerifyCode(): JSX.Element {
-  const { onVerifyCode, handleAccountVerified } = useSignupContext()
+  const { onVerifyCode } = useRecoveryMethodContext()
   const router = useRouter()
 
   const onVerifySuccess = useCallback((): void => {
     router.dismissAll()
-    router.back()
-    handleAccountVerified()
+    router.navigate('./analyticsConsent')
     AnalyticsService.capture('SeedlessMfaVerified', {
       type: 'Authenticator'
     })
-  }, [router, handleAccountVerified])
+  }, [router])
 
   return (
     <VerifyCodeComponent

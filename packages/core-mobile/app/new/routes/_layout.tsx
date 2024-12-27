@@ -20,8 +20,9 @@ import { Platform } from 'react-native'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import { StackActions } from '@react-navigation/native'
 import { LogoModal } from 'new/components/LogoModal'
-import { SignupProvider } from 'new/contexts/SignupProvider'
+import { RecoveryMethodProvider } from 'new/contexts/RecoveryMethodProvider'
 import { stackNavigatorScreenOptions } from 'new/utils/navigation/screenOptions'
+import { OnboardingProvider } from 'new/contexts/OnboardingProvider'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -82,48 +83,50 @@ export default function RootLayout(): JSX.Element | null {
     <K2AlpineThemeProvider>
       <ApplicationContextProvider>
         <NavigationThemeProvider>
-          <SignupProvider>
-            <Stack
-              screenOptions={{
-                ...stackNavigatorScreenOptions,
-                headerShown: false
-              }}>
-              <Stack.Screen
-                name="index"
-                options={{ animationEnabled: false }}
-              />
-              <Stack.Screen
-                name="signup"
-                options={{ animationEnabled: false }}
-              />
-              <Stack.Screen
-                name="accessWallet"
-                options={{ headerShown: true }}
-              />
-              <Stack.Screen
-                name="(signedIn)"
-                options={{
-                  headerShown: false,
-                  animationEnabled: false,
-                  gestureEnabled: false
-                }}
-              />
-              <Stack.Screen
-                name="loginWithPinOrBiometry"
-                options={{
-                  presentation: 'modal',
-                  headerShown: false,
-                  gestureEnabled: false,
-                  animationEnabled: false
-                }}
-              />
-              <Stack.Screen name="forgotPin" />
-              <Stack.Screen name="+not-found" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen name="(totp)" />
-            </Stack>
-            {enabledPrivacyScreen && <LogoModal />}
-          </SignupProvider>
+          <RecoveryMethodProvider>
+            <OnboardingProvider>
+              <Stack
+                screenOptions={{
+                  ...stackNavigatorScreenOptions,
+                  headerShown: false
+                }}>
+                <Stack.Screen
+                  name="index"
+                  options={{ animationEnabled: false }}
+                />
+                <Stack.Screen
+                  name="signup"
+                  options={{ animationEnabled: false }}
+                />
+                <Stack.Screen
+                  name="accessWallet"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen
+                  name="(signedIn)"
+                  options={{
+                    headerShown: false,
+                    animationEnabled: false,
+                    gestureEnabled: false
+                  }}
+                />
+                <Stack.Screen
+                  name="loginWithPinOrBiometry"
+                  options={{
+                    presentation: 'modal',
+                    headerShown: false,
+                    gestureEnabled: false,
+                    animationEnabled: false
+                  }}
+                />
+                <Stack.Screen name="forgotPin" />
+                <Stack.Screen name="+not-found" />
+                <Stack.Screen name="mnemonicOnboarding" />
+                <Stack.Screen name="seedlessOnboarding" />
+              </Stack>
+              {enabledPrivacyScreen && <LogoModal />}
+            </OnboardingProvider>
+          </RecoveryMethodProvider>
         </NavigationThemeProvider>
       </ApplicationContextProvider>
       <GlobalToast />

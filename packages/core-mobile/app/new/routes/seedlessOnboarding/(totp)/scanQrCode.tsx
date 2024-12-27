@@ -1,10 +1,10 @@
 import React from 'react'
-import { useSignupContext } from 'new/contexts/SignupProvider'
+import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
 import { useRouter } from 'expo-router'
-import { ScanQrCode as ScanQrCodeComponent } from '../../components/totp/ScanQrCode'
+import { ScanQrCode as ScanQrCodeComponent } from '../../../components/totp/ScanQrCode'
 
 export default function ScanQrCode(): JSX.Element {
-  const { totpChallenge } = useSignupContext()
+  const { totpChallenge } = useRecoveryMethodContext()
   const router = useRouter()
 
   const goToVerifyCode = (): void => {

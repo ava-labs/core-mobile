@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { router, useFocusEffect } from 'expo-router'
+import React, { useEffect, useRef } from 'react'
+import { useFocusEffect } from 'expo-router'
 import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
 import {
   GroupList,
@@ -14,9 +14,16 @@ import { Platform, Switch } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native'
 import ScreenHeader from 'new/components/ScreenHeader'
 
-export default function CreatePin(): JSX.Element {
+export const CreatePin = ({
+  useBiometrics,
+  setUseBiometrics,
+  onEnteredValidPin
+}: {
+  useBiometrics: boolean
+  setUseBiometrics: (value: boolean) => void
+  onEnteredValidPin: () => void
+}): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
-  const [useBiometrics, setUseBiometrics] = useState(true)
 
   const {
     onEnterChosenPin,
@@ -40,10 +47,8 @@ export default function CreatePin(): JSX.Element {
   })
 
   useEffect(() => {
-    if (validPin) {
-      router.navigate('')
-    }
-  }, [validPin])
+    validPin && onEnteredValidPin()
+  }, [onEnteredValidPin, validPin])
 
   return (
     <BlurredBarsContentLayout>
@@ -90,19 +95,21 @@ export default function CreatePin(): JSX.Element {
               backgroundColor: '$surfacePrimary',
               gap: 16
             }}>
-            <GroupList
-              data={[
-                {
-                  title: 'Unlock with Face ID',
-                  accessory: (
-                    <Switch
-                      value={useBiometrics}
-                      onValueChange={setUseBiometrics}
-                    />
-                  )
-                }
-              ]}
-            />
+            {!chosenPinEntered && (
+              <GroupList
+                data={[
+                  {
+                    title: 'Unlock with Face ID',
+                    accessory: (
+                      <Switch
+                        value={useBiometrics}
+                        onValueChange={setUseBiometrics}
+                      />
+                    )
+                  }
+                ]}
+              />
+            )}
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>

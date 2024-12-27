@@ -548,7 +548,6 @@ __metadata:
     react-dom: 18.3.1
     react-native: 0.73.7
     react-native-dialog: 9.3.0
-    react-native-gesture-handler: 2.14.1
     react-native-reanimated: 3.6.2
     react-native-reanimated-carousel: v4.0.0-canary.22
     react-native-safe-area-context: 4.11.0
@@ -561,6 +560,7 @@ __metadata:
     expo-image: 1.10.6
     react: 18.3.1
     react-native: 0.73.7
+    react-native-gesture-handler: 2.20.0
     react-native-reanimated: 3.6.2
   languageName: unknown
   linkType: soft
@@ -26151,22 +26151,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:2.14.1":
-  version: 2.14.1
-  resolution: "react-native-gesture-handler@npm:2.14.1"
-  dependencies:
-    "@egjs/hammerjs": ^2.0.17
-    hoist-non-react-statics: ^3.3.0
-    invariant: ^2.2.4
-    lodash: ^4.17.21
-    prop-types: ^15.7.2
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: a037e8c5a88a9fc79c283f3064d7653ec8615cb05fc62622eaccb5f3db489ede9c3a0685b7aad210c7efabfd8f5aa34e4f19204318dfda64c8829266d78e0cae
-  languageName: node
-  linkType: hard
-
 "react-native-gesture-handler@npm:2.20.0":
   version: 2.20.0
   resolution: "react-native-gesture-handler@npm:2.20.0"
@@ -26661,7 +26645,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: a187edd718e1ea3a6b1e5da167744e6ee324bc3c3e492bcb0a9d028ab68a82907f053f37c23aa4229d6a9091541cee3c73549c3c850056e4cf5eb5b3cb2c9ffc
+  checksum: 6e268fad7aa8b8e56fd28cc95f94f35a33fdac4cec0085ae71a766d092760e3f9af35218706113ff7ae99a74baabc5112d32005dce9e66bdf4fda676fad9aa4e
   languageName: node
   linkType: hard
 
