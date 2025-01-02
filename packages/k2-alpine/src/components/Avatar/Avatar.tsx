@@ -9,6 +9,7 @@ import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSequence,
   withTiming
 } from 'react-native-reanimated'
@@ -34,7 +35,7 @@ export const Avatar = ({
   isPressed?: boolean
   hasBlur?: boolean
   style?: ViewStyle
-  glowEffect?: { imageSource: ImageSourcePropType; size: number }
+  glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -61,7 +62,7 @@ export const Avatar = ({
           Platform.OS === 'ios' ? '#8b8b8c' : '#79797c'
       }
 
-  const animatedStyle = useGlowAnimatedStyle()
+  const animatedStyle = useGlowAnimatedStyle(glowEffect?.delay ?? 0)
 
   useEffect(() => {
     pressedAnimation.value = withTiming(isPressed ? 0.95 : 1, {
@@ -137,30 +138,39 @@ export const Avatar = ({
 
 const BLURAREA_INSET = 50
 
-const useGlowAnimatedStyle = (): ImageStyle => {
+const useGlowAnimatedStyle = (delay: number): ImageStyle => {
   const opacity = useSharedValue(0)
-  const rotation = useSharedValue(-45)
-  const scale = useSharedValue(0.5)
+  const rotation = useSharedValue(0)
 
   useEffect(() => {
-    opacity.value = withSequence(
-      withTiming(1, { duration: 1000 }),
-      withTiming(1, { duration: 1000 }),
-      withTiming(0, { duration: 1000 })
+    opacity.value = withDelay(
+      delay,
+      withSequence(
+        withTiming(1, { duration: 500 }),
+        withTiming(1, { duration: 500 }),
+        withTiming(0, { duration: 500 })
+      )
     )
-    rotation.value = withTiming(0, { duration: 1000 })
-    scale.value = withTiming(1, { duration: 1000 })
-  }, [opacity, rotation, scale])
+    rotation.value = withDelay(
+      delay,
+      withTiming(180, {
+        duration: 1500,
+        easing: easeOutQuart
+      })
+    )
+  }, [opacity, rotation, delay])
 
   return useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [
       {
         rotate: `${rotation.value}deg`
-      },
-      {
-        scale: scale.value
       }
     ]
   }))
+}
+
+const easeOutQuart = (t: number): number => {
+  'worklet'
+  return 1 - Math.pow(1 - t, 4)
 }

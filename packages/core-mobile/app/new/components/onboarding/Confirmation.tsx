@@ -37,7 +37,8 @@ export const Confirmation = ({
                 hasBlur={true}
                 glowEffect={{
                   imageSource: require('../../../assets/glow.png'),
-                  size: 380
+                  size: 380,
+                  delay: 300
                 }}
               />
             )}
