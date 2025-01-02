@@ -1,8 +1,8 @@
 import { Platform } from 'react-native'
 
-// eslint-disable-next-line no-extend-native
-if (Platform.OS === 'android) {
-Array.prototype.toSorted = function () {
-  return Array.from(this).sort()
-}
+if (Platform.OS === 'android') {
+  // eslint-disable-next-line no-extend-native
+  Array.prototype.toSorted = function () {
+    return Array.from(this).sort()
+  }
 }
