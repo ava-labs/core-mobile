@@ -1,9 +1,15 @@
 import React, { useEffect } from 'react'
-import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
+import {
+  ImageSourcePropType,
+  ImageStyle,
+  Platform,
+  ViewStyle
+} from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withTiming
 } from 'react-native-reanimated'
 import { BlurView } from 'expo-blur'
@@ -18,7 +24,8 @@ export const Avatar = ({
   isPressed,
   hasBlur,
   style,
-  backgroundColor
+  backgroundColor,
+  glowEffect
 }: {
   source: ImageSourcePropType
   size: number | 'small' | 'large'
@@ -27,6 +34,7 @@ export const Avatar = ({
   isPressed?: boolean
   hasBlur?: boolean
   style?: ViewStyle
+  glowEffect?: { imageSource: ImageSourcePropType; size: number }
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -52,6 +60,8 @@ export const Avatar = ({
         [theme.colors.$surfaceTertiary]:
           Platform.OS === 'ios' ? '#8b8b8c' : '#79797c'
       }
+
+  const animatedStyle = useGlowAnimatedStyle()
 
   useEffect(() => {
     pressedAnimation.value = withTiming(isPressed ? 0.95 : 1, {
@@ -98,6 +108,19 @@ export const Avatar = ({
             intensity={75}
             experimentalBlurMethod="dimezisBlurView"
           />
+          {glowEffect !== undefined && (
+            <Animated.Image
+              source={glowEffect.imageSource}
+              style={[
+                {
+                  position: 'absolute',
+                  width: glowEffect.size,
+                  height: glowEffect.size
+                },
+                animatedStyle
+              ]}
+            />
+          )}
         </View>
       )}
       <HexagonImageView
@@ -113,3 +136,31 @@ export const Avatar = ({
 }
 
 const BLURAREA_INSET = 50
+
+const useGlowAnimatedStyle = (): ImageStyle => {
+  const opacity = useSharedValue(0)
+  const rotation = useSharedValue(-45)
+  const scale = useSharedValue(0.5)
+
+  useEffect(() => {
+    opacity.value = withSequence(
+      withTiming(1, { duration: 1000 }),
+      withTiming(1, { duration: 1000 }),
+      withTiming(0, { duration: 1000 })
+    )
+    rotation.value = withTiming(0, { duration: 1000 })
+    scale.value = withTiming(1, { duration: 1000 })
+  }, [opacity, rotation, scale])
+
+  return useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [
+      {
+        rotate: `${rotation.value}deg`
+      },
+      {
+        scale: scale.value
+      }
+    ]
+  }))
+}

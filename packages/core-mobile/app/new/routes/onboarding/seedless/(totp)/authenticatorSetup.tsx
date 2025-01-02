@@ -4,8 +4,8 @@ import useSeedlessManageMFA from 'new/hooks/useSeedlessManageMFA'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import { useRouter } from 'expo-router'
-import { AuthenticatorSetup as AuthenticatorSetupComponent } from '../../../components/totp/AuthenticatorSetup'
-import { Loader } from '../../../components/totp/Loader'
+import { AuthenticatorSetup as AuthenticatorSetupComponent } from '../../../../components/totp/AuthenticatorSetup'
+import { Loader } from '../../../../components/totp/Loader'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =

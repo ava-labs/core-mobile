@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
 import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { VerifyCode as VerifyCodeComponent } from '../../../components/totp/VerifyCode'
+import { VerifyCode as VerifyCodeComponent } from '../../../../components/totp/VerifyCode'
 
 export default function VerifyCode(): JSX.Element {
   const { onVerifyCode } = useRecoveryMethodContext()

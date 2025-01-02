@@ -11,31 +11,23 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
   const rootState = useNavigationContainerRef().getRootState()
 
   useEffect(() => {
-    const onboardingRoute = rootState.routes.find(
-      r => r.name === 'seedlessOnboarding'
-    )
-    if (onboardingRoute?.state?.index !== undefined) {
-      setCurrentPage(onboardingRoute.state.index)
+    const seedlessOnboardingRoute = rootState.routes
+      .find(r => r.name === 'onboarding')
+      ?.state?.routes.find(r => r.name === 'seedless')
+    if (seedlessOnboardingRoute?.state?.index !== undefined) {
+      setCurrentPage(seedlessOnboardingRoute.state.index)
     }
   }, [rootState])
 
-  // Return the onboarding screens based on the hasWalletName
-  // if hasWalletName is true, the function should not include the 'setWalletName' screen
-  const onboardingScreens = useMemo(() => {
-    return SEEDLESS_ONBOARDING_SCREENS.reduce((acc, screen) => {
-      if (hasWalletName === true && screen === 'setWalletName') {
-        return acc
-      }
-      return [...acc, screen]
-    }, [] as string[])
-  }, [hasWalletName])
-
-  const renderPageControl = (): React.ReactNode => (
-    <PageControl
-      numberOfPage={onboardingScreens.length}
-      currentPage={currentPage}
-    />
+  // if hasWalletName is true, we skip setWalletName screen
+  const numberOfPage = useMemo(
+    () => SEEDLESS_ONBOARDING_SCREENS.length - (hasWalletName ? 1 : 0),
+    [hasWalletName]
   )
+
+  const renderPageControl = (): React.ReactNode => {
+    return <PageControl numberOfPage={numberOfPage} currentPage={currentPage} />
+  }
 
   return (
     <Stack
@@ -43,7 +35,7 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
         ...stackNavigatorScreenOptions,
         headerTitle: renderPageControl
       }}>
-      {onboardingScreens.map(screen => {
+      {SEEDLESS_ONBOARDING_SCREENS.map(screen => {
         return <Stack.Screen key={screen} name={screen} />
       })}
     </Stack>

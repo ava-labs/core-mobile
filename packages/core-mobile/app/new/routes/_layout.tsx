@@ -121,8 +121,7 @@ export default function RootLayout(): JSX.Element | null {
                 />
                 <Stack.Screen name="forgotPin" />
                 <Stack.Screen name="+not-found" />
-                <Stack.Screen name="mnemonicOnboarding" />
-                <Stack.Screen name="seedlessOnboarding" />
+                <Stack.Screen name="onboarding" />
               </Stack>
               {enabledPrivacyScreen && <LogoModal />}
             </OnboardingProvider>

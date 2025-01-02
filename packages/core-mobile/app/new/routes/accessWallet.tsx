@@ -25,7 +25,7 @@ const AccessWalletScreen = (): JSX.Element => {
   }
 
   const handleCreateMnemonicWallet = (): void => {
-    navigate('./mnemonicOnboarding/termsAndConditions')
+    navigate('./onboarding/mnemonic/termsAndConditions')
   }
 
   return (

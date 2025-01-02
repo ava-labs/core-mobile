@@ -9,11 +9,11 @@ export default function MnemonicOnboardingLayout(): JSX.Element {
   const rootState = useNavigationContainerRef().getRootState()
 
   useEffect(() => {
-    const onboardingRoute = rootState.routes.find(
-      route => route.name === 'mnemonicOnboarding'
-    )
-    if (onboardingRoute?.state?.index !== undefined) {
-      setCurrentPage(onboardingRoute.state.index)
+    const mnemonicOnboardingRoute = rootState.routes
+      .find(route => route.name === 'onboarding')
+      ?.state?.routes.find(route => route.name === 'mnemonic')
+    if (mnemonicOnboardingRoute?.state?.index !== undefined) {
+      setCurrentPage(mnemonicOnboardingRoute.state.index)
     }
   }, [rootState])
 

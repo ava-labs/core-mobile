@@ -11,8 +11,9 @@ export default function CreatePin(): JSX.Element {
   const handleEnteredValidPin = useCallback(() => {
     if (hasWalletName) {
       navigate('./selectAvatar')
+    } else {
+      navigate('./setWalletName')
     }
-    navigate('./setWalletName')
   }, [hasWalletName, navigate])
 
   return (

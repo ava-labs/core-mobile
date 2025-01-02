@@ -31,7 +31,7 @@ export default function Signup(): JSX.Element {
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
-    router.navigate('./mnemonicOnboarding/termsAndConditions')
+    router.navigate('./onboarding/mnemonic/termsAndConditions')
     AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
@@ -45,11 +45,11 @@ export default function Signup(): JSX.Element {
     mfaId: string
   }): void => {
     setOidcAuth(oidcAuth)
-    router.navigate('./seedlessOnboarding/termsAndConditions')
+    router.navigate('./onboarding/seedless/termsAndConditions')
   }
 
   const handleAccountVerified = (): void => {
-    router.navigate('./seedlessOnboarding/termsAndConditions')
+    router.navigate('./onboarding/seedless/termsAndConditions')
   }
 
   const handleVerifyMfaMethod = (
