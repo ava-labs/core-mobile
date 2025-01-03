@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   Button,
   SafeAreaView,
@@ -9,7 +9,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
-import ScreenHeader from 'new/components/ScreenHeader'
+import ScreenHeader from 'common/components/ScreenHeader'
 
 export const AnalyticsConsent = ({
   onAcceptAnalytics,

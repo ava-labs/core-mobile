@@ -1,5 +1,5 @@
 import React from 'react'
-import { TermsAndConditions as Component } from 'new/components/onboarding/TermsAndConditions'
+import { TermsAndConditions as Component } from 'features/onboarding/components/TermsAndConditions'
 import { useRouter } from 'expo-router'
 
 export default function TermsAndConditions(): JSX.Element {

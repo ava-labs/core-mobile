@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, Button, useTheme, Card, Icons } from '@avalabs/k2-alpine'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export const CopyCode = ({
   totpKey,

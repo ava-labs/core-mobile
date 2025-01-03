@@ -1,5 +1,5 @@
 import React from 'react'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   alpha,
   Button,

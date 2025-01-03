@@ -1,10 +1,10 @@
 import React from 'react'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { Button, SafeAreaView, ScrollView, View } from '@avalabs/k2-alpine'
 import { Platform } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native'
-import ScreenHeader from 'new/components/ScreenHeader'
-import { SimpleTextInput } from 'new/components/SimpleTextInput'
+import ScreenHeader from 'common/components/ScreenHeader'
+import { SimpleTextInput } from 'common/components/SimpleTextInput'
 
 export const SetWalletName = ({
   name,

@@ -6,9 +6,9 @@ import {
   TransitionPresets
 } from '@react-navigation/stack'
 import { Animated } from 'react-native'
-import Grabber from 'new/components/navigation/Grabber'
-import BackBarButton from 'new/components/navigation/BackBarButton'
-import BlurredBackgroundView from 'new/components/navigation/BlurredBackgroundView'
+import Grabber from 'common/components/Grabber'
+import BackBarButton from 'common/components/BackBarButton'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { Text, View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
 

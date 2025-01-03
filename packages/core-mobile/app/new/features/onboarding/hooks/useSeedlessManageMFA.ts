@@ -1,5 +1,5 @@
 import { TotpChallenge } from '@cubist-labs/cubesigner-sdk'
-import { showSnackbar } from 'new/utils/toast'
+import { showSnackbar } from 'common/utils/toast'
 import useVerifyMFA from 'seedless/hooks/useVerifyMFA'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'

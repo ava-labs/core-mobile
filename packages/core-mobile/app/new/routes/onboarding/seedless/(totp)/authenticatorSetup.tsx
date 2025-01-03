@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react'
-import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
-import useSeedlessManageMFA from 'new/hooks/useSeedlessManageMFA'
+import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import useSeedlessManageMFA from 'features/onboarding/hooks/useSeedlessManageMFA'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import { useRouter } from 'expo-router'
-import { AuthenticatorSetup as AuthenticatorSetupComponent } from '../../../../components/totp/AuthenticatorSetup'
-import { Loader } from '../../../../components/totp/Loader'
+import { Loader } from 'common/components/Loader'
+import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =

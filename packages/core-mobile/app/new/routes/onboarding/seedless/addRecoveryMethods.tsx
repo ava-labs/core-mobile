@@ -4,9 +4,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   RecoveryMethods,
   useAvailableRecoveryMethods
-} from 'new/hooks/useAvailableRecoveryMethods'
-import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
-import { AddRecoveryMethods as Component } from 'new/components/onboarding/AddRecoveryMethods'
+} from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import { AddRecoveryMethods as Component } from 'features/onboarding/components/AddRecoveryMethods'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -45,7 +45,7 @@ const AddRecoveryMethods = (): JSX.Element => {
       return
     }
     if (selectedMethod === RecoveryMethods.Authenticator) {
-      navigate('./(totp)/authenticatorSetup')
+      navigate('./authenticatorSetup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
   }

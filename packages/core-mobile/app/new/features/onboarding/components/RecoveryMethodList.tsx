@@ -13,7 +13,7 @@ import {
 import {
   RecoveryMethod,
   RecoveryMethods
-} from 'new/hooks/useAvailableRecoveryMethods'
+} from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 
 export const RecoveryMethodList = ({
   selectedMethod,

@@ -1,7 +1,7 @@
 import React from 'react'
-import { useRecoveryMethodContext } from 'new/contexts/RecoveryMethodProvider'
+import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { useRouter } from 'expo-router'
-import { ScanQrCode as ScanQrCodeComponent } from '../../../../components/totp/ScanQrCode'
+import { ScanQrCode as ScanQrCodeComponent } from 'features/onboarding/components/ScanQrCode'
 
 export default function ScanQrCode(): JSX.Element {
   const { totpChallenge } = useRecoveryMethodContext()

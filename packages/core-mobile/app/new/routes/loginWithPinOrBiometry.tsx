@@ -27,7 +27,7 @@ import {
   PinInputActions,
   CIRCULAR_BUTTON_WIDTH
 } from '@avalabs/k2-alpine'
-import { usePinOrBiometryLogin } from 'new/hooks/usePinOrBiometryLogin'
+import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 

@@ -1,4 +1,4 @@
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import React from 'react'
 import { View, Text, Button, useTheme } from '@avalabs/k2-alpine'
 import QRCode from 'react-native-qrcode-svg'

@@ -1,5 +1,5 @@
 import React from 'react'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   Button,
   Icons,
@@ -10,8 +10,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import MnemonicScreen from 'new/components/MnemonicPhrase'
-import ScreenHeader from 'new/components/ScreenHeader'
+import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
+import ScreenHeader from 'common/components/ScreenHeader'
 
 export const RecoveryPhrase = ({
   onNext,

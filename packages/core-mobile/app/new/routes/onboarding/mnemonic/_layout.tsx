@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Stack } from 'new/components/navigation/Stack'
+import { Stack } from 'common/components/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
-import { stackNavigatorScreenOptions } from 'new/utils/navigation/screenOptions'
+import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { useNavigationContainerRef } from 'expo-router'
 
 export default function MnemonicOnboardingLayout(): JSX.Element {

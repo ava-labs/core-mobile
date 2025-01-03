@@ -1,7 +1,7 @@
 import React from 'react'
 import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
 import { useRouter } from 'expo-router'
-import { AnalyticsConsent as Component } from 'new/components/onboarding/AnalyticsConsent'
+import { AnalyticsConsent as Component } from 'features/onboarding/components/AnalyticsConsent'
 
 export default function AnalyticsConsent(): JSX.Element {
   const { navigate } = useRouter()

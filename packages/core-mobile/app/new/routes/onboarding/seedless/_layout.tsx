@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { Stack } from 'new/components/navigation/Stack'
+import { Stack } from 'common/components/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
-import { stackNavigatorScreenOptions } from 'new/utils/navigation/screenOptions'
-import { useOnboardingContext } from 'new/contexts/OnboardingProvider'
+import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import { useOnboardingContext } from 'features/onboarding/contexts/OnboardingProvider'
 import { useNavigationContainerRef } from 'expo-router'
 
 export default function SeedlessOnboardingLayout(): JSX.Element {

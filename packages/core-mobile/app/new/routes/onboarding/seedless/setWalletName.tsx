@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import { setAccountTitle } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { useRouter } from 'expo-router'
-import { SetWalletName as Component } from 'new/components/onboarding/SetWalletName'
+import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('')

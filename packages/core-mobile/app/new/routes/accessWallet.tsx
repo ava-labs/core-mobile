@@ -8,7 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useRouter } from 'expo-router'
 
 const AccessWalletScreen = (): JSX.Element => {
@@ -25,7 +25,7 @@ const AccessWalletScreen = (): JSX.Element => {
   }
 
   const handleCreateMnemonicWallet = (): void => {
-    navigate('./onboarding/mnemonic/termsAndConditions')
+    navigate('/onboarding/mnemonic/termsAndConditions')
   }
 
   return (

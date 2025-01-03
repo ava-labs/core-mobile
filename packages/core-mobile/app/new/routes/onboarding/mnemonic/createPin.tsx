@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { CreatePin as Component } from 'new/components/onboarding/CreatePin'
+import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 
 export default function CreatePin(): JSX.Element {
   const [useBiometrics, setUseBiometrics] = useState(true)

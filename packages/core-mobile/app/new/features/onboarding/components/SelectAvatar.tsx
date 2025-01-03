@@ -1,5 +1,5 @@
 import React from 'react'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   Avatar,
   Button,
@@ -10,7 +10,7 @@ import {
   AVATAR_BLURAREA_INSET
 } from '@avalabs/k2-alpine'
 import { ImageSourcePropType } from 'react-native'
-import ScreenHeader from 'new/components/ScreenHeader'
+import ScreenHeader from 'common/components/ScreenHeader'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const SelectAvatar = ({

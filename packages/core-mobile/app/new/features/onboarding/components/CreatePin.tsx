@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useFocusEffect } from 'expo-router'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   GroupList,
   PinInput,
@@ -9,10 +9,10 @@ import {
   ScrollView,
   View
 } from '@avalabs/k2-alpine'
-import { useCreatePin } from 'new/hooks/useCreatePin'
+import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { Platform, Switch } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native'
-import ScreenHeader from 'new/components/ScreenHeader'
+import ScreenHeader from 'common/components/ScreenHeader'
 
 export const CreatePin = ({
   useBiometrics,

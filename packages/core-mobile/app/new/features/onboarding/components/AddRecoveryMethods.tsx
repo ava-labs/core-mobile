@@ -1,12 +1,12 @@
 import React from 'react'
 import { View, Text, Button } from '@avalabs/k2-alpine'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   RecoveryMethod,
   RecoveryMethods
-} from 'new/hooks/useAvailableRecoveryMethods'
-import { OidcAuth } from 'new/types'
-import { RecoveryMethodList } from '../../components/RecoveryMethodList'
+} from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import { OidcAuth } from 'features/onboarding/types/types'
+import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 
 export const AddRecoveryMethods = ({
   selectedMethod,

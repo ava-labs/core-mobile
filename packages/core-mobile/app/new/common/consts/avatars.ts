@@ -1,15 +1,15 @@
 import { ImageSourcePropType } from 'react-native'
 
 export const AVATARS: { id: string; source: ImageSourcePropType }[] = [
-  require('../../assets/avatars/avatar-1.jpeg'),
-  require('../../assets/avatars/avatar-2.jpeg'),
-  require('../../assets/avatars/avatar-3.jpeg'),
-  require('../../assets/avatars/avatar-4.jpeg'),
-  require('../../assets/avatars/avatar-5.jpeg'),
-  require('../../assets/avatars/avatar-6.png'),
-  require('../../assets/avatars/avatar-7.png'),
-  require('../../assets/avatars/avatar-8.png'),
-  require('../../assets/avatars/avatar-9.jpeg'),
+  require('assets/avatars/avatar-1.jpeg'),
+  require('assets/avatars/avatar-2.jpeg'),
+  require('assets/avatars/avatar-3.jpeg'),
+  require('assets/avatars/avatar-4.jpeg'),
+  require('assets/avatars/avatar-5.jpeg'),
+  require('assets/avatars/avatar-6.png'),
+  require('assets/avatars/avatar-7.png'),
+  require('assets/avatars/avatar-8.png'),
+  require('assets/avatars/avatar-9.jpeg'),
   {
     uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
   },

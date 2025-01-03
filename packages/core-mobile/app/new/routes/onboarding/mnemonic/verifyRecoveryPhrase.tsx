@@ -1,6 +1,6 @@
 import React from 'react'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
-import { VerifyRecoveryPhrase as Component } from 'new/components/onboarding/VerifyRecoveryPhrase'
+import { VerifyRecoveryPhrase as Component } from 'features/onboarding/components/VerifyRecoveryPhrase'
 
 export default function VerifyRecoveryPhrase(): JSX.Element {
   const { navigate } = useRouter()

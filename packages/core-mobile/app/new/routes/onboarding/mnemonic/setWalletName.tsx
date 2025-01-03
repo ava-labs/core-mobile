@@ -3,7 +3,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useDispatch } from 'react-redux'
 import { setWalletName } from 'store/account'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { SetWalletName as Component } from 'new/components/onboarding/SetWalletName'
+import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('')

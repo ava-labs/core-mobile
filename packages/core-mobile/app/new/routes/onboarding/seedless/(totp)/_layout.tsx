@@ -1,5 +1,5 @@
 import React from 'react'
-import { Stack } from 'new/components/navigation/Stack'
+import { Stack } from 'common/components/Stack'
 
 export default function TotpLayout(): JSX.Element {
   return (

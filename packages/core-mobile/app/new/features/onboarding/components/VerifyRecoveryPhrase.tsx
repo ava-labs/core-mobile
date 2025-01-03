@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   Button,
   SafeAreaView,
@@ -7,15 +7,15 @@ import {
   showAlert,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'new/components/ScreenHeader'
-import WordSelection from 'new/components/onboarding/WordSelection'
+import ScreenHeader from 'common/components/ScreenHeader'
+import WordSelection from 'features/onboarding/components/WordSelection'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useCheckMnemonic } from 'new/hooks/useCheckMnemonic'
+import { useCheckMnemonic } from 'features/onboarding/hooks/useCheckMnemonic'
 
 export const VerifyRecoveryPhrase = ({
   mnemonic,

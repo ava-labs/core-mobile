@@ -1,4 +1,4 @@
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View,

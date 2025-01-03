@@ -1,9 +1,9 @@
 import React from 'react'
-import { Stack } from 'new/components/navigation/Stack'
+import { Stack } from 'common/components/Stack'
 import {
   homeScreenOptions,
   stackNavigatorScreenOptions
-} from 'new/utils/navigation/screenOptions'
+} from 'common/consts/screenOptions'
 
 export default function StakeLayout(): JSX.Element {
   return (

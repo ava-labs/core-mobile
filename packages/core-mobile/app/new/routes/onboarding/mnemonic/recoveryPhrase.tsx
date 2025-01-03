@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { InteractionManager } from 'react-native'
 import WalletSDK from 'utils/WalletSDK'
-import { RecoveryPhrase as Component } from 'new/components/onboarding/RecoveryPhrase'
+import { RecoveryPhrase as Component } from 'features/onboarding/components/RecoveryPhrase'
 
 export default function RecoveryPhrase(): JSX.Element {
   const { navigate } = useRouter()

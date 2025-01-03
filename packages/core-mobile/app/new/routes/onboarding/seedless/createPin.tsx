@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { useRouter } from 'expo-router'
-import { CreatePin as Component } from 'new/components/onboarding/CreatePin'
-import { useOnboardingContext } from 'new/contexts/OnboardingProvider'
+import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
+import { useOnboardingContext } from 'features/onboarding/contexts/OnboardingProvider'
 
 export default function CreatePin(): JSX.Element {
   const { hasWalletName } = useOnboardingContext()

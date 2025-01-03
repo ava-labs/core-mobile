@@ -1,5 +1,5 @@
 import React from 'react'
-import { Confirmation as Component } from 'new/components/onboarding/Confirmation'
+import { Confirmation as Component } from 'features/onboarding/components/Confirmation'
 import { useLocalSearchParams } from 'expo-router'
 import { useWallet } from 'hooks/useWallet'
 import Logger from 'utils/Logger'

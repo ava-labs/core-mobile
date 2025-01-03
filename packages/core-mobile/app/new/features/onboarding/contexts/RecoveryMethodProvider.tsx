@@ -10,10 +10,10 @@ import React, {
   useState
 } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { copyToClipboard } from 'new/utils/clipboard'
+import { copyToClipboard } from 'common/utils/clipboard'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
-import { OidcAuth } from 'new/types'
+import { OidcAuth } from 'features/onboarding/types/types'
 
 export interface RecoveryMethodContextState {
   handleCopyCode: () => void

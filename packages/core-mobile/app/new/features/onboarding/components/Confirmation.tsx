@@ -1,5 +1,5 @@
 import React from 'react'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   Avatar,
   Button,
@@ -9,7 +9,7 @@ import {
   useTheme,
   Text
 } from '@avalabs/k2-alpine'
-import { AVATARS } from 'new/consts/avatars'
+import { AVATARS } from 'common/consts/avatars'
 
 export const Confirmation = ({
   selectedAvatarId,
@@ -36,7 +36,7 @@ export const Confirmation = ({
                 size="large"
                 hasBlur={true}
                 glowEffect={{
-                  imageSource: require('../../../assets/glow.png'),
+                  imageSource: require('../../../../assets/glow.png'),
                   size: 380,
                   delay: 300
                 }}

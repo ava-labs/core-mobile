@@ -7,7 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { copyToClipboard } from 'new/utils/clipboard'
+import { copyToClipboard } from 'common/utils/clipboard'
 import MnemonicAva from './MnemonicAva'
 
 export default function MnemonicPhrase({
