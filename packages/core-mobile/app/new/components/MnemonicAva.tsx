@@ -50,7 +50,7 @@ function MnemonicText(props: TextProps | Readonly<TextProps>): JSX.Element {
   const { theme } = useTheme()
   const orderNum = (props.keyNum + 1).toString()
   return (
-    <View style={[styles.horizontalLayout]} testID="mnemonic_ava__words_view">
+    <View style={styles.horizontalLayout} testID="mnemonic_ava__words_view">
       <Text
         variant="body2"
         sx={{ marginEnd: 6, color: theme.colors.$textSecondary }}

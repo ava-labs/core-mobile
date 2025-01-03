@@ -66,12 +66,12 @@ export const Avatar = ({
         sx={{
           backgroundColor: surfacePrimaryBlurBgMap[backgroundColor],
           position: 'absolute',
-          top: -BLURAREA_INSET + 10,
-          left: -BLURAREA_INSET,
+          top: -AVATAR_BLURAREA_INSET + 10,
+          left: -AVATAR_BLURAREA_INSET,
           right: 0,
           bottom: 0,
-          width: height + BLURAREA_INSET * 2,
-          height: height + BLURAREA_INSET * 2,
+          width: height + AVATAR_BLURAREA_INSET * 2,
+          height: height + AVATAR_BLURAREA_INSET * 2,
           alignItems: 'center',
           justifyContent: 'center'
         }}>
@@ -140,4 +140,4 @@ export const Avatar = ({
   )
 }
 
-const BLURAREA_INSET = 50
+export const AVATAR_BLURAREA_INSET = 50

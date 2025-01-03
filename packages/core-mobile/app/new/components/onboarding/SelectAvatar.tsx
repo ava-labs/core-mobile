@@ -32,7 +32,10 @@ export const SelectAvatar = ({
   return (
     <BlurredBarsContentLayout>
       <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
+        <ScrollView
+          sx={{ flex: 1 }}
+          contentContainerSx={{ padding: 16 }}
+          showsVerticalScrollIndicator={false}>
           <ScreenHeader
             title={`Select your ${'\n'}personal avatar`}
             description="Add a display avatar for your wallet. You can change it at any time in the app’s settings"

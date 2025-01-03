@@ -27,8 +27,6 @@ export default function MnemonicPhrase({
   const {
     theme: { colors }
   } = useTheme()
-  // const BLUR_BACKGROUND_COLOR =
-  //   Platform.OS === 'ios' ? '#BFBFBF70' : colors.$neutral900
   const BLUR_BACKGROUND_COLOR = colors.$surfaceSecondary
 
   const mnemonics = (): JSX.Element => {
@@ -51,8 +49,7 @@ export default function MnemonicPhrase({
             key={index}
             style={{
               justifyContent: 'space-between',
-              flexDirection: 'row',
-              flex: 1
+              flexDirection: 'row'
             }}>
             {row}
           </View>
