@@ -3,14 +3,15 @@ import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsConte
 import {
   Avatar,
   Button,
-  SafeAreaView,
   ScrollView,
   View,
   AvatarSelector,
-  useTheme
+  useTheme,
+  AVATAR_BLURAREA_INSET
 } from '@avalabs/k2-alpine'
 import { ImageSourcePropType } from 'react-native'
 import ScreenHeader from 'new/components/ScreenHeader'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const SelectAvatar = ({
   avatars,
@@ -26,22 +27,23 @@ export const SelectAvatar = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { bottom } = useSafeAreaInsets()
 
   const avatar = avatars.find(a => a.id === selectedAvatarId)
 
   return (
     <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView
-          sx={{ flex: 1 }}
-          contentContainerSx={{ padding: 16 }}
-          showsVerticalScrollIndicator={false}>
-          <ScreenHeader
-            title={`Select your ${'\n'}personal avatar`}
-            description="Add a display avatar for your wallet. You can change it at any time in the app’s settings"
-          />
-        </ScrollView>
-        <View sx={{ alignItems: 'center', paddingBottom: 44, paddingTop: 61 }}>
+      <ScrollView contentContainerSx={{ padding: 16 }}>
+        <ScreenHeader
+          title={`Select your\npersonal avatar`}
+          description="Add a display avatar for your wallet. You can change it at any time in the app's settings"
+        />
+        <View
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: AVATAR_BLURAREA_INSET
+          }}>
           {avatar?.source && (
             <Avatar
               backgroundColor={colors.$surfacePrimary}
@@ -51,22 +53,24 @@ export const SelectAvatar = ({
             />
           )}
         </View>
-        <AvatarSelector
-          selectedId={selectedAvatarId}
-          avatars={avatars}
-          onSelect={setSelectedAvatarId}
-        />
-        <View
-          sx={{
-            padding: 16,
-            paddingTop: 58,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button size="large" type="primary" onPress={onNext}>
-            Next
-          </Button>
+        <View sx={{ paddingVertical: 20 }}>
+          <AvatarSelector
+            selectedId={selectedAvatarId}
+            avatars={avatars}
+            onSelect={setSelectedAvatarId}
+          />
         </View>
-      </SafeAreaView>
+      </ScrollView>
+      <View
+        sx={{
+          padding: 16,
+          paddingBottom: bottom + 16,
+          backgroundColor: '$surfacePrimary'
+        }}>
+        <Button size="large" type="primary" onPress={onNext}>
+          Next
+        </Button>
+      </View>
     </BlurredBarsContentLayout>
   )
 }
