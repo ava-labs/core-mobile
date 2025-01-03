@@ -198,10 +198,6 @@ const setInputText = async (xpath: string, text: string) => {
   await wb.element(by.web.xpath(xpath)).replaceText(text)
 }
 
-const getTextByXpath = async (xpath: string) => {
-  return await wb.element(by.web.xpath(xpath)).getText()
-}
-
 export default {
   tap,
   tapByText,
@@ -218,6 +214,5 @@ export default {
   isVisibleByRunScript,
   verifyUrl,
   setInputText,
-  isVisibleByXpath,
-  getTextByXpath
+  isVisibleByXpath
 }

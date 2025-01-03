@@ -298,7 +298,10 @@ class BrowserPage {
     await Wbs.waitForEleByXpathToBeVisible(
       "//input[contains(@class, 'ant-input')]"
     )
-    return await Wbs.getTextByXpath("//input[contains(@class, 'ant-input')]")
+    return await Wbs.getElementTextByRunScript(
+      'input',
+      '(ele) => ele.getAttribute("value")'
+    )
   }
 }
 
