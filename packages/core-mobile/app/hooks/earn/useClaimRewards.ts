@@ -14,7 +14,6 @@ import { FundsStuckError } from 'hooks/earn/errors'
 import { selectActiveNetwork } from 'store/network'
 import { isDevnet } from 'utils/isDevnet'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useMemo } from 'react'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useClaimFees } from './useClaimFees'
 import { useGetFeeState } from './useGetFeeState'
@@ -23,36 +22,32 @@ import { useGetFeeState } from './useGetFeeState'
  * a hook to claim rewards by doing a cross chain transfer from P to C chain
  *
  * notes:
- * - export P fee is constant and will be deducted automatically from P balance
+ * - export P fee is dynamic and will be deducted automatically from P balance
  * - import C fee is dynamic and will be deducted automatically from the UTXOs present in the shared memory
  */
 export const useClaimRewards = (
   onSuccess: () => void,
   onError: (error: Error) => void,
-  onFundsStuck: (error: Error) => void,
-  gasPrice?: bigint
+  onFundsStuck: (error: Error) => void
 ): {
   mutation: UseMutationResult<void, Error, void, unknown>
   defaultTxFee?: TokenUnit
   totalFees?: TokenUnit
   feeCalculationError?: SendErrorMessage
-  // eslint-disable-next-line max-params
 } => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { getFeeState } = useGetFeeState()
+  const { defaultFeeState } = useGetFeeState()
   const {
     totalFees,
     exportPFee,
     totalClaimable,
     defaultTxFee,
     feeCalculationError
-  } = useClaimFees(gasPrice)
-
-  const feeState = useMemo(() => getFeeState(gasPrice), [getFeeState, gasPrice])
+  } = useClaimFees()
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
@@ -82,7 +77,7 @@ export const useClaimRewards = (
         activeAccount,
         isDeveloperMode,
         isDevnet(activeNetwork),
-        feeState
+        defaultFeeState
       )
     },
     onSuccess: () => {
