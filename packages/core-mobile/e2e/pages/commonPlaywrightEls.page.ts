@@ -58,6 +58,10 @@ class CommonElsPage {
     }
   }
 
+  async waitForQrUriNotVisible(locator = this.wcmQrCode) {
+    await actions.waitFor(locator, 30000, false)
+  }
+
   async tapConnectWallet(index = 0) {
     const connectWallet = this.page.locator(
       `text=/connect wallet/i >> nth=${index}`

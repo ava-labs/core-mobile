@@ -11,8 +11,8 @@ const open = async (url: string, page: Page) => {
   await page.goto(url)
 }
 
-const waitFor = async (item: Locator, timeout = 5000) => {
-  await expect(item).toBeVisible({ timeout })
+const waitFor = async (item: Locator, timeout = 5000, visible = true) => {
+  await expect(item).toBeVisible({ timeout, visible })
 }
 
 async function writeQrCodeToFile(clipboardValue: string) {
