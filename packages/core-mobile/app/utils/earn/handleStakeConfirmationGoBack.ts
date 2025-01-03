@@ -11,7 +11,7 @@ type NodeSearchRouteProp = StakeSetupScreenProps<
 
 export const handleStakeConfirmationGoBack = (
   navigation: ConfirmationNavigationProp | NodeSearchRouteProp['navigation']
-) => {
+): void => {
   const { goBack, getState, navigate } = navigation
   const navigationState = getState()
 
@@ -26,14 +26,7 @@ export const handleStakeConfirmationGoBack = (
       : undefined
 
   if (previousScreen?.name === AppNavigation.StakeSetup.NodeSearch) {
-    const stakingAmount = (previousScreen as NodeSearchRouteProp['route'])
-      .params?.stakingAmount
-    if (stakingAmount) {
-      return navigate(AppNavigation.StakeSetup.StakingDuration, {
-        stakingAmountNanoAvax: stakingAmount.toSubUnit()
-      })
-    }
-    return navigate(AppNavigation.StakeSetup.SmartStakeAmount)
+    return navigate(AppNavigation.StakeSetup.StakingDuration)
   }
   goBack()
 }

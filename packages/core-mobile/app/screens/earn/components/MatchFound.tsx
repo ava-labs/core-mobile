@@ -15,13 +15,16 @@ type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.NodeSearch
 >
 
-export const MatchFound = ({ validator }: { validator: NodeValidator }) => {
+export const MatchFound = ({
+  validator
+}: {
+  validator: NodeValidator
+}): React.JSX.Element => {
   const { theme } = useApplicationContext()
   const navigation = useNavigation<ScreenProps['navigation']>()
-  const { stakingAmount, stakingEndTime } =
-    useRoute<ScreenProps['route']>().params
+  const { stakingEndTime } = useRoute<ScreenProps['route']>().params
 
-  const handleOnBack = () => {
+  const handleOnBack = (): void => {
     handleStakeConfirmationGoBack(navigation)
   }
 
@@ -29,7 +32,6 @@ export const MatchFound = ({ validator }: { validator: NodeValidator }) => {
     const timer = setTimeout(() => {
       navigation.navigate(AppNavigation.StakeSetup.Confirmation, {
         nodeId: validator.nodeID,
-        stakingAmount,
         stakingEndTime,
         onBack: handleOnBack
       })
