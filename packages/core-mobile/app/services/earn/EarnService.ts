@@ -1,6 +1,5 @@
 import { Account, AccountCollection } from 'store/account/types'
-import { exportC } from 'services/earn/exportC'
-import { importP, importPWithBalanceCheck } from 'services/earn/importP'
+import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { importC } from 'services/earn/importC'
@@ -16,7 +15,6 @@ import Logger from 'utils/Logger'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
-  CollectTokensForStakingParams,
   GetAllStakesParams,
   RecoveryEvents
 } from 'services/earn/types'
@@ -123,38 +121,6 @@ class EarnService {
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
     Logger.trace('ImportAnyStuckFunds finished')
-  }
-
-  /**
-   * Collect tokens for staking by moving Avax from C to P-chain
-   */
-  async collectTokensForStaking({
-    cChainBalanceWei,
-    requiredAmountWei,
-    activeAccount,
-    isDevMode,
-    selectedCurrency,
-    isDevnet,
-    feeState
-  }: CollectTokensForStakingParams & { isDevnet: boolean }): Promise<void> {
-    if (requiredAmountWei === 0n) {
-      Logger.info('no need to cross chain')
-      return
-    }
-    await exportC({
-      cChainBalanceWei,
-      requiredAmountWei,
-      activeAccount,
-      isDevMode,
-      isDevnet
-    })
-    await importP({
-      activeAccount,
-      isDevMode,
-      selectedCurrency,
-      isDevnet,
-      feeState
-    })
   }
 
   /**
