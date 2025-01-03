@@ -31,8 +31,7 @@ export default function Signup(): JSX.Element {
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
-    // router.navigate('./onboarding/mnemonic/termsAndConditions')
-    router.navigate('./onboarding/mnemonic/selectAvatar')
+    router.navigate('./onboarding/mnemonic/termsAndConditions')
     AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
