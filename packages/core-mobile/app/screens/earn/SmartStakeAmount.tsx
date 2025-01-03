@@ -7,10 +7,9 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
+import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
 import NotEnoughAvax from './NotEnoughAvax'
 import StakingAmount from './StakingAmount'
 
@@ -20,8 +19,8 @@ type ScreenProps = StakeSetupScreenProps<
 
 enum BalanceStates {
   UNKNOWN = 'unknown', // we don't have any data yet to determine
-  INSUFFICIENT = 'insufficient', // not enough to cover minimum stake amount + fees
-  SUFFICIENT = 'sufficient' // // enough to cover minimum stake amount + fees
+  INSUFFICIENT = 'insufficient', // not enough to cover minimum stake amount
+  SUFFICIENT = 'sufficient' // // enough to cover minimum stake amount
 }
 
 const SmartStakeAmount = (): React.JSX.Element => {
@@ -30,12 +29,8 @@ const SmartStakeAmount = (): React.JSX.Element => {
   const cChainBalance = useCChainBalance()
   const [balanceState, setBalanceState] = useState(BalanceStates.UNKNOWN)
   const claimableBalance = useGetClaimableBalance()
-  const xpProvider = useAvalancheXpProvider()
-  const { estimatedStakingFee: networkFees } = useEstimateStakingFees({
-    stakingAmount: minStakeAmount,
-    xpProvider
-  })
   const cChainNetwork = useCChainNetwork()
+  const stuckBalance = useGetStuckBalance()
   const cChainNetworkToken = cChainNetwork?.networkToken
 
   useEffect(() => {
@@ -46,7 +41,7 @@ const SmartStakeAmount = (): React.JSX.Element => {
         cChainNetworkToken.symbol
       )
         .add(claimableBalance ?? 0)
-        .sub(networkFees ?? 0)
+        .add(stuckBalance ?? 0)
       const notEnoughAvax = availableAvax.lt(minStakeAmount)
 
       if (notEnoughAvax) {
@@ -58,8 +53,8 @@ const SmartStakeAmount = (): React.JSX.Element => {
   }, [
     cChainBalance?.data?.balance,
     minStakeAmount,
+    stuckBalance,
     claimableBalance,
-    networkFees,
     cChainNetworkToken
   ])
 

@@ -49,7 +49,7 @@ type ScreenProps = StakeSetupScreenProps<
 const AdvancedStaking = (): JSX.Element => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const { stakingAmount, stakingEndTime, selectedDuration } =
+  const { stakingEndTime, selectedDuration } =
     useRoute<ScreenProps['route']>().params
 
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -81,7 +81,6 @@ const AdvancedStaking = (): JSX.Element => {
     navigate(AppNavigation.StakeSetup.SelectNode, {
       minUpTime: Number(data.minUpTime),
       maxFee: Number(data.maxFee),
-      stakingAmount,
       stakingEndTime
     })
   }

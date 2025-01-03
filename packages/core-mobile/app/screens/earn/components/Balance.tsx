@@ -204,7 +204,9 @@ export const Balance = (): JSX.Element | null => {
             <BalanceItem
               balanceType={StakeTypeEnum.Available}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Available, theme)}
-              balance={availableInAvax?.toDisplay() ?? UNKNOWN_AMOUNT}
+              balance={
+                availableInAvax?.toDisplay({ fixedDp: 4 }) ?? UNKNOWN_AMOUNT
+              }
               poppableItem={
                 [
                   RecoveryEvents.ImportCStart,
@@ -215,7 +217,9 @@ export const Balance = (): JSX.Element | null => {
             <BalanceItem
               balanceType={StakeTypeEnum.Staked}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Staked, theme)}
-              balance={totalStakedInAvax?.toDisplay() ?? UNKNOWN_AMOUNT}
+              balance={
+                totalStakedInAvax?.toDisplay({ fixedDp: 4 }) ?? UNKNOWN_AMOUNT
+              }
             />
             <BalanceItem
               balanceType={StakeTypeEnum.Claimable}

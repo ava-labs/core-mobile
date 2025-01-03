@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { BackHandler, Linking, StyleSheet } from 'react-native'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import {
-  useIsFocused,
   useNavigation,
   useNavigationState,
   useRoute
@@ -14,7 +14,7 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { Eip1559Fees, truncateNodeId } from 'utils/Utils'
+import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { format, getUnixTime } from 'date-fns'
@@ -23,19 +23,13 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSimpleToast } from 'components/Snackbar'
+import { showTransactionErrorToast } from 'utils/toast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
-import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
-import { timeToShowNetworkFeeError } from 'consts/earn'
-import Spinner from 'components/animation/Spinner'
 import {
   maybePromptEarnNotification,
   scheduleStakingCompleteNotifications
 } from 'store/notifications'
-import useStakingParams from 'hooks/earn/useStakingParams'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Tooltip } from 'components/Tooltip'
@@ -44,15 +38,11 @@ import { showTransactionSuccessToast } from 'utils/toast'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { Text, View } from '@avalabs/k2-mobile'
-import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
-import { SendErrorMessage } from 'screens/send/utils/types'
+import { View } from '@avalabs/k2-mobile'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork } from 'store/network'
 import NetworkService from 'services/network/NetworkService'
-import { useIsNetworkFeeExcessive } from 'hooks/earn/useIsNetworkFeeExcessive'
+import { useDelegationContext } from 'contexts/DelegationContext'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -66,12 +56,10 @@ export const Confirmation = (): JSX.Element | null => {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const dispatch = useDispatch()
-  const { minStakeAmount } = useStakingParams()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const isFocused = useIsFocused()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
-  const { nodeId, stakingAmount, stakingEndTime, onBack } =
+  const { nodeId, stakingEndTime, onBack } =
     useRoute<ScreenProps['route']>().params
   const previousRoute = useNavigationState(
     state => state.routes[state.index - 1]
@@ -85,32 +73,9 @@ export const Confirmation = (): JSX.Element | null => {
     isDeveloperMode,
     isDevnet(activeNetwork)
   )
-  const network = useCChainNetwork()
-  const tokenSymbol = network?.networkToken?.symbol
-  const { issueDelegationMutation } = useIssueDelegation(
-    onDelegationSuccess,
-    onDelegationError,
-    onFundsStuck
-  )
-  const claimableBalance = useGetClaimableBalance()
-  const [gasPrice, setGasPrice] = useState<bigint>()
-  const xpProvider = useAvalancheXpProvider()
-
-  const {
-    estimatedStakingFee: networkFees,
-    defaultTxFee,
-    requiredPFee
-  } = useEstimateStakingFees({
-    stakingAmount,
-    xpProvider,
-    gasPrice
-  })
-  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
-
-  let deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
-  if (deductedStakingAmount.lt(minStakeAmount)) {
-    deductedStakingAmount = stakingAmount
-  }
+  const activeAccount = useSelector(selectActiveAccount)
+  const cChainNetwork = useCChainNetwork()
+  const avaxSymbol = cChainNetwork?.networkToken?.symbol
 
   const validatorEndTimeUnix = useMemo(() => {
     if (validator?.endTime) {
@@ -121,23 +86,67 @@ export const Confirmation = (): JSX.Element | null => {
 
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakingEndTime, validatorEndTimeUnix)
+
+  const onDelegationSuccess = useCallback(
+    (txHash: string): void => {
+      AnalyticsService.capture('StakeDelegationSuccess')
+      showTransactionSuccessToast({ message: 'Staking successful!' })
+
+      getParent()?.goBack()
+      dispatch(maybePromptEarnNotification)
+      dispatch(
+        scheduleStakingCompleteNotifications([
+          {
+            txHash,
+            endTimestamp: getUnixTime(validatedStakingEndTime),
+            accountIndex: activeAccount?.index,
+            isDeveloperMode
+          }
+        ])
+      )
+    },
+    [
+      activeAccount?.index,
+      dispatch,
+      getParent,
+      isDeveloperMode,
+      validatedStakingEndTime
+    ]
+  )
+
+  const onDelegationError = useCallback((error: Error): void => {
+    AnalyticsService.capture('StakeDelegationFail')
+    showTransactionErrorToast({ message: error.message })
+  }, [])
+
+  const { issueDelegationMutation } = useIssueDelegation(
+    onDelegationSuccess,
+    onDelegationError,
+    onFundsStuck
+  )
+  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+
   const localValidatedStakingEndTime = useMemo(() => {
     return new Date(validatedStakingEndTime.getTime())
   }, [validatedStakingEndTime])
 
+  const { networkFees, stakeAmount } = useDelegationContext()
+
   const { data } = useEarnCalcEstimatedRewards({
-    amountNanoAvax: deductedStakingAmount.toSubUnit(),
+    amountNanoAvax: stakeAmount.toSubUnit(),
     duration: validatedStakingDuration,
     delegationFee: Number(validator?.delegationFee)
   })
 
-  const excessiveNetworkFee = useIsNetworkFeeExcessive(gasPrice)
-  const unableToGetNetworkFees = networkFees === undefined
-  const showNetworkFeeError = useTimeElapsed(
-    isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
-    timeToShowNetworkFeeError
+  const networkFeesInAvax = useMemo(
+    () =>
+      new TokenUnit(
+        networkFees,
+        pNetwork.networkToken.decimals,
+        pNetwork.networkToken.symbol
+      ).toDisplay(),
+    [networkFees, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol]
   )
-  const activeAccount = useSelector(selectActiveAccount)
 
   const handleOnBack = useCallback(() => {
     onBack?.()
@@ -151,12 +160,6 @@ export const Confirmation = (): JSX.Element | null => {
     )
     return () => backHandler.remove()
   }, [onBack, handleOnBack])
-
-  useEffect(() => {
-    if (showNetworkFeeError) {
-      navigate(AppNavigation.Earn.FeeUnavailable)
-    }
-  }, [navigate, showNetworkFeeError])
 
   const delegationFee = useMemo(() => {
     if (
@@ -177,51 +180,27 @@ export const Confirmation = (): JSX.Element | null => {
 
   function onFundsStuck(): void {
     navigate(AppNavigation.StakeSetup.FundsStuck, {
-      onTryAgain: () => issueDelegation()
+      onTryAgain: () => {
+        // trying again with updated steps
+        issueDelegation(true)
+      }
     })
-  }
-
-  const issueDelegation = (): void => {
-    if (!claimableBalance) {
-      return
-    }
-    AnalyticsService.capture('StakeIssueDelegation')
-    issueDelegationMutation.mutate({
-      stakingAmountNanoAvax: deductedStakingAmount.toSubUnit(),
-      startDate: minStartTime,
-      endDate: validatedStakingEndTime,
-      nodeId,
-      gasPrice,
-      requiredPFeeNanoAvax: requiredPFee?.toSubUnit()
-    })
-  }
-
-  function onDelegationSuccess(txHash: string): void {
-    AnalyticsService.capture('StakeDelegationSuccess')
-    showTransactionSuccessToast({ message: 'Staking successful!' })
-
-    getParent()?.goBack()
-    dispatch(maybePromptEarnNotification)
-    dispatch(
-      scheduleStakingCompleteNotifications([
-        {
-          txHash,
-          endTimestamp: getUnixTime(validatedStakingEndTime),
-          accountIndex: activeAccount?.index,
-          isDeveloperMode
-        }
-      ])
-    )
-  }
-
-  function onDelegationError(error: Error): void {
-    AnalyticsService.capture('StakeDelegationFail')
-    showSimpleToast(error.message)
   }
 
   const handleReadMore = (): void => {
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
+    })
+  }
+
+  const issueDelegation = (recomputeSteps = false): void => {
+    AnalyticsService.capture('StakeIssueDelegation')
+
+    issueDelegationMutation.mutate({
+      startDate: minStartTime,
+      endDate: validatedStakingEndTime,
+      nodeId,
+      recomputeSteps
     })
   }
 
@@ -260,8 +239,8 @@ export const Confirmation = (): JSX.Element | null => {
   )
 
   const renderStakedAmount = (): JSX.Element => {
-    const stakingAmountInAvax = deductedStakingAmount.toDisplay()
-    const stakingAmountInCurrency = deductedStakingAmount
+    const stakingAmountInAvax = stakeAmount.toDisplay()
+    const stakingAmountInCurrency = stakeAmount
       .mul(avaxPrice)
       .toDisplay({ fixedDp: 2, asNumber: true })
 
@@ -272,7 +251,7 @@ export const Confirmation = (): JSX.Element | null => {
         </AvaText.Body2>
         <View style={{ alignItems: 'flex-end' }}>
           <AvaText.Heading1>
-            {stakingAmountInAvax + ' ' + tokenSymbol}
+            {stakingAmountInAvax + ' ' + avaxSymbol}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
             {`${tokenInCurrencyFormatter(
@@ -298,7 +277,7 @@ export const Confirmation = (): JSX.Element | null => {
             flexDirection: 'column'
           }}>
           <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-            {estimatedRewardInAvax + ' ' + tokenSymbol}
+            {estimatedRewardInAvax + ' ' + avaxSymbol}
           </AvaText.Heading2>
           <AvaText.Body3
             textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
@@ -317,7 +296,7 @@ export const Confirmation = (): JSX.Element | null => {
     if (delegationFee) {
       return (
         <AvaText.Heading6>
-          {delegationFee.toDisplay() + ' ' + tokenSymbol}
+          {delegationFee.toDisplay() + ' ' + avaxSymbol}
         </AvaText.Heading6>
       )
     }
@@ -325,38 +304,26 @@ export const Confirmation = (): JSX.Element | null => {
   }
 
   const renderNetworkFee = (): JSX.Element => {
-    if (unableToGetNetworkFees) {
-      return <Spinner size={22} />
-    }
-
-    const networkFeesInAvax = networkFees?.toDisplay() ?? UNKNOWN_AMOUNT
-
     return (
       <AvaText.Heading6 testID="network_fee">
-        {networkFeesInAvax + ' ' + tokenSymbol}
+        {networkFeesInAvax + ' ' + avaxSymbol}
       </AvaText.Heading6>
     )
   }
-
-  const handleFeesChange = useCallback(
-    (fees: Eip1559Fees) => {
-      setGasPrice(fees.maxFeePerGas)
-    },
-    [setGasPrice]
-  )
 
   if (!validator) return null
 
   return (
     <ConfirmScreen
       isConfirming={issueDelegationMutation.isPending}
-      onConfirm={issueDelegation}
+      onConfirm={() => {
+        issueDelegation()
+      }}
       onCancel={cancelStaking}
       header="Confirm Staking"
       confirmBtnTitle="Stake Now"
       cancelBtnTitle="Cancel"
-      disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected."
-      confirmBtnDisabled={unableToGetNetworkFees || excessiveNetworkFee}>
+      disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.">
       <Space y={4} />
       {renderStakedAmount()}
       <Space y={16} />
@@ -449,28 +416,6 @@ export const Confirmation = (): JSX.Element | null => {
           </Tooltip>
           {renderNetworkFee()}
         </Row>
-        {xpProvider && xpProvider.isEtnaEnabled() && defaultTxFee && (
-          <>
-            <NetworkFeeSelector
-              chainId={pNetwork.chainId}
-              gasLimit={Number(defaultTxFee.toSubUnit())}
-              onFeesChange={handleFeesChange}
-              isGasLimitEditable={false}
-              supportsAvalancheDynamicFee={
-                xpProvider ? xpProvider.isEtnaEnabled() : false
-              }
-              showOnlyFeeSelection={true}
-            />
-            {excessiveNetworkFee && (
-              <Text
-                testID="error_msg"
-                variant="body2"
-                sx={{ color: '$dangerMain' }}>
-                {SendErrorMessage.EXCESSIVE_NETWORK_FEE}
-              </Text>
-            )}
-          </>
-        )}
       </View>
       <Separator />
       <View style={styles.verticalPadding}>
