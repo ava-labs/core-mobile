@@ -63,5 +63,3 @@ export const refetchIntervals = {
   balance: 10000, // 10 seconds
   stakes: 60000 // 60 seconds
 }
-
-export const timeToShowNetworkFeeError = 20000 // 20 seconds

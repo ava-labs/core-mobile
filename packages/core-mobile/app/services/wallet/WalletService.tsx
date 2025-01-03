@@ -21,7 +21,7 @@ import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
-import { info, UnsignedTx, utils } from '@avalabs/avalanchejs'
+import { info, UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
@@ -32,13 +32,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { isDevnet } from 'utils/isDevnet'
-import { extractNeededAmount } from 'hooks/earn/utils/extractNeededAmount'
-import {
-  getStakeableOutUtxos,
-  getTransferOutputUtxos,
-  isAvalancheTransactionRequest,
-  isBtcTransactionRequest
-} from './utils'
+import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
 import MnemonicWalletInstance from './MnemonicWallet'
@@ -54,14 +48,11 @@ type InitProps = {
   isLoggingIn: boolean
 }
 
-// Dummy UTXO ID to construct the unsignedTx to get the estimated tx fee
-const DUMMY_UTXO_ID = 'dummy'
-
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
 
 // We increase C chain base fee by 20% for instant speed
-const BASE_FEE_MULTIPLIER = 0.2
+const C_CHAIN_BASE_FEE_MULTIPLIER = 0.2
 
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
@@ -322,8 +313,44 @@ class WalletService {
     }
   }
 
+  /**
+   * Get atomic UTXOs for P-Chain.
+   */
+  public async getPChainAtomicUTXOs({
+    accountIndex,
+    avaxXPNetwork
+  }: {
+    accountIndex: number
+    avaxXPNetwork: Network
+  }): Promise<utils.UtxoSet> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+
+    return readOnlySigner.getAtomicUTXOs('P', 'C')
+  }
+
+  /**
+   * Get UTXOs on P-Chain.
+   */
+  public async getPChainUTXOs({
+    accountIndex,
+    avaxXPNetwork
+  }: {
+    accountIndex: number
+    avaxXPNetwork: Network
+  }): Promise<utils.UtxoSet> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+
+    return readOnlySigner.getUTXOs('P')
+  }
+
   public getInstantBaseFee<T extends TokenUnit>(baseFee: T): TokenUnit {
-    return baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
+    return baseFee.add(baseFee.mul(C_CHAIN_BASE_FEE_MULTIPLIER))
   }
 
   public async createExportCTx({
@@ -537,7 +564,6 @@ class WalletService {
     return unsignedTx
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async createAddDelegatorTx({
     accountIndex,
     avaxXPNetwork,
@@ -548,8 +574,7 @@ class WalletService {
     rewardAddress,
     isDevMode,
     shouldValidateBurnedAmount = true,
-    feeState,
-    pFeeAdjustmentThreshold
+    feeState
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -604,65 +629,8 @@ class WalletService {
       })
     } catch (error) {
       Logger.warn('unable to create add delegator tx', error)
-
-      const provider = await NetworkService.getAvalancheProviderXP(
-        Boolean(avaxXPNetwork.isTestnet),
-        isDevnet(avaxXPNetwork)
-      )
-
-      if (!provider.isEtnaEnabled()) {
-        // rethrow error if the network is not Etna enabled
-        throw error
-      }
-
-      const missingAmount = extractNeededAmount(
-        (error as Error).message,
-        getAssetId(avaxXPNetwork)
-      )
-
-      if (!missingAmount) {
-        // rethrow error if it's not an insufficient funds error
-        throw error
-      }
-
-      const amountToStake = stakeAmountInNAvax
-      const ratio = Number(missingAmount) / Number(amountToStake)
-
-      if (ratio > pFeeAdjustmentThreshold) {
-        // rethrow insufficient funds error when missing fee is too much compared to total token amount
-        Logger.error(
-          'Failed to create add delegator transaction due to excessive fees',
-          {
-            missingAmount,
-            ratio
-          }
-        )
-        throw error
-      }
-
-      const amountAvailableToStake = amountToStake - missingAmount
-
-      if (amountAvailableToStake <= 0) {
-        Logger.error(
-          'Failed to create add delegator transaction due to excessive fees',
-          {
-            missingAmount
-          }
-        )
-        // rethrow insufficient funds error when balance is not enough to cover fee
-        throw error
-      }
-
-      unsignedTx = readOnlySigner.addPermissionlessDelegator({
-        utxoSet,
-        nodeId,
-        start: BigInt(startDate),
-        end: BigInt(endDate),
-        weight: amountAvailableToStake,
-        subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-        rewardAddresses: [rewardAddress],
-        feeState
-      })
+      // rethrow error
+      throw error
     }
 
     shouldValidateBurnedAmount &&
@@ -674,13 +642,93 @@ class WalletService {
     return unsignedTx
   }
 
-  get walletType(): WalletType {
+  public async simulateImportPTx({
+    utxos,
+    accountIndex,
+    avaxXPNetwork,
+    sourceChain,
+    destinationAddress,
+    feeState
+  }: {
+    utxos: utils.UtxoSet
+    accountIndex: number
+    avaxXPNetwork: Network
+    sourceChain: 'C' | 'X'
+    destinationAddress: string
+    shouldValidateBurnedAmount?: boolean
+    feeState?: pvm.FeeState
+  }): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+
+    return readOnlySigner.importP({
+      utxoSet: utxos,
+      sourceChain,
+      toAddress: destinationAddress,
+      feeState
+    })
+  }
+
+  public async simulateAddPermissionlessDelegatorTx({
+    utxos,
+    stakeAmountInNAvax,
+    accountIndex,
+    avaxXPNetwork,
+    destinationAddress,
+    feeState
+  }: {
+    utxos: utils.UtxoSet
+    stakeAmountInNAvax: bigint
+    accountIndex: number
+    avaxXPNetwork: Network
+    destinationAddress: string
+    shouldValidateBurnedAmount?: boolean
+    feeState?: pvm.FeeState
+  }): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+
+    return readOnlySigner.addPermissionlessDelegator({
+      weight: stakeAmountInNAvax,
+      nodeId: 'NodeID-1',
+      subnetId: PChainId._11111111111111111111111111111111LPO_YY,
+      fromAddresses: [destinationAddress ?? ''],
+      rewardAddresses: [destinationAddress ?? ''],
+      start: BigInt(getUnixTime(new Date())),
+      // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
+      // get the end date 1 month from now
+      end: BigInt(getUnixTime(new Date()) + 60 * 60 * 24 * 30),
+      utxoSet: utxos,
+      feeState
+    })
+  }
+
+  public get walletType(): WalletType {
     return this.#walletType
   }
 
   // PRIVATE METHODS
   private set walletType(walletType: WalletType) {
     this.#walletType = walletType
+  }
+
+  private async getReadOnlyAvaSigner(
+    accountIndex: number,
+    network: Network
+  ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
+    const wallet = await WalletFactory.createWallet(
+      accountIndex,
+      this.walletType
+    )
+    const provXP = await NetworkService.getAvalancheProviderXP(
+      Boolean(network.isTestnet),
+      isDevnet(network)
+    )
+    return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
   }
 
   private async validateAvalancheFee({
@@ -730,88 +778,6 @@ class WalletService {
     }
 
     Logger.info('burned amount is valid')
-  }
-
-  private async getReadOnlyAvaSigner(
-    accountIndex: number,
-    network: Network
-  ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
-    const wallet = await WalletFactory.createWallet(
-      accountIndex,
-      this.walletType
-    )
-    const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet),
-      isDevnet(network)
-    )
-    return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
-  }
-
-  public async simulateImportPTx({
-    stakingAmount,
-    accountIndex,
-    avaxXPNetwork,
-    sourceChain,
-    destinationAddress,
-    feeState
-  }: CreateImportPTxParams & { stakingAmount: bigint }): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      accountIndex,
-      avaxXPNetwork
-    )
-    const assetId = getAssetId(avaxXPNetwork)
-
-    const utxos = getTransferOutputUtxos({
-      amt: stakingAmount,
-      assetId,
-      address: destinationAddress ?? '',
-      utxoId: DUMMY_UTXO_ID
-    })
-    const utxoSet = new utils.UtxoSet([utxos])
-    return readOnlySigner.importP({
-      utxoSet,
-      sourceChain,
-      toAddress: destinationAddress,
-      feeState
-    })
-  }
-
-  public async simulateAddPermissionlessDelegatorTx({
-    amountInNAvax,
-    accountIndex,
-    avaxXPNetwork,
-    destinationAddress,
-    feeState
-  }: CreateExportPTxParams): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      accountIndex,
-      avaxXPNetwork
-    )
-    const provider = await NetworkService.getAvalancheProviderXP(
-      !!avaxXPNetwork.isTestnet,
-      isDevnet(avaxXPNetwork)
-    )
-    const assetId = provider.getAvaxID()
-    const utxos = getStakeableOutUtxos({
-      amt: amountInNAvax * 2n,
-      assetId,
-      address: destinationAddress ?? '',
-      utxoId: DUMMY_UTXO_ID
-    })
-    const utxoSet = new utils.UtxoSet([utxos])
-    return readOnlySigner.addPermissionlessDelegator({
-      weight: amountInNAvax,
-      nodeId: 'NodeID-1',
-      subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      fromAddresses: [destinationAddress ?? ''],
-      rewardAddresses: [destinationAddress ?? ''],
-      start: BigInt(getUnixTime(new Date())),
-      // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
-      // get the end date 1 month from now
-      end: BigInt(getUnixTime(new Date()) + 60 * 60 * 24 * 30),
-      utxoSet,
-      feeState
-    })
   }
 }
 
