@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "testName": "eth_sendTransaction",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_signTypedData_v3",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_signTypedData_v4",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_signTypedData",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "personal_sign",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_sign",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_sendTransaction",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_signTypedData_v3",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_signTypedData_v4",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_signTypedData",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "personal_sign",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "eth_sign",
+    "result": "PASS",
+    "framework": "playwright"
+  }
+]

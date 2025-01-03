@@ -18,7 +18,7 @@ describe('Playground', () => {
       testName,
       testStatus,
       'detox',
-      './e2e/tests/dapps/playwright/playground/detoxResults.json'
+      './e2e/tests/dapps/playwright/factory/detoxResults.json'
     )
   })
 

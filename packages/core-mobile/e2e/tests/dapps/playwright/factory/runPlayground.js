@@ -46,7 +46,7 @@ function connectAndApproveOnDetox() {
       'test',
       '-c',
       'ios.internal.debug',
-      'e2e/tests/dapps/playwright/playground/connectAndApproveRpc.e2e.playwright.ts',
+      'e2e/tests/dapps/playwright/playground/approveEthRpc.e2e.playwright.ts',
       '--reuse'
     ],
     { stdio: 'pipe' }
@@ -67,20 +67,18 @@ async function runTestsSimultaneously() {
     console.error('Fail in runTestsSimultaneously:', error)
   } finally {
     printTestResults(
-      './e2e/tests/dapps/playwright/playground/playwrightResults.json',
+      './e2e/tests/dapps/playwright/factory/playwrightResults.json',
       'PlayWright'
     )
     printTestResults(
-      './e2e/tests/dapps/playwright/playground/detoxResults.json',
+      './e2e/tests/dapps/playwright/factory/detoxResults.json',
       'Detox'
     )
 
     clearTestResults(
-      './e2e/tests/dapps/playwright/playground/playwrightResults.json'
+      './e2e/tests/dapps/playwright/factory/playwrightResults.json'
     )
-    clearTestResults(
-      './e2e/tests/dapps/playwright/playground/detoxResults.json'
-    )
+    clearTestResults('./e2e/tests/dapps/playwright/factory/detoxResults.json')
   }
 }
 

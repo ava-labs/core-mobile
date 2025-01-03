@@ -1,15 +1,13 @@
 import { test } from '@playwright/test'
-import CommonPlaywrightPage from '../../../../pages/commonPlaywrightEls.page'
 import actions from '../../../../helpers/playwrightActions'
 import { playwrightSetup } from '../../../../helpers/playwrightSetup'
-import DappsPlaywrightPage from '../../../../pages/dappsPlaywright.page'
+import delay from '../../../../helpers/waits'
 
-test('Connect SteakHut', async () => {
-  const { page } = await playwrightSetup()
-  const common = new CommonPlaywrightPage(page)
-  const dapps = new DappsPlaywrightPage(page)
+test('Swap on YieldYak', async () => {
+  const { common, dapps } = await playwrightSetup()
 
-  await actions.open(dapps.steakHutUrl, dapps.page)
+  // Connect
+  await actions.open(dapps.yieldYakUrl, dapps.page)
   await common.tapConnectWallet()
   await common.tapWalletConnect()
   await common.tapOpen()
@@ -18,4 +16,10 @@ test('Connect SteakHut', async () => {
     await actions.writeQrCodeToFile(qrUri)
   }
   console.log('URI: ', qrUri)
+
+  // Swap
+  await common.waitForQrUriNotVisible()
+  await dapps.yakFromAmount.fill('0.00001')
+  await actions.tap(dapps.yakSwap)
+  await delay(5000)
 })

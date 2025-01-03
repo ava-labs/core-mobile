@@ -68,7 +68,7 @@ function runFullTests() {
 
   for (const test of playwrightTests) {
     const detoxPath =
-      'e2e/tests/dapps/playwright/factory/connectDapps.e2e.playwright.ts'
+      'e2e/tests/dapps/playwright/connect/connectDapps.e2e.playwright.ts'
     const playwrightPath = path.join(playwrightDir, test)
     const dappName = path.basename(playwrightPath, '.spec.ts')
     console.log(`Running tests for: ${playwrightPath}`)
