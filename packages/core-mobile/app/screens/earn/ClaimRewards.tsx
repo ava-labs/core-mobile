@@ -1,19 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
-import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import Separator from 'components/Separator'
 import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { showSimpleToast } from 'components/Snackbar'
-import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
-import { timeToShowNetworkFeeError } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -28,12 +26,8 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveNetwork } from 'store/network'
-import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
-import { Eip1559Fees } from 'utils/Utils'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { Text } from '@avalabs/k2-mobile'
-import { useIsNetworkFeeExcessive } from 'hooks/earn/useIsNetworkFeeExcessive'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
@@ -44,14 +38,12 @@ const ClaimRewards = (): JSX.Element | null => {
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
-  const xpProvider = useAvalancheXpProvider()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeNetwork = useSelector(selectActiveNetwork)
   const pNetwork = NetworkService.getAvalancheNetworkP(
     isDeveloperMode,
     isDevnet(activeNetwork)
   )
-  const [gasPrice, setGasPrice] = useState<bigint>()
   const { getNetwork } = useNetworks()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const avaxNetwork = getNetwork(ChainId.AVALANCHE_MAINNET_ID)
@@ -62,28 +54,16 @@ const ClaimRewards = (): JSX.Element | null => {
 
   const {
     mutation: claimRewardsMutation,
-    defaultTxFee,
     totalFees,
     feeCalculationError
-  } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck, gasPrice)
-  const isFocused = useIsFocused()
+  } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck)
+
   const unableToGetFees = totalFees === undefined
-  const excessiveNetworkFee = useIsNetworkFeeExcessive(gasPrice)
-  const showFeeError = useTimeElapsed(
-    isFocused && unableToGetFees, // re-enable this checking whenever this screen is focused
-    timeToShowNetworkFeeError
-  )
+
   const insufficientBalanceForFee =
     feeCalculationError === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
 
-  const shouldDisableClaimButton =
-    unableToGetFees || excessiveNetworkFee || insufficientBalanceForFee
-
-  useEffect(() => {
-    if (showFeeError && !insufficientBalanceForFee) {
-      navigate(AppNavigation.Earn.FeeUnavailable)
-    }
-  }, [navigate, showFeeError, insufficientBalanceForFee])
+  const shouldDisableClaimButton = unableToGetFees || insufficientBalanceForFee
 
   const [claimableAmountInAvax, formattedClaimableAmountInCurrency] =
     useMemo(() => {
@@ -174,13 +154,6 @@ const ClaimRewards = (): JSX.Element | null => {
     showSimpleToast(error.message)
   }
 
-  const handleFeesChange = useCallback(
-    (fees: Eip1559Fees) => {
-      setGasPrice(fees.maxFeePerGas)
-    },
-    [setGasPrice]
-  )
-
   if (!data) {
     return null
   }
@@ -230,28 +203,6 @@ const ClaimRewards = (): JSX.Element | null => {
         </Tooltip>
         {renderFees()}
       </Row>
-      {xpProvider && xpProvider.isEtnaEnabled() && defaultTxFee && (
-        <>
-          <NetworkFeeSelector
-            chainId={pNetwork.chainId}
-            gasLimit={Number(defaultTxFee.toSubUnit())}
-            onFeesChange={handleFeesChange}
-            isGasLimitEditable={false}
-            supportsAvalancheDynamicFee={
-              xpProvider ? xpProvider.isEtnaEnabled() : false
-            }
-            showOnlyFeeSelection={true}
-          />
-          {excessiveNetworkFee && (
-            <Text
-              testID="excessive_fee_error_msg"
-              variant="body2"
-              sx={{ color: '$dangerMain' }}>
-              {SendErrorMessage.EXCESSIVE_NETWORK_FEE}
-            </Text>
-          )}
-        </>
-      )}
       {insufficientBalanceForFee && (
         <Text
           testID="insufficent_balance_error_msg"
