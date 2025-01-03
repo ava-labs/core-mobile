@@ -4,13 +4,8 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { refetchIntervals } from 'consts/earn'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { TokenWithBalanceEVM } from '@avalabs/vm-module-types'
-import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { isXPChain } from 'utils/network/isAvalancheNetwork'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
-import Logger from 'utils/Logger'
+import { getCChainBalance } from 'services/balance/getCChainBalance'
 import useCChainNetwork from './useCChainNetwork'
 
 export const useCChainBalance = (): UseQueryResult<
@@ -18,39 +13,25 @@ export const useCChainBalance = (): UseQueryResult<
   Error
 > => {
   const network = useCChainNetwork()
-  const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
+  const cAddress = useSelector(selectActiveAccount)?.addressC
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
   return useQuery({
     refetchInterval: refetchIntervals.balance,
-    enabled: Boolean(addressC),
+    enabled: Boolean(cAddress),
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: ['cChainBalance', isDeveloperMode, addressC, selectedCurrency],
+    queryKey: ['cChainBalance', isDeveloperMode, cAddress, selectedCurrency],
     queryFn: async () => {
-      if (
-        network === undefined ||
-        isBitcoinChainId(network.chainId) ||
-        isXPChain(network.chainId)
-      ) {
-        return Promise.reject(
-          'Chain id not compatible, skipping getNativeBalance'
-        )
+      if (network === undefined || cAddress === undefined) {
+        return Promise.reject('Invalid C-Chain network or address')
       }
 
-      const module = await ModuleManager.loadModuleByNetwork(network)
-      const balancesResponse = await module.getBalances({
-        addresses: [addressC],
-        currency: selectedCurrency,
-        network: mapToVmNetwork(network),
-        storage: coingeckoInMemoryCache
+      return getCChainBalance({
+        cChainNetwork: network,
+        cAddress,
+        currency: selectedCurrency
       })
-      const cChainBalance = balancesResponse[addressC]
-      if (!cChainBalance || 'error' in cChainBalance) {
-        Logger.error('Failed to fetch c-chain balance', cChainBalance?.error)
-        return undefined
-      }
-      return cChainBalance[network.networkToken.symbol]
     }
   })
 }

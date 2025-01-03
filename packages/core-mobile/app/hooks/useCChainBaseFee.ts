@@ -5,7 +5,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvalancheXpProvider } from './networks/networkProviderHooks'
 
-const REFETCH_INTERVAL = 10000 // 10 seconds
+const REFETCH_INTERVAL = 30000 // 30 seconds
 
 /**
  * a query to fetch c chain base fee
