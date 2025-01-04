@@ -1,14 +1,13 @@
 import React from 'react'
 import {
   Card,
-  FlatList,
-  Pressable,
   SxProp,
   Text,
   useTheme,
   View,
   Icons,
-  Separator
+  Separator,
+  TouchableOpacity
 } from '@avalabs/k2-alpine'
 import {
   RecoveryMethod,
@@ -29,94 +28,79 @@ export const RecoveryMethodList = ({
   const {
     theme: { colors }
   } = useTheme()
-  const renderItem = (item: RecoveryMethod): React.JSX.Element => {
-    const isSelected = selectedMethod === item.type
-    const isLastItem = data.indexOf(item) === data.length - 1
-    const Icon = item.icon
-
-    const handleOnPress = (): void => {
-      onPress(item.type)
-    }
-
-    return (
-      <Pressable
-        sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginVertical: 1,
-          borderRadius: 12
-        }}
-        onPress={handleOnPress}>
-        <View
-          sx={{
-            marginRight: 16,
-            width: 22,
-            height: 22,
-            alignItems: 'center'
-          }}>
-          <Icon color={colors.$textPrimary} />
-        </View>
-        <View
-          sx={{
-            flex: 1
-          }}>
-          <View
-            sx={{
-              flex: 1,
-              paddingRight: 17,
-              flexDirection: 'row',
-              alignItems: 'center'
-            }}>
-            <View sx={{ flex: 1, marginRight: 25 }}>
-              <Text
-                sx={{
-                  fontSize: 16,
-                  fontWeight: '500',
-                  lineHeight: 16,
-                  color: colors.$textPrimary
-                }}>
-                {item.title}
-              </Text>
-              <Text
-                sx={{
-                  fontSize: 12,
-                  fontWeight: '400',
-                  lineHeight: 15,
-                  color: colors.$textSecondary,
-                  marginTop: 3
-                }}>
-                {item.description}
-              </Text>
-            </View>
-            {isSelected ? (
-              <Icons.Navigation.Check width={15} color={colors.$textPrimary} />
-            ) : (
-              <View sx={{ width: 15 }} />
-            )}
-          </View>
-          {!isLastItem && (
-            <View sx={{ marginVertical: 12 }}>
-              <Separator />
-            </View>
-          )}
-        </View>
-      </Pressable>
-    )
-  }
 
   if (data.length === 0) {
     return undefined
   }
 
   return (
-    <Card sx={{ paddingRight: 0, ...sx }}>
-      <FlatList
-        scrollEnabled={false}
-        sx={{ width: '100%', backgroundColor: '$surfaceSecondary' }}
-        data={data}
-        renderItem={item => renderItem(item.item as RecoveryMethod)}
-        keyExtractor={item => (item as RecoveryMethod).type}
-      />
+    <Card
+      sx={{
+        ...sx,
+        padding: 0,
+        paddingVertical: 8,
+        alignItems: 'flex-start'
+      }}>
+      {data.map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          sx={{ width: '100%' }}
+          onPress={() => onPress(item.type)}>
+          <>
+            <View
+              sx={{
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 16
+              }}>
+              <item.icon color={colors.$textPrimary} width={22} height={22} />
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  flexShrink: 1,
+                  flexGrow: 1,
+                  justifyContent: 'space-between'
+                }}>
+                <View sx={{ gap: 3, paddingRight: 25 }}>
+                  <Text
+                    sx={{
+                      fontSize: 16,
+                      fontWeight: '500',
+                      lineHeight: 16,
+                      color: colors.$textPrimary
+                    }}>
+                    {item.title}
+                  </Text>
+                  <Text
+                    sx={{
+                      fontSize: 12,
+                      fontWeight: '400',
+                      lineHeight: 15,
+                      color: colors.$textSecondary
+                    }}>
+                    {item.description}
+                  </Text>
+                </View>
+                {selectedMethod === item.type ? (
+                  <Icons.Navigation.Check
+                    width={22}
+                    color={colors.$textPrimary}
+                  />
+                ) : (
+                  <View sx={{ width: 22 }} />
+                )}
+              </View>
+            </View>
+            {index !== data.length - 1 && (
+              <Separator sx={{ marginLeft: 16 + 22 + 16 }} />
+            )}
+          </>
+        </TouchableOpacity>
+      ))}
     </Card>
   )
 }
