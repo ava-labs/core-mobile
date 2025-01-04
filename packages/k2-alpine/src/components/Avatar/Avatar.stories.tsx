@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Switch } from 'react-native'
 import { ScrollView, Text, View } from '../Primitives'
 import { useTheme } from '../..'
-import AvatarSelector from './AvatarSelector'
+import { AvatarSelector } from './AvatarSelector'
 import { Avatar } from './Avatar'
 
 export default {

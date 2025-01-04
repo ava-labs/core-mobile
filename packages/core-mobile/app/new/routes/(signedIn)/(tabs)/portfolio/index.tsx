@@ -1,8 +1,8 @@
 import React from 'react'
 import { Text, ScrollView, View, Button } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
-import { copyToClipboard } from 'new/utils/clipboard'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { copyToClipboard } from 'common/utils/clipboard'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const handleCopyToClipboard = (): void => {

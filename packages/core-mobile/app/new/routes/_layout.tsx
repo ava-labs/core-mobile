@@ -4,10 +4,9 @@ import Bootsplash from 'react-native-bootsplash'
 
 import React from 'react'
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
-import { Stack } from 'new/components/navigation/Stack'
-import NavigationThemeProvider from 'new/utils/navigation/NavigationThemeProvider'
-import { GlobalToast } from 'new/utils/toast'
-import { stackNavigatorScreenOptions } from 'new/utils/navigation/screenOptions'
+import { Stack } from 'common/components/Stack'
+import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
+import { GlobalToast } from 'common/utils/toast'
 import { selectIsReady, selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
 import { useBgDetect } from 'navigation/useBgDetect'
@@ -20,8 +19,10 @@ import {
 import { Platform } from 'react-native'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import { StackActions } from '@react-navigation/native'
-import { LogoModal } from 'new/components/LogoModal'
-import { SignupProvider } from 'new/contexts/SignupProvider'
+import { LogoModal } from 'common/components/LogoModal'
+import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import { OnboardingProvider } from 'features/onboarding/contexts/OnboardingProvider'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -82,40 +83,49 @@ export default function RootLayout(): JSX.Element | null {
     <K2AlpineThemeProvider>
       <ApplicationContextProvider>
         <NavigationThemeProvider>
-          <SignupProvider>
-            <Stack screenOptions={stackNavigatorScreenOptions}>
-              <Stack.Screen
-                name="index"
-                options={{ animationEnabled: false }}
-              />
-              <Stack.Screen
-                name="signup"
-                options={{ animationEnabled: false }}
-              />
-              <Stack.Screen name="accessWallet" />
-              <Stack.Screen
-                name="(signedIn)"
-                options={{
-                  headerShown: false,
-                  animationEnabled: false,
-                  gestureEnabled: false
-                }}
-              />
-              <Stack.Screen
-                name="loginWithPinOrBiometry"
-                options={{
-                  presentation: 'modal',
-                  headerShown: false,
-                  gestureEnabled: false,
-                  animationEnabled: false
-                }}
-              />
-              <Stack.Screen name="forgotPin" />
-              <Stack.Screen name="+not-found" />
-              <Stack.Screen name="(totp)" />
-            </Stack>
-            {enabledPrivacyScreen && <LogoModal />}
-          </SignupProvider>
+          <RecoveryMethodProvider>
+            <OnboardingProvider>
+              <Stack
+                screenOptions={{
+                  ...stackNavigatorScreenOptions,
+                  headerShown: false
+                }}>
+                <Stack.Screen
+                  name="index"
+                  options={{ animationEnabled: false }}
+                />
+                <Stack.Screen
+                  name="signup"
+                  options={{ animationEnabled: false }}
+                />
+                <Stack.Screen
+                  name="accessWallet"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen
+                  name="(signedIn)"
+                  options={{
+                    headerShown: false,
+                    animationEnabled: false,
+                    gestureEnabled: false
+                  }}
+                />
+                <Stack.Screen
+                  name="loginWithPinOrBiometry"
+                  options={{
+                    presentation: 'modal',
+                    headerShown: false,
+                    gestureEnabled: false,
+                    animationEnabled: false
+                  }}
+                />
+                <Stack.Screen name="forgotPin" />
+                <Stack.Screen name="+not-found" />
+                <Stack.Screen name="onboarding" />
+              </Stack>
+              {enabledPrivacyScreen && <LogoModal />}
+            </OnboardingProvider>
+          </RecoveryMethodProvider>
         </NavigationThemeProvider>
       </ApplicationContextProvider>
       <GlobalToast />

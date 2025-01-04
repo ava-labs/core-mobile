@@ -4,7 +4,7 @@ import Carousel from 'react-native-reanimated-carousel'
 import { Pressable } from '../Primitives'
 import { Avatar } from './Avatar'
 
-const AvatarSelector = ({
+export const AvatarSelector = ({
   avatars,
   selectedId,
   onSelect
@@ -90,5 +90,3 @@ const configuration = {
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
-
-export default AvatarSelector

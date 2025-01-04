@@ -11,15 +11,15 @@ import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { OidcProviders } from 'seedless/consts'
-import { hideLogoModal, showLogoModal } from 'new/components/LogoModal'
+import { hideLogoModal, showLogoModal } from 'common/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { showSnackbar } from 'new/utils/toast'
-import { useSignupContext } from 'new/contexts/SignupProvider'
+import { showSnackbar } from 'common/utils/toast'
+import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
-  const { setOidcAuth, handleAccountVerified } = useSignupContext()
+  const { setOidcAuth } = useRecoveryMethodContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -31,18 +31,12 @@ export default function Signup(): JSX.Element {
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
-    // todo: CP-9604
-    // navigate(AppNavigation.Onboard.Welcome, {
-    //   screen: AppNavigation.Onboard.AnalyticsConsent,
-    //   params: {
-    //     nextScreen: AppNavigation.Onboard.CreateWalletStack
-    //   }
-    // })
-    // AnalyticsService.capture('RecoveryPhraseClicked')
+    router.navigate('/onboarding/mnemonic/termsAndConditions')
+    AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
   const handleAccessExistingWallet = (): void => {
-    router.navigate('./accessWallet')
+    router.navigate('/accessWallet')
     AnalyticsService.capture('AccessExistingWalletClicked')
   }
 
@@ -51,10 +45,11 @@ export default function Signup(): JSX.Element {
     mfaId: string
   }): void => {
     setOidcAuth(oidcAuth)
-    router.navigate({
-      pathname: './addRecoveryMethods',
-      params: { allowsUserToAddLater: 'true' }
-    })
+    router.navigate('/onboarding/seedless/termsAndConditions')
+  }
+
+  const handleAccountVerified = (): void => {
+    router.navigate('/onboarding/seedless/termsAndConditions')
   }
 
   const handleVerifyMfaMethod = (

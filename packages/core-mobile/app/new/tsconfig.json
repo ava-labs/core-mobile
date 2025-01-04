@@ -1,5 +1,11 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "features/*": ["../app/new/features/*"],
+      "common/*": ["../app/new/common/*"],
+    }
+  },
   "include": [
     "./**/*.ts",
     "./**/*.tsx",

@@ -1,9 +1,9 @@
 import React from 'react'
-import { Stack } from 'new/components/navigation/Stack'
+import { Stack } from 'common/components/Stack'
 import {
   modalFirstScreenOptions,
   modalStackNavigatorScreenOptions
-} from 'new/utils/navigation/screenOptions'
+} from 'common/consts/screenOptions'
 
 export default function NotificationsLayout(): JSX.Element {
   return (

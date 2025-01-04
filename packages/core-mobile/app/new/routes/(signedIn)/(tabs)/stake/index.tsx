@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 const StakeHomeScreen = (): JSX.Element => {
   return (

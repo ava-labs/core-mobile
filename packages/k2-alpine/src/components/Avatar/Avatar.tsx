@@ -10,6 +10,7 @@ import { BlurView } from 'expo-blur'
 import { View } from '../Primitives'
 import { useTheme } from '../..'
 import { HexagonImageView, HexagonBorder } from './HexagonImageView'
+import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
 
 export const Avatar = ({
   source,
@@ -18,7 +19,8 @@ export const Avatar = ({
   isPressed,
   hasBlur,
   style,
-  backgroundColor
+  backgroundColor,
+  glowEffect
 }: {
   source: ImageSourcePropType
   size: number | 'small' | 'large'
@@ -27,6 +29,7 @@ export const Avatar = ({
   isPressed?: boolean
   hasBlur?: boolean
   style?: ViewStyle
+  glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -53,6 +56,63 @@ export const Avatar = ({
           Platform.OS === 'ios' ? '#8b8b8c' : '#79797c'
       }
 
+  const { animatedStyle, isAnimating } = useGlowAnimatedStyle(
+    glowEffect?.delay ?? 0
+  )
+
+  const renderBlur = (): JSX.Element => {
+    return (
+      <View
+        sx={{
+          backgroundColor: surfacePrimaryBlurBgMap[backgroundColor],
+          position: 'absolute',
+          top: -AVATAR_BLURAREA_INSET + 10,
+          left: -AVATAR_BLURAREA_INSET,
+          right: 0,
+          bottom: 0,
+          width: height + AVATAR_BLURAREA_INSET * 2,
+          height: height + AVATAR_BLURAREA_INSET * 2,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+        {(isAnimating === false || Platform.OS === 'ios') && (
+          <>
+            <HexagonImageView
+              backgroundColor={backgroundColor}
+              source={source}
+              height={height}
+            />
+            <BlurView
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
+              tint={theme.isDark ? 'dark' : undefined}
+              intensity={75}
+              experimentalBlurMethod="dimezisBlurView"
+            />
+          </>
+        )}
+        {glowEffect !== undefined && isAnimating && (
+          <Animated.Image
+            source={glowEffect.imageSource}
+            style={[
+              {
+                position: 'absolute',
+                width: glowEffect.size,
+                height: glowEffect.size
+              },
+              animatedStyle
+            ]}
+          />
+        )}
+      </View>
+    )
+  }
+
   useEffect(() => {
     pressedAnimation.value = withTiming(isPressed ? 0.95 : 1, {
       duration: 150,
@@ -67,39 +127,7 @@ export const Avatar = ({
         pressedAnimatedStyle,
         style
       ]}>
-      {hasBlur === true && (
-        <View
-          sx={{
-            backgroundColor: surfacePrimaryBlurBgMap[backgroundColor],
-            position: 'absolute',
-            top: -BLURAREA_INSET + 10,
-            left: -BLURAREA_INSET,
-            right: 0,
-            bottom: 0,
-            width: height + BLURAREA_INSET * 2,
-            height: height + BLURAREA_INSET * 2,
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-          <HexagonImageView
-            backgroundColor={backgroundColor}
-            source={source}
-            height={height}
-          />
-          <BlurView
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0
-            }}
-            tint={theme.isDark ? 'dark' : undefined}
-            intensity={75}
-            experimentalBlurMethod="dimezisBlurView"
-          />
-        </View>
-      )}
+      {hasBlur === true && renderBlur()}
       <HexagonImageView
         source={source}
         height={height}
@@ -112,4 +140,4 @@ export const Avatar = ({
   )
 }
 
-const BLURAREA_INSET = 50
+export const AVATAR_BLURAREA_INSET = 50
