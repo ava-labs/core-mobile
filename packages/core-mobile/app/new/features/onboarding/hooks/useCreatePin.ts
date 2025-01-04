@@ -49,9 +49,7 @@ export function useCreatePin({
 
     setChosenPin(pinValue)
     if (pinValue.length === 6) {
-      //   setTimeout(() => {
       setChosenPinEntered(true)
-      //   }, 300)
     }
   }
 

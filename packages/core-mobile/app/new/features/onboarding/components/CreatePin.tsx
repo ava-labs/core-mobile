@@ -10,9 +10,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
-import { Platform, Switch } from 'react-native'
-import { KeyboardAvoidingView } from 'react-native'
+import { Switch } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 
 export const CreatePin = ({
   useBiometrics,
@@ -52,9 +52,7 @@ export const CreatePin = ({
 
   return (
     <BlurredBarsContentLayout>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView>
         <SafeAreaView sx={{ flex: 1 }}>
           <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
             <ScreenHeader

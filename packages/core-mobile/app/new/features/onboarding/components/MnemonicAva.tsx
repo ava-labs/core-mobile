@@ -1,45 +1,6 @@
 import React from 'react'
-import { StyleSheet, TextInput } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { useTheme, View, Text } from '@avalabs/k2-alpine'
-
-type InputProps = {
-  keyNum: number
-  text: string
-  onChangeText?: (text: string) => void
-}
-
-function MnemonicInput(props: InputProps | Readonly<InputProps>): JSX.Element {
-  const { theme } = useTheme()
-
-  return (
-    <View style={styles.horizontalLayout}>
-      <Text variant="body2" sx={{ marginEnd: 4 }}>
-        {(props.keyNum + 1).toString()}
-      </Text>
-      <TextInput
-        testID="mnemonic_ava__input"
-        autoCapitalize="none"
-        enablesReturnKeyAutomatically={true}
-        style={[
-          {
-            color: theme.colors.$textPrimary,
-            flex: 1,
-            fontSize: 16,
-            borderWidth: 1,
-            borderColor: theme.colors.$borderPrimary,
-            padding: 4,
-            borderRadius: 4,
-            fontFamily: 'Inter-Regular',
-            marginEnd: 4,
-            marginVertical: 1
-          }
-        ]}
-        onChangeText={props.onChangeText}
-        value={props.text}
-      />
-    </View>
-  )
-}
 
 type TextProps = {
   keyNum: number
@@ -76,7 +37,6 @@ const styles = StyleSheet.create({
 })
 
 const MnemonicAva = {
-  Input: MnemonicInput,
   Text: MnemonicText
 }
 

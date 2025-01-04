@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   InteractionManager,
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback
 } from 'react-native'
@@ -30,6 +29,7 @@ import {
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const { unlock } = useWallet()
@@ -208,9 +208,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
   return (
     <SafeAreaView sx={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView>
         <TouchableWithoutFeedback
           style={{ flex: 1 }}
           onPress={handlePressBackground}>
