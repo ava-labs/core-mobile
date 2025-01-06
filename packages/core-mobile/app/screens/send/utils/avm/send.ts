@@ -9,8 +9,8 @@ import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
 import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
-import { Transaction } from '@sentry/react'
 import { isDevnet } from 'utils/isDevnet'
+import { SpanName } from 'services/sentry/types'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -28,17 +28,16 @@ export const send = async ({
   toAddress: string
   amount: bigint
 }): Promise<string> => {
-  const sentryTrx = SentryWrapper.startTransaction('send-token')
-
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.send')
-    .executeAsync(async () => {
+  const sentrySpanName = 'send-token'
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.send' },
+    async () => {
       const txRequest = await getTransactionRequest({
         toAddress,
         amount,
         network,
         fromAddress,
-        sentryTrx,
+        sentrySpanName,
         accountIndex: account.index
       })
 
@@ -59,10 +58,8 @@ export const send = async ({
       }
 
       return txHash
-    })
-    .finally(() => {
-      SentryWrapper.finish(sentryTrx)
-    })
+    }
+  )
 }
 
 const getTransactionRequest = ({
@@ -71,18 +68,18 @@ const getTransactionRequest = ({
   fromAddress,
   amount,
   network,
-  sentryTrx
+  sentrySpanName
 }: {
   accountIndex: number
   amount: bigint
   toAddress: string
   fromAddress: string
   network: Network
-  sentryTrx: Transaction
+  sentrySpanName?: SpanName
 }): Promise<AvalancheSendTransactionParams> => {
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.avm.get_trx_request')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.avm.get_trx_request' },
+    async () => {
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendXTx({
         accountIndex,
@@ -109,5 +106,6 @@ const getTransactionRequest = ({
           isDevnet: isDevnet(network)
         })
       }
-    })
+    }
+  )
 }

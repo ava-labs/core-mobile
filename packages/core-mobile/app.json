@@ -1,16 +1,31 @@
 {
-  "name": "AvaxWallet",
-  "displayName": "Core Mobile",
-  "slug": "core-wallet",
-  "orientation": "portrait",
-  "userInterfaceStyle": "automatic",
-  "plugins": [
-    "expo-router"
-  ],
   "expo": {
-    "scheme": "core"
-  },
-  "experiments": {
-    "typedRoutes": true
+    "scheme": "core",
+    "name": "AvaxWallet",
+    "displayName": "Core Mobile",
+    "slug": "core-wallet",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      "expo-router",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "note": "Use SENTRY_AUTH_TOKEN env to authenticate with Sentry.",
+          "project": "core-react-native",
+          "organization": "Ava Labs"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

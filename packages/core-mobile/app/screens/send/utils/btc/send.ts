@@ -20,11 +20,9 @@ export const send = async ({
   feeRate: bigint
   isMainnet: boolean
 }): Promise<string> => {
-  const sentryTrx = SentryWrapper.startTransaction('send-token')
-
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.send')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: 'send-token', contextName: 'svc.send.send' },
+    async () => {
       const params: BitcoinSendTransactionParams = {
         from: fromAddress,
         to: toAddress,
@@ -49,8 +47,6 @@ export const send = async ({
       }
 
       return txHash
-    })
-    .finally(() => {
-      SentryWrapper.finish(sentryTrx)
-    })
+    }
+  )
 }

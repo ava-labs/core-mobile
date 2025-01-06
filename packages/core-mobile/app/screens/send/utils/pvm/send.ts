@@ -5,11 +5,11 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
-import { Transaction } from '@sentry/react'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isDevnet } from 'utils/isDevnet'
 import WalletService from 'services/wallet/WalletService'
 import { stripChainAddress } from 'store/account/utils'
+import { SpanName } from 'services/sentry/types'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -29,11 +29,11 @@ export const send = async ({
   feeState?: pvm.FeeState
   accountIndex: number
 }): Promise<string> => {
-  const sentryTrx = SentryWrapper.startTransaction('send-token')
+  const sentrySpanName = 'send-token'
 
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.send')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.send' },
+    async () => {
       const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendPTx({
         accountIndex: accountIndex,
@@ -48,7 +48,7 @@ export const send = async ({
         unsignedTx,
         fromAddress,
         network,
-        sentryTrx
+        sentrySpanName
       })
 
       const [txHash, txError] = await resolve(
@@ -68,26 +68,24 @@ export const send = async ({
       }
 
       return txHash
-    })
-    .finally(() => {
-      SentryWrapper.finish(sentryTrx)
-    })
+    }
+  )
 }
 
 const getTransactionRequest = ({
   unsignedTx,
   fromAddress,
   network,
-  sentryTrx
+  sentrySpanName
 }: {
   unsignedTx: UnsignedTx
   fromAddress: string
   network: Network
-  sentryTrx: Transaction
+  sentrySpanName: SpanName
 }): Promise<AvalancheSendTransactionParams> => {
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.pvm.get_trx_request')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.pvm.get_trx_request' },
+    async () => {
       const manager = utils.getManagerForVM(unsignedTx.getVM())
       const unsignedTxBytes = unsignedTx.toBytes()
       const [codec] = manager.getCodecFromBuffer(unsignedTxBytes)
@@ -105,5 +103,6 @@ const getTransactionRequest = ({
           isDevnet: isDevnet(network)
         })
       }
-    })
+    }
+  )
 }

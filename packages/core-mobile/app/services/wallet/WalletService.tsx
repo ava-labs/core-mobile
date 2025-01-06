@@ -17,7 +17,6 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
@@ -32,6 +31,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { isDevnet } from 'utils/isDevnet'
+import { SpanName } from 'services/sentry/types'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -77,16 +77,16 @@ class WalletService {
     transaction,
     accountIndex,
     network,
-    sentryTrx
+    sentrySpanName
   }: {
     transaction: SignTransactionRequest
     accountIndex: number
     network: Network
-    sentryTrx?: SentryTransaction
+    sentrySpanName?: SpanName
   }): Promise<string> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.wallet.sign')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      { name: sentrySpanName, contextName: 'svc.wallet.sign' },
+      async () => {
         const provider = await NetworkService.getProviderForNetwork(network)
         const wallet = await WalletFactory.createWallet(
           accountIndex,
@@ -132,7 +132,8 @@ class WalletService {
           network,
           provider
         })
-      })
+      }
+    )
   }
 
   public async signMessage({
