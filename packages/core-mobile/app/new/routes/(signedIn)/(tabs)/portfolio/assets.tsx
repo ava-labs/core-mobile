@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, ScrollView } from '@avalabs/k2-alpine'
 import {} from 'react-native-gesture-handler'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 const PortfolioAssetsScreen = (): JSX.Element => {
   return (

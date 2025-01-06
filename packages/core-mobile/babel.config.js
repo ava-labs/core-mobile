@@ -16,7 +16,9 @@ module.exports = {
         ],
         root: ['./app'],
         alias: {
-          tests: './tests'
+          tests: './tests',
+          features: './app/new/features',
+          common: './app/new/common'
         }
       }
     ],
