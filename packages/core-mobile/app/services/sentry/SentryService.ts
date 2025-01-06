@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { Event } from '@sentry/types/types/event'
+import { ErrorEvent } from '@sentry/core'
 
 if (!Config.SENTRY_DSN)
   // (require cycle)
@@ -17,11 +17,11 @@ const isAvailable =
     (!__DEV__ && process.env.E2E !== 'true')) &&
   !!Config.SENTRY_DSN
 
-const routingInstrumentation = new Sentry.ReactNavigationInstrumentation({
+const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: true
 })
 
-function scrubSentryData(event: Event): Event {
+function scrubSentryData(event: ErrorEvent): ErrorEvent {
   /**
    * eliminating breadcrumbs. This should eliminate
    * a massive amount of the data leaks into sentry. If we find that console
@@ -52,10 +52,7 @@ const init = (): void => {
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
       debug: false,
-      enableSpotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
-      beforeSendTransaction: event => {
-        return scrubSentryData(event)
-      },
+      spotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
       beforeSend: event => {
         return scrubSentryData(event)
       },
@@ -65,7 +62,7 @@ const init = (): void => {
       tracesSampler: samplingContext => {
         return __DEV__ ? 1 : samplingContext.sampleRate ?? DefaultSampleRate
       },
-      integrations: [new Sentry.ReactNativeTracing({ routingInstrumentation })]
+      integrations: [navigationIntegration]
     })
   }
 }
@@ -85,4 +82,4 @@ const captureException = (message: string, value?: unknown): void => {
   }
 }
 
-export default { init, isAvailable, captureException, routingInstrumentation }
+export default { init, isAvailable, captureException, navigationIntegration }

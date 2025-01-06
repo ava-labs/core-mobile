@@ -1,8 +1,6 @@
 import { ErrorBase } from 'errors/ErrorBase'
-import { NativeModules } from 'react-native'
 import argon2 from 'react-native-argon2'
-
-const Aes = NativeModules.Aes
+import Aes from 'react-native-aes-crypto'
 
 const VERSION = 2
 
@@ -70,7 +68,7 @@ export async function encrypt(data: string, password: string): Promise<string> {
   const salt = await Aes.randomKey(16) // 128-bit salt
   const iv = await Aes.randomKey(16) // 128-bit iv
   const key = await getDerivedKey(password, salt, VERSION)
-  const cipher = await Aes.encrypt(data, key, iv)
+  const cipher = await Aes.encrypt(data, key, iv, 'aes-256-cbc')
 
   return JSON.stringify({
     cipher,
@@ -98,7 +96,7 @@ export async function decrypt(
   const versionToUse = version === undefined ? 1 : Number(version)
 
   const key = await getDerivedKey(password, salt, versionToUse)
-  const data = (await Aes.decrypt(cipher, key, iv)) as string
+  const data = (await Aes.decrypt(cipher, key, iv, 'aes-256-cbc')) as string
 
   return {
     version: versionToUse,
