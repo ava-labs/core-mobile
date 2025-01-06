@@ -27,8 +27,8 @@
     "plist": "3.0.5",
     "ansi-regex": "4.1.1",
     "ansi-styles": "3.2.1",
-    "@types/react": "18.3.11",
-    "@types/react-dom": "18.2.21",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
     "rxjs": "7.8.1",
     "eslint": "8.50.0",
     "eslint-config-prettier": "8.10.0",
@@ -37,7 +37,13 @@
     "ethers": "6.8.1",
     "web3": "1.7.5",
     "@hpke/core": "1.2.7",
-    "@noble/secp256k1": "2.1.0"
+    "@noble/secp256k1": "2.1.0",
+    "react-native-permissions": "4.1.5"
+  },
+  "overrides": {
+    "react-native-qrcode-scanner": {
+      "react-native-permissions": "4.1.5"
+    }
   },
   "engines": {
     "node": ">=18.14.1",
