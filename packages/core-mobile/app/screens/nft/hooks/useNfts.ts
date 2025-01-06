@@ -21,27 +21,26 @@ export const useNfts = (enabled: boolean) => {
         throw new Error('unable to get NFTs')
       }
 
-      const t = SentryWrapper.startTransaction('get-nfts')
-      try {
-        const nftPagedData = await NftService.fetchNfts({
-          chainId: activeNetwork.chainId,
-          address: account.addressC,
-          pageToken: pageParam
-        })
+      return SentryWrapper.startSpan({ name: 'get-nfts' }, async () => {
+        try {
+          const nftPagedData = await NftService.fetchNfts({
+            chainId: activeNetwork.chainId,
+            address: account.addressC,
+            pageToken: pageParam
+          })
 
-        return {
-          nfts: nftPagedData.nfts,
-          nextPageToken: nftPagedData.nextPageToken
+          return {
+            nfts: nftPagedData.nfts,
+            nextPageToken: nftPagedData.nextPageToken
+          }
+        } catch (err) {
+          Logger.error(
+            `failed to get nfts for chain ${activeNetwork.chainId}`,
+            err
+          )
+          return { nfts: [], nextPageToken: undefined }
         }
-      } catch (err) {
-        Logger.error(
-          `failed to get nfts for chain ${activeNetwork.chainId}`,
-          err
-        )
-        return { nfts: [], nextPageToken: undefined }
-      } finally {
-        SentryWrapper.finish(t)
-      }
+      })
     },
     [account, activeNetwork]
   )
