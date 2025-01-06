@@ -1,10 +1,9 @@
-const { getDefaultConfig } = require('expo/metro-config')
 const { mergeConfig } = require('@react-native/metro-config')
-const { createSentryMetroSerializer } = require('@sentry/react-native/metro')
+const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 const merge = require('lodash.merge')
 
 const monorepoConfig = require('./metro.monorepo.config')
-const defaultConfig = getDefaultConfig(__dirname)
+const defaultConfig = getSentryExpoConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
 
 /**
@@ -15,9 +14,6 @@ const { assetExts, sourceExts } = defaultConfig.resolver
  */
 const baseConfig = {
   resetCache: false,
-  serializer: {
-    customSerializer: createSentryMetroSerializer()
-  },
   transformer: {
     ...defaultConfig.transformer,
     unstable_allowRequireContext: true,
@@ -33,7 +29,7 @@ const baseConfig = {
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
-    sourceExts: [...sourceExts, 'svg'],
+    sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
     resolveRequest: (context, moduleName, platform) => {
       if (moduleName.startsWith('@ledgerhq/cryptoassets')) {
         return context.resolveRequest(

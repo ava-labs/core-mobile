@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction as SentryTransaction } from '@sentry/types'
 import {
   constructFetchFetcher,
   constructGetSpender,
@@ -16,6 +15,7 @@ import {
 } from '@paraswap/sdk'
 import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
+import { SpanName } from 'services/sentry/types'
 
 export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 
@@ -52,7 +52,7 @@ interface BuildTxParams {
   destDecimals?: number
   permit?: string
   deadline?: string
-  sentryTrx?: SentryTransaction
+  sentrySpanName?: SpanName
 }
 
 interface SwapRate {
@@ -64,7 +64,7 @@ interface SwapRate {
   swapSide: SwapSide
   network: Network
   account: Account
-  sentryTrx?: SentryTransaction
+  sentrySpanName?: SpanName
 }
 
 const SUPPORTED_SWAP_NETWORKS = [
@@ -106,11 +106,14 @@ class SwapService {
     swapSide,
     network,
     account,
-    sentryTrx
+    sentrySpanName
   }: SwapRate): Promise<OptimalRate> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.swap.get_rate')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      {
+        name: sentrySpanName,
+        contextName: 'svc.swap.get_rate'
+      },
+      async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
         }
@@ -129,16 +132,17 @@ class SwapService {
           srcDecimals,
           destDecimals
         })
-      })
+      }
+    )
   }
 
   async getParaswapSpender(
     network: Network,
-    sentryTrx?: SentryTransaction
+    sentrySpanName?: SpanName
   ): Promise<Address> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.swap.get_paraswap_spender')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      { name: sentrySpanName, contextName: 'svc.swap.get_paraswap_spender' },
+      async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
         }
@@ -153,7 +157,8 @@ class SwapService {
           fetcher
         })
         return getSpender()
-      })
+      }
+    )
   }
 
   async buildTx({
@@ -172,11 +177,11 @@ class SwapService {
     destDecimals,
     permit,
     deadline,
-    sentryTrx
+    sentrySpanName
   }: BuildTxParams): Promise<Error | TransactionParams> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.swap.build_trx')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      { name: sentrySpanName, contextName: 'svc.swap.build_trx' },
+      async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
         }
@@ -210,7 +215,8 @@ class SwapService {
         }
 
         return result.data
-      })
+      }
+    )
   }
 }
 

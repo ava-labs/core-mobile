@@ -23,7 +23,7 @@ function App(): JSX.Element {
           theme={context.navContainerTheme}
           ref={navigationRef}
           onReady={() => {
-            SentryService.routingInstrumentation.registerNavigationContainer(
+            SentryService.navigationIntegration.registerNavigationContainer(
               navigationRef
             )
             DataDogService.init(navigationRef).catch(Logger.error)

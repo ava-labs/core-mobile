@@ -137,6 +137,7 @@ export const SwapContextProvider = ({
     getOptimalRate()
   }, [getOptimalRate])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   function onSwap({
     srcTokenAddress,
     isSrcTokenNative,
@@ -148,53 +149,57 @@ export const SwapContextProvider = ({
     setSwapStatus('Swapping')
 
     InteractionManager.runAfterInteractions(async () => {
-      const sentryTrx = SentryWrapper.startTransaction('swap')
-      if (!avalancheProvider || !activeAccount) {
-        return
-      }
+      SentryWrapper.startSpan({ name: 'swap' }, async () => {
+        if (!avalancheProvider || !activeAccount) {
+          return
+        }
 
-      resolve(
-        performSwap({
-          srcTokenAddress,
-          isSrcTokenNative,
-          destTokenAddress,
-          isDestTokenNative,
-          priceRoute,
-          slippage: swapSlippage,
-          activeNetwork,
-          provider: avalancheProvider,
-          signAndSend: txParams =>
-            request({
-              method: RpcMethod.ETH_SEND_TRANSACTION,
-              params: txParams,
-              chainId: getEvmCaip2ChainId(activeNetwork.chainId)
-            }),
-          userAddress: activeAccount.addressC
-        })
-      )
-        .then(([result, err]) => {
-          if (err || (result && 'error' in result)) {
-            setSwapStatus('Fail')
-            if (!isUserRejectedError(err)) {
-              AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
-                address: activeAccount.addressC,
-                chainId: activeNetwork.chainId
-              })
-              showTransactionErrorToast({ message: humanizeSwapErrors(err) })
+        resolve(
+          performSwap({
+            srcTokenAddress,
+            isSrcTokenNative,
+            destTokenAddress,
+            isDestTokenNative,
+            priceRoute,
+            slippage: swapSlippage,
+            activeNetwork,
+            provider: avalancheProvider,
+            signAndSend: txParams =>
+              request({
+                method: RpcMethod.ETH_SEND_TRANSACTION,
+                params: txParams,
+                chainId: getEvmCaip2ChainId(activeNetwork.chainId)
+              }),
+            userAddress: activeAccount.addressC
+          })
+        )
+          .then(([result, err]) => {
+            if (err || (result && 'error' in result)) {
+              setSwapStatus('Fail')
+              if (!isUserRejectedError(err)) {
+                AnalyticsService.captureWithEncryption(
+                  'SwapTransactionFailed',
+                  {
+                    address: activeAccount.addressC,
+                    chainId: activeNetwork.chainId
+                  }
+                )
+                showTransactionErrorToast({ message: humanizeSwapErrors(err) })
+              }
+            } else {
+              setSwapStatus('Success')
+              AnalyticsService.captureWithEncryption(
+                'SwapTransactionSucceeded',
+                {
+                  txHash: result?.swapTxHash ?? '',
+                  chainId: activeNetwork.chainId
+                }
+              )
+              audioFeedback(Audios.Send)
             }
-          } else {
-            setSwapStatus('Success')
-            AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
-              txHash: result?.swapTxHash ?? '',
-              chainId: activeNetwork.chainId
-            })
-            audioFeedback(Audios.Send)
-          }
-        })
-        .catch(Logger.error)
-        .finally(() => {
-          SentryWrapper.finish(sentryTrx)
-        })
+          })
+          .catch(Logger.error)
+      })
     })
   }
 

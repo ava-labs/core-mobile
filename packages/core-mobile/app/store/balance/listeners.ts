@@ -26,7 +26,6 @@ import {
 } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
-import SentryWrapper from 'services/sentry/SentryWrapper'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
 import NetworkService from 'services/network/NetworkService'
@@ -130,8 +129,6 @@ const onBalanceUpdateCore = async ({
     return
   }
 
-  const sentryTrx = SentryWrapper.startTransaction('get-balances')
-
   dispatch(setStatus(queryStatus))
 
   const currency = selectSelectedCurrency(state).toLowerCase()
@@ -141,6 +138,7 @@ const onBalanceUpdateCore = async ({
   // fetch the first network balances first
   if (firstNetwork === undefined) return
 
+  const sentrySpanName = 'get-balances'
   const balanceKeyedPromises = accounts.map(account => {
     return {
       key: getKey(firstNetwork.chainId, account.index),
@@ -148,7 +146,7 @@ const onBalanceUpdateCore = async ({
         network: firstNetwork,
         account,
         currency,
-        sentryTrx
+        sentrySpanName
       })
     }
   })
@@ -174,7 +172,7 @@ const onBalanceUpdateCore = async ({
               network: n,
               account,
               currency,
-              sentryTrx,
+              sentrySpanName,
               customTokens: customTokensByChainId
             })
           }
@@ -188,7 +186,6 @@ const onBalanceUpdateCore = async ({
   }
 
   dispatch(setStatus(QueryStatus.IDLE))
-  SentryWrapper.finish(sentryTrx)
 }
 
 const fetchBalancePeriodically = async (
