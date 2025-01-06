@@ -21,14 +21,7 @@ import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
 import { useMigrateFromAsyncStorage } from 'hooks/useMigrateFromAsyncStorage'
-import NotificationsService from 'services/notifications/NotificationsService'
 
-setTimeout(() => {
-  NotificationsService.displayNotification({
-    title: '3️⃣ Things to know this week:',
-    body: '1) IRS offers temporary crypto tax relief\n2) XRP targets $2.90 after resistance break\n3) Bitcoin debates quantum computing risks'
-  })
-}, 10000)
 function setToast(toast: Toast): void {
   global.toast = toast
 }
