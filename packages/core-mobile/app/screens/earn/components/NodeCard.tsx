@@ -35,11 +35,9 @@ type NavigationProp = StakeSetupScreenProps<
 
 export const NodeCard = ({
   data,
-  stakingAmount,
   stakingEndTime
 }: {
   data: NodeValidator
-  stakingAmount: TokenUnit
   stakingEndTime: UTCDate
 }): JSX.Element => {
   const { theme } = useApplicationContext()
@@ -226,7 +224,6 @@ export const NodeCard = ({
             onPress={() =>
               navigate(AppNavigation.StakeSetup.Confirmation, {
                 nodeId: data.nodeID,
-                stakingAmount,
                 stakingEndTime
               })
             }>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
@@ -9,7 +9,7 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import FlexSpacer from 'components/FlexSpacer'
-import AvaButton from 'components/AvaButton'
+import { Button } from '@avalabs/k2-mobile'
 import PercentButtons from 'screens/earn/PercentButtons'
 import EarnInputAmount from 'screens/earn/EarnInputAmount'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
@@ -20,22 +20,27 @@ import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
+import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import { cChainToken } from 'utils/units/knownTokens'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { selectActiveNetwork } from 'store/network'
+import { selectActiveNetwork } from 'store/network/slice'
 import { isDevnet } from 'utils/isDevnet'
+import { useDelegationContext } from 'contexts/DelegationContext'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount(): JSX.Element {
+  const [isComputing, setIsComputing] = useState<boolean>(false)
+  const [computeError, setComputeError] = useState<Error | null>(null)
+  const { compute, setStakeAmount, stakeAmount } = useDelegationContext()
   const { getNetwork } = useNetworks()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
@@ -55,7 +60,7 @@ export default function StakingAmount(): JSX.Element {
   )
   const fetchingBalance = cChainBalance?.data?.balance === undefined
   const claimableBalance = useGetClaimableBalance()
-
+  const stuckBalance = useGetStuckBalance()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDevnet(activeNetwork)
     ? ChainId.AVALANCHE_DEVNET_ID
@@ -68,30 +73,30 @@ export default function StakingAmount(): JSX.Element {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState(zeroAvaxPChain())
   const stakeInCurrency = useMemo(() => {
-    return inputAmount
+    return stakeAmount
       .mul(nativeTokenPrice)
       .toDisplay({ fixedDp: 2, asNumber: true })
-  }, [inputAmount, nativeTokenPrice])
+  }, [stakeAmount, nativeTokenPrice])
 
   const cumulativeBalance = useMemo(
-    () =>
-      claimableBalance ? cChainBalanceAvax?.add(claimableBalance) : undefined,
-    [cChainBalanceAvax, claimableBalance]
+    () => cChainBalanceAvax?.add(claimableBalance || 0).add(stuckBalance || 0),
+    [cChainBalanceAvax, claimableBalance, stuckBalance]
   )
-  const amountNotEnough =
-    !inputAmount.isZero() && inputAmount.lt(minStakeAmount)
 
-  const notEnoughBalance = cumulativeBalance?.lt(inputAmount) ?? true
+  const amountNotEnough =
+    !stakeAmount.isZero() && stakeAmount.lt(minStakeAmount)
+
+  const notEnoughBalance = cumulativeBalance?.lt(stakeAmount) ?? true
 
   const inputValid =
-    !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
+    !amountNotEnough && !notEnoughBalance && !stakeAmount.isZero()
 
   const balanceInAvax = cumulativeBalance?.toDisplay() ?? UNKNOWN_AMOUNT
 
   function handleAmountChange(amount: TokenUnit): void {
-    setInputAmount(amount)
+    computeError && setComputeError(null)
+    setStakeAmount(amount)
   }
 
   function setAmount(factor: number): void {
@@ -99,8 +104,33 @@ export default function StakingAmount(): JSX.Element {
       percent: (100 / factor).toString()
     })
     if (!cumulativeBalance) return
-    setInputAmount(zeroAvaxPChain().add(cumulativeBalance.div(factor)))
+
+    if (factor === 1) {
+      // we can't stake the full amount because of fees
+      // to give a good user experience, when user presses max
+      // we will stake 99.99% of the balance
+      // this is to ensure that the user has enough balance to cover the fees
+      setStakeAmount(zeroAvaxPChain().add(cumulativeBalance.mul(0.9999)))
+    } else {
+      setStakeAmount(zeroAvaxPChain().add(cumulativeBalance.div(factor)))
+    }
   }
+
+  const executeCompute = useCallback(async () => {
+    setIsComputing(true)
+    setComputeError(null)
+
+    try {
+      await compute(stakeAmount.toSubUnit())
+
+      AnalyticsService.capture('StakeOpenDurationSelect')
+      navigate(AppNavigation.StakeSetup.StakingDuration)
+    } catch (e) {
+      setComputeError(e as Error)
+    }
+
+    setIsComputing(false)
+  }, [stakeAmount, compute, navigate])
 
   return (
     <View style={{ padding: 16, flex: 1 }}>
@@ -114,8 +144,8 @@ export default function StakingAmount(): JSX.Element {
       {!fetchingBalance && (
         <Row style={{ justifyContent: 'center' }}>
           <Tooltip
-            content="Final staking amount may be slightly lower due to fees"
-            style={{ width: 150 }}>
+            content={`C-Chain Balance: ${cChainBalanceAvax?.toDisplay()} AVAX\nP-Chain Balance: ${claimableBalance?.toDisplay()} AVAX\nP-Chain Atomic Balance: ${stuckBalance?.toDisplay()} AVAX`}
+            style={{ width: 250 }}>
             <AvaText.Subtitle1
               color={theme.neutral500}
               testID="available_balance">
@@ -128,7 +158,7 @@ export default function StakingAmount(): JSX.Element {
       <Space y={40} />
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
-        inputAmount={inputAmount}
+        inputAmount={stakeAmount}
       />
       <Row style={{ justifyContent: 'center' }}>
         <AvaText.Caption currency textStyle={{ color: theme.white }}>
@@ -150,24 +180,33 @@ export default function StakingAmount(): JSX.Element {
         )}
         {notEnoughBalance && (
           <AvaText.Body3 color={theme.colorError}>
-            {`Insufficient balance`}
+            {'The specified staking amount exceeds the available balance'}
+          </AvaText.Body3>
+        )}
+        {computeError && (
+          <AvaText.Body3 color={theme.colorError}>
+            {computeError.message}
           </AvaText.Body3>
         )}
       </View>
       <FlexSpacer />
       {inputValid && (
-        <AvaButton.PrimaryLarge
+        <Button
           testID="next_btn"
-          onPress={() => {
-            AnalyticsService.capture('StakeOpenDurationSelect')
-            navigate(AppNavigation.StakeSetup.StakingDuration, {
-              stakingAmountNanoAvax: inputAmount.toSubUnit()
-            })
-          }}>
-          Next
-        </AvaButton.PrimaryLarge>
+          type="primary"
+          size="xlarge"
+          disabled={isComputing}
+          onPress={executeCompute}>
+          {isComputing ? (
+            <>
+              <ActivityIndicator /> Computing...
+            </>
+          ) : (
+            'Next'
+          )}
+        </Button>
       )}
-      {inputAmount.isZero() && (
+      {stakeAmount.isZero() && (
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             isDeveloperMode={isDeveloperMode}
