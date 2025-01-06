@@ -10,6 +10,8 @@ export async function registerDeviceToNotificationSender(
     JSON.stringify({
       deviceToken: fcmToken,
       appType: 'CORE_MOBILE_APP'
+      appType: 'CORE_MOBILE_APP',
+      osType: Platform.OS === 'ios' ? 'IOS' : 'ANDROID'
     })
   ).catch(error => {
     Logger.error(
