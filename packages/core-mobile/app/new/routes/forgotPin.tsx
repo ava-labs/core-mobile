@@ -8,9 +8,9 @@ import {
   Icons,
   useTheme
 } from '@avalabs/k2-alpine'
-import BlurredBarsContentLayout from 'new/components/navigation/BlurredBarsContentLayout'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useRouter } from 'expo-router'
-import SlideToConfirm from 'new/components/SlideToConfirm'
+import SlideToConfirm from 'common/components/SlideToConfirm'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { selectWalletType } from 'store/app'
 import { useSelector } from 'react-redux'
