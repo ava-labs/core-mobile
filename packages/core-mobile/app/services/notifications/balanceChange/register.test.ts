@@ -1,5 +1,8 @@
 import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
 import Config from 'react-native-config'
+import { Platform } from 'react-native'
+import { commonStorage } from 'utils/mmkv'
+import { StorageKey } from 'resources/Constants'
 
 global.fetch = jest.fn()
 
@@ -9,6 +12,7 @@ describe('registerDevice', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    commonStorage.delete(StorageKey.NOTIFICATIONS_OPTIMIZATION)
   })
 
   it('should call fetch with the correct options and handle a successful response', async () => {
@@ -34,16 +38,39 @@ describe('registerDevice', () => {
         },
         body: JSON.stringify({
           deviceToken: deviceToken,
-          appType: 'CORE_MOBILE_APP'
+          appType: 'CORE_MOBILE_APP',
+          osType: Platform.OS === 'ios' ? 'IOS' : 'ANDROID'
         })
       }
     )
 
     // Check if the response was handled correctly
-    expect(result).toEqual({
-      deviceArn:
-        'arn:aws:sns:us-east-1:975050371175:endpoint/GCM/notification_sender/30516cb9-c9da-3455-8940-8a0470910005'
-    })
+    expect(result).toEqual(
+      'arn:aws:sns:us-east-1:975050371175:endpoint/GCM/notification_sender/30516cb9-c9da-3455-8940-8a0470910005'
+    )
+  })
+
+  it('should store deviceArn in common store on successful register', async () => {
+    let storedArn = commonStorage.getString(
+      StorageKey.NOTIFICATIONS_OPTIMIZATION
+    )
+    expect(storedArn).toBe(undefined)
+
+    const mockResponse = {
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        deviceArn:
+          'arn:aws:sns:us-east-1:975050371175:endpoint/GCM/notification_sender/30516cb9-c9da-3455-8940-8a0470910005'
+      })
+    }
+    global.fetch = jest.fn(() => Promise.resolve(mockResponse)) as jest.Mock
+
+    await registerDeviceToNotificationSender(deviceToken)
+
+    storedArn = commonStorage.getString(StorageKey.NOTIFICATIONS_OPTIMIZATION)
+    expect(storedArn).toBe(
+      'arn:aws:sns:us-east-1:975050371175:endpoint/GCM/notification_sender/30516cb9-c9da-3455-8940-8a0470910005'
+    )
   })
 
   it('should throw an error if the fetch request fails', async () => {
