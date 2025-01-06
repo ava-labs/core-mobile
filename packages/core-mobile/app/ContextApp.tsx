@@ -26,7 +26,7 @@ import NotificationsService from 'services/notifications/NotificationsService'
 setTimeout(() => {
   NotificationsService.displayNotification({
     title: '3️⃣ Things to know this week:',
-    body: '1) IRS offers temporary crypto tax relief\n2) XRP targets $2.90 after resistance break\n3) Bitcoin debates quantum computing risks'
+    body: '1) IRS offers temporary crypto tax relief\n2) XRP targets $2.90 after resistance break\n3) Bitcoin debates quantum computing risks\n4)Crypto bull market entering final stage: CryptoQuant'
   })
 }, 10000)
 function setToast(toast: Toast): void {
