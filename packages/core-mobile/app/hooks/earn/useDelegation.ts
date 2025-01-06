@@ -5,7 +5,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { selectActiveNetwork } from 'store/network/slice'
-import { selectPFeeAdjustmentThreshold } from 'store/posthog/slice'
+import {
+  selectPFeeAdjustmentThreshold,
+  selectPFeeMultiplier
+} from 'store/posthog/slice'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveAccount } from 'store/account/slice'
 import { computeDelegationSteps } from 'services/earn/computeDelegationSteps/computeDelegationSteps'
@@ -39,6 +42,7 @@ export const useDelegation = (): {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
+  const pFeeMultiplier = useSelector(selectPFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
   const cChainNetwork = useCChainNetwork()
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
@@ -77,6 +81,7 @@ export const useDelegation = (): {
         cChainNetwork,
         provider: avaxProvider,
         pFeeAdjustmentThreshold,
+        pFeeMultiplier,
         cChainBaseFee: cChainBaseFee.data,
         feeState: defaultFeeState,
         stakeAmount: stakeAmount
@@ -93,6 +98,7 @@ export const useDelegation = (): {
       defaultFeeState,
       isDeveloperMode,
       pFeeAdjustmentThreshold,
+      pFeeMultiplier,
       selectedCurrency,
       avaxProvider
     ]

@@ -1,14 +1,7 @@
-// // import { getPChainBalance } from 'services/balance/getPChainBalance'
-// // import WalletService from 'services/wallet/WalletService'
-// // import { getCChainBalance } from 'services/balance/getCChainBalance'
 import { pvm } from '@avalabs/avalanchejs'
-// // import { utils, Utxo } from '@avalabs/avalanchejs'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-// // import { getAssetId, getTransferOutputUtxos } from 'services/wallet/utils'
-// // import { computeDelegationSteps, Operation } from './computeDelegationSteps'
-
 import { getPChainBalance } from 'services/balance/getPChainBalance'
 import { getCChainBalance } from 'services/balance/getCChainBalance'
 import * as utils from './utils'
@@ -42,58 +35,59 @@ describe('computeDelegationSteps', () => {
     cChainNetwork: {} as Network,
     cChainBaseFee: {} as TokenUnit,
     provider: {} as Avalanche.JsonRpcProvider,
-    pFeeAdjustmentThreshold: 5
+    pFeeAdjustmentThreshold: 5,
+    pFeeMultiplier: 0.2
   }
 
-  // it('should throw an error when there is insufficient balance', async () => {
-  //   ;(getPChainBalance as jest.Mock).mockResolvedValue({
-  //     balancePerType: { unlockedUnstaked: 0n }
-  //   })
-  //   ;(utils.getPChainAtomicBalance as jest.Mock).mockResolvedValue(0n)
-  //   ;(getCChainBalance as jest.Mock).mockResolvedValue({ balance: 0 })
+  it('should throw an error when there is insufficient balance', async () => {
+    ;(getPChainBalance as jest.Mock).mockResolvedValue({
+      balancePerType: { unlockedUnstaked: 0n }
+    })
+    ;(utils.getPChainAtomicBalance as jest.Mock).mockResolvedValue(0n)
+    ;(getCChainBalance as jest.Mock).mockResolvedValue({ balance: 0 })
 
-  //   await expect(computeDelegationSteps(defaultParams)).rejects.toThrow(
-  //     'Insufficient balance for the staking amount and fees.'
-  //   )
-  // })
+    await expect(computeDelegationSteps(defaultParams)).rejects.toThrow(
+      'Insufficient balance for the staking amount and fees.'
+    )
+  })
 
-  // it('should return delegation step when there is enough P-Chain balance', async () => {
-  //   ;(getPChainBalance as jest.Mock).mockResolvedValue({
-  //     balancePerType: { unlockedUnstaked: 200n }
-  //   })
-  //   ;(utils.getDelegationFee as jest.Mock).mockResolvedValue(10n)
+  it('should return delegation step when there is enough P-Chain balance', async () => {
+    ;(getPChainBalance as jest.Mock).mockResolvedValue({
+      balancePerType: { unlockedUnstaked: 200n }
+    })
+    ;(utils.getDelegationFee as jest.Mock).mockResolvedValue(10n)
 
-  //   const steps = await computeDelegationSteps(defaultParams)
+    const steps = await computeDelegationSteps(defaultParams)
 
-  //   expect(steps).toEqual([
-  //     {
-  //       operation: 'delegate',
-  //       amount: 100n,
-  //       fee: 10n
-  //     }
-  //   ])
-  // })
+    expect(steps).toEqual([
+      {
+        operation: 'delegate',
+        amount: 100n,
+        fee: 10n
+      }
+    ])
+  })
 
-  // it('should return import and delegation steps when P-Chain atomic balance combined with P-chain balance is enough', async () => {
-  //   ;(getPChainBalance as jest.Mock).mockResolvedValue({
-  //     balancePerType: { unlockedUnstaked: 50n }
-  //   })
-  //   ;(utils.getDelegationFee as jest.Mock).mockRejectedValue(new Error('error'))
-  //   ;(utils.getPChainAtomicBalance as jest.Mock).mockResolvedValue(150n)
-  //   ;(utils.getImportPFee as jest.Mock).mockResolvedValue(5n)
-  //   ;(utils.getDelegationFeePostPImport as jest.Mock).mockResolvedValue(10n)
+  it('should return import and delegation steps when P-Chain atomic balance combined with P-chain balance is enough', async () => {
+    ;(getPChainBalance as jest.Mock).mockResolvedValue({
+      balancePerType: { unlockedUnstaked: 50n }
+    })
+    ;(utils.getDelegationFee as jest.Mock).mockRejectedValue(new Error('error'))
+    ;(utils.getPChainAtomicBalance as jest.Mock).mockResolvedValue(150n)
+    ;(utils.getImportPFee as jest.Mock).mockResolvedValue(5n)
+    ;(utils.getDelegationFeePostPImport as jest.Mock).mockResolvedValue(10n)
 
-  //   const steps = await computeDelegationSteps(defaultParams)
+    const steps = await computeDelegationSteps(defaultParams)
 
-  //   expect(steps).toEqual([
-  //     { operation: 'importP', fee: 5n },
-  //     {
-  //       operation: 'delegate',
-  //       amount: 100n,
-  //       fee: 10n
-  //     }
-  //   ])
-  // })
+    expect(steps).toEqual([
+      { operation: 'importP', fee: 5n },
+      {
+        operation: 'delegate',
+        amount: 100n,
+        fee: 10n
+      }
+    ])
+  })
 
   it('should return export, import, and delegation steps when transferring from C-Chain is needed', async () => {
     ;(getPChainBalance as jest.Mock).mockResolvedValue({
@@ -118,7 +112,7 @@ describe('computeDelegationSteps', () => {
     expect(steps).toEqual([
       {
         operation: 'exportC',
-        amount: 40n,
+        amount: 43n,
         fee: 5n
       },
       { operation: 'importP', fee: 5n },

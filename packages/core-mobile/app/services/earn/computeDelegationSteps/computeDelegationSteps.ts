@@ -32,7 +32,8 @@ export const computeDelegationSteps = async ({
   cChainNetwork,
   cChainBaseFee,
   provider,
-  pFeeAdjustmentThreshold
+  pFeeAdjustmentThreshold,
+  pFeeMultiplier
 }: {
   pAddress: string
   stakeAmount: bigint
@@ -45,6 +46,7 @@ export const computeDelegationSteps = async ({
   cChainBaseFee: TokenUnit | undefined
   provider: Avalanche.JsonRpcProvider
   pFeeAdjustmentThreshold: number
+  pFeeMultiplier: number
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
   let pChainBalance: bigint | undefined
@@ -190,13 +192,25 @@ export const computeDelegationSteps = async ({
           throw INSUFFICIENT_BALANCE_ERROR
         }
 
+        Logger.info(
+          `applying ${pFeeMultiplier} multiplier to importPFee and delegationFee`
+        )
+
+        const adjustedImportPFee = BigInt(
+          Math.ceil(Number(importPFee) * (1 + pFeeMultiplier))
+        )
+        const adjustedDelegationFee = BigInt(
+          Math.ceil(Number(delegationFee) * (1 + pFeeMultiplier))
+        )
+
+        // add some padding to the amount to transfer to account for the fees (import and delegation fees)
         const amountToTransfer =
           stakeAmount -
           pChainAtomicBalance -
           pChainBalance +
           exportCFee +
-          importPFee +
-          delegationFee
+          adjustedImportPFee +
+          adjustedDelegationFee
 
         return [
           {
