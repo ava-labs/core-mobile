@@ -35,7 +35,7 @@ export async function subscribeBalanceChangeNotifications(
   }
 
   const fcmToken = await FCMService.getFCMToken()
-  const { deviceArn } = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
+  const deviceArn = await registerDeviceToNotificationSender(fcmToken)
 
   //check if only BALANCE_CHANGES notifications are denied
   const blockedNotifications =

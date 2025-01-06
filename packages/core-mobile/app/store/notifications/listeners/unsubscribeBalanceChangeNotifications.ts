@@ -4,6 +4,7 @@ import { unSubscribeForBalanceChange } from 'services/notifications/balanceChang
 
 export async function unsubscribeBalanceChangeNotifications(): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
-  const { deviceArn } = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
+
+  const deviceArn = await registerDeviceToNotificationSender(fcmToken)
   await unSubscribeForBalanceChange({ deviceArn })
 }
