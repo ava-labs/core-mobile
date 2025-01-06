@@ -1,12 +1,12 @@
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { Transaction } from '@sentry/react'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 import { RpcMethod, TokenWithBalanceEVM } from '@avalabs/vm-module-types'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionRequest } from 'ethers'
 import { resolve } from '@avalabs/core-utils-sdk'
+import { SpanName } from 'services/sentry/types'
 import { buildTx } from './buildEVMSendTx'
 
 export const send = async ({
@@ -26,11 +26,10 @@ export const send = async ({
   toAddress: string
   amount?: bigint
 }): Promise<string> => {
-  const sentryTrx = SentryWrapper.startTransaction('send-token')
-
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.send')
-    .executeAsync(async () => {
+  const sentrySpanName = 'send-token'
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.send' },
+    async () => {
       const txRequest = await getTransactionRequest({
         fromAddress,
         provider,
@@ -38,7 +37,7 @@ export const send = async ({
         toAddress,
         amount,
         chainId,
-        sentryTrx
+        sentrySpanName
       })
 
       const txParams = transactionRequestToTransactionParams(txRequest)
@@ -60,10 +59,8 @@ export const send = async ({
       }
 
       return txHash
-    })
-    .finally(() => {
-      SentryWrapper.finish(sentryTrx)
-    })
+    }
+  )
 }
 const getTransactionRequest = ({
   fromAddress,
@@ -72,7 +69,7 @@ const getTransactionRequest = ({
   token,
   toAddress,
   amount,
-  sentryTrx
+  sentrySpanName
 }: {
   fromAddress: string
   provider: JsonRpcBatchInternal
@@ -80,11 +77,11 @@ const getTransactionRequest = ({
   token: TokenWithBalanceEVM
   toAddress: string
   amount?: bigint
-  sentryTrx: Transaction
+  sentrySpanName: SpanName
 }): Promise<TransactionRequest> => {
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.evm.get_trx_request')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.evm.get_trx_request' },
+    async () => {
       const txRequest = await buildTx({
         fromAddress,
         provider,
@@ -97,5 +94,6 @@ const getTransactionRequest = ({
         ...txRequest,
         chainId
       }
-    })
+    }
+  )
 }

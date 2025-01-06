@@ -3,7 +3,7 @@ import Keychain from 'react-native-keychain'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { configureEncryptedStore } from 'store'
-import { NativeModules } from 'react-native'
+import Aes from 'react-native-aes-crypto'
 
 type EncryptionKey = string | null
 const SERVICE_KEY = 'sec-store-provider'
@@ -62,7 +62,7 @@ const getEncryptionKey = async (): Promise<EncryptionKey> => {
   }
 
   // Generate new credentials based on random string
-  const key: string = await NativeModules.Aes.randomKey(32)
+  const key: string = await Aes.randomKey(32)
   const hasSetCredentials = await Keychain.setGenericPassword(
     SERVICE_KEY,
     key,
@@ -87,7 +87,7 @@ const getMacKey = async (): Promise<EncryptionKey> => {
   }
 
   // Generate new credentials based on random string
-  const key: string = await NativeModules.Aes.randomKey(32)
+  const key: string = await Aes.randomKey(32)
   const hasSetCredentials = await Keychain.setGenericPassword(MAC_KEY, key, {
     service: MAC_KEY
   })
