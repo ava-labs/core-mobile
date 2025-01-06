@@ -2,7 +2,6 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
 import type {
   NetworkContractToken,
   TokenWithBalance,
@@ -11,6 +10,7 @@ import type {
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import { SpanName } from 'services/sentry/types'
 
 export type BalancesForAccount = {
   accountIndex: number
@@ -24,18 +24,18 @@ export class BalanceService {
     network,
     account,
     currency,
-    sentryTrx,
+    sentrySpanName,
     customTokens
   }: {
     network: Network
     account: Account
     currency: string
     customTokens?: NetworkContractToken[]
-    sentryTrx?: Transaction
+    sentrySpanName?: SpanName
   }): Promise<BalancesForAccount> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.balance.get_for_account')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      { name: sentrySpanName, contextName: 'svc.balance.get_for_account' },
+      async () => {
         const accountAddress = getAddressByNetwork(account, network)
 
         const module = await ModuleManager.loadModuleByNetwork(network)
@@ -62,7 +62,8 @@ export class BalanceService {
           tokens: Object.values(balances),
           accountAddress
         }
-      })
+      }
+    )
   }
 }
 
