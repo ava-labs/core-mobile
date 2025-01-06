@@ -7,11 +7,8 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { assertNotUndefined } from 'utils/assertions'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { Network } from '@avalabs/core-chains-sdk'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
-import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
+import { getPChainBalance } from 'services/balance/getPChainBalance'
 import {
   maxBalanceCheckRetries,
   maxTransactionCreationRetries,
@@ -102,29 +99,17 @@ const getUnlockedUnstakedAmount = async ({
   addressPVM: string
   selectedCurrency: string
 }): Promise<bigint | undefined> => {
-  const balancesResponse = await ModuleManager.avalancheModule.getBalances({
-    addresses: [addressPVM],
-    currency: selectedCurrency,
-    network: mapToVmNetwork(network),
-    storage: coingeckoInMemoryCache
-  })
-  const pChainBalanceResponse = balancesResponse[addressPVM]
-  if (!pChainBalanceResponse || 'error' in pChainBalanceResponse) {
-    Logger.error(
-      'Failed to fetch p-chain balance',
-      pChainBalanceResponse?.error
-    )
+  try {
+    const pChainBalance = await getPChainBalance({
+      pAddress: addressPVM,
+      currency: selectedCurrency,
+      avaxXPNetwork: network
+    })
+
+    return pChainBalance.balancePerType.unlockedUnstaked
+  } catch (e) {
     return
   }
-  const pChainBalance = pChainBalanceResponse[network.networkToken.symbol]
-  if (
-    pChainBalance === undefined ||
-    'error' in pChainBalance ||
-    !isTokenWithBalancePVM(pChainBalance)
-  ) {
-    return
-  }
-  return pChainBalance.balancePerType.unlockedUnstaked
 }
 
 /**

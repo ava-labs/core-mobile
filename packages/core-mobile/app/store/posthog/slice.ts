@@ -179,6 +179,11 @@ export const selectPFeeAdjustmentThreshold = (state: RootState): number => {
   )
 }
 
+export const selectPFeeMultiplier = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseFloat(featureFlags[FeatureVars.P_FEE_MULTIPLIER] as string)
+}
+
 export const selectUseLeftFab = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

@@ -14,6 +14,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]: '1e-3', // 0.1%
+  [FeatureVars.P_FEE_MULTIPLIER]: '2e-1', // 20%
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.DEFI]: true,
   [FeatureGates.BROWSER]: true,

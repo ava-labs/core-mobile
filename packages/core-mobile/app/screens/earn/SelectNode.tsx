@@ -14,6 +14,7 @@ import { advancedFilterDropDownItems, UP_TIME_HIGH_TO_LOW } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import ZeroState from 'components/ZeroState'
 import { useNodes } from 'hooks/earn/useNodes'
+import { useDelegationContext } from 'contexts/DelegationContext'
 import { NodeCard } from './components/NodeCard'
 import { NoMatchFound } from './components/NoMatchFound'
 
@@ -22,17 +23,18 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 const SelectNode = (): JSX.Element => {
+  const { stakeAmount } = useDelegationContext()
   const [searchText, setSearchText] = useState('')
   const [filter, setFilter] =
     useState<TAdvancedFilterDropDownItems>(UP_TIME_HIGH_TO_LOW)
-  const { stakingAmount, stakingEndTime, minUpTime, maxFee } =
+  const { stakingEndTime, minUpTime, maxFee } =
     useRoute<ScreenProps['route']>().params
 
   const { isFetching, data, error } = useNodes()
   const { validators, error: useAdvancedSearchNodesError } =
     useAdvancedSearchNodes({
       validators: data?.validators,
-      stakingAmount,
+      stakingAmount: stakeAmount,
       stakingEndTime,
       minUpTime,
       maxFee,
@@ -63,13 +65,7 @@ const SelectNode = (): JSX.Element => {
   }
 
   const renderItem = ({ item }: { item: NodeValidator }): JSX.Element => {
-    return (
-      <NodeCard
-        data={item}
-        stakingAmount={stakingAmount}
-        stakingEndTime={stakingEndTime}
-      />
-    )
+    return <NodeCard data={item} stakingEndTime={stakingEndTime} />
   }
 
   if (isFetching)
