@@ -18,10 +18,11 @@ const EnableNotificationsModal = (): JSX.Element => {
   const onTurnOnNotifications = useCallback(async () => {
     const { permission } = await NotificationsService.getAllPermissions(false)
 
-    if (permission === 'authorized') {
-      dispatch(turnOnAllNotifications())
+    if (permission !== 'authorized') {
+      NotificationsService.openSystemSettings()
     }
 
+    dispatch(turnOnAllNotifications())
     if (canGoBack()) {
       goBack()
     }
