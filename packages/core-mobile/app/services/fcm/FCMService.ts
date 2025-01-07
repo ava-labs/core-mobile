@@ -4,11 +4,21 @@ import NotificationsService from 'services/notifications/NotificationsService'
 import { ACTIONS, PROTOCOLS } from 'contexts/DeeplinkContext/types'
 import {
   BalanceChangeEvents,
+  NotificationsBalanceChange,
+  NotificationsBalanceChangeData,
   NotificationsBalanceChangeSchema
 } from 'services/fcm/types'
 import { Platform } from 'react-native'
+import { DisplayNotificationParams } from 'services/notifications/types'
+import { ChannelId } from 'services/notifications/channels'
 
 type UnsubscribeFunc = () => void
+
+const EVENT_TO_CH_ID: Record<string, ChannelId> = {
+  [BalanceChangeEvents.ALLOWANCE_APPROVED]: ChannelId.BALANCE_CHANGES,
+  [BalanceChangeEvents.BALANCES_SPENT]: ChannelId.BALANCE_CHANGES,
+  [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES
+}
 
 /**
  * Wrapper for @react-native-firebase/messaging
@@ -38,19 +48,14 @@ class FCMService {
         // skip showing notification if user just spent balance in app
         return
       }
-      const data = {
-        accountAddress: result.data.data.accountAddress,
-        chainId: result.data.data.chainId,
-        transactionHash: result.data.data.transactionHash,
-        url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
-      }
-      await NotificationsService.displayNotification({
-        title: result.data.notification.title,
-        body: result.data.notification.body,
-        data,
-        sound: result.data.notification.sound,
-        channelId: result.data.notification.android?.channelId
-      }).catch(Logger.error)
+      const notificationData =
+        Platform.OS === 'android' && !result.data.notification
+          ? this.#prepareDataOnlyNotificationData(result.data.data)
+          : this.#prepareNotificationData(result.data)
+
+      await NotificationsService.displayNotification(notificationData).catch(
+        Logger.error
+      )
     })
   }
   /**
@@ -60,10 +65,6 @@ class FCMService {
   listenForMessagesBackground = (): void => {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       Logger.info('A new FCM message arrived in background', remoteMessage)
-      if (Platform.OS === 'android') {
-        //skip for android, FCM sdk handles this already
-        return
-      }
       const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
       if (!result.success) {
         Logger.error(
@@ -71,21 +72,63 @@ class FCMService {
         )
         return
       }
-      //show native notification
-      const data = {
-        accountAddress: result.data.data.accountAddress,
-        chainId: result.data.data.chainId,
-        transactionHash: result.data.data.transactionHash,
-        url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
+      if (Platform.OS === 'android' && result.data.notification) {
+        //skip, FCM sdk handles this already
+        return
       }
-      await NotificationsService.displayNotification({
-        channelId: result.data.notification.android?.channelId,
-        title: result.data.notification.title,
-        body: result.data.notification.body,
-        sound: result.data.notification.sound,
-        data
-      })
+
+      const notificationData =
+        Platform.OS === 'android'
+          ? this.#prepareDataOnlyNotificationData(result.data.data)
+          : this.#prepareNotificationData(result.data)
+
+      await NotificationsService.displayNotification(notificationData).catch(
+        Logger.error
+      )
     })
+  }
+
+  #prepareDataOnlyNotificationData = (
+    fcmData: NotificationsBalanceChangeData
+  ): DisplayNotificationParams => {
+    if (!fcmData.title) throw Error('No notification title')
+    const data = this.#extractDeepLinkData(fcmData)
+    return {
+      channelId: EVENT_TO_CH_ID[fcmData.event],
+      title: fcmData.title,
+      body: fcmData.body,
+      data
+    }
+  }
+
+  #prepareNotificationData = (
+    fcm: NotificationsBalanceChange
+  ): DisplayNotificationParams => {
+    if (!fcm.notification) throw Error('No notification payload')
+    const data = this.#extractDeepLinkData(fcm.data)
+    return {
+      channelId: fcm.notification.android?.channelId,
+      title: fcm.notification.title,
+      body: fcm.notification.body,
+      sound: fcm.notification.sound,
+      data
+    }
+  }
+
+  #extractDeepLinkData = (
+    fcmData: NotificationsBalanceChangeData
+  ): {
+    accountAddress: string
+    chainId: string
+    transactionHash: string
+    url: string
+  } => {
+    return {
+      accountAddress: fcmData.accountAddress,
+      chainId: fcmData.chainId,
+      transactionHash: fcmData.transactionHash,
+      url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
+    }
   }
 }
 export default new FCMService()
