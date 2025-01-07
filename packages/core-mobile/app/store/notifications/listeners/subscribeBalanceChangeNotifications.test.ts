@@ -89,9 +89,9 @@ describe('subscribeBalanceChangeNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue({
-      deviceArn: 'deviceArn'
-    })
+    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
+      'deviceArn'
+    )
     ;(
       NotificationsService.getBlockedNotifications as jest.Mock
     ).mockResolvedValue(new Set([ChannelId.BALANCE_CHANGES]))
@@ -109,9 +109,9 @@ describe('subscribeBalanceChangeNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue({
-      deviceArn: 'deviceArn'
-    })
+    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
+      'deviceArn'
+    )
     ;(
       NotificationsService.getBlockedNotifications as jest.Mock
     ).mockResolvedValue(new Set())
@@ -136,9 +136,9 @@ describe('subscribeBalanceChangeNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue({
-      deviceArn: 'deviceArn'
-    })
+    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
+      'deviceArn'
+    )
     ;(
       NotificationsService.getBlockedNotifications as jest.Mock
     ).mockResolvedValue(new Set())
