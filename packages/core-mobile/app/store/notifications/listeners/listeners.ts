@@ -1,7 +1,6 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
 import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
-import { handleMaybePromptBalanceNotification } from 'store/notifications/listeners/handleMaybePromptBalanceNotification'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
 import Logger from 'utils/Logger'
 import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
@@ -12,32 +11,30 @@ import { FeatureFlags, FeatureGates } from 'services/posthog/types'
 import type { Action } from 'redux'
 import { ChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
+import { promptEnableNotifications } from 'store/notifications'
 import {
-  maybePromptBalanceNotification,
-  maybePromptEarnNotification,
   onFcmTokenChange,
   processNotificationData,
   scheduleStakingCompleteNotifications,
   turnOffNotificationsFor,
+  turnOnAllNotifications,
   turnOnNotificationsFor
 } from '../slice'
 import { handleScheduleStakingCompleteNotifications } from './handleScheduleStakingCompleteNotifications'
-import { handleMaybePromptEarnNotification } from './handleMaybePromptEarnNotification'
 import { handleNotificationCleanup } from './handleNotificationCleanup'
 import { handleTurnOnNotificationsFor } from './handleTurnOnNotificationsFor'
 import { handleTurnOffNotificationsFor } from './handleTurnOffNotificationsFor'
 import { scheduleNotificationsForActiveStakesPeriodically } from './scheduleNotificationsForActiveStakesPeriodically'
+import { handlePromptNotifications } from './handlePromptNotifications'
+import { handleTurnOnAllNotifications } from './handleTurnOnAllNotifications'
+import { manageNotificationChannelsCreation } from './manageNotificationChannelsCreation'
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    actionCreator: maybePromptEarnNotification,
-    effect: handleMaybePromptEarnNotification
-  })
-  startListening({
-    actionCreator: maybePromptBalanceNotification,
-    effect: handleMaybePromptBalanceNotification
+    actionCreator: promptEnableNotifications,
+    effect: handlePromptNotifications
   })
 
   startListening({
@@ -54,6 +51,13 @@ export const addNotificationsListeners = (
     actionCreator: turnOffNotificationsFor,
     effect: async (action: AnyAction, listenerApi) => {
       await handleTurnOffNotificationsFor(listenerApi, action.payload.channelId)
+    }
+  })
+
+  startListening({
+    actionCreator: turnOnAllNotifications,
+    effect: async (_, listenerApi) => {
+      await handleTurnOnAllNotifications(listenerApi).catch(Logger.error)
     }
   })
 
@@ -86,23 +90,17 @@ export const addNotificationsListeners = (
       setAccount,
       onFcmTokenChange,
       turnOnNotificationsFor,
-      onBalanceChangeNotificationsEnabled
+      onBalanceChangeNotificationsEnabled,
+      turnOnAllNotifications
     ),
-    effect: async (action, listenerApi) => {
-      if (action.type === setFeatureFlags.type) {
-        // avoid subscribing when previous flag is already true
-        const previousFlag =
-          listenerApi.getOriginalState().posthog.featureFlags[
-            FeatureGates.BALANCE_CHANGE_NOTIFICATIONS
-          ]
-        if (previousFlag === true) return
-      }
-
+    effect: async (_, listenerApi) => {
       await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
         Logger.error(
           `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
         )
       })
+
+      // TODO: subscribe to news notifications
     }
   })
 
@@ -140,6 +138,16 @@ export const addNotificationsListeners = (
           )
         }
       )
+  })
+
+  startListening({
+    matcher: isAnyOf(onRehydrationComplete),
+    effect: async (_, listenerApi) =>
+      await manageNotificationChannelsCreation(listenerApi).catch(reason => {
+        Logger.error(
+          `[listeners.ts][manageNotificationChannelsCreation]${reason}`
+        )
+      })
   })
 
   startListening({

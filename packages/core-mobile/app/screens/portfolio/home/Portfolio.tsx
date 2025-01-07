@@ -23,7 +23,7 @@ import { fetchWatchlist } from 'store/watchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectIsBalanceLoadedForNetworks } from 'store/balance/slice'
 import { setActive } from 'store/network'
-import { maybePromptBalanceNotification } from 'store/notifications'
+import { promptEnableNotifications } from 'store/notifications'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import PortfolioHeader from './components/PortfolioHeader'
 import { PortfolioInactiveNetworksLoader } from './components/Loaders/PortfolioInactiveNetworksLoader'
@@ -39,7 +39,7 @@ const Portfolio = (): JSX.Element => {
   const defiBlocked = useSelector(selectIsDeFiBlocked)
 
   useEffect(() => {
-    dispatch(maybePromptBalanceNotification)
+    dispatch(promptEnableNotifications)
   }, [dispatch])
 
   const captureAnalyticsEvents = useCallback((tabIndex: number): void => {

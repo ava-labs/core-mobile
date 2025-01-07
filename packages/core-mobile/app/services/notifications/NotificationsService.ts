@@ -292,6 +292,10 @@ class NotificationsService {
     return notifee.createChannel(channel)
   }
 
+  createChannels = async (channels: AndroidChannel[]): Promise<void> => {
+    return notifee.createChannels(channels)
+  }
+
   /**
    * @param channelId For Android only
    * @param title
