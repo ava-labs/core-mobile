@@ -274,7 +274,8 @@ export const migrations = {
           [ChannelId.PRODUCT_ANNOUNCEMENTS]: true,
           [ChannelId.OFFERS_AND_PROMOTIONS]: true,
           [ChannelId.MARKET_NEWS]: true,
-          [ChannelId.PRICE_ALERTS]: true
+          [ChannelId.BALANCE_CHANGES]: true,
+          [ChannelId.STAKING_COMPLETE]: true
         }
       },
       viewOnce: {
