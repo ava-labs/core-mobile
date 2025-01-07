@@ -17,7 +17,11 @@ export const NotificationsBalanceChangeSchema = object({
     sound: string().optional(),
     android: object({
       channelId: nativeEnum(ChannelId).optional()
-    }).optional()
+    })
+      .optional()
+      .describe(
+        'Deprecated: this is for backward compatibility, remove when https://github.com/ava-labs/core-notification-sender-service/pull/62 is released to prod '
+      ) //TODO
   }).optional()
 })
 
