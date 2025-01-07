@@ -1,6 +1,6 @@
 import React from 'react'
-import { Stack } from 'new/components/navigation/Stack'
-import { modalScreensOptions } from 'new/utils/navigation/screenOptions'
+import { Stack } from 'common/components/Stack'
+import { modalScreensOptions } from 'common/consts/screenOptions'
 
 export default function WalletLayout(): JSX.Element {
   return (

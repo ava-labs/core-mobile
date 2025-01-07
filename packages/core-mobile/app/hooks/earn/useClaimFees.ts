@@ -35,9 +35,7 @@ import { extractNeededAmount } from './utils/extractNeededAmount'
  * more info about fees here:
  * https://docs.avax.network/quickstart/transaction-fees
  */
-export const useClaimFees = (
-  gasPrice?: bigint
-): {
+export const useClaimFees = (): {
   totalFees?: TokenUnit
   exportPFee?: TokenUnit
   totalClaimable?: TokenUnit
@@ -53,7 +51,7 @@ export const useClaimFees = (
   const [defaultTxFee, setDefaultTxFee] = useState<TokenUnit>()
   const [feeCalculationError, setFeeCalculationError] =
     useState<SendErrorMessage>()
-  const { getFeeState, defaultFeeState } = useGetFeeState()
+  const { defaultFeeState: feeState } = useGetFeeState()
   const pChainBalance = usePChainBalance()
   const xpProvider = useAvalancheXpProvider()
   const cChainBaseFee = useCChainBaseFee()
@@ -62,8 +60,6 @@ export const useClaimFees = (
     isDevMode,
     isDevnet(activeNetwork)
   )
-
-  const feeState = useMemo(() => getFeeState(gasPrice), [getFeeState, gasPrice])
 
   const totalClaimable = useMemo(() => {
     return pChainBalance?.data?.balancePerType.unlockedUnstaked
@@ -84,7 +80,7 @@ export const useClaimFees = (
       if (
         activeAccount === undefined ||
         xpProvider === undefined ||
-        defaultFeeState === undefined ||
+        feeState === undefined ||
         totalClaimable === undefined
       ) {
         return
@@ -94,7 +90,7 @@ export const useClaimFees = (
         activeAccount,
         avaxXPNetwork,
         provider: xpProvider,
-        feeState: defaultFeeState,
+        feeState,
         pFeeAdjustmentThreshold
       })
       setDefaultTxFee(txFee)
@@ -105,7 +101,7 @@ export const useClaimFees = (
     avaxXPNetwork,
     xpProvider,
     totalClaimable,
-    defaultFeeState,
+    feeState,
     pFeeAdjustmentThreshold
   ])
 

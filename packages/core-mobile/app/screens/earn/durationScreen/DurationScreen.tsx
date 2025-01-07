@@ -5,7 +5,7 @@ import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -34,7 +34,7 @@ import {
 } from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
 import { UnixTime } from 'services/earn/types'
-import { AvaxXP } from 'types/AvaxXP'
+import { useDelegationContext } from 'contexts/DelegationContext'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -43,6 +43,7 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const StakingDuration = (): JSX.Element => {
+  const { stakeAmount } = useDelegationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currentUnix = millisecondsToSeconds(useNow())
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
@@ -59,8 +60,6 @@ export const StakingDuration = (): JSX.Element => {
   const { theme } = useApplicationContext()
   const { navigate, setOptions, goBack } =
     useNavigation<ScreenProps['navigation']>()
-  const { stakingAmountNanoAvax } = useRoute<ScreenProps['route']>().params
-  const stakingAmount = AvaxXP.fromNanoAvax(stakingAmountNanoAvax)
   const isNextDisabled =
     stakeEndTime === undefined ||
     (!!stakeEndTime && stakeEndTime < millisecondsToSeconds(UTCDate.now()))
@@ -120,7 +119,6 @@ export const StakingDuration = (): JSX.Element => {
         from: 'DurationScreen'
       })
       navigate(AppNavigation.StakeSetup.NodeSearch, {
-        stakingAmount,
         stakingEndTime: new UTCDate(secondsToMilliseconds(stakeEndTime))
       })
     }
@@ -130,7 +128,6 @@ export const StakingDuration = (): JSX.Element => {
     if (stakeEndTime) {
       AnalyticsService.capture('StakeSelectAdvancedStaking')
       navigate(AppNavigation.StakeSetup.AdvancedStaking, {
-        stakingAmount,
         stakingEndTime: new UTCDate(secondsToMilliseconds(stakeEndTime)),
         selectedDuration: selectedDuration.title
       })
@@ -153,7 +150,7 @@ export const StakingDuration = (): JSX.Element => {
       return (
         <DurationOptionItem
           key={item.title}
-          stakingAmountNanoAvax={stakingAmountNanoAvax}
+          stakingAmountNanoAvax={stakeAmount.toSubUnit()}
           item={item}
           isSelected={selectedDuration?.title === item.title}
           onRadioSelect={onRadioSelect}
@@ -164,7 +161,7 @@ export const StakingDuration = (): JSX.Element => {
 
   const renderCustomOption = (): JSX.Element => (
     <CustomDurationOptionItem
-      stakingAmountNanoAvax={stakingAmountNanoAvax}
+      stakingAmountNanoAvax={stakeAmount.toSubUnit()}
       stakeEndTime={fromUnixTime(stakeEndTime)}
       onRadioSelect={onRadioSelect}
       handleDateConfirm={handleDateConfirm}

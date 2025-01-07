@@ -6,7 +6,7 @@ import { selectActiveNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isDevnet } from 'utils/isDevnet'
 
-const REFETCH_INTERVAL = 1000 * 60 * 2 // 2 minutes
+const REFETCH_INTERVAL = 1000 * 60 * 1 // 1 minute
 
 export const useDefaultFeeState = (): UseQueryResult<
   pvm.FeeState | undefined,
@@ -25,6 +25,7 @@ export const useDefaultFeeState = (): UseQueryResult<
         isDeveloperMode,
         devnet
       )
+
       if (provider.isEtnaEnabled()) {
         return provider.getApiP().getFeeState()
       }

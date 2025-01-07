@@ -5,25 +5,12 @@ import {
   UseMutationResult
 } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { selectPFeeAdjustmentThreshold } from 'store/posthog/slice'
-import { calculateAmountForCrossChainTransferBigint } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import NetworkService from 'services/network/NetworkService'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
-import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network/slice'
-import { nanoToWei } from 'utils/units/converter'
-import { useCChainBalance } from './useCChainBalance'
-import { useGetFeeState } from './useGetFeeState'
+import { useDelegationContext } from 'contexts/DelegationContext'
 
 export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
@@ -35,122 +22,49 @@ export const useIssueDelegation = (
     Error,
     {
       nodeId: string
-      stakingAmountNanoAvax: bigint
       startDate: Date
       endDate: Date
-      gasPrice?: bigint
-      requiredPFeeNanoAvax?: bigint
+      recomputeSteps?: boolean
     },
     unknown
   >
 } => {
+  const { delegate, compute, steps, stakeAmount } = useDelegationContext()
   const queryClient = useQueryClient()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { data: cChainBalanceRes } = useCChainBalance()
-  const { getFeeState } = useGetFeeState()
-  const cChainBalanceWei = cChainBalanceRes?.balance
-  const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(
-      isDeveloperMode,
-      isDevnet(activeNetwork)
-    )
-  const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
 
   const issueDelegationMutation = useMutation({
-    mutationFn: async (data: {
+    mutationFn: async ({
+      nodeId,
+      startDate,
+      endDate,
+      recomputeSteps = false
+    }: {
       nodeId: string
-      stakingAmountNanoAvax: bigint
       startDate: Date
       endDate: Date
-      gasPrice?: bigint
-      requiredPFeeNanoAvax?: bigint
+      recomputeSteps?: boolean
     }) => {
-      if (!activeAccount) {
-        return Promise.reject('no active account')
-      }
-      if (!cChainBalanceWei) {
-        return Promise.reject('no C-Chain balance')
-      }
-
-      Logger.trace('importAnyStuckFunds...')
-      await EarnService.importAnyStuckFunds({
-        activeAccount,
-        isDevMode: isDeveloperMode,
-        selectedCurrency,
-        isDevnet: isDevnet(activeNetwork),
-        feeState: getFeeState(data.gasPrice)
-      }).catch(Logger.error)
-      Logger.trace('getPChainBalance...')
-
-      const network = NetworkService.getAvalancheNetworkP(
-        isDeveloperMode,
-        isDevnet(activeNetwork)
-      )
-      const balancesResponse = await ModuleManager.avalancheModule.getBalances({
-        addresses: [pAddress],
-        currency: selectedCurrency,
-        network: mapToVmNetwork(network),
-        storage: coingeckoInMemoryCache
-      })
-
-      const pChainBalanceResponse = balancesResponse[pAddress]
-      if (!pChainBalanceResponse || 'error' in pChainBalanceResponse) {
-        return Promise.reject(
-          `failed to fetch C-Chain balance. ${pChainBalanceResponse?.error}`
-        )
-      }
-      const pChainBalance = pChainBalanceResponse[network.networkToken.symbol]
-      if (
-        pChainBalance === undefined ||
-        'error' in pChainBalance ||
-        !isTokenWithBalancePVM(pChainBalance)
-      ) {
-        return Promise.reject('invalid balance type.')
+      if (recomputeSteps) {
+        const newSteps = await compute(stakeAmount.toSubUnit())
+        return delegate({
+          steps: newSteps,
+          startDate,
+          endDate,
+          nodeId
+        })
       }
 
-      const claimableBalance = pChainBalance.balancePerType.unlockedUnstaked
-        ? new TokenUnit(
-            pChainBalance.balancePerType.unlockedUnstaked,
-            pChainNetworkToken.decimals,
-            pChainNetworkToken.symbol
-          )
-        : undefined
-
-      Logger.trace('getPChainBalance: ', claimableBalance?.toDisplay())
-      const cChainRequiredAmountNanoAvax =
-        calculateAmountForCrossChainTransferBigint(
-          data.stakingAmountNanoAvax + (data.requiredPFeeNanoAvax ?? 0n),
-          claimableBalance?.toSubUnit()
-        )
-
-      Logger.trace('cChainRequiredAmount: ', cChainRequiredAmountNanoAvax)
-      Logger.trace('collectTokensForStaking...')
-      await EarnService.collectTokensForStaking({
-        activeAccount,
-        cChainBalanceWei,
-        isDevMode: isDeveloperMode,
-        requiredAmountWei: nanoToWei(cChainRequiredAmountNanoAvax),
-        selectedCurrency,
-        isDevnet: isDevnet(activeNetwork),
-        feeState: getFeeState(data.gasPrice)
-      })
-
-      return EarnService.issueAddDelegatorTransaction({
-        activeAccount,
-        endDate: data.endDate,
-        isDevMode: isDeveloperMode,
-        nodeId: data.nodeId,
-        stakeAmountNanoAvax: data.stakingAmountNanoAvax,
-        startDate: data.startDate,
-        isDevnet: isDevnet(activeNetwork),
-        feeState: getFeeState(data.gasPrice),
-        pFeeAdjustmentThreshold
+      return delegate({
+        steps,
+        startDate,
+        endDate,
+        nodeId
       })
     },
     onSuccess: txId => {

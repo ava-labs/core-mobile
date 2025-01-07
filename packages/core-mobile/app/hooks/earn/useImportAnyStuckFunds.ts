@@ -10,7 +10,7 @@ import { selectActiveNetwork } from 'store/network'
 import { isDevnet } from 'utils/isDevnet'
 import { useGetFeeState } from './useGetFeeState'
 
-const REFETCH_INTERVAL = 2 * 60 * 1000 // 2 minutes
+const REFETCH_INTERVAL = 3 * 60 * 1000 // 3 minutes
 
 /**
  * A query to recover lost funds if any
