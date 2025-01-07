@@ -17,10 +17,8 @@ import {
 } from 'services/notifications/channels'
 import { StakeCompleteNotification } from 'store/notifications'
 import Logger from 'utils/Logger'
-import {
-  HandleNotificationCallback,
-  NotificationData
-} from 'contexts/DeeplinkContext/types'
+import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
+import { DisplayNotificationParams } from 'services/notifications/types'
 import {
   LAUNCH_ACTIVITY,
   PressActionId,
@@ -305,13 +303,7 @@ class NotificationsService {
     body,
     sound,
     data
-  }: {
-    channelId?: ChannelId
-    title: string
-    body?: string
-    sound?: string
-    data?: NotificationData
-  }): Promise<void> => {
+  }: DisplayNotificationParams): Promise<void> => {
     const notification: Notification = {
       title,
       body,
