@@ -76,7 +76,7 @@ class NotificationsService {
     return { permission, blockedNotifications }
   }
 
-  openSystemSettings(): void {
+  async openSystemSettings(): Promise<void> {
     if (Platform.OS === 'ios') {
       Linking.openSettings().catch(Logger.error)
     } else {
@@ -288,6 +288,10 @@ class NotificationsService {
 
   createChannel = async (channel: AndroidChannel): Promise<string> => {
     return notifee.createChannel(channel)
+  }
+
+  createChannels = async (channels: AndroidChannel[]): Promise<void> => {
+    return notifee.createChannels(channels)
   }
 
   /**
