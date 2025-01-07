@@ -11,6 +11,7 @@ import { WalletType } from 'services/wallet/types'
 import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
+import { ChannelId } from 'services/notifications/channels'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -19,6 +20,7 @@ import {
 import { initialState as browserFavoritesInitialState } from './browser/slices/favorites'
 import { getInitialState as browserTabsGetInitialState } from './browser/slices/tabs'
 import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
+import { ViewOnceKey } from './viewOnce'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -260,6 +262,31 @@ export const migrations = {
     })
 
     newState.addressBook = addressBookState
+    return newState
+  },
+  16: (state: any) => {
+    const newState = {
+      ...state,
+      notifications: {
+        ...state.notifications,
+        notificationSubscriptions: {
+          ...state.notifications.notificationSubscriptions,
+          [ChannelId.PRODUCT_ANNOUNCEMENTS]: true,
+          [ChannelId.OFFERS_AND_PROMOTIONS]: true,
+          [ChannelId.MARKET_NEWS]: true,
+          [ChannelId.BALANCE_CHANGES]: true,
+          [ChannelId.STAKING_COMPLETE]: true
+        }
+      },
+      viewOnce: {
+        data: {
+          ...state.viewOnce.data,
+          [ViewOnceKey.NOTIFICATIONS_PROMPT]: true
+        }
+      }
+    }
+    delete newState.notifications.hasPromptedAfterFirstDelegation
+    delete newState.notifications.hasPromptedForBalanceChange
     return newState
   }
 }

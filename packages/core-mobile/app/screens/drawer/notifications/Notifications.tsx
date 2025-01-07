@@ -41,10 +41,14 @@ const Notifications = (): JSX.Element => {
   const isBalanceChangeNotificationsBlocked = useSelector(
     selectIsBalanceChangeNotificationsBlocked
   )
+
   const disabledChannels = useMemo(() => {
     return {
       [ChannelId.BALANCE_CHANGES]: isBalanceChangeNotificationsBlocked,
-      [ChannelId.STAKING_COMPLETE]: isEarnBlocked
+      [ChannelId.STAKING_COMPLETE]: isEarnBlocked,
+      [ChannelId.PRODUCT_ANNOUNCEMENTS]: false,
+      [ChannelId.OFFERS_AND_PROMOTIONS]: false,
+      [ChannelId.MARKET_NEWS]: false
     }
   }, [isBalanceChangeNotificationsBlocked, isEarnBlocked])
 

@@ -133,7 +133,6 @@ const initialState = {
     activeAccountIndex: 0
   } as AccountsState,
   notifications: {
-    hasPromptedAfterFirstDelegation: false,
     notificationSubscriptions: {}
   } as NotificationsState,
   bridge: {} as BridgeState,

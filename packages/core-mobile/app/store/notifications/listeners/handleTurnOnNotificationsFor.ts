@@ -9,7 +9,7 @@ import { setNotificationSubscriptions } from '../slice'
 export const handleTurnOnNotificationsFor = async (
   listenerApi: AppListenerEffectAPI,
   channelId: ChannelId
-) => {
+): Promise<void> => {
   listenerApi.dispatch(setNotificationSubscriptions([channelId, true]))
   const channelToCreate = notificationChannels.find(ch => ch.id === channelId)
   if (channelToCreate) {

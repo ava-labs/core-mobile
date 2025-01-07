@@ -26,10 +26,7 @@ import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showTransactionErrorToast } from 'utils/toast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import {
-  maybePromptEarnNotification,
-  scheduleStakingCompleteNotifications
-} from 'store/notifications'
+import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Tooltip } from 'components/Tooltip'
@@ -93,7 +90,6 @@ export const Confirmation = (): JSX.Element | null => {
       showTransactionSuccessToast({ message: 'Staking successful!' })
 
       getParent()?.goBack()
-      dispatch(maybePromptEarnNotification)
       dispatch(
         scheduleStakingCompleteNotifications([
           {
