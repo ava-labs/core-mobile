@@ -31,6 +31,20 @@ export const selectNotificationSubscription =
   (channelId: ChannelId) => (state: RootState) =>
     state.notifications.notificationSubscriptions[channelId]
 
+export const selectEnabledNewsNotificationSubscriptions = (
+  state: RootState
+): ChannelId[] => {
+  return Object.entries(state.notifications.notificationSubscriptions).reduce(
+    (acc, [channelId, enabled]) => {
+      if (enabled) {
+        acc.push(channelId as ChannelId)
+      }
+      return acc
+    },
+    [] as ChannelId[]
+  )
+}
+
 export const selectAllNotificationSubscriptions = (
   state: RootState
 ): Record<ChannelId, boolean> => state.notifications.notificationSubscriptions

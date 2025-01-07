@@ -21,7 +21,7 @@ import {
   notificationChannels
 } from 'services/notifications/channels'
 import {
-  selectIsBalanceChangeNotificationsBlocked,
+  selectIsAllNotificationsBlocked,
   selectIsEarnBlocked
 } from 'store/posthog'
 import Logger from 'utils/Logger'
@@ -38,19 +38,17 @@ const Notifications = (): JSX.Element => {
   )
   const appState = useSelector(selectAppState)
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
-  const isBalanceChangeNotificationsBlocked = useSelector(
-    selectIsBalanceChangeNotificationsBlocked
-  )
+  const isAllNotificationsBlocked = useSelector(selectIsAllNotificationsBlocked)
 
   const disabledChannels = useMemo(() => {
     return {
-      [ChannelId.BALANCE_CHANGES]: isBalanceChangeNotificationsBlocked,
-      [ChannelId.STAKING_COMPLETE]: isEarnBlocked,
-      [ChannelId.PRODUCT_ANNOUNCEMENTS]: false,
-      [ChannelId.OFFERS_AND_PROMOTIONS]: false,
-      [ChannelId.MARKET_NEWS]: false
+      [ChannelId.BALANCE_CHANGES]: isAllNotificationsBlocked,
+      [ChannelId.STAKING_COMPLETE]: isAllNotificationsBlocked || isEarnBlocked,
+      [ChannelId.PRODUCT_ANNOUNCEMENTS]: isAllNotificationsBlocked,
+      [ChannelId.OFFERS_AND_PROMOTIONS]: isAllNotificationsBlocked,
+      [ChannelId.MARKET_NEWS]: isAllNotificationsBlocked
     }
-  }, [isBalanceChangeNotificationsBlocked, isEarnBlocked])
+  }, [isAllNotificationsBlocked, isEarnBlocked])
 
   useEffect(() => {
     if (appState === 'active') {

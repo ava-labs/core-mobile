@@ -28,6 +28,9 @@ import { scheduleNotificationsForActiveStakesPeriodically } from './scheduleNoti
 import { handlePromptNotifications } from './handlePromptNotifications'
 import { handleTurnOnAllNotifications } from './handleTurnOnAllNotifications'
 import { manageNotificationChannelsCreation } from './manageNotificationChannelsCreation'
+import { unsubscribeAllNotifications } from './unsubscribeAllNotifications'
+import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
+import { subscribeNewsNotifications } from './subscribeNewsNotifications'
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
@@ -90,7 +93,7 @@ export const addNotificationsListeners = (
       setAccount,
       onFcmTokenChange,
       turnOnNotificationsFor,
-      onBalanceChangeNotificationsEnabled,
+      onNotificationsEnabled,
       turnOnAllNotifications
     ),
     effect: async (_, listenerApi) => {
@@ -99,22 +102,117 @@ export const addNotificationsListeners = (
           `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
         )
       })
-
-      // TODO: subscribe to news notifications
     }
   })
 
   startListening({
     matcher: isAnyOf(
-      onLogOut,
-      onNotificationsTurnedOffForBalanceChange,
-      onBalanceChangeNotificationsDisabled
+      onRehydrationComplete,
+      onFcmTokenChange,
+      turnOnNotificationsFor,
+      onNotificationsEnabled,
+      turnOnAllNotifications
     ),
+    effect: async (_, listenerApi) => {
+      await subscribeNewsNotifications(listenerApi).catch(reason => {
+        Logger.error(
+          `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
+        )
+      })
+    }
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForMarketNews),
     effect: async (action, listenerApi) => {
       if (action.type === setFeatureFlags.type) {
         const previousFlag =
           listenerApi.getOriginalState().posthog.featureFlags[
-            FeatureGates.BALANCE_CHANGE_NOTIFICATIONS
+            FeatureGates.ALL_NOTIFICATIONS
+          ]
+        // avoid unsubscribing when previous flag is already falsy
+        if (!previousFlag) return
+      }
+
+      await unsubscribeNewsNotifications({
+        channelIds: [ChannelId.MARKET_NEWS]
+      }).catch(reason => {
+        Logger.error(
+          `[listeners.ts][unsubscribeNewsNotifications:marketNews]${reason}`
+        )
+      })
+    }
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForOfferAndPromotions),
+    effect: async (action, listenerApi) => {
+      if (action.type === setFeatureFlags.type) {
+        const previousFlag =
+          listenerApi.getOriginalState().posthog.featureFlags[
+            FeatureGates.ALL_NOTIFICATIONS
+          ]
+        // avoid unsubscribing when previous flag is already falsy
+        if (!previousFlag) return
+      }
+
+      await unsubscribeNewsNotifications({
+        channelIds: [ChannelId.OFFERS_AND_PROMOTIONS]
+      }).catch(reason => {
+        Logger.error(
+          `[listeners.ts][unsubscribeNewsNotifications:offersAndPromotions]${reason}`
+        )
+      })
+    }
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForProductAnnouncements),
+    effect: async (action, listenerApi) => {
+      if (action.type === setFeatureFlags.type) {
+        const previousFlag =
+          listenerApi.getOriginalState().posthog.featureFlags[
+            FeatureGates.ALL_NOTIFICATIONS
+          ]
+        // avoid unsubscribing when previous flag is already falsy
+        if (!previousFlag) return
+      }
+
+      await unsubscribeNewsNotifications({
+        channelIds: [ChannelId.PRODUCT_ANNOUNCEMENTS]
+      }).catch(reason => {
+        Logger.error(
+          `[listeners.ts][unsubscribeNewsNotifications:productAnnouncements]${reason}`
+        )
+      })
+    }
+  })
+
+  startListening({
+    matcher: isAnyOf(onLogOut, onNotificationsDisabled),
+    effect: async (action, listenerApi) => {
+      if (action.type === setFeatureFlags.type) {
+        const previousFlag =
+          listenerApi.getOriginalState().posthog.featureFlags[
+            FeatureGates.ALL_NOTIFICATIONS
+          ]
+        // avoid unsubscribing when previous flag is already falsy
+        if (!previousFlag) return
+      }
+
+      await unsubscribeAllNotifications().catch(reason => {
+        Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
+      })
+    }
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForBalanceChange),
+    effect: async (action, listenerApi) => {
+      if (action.type === setFeatureFlags.type) {
+        const previousFlag =
+          listenerApi.getOriginalState().posthog.featureFlags[
+            FeatureGates.ALL_NOTIFICATIONS
           ]
         // avoid unsubscribing when previous flag is already falsy
         if (!previousFlag) return
@@ -174,24 +272,50 @@ const onNotificationsTurnedOffForBalanceChange = {
   }
 }
 
-const onBalanceChangeNotificationsEnabled = {
+const onNotificationsTurnedOffForMarketNews = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    return (
+      action.type === turnOffNotificationsFor.type &&
+      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
+        ChannelId.MARKET_NEWS
+    )
+  }
+}
+
+const onNotificationsTurnedOffForOfferAndPromotions = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    return (
+      action.type === turnOffNotificationsFor.type &&
+      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
+        ChannelId.OFFERS_AND_PROMOTIONS
+    )
+  }
+}
+
+const onNotificationsTurnedOffForProductAnnouncements = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    return (
+      action.type === turnOffNotificationsFor.type &&
+      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
+        ChannelId.PRODUCT_ANNOUNCEMENTS
+    )
+  }
+}
+
+const onNotificationsEnabled = {
   match: (action: Action<unknown>): action is PayloadAction => {
     if (action.type === setFeatureFlags.type) {
       const setFeatureFlagsAction = action as PayloadAction<FeatureFlags>
-      return !!setFeatureFlagsAction.payload[
-        FeatureGates.BALANCE_CHANGE_NOTIFICATIONS
-      ]
+      return !!setFeatureFlagsAction.payload[FeatureGates.ALL_NOTIFICATIONS]
     }
     return false
   }
 }
-const onBalanceChangeNotificationsDisabled = {
+const onNotificationsDisabled = {
   match: (action: Action<unknown>): action is PayloadAction => {
     if (action.type === setFeatureFlags.type) {
       const setFeatureFlagsAction = action as PayloadAction<FeatureFlags>
-      return !setFeatureFlagsAction.payload[
-        FeatureGates.BALANCE_CHANGE_NOTIFICATIONS
-      ]
+      return !setFeatureFlagsAction.payload[FeatureGates.ALL_NOTIFICATIONS]
     }
     return false
   }

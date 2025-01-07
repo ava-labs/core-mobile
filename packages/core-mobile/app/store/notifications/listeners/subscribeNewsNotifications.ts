@@ -1,0 +1,65 @@
+import { AppListenerEffectAPI } from 'store/index'
+import { selectAccounts } from 'store/account'
+import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
+import FCMService from 'services/fcm/FCMService'
+import Logger from 'utils/Logger'
+import NotificationsService from 'services/notifications/NotificationsService'
+import { ChannelId } from 'services/notifications/channels'
+import { subscribeForNews } from 'services/notifications/balanceChange/subscribeForNews'
+import { selectEnabledNewsNotificationSubscriptions } from '../slice'
+import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
+
+export async function subscribeNewsNotifications(
+  listenerApi: AppListenerEffectAPI
+): Promise<void> {
+  const { getState } = listenerApi
+
+  const state = getState()
+
+  const enabledNewsNotifications =
+    selectEnabledNewsNotificationSubscriptions(state)
+
+  if (enabledNewsNotifications.length === 0) {
+    // skip if user has not enabled any news notifications
+    return
+  }
+
+  const accounts = selectAccounts(state)
+  const addresses = Object.values(accounts).map(account => account.addressC)
+
+  if (addresses.length === 0) {
+    // skip if no addresses, means wallet is not yet created
+    return
+  }
+
+  const fcmToken = await FCMService.getFCMToken()
+  const { deviceArn } = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
+
+  //check if only news notifications are denied
+  const blockedNotifications =
+    await NotificationsService.getBlockedNotifications()
+  const channelIds = Object.entries(blockedNotifications).reduce(
+    (acc, [channelId, enabled]) => {
+      if (!enabled) {
+        acc.push(channelId as ChannelId)
+      }
+      return acc
+    },
+    [] as ChannelId[]
+  )
+  if (channelIds.length > 0) {
+    await unsubscribeNewsNotifications({ channelIds })
+  }
+
+  //subscribe
+  const response = await subscribeForNews({
+    deviceArn,
+    channelIds: enabledNewsNotifications
+  })
+  if (response.message !== 'ok') {
+    Logger.error(
+      `[subscribeNewsNotifications.ts][subscribeNewsNotifications]${response.message}`
+    )
+    throw Error(response.message)
+  }
+}

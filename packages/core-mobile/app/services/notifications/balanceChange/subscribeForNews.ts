@@ -1,25 +1,23 @@
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
 import fetchWithAppCheck from 'utils/httpClient'
+import { ChannelId } from '../channels'
 
-export async function subscribeForBalanceChange({
+export async function subscribeForNews({
   deviceArn,
-  chainIds,
-  addresses
+  channelIds
 }: {
   deviceArn: string
-  chainIds: string[]
-  addresses: string[]
+  channelIds: ChannelId[]
 }): Promise<{ message: 'ok' }> {
   const response = await fetchWithAppCheck(
-    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/subscribe',
+    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/news/subscribe',
     JSON.stringify({
       deviceArn,
-      chainIds,
-      addresses
+      channelIds
     })
   ).catch(error => {
-    Logger.error(`[subscribeForBalanceChange.ts][subscribe]${error}`)
+    Logger.error(`[subscribeForNews.ts][subscribe]${error}`)
     throw new Error(error)
   })
   if (response.ok) {
