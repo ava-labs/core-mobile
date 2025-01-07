@@ -78,7 +78,7 @@ class NotificationsService {
     return { permission, blockedNotifications }
   }
 
-  openSystemSettings(): void {
+  async openSystemSettings(): Promise<void> {
     if (Platform.OS === 'ios') {
       Linking.openSettings().catch(Logger.error)
     } else {
