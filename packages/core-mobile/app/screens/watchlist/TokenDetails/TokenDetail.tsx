@@ -30,6 +30,7 @@ import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
 import { useDispatch, useSelector } from 'react-redux'
 import { GraphPoint } from 'react-native-graph'
+import { NotFoundError } from 'components/NotFoundError'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -69,6 +70,7 @@ const TokenDetail: FC = () => {
   const hyperLinkStyle = { color: theme.colorPrimary1 }
 
   const {
+    noData,
     isFavorite,
     openMoonPay,
     openUrl,
@@ -163,6 +165,15 @@ const TokenDetail: FC = () => {
     ),
     [animatedPrice, theme.neutral50]
   )
+
+  if (noData) {
+    return (
+      <NotFoundError
+        title="Token not found"
+        description="Tap the button below to go back."
+      />
+    )
+  }
 
   return (
     <ScrollView style={styles.container}>
