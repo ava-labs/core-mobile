@@ -4,9 +4,10 @@ import NotificationsService from 'services/notifications/NotificationsService'
 import { ACTIONS, PROTOCOLS } from 'contexts/DeeplinkContext/types'
 import {
   BalanceChangeEvents,
-  NotificationsBalanceChange,
-  NotificationsBalanceChangeData,
-  NotificationsBalanceChangeSchema
+  NotificationPayload,
+  BalanceChangeData,
+  NewsData,
+  NotificationPayloadSchema
 } from 'services/fcm/types'
 import { Platform } from 'react-native'
 import { DisplayNotificationParams } from 'services/notifications/types'
@@ -37,17 +38,20 @@ class FCMService {
   listenForMessagesForeground = (): UnsubscribeFunc => {
     return messaging().onMessage(async remoteMessage => {
       Logger.info('A new FCM message arrived!', remoteMessage)
-      const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
+      const result = NotificationPayloadSchema.safeParse(remoteMessage)
+
       if (!result.success) {
         Logger.error(
-          `[FCMService.ts][listenForMessagesForeground:NotificationsBalanceChangeSchema]${result}`
+          `[FCMService.ts][listenForMessagesForeground:NotificationPayloadSchema]${result}`
         )
         return
       }
+
       if (result.data.data.event === BalanceChangeEvents.BALANCES_SPENT) {
         // skip showing notification if user just spent balance in app
         return
       }
+
       const notificationData =
         Platform.OS === 'android' && !result.data.notification
           ? this.#prepareDataOnlyNotificationData(result.data.data)
@@ -65,7 +69,7 @@ class FCMService {
   listenForMessagesBackground = (): void => {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       Logger.info('A new FCM message arrived in background', remoteMessage)
-      const result = NotificationsBalanceChangeSchema.safeParse(remoteMessage)
+      const result = NotificationPayloadSchema.safeParse(remoteMessage)
       if (!result.success) {
         Logger.error(
           `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
@@ -89,7 +93,7 @@ class FCMService {
   }
 
   #prepareDataOnlyNotificationData = (
-    fcmData: NotificationsBalanceChangeData
+    fcmData: BalanceChangeData | NewsData
   ): DisplayNotificationParams => {
     if (!fcmData.title) throw Error('No notification title')
     const data = this.#extractDeepLinkData(fcmData)
@@ -102,7 +106,7 @@ class FCMService {
   }
 
   #prepareNotificationData = (
-    fcm: NotificationsBalanceChange
+    fcm: NotificationPayload
   ): DisplayNotificationParams => {
     if (!fcm.notification) throw Error('No notification payload')
     const data = this.#extractDeepLinkData(fcm.data)
@@ -116,18 +120,27 @@ class FCMService {
   }
 
   #extractDeepLinkData = (
-    fcmData: NotificationsBalanceChangeData
-  ): {
-    accountAddress: string
-    chainId: string
-    transactionHash: string
-    url: string
-  } => {
-    return {
-      accountAddress: fcmData.accountAddress,
-      chainId: fcmData.chainId,
-      transactionHash: fcmData.transactionHash,
-      url: `${PROTOCOLS.CORE}://${ACTIONS.OpenChainPortfolio}`
+    fcmData: BalanceChangeData | NewsData
+  ):
+    | {
+        accountAddress: string
+        chainId: string
+        transactionHash: string
+        url: string
+      }
+    | { url: string }
+    | undefined => {
+    if (fcmData.type === 'balance') {
+      return {
+        accountAddress: fcmData.accountAddress,
+        chainId: fcmData.chainId,
+        transactionHash: fcmData.transactionHash,
+        url: `${PROTOCOLS.CORE}://${ACTIONS.Portfolio}`
+      }
+    } else if (fcmData.type === 'news') {
+      return {
+        url: fcmData.url
+      }
     }
   }
 }
