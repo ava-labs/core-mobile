@@ -11,7 +11,11 @@ type Audio = {
   hapticType: HapticFeedbackTypes
 }
 
-const audioFiles = {
+export const audioFiles = {
+  Default: {
+    file: 'default.wav',
+    hapticType: HapticFeedbackTypes.soft
+  },
   Send: {
     file: 'core_send.wav',
     hapticType: HapticFeedbackTypes.notificationSuccess
