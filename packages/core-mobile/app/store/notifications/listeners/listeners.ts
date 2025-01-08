@@ -152,16 +152,7 @@ export const addNotificationsListeners = (
 
   startListening({
     matcher: isAnyOf(onLogOut, onNotificationsDisabled),
-    effect: async (action, listenerApi) => {
-      if (action.type === setFeatureFlags.type) {
-        const previousFlag =
-          listenerApi.getOriginalState().posthog.featureFlags[
-            FeatureGates.ALL_NOTIFICATIONS
-          ]
-        // avoid unsubscribing when previous flag is already falsy
-        if (!previousFlag) return
-      }
-
+    effect: async () => {
       await unsubscribeAllNotifications().catch(reason => {
         Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
       })
