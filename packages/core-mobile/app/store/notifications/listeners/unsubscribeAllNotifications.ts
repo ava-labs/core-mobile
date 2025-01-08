@@ -5,7 +5,7 @@ import { unSubscribeForNews } from 'services/notifications/news/unsubscribeForNe
 
 export async function unsubscribeAllNotifications(): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
-  const deviceArn = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
+  const deviceArn = await registerDeviceToNotificationSender(fcmToken)
   await Promise.all([
     unSubscribeForBalanceChange({ deviceArn }),
     unSubscribeForNews({

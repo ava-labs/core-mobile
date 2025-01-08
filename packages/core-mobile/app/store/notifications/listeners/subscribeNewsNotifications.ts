@@ -33,7 +33,7 @@ export async function subscribeNewsNotifications(
   }
 
   const fcmToken = await FCMService.getFCMToken()
-  const deviceArn = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
+  const deviceArn = await registerDeviceToNotificationSender(fcmToken)
 
   //check if only news notifications are denied
   const blockedNotifications =
