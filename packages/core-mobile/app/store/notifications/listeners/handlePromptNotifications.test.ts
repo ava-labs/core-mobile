@@ -8,7 +8,8 @@ import { selectNotificationSubscription } from '../slice'
 import { handlePromptNotifications } from './handlePromptNotifications'
 
 jest.mock('services/notifications/NotificationsService', () => ({
-  getBlockedNotifications: jest.fn()
+  getBlockedNotifications: jest.fn(),
+  getNotificationSettings: jest.fn()
 }))
 
 jest.mock('utils/Navigation', () => ({

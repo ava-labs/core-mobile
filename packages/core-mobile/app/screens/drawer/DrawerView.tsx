@@ -17,7 +17,10 @@ import AdvancedItem from 'screens/drawer/components/AdvancedItem'
 import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 import NotificationsItem from 'screens/drawer/components/NotificationsItem'
 import { useSelector } from 'react-redux'
-import { selectIsNotificationBlocked, selectUseDarkMode } from 'store/posthog'
+import {
+  selectIsAllNotificationsBlocked,
+  selectUseDarkMode
+} from 'store/posthog'
 import FeedbackItem from 'screens/drawer/components/FeedbackItem'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
@@ -57,7 +60,7 @@ const DrawerView = (): JSX.Element => {
 }
 
 const Main = (): JSX.Element => {
-  const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
+  const isNotificationBlocked = useSelector(selectIsAllNotificationsBlocked)
 
   const [hasRecoveryMethodsFetched, setHasRecoveryMethodsFetched] =
     useState(false)

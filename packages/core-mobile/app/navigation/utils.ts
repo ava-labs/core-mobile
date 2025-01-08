@@ -3,7 +3,8 @@ import { navigate } from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { NetworkTokensTabs } from 'screens/portfolio/network/NetworkTokens'
 
-const DELAY_NAVIGATION = 1000
+const DELAY_NAVIGATION_CLAIM_REWARDS = 1000
+const DELAY_NAVIGATION = 400
 
 export const navigateToWatchlist = (coingeckoId: string | undefined): void => {
   setTimeout(async () => {
@@ -46,7 +47,7 @@ export const navigateToChainPortfolio = (): void => {
       // @ts-ignore
       params: { tabIndex: NetworkTokensTabs.Tokens }
     })
-  }, 300)
+  }, DELAY_NAVIGATION)
 }
 
 export const navigateToClaimRewards = (): void => {
@@ -68,5 +69,5 @@ export const navigateToClaimRewards = (): void => {
         }
       }
     })
-  }, DELAY_NAVIGATION)
+  }, DELAY_NAVIGATION_CLAIM_REWARDS)
 }

@@ -1,5 +1,5 @@
 import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'
 import { unSubscribeForBalanceChange } from 'services/notifications/balanceChange/unsubscribeForBalanceChange'
 import { subscribeForBalanceChange } from 'services/notifications/balanceChange/subscribeForBalanceChange'
@@ -19,12 +19,9 @@ jest.mock('store/account', () => ({
   selectAccounts: jest.fn()
 }))
 
-jest.mock(
-  'services/notifications/balanceChange/registerDeviceToNotificationSender',
-  () => ({
-    registerDeviceToNotificationSender: jest.fn()
-  })
-)
+jest.mock('services/notifications/registerDeviceToNotificationSender', () => ({
+  registerDeviceToNotificationSender: jest.fn()
+}))
 
 jest.mock('services/fcm/FCMService', () => ({
   getFCMToken: jest.fn()

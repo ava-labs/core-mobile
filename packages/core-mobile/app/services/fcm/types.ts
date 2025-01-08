@@ -1,10 +1,16 @@
 import z, { object, string, nativeEnum, literal } from 'zod'
 import { ChannelId } from 'services/notifications/channels'
 
+export enum NotificationTypes {
+  BALANCE_CHANGES = 'BALANCE_CHANGES',
+  NEWS = 'NEWS'
+}
+
 export enum NewsEvents {
   PRODUCT_ANNOUNCEMENTS = 'PRODUCT_ANNOUNCEMENTS',
   OFFERS_AND_PROMOTIONS = 'OFFERS_AND_PROMOTIONS',
-  MARKET_NEWS = 'MARKET_NEWS'
+  MARKET_NEWS = 'MARKET_NEWS',
+  PRICE_ALERTS = 'PRICE_ALERTS'
 }
 
 export enum BalanceChangeEvents {
@@ -14,20 +20,20 @@ export enum BalanceChangeEvents {
 }
 
 export const BalanceChangeDataSchema = object({
-  type: literal('balance').optional(), // TODO use correct type from backend
+  type: literal(NotificationTypes.BALANCE_CHANGES),
   event: nativeEnum(BalanceChangeEvents),
-  title: string().optional(),
-  body: string().optional(),
+  title: string(),
+  body: string(),
   accountAddress: string().startsWith('0x'),
   chainId: string(),
   transactionHash: string().startsWith('0x')
 })
 
 export const NewsDataSchema = object({
-  type: literal('news').optional(), // TODO use correct type from backend
-  event: nativeEnum(NewsEvents), // TODO use correct events from backend
-  title: string().optional(),
-  body: string().optional(),
+  type: literal(NotificationTypes.NEWS),
+  event: nativeEnum(NewsEvents),
+  title: string(),
+  body: string(),
   url: string()
 })
 
