@@ -8,7 +8,7 @@ export const isStakeCompleteNotificationDisabled = async (
 ): Promise<undefined | boolean> => {
   const state = listenerApi.getState()
 
-  const isInAppNotificationEnabled = selectNotificationSubscription(
+  const isStakeCompleteEnabled = selectNotificationSubscription(
     ChannelId.STAKING_COMPLETE
   )(state)
 
@@ -19,5 +19,5 @@ export const isStakeCompleteNotificationDisabled = async (
   }
   const isSystemStakeCompleteNotificationBlocked =
     await isStakeCompleteNotificationBlocked()
-  return !isInAppNotificationEnabled || isSystemStakeCompleteNotificationBlocked
+  return !isStakeCompleteEnabled || isSystemStakeCompleteNotificationBlocked
 }

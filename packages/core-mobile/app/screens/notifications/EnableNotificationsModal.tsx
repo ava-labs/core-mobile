@@ -32,12 +32,13 @@ const EnableNotificationsModal = (): JSX.Element => {
     }
   }, [canGoBack, goBack])
 
-  // TODO: add title and message
   return (
     <WarningModal
       testID="turn_on_notifications_modal"
-      title={'TBD title'}
-      message={'TBD'}
+      title={'Enable Push Notification?'}
+      message={
+        'Get notified about market updates, special offers, airdrops, balance changes, and more.'
+      }
       actionText={'Turn on Notifications'}
       dismissText={'Not Now'}
       onAction={onTurnOnNotifications}

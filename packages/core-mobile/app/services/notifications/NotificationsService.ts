@@ -13,6 +13,7 @@ import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import {
   ChannelId,
+  NewsChannelId,
   notificationChannels
 } from 'services/notifications/channels'
 import { StakeCompleteNotification } from 'store/notifications'
@@ -26,16 +27,21 @@ import {
 } from './constants'
 
 class NotificationsService {
+  async getNotificationSettings(): Promise<AuthorizationStatus> {
+    const settings = await notifee.getNotificationSettings()
+    return settings.authorizationStatus
+  }
+
   /**
    * Returns all notification channels that are blocked on system level.
    * If notifications are blocked for whole app then it returns all channels.
    * Map is used for optimization purposes.
    */
   async getBlockedNotifications(): Promise<Map<ChannelId, boolean>> {
-    const settings = await notifee.getNotificationSettings()
+    const authorizationStatus = await this.getNotificationSettings()
     const channels = await notifee.getChannels()
 
-    switch (settings.authorizationStatus) {
+    switch (authorizationStatus) {
       case AuthorizationStatus.NOT_DETERMINED:
       case AuthorizationStatus.DENIED:
         return notificationChannels.reduce((map, next) => {
@@ -50,6 +56,13 @@ class NotificationsService {
       }
       return map
     }, new Map<ChannelId, boolean>())
+  }
+
+  async getBlockedNewsNotifications(): Promise<Map<NewsChannelId, boolean>> {
+    const blockedNotifications = await this.getBlockedNotifications()
+    blockedNotifications.delete(ChannelId.BALANCE_CHANGES)
+    blockedNotifications.delete(ChannelId.STAKING_COMPLETE)
+    return blockedNotifications as unknown as Map<NewsChannelId, boolean>
   }
 
   /**

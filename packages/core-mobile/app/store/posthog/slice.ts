@@ -298,12 +298,10 @@ export const selectIsBlockaidDappScanBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsBalanceChangeNotificationsBlocked = (
-  state: RootState
-): boolean => {
+export const selectIsAllNotificationsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
-    !featureFlags[FeatureGates.BALANCE_CHANGE_NOTIFICATIONS] ||
+    !featureFlags[FeatureGates.ALL_NOTIFICATIONS] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }

@@ -19,7 +19,7 @@ export async function subscribeForBalanceChange({
       addresses
     })
   ).catch(error => {
-    Logger.error(`[subscribe.ts][subscribe]${error}`)
+    Logger.error(`[subscribeForBalanceChange.ts][subscribe]${error}`)
     throw new Error(error)
   })
   if (response.ok) {

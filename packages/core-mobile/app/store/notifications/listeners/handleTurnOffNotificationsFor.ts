@@ -6,7 +6,7 @@ import { handleStakeCompleteNotificationCleanup } from './handleNotificationClea
 export const handleTurnOffNotificationsFor = async (
   listenerApi: AppListenerEffectAPI,
   channelId: ChannelId
-) => {
+): Promise<void> => {
   listenerApi.dispatch(setNotificationSubscriptions([channelId, false]))
 
   if (channelId === ChannelId.STAKING_COMPLETE) {

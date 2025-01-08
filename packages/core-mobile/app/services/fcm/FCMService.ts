@@ -7,7 +7,8 @@ import {
   NotificationPayload,
   BalanceChangeData,
   NewsData,
-  NotificationPayloadSchema
+  NotificationPayloadSchema,
+  NotificationTypes
 } from 'services/fcm/types'
 import { Platform } from 'react-native'
 import { DisplayNotificationParams } from 'services/notifications/types'
@@ -130,14 +131,14 @@ class FCMService {
       }
     | { url: string }
     | undefined => {
-    if (fcmData.type === 'balance') {
+    if (fcmData.type === NotificationTypes.BALANCE_CHANGES) {
       return {
         accountAddress: fcmData.accountAddress,
         chainId: fcmData.chainId,
         transactionHash: fcmData.transactionHash,
         url: `${PROTOCOLS.CORE}://${ACTIONS.Portfolio}`
       }
-    } else if (fcmData.type === 'news') {
+    } else if (fcmData.type === NotificationTypes.NEWS) {
       return {
         url: fcmData.url
       }
