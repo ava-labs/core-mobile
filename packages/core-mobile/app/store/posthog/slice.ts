@@ -113,11 +113,6 @@ export const selectIsEarnBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsNotificationBlocked = (state: RootState): boolean => {
-  // in the future, other feature required notifications should go here
-  return selectIsEarnBlocked(state)
-}
-
 export const selectIsSendNftBlockediOS = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
