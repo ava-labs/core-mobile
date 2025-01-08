@@ -1,7 +1,7 @@
 import Config from 'react-native-config'
-import { ChannelId } from '../channels'
+import { NewsChannelId } from '../channels'
 import { unSubscribeForNews } from './unsubscribeForNews'
-import { newsEvents } from './events'
+import { channelIdToNewsEventMap } from './events'
 
 global.fetch = jest.fn()
 
@@ -24,7 +24,7 @@ describe('unSubscribeForNews', () => {
 
     const result = await unSubscribeForNews({
       deviceArn,
-      channelIds: [ChannelId.MARKET_NEWS]
+      channelIds: [NewsChannelId.MARKET_NEWS]
     })
 
     // Check if fetch was called with correct URL and options
@@ -38,7 +38,7 @@ describe('unSubscribeForNews', () => {
         },
         body: JSON.stringify({
           deviceArn,
-          events: [newsEvents.marketNews]
+          events: [channelIdToNewsEventMap.marketNews]
         })
       }
     )
@@ -59,7 +59,8 @@ describe('unSubscribeForNews', () => {
     global.fetch = jest.fn(() => Promise.resolve(mockResponse)) as jest.Mock
 
     const result = await unSubscribeForNews({
-      deviceArn
+      deviceArn,
+      channelIds: []
     })
 
     // Check if fetch was called with correct URL and options
@@ -88,9 +89,9 @@ describe('unSubscribeForNews', () => {
     const mockError = new Error('Network error')
     global.fetch = jest.fn(() => Promise.reject(mockError)) as jest.Mock
 
-    await expect(unSubscribeForNews({ deviceArn })).rejects.toThrow(
-      'Network error'
-    )
+    await expect(
+      unSubscribeForNews({ deviceArn, channelIds: [] })
+    ).rejects.toThrow('Network error')
   })
 
   it('should throw an error if the response is not ok', async () => {
@@ -101,8 +102,8 @@ describe('unSubscribeForNews', () => {
     }
     global.fetch = jest.fn(() => Promise.resolve(mockResponse)) as jest.Mock
 
-    await expect(unSubscribeForNews({ deviceArn })).rejects.toThrow(
-      '404:not found'
-    )
+    await expect(
+      unSubscribeForNews({ deviceArn, channelIds: [] })
+    ).rejects.toThrow('404:not found')
   })
 })

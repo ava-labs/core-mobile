@@ -4,7 +4,7 @@ import { registerDeviceToNotificationSender } from 'services/notifications/regis
 import FCMService from 'services/fcm/FCMService'
 import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { ChannelId } from 'services/notifications/channels'
+import { NewsChannelId } from 'services/notifications/channels'
 import { subscribeForNews } from 'services/notifications/news/subscribeForNews'
 import { selectEnabledNewsNotificationSubscriptions } from '../slice'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
@@ -42,11 +42,11 @@ export async function subscribeNewsNotifications(
   const newsChannelIds = Object.entries(blockedNewsNotifications).reduce(
     (acc, [channelId, enabled]) => {
       if (!enabled) {
-        acc.push(channelId as ChannelId)
+        acc.push(channelId as NewsChannelId)
       }
       return acc
     },
-    [] as ChannelId[]
+    [] as NewsChannelId[]
   )
   if (newsChannelIds.length > 0) {
     await unsubscribeNewsNotifications({ channelIds: newsChannelIds })

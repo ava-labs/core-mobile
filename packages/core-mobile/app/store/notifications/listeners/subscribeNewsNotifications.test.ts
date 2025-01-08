@@ -39,7 +39,7 @@ jest.mock('services/notifications/news/subscribeForNews', () => ({
 }))
 
 jest.mock('services/notifications/NotificationsService', () => ({
-  getBlockedNotifications: jest.fn()
+  getBlockedNewsNotifications: jest.fn()
 }))
 
 jest.mock('utils/Logger', () => ({
@@ -103,7 +103,7 @@ describe('subscribeNewsNotifications', () => {
       'deviceArn'
     )
     ;(
-      NotificationsService.getBlockedNotifications as jest.Mock
+      NotificationsService.getBlockedNewsNotifications as jest.Mock
     ).mockResolvedValue({
       [ChannelId.MARKET_NEWS]: true,
       [ChannelId.OFFERS_AND_PROMOTIONS]: false,
@@ -141,7 +141,7 @@ describe('subscribeNewsNotifications', () => {
       'deviceArn'
     )
     ;(
-      NotificationsService.getBlockedNotifications as jest.Mock
+      NotificationsService.getBlockedNewsNotifications as jest.Mock
     ).mockResolvedValue(new Set())
     ;(subscribeForNews as jest.Mock).mockResolvedValue({
       message: 'ok'
@@ -176,7 +176,7 @@ describe('subscribeNewsNotifications', () => {
       'deviceArn'
     )
     ;(
-      NotificationsService.getBlockedNotifications as jest.Mock
+      NotificationsService.getBlockedNewsNotifications as jest.Mock
     ).mockResolvedValue(new Set())
     ;(subscribeForNews as jest.Mock).mockResolvedValue({
       message: 'error'

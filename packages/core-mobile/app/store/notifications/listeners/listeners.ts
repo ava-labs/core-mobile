@@ -9,7 +9,7 @@ import { unsubscribeBalanceChangeNotifications } from 'store/notifications/liste
 import { setFeatureFlags } from 'store/posthog/slice'
 import { FeatureFlags, FeatureGates } from 'services/posthog/types'
 import type { Action } from 'redux'
-import { ChannelId } from 'services/notifications/channels'
+import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
 import { promptEnableNotifications } from 'store/notifications'
 import {
@@ -134,7 +134,7 @@ export const addNotificationsListeners = (
   startListening({
     matcher: isAnyOf(onNotificationsTurnedOffForNews),
     effect: async action => {
-      const channelId = (action as PayloadAction<{ channelId: ChannelId }>)
+      const channelId = (action as PayloadAction<{ channelId: NewsChannelId }>)
         .payload.channelId
       await unsubscribeNewsNotifications({ channelIds: [channelId] }).catch(
         reason => {

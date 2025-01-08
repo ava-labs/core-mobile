@@ -1,7 +1,7 @@
 import Config from 'react-native-config'
-import { ChannelId } from '../channels'
+import { NewsChannelId } from '../channels'
 import { subscribeForNews } from './subscribeForNews'
-import { newsEvents } from './events'
+import { channelIdToNewsEventMap } from './events'
 
 global.fetch = jest.fn()
 
@@ -24,7 +24,7 @@ describe('subscribeForNews', () => {
 
     const result = await subscribeForNews({
       deviceArn,
-      channelIds: [ChannelId.MARKET_NEWS]
+      channelIds: [NewsChannelId.MARKET_NEWS]
     })
 
     // Check if fetch was called with correct URL and options
@@ -38,7 +38,7 @@ describe('subscribeForNews', () => {
         },
         body: JSON.stringify({
           deviceArn,
-          events: [newsEvents.marketNews]
+          events: [channelIdToNewsEventMap.marketNews]
         })
       }
     )
@@ -54,7 +54,7 @@ describe('subscribeForNews', () => {
     global.fetch = jest.fn(() => Promise.reject(mockError)) as jest.Mock
 
     await expect(
-      subscribeForNews({ deviceArn, channelIds: [] })
+      subscribeForNews({ deviceArn, channelIds: [NewsChannelId.MARKET_NEWS] })
     ).rejects.toThrow('Network error')
   })
 
@@ -67,7 +67,7 @@ describe('subscribeForNews', () => {
     global.fetch = jest.fn(() => Promise.resolve(mockResponse)) as jest.Mock
 
     await expect(
-      subscribeForNews({ deviceArn, channelIds: [] })
+      subscribeForNews({ deviceArn, channelIds: [NewsChannelId.MARKET_NEWS] })
     ).rejects.toThrow('404:not found')
   })
 })
