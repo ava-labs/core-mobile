@@ -4,6 +4,7 @@ import { addDays, addYears } from 'date-fns'
 import * as Navigation from 'utils/Navigation'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
+import { navigateToClaimRewards } from 'navigation/utils'
 import {
   calculateMaxWeight,
   getAvailableDelegationWeight,
@@ -13,7 +14,6 @@ import {
   getSimpleSortedValidators,
   getSortedValidatorsByEndTime,
   isEndTimeOverOneYear,
-  navigateToClaimRewards,
   comparePeerVersion
 } from './utils'
 

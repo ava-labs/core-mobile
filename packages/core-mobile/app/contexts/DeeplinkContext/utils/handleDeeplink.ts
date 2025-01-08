@@ -1,19 +1,28 @@
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
-import { navigateToClaimRewards } from 'services/earn/utils'
 import { parseUri } from '@walletconnect/utils'
 import { showSimpleToast } from 'components/Snackbar'
 import { WalletConnectVersions } from 'store/walletConnectV2/types'
 import { newSession } from 'store/walletConnectV2/slice'
-import { navigateToChainPortfolio } from 'navigation/utils'
+import {
+  navigateToChainPortfolio,
+  navigateToClaimRewards,
+  navigateToWatchlist
+} from 'navigation/utils'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
-export const handleDeeplink = (
-  deeplink: DeepLink,
-  dispatch: Dispatch,
+export const handleDeeplink = ({
+  deeplink,
+  dispatch,
+  isEarnBlocked,
+  openUrl
+}: {
+  deeplink: DeepLink
+  dispatch: Dispatch
   isEarnBlocked: boolean
-): void => {
+  openUrl: (url: string) => Promise<void>
+}): void => {
   let url
   try {
     url = new URL(deeplink.url)
@@ -32,26 +41,32 @@ export const handleDeeplink = (
       if (CORE_UNIVERSAL_LINK_HOSTS.includes(url.hostname)) {
         const action = url.pathname.split('/')[1]
         if (action === ACTIONS.WC) {
-          const uri = url.searchParams.get('uri')
-          if (uri) {
-            const { version } = parseUri(uri)
-            dispatchWalletConnectSession(version, uri, dispatch)
-          } else {
-            Logger.info(`${deeplink.url} is not a wallet connect link`)
-          }
+          startWalletConnectSession({ url, dispatch, deeplink })
+          break
         }
       }
+
+      // if not a wc link, just open the url in the in-app browser
+      openUrl(deeplink.url)
       break
     }
     case PROTOCOLS.CORE: {
       const action = url.host
-      handleWalletConnectActions({
-        action,
-        url,
-        deeplink,
-        dispatch,
-        isEarnBlocked
-      })
+
+      if (action === ACTIONS.WC) {
+        startWalletConnectSession({ url, dispatch, deeplink })
+      } else if (action === ACTIONS.Portfolio) {
+        deeplink.callback?.()
+        navigateToChainPortfolio()
+      } else if (action === ACTIONS.StakeComplete) {
+        if (isEarnBlocked) return
+        deeplink.callback?.()
+        navigateToClaimRewards()
+      } else if (action === ACTIONS.WatchList) {
+        const coingeckoId = url.pathname.split('/')[1]
+        navigateToWatchlist(coingeckoId)
+      }
+
       break
     }
     default:
@@ -59,45 +74,21 @@ export const handleDeeplink = (
   }
 }
 
-const handleWalletConnectActions = ({
-  action,
+const startWalletConnectSession = ({
   url,
   dispatch,
-  deeplink,
-  isEarnBlocked
+  deeplink
 }: {
-  action: string
   url: URL
   dispatch: Dispatch<AnyAction>
   deeplink: DeepLink
-  isEarnBlocked: boolean
 }): void => {
-  switch (action) {
-    case ACTIONS.WC: {
-      const uri = url.searchParams.get('uri')
-      if (uri) {
-        const { version } = parseUri(uri)
-        dispatchWalletConnectSession(version, uri, dispatch)
-      } else {
-        Logger.info(`${deeplink.url} is not a wallet connect link`)
-      }
-      break
-    }
-    case ACTIONS.StakeComplete: {
-      if (isEarnBlocked) return
-      deeplink.callback?.()
-      navigateToClaimRewards()
-      break
-    }
-    case ACTIONS.OpenChainPortfolio: {
-      deeplink.callback?.()
-      navigateToChainPortfolio().catch(reason => {
-        Logger.error(`[handleDeeplink.ts][navigateToChainPortfolio]${reason}`)
-      })
-      break
-    }
-    default:
-      break
+  const uri = url.searchParams.get('uri')
+  if (uri) {
+    const { version } = parseUri(uri)
+    dispatchWalletConnectSession(version, uri, dispatch)
+  } else {
+    Logger.info(`${deeplink.url} is not a wallet connect link`)
   }
 }
 

@@ -10,8 +10,6 @@ import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams, StakingConfig } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { valid, compare } from 'semver'
 import { Peer } from '@avalabs/avalanchejs/dist/info/model'
@@ -347,28 +345,6 @@ export const getSortedValidatorsByEndTime = (
   return validators.sort(
     (a, b): number => Number(b.endTime) - Number(a.endTime)
   )
-}
-
-export const navigateToClaimRewards = async (): Promise<void> => {
-  setTimeout(async () => {
-    Logger.info('navigating to claim rewards')
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Wallet.Earn,
-        params: {
-          screen: AppNavigation.Earn.ClaimRewards,
-          params: {
-            onBack: () =>
-              Navigation.navigate({
-                //@ts-ignore
-                name: AppNavigation.Tabs.Stake
-              })
-          }
-        }
-      }
-    })
-  }, 1000)
 }
 
 export const getTransformedTransactions = async (

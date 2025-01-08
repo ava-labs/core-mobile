@@ -31,7 +31,8 @@ export enum StakeActions {
 export const ACTIONS = {
   WC: 'wc',
   StakeComplete: StakeActions.StakeComplete,
-  OpenChainPortfolio: 'openchainportfolio'
+  Portfolio: 'portfolio',
+  WatchList: 'watchlist'
 }
 
 export type NotificationData = { [p: string]: string | number | object }
