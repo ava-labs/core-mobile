@@ -1,6 +1,5 @@
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
-import messaging from '@react-native-firebase/messaging'
 import fetchWithAppCheck from 'utils/httpClient'
 import { ChannelId } from '../channels'
 import { newsEvents } from './events'
@@ -34,8 +33,6 @@ export async function unSubscribeForNews({
       events
     })
   ).catch(error => {
-    //as fallback invalidate token so user doesn't get notifications
-    messaging().deleteToken()
     Logger.error(`[unsubscribeForNews.ts][unsubscribe]${error}`)
     throw error
   })
