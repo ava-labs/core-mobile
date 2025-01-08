@@ -1,8 +1,9 @@
+import { NewsEvents } from 'services/fcm/types'
 import { ChannelId } from '../channels'
 
-export const newsEvents = {
-  [ChannelId.PRODUCT_ANNOUNCEMENTS]: 'PRODUCT_ANNOUNCEMENTS',
-  [ChannelId.OFFERS_AND_PROMOTIONS]: 'OFFERS_AND_PROMOTIONS',
-  [ChannelId.MARKET_NEWS]: 'MARKET_NEWS',
-  [ChannelId.PRICE_ALERTS]: 'PRICE_ALERTS'
+export const channelIdToNewsEventMap = {
+  [ChannelId.PRODUCT_ANNOUNCEMENTS]: NewsEvents.PRODUCT_ANNOUNCEMENTS,
+  [ChannelId.OFFERS_AND_PROMOTIONS]: NewsEvents.OFFERS_AND_PROMOTIONS,
+  [ChannelId.MARKET_NEWS]: NewsEvents.MARKET_NEWS,
+  [ChannelId.PRICE_ALERTS]: NewsEvents.PRICE_ALERTS
 }

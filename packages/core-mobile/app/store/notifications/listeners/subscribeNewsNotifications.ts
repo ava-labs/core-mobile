@@ -36,10 +36,10 @@ export async function subscribeNewsNotifications(
   const deviceArn = await registerDeviceToNotificationSender(fcmToken)
 
   //check if only news notifications are denied
-  const blockedNotifications =
-    await NotificationsService.getBlockedNotifications()
+  const blockedNewsNotifications =
+    await NotificationsService.getBlockedNewsNotifications()
 
-  const channelIds = Object.entries(blockedNotifications).reduce(
+  const newsChannelIds = Object.entries(blockedNewsNotifications).reduce(
     (acc, [channelId, enabled]) => {
       if (!enabled) {
         acc.push(channelId as ChannelId)
@@ -48,8 +48,8 @@ export async function subscribeNewsNotifications(
     },
     [] as ChannelId[]
   )
-  if (channelIds.length > 0) {
-    await unsubscribeNewsNotifications({ channelIds })
+  if (newsChannelIds.length > 0) {
+    await unsubscribeNewsNotifications({ channelIds: newsChannelIds })
   }
 
   //subscribe

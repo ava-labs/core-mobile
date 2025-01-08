@@ -1,30 +1,21 @@
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
 import fetchWithAppCheck from 'utils/httpClient'
-import { ChannelId } from '../channels'
-import { newsEvents } from './events'
+import { NewsChannelId } from '../channels'
+import { channelIdToNewsEventMap } from './events'
 
 export async function unSubscribeForNews({
   deviceArn,
   channelIds
 }: {
   deviceArn: string
-  channelIds?: ChannelId[]
+  channelIds: NewsChannelId[]
 }): Promise<{ message: 'ok' }> {
-  const events =
-    channelIds === undefined
-      ? []
-      : channelIds
-          .map(channelId => {
-            if (
-              channelId === ChannelId.BALANCE_CHANGES ||
-              channelId === ChannelId.STAKING_COMPLETE
-            ) {
-              return
-            }
-            return newsEvents[channelId]
-          })
-          .filter(item => item !== undefined)
+  const events = channelIds
+    .map(channelId => {
+      return channelIdToNewsEventMap[channelId]
+    })
+    .filter(item => item !== undefined)
 
   const response = await fetchWithAppCheck(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/news/unsubscribe',

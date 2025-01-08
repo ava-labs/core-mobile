@@ -92,9 +92,9 @@ export const addNotificationsListeners = (
       setNonActiveAccounts,
       setAccount,
       onFcmTokenChange,
-      turnOnNotificationsFor,
+      turnOnAllNotifications,
       onNotificationsEnabled,
-      turnOnAllNotifications
+      onNotificationsTurnedOnForBalanceChange
     ),
     effect: async (_, listenerApi) => {
       await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
@@ -109,44 +109,40 @@ export const addNotificationsListeners = (
     matcher: isAnyOf(
       onRehydrationComplete,
       onFcmTokenChange,
-      turnOnNotificationsFor,
+      turnOnAllNotifications,
       onNotificationsEnabled,
-      turnOnAllNotifications
+      onNotificationsTurnedOnForNews
     ),
     effect: async (_, listenerApi) => {
       await subscribeNewsNotifications(listenerApi).catch(reason => {
+        Logger.error(`[listeners.ts][subscribeNewsNotifications]${reason}`)
+      })
+    }
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForBalanceChange),
+    effect: async () => {
+      await unsubscribeBalanceChangeNotifications().catch(reason => {
         Logger.error(
-          `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
+          `[listeners.ts][unsubscribeBalancheChangeNotifications]${reason}`
         )
       })
     }
   })
 
   startListening({
-    actionCreator: turnOffNotificationsFor,
+    matcher: isAnyOf(onNotificationsTurnedOffForNews),
     effect: async action => {
       const channelId = (action as PayloadAction<{ channelId: ChannelId }>)
         .payload.channelId
-      if (channelId === ChannelId.BALANCE_CHANGES) {
-        await unsubscribeBalanceChangeNotifications().catch(reason => {
-          Logger.error(`[listeners.ts][unsubscribeNewsNotifications]${reason}`)
-        })
-        return
-      }
-      if (
-        channelId === ChannelId.MARKET_NEWS ||
-        channelId === ChannelId.PRICE_ALERTS ||
-        channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
-        channelId === ChannelId.PRODUCT_ANNOUNCEMENTS
-      ) {
-        await unsubscribeNewsNotifications({ channelIds: [channelId] }).catch(
-          reason => {
-            Logger.error(
-              `[listeners.ts][unsubscribeNewsNotifications:priceAlerts]${reason}`
-            )
-          }
-        )
-      }
+      await unsubscribeNewsNotifications({ channelIds: [channelId] }).catch(
+        reason => {
+          Logger.error(
+            `[listeners.ts][unsubscribeNewsNotifications:priceAlerts]${reason}`
+          )
+        }
+      )
     }
   })
 
@@ -193,6 +189,54 @@ export const addNotificationsListeners = (
         )
       })
   })
+}
+
+const onNotificationsTurnedOnForBalanceChange = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    return (
+      action.type === turnOnNotificationsFor.type &&
+      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
+        ChannelId.BALANCE_CHANGES
+    )
+  }
+}
+
+const onNotificationsTurnedOnForNews = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    const channelId = (action as PayloadAction<{ channelId: ChannelId }>)
+      .payload.channelId
+    return (
+      action.type === turnOnNotificationsFor.type &&
+      (channelId === ChannelId.MARKET_NEWS ||
+        channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
+        channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
+        channelId === ChannelId.PRICE_ALERTS)
+    )
+  }
+}
+
+const onNotificationsTurnedOffForBalanceChange = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    return (
+      action.type === turnOffNotificationsFor.type &&
+      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
+        ChannelId.BALANCE_CHANGES
+    )
+  }
+}
+
+const onNotificationsTurnedOffForNews = {
+  match: (action: Action<unknown>): action is PayloadAction => {
+    const channelId = (action as PayloadAction<{ channelId: ChannelId }>)
+      .payload.channelId
+    return (
+      action.type === turnOffNotificationsFor.type &&
+      (channelId === ChannelId.MARKET_NEWS ||
+        channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
+        channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
+        channelId === ChannelId.PRICE_ALERTS)
+    )
+  }
 }
 
 const onNotificationsEnabled = {

@@ -4,7 +4,7 @@ import {
   NotificationsState,
   StakeCompleteNotification
 } from 'store/notifications/types'
-import { ChannelId } from 'services/notifications/channels'
+import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { NotificationData } from 'contexts/DeeplinkContext/types'
 
 const reducerName = 'notifications'
@@ -33,15 +33,19 @@ export const selectNotificationSubscription =
 
 export const selectEnabledNewsNotificationSubscriptions = (
   state: RootState
-): ChannelId[] => {
+): NewsChannelId[] => {
   return Object.entries(state.notifications.notificationSubscriptions).reduce(
     (acc, [channelId, enabled]) => {
-      if (enabled) {
-        acc.push(channelId as ChannelId)
+      if (
+        enabled &&
+        channelId !== ChannelId.BALANCE_CHANGES &&
+        channelId !== ChannelId.STAKING_COMPLETE
+      ) {
+        acc.push(channelId as NewsChannelId)
       }
       return acc
     },
-    [] as ChannelId[]
+    [] as NewsChannelId[]
   )
 }
 

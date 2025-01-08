@@ -9,6 +9,13 @@ export enum ChannelId {
   PRICE_ALERTS = 'priceAlerts'
 }
 
+export enum NewsChannelId {
+  PRODUCT_ANNOUNCEMENTS = 'productAnnouncements',
+  OFFERS_AND_PROMOTIONS = 'offersAndPromotions',
+  MARKET_NEWS = 'marketNews',
+  PRICE_ALERTS = 'priceAlerts'
+}
+
 export interface AvaxAndroidChannel extends AndroidChannel {
   id: ChannelId
   title: string
