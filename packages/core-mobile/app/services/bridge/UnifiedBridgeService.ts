@@ -25,6 +25,8 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
+const INVALID_FEE_ERROR = 'invalid fee'
+
 export class UnifiedBridgeService {
   #service: BridgeService | undefined
 
@@ -87,19 +89,25 @@ export class UnifiedBridgeService {
       await this.service.getFees({
         asset,
         amount,
-        targetChain: await this.buildChain(targetNetwork),
-        sourceChain: await this.buildChain(sourceNetwork)
+        targetChain: this.buildChain(targetNetwork),
+        sourceChain: this.buildChain(sourceNetwork)
       })
     )
 
-    const identifier =
-      asset.type === TokenType.NATIVE ? asset.symbol : asset.address
+    // We currently operate on the assumption that the fee is paid in the
+    // same token as is bridged.
+    // Although sometimes it may be paid on the source chain (as is the case for CCTP),
+    // and sometimes it may be paid on the target chain (i.e. Avalanche Bridge), the
+    // result for the end users is that the received amount on the target chain is lowered
+    // by the fee amount.
+    const feeChainId = Object.keys(feeMap)[0] // ID of the chain where the fee is paid
+    assertNotUndefined(feeChainId, INVALID_FEE_ERROR)
+    const feeChain = feeMap[feeChainId]
+    assertNotUndefined(feeChain, INVALID_FEE_ERROR)
+    const feeAssetId = Object.keys(feeChain)[0] // address or "NATIVE"
+    assertNotUndefined(feeAssetId, INVALID_FEE_ERROR)
 
-    if (!identifier) {
-      throw new Error('invalid asset')
-    }
-
-    return feeMap[identifier.toLowerCase()] ?? undefined
+    return feeChain[feeAssetId as keyof typeof feeChain] ?? undefined
   }
 
   async estimateReceiveAmount({
@@ -117,8 +125,8 @@ export class UnifiedBridgeService {
     fromAddress: string
     gasSettings?: GasSettings
   }): Promise<{ asset: Asset; amount: bigint }> {
-    const sourceChain = await this.buildChain(sourceNetwork)
-    const targetChain = await this.buildChain(targetNetwork)
+    const sourceChain = this.buildChain(sourceNetwork)
+    const targetChain = this.buildChain(targetNetwork)
 
     return await this.service.estimateReceiveAmount({
       asset,
@@ -149,8 +157,8 @@ export class UnifiedBridgeService {
     gasSettings?: GasSettings
     updateListener: (transfer: BridgeTransfer) => void
   }): Promise<BridgeTransfer> {
-    const sourceChain = await this.buildChain(sourceNetwork)
-    const targetChain = await this.buildChain(targetNetwork)
+    const sourceChain = this.buildChain(sourceNetwork)
+    const targetChain = this.buildChain(targetNetwork)
 
     const bridgeTransfer = await this.service.transferAsset({
       asset,
@@ -194,8 +202,8 @@ export class UnifiedBridgeService {
       throw new Error('no target network found')
     }
 
-    const sourceChain = await this.buildChain(sourceNetwork)
-    const targetChain = await this.buildChain(targetNetwork)
+    const sourceChain = this.buildChain(sourceNetwork)
+    const targetChain = this.buildChain(targetNetwork)
 
     return await this.service.estimateGas({
       asset,
@@ -217,8 +225,8 @@ export class UnifiedBridgeService {
     sourceNetwork: Network
     targetNetwork: Network
   }): Promise<bigint> {
-    const sourceChain = await this.buildChain(sourceNetwork)
-    const targetChain = await this.buildChain(targetNetwork)
+    const sourceChain = this.buildChain(sourceNetwork)
+    const targetChain = this.buildChain(targetNetwork)
 
     return this.service.getMinimumTransferAmount({
       asset,
@@ -232,7 +240,7 @@ export class UnifiedBridgeService {
     return this.#service !== undefined
   }
 
-  private async buildChain(network: Network): Promise<Chain> {
+  private buildChain(network: Network): Chain {
     return {
       chainId: getCaip2ChainId(network.chainId),
       chainName: network.chainName,
