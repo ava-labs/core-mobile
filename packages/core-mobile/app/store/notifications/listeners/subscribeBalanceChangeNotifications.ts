@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store/index'
 import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import FCMService from 'services/fcm/FCMService'
 import { unSubscribeForBalanceChange } from 'services/notifications/balanceChange/unsubscribeForBalanceChange'

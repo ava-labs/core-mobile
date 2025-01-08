@@ -73,6 +73,6 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Price Alerts',
-    subtitle: 'TBD'
+    subtitle: 'Token price movement alerts'
   } as AvaxAndroidChannel
 ]

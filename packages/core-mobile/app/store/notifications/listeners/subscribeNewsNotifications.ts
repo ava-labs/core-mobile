@@ -1,11 +1,11 @@
 import { AppListenerEffectAPI } from 'store/index'
 import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'
 import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { ChannelId } from 'services/notifications/channels'
-import { subscribeForNews } from 'services/notifications/balanceChange/subscribeForNews'
+import { subscribeForNews } from 'services/notifications/news/subscribeForNews'
 import { selectEnabledNewsNotificationSubscriptions } from '../slice'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
 
@@ -38,6 +38,7 @@ export async function subscribeNewsNotifications(
   //check if only news notifications are denied
   const blockedNotifications =
     await NotificationsService.getBlockedNotifications()
+
   const channelIds = Object.entries(blockedNotifications).reduce(
     (acc, [channelId, enabled]) => {
       if (!enabled) {

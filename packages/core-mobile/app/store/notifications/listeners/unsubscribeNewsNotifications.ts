@@ -1,6 +1,6 @@
-import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'
-import { unSubscribeForNews } from 'services/notifications/balanceChange/unsubscribeForNews'
+import { unSubscribeForNews } from 'services/notifications/news/unsubscribeForNews'
 import { ChannelId } from 'services/notifications/channels'
 
 export async function unsubscribeNewsNotifications({

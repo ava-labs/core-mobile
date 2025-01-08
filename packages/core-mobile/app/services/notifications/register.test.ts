@@ -1,4 +1,4 @@
-import { registerDeviceToNotificationSender } from 'services/notifications/balanceChange/registerDeviceToNotificationSender'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import Config from 'react-native-config'
 import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
