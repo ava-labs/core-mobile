@@ -126,6 +126,7 @@ export function useTokenDetail(coingeckoId: string) {
     name: coinInfo?.name,
     logoUri: coinInfo?.image?.large,
     // @ts-ignore contract_address exists in CoinsInfoResponse
-    contractAddress: coinInfo?.contract_address as string
+    contractAddress: coinInfo?.contract_address as string,
+    noData: chartData?.length === 0 && !coinInfo
   }
 }
