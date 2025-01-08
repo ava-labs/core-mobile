@@ -123,68 +123,30 @@ export const addNotificationsListeners = (
   })
 
   startListening({
-    matcher: isAnyOf(onNotificationsTurnedOffForMarketNews),
-    effect: async (action, listenerApi) => {
-      if (action.type === setFeatureFlags.type) {
-        const previousFlag =
-          listenerApi.getOriginalState().posthog.featureFlags[
-            FeatureGates.ALL_NOTIFICATIONS
-          ]
-        // avoid unsubscribing when previous flag is already falsy
-        if (!previousFlag) return
+    actionCreator: turnOffNotificationsFor,
+    effect: async action => {
+      const channelId = (action as PayloadAction<{ channelId: ChannelId }>)
+        .payload.channelId
+      if (channelId === ChannelId.BALANCE_CHANGES) {
+        await unsubscribeBalanceChangeNotifications().catch(reason => {
+          Logger.error(`[listeners.ts][unsubscribeNewsNotifications]${reason}`)
+        })
+        return
       }
-
-      await unsubscribeNewsNotifications({
-        channelIds: [ChannelId.MARKET_NEWS]
-      }).catch(reason => {
-        Logger.error(
-          `[listeners.ts][unsubscribeNewsNotifications:marketNews]${reason}`
+      if (
+        channelId === ChannelId.MARKET_NEWS ||
+        channelId === ChannelId.PRICE_ALERTS ||
+        channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
+        channelId === ChannelId.PRODUCT_ANNOUNCEMENTS
+      ) {
+        await unsubscribeNewsNotifications({ channelIds: [channelId] }).catch(
+          reason => {
+            Logger.error(
+              `[listeners.ts][unsubscribeNewsNotifications:priceAlerts]${reason}`
+            )
+          }
         )
-      })
-    }
-  })
-
-  startListening({
-    matcher: isAnyOf(onNotificationsTurnedOffForOfferAndPromotions),
-    effect: async (action, listenerApi) => {
-      if (action.type === setFeatureFlags.type) {
-        const previousFlag =
-          listenerApi.getOriginalState().posthog.featureFlags[
-            FeatureGates.ALL_NOTIFICATIONS
-          ]
-        // avoid unsubscribing when previous flag is already falsy
-        if (!previousFlag) return
       }
-
-      await unsubscribeNewsNotifications({
-        channelIds: [ChannelId.OFFERS_AND_PROMOTIONS]
-      }).catch(reason => {
-        Logger.error(
-          `[listeners.ts][unsubscribeNewsNotifications:offersAndPromotions]${reason}`
-        )
-      })
-    }
-  })
-
-  startListening({
-    matcher: isAnyOf(onNotificationsTurnedOffForProductAnnouncements),
-    effect: async (action, listenerApi) => {
-      if (action.type === setFeatureFlags.type) {
-        const previousFlag =
-          listenerApi.getOriginalState().posthog.featureFlags[
-            FeatureGates.ALL_NOTIFICATIONS
-          ]
-        // avoid unsubscribing when previous flag is already falsy
-        if (!previousFlag) return
-      }
-
-      await unsubscribeNewsNotifications({
-        channelIds: [ChannelId.PRODUCT_ANNOUNCEMENTS]
-      }).catch(reason => {
-        Logger.error(
-          `[listeners.ts][unsubscribeNewsNotifications:productAnnouncements]${reason}`
-        )
-      })
     }
   })
 
@@ -202,26 +164,6 @@ export const addNotificationsListeners = (
 
       await unsubscribeAllNotifications().catch(reason => {
         Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
-      })
-    }
-  })
-
-  startListening({
-    matcher: isAnyOf(onNotificationsTurnedOffForBalanceChange),
-    effect: async (action, listenerApi) => {
-      if (action.type === setFeatureFlags.type) {
-        const previousFlag =
-          listenerApi.getOriginalState().posthog.featureFlags[
-            FeatureGates.ALL_NOTIFICATIONS
-          ]
-        // avoid unsubscribing when previous flag is already falsy
-        if (!previousFlag) return
-      }
-
-      await unsubscribeBalanceChangeNotifications().catch(reason => {
-        Logger.error(
-          `[listeners.ts][unsubscribeBalanceChangeNotifications]${reason}`
-        )
       })
     }
   })
@@ -260,46 +202,6 @@ export const addNotificationsListeners = (
         )
       })
   })
-}
-
-const onNotificationsTurnedOffForBalanceChange = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    return (
-      action.type === turnOffNotificationsFor.type &&
-      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
-        ChannelId.BALANCE_CHANGES
-    )
-  }
-}
-
-const onNotificationsTurnedOffForMarketNews = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    return (
-      action.type === turnOffNotificationsFor.type &&
-      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
-        ChannelId.MARKET_NEWS
-    )
-  }
-}
-
-const onNotificationsTurnedOffForOfferAndPromotions = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    return (
-      action.type === turnOffNotificationsFor.type &&
-      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
-        ChannelId.OFFERS_AND_PROMOTIONS
-    )
-  }
-}
-
-const onNotificationsTurnedOffForProductAnnouncements = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    return (
-      action.type === turnOffNotificationsFor.type &&
-      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
-        ChannelId.PRODUCT_ANNOUNCEMENTS
-    )
-  }
 }
 
 const onNotificationsEnabled = {

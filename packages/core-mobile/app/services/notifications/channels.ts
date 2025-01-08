@@ -5,7 +5,8 @@ export enum ChannelId {
   BALANCE_CHANGES = 'balanceChanges',
   PRODUCT_ANNOUNCEMENTS = 'productAnnouncements',
   OFFERS_AND_PROMOTIONS = 'offersAndPromotions',
-  MARKET_NEWS = 'marketNews'
+  MARKET_NEWS = 'marketNews',
+  PRICE_ALERTS = 'priceAlerts'
 }
 
 export interface AvaxAndroidChannel extends AndroidChannel {
@@ -26,7 +27,7 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Stake',
-    subtitle: 'Staking Complete'
+    subtitle: 'Staking complete alerts'
   } as AvaxAndroidChannel,
   {
     id: ChannelId.BALANCE_CHANGES,
@@ -35,11 +36,9 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Balance',
-    subtitle: 'Notifications when your balance changes',
+    subtitle: 'Wallet balance change alerts',
     sound: 'core_receive'
   } as AvaxAndroidChannel,
-
-  // TODO: Add titles and subtitles
   {
     id: ChannelId.PRODUCT_ANNOUNCEMENTS,
     name: 'Product Announcements',
@@ -47,7 +46,7 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Product Announcements',
-    subtitle: 'TBD'
+    subtitle: 'Learn about new features and changes'
   } as AvaxAndroidChannel,
   {
     id: ChannelId.OFFERS_AND_PROMOTIONS,
@@ -56,7 +55,7 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Special Offers and Promotions',
-    subtitle: 'TBD'
+    subtitle: 'Airdrops and promotional offers'
   } as AvaxAndroidChannel,
   {
     id: ChannelId.MARKET_NEWS,
@@ -65,6 +64,15 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Market News',
+    subtitle: 'News and market information alerts'
+  } as AvaxAndroidChannel,
+  {
+    id: ChannelId.PRICE_ALERTS,
+    name: 'Price Alerts',
+    lights: false,
+    vibration: false,
+    importance: AndroidImportance.DEFAULT,
+    title: 'Price Alerts',
     subtitle: 'TBD'
   } as AvaxAndroidChannel
 ]

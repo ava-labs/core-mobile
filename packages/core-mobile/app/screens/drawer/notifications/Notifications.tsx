@@ -46,7 +46,8 @@ const Notifications = (): JSX.Element => {
       [ChannelId.STAKING_COMPLETE]: isAllNotificationsBlocked || isEarnBlocked,
       [ChannelId.PRODUCT_ANNOUNCEMENTS]: isAllNotificationsBlocked,
       [ChannelId.OFFERS_AND_PROMOTIONS]: isAllNotificationsBlocked,
-      [ChannelId.MARKET_NEWS]: isAllNotificationsBlocked
+      [ChannelId.MARKET_NEWS]: isAllNotificationsBlocked,
+      [ChannelId.PRICE_ALERTS]: isAllNotificationsBlocked
     }
   }, [isAllNotificationsBlocked, isEarnBlocked])
 

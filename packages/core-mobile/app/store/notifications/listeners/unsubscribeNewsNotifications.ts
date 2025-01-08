@@ -9,6 +9,6 @@ export async function unsubscribeNewsNotifications({
   channelIds?: ChannelId[]
 }): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
-  const { deviceArn } = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
+  const deviceArn = await registerDeviceToNotificationSender(fcmToken) //TODO: for optimisation, store deviceArn
   await unSubscribeForNews({ deviceArn, channelIds })
 }
