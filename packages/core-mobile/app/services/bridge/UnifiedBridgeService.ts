@@ -25,8 +25,6 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
-const INVALID_FEE_ERROR = 'invalid fee'
-
 export class UnifiedBridgeService {
   #service: BridgeService | undefined
 
@@ -101,11 +99,13 @@ export class UnifiedBridgeService {
     // result for the end users is that the received amount on the target chain is lowered
     // by the fee amount.
     const feeChainId = Object.keys(feeMap)[0] // ID of the chain where the fee is paid
-    assertNotUndefined(feeChainId, INVALID_FEE_ERROR)
+    if (feeChainId === undefined) return undefined
+
     const feeChain = feeMap[feeChainId]
-    assertNotUndefined(feeChain, INVALID_FEE_ERROR)
+    if (feeChain === undefined) return undefined
+
     const feeAssetId = Object.keys(feeChain)[0] // address or "NATIVE"
-    assertNotUndefined(feeAssetId, INVALID_FEE_ERROR)
+    if (feeAssetId === undefined) return undefined
 
     return feeChain[feeAssetId as keyof typeof feeChain] ?? undefined
   }
