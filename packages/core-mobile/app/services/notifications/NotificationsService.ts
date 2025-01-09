@@ -20,6 +20,7 @@ import { StakeCompleteNotification } from 'store/notifications'
 import Logger from 'utils/Logger'
 import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { DisplayNotificationParams } from 'services/notifications/types'
+import { audioFiles } from 'utils/AudioFeedback'
 import {
   LAUNCH_ACTIVITY,
   PressActionId,
@@ -335,9 +336,7 @@ class NotificationsService {
       },
       data
     }
-    if (sound) {
-      notification.ios = { sound: sound }
-    }
+    notification.ios = { sound: sound ?? audioFiles.Default.file }
     await notifee.displayNotification(notification).catch(Logger.error)
   }
 }

@@ -11,7 +11,10 @@ import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
-import { selectIsEarnBlocked, selectIsNotificationBlocked } from 'store/posthog'
+import {
+  selectIsEarnBlocked,
+  selectIsAllNotificationsBlocked
+} from 'store/posthog'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
 import useInAppBrowser from 'hooks/useInAppBrowser'
@@ -37,7 +40,7 @@ export const DeeplinkContextProvider = ({
   const dispatch = useDispatch()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
-  const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
+  const isAllNotificationsBlocked = useSelector(selectIsAllNotificationsBlocked)
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const { openUrl } = useInAppBrowser()
@@ -70,17 +73,17 @@ export const DeeplinkContextProvider = ({
    * Start listeners that will receive the deep link url
    *****************************************************************************/
   useEffect(() => {
-    if (isNotificationBlocked) return
+    if (isAllNotificationsBlocked) return
     NotificationsService.getInitialNotification(
       handleNotificationCallback
     ).catch(reason => {
       Logger.error(`[DeeplinkContext.tsx][getInitialNotification]${reason}`)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNotificationBlocked])
+  }, [isAllNotificationsBlocked])
 
   useEffect(() => {
-    if (isNotificationBlocked) return
+    if (isAllNotificationsBlocked) return
 
     const unsubscribeForegroundEvent = NotificationsService.onForegroundEvent(
       handleNotificationCallback
@@ -91,7 +94,7 @@ export const DeeplinkContextProvider = ({
     return () => {
       unsubscribeForegroundEvent()
     }
-  }, [handleNotificationCallback, isNotificationBlocked])
+  }, [handleNotificationCallback, isAllNotificationsBlocked])
 
   useEffect(() => {
     // triggered if app is running
