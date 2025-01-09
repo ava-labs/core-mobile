@@ -8,7 +8,8 @@ import {
   BalanceChangeData,
   NewsData,
   NotificationPayloadSchema,
-  NotificationTypes
+  NotificationTypes,
+  NewsEvents
 } from 'services/fcm/types'
 import { Platform } from 'react-native'
 import { DisplayNotificationParams } from 'services/notifications/types'
@@ -19,7 +20,11 @@ type UnsubscribeFunc = () => void
 const EVENT_TO_CH_ID: Record<string, ChannelId> = {
   [BalanceChangeEvents.ALLOWANCE_APPROVED]: ChannelId.BALANCE_CHANGES,
   [BalanceChangeEvents.BALANCES_SPENT]: ChannelId.BALANCE_CHANGES,
-  [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES
+  [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES,
+  [NewsEvents.MARKET_NEWS]: ChannelId.MARKET_NEWS,
+  [NewsEvents.OFFERS_AND_PROMOTIONS]: ChannelId.OFFERS_AND_PROMOTIONS,
+  [NewsEvents.PRICE_ALERTS]: ChannelId.PRICE_ALERTS,
+  [NewsEvents.PRODUCT_ANNOUNCEMENTS]: ChannelId.PRODUCT_ANNOUNCEMENTS
 }
 
 /**
