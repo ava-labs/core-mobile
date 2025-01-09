@@ -1,0 +1,111 @@
+diff --git a/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+NSNotificationCenter.m b/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+NSNotificationCenter.m
+index 560a62c..c010367 100644
+--- a/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+NSNotificationCenter.m
++++ b/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+NSNotificationCenter.m
+@@ -58,13 +58,18 @@
+ #pragma mark Application Notifications
+ 
+ - (void)application_onDidFinishLaunchingNotification:(nonnull NSNotification *)notification {
+-#pragma clang diagnostic push
+-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+-  UILocalNotification *launchNotification =
+-      (UILocalNotification *)notification.userInfo[UIApplicationLaunchOptionsLocalNotificationKey];
+-  [[NotifeeCoreUNUserNotificationCenter instance]
+-      onDidFinishLaunchingNotification:launchNotification.userInfo];
+-  [[NotifeeCoreUNUserNotificationCenter instance] getInitialNotification];
++  NSDictionary *notifUserInfo =
++      notification.userInfo[UIApplicationLaunchOptionsLocalNotificationKey];
++    
++  if (!notifUserInfo) {
++      // Fallback to remote notification key if local notification key is not available
++      notifUserInfo = notification.userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
++  }
++
++  if (notifUserInfo) {
++      [[NotifeeCoreUNUserNotificationCenter instance] onDidFinishLaunchingNotification:notifUserInfo];
++      [[NotifeeCoreUNUserNotificationCenter instance] getInitialNotification];
++  }
+ 
+   [[NotifeeCoreUNUserNotificationCenter instance] observe];
+ }
+diff --git a/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+UNUserNotificationCenter.m b/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+UNUserNotificationCenter.m
+index beaa360..ff53bef 100644
+--- a/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+UNUserNotificationCenter.m
++++ b/node_modules/@notifee/react-native/ios/NotifeeCore/NotifeeCore+UNUserNotificationCenter.m
+@@ -21,7 +21,6 @@
+ #import "NotifeeCoreUtil.h"
+ 
+ @implementation NotifeeCoreUNUserNotificationCenter
+-
+ struct {
+   unsigned int willPresentNotification : 1;
+   unsigned int didReceiveNotificationResponse : 1;
+@@ -73,12 +72,31 @@ struct {
+ 
+ - (nullable NSDictionary *)getInitialNotification {
+   if (_initialNotificationGathered && _initialNotificationBlock != nil) {
++
+     // copying initial notification
+     if (_initialNotification != nil &&
+         [_initialNoticationID isEqualToString:_notificationOpenedAppID]) {
+-      NSDictionary *initialNotificationCopy = [_initialNotification copy];
++
++      NSMutableDictionary *event = [NSMutableDictionary dictionary];
++      NSMutableDictionary *initialNotificationCopy = [_initialNotification mutableCopy];
++      initialNotificationCopy[@"initialNotification"] = @1;
++
+       _initialNotification = nil;
+-      _initialNotificationBlock(nil, initialNotificationCopy);
++
++      // Sets the return payload for getInitialNotification()
++     _initialNotificationBlock(nil, initialNotificationCopy);
++
++      // Prepare onForegroundEvent() payload
++      event[@"detail"] = [initialNotificationCopy copy];
++      if ([event[@"detail"][@"pressAction"][@"id"] isEqualToString:@"default"]) {
++          event[@"type"] = @1;  // PRESS
++      } else {
++          event[@"type"] = @2;  // ACTION_PRESS
++      }
++
++      // Call onForegroundEvent() on Javascript side with payload:
++      [[NotifeeCoreDelegateHolder instance] didReceiveNotifeeCoreEvent:event];
++
+     } else {
+       _initialNotificationBlock(nil, nil);
+     }
+@@ -104,7 +122,6 @@ struct {
+   NSDictionary *notifeeNotification =
+       notification.request.content.userInfo[kNotifeeUserInfoNotification];
+ 
+-  // we only care about notifications created through notifee
+   if (notifeeNotification != nil) {
+     UNNotificationPresentationOptions presentationOptions = UNNotificationPresentationOptionNone;
+     NSDictionary *foregroundPresentationOptions =
+@@ -148,23 +165,16 @@ struct {
+       presentationOptions |= UNNotificationPresentationOptionAlert;
+     }
+ 
+-    NSDictionary *notifeeTrigger = notification.request.content.userInfo[kNotifeeUserInfoTrigger];
+-    if (notifeeTrigger != nil) {
+-      // post DELIVERED event
+-      [[NotifeeCoreDelegateHolder instance] didReceiveNotifeeCoreEvent:@{
++    // post DELIVERED event
++    [[NotifeeCoreDelegateHolder instance] didReceiveNotifeeCoreEvent:@{
+         @"type" : @(NotifeeCoreEventTypeDelivered),
+         @"detail" : @{
+           @"notification" : notifeeNotification,
+         }
+-      }];
+-    }
++    }];
+ 
+     completionHandler(presentationOptions);
+ 
+-  } else if (_originalDelegate != nil && originalUNCDelegateRespondsTo.willPresentNotification) {
+-    [_originalDelegate userNotificationCenter:center
+-                      willPresentNotification:notification
+-                        withCompletionHandler:completionHandler];
+   }
+ }
+ 
