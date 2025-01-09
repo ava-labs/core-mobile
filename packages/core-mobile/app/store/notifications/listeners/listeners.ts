@@ -192,68 +192,84 @@ export const addNotificationsListeners = (
 }
 
 const onNotificationsTurnedOnForBalanceChange = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    return (
-      action.type === turnOnNotificationsFor.type &&
-      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
-        ChannelId.BALANCE_CHANGES
-    )
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOnNotificationsFor.match(action)) {
+      return false
+    }
+
+    return action.payload.channelId === ChannelId.BALANCE_CHANGES
   }
 }
 
 const onNotificationsTurnedOnForNews = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    const channelId = (action as PayloadAction<{ channelId: ChannelId }>)
-      .payload.channelId
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOnNotificationsFor.match(action)) {
+      return false
+    }
+
+    const channelId = action.payload.channelId
+
     return (
-      action.type === turnOnNotificationsFor.type &&
-      (channelId === ChannelId.MARKET_NEWS ||
-        channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
-        channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
-        channelId === ChannelId.PRICE_ALERTS)
+      channelId === ChannelId.MARKET_NEWS ||
+      channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
+      channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
+      channelId === ChannelId.PRICE_ALERTS
     )
   }
 }
 
 const onNotificationsTurnedOffForBalanceChange = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    return (
-      action.type === turnOffNotificationsFor.type &&
-      (action as PayloadAction<{ channelId: ChannelId }>).payload.channelId ===
-        ChannelId.BALANCE_CHANGES
-    )
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOffNotificationsFor.match(action)) {
+      return false
+    }
+
+    return action.payload.channelId === ChannelId.BALANCE_CHANGES
   }
 }
 
 const onNotificationsTurnedOffForNews = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    const channelId = (action as PayloadAction<{ channelId: ChannelId }>)
-      .payload.channelId
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOffNotificationsFor.match(action)) {
+      return false
+    }
+
+    const channelId = action.payload.channelId
+
     return (
-      action.type === turnOffNotificationsFor.type &&
-      (channelId === ChannelId.MARKET_NEWS ||
-        channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
-        channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
-        channelId === ChannelId.PRICE_ALERTS)
+      channelId === ChannelId.MARKET_NEWS ||
+      channelId === ChannelId.OFFERS_AND_PROMOTIONS ||
+      channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
+      channelId === ChannelId.PRICE_ALERTS
     )
   }
 }
 
 const onNotificationsEnabled = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    if (action.type === setFeatureFlags.type) {
-      const setFeatureFlagsAction = action as PayloadAction<FeatureFlags>
+  match: (action: Action<unknown>): action is PayloadAction<FeatureFlags> => {
+    if (setFeatureFlags.match(action)) {
+      const setFeatureFlagsAction = action
       return !!setFeatureFlagsAction.payload[FeatureGates.ALL_NOTIFICATIONS]
     }
+
     return false
   }
 }
 const onNotificationsDisabled = {
-  match: (action: Action<unknown>): action is PayloadAction => {
-    if (action.type === setFeatureFlags.type) {
-      const setFeatureFlagsAction = action as PayloadAction<FeatureFlags>
+  match: (action: Action<unknown>): action is PayloadAction<FeatureFlags> => {
+    if (setFeatureFlags.match(action)) {
+      const setFeatureFlagsAction = action
       return !setFeatureFlagsAction.payload[FeatureGates.ALL_NOTIFICATIONS]
     }
+
     return false
   }
 }
