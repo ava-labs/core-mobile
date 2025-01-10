@@ -339,6 +339,7 @@ class NotificationsService {
       data
     }
     notification.ios = { sound: sound ?? audioFiles.Default.file }
+    notification.android = { sound: sound ?? audioFiles.Default.file }
     await notifee.displayNotification(notification).catch(Logger.error)
   }
 }
