@@ -1,7 +1,11 @@
 import messaging from '@react-native-firebase/messaging'
 import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { ACTIONS, PROTOCOLS } from 'contexts/DeeplinkContext/types'
+import {
+  ACTIONS,
+  DeepLinkOrigin,
+  PROTOCOLS
+} from 'contexts/DeeplinkContext/types'
 import {
   BalanceChangeEvents,
   NotificationPayload,
@@ -14,6 +18,9 @@ import {
 import { Platform } from 'react-native'
 import { DisplayNotificationParams } from 'services/notifications/types'
 import { ChannelId } from 'services/notifications/channels'
+import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
+import { openInAppBrowser } from 'utils/openInAppBrowser'
+import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 
 type UnsubscribeFunc = () => void
 
@@ -73,29 +80,11 @@ class FCMService {
    * e.g. alongside your AppRegistry.registerComponent() method call at the entry point of your application code.
    */
   listenForMessagesBackground = (): void => {
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      Logger.info('A new FCM message arrived in background', remoteMessage)
-      const result = NotificationPayloadSchema.safeParse(remoteMessage)
-      if (!result.success) {
-        Logger.error(
-          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
-        )
-        return
-      }
-      if (Platform.OS === 'android' && result.data.notification) {
-        //skip, FCM sdk handles this already
-        return
-      }
-
-      const notificationData =
-        Platform.OS === 'android'
-          ? this.#prepareDataOnlyNotificationData(result.data.data)
-          : this.#prepareNotificationData(result.data)
-
-      await NotificationsService.displayNotification(notificationData).catch(
-        Logger.error
-      )
-    })
+    if (Platform.OS === 'ios') {
+      this.handleBackgroundMessageIos()
+      return
+    }
+    this.handleBackgroundMessageAndroid()
   }
 
   #prepareDataOnlyNotificationData = (
@@ -149,5 +138,104 @@ class FCMService {
       }
     }
   }
+
+  private skipWcLink = (link: string): boolean => {
+    let url
+    try {
+      url = new URL(link)
+    } catch (e) {
+      return true
+    }
+    const protocol = url.protocol.replace(':', '')
+    return (
+      protocol === PROTOCOLS.WC ||
+      (protocol === PROTOCOLS.HTTPS &&
+        CORE_UNIVERSAL_LINK_HOSTS.includes(url.hostname) &&
+        url.pathname.split('/')[1] === ACTIONS.WC)
+    )
+  }
+
+  private handleBackgroundMessageIos = (): void => {
+    messaging().onNotificationOpenedApp(remoteMessage => {
+      Logger.info('A new FCM message arrived in background', remoteMessage)
+      const result = NotificationPayloadSchema.safeParse(remoteMessage)
+      if (!result.success) {
+        Logger.error(
+          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+        )
+        return
+      }
+      const notificationData = this.#prepareNotificationData(result.data)
+
+      // walletconnect deeplink should not be handled here
+      if (
+        notificationData.data?.url === undefined ||
+        typeof notificationData.data.url !== 'string'
+      ) {
+        return
+      }
+
+      if (this.skipWcLink(notificationData.data.url)) {
+        return
+      }
+
+      handleDeeplink({
+        deeplink: {
+          url: notificationData.data.url,
+          origin: DeepLinkOrigin.ORIGIN_NOTIFICATION
+        },
+        dispatch: action => action,
+        isEarnBlocked: false,
+        openUrl: link =>
+          openInAppBrowser(link, {
+            // iOS Properties
+            dismissButtonStyle: 'close',
+            preferredBarTintColor: '#000000',
+            preferredControlTintColor: '#F8F8FB',
+            readerMode: false,
+            animated: true,
+            modalPresentationStyle: 'fullScreen',
+            modalTransitionStyle: 'coverVertical',
+            modalEnabled: true,
+            enableBarCollapsing: false,
+            // Android Properties
+            showTitle: true,
+            toolbarColor: '#000000',
+            secondaryToolbarColor: 'black',
+            navigationBarColor: 'black',
+            navigationBarDividerColor: 'white',
+            enableUrlBarHiding: false,
+            enableDefaultShare: true,
+            forceCloseOnRedirection: false
+          })
+      })
+    })
+  }
+
+  private handleBackgroundMessageAndroid = (): void => {
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      Logger.info('A new FCM message arrived in background', remoteMessage)
+      const result = NotificationPayloadSchema.safeParse(remoteMessage)
+      if (!result.success) {
+        Logger.error(
+          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+        )
+        return
+      }
+      if (result.data.notification) {
+        //skip, FCM sdk handles this already
+        return
+      }
+
+      const notificationData = this.#prepareDataOnlyNotificationData(
+        result.data.data
+      )
+
+      await NotificationsService.displayNotification(notificationData).catch(
+        Logger.error
+      )
+    })
+  }
 }
+
 export default new FCMService()

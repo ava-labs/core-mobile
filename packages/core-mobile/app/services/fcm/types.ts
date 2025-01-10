@@ -26,7 +26,8 @@ export const BalanceChangeDataSchema = object({
   body: string(),
   accountAddress: string().startsWith('0x'),
   chainId: string(),
-  transactionHash: string().startsWith('0x')
+  transactionHash: string().startsWith('0x'),
+  url: string()
 })
 
 export const NewsDataSchema = object({
