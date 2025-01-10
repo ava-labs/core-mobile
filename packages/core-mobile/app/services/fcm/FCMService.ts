@@ -82,9 +82,9 @@ class FCMService {
   listenForMessagesBackground = (): void => {
     if (Platform.OS === 'ios') {
       this.handleBackgroundMessageIos()
-      return
+    } else {
+      this.handleBackgroundMessageAndroid()
     }
-    this.handleBackgroundMessageAndroid()
   }
 
   #prepareDataOnlyNotificationData = (
@@ -139,7 +139,7 @@ class FCMService {
     }
   }
 
-  private shouldSkipDeeplink = (link: string): boolean => {
+  private shouldSkipHandlingDeeplink = (link: string): boolean => {
     let url
     try {
       url = new URL(link)
@@ -176,7 +176,7 @@ class FCMService {
       }
 
       // we simply take user to portfolio/home page if the url is walletconnect or balanche-change events
-      if (this.shouldSkipDeeplink(notificationData.data.url)) {
+      if (this.shouldSkipHandlingDeeplink(notificationData.data.url)) {
         return
       }
 
