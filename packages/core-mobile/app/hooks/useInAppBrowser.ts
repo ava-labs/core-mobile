@@ -1,6 +1,4 @@
-import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Linking } from 'react-native'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -8,6 +6,7 @@ import Config from 'react-native-config'
 import { showSimpleToast } from 'components/Snackbar'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
 import Logger from 'utils/Logger'
+import { openInAppBrowser } from 'utils/openInAppBrowser'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
   return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
@@ -22,10 +21,6 @@ const useInAppBrowser = (): {
 } => {
   const { theme } = useApplicationContext()
   const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
-
-  function failSafe(url: string): void {
-    Linking.openURL(url).catch(Logger.error)
-  }
 
   async function openMoonPay(): Promise<void> {
     const [result, error] = await resolve(moonpayURL(addressC))
@@ -56,35 +51,28 @@ const useInAppBrowser = (): {
   }
 
   async function openUrl(url: string): Promise<void> {
-    try {
-      if (await InAppBrowser.isAvailable()) {
-        InAppBrowser.open(url, {
-          // iOS Properties
-          dismissButtonStyle: 'close',
-          preferredBarTintColor: theme.background,
-          preferredControlTintColor: theme.colorText1,
-          readerMode: false,
-          animated: true,
-          modalPresentationStyle: 'fullScreen',
-          modalTransitionStyle: 'coverVertical',
-          modalEnabled: true,
-          enableBarCollapsing: false,
-          // Android Properties
-          showTitle: true,
-          toolbarColor: theme.background,
-          secondaryToolbarColor: 'black',
-          navigationBarColor: 'black',
-          navigationBarDividerColor: 'white',
-          enableUrlBarHiding: false,
-          enableDefaultShare: true,
-          forceCloseOnRedirection: false
-        })
-      } else {
-        failSafe(url)
-      }
-    } catch (e) {
-      failSafe(url)
+    const options = {
+      // iOS Properties
+      dismissButtonStyle: 'close',
+      preferredBarTintColor: theme.background,
+      preferredControlTintColor: theme.colorText1,
+      readerMode: false,
+      animated: true,
+      modalPresentationStyle: 'fullScreen',
+      modalTransitionStyle: 'coverVertical',
+      modalEnabled: true,
+      enableBarCollapsing: false,
+      // Android Properties
+      showTitle: true,
+      toolbarColor: theme.background,
+      secondaryToolbarColor: 'black',
+      navigationBarColor: 'black',
+      navigationBarDividerColor: 'white',
+      enableUrlBarHiding: false,
+      enableDefaultShare: true,
+      forceCloseOnRedirection: false
     }
+    openInAppBrowser(url, options)
   }
 
   return { openUrl, openMoonPay, openCoinBasePay }
