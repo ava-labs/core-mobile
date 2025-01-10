@@ -139,7 +139,7 @@ class FCMService {
     }
   }
 
-  private skipWcLink = (link: string): boolean => {
+  private shouldSkipDeeplink = (link: string): boolean => {
     let url
     try {
       url = new URL(link)
@@ -151,7 +151,8 @@ class FCMService {
       protocol === PROTOCOLS.WC ||
       (protocol === PROTOCOLS.HTTPS &&
         CORE_UNIVERSAL_LINK_HOSTS.includes(url.hostname) &&
-        url.pathname.split('/')[1] === ACTIONS.WC)
+        url.pathname.split('/')[1] === ACTIONS.WC) ||
+      (protocol === PROTOCOLS.CORE && url.host === ACTIONS.Portfolio)
     )
   }
 
@@ -167,7 +168,6 @@ class FCMService {
       }
       const notificationData = this.#prepareNotificationData(result.data)
 
-      // walletconnect deeplink should not be handled here
       if (
         notificationData.data?.url === undefined ||
         typeof notificationData.data.url !== 'string'
@@ -175,7 +175,8 @@ class FCMService {
         return
       }
 
-      if (this.skipWcLink(notificationData.data.url)) {
+      // we simply take user to portfolio/home page if the url is walletconnect or balanche-change events
+      if (this.shouldSkipDeeplink(notificationData.data.url)) {
         return
       }
 
