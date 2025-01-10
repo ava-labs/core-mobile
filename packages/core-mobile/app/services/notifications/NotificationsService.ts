@@ -334,12 +334,12 @@ class NotificationsService {
           id: PressActionId.OPEN_PORTFOLIO,
           launchActivity: LAUNCH_ACTIVITY
         },
-        channelId: channelId ?? ''
+        channelId: channelId ?? '',
+        sound: sound ?? audioFiles.Default.file
       },
+      ios: { sound: sound ?? audioFiles.Default.file },
       data
     }
-    notification.ios = { sound: sound ?? audioFiles.Default.file }
-    notification.android = { sound: sound ?? audioFiles.Default.file }
     await notifee.displayNotification(notification).catch(Logger.error)
   }
 }
