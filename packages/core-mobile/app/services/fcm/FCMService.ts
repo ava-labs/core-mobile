@@ -198,16 +198,7 @@ class FCMService {
             modalPresentationStyle: 'fullScreen',
             modalTransitionStyle: 'coverVertical',
             modalEnabled: true,
-            enableBarCollapsing: false,
-            // Android Properties
-            showTitle: true,
-            toolbarColor: '#000000',
-            secondaryToolbarColor: 'black',
-            navigationBarColor: 'black',
-            navigationBarDividerColor: 'white',
-            enableUrlBarHiding: false,
-            enableDefaultShare: true,
-            forceCloseOnRedirection: false
+            enableBarCollapsing: false
           })
       })
     })
