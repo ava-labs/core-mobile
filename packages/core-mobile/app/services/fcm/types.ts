@@ -27,7 +27,7 @@ export const BalanceChangeDataSchema = object({
   accountAddress: string().startsWith('0x'),
   chainId: string(),
   transactionHash: string().startsWith('0x'),
-  url: string()
+  url: string() // we need this url to deeplink to in-app browser or screens.
 })
 
 export const NewsDataSchema = object({
