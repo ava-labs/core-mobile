@@ -73,6 +73,7 @@ class DurationPage {
   }
 
   async verifyDurationScreenItems(devnet: boolean) {
+    await Actions.waitForElement(this.durationDescription, 30000)
     await Assert.isVisible(this.durationTitle)
     await Assert.isVisible(this.durationDescription)
     await Assert.isVisible(this.nextButton, 0)

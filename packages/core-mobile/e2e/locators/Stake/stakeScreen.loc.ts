@@ -69,5 +69,6 @@ export default {
   customBaseFee: 'custom_base_fee',
   slowBaseFee: 'slow_base_fee',
   fastBaseFee: 'fast_base_fee',
-  instantBaseFee: 'instant_base_fee'
+  instantBaseFee: 'instant_base_fee',
+  durationScreenTitle: 'Duration'
 }

@@ -4,7 +4,7 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
 import StakePage from '../../pages/Stake/stake.page'
 import ClaimPage from '../../pages/Stake/claim.page'
-import { cleanup } from '../../helpers/cleanup'
+import advancedPage from '../../pages/burgerMenu/advanced.page'
 
 describe('Stake on Testnet', () => {
   beforeAll(async () => {
@@ -13,7 +13,7 @@ describe('Stake on Testnet', () => {
   })
 
   afterAll(async () => {
-    await cleanup()
+    await advancedPage.switchToMainnet()
   })
   const duration = Actions.getRandomEle([
     '1 Day',
