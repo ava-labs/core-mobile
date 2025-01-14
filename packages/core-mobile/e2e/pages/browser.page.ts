@@ -77,6 +77,7 @@ class BrowserPage {
       default: // core app
         xpath = '//*[text()="WalletConnect"]'
     }
+    await delay(2000)
     await Wbs.waitForEleByXpathToBeVisible(xpath, 10000)
     await Wbs.tapByXpath(xpath)
   }
