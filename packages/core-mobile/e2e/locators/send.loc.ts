@@ -4,7 +4,7 @@ export default {
   avaxToken: 'AVAX',
   ethToken: 'ETH',
   btcToken: 'BTC',
-  sendingAmount: '0.000001',
+  sendingAmount: '0.00001',
   myAccounts: 'My Accounts',
   nextBtn: 'next_btn',
   sendTitle: 'Send',

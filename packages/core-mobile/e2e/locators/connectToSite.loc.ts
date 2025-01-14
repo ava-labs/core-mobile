@@ -6,5 +6,6 @@ export default {
   signMessage: 'Sign Message',
   accountCheckBox: 'account_check_box',
   selectAccounts: 'Select Accounts',
-  selectAccountsId: 'select_accounts'
+  selectAccountsId: 'select_accounts',
+  connectWalletTitle: 'Connect Wallet?'
 }
