@@ -34,7 +34,7 @@ type TabViewAvaItemProps = {
 
 type TabViewAvaFC = FC<
   {
-    renderCustomLabel?: (
+    renderLabel: (
       title: string,
       selected: boolean,
       color: string,
@@ -52,7 +52,7 @@ type TabViewAvaFC = FC<
  * If there's only one route available TabBar won't be displayed
  */
 const TabViewAva: TabViewAvaFC = ({
-  renderCustomLabel,
+  renderLabel,
   currentTabIndex = 0,
   onTabIndexChange,
   lazy = true,
@@ -138,15 +138,15 @@ const TabViewAva: TabViewAvaFC = ({
             alignItems: 'center'
           }}
           onPress={props.onPress}>
-          {props.renderLabel?.({
-            route: props.route,
-            focused: props.navigationState.index === props.route.index,
-            color: theme.alternateBackground
-          })}
+          {renderLabel?.(
+            props.route.title,
+            props.navigationState.index === props.route.index,
+            theme.alternateBackground
+          )}
         </AvaButton.Base>
       )
     },
-    [testID, theme.alternateBackground]
+    [testID, theme.alternateBackground, renderLabel]
   )
 
   //tabBar is hidden if there's only one route
@@ -168,9 +168,6 @@ const TabViewAva: TabViewAvaFC = ({
             contentContainerStyle={{
               marginBottom: 8
             }}
-            renderLabel={({ route, focused, color }) => {
-              return renderCustomLabel?.(route?.title ?? '', focused, color)
-            }}
             indicatorStyle={{
               backgroundColor: theme.colorPrimary1,
               height: 2
@@ -188,7 +185,6 @@ const TabViewAva: TabViewAvaFC = ({
     },
     [
       hideSingleTab,
-      renderCustomLabel,
       routes.length,
       tabBarItem,
       theme.colorPrimary1,
