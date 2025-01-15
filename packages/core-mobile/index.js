@@ -19,8 +19,6 @@ import { name as appName } from './app.json'
 import { server } from './tests/msw/native/server'
 
 if (__DEV__) {
-  require('./ReactotronConfig')
-
   LogBox.ignoreLogs([
     'Require cycle:',
     "Can't perform",
@@ -33,6 +31,7 @@ if (__DEV__) {
   // eslint-disable-next-line no-console
   console.reportErrorsAsExceptions = false
 }
+require('./ReactotronConfig')
 
 SentryService.init()
 
