@@ -22,6 +22,7 @@ import Logger from 'utils/Logger'
 import { DebankNetwork } from 'services/network/types'
 import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
 import { SpanName } from 'services/sentry/types'
+import { HyperSDKClient } from 'hypersdk-client'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -56,7 +57,10 @@ class NetworkService {
   async getProviderForNetwork(
     network: Network
   ): Promise<
-    JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
+    | JsonRpcBatchInternal
+    | BitcoinProvider
+    | Avalanche.JsonRpcProvider
+    | HyperSDKClient
   > {
     const module = await ModuleManager.loadModuleByNetwork(network)
     return module.getProvider(network)

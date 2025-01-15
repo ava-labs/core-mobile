@@ -1,5 +1,10 @@
 import React, { forwardRef, PropsWithChildren } from 'react'
-import { StyleProp, TouchableOpacity, ViewStyle } from 'react-native'
+import {
+  StyleProp,
+  TouchableOpacity,
+  ViewStyle,
+  View as RNView
+} from 'react-native'
 import { useDripsyTheme as useTheme } from 'dripsy'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
@@ -14,7 +19,7 @@ interface CircularButtonProps {
 }
 
 export const CircularButton = forwardRef<
-  TouchableOpacity,
+  RNView,
   CircularButtonProps & PropsWithChildren
 >(({ disabled, style, children, testID, ...rest }, ref) => {
   const { theme } = useTheme()

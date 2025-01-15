@@ -64,9 +64,11 @@ export const EncryptThenMacTransform: (
 
       const buffer = cipher.update(
         serializeJson(inboundState),
+        // @ts-ignore
         UTF8,
         ENCRYPT_OUTPUT_ENCODING
       )
+      // @ts-ignore
       const ciphertext = buffer + cipher.final(ENCRYPT_OUTPUT_ENCODING)
       const mac = getMac(macKey, ciphertext)
 
@@ -120,9 +122,11 @@ export const EncryptThenMacTransform: (
       try {
         const buffer = decipher.update(
           outboundState.ciphertext,
+          // @ts-ignore
           DECRYPT_INPUT_ENCODING,
           UTF8
         )
+        // @ts-ignore
         const cleartext = (buffer + decipher.final(UTF8)).toString()
         return deserializeJson(cleartext)
       } catch (e) {

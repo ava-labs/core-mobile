@@ -4,7 +4,8 @@ import {
   StyleProp,
   StyleSheet,
   TouchableOpacity,
-  ViewStyle
+  ViewStyle,
+  View as RNView
 } from 'react-native'
 import { useDripsyTheme as useTheme } from 'dripsy'
 import { Text, View } from '../Primitives'
@@ -31,10 +32,7 @@ interface ButtonProps {
   rightIcon?: ButtonIconType
 }
 
-export const Button = forwardRef<
-  TouchableOpacity,
-  ButtonProps & PropsWithChildren
->(
+export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
   (
     {
       type,
