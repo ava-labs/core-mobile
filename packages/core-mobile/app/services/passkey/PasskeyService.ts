@@ -13,60 +13,82 @@ import {
   FIDORegistrationRequest,
   PasskeyServiceInterface
 } from 'services/passkey/types'
-import { base64ToBase64Url } from 'utils/data/base64'
+import {
+  base64ToBase64Url,
+  base64UrlToBuffer,
+  bufferToBase64Url
+} from 'utils/data/base64'
 import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
 
 class PasskeyService implements PasskeyServiceInterface {
   get isSupported(): boolean {
-    return Passkey.isSupported() && Platform.OS === 'ios'
+    return Passkey.isSupported()
   }
 
   async create(
     challengeOptions: FIDORegistrationRequest,
     withSecurityKey: boolean
   ): Promise<FIDORegistrationResult> {
-    const request = this.prepareRegistrationRequest(challengeOptions)
-    const result = await Passkey.create({
-      ...request,
-      authenticatorSelection: {
-        authenticatorAttachment: withSecurityKey ? 'cross-platform' : undefined
-      }
-    })
+    const request = this.prepareRegistrationRequest(
+      challengeOptions,
+      withSecurityKey
+    )
+
+    const result = withSecurityKey
+      ? await Passkey.createSecurityKey(request)
+      : await Passkey.createPlatformKey(request)
     return this.convertRegistrationResult(result)
   }
 
   async get(
     challengeOptions: FIDOAuthenticationRequest,
-    _: boolean
+    withSecurityKey: boolean
   ): Promise<FIDOAuthenticationResult> {
     const request = this.prepareAuthenticationRequest(challengeOptions)
 
-    const result = await Passkey.get(request)
+    const result = withSecurityKey
+      ? await Passkey.getSecurityKey(request)
+      : await Passkey.getPlatformKey(request)
 
     return this.convertAuthenticationResult(result)
   }
 
   private prepareRegistrationRequest(
-    request: FIDORegistrationRequest
+    request: FIDORegistrationRequest,
+    withSecurityKey: boolean
   ): PasskeyCreateRequest {
+    let authenticatorSelection = request.authenticatorSelection
+    if (Platform.OS === 'android') {
+      authenticatorSelection = {
+        authenticatorAttachment: withSecurityKey
+          ? 'cross-platform'
+          : 'platform',
+        requireResidentKey: withSecurityKey ? false : true,
+        residentKey: withSecurityKey ? 'discouraged' : 'required',
+        userVerification: withSecurityKey ? 'preferred' : 'required'
+      }
+    }
+
     return {
-      ...request,
-      challenge: request.challenge.toString('base64'),
+      challenge: bufferToBase64Url(request.challenge),
       rp: {
-        ...request.rp,
         name: RP_NAME,
         id: RP_ID
       },
       user: {
-        ...request.user,
-        id: request.user.id.toString('base64')
+        id: bufferToBase64Url(request.user.id),
+        name: request.user.name,
+        displayName: request.user.displayName
       },
       timeout: FIDO_TIMEOUT,
       excludeCredentials: (request.excludeCredentials ?? []).map(cred => ({
-        ...cred,
         transports: cred.transports as [],
-        id: cred.id.toString('base64')
-      }))
+        id: bufferToBase64Url(cred.id),
+        type: cred.type
+      })),
+      pubKeyCredParams: request.pubKeyCredParams,
+      authenticatorSelection,
+      attestation: request.attestation
     }
   }
 
@@ -74,32 +96,36 @@ class PasskeyService implements PasskeyServiceInterface {
     request: FIDOAuthenticationRequest
   ): PasskeyGetRequest {
     return {
-      ...request,
-      challenge: request.challenge.toString('base64'),
+      challenge: bufferToBase64Url(request.challenge),
       rpId: RP_ID,
       timeout: FIDO_TIMEOUT,
       allowCredentials: (request.allowCredentials ?? []).map(cred => ({
-        ...cred,
         transports: cred.transports as [],
-        id: cred.id.toString('base64')
-      }))
+        id: bufferToBase64Url(cred.id),
+        type: cred.type
+      })),
+      userVerification: request.userVerification
     }
   }
 
   private convertRegistrationResult(
     result: PasskeyCreateResult
   ): FIDORegistrationResult {
+    let decodedResult = result
+    if (Platform.OS === 'android') {
+      decodedResult = JSON.parse(result as unknown as string)
+    }
     return {
-      ...result,
-      id: base64ToBase64Url(result.id),
-      rawId: Buffer.from(result.rawId, 'base64'),
+      type: decodedResult.type,
+      id: base64ToBase64Url(decodedResult.id),
+      rawId: base64UrlToBuffer(decodedResult.rawId) as Buffer,
       response: {
-        ...result.response,
-        clientDataJSON: Buffer.from(result.response.clientDataJSON, 'base64'),
-        attestationObject: Buffer.from(
-          result.response.attestationObject,
-          'base64'
-        )
+        clientDataJSON: base64UrlToBuffer(
+          decodedResult.response.clientDataJSON
+        ) as Buffer,
+        attestationObject: base64UrlToBuffer(
+          decodedResult.response.attestationObject
+        ) as Buffer
       }
     }
   }
@@ -107,19 +133,28 @@ class PasskeyService implements PasskeyServiceInterface {
   private convertAuthenticationResult(
     result: PasskeyGetResult
   ): FIDOAuthenticationResult {
+    let decodedResult = result
+    if (Platform.OS === 'android') {
+      decodedResult = JSON.parse(result as unknown as string)
+    }
+
     return {
-      ...result,
-      id: base64ToBase64Url(result.id),
-      rawId: Buffer.from(result.rawId, 'base64'),
+      id: base64ToBase64Url(decodedResult.id),
+      type: result.type,
+      rawId: base64UrlToBuffer(decodedResult.rawId) as Buffer,
       response: {
-        ...result.response,
-        clientDataJSON: Buffer.from(result.response.clientDataJSON, 'base64'),
-        authenticatorData: Buffer.from(
-          result.response.authenticatorData,
-          'base64'
-        ),
-        signature: Buffer.from(result.response.signature, 'base64'),
-        userHandle: Buffer.from(result.response.userHandle, 'base64')
+        clientDataJSON: base64UrlToBuffer(
+          decodedResult.response.clientDataJSON
+        ) as Buffer,
+        authenticatorData: base64UrlToBuffer(
+          decodedResult.response.authenticatorData
+        ) as Buffer,
+        signature: base64UrlToBuffer(
+          decodedResult.response.signature
+        ) as Buffer,
+        userHandle: base64UrlToBuffer(
+          decodedResult.response.userHandle
+        ) as Buffer
       }
     }
   }

@@ -1068,7 +1068,7 @@ PODS:
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - react-native-passkey (2.1.1):
+  - react-native-passkey (3.0.0):
     - React-Core
   - react-native-quick-base64 (2.1.2):
     - glog
@@ -1829,7 +1829,7 @@ SPEC CHECKSUMS:
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-pager-view: 7c45504fe805a954ebabd005d369937ea1c04de1
-  react-native-passkey: 29ff814a83dfd4311478498e71a801dce68043ac
+  react-native-passkey: 1f8d18b3d0202ae5f6171cd39e3193247ab6f1af
   react-native-quick-base64: e1ea036b3dec44c6da2439bd62881a09de614b23
   react-native-quick-crypto: 455c1b411db006dba1026a30681ececb19180187
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
