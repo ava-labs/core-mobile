@@ -237,7 +237,7 @@ const TokenDetail: FC = () => {
         </View>
         {/* this will change once data component purpose and interaction is defined */}
         <TabViewAva
-          renderCustomLabel={(title, selected, color) => (
+          renderLabel={(title, selected, color) => (
             <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
           )}
           onTabIndexChange={onTabChanged}>
