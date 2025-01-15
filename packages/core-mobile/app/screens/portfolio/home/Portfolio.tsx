@@ -62,7 +62,7 @@ const Portfolio = (): JSX.Element => {
         currentTabIndex={params?.tabIndex}
         onTabIndexChange={captureAnalyticsEvents}
         hideSingleTab={false}
-        renderCustomLabel={renderCustomLabel}>
+        renderLabel={renderLabel}>
         <TabViewAva.Item title={'Assets'}>
           <TokensTab />
         </TabViewAva.Item>
@@ -232,7 +232,7 @@ const DeFiTab = (): JSX.Element => {
   return <DeFiProtocolList />
 }
 
-const renderCustomLabel = (
+const renderLabel = (
   title: string,
   selected: boolean,
   color: string
