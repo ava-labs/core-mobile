@@ -56,7 +56,7 @@
     "@paraswap/sdk": "7.2.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-clipboard/clipboard": "1.15.0",
-    "@react-native-community/blur": "github:maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
+    "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-community/netinfo": "11.4.1",
     "@react-native-community/slider": "4.5.5",
@@ -172,7 +172,7 @@
     "react-native-toast-notifications": "3.4.0",
     "react-native-url-polyfill": "2.0.0",
     "react-native-view-shot": "4.0.3",
-    "react-native-webview": "github:ava-labs/react-native-webview",
+    "react-native-webview": "ava-labs/react-native-webview",
     "react-native-webview-crypto": "0.0.26",
     "react-redux": "9.1.2",
     "react-timer-hook": "3.0.7",
@@ -317,15 +317,5 @@
     "stream": "stream-browserify",
     "vm": "vm-browserify",
     "zlib": "browserify-zlib"
-  },
-  "types": "./index.d.ts",
-  "description": "## Setup dev environment",
-  "version": "1.0.0",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
-  "keywords": [],
-  "author": ""
+  }
 }
