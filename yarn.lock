@@ -255,7 +255,7 @@ __metadata:
     "@playwright/test": 1.48.0
     "@react-native-async-storage/async-storage": 1.23.1
     "@react-native-clipboard/clipboard": 1.15.0
-    "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
+    "@react-native-community/blur": "github:maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/netinfo": 11.4.1
     "@react-native-community/slider": 4.5.5
@@ -411,7 +411,7 @@ __metadata:
     react-native-toast-notifications: 3.4.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 4.0.3
-    react-native-webview: ava-labs/react-native-webview
+    react-native-webview: "github:ava-labs/react-native-webview"
     react-native-webview-crypto: 0.0.26
     react-redux: 9.1.2
     react-test-renderer: 18.3.1
@@ -667,7 +667,7 @@ __metadata:
     react-native: 0.76.6
     react-native-mmkv: 2.12.2
     react-native-safe-area-context: 4.11.0
-    react-native-svg: 15.7.1
+    react-native-svg: 15.8.0
     react-native-svg-transformer: 1.5.0
     react-test-renderer: 18.3.1
     tinycolor2: 1.6.0
@@ -675,7 +675,7 @@ __metadata:
   peerDependencies:
     react: 18.2.0
     react-native: 0.76.6
-    react-native-svg: 15.7.1
+    react-native-svg: 15.8.0
   languageName: unknown
   linkType: soft
 
@@ -8821,7 +8821,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/blur@maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1":
+"@react-native-community/blur@github:maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1":
   version: 3.6.1
   resolution: "@react-native-community/blur@https://github.com/maxhungry/react-native-blur.git#commit=a7d77a415a8693d1d49588a04a09970ef26113c1"
   dependencies:
@@ -26686,20 +26686,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:15.7.1":
-  version: 15.7.1
-  resolution: "react-native-svg@npm:15.7.1"
-  dependencies:
-    css-select: ^5.1.0
-    css-tree: ^1.1.3
-    warn-once: 0.1.1
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: ad7f711883ee45673486fe6bedadf8490bb06fd36e6de5d2f00898e6ac6c61ed34a5a8f7e6b25684c93e44ab51f9ea76642abfcca6a29462bc525f97204e6f41
-  languageName: node
-  linkType: hard
-
 "react-native-svg@npm:15.8.0":
   version: 15.8.0
   resolution: "react-native-svg@npm:15.8.0"
@@ -26782,7 +26768,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-react-native-webview@ava-labs/react-native-webview:
+"react-native-webview@github:ava-labs/react-native-webview":
   version: 13.12.2
   resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=179f5094a96b2234756753610fd7502095209927"
   dependencies:
