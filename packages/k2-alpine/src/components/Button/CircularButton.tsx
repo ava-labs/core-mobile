@@ -14,7 +14,7 @@ interface CircularButtonProps {
 }
 
 export const CircularButton = forwardRef<
-  TouchableOpacity,
+  RNView,
   CircularButtonProps & PropsWithChildren
 >(({ disabled, style, children, testID, ...rest }, ref) => {
   const { theme } = useTheme()
