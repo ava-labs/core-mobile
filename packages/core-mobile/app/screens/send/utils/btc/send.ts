@@ -1,9 +1,9 @@
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { resolve } from '@avalabs/core-utils-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { BitcoinSendTransactionParams } from '@avalabs/bitcoin-module'
 import { getBitcoinCaip2ChainId } from 'utils/caip2ChainIds'
+import { RpcMethod } from 'store/rpc'
 
 export const send = async ({
   request,
