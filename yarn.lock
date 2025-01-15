@@ -394,7 +394,7 @@ __metadata:
     react-native-toast-notifications: 3.4.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 4.0.3
-    react-native-webview: "github:ava-labs/react-native-webview"
+    react-native-webview: ava-labs/react-native-webview
     react-native-webview-crypto: 0.0.26
     react-redux: 9.1.2
     react-test-renderer: 18.3.1
@@ -27511,7 +27511,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-webview@github:ava-labs/react-native-webview":
+react-native-webview@ava-labs/react-native-webview:
   version: 13.12.2
   resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=114379c625b5edda2433170022819801fe81638e"
   dependencies:
