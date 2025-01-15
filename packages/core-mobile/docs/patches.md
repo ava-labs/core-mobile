@@ -49,7 +49,7 @@ HMRClient.js: adjust stringify logic of object to make logs in Terminal more rea
 
 for some reason, metro can only consume esm folder so we had to adjust the package.json to only expose esm folder
 
-### react-native-svg+15.6.0.patch
+### react-native-svg+15.8.0.patch
 
 to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 
