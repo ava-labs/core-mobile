@@ -77,10 +77,13 @@ export const useSeedlessRegister = (): ReturnType => {
 
     try {
       const { oidcToken } = await getOidcToken()
+      console.log('oidcToken', oidcToken)
       const identity = await SeedlessService.sessionManager.oidcProveIdentity(
         oidcToken
       )
       const result = await CoreSeedlessAPIService.register(identity)
+      console.log('result', result)
+
       const signResponse = await SeedlessService.sessionManager.requestOidcAuth(
         oidcToken
       )
@@ -182,7 +185,7 @@ export const useSeedlessRegister = (): ReturnType => {
         await SeedlessService.sessionManager.approveFido(
           oidcAuth.oidcToken,
           oidcAuth.mfaId,
-          false
+          true
         )
 
         AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
