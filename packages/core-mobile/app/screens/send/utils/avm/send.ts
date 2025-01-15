@@ -3,7 +3,6 @@ import { CorePrimaryAccount } from '@avalabs/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
@@ -11,6 +10,8 @@ import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
 import { isDevnet } from 'utils/isDevnet'
 import { SpanName } from 'services/sentry/types'
+import { RpcMethod } from 'store/rpc'
+import { ChainAlias } from 'store/network'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -95,7 +96,7 @@ const getTransactionRequest = ({
 
       return {
         transactionHex: utils.bufferToHex(unsignedTxBytes),
-        chainAlias: 'X',
+        chainAlias: 'X' as ChainAlias,
         utxos: unsignedTx.utxos.map(utxo =>
           utils.bufferToHex(utxo.toBytes(codec))
         ),

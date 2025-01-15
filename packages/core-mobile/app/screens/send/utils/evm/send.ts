@@ -2,11 +2,12 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
-import { RpcMethod, TokenWithBalanceEVM } from '@avalabs/vm-module-types'
+import { TokenWithBalanceEVM } from '@avalabs/vm-module-types'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionRequest } from 'ethers'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { SpanName } from 'services/sentry/types'
+import { RpcMethod } from 'store/rpc'
 import { buildTx } from './buildEVMSendTx'
 
 export const send = async ({

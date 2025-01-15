@@ -17,3 +17,5 @@ export enum TokenSymbol {
   ETH = 'ETH',
   BTC = 'BTC'
 }
+
+export type ChainAlias = 'X' | 'P' | 'C'
