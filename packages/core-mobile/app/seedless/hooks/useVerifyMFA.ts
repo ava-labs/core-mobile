@@ -106,10 +106,7 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
     onVerifySuccess: (response: T) => void
   }) => {
     const challenge = await sessionManager.fidoApproveStart(response.mfaId())
-    const credential = await PasskeyService.authenticate(
-      challenge.options,
-      true
-    )
+    const credential = await PasskeyService.get(challenge.options, true)
     const mfaRequestInfo = await challenge.answer(credential)
     if (!mfaRequestInfo.receipt?.confirmation) {
       throw new Error('FIDO authentication failed')

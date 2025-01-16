@@ -358,7 +358,7 @@ __metadata:
     react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
     react-native-pager-view: 6.4.1
-    react-native-passkey: 2.1.1
+    react-native-passkey: 3.0.0
     react-native-performance: 5.1.2
     react-native-permissions: 4.1.5
     react-native-popable: 0.4.3
@@ -26306,13 +26306,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-passkey@npm:2.1.1":
-  version: 2.1.1
-  resolution: "react-native-passkey@npm:2.1.1"
+"react-native-passkey@npm:3.0.0":
+  version: 3.0.0
+  resolution: "react-native-passkey@npm:3.0.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 80631e1548cea8cc172a263cdd90079ff2db525c5e728d554fc8f50a61382556114eb17984371e4514e23c94adb66b4a0b9f5fe5ac5ff752501fad0adbd8cd31
+  checksum: 5533de503b1911e6337c82f557e7ceb00b0760a00754988e082972fefbadab279f149617ed5b55a6512e5efe3d54a3174f90f4364e3c0bc4c1043f372ce266e3
   languageName: node
   linkType: hard
 
@@ -26645,7 +26645,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: a187edd718e1ea3a6b1e5da167744e6ee324bc3c3e492bcb0a9d028ab68a82907f053f37c23aa4229d6a9091541cee3c73549c3c850056e4cf5eb5b3cb2c9ffc
+  checksum: 6e268fad7aa8b8e56fd28cc95f94f35a33fdac4cec0085ae71a766d092760e3f9af35218706113ff7ae99a74baabc5112d32005dce9e66bdf4fda676fad9aa4e
   languageName: node
   linkType: hard
 

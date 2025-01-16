@@ -224,7 +224,7 @@ class SeedlessSessionManager {
     withSecurityKey: boolean
   ): Promise<void> {
     const challenge = await this.fidoApproveStart(mfaId)
-    const credential = await PasskeyService.authenticate(
+    const credential = await PasskeyService.get(
       challenge.options,
       withSecurityKey
     )
