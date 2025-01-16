@@ -19,6 +19,8 @@ import {
   bufferToBase64Url
 } from 'utils/data/base64'
 import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
+import { showSimpleToast } from 'components/Snackbar'
+import { copyToClipboard } from 'utils/DeviceTools'
 
 class PasskeyService implements PasskeyServiceInterface {
   get isSupported(): boolean {
@@ -115,6 +117,9 @@ class PasskeyService implements PasskeyServiceInterface {
     if (Platform.OS === 'android') {
       decodedResult = JSON.parse(result as unknown as string)
     }
+
+    showSimpleToast(decodedResult.response.clientDataJSON)
+    copyToClipboard(decodedResult.response.clientDataJSON)
     return {
       type: decodedResult.type,
       id: base64ToBase64Url(decodedResult.id),
