@@ -53,7 +53,9 @@ export const DetailSectionView = ({
       }
       key={key}>
       <Text variant="caption">{item.label}</Text>
-      <Text variant="buttonSmall">{item.value}</Text>
+      <Text variant="buttonSmall" testID={`${item.label}_${item.value}`}>
+        {item.value}
+      </Text>
     </Row>
   )
 
