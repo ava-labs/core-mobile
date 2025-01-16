@@ -1,1 +1,117 @@
-[]
+[
+  {
+    "testName": "Testnet transfer - C to P",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - C to X",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - P to C",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - P to X",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - X to C",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - X to P",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - C to P",
+    "result": "FAIL",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - C to P",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - C to X",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - P to C",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - P to X",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - X to C",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - X to P",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet delegate",
+    "result": "FAIL",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet delegate",
+    "result": "FAIL",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet delegate",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet delegate",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - C to P",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - C to X",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - P to C",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - P to X",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - X to C",
+    "result": "PASS",
+    "framework": "playwright"
+  },
+  {
+    "testName": "Testnet transfer - X to P",
+    "result": "FAIL",
+    "framework": "playwright"
+  }
+]

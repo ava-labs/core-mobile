@@ -11,6 +11,10 @@ class CoreApp {
     return 'https://core.app/'
   }
 
+  get coreTestnetUrl() {
+    return 'https://test.core.app/'
+  }
+
   get termsCheckBox() {
     return this.page.locator('[data-testid="connect-terms-checkbox"]')
   }

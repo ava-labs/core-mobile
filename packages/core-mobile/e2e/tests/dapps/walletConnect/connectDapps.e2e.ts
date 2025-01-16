@@ -8,8 +8,8 @@ describe('Dapp Wallet Connect - Others', () => {
     await warmup(true)
   })
 
-  it('should connect Aave via Wallet Connect', async () => {
-    await browserPage.connectTo('https://app.aave.com/')
+  it('should connect UniSwap via Wallet Connect', async () => {
+    await browserPage.connectTo('https://app.uniswap.org/')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
