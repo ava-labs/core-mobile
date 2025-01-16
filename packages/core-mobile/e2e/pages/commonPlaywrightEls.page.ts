@@ -18,7 +18,7 @@ class CommonElsPage {
   }
 
   get walletConnectBtn() {
-    return this.page.getByText(commonEls.walletConnectBtn).first()
+    return this.page.getByText(commonEls.walletConnectBtn)
   }
 
   get walletConnectV2Btn() {
