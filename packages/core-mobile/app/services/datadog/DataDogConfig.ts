@@ -1,35 +1,38 @@
 import {
-  DdSdkReactNativeConfiguration,
-  TrackingConsent
+  TrackingConsent,
+  DatadogProviderConfiguration,
+  DdLogs
 } from '@datadog/mobile-react-native'
-import Config from 'react-native-config'
 import DeviceInfo from 'react-native-device-info'
 
-let DataDogConfig: DdSdkReactNativeConfiguration | null = null
+import {
+  APPLICATION_ID,
+  CLIENT_TOKEN,
+  ENVIRONMENT,
+  SITE
+} from './ddCredentials'
 
-if (
-  Config.DD_CLIENT_TOKEN &&
-  Config.ENVIRONMENT &&
-  Config.DD_APPLICATION_ID &&
-  Config.DD_SITE &&
-  process.env.CI
-) {
-  DataDogConfig = new DdSdkReactNativeConfiguration(
-    Config.DD_CLIENT_TOKEN,
-    Config.ENVIRONMENT,
-    Config.DD_APPLICATION_ID,
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function getDatadogConfig() {
+  const DataDogConfig = new DatadogProviderConfiguration(
+    CLIENT_TOKEN,
+    ENVIRONMENT,
+    APPLICATION_ID,
     true,
     true,
     true,
     TrackingConsent.GRANTED
   )
-
-  DataDogConfig.site = Config.DD_SITE
   DataDogConfig.nativeCrashReportEnabled = true
-  DataDogConfig.nativeViewTracking = true
   DataDogConfig.sessionSamplingRate = 100
+  DataDogConfig.nativeViewTracking = true
   DataDogConfig.resourceTracingSamplingRate = 100
+  DataDogConfig.site = SITE
   DataDogConfig.version = DeviceInfo.getBuildNumber()
+
+  return DataDogConfig
 }
 
-export default DataDogConfig
+export function onDatadogInitializationComplete(): void {
+  DdLogs.info('Datadog initialization complete')
+}
