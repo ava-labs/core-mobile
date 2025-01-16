@@ -71,11 +71,11 @@ export enum FidoType {
 
 export interface PasskeyServiceInterface {
   readonly isSupported: boolean
-  register(
+  create(
     challengeOptions: FIDORegistrationRequest,
     withSecurityKey: boolean
   ): Promise<FIDORegistrationResult>
-  authenticate(
+  get(
     challengeOptions: FIDOAuthenticationRequest,
     withSecurityKey: boolean
   ): Promise<FIDOAuthenticationResult>

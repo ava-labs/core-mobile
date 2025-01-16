@@ -145,11 +145,7 @@ async function fidoRefreshFlow(
   sessionManager: SeedlessSessionManager
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   try {
-    await sessionManager.approveFido(
-      oidcToken,
-      mfaId,
-      false //FIXME: this parameter is not needed, should refactor approveFido to remove it,
-    )
+    await sessionManager.approveFido(oidcToken, mfaId, true)
     return {
       success: true,
       value: undefined
