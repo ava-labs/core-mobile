@@ -8,30 +8,34 @@ import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
 import DataDogService from 'services/datadog/DataDogService'
 import Logger from 'utils/Logger'
+import { DatadogProvider } from '@datadog/mobile-react-native'
+import { getDatadogConfig } from 'services/datadog/DataDogConfig'
 
 function App(): JSX.Element {
   const context = useApplicationContext()
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <KeyboardAvoidingView
-        enabled={context.keyboardAvoidingViewEnabled}
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          ref={navigationRef}
-          onReady={() => {
-            SentryService.routingInstrumentation.registerNavigationContainer(
-              navigationRef
-            )
-            DataDogService.init(navigationRef).catch(Logger.error)
-          }}>
-          <RootScreenStack />
-        </NavigationContainer>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <DatadogProvider configuration={getDatadogConfig()}>
+      <SafeAreaView style={backgroundStyle}>
+        <KeyboardAvoidingView
+          enabled={context.keyboardAvoidingViewEnabled}
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <NavigationContainer
+            theme={context.navContainerTheme}
+            ref={navigationRef}
+            onReady={() => {
+              SentryService.routingInstrumentation.registerNavigationContainer(
+                navigationRef
+              )
+              DataDogService.init(navigationRef).catch(Logger.error)
+            }}>
+            <RootScreenStack />
+          </NavigationContainer>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </DatadogProvider>
   )
 }
 

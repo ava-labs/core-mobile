@@ -39,7 +39,7 @@
     "@coinbase/cbpay-js": "2.2.1",
     "@cubist-labs/cubesigner-sdk": "0.3.29",
     "@cubist-labs/cubesigner-sdk-ethers-v6": "0.3.29",
-    "@datadog/mobile-react-native": "2.4.3",
+    "@datadog/mobile-react-native": "^2.6.1",
     "@datadog/mobile-react-navigation": "2.4.3",
     "@date-fns/utc": "2.1.0",
     "@ethereumjs/common": "4.4.0",
