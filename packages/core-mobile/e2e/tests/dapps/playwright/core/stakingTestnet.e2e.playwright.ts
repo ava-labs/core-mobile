@@ -66,6 +66,13 @@ describe('Testnet - Staking Tab', () => {
     await actions.tap(popup.approveBtn)
   })
 
+  it('Testnet - cross chain transfer X to P', async () => {
+    await popup.verifyExportDetail('X', 'P')
+    await actions.tap(popup.approveBtn)
+    await popup.verifyImportDetail('X', 'P')
+    await actions.tap(popup.approveBtn)
+  })
+
   it('Testnet - Delegate', async () => {
     await popup.verifyDelegatorDetail()
     await actions.tap(popup.approveBtn)

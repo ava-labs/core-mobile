@@ -44,24 +44,28 @@ describe('Mainnet - Cross Chain Transfer', () => {
     await popup.verifyImportDetail('C', 'X')
     await actions.tap(popup.approveBtn)
   })
+
   it('Mainnet - cross chain transfer P to C', async () => {
     await popup.verifyExportDetail('P', 'C')
     await actions.tap(popup.approveBtn)
     await popup.verifyImportDetail('P', 'C')
     await actions.tap(popup.approveBtn)
   })
+
   it('Mainnet - cross chain transfer P to X', async () => {
     await popup.verifyExportDetail('P', 'X')
     await actions.tap(popup.approveBtn)
     await popup.verifyImportDetail('P', 'X')
     await actions.tap(popup.approveBtn)
   })
+
   it('Mainnet - cross chain transfer X to C', async () => {
     await popup.verifyExportDetail('X', 'C')
     await actions.tap(popup.approveBtn)
     await popup.verifyImportDetail('X', 'C')
     await actions.tap(popup.approveBtn)
   })
+
   it('Mainnet - cross chain transfer X to P', async () => {
     await popup.verifyExportDetail('X', 'P')
     await actions.tap(popup.approveBtn)

@@ -13,7 +13,6 @@ class ReviewAndSend {
 
   async enterQrCode() {
     const qrCode = this.getQrCode().toString()
-    console.log('entering here: ', qrCode)
     await Actions.setInputText(this.uriInputField, qrCode, 0)
   }
 
