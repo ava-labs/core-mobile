@@ -121,10 +121,14 @@ class PasskeyService implements PasskeyServiceInterface {
       rawId: base64UrlToBuffer(decodedResult.rawId) as Buffer,
       response: {
         clientDataJSON: base64UrlToBuffer(
-          decodedResult.response.clientDataJSON
+          'clientDataJSON' in decodedResult.response
+            ? decodedResult.response.clientDataJSON
+            : ''
         ) as Buffer,
         attestationObject: base64UrlToBuffer(
-          decodedResult.response.attestationObject
+          'attestationObject' in decodedResult.response
+            ? decodedResult.response.attestationObject
+            : ''
         ) as Buffer
       }
     }
@@ -144,16 +148,24 @@ class PasskeyService implements PasskeyServiceInterface {
       rawId: base64UrlToBuffer(decodedResult.rawId) as Buffer,
       response: {
         clientDataJSON: base64UrlToBuffer(
-          decodedResult.response.clientDataJSON
+          'clientDataJSON' in decodedResult.response
+            ? decodedResult.response.clientDataJSON
+            : ''
         ) as Buffer,
         authenticatorData: base64UrlToBuffer(
-          decodedResult.response.authenticatorData
+          'authenticatorData' in decodedResult.response
+            ? decodedResult.response.authenticatorData
+            : ''
         ) as Buffer,
         signature: base64UrlToBuffer(
-          decodedResult.response.signature
+          'signature' in decodedResult.response
+            ? decodedResult.response.signature
+            : ''
         ) as Buffer,
         userHandle: base64UrlToBuffer(
-          decodedResult.response.userHandle
+          'userHandle' in decodedResult.response
+            ? decodedResult.response.userHandle
+            : ''
         ) as Buffer
       }
     }
