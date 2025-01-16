@@ -60,7 +60,6 @@ export const useRegisterAndAuthenticateFido = (): {
         onAccountVerified()
       })
     } catch (e) {
-      console.log('registerAndAuthenticateFido', e)
       Logger.error(`${fidoType} registration failed`, e)
       showSnackbar(`Unable to register ${fidoType}`)
     } finally {
