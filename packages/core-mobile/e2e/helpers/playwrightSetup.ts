@@ -2,6 +2,7 @@ import { Page, Browser, BrowserContext } from '@playwright/test'
 import PlaygroundPlaywrightPage from '../pages/playgroundPlaywright.page'
 import CommonPlaywrightPage from '../pages/commonPlaywrightEls.page'
 import DappsPlaywrightPage from '../pages/dappsPlaywright.page'
+import CorePlaywrightPage from '../pages/corePlaywright.page'
 const { chromium } = require('playwright-extra')
 const stealth = require('puppeteer-extra-plugin-stealth')()
 chromium.use(stealth)
@@ -20,7 +21,8 @@ export const playwrightSetup = async (saveContext = false) => {
   const playground = new PlaygroundPlaywrightPage(page)
   const common = new CommonPlaywrightPage(page)
   const dapps = new DappsPlaywrightPage(page)
-  return { browser, page, sharedContext, playground, common, dapps }
+  const core = new CorePlaywrightPage(page)
+  return { browser, page, sharedContext, playground, common, dapps, core }
 }
 
 export const getCurrentContext = async () => {
@@ -36,5 +38,6 @@ export const getCurrentContext = async () => {
   const playground = new PlaygroundPlaywrightPage(page)
   const common = new CommonPlaywrightPage(page)
   const dapps = new DappsPlaywrightPage(page)
-  return { sharedContext, page, playground, common, dapps }
+  const core = new CorePlaywrightPage(page)
+  return { sharedContext, page, playground, common, dapps, core }
 }
