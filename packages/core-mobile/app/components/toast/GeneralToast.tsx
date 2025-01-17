@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Dimensions } from 'react-native'
+import { Dimensions, useWindowDimensions } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -13,6 +13,7 @@ interface Props {
 }
 
 const GeneralToast: FC<Props> = ({ message, toastId, testID }) => {
+  const { height } = useWindowDimensions()
   const theme = useApplicationContext().theme
 
   function dismissToast() {
@@ -31,7 +32,7 @@ const GeneralToast: FC<Props> = ({ message, toastId, testID }) => {
         alignItems: 'center',
         width: WINDOW_WIDTH * 0.9,
         paddingHorizontal: 8,
-        height: 72
+        height: height * 0.75
       }}>
       {
         <AvaText.ButtonLarge
