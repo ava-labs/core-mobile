@@ -12,10 +12,7 @@ if (!Config.SENTRY_DSN)
 
 // if development then only enable if spotlight is enabled
 // otherwise enable if not development
-const isAvailable =
-  ((__DEV__ && DevDebuggingConfig.SENTRY_SPOTLIGHT) ||
-    (!__DEV__ && process.env.E2E !== 'true')) &&
-  !!Config.SENTRY_DSN
+const isAvailable = !!Config.SENTRY_DSN
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation({
   enableTimeToInitialDisplay: true
