@@ -5,3 +5,5 @@ declare module '*.svg' {
   const testID: string
   export default content
 }
+
+type Nullable<T> = T | null

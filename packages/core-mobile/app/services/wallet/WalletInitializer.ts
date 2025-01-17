@@ -5,16 +5,21 @@ import { Avalanche, getXpubFromMnemonic } from '@avalabs/core-wallets-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
+import KeystoneWalletInstance from './KeystoneWallet'
 
 class WalletInitializer {
   async initialize({
     mnemonic,
     walletType,
-    isLoggingIn
+    isLoggingIn,
+    xpub,
+    xpubXP
   }: {
     mnemonic?: string
     walletType: WalletType
     isLoggingIn: boolean
+    xpub?: string
+    xpubXP?: string
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
@@ -58,6 +63,11 @@ class WalletInitializer {
         MnemonicWalletInstance.mnemonic = mnemonic
         break
       }
+      case WalletType.KEYSTONE: {
+        KeystoneWalletInstance.xpub = xpub
+        KeystoneWalletInstance.xpubXP = xpubXP
+        break
+      }
       default:
         throw new Error(`Wallet type ${walletType} not supported`)
     }
@@ -74,6 +84,10 @@ class WalletInitializer {
         MnemonicWalletInstance.mnemonic = undefined
         MnemonicWalletInstance.xpub = undefined
         MnemonicWalletInstance.xpubXP = undefined
+        break
+      case WalletType.KEYSTONE:
+        KeystoneWalletInstance.xpub = undefined
+        KeystoneWalletInstance.xpubXP = undefined
         break
       default:
         throw new Error(

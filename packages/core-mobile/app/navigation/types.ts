@@ -38,6 +38,7 @@ import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { CreateWalletStackParamList } from './onboarding/CreateWalletStack'
 import { EnterWithMnemonicStackParamList } from './onboarding/EnterWithMnemonicStack'
+import { RecoverWithKeystoneParamList } from './onboarding/RecoverWithKeystone'
 import { WalletScreenStackParams } from './WalletScreenStack/WalletScreenStack'
 import { DrawerParamList } from './wallet/DrawerScreenStack'
 import { TabNavigatorParamList } from './wallet/TabNavigator'
@@ -209,6 +210,14 @@ export type EnterWithMnemonicScreenProps<
   T extends keyof EnterWithMnemonicStackParamList
 > = CompositeScreenProps<
   StackScreenProps<EnterWithMnemonicStackParamList, T>,
+  WelcomeScreenProps<keyof WelcomeScreenStackParamList>
+>
+
+/** ROOT -> ONBOARD -> WELCOME -> CONNECT WITH KEYSTONE **/
+export type RecoverWithKeystoneScreenProps<
+  T extends keyof RecoverWithKeystoneParamList
+> = CompositeScreenProps<
+  StackScreenProps<RecoverWithKeystoneParamList, T>,
   WelcomeScreenProps<keyof WelcomeScreenStackParamList>
 >
 

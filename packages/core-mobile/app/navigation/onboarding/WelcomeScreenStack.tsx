@@ -16,6 +16,7 @@ import EnterWithMnemonicStack, {
   EnterWithMnemonicStackParamList
 } from './EnterWithMnemonicStack'
 import CreatePinStack, { CreatePinStackParamList } from './CreatePinStack'
+import RecoverWithKeystone from './RecoverWithKeystone'
 
 export type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.AnalyticsConsent]: {
@@ -23,6 +24,7 @@ export type WelcomeScreenStackParamList = {
       | typeof AppNavigation.Onboard.CreateWalletStack
       | typeof AppNavigation.Onboard.EnterWithMnemonicStack
       | typeof AppNavigation.Onboard.CreatePin
+      | typeof AppNavigation.Onboard.RecoverWithKeystone
   }
   [AppNavigation.Onboard.CreateWalletStack]:
     | NavigatorScreenParams<CreateWalletStackParamList>
@@ -32,6 +34,9 @@ export type WelcomeScreenStackParamList = {
     | undefined
   [AppNavigation.Onboard.CreatePin]:
     | NavigatorScreenParams<CreatePinStackParamList>
+    | undefined
+  [AppNavigation.Onboard.RecoverWithKeystone]:
+    | NavigatorScreenParams<EnterWithMnemonicStackParamList>
     | undefined
 }
 const WelcomeScreenS = createStackNavigator<WelcomeScreenStackParamList>()
@@ -54,6 +59,10 @@ const WelcomeScreenStack: () => JSX.Element = () => (
     <WelcomeScreenS.Screen
       name={AppNavigation.Onboard.CreatePin}
       component={CreatePinStack}
+    />
+    <WelcomeScreenS.Screen
+      name={AppNavigation.Onboard.RecoverWithKeystone}
+      component={RecoverWithKeystone}
     />
   </WelcomeScreenS.Navigator>
 )

@@ -12,6 +12,7 @@ import { OnboardScreenProps } from 'navigation/types'
 import React, { useLayoutEffect } from 'react'
 import { Row } from 'components/Row'
 import Encrypted from 'assets/icons/encrypted.svg'
+import Keystone from 'assets/icons/keystone.svg'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.AccessMnemonicWallet
@@ -47,6 +48,15 @@ const AccessMnemonicWalletScreen = (): JSX.Element => {
     })
   }
 
+  const handleRecoverWalletUsingKeystone = (): void => {
+    navigate(AppNavigation.Onboard.Welcome, {
+      screen: AppNavigation.Onboard.AnalyticsConsent,
+      params: {
+        nextScreen: AppNavigation.Onboard.RecoverWithKeystone
+      }
+    })
+  }
+
   return (
     <ScrollView
       sx={{ flex: 1, backgroundColor: '$black' }}
@@ -70,6 +80,14 @@ const AccessMnemonicWalletScreen = (): JSX.Element => {
           }
           onPress={handleCreateMnemonicWallet}
         />
+      </Row>
+      <Row style={{ marginTop: 30, gap: 16 }}>
+        <ActionButton
+          text="Add using Keystone"
+          icon={<Keystone color={theme.colors.$white} />}
+          onPress={handleRecoverWalletUsingKeystone}
+        />
+        <View style={{ flex: 1 }} />
       </Row>
     </ScrollView>
   )

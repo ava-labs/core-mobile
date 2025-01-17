@@ -60,6 +60,8 @@ class AvalancheRenameAccountHandler
       walletType = WalletType.MNEMONIC
     } else if (requestedAccount.walletType === AvalabsWalletType.Seedless) {
       walletType = WalletType.SEEDLESS
+    } else if (requestedAccount.walletType === AvalabsWalletType.Keystone) {
+      walletType = WalletType.KEYSTONE
     } else {
       return {
         success: false,

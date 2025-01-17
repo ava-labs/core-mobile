@@ -13,6 +13,7 @@ import { CorePrimaryAccount } from '@avalabs/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import MnemonicWalletInstance from 'services/wallet/MnemonicWallet'
+import KeystoneWalletInstance from 'services/wallet/KeystoneWallet'
 import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
@@ -129,6 +130,9 @@ const getContext = (
 
     if (WalletService.walletType === WalletType.MNEMONIC) {
       context.xpubXP = MnemonicWalletInstance.xpubXP
+    }
+    if (WalletService.walletType === WalletType.KEYSTONE) {
+      context.xpubXP = KeystoneWalletInstance.xpubXP
     }
 
     return context

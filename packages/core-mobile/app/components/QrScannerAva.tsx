@@ -9,12 +9,14 @@ type Props = {
   onSuccess: (data: string) => void
   onCancel?: () => void
   vibrate?: boolean
+  reactivate?: boolean
 }
 
 export default function QrScannerAva({
   onSuccess,
   onCancel,
-  vibrate = false
+  vibrate = false,
+  reactivate = false
 }: Props) {
   const context = useApplicationContext()
 
@@ -40,6 +42,7 @@ export default function QrScannerAva({
         onRead={handleSuccess}
         cameraType={'back'}
         vibrate={vibrate}
+        reactivate={reactivate}
       />
       {onCancel && (
         <AvaButton.PrimaryLarge onPress={onCancel} style={{ margin: 16 }}>

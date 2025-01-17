@@ -3,6 +3,7 @@ import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { Wallet, WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
+import KeystoneWalletInstance from './KeystoneWallet'
 
 class WalletFactory {
   async createWallet(
@@ -28,6 +29,8 @@ class WalletFactory {
       }
       case WalletType.MNEMONIC:
         return MnemonicWalletInstance
+      case WalletType.KEYSTONE:
+        return KeystoneWalletInstance
       default:
         throw new Error(
           `Unable to create wallet: unsupported wallet type ${walletType}`

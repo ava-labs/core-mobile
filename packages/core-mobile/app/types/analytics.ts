@@ -69,6 +69,7 @@ export type AnalyticsEvents = {
   HelpCenterClicked: undefined
   LegalClicked: undefined
   'LoginWithMnemonic:WalletNameSet': undefined
+  'RecoverWithKeystone:WalletNameSet': undefined
   ManageNetworksClicked: undefined
   ManageTokensAddCustomToken: { status: string; address: string }
   MoonpayBuyClicked: undefined
