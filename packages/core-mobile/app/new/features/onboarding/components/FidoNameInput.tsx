@@ -9,7 +9,7 @@ import {
   TouchableOpacity
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { FIDONameInputProps } from 'new/routes/onboarding/seedless/fidoNameInput'
+import { FIDONameInputProps } from 'new/routes/onboarding/seedless/(fido)/fidoNameInput'
 
 const FidoNameInput = ({
   title,
