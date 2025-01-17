@@ -19,6 +19,8 @@ import {
   bufferToBase64Url
 } from 'utils/data/base64'
 import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
+import { copyToClipboard } from 'utils/DeviceTools'
+import { showSimpleToast } from 'components/Snackbar'
 
 class PasskeyService implements PasskeyServiceInterface {
   get isSupported(): boolean {
@@ -111,6 +113,8 @@ class PasskeyService implements PasskeyServiceInterface {
   private convertRegistrationResult(
     result: PasskeyCreateResult
   ): FIDORegistrationResult {
+    copyToClipboard(result.response.clientDataJSON)
+    showSimpleToast(result.response.clientDataJSON)
     let decodedResult = result
     if (Platform.OS === 'android') {
       decodedResult = JSON.parse(result as unknown as string)
