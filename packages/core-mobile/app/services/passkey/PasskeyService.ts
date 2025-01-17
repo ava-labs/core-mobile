@@ -111,23 +111,19 @@ class PasskeyService implements PasskeyServiceInterface {
   private convertRegistrationResult(
     result: PasskeyCreateResult
   ): FIDORegistrationResult {
-    let decodedResult = result
-    if (Platform.OS === 'android') {
-      decodedResult = JSON.parse(result as unknown as string)
-    }
     return {
-      type: decodedResult.type,
-      id: base64ToBase64Url(decodedResult.id),
-      rawId: base64UrlToBuffer(decodedResult.rawId) as Buffer,
+      type: result.type,
+      id: base64ToBase64Url(result.id),
+      rawId: base64UrlToBuffer(result.rawId) as Buffer,
       response: {
         clientDataJSON: base64UrlToBuffer(
-          'clientDataJSON' in decodedResult.response
-            ? decodedResult.response.clientDataJSON
+          'clientDataJSON' in result.response
+            ? result.response.clientDataJSON
             : ''
         ) as Buffer,
         attestationObject: base64UrlToBuffer(
-          'attestationObject' in decodedResult.response
-            ? decodedResult.response.attestationObject
+          'attestationObject' in result.response
+            ? result.response.attestationObject
             : ''
         ) as Buffer
       }
@@ -137,35 +133,26 @@ class PasskeyService implements PasskeyServiceInterface {
   private convertAuthenticationResult(
     result: PasskeyGetResult
   ): FIDOAuthenticationResult {
-    let decodedResult = result
-    if (Platform.OS === 'android') {
-      decodedResult = JSON.parse(result as unknown as string)
-    }
-
     return {
-      id: base64ToBase64Url(decodedResult.id),
+      id: base64ToBase64Url(result.id),
       type: result.type,
-      rawId: base64UrlToBuffer(decodedResult.rawId) as Buffer,
+      rawId: base64UrlToBuffer(result.rawId) as Buffer,
       response: {
         clientDataJSON: base64UrlToBuffer(
-          'clientDataJSON' in decodedResult.response
-            ? decodedResult.response.clientDataJSON
+          'clientDataJSON' in result.response
+            ? result.response.clientDataJSON
             : ''
         ) as Buffer,
         authenticatorData: base64UrlToBuffer(
-          'authenticatorData' in decodedResult.response
-            ? decodedResult.response.authenticatorData
+          'authenticatorData' in result.response
+            ? result.response.authenticatorData
             : ''
         ) as Buffer,
         signature: base64UrlToBuffer(
-          'signature' in decodedResult.response
-            ? decodedResult.response.signature
-            : ''
+          'signature' in result.response ? result.response.signature : ''
         ) as Buffer,
         userHandle: base64UrlToBuffer(
-          'userHandle' in decodedResult.response
-            ? decodedResult.response.userHandle
-            : ''
+          'userHandle' in result.response ? result.response.userHandle : ''
         ) as Buffer
       }
     }

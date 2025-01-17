@@ -358,7 +358,7 @@ __metadata:
     react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
     react-native-pager-view: 6.4.1
-    react-native-passkey: 3.0.0
+    react-native-passkey: 3.1.0
     react-native-performance: 5.1.2
     react-native-permissions: 4.1.5
     react-native-popable: 0.4.3
@@ -26306,13 +26306,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-passkey@npm:3.0.0":
-  version: 3.0.0
-  resolution: "react-native-passkey@npm:3.0.0"
+"react-native-passkey@npm:3.1.0":
+  version: 3.1.0
+  resolution: "react-native-passkey@npm:3.1.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 5533de503b1911e6337c82f557e7ceb00b0760a00754988e082972fefbadab279f149617ed5b55a6512e5efe3d54a3174f90f4364e3c0bc4c1043f372ce266e3
+  checksum: 24e39648eae2162bf88c258f421c74a52dea243e9943f5fb89a7a5adc1b201cad61b687d3d0c56c5363fedc8339f6d4e1e160c8076b8a221464514db6b7a2717
   languageName: node
   linkType: hard
 
