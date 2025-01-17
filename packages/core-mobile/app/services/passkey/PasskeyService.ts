@@ -18,9 +18,9 @@ import {
   base64UrlToBuffer,
   bufferToBase64Url
 } from 'utils/data/base64'
-import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { showSimpleToast } from 'components/Snackbar'
+import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
 
 class PasskeyService implements PasskeyServiceInterface {
   get isSupported(): boolean {
@@ -36,10 +36,15 @@ class PasskeyService implements PasskeyServiceInterface {
       withSecurityKey
     )
 
-    const result = withSecurityKey
-      ? await Passkey.createSecurityKey(request)
-      : await Passkey.createPlatformKey(request)
-    return this.convertRegistrationResult(result)
+    try {
+      const result = withSecurityKey
+        ? await Passkey.createSecurityKey(request)
+        : await Passkey.createPlatformKey(request)
+      return this.convertRegistrationResult(result)
+    } catch (error) {
+      showSimpleToast('Error', error)
+      throw error
+    }
   }
 
   async get(
