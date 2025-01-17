@@ -37,7 +37,7 @@ commenting out "react-native-get-random-values" as we already use getRandomValue
 
 commenting out import "react-native-url-polyfill/auto" as we already import it ourselves
 
-### @react-native+0.76.6.patch
+### @react-native+0.76.2.patch
 
 commenting out assertions in JSCRuntime.cpp that checked if API object and API string counters are zero in debug to avoid crash in fast refresh
 
