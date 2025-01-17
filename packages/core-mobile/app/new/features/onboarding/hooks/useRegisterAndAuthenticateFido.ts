@@ -5,6 +5,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'common/utils/toast'
 import { showLogoModal, hideLogoModal } from 'common/components/LogoModal'
+import { showSimpleToast } from 'components/Snackbar'
 import { useRecoveryMethodContext } from '../contexts/RecoveryMethodProvider'
 import useSeedlessManageMFA from './useSeedlessManageMFA'
 
@@ -44,7 +45,18 @@ export const useRegisterAndAuthenticateFido = (): {
           withSecurityKey
         )
 
-        await challenge.answer(credential)
+        try {
+          await challenge.answer(credential)
+        } catch (e) {
+          Logger.error(
+            '[useRegisterAndAuthenticateFido][registerAndAuthenticateFido]Failed to answer challenge',
+            e
+          )
+          showSimpleToast(
+            '[useRegisterAndAuthenticateFido][registerAndAuthenticateFido]Failed to answer challenge'
+          )
+          return
+        }
 
         AnalyticsService.capture('SeedlessMfaAdded')
 

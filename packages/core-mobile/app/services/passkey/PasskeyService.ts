@@ -38,6 +38,7 @@ class PasskeyService implements PasskeyServiceInterface {
     )
 
     Logger.info('[PasskeyService.create][preparedRequest]', request)
+    showSimpleToast('[PasskeyService.create][preparedRequest]')
     const result = withSecurityKey
       ? await Passkey.createSecurityKey(request)
       : await Passkey.createPlatformKey(request)
@@ -45,10 +46,19 @@ class PasskeyService implements PasskeyServiceInterface {
       '[PasskeyService.create][resultFromLib]',
       result.response.clientDataJSON
     )
+    showSimpleToast(
+      '[PasskeyService.create][resultFromLib]',
+      result.response.clientDataJSON
+    )
+
     const convertedResult = this.convertRegistrationResult(result)
     Logger.info(
-      '[PasskeyService.create][resultFromLib]',
+      '[PasskeyService.create][convertedResult]',
       convertedResult.response.clientDataJSON
+    )
+    showSimpleToast(
+      '[PasskeyService.create][convertedResult]',
+      result.response.clientDataJSON
     )
     return convertedResult
   }

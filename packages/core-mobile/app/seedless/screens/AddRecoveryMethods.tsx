@@ -81,8 +81,18 @@ export const AddRecoveryMethods = (): JSX.Element => {
           withSecurityKey
         )
 
-        await challenge.answer(credential)
-
+        try {
+          await challenge.answer(credential)
+        } catch (e) {
+          Logger.error(
+            '[AddRecoveryMethods][registerAndAuthenticateFido]Failed to answer challenge',
+            e
+          )
+          showSimpleToast(
+            '[AddRecoveryMethods][registerAndAuthenticateFido]Failed to answer challenge'
+          )
+          return
+        }
         AnalyticsService.capture('SeedlessMfaAdded')
 
         if (oidcAuth) {
