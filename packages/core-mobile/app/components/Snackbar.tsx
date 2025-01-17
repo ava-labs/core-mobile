@@ -42,7 +42,7 @@ export const showDappToastError = (message: string, dappName: string): void => {
 export const showSimpleToast = (message: string, id?: string): void => {
   showSnackBarCustom({
     component: <GeneralToast message={message} testID="simple_toast_msg" />,
-    duration: 'short',
+    duration: 'long',
     id
   })
 }

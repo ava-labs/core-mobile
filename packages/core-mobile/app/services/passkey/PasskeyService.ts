@@ -18,6 +18,7 @@ import {
   base64UrlToBuffer,
   bufferToBase64Url
 } from 'utils/data/base64'
+import { showSimpleToast } from 'components/Snackbar'
 import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
 
 class PasskeyService implements PasskeyServiceInterface {
@@ -34,9 +35,13 @@ class PasskeyService implements PasskeyServiceInterface {
       withSecurityKey
     )
 
-    const result = withSecurityKey
-      ? await Passkey.createSecurityKey(request)
-      : await Passkey.createPlatformKey(request)
+    let result
+    try {
+      result = await Passkey.create(request)
+    } catch (error) {
+      showSimpleToast(JSON.stringify(error))
+      throw error
+    }
     return this.convertRegistrationResult(result)
   }
 
