@@ -7,6 +7,7 @@ import { showSnackbar } from 'common/utils/toast'
 import { showLogoModal, hideLogoModal } from 'common/components/LogoModal'
 import { useRecoveryMethodContext } from '../contexts/RecoveryMethodProvider'
 import useSeedlessManageMFA from './useSeedlessManageMFA'
+import { showSimpleToast } from 'components/Snackbar'
 
 export const useRegisterAndAuthenticateFido = (): {
   registerAndAuthenticateFido: ({
@@ -44,7 +45,12 @@ export const useRegisterAndAuthenticateFido = (): {
           withSecurityKey
         )
 
-        await challenge.answer(credential)
+        try {
+          await challenge.answer(credential)
+        } catch (error) {
+          showSimpleToast('3 ' + JSON.stringify(error))
+          return
+        }
 
         AnalyticsService.capture('SeedlessMfaAdded')
 

@@ -39,10 +39,15 @@ class PasskeyService implements PasskeyServiceInterface {
     try {
       result = await Passkey.create(request)
     } catch (error) {
-      showSimpleToast(JSON.stringify(error))
+      showSimpleToast('1 ' + JSON.stringify(error))
       throw error
     }
-    return this.convertRegistrationResult(result)
+    try {
+      return this.convertRegistrationResult(result)
+    } catch (error) {
+      showSimpleToast('2 ' + JSON.stringify(error))
+      throw error
+    }
   }
 
   async get(

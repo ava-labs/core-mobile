@@ -81,8 +81,12 @@ export const AddRecoveryMethods = (): JSX.Element => {
           withSecurityKey
         )
 
-        await challenge.answer(credential)
-
+        try {
+          await challenge.answer(credential)
+        } catch (error) {
+          showSimpleToast('4 ' + JSON.stringify(error))
+          return
+        }
         AnalyticsService.capture('SeedlessMfaAdded')
 
         if (oidcAuth) {
