@@ -20,6 +20,7 @@ import {
 } from 'utils/data/base64'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { showSimpleToast } from 'components/Snackbar'
+import Logger from 'utils/Logger'
 import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
 
 class PasskeyService implements PasskeyServiceInterface {
@@ -36,15 +37,20 @@ class PasskeyService implements PasskeyServiceInterface {
       withSecurityKey
     )
 
-    try {
-      const result = withSecurityKey
-        ? await Passkey.createSecurityKey(request)
-        : await Passkey.createPlatformKey(request)
-      return this.convertRegistrationResult(result)
-    } catch (error) {
-      showSimpleToast('Error', error)
-      throw error
-    }
+    Logger.info('[PasskeyService.create][preparedRequest]', request)
+    const result = withSecurityKey
+      ? await Passkey.createSecurityKey(request)
+      : await Passkey.createPlatformKey(request)
+    Logger.info(
+      '[PasskeyService.create][resultFromLib]',
+      result.response.clientDataJSON
+    )
+    const convertedResult = this.convertRegistrationResult(result)
+    Logger.info(
+      '[PasskeyService.create][resultFromLib]',
+      convertedResult.response.clientDataJSON
+    )
+    return convertedResult
   }
 
   async get(
