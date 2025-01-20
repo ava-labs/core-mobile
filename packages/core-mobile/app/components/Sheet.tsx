@@ -17,6 +17,7 @@ import {
 interface SheetProps {
   title?: string
   onClose?: () => void
+  snapPoints?: string[]
 }
 
 /**
@@ -26,13 +27,13 @@ interface SheetProps {
 export const Sheet: FC<SheetProps & PropsWithChildren> = ({
   title,
   onClose,
-  children
+  children,
+  snapPoints = ['94%']
 }) => {
   const {
     theme: { colors }
   } = useTheme()
 
-  const snapPoints = ['94%']
   // -1 means the bottom sheet is closed, according to @gorhom/bottom-sheet's implementation
   const [bottomSheetIndex, setBottomSheetIndex] = useState(-1)
 

@@ -1,15 +1,11 @@
-import React, {
-  createContext,
-  Dispatch,
-  useState,
-  useContext,
-  useCallback
-} from 'react'
+import React, { createContext, Dispatch, useState, useContext } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
+import { Link } from 'expo-router'
+import { Dimensions } from 'react-native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { getModalOptions, MainHeaderOptions } from 'navigation/NavUtils'
-import { View } from '@avalabs/k2-mobile'
+import { View, Text } from '@avalabs/k2-mobile'
 import Logger from 'utils/Logger'
 import { KeystoneQrScannerAva } from 'components/KeystoneQrScannerAva'
 import KeytoneSDK, { URType, UR } from '@keystonehq/keystone-sdk'
@@ -27,7 +23,11 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { WalletType } from 'services/wallet/types'
 import OwlLoader from 'components/OwlLoader'
 import { KEYSTONE_MNEMONIC_STUB } from 'keystone/consts'
-
+import { Sheet } from 'components/Sheet'
+import QrError from 'assets/icons/qr_error.svg'
+import LinkSVG from 'components/svg/LinkSVG'
+import AvaButton from 'components/AvaButton'
+import { Space } from 'components/Space'
 import { RecoverWithKeystoneScreenProps } from '../types'
 
 interface KeystoneWalletInfo {
@@ -195,11 +195,15 @@ type ScannerNavigationProp = RecoverWithKeystoneScreenProps<
 >['navigation']
 
 const KeystoneScanner = (): JSX.Element => {
+  const { theme } = useApplicationContext()
   const { setKeystoneWallet } = useContext(RecoverWithKeystoneContext)
   const { navigate } = useNavigation<ScannerNavigationProp>()
-  const handleError = useCallback((error: string) => {
-    throw new Error(error)
-  }, [])
+  const [errorInfo, setErrorInfo] = useState<
+    Nullable<{
+      title: string
+      message: string
+    }>
+  >(null)
 
   return (
     <>
@@ -241,13 +245,61 @@ const KeystoneScanner = (): JSX.Element => {
 
               navigate(AppNavigation.RecoveryKeystoneScreens.NameYourWallet)
             } catch (error) {
-              handleError((error as Error).message)
+              setErrorInfo({
+                title: 'Error',
+                message: 'Invalid QR code'
+              })
             }
           }}
-          onError={handleError}
+          onError={setErrorInfo}
           info="Place the QR code from your Keystone device in front of the camera."
         />
       </View>
+      {errorInfo && (
+        <Sheet
+          title={errorInfo.title}
+          onClose={() => setErrorInfo(null)}
+          snapPoints={['65%']}>
+          <View
+            sx={{
+              alignItems: 'center'
+            }}>
+            <AvaText.Body1>{errorInfo.message}</AvaText.Body1>
+            <Space y={80} />
+            <QrError />
+            <Space y={80} />
+            <AvaButton.PrimaryLarge
+              style={{
+                width: Dimensions.get('window').width - 32
+              }}
+              onPress={() => setErrorInfo(null)}>
+              Try Again
+            </AvaButton.PrimaryLarge>
+            <Link
+              href="https://keyst.one"
+              style={{
+                marginTop: 32,
+                paddingVertical: 15
+              }}>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                <Text
+                  style={{
+                    color: theme.colorPrimary1
+                  }}
+                  variant="buttonSmall">
+                  Keystone Support
+                </Text>
+                <LinkSVG />
+              </View>
+            </Link>
+          </View>
+        </Sheet>
+      )}
     </>
   )
 }

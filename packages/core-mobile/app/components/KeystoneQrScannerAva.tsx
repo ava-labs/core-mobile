@@ -10,7 +10,7 @@ import { Space } from './Space'
 interface Props {
   urType: string
   onSuccess: (ur: UR) => void
-  onError: (error: string) => void
+  onError: (errorInfo: { title: string; message: string }) => void
   info?: string
 }
 
@@ -24,6 +24,15 @@ export const KeystoneQrScannerAva: (props: Props) => JSX.Element = ({
   const [progress, setProgress] = useState(0)
   const { theme } = useApplicationContext()
 
+  const handleError = useCallback(() => {
+    onError({
+      title: 'Invalid qr code',
+      message:
+        'Please ensure you have selected a valid QR code from your Keystone device.'
+    })
+    setUrDecoder(new URDecoder())
+  }, [onError])
+
   const handleScan = useCallback(
     (code: string) => {
       try {
@@ -35,7 +44,7 @@ export const KeystoneQrScannerAva: (props: Props) => JSX.Element = ({
         }
 
         if (urDecoder.isError()) {
-          onError('Invalid qr code')
+          handleError()
         }
 
         if (urDecoder.isSuccess()) {
@@ -50,11 +59,10 @@ export const KeystoneQrScannerAva: (props: Props) => JSX.Element = ({
           }
         }
       } catch (error) {
-        onError('Unknown error')
-        setUrDecoder(new URDecoder())
+        handleError()
       }
     },
-    [onError, setProgress, onSuccess, progress, urDecoder, urType]
+    [setProgress, onSuccess, progress, urDecoder, urType, handleError]
   )
 
   return (
