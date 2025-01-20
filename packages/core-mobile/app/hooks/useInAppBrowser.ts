@@ -70,7 +70,8 @@ const useInAppBrowser = (): {
       navigationBarDividerColor: 'white',
       enableUrlBarHiding: false,
       enableDefaultShare: true,
-      forceCloseOnRedirection: false
+      forceCloseOnRedirection: false,
+      showInRecents: true
     }
     openInAppBrowser(url, options)
   }
