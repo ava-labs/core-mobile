@@ -33,8 +33,6 @@ Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only
 
 ### @walletconnect+react-native-compat+2.11.0.patch
 
-commenting out "react-native-get-random-values" as we already use getRandomValues from "react-native-quick-crypto"
-
 commenting out import "react-native-url-polyfill/auto" as we already import it ourselves
 
 ### @react-native+0.76.2.patch
