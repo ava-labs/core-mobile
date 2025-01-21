@@ -27,6 +27,8 @@ const FidoNameInput = ({
     theme: { colors }
   } = useTheme()
 
+  const handleClear = (): void => setName('')
+
   return (
     <BlurredBarsContentLayout>
       <View
@@ -65,7 +67,7 @@ const FidoNameInput = ({
               onChangeText={setName}
               placeholder={textInputPlaceholder}
             />
-            <TouchableOpacity onPress={() => setName('')}>
+            <TouchableOpacity onPress={handleClear}>
               <Icons.Action.Clear
                 width={16}
                 height={16}

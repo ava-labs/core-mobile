@@ -39,7 +39,7 @@ export const useRegisterAndAuthenticateFido = (): {
       const withSecurityKey = fidoType === FidoType.YUBI_KEY
 
       fidoRegisterInit(passkeyName, async challenge => {
-        const credential = await PasskeyService.create(
+        const credential = await PasskeyService.createCredential(
           challenge.options,
           withSecurityKey
         )

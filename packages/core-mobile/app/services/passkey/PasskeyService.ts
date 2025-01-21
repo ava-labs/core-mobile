@@ -10,8 +10,7 @@ import {
   FIDOAuthenticationResult,
   FIDOAuthenticationRequest,
   FIDORegistrationResult,
-  FIDORegistrationRequest,
-  PasskeyServiceInterface
+  FIDORegistrationRequest
 } from 'services/passkey/types'
 import {
   base64ToBase64Url,
@@ -20,12 +19,12 @@ import {
 } from 'utils/data/base64'
 import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
 
-class PasskeyService implements PasskeyServiceInterface {
+class PasskeyService {
   get isSupported(): boolean {
     return Passkey.isSupported()
   }
 
-  async create(
+  async createCredential(
     challengeOptions: FIDORegistrationRequest,
     withSecurityKey: boolean
   ): Promise<FIDORegistrationResult> {
@@ -40,7 +39,7 @@ class PasskeyService implements PasskeyServiceInterface {
     return this.convertRegistrationResult(result)
   }
 
-  async get(
+  async getCredential(
     challengeOptions: FIDOAuthenticationRequest,
     withSecurityKey: boolean
   ): Promise<FIDOAuthenticationResult> {
@@ -114,18 +113,18 @@ class PasskeyService implements PasskeyServiceInterface {
     return {
       type: result.type,
       id: base64ToBase64Url(result.id),
-      rawId: base64UrlToBuffer(result.rawId) as Buffer,
+      rawId: base64UrlToBuffer(result.rawId),
       response: {
         clientDataJSON: base64UrlToBuffer(
           'clientDataJSON' in result.response
             ? result.response.clientDataJSON
             : ''
-        ) as Buffer,
+        ),
         attestationObject: base64UrlToBuffer(
           'attestationObject' in result.response
             ? result.response.attestationObject
             : ''
-        ) as Buffer
+        )
       }
     }
   }
@@ -136,24 +135,24 @@ class PasskeyService implements PasskeyServiceInterface {
     return {
       id: base64ToBase64Url(result.id),
       type: result.type,
-      rawId: base64UrlToBuffer(result.rawId) as Buffer,
+      rawId: base64UrlToBuffer(result.rawId),
       response: {
         clientDataJSON: base64UrlToBuffer(
           'clientDataJSON' in result.response
             ? result.response.clientDataJSON
             : ''
-        ) as Buffer,
+        ),
         authenticatorData: base64UrlToBuffer(
           'authenticatorData' in result.response
             ? result.response.authenticatorData
             : ''
-        ) as Buffer,
+        ),
         signature: base64UrlToBuffer(
           'signature' in result.response ? result.response.signature : ''
-        ) as Buffer,
+        ),
         userHandle: base64UrlToBuffer(
           'userHandle' in result.response ? result.response.userHandle : ''
-        ) as Buffer
+        )
       }
     }
   }
