@@ -54,6 +54,7 @@ const FidoNameInput = ({
               justifyContent: 'space-between',
               height: 44
             }}>
+            {/* TODO: CP9695 - move to k2-alpine TextInput component */}
             <TextInput
               sx={{
                 flex: 1,
