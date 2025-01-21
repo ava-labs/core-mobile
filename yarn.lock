@@ -315,7 +315,7 @@ __metadata:
     ethers: 6.8.1
     events: 3.3.0
     expo: 52.0.9
-    expo-application: ~6.0.2
+    expo-application: 6.0.2
     expo-blur: 14.0.2
     expo-constants: 17.0.4
     expo-dev-client: 5.0.3
@@ -18076,7 +18076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-application@npm:~6.0.2":
+"expo-application@npm:6.0.2":
   version: 6.0.2
   resolution: "expo-application@npm:6.0.2"
   peerDependencies:
