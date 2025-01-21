@@ -50,7 +50,7 @@ class SeedlessExportService {
    */
   async userExportComplete(
     keyId: string,
-    pubKey: string
+    pubKey: CryptoKey
   ): Promise<CubeSignerResponse<UserExportCompleteResponse>> {
     const signerSession = await this.sessionManager.getSignerSession()
     return signerSession.userExportComplete(keyId, pubKey)
@@ -60,7 +60,7 @@ class SeedlessExportService {
    * Decrypt user export's mnemonic
    */
   async userExportDecrypt(
-    privateKey: Parameters<typeof userExportDecrypt>[0]['privateKey'],
+    privateKey: CryptoKey,
     response: UserExportCompleteResponse
   ): Promise<string> {
     const exportDecrypted = await userExportDecrypt(privateKey, response)
