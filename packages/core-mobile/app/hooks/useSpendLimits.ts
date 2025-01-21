@@ -104,14 +104,14 @@ export const useSpendLimits = (
       const web3 = new Web3()
 
       const contract = new web3.eth.Contract(
-        ERC20.abi as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ERC20.abi,
         spendLimit?.tokenApproval.token.address
       )
 
       const hashed =
         limitAmount &&
         contract.methods
-          .approve(spendLimit.tokenApproval.spenderAddress, limitAmount)
+          .approve?.(spendLimit.tokenApproval.spenderAddress, limitAmount)
           .encodeABI()
 
       setHashedCustomSpend(hashed)
