@@ -25,8 +25,8 @@ describe('Send AVAX', () => {
 
   it('should verify the AVAX transaction on activity tab', async () => {
     await portfolioPage.goToActivityTab()
-    await activityTabPage.verifyExistingRow('Send', '-0.000001 AVAX')
+    await activityTabPage.verifyExistingRow('Send', '-0.00001 AVAX')
     await accountManagePage.switchToSecondAccount()
-    await activityTabPage.verifyExistingRow('Receive', '+0.000001 AVAX')
+    await activityTabPage.verifyExistingRow('Receive', '+0.00001 AVAX')
   })
 })
