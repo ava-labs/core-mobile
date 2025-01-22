@@ -22,6 +22,12 @@
           "project": "core-react-native",
           "organization": "Ava Labs"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "experiments": {

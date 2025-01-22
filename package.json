@@ -40,11 +40,6 @@
     "@noble/secp256k1": "2.1.0",
     "react-native-permissions": "4.1.5"
   },
-  "overrides": {
-    "react-native-qrcode-scanner": {
-      "react-native-permissions": "4.1.5"
-    }
-  },
   "engines": {
     "node": ">=18.14.1",
     "yarn": ">=3.6.4"
