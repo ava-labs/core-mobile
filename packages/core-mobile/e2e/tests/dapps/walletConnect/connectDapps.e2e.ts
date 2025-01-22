@@ -22,13 +22,10 @@ describe('Dapp Wallet Connect - Others', () => {
     await connectToSitePage.selectAccountAndconnect()
   })
 
-  it('should connect OpenSea via Wallet Connect', async () => {
-    await browserPage.connectTo('https://opensea.io/')
+  it('should connect Benqi via Wallet Connect', async () => {
+    await browserPage.connectTo('https://app.benqi.fi/markets')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
-    await connectToSitePage.approveSignMessage(
-      'OpenSea, the largest NFT marketplace'
-    )
   })
 })
