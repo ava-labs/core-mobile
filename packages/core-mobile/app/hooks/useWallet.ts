@@ -48,15 +48,13 @@ export async function initWalletServiceAndUnlock({
   xpub,
   xpubXP
 }: InitWalletServiceAndUnlockProps): Promise<void> {
-  if (walletType === WalletType.KEYSTONE || mnemonic) {
-    await WalletService.init({
-      mnemonic,
-      xpub,
-      xpubXP,
-      walletType,
-      isLoggingIn
-    })
-  }
+  await WalletService.init({
+    mnemonic,
+    xpub,
+    xpubXP,
+    walletType,
+    isLoggingIn
+  })
   dispatch(onAppUnlocked())
 }
 
