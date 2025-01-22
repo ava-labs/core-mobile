@@ -102,8 +102,6 @@ android {
         testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
-        missingDimensionStrategy 'react-native-camera', 'general'
-
         // required for react native config to work properly across different build variants
         resValue "string", "build_config_package", "com.avaxwallet"
     }

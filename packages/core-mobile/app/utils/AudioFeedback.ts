@@ -1,4 +1,3 @@
-import { HapticFeedbackTypes } from 'react-native-haptic-feedback'
 import Sound from 'react-native-sound'
 import { hapticFeedback } from 'utils/HapticFeedback'
 import Logger from 'utils/Logger'
@@ -8,21 +7,17 @@ Sound.setCategory('Ambient', true)
 
 type Audio = {
   file: string
-  hapticType: HapticFeedbackTypes
 }
 
 export const audioFiles = {
   Default: {
-    file: 'default.wav',
-    hapticType: HapticFeedbackTypes.soft
+    file: 'default.wav'
   },
   Send: {
-    file: 'core_send.wav',
-    hapticType: HapticFeedbackTypes.notificationSuccess
+    file: 'core_send.wav'
   },
   Receive: {
-    file: 'core_receive.wav',
-    hapticType: HapticFeedbackTypes.notificationSuccess
+    file: 'core_receive.wav'
   }
 }
 
@@ -44,7 +39,7 @@ export const audioFeedback = (audio: Audio, withHaptic = true): void => {
     })
 
     if (withHaptic) {
-      hapticFeedback(audio.hapticType)
+      hapticFeedback()
     }
   })
 }

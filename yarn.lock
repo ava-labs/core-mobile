@@ -317,8 +317,10 @@ __metadata:
     expo: 52.0.9
     expo-application: 6.0.2
     expo-blur: 14.0.2
+    expo-camera: 16.0.11
     expo-constants: 17.0.4
     expo-dev-client: 5.0.3
+    expo-haptics: 14.0.1
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.4
@@ -355,7 +357,6 @@ __metadata:
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.1.4
-    react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -366,7 +367,6 @@ __metadata:
     react-native-gesture-handler: 2.22.0
     react-native-get-random-values: 1.11.0
     react-native-graph: 1.1.0
-    react-native-haptic-feedback: 2.3.3
     react-native-inappbrowser-reborn: 3.7.0
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.1
@@ -380,7 +380,6 @@ __metadata:
     react-native-permissions: 4.1.5
     react-native-popable: 0.4.3
     react-native-popover-view: 6.1.0
-    react-native-qrcode-scanner: 1.5.5
     react-native-qrcode-svg: 6.3.2
     react-native-quick-base64: 2.1.2
     react-native-quick-crypto: 0.7.11
@@ -8937,17 +8936,6 @@ __metadata:
   peerDependencies:
     react-native: ^0.0.0-0 || >=0.65 <1.0
   checksum: 7007a411f13988594a3f9b5ebb29f1554ab65ff2bd90814fa8b125fa68b69c431bdfcd38769ae2dcb6505aec2bad9296f0a0fa1ac8f123007eda49c826f2d138
-  languageName: node
-  linkType: hard
-
-"@react-native-async-storage/async-storage@npm:^1.13.4":
-  version: 1.19.3
-  resolution: "@react-native-async-storage/async-storage@npm:1.19.3"
-  dependencies:
-    merge-options: ^3.0.4
-  peerDependencies:
-    react-native: ^0.0.0-0 || 0.60 - 0.72 || 1000.0.0
-  checksum: d849e5c8bb08d2130d95cc246749dae820cc1996b6b31defa063a1b67070524d72aed5a0e57ce2fafe3c3726712c09a5a3babaed1358182060ce7cfd8bd2c1a3
   languageName: node
   linkType: hard
 
@@ -18112,6 +18100,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-camera@npm:16.0.11":
+  version: 16.0.11
+  resolution: "expo-camera@npm:16.0.11"
+  dependencies:
+    invariant: ^2.2.4
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+    react-native-web: "*"
+  peerDependenciesMeta:
+    react-native-web:
+      optional: true
+  checksum: a779c06840c7c723116820112e0e59837c9b0afedb57c74074328aef4831ae4d28f6c99cc12586dee767645f6940045c5e265c13317f4334e5437da408ff13d0
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:17.0.4, expo-constants@npm:~17.0.3, expo-constants@npm:~17.0.4":
   version: 17.0.4
   resolution: "expo-constants@npm:17.0.4"
@@ -18207,6 +18212,15 @@ __metadata:
     expo: "*"
     react: "*"
   checksum: 43d46ddcd66cab21dd68c33dd45be21f9bd5092a7e8afe4becb6b4d6b6f3adb7d18c46ee4034526529ffcaa71070060c41377a1e88ba7d28a9587962d03e10b2
+  languageName: node
+  linkType: hard
+
+"expo-haptics@npm:14.0.1":
+  version: 14.0.1
+  resolution: "expo-haptics@npm:14.0.1"
+  peerDependencies:
+    expo: "*"
+  checksum: 88f6f69ce99e0eb36a15335fc777f5e2fde4c46b1f867ae85564435676cc0bac6623a0b9ef338b1059cde7a416593b588b5fb629d934f0900dffab80149948ab
   languageName: node
   linkType: hard
 
@@ -25675,7 +25689,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
+"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -26204,15 +26218,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-camera@npm:4.2.1":
-  version: 4.2.1
-  resolution: "react-native-camera@npm:4.2.1"
-  dependencies:
-    prop-types: ^15.6.2
-  checksum: 0e84ce657774694d1cc49395c43a8f2caabc03df36aa77aacfb5c797ad8cfe0368f4807deccc54e82ff2b193e8c2d1ce7ad504eedf7a9fc4719b38e39958a804
-  languageName: node
-  linkType: hard
-
 "react-native-chart-kit@npm:6.12.0":
   version: 6.12.0
   resolution: "react-native-chart-kit@npm:6.12.0"
@@ -26375,15 +26380,6 @@ __metadata:
     react-native-gesture-handler: ">=2"
     react-native-reanimated: ">=3.1.0"
   checksum: 1973714f22763b89e8d5a1524eb8033eef4db86e336829fb17824125964757a753dd29fef7aba5faa25d64a985fc08b875be53d6ca77c4c14ef55d92eff79980
-  languageName: node
-  linkType: hard
-
-"react-native-haptic-feedback@npm:2.3.3":
-  version: 2.3.3
-  resolution: "react-native-haptic-feedback@npm:2.3.3"
-  peerDependencies:
-    react-native: ">=0.60.0"
-  checksum: 5ff12aaf44fa1cad8ab3d9c58046a11c631c6622955120294060efc51c625203ee4cd7ccb565663c12b27552ebbb7034a386000d9da738b9eea5ff62d58b14c0
   languageName: node
   linkType: hard
 
@@ -26565,19 +26561,6 @@ __metadata:
     deprecated-react-native-prop-types: ^2.3.0
     prop-types: ^15.8.1
   checksum: acf988e2ad4600c8ad17683909e245f55a600950ad744537218e69da289aa25634be71f26c159e84c735ba54cd384e7b17570707cbdeb213db797fd0e1c6650d
-  languageName: node
-  linkType: hard
-
-"react-native-qrcode-scanner@npm:1.5.5":
-  version: 1.5.5
-  resolution: "react-native-qrcode-scanner@npm:1.5.5"
-  dependencies:
-    "@react-native-async-storage/async-storage": ^1.13.4
-    prop-types: ^15.5.10
-    react-native-permissions: ^2.0.2
-  peerDependencies:
-    react-native-camera: ">=1.0.2"
-  checksum: 135a46a3ecc424b7b3be2f0637baba0e108fda10435299a15bad44dedff100fddaae8e31ddaf7dbd86296cc363e20195e7268bf58d8d7604e6de3243311cf8c3
   languageName: node
   linkType: hard
 
