@@ -2,9 +2,8 @@ import React, { useCallback, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { FidoType } from 'services/passkey/types'
 import { useRegisterAndAuthenticateFido } from 'features/onboarding/hooks/useRegisterAndAuthenticateFido'
-import { hideLogoModal, showLogoModal } from 'common/components/LogoModal'
-import SeedlessService from 'seedless/services/SeedlessService'
 import Component from 'features/onboarding/components/FidoNameInput'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type FIDONameInputProps = {
   fidoType: FidoType
@@ -22,16 +21,12 @@ const FidoNameInput = (): JSX.Element => {
   const [name, setName] = useState<string>('')
 
   const onAccountVerified = useCallback(async (): Promise<void> => {
-    showLogoModal()
-    const walletName = await SeedlessService.getAccountName()
-    hideLogoModal()
-
-    if (walletName) {
-      router.navigate('./createPin')
-      return
-    }
-    router.navigate('./nameYourWallet')
-  }, [router])
+    router.back()
+    router.navigate('./analyticsConsent')
+    AnalyticsService.capture('SeedlessMfaVerified', {
+      type: fidoType ?? 'Fido'
+    })
+  }, [router, fidoType])
 
   const handleSave = (): void => {
     if (router.canGoBack()) {
