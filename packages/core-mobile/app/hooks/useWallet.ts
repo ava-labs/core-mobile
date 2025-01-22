@@ -34,8 +34,8 @@ export interface UseWallet {
   login: (
     mnemonic: string,
     walletType: WalletType,
-    xpub?: Nullable<string>,
-    xpubXP?: Nullable<string>
+    xpub?: string,
+    xpubXP?: string
   ) => Promise<void>
   destroyWallet: () => void
 }
@@ -48,7 +48,7 @@ export async function initWalletServiceAndUnlock({
   xpub,
   xpubXP
 }: InitWalletServiceAndUnlockProps): Promise<void> {
-  if (walletType === WalletType.KEYSTONE && xpub && xpubXP) {
+  if (walletType === WalletType.KEYSTONE || mnemonic) {
     await WalletService.init({
       mnemonic,
       xpub,
@@ -56,8 +56,6 @@ export async function initWalletServiceAndUnlock({
       walletType,
       isLoggingIn
     })
-  } else if (mnemonic) {
-    await WalletService.init({ mnemonic, walletType, isLoggingIn })
   }
   dispatch(onAppUnlocked())
 }
@@ -92,8 +90,8 @@ export function useWallet(): UseWallet {
   const login = async (
     mnemonic: string,
     walletType: WalletType,
-    xpub?: Nullable<string>,
-    xpubXP?: Nullable<string>
+    xpub?: string,
+    xpubXP?: string
   ): Promise<void> => {
     try {
       dispatch(setWalletType(walletType))
@@ -102,8 +100,8 @@ export function useWallet(): UseWallet {
         mnemonic,
         walletType,
         isLoggingIn: true,
-        xpub: xpub ?? undefined,
-        xpubXP: xpubXP ?? undefined
+        xpub,
+        xpubXP
       })
 
       dispatch(onLogIn())
