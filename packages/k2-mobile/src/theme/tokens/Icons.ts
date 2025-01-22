@@ -22,6 +22,7 @@ import IconWarningAmber from '../../assets/icons/warning_amber.svg'
 import IconApple from '../../assets/icons/apple.svg'
 import IconGoogle from '../../assets/icons/google.svg'
 import IconAirDrop from '../../assets/icons/airdrop.svg'
+import IconHalliday from '../../assets/icons/halliday.svg'
 
 export const Icons = {
   Custom: {
@@ -62,6 +63,7 @@ export const Icons = {
   Logos: {
     Apple: IconApple,
     WalletConnect: IconWC,
-    Google: IconGoogle
+    Google: IconGoogle,
+    Halliday: IconHalliday
   }
 }
