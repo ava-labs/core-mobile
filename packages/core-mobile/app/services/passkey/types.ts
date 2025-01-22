@@ -68,15 +68,3 @@ export enum FidoType {
   PASS_KEY = 'Passkey',
   YUBI_KEY = 'Yubikey'
 }
-
-export interface PasskeyServiceInterface {
-  readonly isSupported: boolean
-  register(
-    challengeOptions: FIDORegistrationRequest,
-    withSecurityKey: boolean
-  ): Promise<FIDORegistrationResult>
-  authenticate(
-    challengeOptions: FIDOAuthenticationRequest,
-    withSecurityKey: boolean
-  ): Promise<FIDOAuthenticationResult>
-}
