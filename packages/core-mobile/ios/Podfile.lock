@@ -278,9 +278,15 @@ PODS:
     - ExpoModulesCore
   - ExpoBlur (14.0.2):
     - ExpoModulesCore
+  - ExpoCamera (16.0.11):
+    - ExpoModulesCore
+    - ZXingObjC/OneD
+    - ZXingObjC/PDF417
   - ExpoFileSystem (18.0.7):
     - ExpoModulesCore
   - ExpoFont (13.0.3):
+    - ExpoModulesCore
+  - ExpoHaptics (14.0.1):
     - ExpoModulesCore
   - ExpoHead (3.4.10):
     - ExpoModulesCore
@@ -1735,14 +1741,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-camera (4.2.1):
-    - React-Core
-    - react-native-camera/RCT (= 4.2.1)
-    - react-native-camera/RN (= 4.2.1)
-  - react-native-camera/RCT (4.2.1):
-    - React-Core
-  - react-native-camera/RN (4.2.1):
-    - React-Core
   - react-native-compat (2.11.0):
     - DoubleConversion
     - glog
@@ -2576,27 +2574,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNReactNativeHapticFeedback (2.3.3):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.01.01.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - RNReanimated (3.16.1):
     - DoubleConversion
     - glog
@@ -2813,6 +2790,11 @@ PODS:
   - Sentry/HybridSDK (8.43.0)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
+  - ZXingObjC/Core (3.6.9)
+  - ZXingObjC/OneD (3.6.9):
+    - ZXingObjC/Core
+  - ZXingObjC/PDF417 (3.6.9):
+    - ZXingObjC/Core
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -2830,8 +2812,10 @@ DEPENDENCIES:
   - "ExpoAdapterGoogleSignIn (from `../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
   - ExpoBlur (from `../node_modules/expo-blur/ios`)
+  - ExpoCamera (from `../node_modules/expo-camera/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
+  - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
   - ExpoHead (from `../node_modules/expo-router/ios`)
   - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
@@ -2882,7 +2866,6 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-aes (from `../node_modules/react-native-aes-crypto`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
-  - react-native-camera (from `../node_modules/react-native-camera`)
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
@@ -2949,7 +2932,6 @@ DEPENDENCIES:
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNOS (from `../node_modules/react-native-os`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
-  - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSensors (from `../node_modules/react-native-sensors`)
@@ -2997,6 +2979,7 @@ SPEC REPOS:
     - SDWebImageSVGCoder
     - Sentry
     - SocketRocket
+    - ZXingObjC
 
 EXTERNAL SOURCES:
   boost:
@@ -3029,10 +3012,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-asset/ios"
   ExpoBlur:
     :path: "../node_modules/expo-blur/ios"
+  ExpoCamera:
+    :path: "../node_modules/expo-camera/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
     :path: "../node_modules/expo-font/ios"
+  ExpoHaptics:
+    :path: "../node_modules/expo-haptics/ios"
   ExpoHead:
     :path: "../node_modules/expo-router/ios"
   ExpoImage:
@@ -3124,8 +3111,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-aes-crypto"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
-  react-native-camera:
-    :path: "../node_modules/react-native-camera"
   react-native-compat:
     :path: "../node_modules/@walletconnect/react-native-compat"
   react-native-config:
@@ -3258,8 +3243,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-os"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
-  RNReactNativeHapticFeedback:
-    :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -3301,8 +3284,10 @@ SPEC CHECKSUMS:
   ExpoAdapterGoogleSignIn: da10ae7e7c1d73a10c2facebcdfe5ebea8e073ce
   ExpoAsset: 6cc988c426b5fc997859cc0f8f6728d1376bf53f
   ExpoBlur: 5327b09a58e04e4066dd95fe994d8ef5539a1f26
+  ExpoCamera: f21bbd3ed3d4ca56774520a33de63b3d2cd5a6ce
   ExpoFileSystem: a0a5c44d3d3e8a2aa54fe7c70c7690df03cf4dd8
   ExpoFont: 8b14db1afebf62e9774613a082e402985f4e747c
+  ExpoHaptics: e01cce0741d68c281853118eb0267f88d42c6b7a
   ExpoHead: 89ffd324e60520751c2c285233fe45e875c91874
   ExpoImage: 3099001359e4414d60addd7c3e00a5d949df41e0
   ExpoKeepAwake: 1f74cdf53ab3b3aeb7110f18eb053c92e7c3e710
@@ -3370,7 +3355,6 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 7a69a9b8fded72ea3cf81923ecf75cad5558ed26
   react-native-aes: 8e4348c6e75fcb32f5a960e987df877e1062714e
   react-native-blur: 28b0a731ed804bed3e88757c2414305896e6b47e
-  react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
   react-native-compat: e0e4c6eb5017e093bb4da3a70a7b39bf42526a9b
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
@@ -3437,7 +3421,6 @@ SPEC CHECKSUMS:
   RNNotifee: 35b5f984d11083b02d7f2990b3408cd99a0aeeac
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: 67f47da0f23b170dcb80c20f6a2bf9d4978a583b
-  RNReactNativeHapticFeedback: 73756a3477a5a622fa16862a3ab0d0fc5e5edff5
   RNReanimated: 77242c6d67416988a2fd9f5cf574bb3e60016362
   RNScreens: d022507f2b6d76c73335e9e35aedcf7bb2f791b0
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
@@ -3450,6 +3433,7 @@ SPEC CHECKSUMS:
   Sentry: 532b281a53b1b45a523fd592f608956fb36e577c
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 96872ee462cfc43866ad013c8160d4ff6b85709b
+  ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
 PODFILE CHECKSUM: 64c87c4676df1a44c3fa8243a7946bbea93dd97f
 
