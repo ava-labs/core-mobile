@@ -45,6 +45,7 @@ allprojects {
         maven {
             // All of Detox' artifacts are provided via the npm module
             url "$rootDir/../node_modules/detox/Detox-android"
+            url "$rootDir/../node_modules/expo-camera/android/maven"
         }
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
