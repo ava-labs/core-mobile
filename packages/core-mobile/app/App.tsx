@@ -15,6 +15,8 @@ function App(): JSX.Element {
   const context = useApplicationContext()
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
+  console.log(getDatadogConfig())
+
   return (
     <DatadogProvider configuration={getDatadogConfig()}>
       <SafeAreaView style={backgroundStyle}>

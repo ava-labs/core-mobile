@@ -1,7 +1,7 @@
 import {
   TrackingConsent,
   DatadogProviderConfiguration,
-  DdLogs
+  SdkVerbosity
 } from '@datadog/mobile-react-native'
 import DeviceInfo from 'react-native-device-info'
 
@@ -29,10 +29,7 @@ export function getDatadogConfig() {
   DataDogConfig.resourceTracingSamplingRate = 100
   DataDogConfig.site = SITE
   DataDogConfig.version = DeviceInfo.getBuildNumber()
+  DataDogConfig.verbosity = SdkVerbosity.DEBUG
 
   return DataDogConfig
-}
-
-export function onDatadogInitializationComplete(): void {
-  DdLogs.info('Datadog initialization complete')
 }
