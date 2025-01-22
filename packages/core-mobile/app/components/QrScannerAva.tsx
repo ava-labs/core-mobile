@@ -1,8 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { SafeAreaView, StyleSheet } from 'react-native'
-import QRCodeScanner from 'react-native-qrcode-scanner'
-import { BarCodeReadEvent } from 'react-native-camera'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import {
+  BarcodeScanningResult,
+  CameraView,
+  useCameraPermissions
+} from 'expo-camera'
+import { View } from 'react-native'
+import { notificationAsync, NotificationFeedbackType } from 'expo-haptics'
 import AvaButton from './AvaButton'
 
 type Props = {
@@ -15,32 +20,61 @@ export default function QrScannerAva({
   onSuccess,
   onCancel,
   vibrate = false
-}: Props) {
-  const context = useApplicationContext()
+}: Props): JSX.Element {
+  const { theme, backgroundStyle } = useApplicationContext()
+  const [permission, requestPermission] = useCameraPermissions()
 
-  const handleSuccess = (e: BarCodeReadEvent): void => {
-    onSuccess(e.data)
+  const handleScanned = (scanningResult: BarcodeScanningResult): void => {
+    onSuccess(scanningResult.data)
+
+    if (vibrate) {
+      notificationAsync(NotificationFeedbackType.Success)
+    }
   }
 
-  const theme = context.theme
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission()
+    }
+  }, [permission, requestPermission])
+
   return (
-    <SafeAreaView style={[context.backgroundStyle, styles.container]}>
-      <QRCodeScanner
-        showMarker={true}
-        markerStyle={[
-          {
-            borderColor: theme.colorPrimary1,
-            borderRadius: 8,
-            shadowColor: theme.colorBg2,
-            shadowOffset: { width: 4, height: 4 },
-            shadowRadius: 8
-          }
-        ]}
-        fadeIn={false}
-        onRead={handleSuccess}
-        cameraType={'back'}
-        vibrate={vibrate}
-      />
+    <SafeAreaView style={[backgroundStyle, styles.container]}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <CameraView
+          style={{
+            width: '100%',
+            aspectRatio: 1,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          ratio="1:1"
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr']
+          }}
+          onBarcodeScanned={handleScanned}>
+          <View
+            style={{
+              padding: 80,
+              backgroundColor: 'transparent'
+            }}>
+            <View
+              style={{
+                width: '100%',
+                aspectRatio: 1,
+                borderRadius: 8,
+                borderColor: theme.colorPrimary1,
+                borderWidth: 4
+              }}
+            />
+          </View>
+        </CameraView>
+      </View>
       {onCancel && (
         <AvaButton.PrimaryLarge onPress={onCancel} style={{ margin: 16 }}>
           Cancel
