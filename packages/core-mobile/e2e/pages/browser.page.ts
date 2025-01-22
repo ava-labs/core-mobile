@@ -61,8 +61,8 @@ class BrowserPage {
       case 'https://lfj.gg/avalanche': // TraderJoe
         xpath = '//button[@aria-label="connect-wallet"]'
         break
-      case 'https://opensea.io/': // OpenSea
-        xpath = '//button[@data-id="UnstyledButton"]//div[text()="Login"]'
+      case 'https://app.benqi.fi/markets': // Benqi
+        xpath = '//button[text()="Connect Wallet"]'
         break
       case 'https://ava-labs.github.io/extension-avalanche-playground/': // Core Playground
         xpath =

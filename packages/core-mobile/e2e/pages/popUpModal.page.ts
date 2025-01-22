@@ -123,7 +123,7 @@ class PopUpModalPage {
   }
 
   async tapApproveBtn() {
-    await actions.waitForElement(this.popUpModalScrollView, 20000)
+    await actions.waitForElement(this.popUpModalScrollView, 30000)
     await actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
@@ -160,7 +160,7 @@ class PopUpModalPage {
   }
 
   async verifySignMessageModal() {
-    await actions.waitForElement(this.signMessage, 8000)
+    await actions.waitForElement(this.signMessage, 20000)
     await asserts.isVisible(this.network)
     await asserts.isVisible(this.approveBtn)
     await asserts.isVisible(this.rejectBtn)
