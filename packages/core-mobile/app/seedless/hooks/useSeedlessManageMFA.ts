@@ -10,18 +10,18 @@ import useVerifyMFA from './useVerifyMFA'
 
 function useSeedlessManageMFA(): {
   totpResetInit: (
-    onInitialzied: (challenge: TotpChallenge) => void
+    onInitialized: (challenge: TotpChallenge) => void
   ) => Promise<void>
   fidoRegisterInit: (
     name: string,
-    onInitialzied: (challenge: AddFidoChallenge) => Promise<void>
+    onInitialized: (challenge: AddFidoChallenge) => Promise<void>
   ) => Promise<void>
   fidoDelete: (fidoId: string, onDelete: () => void) => Promise<void>
 } {
   const { verifyMFA } = useVerifyMFA(SeedlessService.sessionManager)
 
   async function totpResetInit(
-    onInitialzied: (challenge: TotpChallenge) => void
+    onInitialized: (challenge: TotpChallenge) => void
   ): Promise<void> {
     try {
       const totpResetInitResponse =
@@ -31,7 +31,7 @@ function useSeedlessManageMFA(): {
         const handleVerifySuccess: HandleVerifyMfaSuccess<
           TotpChallenge
         > = async totpChallenge => {
-          onInitialzied(totpChallenge)
+          onInitialized(totpChallenge)
         }
 
         verifyMFA({
@@ -41,7 +41,7 @@ function useSeedlessManageMFA(): {
       } else {
         const totpChallenge = totpResetInitResponse.data()
 
-        onInitialzied(totpChallenge)
+        onInitialized(totpChallenge)
       }
     } catch (e) {
       Logger.error('totpResetInit error', e)
@@ -51,7 +51,7 @@ function useSeedlessManageMFA(): {
 
   async function fidoRegisterInit(
     name: string,
-    onInitialzied: (challenge: AddFidoChallenge) => Promise<void>
+    onInitialized: (challenge: AddFidoChallenge) => Promise<void>
   ): Promise<void> {
     try {
       const fidoRegisterInitResponse =
@@ -61,7 +61,7 @@ function useSeedlessManageMFA(): {
         const handleVerifySuccess: HandleVerifyMfaSuccess<
           AddFidoChallenge
         > = async addFidoChallenge => {
-          onInitialzied(addFidoChallenge)
+          onInitialized(addFidoChallenge)
         }
 
         verifyMFA({
@@ -71,7 +71,7 @@ function useSeedlessManageMFA(): {
       } else {
         const addFidoChallenge = fidoRegisterInitResponse.data()
 
-        onInitialzied(addFidoChallenge)
+        onInitialized(addFidoChallenge)
       }
     } catch (e) {
       Logger.error('fidoRegisterInit error', e)

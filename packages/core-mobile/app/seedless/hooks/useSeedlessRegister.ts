@@ -182,7 +182,7 @@ export const useSeedlessRegister = (): ReturnType => {
         await SeedlessService.sessionManager.approveFido(
           oidcAuth.oidcToken,
           oidcAuth.mfaId,
-          false
+          true
         )
 
         AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
