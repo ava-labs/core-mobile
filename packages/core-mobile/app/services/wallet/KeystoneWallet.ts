@@ -5,8 +5,7 @@ import {
   DerivationPath,
   JsonRpcBatchInternal,
   getAddressPublicKeyFromXPub,
-  getWalletFromMnemonic,
-  getAddressDerivationPath
+  getWalletFromMnemonic
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
@@ -17,25 +16,14 @@ import {
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import {
-  personalSign,
-  signTypedData,
-  SignTypedDataVersion
-} from '@metamask/eth-sig-util'
-import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
-import { utils } from '@avalabs/avalanchejs'
-import { toUtf8 } from 'ethereumjs-util'
-import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
-import {
-  TypedDataV1,
-  TypedData,
-  MessageTypes,
-  WalletType
-} from '@avalabs/vm-module-types'
-import { isTypedData } from '@avalabs/evm-module'
+import { WalletType } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
+
+const throwUnsupportedMethodError = (method: string): never => {
+  throw new Error(`Unsupported method: ${method}`)
+}
 
 export class KeystoneWallet implements Wallet {
   /**
@@ -49,6 +37,16 @@ export class KeystoneWallet implements Wallet {
    * @private
    */
   #xpubXP?: string
+
+  static instance: KeystoneWallet
+
+  public static getInstance(): KeystoneWallet {
+    if (!KeystoneWallet.instance) {
+      KeystoneWallet.instance = new KeystoneWallet()
+    }
+
+    return KeystoneWallet.instance
+  }
 
   private async getBtcSigner(
     accountIndex: number,
@@ -80,17 +78,14 @@ export class KeystoneWallet implements Wallet {
 
   private async getAvaSigner(
     accountIndex: number,
-    provider?: Avalanche.JsonRpcProvider
-  ): Promise<Avalanche.StaticSigner | Avalanche.SimpleSigner> {
-    if (provider) {
-      return Avalanche.StaticSigner.fromMnemonic(
-        '', // this.mnemonic,
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'AVM'),
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'EVM'),
-        provider
-      )
-    }
-    return new Avalanche.SimpleSigner('', accountIndex)
+    provider: Avalanche.JsonRpcProvider
+  ): Promise<Avalanche.WalletVoid> {
+    const keys = await this.getPublicKey(accountIndex)
+    return Avalanche.StaticSigner.fromPublicKey(
+      Buffer.from(keys.xp!, 'hex'),
+      Buffer.from(keys.evm, 'hex'),
+      provider
+    )
   }
 
   private async getSigner({
@@ -101,7 +96,9 @@ export class KeystoneWallet implements Wallet {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
+  }): Promise<
+    BitcoinWallet | BaseWallet | Avalanche.SimpleSigner | Avalanche.WalletVoid
+  > {
     switch (network.vmName) {
       case NetworkVMType.EVM:
         return this.getEvmSigner(accountIndex)
@@ -119,7 +116,10 @@ export class KeystoneWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
+        return (await this.getAvaSigner(
+          accountIndex,
+          provider
+        )) as Avalanche.WalletVoid
       default:
         throw new Error('Unable to get signer: network not supported')
     }
@@ -144,115 +144,9 @@ export class KeystoneWallet implements Wallet {
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
-  public async signMessage({
-    rpcMethod,
-    data,
-    accountIndex,
-    network,
-    provider
-  }: {
-    rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
-    accountIndex: number
-    network: Network
-    provider: JsonRpcBatchInternal
-  }): Promise<string> {
-    switch (rpcMethod) {
-      case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
-        const chainAlias = getChainAliasFromNetwork(network)
-        if (!chainAlias) throw new Error('invalid chain alias')
-
-        return await this.signAvalancheMessage(accountIndex, data, chainAlias)
-      }
-      case RpcMethod.ETH_SIGN:
-      case RpcMethod.PERSONAL_SIGN: {
-        if (typeof data !== 'string') throw new Error('data must be string')
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return personalSign({ privateKey: key, data })
-      }
-      case RpcMethod.SIGN_TYPED_DATA:
-      case RpcMethod.SIGN_TYPED_DATA_V1: {
-        if (typeof data === 'string') throw new Error('data cannot be string')
-
-        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
-        // however, payload was V4
-        const isV4 = isTypedData(data)
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V3: {
-        if (!isTypedData(data)) throw new Error('invalid typed data')
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V3
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V4: {
-        if (!isTypedData(data)) throw new Error('invalid typed data')
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V4
-        })
-      }
-      default:
-        throw new Error('unknown method')
-    }
-  }
-
-  private async getSigningKey({
-    accountIndex,
-    network,
-    provider
-  }: {
-    accountIndex: number
-    network: Network
-    provider: JsonRpcBatchInternal
-  }): Promise<Buffer> {
-    const signer = await this.getSigner({
-      accountIndex,
-      network,
-      provider
-    })
-
-    if (!(signer instanceof BaseWallet)) {
-      throw new Error(
-        'Unable to sign message: function is not supported on wallet'
-      )
-    }
-
-    const privateKey = signer.privateKey.toLowerCase().startsWith('0x')
-      ? signer.privateKey.slice(2)
-      : signer.privateKey
-
-    return Buffer.from(privateKey, 'hex')
+  public async signMessage(): Promise<string> {
+    throwUnsupportedMethodError('signMessage')
+    return ''
   }
 
   public async signBtcTransaction({
@@ -384,23 +278,6 @@ export class KeystoneWallet implements Wallet {
       provXP
     )) as Avalanche.StaticSigner
   }
-
-  private signAvalancheMessage = async (
-    accountIndex: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any,
-    chainAlias: Avalanche.ChainIDAlias
-  ): Promise<string> => {
-    const message = toUtf8(data)
-    const signer = (await this.getAvaSigner(
-      accountIndex
-    )) as Avalanche.SimpleSigner
-    const buffer = await signer.signMessage({
-      message,
-      chain: chainAlias
-    })
-    return utils.base58check.encode(buffer)
-  }
 }
 
-export default new KeystoneWallet()
+export default KeystoneWallet.getInstance()

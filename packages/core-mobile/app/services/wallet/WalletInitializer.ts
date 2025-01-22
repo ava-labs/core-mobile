@@ -1,4 +1,5 @@
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { KeystonePubKeysStorage } from 'keystone/services/storage/KeystonePubKeysStorage'
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
 import { Avalanche, getXpubFromMnemonic } from '@avalabs/core-wallets-sdk'
@@ -8,6 +9,7 @@ import MnemonicWalletInstance from './MnemonicWallet'
 import KeystoneWalletInstance from './KeystoneWallet'
 
 class WalletInitializer {
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async initialize({
     mnemonic,
     walletType,
@@ -64,8 +66,19 @@ class WalletInitializer {
         break
       }
       case WalletType.KEYSTONE: {
-        KeystoneWalletInstance.xpub = xpub
-        KeystoneWalletInstance.xpubXP = xpubXP
+        try {
+          const pubKeysStorage = new KeystonePubKeysStorage()
+          if (xpub && xpubXP) {
+            await pubKeysStorage.save({ evm: xpub, xp: xpubXP })
+          }
+          const pubKeys = await pubKeysStorage.retrieve()
+
+          KeystoneWalletInstance.xpub = pubKeys.evm
+          KeystoneWalletInstance.xpubXP = pubKeys.xp
+        } catch (error) {
+          Logger.error(`Unable to save public keys`, error)
+          throw new Error(`Unable to save public keys`)
+        }
         break
       }
       default:
