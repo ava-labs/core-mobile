@@ -6,7 +6,7 @@ export const base64ToBase64Url = (b64: string): string => {
 
 export const base64UrlToBuffer = (b64url: string): Buffer => {
   const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/').replace(/[=]*$/g, '')
-  return new Uint8Array(Buffer.from(b64, 'base64'))
+  return Buffer.from(b64, 'base64')
 }
 
 export function bufferToBase64Url(buffer: ArrayBuffer): string {
