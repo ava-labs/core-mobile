@@ -126,8 +126,8 @@ export const EncryptThenMacTransform: (
           DECRYPT_INPUT_ENCODING,
           UTF8
         )
-        // @ts-ignore
-        const cleartext = (buffer + decipher.final(UTF8)).toString()
+        const finalBuffer = decipher.final(UTF8)
+        const cleartext = buffer.toString() + finalBuffer.toString()
         return deserializeJson(cleartext)
       } catch (e) {
         Logger.error('Failed to decipher', e)

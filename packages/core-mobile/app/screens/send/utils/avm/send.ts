@@ -10,7 +10,7 @@ import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
 import { SpanName } from 'services/sentry/types'
 import { RpcMethod } from 'store/rpc'
-import { ChainAlias } from 'store/network'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -95,7 +95,7 @@ const getTransactionRequest = ({
 
       return {
         transactionHex: utils.bufferToHex(unsignedTxBytes),
-        chainAlias: 'X' as ChainAlias,
+        chainAlias: 'X' as Avalanche.ChainIDAlias,
         utxos: unsignedTx.utxos.map(utxo =>
           utils.bufferToHex(utxo.toBytes(codec))
         ),
