@@ -1,7 +1,9 @@
 import {
   TrackingConsent,
   DatadogProviderConfiguration,
-  SdkVerbosity
+  SdkVerbosity,
+  InitializationMode,
+  BatchSize
 } from '@datadog/mobile-react-native'
 import DeviceInfo from 'react-native-device-info'
 
@@ -21,7 +23,8 @@ export function getDatadogConfig() {
     true,
     true,
     true,
-    TrackingConsent.GRANTED
+    TrackingConsent.GRANTED,
+    true
   )
   DataDogConfig.nativeCrashReportEnabled = true
   DataDogConfig.sessionSamplingRate = 100
@@ -30,6 +33,8 @@ export function getDatadogConfig() {
   DataDogConfig.site = SITE
   DataDogConfig.version = DeviceInfo.getBuildNumber()
   DataDogConfig.verbosity = SdkVerbosity.DEBUG
+  DataDogConfig.initializationMode = InitializationMode.ASYNC
+  DataDogConfig.batchSize = BatchSize.SMALL
 
   return DataDogConfig
 }

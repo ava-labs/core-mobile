@@ -206,6 +206,7 @@ __metadata:
     "@cubist-labs/cubesigner-sdk": 0.3.29
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
     "@datadog/mobile-react-native": ^2.6.1
+    "@datadog/mobile-react-native-session-replay": ^2.6.1
     "@datadog/mobile-react-navigation": 2.4.3
     "@date-fns/utc": 2.1.0
     "@dlenroc/testrail": 1.9.1
@@ -4415,6 +4416,16 @@ __metadata:
     "@hpke/core":
       optional: true
   checksum: 32d67140baa33598de390eba144bd419bed2cb78c86867727701ff924f87b278da09d8016cf089347596180176aa3f102d4f36e4a9666185ee1b3d057ffbae56
+  languageName: node
+  linkType: hard
+
+"@datadog/mobile-react-native-session-replay@npm:^2.6.1":
+  version: 2.6.1
+  resolution: "@datadog/mobile-react-native-session-replay@npm:2.6.1"
+  peerDependencies:
+    react: ">=16.13.1"
+    react-native: ">=0.63.4 <1.0"
+  checksum: d3dc37582ef56df3d48fc7a230ef5422e399843986d2ed57c190ccb93cc6c9548b75fdaa5ecf3195b17bed29fe5fc4fd0f803c4e86a73bed471d4930e760474b
   languageName: node
   linkType: hard
 

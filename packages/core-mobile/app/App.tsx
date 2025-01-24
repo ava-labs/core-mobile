@@ -10,11 +10,13 @@ import DataDogService from 'services/datadog/DataDogService'
 import Logger from 'utils/Logger'
 import { DatadogProvider } from '@datadog/mobile-react-native'
 import { getDatadogConfig } from 'services/datadog/DataDogConfig'
+import { SessionReplay } from '@datadog/mobile-react-native-session-replay'
 
 function App(): JSX.Element {
   const context = useApplicationContext()
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
+  SessionReplay.enable()
   console.log(getDatadogConfig())
 
   return (
