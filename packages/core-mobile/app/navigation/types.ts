@@ -33,6 +33,7 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
 import { ProposalTypes } from '@walletconnect/types'
+import { UR } from '@ngraveio/bc-ur'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -130,6 +131,13 @@ export type ApprovalPopupParams = {
     maxPriorityFeePerGas?: bigint
     overrideData?: string
   }) => Promise<void>
+  onReject: (message?: string) => void
+}
+
+export type KeystoneSignerParams = {
+  requesrUR: UR
+  responseURTypes: string[]
+  onApprove: (cbor: Buffer) => Promise<void>
   onReject: (message?: string) => void
 }
 

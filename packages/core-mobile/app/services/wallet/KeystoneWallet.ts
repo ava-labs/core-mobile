@@ -1,28 +1,78 @@
 import {
   Avalanche,
-  BitcoinWallet,
   BitcoinProvider,
   DerivationPath,
   JsonRpcBatchInternal,
   getAddressPublicKeyFromXPub,
-  getWalletFromMnemonic
+  getAddressDerivationPath
 } from '@avalabs/core-wallets-sdk'
-import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
   PubKeyType,
   Wallet
 } from 'services/wallet/types'
-import { BaseWallet, TransactionRequest } from 'ethers'
+import { TransactionRequest } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
 import { WalletType } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
+import AppNavigation from 'navigation/AppNavigation'
+import * as Navigation from 'utils/Navigation'
+import { UR } from '@ngraveio/bc-ur'
+import {
+  AvalancheSignRequest,
+  AvalancheSignature
+} from '@keystonehq/bc-ur-registry-avalanche'
+import { v4, parse } from 'uuid'
+import { createPsbt } from '@avalabs/core-wallets-sdk'
+import {
+  CryptoPSBT,
+  RegistryTypes,
+  DataType,
+  ETHSignature,
+  EthSignRequest
+} from '@keystonehq/bc-ur-registry-eth'
+import { Psbt } from 'bitcoinjs-lib'
+import { Common, Hardfork } from '@ethereumjs/common'
+import {
+  FeeMarketEIP1559Transaction,
+  FeeMarketEIP1559TxData,
+  LegacyTransaction
+} from '@ethereumjs/tx'
+import { makeBigIntLike } from 'utils/makeBigIntLike'
+import { rlp } from 'ethereumjs-util'
+import { BytesLike, AddressLike, BigIntLike } from '@ethereumjs/util'
+import { URType } from '@keystonehq/animated-qr'
+import { convertTxData } from './utils'
 
 const throwUnsupportedMethodError = (method: string): never => {
   throw new Error(`Unsupported method: ${method}`)
+}
+
+const signer = async (
+  requesrUR: UR,
+  responseURTypes: string[],
+  handleResult: (cbor: Buffer) => Promise<string>
+): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.KeystoneSigner,
+        params: {
+          requesrUR,
+          responseURTypes,
+          onReject: (message?: string) => {
+            reject(message ?? 'User rejected')
+          },
+          onApprove: (cbor: Buffer) => {
+            return handleResult(cbor).then(resolve).catch(reject)
+          }
+        }
+      }
+    })
+  })
 }
 
 export class KeystoneWallet implements Wallet {
@@ -38,6 +88,8 @@ export class KeystoneWallet implements Wallet {
    */
   #xpubXP?: string
 
+  #mfp?: string
+
   static instance: KeystoneWallet
 
   public static getInstance(): KeystoneWallet {
@@ -46,34 +98,6 @@ export class KeystoneWallet implements Wallet {
     }
 
     return KeystoneWallet.instance
-  }
-
-  private async getBtcSigner(
-    accountIndex: number,
-    provider: BitcoinProvider
-  ): Promise<BitcoinWallet> {
-    Logger.info('btcWallet', now())
-    const btcWallet = await BitcoinWallet.fromMnemonic(
-      '', // this.mnemonic,
-      accountIndex,
-      provider
-    )
-    Logger.info('btcWallet end', now())
-    return btcWallet
-  }
-
-  private getEvmSigner(accountIndex: number): BaseWallet {
-    const start = now()
-
-    const wallet = getWalletFromMnemonic(
-      '', // this.mnemonic,
-      accountIndex,
-      DerivationPath.BIP44
-    )
-
-    Logger.info('evmWallet getWalletFromMnemonic', now() - start)
-
-    return wallet
   }
 
   private async getAvaSigner(
@@ -86,43 +110,6 @@ export class KeystoneWallet implements Wallet {
       Buffer.from(keys.evm, 'hex'),
       provider
     )
-  }
-
-  private async getSigner({
-    accountIndex,
-    network,
-    provider
-  }: {
-    accountIndex: number
-    network: Network
-    provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  }): Promise<
-    BitcoinWallet | BaseWallet | Avalanche.SimpleSigner | Avalanche.WalletVoid
-  > {
-    switch (network.vmName) {
-      case NetworkVMType.EVM:
-        return this.getEvmSigner(accountIndex)
-      case NetworkVMType.BITCOIN:
-        if (!(provider instanceof BitcoinProvider)) {
-          throw new Error(
-            'Unable to get signer: wrong provider obtained for BTC network'
-          )
-        }
-        return this.getBtcSigner(accountIndex, provider)
-      case NetworkVMType.AVM:
-      case NetworkVMType.PVM:
-        if (!(provider instanceof Avalanche.JsonRpcProvider)) {
-          throw new Error(
-            `Unable to get signer: wrong provider obtained for network ${network.vmName}`
-          )
-        }
-        return (await this.getAvaSigner(
-          accountIndex,
-          provider
-        )) as Avalanche.WalletVoid
-      default:
-        throw new Error('Unable to get signer: network not supported')
-    }
   }
 
   public get xpub(): string {
@@ -143,6 +130,15 @@ export class KeystoneWallet implements Wallet {
     this.#xpubXP = xpubXP
   }
 
+  public get mfp(): string {
+    assertNotUndefined(this.#mfp, 'no master fingerprint available')
+    return this.#mfp
+  }
+
+  public set mfp(mfp: string | undefined) {
+    this.#mfp = mfp
+  }
+
   /** WALLET INTERFACE IMPLEMENTATION **/
   public async signMessage(): Promise<string> {
     throwUnsupportedMethodError('signMessage')
@@ -152,6 +148,7 @@ export class KeystoneWallet implements Wallet {
   public async signBtcTransaction({
     accountIndex,
     transaction,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     network,
     provider
   }: {
@@ -160,70 +157,192 @@ export class KeystoneWallet implements Wallet {
     network: Network
     provider: BitcoinProvider
   }): Promise<string> {
-    const signer = await this.getSigner({ accountIndex, network, provider })
+    const { inputs, outputs } = transaction
+    const psbt = createPsbt(inputs, outputs, provider.getNetwork())
 
-    if (!(signer instanceof BitcoinWallet)) {
-      throw new Error('Unable to sign btc transaction: invalid signer')
-    }
+    inputs.forEach((_, index) => {
+      psbt.updateInput(index, {
+        bip32Derivation: [
+          {
+            masterFingerprint: Buffer.from(this.mfp, 'hex'),
+            pubkey: getAddressPublicKeyFromXPub(this.xpub, accountIndex),
+            path: getAddressDerivationPath(
+              accountIndex,
+              DerivationPath.BIP44,
+              'EVM'
+            )
+          }
+        ]
+      })
+    })
 
-    const signedTx = await signer.signTx(
-      transaction.inputs,
-      transaction.outputs
-    )
+    const cryptoPSBT = new CryptoPSBT(psbt.toBuffer())
+    const ur = cryptoPSBT.toUR()
 
-    return signedTx.toHex()
+    return await signer(ur, [RegistryTypes.CRYPTO_PSBT.getType()], cbor => {
+      const signedTx = CryptoPSBT.fromCBOR(cbor).getPSBT()
+      return Promise.resolve(
+        Psbt.fromBuffer(signedTx).extractTransaction().toHex()
+      )
+    })
   }
 
   public async signAvalancheTransaction({
     accountIndex,
-    transaction,
-    network,
-    provider
+    transaction
   }: {
     accountIndex: number
     transaction: AvalancheTransactionRequest
     network: Network
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> {
-    const signer = await this.getSigner({ accountIndex, network, provider })
+    const tx = transaction.tx
+    const isEvmChain = tx.getVM() === 'EVM'
 
-    if (!(signer instanceof Avalanche.SimpleSigner)) {
-      throw new Error('Unable to sign avalanche transaction: invalid signer')
+    const requestId = Buffer.from(parse(v4()) as Uint8Array)
+    const requestUR = AvalancheSignRequest.constructAvalancheRequest(
+      Buffer.from(tx.toBytes()),
+      this.mfp,
+      isEvmChain ? this.xpub : this.xpubXP,
+      accountIndex,
+      requestId
+    ).toUR()
+
+    return await signer(requestUR, ['avax-signature'], cbor => {
+      const response = AvalancheSignature.fromCBOR(cbor)
+      const sig = response.getSignature()
+      tx.addSignature(sig)
+      return Promise.resolve(JSON.stringify(tx.toJSON()))
+    })
+  }
+
+  private txRequestToFeeMarketTxData(
+    txRequest: TransactionRequest
+  ): FeeMarketEIP1559TxData {
+    const {
+      to,
+      nonce,
+      gasLimit,
+      value,
+      data,
+      type,
+      maxFeePerGas,
+      maxPriorityFeePerGas
+    } = txRequest
+
+    return {
+      to: (to?.toString() || undefined) as AddressLike,
+      nonce: makeBigIntLike(nonce),
+      maxFeePerGas: makeBigIntLike(maxFeePerGas),
+      maxPriorityFeePerGas: makeBigIntLike(maxPriorityFeePerGas),
+      gasLimit: makeBigIntLike(gasLimit),
+      value: makeBigIntLike(value),
+      data: data as BytesLike,
+      type: type || undefined
     }
+  }
 
-    const txToSign = {
-      tx: transaction.tx,
-      externalIndices: transaction.externalIndices,
-      internalIndices: transaction.internalIndices
-    }
+  private async getTxFromTransactionRequest(
+    txRequest: TransactionRequest,
+    signature?: { r: BigIntLike; s: BigIntLike; v: BigIntLike }
+  ): Promise<LegacyTransaction | FeeMarketEIP1559Transaction> {
+    return typeof txRequest.gasPrice !== 'undefined'
+      ? LegacyTransaction.fromTxData(
+          {
+            ...convertTxData(txRequest),
+            ...signature
+          },
+          {
+            common: Common.custom({
+              chainId: Number(txRequest.chainId)
+            })
+          }
+        )
+      : FeeMarketEIP1559Transaction.fromTxData(
+          { ...this.txRequestToFeeMarketTxData(txRequest), ...signature },
+          {
+            common: Common.custom(
+              { chainId: Number(txRequest.chainId) },
+              {
+                // "London" hardfork introduced EIP-1559 proposal. Setting it here allows us
+                // to use the new TX props (maxFeePerGas and maxPriorityFeePerGas) in combination
+                // with the custom chainId.
+                hardfork: Hardfork.London
+              }
+            )
+          }
+        )
+  }
 
-    const sig = await signer.signTx(txToSign)
+  private async buildSignatureUR(
+    txRequest: TransactionRequest,
+    fingerprint: string,
+    activeAccountIndex: number
+  ): Promise<UR> {
+    const chainId = txRequest.chainId
+    const isLegacyTx = typeof txRequest.gasPrice !== 'undefined'
 
-    return JSON.stringify(sig.toJSON())
+    const tx = await this.getTxFromTransactionRequest(txRequest)
+
+    const message =
+      tx instanceof FeeMarketEIP1559Transaction
+        ? tx.getMessageToSign()
+        : rlp.encode(tx.getMessageToSign()) // Legacy transactions are not RLP-encoded
+
+    const dataType = isLegacyTx
+      ? DataType.transaction
+      : DataType.typedTransaction
+
+    // The keyPath below will depend on how the user onboards and should come from WalletService probably,
+    // based on activeAccount.index, or fetched based on the address passed in params.from.
+    // This here is BIP44 for the first account (index 0). 2nd account should be M/44'/60'/0'/0/1, etc..
+    const keyPath = `M/44'/60'/0'/0/${activeAccountIndex}`
+    const ethSignRequest = EthSignRequest.constructETHRequest(
+      Buffer.from(message),
+      dataType,
+      keyPath,
+      fingerprint,
+      v4(),
+      Number(chainId)
+    )
+
+    return ethSignRequest.toUR()
   }
 
   public async signEvmTransaction({
     accountIndex,
-    transaction,
-    network,
-    provider
+    transaction
   }: {
     accountIndex: number
     transaction: TransactionRequest
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string> {
-    const signer = await this.getSigner({
-      accountIndex,
-      network,
-      provider
-    })
+    const ur = await this.buildSignatureUR(transaction, this.mfp, accountIndex)
 
-    if (!(signer instanceof BaseWallet)) {
-      throw new Error('Unable to sign evm transaction: invalid signer')
-    }
+    return await signer(
+      ur,
+      [URType.ETH_SIGNATURE, URType.EVM_SIGNATURE],
+      async cbor => {
+        const signature = ETHSignature.fromCBOR(cbor).getSignature()
 
-    return await signer.signTransaction(transaction)
+        const r = makeBigIntLike(
+          Buffer.from(signature.slice(0, 32)).toString('hex')
+        )!
+        const s = makeBigIntLike(
+          Buffer.from(signature.slice(32, 64)).toString('hex')
+        )!
+        const v = signature.slice(64)
+
+        const signedTx = await this.getTxFromTransactionRequest(transaction, {
+          r,
+          s,
+          v
+        })
+
+        return '0x' + signedTx.serialize().toString()
+      }
+    )
   }
 
   public async getPublicKey(accountIndex: number): Promise<PubKeyType> {

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { UR, URDecoder } from '@keystonehq/keystone-sdk'
+import { UR, URDecoder } from '@ngraveio/bc-ur'
 import * as Progress from 'react-native-progress'
 import { View, Text } from '@avalabs/k2-mobile'
 import QRCodeScanner from 'react-native-qrcode-scanner'
@@ -8,7 +8,7 @@ import { BarCodeReadEvent } from 'react-native-camera'
 import { Space } from './Space'
 
 interface Props {
-  urType: string
+  urTypes: string[]
   onSuccess: (ur: UR) => void
   onError: (errorInfo: { title: string; message: string }) => void
   info?: string
@@ -16,7 +16,7 @@ interface Props {
 
 export const KeystoneQrScannerAva: (props: Props) => JSX.Element = ({
   info,
-  urType,
+  urTypes,
   onSuccess,
   onError
 }) => {
@@ -38,8 +38,7 @@ export const KeystoneQrScannerAva: (props: Props) => JSX.Element = ({
       try {
         urDecoder.receivePart(code)
         if (!urDecoder.isComplete()) {
-          !!progress &&
-            setProgress(Math.trunc(urDecoder.estimatedPercentComplete()))
+          setProgress(Math.trunc(urDecoder.estimatedPercentComplete()))
           return
         }
 
@@ -50,8 +49,8 @@ export const KeystoneQrScannerAva: (props: Props) => JSX.Element = ({
         if (urDecoder.isSuccess()) {
           const ur = urDecoder.resultUR()
 
-          if (ur.type.toLowerCase() === urType.toLowerCase()) {
-            !!setProgress && setProgress(1)
+          if (urTypes.includes(ur.type)) {
+            setProgress(1)
 
             onSuccess(ur)
           } else {
@@ -62,7 +61,7 @@ export const KeystoneQrScannerAva: (props: Props) => JSX.Element = ({
         handleError()
       }
     },
-    [setProgress, onSuccess, progress, urDecoder, urType, handleError]
+    [setProgress, onSuccess, urDecoder, urTypes, handleError]
   )
 
   return (

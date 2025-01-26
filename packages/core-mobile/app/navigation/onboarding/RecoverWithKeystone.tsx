@@ -180,7 +180,8 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
               KEYSTONE_MNEMONIC_STUB,
               WalletType.KEYSTONE,
               context.keystoneWallet.xpub,
-              context.keystoneWallet.xpubXP
+              context.keystoneWallet.xpubXP,
+              context.keystoneWallet.mfp
             )
           }
         }, 300)
@@ -218,7 +219,7 @@ const KeystoneScanner = (): JSX.Element => {
           flex: 1
         }}>
         <KeystoneQrScannerAva
-          urType={URType.CryptoMultiAccounts}
+          urTypes={[URType.CryptoMultiAccounts]}
           onSuccess={(ur: UR) => {
             try {
               const sdk = new KeytoneSDK()

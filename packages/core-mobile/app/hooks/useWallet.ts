@@ -22,6 +22,7 @@ type InitWalletServiceAndUnlockProps = {
   dispatch: Dispatch
   xpub?: string
   xpubXP?: string
+  masterfingerprint?: string
 }
 
 export interface UseWallet {
@@ -35,7 +36,8 @@ export interface UseWallet {
     mnemonic: string,
     walletType: WalletType,
     xpub?: string,
-    xpubXP?: string
+    xpubXP?: string,
+    masterfingerprint?: string
   ) => Promise<void>
   destroyWallet: () => void
 }
@@ -46,14 +48,16 @@ export async function initWalletServiceAndUnlock({
   walletType,
   isLoggingIn,
   xpub,
-  xpubXP
+  xpubXP,
+  masterfingerprint
 }: InitWalletServiceAndUnlockProps): Promise<void> {
   await WalletService.init({
     mnemonic,
     xpub,
     xpubXP,
     walletType,
-    isLoggingIn
+    isLoggingIn,
+    masterfingerprint
   })
   dispatch(onAppUnlocked())
 }
@@ -89,7 +93,8 @@ export function useWallet(): UseWallet {
     mnemonic: string,
     walletType: WalletType,
     xpub?: string,
-    xpubXP?: string
+    xpubXP?: string,
+    masterfingerprint?: string
   ): Promise<void> => {
     try {
       dispatch(setWalletType(walletType))
@@ -99,7 +104,8 @@ export function useWallet(): UseWallet {
         walletType,
         isLoggingIn: true,
         xpub,
-        xpubXP
+        xpubXP,
+        masterfingerprint
       })
 
       dispatch(onLogIn())

@@ -211,10 +211,14 @@ __metadata:
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 4.4.0
     "@ethereumjs/tx": 5.4.0
+    "@ethereumjs/util": 9.1.0
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
-    "@keystonehq/keystone-sdk": ^0.9.1
+    "@keystonehq/animated-qr": ^0.10.0
+    "@keystonehq/bc-ur-registry-avalanche": ^0.0.5
+    "@keystonehq/bc-ur-registry-eth": ^0.21.0
+    "@keystonehq/keystone-sdk": ^0.9.3
     "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 7.0.3
@@ -4770,6 +4774,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ethereumjs/util@npm:9.1.0, @ethereumjs/util@npm:^9.0.3, @ethereumjs/util@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "@ethereumjs/util@npm:9.1.0"
+  dependencies:
+    "@ethereumjs/rlp": ^5.0.2
+    ethereum-cryptography: ^2.2.1
+  checksum: 594e009c3001ca1ca658b4ded01b38e72f5dd5dd76389efd90cb020de099176a3327685557df268161ac3144333cfe8abaae68cda8ae035d9cc82409d386d79a
+  languageName: node
+  linkType: hard
+
 "@ethereumjs/util@npm:^8.1.0":
   version: 8.1.0
   resolution: "@ethereumjs/util@npm:8.1.0"
@@ -4778,16 +4792,6 @@ __metadata:
     ethereum-cryptography: ^2.0.0
     micro-ftch: ^0.3.1
   checksum: 9ae5dee8f12b0faf81cd83f06a41560e79b0ba96a48262771d897a510ecae605eb6d84f687da001ab8ccffd50f612ae50f988ef76e6312c752897f462f3ac08d
-  languageName: node
-  linkType: hard
-
-"@ethereumjs/util@npm:^9.0.3, @ethereumjs/util@npm:^9.1.0":
-  version: 9.1.0
-  resolution: "@ethereumjs/util@npm:9.1.0"
-  dependencies:
-    "@ethereumjs/rlp": ^5.0.2
-    ethereum-cryptography: ^2.2.1
-  checksum: 594e009c3001ca1ca658b4ded01b38e72f5dd5dd76389efd90cb020de099176a3327685557df268161ac3144333cfe8abaae68cda8ae035d9cc82409d386d79a
   languageName: node
   linkType: hard
 
@@ -6964,6 +6968,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@keystonehq/animated-qr-base@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@keystonehq/animated-qr-base@npm:0.0.1"
+  dependencies:
+    "@ngraveio/bc-ur": ^1.1.13
+  checksum: 5058f7e21b12f3c429e5c0c37c9c9adf718d7c397a13bd75c7bc4f81820754d6a01ca12a8f955472189b3d9fc452f117846db45dcc045108b9211abcfb2cc89c
+  languageName: node
+  linkType: hard
+
+"@keystonehq/animated-qr@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@keystonehq/animated-qr@npm:0.10.0"
+  dependencies:
+    "@keystonehq/animated-qr-base": ^0.0.1
+    "@ngraveio/bc-ur": ^1.1.6
+    "@zxing/browser": ^0.1.1
+    "@zxing/library": ^0.19.1
+    qrcode.react: ^3.1.0
+  peerDependencies:
+    react: ">= 16.8"
+    react-dom: ">= 16.8"
+  checksum: f0657d3c600ea4bc3d0c76dc78c1e6242bf43f5a2ecb34bc3e1de3428dd00f8f8a2c0728a63fc2606294c51a75af50d99d8f0fe4443761cd14fd74db8bf80e76
+  languageName: node
+  linkType: hard
+
 "@keystonehq/bc-ur-registry-aptos@npm:^0.6.3":
   version: 0.6.3
   resolution: "@keystonehq/bc-ur-registry-aptos@npm:0.6.3"
@@ -6982,6 +7011,27 @@ __metadata:
     "@keystonehq/bc-ur-registry": ^0.6.4
     uuid: ^8.3.2
   checksum: 0a967f318343022dc1201561bb3cd7f5a889135bf65bb48e959153802207b0693dd9a1f6cc653eb40e0dc8e3675471df4584dc287ff7a2b7e6d6d128e38a52d4
+  languageName: node
+  linkType: hard
+
+"@keystonehq/bc-ur-registry-avalanche@npm:^0.0.4":
+  version: 0.0.4
+  resolution: "@keystonehq/bc-ur-registry-avalanche@npm:0.0.4"
+  dependencies:
+    "@keystonehq/bc-ur-registry": ^0.6.4
+    buffer: ^6.0.3
+    uuid: ^8.3.2
+  checksum: c8bff304d1bf2430572d07408e8fdbcacf5f769fc885fc094c248c7c4a7a771cde427f385dd4bb1a38d864361829f6ba2f4f0104e46ce37c251720dfd0ec2336
+  languageName: node
+  linkType: hard
+
+"@keystonehq/bc-ur-registry-avalanche@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "@keystonehq/bc-ur-registry-avalanche@npm:0.0.5"
+  dependencies:
+    "@keystonehq/bc-ur-registry": ^0.6.4
+    uuid: ^8.3.2
+  checksum: dc1edbe038b3d6bcc16b0922b9ba37f03e5c1530e02bef6828a8b6c8e1cb93be38603bd1ce33cc4dca9a352cbc84328362e50a90b70cd26006c615f0c90ce3b8
   languageName: node
   linkType: hard
 
@@ -7025,6 +7075,18 @@ __metadata:
     hdkey: ^2.0.1
     uuid: ^8.3.2
   checksum: 79b6312d27d1c30f4aa32f28c82ddad9acd2a47c3f3e45c816834ca8a1491284d801752fddb9883299f8f6e4b13d08e1a8e34d1fc19d028406dfc91b77ea460c
+  languageName: node
+  linkType: hard
+
+"@keystonehq/bc-ur-registry-eth@npm:^0.21.0":
+  version: 0.21.0
+  resolution: "@keystonehq/bc-ur-registry-eth@npm:0.21.0"
+  dependencies:
+    "@ethereumjs/util": ^9.0.3
+    "@keystonehq/bc-ur-registry": ^0.7.0
+    hdkey: ^2.0.1
+    uuid: ^8.3.2
+  checksum: aaf1520f918ee297bdeb00bef4610f862600be74ad30926bebfff17d3e982cc23cfbd2c63ada5f3362dc153a1ab10aa78eba68c9cec3b42dccff182a6f18107e
   languageName: node
   linkType: hard
 
@@ -7123,14 +7185,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keystonehq/keystone-sdk@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "@keystonehq/keystone-sdk@npm:0.9.1"
+"@keystonehq/keystone-sdk@npm:^0.9.3":
+  version: 0.9.3
+  resolution: "@keystonehq/keystone-sdk@npm:0.9.3"
   dependencies:
     "@bufbuild/protobuf": ^1.2.0
     "@keystonehq/bc-ur-registry": ^0.7.0
     "@keystonehq/bc-ur-registry-aptos": ^0.6.3
     "@keystonehq/bc-ur-registry-arweave": ^0.5.3
+    "@keystonehq/bc-ur-registry-avalanche": ^0.0.4
     "@keystonehq/bc-ur-registry-btc": ^0.1.1
     "@keystonehq/bc-ur-registry-cardano": ^0.5.0
     "@keystonehq/bc-ur-registry-cosmos": ^0.5.3
@@ -7145,10 +7208,11 @@ __metadata:
     "@ngraveio/bc-ur": ^1.1.6
     "@noble/hashes": ^1.5.0
     bs58check: ^3.0.1
+    buffer: ^6.0.3
     pako: ^2.1.0
     ripple-binary-codec: ^1.4.3
     uuid: ^9.0.0
-  checksum: 4cf448663d7af3b6bb6f36f8d7680f604803ae477e384e6f1cb0cc06ebef9194cd26ab3b2f28a6e5d9b22ca2149b677897978787ab5fe3c3100cc7ebce6bc0c8
+  checksum: 59e4fedafbbda0c24f8f9229e9756cab11d84988e4fdce7ddc7b6eee1a20cc8625c43ebda7e8663a32f9cb9de1d4378833fc77dcc3e02dde64b92ffe0686442c
   languageName: node
   linkType: hard
 
@@ -7621,7 +7685,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ngraveio/bc-ur@npm:^1.1.5, @ngraveio/bc-ur@npm:^1.1.6":
+"@ngraveio/bc-ur@npm:^1.1.13, @ngraveio/bc-ur@npm:^1.1.5, @ngraveio/bc-ur@npm:^1.1.6":
   version: 1.1.13
   resolution: "@ngraveio/bc-ur@npm:1.1.13"
   dependencies:
@@ -7735,9 +7799,9 @@ __metadata:
   linkType: hard
 
 "@noble/hashes@npm:^1.5.0":
-  version: 1.7.0
-  resolution: "@noble/hashes@npm:1.7.0"
-  checksum: c06949ead7f5771a74f6fc9a346c7519212b3484c5b7916c8cad6b1b0e5f5f6c997ac3a43c0884ef8b99cfc55fac89058eefb29b6aad1cb41f436c748b316a1c
+  version: 1.7.1
+  resolution: "@noble/hashes@npm:1.7.1"
+  checksum: 4f1b56428a10323feef17e4f437c9093556cb18db06f94d254043fadb69c3da8475f96eb3f8322d41e8670117d7486475a8875e68265c2839f60fd03edd6a616
   languageName: node
   linkType: hard
 
@@ -12589,7 +12653,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zxing/text-encoding@npm:0.9.0":
+"@zxing/browser@npm:^0.1.1":
+  version: 0.1.5
+  resolution: "@zxing/browser@npm:0.1.5"
+  dependencies:
+    "@zxing/text-encoding": ^0.9.0
+  peerDependencies:
+    "@zxing/library": ^0.21.0
+  dependenciesMeta:
+    "@zxing/text-encoding":
+      optional: true
+  checksum: 27bfddd707e8e643624b432666a956f1e7e283e20963243f7050c781fd80daad9f54408acdf46d809c64586983f7b02a4981c1d3b0251519e0566c165f6b3924
+  languageName: node
+  linkType: hard
+
+"@zxing/library@npm:^0.19.1":
+  version: 0.19.3
+  resolution: "@zxing/library@npm:0.19.3"
+  dependencies:
+    "@zxing/text-encoding": ~0.9.0
+    ts-custom-error: ^3.2.1
+  dependenciesMeta:
+    "@zxing/text-encoding":
+      optional: true
+  checksum: 2a3adaccbde0e075ee4c3c73ab7fa9306be979dafeff6d373204470ea3cddab88608c6eca5e891c7d5e693c5df0f0664e14ea0a74d38e0658fc7464f5c986474
+  languageName: node
+  linkType: hard
+
+"@zxing/text-encoding@npm:0.9.0, @zxing/text-encoding@npm:^0.9.0, @zxing/text-encoding@npm:~0.9.0":
   version: 0.9.0
   resolution: "@zxing/text-encoding@npm:0.9.0"
   checksum: c23b12aee7639382e4949961304a1294776afaffa40f579e09ffecd0e5e68cf26ef3edd75009de46da8a536e571448755ca68b3e2ea707d53793c0edb2e2c34a
@@ -15987,9 +16078,9 @@ __metadata:
   linkType: hard
 
 "decimal.js@npm:^10.2.0":
-  version: 10.4.3
-  resolution: "decimal.js@npm:10.4.3"
-  checksum: 796404dcfa9d1dbfdc48870229d57f788b48c21c603c3f6554a1c17c10195fc1024de338b0cf9e1efe0c7c167eeb18f04548979bcc5fdfabebb7cc0ae3287bae
+  version: 10.5.0
+  resolution: "decimal.js@npm:10.5.0"
+  checksum: 91c6b53b5dd2f39a05535349ced6840f591d1f914e3c025c6dcec6ffada6e3cfc8dc3f560d304b716be9a9aece3567a7f80f6aff8f38d11ab6f78541c3a91a01
   languageName: node
   linkType: hard
 
@@ -25965,6 +26056,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"qrcode.react@npm:^3.1.0":
+  version: 3.2.0
+  resolution: "qrcode.react@npm:3.2.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 55d020ca482d57e8d73ee9e2e18f152184fd3d7d2d0742ae54ec58c5a3bab08b242a648585178d7fc91877fc75d6fbad7a35fb51bc4bddd4374e1de450ca78e7
+  languageName: node
+  linkType: hard
+
 "qrcode@npm:^1.5.1":
   version: 1.5.4
   resolution: "qrcode@npm:1.5.4"
@@ -29859,6 +29959,13 @@ react-native-webview@ava-labs/react-native-webview:
   bin:
     write-markdown: dist/write-markdown.js
   checksum: 7c0a7582e94f1d2160e3dd379851ec4f1758bc673ccd71bae07f839f83051b6b83e0ae14325c2d04ea728e5bde7b7eacfd2ab060b8fd4b8ab29e0bbf77f6c51e
+  languageName: node
+  linkType: hard
+
+"ts-custom-error@npm:^3.2.1":
+  version: 3.3.1
+  resolution: "ts-custom-error@npm:3.3.1"
+  checksum: 50a1e825fced68d70049bd8d282379a635e43aa023a370fa8e736b12a6edba7f18a2d731fa194ac35303a8b625be56e121bdb31d8a0318250d1a8b277059fce3
   languageName: node
   linkType: hard
 

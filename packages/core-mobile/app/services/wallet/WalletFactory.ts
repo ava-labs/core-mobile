@@ -40,6 +40,7 @@ class WalletFactory {
 
         KeystoneWalletInstance.xpub = pubKeys.evm
         KeystoneWalletInstance.xpubXP = pubKeys.xp
+        KeystoneWalletInstance.mfp = pubKeys.mfp
 
         return KeystoneWalletInstance
       }

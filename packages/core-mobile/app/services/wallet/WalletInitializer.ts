@@ -15,13 +15,15 @@ class WalletInitializer {
     walletType,
     isLoggingIn,
     xpub,
-    xpubXP
+    xpubXP,
+    masterfingerprint
   }: {
     mnemonic?: string
     walletType: WalletType
     isLoggingIn: boolean
     xpub?: string
     xpubXP?: string
+    masterfingerprint?: string
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
@@ -68,13 +70,18 @@ class WalletInitializer {
       case WalletType.KEYSTONE: {
         try {
           const pubKeysStorage = new KeystonePubKeysStorage()
-          if (xpub && xpubXP) {
-            await pubKeysStorage.save({ evm: xpub, xp: xpubXP })
+          if (xpub && xpubXP && masterfingerprint) {
+            await pubKeysStorage.save({
+              evm: xpub,
+              xp: xpubXP,
+              mfp: masterfingerprint
+            })
           }
           const pubKeys = await pubKeysStorage.retrieve()
 
           KeystoneWalletInstance.xpub = pubKeys.evm
           KeystoneWalletInstance.xpubXP = pubKeys.xp
+          KeystoneWalletInstance.mfp = pubKeys.mfp
         } catch (error) {
           Logger.error(`Unable to save public keys`, error)
           throw new Error(`Unable to save public keys`)
@@ -101,6 +108,7 @@ class WalletInitializer {
       case WalletType.KEYSTONE:
         KeystoneWalletInstance.xpub = undefined
         KeystoneWalletInstance.xpubXP = undefined
+        KeystoneWalletInstance.mfp = undefined
         break
       default:
         throw new Error(
