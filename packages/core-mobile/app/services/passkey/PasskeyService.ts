@@ -46,7 +46,7 @@ class PasskeyService {
     const request = this.prepareAuthenticationRequest(challengeOptions)
 
     const result = withSecurityKey
-      ? await Passkey.getSecurityKey(request)
+      ? await Passkey.get(request)
       : await Passkey.getPlatformKey(request)
 
     return this.convertAuthenticationResult(result)
