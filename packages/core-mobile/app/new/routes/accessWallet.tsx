@@ -16,16 +16,16 @@ const AccessWalletScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handleEnterRecoveryPhrase = (): void => {
-    // navigate(AppNavigation.Onboard.Welcome, {
-    //   screen: AppNavigation.Onboard.AnalyticsConsent,
-    //   params: {
-    //     nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
-    //   }
-    // })
+    navigate({
+      pathname: '/onboarding/mnemonic/',
+      params: { recovering: true }
+    })
   }
 
   const handleCreateMnemonicWallet = (): void => {
-    navigate('/onboarding/mnemonic/termsAndConditions')
+    navigate({
+      pathname: '/onboarding/mnemonic/'
+    })
   }
 
   return (
