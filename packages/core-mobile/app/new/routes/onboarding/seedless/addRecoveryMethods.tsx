@@ -5,8 +5,9 @@ import {
   RecoveryMethods,
   useAvailableRecoveryMethods
 } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
-import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { AddRecoveryMethods as Component } from 'features/onboarding/components/AddRecoveryMethods'
+import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import { FidoType } from 'services/passkey/types'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -21,27 +22,27 @@ const AddRecoveryMethods = (): JSX.Element => {
 
   const handleOnNext = (): void => {
     if (selectedMethod === RecoveryMethods.Passkey) {
-      // navigate({
-      //   pathname: './fidoNameInput',
-      //   params: {
-      //     title: 'How would you like to name your passkey?',
-      //     description: 'Add a Passkey name, so it’s easier to find later',
-      //     textInputPlaceholder: 'Passkey name',
-      //     fidoType: FidoType.PASS_KEY
-      //   }
-      // })
+      navigate({
+        pathname: './fidoNameInput',
+        params: {
+          title: 'How would you like to name your passkey?',
+          description: 'Add a Passkey name, so it’s easier to find later',
+          textInputPlaceholder: 'Passkey name',
+          fidoType: FidoType.PASS_KEY
+        }
+      })
       return
     }
     if (selectedMethod === RecoveryMethods.Yubikey) {
-      // navigate({
-      //   pathname: './fidoNameInput',
-      //   params: {
-      //     title: 'How would you like to name your YubiKey?',
-      //     description: 'Add a YubiKey name, so it’s easier to find later',
-      //     textInputPlaceholder: 'YubiKey name',
-      //     fidoType: FidoType.YUBI_KEY
-      //   }
-      // })
+      navigate({
+        pathname: './fidoNameInput',
+        params: {
+          title: 'How would you like to name your YubiKey?',
+          description: 'Add a YubiKey name, so it’s easier to find later',
+          textInputPlaceholder: 'YubiKey name',
+          fidoType: FidoType.YUBI_KEY
+        }
+      })
       return
     }
     if (selectedMethod === RecoveryMethods.Authenticator) {
