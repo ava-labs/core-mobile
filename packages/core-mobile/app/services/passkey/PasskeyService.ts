@@ -45,6 +45,11 @@ class PasskeyService {
   ): Promise<FIDOAuthenticationResult> {
     const request = this.prepareAuthenticationRequest(challengeOptions)
 
+    // use Passkey.get() to get the credential
+    // on iOS, Passkey.getSecurityKey() only shows prompt with security key
+    // since currently we don't have a way to detect if the recovery method is for security key or platform key
+    // we want to always show the prompt with both options on iOS
+    // TODO: once we have support from Cubist to store and send the FIDO metadata, we can show more accurate prompt to user
     const result = withSecurityKey
       ? await Passkey.get(request)
       : await Passkey.getPlatformKey(request)
