@@ -17,7 +17,7 @@ import { useSelector } from 'react-redux'
 import { selectIsBridgeBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Bridge from 'screens/bridge/Bridge'
-import { HallidayBannerBottomSheet } from 'screens/bridge/components/HallidayWebView'
+import { HallidayWebView } from 'screens/bridge/components/HallidayWebView'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: { initialTokenSymbol: string } | undefined
@@ -73,7 +73,7 @@ function BridgeScreenStack(): JSX.Element {
               ...SubHeaderOptions('Halliday')
             }}
             name={AppNavigation.Bridge.Halliday}
-            component={HallidayBannerBottomSheet}
+            component={HallidayWebView}
           />
         </BridgeStack.Group>
       </BridgeStack.Navigator>

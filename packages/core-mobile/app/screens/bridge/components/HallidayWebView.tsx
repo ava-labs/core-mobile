@@ -4,7 +4,7 @@ import React from 'react'
 
 const HALLIDAY_BRIDGE_URL = 'http://core.app/bridge?useHalliday=1&useEmbed=1'
 
-export const HallidayBannerBottomSheet = (): React.JSX.Element => {
+export const HallidayWebView = (): React.JSX.Element => {
   const { coreConnectInterceptor } = useInjectedJavascript()
 
   // reload iframe with 5 seconds delay
