@@ -182,7 +182,10 @@ export class KeystoneWallet implements Wallet {
     return await signer(ur, [RegistryTypes.CRYPTO_PSBT.getType()], cbor => {
       const signedTx = CryptoPSBT.fromCBOR(cbor).getPSBT()
       return Promise.resolve(
-        Psbt.fromBuffer(signedTx).extractTransaction().toHex()
+        Psbt.fromBuffer(signedTx)
+          .finalizeAllInputs()
+          .extractTransaction()
+          .toHex()
       )
     })
   }
