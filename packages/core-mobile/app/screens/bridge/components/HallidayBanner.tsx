@@ -1,19 +1,22 @@
 import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-mobile'
-import useInAppBrowser from 'hooks/useInAppBrowser'
+import { useNavigation } from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
+import { BridgeScreenProps } from 'navigation/types'
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
+
+type NavigationProps = BridgeScreenProps<typeof AppNavigation.Bridge.Bridge>
 
 export const HallidayBanner = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
-  const { openUrl } = useInAppBrowser()
+  const { navigate } = useNavigation<NavigationProps['navigation']>()
 
-  const openHalliday = (): void => {
-    // Todo: add core web base url to envs
-    openUrl('https://core.app/bridge?useHalliday=1')
+  const openHalliday = async (): Promise<void> => {
+    navigate(AppNavigation.Bridge.Halliday)
   }
 
   const dismissHallidayBanner = (): void => {
