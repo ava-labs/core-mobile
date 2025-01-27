@@ -867,8 +867,12 @@ const Bridge: FC = () => {
           Bridge
         </Text>
         <Space y={40} />
-        {shouldShowHallidayBanner && <HallidayBanner />}
-        <Space y={40} />
+        {shouldShowHallidayBanner && (
+          <>
+            <HallidayBanner />
+            <Space y={40} />
+          </>
+        )}
         <View
           sx={{
             backgroundColor: '$neutral850',
