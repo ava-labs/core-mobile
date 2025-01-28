@@ -1,5 +1,10 @@
 import React, { forwardRef, PropsWithChildren } from 'react'
-import { StyleProp, TouchableOpacity, ViewStyle } from 'react-native'
+import {
+  StyleProp,
+  TouchableOpacity,
+  ViewStyle,
+  View as RNView
+} from 'react-native'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { alpha, overlayColor } from '../../utils/colors'
