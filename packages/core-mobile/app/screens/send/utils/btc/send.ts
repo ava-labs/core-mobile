@@ -1,9 +1,9 @@
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { resolve } from '@avalabs/core-utils-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { BitcoinSendTransactionParams } from '@avalabs/bitcoin-module'
 import { getBitcoinCaip2ChainId } from 'utils/caip2ChainIds'
+import { RpcMethod } from 'store/rpc'
 
 export const send = async ({
   request,
@@ -20,11 +20,9 @@ export const send = async ({
   feeRate: bigint
   isMainnet: boolean
 }): Promise<string> => {
-  const sentryTrx = SentryWrapper.startTransaction('send-token')
-
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.send')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: 'send-token', contextName: 'svc.send.send' },
+    async () => {
       const params: BitcoinSendTransactionParams = {
         from: fromAddress,
         to: toAddress,
@@ -49,8 +47,6 @@ export const send = async ({
       }
 
       return txHash
-    })
-    .finally(() => {
-      SentryWrapper.finish(sentryTrx)
-    })
+    }
+  )
 }

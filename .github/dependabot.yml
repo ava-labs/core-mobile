@@ -38,9 +38,7 @@ updates:
       - dependency-name: "bitcoinjs-lib" # we should be using bitcoinjs-lib 5.2.0 (please refer to dependencies_resolutions.md)
       - dependency-name: "bip39" # we should be using patched version of bip39 3.0.4 (please refer to /patches/bip39+3.0.4.patch) 
       - dependency-name: "@shopify/react-native-skia" # the latest version is not compatible with react-native-graph 1.1.0.
-      - dependency-name: "react-native-aes-crypto" # the latest version crashes on Android
       - dependency-name: "react-native-quick-crypto" # the latest version has conflicts with @wallet-connect/react-native-compat. consider to update @walletconnect/* first
-      - dependency-name: "react-native-haptic-feedback" # the latest version is only compatible with new architecture of react-native
       - dependency-name: "react-native-keychain" # the latest version slows down android app launch time. https://github.com/oblador/react-native-keychain/issues/630 please update after this issue is resolved
       - dependency-name: "redux-persist-transform-encrypt" # this project(https://github.com/maxdeviant/redux-persist-transform-encrypt) is dead and the latest version doesn't work.
       - dependency-name: "@storybook/*" # we're currently using storybook version 7.6.20, but still configuring it with v6 syntax. the latest version is 8.x.x and currently not compatible with our project.

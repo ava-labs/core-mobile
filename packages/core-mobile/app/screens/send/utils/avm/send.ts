@@ -3,14 +3,15 @@ import { CorePrimaryAccount } from '@avalabs/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
 import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
-import { Transaction } from '@sentry/react'
 import { isDevnet } from 'utils/isDevnet'
+import { SpanName } from 'services/sentry/types'
+import { RpcMethod } from 'store/rpc'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -28,17 +29,16 @@ export const send = async ({
   toAddress: string
   amount: bigint
 }): Promise<string> => {
-  const sentryTrx = SentryWrapper.startTransaction('send-token')
-
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.send')
-    .executeAsync(async () => {
+  const sentrySpanName = 'send-token'
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.send' },
+    async () => {
       const txRequest = await getTransactionRequest({
         toAddress,
         amount,
         network,
         fromAddress,
-        sentryTrx,
+        sentrySpanName,
         accountIndex: account.index
       })
 
@@ -59,10 +59,8 @@ export const send = async ({
       }
 
       return txHash
-    })
-    .finally(() => {
-      SentryWrapper.finish(sentryTrx)
-    })
+    }
+  )
 }
 
 const getTransactionRequest = ({
@@ -71,18 +69,18 @@ const getTransactionRequest = ({
   fromAddress,
   amount,
   network,
-  sentryTrx
+  sentrySpanName
 }: {
   accountIndex: number
   amount: bigint
   toAddress: string
   fromAddress: string
   network: Network
-  sentryTrx: Transaction
+  sentrySpanName?: SpanName
 }): Promise<AvalancheSendTransactionParams> => {
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.avm.get_trx_request')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.avm.get_trx_request' },
+    async () => {
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendXTx({
         accountIndex,
@@ -98,7 +96,7 @@ const getTransactionRequest = ({
 
       return {
         transactionHex: utils.bufferToHex(unsignedTxBytes),
-        chainAlias: 'X',
+        chainAlias: 'X' as Avalanche.ChainIDAlias,
         utxos: unsignedTx.utxos.map(utxo =>
           utils.bufferToHex(utxo.toBytes(codec))
         ),
@@ -109,5 +107,6 @@ const getTransactionRequest = ({
           isDevnet: isDevnet(network)
         })
       }
-    })
+    }
+  )
 }

@@ -1,21 +1,20 @@
 diff --git a/node_modules/react-native/Libraries/Utilities/HMRClient.js b/node_modules/react-native/Libraries/Utilities/HMRClient.js
-index 03ae287..05f4ebe 100644
+index 5651788..2bc6004 100644
 --- a/node_modules/react-native/Libraries/Utilities/HMRClient.js
 +++ b/node_modules/react-native/Libraries/Utilities/HMRClient.js
-@@ -9,7 +9,7 @@
-  */
+@@ -10,6 +10,7 @@
  
  import type {ExtendedError} from '../Core/ExtendedError';
--
+ 
 +import stringify from "json-stringify-pretty-compact";
  import getDevServer from '../Core/Devtools/getDevServer';
  import LogBox from '../LogBox/LogBox';
  import NativeRedBox from '../NativeModules/specs/NativeRedBox';
-@@ -124,13 +124,14 @@ const HMRClient: HMRClientNativeInterface = {
+@@ -126,13 +127,14 @@ const HMRClient: HMRClientNativeInterface = {
            data: data.map(item =>
              typeof item === 'string'
                ? item
--              : prettyFormat(item, {
+-              : prettyFormat.format(item, {
 -                  escapeString: true,
 -                  highlight: true,
 -                  maxDepth: 3,
@@ -23,7 +22,7 @@ index 03ae287..05f4ebe 100644
 -                  plugins: [prettyFormat.plugins.ReactElement],
 -                }),
 +              : item instanceof Error ? item.message : stringify(item)
-+              // : prettyFormat(item, {
++              // : prettyFormat.format(item, {
 +              //     escapeString: true,
 +              //     highlight: true,
 +              //     maxDepth: 3,
@@ -34,13 +33,13 @@ index 03ae287..05f4ebe 100644
          }),
        );
 diff --git a/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp b/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp
-index 362d76d..dea40fd 100644
+index e63260a..134e3a6 100644
 --- a/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp
 +++ b/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp
-@@ -369,9 +369,9 @@ JSCRuntime::JSCRuntime(JSGlobalContextRef ctx)
- {
+@@ -378,9 +378,9 @@ JSCRuntime::JSCRuntime(JSGlobalContextRef ctx)
  #ifndef NDEBUG
  #ifdef _JSC_HAS_INSPECTABLE
+ #if (__OSX_AVAILABLE_STARTING(MAC_NA, IPHONE_16_4))
 -  if (__builtin_available(macOS 13.3, iOS 16.4, tvOS 16.4, *)) {
 -    JSGlobalContextSetInspectable(ctx_, true);
 -  }
@@ -49,10 +48,10 @@ index 362d76d..dea40fd 100644
 +  // }
  #endif
  #endif
- }
-@@ -385,12 +385,12 @@ JSCRuntime::~JSCRuntime() {
-   // has started.
-   ctxInvalid_ = true;
+ #endif
+@@ -401,12 +401,12 @@ JSCRuntime::~JSCRuntime() {
+   // No need to unprotect nativeStateSymbol_ since the heap is getting torn down
+   // anyway
    JSGlobalContextRelease(ctx_);
 -#ifndef NDEBUG
 -  assert(
@@ -69,28 +68,3 @@ index 362d76d..dea40fd 100644
  }
  
  std::shared_ptr<const jsi::PreparedJavaScript> JSCRuntime::prepareJavaScript(
-diff --git a/node_modules/react-native/index.js b/node_modules/react-native/index.js
-index 7149c64..9da5ed4 100644
---- a/node_modules/react-native/index.js
-+++ b/node_modules/react-native/index.js
-@@ -410,13 +410,13 @@ module.exports = {
-     return require('deprecated-react-native-prop-types').PointPropType;
-   },
-   get ViewPropTypes(): $FlowFixMe {
--    console.error(
--      'ViewPropTypes will be removed from React Native, along with all ' +
--        'other PropTypes. We recommend that you migrate away from PropTypes ' +
--        'and switch to a type system like TypeScript. If you need to ' +
--        'continue using ViewPropTypes, migrate to the ' +
--        "'deprecated-react-native-prop-types' package.",
--    );
-+    // console.error(
-+    //   'ViewPropTypes will be removed from React Native, along with all ' +
-+    //     'other PropTypes. We recommend that you migrate away from PropTypes ' +
-+    //     'and switch to a type system like TypeScript. If you need to ' +
-+    //     'continue using ViewPropTypes, migrate to the ' +
-+    //     "'deprecated-react-native-prop-types' package.",
-+    // );
-     return require('deprecated-react-native-prop-types').ViewPropTypes;
-   },
- };
