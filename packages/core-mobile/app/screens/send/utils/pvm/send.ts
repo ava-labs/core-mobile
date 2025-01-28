@@ -10,6 +10,7 @@ import { stripChainAddress } from 'store/account/utils'
 import { SpanName } from 'services/sentry/types'
 import { RpcMethod } from 'store/rpc'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -33,41 +34,51 @@ export const send = async ({
 
   return SentryWrapper.startSpan(
     { name: sentrySpanName, contextName: 'svc.send.send' },
-    async () => {
-      const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
-      const unsignedTx = await WalletService.createSendPTx({
-        accountIndex: accountIndex,
-        amountInNAvax,
-        avaxXPNetwork: network,
-        destinationAddress: destinationAddress,
-        sourceAddress: fromAddress,
-        feeState
-      })
-
-      const txRequest = await getTransactionRequest({
-        unsignedTx,
-        fromAddress,
-        network,
-        sentrySpanName
-      })
-
-      const [txHash, txError] = await resolve(
-        request({
-          method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-          params: txRequest as AvalancheSendTransactionParams,
-          chainId: getAvalancheCaip2ChainId(network.chainId)
+    async span => {
+      try {
+        const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
+        const unsignedTx = await WalletService.createSendPTx({
+          accountIndex: accountIndex,
+          amountInNAvax,
+          avaxXPNetwork: network,
+          destinationAddress: destinationAddress,
+          sourceAddress: fromAddress,
+          feeState
         })
-      )
 
-      if (txError) {
-        throw txError
+        const txRequest = await getTransactionRequest({
+          unsignedTx,
+          fromAddress,
+          network,
+          sentrySpanName
+        })
+
+        const [txHash, txError] = await resolve(
+          request({
+            method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+            params: txRequest as AvalancheSendTransactionParams,
+            chainId: getAvalancheCaip2ChainId(network.chainId)
+          })
+        )
+
+        if (txError) {
+          throw txError
+        }
+
+        if (!txHash || typeof txHash !== 'string') {
+          throw new Error('invalid transaction hash')
+        }
+
+        return txHash
+      } catch (error) {
+        span?.setStatus({
+          code: SPAN_STATUS_ERROR,
+          message: error instanceof Error ? error.message : 'unknown error'
+        })
+        throw error
+      } finally {
+        span?.end()
       }
-
-      if (!txHash || typeof txHash !== 'string') {
-        throw new Error('invalid transaction hash')
-      }
-
-      return txHash
     }
   )
 }

@@ -11,6 +11,7 @@ import { utils } from '@avalabs/avalanchejs'
 import { SpanName } from 'services/sentry/types'
 import { RpcMethod } from 'store/rpc'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -31,33 +32,43 @@ export const send = async ({
   const sentrySpanName = 'send-token'
   return SentryWrapper.startSpan(
     { name: sentrySpanName, contextName: 'svc.send.send' },
-    async () => {
-      const txRequest = await getTransactionRequest({
-        toAddress,
-        amount,
-        network,
-        fromAddress,
-        sentrySpanName,
-        accountIndex: account.index
-      })
-
-      const [txHash, txError] = await resolve(
-        request({
-          method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-          params: txRequest as AvalancheSendTransactionParams,
-          chainId: getAvalancheCaip2ChainId(network.chainId)
+    async span => {
+      try {
+        const txRequest = await getTransactionRequest({
+          toAddress,
+          amount,
+          network,
+          fromAddress,
+          sentrySpanName,
+          accountIndex: account.index
         })
-      )
 
-      if (txError) {
-        throw txError
+        const [txHash, txError] = await resolve(
+          request({
+            method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+            params: txRequest as AvalancheSendTransactionParams,
+            chainId: getAvalancheCaip2ChainId(network.chainId)
+          })
+        )
+
+        if (txError) {
+          throw txError
+        }
+
+        if (!txHash || typeof txHash !== 'string') {
+          throw new Error('invalid transaction hash')
+        }
+
+        return txHash
+      } catch (error) {
+        span?.setStatus({
+          code: SPAN_STATUS_ERROR,
+          message: error instanceof Error ? error.message : 'unknown error'
+        })
+        throw error
+      } finally {
+        span?.end()
       }
-
-      if (!txHash || typeof txHash !== 'string') {
-        throw new Error('invalid transaction hash')
-      }
-
-      return txHash
     }
   )
 }
