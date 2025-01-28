@@ -1,7 +1,9 @@
+import assert from 'assert'
 import watchlist from '../locators/watchlist.loc'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import delay from '../helpers/waits'
+import { Coin } from '../helpers/tokens'
 
 class WatchListPage {
   get allTab() {
@@ -109,13 +111,51 @@ class WatchListPage {
     }
   }
 
-  async setWatchListToken(tokenSymbol: string) {
+  async searchToken(tokenSymbol: string) {
     await Action.setInputText(this.searchBar, tokenSymbol)
   }
 
   async clearSearchBar() {
     await Action.tap(this.searchBar)
     await Action.tap(by.text('Cancel'))
+  }
+
+  async verifyTokenRow(token: Coin, tolerance = 7) {
+    console.log(`Testing ${token.name}...`)
+    await Action.waitForElementNotVisible(by.id('fallback_logo'))
+    await Action.waitForElement(by.id(`avatar__logo_avatar`))
+    await Action.waitForElement(by.text(token.symbol.toUpperCase()))
+    await this.verifyPriceChangePercentage(
+      token.price_change_percentage_24h,
+      token.symbol,
+      tolerance
+    )
+    await this.verifyTokenPrice(token.current_price, tolerance)
+  }
+
+  async verifyTokenPrice(apiPrice: number, tolerance: number) {
+    const perc =
+      (await Action.getElementText(by.id(`watchlist_price`))) || '$0.00'
+    const uiPrice = parseFloat(perc.replace('$', ''))
+    const percNum = Action.isWithinTolerance(apiPrice, uiPrice, tolerance)
+    assert(percNum, `The tolerance is not within 7%: ${apiPrice} ${uiPrice}`)
+  }
+
+  async verifyPriceChangePercentage(
+    percentage: number,
+    symbol: string,
+    tolerance: number
+  ) {
+    const perc =
+      (await Action.getElementText(
+        by.id(`price_movement_change__${symbol}`)
+      )) || '(0)%'
+    const match = perc.match(/\(\s*(\d+\.\d+)\s*%\)/)
+    const result = match && match[1] ? parseFloat(match[1]) : 0
+    if (result) {
+      const percNum = Action.isWithinTolerance(result, percentage, tolerance)
+      assert(percNum, `The tolerance is not within 7%: ${match} ${percentage}`)
+    }
   }
 
   async reorderToken(token: string) {
@@ -143,6 +183,48 @@ class WatchListPage {
   async getTopTokenPriceFromList() {
     await delay(1000)
     return await Action.getElementText(by.id('watchlist_price'))
+  }
+
+  async getTokens(): Promise<Coin[]> {
+    const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=avalanche-ecosystem&order=market_cap_desc&price_change_percentage=24h&per_page=250&page=1`
+    let attempts = 0
+    while (attempts < 2) {
+      try {
+        const response = await fetch(url)
+        if (!response.ok)
+          throw new Error(`Failed with status: ${response.status}`)
+        return (await response.json()) as Coin[]
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(`Attempt ${attempts + 1} failed: ${error.message}`)
+        } else {
+          console.error(`Attempt ${attempts + 1} failed: Unknown error`)
+        }
+        attempts++
+      }
+    }
+
+    throw new Error('Failed to fetch tokens after retry.')
+  }
+
+  async getGainers(): Promise<Coin[]> {
+    const data = await this.getTokens()
+
+    data.sort(
+      (
+        a: { price_change_percentage_24h: number },
+        b: { price_change_percentage_24h: number }
+      ) => b.price_change_percentage_24h - a.price_change_percentage_24h
+    )
+    console.log(data.slice(0, 5))
+    return data.slice(0, 5).map(coin => ({
+      id: coin.id,
+      symbol: coin.symbol,
+      name: coin.name,
+      current_price: coin.current_price,
+      image: coin.image,
+      price_change_percentage_24h: coin.price_change_percentage_24h
+    }))
   }
 
   async selectSortOption(option: string) {

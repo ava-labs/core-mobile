@@ -403,6 +403,19 @@ const getAmount = (amount: string | undefined): number => {
   } else return 0
 }
 
+const isWithinTolerance = (
+  baseValue: number,
+  targetValue: number,
+  tolerance: number
+) => {
+  const result =
+    Math.abs(baseValue - Math.abs(targetValue)) <= baseValue * (tolerance / 100)
+  console.log(
+    `baseValue: ${baseValue}, targetValue: ${targetValue}, result: ${result}`
+  )
+  return result
+}
+
 const shuffleArray = <T>(array: T[]): T[] =>
   array.sort(() => Math.random() - 0.5)
 
@@ -446,5 +459,6 @@ export default {
   hasText,
   getAmount,
   getRandomEle,
-  getRandomIndex
+  getRandomIndex,
+  isWithinTolerance
 }

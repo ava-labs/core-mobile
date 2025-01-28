@@ -2,7 +2,7 @@ import assert from 'assert'
 import tokenDetail from '../locators/tokenDetail.loc'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
-import { TokenDetailToken, TokenPriceResponse } from '../helpers/tokens'
+import { Coin, TokenDetailToken, TokenPriceResponse } from '../helpers/tokens'
 import delay from '../helpers/waits'
 import sendPage from './send.page'
 import commonElsPage from './commonEls.page'
@@ -230,6 +230,31 @@ class TokenDetailsPage {
         console.error(`Error fetching price for ${token.id}:`, error)
       }
     }
+  }
+
+  async getGainers(): Promise<Coin[]> {
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=avalanche-ecosystem&price_change_percentage=24h&per_page=100&page=1`
+    )
+    const data: Coin[] = (await response.json()) as Coin[]
+    data.sort(
+      (
+        a: { price_change_percentage_24h: number },
+        b: { price_change_percentage_24h: number }
+      ) => b.price_change_percentage_24h - a.price_change_percentage_24h
+    )
+
+    return data.slice(0, 20).map((coin, i) => {
+      process.env[`coin_${i}`] = coin.name // coin_0, coin_1, ... 와 같이 저장
+      return {
+        id: coin.id,
+        symbol: coin.symbol,
+        name: coin.name,
+        current_price: coin.current_price,
+        image: coin.image,
+        price_change_percentage_24h: coin.price_change_percentage_24h
+      }
+    })
   }
 
   async isPriceValid(expectedPrice: number, currentPrice: string) {
