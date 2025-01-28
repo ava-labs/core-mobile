@@ -32,6 +32,14 @@ jest.mock('store/viewOnce/types', () => ({
   }
 }))
 
+jest.mock('store/posthog/slice', () => {
+  const actual = jest.requireActual('store/posthog/slice')
+  return {
+    ...actual,
+    selectIsEnableNotificationPromptBlocked: jest.fn()
+  }
+})
+
 function getNotificationsPrompt(): string {
   return AppNavigation.Modal.EnableNotificationsPrompt
 }
