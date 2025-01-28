@@ -1,7 +1,6 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
-import SentryWrapper from 'services/sentry/SentryWrapper'
 import type {
   NetworkContractToken,
   TokenWithBalance,
@@ -10,7 +9,6 @@ import type {
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
-import { SpanName } from 'services/sentry/types'
 
 export type BalancesForAccount = {
   accountIndex: number
@@ -24,46 +22,39 @@ export class BalanceService {
     network,
     account,
     currency,
-    sentrySpanName,
     customTokens
   }: {
     network: Network
     account: Account
     currency: string
     customTokens?: NetworkContractToken[]
-    sentrySpanName?: SpanName
   }): Promise<BalancesForAccount> {
-    return SentryWrapper.startSpan(
-      { name: sentrySpanName, contextName: 'svc.balance.get_for_account' },
-      async () => {
-        const accountAddress = getAddressByNetwork(account, network)
+    const accountAddress = getAddressByNetwork(account, network)
 
-        const module = await ModuleManager.loadModuleByNetwork(network)
-        const balancesResponse = await module.getBalances({
-          customTokens,
-          addresses: [accountAddress],
-          currency,
-          network: mapToVmNetwork(network),
-          storage: coingeckoInMemoryCache
-        })
-        const balances = balancesResponse[accountAddress] ?? {}
-        if ('error' in balances) {
-          return {
-            accountIndex: account.index,
-            chainId: network.chainId,
-            tokens: [],
-            accountAddress
-          }
-        }
-
-        return {
-          accountIndex: account.index,
-          chainId: network.chainId,
-          tokens: Object.values(balances),
-          accountAddress
-        }
+    const module = await ModuleManager.loadModuleByNetwork(network)
+    const balancesResponse = await module.getBalances({
+      customTokens,
+      addresses: [accountAddress],
+      currency,
+      network: mapToVmNetwork(network),
+      storage: coingeckoInMemoryCache
+    })
+    const balances = balancesResponse[accountAddress] ?? {}
+    if ('error' in balances) {
+      return {
+        accountIndex: account.index,
+        chainId: network.chainId,
+        tokens: [],
+        accountAddress
       }
-    )
+    }
+
+    return {
+      accountIndex: account.index,
+      chainId: network.chainId,
+      tokens: Object.values(balances),
+      accountAddress
+    }
   }
 }
 

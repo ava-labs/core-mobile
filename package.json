@@ -37,8 +37,7 @@
     "ethers": "6.8.1",
     "web3": "4.16.0",
     "@hpke/core": "1.2.7",
-    "@noble/secp256k1": "2.1.0",
-    "react-native-permissions": "4.1.5"
+    "@noble/secp256k1": "2.1.0"
   },
   "engines": {
     "node": ">=18.14.1",
