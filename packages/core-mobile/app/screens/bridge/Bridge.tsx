@@ -46,8 +46,11 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
+import { selectIsHallidayBridgeBannerBlocked } from 'store/posthog'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { AssetBalance } from './utils/types'
 import BridgeTypeFootnote from './components/BridgeTypeFootnote'
+import { HallidayBanner } from './components/HallidayBanner'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWidth = Dimensions.get('window').width * 0.6
@@ -66,7 +69,14 @@ const Bridge: FC = () => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const { activeNetwork } = useNetworks()
-
+  const hasBeenViewedHallidayBanner = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.HALLIDAY_BANNER)
+  )
+  const isHallidayBannerBlocked = useSelector(
+    selectIsHallidayBridgeBannerBlocked
+  )
+  const shouldShowHallidayBanner =
+    !hasBeenViewedHallidayBanner && !isHallidayBannerBlocked
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
     assetBalance,
@@ -857,6 +867,12 @@ const Bridge: FC = () => {
           Bridge
         </Text>
         <Space y={40} />
+        {shouldShowHallidayBanner && (
+          <>
+            <HallidayBanner />
+            <Space y={40} />
+          </>
+        )}
         <View
           sx={{
             backgroundColor: '$neutral850',

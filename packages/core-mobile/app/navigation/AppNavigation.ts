@@ -217,7 +217,8 @@ enum AddressBookScreens {
 enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
-  HideWarning = 'BridgeScreens.HideWarning'
+  HideWarning = 'BridgeScreens.HideWarning',
+  Halliday = 'BridgeScreens.Halliday'
 }
 
 enum PortfolioScreens {
