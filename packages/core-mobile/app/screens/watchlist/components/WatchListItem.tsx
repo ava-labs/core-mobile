@@ -153,6 +153,7 @@ const RightComponent = ({
           priceChange={token.priceChange24h ?? 0}
           percentChange={token.priceChangePercentage24h ?? 0}
           filterBy={filterBy}
+          testID={`price_movement_change__${token.symbol}`}
         />
       </View>
     </Row>

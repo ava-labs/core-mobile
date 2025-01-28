@@ -86,6 +86,7 @@ const AvatarBase: FC<AvatarBaseProps> = ({
         size={size}
         showBorder={showBorder}
         fallbackBackgroundColor={fallbackBackgroundColor ?? backgroundColor}
+        testID="fallback_logo"
       />
     )
   }
@@ -185,7 +186,8 @@ function FallbackAvatar({
   title,
   size = DEFAULT_SIZE,
   fallbackBackgroundColor,
-  showBorder
+  showBorder,
+  testID
 }: AvatarBaseProps): JSX.Element {
   const initials = useGetInitials(title)
 
@@ -202,6 +204,7 @@ function FallbackAvatar({
         borderColor: showBorder ? '$neutral800' : 'unset'
       }}>
       <Text
+        testID={testID}
         variant="body1"
         sx={{
           color: '$neutral50',
