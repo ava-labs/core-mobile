@@ -6,10 +6,16 @@ const ImpactFeedbackStyle = {
   Soft: 'soft'
 }
 
+const NotificationFeedbackType = {
+  Success: 'success',
+  Warning: 'warning',
+  Error: 'error'
+}
+
 const Haptics = {
   impactAsync: jest.fn()
 }
 
-export { ImpactFeedbackStyle }
+export { ImpactFeedbackStyle, NotificationFeedbackType }
 export const impactAsync = Haptics.impactAsync
 export default Haptics
