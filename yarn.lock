@@ -316,6 +316,7 @@ __metadata:
     events: 3.3.0
     expo: 52.0.9
     expo-application: 6.0.2
+    expo-asset: 11.0.2
     expo-blur: 14.0.2
     expo-camera: 16.0.11
     expo-constants: 17.0.4
@@ -18073,7 +18074,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-asset@npm:~11.0.1":
+"expo-asset@npm:11.0.2, expo-asset@npm:~11.0.1":
   version: 11.0.2
   resolution: "expo-asset@npm:11.0.2"
   dependencies:
