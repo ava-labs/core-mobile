@@ -21,7 +21,7 @@ export const useNfts = (enabled: boolean) => {
         throw new Error('unable to get NFTs')
       }
 
-      return SentryWrapper.startSpan({ name: 'get-nfts' }, async () => {
+      return SentryWrapper.startSpan({ name: 'get-nfts' }, async span => {
         try {
           const nftPagedData = await NftService.fetchNfts({
             chainId: activeNetwork.chainId,
@@ -39,6 +39,8 @@ export const useNfts = (enabled: boolean) => {
             err
           )
           return { nfts: [], nextPageToken: undefined }
+        } finally {
+          span?.end()
         }
       })
     },
