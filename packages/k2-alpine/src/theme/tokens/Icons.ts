@@ -24,6 +24,10 @@ import IconGoogleAuthenticator from '../../assets/icons/google_authenticator.svg
 import IconMicrosoftAuthenticator from '../../assets/icons/microsoft_authenticator.svg'
 import IconAuthenticatorApp from '../../assets/icons/authenticator_app.svg'
 import IconChevronRight from '../../assets/icons/chevron_right.svg'
+import IconSwitchRight from '../../assets/icons/switch_right.svg'
+import IconCompare from '../../assets/icons/compare.svg'
+import IconSend from '../../assets/icons/send.svg'
+import IconPsychiatry from '../../assets/icons/psychiatry.svg'
 
 export const Icons = {
   Action: {
@@ -51,9 +55,13 @@ export const Icons = {
   },
   Custom: {
     BackArrowCustom: IconBackArrowCustom,
+    Compare: IconCompare,
     FaceID: IconFaceID,
     TouchID: IconTouchID,
+    Send: IconSend,
+    SwitchRight: IconSwitchRight,
     Pin: IconPin,
+    Psychiatry: IconPsychiatry,
     Error: IconError
   },
   RecoveryMethod: {
