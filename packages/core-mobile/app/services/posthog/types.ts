@@ -31,7 +31,8 @@ export enum FeatureGates {
   LOG_ERRORS_TO_SENTRY = 'log-errors-to-sentry',
   BLOCKAID_TRANSACTION_VALIDATION = 'blockaid-transaction-validation',
   BLOCKAID_DAPP_SCAN = 'blockaid-dapp-scan',
-  ALL_NOTIFICATIONS = 'all-notifications'
+  ALL_NOTIFICATIONS = 'all-notifications',
+  ENABLE_NOTIFICATION_PROMPT = 'enable-notification-prompt'
 }
 
 export enum FeatureVars {
