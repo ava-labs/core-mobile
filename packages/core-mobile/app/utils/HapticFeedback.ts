@@ -1,7 +1,30 @@
-import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics'
+import {
+  impactAsync,
+  ImpactFeedbackStyle,
+  notificationAsync,
+  NotificationFeedbackType
+} from 'expo-haptics'
 
 export function hapticFeedback(
-  type: ImpactFeedbackStyle = ImpactFeedbackStyle.Light
+  type:
+    | ImpactFeedbackStyle
+    | NotificationFeedbackType = ImpactFeedbackStyle.Light
 ): void {
-  impactAsync(type)
+  switch (type) {
+    case ImpactFeedbackStyle.Light:
+    case ImpactFeedbackStyle.Medium:
+    case ImpactFeedbackStyle.Heavy:
+    case ImpactFeedbackStyle.Soft:
+    case ImpactFeedbackStyle.Rigid:
+      impactAsync(type)
+      break
+    case NotificationFeedbackType.Success:
+    case NotificationFeedbackType.Warning:
+    case NotificationFeedbackType.Error:
+      notificationAsync(type)
+      break
+    default:
+      impactAsync(ImpactFeedbackStyle.Light)
+      break
+  }
 }

@@ -192,7 +192,7 @@ export const SwapContextProvider = ({
     setSwapStatus('Swapping')
 
     InteractionManager.runAfterInteractions(async () => {
-      SentryWrapper.startSpan({ name: 'swap' }, async () => {
+      SentryWrapper.startSpan({ name: 'swap' }, async span => {
         if (!avalancheProvider || !activeAccount) {
           return
         }
@@ -227,6 +227,9 @@ export const SwapContextProvider = ({
             }
           })
           .catch(Logger.error)
+          .finally(() => {
+            span?.end()
+          })
       })
     })
   }
