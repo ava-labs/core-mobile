@@ -25,6 +25,7 @@ const MarketMovement: FC<Props> = ({
   hideDifference,
   hidePercentage,
   hideCurrencyCode,
+  testID,
   filterBy = WatchlistFilter.PRICE
 }) => {
   const theme = useApplicationContext().theme
@@ -69,7 +70,7 @@ const MarketMovement: FC<Props> = ({
         direction={negative ? 'down' : 'up'}
         color={textColor}
       />
-      <AvaText.Caption textStyle={textStyle}>
+      <AvaText.Caption textStyle={textStyle} testID={testID}>
         {' ' + textToDisplay}
       </AvaText.Caption>
     </Row>
