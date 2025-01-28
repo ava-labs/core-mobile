@@ -1,7 +1,9 @@
 import React from 'react'
-import RNWebView, { WebViewMessageEvent } from 'react-native-webview'
+import RNWebView, {
+  WebViewMessageEvent,
+  WebViewNavigationEvent
+} from 'react-native-webview'
 import Logger from 'utils/Logger'
-import { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes'
 
 export type WebViewParams = {
   url: string
