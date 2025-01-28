@@ -9,9 +9,10 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
-import { alpha, useTheme } from '../..'
+import { alpha } from '../../utils/colors'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
+import { useTheme } from '../../hooks'
 
 export const SegmentedControl = ({
   items,

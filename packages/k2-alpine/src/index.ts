@@ -1,4 +1,4 @@
-export { useDripsyTheme as useTheme } from 'dripsy'
+export * from './hooks'
 export type { SxProp, Sx } from 'dripsy'
 export * from './components'
 export * from './theme/ThemeProvider'
