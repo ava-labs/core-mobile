@@ -4,6 +4,7 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { BitcoinSendTransactionParams } from '@avalabs/bitcoin-module'
 import { getBitcoinCaip2ChainId } from 'utils/caip2ChainIds'
 import { RpcMethod } from 'store/rpc'
+import { SPAN_STATUS_ERROR } from '@sentry/core'
 
 export const send = async ({
   request,
@@ -22,31 +23,41 @@ export const send = async ({
 }): Promise<string> => {
   return SentryWrapper.startSpan(
     { name: 'send-token', contextName: 'svc.send.send' },
-    async () => {
-      const params: BitcoinSendTransactionParams = {
-        from: fromAddress,
-        to: toAddress,
-        amount: Number(amount),
-        feeRate: Number(feeRate)
-      }
+    async span => {
+      try {
+        const params: BitcoinSendTransactionParams = {
+          from: fromAddress,
+          to: toAddress,
+          amount: Number(amount),
+          feeRate: Number(feeRate)
+        }
 
-      const [txHash, txError] = await resolve(
-        request({
-          method: RpcMethod.BITCOIN_SEND_TRANSACTION,
-          params,
-          chainId: getBitcoinCaip2ChainId(isMainnet)
+        const [txHash, txError] = await resolve(
+          request({
+            method: RpcMethod.BITCOIN_SEND_TRANSACTION,
+            params,
+            chainId: getBitcoinCaip2ChainId(isMainnet)
+          })
+        )
+
+        if (txError) {
+          throw txError
+        }
+
+        if (!txHash || typeof txHash !== 'string') {
+          throw new Error('invalid transaction hash')
+        }
+
+        return txHash
+      } catch (error) {
+        span?.setStatus({
+          code: SPAN_STATUS_ERROR,
+          message: error instanceof Error ? error.message : 'unknown error'
         })
-      )
-
-      if (txError) {
-        throw txError
+        throw error
+      } finally {
+        span?.end()
       }
-
-      if (!txHash || typeof txHash !== 'string') {
-        throw new Error('invalid transaction hash')
-      }
-
-      return txHash
     }
   )
 }

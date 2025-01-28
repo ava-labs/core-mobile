@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { ErrorEvent } from '@sentry/core'
+import { ErrorEvent, TransactionEvent } from '@sentry/core'
 
 if (!Config.SENTRY_DSN)
   // (require cycle)
@@ -21,7 +21,7 @@ const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: true
 })
 
-function scrubSentryData(event: ErrorEvent): ErrorEvent {
+function scrubSentryData<T extends ErrorEvent | TransactionEvent>(event: T): T {
   /**
    * eliminating breadcrumbs. This should eliminate
    * a massive amount of the data leaks into sentry. If we find that console
@@ -53,9 +53,8 @@ const init = (): void => {
       environment: Config.ENVIRONMENT,
       debug: false,
       spotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
-      beforeSend: event => {
-        return scrubSentryData(event)
-      },
+      beforeSend: scrubSentryData,
+      beforeSendTransaction: scrubSentryData,
       beforeBreadcrumb: () => {
         return null
       },

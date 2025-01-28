@@ -15,15 +15,6 @@
       ],
       "expo-router",
       [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "note": "Use SENTRY_AUTH_TOKEN env to authenticate with Sentry.",
-          "project": "core-react-native",
-          "organization": "Ava Labs"
-        }
-      ],
-      [
         "expo-camera",
         {
           "recordAudioAndroid": false
