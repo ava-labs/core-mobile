@@ -61,20 +61,16 @@ abstract_target 'common' do
   end
   
   # put common target configuration here
-  if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
-    config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
-  else
-    config_command = [
-      'node',
-      '--no-warnings',
-      '--eval',
-      'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
-      'react-native-config',
-      '--json',
-      '--platform',
-      'ios'
-    ]
-  end
+  config_command = [
+    'node',
+    '--no-warnings',
+    '--eval',
+    'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
+    'react-native-config',
+    '--json',
+    '--platform',
+    'ios'
+  ]
  
   config = use_native_modules!(config_command)
 
@@ -131,6 +127,8 @@ abstract_target 'common' do
       end
     end
 
+    # Strip bitcode from OpenSSL framework
+    # https://medium.com/@abdulahad2024/fixing-bitcode-issues-in-xcode-16-how-to-resolve-invalid-executable-errors-when-uploading-ios-da07a5a39c7c
     bitcode_strip_path = `xcrun --find bitcode_strip`.chop!
     def strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
       framework_path = File.join(Dir.pwd, framework_relative_path)
