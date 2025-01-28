@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useFocusEffect } from 'expo-router'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
@@ -21,7 +21,7 @@ export const CreatePin = ({
 }: {
   useBiometrics: boolean
   setUseBiometrics: (value: boolean) => void
-  onEnteredValidPin: () => void
+  onEnteredValidPin: (validPin: string) => void
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
 
@@ -31,7 +31,8 @@ export const CreatePin = ({
     chosenPinEntered,
     chosenPin,
     confirmedPin,
-    validPin
+    validPin,
+    resetPin
   } = useCreatePin({
     onError: async () => {
       await new Promise<void>(resolve => {
@@ -42,13 +43,18 @@ export const CreatePin = ({
     }
   })
 
-  useFocusEffect(() => {
-    ref.current?.focus()
-  })
+  useFocusEffect(
+    useCallback(() => {
+      resetPin()
+      ref.current?.focus()
+    }, [resetPin])
+  )
 
-  useEffect(() => {
-    validPin && onEnteredValidPin()
-  }, [onEnteredValidPin, validPin])
+  useFocusEffect(
+    useCallback(() => {
+      validPin && onEnteredValidPin(validPin)
+    }, [onEnteredValidPin, validPin])
+  )
 
   return (
     <BlurredBarsContentLayout>

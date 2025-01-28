@@ -1,9 +1,9 @@
 import React from 'react'
 import { Dimensions, Pressable, ViewStyle } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
+import { useTheme } from '../../hooks'
 
 export const NotificationAlert = ({
   type,
