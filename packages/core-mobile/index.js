@@ -1,3 +1,6 @@
+// import expo-asset to fix the issue with the image loading in ios release build
+// https://github.com/expo/expo/issues/31377#issuecomment-2556120583
+import 'expo-asset'
 import {
   AppRegistry,
   Text,
