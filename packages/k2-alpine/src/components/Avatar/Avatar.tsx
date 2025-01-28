@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { BlurView } from 'expo-blur'
 import { View } from '../Primitives'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 import { HexagonImageView, HexagonBorder } from './HexagonImageView'
 import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
 
