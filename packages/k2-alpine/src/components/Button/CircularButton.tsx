@@ -1,10 +1,10 @@
 import React, { forwardRef, PropsWithChildren } from 'react'
 import { StyleProp, TouchableOpacity, ViewStyle } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { alpha, overlayColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
+import { useTheme } from '../../hooks'
 
 interface CircularButtonProps {
   onPress?: () => void

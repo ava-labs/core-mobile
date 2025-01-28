@@ -1,8 +1,8 @@
 import React from 'react'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { View, Text, TouchableHighlight } from '../Primitives'
 import { Separator } from '../Separator/Separator'
 import { Icons } from '../../theme/tokens/Icons'
+import { useTheme } from '../../hooks'
 
 export const GroupList = ({ data }: { data: GroupListItem[] }): JSX.Element => {
   const { theme } = useTheme()

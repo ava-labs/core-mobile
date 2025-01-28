@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react'
 import { SxProp } from 'dripsy'
 import { View } from '../Primitives'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 
 export const Card = ({
   sx,

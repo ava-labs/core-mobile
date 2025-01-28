@@ -1,5 +1,6 @@
-import { SxProp, View, useDripsyTheme as useTheme } from 'dripsy'
+import { SxProp, View } from 'dripsy'
 import React from 'react'
+import { useTheme } from '../../hooks'
 
 export const Separator = ({ sx }: { sx?: SxProp }): React.JSX.Element => {
   const {

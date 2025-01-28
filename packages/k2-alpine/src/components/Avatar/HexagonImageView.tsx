@@ -19,7 +19,7 @@ import {
   darkModeColors,
   lightModeColors
 } from '../../theme/tokens/colors'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 
 export const HexagonImageView = ({
   source,

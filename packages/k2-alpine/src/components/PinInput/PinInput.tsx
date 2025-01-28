@@ -12,7 +12,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { TouchableOpacity } from '../Primitives'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   ({ value, onChangePin, length = 6, disabled, style }, ref) => {

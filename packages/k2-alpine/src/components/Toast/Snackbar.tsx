@@ -1,8 +1,8 @@
 import React from 'react'
 import { TouchableWithoutFeedback, ViewStyle } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
+import { useTheme } from '../../hooks'
 
 export const Snackbar = ({
   message,

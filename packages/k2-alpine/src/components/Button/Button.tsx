@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ViewStyle
 } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
@@ -14,6 +13,7 @@ import { TextVariant } from '../../theme/tokens/text'
 import { GlassView } from '../../components/GlassView/GlassView'
 import { alpha, overlayColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
+import { useTheme } from '../../hooks'
 
 export type ButtonType = 'primary' | 'secondary' | 'tertiary'
 export type ButtonSize = 'small' | 'medium' | 'large'
