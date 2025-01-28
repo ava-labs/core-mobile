@@ -1,7 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import {
   ApprovalResponse,
-  RpcMethod as VmModuleRpcMethod,
+  RpcMethod,
   TypedData,
   MessageTypes,
   TypedDataV1
@@ -9,7 +9,6 @@ import {
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { RpcMethod } from 'store/rpc'
 
 export const signMessage = async ({
   method,
@@ -18,7 +17,7 @@ export const signMessage = async ({
   network,
   resolve
 }: {
-  method: VmModuleRpcMethod
+  method: RpcMethod
   data: string | TypedData<MessageTypes> | TypedDataV1
   network: Network
   account: Account
@@ -26,7 +25,7 @@ export const signMessage = async ({
 }): Promise<void> => {
   try {
     const signedMessage = await WalletService.signMessage({
-      rpcMethod: method as unknown as RpcMethod,
+      rpcMethod: method,
       data,
       accountIndex: account.index,
       network
