@@ -2355,7 +2355,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNCAsyncStorage (1.23.1):
+  - RNCAsyncStorage (2.0.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3402,7 +3402,7 @@ SPEC CHECKSUMS:
   RNAppleAuthentication: e00c76acb03351f5544373c78fa7f359bef6d5d3
   RNArgon2: 1481820722fd4af1575c09f7fc9ad67c00ee8a42
   RNBootSplash: a9ab3fb5b4276a1a7c9f9aa8b80affd83db65b5d
-  RNCAsyncStorage: a927b768986f83467b635cf6d7559e6edb46db7a
+  RNCAsyncStorage: 597673c6086d359029afefef8fd5859f1f35ab87
   RNCClipboard: 8212ca9e8370d0e23bfb7f5a591380da5a63456d
   RNCMaskedView: c22a01dd2d0744c16b56e06eb8720512b900988c
   RNDateTimePicker: 6008d74df8122d6af6d9d08096bff19a8c6ba647
@@ -3435,6 +3435,6 @@ SPEC CHECKSUMS:
   Yoga: 96872ee462cfc43866ad013c8160d4ff6b85709b
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 64c87c4676df1a44c3fa8243a7946bbea93dd97f
+PODFILE CHECKSUM: 9ba4d3d14107b817e412d9ff89398dde80198b02
 
 COCOAPODS: 1.15.2
