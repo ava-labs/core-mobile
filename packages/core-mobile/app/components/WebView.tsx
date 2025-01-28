@@ -1,10 +1,7 @@
 import React from 'react'
 import RNWebView, { WebViewMessageEvent } from 'react-native-webview'
 import Logger from 'utils/Logger'
-import {
-  ShouldStartLoadRequest,
-  WebViewNavigationEvent
-} from 'react-native-webview/lib/WebViewTypes'
+import { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes'
 
 export type WebViewParams = {
   url: string
@@ -13,7 +10,6 @@ export type WebViewParams = {
   onLoad?: (event: WebViewNavigationEvent) => void
   onMessage?: (event: WebViewMessageEvent) => void
   testID?: string
-  onShouldStartLoadWithRequest?: (event: ShouldStartLoadRequest) => boolean
 }
 
 export const WebView = ({
@@ -22,14 +18,12 @@ export const WebView = ({
   url,
   onLoad,
   onMessage,
-  onShouldStartLoadWithRequest,
   testID
 }: WebViewParams): React.JSX.Element => {
   return (
     <RNWebView
       javaScriptCanOpenWindowsAutomatically={true}
       allowsInlineMediaPlayback={true}
-      javaScriptEnabled={true}
       testID={testID}
       ref={webViewRef}
       pullToRefreshEnabled={true}
@@ -45,7 +39,6 @@ export const WebView = ({
       }}
       onLoad={onLoad}
       onMessage={onMessage}
-      onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
     />
   )
 }
