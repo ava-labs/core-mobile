@@ -57,6 +57,7 @@ export const TextInput = ({
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
+            selectionColor={colors.$textPrimary}
           />
         </View>
       </View>
