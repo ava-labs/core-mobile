@@ -43,39 +43,20 @@ const FidoNameInput = ({
           <Text variant="body1" sx={{ marginTop: 14 }}>
             {description}
           </Text>
-          <View
-            sx={{
-              marginTop: 27,
-              paddingHorizontal: 13,
-              backgroundColor: colors.$surfaceSecondary,
-              borderRadius: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              height: 44
-            }}>
-            {/* TODO: CP9695 - move to k2-alpine TextInput component */}
-            <TextInput
-              sx={{
-                flex: 1,
-                fontFamily: 'Inter-Regular',
-                marginRight: 13,
-                height: 44,
-                fontSize: 16,
-                color: colors.$textPrimary
-              }}
-              value={name}
-              onChangeText={setName}
-              placeholder={textInputPlaceholder}
-            />
-            <TouchableOpacity onPress={handleClear}>
-              <Icons.Action.Clear
-                width={16}
-                height={16}
-                color={colors.$textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder={textInputPlaceholder}
+            rightIcon={
+              <TouchableOpacity onPress={handleClear}>
+                <Icons.Action.Clear
+                  width={16}
+                  height={16}
+                  color={colors.$textSecondary}
+                />
+              </TouchableOpacity>
+            }
+          />
         </View>
         <View sx={{ marginVertical: 36 }}>
           <Button
