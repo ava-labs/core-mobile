@@ -21,13 +21,6 @@ import { server } from './tests/msw/native/server'
 if (__DEV__) {
   require('./ReactotronConfig')
 
-  LogBox.ignoreLogs([
-    'Require cycle:',
-    "Can't perform",
-    'new',
-    'Non-serializable'
-  ])
-
   DevDebuggingConfig.LOGBOX_DISABLED && LogBox.ignoreAllLogs(true)
 
   // eslint-disable-next-line no-console
