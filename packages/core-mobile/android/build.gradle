@@ -50,6 +50,7 @@ allprojects {
     }
     configurations.all {
         resolutionStrategy {
+            // TODO remove this after expo-blur is upgraded to 14.0.3
             force 'com.github.Dimezis:BlurView:2.0.4'
         }
     }
