@@ -48,6 +48,11 @@ allprojects {
         }
         mavenCentral()
     }
+    configurations.all {
+        resolutionStrategy {
+            force 'com.github.Dimezis:BlurView:2.0.4'
+        }
+    }
 }
 project.ext {
     excludeAppGlideModule = true
