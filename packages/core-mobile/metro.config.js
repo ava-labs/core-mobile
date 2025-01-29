@@ -24,6 +24,12 @@ const baseConfig = {
     babelTransformerPath: require.resolve('react-native-svg-transformer')
   },
   resolver: {
+    // mute warnings about circular dependencies
+    requireCycleIgnorePatterns: [
+      /^app\/.*/,
+      /k2-mobile\/.*/,
+      /^node_modules\/.*/
+    ],
     extraNodeModules: {
       // react-native-quick-crypto integration
       crypto: require.resolve('react-native-quick-crypto'),
