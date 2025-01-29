@@ -32,7 +32,8 @@ export enum FeatureGates {
   BLOCKAID_TRANSACTION_VALIDATION = 'blockaid-transaction-validation',
   BLOCKAID_DAPP_SCAN = 'blockaid-dapp-scan',
   ALL_NOTIFICATIONS = 'all-notifications',
-  ENABLE_NOTIFICATION_PROMPT = 'enable-notification-prompt'
+  ENABLE_NOTIFICATION_PROMPT = 'enable-notification-prompt',
+  HALLIDAY_BRIDGE_BANNER = 'halliday-bridge-banner'
 }
 
 export enum FeatureVars {

@@ -26639,14 +26639,14 @@ __metadata:
 
 react-native-webview@ava-labs/react-native-webview:
   version: 13.12.2
-  resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=179f5094a96b2234756753610fd7502095209927"
+  resolution: "react-native-webview@https://github.com/ava-labs/react-native-webview.git#commit=114379c625b5edda2433170022819801fe81638e"
   dependencies:
     escape-string-regexp: ^4.0.0
     invariant: 2.2.4
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 6e268fad7aa8b8e56fd28cc95f94f35a33fdac4cec0085ae71a766d092760e3f9af35218706113ff7ae99a74baabc5112d32005dce9e66bdf4fda676fad9aa4e
+  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
   languageName: node
   linkType: hard
 
