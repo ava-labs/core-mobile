@@ -235,7 +235,6 @@ __metadata:
     "@playwright/test": 1.48.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.15.0
-    "@react-native-community/blur": 4.4.1
     "@react-native-community/cli": 15.1.3
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/netinfo": 11.4.1
@@ -8953,16 +8952,6 @@ __metadata:
     react-native-windows:
       optional: true
   checksum: b0c071368e46ce0676bbe68de2812c31ba67c477a85163b3f6392d04d13e4134c42040dc485361bfa059a7713baceb25afd4e15b77bfcaabe136fa499d9d5e19
-  languageName: node
-  linkType: hard
-
-"@react-native-community/blur@npm:4.4.1":
-  version: 4.4.1
-  resolution: "@react-native-community/blur@npm:4.4.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 1e47144b0c00dce562e72ea9f6c3e93d3bb392ec0ea001ce37ff801d9a496c9801927033ee4800bf92ea2ece9de0abe596715add3b7afe3c5d1533e260f5e09e
   languageName: node
   linkType: hard
 
