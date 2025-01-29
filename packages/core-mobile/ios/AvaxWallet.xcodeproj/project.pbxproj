@@ -389,6 +389,7 @@
 				8E3793782CA2790500D3A9B4 /* Embed Foundation Extensions */,
 				885709289025CB5D63C44517 /* [CP] Embed Pods Frameworks */,
 				B9FF033946FC3982968370FA /* [CP] Copy Pods Resources */,
+				505BAB192D4AB5CD00E383D3 /* Relocate assets */,
 			);
 			buildRules = (
 			);
@@ -451,6 +452,7 @@
 				815E551D2C92197B000F8E0F /* CopyFiles */,
 				0E581F34410E185E3A1CB4B3 /* [CP] Embed Pods Frameworks */,
 				0F912A47AA75A6BE904008DB /* [CP] Copy Pods Resources */,
+				505BAB182D4AB00800E383D3 /* Relocate assets */,
 			);
 			buildRules = (
 			);
@@ -635,6 +637,42 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		505BAB182D4AB00800E383D3 /* Relocate assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Relocate assets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\nAPP_BUNDLE_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nSOURCE_DIR=\"${APP_BUNDLE_PATH}/assets/packages/core-mobile\"\nDEST_DIR=\"${APP_BUNDLE_PATH}/assets\"\n\necho \"📂 Copying assets from ${SOURCE_DIR} to ${DEST_DIR}...\"\n\nmkdir -p \"${DEST_DIR}\"\n\nmv \"${SOURCE_DIR}\"/* \"${DEST_DIR}/\"\n\nrm -rf \"${SOURCE_DIR}\"\n\necho \"✅ Assets copied successfully!\"\n";
+		};
+		505BAB192D4AB5CD00E383D3 /* Relocate assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Relocate assets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\nAPP_BUNDLE_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nSOURCE_DIR=\"${APP_BUNDLE_PATH}/assets/packages/core-mobile\"\nDEST_DIR=\"${APP_BUNDLE_PATH}/assets\"\n\necho \"📂 Copying assets from ${SOURCE_DIR} to ${DEST_DIR}...\"\n\nmkdir -p \"${DEST_DIR}\"\n\nmv \"${SOURCE_DIR}\"/* \"${DEST_DIR}/\"\n\nrm -rf \"${SOURCE_DIR}\"\n\necho \"✅ Assets copied successfully!\"\n";
 		};
 		589A471A19994272BE3D2FE3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1032,12 +1070,12 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = NotificationServiceExtensionInternal/NotificationServiceExtensionInternal.entitlements;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = U57DXD258P;
+				DEVELOPMENT_TEAM = U57DXD258P;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				INFOPLIST_FILE = NotificationServiceExtensionInternal/Info.plist;
@@ -1056,7 +1094,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Bitrise iOS app-store - (org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal)";
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1365,7 +1402,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Internal";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWalletRelease.entitlements;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U57DXD258P;
 				DISPLAY_NAME = "Core Internal";
@@ -1386,7 +1424,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Bitrise iOS app-store - (org.avalabs.avaxwallet.internal)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
