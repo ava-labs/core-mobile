@@ -225,7 +225,7 @@ __metadata:
     "@playwright/test": 1.48.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.14.2
-    "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
+    "@react-native-community/blur": 4.4.1
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/netinfo": 11.4.1
     "@react-native-community/slider": 4.5.3
@@ -8591,12 +8591,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/blur@maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1":
-  version: 3.6.1
-  resolution: "@react-native-community/blur@https://github.com/maxhungry/react-native-blur.git#commit=a7d77a415a8693d1d49588a04a09970ef26113c1"
-  dependencies:
-    prop-types: ^15.5.10
-  checksum: affe3bff8f41cee3f069c9b07dd4237b87e3ef01f3633cec7bc80a0e07dcb91977304db84dd727b2ad05124b900b570e8ce7f94f86f107327d7d62c7963ba3f7
+"@react-native-community/blur@npm:4.4.1":
+  version: 4.4.1
+  resolution: "@react-native-community/blur@npm:4.4.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 1e47144b0c00dce562e72ea9f6c3e93d3bb392ec0ea001ce37ff801d9a496c9801927033ee4800bf92ea2ece9de0abe596715add3b7afe3c5d1533e260f5e09e
   languageName: node
   linkType: hard
 
