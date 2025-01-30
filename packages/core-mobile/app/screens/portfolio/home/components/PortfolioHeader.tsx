@@ -16,7 +16,7 @@ import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPri
 import { Tooltip } from 'components/Tooltip'
 import { Space } from 'components/Space'
 import { RootState } from 'store'
-import { selectTokenBlacklist } from 'store/portfolio/slice'
+import { selectTokenVisilibity } from 'store/portfolio/slice'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
@@ -28,11 +28,11 @@ function PortfolioHeader(): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const tokenBlacklist = useSelector(selectTokenBlacklist)
+  const tokenVisiblity = useSelector(selectTokenVisilibity)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(
       activeAccount?.index ?? 0,
-      tokenBlacklist
+      tokenVisiblity
     )
   )
   const balanceAccurate = useSelector(

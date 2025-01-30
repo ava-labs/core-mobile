@@ -5,7 +5,8 @@ import AvaText from 'components/AvaText'
 import Switch from 'components/Switch'
 import Avatar from 'components/Avatar'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsTokenBlacklisted, toggleBlacklist } from 'store/portfolio'
+import { selectIsTokenVisible, toggleTokenVisibility } from 'store/portfolio'
+import { MaliciousTokenIconWithWarning } from 'components/MaliciousTokenIconWithWarning'
 
 type Props = {
   id: string
@@ -13,15 +14,22 @@ type Props = {
   image?: string
   symbol?: string
   onPress?: () => void
+  isMalicious: boolean
 }
 
-const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
+const TokenManagementItem: FC<Props> = ({
+  id,
+  name,
+  image,
+  symbol,
+  isMalicious
+}) => {
   const dispatch = useDispatch()
 
-  const isBlacklisted = useSelector(selectIsTokenBlacklisted(id))
+  const isVisible = useSelector(selectIsTokenVisible(id))
 
   function handleChange(): void {
-    dispatch(toggleBlacklist(id))
+    dispatch(toggleTokenVisibility(id))
   }
 
   const tokenLogo = (
@@ -39,11 +47,16 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
     <View
       style={{
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: 8
       }}>
+      {isMalicious && (
+        <MaliciousTokenIconWithWarning contentWidth={200} position="left" />
+      )}
       <Switch
-        testID={isBlacklisted ? `${name}_blocked` : `${name}_displayed`}
-        value={!isBlacklisted}
+        testID={isVisible ? `${name}_displayed` : `${name}_blocked`}
+        value={isVisible}
         onValueChange={handleChange}
       />
     </View>

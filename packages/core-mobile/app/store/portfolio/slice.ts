@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { initialState } from './types'
+import { initialState, TokenVisibility } from './types'
 
 const reducerName = 'portfolio'
 
@@ -8,30 +8,26 @@ export const portfolioSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    toggleBlacklist: (state, action: PayloadAction<string>) => {
+    toggleTokenVisibility: (state, action: PayloadAction<string>) => {
       const tokenId = action.payload
-
-      if (!state.tokenBlacklist.includes(tokenId)) {
-        // add to list
-        state.tokenBlacklist.push(tokenId)
-      } else {
-        // remove from list
-        const newList = state.tokenBlacklist.filter(id => id !== tokenId)
-        state.tokenBlacklist = newList
-      }
+      state.tokenVisibility[tokenId] = !state.tokenVisibility[tokenId]
+    },
+    turnOffTokenVisibility: (state, action: PayloadAction<string>) => {
+      const tokenId = action.payload
+      state.tokenVisibility[tokenId] = false
     }
   }
 })
 
 // selectors
-export const selectTokenBlacklist = (state: RootState) =>
-  state.portfolio.tokenBlacklist
+export const selectTokenVisilibity = (state: RootState): TokenVisibility =>
+  state.portfolio.tokenVisibility
 
-export const selectIsTokenBlacklisted =
-  (tokenId: string) => (state: RootState) =>
-    state.portfolio.tokenBlacklist.includes(tokenId)
+export const selectIsTokenVisible = (tokenId: string) => (state: RootState) =>
+  state.portfolio.tokenVisibility[tokenId] !== false
 
 // actions
-export const { toggleBlacklist } = portfolioSlice.actions
+export const { toggleTokenVisibility, turnOffTokenVisibility } =
+  portfolioSlice.actions
 
 export const portfolioReducer = portfolioSlice.reducer

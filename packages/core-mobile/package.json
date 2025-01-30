@@ -20,21 +20,21 @@
     "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'"
   },
   "dependencies": {
-    "@avalabs/avalanche-module": "0.11.14",
-    "@avalabs/avalanchejs": "4.1.2-alpha.1",
-    "@avalabs/bitcoin-module": "0.11.14",
+    "@avalabs/avalanche-module": "1.2.0",
+    "@avalabs/avalanchejs": "4.1.2-alpha.3",
+    "@avalabs/bitcoin-module": "1.2.0",
     "@avalabs/bridge-unified": "4.0.1",
-    "@avalabs/core-bridge-sdk": "3.1.0-alpha.26",
-    "@avalabs/core-chains-sdk": "3.1.0-alpha.26",
-    "@avalabs/core-coingecko-sdk": "3.1.0-alpha.26",
+    "@avalabs/core-bridge-sdk": "3.1.0-alpha.32",
+    "@avalabs/core-chains-sdk": "3.1.0-alpha.32",
+    "@avalabs/core-coingecko-sdk": "3.1.0-alpha.32",
     "@avalabs/core-utils-sdk": "3.1.0-alpha.23",
-    "@avalabs/core-wallets-sdk": "3.1.0-alpha.26",
-    "@avalabs/evm-module": "0.11.14",
-    "@avalabs/glacier-sdk": "3.1.0-alpha.26",
+    "@avalabs/core-wallets-sdk": "3.1.0-alpha.32",
+    "@avalabs/evm-module": "1.2.0",
+    "@avalabs/glacier-sdk": "3.1.0-alpha.32",
     "@avalabs/k2-alpine": "workspace:*",
     "@avalabs/k2-mobile": "workspace:*",
-    "@avalabs/types": "3.1.0-alpha.26",
-    "@avalabs/vm-module-types": "0.11.14",
+    "@avalabs/types": "3.1.0-alpha.32",
+    "@avalabs/vm-module-types": "1.2.0",
     "@blockaid/client": "0.27.4",
     "@coinbase/cbpay-js": "2.2.1",
     "@cubist-labs/cubesigner-sdk": "0.3.29",
@@ -284,7 +284,9 @@
       "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>es5-ext": false,
       "web3>web3-shh": false,
       "web3>web3-utils>ethereumjs-util>ethereum-cryptography>keccak": false,
-      "@react-native-firebase/app>firebase>@firebase/firestore>@grpc/proto-loader>protobufjs": false
+      "@react-native-firebase/app>firebase>@firebase/firestore>@grpc/proto-loader>protobufjs": false,
+      "@avalabs/vm-module-types>hypersdk-client>@metamask/sdk>eciesjs>secp256k1": false,
+      "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>bufferutil": false
     }
   },
   "react-native": {

@@ -14,11 +14,11 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
+import { TokenVisibility } from 'store/portfolio'
 import {
   Balance,
   Balances,
   BalanceState,
-  LocalTokenId,
   LocalTokenWithBalance,
   QueryStatus
 } from './types'
@@ -195,11 +195,12 @@ export const selectTokensWithBalanceForAccount = createSelector(
 )
 
 export const selectBalanceTotalInCurrencyForAccount =
-  (accountIndex: number, blacklist: LocalTokenId[]) => (state: RootState) => {
+  (accountIndex: number, tokenVisibility: TokenVisibility) =>
+  (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
 
     return tokens
-      .filter(token => !blacklist.includes(token.localId))
+      .filter(token => tokenVisibility[token.localId] !== false)
       .reduce((total, token) => {
         total += token.balanceInCurrency ?? 0
         return total
@@ -218,7 +219,7 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
   (
     chainId: number,
     accountIndex: number | undefined,
-    blacklist: LocalTokenId[]
+    tokenVisibility: TokenVisibility
   ) =>
   (state: RootState) => {
     if (accountIndex === undefined) return 0
@@ -232,7 +233,7 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
     for (const balance of balances) {
       for (const token of balance.tokens) {
-        if (blacklist.includes(token.localId)) continue
+        if (tokenVisibility[token.localId] === false) continue
         totalInCurrency += token.balanceInCurrency ?? 0
       }
     }
