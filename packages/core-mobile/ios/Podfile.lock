@@ -276,7 +276,7 @@ PODS:
     - React-Core
   - ExpoAsset (11.0.2):
     - ExpoModulesCore
-  - ExpoBlur (14.0.2):
+  - ExpoBlur (14.0.3):
     - ExpoModulesCore
   - ExpoCamera (16.0.11):
     - ExpoModulesCore
@@ -3259,7 +3259,7 @@ SPEC CHECKSUMS:
   expo-dev-menu-interface: 1495ca112a4961f9fbaf586ae952faaafdbd967b
   ExpoAdapterGoogleSignIn: da10ae7e7c1d73a10c2facebcdfe5ebea8e073ce
   ExpoAsset: 6cc988c426b5fc997859cc0f8f6728d1376bf53f
-  ExpoBlur: 5327b09a58e04e4066dd95fe994d8ef5539a1f26
+  ExpoBlur: 567af66164e3043a9a30069594aed1ddf0a88d97
   ExpoCamera: f21bbd3ed3d4ca56774520a33de63b3d2cd5a6ce
   ExpoFileSystem: a0a5c44d3d3e8a2aa54fe7c70c7690df03cf4dd8
   ExpoFont: 8b14db1afebf62e9774613a082e402985f4e747c
