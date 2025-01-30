@@ -10,7 +10,10 @@ export const portfolioSlice = createSlice({
   reducers: {
     toggleTokenVisibility: (state, action: PayloadAction<string>) => {
       const tokenId = action.payload
-      state.tokenVisibility[tokenId] = !state.tokenVisibility[tokenId]
+      state.tokenVisibility[tokenId] =
+        state.tokenVisibility[tokenId] === undefined
+          ? false
+          : !state.tokenVisibility[tokenId]
     },
     turnOffTokenVisibility: (state, action: PayloadAction<string>) => {
       const tokenId = action.payload
