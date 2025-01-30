@@ -1,13 +1,13 @@
 import { View } from '@avalabs/k2-mobile'
 import { Platform, StyleSheet } from 'react-native'
 import React, { FC } from 'react'
-import { BlurView, BlurViewProperties } from '@react-native-community/blur'
+import { BlurView, BlurViewProps } from '@react-native-community/blur'
 
 interface Props {
   opacity: number
   backgroundColor: string
   borderRadius: number
-  iosBlurType?: BlurViewProperties['blurType']
+  iosBlurType?: BlurViewProps['blurType']
   reducedTransparencyFallbackColor?: string
 }
 
