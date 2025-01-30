@@ -542,6 +542,7 @@ __metadata:
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 52.0.9
+    expo-blur: 14.0.3
     expo-font: 13.0.2
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
