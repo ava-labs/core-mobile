@@ -315,7 +315,7 @@ __metadata:
     events: 3.3.0
     expo: 52.0.9
     expo-application: 6.0.2
-    expo-blur: 14.0.2
+    expo-blur: 14.0.3
     expo-camera: 16.0.11
     expo-constants: 17.0.4
     expo-dev-client: 5.0.3
@@ -527,7 +527,7 @@ __metadata:
     "@react-native-community/slider": 4.5.5
     "@react-native-masked-view/masked-view": 0.3.2
     "@rushstack/eslint-patch": 1.5.1
-    "@shopify/react-native-skia": 0.1.233
+    "@shopify/react-native-skia": 1.10.1
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
@@ -542,7 +542,6 @@ __metadata:
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 52.0.9
-    expo-blur: 14.0.2
     expo-font: 13.0.2
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
@@ -567,8 +566,8 @@ __metadata:
     typescript: 5.6.3
   peerDependencies:
     "@react-native-masked-view/masked-view": 0.3.0
-    "@shopify/react-native-skia": 0.1.233
-    expo-blur: 12.9.2
+    "@shopify/react-native-skia": 1.10.1
+    expo-blur: 14.0.3
     expo-image: 2.0.4
     expo-linear-gradient: 12.7.2
     react: 18.3.1
@@ -7914,7 +7913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:^1.5.0":
+"@noble/hashes@npm:1.7.1, @noble/hashes@npm:^1.5.0":
   version: 1.7.1
   resolution: "@noble/hashes@npm:1.7.1"
   checksum: 4f1b56428a10323feef17e4f437c9093556cb18db06f94d254043fadb69c3da8475f96eb3f8322d41e8670117d7486475a8875e68265c2839f60fd03edd6a616
@@ -10352,27 +10351,6 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 9577aa31266250d9ff72d881301eef1b63be899aca4e8b97c8f02d954c618d16be87cac93c4288a941d754df2f59148f944e03bd1affc641c4b4f2e2a3c767a7
-  languageName: node
-  linkType: hard
-
-"@shopify/react-native-skia@npm:0.1.233":
-  version: 0.1.233
-  resolution: "@shopify/react-native-skia@npm:0.1.233"
-  dependencies:
-    canvaskit-wasm: 0.39.1
-    react-reconciler: ^0.27.0
-  peerDependencies:
-    react: ">=18.0"
-    react-native: ">=0.64"
-    react-native-reanimated: ">=2.0.0"
-  peerDependenciesMeta:
-    react-native:
-      optional: true
-    react-native-reanimated:
-      optional: true
-  bin:
-    setup-skia-web: scripts/setup-canvaskit.js
-  checksum: dafc450d3d225fd49aa94d1bd1508d6e33580e12d9299cea439077676497ce0c483564a875c0d70451bf47cf75adf5e123cd94b05bf61f3d2b926019442696fa
   languageName: node
   linkType: hard
 
@@ -18078,14 +18056,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-blur@npm:14.0.2":
-  version: 14.0.2
-  resolution: "expo-blur@npm:14.0.2"
+"expo-blur@npm:14.0.3":
+  version: 14.0.3
+  resolution: "expo-blur@npm:14.0.3"
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 9736a846000918ddaf9b3f190e2217e0bf121c8950263f80b0fbc2060016197ca7f438bbe48d0c29f703232ec232c1526753d61d54b80c190625111e7054c849
+  checksum: f5f8aad2fa23b7cadc4c84bc7690ba44ebbe15c7aca89a703662c8a176e96de243baed2fde879bd6e044aafbe115ff0f3460ab8667aab0fd2461dfb1e5c53431
   languageName: node
   linkType: hard
 
@@ -20104,21 +20082,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:^0.4.24":
-  version: 0.4.24
-  resolution: "iconv-lite@npm:0.4.24"
-  dependencies:
-    safer-buffer: ">= 2.1.2 < 3"
-  checksum: bd9f120f5a5b306f0bc0b9ae1edeb1577161503f5f8252a20f1a9e56ef8775c9959fd01c55f2d3a39d9a8abaf3e30c1abeb1895f367dcbbe0a8fd1c9ca01c4f6
-  languageName: node
-  linkType: hard
-
 "iconv-lite@npm:0.6, iconv-lite@npm:^0.6.2":
   version: 0.6.3
   resolution: "iconv-lite@npm:0.6.3"
   dependencies:
     safer-buffer: ">= 2.1.2 < 3.0.0"
   checksum: 3f60d47a5c8fc3313317edfd29a00a692cc87a19cac0159e2ce711d0ebc9019064108323b5e493625e25594f11c6236647d8e256fbe7a58f4a3b33b89e6d30bf
+  languageName: node
+  linkType: hard
+
+"iconv-lite@npm:^0.4.24":
+  version: 0.4.24
+  resolution: "iconv-lite@npm:0.4.24"
+  dependencies:
+    safer-buffer: ">= 2.1.2 < 3"
+  checksum: bd9f120f5a5b306f0bc0b9ae1edeb1577161503f5f8252a20f1a9e56ef8775c9959fd01c55f2d3a39d9a8abaf3e30c1abeb1895f367dcbbe0a8fd1c9ca01c4f6
   languageName: node
   linkType: hard
 
@@ -26904,7 +26882,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"react-reconciler@npm:0.27.0, react-reconciler@npm:^0.27.0":
+"react-reconciler@npm:0.27.0":
   version: 0.27.0
   resolution: "react-reconciler@npm:0.27.0"
   dependencies:
