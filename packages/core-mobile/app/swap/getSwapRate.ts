@@ -19,7 +19,8 @@ export async function getSwapRate({
   amount,
   swapSide,
   account,
-  network
+  network,
+  abortSignal
 }: {
   fromTokenAddress?: string
   toTokenAddress?: string
@@ -29,6 +30,7 @@ export async function getSwapRate({
   swapSide: SwapSide
   account: Account
   network: Network
+  abortSignal?: AbortSignal
 }): Promise<{
   destAmount?: string
   optimalRate?: OptimalRate
@@ -61,7 +63,8 @@ export async function getSwapRate({
       srcAmount: amount,
       swapSide: swapSide,
       network: network,
-      account: account
+      account: account,
+      abortSignal
     })
     return {
       optimalRate: priceResponse,

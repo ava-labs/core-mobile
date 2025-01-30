@@ -65,6 +65,7 @@ interface SwapRate {
   network: Network
   account: Account
   sentryTrx?: SentryTransaction
+  abortSignal?: AbortSignal
 }
 
 const SUPPORTED_SWAP_NETWORKS = [
@@ -106,7 +107,8 @@ class SwapService {
     swapSide,
     network,
     account,
-    sentryTrx
+    sentryTrx,
+    abortSignal
   }: SwapRate): Promise<OptimalRate> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_rate')
@@ -120,15 +122,18 @@ class SwapService {
         if (!account) {
           throw new Error('Account address missing')
         }
-        return await this.getParaSwapSDK(network.chainId).swap.getRate({
-          srcToken,
-          destToken,
-          amount: srcAmount,
-          userAddress: account.addressC,
-          side: swapSide,
-          srcDecimals,
-          destDecimals
-        })
+        return await this.getParaSwapSDK(network.chainId).swap.getRate(
+          {
+            srcToken,
+            destToken,
+            amount: srcAmount,
+            userAddress: account.addressC,
+            side: swapSide,
+            srcDecimals,
+            destDecimals
+          },
+          abortSignal
+        )
       })
   }
 
