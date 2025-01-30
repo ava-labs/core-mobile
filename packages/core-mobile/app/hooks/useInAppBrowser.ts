@@ -7,6 +7,7 @@ import { showSimpleToast } from 'components/Snackbar'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
 import Logger from 'utils/Logger'
 import { openInAppBrowser } from 'utils/openInAppBrowser'
+import { InAppBrowserOptions } from 'react-native-inappbrowser-reborn'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
   return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
@@ -51,7 +52,7 @@ const useInAppBrowser = (): {
   }
 
   async function openUrl(url: string): Promise<void> {
-    const options = {
+    const options: InAppBrowserOptions = {
       // iOS Properties
       dismissButtonStyle: 'close',
       preferredBarTintColor: theme.background,

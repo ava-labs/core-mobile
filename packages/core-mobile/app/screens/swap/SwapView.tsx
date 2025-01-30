@@ -49,7 +49,6 @@ export default function SwapView(): JSX.Element {
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<Amount>()
   const [toTokenValue, setToTokenValue] = useState<Amount>()
-
   const [localError, setLocalError] = useState<string>('')
 
   const canSwap: boolean =
@@ -178,6 +177,24 @@ export default function SwapView(): JSX.Element {
     setAmount(totalBalance)
   }, [fromToken, setAmount, setDestination])
 
+  const onFromAmountChange = useCallback(
+    (value: Amount): void => {
+      setFromTokenValue(value)
+      setDestination(SwapSide.SELL)
+      setAmount(value)
+    },
+    [setDestination, setAmount]
+  )
+
+  const onToAmountChange = useCallback(
+    (value: Amount): void => {
+      setToTokenValue(value)
+      setDestination(SwapSide.BUY)
+      setAmount(value)
+    },
+    [setDestination, setAmount]
+  )
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
@@ -197,11 +214,7 @@ export default function SwapView(): JSX.Element {
               AnalyticsService.capture('Swap_TokenSelected')
             }}
             onMax={handleOnMax}
-            onAmountChange={value => {
-              setFromTokenValue(value)
-              setDestination(SwapSide.SELL)
-              setAmount(value)
-            }}
+            onAmountChange={onFromAmountChange}
             selectedToken={fromToken}
             inputAmount={fromTokenValue?.bn}
             hideErrorMessage
@@ -234,11 +247,7 @@ export default function SwapView(): JSX.Element {
               setToToken(tkWithBalance)
               AnalyticsService.capture('Swap_TokenSelected')
             }}
-            onAmountChange={value => {
-              setToTokenValue(value)
-              setDestination(SwapSide.BUY)
-              setAmount(value)
-            }}
+            onAmountChange={onToAmountChange}
             selectedToken={toToken}
             inputAmount={toTokenValue?.bn}
             hideErrorMessage

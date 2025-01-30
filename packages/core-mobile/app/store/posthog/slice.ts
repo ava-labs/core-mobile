@@ -301,6 +301,26 @@ export const selectIsAllNotificationsBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsEnableNotificationPromptBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ENABLE_NOTIFICATION_PROMPT] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsHallidayBridgeBannerBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.HALLIDAY_BRIDGE_BANNER] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

@@ -5,7 +5,8 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
+  useRef
 } from 'react'
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide, OptimalRate } from '@paraswap/sdk'
@@ -26,7 +27,10 @@ import { showTransactionErrorToast } from 'utils/toast'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { RpcMethod, TokenWithBalance } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { useDebounce } from 'hooks/useDebounce'
 import { performSwap } from './performSwap/performSwap'
+
+const DEFAULT_DEBOUNCE_MILLISECONDS = 150
 
 // success here just means the transaction was sent, not that it was successful/confirmed
 export type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
@@ -68,6 +72,7 @@ export const SwapContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
+  const abortControllerRef = useRef<AbortController | null>(null)
   const { request } = useInAppRequest()
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
@@ -81,6 +86,7 @@ export const SwapContextProvider = ({
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
   const [amount, setAmount] = useState<Amount | undefined>() //the amount that's gonna be passed to paraswap
   const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
+  const debouncedAmount = useDebounce(amount, DEFAULT_DEBOUNCE_MILLISECONDS) // debounce since fetching rates via paraswaps can take awhile
 
   const getOptimalRateForAmount = useCallback(
     (amnt: Amount | undefined) => {
@@ -92,6 +98,15 @@ export const SwapContextProvider = ({
         toToken &&
         'decimals' in toToken
       ) {
+        // abort previous request if it exists
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort()
+        }
+
+        // create new AbortController
+        const controller = new AbortController()
+        abortControllerRef.current = controller
+
         return getSwapRate({
           fromTokenAddress: getTokenAddress(fromToken),
           toTokenAddress: getTokenAddress(toToken),
@@ -100,7 +115,8 @@ export const SwapContextProvider = ({
           amount: amnt.bn.toString(),
           swapSide: destination,
           network: activeNetwork,
-          account: activeAccount
+          account: activeAccount,
+          abortSignal: controller.signal
         })
       } else {
         return Promise.reject('invalid data')
@@ -110,9 +126,9 @@ export const SwapContextProvider = ({
   )
 
   const getOptimalRate = useCallback(() => {
-    if (activeAccount && amount) {
+    if (activeAccount && debouncedAmount) {
       setIsFetchingOptimalRate(true)
-      getOptimalRateForAmount(amount)
+      getOptimalRateForAmount(debouncedAmount)
         .then(({ optimalRate: opRate, error: err }) => {
           setError(err ?? '')
           setOptimalRate(opRate)
@@ -125,7 +141,7 @@ export const SwapContextProvider = ({
           setIsFetchingOptimalRate(false)
         })
     }
-  }, [activeAccount, amount, getOptimalRateForAmount])
+  }, [activeAccount, debouncedAmount, getOptimalRateForAmount])
 
   useEffect(() => {
     //call getOptimalRate every time its params change to get fresh rates

@@ -52,3 +52,8 @@ for some reason, metro can only consume esm folder so we had to adjust the packa
 ### react-native-svg+15.6.0.patch
 
 to prevent a crash on iOS when react-native-svg is unable to render certain svgs
+
+### @walletconnect+logger+2.1.2.patch
+
+logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
+https://github.com/WalletConnect/walletconnect-utils/issues/171
