@@ -43,6 +43,9 @@ if [[ "$build_number" != "$build_number_two" ]]; then
     \"type\": \"bitrise\"
   }
 }"
+  )
+
+  echo "PIPELINE: $PIPELINE"
 else
   echo "Build already in progress"
 fi
