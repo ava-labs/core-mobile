@@ -48,13 +48,6 @@ allprojects {
             url "$rootDir/../node_modules/expo-camera/android/maven"
         }
         mavenCentral()
-        maven { url 'https://www.jitpack.io' }
-    }
-    configurations.all {
-        resolutionStrategy {
-            // TODO remove this after expo-blur is upgraded to 14.0.3
-            force 'com.github.Dimezis:BlurView:version-2.0.4'
-        }
     }
 }
 project.ext {
