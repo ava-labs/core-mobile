@@ -23,14 +23,14 @@ import {
   TypedDataUtils,
   typedSignatureHash
 } from '@metamask/eth-sig-util'
-import { RpcMethod } from 'store/rpc/types'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
 import {
   TypedData,
   TypedDataV1,
   MessageTypes,
-  WalletType
+  WalletType,
+  RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'

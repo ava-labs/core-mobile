@@ -22,7 +22,6 @@ import {
   signTypedData,
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
-import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
@@ -32,7 +31,8 @@ import {
   TypedDataV1,
   TypedData,
   MessageTypes,
-  WalletType
+  WalletType,
+  RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
 import ModuleManager from 'vmModule/ModuleManager'
