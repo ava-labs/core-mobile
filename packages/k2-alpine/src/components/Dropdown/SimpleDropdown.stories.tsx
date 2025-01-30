@@ -66,7 +66,7 @@ const SingleSectionMultipleSelectionDropdown = (): JSX.Element => {
       style={{
         gap: 12
       }}>
-      <Text>Single section, Multiple selection</Text>
+      <Text>Single section, Multiple selections</Text>
       <SimpleDropdown
         from={
           <Button type="primary" size="medium">
@@ -121,7 +121,7 @@ const MultipleSectionSingleSelectionDropdown = (): JSX.Element => {
       style={{
         gap: 12
       }}>
-      <Text>Multiple section, Single selection</Text>
+      <Text>Multiple sections, Single selection</Text>
       <SimpleDropdown
         from={
           <Button type="primary" size="medium">
@@ -151,7 +151,7 @@ const MultipleSectionMultipleSelectionDropdown = (): JSX.Element => {
       style={{
         gap: 12
       }}>
-      <Text>Multiple section, Multiple selection</Text>
+      <Text>Multiple sections, Multiple selections</Text>
       <SimpleDropdown
         from={
           <Button type="primary" size="medium">
