@@ -304,7 +304,7 @@ __metadata:
     events: 3.3.0
     expo: 52.0.9
     expo-application: 6.0.2
-    expo-blur: 14.0.2
+    expo-blur: 14.0.3
     expo-camera: 16.0.11
     expo-constants: 17.0.4
     expo-dev-client: 5.0.3
@@ -526,7 +526,6 @@ __metadata:
     eslint: 9.9.1
     eslint-plugin-avalabs-mobile: "workspace:*"
     expo: 52.0.9
-    expo-blur: 14.0.2
     expo-font: 13.0.2
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
@@ -550,7 +549,7 @@ __metadata:
     typescript: 5.6.3
   peerDependencies:
     "@react-native-masked-view/masked-view": 0.3.0
-    expo-blur: 12.9.2
+    expo-blur: 14.0.3
     expo-image: 2.0.4
     expo-linear-gradient: 12.7.2
     react: 18.3.1
@@ -17713,14 +17712,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-blur@npm:14.0.2":
-  version: 14.0.2
-  resolution: "expo-blur@npm:14.0.2"
+"expo-blur@npm:14.0.3":
+  version: 14.0.3
+  resolution: "expo-blur@npm:14.0.3"
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 9736a846000918ddaf9b3f190e2217e0bf121c8950263f80b0fbc2060016197ca7f438bbe48d0c29f703232ec232c1526753d61d54b80c190625111e7054c849
+  checksum: f5f8aad2fa23b7cadc4c84bc7690ba44ebbe15c7aca89a703662c8a176e96de243baed2fde879bd6e044aafbe115ff0f3460ab8667aab0fd2461dfb1e5c53431
   languageName: node
   linkType: hard
 
