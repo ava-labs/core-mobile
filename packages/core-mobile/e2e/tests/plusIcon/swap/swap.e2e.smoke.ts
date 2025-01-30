@@ -18,7 +18,7 @@ describe('Swap', () => {
   })
 
   it('Should swap ERC20 to ERC20', async () => {
-    await SwapTabPage.swap('USDC', 'USDT', '0.0001')
+    await SwapTabPage.swap('USDC', 'BTC.b', '0.0001')
     await SendPage.verifySuccessToast()
   })
 })

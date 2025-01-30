@@ -21,16 +21,21 @@ describe('Manage Token', () => {
 
   it('should hide token via manage token', async () => {
     // Hide Tether Token
-    await manageTokensPage.showToken('TetherToken', false)
+    await manageTokensPage.showToken('KET', false)
     // Verify the token is hidden
-    await actions.waitForElementNotVisible(by.text('TetherToken'))
+    await actions.waitForElementNotVisible(by.text('KET'))
   })
 
   it('should show token via manage token', async () => {
     // Show Tether Token
     await PortfolioPage.tapManageTokens()
-    await manageTokensPage.showToken('TetherToken')
+    await manageTokensPage.showToken('KET')
     // Verify the token is shown
-    await actions.waitForElement(by.text('TetherToken'))
+    await actions.scrollListUntil(
+      by.id(`portfolio_list_item_title__KET`),
+      by.id('portfolio_token_list'),
+      20
+    )
+    await actions.waitForElement(by.id(`portfolio_list_item_title__KET`))
   })
 })
