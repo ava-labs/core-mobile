@@ -23,6 +23,7 @@ import {
   LocalTokenWithBalance,
   QueryStatus
 } from './types'
+import { isTokenVisible } from './utils'
 
 const reducerName = 'balance'
 
@@ -201,11 +202,8 @@ export const selectBalanceTotalInCurrencyForAccount =
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
 
     return tokens
-      .filter(
-        token =>
-          tokenVisibility[token.localId] === true ||
-          (tokenVisibility[token.localId] === undefined &&
-            !isTokenMalicious(token))
+      .filter(token =>
+        isTokenVisible(tokenVisibility[token.localId], isTokenMalicious(token))
       )
       .reduce((total, token) => {
         total += token.balanceInCurrency ?? 0
@@ -240,9 +238,10 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
     for (const balance of balances) {
       for (const token of balance.tokens) {
         if (
-          tokenVisibility[token.localId] === false ||
-          (tokenVisibility[token.localId] === undefined &&
-            isTokenMalicious(token))
+          !isTokenVisible(
+            tokenVisibility[token.localId],
+            isTokenMalicious(token)
+          )
         )
           continue
         totalInCurrency += token.balanceInCurrency ?? 0

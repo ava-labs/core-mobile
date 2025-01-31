@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { getLocalTokenId } from 'store/balance/utils'
+import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
 import { TokenType } from '@avalabs/vm-module-types'
 import { isTokenMalicious } from 'utils/isTokenMalicious'
 
@@ -19,8 +19,7 @@ const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
 
 const isNotBlacklisted =
   (tokenVisibility: TokenVisibility) => (token: LocalTokenWithBalance) =>
-    tokenVisibility[token.localId] === true ||
-    (tokenVisibility[token.localId] === undefined && !isTokenMalicious(token))
+    isTokenVisible(tokenVisibility[token.localId], isTokenMalicious(token))
 
 const isNotNFT = (token: LocalTokenWithBalance): boolean =>
   token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
