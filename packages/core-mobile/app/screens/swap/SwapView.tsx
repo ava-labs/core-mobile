@@ -92,7 +92,7 @@ export default function SwapView(): JSX.Element {
       fromTokenValue &&
       fromTokenValue.bn > maxFromValue
     ) {
-      setLocalError('Insufficient balance.')
+      setLocalError('Amount exceeds available balance')
     } else {
       setLocalError('')
     }

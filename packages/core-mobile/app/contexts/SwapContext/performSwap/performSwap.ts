@@ -1,15 +1,13 @@
-import assert from 'assert'
-import { Contract } from 'ethers'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
-import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Big from 'big.js'
 import { OptimalRate, TransactionParams as Transaction } from '@paraswap/sdk'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
-import { rpcErrors } from '@metamask/rpc-errors'
 import SwapService, { ETHER_ADDRESS } from 'services/swap/SwapService'
+import { swapError } from 'errors/swapError'
+import { ERC20__factory } from 'contracts/openzeppelin'
 
 export type PerformSwapParams = {
   srcTokenAddress: string | undefined
@@ -44,12 +42,18 @@ export async function performSwap({
   swapTxHash: string
   approveTxHash: string | undefined
 }> {
-  assert(srcTokenAddress, 'no source token on request')
-  assert(destTokenAddress, 'no destination token on request')
-  assert(priceRoute, 'request requires the paraswap priceRoute')
-  assert(userAddress, 'Wallet Error: address not defined')
-  assert(activeNetwork, 'Network Init Error: Wrong network')
-  assert(!activeNetwork.isTestnet, 'Network Init Error: Wrong network')
+  if (!srcTokenAddress) throw swapError.missingParam('srcTokenAddress')
+
+  if (!destTokenAddress) throw swapError.missingParam('destTokenAddress')
+
+  if (!priceRoute) throw swapError.missingParam('priceRoute')
+
+  if (!userAddress) throw swapError.missingParam('userAddress')
+
+  if (!activeNetwork) throw swapError.missingParam('activeNetwork')
+
+  if (activeNetwork.isTestnet)
+    throw swapError.networkNotSupported(activeNetwork.chainName)
 
   const sourceTokenAddress = isSrcTokenNative ? ETHER_ADDRESS : srcTokenAddress
   const destinationTokenAddress = isDestTokenNative
@@ -81,20 +85,17 @@ export async function performSwap({
     try {
       spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
     } catch (error) {
-      throw new Error(`Spender Address Error: ${error}`)
+      throw swapError.cannotFetchSpender(error)
     }
 
-    const contract = new Contract(sourceTokenAddress, ERC20.abi, provider)
+    const contract = ERC20__factory.connect(sourceTokenAddress, provider)
 
     const [allowance, allowanceError] = await resolve<bigint>(
-      contract.allowance?.(userAddress, spenderAddress) ?? Promise.resolve(null)
+      contract.allowance(userAddress, spenderAddress)
     )
 
-    if (allowanceError || allowance === null) {
-      throw rpcErrors.internal({
-        message: 'Allowance Error',
-        data: { cause: allowanceError }
-      })
+    if (allowance === null || allowanceError) {
+      throw swapError.cannotFetchAllowance(allowanceError)
     }
 
     if (allowance < BigInt(sourceAmount)) {
@@ -123,22 +124,21 @@ export async function performSwap({
         }
       ]
 
-      const [hash, approveError] = await resolve(signAndSend(txParams))
+      const [approvalTxHash, approvalTxError] = await resolve(
+        signAndSend(txParams)
+      )
 
-      if (approveError) {
-        throw approveError
+      if (!approvalTxHash || approvalTxError) {
+        throw swapError.approvalTxFailed(approvalTxError)
       }
 
-      if (!hash) {
-        throw rpcErrors.internal('Invalid transaction hash')
-      }
+      const receipt = await provider.waitForTransaction(approvalTxHash)
 
-      const receipt = hash && (await provider.waitForTransaction(hash))
       if (!receipt || (receipt && receipt.status !== 1)) {
-        throw new Error('Swap token approval failed')
+        throw swapError.approvalTxFailed(new Error('Transaction Reverted'))
       }
 
-      approveTxHash = hash
+      approveTxHash = approvalTxHash
     } else {
       approveTxHash = undefined
     }
@@ -175,11 +175,8 @@ export async function performSwap({
     )
   )
 
-  if (!txBuildData || txBuildDataError || 'message' in txBuildData) {
-    throw rpcErrors.internal({
-      message: 'Data Error',
-      data: { cause: txBuildDataError }
-    })
+  if (!txBuildData || txBuildDataError) {
+    throw swapError.cannotBuildTx(txBuildDataError)
   }
 
   const txParams: [TransactionParams] = [
@@ -195,14 +192,10 @@ export async function performSwap({
     }
   ]
 
-  const [swapTxHash, txError] = await resolve(signAndSend(txParams))
+  const [swapTxHash, swapTxError] = await resolve(signAndSend(txParams))
 
-  if (txError) {
-    throw txError
-  }
-
-  if (!swapTxHash) {
-    throw rpcErrors.internal('Invalid transaction hash')
+  if (!swapTxHash || swapTxError) {
+    throw swapError.swapTxFailed(swapTxError)
   }
 
   return {

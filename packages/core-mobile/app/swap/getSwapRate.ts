@@ -34,45 +34,33 @@ export async function getSwapRate({
 }): Promise<{
   destAmount?: string
   optimalRate?: OptimalRate
-  error?: string
 }> {
   if (!fromTokenAddress || !fromTokenDecimals) {
-    return {
-      error: 'no source token selected'
-    }
+    throw new Error('No source token selected')
   }
 
   if (!toTokenAddress || !toTokenDecimals) {
-    return {
-      error: 'no destination token selected'
-    }
+    throw new Error('No destination token selected')
   }
 
   if (!amount) {
-    return {
-      error: 'no amount'
-    }
+    throw new Error('No amount')
   }
 
-  try {
-    const priceResponse = await SwapService.getSwapRate({
-      srcToken: fromTokenAddress,
-      srcDecimals: fromTokenDecimals,
-      destToken: toTokenAddress,
-      destDecimals: toTokenDecimals,
-      srcAmount: amount,
-      swapSide: swapSide,
-      network: network,
-      account: account,
-      abortSignal
-    })
-    return {
-      optimalRate: priceResponse,
-      destAmount: priceResponse.destAmount
-    }
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'unknown error'
-    }
+  const priceResponse = await SwapService.getSwapRate({
+    srcToken: fromTokenAddress,
+    srcDecimals: fromTokenDecimals,
+    destToken: toTokenAddress,
+    destDecimals: toTokenDecimals,
+    srcAmount: amount,
+    swapSide: swapSide,
+    network: network,
+    account: account,
+    abortSignal
+  })
+
+  return {
+    optimalRate: priceResponse,
+    destAmount: priceResponse.destAmount
   }
 }

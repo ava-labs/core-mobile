@@ -191,18 +191,24 @@ const UniversalTokenSelector: FC<Props> = ({
           <Text
             testID="error_msg"
             variant="body2"
-            sx={{ color: '$dangerMain' }}>
+            sx={{ color: '$dangerMain', maxWidth: '55%' }}>
             {error}
           </Text>
         )}
         <FlexSpacer />
-        <AvaText.Body2>
+        <AvaText.Body2
+          numberOfLines={1}
+          textStyle={{
+            maxWidth: hasError ? '32%' : '70%'
+          }}
+          ellipsizeMode="tail">
           {`${
             selectedToken && amountInCurrency
               ? tokenInCurrencyFormatter(amountInCurrency)
               : '-'
-          } ${selectedCurrency}`}
+          }`}
         </AvaText.Body2>
+        <AvaText.Body2>{' ' + selectedCurrency}</AvaText.Body2>
       </Row>
     </View>
   )
