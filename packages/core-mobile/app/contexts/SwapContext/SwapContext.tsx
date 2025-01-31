@@ -16,7 +16,7 @@ import { resolve } from '@avalabs/core-utils-sdk'
 import { Amount } from 'types'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { humanizeSwapErrors } from 'localization/errors'
+import { humanizeSwapError } from 'errors/swapError'
 import { useAvalancheProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import { Account, selectActiveAccount } from 'store/account'
@@ -29,6 +29,7 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { RpcMethod, TokenWithBalance } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { useDebounce } from 'hooks/useDebounce'
+import { humanizeParaswapRateError } from 'errors/swapError'
 import { performSwap } from './performSwap/performSwap'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
@@ -129,9 +130,11 @@ export const SwapContextProvider = ({
           setOptimalRate(opRate)
         })
         .catch(reason => {
-          setError(reason.message)
-          setOptimalRate(undefined)
-          Logger.error('failed to getSwapRate', reason)
+          if (reason.message !== 'Aborted') {
+            setError(humanizeParaswapRateError(reason.message))
+            setOptimalRate(undefined)
+            Logger.error('failed to getSwapRate', reason)
+          }
         })
         .finally(() => {
           setIsFetchingOptimalRate(false)
@@ -155,7 +158,7 @@ export const SwapContextProvider = ({
         chainId: activeNetwork.chainId
       })
 
-      const readableErrorMessage = humanizeSwapErrors(err)
+      const readableErrorMessage = humanizeSwapError(err)
       const originalError =
         err instanceof JsonRpcError ? err.data.cause : undefined
 

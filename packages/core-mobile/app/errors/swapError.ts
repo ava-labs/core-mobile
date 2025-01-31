@@ -1,4 +1,5 @@
-import { rpcErrors } from '@metamask/rpc-errors'
+import { rpcErrors, JsonRpcError } from '@metamask/rpc-errors'
+import { isError } from 'ethers'
 
 enum SwapErrorCode {
   MISSING_PARAM = 'MISSING_PARAM',
@@ -9,6 +10,11 @@ enum SwapErrorCode {
   APPROVAL_TX_FAILED = 'APPROVAL_TX_FAILED',
   SWAP_TX_FAILED = 'SWAP_TX_FAILED'
 }
+
+type ObjWithError = { error: string }
+
+const isObjWithError = (error: unknown): error is ObjWithError =>
+  Boolean(typeof error === 'object' && error && 'error' in error)
 
 export const swapError = {
   missingParam: (param: string) =>
@@ -48,4 +54,49 @@ export const swapError = {
         'Swap transaction failed. The transaction may not have been signed or broadcasted successfully.',
       data: { cause: error, code: SwapErrorCode.SWAP_TX_FAILED }
     })
+}
+
+export const humanizeParaswapRateError = (errorMsg: string): string => {
+  switch (errorMsg) {
+    case 'ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT':
+      return 'Amount too low or too big to cover. Please adjust swap values.'
+    case 'Internal Error while computing the price':
+      return 'An error occurred while computing the price'
+    default:
+      return errorMsg
+  }
+}
+
+export function humanizeSwapError(err: unknown): string {
+  let errorString = ''
+
+  if (isObjWithError(err)) {
+    errorString = err.error
+  } else if (typeof err === 'string') {
+    errorString = err
+  }
+
+  if (
+    errorString.toLowerCase().startsWith('not enough') &&
+    errorString.includes('allowance')
+  ) {
+    return 'Swap failed! Not enough allowance.'
+  }
+
+  if (errorString.includes('-32000')) {
+    return 'Swap failed! Another transaction is pending. Rise gas price to overwrite it.'
+  }
+
+  if (errorString.toLowerCase().includes('network error')) {
+    return 'Swap failed! Network error, please try again.'
+  }
+
+  if (err instanceof JsonRpcError) {
+    if (isError(err.cause, 'INSUFFICIENT_FUNDS'))
+      return `Swap failed! Insufficient amount for gas. Reduce swap quantity and try again.`
+
+    return err.message
+  }
+
+  return 'Swap failed! Please try again.'
 }
