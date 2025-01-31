@@ -24,7 +24,7 @@ import { FeatureGates } from 'services/posthog/types'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { TransactionParams } from '@avalabs/evm-module'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import {
   removePendingTransfer,
   selectPendingTransfers,

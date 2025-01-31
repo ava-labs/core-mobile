@@ -174,7 +174,6 @@ const onBalanceUpdateCore = async ({
                   network: n,
                   account,
                   currency,
-                  sentrySpanName,
                   customTokens: customTokensByChainIdAndNetwork
                 })
               }
