@@ -19,7 +19,6 @@ import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'
-import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { info, UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
@@ -27,7 +26,12 @@ import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
-import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
+import {
+  MessageTypes,
+  RpcMethod,
+  TypedData,
+  TypedDataV1
+} from '@avalabs/vm-module-types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'

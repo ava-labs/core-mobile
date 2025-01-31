@@ -1,7 +1,9 @@
 export const initialState: PortfolioState = {
-  tokenBlacklist: []
+  tokenVisibility: {}
 }
 
+export type TokenVisibility = Record<string, boolean>
+
 export type PortfolioState = {
-  tokenBlacklist: string[]
+  tokenVisibility: TokenVisibility
 }

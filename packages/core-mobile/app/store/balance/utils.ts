@@ -8,3 +8,10 @@ export function getLocalTokenId(
 ): string {
   return 'address' in token ? token.address : `${token.name}${token.symbol}`
 }
+
+export function isTokenVisible(
+  tokenVisible: boolean | undefined,
+  isMalicious: boolean
+): boolean {
+  return tokenVisible === true || (tokenVisible === undefined && !isMalicious)
+}

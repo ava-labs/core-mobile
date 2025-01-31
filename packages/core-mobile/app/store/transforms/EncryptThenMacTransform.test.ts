@@ -12,11 +12,11 @@ import { AccountsState } from 'store/account'
 import { NotificationsState } from 'store/notifications'
 import { PosthogState } from 'store/posthog'
 import { NFTItemData, NftState } from 'store/nft'
-import { PortfolioState } from 'store/portfolio'
 import { RawRootState, RootState } from 'store/index'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { Network } from '@avalabs/core-chains-sdk'
 import { CoreAccountType, WalletType } from '@avalabs/types'
+import { PortfolioState } from 'store/portfolio'
 
 const secretKey =
   '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328efa'
@@ -179,6 +179,6 @@ const initialState = {
     advanced: advancedState
   },
   portfolio: {
-    tokenBlacklist: []
+    tokenVisibility: {}
   } as PortfolioState
 } as RootState
