@@ -112,10 +112,10 @@ export const Tooltip = ({
       return renderPopable(renderLabel())
     }
     return (
-      <View style={{ gap: 4 }}>
+      <Row style={{ gap: 4, alignItems: 'center' }}>
         {renderLabel()}
         {renderPopable(icon ?? <InfoSVG color={iconColor} />)}
-      </View>
+      </Row>
     )
   }
 
