@@ -116,12 +116,15 @@ class SwapService {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
         }
+
         if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
           throw new Error(`${network.chainName} is not supported by Paraswap`)
         }
+
         if (!account) {
           throw new Error('Account address missing')
         }
+
         return await this.getParaSwapSDK(network.chainId).swap.getRate(
           {
             srcToken,
@@ -178,7 +181,7 @@ class SwapService {
     permit,
     deadline,
     sentryTrx
-  }: BuildTxParams): Promise<Error | TransactionParams> {
+  }: BuildTxParams): Promise<TransactionParams> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.build_trx')
       .executeAsync(async () => {
@@ -211,7 +214,7 @@ class SwapService {
         const result = txResponseSchema.safeParse(response)
 
         if (!result.success) {
-          throw new Error('Invalid transaction params')
+          throw new Error('Unexpected response from our pricing provider')
         }
 
         return result.data

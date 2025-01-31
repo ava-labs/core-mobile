@@ -8,6 +8,7 @@ import React, {
   useState,
   useRef
 } from 'react'
+import { JsonRpcError } from '@metamask/rpc-errors'
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide, OptimalRate } from '@paraswap/sdk'
 import Logger from 'utils/Logger'
@@ -15,10 +16,10 @@ import { resolve } from '@avalabs/core-utils-sdk'
 import { Amount } from 'types'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { humanizeSwapErrors } from 'localization/errors'
+import { humanizeSwapError } from 'errors/swapError'
 import { useAvalancheProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
@@ -28,6 +29,7 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { RpcMethod, TokenWithBalance } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { useDebounce } from 'hooks/useDebounce'
+import { humanizeParaswapRateError } from 'errors/swapError'
 import { performSwap } from './performSwap/performSwap'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
@@ -89,53 +91,50 @@ export const SwapContextProvider = ({
   const debouncedAmount = useDebounce(amount, DEFAULT_DEBOUNCE_MILLISECONDS) // debounce since fetching rates via paraswaps can take awhile
 
   const getOptimalRateForAmount = useCallback(
-    (amnt: Amount | undefined) => {
-      if (
-        activeAccount &&
-        amnt &&
-        fromToken &&
-        'decimals' in fromToken &&
-        toToken &&
-        'decimals' in toToken
-      ) {
-        // abort previous request if it exists
-        if (abortControllerRef.current) {
-          abortControllerRef.current.abort()
-        }
+    (account: Account, amnt: Amount) => {
+      if (!fromToken || !('decimals' in fromToken))
+        return Promise.reject('Invalid from token')
 
-        // create new AbortController
-        const controller = new AbortController()
-        abortControllerRef.current = controller
+      if (!toToken || !('decimals' in toToken))
+        return Promise.reject('Invalid to token')
 
-        return getSwapRate({
-          fromTokenAddress: getTokenAddress(fromToken),
-          toTokenAddress: getTokenAddress(toToken),
-          fromTokenDecimals: fromToken.decimals,
-          toTokenDecimals: toToken.decimals,
-          amount: amnt.bn.toString(),
-          swapSide: destination,
-          network: activeNetwork,
-          account: activeAccount,
-          abortSignal: controller.signal
-        })
-      } else {
-        return Promise.reject('invalid data')
+      // abort previous request if it exists
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
       }
+      // create new AbortController
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+
+      return getSwapRate({
+        fromTokenAddress: getTokenAddress(fromToken),
+        toTokenAddress: getTokenAddress(toToken),
+        fromTokenDecimals: fromToken.decimals,
+        toTokenDecimals: toToken.decimals,
+        amount: amnt.bn.toString(),
+        swapSide: destination,
+        network: activeNetwork,
+        account,
+        abortSignal: controller.signal
+      })
     },
-    [activeAccount, activeNetwork, destination, fromToken, toToken]
+    [activeNetwork, destination, fromToken, toToken]
   )
 
   const getOptimalRate = useCallback(() => {
     if (activeAccount && debouncedAmount) {
       setIsFetchingOptimalRate(true)
-      getOptimalRateForAmount(debouncedAmount)
-        .then(({ optimalRate: opRate, error: err }) => {
-          setError(err ?? '')
+      getOptimalRateForAmount(activeAccount, debouncedAmount)
+        .then(({ optimalRate: opRate }) => {
+          setError('')
           setOptimalRate(opRate)
         })
         .catch(reason => {
-          setOptimalRate(undefined)
-          Logger.warn('Error getSwapRate', reason)
+          if (reason.message !== 'Aborted') {
+            setError(humanizeParaswapRateError(reason.message))
+            setOptimalRate(undefined)
+            Logger.error('failed to getSwapRate', reason)
+          }
         })
         .finally(() => {
           setIsFetchingOptimalRate(false)
@@ -151,6 +150,35 @@ export const SwapContextProvider = ({
   const refresh = useCallback(() => {
     getOptimalRate()
   }, [getOptimalRate])
+
+  const handleSwapError = useCallback(
+    (account: Account, err: unknown) => {
+      AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
+        address: account.addressC,
+        chainId: activeNetwork.chainId
+      })
+
+      const readableErrorMessage = humanizeSwapError(err)
+      const originalError =
+        err instanceof JsonRpcError ? err.data.cause : undefined
+
+      showTransactionErrorToast({ message: readableErrorMessage })
+      Logger.error(readableErrorMessage, originalError)
+    },
+    [activeNetwork.chainId]
+  )
+
+  const handleSwapSuccess = useCallback(
+    (swapTxHash: string | undefined) => {
+      setSwapStatus('Success')
+      AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
+        txHash: swapTxHash ?? '',
+        chainId: activeNetwork.chainId
+      })
+      audioFeedback(Audios.Send)
+    },
+    [activeNetwork.chainId]
+  )
 
   function onSwap({
     srcTokenAddress,
@@ -191,19 +219,10 @@ export const SwapContextProvider = ({
           if (err || (result && 'error' in result)) {
             setSwapStatus('Fail')
             if (!isUserRejectedError(err)) {
-              AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
-                address: activeAccount.addressC,
-                chainId: activeNetwork.chainId
-              })
-              showTransactionErrorToast({ message: humanizeSwapErrors(err) })
+              handleSwapError(activeAccount, err)
             }
           } else {
-            setSwapStatus('Success')
-            AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
-              txHash: result?.swapTxHash ?? '',
-              chainId: activeNetwork.chainId
-            })
-            audioFeedback(Audios.Send)
+            handleSwapSuccess(result?.swapTxHash)
           }
         })
         .catch(Logger.error)
