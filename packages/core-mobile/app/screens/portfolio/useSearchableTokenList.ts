@@ -7,18 +7,20 @@ import {
 } from 'store/balance/slice'
 import { LocalTokenId, LocalTokenWithBalance } from 'store/balance/types'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectTokenVisilibity, TokenVisibility } from 'store/portfolio'
+import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getLocalTokenId } from 'store/balance/utils'
 import { TokenType } from '@avalabs/vm-module-types'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
 
 const isNotBlacklisted =
   (tokenVisibility: TokenVisibility) => (token: LocalTokenWithBalance) =>
-    tokenVisibility[token.localId] !== false
+    tokenVisibility[token.localId] === true ||
+    (tokenVisibility[token.localId] === undefined && !isTokenMalicious(token))
 
 const isNotNFT = (token: LocalTokenWithBalance): boolean =>
   token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
@@ -66,7 +68,7 @@ export function useSearchableTokenList(
   }, [activeNetworkContractTokens])
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
-  const tokenVisibility = useSelector(selectTokenVisilibity)
+  const tokenVisibility = useSelector(selectTokenVisibility)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const tokensWithBalance = useSelector(selectTokensWithBalance)

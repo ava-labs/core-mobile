@@ -21,7 +21,7 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { selectTokenVisilibity } from 'store/portfolio/slice'
+import { selectTokenVisibility } from 'store/portfolio/slice'
 
 type Props = {
   account: Account
@@ -43,7 +43,7 @@ function AccountItem({
   const { activeNetwork } = useNetworks()
   const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
-  const tokenVisibility = useSelector(selectTokenVisilibity)
+  const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
   )

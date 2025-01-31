@@ -19,7 +19,7 @@ import {
   selectIsBalanceLoadedForAddress
 } from 'store/balance/slice'
 import { QueryStatus } from 'store/balance/types'
-import { selectTokenVisilibity } from 'store/portfolio/slice'
+import { selectTokenVisibility } from 'store/portfolio/slice'
 
 type Props = {
   account: Account
@@ -30,7 +30,7 @@ type Props = {
 const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
   const { theme } = useApplicationContext()
   const { activeNetwork } = useNetworks()
-  const tokenVisibility = useSelector(selectTokenVisilibity)
+  const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
   )

@@ -19,7 +19,7 @@ export const portfolioSlice = createSlice({
 })
 
 // selectors
-export const selectTokenVisilibity = (state: RootState): TokenVisibility =>
+export const selectTokenVisibility = (state: RootState): TokenVisibility =>
   state.portfolio.tokenVisibility
 
 export const selectIsTokenVisible = (tokenId: string) => (state: RootState) =>

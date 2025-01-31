@@ -15,6 +15,7 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenVisibility } from 'store/portfolio'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 import {
   Balance,
   Balances,
@@ -200,7 +201,12 @@ export const selectBalanceTotalInCurrencyForAccount =
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
 
     return tokens
-      .filter(token => tokenVisibility[token.localId] !== false)
+      .filter(
+        token =>
+          tokenVisibility[token.localId] === true ||
+          (tokenVisibility[token.localId] === undefined &&
+            !isTokenMalicious(token))
+      )
       .reduce((total, token) => {
         total += token.balanceInCurrency ?? 0
         return total
@@ -233,7 +239,12 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
     for (const balance of balances) {
       for (const token of balance.tokens) {
-        if (tokenVisibility[token.localId] === false) continue
+        if (
+          tokenVisibility[token.localId] === false ||
+          (tokenVisibility[token.localId] === undefined &&
+            isTokenMalicious(token))
+        )
+          continue
         totalInCurrency += token.balanceInCurrency ?? 0
       }
     }

@@ -5,7 +5,7 @@ import AvaText from 'components/AvaText'
 import Switch from 'components/Switch'
 import Avatar from 'components/Avatar'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectTokenVisilibity, toggleTokenVisibility } from 'store/portfolio'
+import { selectTokenVisibility, toggleTokenVisibility } from 'store/portfolio'
 import { MaliciousTokenIconWithWarning } from 'components/MaliciousTokenIconWithWarning'
 
 type Props = {
@@ -26,7 +26,7 @@ const TokenManagementItem: FC<Props> = ({
 }) => {
   const dispatch = useDispatch()
 
-  const tokenVisibility = useSelector(selectTokenVisilibity)
+  const tokenVisibility = useSelector(selectTokenVisibility)
 
   const isSwitchOn =
     tokenVisibility[id] !== undefined ? tokenVisibility[id] : !isMalicious
