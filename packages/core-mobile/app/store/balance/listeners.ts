@@ -165,9 +165,10 @@ const onBalanceUpdateCore = async ({
     }[] = []
 
     for (const n of restNetworks) {
+      const customTokensByChainIdAndNetwork =
+        customTokens[n.chainId.toString()] ?? []
       inactiveNetworkPromises.push(
         ...accounts.map(account => {
-          const customTokensByChainId = customTokens[n.chainId.toString()] ?? []
           return {
             key: getKey(n.chainId, account.index),
             promise: BalanceService.getBalancesForAccount({
@@ -175,7 +176,7 @@ const onBalanceUpdateCore = async ({
               account,
               currency,
               sentryTrx,
-              customTokens: customTokensByChainId
+              customTokens: customTokensByChainIdAndNetwork
             })
           }
         })

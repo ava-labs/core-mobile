@@ -38,7 +38,8 @@ const mockERC20TokenWithBalance: TokenWithBalanceERC20 = {
   type: TokenType.ERC20,
   address: mockActiveAccount.addressC,
   logoUri: 'logoUri',
-  balance: 1000n
+  balance: 1000n,
+  reputation: null
 }
 
 describe('validate evm send', () => {
