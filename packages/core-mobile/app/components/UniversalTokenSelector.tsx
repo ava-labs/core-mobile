@@ -198,7 +198,9 @@ const UniversalTokenSelector: FC<Props> = ({
         <FlexSpacer />
         <AvaText.Body2
           numberOfLines={1}
-          textStyle={{ maxWidth: '34%' }}
+          textStyle={{
+            maxWidth: hasError ? '32%' : '70%'
+          }}
           ellipsizeMode="tail">
           {`${
             selectedToken && amountInCurrency
