@@ -19,7 +19,6 @@ import { addNotificationsListeners } from 'store/notifications/listeners/listene
 import { addSeedlessListeners } from 'seedless/store/listeners'
 import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
-import { addPortfolioListeners } from 'store/portfolio/listeners'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
@@ -36,8 +35,6 @@ const startListening = listener.startListening as AppStartListening
 addAppListeners(startListening)
 
 addBalanceListeners(startListening)
-
-addPortfolioListeners(startListening)
 
 addAccountListeners(startListening)
 

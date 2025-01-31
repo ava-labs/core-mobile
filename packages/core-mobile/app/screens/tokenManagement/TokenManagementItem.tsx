@@ -5,7 +5,7 @@ import AvaText from 'components/AvaText'
 import Switch from 'components/Switch'
 import Avatar from 'components/Avatar'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsTokenVisible, toggleTokenVisibility } from 'store/portfolio'
+import { selectTokenVisilibity, toggleTokenVisibility } from 'store/portfolio'
 import { MaliciousTokenIconWithWarning } from 'components/MaliciousTokenIconWithWarning'
 
 type Props = {
@@ -26,10 +26,13 @@ const TokenManagementItem: FC<Props> = ({
 }) => {
   const dispatch = useDispatch()
 
-  const isVisible = useSelector(selectIsTokenVisible(id))
+  const tokenVisibility = useSelector(selectTokenVisilibity)
+
+  const isSwitchOn =
+    tokenVisibility[id] !== undefined ? tokenVisibility[id] : !isMalicious
 
   function handleChange(): void {
-    dispatch(toggleTokenVisibility(id))
+    dispatch(toggleTokenVisibility({ tokenId: id, value: !isSwitchOn }))
   }
 
   const tokenLogo = (
@@ -55,8 +58,8 @@ const TokenManagementItem: FC<Props> = ({
         <MaliciousTokenIconWithWarning contentWidth={200} position="left" />
       )}
       <Switch
-        testID={isVisible ? `${name}_displayed` : `${name}_blocked`}
-        value={isVisible}
+        testID={isSwitchOn ? `${name}_displayed` : `${name}_blocked`}
+        value={isSwitchOn}
         onValueChange={handleChange}
       />
     </View>

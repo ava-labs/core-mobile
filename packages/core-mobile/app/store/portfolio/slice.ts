@@ -8,16 +8,12 @@ export const portfolioSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    toggleTokenVisibility: (state, action: PayloadAction<string>) => {
-      const tokenId = action.payload
-      state.tokenVisibility[tokenId] =
-        state.tokenVisibility[tokenId] === undefined
-          ? false
-          : !state.tokenVisibility[tokenId]
-    },
-    turnOffTokenVisibility: (state, action: PayloadAction<string>) => {
-      const tokenId = action.payload
-      state.tokenVisibility[tokenId] = false
+    toggleTokenVisibility: (
+      state,
+      action: PayloadAction<{ tokenId: string; value: boolean }>
+    ) => {
+      const { tokenId, value } = action.payload
+      state.tokenVisibility[tokenId] = value
     }
   }
 })
@@ -30,7 +26,6 @@ export const selectIsTokenVisible = (tokenId: string) => (state: RootState) =>
   state.portfolio.tokenVisibility[tokenId] !== false
 
 // actions
-export const { toggleTokenVisibility, turnOffTokenVisibility } =
-  portfolioSlice.actions
+export const { toggleTokenVisibility } = portfolioSlice.actions
 
 export const portfolioReducer = portfolioSlice.reducer
