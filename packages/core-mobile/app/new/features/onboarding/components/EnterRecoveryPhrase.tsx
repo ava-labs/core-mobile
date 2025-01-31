@@ -51,7 +51,8 @@ export const EnterRecoveryPhrase = ({
         <ScrollView
           sx={{ flex: 1 }}
           contentContainerSx={{ padding: 16 }}
-          keyboardShouldPersistTaps="always">
+          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="on-drag">
           <ScreenHeader
             title="Enter your recovery phrase"
             description="This phrase should contain 12, 18, or 24 words. Use a space between each word."
