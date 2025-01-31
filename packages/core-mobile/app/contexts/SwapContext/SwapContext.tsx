@@ -90,11 +90,7 @@ export const SwapContextProvider = ({
   const debouncedAmount = useDebounce(amount, DEFAULT_DEBOUNCE_MILLISECONDS) // debounce since fetching rates via paraswaps can take awhile
 
   const getOptimalRateForAmount = useCallback(
-    (amnt: Amount | undefined) => {
-      if (!activeAccount) return Promise.reject('No active account')
-
-      if (!amnt) return Promise.reject('No amount')
-
+    (account: Account, amnt: Amount) => {
       if (!fromToken || !('decimals' in fromToken))
         return Promise.reject('Invalid from token')
 
@@ -117,17 +113,17 @@ export const SwapContextProvider = ({
         amount: amnt.bn.toString(),
         swapSide: destination,
         network: activeNetwork,
-        account: activeAccount,
+        account,
         abortSignal: controller.signal
       })
     },
-    [activeAccount, activeNetwork, destination, fromToken, toToken]
+    [activeNetwork, destination, fromToken, toToken]
   )
 
   const getOptimalRate = useCallback(() => {
     if (activeAccount && debouncedAmount) {
       setIsFetchingOptimalRate(true)
-      getOptimalRateForAmount(debouncedAmount)
+      getOptimalRateForAmount(activeAccount, debouncedAmount)
         .then(({ optimalRate: opRate }) => {
           setError('')
           setOptimalRate(opRate)
@@ -162,6 +158,7 @@ export const SwapContextProvider = ({
       const readableErrorMessage = humanizeSwapErrors(err)
       const originalError =
         err instanceof JsonRpcError ? err.data.cause : undefined
+
       showTransactionErrorToast({ message: readableErrorMessage })
       Logger.error(readableErrorMessage, originalError)
     },
