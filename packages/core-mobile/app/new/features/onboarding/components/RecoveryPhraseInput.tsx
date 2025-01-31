@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   FlatList,
   InteractionManager,
+  Keyboard,
   NativeSyntheticEvent,
   TextInput
 } from 'react-native'
@@ -104,6 +105,10 @@ export default function RecoveryPhraseInput({
     updateCurrentWord(enteredText, e.nativeEvent.selection.start)
   }
 
+  const handleSubmitEditing = (): void => {
+    Keyboard.dismiss()
+  }
+
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
       textInputRef.current?.focus()
@@ -151,11 +156,14 @@ export default function RecoveryPhraseInput({
           autoCapitalize={'none'}
           ref={textInputRef}
           autoCorrect={false}
+          returnKeyType="done"
           selectionColor={theme.colors.$textPrimary}
           spellCheck
           multiline
           onChangeText={handleChangeText}
           onSelectionChange={handleSelectionChange}
+          blurOnSubmit
+          onSubmitEditing={handleSubmitEditing}
           style={{
             flexGrow: 1,
             textAlignVertical: 'top',
@@ -172,6 +180,7 @@ export default function RecoveryPhraseInput({
         showsHorizontalScrollIndicator={false}
         data={suggestedWords}
         renderItem={renderWordSuggestion}
+        keyboardShouldPersistTaps="always"
       />
     </View>
   )
