@@ -13,5 +13,5 @@ export function isTokenVisible(
   tokenVisible: boolean | undefined,
   isMalicious: boolean
 ): boolean {
-  return tokenVisible === true || (tokenVisible === undefined && !isMalicious)
+  return tokenVisible !== undefined ? tokenVisible : !isMalicious
 }
