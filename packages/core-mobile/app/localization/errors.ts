@@ -26,8 +26,11 @@ export function humanizeSwapErrors(err: unknown): string {
   if (errorString.toLowerCase().includes('network error')) {
     return 'Swap failed! Network error, please try again.'
   }
-  if (err instanceof JsonRpcError && isError(err.cause, 'INSUFFICIENT_FUNDS')) {
-    return `Swap failed! Insufficient amount for gas. Reduce swap quantity and try again.`
+  if (err instanceof JsonRpcError) {
+    if (isError(err.cause, 'INSUFFICIENT_FUNDS'))
+      return `Swap failed! Insufficient amount for gas. Reduce swap quantity and try again.`
+
+    return err.message
   }
   return 'Swap failed! Please try again.'
 }
