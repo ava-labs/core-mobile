@@ -172,6 +172,7 @@ export default function RecoveryPhraseInput({
         showsHorizontalScrollIndicator={false}
         data={suggestedWords}
         renderItem={renderWordSuggestion}
+        keyboardShouldPersistTaps="always"
       />
     </View>
   )
