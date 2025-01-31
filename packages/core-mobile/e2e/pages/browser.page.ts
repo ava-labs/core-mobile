@@ -264,7 +264,11 @@ class BrowserPage {
     await delay(1000)
     await Wbs.tapByXpath('//span[@data-testid="choose-output-token-label"]')
     await delay(1000)
-    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
+    await Wbs.setInputText(
+      '//input[@data-testid="explore-search-input"]',
+      'USDC'
+    )
+    await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDC"]')
     await this.setDappSwapAmount('[data-testid="amount-input-in"]')
     await Wbs.tapByXpath(
       '//div[not(@aria-disabled="true")]/span[text()="Review"]'

@@ -72,7 +72,10 @@ const PortfolioListItem: FC<Props> = ({
       }}>
       <AvaListItem.Base
         title={
-          <Text numberOfLines={1} variant="heading6">
+          <Text
+            numberOfLines={1}
+            variant="heading6"
+            testID={`portfolio_list_item_title__${symbol}`}>
             {title}
           </Text>
         }

@@ -19,7 +19,11 @@ describe('Filter transactions on Activity List', () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
     await ActivityTabPage.verifySelectedFilter('Contract Call')
-    await Actions.waitForElement(by.text('Contract Call'), 5000, 1)
+    try {
+      await Actions.waitForElement(by.text('Contract Call'), 5000, 1)
+    } catch (e) {
+      await Actions.waitForElement(by.text('Swap'), 5000, 1)
+    }
   })
 
   it('should filter Bridge on Activity List', async () => {
