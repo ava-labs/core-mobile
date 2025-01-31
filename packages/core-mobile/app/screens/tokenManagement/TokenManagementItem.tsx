@@ -7,6 +7,7 @@ import Avatar from 'components/Avatar'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenVisibility, toggleTokenVisibility } from 'store/portfolio'
 import { MaliciousTokenIconWithWarning } from 'components/MaliciousTokenIconWithWarning'
+import { isTokenVisible } from 'store/balance/utils'
 
 type Props = {
   id: string
@@ -28,8 +29,7 @@ const TokenManagementItem: FC<Props> = ({
 
   const tokenVisibility = useSelector(selectTokenVisibility)
 
-  const isSwitchOn =
-    tokenVisibility[id] !== undefined ? tokenVisibility[id] : !isMalicious
+  const isSwitchOn = isTokenVisible(tokenVisibility[id], isMalicious)
 
   function handleChange(): void {
     dispatch(toggleTokenVisibility({ tokenId: id, value: !isSwitchOn }))
