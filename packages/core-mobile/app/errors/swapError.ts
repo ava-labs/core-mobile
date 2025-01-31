@@ -80,23 +80,23 @@ export function humanizeSwapError(err: unknown): string {
     errorString.toLowerCase().startsWith('not enough') &&
     errorString.includes('allowance')
   ) {
-    return 'Swap failed! Not enough allowance.'
+    return 'Not enough allowance.'
   }
 
   if (errorString.includes('-32000')) {
-    return 'Swap failed! Another transaction is pending. Rise gas price to overwrite it.'
+    return 'Another transaction is pending. Raise gas price to overwrite it.'
   }
 
   if (errorString.toLowerCase().includes('network error')) {
-    return 'Swap failed! Network error, please try again.'
+    return 'Network error, please try again later.'
   }
 
   if (err instanceof JsonRpcError) {
     if (isError(err.cause, 'INSUFFICIENT_FUNDS'))
-      return `Swap failed! Insufficient amount for gas. Reduce swap quantity and try again.`
+      return 'Insufficient amount for gas. Reduce swap quantity and try again.'
 
     return err.message
   }
 
-  return 'Swap failed! Please try again.'
+  return errorString || 'An unknown error occurred'
 }
