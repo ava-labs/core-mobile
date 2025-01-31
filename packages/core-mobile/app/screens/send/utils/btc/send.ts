@@ -3,8 +3,8 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { BitcoinSendTransactionParams } from '@avalabs/bitcoin-module'
 import { getBitcoinCaip2ChainId } from 'utils/caip2ChainIds'
-import { RpcMethod } from 'store/rpc'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
+import { RpcMethod } from '@avalabs/vm-module-types'
 
 export const send = async ({
   request,
