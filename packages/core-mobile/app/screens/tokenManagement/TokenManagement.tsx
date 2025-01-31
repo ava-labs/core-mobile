@@ -16,6 +16,7 @@ import { WalletScreenProps } from 'navigation/types'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import ZeroState from 'components/ZeroState'
 import { TokenType } from '@avalabs/vm-module-types'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.TokenManagement
@@ -44,6 +45,7 @@ function TokenManagement(): JSX.Element {
         name={token.name}
         symbol={token.symbol}
         image={logoUri}
+        isMalicious={isTokenMalicious(token)}
       />
     )
   }

@@ -1,14 +1,19 @@
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { isAddress } from 'ethers'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import TokenService from 'services/token/TokenService'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { NetworkContractToken } from '@avalabs/vm-module-types'
+import {
+  NetworkContractToken,
+  TokenType,
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
+import { selectTokensWithBalance } from 'store/balance'
 
 enum AddressValidationStatus {
   Valid,
@@ -19,7 +24,7 @@ enum AddressValidationStatus {
 
 const validateAddress = (
   tokenAddress: string,
-  tokens: NetworkContractToken[]
+  tokens: string[]
 ): AddressValidationStatus => {
   if (tokenAddress.length <= 10) {
     return AddressValidationStatus.TooShort
@@ -29,7 +34,7 @@ const validateAddress = (
     return AddressValidationStatus.Invalid
   }
 
-  if (tokens.some(token => token.address === tokenAddress)) {
+  if (tokens.some(token => token === tokenAddress)) {
     return AddressValidationStatus.AlreadyExists
   }
 
@@ -56,7 +61,7 @@ type CustomToken = {
   tokenAddress: string
   setTokenAddress: (tokenAddress: string) => void
   errorMessage: string
-  token: NetworkContractToken | undefined
+  token: TokenWithBalanceERC20 | NetworkContractToken | undefined
   addCustomToken: () => void
   isLoading: boolean
 }
@@ -70,9 +75,41 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const dispatch = useDispatch()
   const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
+  const tokensWithBalance = useSelector(selectTokensWithBalance)
+
+  const tokenAddresses = useMemo(
+    () => [
+      ...new Set([
+        ...tokens.map(t => t.address),
+        ...tokensWithBalance
+          .map(t => {
+            if (t.type === TokenType.ERC20) {
+              return t.address
+            }
+          })
+          .filter(item => item !== undefined)
+      ])
+    ],
+    [tokens, tokensWithBalance]
+  )
+
+  const existingToken = useMemo(
+    () =>
+      tokensWithBalance.find(
+        t =>
+          t.type === TokenType.ERC20 &&
+          t.address.toLowerCase() === tokenAddress.toLowerCase()
+      ) as TokenWithBalanceERC20 | undefined,
+    [tokensWithBalance, tokenAddress]
+  )
+
+  const tokenData = useMemo(
+    () => existingToken ?? token,
+    [existingToken, token]
+  )
 
   useEffect(() => {
-    const validationStatus = validateAddress(tokenAddress, tokens)
+    const validationStatus = validateAddress(tokenAddress, tokenAddresses)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
         setToken(undefined)
@@ -104,7 +141,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [activeNetwork, tokenAddress, tokens])
+  }, [activeNetwork, tokenAddress, tokenAddresses, tokens])
 
   const addCustomToken = (): void => {
     if (token) {
@@ -122,7 +159,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     tokenAddress,
     setTokenAddress,
     errorMessage,
-    token,
+    token: tokenData,
     addCustomToken,
     isLoading
   }

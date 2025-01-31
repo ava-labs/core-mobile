@@ -17,7 +17,7 @@ export const generateInAppRequestPayload = ({
   chainId?: string
 }): RpcRequest<RpcMethod> => ({
   provider: RpcProvider.CORE_MOBILE,
-  method: method,
+  method,
   data: {
     id: generateRandomNumberId(),
     topic: CORE_MOBILE_TOPIC,
