@@ -97,7 +97,7 @@ function StakeSetupScreenStack(): JSX.Element {
         <Stack.Screen
           options={{ presentation: 'transparentModal' }}
           name={AppNavigation.StakeSetup.FundsStuck}
-          component={FundsStuckModal}
+          component={StakeFundsStuckModal}
         />
       </Stack.Navigator>
     </DelegationContextProvider>
@@ -107,6 +107,14 @@ function StakeSetupScreenStack(): JSX.Element {
 type GetStartedScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.GetStarted
 >
+
+const StakeFundsStuckModal = (): JSX.Element => (
+  <FundsStuckModal
+    title="Stake Failed"
+    message="Your stake failed due to network issues. Would you like to keep trying to stake your funds?"
+    dismissText="Cancel Stake"
+  />
+)
 
 const GetStartedScreen = (): JSX.Element => {
   const { navigate } = useNavigation<GetStartedScreenProps['navigation']>()
