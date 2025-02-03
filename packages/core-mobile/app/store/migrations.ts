@@ -294,7 +294,7 @@ export const migrations = {
   17: (state: any) => {
     const tokenVisibility = state.portfolio.tokenBlacklist.reduce(
       (acc: TokenVisibility, tokenId: string) => {
-        acc[tokenId] = false
+        acc[tokenId.toLowerCase()] = false
         return acc
       },
       {}
