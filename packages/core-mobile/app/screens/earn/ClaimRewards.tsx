@@ -95,7 +95,7 @@ const ClaimRewards = (): JSX.Element | null => {
     }
 
     return [
-      totalFees.toDisplay(),
+      totalFees.toDisplay({ fixedDp: 10 }),
       appHook.tokenInCurrencyFormatter(
         totalFees.mul(avaxPrice).toDisplay({ asNumber: true })
       )
