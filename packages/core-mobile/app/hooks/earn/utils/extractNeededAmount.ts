@@ -4,7 +4,8 @@ export const extractNeededAmount = (
   assetId: string
 ): bigint | null => {
   const regex = new RegExp(
-    `Insufficient funds.*need (\\d+) more nAVAX \\(asset id: ${assetId}\\)`
+    `insufficient funds: provided utxos need (\\d+) more unlocked navax \\(asset id: ${assetId}\\) to cover fee.`,
+    'i'
   )
   const match = errorMessage.match(regex)
 
