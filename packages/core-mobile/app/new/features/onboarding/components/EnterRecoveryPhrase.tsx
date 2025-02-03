@@ -10,6 +10,7 @@ import {
 import ScreenHeader from 'common/components/ScreenHeader'
 import * as bip39 from 'bip39'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import WalletSDK from 'utils/WalletSDK'
 import RecoveryPhraseInput from './RecoveryPhraseInput'
 
 export const EnterRecoveryPhrase = ({
@@ -18,6 +19,7 @@ export const EnterRecoveryPhrase = ({
   onNext: (mnemonic: string) => void
 }): React.JSX.Element => {
   const [mnemonic, setMnemonic] = useState('')
+  const testMnemonic = WalletSDK.testMnemonic()
 
   function handleNext(): void {
     const trimmed = mnemonic.toLowerCase().trim()
@@ -45,6 +47,10 @@ export const EnterRecoveryPhrase = ({
     }
   }
 
+  function handleEnterTestWallet(): void {
+    onNext(testMnemonic)
+  }
+
   return (
     <BlurredBarsContentLayout>
       <SafeAreaView sx={{ flex: 1 }}>
@@ -64,8 +70,17 @@ export const EnterRecoveryPhrase = ({
         <View
           sx={{
             padding: 16,
-            backgroundColor: '$surfacePrimary'
+            backgroundColor: '$surfacePrimary',
+            gap: 12
           }}>
+          {__DEV__ && bip39.validateMnemonic(testMnemonic) && (
+            <Button
+              size="large"
+              type="tertiary"
+              onPress={handleEnterTestWallet}>
+              Enter test HD wallet
+            </Button>
+          )}
           <Button
             size="large"
             type="primary"
