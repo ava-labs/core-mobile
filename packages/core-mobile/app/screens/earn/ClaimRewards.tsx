@@ -134,7 +134,7 @@ const ClaimRewards = (): JSX.Element | null => {
   }
 
   function onFundsStuck(): void {
-    navigate(AppNavigation.Earn.FundsStuck, {
+    navigate(AppNavigation.Earn.ClaimFundsStuck, {
       onTryAgain: () => issueClaimRewards()
     })
   }
