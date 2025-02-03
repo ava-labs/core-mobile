@@ -19,9 +19,8 @@ import { UTCDate } from '@date-fns/utc'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
-// 7 means ~ 2 minutes
-export const maxTransactionStatusCheckRetries = 7
-export const maxTransactionCreationRetries = 5
+export const maxTransactionStatusCheckRetries = 7 // ~ 2 minutes
+export const maxTransactionCreationRetries = 6 // ~ 1 minute
 export const maxBalanceCheckRetries = 10
 export const maxGetAtomicUTXOsRetries = 10
 
