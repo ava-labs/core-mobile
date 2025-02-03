@@ -203,7 +203,10 @@ export const selectBalanceTotalInCurrencyForAccount =
 
     return tokens
       .filter(token =>
-        isTokenVisible(tokenVisibility[token.localId], isTokenMalicious(token))
+        isTokenVisible(
+          tokenVisibility[token.localId.toLowerCase()],
+          isTokenMalicious(token)
+        )
       )
       .reduce((total, token) => {
         total += token.balanceInCurrency ?? 0
@@ -239,7 +242,7 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
       for (const token of balance.tokens) {
         if (
           !isTokenVisible(
-            tokenVisibility[token.localId],
+            tokenVisibility[token.localId.toLowerCase()],
             isTokenMalicious(token)
           )
         )

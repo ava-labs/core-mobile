@@ -29,7 +29,10 @@ const TokenManagementItem: FC<Props> = ({
 
   const tokenVisibility = useSelector(selectTokenVisibility)
 
-  const isSwitchOn = isTokenVisible(tokenVisibility[id], isMalicious)
+  const isSwitchOn = isTokenVisible(
+    tokenVisibility[id.toLowerCase()],
+    isMalicious
+  )
 
   function handleChange(): void {
     dispatch(toggleTokenVisibility({ tokenId: id, value: !isSwitchOn }))

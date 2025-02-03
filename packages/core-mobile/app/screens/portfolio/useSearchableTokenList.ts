@@ -19,7 +19,10 @@ const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
 
 const isNotBlacklisted =
   (tokenVisibility: TokenVisibility) => (token: LocalTokenWithBalance) =>
-    isTokenVisible(tokenVisibility[token.localId], isTokenMalicious(token))
+    isTokenVisible(
+      tokenVisibility[token.localId.toLowerCase()],
+      isTokenMalicious(token)
+    )
 
 const isNotNFT = (token: LocalTokenWithBalance): boolean =>
   token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
