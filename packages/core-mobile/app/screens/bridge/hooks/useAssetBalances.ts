@@ -6,7 +6,6 @@ import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
-import { isErc20Asset } from '@avalabs/bridge-unified'
 import { getAssetBalances } from '../handlers/getAssetBalances'
 import { unwrapAssetSymbol } from '../utils/bridgeUtils'
 import { useBridgeAssets } from './useBridgeAssets'
@@ -23,9 +22,14 @@ export function useAssetBalances(): {
   const tokenInfoData = useTokenInfoContext()
   const { bridgeAssets } = useBridgeAssets()
 
+  const visibleTokens = useMemo(
+    () => tokens.filter(token => isTokenVisible(tokenVisibility, token)),
+    [tokens, tokenVisibility]
+  )
+
   const assetsWithBalances = useMemo(
     () =>
-      getAssetBalances(bridgeAssets, tokens)
+      getAssetBalances(bridgeAssets, visibleTokens)
         .map(token => {
           return {
             ...token,
@@ -35,16 +39,8 @@ export function useAssetBalances(): {
             symbolOnNetwork: token.asset.symbol
           }
         })
-        .filter(token => token.balance !== undefined)
-        .filter(token =>
-          isErc20Asset(token.asset)
-            ? isTokenVisible(
-                tokenVisibility[token.asset.address.toLowerCase()],
-                false
-              )
-            : true
-        ),
-    [bridgeAssets, tokens, tokenInfoData, tokenVisibility]
+        .filter(token => token.balance !== undefined),
+    [bridgeAssets, visibleTokens, tokenInfoData]
   )
 
   const sortedAssetsWithBalances = assetsWithBalances.sort((asset1, asset2) => {

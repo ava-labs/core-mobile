@@ -8,34 +8,25 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenVisibility, toggleTokenVisibility } from 'store/portfolio'
 import { MaliciousTokenIconWithWarning } from 'components/MaliciousTokenIconWithWarning'
 import { isTokenVisible } from 'store/balance/utils'
+import { LocalTokenWithBalance } from 'store/balance'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 type Props = {
-  id: string
-  name: string
-  image?: string
-  symbol?: string
-  onPress?: () => void
-  isMalicious: boolean
+  token: LocalTokenWithBalance
 }
 
-const TokenManagementItem: FC<Props> = ({
-  id,
-  name,
-  image,
-  symbol,
-  isMalicious
-}) => {
+const TokenManagementItem: FC<Props> = ({ token }) => {
   const dispatch = useDispatch()
 
   const tokenVisibility = useSelector(selectTokenVisibility)
 
-  const isSwitchOn = isTokenVisible(
-    tokenVisibility[id.toLowerCase()],
-    isMalicious
-  )
+  const isSwitchOn = isTokenVisible(tokenVisibility, token)
+  const isMalicious = isTokenMalicious(token)
 
   function handleChange(): void {
-    dispatch(toggleTokenVisibility({ tokenId: id, value: !isSwitchOn }))
+    dispatch(
+      toggleTokenVisibility({ tokenId: token.localId, value: !isSwitchOn })
+    )
   }
 
   const tokenLogo = (
@@ -45,7 +36,12 @@ const TokenManagementItem: FC<Props> = ({
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Avatar.Custom name={name} symbol={symbol} logoUri={image} showBorder />
+      <Avatar.Custom
+        name={token.name}
+        symbol={token.symbol}
+        logoUri={token.logoUri}
+        showBorder
+      />
     </View>
   )
 
@@ -61,7 +57,9 @@ const TokenManagementItem: FC<Props> = ({
         <MaliciousTokenIconWithWarning contentWidth={200} position="left" />
       )}
       <Switch
-        testID={isSwitchOn ? `${name}_displayed` : `${name}_blocked`}
+        testID={
+          isSwitchOn ? `${token.name}_displayed` : `${token.name}_blocked`
+        }
         value={isSwitchOn}
         onValueChange={handleChange}
       />
@@ -74,9 +72,9 @@ const TokenManagementItem: FC<Props> = ({
         flexGrow: 1,
         marginRight: 15
       }}>
-      <AvaText.Heading3 ellipsizeMode="tail">{name}</AvaText.Heading3>
+      <AvaText.Heading3 ellipsizeMode="tail">{token.name}</AvaText.Heading3>
       <AvaText.Body2 numberOfLines={1} ellipsizeMode="tail">
-        {symbol}
+        {token.symbol}
       </AvaText.Body2>
     </View>
   )
