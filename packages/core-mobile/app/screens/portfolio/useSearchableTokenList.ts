@@ -12,14 +12,13 @@ import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractToken
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
 import { TokenType } from '@avalabs/vm-module-types'
-import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
 
 const isNotBlacklisted =
   (tokenVisibility: TokenVisibility) => (token: LocalTokenWithBalance) =>
-    isTokenVisible(tokenVisibility[token.localId], isTokenMalicious(token))
+    isTokenVisible(tokenVisibility, token)
 
 const isNotNFT = (token: LocalTokenWithBalance): boolean =>
   token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
