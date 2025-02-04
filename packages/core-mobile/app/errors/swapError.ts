@@ -59,7 +59,7 @@ export const swapError = {
 export const humanizeParaswapRateError = (errorMsg: string): string => {
   switch (errorMsg) {
     case 'ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT':
-      return 'The expected influence of the trade over the current market fiat price of the chosen pair of token is too high.'
+      return 'The expected influence of the trade over the current market fiat price of the chosen pair of tokens is too high.'
     case 'Internal Error while computing the price':
       return 'An error occurred while computing the price'
     default:
