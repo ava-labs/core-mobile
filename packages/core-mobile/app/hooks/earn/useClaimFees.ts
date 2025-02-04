@@ -5,7 +5,10 @@ import {
 } from 'services/earn/calculateCrossChainFees'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { selectPFeeAdjustmentThreshold } from 'store/posthog/slice'
+import {
+  selectPFeeAdjustmentThreshold,
+  selectCBaseFeeMultiplier
+} from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account/slice'
 import WalletService from 'services/wallet/WalletService'
@@ -20,7 +23,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
-import { getAssetId } from 'services/wallet/utils'
+import { getAssetId, addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
@@ -53,6 +56,7 @@ export const useClaimFees = (): {
   const pChainBalance = usePChainBalance()
   const xpProvider = useAvalancheXpProvider()
   const cChainBaseFee = useCChainBaseFee()
+  const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
     isDevMode,
@@ -84,7 +88,10 @@ export const useClaimFees = (): {
 
       if (!activeAccount) throw new Error('No active account')
 
-      const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
+      const instantBaseFee = addBufferToCChainBaseFee(
+        baseFee,
+        cBaseFeeMultiplier
+      )
 
       const unsignedTx = await WalletService.createImportCTx({
         accountIndex: activeAccount.index,
@@ -146,7 +153,8 @@ export const useClaimFees = (): {
     totalClaimable,
     xpProvider,
     feeState,
-    pFeeAdjustmentThreshold
+    pFeeAdjustmentThreshold,
+    cBaseFeeMultiplier
   ])
 
   return {

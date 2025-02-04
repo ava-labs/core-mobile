@@ -33,7 +33,8 @@ export const computeDelegationSteps = async ({
   cChainBaseFee,
   provider,
   pFeeAdjustmentThreshold,
-  pFeeMultiplier
+  pFeeMultiplier,
+  cBaseFeeMultiplier
 }: {
   pAddress: string
   stakeAmount: bigint
@@ -47,6 +48,7 @@ export const computeDelegationSteps = async ({
   provider: Avalanche.JsonRpcProvider
   pFeeAdjustmentThreshold: number
   pFeeMultiplier: number
+  cBaseFeeMultiplier: number
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
   let pChainBalance: bigint | undefined
@@ -155,7 +157,8 @@ export const computeDelegationSteps = async ({
           cChainBaseFee,
           accountIndex,
           avaxXPNetwork,
-          pAddress
+          pAddress,
+          cBaseFeeMultiplier
         })
 
         const importPFee = await getImportPFeePostCExport({

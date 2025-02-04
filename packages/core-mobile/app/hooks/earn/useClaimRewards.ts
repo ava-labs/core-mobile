@@ -6,9 +6,10 @@ import {
 } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
-import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveAccount } from 'store/account/slice'
+import { selectCBaseFeeMultiplier } from 'store/posthog/slice'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { selectActiveNetwork } from 'store/network'
@@ -40,6 +41,7 @@ export const useClaimRewards = (
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { defaultFeeState } = useGetFeeState()
+  const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const {
     totalFees,
     pClaimableBalance,
@@ -66,14 +68,15 @@ export const useClaimRewards = (
 
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
-      return EarnService.claimRewards(
-        pClaimableBalance,
-        amountToTransfer,
+      return EarnService.claimRewards({
+        pChainBalance: pClaimableBalance,
+        requiredAmount: amountToTransfer,
         activeAccount,
-        isDeveloperMode,
-        isDevnet(activeNetwork),
-        defaultFeeState
-      )
+        isDevMode: isDeveloperMode,
+        isDevnet: isDevnet(activeNetwork),
+        feeState: defaultFeeState,
+        cBaseFeeMultiplier
+      })
     },
     onSuccess: () => {
       refetchQueries({
