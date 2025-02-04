@@ -28,6 +28,10 @@ import IconSwitchRight from '../../assets/icons/switch_right.svg'
 import IconCompare from '../../assets/icons/compare.svg'
 import IconSend from '../../assets/icons/send.svg'
 import IconPsychiatry from '../../assets/icons/psychiatry.svg'
+import IconTrendingArrowUp from '../../assets/icons/trending_arrow_up.svg'
+import IconTrendingArrowDown from '../../assets/icons/trending_arrow_down.svg'
+import IconQRCode2 from '../../assets/icons/qr_code_2.svg'
+import IconNotifications from '../../assets/icons/notifications.svg'
 
 export const Icons = {
   Action: {
@@ -48,7 +52,11 @@ export const Icons = {
     ExpandMore: IconExpandMore
   },
   Social: {
-    RemoveModerator: IconRemoveModerator
+    RemoveModerator: IconRemoveModerator,
+    Notifications: IconNotifications
+  },
+  Communication: {
+    QRCode2: IconQRCode2
   },
   Content: {
     Add: IconAdd
@@ -62,7 +70,9 @@ export const Icons = {
     SwitchRight: IconSwitchRight,
     Pin: IconPin,
     Psychiatry: IconPsychiatry,
-    Error: IconError
+    Error: IconError,
+    TrendingArrowUp: IconTrendingArrowUp,
+    TrendingArrowDown: IconTrendingArrowDown
   },
   RecoveryMethod: {
     Passkey: IconPasskey,
