@@ -73,6 +73,10 @@ const ClaimRewards = (): JSX.Element | null => {
   useEffect(() => {
     if (claimRewardsMutation.isPending) return
 
+    // the balance is usually updated faster than the tx "committed" event
+    // and we don't want to show the updated balance while the tx is still pending (spinner is being displayed)
+    // as that might confuse the user
+    // thus, we only update the balance if the tx is not pending
     if (data?.balancePerType.unlockedUnstaked) {
       const unlockedInUnit = new TokenUnit(
         data.balancePerType.unlockedUnstaked,
