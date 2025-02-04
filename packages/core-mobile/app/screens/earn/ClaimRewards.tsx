@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -38,6 +38,12 @@ const ClaimRewards = (): JSX.Element | null => {
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
+  const [claimableAmountInAvax, setClaimableAmountInAvax] =
+    useState<string>(UNKNOWN_AMOUNT)
+  const [
+    formattedClaimableAmountInCurrency,
+    setFormattedClaimableAmountInCurrency
+  ] = useState<string>(UNKNOWN_AMOUNT)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeNetwork = useSelector(selectActiveNetwork)
   const pNetwork = NetworkService.getAvalancheNetworkP(
@@ -51,7 +57,6 @@ const ClaimRewards = (): JSX.Element | null => {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-
   const {
     mutation: claimRewardsMutation,
     totalFees,
@@ -65,29 +70,31 @@ const ClaimRewards = (): JSX.Element | null => {
 
   const shouldDisableClaimButton = unableToGetFees || insufficientBalanceForFee
 
-  const [claimableAmountInAvax, formattedClaimableAmountInCurrency] =
-    useMemo(() => {
-      if (data?.balancePerType.unlockedUnstaked) {
-        const unlockedInUnit = new TokenUnit(
-          data.balancePerType.unlockedUnstaked,
-          pNetwork.networkToken.decimals,
-          pNetwork.networkToken.symbol
+  useEffect(() => {
+    if (claimRewardsMutation.isPending) return
+
+    if (data?.balancePerType.unlockedUnstaked) {
+      const unlockedInUnit = new TokenUnit(
+        data.balancePerType.unlockedUnstaked,
+        pNetwork.networkToken.decimals,
+        pNetwork.networkToken.symbol
+      )
+
+      setClaimableAmountInAvax(unlockedInUnit.toDisplay())
+      setFormattedClaimableAmountInCurrency(
+        appHook.tokenInCurrencyFormatter(
+          unlockedInUnit.mul(avaxPrice).toDisplay({ asNumber: true })
         )
-        return [
-          unlockedInUnit.toDisplay(),
-          appHook.tokenInCurrencyFormatter(
-            unlockedInUnit.mul(avaxPrice).toDisplay({ asNumber: true })
-          )
-        ]
-      }
-      return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
-    }, [
-      avaxPrice,
-      data?.balancePerType.unlockedUnstaked,
-      pNetwork.networkToken.decimals,
-      pNetwork.networkToken.symbol,
-      appHook
-    ])
+      )
+    }
+  }, [
+    data?.balancePerType.unlockedUnstaked,
+    avaxPrice,
+    pNetwork.networkToken.decimals,
+    pNetwork.networkToken.symbol,
+    appHook,
+    claimRewardsMutation.isPending
+  ])
 
   const [feesInAvax, formattedFeesInCurrency] = useMemo(() => {
     if (totalFees === undefined) {
@@ -203,7 +210,7 @@ const ClaimRewards = (): JSX.Element | null => {
         </Tooltip>
         {renderFees()}
       </Row>
-      {insufficientBalanceForFee && (
+      {!claimRewardsMutation.isPending && insufficientBalanceForFee && (
         <Text
           testID="insufficent_balance_error_msg"
           variant="body2"
