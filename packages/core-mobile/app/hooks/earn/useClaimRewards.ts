@@ -31,7 +31,6 @@ export const useClaimRewards = (
   onFundsStuck: (error: Error) => void
 ): {
   mutation: UseMutationResult<void, Error, void, unknown>
-  defaultTxFee?: TokenUnit
   totalFees?: TokenUnit
   feeCalculationError?: SendErrorMessage
 } => {
@@ -43,9 +42,8 @@ export const useClaimRewards = (
   const { defaultFeeState } = useGetFeeState()
   const {
     totalFees,
-    exportPFee,
-    totalClaimable,
-    defaultTxFee,
+    pClaimableBalance,
+    amountToTransfer,
     feeCalculationError
   } = useClaimFees()
 
@@ -55,24 +53,21 @@ export const useClaimRewards = (
   const mutation = useMutation({
     mutationFn: () => {
       if (!activeAccount) {
-        throw Error('no active account')
+        throw Error('No active account')
       }
 
-      if (!totalFees || !exportPFee || !totalClaimable) {
-        throw Error('unable to calculate fees')
+      if (!pClaimableBalance) {
+        throw Error('No claimable balance')
       }
 
-      if (totalFees.gt(totalClaimable)) {
-        throw Error('not enough balance to cover fee')
+      if (!totalFees || !amountToTransfer) {
+        throw Error('Unable to calculate fees')
       }
-
-      // maximum amount that we can transfer = max claimable amount - total fee (exportP + importC)
-      const amountToTransfer = totalClaimable.sub(totalFees)
 
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
       return EarnService.claimRewards(
-        totalClaimable,
+        pClaimableBalance,
         amountToTransfer,
         activeAccount,
         isDeveloperMode,
@@ -100,7 +95,11 @@ export const useClaimRewards = (
       }
     }
   })
-  return { mutation, defaultTxFee, totalFees, feeCalculationError }
+  return {
+    mutation,
+    totalFees,
+    feeCalculationError
+  }
 }
 
 /**
