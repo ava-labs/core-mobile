@@ -106,7 +106,12 @@ export const modalFirstScreenOptions: StackNavigationOptions = {
 
 export const homeScreenOptions: StackNavigationOptions = {
   headerLeft: () => (
-    <View sx={{ marginLeft: 12, backgroundColor: 'transparent' }}>
+    <View
+      sx={{
+        marginLeft: 12,
+        height: '100%',
+        justifyContent: 'center'
+      }}>
       <Link href="/settings/">
         <AccountSettingBarButton />
       </Link>
@@ -119,7 +124,8 @@ export const homeScreenOptions: StackNavigationOptions = {
           flexDirection: 'row',
           gap: 12,
           marginRight: 12,
-          marginBottom: 12
+          height: '100%',
+          alignItems: 'center'
         }}>
         <Link href="/receive/" asChild>
           <ReceiveBarButton />

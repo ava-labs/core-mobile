@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import {
   ScrollView,
   View,
@@ -6,30 +6,25 @@ import {
   BalanceHeader,
   NavigationTitleHeader
 } from '@avalabs/k2-alpine'
-import { Link, useNavigation } from 'expo-router'
+import { Link } from 'expo-router'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { copyToClipboard } from 'common/utils/clipboard'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent,
-  View as RNView
+  NativeSyntheticEvent
 } from 'react-native'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
+import { useAnimatedNavigationHeader } from 'common/hooks/useAnimatedNavigationHeader'
+import { clamp } from 'react-native-reanimated'
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const navigation = useNavigation()
   const accountName = 'Account 1'
   const formattedBalance = '$7,377.37'
-  const targetRef = useRef<RNView>(null)
-  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | undefined>(
-    undefined
-  )
-  const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
+  const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
-  >(undefined)
-  const [headerVisibility, setHeaderVisibility] = useState<number>(1)
+  >()
+  const [balanceHeaderVisibility, setBalanceHeaderVisibility] = useState(1)
 
   const handleCopyToClipboard = (): void => {
     copyToClipboard('test')
@@ -38,72 +33,30 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const handleScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent>
   ): void => {
-    if (headerLayout) {
-      setHeaderVisibility(
-        Math.max(
-          Math.min(
-            1 -
-              event.nativeEvent.contentOffset.y /
-                (headerLayout.y + headerLayout.height),
-            1
-          ),
-          0
+    if (balanceHeaderLayout) {
+      setBalanceHeaderVisibility(
+        // calculate balance header's visibility based on the scroll position
+        clamp(
+          1 -
+            event.nativeEvent.contentOffset.y /
+              (balanceHeaderLayout.y + balanceHeaderLayout.height),
+          0,
+          1
         )
       )
     }
   }
 
-  const handleNavigationHeaderLayout = (event: LayoutChangeEvent): void => {
-    setNavigationHeaderLayout(event.nativeEvent.layout)
+  const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
+    setBalanceHeaderLayout(event.nativeEvent.layout)
   }
 
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
-
-  const renderHeaderBackground = useCallback(() => {
-    return (
-      <BlurredBackgroundView
-        separator={{ position: 'bottom', opacity: 1 - headerVisibility }}
-      />
+  useAnimatedNavigationHeader({
+    visibility: 1 - balanceHeaderVisibility,
+    header: (
+      <NavigationTitleHeader title={accountName} subtitle={formattedBalance} />
     )
-  }, [headerVisibility])
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerBackground: renderHeaderBackground,
-      title: (
-        <View
-          sx={{
-            overflow: 'hidden',
-            height: '100%',
-            justifyContent: 'center'
-          }}>
-          <View
-            sx={{
-              opacity: 1 - headerVisibility,
-              transform: [
-                {
-                  translateY:
-                    (navigationHeaderLayout?.height ?? 0) * headerVisibility
-                }
-              ]
-            }}
-            onLayout={handleNavigationHeaderLayout}>
-            <NavigationTitleHeader
-              title={accountName}
-              subtitle={formattedBalance}
-            />
-          </View>
-        </View>
-      )
-    })
-  }, [
-    navigation,
-    headerVisibility,
-    navigationHeaderLayout,
-    renderHeaderBackground
-  ])
+  })
 
   return (
     <BlurredBarsContentLayout>
@@ -116,13 +69,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
         }}
         scrollEventThrottle={16}
         onScroll={handleScroll}>
-        <View ref={targetRef} onLayout={handleHeaderLayout}>
-          <BalanceHeader
-            accountName={accountName}
-            formattedBalance={formattedBalance}
-            currency="USD"
-          />
-        </View>
+        <BalanceHeader
+          accountName={accountName}
+          formattedBalance={formattedBalance}
+          currency="USD"
+          onLayout={handleBalanceHeaderLayout}
+        />
         <View sx={{ height: 800 }} />
         <Link href="/portfolio/assets" asChild>
           <Button type="primary" size="medium">

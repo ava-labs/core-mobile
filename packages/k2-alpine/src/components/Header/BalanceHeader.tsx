@@ -1,18 +1,21 @@
 import React from 'react'
+import { LayoutChangeEvent } from 'react-native'
 import { Text, View } from '../Primitives'
 import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
 
 export const BalanceHeader = ({
   accountName,
   formattedBalance,
-  currency
+  currency,
+  onLayout
 }: {
   accountName: string
   formattedBalance: string
   currency: string
+  onLayout?: (event: LayoutChangeEvent) => void
 }): JSX.Element => {
   return (
-    <View sx={{ gap: 5 }}>
+    <View sx={{ gap: 5 }} onLayout={onLayout}>
       <View>
         <Text
           variant="heading2"
