@@ -6,10 +6,10 @@ import { useNavigation } from 'expo-router'
 
 export const useAnimatedNavigationHeader = ({
   header,
-  visibility
+  visibilityProgress
 }: {
   header: JSX.Element
-  visibility: number
+  visibilityProgress: number
 }): void => {
   const navigation = useNavigation()
   const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
@@ -19,10 +19,10 @@ export const useAnimatedNavigationHeader = ({
   const renderHeaderBackground = useCallback(
     () => (
       <BlurredBackgroundView
-        separator={{ position: 'bottom', opacity: visibility }}
+        separator={{ position: 'bottom', opacity: visibilityProgress }}
       />
     ),
-    [visibility]
+    [visibilityProgress]
   )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
@@ -41,11 +41,12 @@ export const useAnimatedNavigationHeader = ({
           }}>
           <View
             sx={{
-              opacity: visibility,
+              opacity: visibilityProgress,
               transform: [
                 {
                   translateY:
-                    (navigationHeaderLayout?.height ?? 0) * (1 - visibility)
+                    (navigationHeaderLayout?.height ?? 0) *
+                    (1 - visibilityProgress)
                 }
               ]
             }}
@@ -59,7 +60,7 @@ export const useAnimatedNavigationHeader = ({
     navigation,
     header,
     renderHeaderBackground,
-    visibility,
+    visibilityProgress,
     navigationHeaderLayout
   ])
 }

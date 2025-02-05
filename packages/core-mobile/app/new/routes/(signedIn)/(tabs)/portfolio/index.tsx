@@ -52,7 +52,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }
 
   useAnimatedNavigationHeader({
-    visibility: balanceHeaderHiddenProgress,
+    visibilityProgress: balanceHeaderHiddenProgress,
     header: (
       <NavigationTitleHeader title={accountName} subtitle={formattedBalance} />
     )
