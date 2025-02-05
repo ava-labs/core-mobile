@@ -6,16 +6,18 @@ export const NavigationTitleHeader = ({
   subtitle
 }: {
   title: string
-  subtitle: string
+  subtitle?: string
 }): JSX.Element => {
   return (
     <View style={[{ alignItems: 'center' }]}>
       <Text sx={{ fontSize: 17, lineHeight: 20, fontFamily: 'Inter-SemiBold' }}>
         {title}
       </Text>
-      <Text variant="caption" sx={{ color: '$textSecondary' }}>
-        {subtitle}
-      </Text>
+      {subtitle && (
+        <Text variant="caption" sx={{ color: '$textSecondary' }}>
+          {subtitle}
+        </Text>
+      )}
     </View>
   )
 }
