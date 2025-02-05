@@ -52,9 +52,9 @@ export const PriceChangeIndicator = ({
               }}
               colors={
                 status === 'down'
-                  ? ['#E84142', '#F6663B']
+                  ? [theme.colors.$textDanger, '#F6663B']
                   : status === 'up'
-                  ? ['#1CC51D', '#47C4AF']
+                  ? [theme.colors.$textSuccess, '#47C4AF']
                   : [theme.colors.$textSecondary, theme.colors.$textSecondary]
               }
               start={{ x: 1, y: 0.5 }}

@@ -17,10 +17,14 @@ import {
 } from 'react-native'
 import { useAnimatedNavigationHeader } from 'common/hooks/useAnimatedNavigationHeader'
 import { clamp } from 'react-native-reanimated'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const accountName = 'Account 1'
   const formattedBalance = '$7,377.37'
+  const {
+    appHook: { selectedCurrency }
+  } = useApplicationContext()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -72,7 +76,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <BalanceHeader
           accountName={accountName}
           formattedBalance={formattedBalance}
-          currency="USD"
+          currency={selectedCurrency}
           onLayout={handleBalanceHeaderLayout}
         />
         <Link href="/portfolio/assets" asChild>
