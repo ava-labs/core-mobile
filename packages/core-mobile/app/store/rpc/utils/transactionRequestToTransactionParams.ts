@@ -1,5 +1,6 @@
 import { TransactionParams } from '@avalabs/evm-module'
 import { BigNumberish, TransactionRequest } from 'ethers'
+import { bigIntToHex } from '@ethereumjs/util'
 
 export const transactionRequestToTransactionParams = (
   txRequest: TransactionRequest
@@ -18,10 +19,6 @@ export const transactionRequestToTransactionParams = (
     value,
     gas
   }
-}
-
-export const bigIntToHex = (num: bigint | number): string => {
-  return '0x' + num.toString(16)
 }
 
 const bigNumberishToHex = (

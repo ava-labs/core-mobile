@@ -338,7 +338,7 @@ const Bridge: FC = () => {
           })
           return
         }
-        setBridgeError(TRANSFER_ERROR)
+        transferError instanceof Error && setBridgeError(transferError.message)
         showTransactionErrorToast({
           message: getJsonRpcErrorMessage(transferError)
         })
