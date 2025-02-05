@@ -4,6 +4,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EarnService from 'services/earn/EarnService'
 import { selectActiveAccount } from 'store/account'
 import { RecoveryEvents } from 'services/earn/types'
+import { selectCBaseFeeMultiplier } from 'store/posthog/slice'
 import { assertNotUndefined } from 'utils/assertions'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectActiveNetwork } from 'store/network'
@@ -24,6 +25,7 @@ export const useImportAnyStuckFunds = (
   const isDevMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const activeNetwork = useSelector(selectActiveNetwork)
+  const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
   const devnet = isDevnet(activeNetwork)
 
@@ -48,7 +50,8 @@ export const useImportAnyStuckFunds = (
         selectedCurrency,
         progressEvents: handleRecoveryEvent,
         feeState: defaultFeeState,
-        isDevnet: devnet
+        isDevnet: devnet,
+        cBaseFeeMultiplier
       })
       return true
     }

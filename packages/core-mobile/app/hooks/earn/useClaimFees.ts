@@ -5,7 +5,10 @@ import {
 } from 'services/earn/calculateCrossChainFees'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { selectPFeeAdjustmentThreshold } from 'store/posthog/slice'
+import {
+  selectPFeeAdjustmentThreshold,
+  selectCBaseFeeMultiplier
+} from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account/slice'
 import WalletService from 'services/wallet/WalletService'
@@ -20,7 +23,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
-import { getAssetId } from 'services/wallet/utils'
+import { getAssetId, addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
@@ -37,9 +40,8 @@ import { extractNeededAmount } from './utils/extractNeededAmount'
  */
 export const useClaimFees = (): {
   totalFees?: TokenUnit
-  exportPFee?: TokenUnit
-  totalClaimable?: TokenUnit
-  defaultTxFee?: TokenUnit
+  amountToTransfer?: TokenUnit
+  pClaimableBalance?: TokenUnit
   feeCalculationError?: SendErrorMessage
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
@@ -47,14 +49,14 @@ export const useClaimFees = (): {
   const activeNetwork = useSelector(selectActiveNetwork)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const [totalFees, setTotalFees] = useState<TokenUnit>()
-  const [exportFee, setExportFee] = useState<TokenUnit>()
-  const [defaultTxFee, setDefaultTxFee] = useState<TokenUnit>()
+  const [amountToTransfer, setAmountToTransfer] = useState<TokenUnit>()
   const [feeCalculationError, setFeeCalculationError] =
     useState<SendErrorMessage>()
   const { defaultFeeState: feeState } = useGetFeeState()
   const pChainBalance = usePChainBalance()
   const xpProvider = useAvalancheXpProvider()
   const cChainBaseFee = useCChainBaseFee()
+  const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
     isDevMode,
@@ -76,47 +78,20 @@ export const useClaimFees = (): {
   ])
 
   useEffect(() => {
-    const getDefaultTxFee = async (): Promise<void> => {
-      if (
-        activeAccount === undefined ||
-        xpProvider === undefined ||
-        feeState === undefined ||
-        totalClaimable === undefined
-      ) {
-        return
-      }
-      const txFee = await getExportPFee({
-        amountInNAvax: totalClaimable,
-        activeAccount,
-        avaxXPNetwork,
-        provider: xpProvider,
-        feeState,
-        pFeeAdjustmentThreshold
-      })
-      setDefaultTxFee(txFee)
-    }
-    getDefaultTxFee().catch(Logger.error)
-  }, [
-    activeAccount,
-    avaxXPNetwork,
-    xpProvider,
-    totalClaimable,
-    feeState,
-    pFeeAdjustmentThreshold
-  ])
-
-  useEffect(() => {
     const calculateFees = async (): Promise<void> => {
       if (xpProvider === undefined) return
 
-      if (totalClaimable === undefined) throw new Error('no claimable balance')
+      if (totalClaimable === undefined) throw new Error('No claimable balance')
 
       const baseFee = cChainBaseFee?.data
-      if (!baseFee) throw new Error('no base fee available')
+      if (!baseFee) throw new Error('No base fee available')
 
-      if (!activeAccount) throw new Error('no active account')
+      if (!activeAccount) throw new Error('No active account')
 
-      const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
+      const instantBaseFee = addBufferToCChainBaseFee(
+        baseFee,
+        cBaseFeeMultiplier
+      )
 
       const unsignedTx = await WalletService.createImportCTx({
         accountIndex: activeAccount.index,
@@ -131,26 +106,27 @@ export const useClaimFees = (): {
 
       const importCFee = calculateCChainFee(instantBaseFee, unsignedTx)
 
-      const exportPFee = await getExportPFee({
-        amountInNAvax: totalClaimable,
-        activeAccount,
-        avaxXPNetwork,
-        provider: xpProvider,
-        feeState,
-        pFeeAdjustmentThreshold
-      })
+      const { txFee: exportPFee, txAmount: exportPAmount } =
+        await getExportPFee({
+          amountInNAvax: totalClaimable,
+          activeAccount,
+          avaxXPNetwork,
+          provider: xpProvider,
+          feeState,
+          pFeeAdjustmentThreshold
+        })
 
       Logger.info('importCFee', importCFee.toDisplay())
       Logger.info('exportPFee', exportPFee.toDisplay())
 
-      const allFees = importCFee.add(exportPFee)
+      const allFees = exportPFee.add(importCFee)
 
       if (allFees.gt(totalClaimable)) {
         throw SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
       }
 
+      setAmountToTransfer(exportPAmount)
       setTotalFees(allFees)
-      setExportFee(exportPFee)
     }
 
     calculateFees()
@@ -177,14 +153,14 @@ export const useClaimFees = (): {
     totalClaimable,
     xpProvider,
     feeState,
-    pFeeAdjustmentThreshold
+    pFeeAdjustmentThreshold,
+    cBaseFeeMultiplier
   ])
 
   return {
     totalFees,
-    exportPFee: exportFee,
-    totalClaimable,
-    defaultTxFee,
+    amountToTransfer,
+    pClaimableBalance: totalClaimable,
     feeCalculationError
   }
 }
@@ -204,9 +180,19 @@ const getExportPFee = async ({
   feeState?: pvm.FeeState
   missingAvax?: bigint
   pFeeAdjustmentThreshold: number
-}): Promise<TokenUnit> => {
+}): Promise<{
+  txFee: TokenUnit
+  txAmount: TokenUnit
+}> => {
+  let txAmount = new TokenUnit(
+    amountInNAvax.toSubUnit(),
+    avaxXPNetwork.networkToken.decimals,
+    avaxXPNetwork.networkToken.symbol
+  )
+
   if (provider.isEtnaEnabled()) {
     let unsignedTxP
+
     try {
       unsignedTxP = await WalletService.createExportPTx({
         amountInNAvax: amountInNAvax.toSubUnit(),
@@ -259,6 +245,12 @@ const getExportPFee = async ({
         destinationChain: 'C',
         feeState
       })
+
+      txAmount = new TokenUnit(
+        amountAvailableToClaim,
+        avaxXPNetwork.networkToken.decimals,
+        avaxXPNetwork.networkToken.symbol
+      )
     }
 
     const tx = await Avalanche.parseAvalancheTx(
@@ -267,11 +259,20 @@ const getExportPFee = async ({
       activeAccount.addressPVM
     )
 
-    return new TokenUnit(
+    const txFee = new TokenUnit(
       tx.txFee,
       avaxXPNetwork.networkToken.decimals,
       avaxXPNetwork.networkToken.symbol
     )
+
+    return {
+      txFee,
+      txAmount
+    }
   }
-  return calculatePChainFee(avaxXPNetwork)
+
+  return {
+    txFee: await calculatePChainFee(avaxXPNetwork),
+    txAmount
+  }
 }
