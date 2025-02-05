@@ -20,6 +20,12 @@ export const All = (): JSX.Element => {
           formattedBalance="$7,377.37"
           currency="USD"
         />
+        <BalanceHeader
+          accountName="Account 1"
+          formattedBalance="$7,377.37"
+          errorMessage="Unable to load all balances"
+          currency="USD"
+        />
         <NavigationTitleHeader title="Account 1" subtitle="$51.72 USD" />
       </View>
     </ScrollView>

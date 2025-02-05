@@ -32,6 +32,7 @@ import IconTrendingArrowUp from '../../assets/icons/trending_arrow_up.svg'
 import IconTrendingArrowDown from '../../assets/icons/trending_arrow_down.svg'
 import IconQRCode2 from '../../assets/icons/qr_code_2.svg'
 import IconNotifications from '../../assets/icons/notifications.svg'
+import IconAlertError from '../../assets/icons/alert_error.svg'
 
 export const Icons = {
   Action: {
@@ -40,7 +41,8 @@ export const Icons = {
     Clear: IconClear
   },
   Alert: {
-    IconErrorOutline: IconErrorOutline
+    IconErrorOutline: IconErrorOutline,
+    Error: IconAlertError
   },
   Device: {
     IconGPPMaybe: IconGPPMaybe
