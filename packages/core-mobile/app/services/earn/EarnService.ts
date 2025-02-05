@@ -69,7 +69,8 @@ class EarnService {
     selectedCurrency,
     progressEvents,
     isDevnet,
-    feeState
+    feeState,
+    cBaseFeeMultiplier
   }: {
     activeAccount: Account
     isDevMode: boolean
@@ -77,6 +78,7 @@ class EarnService {
     progressEvents?: (events: RecoveryEvents) => void
     isDevnet: boolean
     feeState?: pvm.FeeState
+    cBaseFeeMultiplier: number
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
@@ -116,7 +118,8 @@ class EarnService {
       await importC({
         activeAccount,
         isDevMode,
-        isDevnet
+        isDevnet,
+        cBaseFeeMultiplier
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -131,15 +134,23 @@ class EarnService {
    * @param activeAccount
    * @param isDevMode
    */
-  // eslint-disable-next-line max-params
-  async claimRewards(
-    pChainBalance: TokenUnit,
-    requiredAmount: TokenUnit,
-    activeAccount: Account,
-    isDevMode: boolean,
-    isDevnet: boolean,
+  async claimRewards({
+    pChainBalance,
+    requiredAmount,
+    activeAccount,
+    isDevMode,
+    isDevnet,
+    feeState,
+    cBaseFeeMultiplier
+  }: {
+    pChainBalance: TokenUnit
+    requiredAmount: TokenUnit
+    activeAccount: Account
+    isDevMode: boolean
+    isDevnet: boolean
     feeState?: pvm.FeeState
-  ): Promise<void> {
+    cBaseFeeMultiplier: number
+  }): Promise<void> {
     await exportP({
       pChainBalance,
       requiredAmount,
@@ -151,7 +162,8 @@ class EarnService {
     await importC({
       activeAccount,
       isDevMode,
-      isDevnet
+      isDevnet,
+      cBaseFeeMultiplier
     })
   }
 

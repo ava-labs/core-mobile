@@ -31,7 +31,7 @@ function TokenSelector({
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
 }: TokenSelectorProps): React.JSX.Element {
   const { filteredTokenList, searchText, setSearchText } =
-    useSearchableTokenList(hideZeroBalance, false)
+    useSearchableTokenList(hideZeroBalance, true)
   const textInputRef = useRef() as RefObject<TextInput>
 
   useEffect(() => {

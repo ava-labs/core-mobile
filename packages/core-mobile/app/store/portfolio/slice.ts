@@ -13,7 +13,7 @@ export const portfolioSlice = createSlice({
       action: PayloadAction<{ tokenId: string; value: boolean }>
     ) => {
       const { tokenId, value } = action.payload
-      state.tokenVisibility[tokenId] = value
+      state.tokenVisibility[tokenId.toLowerCase()] = value
     }
   }
 })

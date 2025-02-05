@@ -36,7 +36,8 @@ describe('computeDelegationSteps', () => {
     cChainBaseFee: {} as TokenUnit,
     provider: {} as Avalanche.JsonRpcProvider,
     pFeeAdjustmentThreshold: 5,
-    pFeeMultiplier: 0.2
+    pFeeMultiplier: 0.2,
+    cBaseFeeMultiplier: 1
   }
 
   it('should throw an error when there is insufficient balance', async () => {

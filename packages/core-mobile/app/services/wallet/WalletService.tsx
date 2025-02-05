@@ -32,7 +32,6 @@ import {
   TypedData,
   TypedDataV1
 } from '@avalabs/vm-module-types'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { isDevnet } from 'utils/isDevnet'
@@ -54,9 +53,6 @@ type InitProps = {
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
-
-// We increase C chain base fee by 20% for instant speed
-const C_CHAIN_BASE_FEE_MULTIPLIER = 0.2
 
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
@@ -351,10 +347,6 @@ class WalletService {
     )
 
     return readOnlySigner.getUTXOs('P')
-  }
-
-  public getInstantBaseFee<T extends TokenUnit>(baseFee: T): TokenUnit {
-    return baseFee.add(baseFee.mul(C_CHAIN_BASE_FEE_MULTIPLIER))
   }
 
   public async createExportCTx({

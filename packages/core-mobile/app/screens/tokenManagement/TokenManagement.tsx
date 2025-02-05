@@ -16,7 +16,6 @@ import { WalletScreenProps } from 'navigation/types'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import ZeroState from 'components/ZeroState'
 import { TokenType } from '@avalabs/vm-module-types'
-import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.TokenManagement
@@ -37,17 +36,7 @@ function TokenManagement(): JSX.Element {
     item: ListRenderItemInfo<LocalTokenWithBalance>
   ): JSX.Element => {
     const token = item.item
-    const logoUri = token.logoUri
-
-    return (
-      <TokenManagementItem
-        id={token.localId}
-        name={token.name}
-        symbol={token.symbol}
-        image={logoUri}
-        isMalicious={isTokenMalicious(token)}
-      />
-    )
+    return <TokenManagementItem token={token} />
   }
 
   const emptyView = <ZeroState.Basic title="No results found" />

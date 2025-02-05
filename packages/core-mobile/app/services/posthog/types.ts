@@ -39,7 +39,8 @@ export enum FeatureGates {
 export enum FeatureVars {
   SENTRY_SAMPLE_RATE = 'sentry-sample-rate',
   P_FEE_ADJUSTMENT_THRESHOLD = 'p-fee-adjustment-threshold',
-  P_FEE_MULTIPLIER = 'p-fee-multiplier'
+  P_FEE_MULTIPLIER = 'p-fee-multiplier',
+  C_BASE_FEE_MULTIPLIER = 'c-base-fee-multiplier'
 }
 
 // posthog response can be an empty object when all features are disabled

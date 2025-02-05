@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance/slice'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
+import { selectTokenVisibility } from 'store/portfolio'
+import { isTokenVisible } from 'store/balance/utils'
 import { getAssetBalances } from '../handlers/getAssetBalances'
 import { unwrapAssetSymbol } from '../utils/bridgeUtils'
 import { useBridgeAssets } from './useBridgeAssets'
@@ -15,13 +17,19 @@ import { useBridgeAssets } from './useBridgeAssets'
 export function useAssetBalances(): {
   assetsWithBalances: AssetBalance[]
 } {
+  const tokenVisibility = useSelector(selectTokenVisibility)
   const tokens = useSelector(selectTokensWithBalance)
   const tokenInfoData = useTokenInfoContext()
   const { bridgeAssets } = useBridgeAssets()
 
+  const visibleTokens = useMemo(
+    () => tokens.filter(token => isTokenVisible(tokenVisibility, token)),
+    [tokens, tokenVisibility]
+  )
+
   const assetsWithBalances = useMemo(
     () =>
-      getAssetBalances(bridgeAssets, tokens)
+      getAssetBalances(bridgeAssets, visibleTokens)
         .map(token => {
           return {
             ...token,
@@ -32,7 +40,7 @@ export function useAssetBalances(): {
           }
         })
         .filter(token => token.balance !== undefined),
-    [bridgeAssets, tokens, tokenInfoData]
+    [bridgeAssets, visibleTokens, tokenInfoData]
   )
 
   const sortedAssetsWithBalances = assetsWithBalances.sort((asset1, asset2) => {

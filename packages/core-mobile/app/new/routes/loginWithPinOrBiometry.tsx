@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   Keyboard,
@@ -32,6 +32,8 @@ import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
+  const { theme } = useTheme()
+  const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
   const router = useRouter()
   const handleLoginSuccess = useCallback(
@@ -40,10 +42,11 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     },
     [unlock]
   )
+  const [hasNoRecentInput, setHasNoRecentInput] = useState(false)
+  const [hasWrongPinEntered, setHasWrongPinEntered] = useState(false)
 
-  const { theme } = useTheme()
-  const pinInputRef = useRef<PinInputActions>(null)
   const handleWrongPin = (): void => {
+    setHasWrongPinEntered(true)
     pinInputRef.current?.fireWrongPinAnimation(() => {
       onEnterPin('')
 
@@ -70,6 +73,19 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     onStopLoading: handleStopLoading
   })
   const [isEnteringPin, setIsEnteringPin] = useState(false)
+  const shouldShowForgotPin = useMemo(() => {
+    return (
+      disableKeypad === false &&
+      isEnteringPin &&
+      (hasNoRecentInput || hasWrongPinEntered)
+    )
+  }, [disableKeypad, hasNoRecentInput, isEnteringPin, hasWrongPinEntered])
+
+  const forgotPinButtonOpacityStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(shouldShowForgotPin ? 1 : 0, { duration: 300 })
+    }
+  })
 
   const pinInputOpacity = useSharedValue(0)
   const pinInputOpacityStyle = useAnimatedStyle(() => {
@@ -173,6 +189,14 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   )
 
   useEffect(() => {
+    setTimeout(() => {
+      if (!enteredPin && isEnteringPin) {
+        setHasNoRecentInput(true)
+      }
+    }, configuration.noInputTimeout)
+  }, [enteredPin, isEnteringPin])
+
+  useEffect(() => {
     if (mnemonic) {
       handleLoginSuccess(mnemonic)
     }
@@ -262,9 +286,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   )}
                 </Reanimated.View>
                 <Reanimated.View
-                  style={
-                    disableKeypad ? { marginTop: 60 } : pinInputOpacityStyle
-                  }>
+                  style={[
+                    disableKeypad ? { marginTop: 60 } : {},
+                    forgotPinButtonOpacityStyle
+                  ]}>
                   <Button
                     size="medium"
                     type="tertiary"
@@ -316,7 +341,8 @@ const configuration = {
   avatarContainerMarginTop: {
     from: 40,
     to: 10
-  }
+  },
+  noInputTimeout: 3000
 }
 
 export default LoginWithPinOrBiometry

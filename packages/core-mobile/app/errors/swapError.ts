@@ -59,7 +59,7 @@ export const swapError = {
 export const humanizeParaswapRateError = (errorMsg: string): string => {
   switch (errorMsg) {
     case 'ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT':
-      return 'Amount too low or too big to cover. Please adjust swap values.'
+      return 'Price impact high, you may lose money on this swap.'
     case 'Internal Error while computing the price':
       return 'An error occurred while computing the price'
     default:
