@@ -9,6 +9,7 @@ import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
 import { weiToNano } from 'utils/units/converter'
+import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
@@ -18,14 +19,19 @@ export type ImportCParams = {
   activeAccount: Account
   isDevMode: boolean
   isDevnet: boolean
+  cBaseFeeMultiplier: number
 }
 
 export async function importC({
   activeAccount,
   isDevMode,
-  isDevnet
+  isDevnet,
+  cBaseFeeMultiplier
 }: ImportCParams): Promise<void> {
-  Logger.info('importing C started')
+  Logger.info(
+    `importing C started with base fee multiplier: ${cBaseFeeMultiplier}`
+  )
+
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
   const avaxProvider = await NetworkService.getAvalancheProviderXP(
     isDevMode,
@@ -38,8 +44,10 @@ export async function importC({
     cChainToken.maxDecimals,
     cChainToken.symbol
   )
-  const instantBaseFee = WalletService.getInstantBaseFee(baseFeeAvax)
-
+  const instantBaseFee = addBufferToCChainBaseFee(
+    baseFeeAvax,
+    cBaseFeeMultiplier
+  )
   const unsignedTx = await WalletService.createImportCTx({
     accountIndex: activeAccount.index,
     baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
