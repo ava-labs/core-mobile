@@ -75,7 +75,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
           currency="USD"
           onLayout={handleBalanceHeaderLayout}
         />
-        <View sx={{ height: 800 }} />
         <Link href="/portfolio/assets" asChild>
           <Button type="primary" size="medium">
             Go to Portfolio Assets

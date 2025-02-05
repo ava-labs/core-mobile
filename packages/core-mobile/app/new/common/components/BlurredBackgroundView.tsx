@@ -1,5 +1,6 @@
 import React from 'react'
 import { GlassView, Separator, View } from '@avalabs/k2-alpine'
+import { Platform } from 'react-native'
 
 const BlurredBackgroundView = ({
   separator
@@ -14,7 +15,11 @@ const BlurredBackgroundView = ({
       {separator?.position === 'top' && (
         <Separator sx={{ opacity: separator.opacity }} />
       )}
-      <GlassView style={{ flex: 1 }} />
+      {Platform.OS === 'ios' ? (
+        <GlassView style={{ flex: 1 }} />
+      ) : (
+        <View sx={{ flex: 1, backgroundColor: '$surfacePrimary' }} />
+      )}
       {separator?.position === 'bottom' && (
         <Separator sx={{ opacity: separator.opacity }} />
       )}
