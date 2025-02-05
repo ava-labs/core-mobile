@@ -47,6 +47,7 @@ type TabViewNavigationProp = BrowserScreenProps<
 >['navigation']
 
 const { height: screenHeight } = Dimensions.get('window')
+const minHeight = Math.min(screenHeight, 720)
 
 export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const dispatch = useDispatch()
@@ -201,7 +202,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
       keyboardShouldPersistTaps="handled">
-      <View style={{ width: '100%', height: screenHeight - 200 }}>
+      <View style={{ width: '100%', minHeight: minHeight, height: '100%' }}>
         <View
           style={{
             flexDirection: 'row',
