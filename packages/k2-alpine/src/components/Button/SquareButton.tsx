@@ -49,14 +49,21 @@ export const SquareButton = ({
   )
 }
 
-export type SquareButtonIconType = 'bridge' | 'swap' | 'send' | 'stake' | 'buy'
+export type SquareButtonIconType =
+  | 'bridge'
+  | 'swap'
+  | 'send'
+  | 'stake'
+  | 'buy'
+  | 'connect'
 
 const iconComponents = {
   bridge: Icons.Custom.SwitchRight,
   swap: Icons.Custom.Compare,
   send: Icons.Custom.Send,
   stake: Icons.Custom.Psychiatry,
-  buy: Icons.Content.Add
+  buy: Icons.Content.Add,
+  connect: Icons.Custom.Connect
 }
 
 const getIcon = (

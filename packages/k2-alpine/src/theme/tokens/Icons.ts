@@ -35,6 +35,7 @@ import IconNotifications from '../../assets/icons/notifications.svg'
 import IconAlertError from '../../assets/icons/alert_error.svg'
 import IconArrowDown from '../../assets/icons/arrow_down.svg'
 import IconCompass from '../../assets/icons/compass.svg'
+import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
 import IconOutboundDark from '../../assets/icons/outbound_filled_dark.svg'
 import IconOutboundLight from '../../assets/icons/outbound_filled_light.svg'
@@ -151,13 +152,13 @@ export const Icons = {
     VisibilityOff: IconVisibilityOff
   },
   Alert: {
-    IconErrorOutline: IconErrorOutline,
+    ErrorOutline: IconErrorOutline,
     Error: IconAlertError,
     AlertCircleDark: IconAlertCircleDark,
     AlertCircleLight: IconAlertCircleLight
   },
   Device: {
-    IconGPPMaybe: IconGPPMaybe
+    GPPMaybe: IconGPPMaybe
   },
   Navigation: {
     ArrowForwardIOS: IconArrowForwardIOS,
@@ -196,6 +197,7 @@ export const Icons = {
     TrendingArrowUp: IconTrendingArrowUp,
     TrendingArrowDown: IconTrendingArrowDown,
     ArrowDown: IconArrowDown,
+    Connect: IconWalletConnect,
     Compass: IconCompass,
     Contactless: IconContactLess,
     OutboundDark: IconOutboundDark,

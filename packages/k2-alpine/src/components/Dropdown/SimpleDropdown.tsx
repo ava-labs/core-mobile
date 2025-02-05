@@ -16,7 +16,9 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onSelectRow,
   onDeselectRow,
   onRequestClose,
-  isVisible
+  isVisible,
+  showSelectedCheckmark = true,
+  minWidth
 }: {
   from: React.ReactNode | Rect
   sections: T[][]
@@ -27,6 +29,8 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onDeselectRow?: (indexPath: IndexPath) => void
   onRequestClose?: () => void
   isVisible?: boolean
+  showSelectedCheckmark?: boolean
+  minWidth?: number
 }): JSX.Element => {
   const { theme } = useTheme()
   const popoverRef = useRef<Popover>()
@@ -70,7 +74,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         shadowRadius: 30,
         shadowOpacity: 0.3,
         backgroundColor: 'transparent',
-        minWidth: 200
+        minWidth: minWidth ?? 200
       }}
       arrowSize={{ width: -10, height: 0 }}
       backgroundStyle={{ backgroundColor: 'transparent' }}>
@@ -105,11 +109,12 @@ export const SimpleDropdown = <T extends { toString(): string }>({
                         {isSelected({
                           section: sectionIndex,
                           row: rowIndex
-                        }) && (
-                          <Icons.Navigation.Check
-                            color={theme.colors.$textPrimary}
-                          />
-                        )}
+                        }) &&
+                          showSelectedCheckmark && (
+                            <Icons.Navigation.Check
+                              color={theme.colors.$textPrimary}
+                            />
+                          )}
                       </View>
                     </TouchableOpacity>
                     {rowIndex !== section.length - 1 &&

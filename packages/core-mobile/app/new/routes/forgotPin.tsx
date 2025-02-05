@@ -50,7 +50,7 @@ const ForgotPin = (): JSX.Element => {
                 alignItems: 'center',
                 gap: 8
               }}>
-              <Icons.Alert.IconErrorOutline color={theme.colors.$textDanger} />
+              <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
               <Text
                 variant="subtitle1"
                 sx={{ color: '$textDanger', flexShrink: 1 }}>
