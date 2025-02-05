@@ -179,6 +179,11 @@ export const selectPFeeMultiplier = (state: RootState): number => {
   return parseFloat(featureFlags[FeatureVars.P_FEE_MULTIPLIER] as string)
 }
 
+export const selectCBaseFeeMultiplier = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseFloat(featureFlags[FeatureVars.C_BASE_FEE_MULTIPLIER] as string)
+}
+
 export const selectUseLeftFab = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

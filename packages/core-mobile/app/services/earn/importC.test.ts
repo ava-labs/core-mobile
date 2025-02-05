@@ -5,6 +5,8 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importC } from 'services/earn/importC'
 
+const testCBaseFeeMultiplier = 1
+
 describe('earn/importC', () => {
   describe('importC', () => {
     const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(250000e9))
@@ -60,11 +62,12 @@ describe('earn/importC', () => {
       await importC({
         activeAccount: {} as Account,
         isDevMode: false,
-        isDevnet: false
+        isDevnet: false,
+        cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith({
         accountIndex: undefined,
-        baseFeeInNAvax: BigInt(0.0003 * 10 ** 9),
+        baseFeeInNAvax: BigInt(0.0005 * 10 ** 9),
         avaxXPNetwork: NetworkService.getAvalancheNetworkP(false, false),
         sourceChain: 'P',
         destinationAddress: undefined
@@ -75,7 +78,8 @@ describe('earn/importC', () => {
       await importC({
         activeAccount: {} as Account,
         isDevMode: false,
-        isDevnet: false
+        isDevnet: false,
+        cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.sign).toHaveBeenCalled()
     })
@@ -84,7 +88,8 @@ describe('earn/importC', () => {
       await importC({
         activeAccount: {} as Account,
         isDevMode: false,
-        isDevnet: false
+        isDevnet: false,
+        cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
     })
