@@ -24,7 +24,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const [balanceHeaderVisibility, setBalanceHeaderVisibility] = useState(1)
+  const [balanceHeaderHiddenProgress, setBalanceHeaderHiddenProgress] =
+    useState(0) // from 0 to 1, 0 = fully hidden, 1 = fully shown
 
   const handleCopyToClipboard = (): void => {
     copyToClipboard('test')
@@ -34,12 +35,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
     event: NativeSyntheticEvent<NativeScrollEvent>
   ): void => {
     if (balanceHeaderLayout) {
-      setBalanceHeaderVisibility(
+      setBalanceHeaderHiddenProgress(
         // calculate balance header's visibility based on the scroll position
         clamp(
-          1 -
-            event.nativeEvent.contentOffset.y /
-              (balanceHeaderLayout.y + balanceHeaderLayout.height),
+          event.nativeEvent.contentOffset.y /
+            (balanceHeaderLayout.y + balanceHeaderLayout.height),
           0,
           1
         )
@@ -52,7 +52,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }
 
   useAnimatedNavigationHeader({
-    visibility: 1 - balanceHeaderVisibility,
+    visibility: balanceHeaderHiddenProgress,
     header: (
       <NavigationTitleHeader title={accountName} subtitle={formattedBalance} />
     )
