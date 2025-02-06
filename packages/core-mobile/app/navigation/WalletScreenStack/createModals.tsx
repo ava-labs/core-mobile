@@ -146,12 +146,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       {walletConnectV2Modals}
       {browserModals}
       <WalletScreenS.Screen
-        options={{
-          transitionSpec: {
-            open: { animation: 'timing', config: { duration: 0 } },
-            close: { animation: 'timing', config: { duration: 300 } }
-          }
-        }}
         name={AppNavigation.Modal.AccountDropDown}
         component={AccountDropdownComp}
       />
