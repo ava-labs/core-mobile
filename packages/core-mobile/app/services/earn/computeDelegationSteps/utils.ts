@@ -18,6 +18,7 @@ import { getAssetId } from 'services/wallet/utils'
 import { weiToNano } from 'utils/units/converter'
 import { calculateCChainFee } from 'services/earn/calculateCrossChainFees'
 import { extractNeededAmount } from 'hooks/earn/utils/extractNeededAmount'
+import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import Logger from 'utils/Logger'
 
 const DUMMY_AMOUNT = 1000000n
@@ -297,14 +298,19 @@ export const getExportCFee = async ({
   cChainBaseFee,
   accountIndex,
   avaxXPNetwork,
-  pAddress
+  pAddress,
+  cBaseFeeMultiplier
 }: {
   cChainBaseFee: TokenUnit
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
+  cBaseFeeMultiplier: number
 }): Promise<bigint> => {
-  const paddedCChainBaseFee = WalletService.getInstantBaseFee(cChainBaseFee)
+  const paddedCChainBaseFee = addBufferToCChainBaseFee(
+    cChainBaseFee,
+    cBaseFeeMultiplier
+  )
 
   // using a dummy amount as the amount doesn't affect fee
   const unsignedTx = await WalletService.createExportCTx({

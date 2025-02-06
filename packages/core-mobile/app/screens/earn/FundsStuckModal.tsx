@@ -8,7 +8,15 @@ type RouteProp = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.FundsStuck
 >['route']
 
-export const FundsStuckModal = () => {
+export const FundsStuckModal = ({
+  title,
+  message,
+  dismissText
+}: {
+  title: string
+  message: string
+  dismissText: string
+}): JSX.Element => {
   const { goBack, canGoBack, getParent } = useNavigation()
   const { onTryAgain } = useRoute<RouteProp>().params
 
@@ -25,12 +33,10 @@ export const FundsStuckModal = () => {
 
   return (
     <WarningModal
-      title={'Stake Failed'}
-      message={
-        'Your stake failed due to network issues. Would you like to keep trying to stake your funds?'
-      }
+      title={title}
+      message={message}
       actionText={'Try Again'}
-      dismissText={'Cancel Stake'}
+      dismissText={dismissText}
       onAction={onAction}
       onDismiss={onCancel}
     />

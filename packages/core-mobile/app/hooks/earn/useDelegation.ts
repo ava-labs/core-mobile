@@ -7,7 +7,8 @@ import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { selectActiveNetwork } from 'store/network/slice'
 import {
   selectPFeeAdjustmentThreshold,
-  selectPFeeMultiplier
+  selectPFeeMultiplier,
+  selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
 import { isDevnet } from 'utils/isDevnet'
 import { selectActiveAccount } from 'store/account/slice'
@@ -43,6 +44,7 @@ export const useDelegation = (): {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const pFeeMultiplier = useSelector(selectPFeeMultiplier)
+  const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
   const cChainNetwork = useCChainNetwork()
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
@@ -82,6 +84,7 @@ export const useDelegation = (): {
         provider: avaxProvider,
         pFeeAdjustmentThreshold,
         pFeeMultiplier,
+        cBaseFeeMultiplier,
         cChainBaseFee: cChainBaseFee.data,
         feeState: defaultFeeState,
         stakeAmount: stakeAmount
@@ -99,6 +102,7 @@ export const useDelegation = (): {
       isDeveloperMode,
       pFeeAdjustmentThreshold,
       pFeeMultiplier,
+      cBaseFeeMultiplier,
       selectedCurrency,
       avaxProvider
     ]
@@ -164,7 +168,8 @@ export const useDelegation = (): {
               requiredAmountWei: nanoToWei(step.amount),
               activeAccount,
               isDevMode: isDeveloperMode,
-              isDevnet: isDevNetwork
+              isDevnet: isDevNetwork,
+              cBaseFeeMultiplier
             })
             break
 
@@ -187,7 +192,8 @@ export const useDelegation = (): {
       defaultFeeState,
       isDeveloperMode,
       pFeeAdjustmentThreshold,
-      selectedCurrency
+      selectedCurrency,
+      cBaseFeeMultiplier
     ]
   )
 

@@ -119,7 +119,10 @@ export default function RootLayout(): JSX.Element | null {
                     animationEnabled: false
                   }}
                 />
-                <Stack.Screen name="forgotPin" />
+                <Stack.Screen
+                  name="forgotPin"
+                  options={{ headerShown: true }}
+                />
                 <Stack.Screen name="+not-found" />
                 <Stack.Screen name="onboarding" />
               </Stack>

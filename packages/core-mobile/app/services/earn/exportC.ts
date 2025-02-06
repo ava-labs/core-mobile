@@ -10,6 +10,7 @@ import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { AvaxC } from 'types/AvaxC'
 import { weiToNano } from 'utils/units/converter'
+import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
@@ -18,6 +19,7 @@ export type ExportCParams = {
   activeAccount: Account
   isDevMode: boolean
   isDevnet: boolean
+  cBaseFeeMultiplier: number
 }
 
 export async function exportC({
@@ -25,9 +27,12 @@ export async function exportC({
   requiredAmountWei,
   activeAccount,
   isDevMode,
-  isDevnet
+  isDevnet,
+  cBaseFeeMultiplier
 }: ExportCParams): Promise<void> {
-  Logger.info('exporting C started')
+  Logger.info(
+    `exporting C started with base fee multiplier: ${cBaseFeeMultiplier}`
+  )
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
   const chains = await NetworkService.getNetworks()
@@ -48,7 +53,10 @@ export async function exportC({
 
   const baseFeeAvax = AvaxC.fromWei(await avaxProvider.getApiC().getBaseFee())
 
-  const instantBaseFeeAvax = WalletService.getInstantBaseFee(baseFeeAvax)
+  const instantBaseFeeAvax = addBufferToCChainBaseFee(
+    baseFeeAvax,
+    cBaseFeeMultiplier
+  )
 
   const cChainBalanceAvax = AvaxC.fromWei(cChainBalanceWei)
   const requiredAmountAvax = AvaxC.fromWei(requiredAmountWei)
