@@ -1,7 +1,173 @@
 import { makeApi, Zodios, type ZodiosOptions } from '@zodios/core'
 import { z } from 'zod'
-import { CORE_HEADERS } from './constants'
 
+const ChainStatus = z.enum(['OK', 'UNAVAILABLE'])
+const VmName = z.enum(['EVM', 'BITCOIN', 'ETHEREUM'])
+const UtilityAddresses = z
+  .object({ multicall: z.string() })
+  .partial()
+  .passthrough()
+const NetworkToken = z
+  .object({
+    name: z.string(),
+    symbol: z.string(),
+    decimals: z.number(),
+    logoUri: z.string().optional(),
+    description: z.string().optional()
+  })
+  .passthrough()
+const ChainInfo = z
+  .object({
+    chainId: z.string(),
+    status: ChainStatus,
+    chainName: z.string(),
+    description: z.string(),
+    platformChainId: z.string().optional(),
+    subnetId: z.string().optional(),
+    vmId: z.string().optional(),
+    vmName: VmName,
+    explorerUrl: z.string().optional(),
+    rpcUrl: z.string(),
+    wsUrl: z.string().optional(),
+    isTestnet: z.boolean(),
+    utilityAddresses: UtilityAddresses.optional(),
+    networkToken: NetworkToken,
+    chainLogoUri: z.string().optional(),
+    private: z.boolean().optional(),
+    enabledFeatures: z
+      .array(z.enum(['nftIndexing', 'webhooks', 'teleporter']))
+      .optional()
+  })
+  .passthrough()
+const ListAddressChainsResponse = z
+  .object({
+    indexedChains: z.array(ChainInfo),
+    unindexedChains: z.array(z.string())
+  })
+  .partial()
+  .passthrough()
+const BadRequest = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const Unauthorized = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const Forbidden = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const NotFound = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const TooManyRequests = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const InternalServerError = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const BadGateway = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const ServiceUnavailable = z
+  .object({
+    message: z.union([z.string(), z.array(z.string())]),
+    statusCode: z.number(),
+    error: z.string()
+  })
+  .passthrough()
+const RichAddress = z
+  .object({
+    name: z.string().optional(),
+    symbol: z.string().optional(),
+    decimals: z.number().optional(),
+    logoUri: z.string().optional(),
+    address: z.string()
+  })
+  .passthrough()
+const TransactionMethodType = z.enum([
+  'NATIVE_TRANSFER',
+  'CONTRACT_CALL',
+  'CONTRACT_CREATION'
+])
+const Method = z
+  .object({
+    callType: TransactionMethodType,
+    methodHash: z.string(),
+    methodName: z.string().optional()
+  })
+  .passthrough()
+const NativeTransaction = z
+  .object({
+    blockNumber: z.string(),
+    blockTimestamp: z.number(),
+    blockHash: z.string(),
+    chainId: z.string(),
+    blockIndex: z.number(),
+    txHash: z.string(),
+    txStatus: z.string(),
+    txType: z.number(),
+    gasLimit: z.string(),
+    gasUsed: z.string(),
+    gasPrice: z.string(),
+    nonce: z.string(),
+    from: RichAddress,
+    to: RichAddress,
+    method: Method.optional(),
+    value: z.string()
+  })
+  .passthrough()
+const ListNativeTransactionsResponse = z
+  .object({
+    nextPageToken: z.string().optional(),
+    transactions: z.array(NativeTransaction)
+  })
+  .passthrough()
+const EvmBlock = z
+  .object({
+    chainId: z.string(),
+    blockNumber: z.string(),
+    blockTimestamp: z.number(),
+    blockHash: z.string(),
+    txCount: z.number(),
+    baseFee: z.string(),
+    gasUsed: z.string(),
+    gasLimit: z.string(),
+    gasCost: z.string(),
+    parentHash: z.string(),
+    feesSpent: z.string(),
+    cumulativeTransactions: z.string()
+  })
+  .passthrough()
+const ListEvmBlocksResponse = z
+  .object({ nextPageToken: z.string().optional(), blocks: z.array(EvmBlock) })
+  .passthrough()
 const NftTokenMetadataStatus = z.enum([
   'UNKNOWN',
   'MISSING_TOKEN',
@@ -117,10 +283,10 @@ const EvmNetworkOptions = z
 const CreateEvmTransactionExportRequest = z
   .object({
     type: EVMOperationType,
-    firstDate: z.string(),
-    lastDate: z.string(),
-    startDate: z.string(),
-    endDate: z.string(),
+    firstDate: z.string().optional(),
+    lastDate: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
     options: EvmNetworkOptions
   })
   .passthrough()
@@ -138,8 +304,10 @@ const PrimaryNetworkOptions = z
         '11111111111111111111111111111111LpoYY',
         '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
         '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+        '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
         '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
         'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+        'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
         'p-chain',
         'x-chain',
         'c-chain'
@@ -150,10 +318,10 @@ const PrimaryNetworkOptions = z
 const CreatePrimaryNetworkTransactionExportRequest = z
   .object({
     type: PrimaryNetworkOperationType,
-    firstDate: z.string(),
-    lastDate: z.string(),
-    startDate: z.string(),
-    endDate: z.string(),
+    firstDate: z.string().optional(),
+    lastDate: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
     options: PrimaryNetworkOptions
   })
   .passthrough()
@@ -177,6 +345,11 @@ const PChainTransactionType = z.enum([
   'AddPermissionlessDelegatorTx',
   'BaseTx',
   'TransferSubnetOwnershipTx',
+  'ConvertSubnetToL1Tx',
+  'RegisterL1ValidatorTx',
+  'SetL1ValidatorWeightTx',
+  'DisableL1ValidatorTx',
+  'IncreaseL1ValidatorBalanceTx',
   'UNKNOWN'
 ])
 const PrimaryNetworkAssetType = z.enum(['secp256k1', 'nft'])
@@ -218,12 +391,29 @@ const PChainUtxo = z
     utxoType: UtxoType
   })
   .passthrough()
+const L1ValidatorManagerDetails = z
+  .object({ blockchainId: z.string(), contractAddress: z.string() })
+  .passthrough()
+const L1ValidatorDetailsTransaction = z
+  .object({
+    validationId: z.string(),
+    nodeId: z.string(),
+    subnetId: z.string(),
+    weight: z.number(),
+    remainingBalance: z.number(),
+    balanceChange: z.number().optional(),
+    blsCredentials: z.object({}).partial().passthrough().optional()
+  })
+  .passthrough()
 const SubnetOwnershipInfo = z
   .object({
     locktime: z.number(),
     threshold: z.number(),
     addresses: z.array(z.string())
   })
+  .passthrough()
+const BlsCredentials = z
+  .object({ publicKey: z.string(), proofOfPossession: z.string() })
   .passthrough()
 const PChainTransaction = z
   .object({
@@ -239,17 +429,21 @@ const PChainTransaction = z
     value: z.array(AssetAmount),
     amountBurned: z.array(AssetAmount),
     amountStaked: z.array(AssetAmount),
+    amountL1ValidatorBalanceBurned: z.array(AssetAmount),
     startTimestamp: z.number().optional(),
     endTimestamp: z.number().optional(),
     delegationFeePercent: z.string().optional(),
     nodeId: z.string().optional(),
     subnetId: z.string().optional(),
+    l1ValidatorManagerDetails: L1ValidatorManagerDetails.optional(),
+    l1ValidatorDetails: z.array(L1ValidatorDetailsTransaction).optional(),
     estimatedReward: z.string().optional(),
     rewardTxHash: z.string().optional(),
     rewardAddresses: z.array(z.string()).optional(),
     memo: z.string().optional(),
     stakingTxHash: z.string().optional(),
-    subnetOwnershipInfo: SubnetOwnershipInfo.optional()
+    subnetOwnershipInfo: SubnetOwnershipInfo.optional(),
+    blsCredentials: BlsCredentials.optional()
   })
   .passthrough()
 const XChainTransactionType = z.enum([
@@ -376,11 +570,35 @@ const CChainImportTransaction = z
     consumedUtxos: z.array(Utxo)
   })
   .passthrough()
-const PrimaryNetworkTxType = z.array(z.any())
+const PrimaryNetworkTxType = z.enum([
+  'AddValidatorTx',
+  'AddSubnetValidatorTx',
+  'AddDelegatorTx',
+  'CreateChainTx',
+  'CreateSubnetTx',
+  'ImportTx',
+  'ExportTx',
+  'AdvanceTimeTx',
+  'RewardValidatorTx',
+  'RemoveSubnetValidatorTx',
+  'TransformSubnetTx',
+  'AddPermissionlessValidatorTx',
+  'AddPermissionlessDelegatorTx',
+  'BaseTx',
+  'TransferSubnetOwnershipTx',
+  'ConvertSubnetToL1Tx',
+  'RegisterL1ValidatorTx',
+  'SetL1ValidatorWeightTx',
+  'DisableL1ValidatorTx',
+  'IncreaseL1ValidatorBalanceTx',
+  'UNKNOWN',
+  'CreateAssetTx',
+  'OperationTx'
+])
 const PrimaryNetworkChainName = z.enum(['p-chain', 'x-chain', 'c-chain'])
-const PrimaryNetwork = z.enum(['mainnet', 'fuji'])
+const Network = z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
 const PrimaryNetworkChainInfo = z
-  .object({ chainName: PrimaryNetworkChainName, network: PrimaryNetwork })
+  .object({ chainName: PrimaryNetworkChainName, network: Network })
   .passthrough()
 const ListPChainTransactionsResponse = z
   .object({
@@ -597,6 +815,8 @@ const GetPrimaryNetworkBlockResponse = z
     txCount: z.number(),
     transactions: z.array(z.string()),
     blockSizeBytes: z.number(),
+    l1ValidatorsAccruedFees: z.number().optional(),
+    activeL1Validators: z.number().optional(),
     currentSupply: z.string().optional(),
     proposerDetails: ProposerDetails.optional()
   })
@@ -611,6 +831,8 @@ const PrimaryNetworkBlock = z
     txCount: z.number(),
     transactions: z.array(z.string()),
     blockSizeBytes: z.number(),
+    l1ValidatorsAccruedFees: z.number().optional(),
+    activeL1Validators: z.number().optional(),
     currentSupply: z.string().optional(),
     proposerDetails: ProposerDetails.optional()
   })
@@ -645,8 +867,10 @@ const BlockchainIds = z.enum([
   '11111111111111111111111111111111LpoYY',
   '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
   '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+  '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
   '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
-  'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp'
+  'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+  'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu'
 ])
 const ChainAddressChainIdMap = z
   .object({ address: z.string(), blockchainIds: z.array(BlockchainIds) })
@@ -705,6 +929,9 @@ const Subnet = z
     threshold: z.number(),
     locktime: z.number(),
     subnetOwnershipInfo: SubnetOwnershipInfo,
+    isL1: z.boolean(),
+    l1ConversionTransactionHash: z.string().optional(),
+    l1ValidatorManagerDetails: L1ValidatorManagerDetails.optional(),
     blockchains: z.array(BlockchainInfo)
   })
   .passthrough()
@@ -728,7 +955,9 @@ const CompletedValidatorDetails = z
     delegationFee: z.string().optional(),
     startTimestamp: z.number(),
     endTimestamp: z.number(),
+    blsCredentials: BlsCredentials.optional(),
     delegatorCount: z.number(),
+    amountDelegated: z.string().optional(),
     rewards: Rewards,
     validationStatus: z.literal('completed')
   })
@@ -750,6 +979,7 @@ const ActiveValidatorDetails = z
     delegationFee: z.string().optional(),
     startTimestamp: z.number(),
     endTimestamp: z.number(),
+    blsCredentials: BlsCredentials.optional(),
     stakePercentage: z.number(),
     delegatorCount: z.number(),
     amountDelegated: z.string().optional(),
@@ -770,6 +1000,7 @@ const PendingValidatorDetails = z
     delegationFee: z.string().optional(),
     startTimestamp: z.number(),
     endTimestamp: z.number(),
+    blsCredentials: BlsCredentials.optional(),
     validationStatus: z.literal('pending')
   })
   .passthrough()
@@ -782,6 +1013,7 @@ const RemovedValidatorDetails = z
     delegationFee: z.string().optional(),
     startTimestamp: z.number(),
     endTimestamp: z.number(),
+    blsCredentials: BlsCredentials.optional(),
     removeTxHash: z.string(),
     removeTimestamp: z.number(),
     validationStatus: z.literal('removed')
@@ -854,19 +1086,230 @@ const ListDelegatorDetailsResponse = z
     )
   })
   .passthrough()
+const BalanceOwner = z
+  .object({ addresses: z.array(z.string()), threshold: z.number() })
+  .passthrough()
+const L1ValidatorDetailsFull = z
+  .object({
+    validationId: z.string(),
+    nodeId: z.string(),
+    subnetId: z.string(),
+    weight: z.number(),
+    remainingBalance: z.number(),
+    creationTimestamp: z.number(),
+    blsCredentials: z.object({}).partial().passthrough(),
+    remainingBalanceOwner: BalanceOwner,
+    deactivationOwner: BalanceOwner
+  })
+  .passthrough()
+const ListL1ValidatorsResponse = z
+  .object({
+    nextPageToken: z.string().optional(),
+    validators: z.array(L1ValidatorDetailsFull)
+  })
+  .passthrough()
+const TeleporterReceipt = z
+  .object({
+    receivedMessageNonce: z.string(),
+    relayerRewardAddress: z.string()
+  })
+  .passthrough()
+const TeleporterRewardDetails = z
+  .object({
+    address: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    decimals: z.number(),
+    logoUri: z.string().optional(),
+    ercType: z.literal('ERC-20'),
+    price: Money.optional(),
+    value: z.string()
+  })
+  .passthrough()
+const TeleporterSourceTransaction = z
+  .object({ txHash: z.string(), timestamp: z.number(), gasSpent: z.string() })
+  .passthrough()
+const PendingTeleporterMessage = z
+  .object({
+    messageId: z.string(),
+    teleporterContractAddress: z.string(),
+    sourceBlockchainId: z.string(),
+    destinationBlockchainId: z.string(),
+    sourceEvmChainId: z.string(),
+    destinationEvmChainId: z.string(),
+    messageNonce: z.string(),
+    from: z.string(),
+    to: z.string(),
+    data: z.string().optional(),
+    messageExecuted: z.boolean(),
+    receipts: z.array(TeleporterReceipt),
+    receiptDelivered: z.boolean(),
+    rewardDetails: TeleporterRewardDetails,
+    sourceTransaction: TeleporterSourceTransaction,
+    status: z.literal('pending')
+  })
+  .passthrough()
+const TeleporterDestinationTransaction = z
+  .object({
+    txHash: z.string(),
+    timestamp: z.number(),
+    gasSpent: z.string(),
+    rewardRedeemer: z.string(),
+    delivererAddress: z.string()
+  })
+  .passthrough()
+const DeliveredTeleporterMessage = z
+  .object({
+    messageId: z.string(),
+    teleporterContractAddress: z.string(),
+    sourceBlockchainId: z.string(),
+    destinationBlockchainId: z.string(),
+    sourceEvmChainId: z.string(),
+    destinationEvmChainId: z.string(),
+    messageNonce: z.string(),
+    from: z.string(),
+    to: z.string(),
+    data: z.string().optional(),
+    messageExecuted: z.boolean(),
+    receipts: z.array(TeleporterReceipt),
+    receiptDelivered: z.boolean(),
+    rewardDetails: TeleporterRewardDetails,
+    sourceTransaction: TeleporterSourceTransaction,
+    destinationTransaction: TeleporterDestinationTransaction,
+    status: z.literal('delivered')
+  })
+  .passthrough()
+const DeliveredSourceNotIndexedTeleporterMessage = z
+  .object({
+    messageId: z.string(),
+    teleporterContractAddress: z.string(),
+    sourceBlockchainId: z.string(),
+    destinationBlockchainId: z.string(),
+    sourceEvmChainId: z.string(),
+    destinationEvmChainId: z.string(),
+    messageNonce: z.string(),
+    from: z.string(),
+    to: z.string(),
+    data: z.string().optional(),
+    messageExecuted: z.boolean(),
+    receipts: z.array(TeleporterReceipt),
+    receiptDelivered: z.boolean(),
+    rewardDetails: TeleporterRewardDetails,
+    destinationTransaction: TeleporterDestinationTransaction,
+    status: z.literal('delivered_source_not_indexed')
+  })
+  .passthrough()
+const ListTeleporterMessagesResponse = z
+  .object({
+    nextPageToken: z.string().optional(),
+    messages: z.array(
+      z.discriminatedUnion('status', [
+        PendingTeleporterMessage,
+        DeliveredTeleporterMessage
+      ])
+    )
+  })
+  .passthrough()
+const UsageMetricsValueDTO = z
+  .object({
+    groupedBy: z.enum([
+      'requestPath',
+      'responseCode',
+      'chainId',
+      'apiKeyId',
+      'requestType',
+      'None'
+    ]),
+    groupValue: z.union([z.string(), z.number()]).optional(),
+    totalRequests: z.number(),
+    requestsPerSecond: z.number(),
+    successRatePercent: z.number(),
+    medianResponseTimeMsecs: z.number(),
+    invalidRequests: z.number(),
+    apiCreditsUsed: z.number(),
+    apiCreditsWasted: z.number()
+  })
+  .passthrough()
+const Metric = z
+  .object({ timestamp: z.number(), values: z.array(UsageMetricsValueDTO) })
+  .passthrough()
+const UsageMetricsResponseDTO = z
+  .object({
+    aggregateDuration: z.string(),
+    orgId: z.string(),
+    metrics: z.array(Metric)
+  })
+  .passthrough()
+const RequestType = z.enum(['data', 'rpc'])
+const LogsFormatMetadata = z
+  .object({ ipAddress: z.string(), host: z.string(), userAgent: z.string() })
+  .passthrough()
+const LogsFormat = z
+  .object({
+    orgId: z.string(),
+    logId: z.string(),
+    eventTimestamp: z.number(),
+    apiKeyId: z.string(),
+    apiKeyAlias: z.string(),
+    hostRegion: z.string(),
+    requestType: RequestType,
+    requestPath: z.string(),
+    apiCreditsConsumed: z.number(),
+    requestDurationMsecs: z.number(),
+    responseCode: z.number(),
+    chainId: z.string().optional(),
+    rpcMethod: z.string().optional(),
+    metadata: LogsFormatMetadata
+  })
+  .passthrough()
+const LogsResponseDTO = z
+  .object({
+    nextPageToken: z.string().optional(),
+    orgId: z.string(),
+    logs: z.array(LogsFormat)
+  })
+  .passthrough()
+const RpcUsageMetricsValueAggregated = z
+  .object({
+    totalRequests: z.number(),
+    apiCreditsUsed: z.number(),
+    requestsPerSecond: z.number(),
+    successRatePercent: z.number(),
+    medianResponseTimeMsecs: z.number(),
+    invalidRequests: z.number(),
+    apiCreditsWasted: z.number(),
+    groupedBy: z.enum(['rpcMethod', 'responseCode', 'rlBypassToken', 'None']),
+    groupValue: z.union([z.string(), z.number()]).optional()
+  })
+  .passthrough()
+const RpcMetrics = z
+  .object({
+    timestamp: z.number(),
+    values: z.array(RpcUsageMetricsValueAggregated)
+  })
+  .passthrough()
+const SubnetRpcUsageMetricsResponseDTO = z
+  .object({
+    aggregateDuration: z.string(),
+    metrics: z.array(RpcMetrics),
+    chainId: z.string()
+  })
+  .passthrough()
 const EventType = z.literal('address_activity')
 const AddressActivityMetadata = z
   .object({
-    addresses: z.array(z.array(z.any())),
+    addresses: z.array(z.string()),
     eventSignatures: z.array(z.string()).optional()
   })
   .passthrough()
-const RegisterWebhookRequest = z
+const CreateWebhookRequest = z
   .object({
     url: z.string(),
     chainId: z.string(),
     eventType: EventType,
     metadata: AddressActivityMetadata,
+    name: z.string().optional(),
+    description: z.string().optional(),
     includeInternalTxs: z.boolean().optional(),
     includeLogs: z.boolean().optional()
   })
@@ -906,96 +1349,25 @@ const UpdateWebhookRequest = z
   .passthrough()
 const SharedSecretsResponse = z.object({ secret: z.string() }).passthrough()
 const AddressesChangeRequest = z
-  .object({ addresses: z.array(z.array(z.any())) })
+  .object({ addresses: z.array(z.string()) })
   .passthrough()
-const TeleporterReceipt = z
+const ListWebhookAddressesResponse = z
   .object({
-    receivedMessageNonce: z.string(),
-    relayerRewardAddress: z.string()
+    nextPageToken: z.string().optional(),
+    addresses: z.array(z.string()),
+    totalAddresses: z.number()
   })
   .passthrough()
-const TeleporterRewardDetails = z
+const SignatureAggregatorRequest = z
   .object({
-    address: z.string(),
-    name: z.string(),
-    symbol: z.string(),
-    decimals: z.number(),
-    logoUri: z.string().optional(),
-    ercType: z.literal('ERC-20'),
-    price: Money.optional(),
-    value: z.string()
+    message: z.string(),
+    justification: z.string().optional(),
+    signingSubnetId: z.string().optional(),
+    quorumPercentage: z.number().optional()
   })
   .passthrough()
-const TeleporterSourceTransaction = z
-  .object({ txHash: z.string(), timestamp: z.number(), gasSpent: z.string() })
-  .passthrough()
-const PendingTeleporterMessage = z
-  .object({
-    messageId: z.string(),
-    teleporterContractAddress: z.string(),
-    sourceBlockchainId: z.string(),
-    destinationBlockchainId: z.string(),
-    messageNonce: z.string(),
-    from: z.string(),
-    to: z.string(),
-    data: z.string().optional(),
-    messageExecuted: z.boolean(),
-    receipts: z.array(TeleporterReceipt),
-    receiptDelivered: z.boolean(),
-    rewardDetails: TeleporterRewardDetails,
-    sourceTransaction: TeleporterSourceTransaction,
-    status: z.literal('pending')
-  })
-  .passthrough()
-const TeleporterDestinationTransaction = z
-  .object({
-    txHash: z.string(),
-    timestamp: z.number(),
-    gasSpent: z.string(),
-    rewardRedeemer: z.string(),
-    delivererAddress: z.string()
-  })
-  .passthrough()
-const DeliveredTeleporterMessage = z
-  .object({
-    messageId: z.string(),
-    teleporterContractAddress: z.string(),
-    sourceBlockchainId: z.string(),
-    destinationBlockchainId: z.string(),
-    messageNonce: z.string(),
-    from: z.string(),
-    to: z.string(),
-    data: z.string().optional(),
-    messageExecuted: z.boolean(),
-    receipts: z.array(TeleporterReceipt),
-    receiptDelivered: z.boolean(),
-    rewardDetails: TeleporterRewardDetails,
-    sourceTransaction: TeleporterSourceTransaction,
-    destinationTransaction: TeleporterDestinationTransaction,
-    status: z.literal('delivered')
-  })
-  .passthrough()
-const DeliveredSourceNotIndexedTeleporterMessage = z
-  .object({
-    messageId: z.string(),
-    teleporterContractAddress: z.string(),
-    sourceBlockchainId: z.string(),
-    destinationBlockchainId: z.string(),
-    messageNonce: z.string(),
-    from: z.string(),
-    to: z.string(),
-    data: z.string().optional(),
-    messageExecuted: z.boolean(),
-    receipts: z.array(TeleporterReceipt),
-    receiptDelivered: z.boolean(),
-    rewardDetails: TeleporterRewardDetails,
-    destinationTransaction: TeleporterDestinationTransaction,
-    status: z.literal('delivered_source_not_indexed')
-  })
-  .passthrough()
-const NextPageToken = z
-  .object({ nextPageToken: z.string() })
-  .partial()
+const SignatureAggregationResponse = z
+  .object({ signedMessage: z.string() })
   .passthrough()
 const NativeTokenBalance = z
   .object({
@@ -1023,12 +1395,14 @@ const Erc20TokenBalance = z
     price: Money.optional(),
     chainId: z.string(),
     balance: z.string(),
-    balanceValue: Money.optional()
+    balanceValue: Money.optional(),
+    tokenReputation: z.enum(['Malicious', 'Benign']).nullable()
   })
   .passthrough()
 const ListErc20BalancesResponse = z
   .object({
     nextPageToken: z.string().optional(),
+    nativeTokenBalance: NativeTokenBalance,
     erc20TokenBalances: z.array(Erc20TokenBalance)
   })
   .passthrough()
@@ -1048,6 +1422,7 @@ const Erc721TokenBalance = z
 const ListErc721BalancesResponse = z
   .object({
     nextPageToken: z.string().optional(),
+    nativeTokenBalance: NativeTokenBalance,
     erc721TokenBalances: z.array(Erc721TokenBalance)
   })
   .passthrough()
@@ -1065,6 +1440,7 @@ const Erc1155TokenBalance = z
 const ListErc1155BalancesResponse = z
   .object({
     nextPageToken: z.string().optional(),
+    nativeTokenBalance: NativeTokenBalance,
     erc1155TokenBalances: z.array(Erc1155TokenBalance)
   })
   .passthrough()
@@ -1076,26 +1452,9 @@ const ListCollectibleBalancesResponse = z
     )
   })
   .passthrough()
-const EvmBlock = z
-  .object({
-    blockNumber: z.string(),
-    blockTimestamp: z.number(),
-    blockHash: z.string(),
-    txCount: z.number(),
-    baseFee: z.string(),
-    gasUsed: z.string(),
-    gasLimit: z.string(),
-    gasCost: z.string(),
-    parentHash: z.string(),
-    feesSpent: z.string(),
-    cumulativeTransactions: z.string()
-  })
-  .passthrough()
-const ListEvmBlocksResponse = z
-  .object({ nextPageToken: z.string().optional(), blocks: z.array(EvmBlock) })
-  .passthrough()
 const GetEvmBlockResponse = z
   .object({
+    chainId: z.string(),
     blockNumber: z.string(),
     blockTimestamp: z.number(),
     blockHash: z.string(),
@@ -1107,15 +1466,6 @@ const GetEvmBlockResponse = z
     parentHash: z.string(),
     feesSpent: z.string(),
     cumulativeTransactions: z.string()
-  })
-  .passthrough()
-const RichAddress = z
-  .object({
-    name: z.string().optional(),
-    symbol: z.string().optional(),
-    decimals: z.number().optional(),
-    logoUri: z.string().optional(),
-    address: z.string()
   })
   .passthrough()
 const Erc20Token = z
@@ -1175,15 +1525,6 @@ const InternalTransactionDetails = z
     gasLimit: z.string()
   })
   .passthrough()
-const NetworkToken = z
-  .object({
-    name: z.string(),
-    symbol: z.string(),
-    decimals: z.number(),
-    logoUri: z.string().optional(),
-    description: z.string().optional()
-  })
-  .passthrough()
 const NetworkTokenDetails = z
   .object({
     networkToken: NetworkToken,
@@ -1191,23 +1532,12 @@ const NetworkTokenDetails = z
     historicalPrice: Money.optional()
   })
   .passthrough()
-const TransactionMethodType = z.enum([
-  'NATIVE_TRANSFER',
-  'CONTRACT_CALL',
-  'CONTRACT_CREATION'
-])
-const Method = z
-  .object({
-    callType: TransactionMethodType,
-    methodHash: z.string(),
-    methodName: z.string().optional()
-  })
-  .passthrough()
 const FullNativeTransactionDetails = z
   .object({
     blockNumber: z.string(),
     blockTimestamp: z.number(),
     blockHash: z.string(),
+    chainId: z.string(),
     blockIndex: z.number(),
     txHash: z.string(),
     txStatus: z.string(),
@@ -1226,6 +1556,18 @@ const FullNativeTransactionDetails = z
     maxPriorityFeePerGas: z.string().optional()
   })
   .passthrough()
+const TransactionDirectionType = z.enum([
+  'SOURCE_TRANSACTION',
+  'DESTINATION_TRANSACTION'
+])
+const TeleporterMessageInfo = z
+  .object({
+    teleporterMessageId: z.string(),
+    direction: TransactionDirectionType,
+    sourceChainId: z.object({}).partial().passthrough().optional(),
+    destinationChainId: z.object({}).partial().passthrough().optional()
+  })
+  .passthrough()
 const GetTransactionResponse = z
   .object({
     erc20Transfers: z.array(Erc20TransferDetails).optional(),
@@ -1233,7 +1575,8 @@ const GetTransactionResponse = z
     erc1155Transfers: z.array(Erc1155TransferDetails).optional(),
     internalTransactions: z.array(InternalTransactionDetails).optional(),
     networkTokenDetails: NetworkTokenDetails,
-    nativeTransaction: FullNativeTransactionDetails
+    nativeTransaction: FullNativeTransactionDetails,
+    teleporterMessageInfo: TeleporterMessageInfo.optional()
   })
   .passthrough()
 const ImageAsset = z
@@ -1438,33 +1781,6 @@ const UpdateContractResponse = z
     ])
   })
   .passthrough()
-const ChainStatus = z.enum(['OK', 'UNAVAILABLE'])
-const VmName = z.enum(['EVM', 'BITCOIN', 'ETHEREUM'])
-const UtilityAddresses = z
-  .object({ multicall: z.string() })
-  .partial()
-  .passthrough()
-const ChainInfo = z
-  .object({
-    chainId: z.string(),
-    status: ChainStatus,
-    chainName: z.string(),
-    description: z.string(),
-    platformChainId: z.string().optional(),
-    subnetId: z.string().optional(),
-    vmId: z.string().optional(),
-    vmName: VmName,
-    explorerUrl: z.string().optional(),
-    rpcUrl: z.string(),
-    wsUrl: z.string().optional(),
-    isTestnet: z.boolean(),
-    utilityAddresses: UtilityAddresses.optional(),
-    networkToken: NetworkToken,
-    chainLogoUri: z.string().optional(),
-    private: z.boolean().optional(),
-    enabledFeatures: z.array(z.enum(['nftIndexing', 'webhooks'])).optional()
-  })
-  .passthrough()
 const ListChainsResponse = z
   .object({ chains: z.array(ChainInfo) })
   .passthrough()
@@ -1486,7 +1802,9 @@ const GetChainResponse = z
     networkToken: NetworkToken,
     chainLogoUri: z.string().optional(),
     private: z.boolean().optional(),
-    enabledFeatures: z.array(z.enum(['nftIndexing', 'webhooks'])).optional()
+    enabledFeatures: z
+      .array(z.enum(['nftIndexing', 'webhooks', 'teleporter']))
+      .optional()
   })
   .passthrough()
 const Erc20Transfer = z
@@ -1535,25 +1853,6 @@ const ListTransfersResponse = z
     )
   })
   .passthrough()
-const NativeTransaction = z
-  .object({
-    blockNumber: z.string(),
-    blockTimestamp: z.number(),
-    blockHash: z.string(),
-    blockIndex: z.number(),
-    txHash: z.string(),
-    txStatus: z.string(),
-    txType: z.number(),
-    gasLimit: z.string(),
-    gasUsed: z.string(),
-    gasPrice: z.string(),
-    nonce: z.string(),
-    from: RichAddress,
-    to: RichAddress,
-    method: Method.optional(),
-    value: z.string()
-  })
-  .passthrough()
 const TransactionDetails = z
   .object({
     nativeTransaction: NativeTransaction,
@@ -1567,12 +1866,6 @@ const ListTransactionDetailsResponse = z
   .object({
     nextPageToken: z.string().optional(),
     transactions: z.array(TransactionDetails)
-  })
-  .passthrough()
-const ListNativeTransactionsResponse = z
-  .object({
-    nextPageToken: z.string().optional(),
-    transactions: z.array(NativeTransaction)
   })
   .passthrough()
 const ListErc20TransactionsResponse = z
@@ -1614,49 +1907,29 @@ const ListInternalTransactionsResponse = z
     transactions: z.array(InternalTransaction)
   })
   .passthrough()
-const RpcRequestBodyDto = z
-  .object({
-    method: z.string(),
-    params: z
-      .union([
-        z.array(
-          z.union([
-            z.string(),
-            z.number(),
-            z.object({}).partial().passthrough()
-          ])
-        ),
-        z.object({}).partial().passthrough()
-      ])
-      .optional(),
-    id: z.union([z.string(), z.number()]).optional(),
-    jsonrpc: z.string().optional()
-  })
-  .passthrough()
-const rpc_Body = z.union([RpcRequestBodyDto, z.array(RpcRequestBodyDto)])
-const RpcSuccessResponseDto = z
-  .object({
-    jsonrpc: z.string(),
-    id: z.union([z.string(), z.number()]).optional(),
-    result: z.object({}).partial().passthrough()
-  })
-  .passthrough()
-const RpcErrorDto = z
-  .object({
-    code: z.number(),
-    message: z.string(),
-    data: z.object({}).partial().passthrough().optional()
-  })
-  .passthrough()
-const RpcErrorResponseDto = z
-  .object({
-    jsonrpc: z.string(),
-    id: z.union([z.string(), z.number()]).optional(),
-    error: RpcErrorDto
-  })
-  .passthrough()
 
 export const schemas = {
+  ChainStatus,
+  VmName,
+  UtilityAddresses,
+  NetworkToken,
+  ChainInfo,
+  ListAddressChainsResponse,
+  BadRequest,
+  Unauthorized,
+  Forbidden,
+  NotFound,
+  TooManyRequests,
+  InternalServerError,
+  BadGateway,
+  ServiceUnavailable,
+  RichAddress,
+  TransactionMethodType,
+  Method,
+  NativeTransaction,
+  ListNativeTransactionsResponse,
+  EvmBlock,
+  ListEvmBlocksResponse,
   NftTokenMetadataStatus,
   Erc721TokenMetadata,
   Erc721Token,
@@ -1681,7 +1954,10 @@ export const schemas = {
   RewardType,
   UtxoType,
   PChainUtxo,
+  L1ValidatorManagerDetails,
+  L1ValidatorDetailsTransaction,
   SubnetOwnershipInfo,
+  BlsCredentials,
   PChainTransaction,
   XChainTransactionType,
   UtxoCredential,
@@ -1697,7 +1973,7 @@ export const schemas = {
   CChainImportTransaction,
   PrimaryNetworkTxType,
   PrimaryNetworkChainName,
-  PrimaryNetwork,
+  Network,
   PrimaryNetworkChainInfo,
   ListPChainTransactionsResponse,
   ListXChainTransactionsResponse,
@@ -1750,15 +2026,9 @@ export const schemas = {
   ActiveDelegatorDetails,
   PendingDelegatorDetails,
   ListDelegatorDetailsResponse,
-  EventType,
-  AddressActivityMetadata,
-  RegisterWebhookRequest,
-  WebhookStatusType,
-  WebhookResponse,
-  ListWebhooksResponse,
-  UpdateWebhookRequest,
-  SharedSecretsResponse,
-  AddressesChangeRequest,
+  BalanceOwner,
+  L1ValidatorDetailsFull,
+  ListL1ValidatorsResponse,
   TeleporterReceipt,
   TeleporterRewardDetails,
   TeleporterSourceTransaction,
@@ -1766,7 +2036,29 @@ export const schemas = {
   TeleporterDestinationTransaction,
   DeliveredTeleporterMessage,
   DeliveredSourceNotIndexedTeleporterMessage,
-  NextPageToken,
+  ListTeleporterMessagesResponse,
+  UsageMetricsValueDTO,
+  Metric,
+  UsageMetricsResponseDTO,
+  RequestType,
+  LogsFormatMetadata,
+  LogsFormat,
+  LogsResponseDTO,
+  RpcUsageMetricsValueAggregated,
+  RpcMetrics,
+  SubnetRpcUsageMetricsResponseDTO,
+  EventType,
+  AddressActivityMetadata,
+  CreateWebhookRequest,
+  WebhookStatusType,
+  WebhookResponse,
+  ListWebhooksResponse,
+  UpdateWebhookRequest,
+  SharedSecretsResponse,
+  AddressesChangeRequest,
+  ListWebhookAddressesResponse,
+  SignatureAggregatorRequest,
+  SignatureAggregationResponse,
   NativeTokenBalance,
   GetNativeBalanceResponse,
   Erc20TokenBalance,
@@ -1776,21 +2068,17 @@ export const schemas = {
   Erc1155TokenBalance,
   ListErc1155BalancesResponse,
   ListCollectibleBalancesResponse,
-  EvmBlock,
-  ListEvmBlocksResponse,
   GetEvmBlockResponse,
-  RichAddress,
   Erc20Token,
   Erc20TransferDetails,
   Erc721TransferDetails,
   Erc1155TransferDetails,
   InternalTransactionOpCall,
   InternalTransactionDetails,
-  NetworkToken,
   NetworkTokenDetails,
-  TransactionMethodType,
-  Method,
   FullNativeTransactionDetails,
+  TransactionDirectionType,
+  TeleporterMessageInfo,
   GetTransactionResponse,
   ImageAsset,
   ResourceLinkType,
@@ -1808,33 +2096,420 @@ export const schemas = {
   ContractSubmissionUnknown,
   ContractSubmissionBody,
   UpdateContractResponse,
-  ChainStatus,
-  VmName,
-  UtilityAddresses,
-  ChainInfo,
   ListChainsResponse,
   GetChainResponse,
   Erc20Transfer,
   Erc721Transfer,
   Erc1155Transfer,
   ListTransfersResponse,
-  NativeTransaction,
   TransactionDetails,
   ListTransactionDetailsResponse,
-  ListNativeTransactionsResponse,
   ListErc20TransactionsResponse,
   ListErc721TransactionsResponse,
   ListErc1155TransactionsResponse,
   InternalTransaction,
-  ListInternalTransactionsResponse,
-  RpcRequestBodyDto,
-  rpc_Body,
-  RpcSuccessResponseDto,
-  RpcErrorDto,
-  RpcErrorResponseDto
+  ListInternalTransactionsResponse
 }
 
 const endpoints = makeApi([
+  {
+    method: 'get',
+    path: '/v1/address/:address/chains',
+    alias: 'listAddressChains',
+    description: `Lists the chains where the specified address has  participated in transactions or ERC token transfers,  either as a sender or receiver. The data is refreshed every 15  minutes.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'address',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: ListAddressChainsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/apiLogs',
+    alias: 'getApiLogs',
+    description: `Gets logs for requests made by client over a specified time interval for a specific organization.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'orgId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'startTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'endTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'chainId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'responseCode',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'requestType',
+        type: 'Query',
+        schema: z.enum(['data', 'rpc']).optional()
+      },
+      {
+        name: 'apiKeyId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'requestPath',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      }
+    ],
+    response: LogsResponseDTO,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/apiUsageMetrics',
+    alias: 'getApiUsageMetrics',
+    description: `Gets metrics for Data API usage over a specified time interval aggregated at the specified time-duration granularity.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'orgId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'startTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'endTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'timeInterval',
+        type: 'Query',
+        schema: z
+          .enum(['minute', 'hourly', 'daily', 'weekly', 'monthly'])
+          .optional()
+      },
+      {
+        name: 'groupBy',
+        type: 'Query',
+        schema: z
+          .enum([
+            'requestPath',
+            'responseCode',
+            'chainId',
+            'apiKeyId',
+            'requestType'
+          ])
+          .optional()
+      },
+      {
+        name: 'chainId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'responseCode',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'requestType',
+        type: 'Query',
+        schema: z.enum(['data', 'rpc']).optional()
+      },
+      {
+        name: 'apiKeyId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'requestPath',
+        type: 'Query',
+        schema: z.string().optional()
+      }
+    ],
+    response: UsageMetricsResponseDTO,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/blocks',
+    alias: 'listLatestBlocksAllChains',
+    description: `Lists the most recent blocks from all supported  EVM-compatible chains. The results can be filtered by network.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'network',
+        type: 'Query',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet']).optional()
+      }
+    ],
+    response: ListEvmBlocksResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
   {
     method: 'get',
     path: '/v1/chains',
@@ -1845,15 +2520,72 @@ const endpoints = makeApi([
       {
         name: 'network',
         type: 'Query',
-        schema: z.enum(['mainnet', 'testnet']).optional()
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet']).optional()
       },
       {
         name: 'feature',
         type: 'Query',
-        schema: z.enum(['nftIndexing', 'webhooks']).optional()
+        schema: z.enum(['nftIndexing', 'webhooks', 'teleporter']).optional()
       }
     ],
-    response: ListChainsResponse
+    response: ListChainsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -1868,7 +2600,64 @@ const endpoints = makeApi([
         schema: z.string()
       }
     ],
-    response: GetChainResponse
+    response: GetChainResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -1893,7 +2682,64 @@ const endpoints = makeApi([
       Erc1155Contract,
       Erc20Contract,
       UnknownContract
-    ])
+    ]),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -1942,7 +2788,64 @@ Balance at a given block can be retrieved with the &#x60;blockNumber&#x60; param
           .optional()
       }
     ],
-    response: GetNativeBalanceResponse
+    response: GetNativeBalanceResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -1979,7 +2882,64 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
         schema: z.string().optional()
       }
     ],
-    response: ListCollectibleBalancesResponse
+    response: ListCollectibleBalancesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2023,7 +2983,64 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
         schema: z.string().optional()
       }
     ],
-    response: ListErc1155BalancesResponse
+    response: ListErc1155BalancesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2050,6 +3067,11 @@ Balance for specific contracts can be retrieved with the &#x60;contractAddresses
         name: 'pageSize',
         type: 'Query',
         schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'filterSpamTokens',
+        type: 'Query',
+        schema: z.boolean().optional().default(true)
       },
       {
         name: 'chainId',
@@ -2089,7 +3111,64 @@ Balance for specific contracts can be retrieved with the &#x60;contractAddresses
           .optional()
       }
     ],
-    response: ListErc20BalancesResponse
+    response: ListErc20BalancesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2126,7 +3205,64 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
         schema: z.string().optional()
       }
     ],
-    response: ListErc721BalancesResponse
+    response: ListErc721BalancesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2173,7 +3309,64 @@ Filterable by block ranges.`,
         schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: ListTransactionDetailsResponse
+    response: ListTransactionDetailsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2213,7 +3406,64 @@ Filterable by block ranges.`,
         schema: z.string()
       }
     ],
-    response: ListErc1155TransactionsResponse
+    response: ListErc1155TransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2253,7 +3503,64 @@ Filterable by block ranges.`,
         schema: z.string()
       }
     ],
-    response: ListErc20TransactionsResponse
+    response: ListErc20TransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2293,7 +3600,64 @@ Filterable by block ranges.`,
         schema: z.string()
       }
     ],
-    response: ListErc721TransactionsResponse
+    response: ListErc721TransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2335,7 +3699,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListInternalTransactionsResponse
+    response: ListInternalTransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2375,7 +3796,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListNativeTransactionsResponse
+    response: ListNativeTransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2400,7 +3878,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListEvmBlocksResponse
+    response: ListEvmBlocksResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2420,7 +3955,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: GetEvmBlockResponse
+    response: GetEvmBlockResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2429,6 +4021,16 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
     description: `Lists the transactions that occured in a given block.`,
     requestFormat: 'json',
     parameters: [
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(0).lte(100).optional().default(0)
+      },
       {
         name: 'chainId',
         type: 'Path',
@@ -2440,7 +4042,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListNativeTransactionsResponse
+    response: ListNativeTransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'patch',
@@ -2465,7 +4124,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: UpdateContractResponse
+    response: UpdateContractResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2495,7 +4211,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListContractsResponse
+    response: ListContractsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2537,7 +4310,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
           .optional()
       }
     ],
-    response: GetTransactionResponse
+    response: GetTransactionResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2567,7 +4397,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListNftTokens
+    response: ListNftTokens,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2592,7 +4479,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: z.discriminatedUnion('ercType', [Erc721Token, Erc1155Token])
+    response: z.discriminatedUnion('ercType', [Erc721Token, Erc1155Token]),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'post',
@@ -2617,7 +4561,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: z.void()
+    response: z.void(),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2657,7 +4658,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListTransfersResponse
+    response: ListTransfersResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2687,7 +4745,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.enum(['failed', 'success']).optional()
       }
     ],
-    response: ListNativeTransactionsResponse
+    response: ListNativeTransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2707,43 +4822,69 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: GetTransactionResponse
-  },
-  {
-    method: 'post',
-    path: '/v1/ext/bc/:chainId/rpc',
-    alias: 'rpc',
-    description: `Calls JSON-RPC method.`,
-    requestFormat: 'json',
-    parameters: [
-      {
-        name: 'body',
-        type: 'Body',
-        schema: rpc_Body
-      },
-      {
-        name: 'chainId',
-        type: 'Path',
-        schema: z.string()
-      }
-    ],
-    response: z.union([
-      RpcSuccessResponseDto,
-      RpcErrorResponseDto,
-      z.array(z.union([RpcSuccessResponseDto, RpcErrorResponseDto]))
-    ]),
+    response: GetTransactionResponse,
     errors: [
       {
-        status: 504,
-        description: `Request timed out`,
-        schema: z.void()
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
       }
     ]
   },
   {
     method: 'get',
     path: '/v1/health-check',
-    alias: 'health-check',
+    alias: 'data-health-check',
     requestFormat: 'json',
     response: z
       .object({
@@ -2787,10 +4928,67 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       }
     ],
-    response: GetNetworkDetailsResponse
+    response: GetNetworkDetailsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2807,10 +5005,67 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       }
     ],
-    response: ChainAddressChainIdMapListResponse
+    response: ChainAddressChainIdMapListResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2832,7 +5087,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'sortOrder',
@@ -2840,7 +5095,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: ListBlockchainsResponse
+    response: ListBlockchainsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2855,13 +5167,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.enum([
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           'x-chain'
         ])
       },
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'assetId',
@@ -2869,7 +5182,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: XChainAssetDetails
+    response: XChainAssetDetails,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2909,13 +5279,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.enum([
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           'x-chain'
         ])
       },
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'assetId',
@@ -2923,7 +5294,64 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.string()
       }
     ],
-    response: ListXChainTransactionsResponse
+    response: ListXChainTransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2951,8 +5379,10 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
           '11111111111111111111111111111111LpoYY',
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
           'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+          'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
           'p-chain',
           'x-chain',
           'c-chain'
@@ -2961,14 +5391,71 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       }
     ],
     response: z.union([
       ListPChainBalancesResponse,
       ListXChainBalancesResponse,
       ListCChainAtomicBalancesResponse
-    ])
+    ]),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -2977,6 +5464,16 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
     description: `Lists latest blocks on one of the Primary Network chains.`,
     requestFormat: 'json',
     parameters: [
+      {
+        name: 'startTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'endTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
       {
         name: 'pageToken',
         type: 'Query',
@@ -2994,8 +5491,10 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
           '11111111111111111111111111111111LpoYY',
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
           'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+          'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
           'p-chain',
           'x-chain',
           'c-chain'
@@ -3004,10 +5503,67 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       }
     ],
-    response: ListPrimaryNetworkBlocksResponse
+    response: ListPrimaryNetworkBlocksResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3023,8 +5579,10 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
           '11111111111111111111111111111111LpoYY',
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
           'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+          'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
           'p-chain',
           'x-chain',
           'c-chain'
@@ -3033,7 +5591,7 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'blockId',
@@ -3041,7 +5599,64 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
         schema: z.string()
       }
     ],
-    response: GetPrimaryNetworkBlockResponse
+    response: GetPrimaryNetworkBlockResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3050,6 +5665,16 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
     description: `Lists the latest blocks proposed by a given NodeID on one of the Primary Network chains.`,
     requestFormat: 'json',
     parameters: [
+      {
+        name: 'startTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'endTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
       {
         name: 'pageToken',
         type: 'Query',
@@ -3067,8 +5692,10 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
           '11111111111111111111111111111111LpoYY',
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
           'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+          'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
           'p-chain',
           'x-chain',
           'c-chain'
@@ -3077,7 +5704,7 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'nodeId',
@@ -3085,7 +5712,64 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
         schema: z.string()
       }
     ],
-    response: ListPrimaryNetworkBlocksResponse
+    response: ListPrimaryNetworkBlocksResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3095,11 +5779,18 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
 
 Transactions are filterable by addresses, txTypes, and timestamps. When querying for latest transactions without an address parameter, filtering by txTypes and timestamps is not supported. An address filter must be provided to utilize txTypes and timestamp filters.
 
+For P-Chain, you can fetch all L1 validators related transactions like ConvertSubnetToL1Tx, IncreaseL1ValidatorBalanceTx etc. using the unique L1 validation ID. These transactions are further filterable by txTypes and timestamps as well.
+
 Given that each transaction may return a large number of UTXO objects, bounded only by the maximum transaction size, the query may return less transactions than the provided page size. The result will contain less results than the page size if the number of utxos contained in the resulting transactions reach a performance threshold.`,
     requestFormat: 'json',
     parameters: [
       {
         name: 'addresses',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'l1ValidationId',
         type: 'Query',
         schema: z.string().optional()
       },
@@ -3135,8 +5826,10 @@ Given that each transaction may return a large number of UTXO objects, bounded o
           '11111111111111111111111111111111LpoYY',
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
           'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+          'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
           'p-chain',
           'x-chain',
           'c-chain'
@@ -3145,7 +5838,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'sortOrder',
@@ -3157,7 +5850,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       ListPChainTransactionsResponse,
       ListXChainTransactionsResponse,
       ListCChainAtomicTransactionsResponse
-    ])
+    ]),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3204,7 +5954,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'sortOrder',
@@ -3212,7 +5962,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: ListPChainTransactionsResponse
+    response: ListPChainTransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3228,8 +6035,10 @@ Given that each transaction may return a large number of UTXO objects, bounded o
           '11111111111111111111111111111111LpoYY',
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
           'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+          'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
           'p-chain',
           'x-chain',
           'c-chain'
@@ -3238,7 +6047,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'txHash',
@@ -3252,7 +6061,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       XChainLinearTransaction,
       CChainExportTransaction,
       CChainImportTransaction
-    ])
+    ]),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3283,8 +6149,10 @@ Given that each transaction may return a large number of UTXO objects, bounded o
           '11111111111111111111111111111111LpoYY',
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5',
           'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp',
+          'vV3cui1DsEPC3nLCGH9rorwo8s6BYxM2Hz4QFE5gEYjwTqAu',
           'p-chain',
           'x-chain',
           'c-chain'
@@ -3293,7 +6161,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'assetId',
@@ -3311,7 +6179,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: z.union([ListPChainUtxosResponse, ListUtxosResponse])
+    response: z.union([ListPChainUtxosResponse, ListUtxosResponse]),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3336,16 +6261,74 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum([
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           'x-chain'
         ])
       },
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       }
     ],
-    response: ListXChainVerticesResponse
+    response: ListXChainVerticesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3375,13 +6358,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum([
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           'x-chain'
         ])
       },
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'sortOrder',
@@ -3389,7 +6373,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: ListXChainVerticesResponse
+    response: ListXChainVerticesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3409,16 +6450,74 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum([
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
           '2JVSBoinj9C2J33VntvzYtVJNZdN2NKiwwKjcumHUWEb5DbBrm',
+          '2piQ2AVHCjnduiWXsSY15DtbVuwHE2cwMHYnEXHsLL73BBkdbV',
           'x-chain'
         ])
       },
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       }
     ],
-    response: XChainVertex
+    response: XChainVertex,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3445,7 +6544,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'sortOrder',
@@ -3463,7 +6562,166 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.string().optional()
       }
     ],
-    response: ListDelegatorDetailsResponse
+    response: ListDelegatorDetailsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/networks/:network/l1Validators',
+    alias: 'listL1Validators',
+    description: `Lists details for L1 validators. By default, returns details for all active L1 validators. Filterable by validator node ids, subnet id, and validation id.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'l1ValidationId',
+        type: 'Query',
+        schema: z.unknown().optional()
+      },
+      {
+        name: 'includeInactiveL1Validators',
+        type: 'Query',
+        schema: z.boolean().optional()
+      },
+      {
+        name: 'network',
+        type: 'Path',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
+      },
+      {
+        name: 'nodeId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'subnetId',
+        type: 'Query',
+        schema: z.unknown().optional()
+      }
+    ],
+    response: ListL1ValidatorsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3490,7 +6748,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'nodeIds',
@@ -3525,7 +6783,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
           .optional()
       }
     ],
-    response: ListHistoricalRewardsResponse
+    response: ListHistoricalRewardsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3552,7 +6867,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'nodeIds',
@@ -3565,7 +6880,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: ListPendingRewardsResponse
+    response: ListPendingRewardsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3587,7 +6959,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'sortOrder',
@@ -3595,7 +6967,141 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: ListSubnetsResponse
+    response: ListSubnetsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/networks/:network/subnets/:subnetId',
+    alias: 'getSubnetById',
+    description: `Get details of the Subnet registered on the network.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'network',
+        type: 'Path',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
+      },
+      {
+        name: 'subnetId',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: Subnet,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3617,12 +7123,25 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'nodeIds',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'sortBy',
+        type: 'Query',
+        schema: z
+          .enum([
+            'blockIndex',
+            'delegationCapacity',
+            'timeRemaining',
+            'delegationFee',
+            'uptimePerformance'
+          ])
+          .optional()
       },
       {
         name: 'sortOrder',
@@ -3665,12 +7184,79 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.number().gte(2).lte(100).optional()
       },
       {
+        name: 'minUptimePerformance',
+        type: 'Query',
+        schema: z.number().gte(0).lte(100).optional()
+      },
+      {
+        name: 'maxUptimePerformance',
+        type: 'Query',
+        schema: z.number().gte(0).lte(100).optional()
+      },
+      {
         name: 'subnetId',
         type: 'Query',
         schema: z.unknown().optional()
       }
     ],
-    response: ListValidatorDetailsResponse
+    response: ListValidatorDetailsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3692,7 +7278,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'network',
         type: 'Path',
-        schema: z.enum(['mainnet', 'fuji'])
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
       },
       {
         name: 'nodeId',
@@ -3700,17 +7286,74 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.string()
       },
       {
-        name: 'sortOrder',
-        type: 'Query',
-        schema: z.enum(['asc', 'desc']).optional()
-      },
-      {
         name: 'validationStatus',
         type: 'Query',
         schema: z.enum(['completed', 'active', 'pending', 'removed']).optional()
+      },
+      {
+        name: 'sortOrder',
+        type: 'Query',
+        schema: z.enum(['asc', 'desc']).optional()
       }
     ],
-    response: ListValidatorDetailsResponse
+    response: ListValidatorDetailsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3725,7 +7368,64 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.string()
       }
     ],
-    response: OperationStatusResponse
+    response: OperationStatusResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'post',
@@ -3742,7 +7442,462 @@ The transaction export operation runs asynchronously in the background. The stat
         schema: postTransactionExportJob_Body
       }
     ],
-    response: OperationStatusResponse
+    response: OperationStatusResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/primaryNetworkRpcUsageMetrics',
+    alias: 'getPrimaryNetworkRpcUsageMetrics',
+    description: `Gets metrics for public Primary Network RPC usage over  a specified time interval aggregated at the specified  time-duration granularity.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'timeInterval',
+        type: 'Query',
+        schema: z.enum(['hourly', 'daily', 'weekly', 'monthly']).optional()
+      },
+      {
+        name: 'startTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'endTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'groupBy',
+        type: 'Query',
+        schema: z
+          .enum([
+            'requestPath',
+            'responseCode',
+            'country',
+            'continent',
+            'userAgent'
+          ])
+          .optional()
+      },
+      {
+        name: 'responseCode',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'requestPath',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'country',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'continent',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'userAgent',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'network',
+        type: 'Query',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
+      }
+    ],
+    response: SubnetRpcUsageMetricsResponseDTO,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/rpcUsageMetrics',
+    alias: 'getRpcUsageMetrics',
+    description: `Gets metrics for public Subnet RPC usage over a specified time interval aggregated at the specified time-duration granularity.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'timeInterval',
+        type: 'Query',
+        schema: z.enum(['hourly', 'daily', 'weekly', 'monthly']).optional()
+      },
+      {
+        name: 'startTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'endTimestamp',
+        type: 'Query',
+        schema: z.number().int().gte(0).optional()
+      },
+      {
+        name: 'groupBy',
+        type: 'Query',
+        schema: z
+          .enum(['rpcMethod', 'responseCode', 'rlBypassToken'])
+          .optional()
+      },
+      {
+        name: 'chainId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'responseCode',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'rpcMethod',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'rlBypassApiToken',
+        type: 'Query',
+        schema: z.string().optional()
+      }
+    ],
+    response: SubnetRpcUsageMetricsResponseDTO,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'post',
+    path: '/v1/signatureAggregator/:network/aggregateSignatures',
+    alias: 'aggregateSignatures',
+    description: `Aggregates Signatures for a Warp message from Subnet validators.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: SignatureAggregatorRequest
+      },
+      {
+        name: 'network',
+        type: 'Path',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet'])
+      }
+    ],
+    response: z.object({ signedMessage: z.string() }).passthrough(),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/teleporter/addresses/:address/messages',
+    alias: 'listTeleporterMessagesByAddress',
+    description: `Lists teleporter messages by address. Ordered by timestamp in descending order.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'address',
+        type: 'Path',
+        schema: z.string()
+      },
+      {
+        name: 'network',
+        type: 'Query',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet']).optional()
+      }
+    ],
+    response: ListTeleporterMessagesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3772,6 +7927,11 @@ The transaction export operation runs asynchronously in the background. The stat
         schema: z.string().optional()
       },
       {
+        name: 'blockchainId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
         name: 'to',
         type: 'Query',
         schema: z.string().optional()
@@ -3780,20 +7940,71 @@ The transaction export operation runs asynchronously in the background. The stat
         name: 'from',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'network',
+        type: 'Query',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet']).optional()
       }
     ],
-    response: z
-      .object({
-        messages: z.array(
-          z.discriminatedUnion('status', [
-            PendingTeleporterMessage,
-            DeliveredTeleporterMessage
-          ])
-        )
-      })
-      .partial()
-      .passthrough()
-      .and(NextPageToken)
+    response: ListTeleporterMessagesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3812,22 +8023,223 @@ The transaction export operation runs asynchronously in the background. The stat
       PendingTeleporterMessage,
       DeliveredTeleporterMessage,
       DeliveredSourceNotIndexedTeleporterMessage
-    ])
+    ]),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/transactions',
+    alias: 'listLatestTransactionsAllChains',
+    description: `Lists the most recent transactions from all supported EVM-compatible  chains. The results can be filtered based on transaction status.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'network',
+        type: 'Query',
+        schema: z.enum(['mainnet', 'fuji', 'testnet', 'devnet']).optional()
+      },
+      {
+        name: 'status',
+        type: 'Query',
+        schema: z.enum(['failed', 'success']).optional()
+      }
+    ],
+    response: ListNativeTransactionsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'post',
     path: '/v1/webhooks',
-    alias: 'registerWebhook',
-    description: `Registers a new webhook.`,
+    alias: 'createWebhook',
+    description: `Create a new webhook.`,
     requestFormat: 'json',
     parameters: [
       {
         name: 'body',
         type: 'Body',
-        schema: RegisterWebhookRequest
+        schema: CreateWebhookRequest
       }
     ],
-    response: WebhookResponse
+    response: WebhookResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3852,7 +8264,64 @@ The transaction export operation runs asynchronously in the background. The stat
         schema: z.enum(['active', 'inactive']).optional()
       }
     ],
-    response: ListWebhooksResponse
+    response: ListWebhooksResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'post',
@@ -3860,7 +8329,64 @@ The transaction export operation runs asynchronously in the background. The stat
     alias: 'generateSharedSecret',
     description: `Generates a new shared secret.`,
     requestFormat: 'json',
-    response: z.object({ secret: z.string() }).passthrough()
+    response: z.object({ secret: z.string() }).passthrough(),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3868,7 +8394,64 @@ The transaction export operation runs asynchronously in the background. The stat
     alias: 'getSharedSecret',
     description: `Get a previously generated shared secret.`,
     requestFormat: 'json',
-    response: z.object({ secret: z.string() }).passthrough()
+    response: z.object({ secret: z.string() }).passthrough(),
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'get',
@@ -3883,7 +8466,64 @@ The transaction export operation runs asynchronously in the background. The stat
         schema: z.string()
       }
     ],
-    response: WebhookResponse
+    response: WebhookResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'delete',
@@ -3898,7 +8538,64 @@ The transaction export operation runs asynchronously in the background. The stat
         schema: z.string()
       }
     ],
-    response: WebhookResponse
+    response: WebhookResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'patch',
@@ -3918,13 +8615,70 @@ The transaction export operation runs asynchronously in the background. The stat
         schema: z.string()
       }
     ],
-    response: WebhookResponse
+    response: WebhookResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   },
   {
     method: 'patch',
-    path: '/v1/webhooks/:id/addresses:addAddresses',
+    path: '/v1/webhooks/:id/addresses',
     alias: 'addAddressesToWebhook',
-    description: `Adding address(es) to a given webhook.`,
+    description: `Add addresses to webhook.`,
     requestFormat: 'json',
     parameters: [
       {
@@ -3938,17 +8692,228 @@ The transaction export operation runs asynchronously in the background. The stat
         schema: z.string()
       }
     ],
-    response: WebhookResponse
+    response: WebhookResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'delete',
+    path: '/v1/webhooks/:id/addresses',
+    alias: 'removeAddressesFromWebhook',
+    description: `Remove addresses from webhook.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: AddressesChangeRequest
+      },
+      {
+        name: 'id',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: WebhookResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
+  },
+  {
+    method: 'get',
+    path: '/v1/webhooks/:id/addresses',
+    alias: 'getAddressesFromWebhook',
+    description: `List adresses by webhook.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'id',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: ListWebhookAddressesResponse,
+    errors: [
+      {
+        status: 400,
+        description: `Bad requests generally mean the client has passed invalid 
+    or malformed parameters. Error messages in the response could help in 
+    evaluating the error.`,
+        schema: BadRequest
+      },
+      {
+        status: 401,
+        description: `When a client attempts to access resources that require 
+    authorization credentials but the client lacks proper authentication 
+    in the request, the server responds with 401.`,
+        schema: Unauthorized
+      },
+      {
+        status: 403,
+        description: `When a client attempts to access resources with valid
+    credentials but doesn&#x27;t have the privilege to perform that action, 
+    the server responds with 403.`,
+        schema: Forbidden
+      },
+      {
+        status: 404,
+        description: `The error is mostly returned when the client requests
+    with either mistyped URL, or the passed resource is moved or deleted, 
+    or the resource doesn&#x27;t exist.`,
+        schema: NotFound
+      },
+      {
+        status: 429,
+        description: `This error is returned when the client has sent too many,
+    and has hit the rate limit.`,
+        schema: TooManyRequests
+      },
+      {
+        status: 500,
+        description: `The error is a generic server side error that is 
+    returned for any uncaught and unexpected issues on the server side. 
+    This should be very rare, and you may reach out to us if the problem 
+    persists for a longer duration.`,
+        schema: InternalServerError
+      },
+      {
+        status: 502,
+        description: `This is an internal error indicating invalid response 
+      received by the client-facing proxy or gateway from the upstream server.`,
+        schema: BadGateway
+      },
+      {
+        status: 503,
+        description: `The error is returned for certain routes on a particular
+    Subnet. This indicates an internal problem with our Subnet node, and may 
+    not necessarily mean the Subnet is down or affected.`,
+        schema: ServiceUnavailable
+      }
+    ]
   }
 ])
 
-export const api = new Zodios(endpoints, {
-  axiosConfig: { headers: CORE_HEADERS }
-})
+export const api = new Zodios(endpoints)
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options)
-}
-export function createNoopApiClient() {
-  return new Zodios(endpoints)
 }
