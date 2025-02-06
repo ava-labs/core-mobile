@@ -10,11 +10,16 @@ import {
 import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store'
 import { TokensList } from 'features/portfolio/components/assets/TokensList'
+import { TokenType } from '@avalabs/vm-module-types'
 
 const PortfolioAssetsScreen = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const tokens = useSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
+  )
+
+  const nonNftTokens = tokens.filter(
+    token => token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
@@ -23,7 +28,7 @@ const PortfolioAssetsScreen = (): JSX.Element => {
     return <EmptyAssets />
   }
 
-  return <TokensList tokens={tokens} />
+  return <TokensList tokens={nonNftTokens} />
 }
 
 export default PortfolioAssetsScreen

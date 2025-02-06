@@ -2,7 +2,6 @@ import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import {
-  alpha,
   Icons,
   Text,
   TouchableOpacity,
@@ -10,7 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
-import { TokenLogo } from '../TokenLogo'
+import { AssetLogoWithNetwork } from './AssetLogoWithNetwork'
 
 interface TokenProps {
   token: TokenWithBalance
@@ -18,7 +17,7 @@ interface TokenProps {
 
 export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
   const {
-    theme: { colors, isDark }
+    theme: { colors }
   } = useTheme()
   const {
     appHook: { currencyFormatter }
@@ -37,8 +36,6 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
   //     ? (balanceInCurrency * percentChange) / 100
   //     : undefined
 
-  const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
-
   const goToTokenDetail = (): void => {
     // TODO: go to token detail
   }
@@ -55,13 +52,7 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
         backgroundColor: '$surfaceSecondary'
       }}>
       {/* TODO: use another endpoint to get the logo and network icon */}
-      <TokenLogo
-        size={24}
-        symbol={token.symbol}
-        logoUri={token.logoUri}
-        backgroundColor={colors.$borderPrimary}
-        borderColor={borderColor}
-      />
+      <AssetLogoWithNetwork token={token} />
       <View
         sx={{
           flexGrow: 1,
