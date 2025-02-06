@@ -343,7 +343,7 @@ export class KeystoneWallet implements Wallet {
           v
         })
 
-        return '0x' + signedTx.serialize().toString()
+        return '0x' + Buffer.from(signedTx.serialize()).toString('hex')
       }
     )
   }
