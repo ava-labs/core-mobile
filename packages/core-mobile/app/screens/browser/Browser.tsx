@@ -28,7 +28,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
-import { Dimensions, LayoutAnimation, Platform, ScrollView } from 'react-native'
+import { LayoutAnimation, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { WebView } from 'components/WebView'
@@ -45,8 +45,6 @@ import NavButton from './components/NavButton'
 type TabViewNavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
-
-const { height: screenHeight } = Dimensions.get('window')
 
 export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const dispatch = useDispatch()
@@ -198,95 +196,91 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   )
 
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      keyboardShouldPersistTaps="handled">
-      <View style={{ width: '100%', height: screenHeight - 200 }}>
+    <View style={{ width: '100%', height: '100%' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginLeft: 4
+        }}>
+        <InputText
+          mode={'url'}
+          onRefresh={handleRefresh}
+          keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
+          text={urlEntry}
+          autoCorrect={false}
+          onChangeText={setUrlEntry}
+          onSubmit={handleUrlSubmit}
+          onBlur={() => {
+            LayoutAnimation.easeInEaseOut()
+            setUrlBarFocused(false)
+          }}
+          onFocus={() => {
+            LayoutAnimation.easeInEaseOut()
+            setUrlBarFocused(true)
+          }}
+          style={{ width: urlBarFocused ? '93%' : '45%' }}
+        />
         <View
           style={{
             flexDirection: 'row',
+            flex: 1,
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginLeft: 4
+            marginRight: 12,
+            marginLeft: 6
           }}>
-          <InputText
-            mode={'url'}
-            onRefresh={handleRefresh}
-            keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
-            text={urlEntry}
-            autoCorrect={false}
-            onChangeText={setUrlEntry}
-            onSubmit={handleUrlSubmit}
-            onBlur={() => {
-              LayoutAnimation.easeInEaseOut()
-              setUrlBarFocused(false)
-            }}
-            onFocus={() => {
-              LayoutAnimation.easeInEaseOut()
-              setUrlBarFocused(true)
-            }}
-            style={{ width: urlBarFocused ? '93%' : '45%' }}
+          <NavButton
+            Icon={Icons.Navigation.ArrowBack}
+            onPress={goBack}
+            disabled={!canGoBack}
+            testID="browser_back_btn"
           />
-          <View
-            style={{
-              flexDirection: 'row',
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginRight: 12,
-              marginLeft: 6
-            }}>
+          <NavButton
+            Icon={Icons.Navigation.ArrowForward}
+            onPress={goForward}
+            disabled={!canGoForward}
+          />
+          <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
+          <MoreMenu isFavorited={isFavorited}>
             <NavButton
-              Icon={Icons.Navigation.ArrowBack}
-              onPress={goBack}
-              disabled={!canGoBack}
-              testID="browser_back_btn"
+              Icon={Icons.Navigation.MoreVert}
+              onPress={() => {
+                AnalyticsService.capture('BrowserContextualMenuOpened')
+              }}
             />
-            <NavButton
-              Icon={Icons.Navigation.ArrowForward}
-              onPress={goForward}
-              disabled={!canGoForward}
-            />
-            <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
-            <MoreMenu isFavorited={isFavorited}>
-              <NavButton
-                Icon={Icons.Navigation.MoreVert}
-                onPress={() => {
-                  AnalyticsService.capture('BrowserContextualMenuOpened')
-                }}
-              />
-            </MoreMenu>
-          </View>
+          </MoreMenu>
         </View>
-        <WebView
-          testID="myWebview"
-          webViewRef={webViewRef}
-          injectedJavaScript={
-            injectGetDescriptionAndFavicon +
-            injectCoreAsRecent +
-            coreConnectInterceptor +
-            injectCustomWindowOpen +
-            injectCustomPrompt
-          }
-          url={urlToLoad}
-          onLoad={event => {
-            if (event.nativeEvent.url.startsWith('about:blank')) return
-            const includeDescriptionAndFavicon =
-              description !== '' && favicon !== undefined
-            const history: AddHistoryPayload = includeDescriptionAndFavicon
-              ? {
-                  title: event.nativeEvent.title,
-                  url: event.nativeEvent.url,
-                  description,
-                  favicon
-                }
-              : { title: event.nativeEvent.title, url: event.nativeEvent.url }
-            dispatch(addHistoryForActiveTab(history))
-            setUrlEntry(event.nativeEvent.url)
-          }}
-          onMessage={onMessageHandler}
-        />
       </View>
-    </ScrollView>
+      <WebView
+        testID="myWebview"
+        webViewRef={webViewRef}
+        injectedJavaScript={
+          injectGetDescriptionAndFavicon +
+          injectCoreAsRecent +
+          coreConnectInterceptor +
+          injectCustomWindowOpen +
+          injectCustomPrompt
+        }
+        url={urlToLoad}
+        onLoad={event => {
+          if (event.nativeEvent.url.startsWith('about:blank')) return
+          const includeDescriptionAndFavicon =
+            description !== '' && favicon !== undefined
+          const history: AddHistoryPayload = includeDescriptionAndFavicon
+            ? {
+                title: event.nativeEvent.title,
+                url: event.nativeEvent.url,
+                description,
+                favicon
+              }
+            : { title: event.nativeEvent.title, url: event.nativeEvent.url }
+          dispatch(addHistoryForActiveTab(history))
+          setUrlEntry(event.nativeEvent.url)
+        }}
+        onMessage={onMessageHandler}
+      />
+    </View>
   )
 }
