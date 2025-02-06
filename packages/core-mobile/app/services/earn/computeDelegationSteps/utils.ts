@@ -146,7 +146,8 @@ export const getDelegationFeePostCExportAndPImport = async ({
   // we are trying to find the delegation fee itself here
   const simulatedUTXOs = [
     getTransferOutputUtxos({
-      amt: stakeAmount - pChainBalance,
+      // we need to get the absolute value of the difference since either the balance or the stake amount can be greater
+      amt: bigIntDiff(stakeAmount, pChainBalance),
       assetId,
       address: pAddress
     }),
@@ -199,7 +200,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
     }
 
     simulatedUTXOs[0] = getTransferOutputUtxos({
-      amt: stakeAmount - pChainBalance + missingAmount,
+      amt: bigIntDiff(stakeAmount, pChainBalance) + missingAmount,
       assetId,
       address: pAddress
     })
@@ -367,3 +368,7 @@ const getTransferOutputUtxos = ({
       OutputOwners.fromNative([Address.fromString(address).toBytes()])
     )
   )
+
+const bigIntDiff = (a: bigint, b: bigint): bigint => {
+  return a > b ? a - b : b - a
+}
