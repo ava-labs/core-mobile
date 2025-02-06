@@ -316,7 +316,7 @@ __metadata:
     expo: 52.0.9
     expo-application: 6.0.2
     expo-blur: 14.0.3
-    expo-camera: 16.0.11
+    expo-camera: 16.0.14
     expo-constants: 17.0.4
     expo-dev-client: 5.0.3
     expo-haptics: 14.0.1
@@ -18005,9 +18005,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-camera@npm:16.0.11":
-  version: 16.0.11
-  resolution: "expo-camera@npm:16.0.11"
+"expo-camera@npm:16.0.14":
+  version: 16.0.14
+  resolution: "expo-camera@npm:16.0.14"
   dependencies:
     invariant: ^2.2.4
   peerDependencies:
@@ -18018,7 +18018,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: a779c06840c7c723116820112e0e59837c9b0afedb57c74074328aef4831ae4d28f6c99cc12586dee767645f6940045c5e265c13317f4334e5437da408ff13d0
+  checksum: 947118b339ff6c17f9d0846098a1c5d0932b02b99c543e1ad3abb2fdf77e6efdbda9ec8092591e6367745b14c21e1433d7103969a14037075d73f0883dcaa37e
   languageName: node
   linkType: hard
 
