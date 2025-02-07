@@ -174,9 +174,17 @@ export const selectPFeeAdjustmentThreshold = (state: RootState): number => {
   )
 }
 
+// TODO deprecate since we no longer use this
 export const selectPFeeMultiplier = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseFloat(featureFlags[FeatureVars.P_FEE_MULTIPLIER] as string)
+}
+
+export const selectCrossChainFeesMultiplier = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseFloat(
+    featureFlags[FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER] as string
+  )
 }
 
 export const selectCBaseFeeMultiplier = (state: RootState): number => {

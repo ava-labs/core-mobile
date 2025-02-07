@@ -140,7 +140,7 @@ export const Confirmation = (): JSX.Element | null => {
         networkFees,
         pNetwork.networkToken.decimals,
         pNetwork.networkToken.symbol
-      ).toDisplay(),
+      ).toDisplay({ fixedDp: 6 }),
     [networkFees, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol]
   )
 
@@ -404,11 +404,11 @@ export const Confirmation = (): JSX.Element | null => {
           }}>
           <Tooltip
             content={renderPopoverInfoText(
-              'Fee paid to the network to execute the transaction'
+              'Estimated fee paid to the network to execute the transaction'
             )}
             position="right"
             style={{ width: 200 }}>
-            Network Fee
+            Estimated Network Fee
           </Tooltip>
           {renderNetworkFee()}
         </Row>

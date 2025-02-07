@@ -7,7 +7,7 @@ import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { selectActiveNetwork } from 'store/network/slice'
 import {
   selectPFeeAdjustmentThreshold,
-  selectPFeeMultiplier,
+  selectCrossChainFeesMultiplier,
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
 import { isDevnet } from 'utils/isDevnet'
@@ -43,12 +43,13 @@ export const useDelegation = (): {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
-  const pFeeMultiplier = useSelector(selectPFeeMultiplier)
+  const crossChainFeesMultiplier = useSelector(selectCrossChainFeesMultiplier)
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
   const cChainNetwork = useCChainNetwork()
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
   const cChainBaseFee = useCChainBaseFee()
+
   const networkFees = useMemo(
     () =>
       steps.reduce((sum, transaction) => {
@@ -56,6 +57,7 @@ export const useDelegation = (): {
       }, BigInt(0)),
     [steps]
   )
+
   const isDevNetwork = isDevnet(activeNetwork)
 
   const compute: Compute = useCallback(
@@ -83,11 +85,11 @@ export const useDelegation = (): {
         cChainNetwork,
         provider: avaxProvider,
         pFeeAdjustmentThreshold,
-        pFeeMultiplier,
         cBaseFeeMultiplier,
         cChainBaseFee: cChainBaseFee.data,
         feeState: defaultFeeState,
-        stakeAmount: stakeAmount
+        stakeAmount: stakeAmount,
+        crossChainFeesMultiplier
       })
 
       setSteps(result)
@@ -101,8 +103,8 @@ export const useDelegation = (): {
       defaultFeeState,
       isDeveloperMode,
       pFeeAdjustmentThreshold,
-      pFeeMultiplier,
       cBaseFeeMultiplier,
+      crossChainFeesMultiplier,
       selectedCurrency,
       avaxProvider
     ]
@@ -116,7 +118,7 @@ export const useDelegation = (): {
       }
 
       if (steps.length === 0) {
-        throw new Error('No valid delegation steps found')
+        throw new Error('An unexpected error occurred. Please retry.')
       }
 
       Logger.info(
