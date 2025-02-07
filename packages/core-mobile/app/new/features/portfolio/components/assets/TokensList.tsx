@@ -39,18 +39,6 @@ export const TokensList = ({ tokens }: Props): React.JSX.Element => {
         setSelectedFilter={setSelectedFilter}
         setSelectedSort={setSelectedSort}
       />
-      <View
-        sx={{
-          flex: 1,
-          zIndex: 1
-        }}>
-        <LinearGradient
-          colors={[colors.$surfacePrimary, alpha(colors.$surfacePrimary, 0)]}
-          style={{ height: 40 }}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
-        />
-      </View>
       <FlatList
         data={sorted}
         renderItem={item => renderItem(item.item as LocalTokenWithBalance)}

@@ -1,4 +1,3 @@
-import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import {
@@ -10,11 +9,12 @@ import {
 } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { LocalTokenWithBalance } from 'store/balance'
 import { AssetLogoWithNetwork } from './AssetLogoWithNetwork'
 import { PriceChangeIndicator } from './PriceChangeIndicator'
 
 interface TokenProps {
-  token: TokenWithBalance
+  token: LocalTokenWithBalance
 }
 
 export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {

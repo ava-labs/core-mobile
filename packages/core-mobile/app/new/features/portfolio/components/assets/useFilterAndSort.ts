@@ -9,6 +9,7 @@ import {
   setFilter,
   setSort
 } from 'store/assets'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import {
   ASSET_BALANCE_SORTS,
   ASSET_NETWORK_FILTERS,
@@ -43,8 +44,10 @@ export const useFilterAndSort = (
     if (filter === AssetNetworkFilter.AvalancheCChain) {
       return tokens.filter(
         token =>
-          'chainId' in token &&
-          (token.chainId === 43114 || token.chainId === 43113)
+          ('chainId' in token &&
+            token.chainId &&
+            isAvalancheCChainId(token.chainId)) ||
+          token.localId === 'AvalancheAVAX'
       )
     }
     if (filter === AssetNetworkFilter.Ethereum) {

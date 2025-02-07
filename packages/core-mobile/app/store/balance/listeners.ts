@@ -58,8 +58,8 @@ export const PollingConfig = {
   allNetworks: __DEV__ ? 60000 : 30000
 }
 
-const AVAX_X_ID = 'AVAX-X'
-const AVAX_P_ID = 'AVAX-P'
+export const AVAX_X_ID = 'AVAX-X'
+export const AVAX_P_ID = 'AVAX-P'
 
 const allNetworksOperand =
   PollingConfig.allNetworks / PollingConfig.activeNetwork

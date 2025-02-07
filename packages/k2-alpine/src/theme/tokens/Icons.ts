@@ -96,6 +96,8 @@ import USDT from '../../assets/tokenLogos/USDT.svg'
 import VET from '../../assets/tokenLogos/VET.svg'
 import XLM from '../../assets/tokenLogos/XLM.svg'
 import XRP from '../../assets/tokenLogos/XRP.svg'
+import IconAvaxP from '../../assets/logos/avax_p.svg'
+import IconAvaxX from '../../assets/logos/avax_x.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -265,7 +267,9 @@ export const Icons = {
     USDT: USDT,
     VET: VET,
     XLM: XLM,
-    XRP: XRP
+    XRP: XRP,
+    AVAX_P: IconAvaxP,
+    AVAX_X: IconAvaxX
   },
   Currencies: {
     AED: AED,
