@@ -3,6 +3,7 @@ import { LayoutChangeEvent } from 'react-native'
 import { Text, View } from '../Primitives'
 import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
 import { Icons } from '../../theme/tokens/Icons'
+import { colors } from '../../theme/tokens/colors'
 
 export const BalanceHeader = ({
   accountName,
@@ -43,8 +44,12 @@ export const BalanceHeader = ({
       </View>
       {errorMessage ? (
         <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
-          <Icons.Alert.Error width={16} height={16} color={ERROR_COLOR} />
-          <Text variant="buttonMedium" sx={{ color: ERROR_COLOR }}>
+          <Icons.Alert.Error
+            width={16}
+            height={16}
+            color={colors.$accentDanger}
+          />
+          <Text variant="buttonMedium" sx={{ color: colors.$accentDanger }}>
             {errorMessage}
           </Text>
         </View>
@@ -59,5 +64,3 @@ export const BalanceHeader = ({
     </View>
   )
 }
-
-const ERROR_COLOR = '#F5643B'
