@@ -78,6 +78,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
           formattedBalance={formattedBalance}
           currency={selectedCurrency}
           onLayout={handleBalanceHeaderLayout}
+          priceChange={{
+            formattedPrice: '$12.7',
+            status: 'up',
+            formattedPercent: '3.7%'
+          }}
         />
         <Link href="/portfolio/assets" asChild>
           <Button type="primary" size="medium">

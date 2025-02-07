@@ -9,12 +9,18 @@ export const BalanceHeader = ({
   formattedBalance,
   currency,
   errorMessage,
+  priceChange,
   onLayout
 }: {
   accountName: string
   formattedBalance: string
   currency: string
   errorMessage?: string
+  priceChange: {
+    formattedPrice: string
+    status: 'up' | 'down' | 'equal'
+    formattedPercent?: string
+  }
   onLayout?: (event: LayoutChangeEvent) => void
 }): JSX.Element => {
   return (
@@ -44,9 +50,9 @@ export const BalanceHeader = ({
         </View>
       ) : (
         <PriceChangeIndicator
-          formattedPrice="$12.7"
-          status="up"
-          formattedPercent="3.7%"
+          formattedPrice={priceChange.formattedPrice}
+          status={priceChange.status}
+          formattedPercent={priceChange.formattedPercent}
           textVariant="buttonMedium"
         />
       )}

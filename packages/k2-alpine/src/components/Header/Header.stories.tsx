@@ -19,12 +19,32 @@ export const All = (): JSX.Element => {
           accountName="Account 1"
           formattedBalance="$7,377.37"
           currency="USD"
+          priceChange={{
+            formattedPrice: '$12.7',
+            status: 'up',
+            formattedPercent: '3.7%'
+          }}
+        />
+        <BalanceHeader
+          accountName="Account 1"
+          formattedBalance="$7,377.37"
+          currency="USD"
+          priceChange={{
+            formattedPrice: '$12.7',
+            status: 'down',
+            formattedPercent: '3.7%'
+          }}
         />
         <BalanceHeader
           accountName="Account 1"
           formattedBalance="$7,377.37"
           errorMessage="Unable to load all balances"
           currency="USD"
+          priceChange={{
+            formattedPrice: '$12.7',
+            status: 'up',
+            formattedPercent: '3.7%'
+          }}
         />
         <NavigationTitleHeader title="Account 1" subtitle="$51.72 USD" />
       </View>

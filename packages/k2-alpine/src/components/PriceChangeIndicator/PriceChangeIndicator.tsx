@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
 import { useTheme } from '../../hooks'
+import { colors } from '../../theme/tokens/colors'
 
 export const PriceChangeIndicator = ({
   formattedPrice,
@@ -52,9 +53,9 @@ export const PriceChangeIndicator = ({
               }}
               colors={
                 status === 'down'
-                  ? [theme.colors.$textDanger, '#F6663B']
+                  ? [colors.$accentRed, colors.$accentDanger]
                   : status === 'up'
-                  ? [theme.colors.$textSuccess, '#47C4AF']
+                  ? [theme.colors.$textSuccess, colors.$accentTeal]
                   : [theme.colors.$textSecondary, theme.colors.$textSecondary]
               }
               start={{ x: 1, y: 0.5 }}
@@ -66,7 +67,7 @@ export const PriceChangeIndicator = ({
           sx={{ marginBottom: iconMarginBottom, marginLeft: iconMarginLeft }}>
           {status === 'down' ? (
             <Icons.Custom.TrendingArrowDown
-              color={'#F5643B'}
+              color={colors.$accentDanger}
               width={ICON_SIZE}
               height={ICON_SIZE}
             />
@@ -75,7 +76,9 @@ export const PriceChangeIndicator = ({
               width={ICON_SIZE}
               height={ICON_SIZE}
               color={
-                status === 'equal' ? theme.colors.$textSecondary : '#42C49F'
+                status === 'equal'
+                  ? theme.colors.$textSecondary
+                  : colors.$accentTeal
               }
             />
           )}
