@@ -33,9 +33,13 @@ export enum WebScripts {
       .getAttribute('uri');
   }`,
   CLICK_WC_CORE = `(element) => {
-    element.shadowRoot.querySelector('w3m-router')
+    element.shadowRoot.querySelector('wui-flex > wui-card > w3m-router')
       .shadowRoot.querySelector('w3m-connect-view')
-      .shadowRoot.querySelector('wui-list-wallet[name="Core"]').click();
+      .shadowRoot.querySelector('wui-flex > w3m-wallet-login-list')
+      .shadowRoot.querySelector('wui-flex > w3m-connector-list')
+      .shadowRoot.querySelector('wui-flex > w3m-connect-featured-widget')
+      .shadowRoot.querySelector('wui-flex > wui-list-wallet[name="Core"]')
+      .click();
   }`,
   EXIST_WC_CORE = `(element) => {
     return element.shadowRoot.querySelector('wui-flex > wui-card > w3m-router')
