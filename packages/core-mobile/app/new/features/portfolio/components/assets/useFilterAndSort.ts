@@ -1,7 +1,14 @@
 import { IndexPath } from '@avalabs/k2-alpine'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
 import { sortUndefined } from 'common/utils/sortUndefined'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  selectAssetsFilter,
+  selectAssetsSort,
+  setFilter,
+  setSort
+} from 'store/assets'
 import {
   ASSET_BALANCE_SORTS,
   ASSET_NETWORK_FILTERS,
@@ -18,15 +25,16 @@ export const useFilterAndSort = (
   setSelectedSort: (index: IndexPath) => void
   sorted: LocalTokenWithBalance[]
 } => {
-  const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const dispatch = useDispatch()
+  const selectedFilter = useSelector(selectAssetsFilter)
+  const selectedSort = useSelector(selectAssetsSort)
 
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const setSelectedFilter = (indexPath: IndexPath): void => {
+    dispatch(setFilter(indexPath))
+  }
+  const setSelectedSort = (indexPath: IndexPath): void => {
+    dispatch(setSort(indexPath))
+  }
 
   const filtered = useMemo(() => {
     const filter =

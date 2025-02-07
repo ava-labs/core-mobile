@@ -9,7 +9,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { AssetLogoWithNetwork } from './AssetLogoWithNetwork'
+import { PriceChangeIndicator } from './PriceChangeIndicator'
 
 interface TokenProps {
   token: TokenWithBalance
@@ -22,19 +24,19 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  // const { getMarketToken } = useWatchlist()
+  const { getMarketToken } = useWatchlist()
 
   const { balanceDisplayValue, balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
     ? currencyFormatter(balanceInCurrency)
     : `${balanceDisplayValue} ${symbol}`
 
-  // const marketToken = getMarketToken(symbol)
-  // const percentChange = marketToken?.priceChangePercentage24h ?? undefined
-  // const priceChange =
-  //   percentChange && balanceInCurrency
-  //     ? (balanceInCurrency * percentChange) / 100
-  //     : undefined
+  const marketToken = getMarketToken(symbol)
+  const percentChange = marketToken?.priceChangePercentage24h ?? undefined
+  const priceChange =
+    percentChange && balanceInCurrency
+      ? (balanceInCurrency * percentChange) / 100
+      : undefined
 
   const goToTokenDetail = (): void => {
     // TODO: go to token detail
@@ -94,9 +96,7 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
             sx={{ fontWeight: '500', lineHeight: 16 }}>
             {formattedBalance}
           </Text>
-          {/* {priceChange !== undefined && (
-            <PriceChangeIndicator price={priceChange} />
-          )} */}
+          <PriceChangeIndicator price={priceChange} />
         </View>
       </View>
       <View
