@@ -369,6 +369,6 @@ const getTransferOutputUtxos = ({
     )
   )
 
-const bigIntDiff = (a: bigint, b: bigint): bigint => {
+export const bigIntDiff = (a: bigint, b: bigint): bigint => {
   return a > b ? a - b : b - a
 }
