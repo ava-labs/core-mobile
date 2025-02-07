@@ -9,8 +9,11 @@ import { Animated } from 'react-native'
 import Grabber from 'common/components/Grabber'
 import BackBarButton from 'common/components/BackBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { Text, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
+import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
+import { NotificationBarButton } from 'common/components/NotificationBarButton'
+import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -103,27 +106,35 @@ export const modalFirstScreenOptions: StackNavigationOptions = {
 
 export const homeScreenOptions: StackNavigationOptions = {
   headerLeft: () => (
-    <View sx={{ marginLeft: 12, backgroundColor: 'transparent' }}>
-      <Link href="/settings/">
-        <Text>Account</Text>
-      </Link>
-    </View>
-  ),
-  headerRight: () => (
     <View
       sx={{
-        flexDirection: 'row',
-        gap: 12,
-        marginRight: 12,
-        backgroundColor: 'transparent'
+        marginLeft: 12,
+        height: '100%',
+        justifyContent: 'center'
       }}>
-      <Link href="/receive/">
-        <Text>Receive</Text>
-      </Link>
-      <Link href="/notifications/">
-        <Text>Notifications</Text>
+      <Link href="/settings/">
+        <AccountSettingBarButton />
       </Link>
     </View>
   ),
+  headerRight: () => {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: 12,
+          marginRight: 12,
+          height: '100%',
+          alignItems: 'center'
+        }}>
+        <Link href="/receive/" asChild>
+          <ReceiveBarButton />
+        </Link>
+        <Link href="/notifications/" asChild>
+          <NotificationBarButton />
+        </Link>
+      </View>
+    )
+  },
   animationEnabled: false
 }
