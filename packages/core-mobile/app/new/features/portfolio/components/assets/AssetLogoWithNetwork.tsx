@@ -17,6 +17,7 @@ export const AssetLogoWithNetwork = ({ token }: Props): React.JSX.Element => {
 
   const renderNetworkLogo = (
     t: LocalTokenWithBalance
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): React.JSX.Element | undefined => {
     if (
       t.type === TokenType.ERC20 ||
@@ -25,10 +26,18 @@ export const AssetLogoWithNetwork = ({ token }: Props): React.JSX.Element => {
     ) {
       const renderLogo = (): React.JSX.Element => {
         if (t.localId === AVAX_P_ID) {
-          return <Icons.Logos.AvaxP width={12} height={12} />
+          return isDark ? (
+            <Icons.Logos.AvaxPDark width={12} height={12} />
+          ) : (
+            <Icons.Logos.AvaxP width={12} height={12} />
+          )
         }
         if (t.localId === AVAX_X_ID) {
-          return <Icons.Logos.AvaxX width={12} height={12} />
+          return isDark ? (
+            <Icons.Logos.AvaxXDark width={12} height={12} />
+          ) : (
+            <Icons.Logos.AvaxX width={12} height={12} />
+          )
         }
         if ('chainId' in t && t.chainId && isAvalancheChainId(t.chainId)) {
           return <Icons.Logos.Avax width={12} height={12} />

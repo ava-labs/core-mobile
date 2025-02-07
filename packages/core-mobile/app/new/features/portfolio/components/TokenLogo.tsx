@@ -39,7 +39,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
     return (
       <AvaLogoSVG
         size={size}
-        logoColor={colors.$surfacePrimary}
+        logoColor={'#FFFFFF'} // Avalanche logo shoud be white
         backgroundColor={colors.$textDanger}
       />
     )

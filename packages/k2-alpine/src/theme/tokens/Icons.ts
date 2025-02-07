@@ -96,8 +96,6 @@ import USDT from '../../assets/tokenLogos/USDT.svg'
 import VET from '../../assets/tokenLogos/VET.svg'
 import XLM from '../../assets/tokenLogos/XLM.svg'
 import XRP from '../../assets/tokenLogos/XRP.svg'
-import IconAvaxP from '../../assets/logos/avax_p.svg'
-import IconAvaxX from '../../assets/logos/avax_x.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -145,6 +143,8 @@ import TWD from '../../assets/currency-flagKit/currency-twd.svg'
 import USD from '../../assets/currency-flagKit/currency-usd.svg'
 import VND from '../../assets/currency-flagKit/currency-vnd.svg'
 import ZAR from '../../assets/currency-flagKit/currency-zar.svg'
+import IconAvaxP from '../../assets/logos/avax_p.svg'
+import IconAvaxX from '../../assets/logos/avax_x.svg'
 
 export const Icons = {
   Action: {
