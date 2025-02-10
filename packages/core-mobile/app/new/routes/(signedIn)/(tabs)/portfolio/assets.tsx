@@ -1,8 +1,8 @@
 import React from 'react'
-import {} from 'react-native-gesture-handler'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
 import { useSelector } from 'react-redux'
 import {
+  selectIsAllBalancesInaccurate,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
@@ -11,11 +11,21 @@ import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store'
 import { TokensList } from 'features/portfolio/components/assets/TokensList'
 import { TokenType } from '@avalabs/vm-module-types'
+import { View } from '@avalabs/k2-alpine'
+import { Dimensions } from 'react-native'
+import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
+import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
+
+const WINDOW_HEIGHT = Dimensions.get('window').height
 
 const PortfolioAssetsScreen = (): JSX.Element => {
+  const { refetch } = useSearchableTokenList()
   const activeAccount = useSelector(selectActiveAccount)
   const tokens = useSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
+  )
+  const isAllBalancesInaccurate = useSelector(
+    selectIsAllBalancesInaccurate(activeAccount?.index ?? 0)
   )
 
   const nonNftTokens = tokens.filter(
@@ -24,8 +34,25 @@ const PortfolioAssetsScreen = (): JSX.Element => {
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
 
-  if (tokens.length === 0 && !isBalanceLoading && !isRefetchingBalance) {
-    return <EmptyAssets />
+  if (
+    (tokens.length === 0 || isAllBalancesInaccurate) &&
+    !isBalanceLoading &&
+    !isRefetchingBalance
+  ) {
+    return (
+      <View
+        sx={{
+          marginTop: WINDOW_HEIGHT * 0.25,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        {isAllBalancesInaccurate ? (
+          <ErrorState onPress={refetch} />
+        ) : (
+          <EmptyAssets />
+        )}
+      </View>
+    )
   }
 
   return <TokensList tokens={nonNftTokens} />

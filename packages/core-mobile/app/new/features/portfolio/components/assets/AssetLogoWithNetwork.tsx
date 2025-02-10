@@ -57,21 +57,31 @@ export const AssetLogoWithNetwork = ({ token }: Props): React.JSX.Element => {
       />
       {shouldShowNetworkLogo && network ? (
         <View
-          style={{
+          sx={{
             width: 16,
             height: 16,
             borderRadius: 16 / 2,
             position: 'absolute',
             bottom: -2,
             right: -2,
-            borderColor: colors.$surfacePrimary,
-            borderWidth: 2,
+            backgroundColor: colors.$surfacePrimary,
             justifyContent: 'center',
             alignItems: 'center',
             overflow: 'hidden'
           }}
           testID="network_logo">
-          {renderNetworkLogo(token, network)}
+          <View
+            sx={{
+              borderColor: borderColor,
+              borderWidth: 1,
+              width: 14,
+              height: 14,
+              borderRadius: 14 / 2,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            {renderNetworkLogo(token, network)}
+          </View>
         </View>
       ) : undefined}
     </View>

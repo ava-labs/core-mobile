@@ -19,6 +19,7 @@ import { selectActiveAccount } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
+  selectIsAllBalancesInaccurate,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
@@ -74,6 +75,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const tokens = useSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
   )
+  const isAllBalancesInaccurate = useSelector(
+    selectIsAllBalancesInaccurate(activeAccount?.index ?? 0)
+  )
+  const hasNoAssets = tokens.length === 0
 
   const totalPriceChanged = useMemo(
     () =>
@@ -108,9 +113,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     targetLayout: balanceHeaderLayout
   })
 
-  const renderHeader = (): React.JSX.Element => {
+  const renderHeader = (): React.JSX.Element | undefined => {
     if (isBalanceLoading || isRefetchingBalance) {
       return <ActivityIndicator style={{ alignSelf: 'flex-start' }} />
+    }
+    if (hasNoAssets || isAllBalancesInaccurate) {
+      return
     }
     return (
       <BalanceHeader
