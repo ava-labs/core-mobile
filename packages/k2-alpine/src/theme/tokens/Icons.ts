@@ -33,6 +33,7 @@ import IconTrendingArrowDown from '../../assets/icons/trending_arrow_down.svg'
 import IconQRCode2 from '../../assets/icons/qr_code_2.svg'
 import IconNotifications from '../../assets/icons/notifications.svg'
 import IconAlertError from '../../assets/icons/alert_error.svg'
+import IconArrowDown from '../../assets/icons/arrow_down.svg'
 
 export const Icons = {
   Action: {
@@ -74,7 +75,8 @@ export const Icons = {
     Psychiatry: IconPsychiatry,
     Error: IconError,
     TrendingArrowUp: IconTrendingArrowUp,
-    TrendingArrowDown: IconTrendingArrowDown
+    TrendingArrowDown: IconTrendingArrowDown,
+    ArrowDown: IconArrowDown
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

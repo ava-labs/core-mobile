@@ -29,7 +29,7 @@ export const BalanceHeader = ({
       <View>
         <Text
           variant="heading2"
-          sx={{ color: '$textSecondary', lineHeight: 38, maxWidth: 320 }}
+          sx={{ color: '$textSecondary', lineHeight: 38, marginRight: 100 }}
           numberOfLines={1}>
           {accountName}
         </Text>

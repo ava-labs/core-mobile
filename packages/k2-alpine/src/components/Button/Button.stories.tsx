@@ -5,6 +5,7 @@ import { ScrollView, Text, View } from '../Primitives'
 import Link from '../../utils/Link'
 import { useTheme } from '../..'
 import { Button, ButtonSize, ButtonType } from './Button'
+import { FilterButton } from './FilterButton'
 
 export default {
   title: 'Button'
@@ -103,6 +104,13 @@ export const All = (): JSX.Element => {
           }}>
           disabled
         </Button>
+        <View
+          style={{
+            marginTop: 20,
+            flexDirection: 'row'
+          }}>
+          <FilterButton title={'Most tradable'} />
+        </View>
         <View style={{ height: 160 }} />
       </ScrollView>
     </BackgroundComponent>
