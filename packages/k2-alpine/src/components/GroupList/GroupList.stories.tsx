@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Switch } from 'react-native'
 import { ScrollView, View } from '../Primitives'
-import { showAlert, useTheme } from '../..'
+import { Icons, showAlert, useTheme } from '../..'
 import { GroupList } from './GroupList'
 
 export default {
@@ -51,6 +51,25 @@ export const All = (): JSX.Element => {
               }
             }
           ]}
+        />
+        <GroupList
+          data={[
+            {
+              title: 'Type in a recovery phrase',
+              leftIcon: <Icons.Action.Info color={theme.colors.$textPrimary} />,
+              onPress: () => {
+                showAlert({ title: 'Pressed', buttons: [{ text: 'OK' }] })
+              }
+            },
+            {
+              title: 'Create a new wallet',
+              leftIcon: <Icons.Content.Add color={theme.colors.$textPrimary} />,
+              onPress: () => {
+                showAlert({ title: 'Pressed', buttons: [{ text: 'OK' }] })
+              }
+            }
+          ]}
+          itemHeight={60}
         />
       </View>
     </ScrollView>

@@ -149,7 +149,8 @@ export default function RecoveryPhraseInput({
         sx={{
           backgroundColor: '$surfaceSecondary',
           borderRadius: 12,
-          padding: 16,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
           minHeight: 150
         }}>
         <TextInput

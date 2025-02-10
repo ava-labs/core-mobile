@@ -136,7 +136,7 @@ export default function Signup(): JSX.Element {
             disabled={isRegistering}
             leftIcon="google"
             onPress={handleGoogleSignin}>
-            Sign in with Google
+            Continue with Google
           </Button>
         )}
         {shouldShowApple && (
@@ -147,7 +147,7 @@ export default function Signup(): JSX.Element {
             disabled={isRegistering}
             leftIcon="apple"
             onPress={handleAppleSignin}>
-            Sign in with Apple
+            Continue with Apple
           </Button>
         )}
       </View>

@@ -45,7 +45,7 @@ export const Avatar = ({
   const surfacePrimaryBlurBgMap = theme.isDark
     ? {
         [theme.colors.$surfacePrimary]:
-          Platform.OS === 'ios' ? '#050506' : '#0a0a0b',
+          Platform.OS === 'ios' ? '#37373f' : '#373743',
         [theme.colors.$surfaceSecondary]:
           Platform.OS === 'ios' ? '#37373f' : '#373743',
         [theme.colors.$surfaceTertiary]:
