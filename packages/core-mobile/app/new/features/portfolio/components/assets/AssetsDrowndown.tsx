@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { IndexPath, SimpleDropdown, Button } from '@avalabs/k2-alpine'
+import { IndexPath, SimpleDropdown, FilterButton } from '@avalabs/k2-alpine'
 
 export enum AssetNetworkFilter {
   AllNetworks = 'All networks',
@@ -43,11 +43,7 @@ export function AssetsDropdown({
 }: Props): React.JSX.Element {
   return (
     <SimpleDropdown
-      from={
-        <Button type="secondary" size="small" rightIcon="expandMore">
-          {name}
-        </Button>
-      }
+      from={<FilterButton title={name} />}
       offset={10}
       sections={options}
       selectedRows={[selectedValue]}

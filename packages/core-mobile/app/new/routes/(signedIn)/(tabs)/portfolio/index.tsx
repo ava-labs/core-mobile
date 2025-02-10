@@ -6,8 +6,7 @@ import {
   NavigationTitleHeader,
   useTheme,
   SegmentedControl,
-  alpha,
-  ActivityIndicator
+  alpha
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
@@ -109,9 +108,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   })
 
   const renderHeader = (): React.JSX.Element | undefined => {
-    if (isBalanceLoading || isRefetchingBalance) {
-      return <ActivityIndicator style={{ alignSelf: 'flex-start' }} />
-    }
     return (
       <BalanceHeader
         accountName={activeAccount?.name ?? ''}
@@ -151,20 +147,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
         {...scrollViewProps}>
         {renderHeader()}
         {renderContent()}
-        <View>
-          <LinearGradient
-            colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
-            style={{ height: 0 }}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.5 }}
-          />
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={['Assets', 'Collectibles', 'DeFi']}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={setSelectedSegmentIndex}
-          />
-        </View>
         <View />
       </ScrollView>
       <View sx={{ paddingHorizontal: 16 }}>
