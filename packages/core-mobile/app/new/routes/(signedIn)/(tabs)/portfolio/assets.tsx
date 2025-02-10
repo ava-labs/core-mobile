@@ -11,7 +11,7 @@ import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store'
 import { TokensList } from 'features/portfolio/components/assets/TokensList'
 import { TokenType } from '@avalabs/vm-module-types'
-import { View } from '@avalabs/k2-alpine'
+import { ActivityIndicator, View } from '@avalabs/k2-alpine'
 import { Dimensions } from 'react-native'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -33,27 +33,35 @@ const PortfolioAssetsScreen = (): JSX.Element | undefined => {
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+  const isDataReady =
+    !isBalanceLoading &&
+    !isRefetchingBalance &&
+    nonNftTokens.length > 0 &&
+    !isAllBalancesInaccurate
 
-  if (isBalanceLoading || isRefetchingBalance) return undefined
-
-  if (tokens.length === 0 || isAllBalancesInaccurate) {
-    return (
-      <View
-        sx={{
-          marginTop: WINDOW_HEIGHT * 0.15,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        {isAllBalancesInaccurate ? (
-          <ErrorState onPress={refetch} />
-        ) : (
-          <EmptyAssets />
-        )}
-      </View>
-    )
+  const renderContent = (): React.JSX.Element => {
+    if (isBalanceLoading || isRefetchingBalance) {
+      return <ActivityIndicator size={'large'} />
+    }
+    if (isAllBalancesInaccurate) {
+      return <ErrorState onPress={refetch} />
+    }
+    if (tokens.length === 0) {
+      return <EmptyAssets />
+    }
+    return <TokensList tokens={nonNftTokens} />
   }
 
-  return <TokensList tokens={nonNftTokens} />
+  return (
+    <View
+      sx={{
+        marginTop: isDataReady ? undefined : WINDOW_HEIGHT * 0.15,
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+      {renderContent()}
+    </View>
+  )
 }
 
 export default PortfolioAssetsScreen
