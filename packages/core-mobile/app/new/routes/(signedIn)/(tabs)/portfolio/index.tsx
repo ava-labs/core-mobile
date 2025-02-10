@@ -79,7 +79,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
     () =>
       tokens.reduce((acc, token) => {
         const marketToken = getMarketToken(token.symbol)
-        return acc + (marketToken?.priceChangePercentage24h ?? 0)
+        const percentChange = marketToken?.priceChangePercentage24h ?? 0
+        const priceChange = token.balanceInCurrency
+          ? (token.balanceInCurrency * percentChange) / 100
+          : 0
+        return acc + priceChange
       }, 0),
     [getMarketToken, tokens]
   )
