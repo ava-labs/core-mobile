@@ -18,7 +18,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 
 const WINDOW_HEIGHT = Dimensions.get('window').height
 
-const PortfolioAssetsScreen = (): JSX.Element => {
+const PortfolioAssetsScreen = (): JSX.Element | undefined => {
   const { refetch } = useSearchableTokenList()
   const activeAccount = useSelector(selectActiveAccount)
   const tokens = useSelector((state: RootState) =>
@@ -34,11 +34,9 @@ const PortfolioAssetsScreen = (): JSX.Element => {
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
 
-  if (
-    (tokens.length === 0 || isAllBalancesInaccurate) &&
-    !isBalanceLoading &&
-    !isRefetchingBalance
-  ) {
+  if (isBalanceLoading || isRefetchingBalance) return undefined
+
+  if (tokens.length === 0 || isAllBalancesInaccurate) {
     return (
       <View
         sx={{
