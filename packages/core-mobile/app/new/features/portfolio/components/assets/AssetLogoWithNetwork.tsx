@@ -2,7 +2,9 @@ import React from 'react'
 import { alpha, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
 import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { useSelector } from 'react-redux'
+import { selectNetwork } from 'store/network'
+import { Network } from '@avalabs/core-chains-sdk'
 import { TokenLogo } from '../TokenLogo'
 
 interface Props {
@@ -15,37 +17,45 @@ export const AssetLogoWithNetwork = ({ token }: Props): React.JSX.Element => {
   } = useTheme()
   const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
 
-  const renderNetworkLogo = (
-    t: LocalTokenWithBalance
-    // eslint-disable-next-line sonarjs/cognitive-complexity
-  ): React.JSX.Element | undefined => {
-    if (
-      t.type === TokenType.ERC20 ||
-      t.localId === AVAX_P_ID ||
-      t.localId === AVAX_X_ID
-    ) {
-      const renderLogo = (): React.JSX.Element => {
-        if (t.localId === AVAX_P_ID) {
-          return isDark ? (
-            <Icons.Logos.AvaxPDark width={12} height={12} />
-          ) : (
-            <Icons.Logos.AvaxP width={12} height={12} />
-          )
-        }
-        if (t.localId === AVAX_X_ID) {
-          return isDark ? (
-            <Icons.Logos.AvaxXDark width={12} height={12} />
-          ) : (
-            <Icons.Logos.AvaxX width={12} height={12} />
-          )
-        }
-        if ('chainId' in t && t.chainId && isAvalancheChainId(t.chainId)) {
-          return <Icons.Logos.Avax width={12} height={12} />
-        }
-        return <Icons.Logos.Eth width={12} height={12} />
-      }
+  const network = useSelector(selectNetwork(token.networkChainId))
 
-      return (
+  const shouldShowNetworkLogo =
+    token.type !== TokenType.NATIVE ||
+    token.localId === AVAX_X_ID ||
+    token.localId === AVAX_P_ID
+
+  const renderNetworkLogo = (
+    t: LocalTokenWithBalance,
+    n: Network
+  ): React.JSX.Element | undefined => {
+    if (t.localId === AVAX_X_ID) {
+      return isDark ? (
+        <Icons.Logos.AvaxXDark width={12} height={12} />
+      ) : (
+        <Icons.Logos.AvaxX width={12} height={12} />
+      )
+    }
+    if (t.localId === AVAX_P_ID) {
+      return isDark ? (
+        <Icons.Logos.AvaxPDark width={12} height={12} />
+      ) : (
+        <Icons.Logos.AvaxP width={12} height={12} />
+      )
+    }
+
+    return <TokenLogo size={12} symbol={token.symbol} logoUri={n.logoUri} />
+  }
+
+  return (
+    <View style={{ marginRight: 16 }}>
+      <TokenLogo
+        size={36}
+        symbol={token.symbol}
+        logoUri={token.logoUri}
+        backgroundColor={colors.$borderPrimary}
+        borderColor={borderColor}
+      />
+      {shouldShowNetworkLogo && network ? (
         <View
           style={{
             width: 16,
@@ -61,23 +71,9 @@ export const AssetLogoWithNetwork = ({ token }: Props): React.JSX.Element => {
             overflow: 'hidden'
           }}
           testID="network_logo">
-          {renderLogo()}
+          {renderNetworkLogo(token, network)}
         </View>
-      )
-    }
-    return undefined
-  }
-
-  return (
-    <View style={{ marginRight: 16 }}>
-      <TokenLogo
-        size={36}
-        symbol={token.symbol}
-        logoUri={token.logoUri}
-        backgroundColor={colors.$borderPrimary}
-        borderColor={borderColor}
-      />
-      {renderNetworkLogo(token)}
+      ) : undefined}
     </View>
   )
 }

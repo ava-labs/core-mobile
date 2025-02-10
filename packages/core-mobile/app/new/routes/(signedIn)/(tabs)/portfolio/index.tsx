@@ -27,7 +27,6 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { RootState } from 'store'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import PortfolioDefiScreen from './defi'
 import PortfolioAssetsScreen from './assets'
 import PortfolioCollectiblesScreen from './collectibles'
@@ -36,7 +35,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const bottom = useSafeAreaInsets().bottom
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -141,9 +139,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   return (
     <BlurredBarsContentLayout>
       <ScrollView
-        sx={{
-          height: '100%'
-        }}
         contentContainerSx={{
           paddingTop: 16,
           paddingHorizontal: 16,
@@ -168,26 +163,22 @@ const PortfolioHomeScreen = (): JSX.Element => {
         </View>
         <View />
       </ScrollView>
-      <View
-        sx={{
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          position: 'absolute',
-          bottom: bottom + 44,
-          left: 0,
-          right: 0
-        }}>
+      <View sx={{ paddingHorizontal: 16 }}>
         <LinearGradient
           colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
+          style={{ height: 40 }}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 0.5 }}
         />
-        <SegmentedControl
-          dynamicItemWidth={false}
-          items={['Assets', 'Collectibles', 'DeFi']}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={setSelectedSegmentIndex}
-        />
+        <View
+          sx={{ paddingBottom: 16, backgroundColor: colors.$surfacePrimary }}>
+          <SegmentedControl
+            dynamicItemWidth={false}
+            items={['Assets', 'Collectibles', 'DeFi']}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={setSelectedSegmentIndex}
+          />
+        </View>
       </View>
     </BlurredBarsContentLayout>
   )
