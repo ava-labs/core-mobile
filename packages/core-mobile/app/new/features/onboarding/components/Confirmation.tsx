@@ -43,7 +43,12 @@ export const Confirmation = ({
               />
             )}
           </View>
-          <View sx={{ paddingHorizontal: 48 }}>
+          <View
+            sx={{
+              paddingHorizontal: 12,
+              maxWidth: 320,
+              alignSelf: 'center'
+            }}>
             <Text
               sx={{ marginTop: 96, textAlign: 'center' }}
               variant="heading3">
@@ -51,7 +56,10 @@ export const Confirmation = ({
             </Text>
             <Text
               variant="subtitle1"
-              sx={{ textAlign: 'center', marginTop: 20 }}>
+              sx={{
+                textAlign: 'center',
+                marginTop: 20
+              }}>
               You can now start buying, swapping, sending, receiving crypto and
               collectibles with no added fees
             </Text>

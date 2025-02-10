@@ -9,18 +9,12 @@ import {
 import { Link } from 'expo-router'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { copyToClipboard } from 'common/utils/clipboard'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  NativeScrollEvent,
-  NativeSyntheticEvent
-} from 'react-native'
-import { useAnimatedNavigationHeader } from 'common/hooks/useAnimatedNavigationHeader'
-import { clamp } from 'react-native-reanimated'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const accountName = 'Account 1'
+  const accountName = 'Very long wallet name blar blar'
   const formattedBalance = '$7,377.37'
   const {
     appHook: { selectedCurrency }
@@ -28,38 +22,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const [balanceHeaderHiddenProgress, setBalanceHeaderHiddenProgress] =
-    useState(0) // from 0 to 1, 0 = fully hidden, 1 = fully shown
-
   const handleCopyToClipboard = (): void => {
     copyToClipboard('test')
-  }
-
-  const handleScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent>
-  ): void => {
-    if (balanceHeaderLayout) {
-      setBalanceHeaderHiddenProgress(
-        // calculate balance header's visibility based on the scroll position
-        clamp(
-          event.nativeEvent.contentOffset.y /
-            (balanceHeaderLayout.y + balanceHeaderLayout.height),
-          0,
-          1
-        )
-      )
-    }
   }
 
   const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
   }
 
-  useAnimatedNavigationHeader({
-    visibilityProgress: balanceHeaderHiddenProgress,
+  const scrollViewProps = useFadingHeaderNavigation({
     header: (
       <NavigationTitleHeader title={accountName} subtitle={formattedBalance} />
-    )
+    ),
+    targetLayout: balanceHeaderLayout
   })
 
   return (
@@ -71,8 +46,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           paddingHorizontal: 16,
           gap: 16
         }}
-        scrollEventThrottle={16}
-        onScroll={handleScroll}>
+        {...scrollViewProps}>
         <BalanceHeader
           accountName={accountName}
           formattedBalance={formattedBalance}

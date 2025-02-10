@@ -7,7 +7,8 @@ import {
   View,
   AvatarSelector,
   useTheme,
-  AVATAR_BLURAREA_INSET
+  AVATAR_BLURAREA_INSET,
+  isScreenSmall
 } from '@avalabs/k2-alpine'
 import { ImageSourcePropType } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
@@ -48,7 +49,7 @@ export const SelectAvatar = ({
             <Avatar
               backgroundColor={colors.$surfacePrimary}
               source={avatar.source}
-              size="large"
+              size={isScreenSmall ? 100 : 'large'}
               hasBlur={true}
             />
           )}

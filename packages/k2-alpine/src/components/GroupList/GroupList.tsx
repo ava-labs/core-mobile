@@ -1,55 +1,84 @@
-import React from 'react'
-import { View, Text, TouchableHighlight } from '../Primitives'
+import React, { useState } from 'react'
+import { LayoutChangeEvent } from 'react-native'
+import { View, Text, TouchableOpacity } from '../Primitives'
 import { Separator } from '../Separator/Separator'
 import { Icons } from '../../theme/tokens/Icons'
 import { useTheme } from '../../hooks'
 
-export const GroupList = ({ data }: { data: GroupListItem[] }): JSX.Element => {
+export const GroupList = ({
+  data,
+  itemHeight
+}: {
+  data: GroupListItem[]
+  itemHeight?: number
+}): JSX.Element => {
   const { theme } = useTheme()
+  const [textMarginLeft, setTextMarginLeft] = useState(0)
+
+  const handleLayout = (event: LayoutChangeEvent): void => {
+    setTextMarginLeft(event.nativeEvent.layout.x)
+  }
 
   return (
-    <View sx={{ borderRadius: 12, overflow: 'hidden' }}>
-      {data.map(({ title, value, accessory, onPress }, index) => (
+    <View
+      sx={{
+        width: '100%',
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '$surfaceSecondary'
+      }}>
+      {data.map(({ leftIcon, title, value, accessory, onPress }, index) => (
         <View key={index}>
-          <TouchableHighlight onPress={onPress}>
+          <TouchableOpacity onPress={onPress}>
             <View
               sx={{
-                backgroundColor: '$surfaceSecondary',
                 flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                minHeight: itemHeight
               }}>
-              <Text
-                variant="body1"
-                sx={{
-                  color: '$textPrimary',
-                  paddingVertical: 14,
-                  marginLeft: 15
-                }}>
-                {title}
-              </Text>
+              {leftIcon && <View sx={{ marginLeft: 16 }}>{leftIcon}</View>}
               <View
                 sx={{
+                  flexGrow: 1,
                   flexDirection: 'row',
                   alignItems: 'center',
-                  marginRight: 15,
-                  gap: 4
-                }}>
-                {value !== undefined && (
-                  <Text variant="body1" sx={{ color: '$textSecondary' }}>
-                    {value}
-                  </Text>
-                )}
-                {accessory !== undefined && accessory}
-                {accessory === undefined && onPress !== undefined && (
-                  <Icons.Navigation.ChevronRight
-                    color={theme.colors.$textSecondary}
-                  />
-                )}
+                  justifyContent: 'space-between',
+                  marginLeft: 15
+                }}
+                onLayout={handleLayout}>
+                <Text
+                  variant="body1"
+                  sx={{
+                    color: '$textPrimary',
+                    paddingVertical: 14
+                  }}>
+                  {title}
+                </Text>
+                <View
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginRight: 15,
+                    gap: 4
+                  }}>
+                  {value !== undefined && (
+                    <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                      {value}
+                    </Text>
+                  )}
+                  {accessory !== undefined && accessory}
+                  {accessory === undefined && onPress !== undefined && (
+                    <Icons.Navigation.ChevronRight
+                      color={theme.colors.$textSecondary}
+                    />
+                  )}
+                </View>
               </View>
             </View>
-          </TouchableHighlight>
-          {index < data.length - 1 && <Separator sx={{ marginLeft: 15 }} />}
+          </TouchableOpacity>
+          {index < data.length - 1 && (
+            <Separator sx={{ marginLeft: textMarginLeft }} />
+          )}
         </View>
       ))}
     </View>
@@ -60,5 +89,6 @@ export type GroupListItem = {
   title: string
   value?: string
   onPress?: () => void
+  leftIcon?: JSX.Element
   accessory?: JSX.Element
 }

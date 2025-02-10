@@ -60,7 +60,12 @@ export const CreatePin = ({
     <BlurredBarsContentLayout>
       <KeyboardAvoidingView>
         <SafeAreaView sx={{ flex: 1 }}>
-          <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
+          <ScrollView
+            sx={{ flex: 1 }}
+            contentContainerSx={{
+              padding: 16,
+              flex: 1
+            }}>
             <ScreenHeader
               title={
                 chosenPinEntered
@@ -75,12 +80,8 @@ export const CreatePin = ({
             />
             <View
               sx={{
-                position: 'absolute',
-                alignItems: 'center',
-                left: 0,
-                right: 0,
-                top: 180,
-                padding: 20
+                flex: 1,
+                justifyContent: 'center'
               }}>
               <PinInput
                 ref={ref}
@@ -92,14 +93,13 @@ export const CreatePin = ({
               />
             </View>
           </ScrollView>
-          <View
-            sx={{
-              paddingHorizontal: 16,
-              paddingBottom: 16,
-              backgroundColor: '$surfacePrimary',
-              gap: 16
-            }}>
-            {!chosenPinEntered && (
+          {!chosenPinEntered && (
+            <View
+              sx={{
+                paddingHorizontal: 16,
+                paddingBottom: 16,
+                backgroundColor: '$surfacePrimary'
+              }}>
               <GroupList
                 data={[
                   {
@@ -113,8 +113,8 @@ export const CreatePin = ({
                   }
                 ]}
               />
-            )}
-          </View>
+            </View>
+          )}
         </SafeAreaView>
       </KeyboardAvoidingView>
     </BlurredBarsContentLayout>

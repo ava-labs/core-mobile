@@ -1,38 +1,62 @@
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import React, { useCallback, useEffect, useState } from 'react'
 import { View } from '@avalabs/k2-alpine'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollViewProps
+} from 'react-native'
 import { useNavigation } from 'expo-router'
+import { clamp } from 'react-native-reanimated'
 
-export const useAnimatedNavigationHeader = ({
+export const useFadingHeaderNavigation = ({
   header,
-  visibilityProgress
+  targetLayout
 }: {
-  header: JSX.Element
-  visibilityProgress: number
-}): void => {
+  header?: JSX.Element
+  targetLayout?: LayoutRectangle
+}): Partial<ScrollViewProps> => {
   const navigation = useNavigation()
   const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
     LayoutRectangle | undefined
   >(undefined)
+  const [targetHiddenProgress, setTargetHiddenProgress] = useState(0) // from 0 to 1, 0 = fully hidden, 1 = fully shown
 
   const renderHeaderBackground = useCallback(
     () => (
       <BlurredBackgroundView
-        separator={{ position: 'bottom', opacity: visibilityProgress }}
+        separator={{ position: 'bottom', opacity: targetHiddenProgress }}
       />
     ),
-    [visibilityProgress]
+    [targetHiddenProgress]
   )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setNavigationHeaderLayout(event.nativeEvent.layout)
   }
 
+  const handleScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ): void => {
+    if (targetLayout) {
+      setTargetHiddenProgress(
+        // calculate balance header's visibility based on the scroll position
+        clamp(
+          event.nativeEvent.contentOffset.y /
+            (targetLayout.y + targetLayout.height),
+          0,
+          1
+        )
+      )
+    }
+  }
+
   useEffect(() => {
     navigation.setOptions({
       headerBackground: renderHeaderBackground,
-      title: (
+      title: header && (
         <View
           sx={{
             overflow: 'hidden',
@@ -41,12 +65,12 @@ export const useAnimatedNavigationHeader = ({
           }}>
           <View
             sx={{
-              opacity: visibilityProgress,
+              opacity: targetHiddenProgress,
               transform: [
                 {
                   translateY:
                     (navigationHeaderLayout?.height ?? 0) *
-                    (1 - visibilityProgress)
+                    (1 - targetHiddenProgress)
                 }
               ]
             }}
@@ -60,7 +84,9 @@ export const useAnimatedNavigationHeader = ({
     navigation,
     header,
     renderHeaderBackground,
-    visibilityProgress,
+    targetHiddenProgress,
     navigationHeaderLayout
   ])
+
+  return { onScroll: handleScroll, scrollEventThrottle: 16 }
 }

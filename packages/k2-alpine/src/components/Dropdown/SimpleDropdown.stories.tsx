@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
+import { TouchableOpacity } from 'react-native'
+import { Rect } from 'react-native-popover-view'
 import { ScrollView, Text, View } from '../Primitives'
 import { Button } from '../Button/Button'
 import { showAlert } from '../Alert/Alert'
 import { IndexPath, SimpleDropdown } from './SimpleDropdown'
+import { usePopoverAnchor } from './usePopoverAnchor'
 
 export default {
   title: 'Dropdown'
@@ -20,6 +23,8 @@ export const All = (): JSX.Element => {
         <SingleSectionMultipleSelectionDropdown />
         <MultipleSectionSingleSelectionDropdown />
         <MultipleSectionMultipleSelectionDropdown />
+        <LeftAlignedDropdown />
+        <RightAlignedDropdown />
       </View>
     </ScrollView>
   )
@@ -174,6 +179,92 @@ const MultipleSectionMultipleSelectionDropdown = (): JSX.Element => {
             )
           )
         }
+      />
+    </View>
+  )
+}
+
+const LeftAlignedDropdown = (): JSX.Element => {
+  const sections = [
+    ['All networks', 'Avalanche C-Chain', 'Bitcoin network', 'Ethereum']
+  ]
+  const [selectedRow, setSelectedRow] = useState<IndexPath>({
+    section: 0,
+    row: 0
+  })
+  const sourceRef = useRef<TouchableOpacity>(null)
+
+  const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
+    usePopoverAnchor(sourceRef)
+
+  return (
+    <View
+      style={{
+        gap: 12
+      }}>
+      <Text>Left aligned</Text>
+      <Button
+        ref={sourceRef}
+        type="primary"
+        size="medium"
+        onPress={onShowPopover}>
+        {sections[selectedRow.section]?.[selectedRow.row]}
+      </Button>
+      <SimpleDropdown
+        from={
+          anchorRect
+            ? new Rect(anchorRect.x, anchorRect.y, 0, anchorRect.height)
+            : undefined
+        }
+        isVisible={isPopoverVisible}
+        offset={10}
+        sections={sections}
+        selectedRows={[selectedRow]}
+        onSelectRow={indexPath => setSelectedRow(indexPath)}
+        onRequestClose={onHidePopover}
+      />
+    </View>
+  )
+}
+
+const RightAlignedDropdown = (): JSX.Element => {
+  const sections = [
+    ['All networks', 'Avalanche C-Chain', 'Bitcoin network', 'Ethereum']
+  ]
+  const [selectedRow, setSelectedRow] = useState<IndexPath>({
+    section: 0,
+    row: 0
+  })
+  const sourceRef = useRef<TouchableOpacity>(null)
+
+  const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
+    usePopoverAnchor(sourceRef)
+
+  return (
+    <View
+      style={{
+        gap: 12
+      }}>
+      <Text>Right aligned</Text>
+      <Button
+        ref={sourceRef}
+        type="primary"
+        size="medium"
+        onPress={onShowPopover}>
+        {sections[selectedRow.section]?.[selectedRow.row]}
+      </Button>
+      <SimpleDropdown
+        from={
+          anchorRect
+            ? new Rect(anchorRect.width, anchorRect.y, 0, anchorRect.height)
+            : undefined
+        }
+        isVisible={isPopoverVisible}
+        offset={10}
+        sections={sections}
+        selectedRows={[selectedRow]}
+        onSelectRow={indexPath => setSelectedRow(indexPath)}
+        onRequestClose={onHidePopover}
       />
     </View>
   )
