@@ -221,9 +221,11 @@ export const selectBalanceForAccountIsAccurate =
 export const selectIsAllBalancesInaccurate =
   (accountIndex: number) => (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
-    if (tokens.length === 0) return false
-    return !Object.values(state.balance.balances).some(
-      balance => balance.dataAccurate === true
+    return (
+      tokens.length === 0 &&
+      !Object.values(state.balance.balances).some(
+        balance => balance.dataAccurate === true
+      )
     )
   }
 
