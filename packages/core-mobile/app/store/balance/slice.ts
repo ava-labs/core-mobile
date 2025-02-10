@@ -192,15 +192,7 @@ export const selectTokensWithBalanceForAccount = createSelector(
     )
 
     // Return the tokens for filtered balances
-    return filteredBalancesForCurrentMode.flatMap(b => {
-      return b.tokens.flatMap(t => {
-        return {
-          ...t,
-          isDataAccurate: b.dataAccurate,
-          networkChainId: b.chainId
-        }
-      })
-    })
+    return filteredBalancesForCurrentMode.flatMap(b => b.tokens)
   }
 )
 
