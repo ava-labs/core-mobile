@@ -44,11 +44,7 @@ export function AssetsDropdown({
   return (
     <SimpleDropdown
       from={
-        <Button
-          type="secondary"
-          size="small"
-          rightIcon="expandMore"
-          shouldCenterAlignedText={false}>
+        <Button type="secondary" size="small" rightIcon="expandMore">
           {name}
         </Button>
       }
