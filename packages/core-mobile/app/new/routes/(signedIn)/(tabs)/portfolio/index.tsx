@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   ScrollView,
   View,
@@ -6,13 +6,13 @@ import {
   NavigationTitleHeader,
   useTheme,
   SegmentedControl,
-  alpha
+  alpha,
+  ActivityIndicator
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -20,9 +20,14 @@ import {
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
   selectIsLoadingBalances,
-  selectIsRefetchingBalances
+  selectIsRefetchingBalances,
+  selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { RootState } from 'store'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import PortfolioDefiScreen from './defi'
 import PortfolioAssetsScreen from './assets'
 import PortfolioCollectiblesScreen from './collectibles'
@@ -31,6 +36,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const bottom = useSafeAreaInsets().bottom
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -58,14 +64,33 @@ const PortfolioHomeScreen = (): JSX.Element => {
       : currencyFormatter(balanceTotalInCurrency)
 
   const formattedBalance = currencyBalance.replace(selectedCurrency, '')
-  const renderContent = (): React.JSX.Element => {
-    if (selectedSegmentIndex === 2) {
-      return <PortfolioCollectiblesScreen />
-    } else if (selectedSegmentIndex === 1) {
-      return <PortfolioDefiScreen />
-    }
-    return <PortfolioAssetsScreen />
-  }
+
+  const indicatorStatus =
+    balanceTotalInCurrency > 0
+      ? 'up'
+      : balanceTotalInCurrency < 0
+      ? 'down'
+      : 'equal'
+
+  const { getMarketToken } = useWatchlist()
+  const tokens = useSelector((state: RootState) =>
+    selectTokensWithBalanceForAccount(state, activeAccount?.index)
+  )
+
+  const totalPriceChanged = useMemo(
+    () =>
+      tokens.reduce((acc, token) => {
+        const marketToken = getMarketToken(token.symbol)
+        return acc + (marketToken?.priceChangePercentage24h ?? 0)
+      }, 0),
+    [getMarketToken, tokens]
+  )
+
+  const totalPriceChangedInPercent = useMemo(() => {
+    return (totalPriceChanged / balanceTotalInCurrency) * 100
+  }, [balanceTotalInCurrency, totalPriceChanged])
+
+  const formattedPercent = totalPriceChangedInPercent.toFixed(2) + '%'
 
   const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
@@ -81,29 +106,52 @@ const PortfolioHomeScreen = (): JSX.Element => {
     targetLayout: balanceHeaderLayout
   })
 
+  const renderHeader = (): React.JSX.Element => {
+    if (isBalanceLoading || isRefetchingBalance) {
+      return <ActivityIndicator style={{ alignSelf: 'flex-start' }} />
+    }
+    return (
+      <BalanceHeader
+        accountName={activeAccount?.name ?? ''}
+        formattedBalance={formattedBalance}
+        currency={selectedCurrency}
+        onLayout={handleBalanceHeaderLayout}
+        priceChange={{
+          formattedPrice: totalPriceChanged.toFixed(2),
+          status: indicatorStatus,
+          formattedPercent
+        }}
+        errorMessage={
+          balanceAccurate ? undefined : 'Unable to load all balances'
+        }
+        isLoading={isLoading}
+      />
+    )
+  }
+
+  const renderContent = (): React.JSX.Element => {
+    if (selectedSegmentIndex === 2) {
+      return <PortfolioCollectiblesScreen />
+    } else if (selectedSegmentIndex === 1) {
+      return <PortfolioDefiScreen />
+    }
+    return <PortfolioAssetsScreen />
+  }
+
   return (
     <BlurredBarsContentLayout>
       <ScrollView
+        sx={{
+          height: '100%'
+        }}
         contentContainerSx={{
           paddingTop: 16,
-          paddingBottom: 16,
           paddingHorizontal: 16,
           gap: 16
         }}
         {...scrollViewProps}>
-        <BalanceHeader
-          accountName={activeAccount?.name ?? ''}
-          formattedBalance={formattedBalance}
-          currency={selectedCurrency}
-          onLayout={handleBalanceHeaderLayout}
-          priceChange={{
-            formattedPrice: '$12.7',
-            status: 'up',
-            formattedPercent: '3.7%'
-          }}
-          isLoading={isLoading}
-        />
-        <View sx={{ flex: 1, marginTop: 30 }}>{renderContent()}</View>
+        {renderHeader()}
+        {renderContent()}
         <View>
           <LinearGradient
             colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
@@ -120,6 +168,27 @@ const PortfolioHomeScreen = (): JSX.Element => {
         </View>
         <View />
       </ScrollView>
+      <View
+        sx={{
+          paddingHorizontal: 16,
+          paddingBottom: 16,
+          position: 'absolute',
+          bottom: bottom + 44,
+          left: 0,
+          right: 0
+        }}>
+        <LinearGradient
+          colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 0.5 }}
+        />
+        <SegmentedControl
+          dynamicItemWidth={false}
+          items={['Assets', 'Collectibles', 'DeFi']}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={setSelectedSegmentIndex}
+        />
+      </View>
     </BlurredBarsContentLayout>
   )
 }

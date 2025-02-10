@@ -52,6 +52,7 @@ import IconSearchCustom from '../../assets/icons/search_custom.svg'
 import IconAlertCircleDark from '../../assets/icons/alert_circle_dark.svg'
 import IconAlertCircleLight from '../../assets/icons/alert_circle_light.svg'
 import IconAvalabsTrademark from '../../assets/icons/avalabs_trademark.svg'
+import IconChevronRightV2 from '../../assets/icons/chevron_right_v2.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -96,6 +97,10 @@ import USDT from '../../assets/tokenLogos/USDT.svg'
 import VET from '../../assets/tokenLogos/VET.svg'
 import XLM from '../../assets/tokenLogos/XLM.svg'
 import XRP from '../../assets/tokenLogos/XRP.svg'
+import IconAvaxP from '../../assets/logos/avax_p.svg'
+import IconAvaxX from '../../assets/logos/avax_x.svg'
+import IconAvaxPDark from '../../assets/logos/avax_p_dark.svg'
+import IconAvaxXDark from '../../assets/logos/avax_x_dark.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -143,8 +148,6 @@ import TWD from '../../assets/currency-flagKit/currency-twd.svg'
 import USD from '../../assets/currency-flagKit/currency-usd.svg'
 import VND from '../../assets/currency-flagKit/currency-vnd.svg'
 import ZAR from '../../assets/currency-flagKit/currency-zar.svg'
-import IconAvaxP from '../../assets/logos/avax_p.svg'
-import IconAvaxX from '../../assets/logos/avax_x.svg'
 
 export const Icons = {
   Action: {
@@ -164,6 +167,7 @@ export const Icons = {
   },
   Navigation: {
     ArrowForwardIOS: IconArrowForwardIOS,
+    ChevronRightV2: IconChevronRightV2,
     ChevronRight: IconChevronRight,
     Check: IconCheck,
     ExpandMore: IconExpandMore
@@ -269,7 +273,9 @@ export const Icons = {
     XLM: XLM,
     XRP: XRP,
     AVAX_P: IconAvaxP,
-    AVAX_X: IconAvaxX
+    AVAX_X: IconAvaxX,
+    AVAX_P_DARK: IconAvaxPDark,
+    AVAX_X_DARK: IconAvaxXDark
   },
   Currencies: {
     AED: AED,

@@ -4,6 +4,7 @@ export type LocalTokenId = string
 
 export type LocalTokenWithBalance = TokenWithBalance & {
   localId: string
+  isDataAccurate: boolean
 }
 
 export type Balance = {

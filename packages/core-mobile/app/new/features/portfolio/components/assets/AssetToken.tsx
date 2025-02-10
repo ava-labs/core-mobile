@@ -2,6 +2,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import {
   Icons,
+  PriceChangeIndicator,
   Text,
   TouchableOpacity,
   useTheme,
@@ -11,7 +12,6 @@ import { Space } from 'components/Space'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
 import { AssetLogoWithNetwork } from './AssetLogoWithNetwork'
-import { PriceChangeIndicator } from './PriceChangeIndicator'
 
 interface TokenProps {
   token: LocalTokenWithBalance
@@ -37,6 +37,16 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
     percentChange && balanceInCurrency
       ? (balanceInCurrency * percentChange) / 100
       : undefined
+  const formattedPrice = priceChange
+    ? Math.abs(priceChange)?.toFixed(2).toString()
+    : ''
+  const status = priceChange
+    ? priceChange > 0
+      ? 'up'
+      : priceChange < 0
+      ? 'down'
+      : 'equal'
+    : 'equal'
 
   const goToTokenDetail = (): void => {
     // TODO: go to token detail
@@ -53,7 +63,6 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
         alignItems: 'center',
         backgroundColor: '$surfaceSecondary'
       }}>
-      {/* TODO: use another endpoint to get the logo and network icon */}
       <AssetLogoWithNetwork token={token} />
       <View
         sx={{
@@ -90,13 +99,23 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
             flexShrink: 1,
             justifyContent: 'center'
           }}>
-          <Text
-            variant="buttonMedium"
-            numberOfLines={1}
-            sx={{ fontWeight: '500', lineHeight: 16 }}>
-            {formattedBalance}
-          </Text>
-          <PriceChangeIndicator price={priceChange} />
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            {!token.isDataAccurate && (
+              <Icons.Alert.Error width={16} height={16} color={'#E84142'} />
+            )}
+            <Text
+              variant="buttonMedium"
+              numberOfLines={1}
+              sx={{ fontWeight: '500', lineHeight: 16 }}>
+              {formattedBalance}
+            </Text>
+          </View>
+          {priceChange && (
+            <PriceChangeIndicator
+              formattedPrice={formattedPrice}
+              status={status}
+            />
+          )}
         </View>
       </View>
       <View
@@ -105,11 +124,7 @@ export const AssetToken = ({ token }: TokenProps): React.JSX.Element => {
           justifyContent: 'center',
           marginLeft: 13
         }}>
-        <Icons.Navigation.ChevronRight
-          width={16}
-          height={16}
-          color={colors.$textSecondary}
-        />
+        <Icons.Navigation.ChevronRightV2 color={colors.$textSecondary} />
       </View>
     </TouchableOpacity>
   )

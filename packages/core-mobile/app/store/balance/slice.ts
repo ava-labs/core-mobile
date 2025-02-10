@@ -97,8 +97,9 @@ export const selectIsLoadingBalances = (state: RootState): boolean =>
 export const selectIsRefetchingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.REFETCHING
 
-const _selectAllBalances = (state: RootState): Balances =>
-  state.balance.balances
+const _selectAllBalances = (state: RootState): Balances => {
+  return state.balance.balances
+}
 
 // get the list of tokens for the active network
 // each token will have info such as: balance, price, market cap,...
@@ -191,7 +192,11 @@ export const selectTokensWithBalanceForAccount = createSelector(
     )
 
     // Return the tokens for filtered balances
-    return filteredBalancesForCurrentMode.flatMap(b => b.tokens)
+    return filteredBalancesForCurrentMode.flatMap(b => {
+      return b.tokens.flatMap(t => {
+        return { ...t, isDataAccurate: b.dataAccurate }
+      })
+    })
   }
 )
 
