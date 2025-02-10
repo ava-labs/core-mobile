@@ -1,6 +1,7 @@
 import React from 'react'
-import { GlassView, Separator, View } from '@avalabs/k2-alpine'
+import { alpha, Separator, useTheme, View } from '@avalabs/k2-alpine'
 import { Platform } from 'react-native'
+import { BlurView } from 'expo-blur'
 
 const BlurredBackgroundView = ({
   separator
@@ -10,13 +11,23 @@ const BlurredBackgroundView = ({
     position: 'top' | 'bottom'
   }
 }): JSX.Element => {
+  const { theme } = useTheme()
+
   return (
     <View style={{ flex: 1 }}>
       {separator?.position === 'top' && (
         <Separator sx={{ opacity: separator.opacity }} />
       )}
       {Platform.OS === 'ios' ? (
-        <GlassView style={{ flex: 1 }} />
+        <BlurView
+          style={{
+            flex: 1,
+            // alpha('#afafd0', 0.1) is a color value found through experimentation
+            // to make the blur effect appear the same as $surfacePrimary(neutral-850) in dark mode.
+            backgroundColor: theme.isDark ? alpha('#afafd0', 0.1) : undefined
+          }}
+          intensity={75}
+        />
       ) : (
         <View sx={{ flex: 1, backgroundColor: '$surfacePrimary' }} />
       )}

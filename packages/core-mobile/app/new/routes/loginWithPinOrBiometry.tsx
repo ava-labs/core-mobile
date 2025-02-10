@@ -94,15 +94,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     }
   })
 
-  const avatarContainerMarginTop = useSharedValue(
-    configuration.avatarContainerMarginTop.from
-  )
-  const avatarContainerStyle = useAnimatedStyle(() => {
-    return {
-      marginTop: avatarContainerMarginTop.value
-    }
-  })
-
   const buttonContainerPaddingBottom = useSharedValue(
     configuration.buttonContainerPaddingBottom.from
   )
@@ -207,9 +198,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     const buttonContainerPaddingBottomValue = isEnteringPin
       ? configuration.buttonContainerPaddingBottom.to
       : configuration.buttonContainerPaddingBottom.from
-    const avatarContainerMarginTopValue = isEnteringPin
-      ? configuration.avatarContainerMarginTop.to
-      : configuration.avatarContainerMarginTop.from
 
     pinInputOpacity.value = withTiming(pinInputOpacityValue, {
       duration: configuration.animationDuration
@@ -220,15 +208,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         duration: configuration.animationDuration
       }
     )
-    avatarContainerMarginTop.value = withTiming(avatarContainerMarginTopValue, {
-      duration: configuration.animationDuration
-    })
-  }, [
-    isEnteringPin,
-    pinInputOpacity,
-    buttonContainerPaddingBottom,
-    avatarContainerMarginTop
-  ])
+  }, [isEnteringPin, pinInputOpacity, buttonContainerPaddingBottom])
 
   return (
     <SafeAreaView sx={{ flex: 1 }}>
@@ -259,7 +239,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   </View>
                 )}
               </View>
-              <Reanimated.View style={[{ zIndex: -100 }, avatarContainerStyle]}>
+              <Reanimated.View style={[{ zIndex: -100, marginTop: 10 }]}>
                 <Avatar
                   size="small"
                   // todo: replace with actual avatar
@@ -337,10 +317,6 @@ const configuration = {
   buttonContainerPaddingBottom: {
     from: 40,
     to: 20
-  },
-  avatarContainerMarginTop: {
-    from: 40,
-    to: 10
   },
   noInputTimeout: 3000
 }

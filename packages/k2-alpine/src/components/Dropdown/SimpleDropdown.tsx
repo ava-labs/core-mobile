@@ -1,10 +1,11 @@
 import React, { useRef } from 'react'
-import Popover from 'react-native-popover-view'
-import { BlurView } from 'expo-blur'
+import Popover, { Rect } from 'react-native-popover-view'
+import { Platform } from 'react-native'
 import { Text, View, TouchableOpacity } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Separator } from '../Separator/Separator'
 import { Icons } from '../../theme/tokens/Icons'
+import { DropdownBackground } from './DropdownBackground'
 
 export const SimpleDropdown = <T extends { toString(): string }>({
   from,
@@ -13,15 +14,19 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   offset = 0,
   allowsMultipleSelection = false,
   onSelectRow,
-  onDeselectRow
+  onDeselectRow,
+  onRequestClose,
+  isVisible
 }: {
-  from: React.ReactNode
+  from: React.ReactNode | Rect
   sections: T[][]
   selectedRows: IndexPath[]
   allowsMultipleSelection?: boolean
   offset?: number
   onSelectRow: (indexPath: IndexPath) => void
   onDeselectRow?: (indexPath: IndexPath) => void
+  onRequestClose?: () => void
+  isVisible?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const popoverRef = useRef<Popover>()
@@ -48,28 +53,28 @@ export const SimpleDropdown = <T extends { toString(): string }>({
     )
   }
 
+  const groupSeparatorHeight = Platform.OS === 'ios' ? 6 : 1
+  const backgroundBorderRadius = Platform.OS === 'ios' ? 10 : 4
+
   return (
     <Popover
       // @ts-expect-error
       ref={popoverRef}
       from={from}
+      isVisible={isVisible}
       offset={offset}
+      onRequestClose={onRequestClose}
       popoverStyle={{
-        borderRadius: 10,
+        borderRadius: backgroundBorderRadius,
         shadowOffset: { width: 0, height: 15 },
         shadowRadius: 30,
         shadowOpacity: 0.3,
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
+        minWidth: 200
       }}
       arrowSize={{ width: -10, height: 0 }}
       backgroundStyle={{ backgroundColor: 'transparent' }}>
-      <BlurView
-        tint={'default'}
-        style={{
-          minWidth: 240
-        }}
-        intensity={100}
-        experimentalBlurMethod="dimezisBlurView">
+      <DropdownBackground>
         {sections.map((section, sectionIndex) => {
           return (
             <View key={sectionIndex}>
@@ -107,14 +112,15 @@ export const SimpleDropdown = <T extends { toString(): string }>({
                         )}
                       </View>
                     </TouchableOpacity>
-                    {rowIndex !== section.length - 1 && <Separator />}
+                    {rowIndex !== section.length - 1 &&
+                      Platform.OS === 'ios' && <Separator />}
                   </View>
                 )
               })}
               {sectionIndex !== sections.length - 1 && (
                 <View
                   sx={{
-                    height: 6,
+                    height: groupSeparatorHeight,
                     backgroundColor: theme.colors.$borderPrimary
                   }}
                 />
@@ -122,7 +128,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
             </View>
           )
         })}
-      </BlurView>
+      </DropdownBackground>
     </Popover>
   )
 }

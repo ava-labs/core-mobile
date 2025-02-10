@@ -44,8 +44,8 @@ export const darkModeColors = {
   $textSuccess: colors.$accentSuccessD,
 
   // surface
-  $surfacePrimary: colors.$neutral950,
-  $surfaceSecondary: colors.$neutral850,
+  $surfacePrimary: colors.$neutral850,
+  $surfaceSecondary: alpha(colors.$neutralWhite, 0.1),
   $surfaceTertiary: colors.$neutral900,
 
   // border

@@ -6,11 +6,20 @@ export const NavigationTitleHeader = memo(
     return (
       <View style={[{ alignItems: 'center' }]}>
         <Text
-          sx={{ fontSize: 17, lineHeight: 20, fontFamily: 'Inter-SemiBold' }}>
+          numberOfLines={1}
+          sx={{
+            fontSize: 17,
+            lineHeight: 20,
+            fontFamily: 'Inter-SemiBold',
+            maxWidth: 150
+          }}>
           {title}
         </Text>
         {subtitle && (
-          <Text variant="caption" sx={{ color: '$textSecondary' }}>
+          <Text
+            numberOfLines={1}
+            variant="caption"
+            sx={{ color: '$textSecondary' }}>
             {subtitle}
           </Text>
         )}
