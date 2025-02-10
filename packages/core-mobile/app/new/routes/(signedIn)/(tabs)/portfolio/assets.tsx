@@ -42,7 +42,7 @@ const PortfolioAssetsScreen = (): JSX.Element => {
     return (
       <View
         sx={{
-          marginTop: WINDOW_HEIGHT * 0.25,
+          marginTop: WINDOW_HEIGHT * 0.15,
           justifyContent: 'center',
           alignItems: 'center'
         }}>
