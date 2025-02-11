@@ -60,12 +60,11 @@ export const RecoveryMethodList = ({
                 sx={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  flexWrap: 'wrap',
                   flexShrink: 1,
                   flexGrow: 1,
                   justifyContent: 'space-between'
                 }}>
-                <View sx={{ gap: 3, paddingRight: 25 }}>
+                <View sx={{ gap: 3, paddingRight: 25, flexShrink: 1 }}>
                   <Text
                     sx={{
                       fontSize: 16,
@@ -91,7 +90,11 @@ export const RecoveryMethodList = ({
                     color={colors.$textPrimary}
                   />
                 ) : (
-                  <View sx={{ width: 22 }} />
+                  <View
+                    sx={{
+                      width: 22
+                    }}
+                  />
                 )}
               </View>
             </View>
