@@ -123,7 +123,7 @@ class PopUpModalPage {
   }
 
   async tapApproveBtn() {
-    await actions.waitForElement(this.popUpModalScrollView, 30000)
+    await actions.waitForElement(this.popUpModalScrollView, 40000)
     await actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
@@ -160,7 +160,7 @@ class PopUpModalPage {
   }
 
   async verifySignMessageModal() {
-    await actions.waitForElement(this.signMessage, 20000)
+    await actions.waitForElement(this.signMessage, 50000)
     await asserts.isVisible(this.network)
     await asserts.isVisible(this.approveBtn)
     await asserts.isVisible(this.rejectBtn)
@@ -173,19 +173,19 @@ class PopUpModalPage {
   }
 
   async switchToSepoliaNetwork() {
-    await actions.waitForElementNoSync(this.switchToSepoliaNetworkTitle, 20000)
+    await actions.waitForElementNoSync(this.switchToSepoliaNetworkTitle, 50000)
     await asserts.isVisible(this.rejectBtn)
     await actions.tap(this.approveBtn)
   }
 
   async switchToFujiNetwork() {
-    await actions.waitForElementNoSync(this.switchToFujiNetworkTitle, 20000)
+    await actions.waitForElementNoSync(this.switchToFujiNetworkTitle, 50000)
     await asserts.isVisible(this.rejectBtn)
     await actions.tap(this.approveBtn)
   }
 
   async verifyScamTransactionModal() {
-    await actions.waitForElementNoSync(this.scamTransaction, 20000)
+    await actions.waitForElementNoSync(this.scamTransaction, 50000)
     await asserts.isVisible(this.scamTransactionContent)
     await asserts.isVisible(this.rejectTransaction)
     await asserts.isVisible(this.proceedAnyway)

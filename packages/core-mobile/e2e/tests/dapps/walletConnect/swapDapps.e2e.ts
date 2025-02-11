@@ -9,7 +9,7 @@ describe('Dapp Swap', () => {
   })
 
   it('should swap via LFJ', async () => {
-    await browserPage.connect('https://lfj.gg/avalanche')
+    await browserPage.connectLFJ()
     await browserPage.swapLFJ()
     await popUpModalPage.verifyFeeIsLegit(true, false, 0.2)
     await swapTabPage.tapApproveButton()
