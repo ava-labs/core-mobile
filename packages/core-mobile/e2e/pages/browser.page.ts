@@ -6,6 +6,7 @@ import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
 import connectToSitePage from './connectToSite.page'
 import plusMenuPage from './plusMenu.page'
+import popUpModalPage from './popUpModal.page'
 
 class BrowserPage {
   get searchBar() {
@@ -134,6 +135,14 @@ class BrowserPage {
     await Actions.waitForElementNoSync(this.continueBtn, 10000)
     await Actions.tap(this.continueBtn)
     await Actions.waitForElementNotVisible(this.continueBtn, 5000)
+  }
+
+  async connectLFJ() {
+    await this.connectTo('https://lfj.gg/avalanche', false, false)
+    await Wbs.tapByText('I read and accept')
+    await Wbs.tapByXpath('//button[@data-testid="rk-wallet-option-core"]')
+    await connectToSitePage.selectAccountAndconnect()
+    await popUpModalPage.verifySuccessToast()
   }
 
   async connectTo(

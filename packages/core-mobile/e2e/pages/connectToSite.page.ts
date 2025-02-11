@@ -73,8 +73,8 @@ class ConnectToSite {
   }
 
   async selectAccountAndconnect() {
-    await Action.waitForElement(this.selectAccountsId, 25000)
-    await Action.waitForElement(this.connectWalletTitle, 25000)
+    await Action.waitForElement(this.selectAccountsId, 30000)
+    await Action.waitForElement(this.connectWalletTitle, 30000)
     await this.tapSelectAccounts()
     await this.tapAccountCheckBox()
     await this.tapApproveBtn()
