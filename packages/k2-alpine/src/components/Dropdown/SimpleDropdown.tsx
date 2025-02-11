@@ -18,7 +18,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onRequestClose,
   isVisible,
   showSelectedCheckmark = true,
-  minWidth
+  minWidth = 200
 }: {
   from: React.ReactNode | Rect
   sections: T[][]
@@ -74,7 +74,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         shadowRadius: 30,
         shadowOpacity: 0.3,
         backgroundColor: 'transparent',
-        minWidth: minWidth ?? 200
+        minWidth
       }}
       arrowSize={{ width: -10, height: 0 }}
       backgroundStyle={{ backgroundColor: 'transparent' }}>

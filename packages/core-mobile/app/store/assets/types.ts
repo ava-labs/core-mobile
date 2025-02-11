@@ -1,4 +1,4 @@
-import { IndexPath } from '../../../../k2-alpine/src/components/Dropdown/SimpleDropdown'
+import { IndexPath } from '@avalabs/k2-alpine'
 
 export const initialState = {
   filter: {
