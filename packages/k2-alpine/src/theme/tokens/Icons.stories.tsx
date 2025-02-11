@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from '../../utils/Link'
+import { useTheme } from '../../hooks'
 import { Icons } from './Icons'
 import { Template } from './Template'
-import { useTheme } from '../../hooks'
 
 export default {
   title: 'Icons'
