@@ -18,7 +18,7 @@ export const Snackbar = ({
   const { theme } = useTheme()
   const backgroundColor = theme.isDark
     ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfaceSecondary
+    : darkModeColors.$surfacePrimary
   const textColor = theme.isDark
     ? lightModeColors.$textPrimary
     : darkModeColors.$textPrimary
