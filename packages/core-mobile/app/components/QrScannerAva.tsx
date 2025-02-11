@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView, StyleSheet } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
@@ -23,14 +23,22 @@ export default function QrScannerAva({
 }: Props): JSX.Element {
   const { theme, backgroundStyle } = useApplicationContext()
   const [permission, requestPermission] = useCameraPermissions()
+  const [data, setData] = useState<string>()
 
   const handleScanned = (scanningResult: BarcodeScanningResult): void => {
-    onSuccess(scanningResult.data)
-
-    if (vibrate) {
-      notificationAsync(NotificationFeedbackType.Success)
-    }
+    // expo-camera's onBarcodeScanned callback is not debounced, so we need to debounce it ourselves
+    setData(scanningResult.data)
   }
+
+  useEffect(() => {
+    if (data) {
+      onSuccess(data)
+
+      if (vibrate) {
+        notificationAsync(NotificationFeedbackType.Success)
+      }
+    }
+  }, [data, onSuccess, vibrate])
 
   useEffect(() => {
     if (permission && !permission.granted && permission.canAskAgain) {
