@@ -26,7 +26,7 @@ export const RecoveryPhrase = ({
 
   function handleNext(): void {
     showAlert({
-      title: 'Security Warning',
+      title: 'Security warning',
       description:
         'For your security, you should not screenshot your recovery phrase. It is best to write it down and store it in a secure location.',
       buttons: [

@@ -8,13 +8,15 @@ import {
 } from '@avalabs/k2-alpine'
 
 export const SimpleTextInput = ({
-  name,
-  setName,
-  placeholder
+  value,
+  onChangeText,
+  placeholder,
+  maxLength
 }: {
-  name: string
-  setName: (name: string) => void
+  value: string
+  onChangeText: (name: string) => void
   placeholder?: string
+  maxLength?: number
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -22,8 +24,7 @@ export const SimpleTextInput = ({
   return (
     <View
       sx={{
-        marginTop: 27,
-        paddingHorizontal: 13,
+        paddingRight: 13,
         backgroundColor: colors.$surfaceSecondary,
         borderRadius: 12,
         flexDirection: 'row',
@@ -38,14 +39,16 @@ export const SimpleTextInput = ({
           marginRight: 13,
           height: 44,
           fontSize: 16,
-          color: colors.$textPrimary
+          color: colors.$textPrimary,
+          backgroundColor: 'transparent'
         }}
-        value={name}
-        onChangeText={setName}
+        value={value}
+        onChangeText={onChangeText}
         placeholder={placeholder}
+        maxLength={maxLength}
       />
-      {name.length !== 0 && (
-        <TouchableOpacity onPress={() => setName('')}>
+      {value.length !== 0 && (
+        <TouchableOpacity onPress={() => onChangeText('')}>
           <Icons.Action.Clear
             width={16}
             height={16}

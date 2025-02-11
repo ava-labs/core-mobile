@@ -85,7 +85,10 @@ export const EnterRecoveryPhrase = ({
             size="large"
             type="primary"
             onPress={handleNext}
-            disabled={!mnemonic}>
+            disabled={
+              !mnemonic ||
+              mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
+            }>
             Import
           </Button>
         </View>
@@ -93,3 +96,5 @@ export const EnterRecoveryPhrase = ({
     </BlurredBarsContentLayout>
   )
 }
+
+const MINIMUM_MNEMONIC_WORDS = 12

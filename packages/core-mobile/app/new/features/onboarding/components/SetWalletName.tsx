@@ -18,12 +18,16 @@ export const SetWalletName = ({
     <BlurredBarsContentLayout>
       <KeyboardAvoidingView>
         <SafeAreaView sx={{ flex: 1 }}>
-          <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
+          <ScrollView
+            sx={{ flex: 1 }}
+            contentContainerSx={{ padding: 16, gap: 27 }}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="on-drag">
             <ScreenHeader
               title="How would you like to name your wallet?"
               description="Add a display name for your wallet. You can change it at any time in the app’s settings"
             />
-            <SimpleTextInput name={name} setName={setName} />
+            <SimpleTextInput value={name} onChangeText={setName} />
           </ScrollView>
           <View
             sx={{

@@ -20,6 +20,12 @@ export type ButtonSize = 'small' | 'medium' | 'large'
 
 type ButtonIconType = 'check' | 'expandMore' | 'google' | 'apple'
 
+const BUTTON_ICON_TYPES = ['check', 'expandMore', 'google', 'apple'] as const
+
+const isButtonIconType = (value: unknown): value is ButtonIconType => {
+  return (BUTTON_ICON_TYPES as readonly string[]).includes(value as string)
+}
+
 interface ButtonProps {
   onPress?: () => void
   disabled?: boolean
@@ -27,8 +33,8 @@ interface ButtonProps {
   testID?: string
   type: ButtonType
   size: ButtonSize
-  leftIcon?: ButtonIconType
-  rightIcon?: ButtonIconType
+  leftIcon?: ButtonIconType | JSX.Element
+  rightIcon?: ButtonIconType | JSX.Element
 }
 
 export const Button = forwardRef<
@@ -104,16 +110,16 @@ export const Button = forwardRef<
                 alignItems: 'center',
                 ...sizeStyles[size]
               }}>
-              {leftIcon ? (
-                getIcon(leftIcon, {
-                  width: iconWidth,
-                  height: iconWidth,
-                  color: tintColor,
-                  style: { marginRight: 8 }
-                })
-              ) : rightIcon ? (
-                <View style={{ width: iconWidth, marginRight: 8 }} />
-              ) : null}
+              {React.isValidElement(leftIcon)
+                ? leftIcon
+                : isButtonIconType(leftIcon)
+                ? getIcon(leftIcon, {
+                    width: iconWidth,
+                    height: iconWidth,
+                    color: tintColor,
+                    style: { marginRight: 8 }
+                  })
+                : null}
               <Text
                 numberOfLines={1}
                 variant={textVariant}
@@ -124,16 +130,16 @@ export const Button = forwardRef<
                 }}>
                 {children}
               </Text>
-              {rightIcon ? (
-                getIcon(rightIcon, {
-                  width: iconWidth,
-                  height: iconWidth,
-                  color: tintColor,
-                  style: { marginLeft: 8 }
-                })
-              ) : leftIcon ? (
-                <View style={{ width: iconWidth, marginLeft: 8 }} />
-              ) : null}
+              {React.isValidElement(rightIcon)
+                ? rightIcon
+                : isButtonIconType(rightIcon)
+                ? getIcon(rightIcon, {
+                    width: iconWidth,
+                    height: iconWidth,
+                    color: tintColor,
+                    style: { marginLeft: 8 }
+                  })
+                : null}
             </View>
           </WrapperComponent>
         </View>
@@ -189,7 +195,7 @@ const getBackgroundColor = (
           darkModeColors.$surfacePrimary
         )
       : overlayColor(
-          alpha(darkModeColors.$surfaceSecondary, 0.3),
+          alpha(darkModeColors.$surfacePrimary, 0.3),
           lightModeColors.$surfacePrimary
         )
   }
@@ -206,7 +212,7 @@ const getBackgroundColor = (
   }
 }
 
-const getTintColor = (
+export const getTintColor = (
   type: ButtonType,
   theme: K2AlpineTheme,
   disabled: boolean | undefined

@@ -77,6 +77,7 @@ export const SubHeaderOptions = (
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const getCommonBottomTabOptions = (theme: AppTheme) => ({
+  tabBarHideOnKeyboard: true,
   tabBarShowLabel: false,
   headerShown: true,
   tabBarAllowFontScaling: false,

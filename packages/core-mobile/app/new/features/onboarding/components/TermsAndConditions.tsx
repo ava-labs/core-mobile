@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   alpha,
@@ -10,6 +10,8 @@ import {
 } from '@avalabs/k2-alpine'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 
 export const TermsAndConditions = ({
   onAgreeAndContinue
@@ -18,11 +20,26 @@ export const TermsAndConditions = ({
 }): JSX.Element => {
   const { bottom } = useSafeAreaInsets()
   const { theme } = useTheme()
+  const [headerLayout, setHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
+  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
+    setHeaderLayout(event.nativeEvent.layout)
+  }
+
+  const scrollViewProps = useFadingHeaderNavigation({
+    targetLayout: headerLayout
+  })
 
   return (
     <BlurredBarsContentLayout>
-      <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
+      <ScrollView
+        sx={{ flex: 1 }}
+        contentContainerSx={{ padding: 16 }}
+        {...scrollViewProps}>
         <Text
+          onLayout={handleHeaderLayout}
           sx={{ marginRight: 10, marginTop: 8, marginBottom: 10 }}
           variant="heading3">
           Terms and conditions

@@ -119,7 +119,7 @@ export const HexagonBorder = ({ height }: { height: number }): JSX.Element => {
         fill="none"
         stroke={theme.isDark ? colors.$neutralWhite : 'black'}
         strokeOpacity={0.1}
-        strokeWidth="1"
+        strokeWidth="2"
       />
     </Svg>
   )

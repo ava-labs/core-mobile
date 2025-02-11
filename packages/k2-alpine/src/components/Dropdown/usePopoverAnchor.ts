@@ -1,0 +1,43 @@
+import { useEffect, useState } from 'react'
+import { NativeMethods } from 'react-native'
+import { Rect } from 'react-native-popover-view'
+
+export const usePopoverAnchor = (
+  sourceRef: React.RefObject<NativeMethods>
+): {
+  anchorRect: Rect | undefined
+  isPopoverVisible: boolean
+  onShowPopover: () => void
+  onHidePopover: () => void
+} => {
+  const [isPopoverVisible, setIsPopoverVisible] = useState(false)
+  const [anchorRect, setAnchorRect] = useState<Rect>()
+
+  const showPopover = (): void => {
+    if (sourceRef.current) {
+      // eslint-disable-next-line max-params
+      sourceRef.current.measureInWindow((x, y, width, height) => {
+        setAnchorRect(new Rect(x, y, width, height))
+      })
+    }
+  }
+
+  const hidePopover = (): void => {
+    setAnchorRect(undefined)
+  }
+
+  useEffect(() => {
+    if (anchorRect) {
+      setIsPopoverVisible(true)
+    } else {
+      setIsPopoverVisible(false)
+    }
+  }, [anchorRect])
+
+  return {
+    anchorRect,
+    isPopoverVisible,
+    onShowPopover: showPopover,
+    onHidePopover: hidePopover
+  }
+}

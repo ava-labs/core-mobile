@@ -11,6 +11,7 @@ interface TextInputProps {
   sx?: SxProp
   rightIcon?: React.ReactNode
   leftIcon?: React.ReactNode
+  maxLength?: number
 }
 
 export const TextInput = ({
@@ -20,7 +21,8 @@ export const TextInput = ({
   placeholder,
   onChangeText,
   rightIcon,
-  leftIcon
+  leftIcon,
+  maxLength
 }: TextInputProps): React.JSX.Element => {
   const {
     theme: { colors }
@@ -29,7 +31,7 @@ export const TextInput = ({
   return (
     <View
       sx={{
-        paddingHorizontal: 13,
+        paddingHorizontal: 16,
         backgroundColor: colors.$surfaceSecondary,
         borderRadius: 12,
         flexDirection: 'row',
@@ -58,6 +60,7 @@ export const TextInput = ({
             onChangeText={onChangeText}
             placeholder={placeholder}
             selectionColor={colors.$textPrimary}
+            maxLength={maxLength}
           />
         </View>
       </View>

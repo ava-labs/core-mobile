@@ -29,7 +29,8 @@ export const BalanceHeader = ({
       <View>
         <Text
           variant="heading2"
-          sx={{ color: '$textSecondary', lineHeight: 38 }}>
+          sx={{ color: '$textSecondary', lineHeight: 38, marginRight: 100 }}
+          numberOfLines={1}>
           {accountName}
         </Text>
         <View sx={{ flexDirection: 'row', alignItems: 'flex-end' }}>
