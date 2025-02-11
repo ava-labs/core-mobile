@@ -208,7 +208,7 @@ export default function NftSend({
         </>
       )}
       <Button
-        testID="next_btn"
+        testID={canSubmit ? 'next_btn' : 'next_btn_disabled'}
         type="primary"
         size="xlarge"
         onPress={onNextPress}
