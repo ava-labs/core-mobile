@@ -1,15 +1,10 @@
 import React from 'react'
-import {
-  Text,
-  TextInput,
-  useTheme,
-  View,
-  Icons,
-  Button,
-  TouchableOpacity
-} from '@avalabs/k2-alpine'
+import { View, Button, ScrollView, SafeAreaView } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { FIDONameInputProps } from 'new/routes/onboarding/seedless/(fido)/fidoNameInput'
+import { SimpleTextInput } from 'common/components/SimpleTextInput'
+import ScreenHeader from 'common/components/ScreenHeader'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 
 const FidoNameInput = ({
   title,
@@ -23,51 +18,35 @@ const FidoNameInput = ({
   setName: (value: string) => void
   handleSave: () => void
 }): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
-
-  const handleClear = (): void => setName('')
-
   return (
     <BlurredBarsContentLayout>
-      <View
-        style={{
-          flex: 1,
-          marginHorizontal: 16,
-          marginTop: 25,
-          justifyContent: 'space-between'
-        }}>
-        <View>
-          <Text variant="heading2">{title}</Text>
-          <Text variant="body1" sx={{ marginTop: 14 }}>
-            {description}
-          </Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder={textInputPlaceholder}
-            rightIcon={
-              <TouchableOpacity onPress={handleClear}>
-                <Icons.Action.Clear
-                  width={16}
-                  height={16}
-                  color={colors.$textSecondary}
-                />
-              </TouchableOpacity>
-            }
-          />
-        </View>
-        <View sx={{ marginVertical: 36 }}>
-          <Button
-            type="primary"
-            size="large"
-            disabled={name === ''}
-            onPress={handleSave}>
-            Next
-          </Button>
-        </View>
-      </View>
+      <KeyboardAvoidingView>
+        <SafeAreaView sx={{ flex: 1 }}>
+          <ScrollView
+            sx={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingTop: 25,
+              paddingHorizontal: 16,
+              gap: 27
+            }}>
+            <ScreenHeader title={title} description={description} />
+            <SimpleTextInput
+              value={name}
+              placeholder={textInputPlaceholder}
+              onChangeText={setName}
+            />
+          </ScrollView>
+          <View sx={{ padding: 16, backgroundColor: '$surfacePrimary' }}>
+            <Button
+              type="primary"
+              size="large"
+              disabled={name === ''}
+              onPress={handleSave}>
+              Next
+            </Button>
+          </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </BlurredBarsContentLayout>
   )
 }

@@ -23,7 +23,7 @@ export const NotificationAlert = ({
   const { theme } = useTheme()
   const backgroundColor = theme.isDark
     ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfaceSecondary
+    : darkModeColors.$surfacePrimary
   const titleColor = theme.isDark
     ? lightModeColors.$textPrimary
     : darkModeColors.$textPrimary
