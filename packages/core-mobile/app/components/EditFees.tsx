@@ -1,7 +1,7 @@
 import { formatUnits, parseUnits } from 'ethers'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
@@ -23,6 +23,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { sanitizeDecimalInput } from 'utils/units/sanitize'
 
 type EditFeesProps = {
   network: Network
@@ -49,38 +50,6 @@ function CurrencyHelperText({ text }: { text: string }): JSX.Element {
       </Text>
     </Row>
   )
-}
-
-// ensure only one decimal point
-const enforceSingleDecimal = (text: string): string => {
-  const parts = text.split('.')
-  return parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : text
-}
-
-// limit decimal places
-const limitDecimalPlaces = (text: string, maxDecimals = 5): string => {
-  const parts = text.split('.')
-
-  return parts.length === 2 && parts[1] && parts[1].length > maxDecimals
-    ? parts[0] + '.' + parts[1].slice(0, maxDecimals)
-    : text
-}
-
-const sanitizeDecimalInput = ({
-  text,
-  maxDecimals = 5,
-  allowDecimalPoint
-}: {
-  text: string
-  maxDecimals?: number
-  allowDecimalPoint: boolean
-}): string => {
-  let sanitized = allowDecimalPoint
-    ? text.replace(/[^0-9.]/g, '') // allow only numbers and decimal point
-    : text.replace(/[^0-9]/g, '') // allow only numbers
-
-  sanitized = enforceSingleDecimal(sanitized)
-  return limitDecimalPlaces(sanitized, maxDecimals)
 }
 
 const EditFees = ({
@@ -215,6 +184,27 @@ const EditFees = ({
 
   const saveDisabled = !!feeError || newFees.gasLimit === 0 || !newMaxFeePerGas
 
+  const handleDecimalInputTextChange = useCallback(
+    (
+      text: string,
+      setter: (value: React.SetStateAction<string>) => void
+    ): void => {
+      const sanitized = sanitizeDecimalInput({
+        text,
+        maxDecimals: feeDecimals,
+        allowDecimalPoint: !isBaseUnitRate
+      })
+      setter(sanitized)
+    },
+    [feeDecimals, isBaseUnitRate]
+  )
+
+  const handleGasLimitChange = useCallback((text: string) => {
+    // allow only whole numbers (no decimals)
+    const sanitized = text.replace(/[^0-9]/g, '')
+    setNewGasLimit(sanitized)
+  }, [])
+
   return (
     <SafeAreaProvider style={{ flex: 1, paddingBottom: 16 }}>
       <ScrollView>
@@ -231,14 +221,9 @@ const EditFees = ({
           text={newMaxFeePerGas}
           keyboardType="numeric"
           popOverInfoText={isBaseUnitRate ? undefined : maxBaseFeeInfoMessage}
-          onChangeText={text => {
-            const sanitized = sanitizeDecimalInput({
-              text,
-              maxDecimals: feeDecimals,
-              allowDecimalPoint: !isBaseUnitRate
-            })
-            setNewMaxFeePerGas(sanitized)
-          }}
+          onChangeText={text =>
+            handleDecimalInputTextChange(text, setNewMaxFeePerGas)
+          }
           errorText={feeError}
         />
         {!isBaseUnitRate && (
@@ -249,14 +234,9 @@ const EditFees = ({
               keyboardType="numeric"
               text={newMaxPriorityFeePerGas}
               popOverInfoText={maxPriorityFeeInfoMessage}
-              onChangeText={text => {
-                const sanitized = sanitizeDecimalInput({
-                  text,
-                  maxDecimals: feeDecimals,
-                  allowDecimalPoint: !isBaseUnitRate
-                })
-                setNewMaxPriorityFeePerGas(sanitized)
-              }}
+              onChangeText={text =>
+                handleDecimalInputTextChange(text, setNewMaxPriorityFeePerGas)
+              }
             />
             <InputText
               label={'Gas Limit'}
@@ -265,11 +245,7 @@ const EditFees = ({
               keyboardType="numeric"
               editable={isGasLimitEditable}
               popOverInfoText={gasLimitInfoMessage}
-              onChangeText={text => {
-                // allow only whole numbers (no decimals)
-                const sanitized = text.replace(/[^0-9]/g, '')
-                setNewGasLimit(sanitized)
-              }}
+              onChangeText={handleGasLimitChange}
               errorText={gasLimitError}
               backgroundColor={
                 isGasLimitEditable
