@@ -13,8 +13,6 @@ import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import { zeroTokenUnit } from 'utils/units/zeroValues'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
 
 const EarnInputAmount = ({
   inputAmount,
@@ -24,16 +22,12 @@ const EarnInputAmount = ({
   handleAmountChange?: (amount: TokenUnit) => void
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const maxDecimalDigits = useMemo(() => {
     return getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals()
   }, [inputAmount])
 
   const isTestnet = useSelector(selectIsDeveloperMode)
-  const network = NetworkService.getAvalancheNetworkP(
-    isTestnet,
-    isDevnet(activeNetwork)
-  )
+  const network = NetworkService.getAvalancheNetworkP(isTestnet)
 
   const isAndroid = Platform.OS === 'android'
 

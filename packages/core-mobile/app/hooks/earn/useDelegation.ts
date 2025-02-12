@@ -4,13 +4,11 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
-import { selectActiveNetwork } from 'store/network/slice'
 import {
   selectPFeeAdjustmentThreshold,
   selectCrossChainFeesMultiplier,
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
-import { isDevnet } from 'utils/isDevnet'
 import { selectActiveAccount } from 'store/account/slice'
 import { computeDelegationSteps } from 'services/earn/computeDelegationSteps/computeDelegationSteps'
 import {
@@ -38,7 +36,6 @@ export const useDelegation = (): {
 } => {
   const [steps, setSteps] = useState<Step[]>(EMPTY_STEPS)
   const cChainBalance = useCChainBalance()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -58,8 +55,6 @@ export const useDelegation = (): {
     [steps]
   )
 
-  const isDevNetwork = isDevnet(activeNetwork)
-
   const compute: Compute = useCallback(
     async (stakeAmount: bigint) => {
       if (
@@ -71,10 +66,7 @@ export const useDelegation = (): {
       )
         return EMPTY_STEPS
 
-      const network = NetworkService.getAvalancheNetworkP(
-        isDeveloperMode,
-        isDevNetwork
-      )
+      const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
         pAddress: activeAccount.addressPVM,
@@ -98,7 +90,6 @@ export const useDelegation = (): {
     [
       cChainNetwork,
       activeAccount,
-      isDevNetwork,
       cChainBaseFee.data,
       defaultFeeState,
       isDeveloperMode,
@@ -142,7 +133,6 @@ export const useDelegation = (): {
               nodeId,
               stakeAmountNanoAvax: step.amount,
               startDate: startDate,
-              isDevnet: isDevNetwork,
               feeState: defaultFeeState,
               pFeeAdjustmentThreshold
             })
@@ -155,7 +145,6 @@ export const useDelegation = (): {
               activeAccount,
               selectedCurrency,
               isDevMode: isDeveloperMode,
-              isDevnet: isDevNetwork,
               feeState: defaultFeeState
             })
             break
@@ -170,7 +159,6 @@ export const useDelegation = (): {
               requiredAmountWei: nanoToWei(step.amount),
               activeAccount,
               isDevMode: isDeveloperMode,
-              isDevnet: isDevNetwork,
               cBaseFeeMultiplier
             })
             break
@@ -189,7 +177,6 @@ export const useDelegation = (): {
     },
     [
       activeAccount,
-      isDevNetwork,
       cChainBalance.data?.balance,
       defaultFeeState,
       isDeveloperMode,

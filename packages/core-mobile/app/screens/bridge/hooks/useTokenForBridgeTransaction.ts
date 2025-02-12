@@ -14,14 +14,12 @@ import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
-  isTestnet: boolean,
-  isDevnet: boolean
+  isTestnet: boolean
 ): NetworkContractToken | NetworkToken | undefined {
   const chainId = useMemo(() => {
-    return getSourceChainId(bridgeTransaction, isTestnet, isDevnet)
+    return getSourceChainId(bridgeTransaction, isTestnet)
   }, [bridgeTransaction, isTestnet])
 
   const { getNetwork } = useNetworks()
@@ -46,8 +44,7 @@ export function useTokenForBridgeTransaction(
 
 function getSourceChainId(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
-  isTestnet: boolean,
-  isDevnet: boolean
+  isTestnet: boolean
 ): number | undefined {
   if (isUnifiedBridgeTransfer(bridgeTransaction)) {
     return getSourceChainIdForUnifiedBridgeTransaction(
@@ -57,16 +54,14 @@ function getSourceChainId(
   } else {
     return getSourceChainIdForLegacyBridgeTransaction(
       bridgeTransaction,
-      isTestnet,
-      isDevnet
+      isTestnet
     )
   }
 }
 
 function getSourceChainIdForLegacyBridgeTransaction(
   bridgeTransaction: BridgeTransaction | undefined,
-  isTestnet: boolean,
-  isDevnet: boolean
+  isTestnet: boolean
 ): number {
   switch (bridgeTransaction?.sourceChain) {
     case Blockchain.BITCOIN:
@@ -76,9 +71,7 @@ function getSourceChainIdForLegacyBridgeTransaction(
       return ChainId.ETHEREUM_HOMESTEAD
     case Blockchain.AVALANCHE:
     default:
-      return isDevnet
-        ? ChainId.AVALANCHE_DEVNET_ID
-        : isTestnet
+      return isTestnet
         ? ChainId.AVALANCHE_TESTNET_ID
         : ChainId.AVALANCHE_MAINNET_ID
   }

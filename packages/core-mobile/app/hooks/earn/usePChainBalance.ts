@@ -6,8 +6,6 @@ import { refetchIntervals } from 'consts/earn'
 import NetworkService from 'services/network/NetworkService'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
 
 export const usePChainBalance = (): UseQueryResult<
@@ -17,11 +15,7 @@ export const usePChainBalance = (): UseQueryResult<
   const addressPVM = useSelector(selectActiveAccount)?.addressPVM
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const network = NetworkService.getAvalancheNetworkP(
-    isDeveloperMode,
-    isDevnet(activeNetwork)
-  )
+  const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useQuery({
     refetchInterval: refetchIntervals.balance,

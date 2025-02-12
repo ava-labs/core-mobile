@@ -23,8 +23,6 @@ import { useSelector } from 'react-redux'
 import { xpChainToken } from 'utils/units/knownTokens'
 import { UTCDate } from '@date-fns/utc'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -59,9 +57,8 @@ export const StakeCard = (props: Props): JSX.Element => {
   const { txHash, status, title, stakeAmount } = props
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDevMode, isDevnet(activeNetwork))
+    NetworkService.getAvalancheNetworkP(isDevMode)
 
   const cardHighLightColor = getCardHighLightColor(theme)
 

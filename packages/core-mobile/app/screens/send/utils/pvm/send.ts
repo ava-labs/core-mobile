@@ -7,7 +7,6 @@ import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Transaction } from '@sentry/react'
 import { Network } from '@avalabs/core-chains-sdk'
-import { isDevnet } from 'utils/isDevnet'
 import WalletService from 'services/wallet/WalletService'
 import { stripChainAddress } from 'store/account/utils'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
@@ -101,8 +100,7 @@ const getTransactionRequest = ({
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
           xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
-          isTestnet: network.isTestnet === true,
-          isDevnet: isDevnet(network)
+          isTestnet: network.isTestnet === true
         })
       }
     })
