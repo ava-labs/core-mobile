@@ -7,6 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import React from 'react'
+import { Rect } from 'react-native-popover-view'
 import { Selection } from './assets/useFilterAndSort'
 
 interface Props {
@@ -51,24 +52,38 @@ export const ListFilterHeader = ({
           onSelectRow={filter.onSelected}
         />
 
-        <SimpleDropdown
-          from={
-            <Button
-              size="small"
-              type="secondary"
-              rightIcon={
-                <Icons.Custom.ArrowDown
-                  style={{ marginLeft: 5 }}
-                  color={tintColor}
-                />
-              }>
-              {sort.title}
-            </Button>
-          }
-          sections={sort.data}
-          selectedRows={[sort.selected]}
-          onSelectRow={sort.onSelected}
-        />
+        <View>
+          <Button
+            ref={sort.ref}
+            size="small"
+            type="secondary"
+            onPress={sort.onShowPopover}
+            rightIcon={
+              <Icons.Custom.ArrowDown
+                style={{ marginLeft: 5 }}
+                color={tintColor}
+              />
+            }>
+            {sort.title}
+          </Button>
+          <SimpleDropdown
+            from={
+              sort.anchorRect
+                ? new Rect(
+                    sort.anchorRect.width + sort.anchorRect.x + 8,
+                    sort.anchorRect.y,
+                    sort.anchorRect.width,
+                    sort.anchorRect.height
+                  )
+                : undefined
+            }
+            sections={sort.data}
+            isVisible={sort.isPopoverVisible}
+            onRequestClose={sort.onHidePopover}
+            selectedRows={[sort.selected]}
+            onSelectRow={sort.onSelected}
+          />
+        </View>
       </View>
       <SimpleDropdown
         from={

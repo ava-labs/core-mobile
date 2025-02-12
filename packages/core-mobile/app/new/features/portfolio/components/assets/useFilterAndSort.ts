@@ -64,14 +64,14 @@ export const useFilterAndSort = (
     isPopoverVisible: isSortPopoverVisible,
     onShowPopover: onShowSortPopover,
     onHidePopover: onHideSortPopover
-  } = usePopoverAnchor(filterRef)
+  } = usePopoverAnchor(sortRef)
 
   const {
     anchorRect: viewAnchorRect,
     isPopoverVisible: isViewPopoverVisible,
     onShowPopover: onShowViewPopover,
     onHidePopover: onHideViewPopover
-  } = usePopoverAnchor(filterRef)
+  } = usePopoverAnchor(viewRef)
 
   const setSelectedFilter = (indexPath: IndexPath): void => {
     dispatch(setFilter(indexPath))
