@@ -1,24 +1,16 @@
 import { Image, Text, View } from '@avalabs/k2-alpine'
 import React from 'react'
 import { Dimensions } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const WINDOW_HEIGHT = Dimensions.get('window').height
 
 export const EmptyAssets = (): React.JSX.Element => {
-  const safeArea = useSafeAreaInsets()
-
   return (
     <View
       sx={{
-        height: WINDOW_HEIGHT - safeArea.top - safeArea.bottom,
-        alignItems: 'center',
+        height: WINDOW_HEIGHT / 2,
         justifyContent: 'center',
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0
+        alignItems: 'center'
       }}>
       <Image
         source={require('../../../../assets/icons/owl.png')}
