@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView, StyleSheet } from 'react-native'
+import { Platform, SafeAreaView, StyleSheet } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   BarcodeScanningResult,
@@ -8,6 +8,8 @@ import {
 } from 'expo-camera'
 import { View } from 'react-native'
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics'
+import Logger from 'utils/Logger'
+import { check, PERMISSIONS, request } from 'react-native-permissions'
 import AvaButton from './AvaButton'
 
 type Props = {
@@ -41,10 +43,29 @@ export default function QrScannerAva({
   }, [data, onSuccess, vibrate])
 
   useEffect(() => {
-    if (permission && !permission.granted && permission.canAskAgain) {
+    if (
+      Platform.OS === 'ios' &&
+      permission &&
+      !permission.granted &&
+      permission.canAskAgain
+    ) {
       requestPermission()
     }
   }, [permission, requestPermission])
+
+  useEffect(() => {
+    // on android, permission.canAskAgain returns false when user select "ask every time",
+    // so we separate the logic for android
+    if (Platform.OS === 'android') {
+      check(PERMISSIONS.ANDROID.CAMERA)
+        .then(result => {
+          if (result !== 'granted') {
+            request(PERMISSIONS.ANDROID.CAMERA)
+          }
+        })
+        .catch(Logger.error)
+    }
+  }, [])
 
   return (
     <SafeAreaView style={[backgroundStyle, styles.container]}>
