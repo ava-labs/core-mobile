@@ -8,7 +8,7 @@ import { cleanup } from '../../../helpers/cleanup'
 import actions from '../../../helpers/actions'
 import portfolioLoc from '../../../locators/portfolio.loc'
 
-describe('Send AVAX', () => {
+describe('P-Chain Transaction', () => {
   beforeAll(async () => {
     await warmup()
     await accountManagePage.createSecondAccount()
@@ -16,14 +16,6 @@ describe('Send AVAX', () => {
 
   afterAll(async () => {
     await cleanup()
-  })
-
-  it('should send AVAX on C-Chain', async () => {
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.avaxToken,
-      sendLoc.sendingAmount
-    )
-    await sendPage.verifySuccessToast()
   })
 
   it('should send AVAX on P-Chain', async () => {
@@ -34,24 +26,6 @@ describe('Send AVAX', () => {
     )
     await actions.waitForElement(
       by.id(portfolioLoc.activeNetwork + portfolioLoc.avaxPNetwork)
-    )
-    const hasBalance = await sendPage.sendTokenTo2ndAccount(
-      sendLoc.avaxToken,
-      sendLoc.sendingAmount,
-      false,
-      true
-    )
-    await sendPage.verifySuccessToast(hasBalance)
-  })
-
-  it('should send AVAX on X-Chain', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.tapNetworksDropdown()
-    await portfolioPage.tapNetworksDropdownAVAX(
-      portfolioPage.networksDropdownXChain
-    )
-    await actions.waitForElement(
-      by.id(portfolioLoc.activeNetwork + portfolioLoc.avaxXNetwork)
     )
     const hasBalance = await sendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,

@@ -1,9 +1,9 @@
-import { warmup } from '../../../helpers/warmup'
-import sendLoc from '../../../locators/send.loc'
-import accountManagePage from '../../../pages/accountManage.page'
-import activityTabPage from '../../../pages/activityTab.page'
-import portfolioPage from '../../../pages/portfolio.page'
-import sendPage from '../../../pages/send.page'
+import { warmup } from '../../../../helpers/warmup'
+import sendLoc from '../../../../locators/send.loc'
+import accountManagePage from '../../../../pages/accountManage.page'
+import activityTabPage from '../../../../pages/activityTab.page'
+import portfolioPage from '../../../../pages/portfolio.page'
+import sendPage from '../../../../pages/send.page'
 
 describe('Send AVAX', () => {
   beforeAll(async () => {

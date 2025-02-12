@@ -1,8 +1,8 @@
-import actions from '../../../helpers/actions'
-import { Tokens } from '../../../helpers/tokens'
-import { warmup } from '../../../helpers/warmup'
-import accountManagePage from '../../../pages/accountManage.page'
-import sendPage from '../../../pages/send.page'
+import actions from '../../../../helpers/actions'
+import { Tokens } from '../../../../helpers/tokens'
+import { warmup } from '../../../../helpers/warmup'
+import accountManagePage from '../../../../pages/accountManage.page'
+import sendPage from '../../../../pages/send.page'
 
 describe('Send ERC20', () => {
   beforeAll(async () => {
