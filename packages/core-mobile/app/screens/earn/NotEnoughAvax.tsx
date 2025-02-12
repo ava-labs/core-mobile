@@ -30,7 +30,7 @@ export default function NotEnoughAvax({
           paddingBottom: 80,
           gap: 24
         }}>
-        <Icons.Alert.ErrorOutline
+        <Icons.Alert.IconErrorOutline
           color={colors.$white}
           width={72}
           height={72}
