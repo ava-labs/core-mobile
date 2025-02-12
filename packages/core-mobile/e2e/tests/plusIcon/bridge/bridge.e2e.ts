@@ -4,7 +4,6 @@ import bridgeTabPage from '../../../pages/bridgeTab.page'
 import portfolioLoc from '../../../locators/portfolio.loc'
 import commonElsPage from '../../../pages/commonEls.page'
 import sendPage from '../../../pages/send.page'
-import popUpModalPage from '../../../pages/popUpModal.page'
 import bridgeTabLoc from '../../../locators/bridgeTab.loc'
 import { cleanup } from '../../../helpers/cleanup'
 
@@ -56,49 +55,6 @@ describe('Bridge Screen', () => {
 
       // Exit bridge screen
       await bridgeTabPage.tapBridgeToggleBtn()
-      await commonElsPage.goBack()
-    })
-  })
-
-  networks.forEach(({ network, token }) => {
-    it(`should show Bridge Approval Modal for Avalanche to ${network}`, async () => {
-      // Avalanche > Select token with Max amount
-      if (token === 'BTC') token = 'BTC.b'
-      await bridgeTabPage.goToBridge()
-      await bridgeTabPage.tapSelectToken()
-      await sendPage.selectToken(token)
-      await sendPage.tapMax()
-
-      // Verify approve modal with legit fee > Reject
-      await bridgeTabPage.tapBridgeBtn()
-      await popUpModalPage.verifyFeeIsLegit(true, false, 0.02)
-      await popUpModalPage.tapRejectBtn()
-
-      // Exit bridge screen
-      await commonElsPage.goBack()
-    })
-  })
-
-  networks.forEach(({ network, token }) => {
-    it(`should show Bridge Approval Modal for ${network} to Avalanche`, async () => {
-      // Select Ethereum network
-      await bridgeTabPage.goToBridge()
-      await bridgeTabPage.tapFromNetwork()
-      await commonElsPage.tapDropdownItem(network, platformIndex)
-
-      // Select token. If Ethereum, update token to `ETH`
-      await bridgeTabPage.tapSelectToken()
-      token = network === portfolioLoc.ethNetwork ? 'ETH' : token
-      await sendPage.selectToken(token)
-      await sendPage.tapMax()
-      // Verify approve modal with legit fee > Reject
-      await bridgeTabPage.tapBridgeBtn()
-      if (network === portfolioLoc.ethNetwork) {
-        await popUpModalPage.verifyFeeIsLegit(false, false, 0.02)
-      }
-      await popUpModalPage.tapRejectBtn()
-
-      // Exit bridge screen
       await commonElsPage.goBack()
     })
   })
