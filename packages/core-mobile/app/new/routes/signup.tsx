@@ -160,7 +160,7 @@ export default function Signup(): JSX.Element {
         flex: 1
       }}>
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Logos.Core color={theme.colors.$textPrimary} />
+        <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
       </View>
       <View sx={{ padding: 16, gap: 88 }}>
         {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}
