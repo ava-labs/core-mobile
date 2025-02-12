@@ -7,17 +7,17 @@ import {
   Environment,
   IdentityProof,
   Key,
-  KeyInfoApi,
+  KeyInfo,
   MfaFidoChallenge,
   MfaReceipt,
-  OidcClient,
-  SessionStorage,
-  SignerSession,
-  SignerSessionData,
-  SignerSessionManager,
+  SessionData,
+  // SessionStorage,
+  // SignerSession,
+  // SignerSessionManager,
   TotpChallenge,
   UserInfo,
-  envs
+  envs,
+  ExclusiveSessionManager
 } from '@cubist-labs/cubesigner-sdk'
 import { hoursToSeconds, minutesToSeconds } from 'date-fns'
 import Config from 'react-native-config'
@@ -44,19 +44,20 @@ const envInterface = envs[SEEDLESS_ENVIRONMENT as Environment]
 
 class SeedlessSessionManager {
   private scopes: string[]
-  private sessionStorage: SessionStorage<SignerSessionData>
+  private sessionManager: ExclusiveSessionManager
   private eventEmitter = new EventEmitter()
   private isTokenValid = false
+  private signerClient: CubeSignerClient
 
   constructor({
     scopes,
-    sessionStorage
+    sessionManager
   }: {
     scopes: string[]
-    sessionStorage: SessionStorage<SignerSessionData>
+    sessionManager: ExclusiveSessionManager
   }) {
     this.scopes = scopes
-    this.sessionStorage = sessionStorage
+    this.sessionManager = sessionManager
   }
 
   /**
@@ -67,29 +68,18 @@ class SeedlessSessionManager {
    * @throws Error in case of network call fail
    */
   async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
-    const oidcClient = this.getOidcClient(oidcToken)
-    return oidcClient.identityProve()
-  }
-
-  /**
-   * Create a CubeSigner API client for methods that require OIDC authorization.
-   *
-   * This client can be used to:
-   * - obtain a proof of identity (see {@link OidcClient.identityProve})
-   * - obtain a full CubeSigner session (see {@link OidcClient.sessionCreate})
-   *
-   * @param {string} oidcToken The OIDC token to include in 'Authorization' header.
-   * @return {OidcClient} CubeSigner API client for methods that require OIDC authorization.
-   */
-  private getOidcClient(oidcToken: string): OidcClient {
-    return new OidcClient(envInterface, SEEDLESS_ORG_ID, oidcToken)
+    return await CubeSignerClient.proveOidcIdentity(
+      envInterface,
+      SEEDLESS_ORG_ID,
+      oidcToken
+    )
   }
 
   /**
    * Retrieves information about the current user.
    */
   private async aboutMe(): Promise<UserInfo> {
-    return (await this.getCubeSignerClient()).userGet()
+    return (await this.getSignerClient()).user()
   }
 
   /**
@@ -105,9 +95,11 @@ class SeedlessSessionManager {
   async requestOidcAuth(
     oidcToken: string,
     mfaReceipt?: MfaReceipt | undefined
-  ): Promise<CubeSignerResponse<SignerSessionData>> {
-    const oidcClient = this.getOidcClient(oidcToken)
-    const signResponse = await oidcClient.sessionCreate(
+  ): Promise<CubeSignerResponse<SessionData>> {
+    return await CubeSignerClient.createOidcSession(
+      envInterface,
+      SEEDLESS_ORG_ID,
+      oidcToken,
       this.scopes,
       {
         // How long singing with a particular token works from the token creation
@@ -120,45 +112,14 @@ class SeedlessSessionManager {
       },
       mfaReceipt
     )
-
-    const sessionResponse = signResponse.requiresMfa()
-      ? signResponse.mfaSessionInfo()
-      : signResponse.data()
-
-    if (sessionResponse) {
-      await SignerSessionManager.createFromSessionInfo(
-        envInterface,
-        SEEDLESS_ORG_ID,
-        sessionResponse,
-        this.sessionStorage
-      )
-    }
-
-    return signResponse
   }
 
   async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
     this.setIsTokenValid(false)
 
-    const sessionMgr = await SignerSessionManager.loadFromStorage(
-      this.sessionStorage
-    ).catch(reason => {
-      Logger.error('Failed to load session manager from storage', reason)
-      return undefined
-    })
-
-    if (!sessionMgr) {
-      return {
-        success: false,
-        error: {
-          name: 'RefreshFailed',
-          message: 'Failed to load session manager from storage'
-        }
-      }
-    }
     const refreshResult = await retry({
       operation: async _ => {
-        return await sessionMgr.refresh().catch(err => {
+        return await this.sessionManager.forceRefresh().catch(err => {
           //if status is 403 means the token has expired and we need to refresh it
           Logger.error('sessionMgr.refresh() failed', err)
 
@@ -201,21 +162,21 @@ class SeedlessSessionManager {
   }
 
   async totpResetInit(): Promise<CubeSignerResponse<TotpChallenge>> {
-    const cubeSignerClient = await this.getCubeSignerClient()
+    const cubeSignerClient = await this.getSignerClient()
 
-    return await cubeSignerClient.userTotpResetInit('Core')
+    return await cubeSignerClient.resetTotp('Core')
   }
 
   async fidoRegisterInit(
     name: string
   ): Promise<CubeSignerResponse<AddFidoChallenge>> {
-    const cubeSignerClient = await this.getCubeSignerClient()
-    return await cubeSignerClient.userFidoRegisterInit(name)
+    const cubeSignerClient = await this.getSignerClient()
+    return await cubeSignerClient.addFido(name)
   }
 
   async deleteFido(fidoId: string): Promise<CubeSignerResponse<Empty>> {
-    const cubeSignerClient = await this.getCubeSignerClient()
-    return await cubeSignerClient.userFidoDelete(fidoId)
+    const cubeSignerClient = await this.getSignerClient()
+    return await cubeSignerClient.deleteFido(fidoId)
   }
 
   async approveFido(
@@ -230,12 +191,13 @@ class SeedlessSessionManager {
     )
 
     const mfaRequestInfo = await challenge.answer(credential)
+    const mfaReceipt = await mfaRequestInfo.receipt()
 
-    if (mfaRequestInfo.receipt?.confirmation) {
+    if (mfaReceipt?.mfaConf) {
       await this.requestOidcAuth(oidcToken, {
         mfaOrgId: SEEDLESS_ORG_ID,
         mfaId: mfaId,
-        mfaConf: mfaRequestInfo.receipt.confirmation
+        mfaConf: mfaReceipt.mfaConf
       })
     } else {
       throw new Error('Passkey authentication failed')
@@ -253,12 +215,15 @@ class SeedlessSessionManager {
     code: string
   ): Promise<Result<undefined, TotpErrors>> {
     try {
-      const mfaSession = await SignerSession.loadSignerSession(
-        this.sessionStorage
-      )
-      const status = await mfaSession.totpApprove(mfaId, code)
+      const signerClient = await this.getSignerClient()
 
-      if (!status.receipt?.confirmation) {
+      const status = await signerClient
+        .org()
+        .getMfaRequest(mfaId)
+        .totpApprove(code)
+      const receipt = await status.receipt()
+
+      if (!receipt?.mfaConf) {
         return {
           success: false,
           error: new TotpErrors({
@@ -271,7 +236,7 @@ class SeedlessSessionManager {
       await this.requestOidcAuth(oidcToken, {
         mfaOrgId: SEEDLESS_ORG_ID,
         mfaId: mfaId,
-        mfaConf: status.receipt.confirmation
+        mfaConf: receipt.mfaConf
       })
 
       return { success: true, value: undefined }
@@ -291,8 +256,8 @@ class SeedlessSessionManager {
    * MfaFidoChallenge.answer or fidoApproveComplete.
    */
   async fidoApproveStart(mfaId: string): Promise<MfaFidoChallenge> {
-    const signerSession = new SignerSession(await this.getSessionManager())
-    return signerSession.fidoApproveStart(mfaId)
+    const signerClient = await this.getSignerClient()
+    return signerClient.apiClient.mfaFidoInit(mfaId)
   }
 
   /**
@@ -302,31 +267,20 @@ class SeedlessSessionManager {
     cubeSignerResponse: CubeSignerResponse<T>,
     code: string
   ): Promise<Result<CubeSignerResponse<T>, TotpErrors>> {
-    const signerSession = await this.getSignerSession()
-    const response = await cubeSignerResponse.approveTotp(signerSession, code)
+    const signerSession = await this.getSignerClient()
+    const response = await cubeSignerResponse.totpApprove(signerSession, code)
     return { success: true, value: response }
   }
 
   /**
    * Returns a CubeSigner instance
    */
-  private async getCubeSignerClient(): Promise<CubeSignerClient> {
-    const sessionManager = await this.getSessionManager()
-    return new CubeSignerClient(sessionManager, SEEDLESS_ORG_ID)
-  }
+  async getSignerClient(): Promise<CubeSignerClient> {
+    if (!this.signerClient) {
+      this.signerClient = await CubeSignerClient.create(this.sessionManager)
+    }
 
-  /**
-   * Returns a session manager that can be used to retrieve session data.
-   */
-  private async getSessionManager(): Promise<SignerSessionManager> {
-    return await SignerSessionManager.loadFromStorage(this.sessionStorage)
-  }
-
-  /**
-   * Returns a signer session
-   */
-  async getSignerSession(): Promise<SignerSession> {
-    return new SignerSession(await this.getSessionManager())
+    return this.signerClient
   }
 
   /**
@@ -340,11 +294,12 @@ class SeedlessSessionManager {
    * Returns the result of signing after MFA approval
    */
   static async signWithMfaApproval<T>(
+    mfaId: string,
     response: CubeSignerResponse<T>,
     mfaReceiptConfirmation: string
   ): Promise<CubeSignerResponse<T>> {
-    return response.signWithMfaApproval({
-      mfaId: response.mfaId(),
+    return response.execWithMfaApproval({
+      mfaId,
       mfaOrgId: SEEDLESS_ORG_ID,
       mfaConf: mfaReceiptConfirmation
     })
@@ -374,10 +329,10 @@ class SeedlessSessionManager {
   }
 
   /**
-   * Get Key from keyInfoApi
+   * Get Key from keyInfo
    */
-  async getKey(keyInfo: KeyInfoApi): Promise<Key> {
-    const client = await this.getCubeSignerClient()
+  async getKey(keyInfo: KeyInfo): Promise<Key> {
+    const client = await this.getSignerClient()
     return new Key(client, keyInfo)
   }
 }

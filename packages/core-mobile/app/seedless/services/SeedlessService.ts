@@ -1,4 +1,4 @@
-import { KeyInfoApi, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
+import { KeyInfo, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import Logger from 'utils/Logger'
 import { ACCOUNT_NAME } from '../consts'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
@@ -20,15 +20,15 @@ class SeedlessService {
       'manage:key:update:metadata',
       'manage:key:get'
     ],
-    sessionStorage: new SeedlessSessionStorage()
+    sessionManager: new SeedlessSessionStorage()
   })
 
   /**
    * Returns the list of keys that this session has access to.
    */
-  async getSessionKeysList(type?: KeyType): Promise<KeyInfoApi[]> {
-    const signerSession = await this.sessionManager.getSignerSession()
-    const keysList = await signerSession.sessionKeysList()
+  async getSessionKeysList(type?: KeyType): Promise<KeyInfo[]> {
+    const signerSession = await this.sessionManager.getSignerClient()
+    const keysList = await signerSession.apiClient.sessionKeysList()
     return type !== undefined
       ? keysList.filter(k => k.key_type === type)
       : keysList
@@ -37,7 +37,7 @@ class SeedlessService {
   /**
    * Returns Mnemonic keys that this session has access to.
    */
-  async getMnemonicKeysList(): Promise<KeyInfoApi | undefined> {
+  async getMnemonicKeysList(): Promise<KeyInfo | undefined> {
     const keysList = await this.getSessionKeysList('Mnemonic')
     return keysList.find(k => k.key_type === 'Mnemonic')
   }
@@ -82,9 +82,9 @@ class SeedlessService {
   }
 
   private getKeyInfo = (
-    keys: KeyInfoApi[],
+    keys: KeyInfo[],
     accountIndex: number
-  ): KeyInfoApi | undefined => {
+  ): KeyInfo | undefined => {
     return keys.find(
       k =>
         Number(k.derivation_info?.derivation_path.split('/').pop()) ===

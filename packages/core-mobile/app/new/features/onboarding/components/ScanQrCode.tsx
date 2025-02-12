@@ -49,11 +49,7 @@ export const ScanQrCode = ({
               alignItems: 'center',
               alignSelf: 'center'
             }}>
-            <QRCode
-              ecl={'H'}
-              size={qrCodeSize}
-              value={totpChallenge?.totpUrl}
-            />
+            <QRCode ecl={'H'} size={qrCodeSize} value={totpChallenge?.url} />
           </View>
 
           <Button
