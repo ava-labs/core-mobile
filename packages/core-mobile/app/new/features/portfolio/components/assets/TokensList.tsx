@@ -51,7 +51,7 @@ export const TokensList = ({ tokens }: Props): React.JSX.Element => {
   }
 
   return (
-    <View sx={{ marginTop: 30, flex: 1 }}>
+    <View sx={{ marginTop: 30 }}>
       <Animated.FlatList
         style={{ marginHorizontal: -16 }}
         contentContainerStyle={{ gap: 10, paddingHorizontal: 16 }}

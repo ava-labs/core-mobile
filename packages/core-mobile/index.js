@@ -31,7 +31,7 @@ SentryService.init()
 
 Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
-  UIManager.setLayoutAnimationEnabledExperimental(false)
+  UIManager.setLayoutAnimationEnabledExperimental(true)
 
 Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 

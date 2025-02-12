@@ -135,6 +135,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
   return (
     <BlurredBarsContentLayout>
       <ScrollView
+        sx={{ marginBottom: -40 }}
+        showsVerticalScrollIndicator={false}
         contentContainerSx={{
           paddingTop: 16,
           paddingHorizontal: 16,
