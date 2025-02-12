@@ -1,10 +1,12 @@
+import { formatUnits, parseUnits } from 'ethers'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/core-chains-sdk'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import {
   Button,
@@ -21,10 +23,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import {
-  bigIntToFeeDenomination,
-  feeDenominationToBigint
-} from 'utils/units/fees'
+import { sanitizeDecimalInput } from 'utils/units/sanitize'
 
 type EditFeesProps = {
   network: Network
@@ -32,7 +31,7 @@ type EditFeesProps = {
   onClose?: () => void
   lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isBaseUnitRate: boolean
+  feeDecimals?: number
   noGasLimitError?: string
 } & Eip1559Fees
 
@@ -62,9 +61,14 @@ const EditFees = ({
   onSave,
   onClose,
   isGasLimitEditable,
-  isBaseUnitRate,
+  feeDecimals,
   noGasLimitError
 }: EditFeesProps): JSX.Element => {
+  const isBaseUnitRate = feeDecimals === undefined
+
+  const {
+    appHook: { tokenInCurrencyFormatter }
+  } = useApplicationContext()
   const _gasLimitError = noGasLimitError ?? 'Please enter a valid gas limit'
   const {
     theme: { colors }
@@ -72,18 +76,11 @@ const EditFees = ({
   const selectedCurrency = useSelector(
     selectSelectedCurrency
   ).toLowerCase() as VsCurrencyType
-  const typeCreator = useMemo(
-    () =>
-      new TokenUnit(
-        0,
-        network.networkToken.decimals,
-        network.networkToken.symbol
-      ),
-    [network]
-  )
+
   const [newGasLimit, setNewGasLimit] = useState<string>(
     initGasLimit.toString()
   )
+
   /**
    * Denominated depending of network:
    * BTC - Satoshi
@@ -91,7 +88,9 @@ const EditFees = ({
    * EVM - gWei
    */
   const [newMaxFeePerGas, setNewMaxFeePerGas] = useState<string>(
-    bigIntToFeeDenomination(initMaxFeePerGas, isBaseUnitRate)
+    isBaseUnitRate
+      ? initMaxFeePerGas.toString()
+      : formatUnits(initMaxFeePerGas, feeDecimals)
   )
   /**
    * Denominated depending of network:
@@ -101,7 +100,9 @@ const EditFees = ({
    */
   const [newMaxPriorityFeePerGas, setNewMaxPriorityFeePerGas] =
     useState<string>(
-      bigIntToFeeDenomination(initMaxPriorityFeePerGas, isBaseUnitRate)
+      isBaseUnitRate
+        ? initMaxPriorityFeePerGas.toString()
+        : formatUnits(initMaxPriorityFeePerGas, feeDecimals)
     )
   const tokenPrice = useNativeTokenPriceForNetwork(network).nativeTokenPrice
   const [feeError, setFeeError] = useState('')
@@ -131,25 +132,32 @@ const EditFees = ({
 
   useEffect(() => {
     try {
+      if (!newMaxFeePerGas) return
+
       const fees = calculateGasAndFees({
         tokenPrice,
-        maxFeePerGas: feeDenominationToBigint(newMaxFeePerGas, isBaseUnitRate),
-        maxPriorityFeePerGas: feeDenominationToBigint(
-          newMaxPriorityFeePerGas,
-          isBaseUnitRate
-        ),
+        maxFeePerGas: isBaseUnitRate
+          ? BigInt(newMaxFeePerGas)
+          : parseUnits(newMaxFeePerGas, feeDecimals),
+        maxPriorityFeePerGas: isBaseUnitRate
+          ? BigInt(newMaxPriorityFeePerGas)
+          : parseUnits(newMaxPriorityFeePerGas, feeDecimals),
         gasLimit: isNaN(parseInt(newGasLimit)) ? 0 : parseInt(newGasLimit),
         networkToken: network.networkToken
       })
+
       setNewFees(fees)
       setGasLimitError(fees.gasLimit <= 0 ? _gasLimitError : '')
       setFeeError(
-        fees.maxFeePerGas < lowMaxFeePerGas ? 'Max base fee is too low' : ''
+        fees.maxFeePerGas < lowMaxFeePerGas
+          ? `${isBaseUnitRate ? 'Network' : 'Max base'} fee is too low`
+          : ''
       )
     } catch (e) {
       setFeeError('Gas Limit is too much')
     }
   }, [
+    isBaseUnitRate,
     feeError,
     initMaxFeePerGas,
     gasLimitError,
@@ -157,10 +165,9 @@ const EditFees = ({
     newMaxFeePerGas,
     newMaxPriorityFeePerGas,
     tokenPrice,
-    typeCreator,
     lowMaxFeePerGas,
     _gasLimitError,
-    isBaseUnitRate,
+    feeDecimals,
     network.networkToken
   ])
 
@@ -175,9 +182,28 @@ const EditFees = ({
     }
   }
 
-  const saveDisabled = !!feeError || (newFees.gasLimit === 0 && !isBaseUnitRate)
+  const saveDisabled = !!feeError || newFees.gasLimit === 0 || !newMaxFeePerGas
 
-  const sanitized = (text: string): string => text.replace(/[^0-9]/g, '')
+  const handleDecimalInputTextChange = useCallback(
+    (
+      text: string,
+      setter: (value: React.SetStateAction<string>) => void
+    ): void => {
+      const sanitized = sanitizeDecimalInput({
+        text,
+        maxDecimals: feeDecimals,
+        allowDecimalPoint: !isBaseUnitRate
+      })
+      setter(sanitized)
+    },
+    [feeDecimals, isBaseUnitRate]
+  )
+
+  const handleGasLimitChange = useCallback((text: string) => {
+    // allow only whole numbers (no decimals)
+    const sanitized = text.replace(/[^0-9]/g, '')
+    setNewGasLimit(sanitized)
+  }, [])
 
   return (
     <SafeAreaProvider style={{ flex: 1, paddingBottom: 16 }}>
@@ -195,7 +221,9 @@ const EditFees = ({
           text={newMaxFeePerGas}
           keyboardType="numeric"
           popOverInfoText={isBaseUnitRate ? undefined : maxBaseFeeInfoMessage}
-          onChangeText={text => setNewMaxFeePerGas(sanitized(text))}
+          onChangeText={text =>
+            handleDecimalInputTextChange(text, setNewMaxFeePerGas)
+          }
           errorText={feeError}
         />
         {!isBaseUnitRate && (
@@ -206,7 +234,9 @@ const EditFees = ({
               keyboardType="numeric"
               text={newMaxPriorityFeePerGas}
               popOverInfoText={maxPriorityFeeInfoMessage}
-              onChangeText={text => setNewMaxPriorityFeePerGas(sanitized(text))}
+              onChangeText={text =>
+                handleDecimalInputTextChange(text, setNewMaxPriorityFeePerGas)
+              }
             />
             <InputText
               label={'Gas Limit'}
@@ -215,7 +245,7 @@ const EditFees = ({
               keyboardType="numeric"
               editable={isGasLimitEditable}
               popOverInfoText={gasLimitInfoMessage}
-              onChangeText={text => setNewGasLimit(sanitized(text))}
+              onChangeText={handleGasLimitChange}
               errorText={gasLimitError}
               backgroundColor={
                 isGasLimitEditable
@@ -249,10 +279,11 @@ const EditFees = ({
             {network?.networkToken?.symbol?.toUpperCase()}
           </Text>
         </Row>
+
         <CurrencyHelperText
-          text={`${
+          text={`${tokenInCurrencyFormatter(
             newFees.maxTotalFeeInCurrency
-          } ${selectedCurrency.toUpperCase()}`}
+          )} ${selectedCurrency.toUpperCase()}`}
         />
       </ScrollView>
       <Button

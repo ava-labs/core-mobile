@@ -20,7 +20,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'
 import Logger from 'utils/Logger'
-import { info, UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
+import { UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
@@ -754,18 +754,11 @@ class WalletService {
       isDevnet(network)
     )
 
-    const upgradesInfo = isDevnet(network)
-      ? await new info.InfoApi(network.rpcUrl)
-          .getUpgradesInfo()
-          .catch(() => undefined)
-      : undefined
-
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
       baseFee: evmBaseFeeInNAvax,
-      feeTolerance: EVM_FEE_TOLERANCE,
-      upgradesInfo
+      feeTolerance: EVM_FEE_TOLERANCE
     })
 
     if (!isValid) {
