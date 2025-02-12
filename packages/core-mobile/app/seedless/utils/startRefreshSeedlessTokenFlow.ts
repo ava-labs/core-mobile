@@ -61,11 +61,12 @@ export async function startRefreshSeedlessTokenFlow(
     const loginResult = await sessionManager.requestOidcAuth(
       oidcTokenResult.oidcToken
     )
+    const mfaId = loginResult.mfaId()
 
-    if (loginResult.requiresMfa()) {
+    if (loginResult.requiresMfa() && mfaId) {
       return await verifyUserWithMFA(
         oidcTokenResult.oidcToken,
-        loginResult.mfaId(),
+        mfaId,
         sessionManager
       )
     } else {

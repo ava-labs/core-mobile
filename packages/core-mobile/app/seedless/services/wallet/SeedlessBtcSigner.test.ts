@@ -35,7 +35,7 @@ describe('SeedlessBtcSigner', () => {
           }
         }
       }
-    } as cs.SignerSession
+    } as cs.CubeSignerClient
   })
   it('should have returned Invalid public key error', () => {
     try {
@@ -46,7 +46,7 @@ describe('SeedlessBtcSigner', () => {
         inputIndex: 0,
         utxos: [],
         network: {} as Network,
-        session: {} as cs.SignerSession
+        session: {} as cs.CubeSignerClient
       })
     } catch (e) {
       expect((e as Error).message).toBe('Invalid public key')
@@ -114,7 +114,7 @@ describe('SeedlessBtcSigner', () => {
               }
             }
           }
-        } as cs.SignerSession
+        } as cs.CubeSignerClient
       })
       try {
         await signer.sign()

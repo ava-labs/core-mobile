@@ -39,7 +39,7 @@ export const SettingScanQrCodeScreen = (): JSX.Element => {
 
   return (
     <ScanQrCode
-      totpUrl={totpChallenge.totpUrl}
+      totpUrl={totpChallenge.url}
       onPressEnterManually={handlePressEnterManually}
       onVeryfiCode={handleVerifyCode}
     />

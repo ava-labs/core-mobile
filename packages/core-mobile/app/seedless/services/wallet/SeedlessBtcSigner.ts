@@ -20,7 +20,7 @@ export class SeedlessBtcSigner implements SignerAsync {
   // Unspent output corresponding to that input
   readonly #utxos: BitcoinInputUTXO[]
   // cubesigner current signer session
-  readonly #session: cs.SignerSession
+  readonly #session: cs.CubeSignerClient
 
   /** Compressed pubkey of the wallet/key (`this.#fromKey`) to sign with */
   public readonly publicKey: Buffer
@@ -42,7 +42,7 @@ export class SeedlessBtcSigner implements SignerAsync {
    * @param {number} inputIndex Index of the transaction input to sign
    * @param {BitcoinInputUTXO[]} utxos Unspent outputs corresponding to transaction intputs
    * @param {Network} network Bitcoin network
-   * @param {cs.SignerSession} session cubesigner signer session
+   * @param {cs.CubeSignerClient} session cubesigner signer session
    */
   constructor({
     fromKey,
@@ -57,7 +57,7 @@ export class SeedlessBtcSigner implements SignerAsync {
     inputIndex: number
     utxos: BitcoinInputUTXO[]
     network: Network
-    session: cs.SignerSession
+    session: cs.CubeSignerClient
   }) {
     this.#fromKey = fromKey
     this.#psbt = psbt
@@ -116,7 +116,7 @@ export class SeedlessBtcSigner implements SignerAsync {
       throw new Error('Unable to create p2pkh')
     }
 
-    const resp = await this.#session.signBtc(this.address, {
+    const resp = await this.#session.apiClient.signBtc(this.address, {
       sig_kind: {
         Segwit: {
           input_index: this.#inputIndex,

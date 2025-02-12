@@ -41,6 +41,7 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
       })
     } else if (mfa.type === 'fido') {
       verifyFido({
+        mfaId: mfa.id,
         response,
         onVerifySuccess
       })
@@ -99,24 +100,28 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
   }
 
   const verifyFido: VerifyFidoFunction = async <T>({
+    mfaId,
     response,
     onVerifySuccess
   }: {
+    mfaId: string
     response: CubeSignerResponse<T>
     onVerifySuccess: (response: T) => void
   }) => {
-    const challenge = await sessionManager.fidoApproveStart(response.mfaId())
+    const challenge = await sessionManager.fidoApproveStart(mfaId)
     const credential = await PasskeyService.getCredential(
       challenge.options,
       true
     )
     const mfaRequestInfo = await challenge.answer(credential)
-    if (!mfaRequestInfo.receipt?.confirmation) {
+    const mfaReceipt = await mfaRequestInfo.receipt()
+    if (!mfaReceipt?.mfaConf) {
       throw new Error('FIDO authentication failed')
     }
     const signedResponse = await SeedlessSessionManager.signWithMfaApproval(
+      mfaId,
       response,
-      mfaRequestInfo.receipt.confirmation
+      mfaReceipt.mfaConf
     )
 
     onVerifySuccess(signedResponse.data())
@@ -150,9 +155,11 @@ type VerifyTotpFunction = <T>({
 }) => void
 
 type VerifyFidoFunction = <T>({
+  mfaId,
   response,
   onVerifySuccess
 }: {
+  mfaId: string
   response: CubeSignerResponse<T>
   onVerifySuccess: (response: T) => void
 }) => Promise<void>

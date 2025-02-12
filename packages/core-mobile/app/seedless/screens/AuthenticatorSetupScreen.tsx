@@ -80,10 +80,8 @@ export const AuthenticatorSetupScreen = (): JSX.Element => {
   }, [totpResetInit, totpChallenge])
 
   const totpKey = useMemo(() => {
-    if (totpChallenge?.totpUrl) {
-      return (
-        new URL(totpChallenge.totpUrl).searchParams.get('secret') ?? undefined
-      )
+    if (totpChallenge?.url) {
+      return new URL(totpChallenge.url).searchParams.get('secret') ?? undefined
     }
   }, [totpChallenge])
 
