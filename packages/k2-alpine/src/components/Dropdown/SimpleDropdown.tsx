@@ -4,7 +4,7 @@ import { Platform } from 'react-native'
 import { Text, View, TouchableOpacity } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Separator } from '../Separator/Separator'
-import { Icons } from '../../theme/tokens/Icons'
+import { Icons } from '../../assets/tokenLogos/Icons'
 import { DropdownBackground } from './DropdownBackground'
 
 export const SimpleDropdown = <T extends { toString(): string }>({

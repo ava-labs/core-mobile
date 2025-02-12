@@ -97,10 +97,10 @@ import USDT from '../../assets/tokenLogos/USDT.svg'
 import VET from '../../assets/tokenLogos/VET.svg'
 import XLM from '../../assets/tokenLogos/XLM.svg'
 import XRP from '../../assets/tokenLogos/XRP.svg'
-import IconAvaxP from '../../assets/logos/avax_p.svg'
-import IconAvaxX from '../../assets/logos/avax_x.svg'
-import IconAvaxPDark from '../../assets/logos/avax_p_dark.svg'
-import IconAvaxXDark from '../../assets/logos/avax_x_dark.svg'
+import IconAvaxP from '../../assets/tokenLogos/AVAX_P_LIGHT.svg'
+import IconAvaxX from '../../assets/tokenLogos/AVAX_X_LIGHT.svg'
+import IconAvaxPDark from '../../assets/tokenLogos/AVAX_P_DARK.svg'
+import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -272,8 +272,8 @@ export const Icons = {
     VET: VET,
     XLM: XLM,
     XRP: XRP,
-    AVAX_P: IconAvaxP,
-    AVAX_X: IconAvaxX,
+    AVAX_P_LIGHT: IconAvaxP,
+    AVAX_X_LIGHT: IconAvaxX,
     AVAX_P_DARK: IconAvaxPDark,
     AVAX_X_DARK: IconAvaxXDark
   },

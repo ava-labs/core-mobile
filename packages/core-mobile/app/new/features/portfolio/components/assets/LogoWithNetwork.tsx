@@ -30,16 +30,16 @@ export const LogoWithNetwork = ({ token }: Props): React.JSX.Element => {
   ): React.JSX.Element | undefined => {
     if (t.localId === AVAX_X_ID) {
       return isDark ? (
-        <Icons.Logos.AvaxXDark width={12} height={12} />
+        <Icons.TokenLogos.AVAX_P_DARK width={12} height={12} />
       ) : (
-        <Icons.Logos.AvaxX width={12} height={12} />
+        <Icons.TokenLogos.AVAX_P_LIGHT width={12} height={12} />
       )
     }
     if (t.localId === AVAX_P_ID) {
       return isDark ? (
-        <Icons.Logos.AvaxPDark width={12} height={12} />
+        <Icons.TokenLogos.AVAX_X_DARK width={12} height={12} />
       ) : (
-        <Icons.Logos.AvaxP width={12} height={12} />
+        <Icons.TokenLogos.AVAX_X_LIGHT width={12} height={12} />
       )
     }
 

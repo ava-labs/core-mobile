@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { View, Text, TouchableOpacity } from '../Primitives'
 import { Separator } from '../Separator/Separator'
-import { Icons } from '../../theme/tokens/Icons'
+import { Icons } from '../../assets/tokenLogos/Icons'
 import { useTheme } from '../../hooks'
 
 export const GroupList = ({
