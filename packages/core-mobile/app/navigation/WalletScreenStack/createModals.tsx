@@ -268,7 +268,7 @@ const EditGasLimit = (): JSX.Element => {
       network={params.network}
       lowMaxFeePerGas={params.lowMaxFeePerGas}
       isGasLimitEditable={params.isGasLimitEditable}
-      isBaseUnitRate={params.isBaseUnitRate}
+      feeDecimals={params.feeDecimals}
       noGasLimitError={params.noGasLimitError}
     />
   )

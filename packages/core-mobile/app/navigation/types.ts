@@ -71,7 +71,7 @@ export type EditGasLimitParams = {
   onSave: (customFees: Eip1559Fees) => void
   lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isBaseUnitRate: boolean
+  feeDecimals?: number
   noGasLimitError?: string
 } & Eip1559Fees
 
