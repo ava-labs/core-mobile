@@ -2,7 +2,7 @@ import React from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Text, View } from '../Primitives'
 import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
-import { Icons } from '../../assets/tokenLogos/Icons'
+import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
 import { BalanceLoader } from './BalanceHeaderLoader'
 

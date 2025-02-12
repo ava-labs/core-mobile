@@ -7,7 +7,7 @@ import {
   ViewStyle
 } from 'react-native'
 import { Text, View } from '../Primitives'
-import { Icons } from '../../assets/tokenLogos/Icons'
+import { Icons } from '../../theme/tokens/Icons'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { TextVariant } from '../../theme/tokens/text'
 import { GlassView } from '../../components/GlassView/GlassView'

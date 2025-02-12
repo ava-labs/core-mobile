@@ -1,6 +1,6 @@
 import React from 'react'
 import { ViewStyle } from 'react-native'
-import { Icons } from '../../assets/tokenLogos/Icons'
+import { Icons } from '../../theme/tokens/Icons'
 import { Text, TouchableOpacity, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 

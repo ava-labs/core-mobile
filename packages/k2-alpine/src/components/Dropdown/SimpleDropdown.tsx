@@ -4,7 +4,7 @@ import { Platform } from 'react-native'
 import { Text, View, TouchableOpacity } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Separator } from '../Separator/Separator'
-import { Icons } from '../../assets/tokenLogos/Icons'
+import { Icons } from '../../theme/tokens/Icons'
 import { DropdownBackground } from './DropdownBackground'
 
 export const SimpleDropdown = <T extends { toString(): string }>({
@@ -16,8 +16,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onSelectRow,
   onDeselectRow,
   onRequestClose,
-  isVisible,
-  minWidth = 200
+  isVisible
 }: {
   from: React.ReactNode | Rect
   sections: T[][]
@@ -28,8 +27,6 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onDeselectRow?: (indexPath: IndexPath) => void
   onRequestClose?: () => void
   isVisible?: boolean
-  showSelectedCheckmark?: boolean
-  minWidth?: number
 }): JSX.Element => {
   const { theme } = useTheme()
   const popoverRef = useRef<Popover>()
@@ -73,7 +70,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         shadowRadius: 30,
         shadowOpacity: 0.3,
         backgroundColor: 'transparent',
-        minWidth
+        minWidth: 200
       }}
       arrowSize={{ width: -10, height: 0 }}
       backgroundStyle={{ backgroundColor: 'transparent' }}>

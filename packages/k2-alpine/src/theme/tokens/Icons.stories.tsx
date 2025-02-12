@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from '../../utils/Link'
 import { useTheme } from '../../hooks'
-import { Icons } from '../../assets/tokenLogos/Icons'
+import { Icons } from './Icons'
 import { Template } from './Template'
 
 export default {

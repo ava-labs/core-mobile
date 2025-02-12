@@ -2,7 +2,7 @@ import React from 'react'
 import MaskedView from '@react-native-masked-view/masked-view'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Text, View } from '../Primitives'
-import { Icons } from '../../assets/tokenLogos/Icons'
+import { Icons } from '../../theme/tokens/Icons'
 import { useTheme } from '../../hooks'
 import { colors } from '../../theme/tokens/colors'
 
