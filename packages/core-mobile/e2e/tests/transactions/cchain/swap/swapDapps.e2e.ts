@@ -1,7 +1,7 @@
-import { warmup } from '../../../helpers/warmup'
-import browserPage from '../../../pages/browser.page'
-import popUpModalPage from '../../../pages/popUpModal.page'
-import swapTabPage from '../../../pages/swapTab.page'
+import { warmup } from '../../../../helpers/warmup'
+import browserPage from '../../../../pages/browser.page'
+import popUpModalPage from '../../../../pages/popUpModal.page'
+import swapTabPage from '../../../../pages/swapTab.page'
 
 describe('Dapp Swap', () => {
   beforeEach(async () => {

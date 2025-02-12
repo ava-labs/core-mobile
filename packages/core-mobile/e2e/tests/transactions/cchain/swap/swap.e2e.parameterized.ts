@@ -1,9 +1,9 @@
-import actions from '../../../helpers/actions'
-import { SwapTokens } from '../../../helpers/tokens'
-import { warmup } from '../../../helpers/warmup'
-import swapTabLoc from '../../../locators/swapTab.loc'
-import SendPage from '../../../pages/send.page'
-import SwapTabPage from '../../../pages/swapTab.page'
+import actions from '../../../../helpers/actions'
+import { SwapTokens } from '../../../../helpers/tokens'
+import { warmup } from '../../../../helpers/warmup'
+import swapTabLoc from '../../../../locators/swapTab.loc'
+import SendPage from '../../../../pages/send.page'
+import SwapTabPage from '../../../../pages/swapTab.page'
 
 describe('Swap AVAX to Parameterized Tokens', () => {
   beforeEach(async () => {
