@@ -45,18 +45,20 @@ export const SQUARE_BUTTONS = [
 ]
 
 export enum ActionButtonTitle {
-  Bridge = 'Bridge',
-  Swap = 'Swap',
   Send = 'Send',
+  Swap = 'Swap',
   Buy = 'Buy',
+  Stake = 'Stake',
+  Bridge = 'Bridge',
   Connect = 'Connect'
 }
 
 export const ACTION_BUTTONS: ActionButton[] = [
-  { title: ActionButtonTitle.Bridge, icon: 'bridge' },
-  { title: ActionButtonTitle.Swap, icon: 'swap' },
   { title: ActionButtonTitle.Send, icon: 'send' },
+  { title: ActionButtonTitle.Swap, icon: 'swap' },
   { title: ActionButtonTitle.Buy, icon: 'buy' },
+  { title: ActionButtonTitle.Stake, icon: 'stake' },
+  { title: ActionButtonTitle.Bridge, icon: 'bridge' },
   { title: ActionButtonTitle.Connect, icon: 'connect' }
 ]
 
