@@ -1,12 +1,12 @@
-import AccountManagePage from '../../pages/accountManage.page'
-import PortfolioPage from '../../pages/portfolio.page'
-import CollectiblesPage from '../../pages/collectibles.page'
-import { warmup } from '../../helpers/warmup'
-import { cleanup } from '../../helpers/cleanup'
-import sendPage from '../../pages/send.page'
-import networksManagePage from '../../pages/networksManage.page'
+import AccountManagePage from '../../../pages/accountManage.page'
+import PortfolioPage from '../../../pages/portfolio.page'
+import CollectiblesPage from '../../../pages/collectibles.page'
+import { warmup } from '../../../helpers/warmup'
+import { cleanup } from '../../../helpers/cleanup'
+import sendPage from '../../../pages/send.page'
+import networksManagePage from '../../../pages/networksManage.page'
 
-describe('Send NFT', () => {
+describe('Ethereum NFT Transaction', () => {
   beforeAll(async () => {
     await warmup()
     await AccountManagePage.createSecondAccount()
