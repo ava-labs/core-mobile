@@ -62,13 +62,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const formattedBalance = currencyBalance.replace(selectedCurrency, '')
 
-  const indicatorStatus =
-    balanceTotalInCurrency > 0
-      ? 'up'
-      : balanceTotalInCurrency < 0
-      ? 'down'
-      : 'equal'
-
   const { getMarketToken } = useWatchlist()
   const tokens = useSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
@@ -86,6 +79,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
       }, 0),
     [getMarketToken, tokens]
   )
+
+  const indicatorStatus =
+    totalPriceChanged > 0 ? 'up' : totalPriceChanged < 0 ? 'down' : 'equal'
 
   const totalPriceChangedInPercent = useMemo(() => {
     return (totalPriceChanged / balanceTotalInCurrency) * 100
@@ -115,7 +111,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         currency={selectedCurrency}
         onLayout={handleBalanceHeaderLayout}
         priceChange={{
-          formattedPrice: totalPriceChanged.toFixed(2),
+          formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
           status: indicatorStatus,
           formattedPercent
         }}

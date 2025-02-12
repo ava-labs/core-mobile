@@ -11,7 +11,7 @@ interface Props {
   token: LocalTokenWithBalance
 }
 
-export const AssetLogoWithNetwork = ({ token }: Props): React.JSX.Element => {
+export const LogoWithNetwork = ({ token }: Props): React.JSX.Element => {
   const {
     theme: { colors, isDark }
   } = useTheme()
@@ -47,7 +47,7 @@ export const AssetLogoWithNetwork = ({ token }: Props): React.JSX.Element => {
   }
 
   return (
-    <View style={{ marginRight: 16 }}>
+    <View style={{ marginRight: 16, width: 36 }}>
       <TokenLogo
         size={36}
         symbol={token.symbol}

@@ -17,7 +17,6 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onDeselectRow,
   onRequestClose,
   isVisible,
-  showSelectedCheckmark = true,
   minWidth = 200
 }: {
   from: React.ReactNode | Rect
@@ -109,12 +108,11 @@ export const SimpleDropdown = <T extends { toString(): string }>({
                         {isSelected({
                           section: sectionIndex,
                           row: rowIndex
-                        }) &&
-                          showSelectedCheckmark && (
-                            <Icons.Navigation.Check
-                              color={theme.colors.$textPrimary}
-                            />
-                          )}
+                        }) && (
+                          <Icons.Navigation.Check
+                            color={theme.colors.$textPrimary}
+                          />
+                        )}
                       </View>
                     </TouchableOpacity>
                     {rowIndex !== section.length - 1 &&

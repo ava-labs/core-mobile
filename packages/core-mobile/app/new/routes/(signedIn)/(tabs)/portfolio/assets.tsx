@@ -11,12 +11,9 @@ import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store'
 import { TokensList } from 'features/portfolio/components/assets/TokensList'
 import { TokenType } from '@avalabs/vm-module-types'
-import { ActivityIndicator, View } from '@avalabs/k2-alpine'
-import { Dimensions } from 'react-native'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-
-const WINDOW_HEIGHT = Dimensions.get('window').height
+import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
 
 const PortfolioAssetsScreen = (): JSX.Element | undefined => {
   const { refetch } = useSearchableTokenList()
@@ -33,15 +30,10 @@ const PortfolioAssetsScreen = (): JSX.Element | undefined => {
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const isDataReady =
-    !isBalanceLoading &&
-    !isRefetchingBalance &&
-    nonNftTokens.length > 0 &&
-    !isAllBalancesInaccurate
 
   const renderContent = (): React.JSX.Element => {
     if (isBalanceLoading || isRefetchingBalance) {
-      return <ActivityIndicator size={'large'} />
+      return <LoadingState />
     }
     if (isAllBalancesInaccurate) {
       return <ErrorState onPress={refetch} />
@@ -52,16 +44,7 @@ const PortfolioAssetsScreen = (): JSX.Element | undefined => {
     return <TokensList tokens={nonNftTokens} />
   }
 
-  return (
-    <View
-      sx={{
-        marginTop: isDataReady ? undefined : WINDOW_HEIGHT * 0.15,
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-      {renderContent()}
-    </View>
-  )
+  return renderContent()
 }
 
 export default PortfolioAssetsScreen

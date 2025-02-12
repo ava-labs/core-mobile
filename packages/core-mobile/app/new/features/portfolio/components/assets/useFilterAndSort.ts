@@ -1,40 +1,95 @@
-import { IndexPath } from '@avalabs/k2-alpine'
-import { useMemo } from 'react'
+import { IndexPath, usePopoverAnchor } from '@avalabs/k2-alpine'
+import { RefObject, useMemo, useRef } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   selectAssetsFilter,
   selectAssetsSort,
+  selectAssetsView,
   setFilter,
-  setSort
+  setSort,
+  setView
 } from 'store/assets'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { TouchableOpacity } from 'react-native'
+import { Rect } from 'react-native-popover-view'
 import {
-  ASSET_BALANCE_SORTS,
-  ASSET_NETWORK_FILTERS,
   AssetBalanceSort,
-  AssetNetworkFilter
-} from './AssetsDrowndown'
+  AssetManageView,
+  AssetNetworkFilter,
+  ASSET_BALANCE_SORTS,
+  ASSET_MANAGE_VIEWS,
+  ASSET_NETWORK_FILTERS
+} from './consts'
+
+export type Selection = {
+  title: string
+  data: string[][]
+  selected: IndexPath
+  onSelected: (index: IndexPath) => void
+  ref: RefObject<TouchableOpacity>
+  anchorRect: Rect | undefined
+  isPopoverVisible: boolean
+  onShowPopover: () => void
+  onHidePopover: () => void
+}
 
 export const useFilterAndSort = (
   tokens: LocalTokenWithBalance[]
 ): {
-  selectedFilter: IndexPath
-  setSelectedFilter: (index: IndexPath) => void
-  selectedSort: IndexPath
-  setSelectedSort: (index: IndexPath) => void
-  sorted: LocalTokenWithBalance[]
+  data: LocalTokenWithBalance[]
+  filter: Selection
+  sort: Selection
+  view: Selection
 } => {
   const dispatch = useDispatch()
   const selectedFilter = useSelector(selectAssetsFilter)
   const selectedSort = useSelector(selectAssetsSort)
+  const selectedView = useSelector(selectAssetsView)
+
+  const filterRef = useRef<TouchableOpacity>(null)
+  const sortRef = useRef<TouchableOpacity>(null)
+  const viewRef = useRef<TouchableOpacity>(null)
+
+  const {
+    anchorRect: filterAnchorRect,
+    isPopoverVisible: isFilterPopoverVisible,
+    onShowPopover: onShowFilterPopover,
+    onHidePopover: onHideFilterPopover
+  } = usePopoverAnchor(filterRef)
+
+  const {
+    anchorRect: sortAnchorRect,
+    isPopoverVisible: isSortPopoverVisible,
+    onShowPopover: onShowSortPopover,
+    onHidePopover: onHideSortPopover
+  } = usePopoverAnchor(filterRef)
+
+  const {
+    anchorRect: viewAnchorRect,
+    isPopoverVisible: isViewPopoverVisible,
+    onShowPopover: onShowViewPopover,
+    onHidePopover: onHideViewPopover
+  } = usePopoverAnchor(filterRef)
 
   const setSelectedFilter = (indexPath: IndexPath): void => {
     dispatch(setFilter(indexPath))
   }
   const setSelectedSort = (indexPath: IndexPath): void => {
     dispatch(setSort(indexPath))
+  }
+  const setSelectedView = (indexPath: IndexPath): void => {
+    dispatch(setView(indexPath))
+  }
+
+  const onSelectedView = (indexPath: IndexPath): void => {
+    const manageList = ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
+    if (manageList === AssetManageView.ManageList) {
+      // TODO: navigate to manage list
+      return
+    }
+    setSelectedView(indexPath)
   }
 
   const filtered = useMemo(() => {
@@ -80,10 +135,39 @@ export const useFilterAndSort = (
   }, [filtered, selectedSort])
 
   return {
-    selectedFilter,
-    setSelectedFilter,
-    selectedSort,
-    setSelectedSort,
-    sorted
+    filter: {
+      title: 'Filter',
+      data: ASSET_NETWORK_FILTERS,
+      ref: filterRef,
+      anchorRect: filterAnchorRect,
+      isPopoverVisible: isFilterPopoverVisible,
+      onShowPopover: onShowFilterPopover,
+      onHidePopover: onHideFilterPopover,
+      selected: selectedFilter,
+      onSelected: setSelectedFilter
+    },
+    sort: {
+      title: 'Sort',
+      data: ASSET_BALANCE_SORTS,
+      ref: sortRef,
+      anchorRect: sortAnchorRect,
+      isPopoverVisible: isSortPopoverVisible,
+      onShowPopover: onShowSortPopover,
+      onHidePopover: onHideSortPopover,
+      selected: selectedSort,
+      onSelected: setSelectedSort
+    },
+    view: {
+      title: 'View',
+      data: ASSET_MANAGE_VIEWS,
+      ref: viewRef,
+      anchorRect: viewAnchorRect,
+      isPopoverVisible: isViewPopoverVisible,
+      onShowPopover: onShowViewPopover,
+      onHidePopover: onHideViewPopover,
+      selected: selectedView,
+      onSelected: onSelectedView
+    },
+    data: sorted
   }
 }

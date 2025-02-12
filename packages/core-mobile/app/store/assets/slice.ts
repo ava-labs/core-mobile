@@ -14,6 +14,9 @@ export const assetsSlice = createSlice({
     },
     setSort: (state, action: PayloadAction<IndexPath>) => {
       state.sort = action.payload
+    },
+    setView: (state, action: PayloadAction<IndexPath>) => {
+      state.view = action.payload
     }
   }
 })
@@ -25,7 +28,10 @@ export const selectAssetsFilter = (state: RootState): IndexPath =>
 export const selectAssetsSort = (state: RootState): IndexPath =>
   state.assets.sort
 
+export const selectAssetsView = (state: RootState): IndexPath =>
+  state.assets.view
+
 // actions
-export const { setFilter, setSort } = assetsSlice.actions
+export const { setFilter, setSort, setView } = assetsSlice.actions
 
 export const assetsReducer = assetsSlice.reducer
