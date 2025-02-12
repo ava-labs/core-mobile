@@ -20,7 +20,7 @@ export const LogoModal = (): JSX.Element => {
         justifyContent: 'center',
         position: 'absolute'
       }}>
-      <Logos.Core color={theme.colors.$textPrimary} />
+      <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
     </View>
   )
 }

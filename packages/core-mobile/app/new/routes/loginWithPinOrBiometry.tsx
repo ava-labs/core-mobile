@@ -225,7 +225,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                <Logos.Core color={theme.colors.$textPrimary} />
+                <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
                 {disableKeypad && (
                   <View
                     style={{
