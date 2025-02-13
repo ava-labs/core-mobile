@@ -35,8 +35,7 @@ describe('EarnService', () => {
             'AVAX'
           ),
           2,
-          true,
-          false
+          true
         )
       ).toEqual(zeroAvaxPChain())
     })
@@ -47,8 +46,7 @@ describe('EarnService', () => {
           Seconds(7 * 24 * Hour),
           new TokenUnit(400_000_000 * 10 ** 9, 9, 'AVAX'),
           2,
-          true,
-          false
+          true
         ).toDisplay()
       ).toEqual('3,018.66')
     })

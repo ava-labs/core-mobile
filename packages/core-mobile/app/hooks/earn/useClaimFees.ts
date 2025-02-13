@@ -15,8 +15,6 @@ import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { selectActiveNetwork } from 'store/network/slice'
-import { isDevnet } from 'utils/isDevnet'
 import { weiToNano } from 'utils/units/converter'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
@@ -46,7 +44,6 @@ export const useClaimFees = (): {
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [amountToTransfer, setAmountToTransfer] = useState<TokenUnit>()
@@ -58,10 +55,7 @@ export const useClaimFees = (): {
   const cChainBaseFee = useCChainBaseFee()
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
-    isDevMode,
-    isDevnet(activeNetwork)
-  )
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const totalClaimable = useMemo(() => {
     return pChainBalance?.data?.balancePerType.unlockedUnstaked

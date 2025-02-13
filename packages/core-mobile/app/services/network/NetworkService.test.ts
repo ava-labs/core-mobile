@@ -4,8 +4,7 @@ import {
   ChainId,
   Network,
   BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK,
-  AVALANCHE_P_DEV_NETWORK
+  BITCOIN_TEST_NETWORK
 } from '@avalabs/core-chains-sdk'
 import { Networks } from 'store/network/types'
 
@@ -34,8 +33,8 @@ const mockDeBankNetworks = {
 type TNetworkService = {
   fetchERC20Networks: () => Promise<TNetworks>
   fetchDeBankNetworks: () => Promise<TNetworks>
-  getAvalancheNetworkP: (isDevMode: boolean, isDevnet: boolean) => Network
-  getAvalancheNetworkX: (isDevMode: boolean, isDevnet: boolean) => Network
+  getAvalancheNetworkP: (isDevMode: boolean) => Network
+  getAvalancheNetworkX: (isDevMode: boolean) => Network
 }
 
 describe('NetworkService', () => {
@@ -71,8 +70,7 @@ describe('NetworkService', () => {
         [ChainId.AVALANCHE_P]: NETWORK_P,
         [ChainId.AVALANCHE_TEST_P]: NETWORK_P_TEST,
         [ChainId.AVALANCHE_X]: NETWORK_X,
-        [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST,
-        [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
+        [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST
       })
     })
 
@@ -114,8 +112,7 @@ describe('NetworkService', () => {
         [ChainId.AVALANCHE_P]: NETWORK_P,
         [ChainId.AVALANCHE_TEST_P]: NETWORK_P_TEST,
         [ChainId.AVALANCHE_X]: NETWORK_X,
-        [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST,
-        [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
+        [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST
       })
     })
 

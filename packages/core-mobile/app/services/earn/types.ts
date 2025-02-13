@@ -12,7 +12,6 @@ export type AddDelegatorTransactionProps = {
   // The Date time when the delegation ends.
   endDate: Date
   isDevMode: boolean
-  isDevnet: boolean
   feeState?: pvm.FeeState
   pFeeAdjustmentThreshold: number
 }
