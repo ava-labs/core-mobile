@@ -18,25 +18,20 @@ import {
 export type ImportCParams = {
   activeAccount: Account
   isDevMode: boolean
-  isDevnet: boolean
   cBaseFeeMultiplier: number
 }
 
 export async function importC({
   activeAccount,
   isDevMode,
-  isDevnet,
   cBaseFeeMultiplier
 }: ImportCParams): Promise<void> {
   Logger.info(
     `importing C started with base fee multiplier: ${cBaseFeeMultiplier}`
   )
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(
-    isDevMode,
-    isDevnet
-  )
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
   const baseFeeAvax = new TokenUnit(

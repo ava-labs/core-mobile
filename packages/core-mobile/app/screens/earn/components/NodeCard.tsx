@@ -25,8 +25,6 @@ import { usePeers } from 'hooks/earn/usePeers'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { UTCDate } from '@date-fns/utc'
-import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -44,12 +42,8 @@ export const NodeCard = ({
   const [isCardExpanded, setIsCardExpanded] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(
-      isDeveloperMode,
-      isDevnet(activeNetwork)
-    )
+    NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
   const validatorWeight = new TokenUnit(
@@ -64,7 +58,6 @@ export const NodeCard = ({
   )
 
   const availableDelegationWeight = getAvailableDelegationWeight({
-    isDevnet: isDevnet(activeNetwork),
     isDeveloperMode,
     validatorWeight,
     delegatorWeight

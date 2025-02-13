@@ -12,8 +12,6 @@ import { selectCBaseFeeMultiplier } from 'store/posthog/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useClaimFees } from './useClaimFees'
@@ -38,7 +36,6 @@ export const useClaimRewards = (
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { defaultFeeState } = useGetFeeState()
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
@@ -73,7 +70,6 @@ export const useClaimRewards = (
         requiredAmount: amountToTransfer,
         activeAccount,
         isDevMode: isDeveloperMode,
-        isDevnet: isDevnet(activeNetwork),
         feeState: defaultFeeState,
         cBaseFeeMultiplier
       })

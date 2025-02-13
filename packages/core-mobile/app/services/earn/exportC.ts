@@ -18,7 +18,6 @@ export type ExportCParams = {
   requiredAmountWei: bigint // this amount should already include the fee to export
   activeAccount: Account
   isDevMode: boolean
-  isDevnet: boolean
   cBaseFeeMultiplier: number
 }
 
@@ -27,29 +26,21 @@ export async function exportC({
   requiredAmountWei,
   activeAccount,
   isDevMode,
-  isDevnet,
   cBaseFeeMultiplier
 }: ExportCParams): Promise<void> {
   Logger.info(
     `exporting C started with base fee multiplier: ${cBaseFeeMultiplier}`
   )
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const chains = await NetworkService.getNetworks()
   const cChainNetwork =
     chains[
-      isDevnet
-        ? ChainId.AVALANCHE_DEVNET_ID
-        : isDevMode
-        ? ChainId.AVALANCHE_TESTNET_ID
-        : ChainId.AVALANCHE_MAINNET_ID
+      isDevMode ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID
     ]
   assertNotUndefined(cChainNetwork)
 
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(
-    isDevMode,
-    isDevnet
-  )
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   const baseFeeAvax = AvaxC.fromWei(await avaxProvider.getApiC().getBaseFee())
 

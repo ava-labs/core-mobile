@@ -34,7 +34,6 @@ import {
 } from '@avalabs/vm-module-types'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
-import { isDevnet } from 'utils/isDevnet'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -220,8 +219,7 @@ class WalletService {
     })
 
     const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet),
-      isDevnet(network)
+      Boolean(network.isTestnet)
     )
 
     return wallet.getAddresses({
@@ -248,14 +246,12 @@ class WalletService {
     indices,
     chainAlias,
     isChange,
-    isTestnet,
-    isDevnet: devnet
+    isTestnet
   }: {
     indices: number[]
     chainAlias: 'X' | 'P'
     isChange: boolean
     isTestnet: boolean
-    isDevnet: boolean
   }): Promise<string[]> {
     if (
       this.walletType === WalletType.SEEDLESS ||
@@ -265,10 +261,7 @@ class WalletService {
     }
 
     if (this.walletType === WalletType.MNEMONIC) {
-      const provXP = await NetworkService.getAvalancheProviderXP(
-        isTestnet,
-        devnet
-      )
+      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
       return indices.map(index =>
         Avalanche.getAddressFromXpub(
@@ -721,8 +714,7 @@ class WalletService {
       this.walletType
     )
     const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet),
-      isDevnet(network)
+      Boolean(network.isTestnet)
     )
     return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
   }
@@ -750,8 +742,7 @@ class WalletService {
     Logger.info('validating burned amount')
 
     const avalancheProvider = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet),
-      isDevnet(network)
+      Boolean(network.isTestnet)
     )
 
     const { isValid, txFee } = utils.validateBurnedAmount({
