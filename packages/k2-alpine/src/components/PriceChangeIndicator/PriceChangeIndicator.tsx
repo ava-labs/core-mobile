@@ -55,7 +55,7 @@ export const PriceChangeIndicator = ({
                 status === 'down'
                   ? [colors.$accentRed, colors.$accentDanger]
                   : status === 'up'
-                  ? [theme.colors.$textSuccess, colors.$accentTeal]
+                  ? [colors.$accentTeal, theme.colors.$textSuccess]
                   : [theme.colors.$textSecondary, theme.colors.$textSecondary]
               }
               start={{ x: 1, y: 0.5 }}

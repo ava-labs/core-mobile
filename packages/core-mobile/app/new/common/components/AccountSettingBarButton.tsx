@@ -11,7 +11,7 @@ export const AccountSettingBarButton = ({
       <View sx={{ marginTop: 5 }}>
         <Avatar
           backgroundColor="transparent"
-          size={36}
+          size={32}
           // todo: replace with actual avatar
           source={{
             uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
