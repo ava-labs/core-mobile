@@ -4,12 +4,11 @@ import { useSelector } from 'react-redux'
 import {
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
-  selectTokensWithBalanceForAccount
+  selectNonNFTTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store'
 import { TokensList } from 'features/portfolio/components/assets/TokensList'
-import { TokenType } from '@avalabs/vm-module-types'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
@@ -20,26 +19,25 @@ const PortfolioAssetsScreen = (): JSX.Element | undefined => {
   const isOnline = useIsOnline()
   const activeAccount = useSelector(selectActiveAccount)
   const tokens = useSelector((state: RootState) =>
-    selectTokensWithBalanceForAccount(state, activeAccount?.index)
+    selectNonNFTTokensWithBalanceForAccount(state, activeAccount?.index)
   )
 
-  const nonNftTokens = tokens.filter(
-    token => token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
-  )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
 
   const renderContent = (): React.JSX.Element => {
-    if (!isOnline) {
-      return <ErrorState onPress={refetch} />
-    }
     if (isBalanceLoading || isRefetchingBalance) {
       return <LoadingState />
     }
+
+    if (!isOnline) {
+      return <ErrorState onPress={refetch} />
+    }
+
     if (tokens.length === 0) {
       return <EmptyAssets />
     }
-    return <TokensList tokens={nonNftTokens} />
+    return <TokensList />
   }
 
   return renderContent()

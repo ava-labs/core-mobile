@@ -1,20 +1,13 @@
 import { IndexPath, usePopoverAnchor } from '@avalabs/k2-alpine'
-import { RefObject, useMemo, useRef } from 'react'
-import { LocalTokenWithBalance } from 'store/balance'
-import { sortUndefined } from 'common/utils/sortUndefined'
-import { useDispatch, useSelector } from 'react-redux'
+import { RefObject, useMemo, useRef, useState } from 'react'
 import {
-  selectAssetsFilter,
-  selectAssetsSort,
-  selectAssetsView,
-  setFilter,
-  setSort,
-  setView
-} from 'store/assets'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+  LocalTokenWithBalance,
+  selectFilteredAndSortedTokensWithBalance
+} from 'store/balance'
+import { useSelector } from 'react-redux'
 import { TouchableOpacity } from 'react-native'
 import { Rect } from 'react-native-popover-view'
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { selectActiveAccount } from 'store/account'
 import {
   AssetBalanceSort,
   AssetManageView,
@@ -36,22 +29,52 @@ export type Selection = {
   onHidePopover: () => void
 }
 
-export const useFilterAndSort = (
-  tokens: LocalTokenWithBalance[]
-): {
+export const useFilterAndSort = (): {
   data: LocalTokenWithBalance[]
   filter: Selection
   sort: Selection
   view: Selection
 } => {
-  const dispatch = useDispatch()
-  const selectedFilter = useSelector(selectAssetsFilter)
-  const selectedSort = useSelector(selectAssetsSort)
-  const selectedView = useSelector(selectAssetsView)
+  const activeAccount = useSelector(selectActiveAccount)
+
+  const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
+    section: 0,
+    row: 0
+  })
+  const [selectedSort, setSelectedSort] = useState<IndexPath>({
+    section: 0,
+    row: 0
+  })
+  const [selectedView, setSelectedView] = useState<IndexPath>({
+    section: 0,
+    row: 0
+  })
 
   const filterRef = useRef<TouchableOpacity>(null)
   const sortRef = useRef<TouchableOpacity>(null)
   const viewRef = useRef<TouchableOpacity>(null)
+
+  const filterOption = useMemo(() => {
+    return (
+      ASSET_NETWORK_FILTERS?.[selectedFilter.section]?.[selectedFilter.row] ??
+      AssetNetworkFilter.AllNetworks
+    )
+  }, [selectedFilter])
+
+  const sortOption = useMemo(() => {
+    return (
+      ASSET_BALANCE_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
+      AssetBalanceSort.HighToLow
+    )
+  }, [selectedSort])
+
+  const filteredAndSorted = useSelector(
+    selectFilteredAndSortedTokensWithBalance(
+      sortOption,
+      filterOption,
+      activeAccount?.index
+    )
+  )
 
   const {
     anchorRect: filterAnchorRect,
@@ -74,16 +97,6 @@ export const useFilterAndSort = (
     onHidePopover: onHideViewPopover
   } = usePopoverAnchor(viewRef)
 
-  const setSelectedFilter = (indexPath: IndexPath): void => {
-    dispatch(setFilter(indexPath))
-  }
-  const setSelectedSort = (indexPath: IndexPath): void => {
-    dispatch(setSort(indexPath))
-  }
-  const setSelectedView = (indexPath: IndexPath): void => {
-    dispatch(setView(indexPath))
-  }
-
   const onSelectedView = (indexPath: IndexPath): void => {
     const manageList = ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
     if (manageList === AssetManageView.ManageList) {
@@ -92,48 +105,6 @@ export const useFilterAndSort = (
     }
     setSelectedView(indexPath)
   }
-
-  const filtered = useMemo(() => {
-    const filter =
-      ASSET_NETWORK_FILTERS?.[selectedFilter.section]?.[selectedFilter.row]
-
-    if (filter === AssetNetworkFilter.AvalancheCChain) {
-      return tokens.filter(
-        token =>
-          ('chainId' in token &&
-            token.chainId &&
-            isAvalancheCChainId(token.chainId)) ||
-          token.localId === 'AvalancheAVAX'
-      )
-    }
-    if (filter === AssetNetworkFilter.Ethereum) {
-      return tokens.filter(
-        token =>
-          'chainId' in token &&
-          (token.chainId === ChainId.ETHEREUM_HOMESTEAD ||
-            token.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
-            token.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
-      )
-    }
-    if (filter === AssetNetworkFilter.BitcoinNetwork) {
-      return tokens.filter(token => token.symbol === 'BTC')
-    }
-    return tokens
-  }, [selectedFilter, tokens])
-
-  const sorted = useMemo(() => {
-    const sort = ASSET_BALANCE_SORTS?.[selectedSort.section]?.[selectedSort.row]
-
-    if (sort === AssetBalanceSort.LowToHigh) {
-      return filtered?.sort((a, b) =>
-        sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
-      )
-    }
-
-    return filtered?.sort((a, b) =>
-      sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
-    )
-  }, [filtered, selectedSort])
 
   return {
     filter: {
@@ -169,6 +140,6 @@ export const useFilterAndSort = (
       selected: selectedView,
       onSelected: onSelectedView
     },
-    data: sorted
+    data: filteredAndSorted
   }
 }

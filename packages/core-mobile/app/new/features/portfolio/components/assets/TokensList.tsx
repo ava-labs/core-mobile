@@ -10,12 +10,8 @@ import { ActionButton as TSquareButton } from './types'
 import { ACTION_BUTTONS, AssetManageView } from './consts'
 import { ActionButton } from './ActionButton'
 
-interface Props {
-  tokens: LocalTokenWithBalance[]
-}
-
-export const TokensList = ({ tokens }: Props): React.JSX.Element => {
-  const { data, filter, sort, view } = useFilterAndSort(tokens)
+export const TokensList = (): React.JSX.Element => {
+  const { data, filter, sort, view } = useFilterAndSort()
 
   const goToTokenDetail = (): void => {
     // TODO: go to token detail
