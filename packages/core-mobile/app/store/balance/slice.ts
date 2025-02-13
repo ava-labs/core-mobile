@@ -341,8 +341,8 @@ export const selectIsAllBalancesInaccurate =
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
     return (
       tokens.length === 0 &&
-      !Object.values(state.balance.balances).some(
-        balance => balance.dataAccurate === true
+      Object.values(state.balance.balances).every(
+        balance => balance.dataAccurate === false
       )
     )
   }
