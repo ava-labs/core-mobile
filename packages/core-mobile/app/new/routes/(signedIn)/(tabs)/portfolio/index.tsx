@@ -148,7 +148,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <PortfolioCollectiblesScreen onScroll={onScroll} />
         <PortfolioDefiScreen onScroll={onScroll} />
       </CollapsibleHeaderTabView>
-      <View sx={{ paddingHorizontal: 16, marginTop: 16 }}>
+      <View sx={{ marginTop: 16, marginBottom: -1 }}>
         <LinearGradient
           colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
           style={{ height: 40 }}
@@ -156,7 +156,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
           end={{ x: 0.5, y: 0.5 }}
         />
         <View
-          sx={{ paddingBottom: 16, backgroundColor: colors.$surfacePrimary }}>
+          sx={{
+            paddingBottom: 16,
+            paddingHorizontal: 16,
+            backgroundColor: colors.$surfacePrimary
+          }}>
           <SegmentedControl
             dynamicItemWidth={false}
             items={['Assets', 'Collectibles', 'DeFi']}
