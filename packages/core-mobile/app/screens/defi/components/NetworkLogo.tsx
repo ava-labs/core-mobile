@@ -10,7 +10,7 @@ export const NetworkLogo = ({
   size?: number
   style?: StyleProp<ImageStyle>
   testID?: string
-}) => {
+}): React.JSX.Element | null => {
   if (!uri) return null
   return (
     <Image

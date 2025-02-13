@@ -35,6 +35,7 @@ import IconNotifications from '../../assets/icons/notifications.svg'
 import IconAlertError from '../../assets/icons/alert_error.svg'
 import IconArrowDown from '../../assets/icons/arrow_down.svg'
 import IconCompass from '../../assets/icons/compass.svg'
+import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
 import IconOutboundDark from '../../assets/icons/outbound_filled_dark.svg'
 import IconOutboundLight from '../../assets/icons/outbound_filled_light.svg'
@@ -51,6 +52,7 @@ import IconSearchCustom from '../../assets/icons/search_custom.svg'
 import IconAlertCircleDark from '../../assets/icons/alert_circle_dark.svg'
 import IconAlertCircleLight from '../../assets/icons/alert_circle_light.svg'
 import IconAvalabsTrademark from '../../assets/icons/avalabs_trademark.svg'
+import IconChevronRightV2 from '../../assets/icons/chevron_right_v2.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -95,6 +97,10 @@ import USDT from '../../assets/tokenLogos/USDT.svg'
 import VET from '../../assets/tokenLogos/VET.svg'
 import XLM from '../../assets/tokenLogos/XLM.svg'
 import XRP from '../../assets/tokenLogos/XRP.svg'
+import IconAvaxP from '../../assets/tokenLogos/AVAX_P_LIGHT.svg'
+import IconAvaxX from '../../assets/tokenLogos/AVAX_X_LIGHT.svg'
+import IconAvaxPDark from '../../assets/tokenLogos/AVAX_P_DARK.svg'
+import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -151,16 +157,17 @@ export const Icons = {
     VisibilityOff: IconVisibilityOff
   },
   Alert: {
-    IconErrorOutline: IconErrorOutline,
+    ErrorOutline: IconErrorOutline,
     Error: IconAlertError,
     AlertCircleDark: IconAlertCircleDark,
     AlertCircleLight: IconAlertCircleLight
   },
   Device: {
-    IconGPPMaybe: IconGPPMaybe
+    GPPMaybe: IconGPPMaybe
   },
   Navigation: {
     ArrowForwardIOS: IconArrowForwardIOS,
+    ChevronRightV2: IconChevronRightV2,
     ChevronRight: IconChevronRight,
     Check: IconCheck,
     ExpandMore: IconExpandMore
@@ -196,6 +203,7 @@ export const Icons = {
     TrendingArrowUp: IconTrendingArrowUp,
     TrendingArrowDown: IconTrendingArrowDown,
     ArrowDown: IconArrowDown,
+    Connect: IconWalletConnect,
     Compass: IconCompass,
     Contactless: IconContactLess,
     OutboundDark: IconOutboundDark,
@@ -263,7 +271,11 @@ export const Icons = {
     USDT: USDT,
     VET: VET,
     XLM: XLM,
-    XRP: XRP
+    XRP: XRP,
+    AVAX_P_LIGHT: IconAvaxP,
+    AVAX_X_LIGHT: IconAvaxX,
+    AVAX_P_DARK: IconAvaxPDark,
+    AVAX_X_DARK: IconAvaxXDark
   },
   Currencies: {
     AED: AED,
