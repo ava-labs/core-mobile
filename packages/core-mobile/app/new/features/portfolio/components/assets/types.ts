@@ -1,9 +1,4 @@
 import { LocalTokenWithBalance } from 'store/balance'
-import { AssetBalanceSort, AssetManageView, AssetNetworkFilter } from './consts'
-
-export type AssetBalanceSorts = AssetBalanceSort[][]
-export type AssetNetworkFilters = AssetNetworkFilter[][]
-export type AssetManageViews = AssetManageView[][]
 
 export interface TokenListViewProps {
   token: LocalTokenWithBalance

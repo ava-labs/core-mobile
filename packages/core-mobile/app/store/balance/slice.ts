@@ -15,13 +15,11 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenVisibility } from 'store/portfolio'
-import {
-  AssetBalanceSort,
-  AssetNetworkFilter
-} from 'new/features/portfolio/components/assets/consts'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { sortUndefined } from 'new/common/utils/sortUndefined'
 import {
+  AssetBalanceSort,
+  AssetNetworkFilter,
   Balance,
   Balances,
   BalanceState,
@@ -335,6 +333,17 @@ export const selectFilteredAndSortedTokensWithBalance =
 
     return filtered?.sort((a, b) =>
       sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
+    )
+  }
+
+export const selectIsAllBalancesInaccurate =
+  (accountIndex: number) => (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    return (
+      tokens.length === 0 &&
+      !Object.values(state.balance.balances).some(
+        balance => balance.dataAccurate === true
+      )
     )
   }
 

@@ -1,6 +1,12 @@
 import { IndexPath, usePopoverAnchor } from '@avalabs/k2-alpine'
 import { RefObject, useMemo, useRef, useState } from 'react'
 import {
+  ASSET_BALANCE_SORTS,
+  ASSET_MANAGE_VIEWS,
+  ASSET_NETWORK_FILTERS,
+  AssetBalanceSort,
+  AssetManageView,
+  AssetNetworkFilter,
   LocalTokenWithBalance,
   selectFilteredAndSortedTokensWithBalance
 } from 'store/balance'
@@ -8,14 +14,6 @@ import { useSelector } from 'react-redux'
 import { TouchableOpacity } from 'react-native'
 import { Rect } from 'react-native-popover-view'
 import { selectActiveAccount } from 'store/account'
-import {
-  AssetBalanceSort,
-  AssetManageView,
-  AssetNetworkFilter,
-  ASSET_BALANCE_SORTS,
-  ASSET_MANAGE_VIEWS,
-  ASSET_NETWORK_FILTERS
-} from './consts'
 
 export type Selection = {
   title: string

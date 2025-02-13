@@ -1,6 +1,8 @@
 import React from 'react'
 import {
+  AssetManageView,
   LocalTokenWithBalance,
+  selectIsAllBalancesInaccurate,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectNonNFTTokensWithBalanceForAccount
@@ -11,15 +13,11 @@ import Animated, { LinearTransition } from 'react-native-reanimated'
 import { selectActiveAccount } from 'store/account'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { useSelector } from 'react-redux'
-import { useIsOnline } from 'common/hooks/useIsOnline'
 import { RootState } from 'store'
 import { ListFilterHeader } from 'features/portfolio/components/ListFilterHeader'
 import { TokenListItem } from 'features/portfolio/components/assets/TokenListItem'
 import { useFilterAndSort } from 'features/portfolio/components/assets/useFilterAndSort'
-import {
-  ActionButtonTitle,
-  AssetManageView
-} from 'features/portfolio/components/assets/consts'
+import { ActionButtonTitle } from 'features/portfolio/components/assets/consts'
 import {
   ActionButton,
   TActionButton
@@ -32,12 +30,13 @@ export const PortfolioScreen = (): React.JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
 
   const { refetch } = useSearchableTokenList()
-  const isOnline = useIsOnline()
   const activeAccount = useSelector(selectActiveAccount)
   const tokens = useSelector((state: RootState) =>
     selectNonNFTTokensWithBalanceForAccount(state, activeAccount?.index)
   )
-
+  const isAllBalancesInaccurate = useSelector(
+    selectIsAllBalancesInaccurate(activeAccount?.index ?? 0)
+  )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
 
@@ -79,7 +78,7 @@ export const PortfolioScreen = (): React.JSX.Element => {
       return <LoadingState />
     }
 
-    if (!isOnline) {
+    if (isAllBalancesInaccurate) {
       return <ErrorState onPress={refetch} />
     }
 
