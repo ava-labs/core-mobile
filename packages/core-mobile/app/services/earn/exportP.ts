@@ -14,7 +14,6 @@ export type ExportPParams = {
   requiredAmount: TokenUnit
   activeAccount: Account
   isDevMode: boolean
-  isDevnet: boolean
   feeState?: pvm.FeeState
 }
 
@@ -23,7 +22,6 @@ export async function exportP({
   requiredAmount,
   activeAccount,
   isDevMode,
-  isDevnet,
   feeState
 }: ExportPParams): Promise<void> {
   Logger.info('exporting P started')
@@ -31,7 +29,7 @@ export async function exportP({
   if (pChainBalance.lt(requiredAmount)) {
     throw Error('Not enough balance on P chain')
   }
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const unsignedTx = await WalletService.createExportPTx({
     amountInNAvax: requiredAmount.toSubUnit(),
@@ -55,10 +53,7 @@ export async function exportP({
   })
   Logger.trace('txID', txID)
 
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(
-    isDevMode,
-    isDevnet
-  )
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   try {
     await retry({

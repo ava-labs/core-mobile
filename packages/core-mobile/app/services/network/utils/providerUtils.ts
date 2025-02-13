@@ -33,11 +33,9 @@ export async function getEvmProvider(
 
 export function getAvalancheEvmProvider(
   networks: Networks,
-  isTest: boolean | undefined,
-  devnet: boolean
+  isTest: boolean | undefined
 ): Promise<JsonRpcBatchInternal | undefined> {
-  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
-  const network = getAvalancheNetwork(networks, isTest, devnet)
+  const network = getAvalancheNetwork(networks, isTest)
   if (!network) return Promise.resolve(undefined)
   return getEvmProvider(network)
 }
@@ -53,13 +51,9 @@ export function getEthereumProvider(
 
 export function getAvalancheNetwork(
   networks: Networks,
-  isTest: boolean | undefined,
-  devnet: boolean
+  isTest: boolean | undefined
 ): Network | undefined {
-  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
-  return devnet
-    ? networks[ChainId.AVALANCHE_DEVNET_ID]
-    : isTest
+  return isTest
     ? networks[ChainId.AVALANCHE_TESTNET_ID]
     : networks[ChainId.AVALANCHE_MAINNET_ID]
 }
@@ -78,8 +72,7 @@ export function getEthereumNetwork(
 }
 
 export function getAvalancheXpProvider(
-  isTestnet: boolean,
-  devnet: boolean
+  isTestnet: boolean
 ): Promise<Avalanche.JsonRpcProvider | undefined> {
-  return NetworkService.getAvalancheProviderXP(isTestnet, devnet)
+  return NetworkService.getAvalancheProviderXP(isTestnet)
 }

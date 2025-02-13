@@ -23,7 +23,6 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { bnToBig, noop, stringToBN } from '@avalabs/core-utils-sdk'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { isDevnet } from 'utils/isDevnet'
 import { RpcMethod } from '@avalabs/vm-module-types'
 
 type TransferBTCParams = {
@@ -113,8 +112,7 @@ export class BridgeService {
 
     const avalancheProvider = await getAvalancheEvmProvider(
       allNetworks,
-      isTestnet,
-      isDevnet(blockchainNetwork)
+      isTestnet
     )
 
     const ethereumProvider = await getEthereumProvider(allNetworks, isTestnet)

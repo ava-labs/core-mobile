@@ -36,8 +36,6 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { View } from '@avalabs/k2-mobile'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
 import NetworkService from 'services/network/NetworkService'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { ConfirmScreen } from '../components/ConfirmScreen'
@@ -65,11 +63,7 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const pNetwork = NetworkService.getAvalancheNetworkP(
-    isDeveloperMode,
-    isDevnet(activeNetwork)
-  )
+  const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
   const cChainNetwork = useCChainNetwork()
   const avaxSymbol = cChainNetwork?.networkToken?.symbol

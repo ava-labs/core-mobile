@@ -7,8 +7,6 @@ import { RecoveryEvents } from 'services/earn/types'
 import { selectCBaseFeeMultiplier } from 'store/posthog/slice'
 import { assertNotUndefined } from 'utils/assertions'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import { useGetFeeState } from './useGetFeeState'
 
 const REFETCH_INTERVAL = 3 * 60 * 1000 // 3 minutes
@@ -24,10 +22,8 @@ export const useImportAnyStuckFunds = (
   const activeAccount = useSelector(selectActiveAccount)
   const isDevMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
-  const devnet = isDevnet(activeNetwork)
 
   return useQuery({
     // no need to retry failed request as we are already doing interval fetching
@@ -39,8 +35,7 @@ export const useImportAnyStuckFunds = (
       'ImportAnyStuckFunds',
       activeAccount,
       isDevMode,
-      defaultFeeState,
-      devnet
+      defaultFeeState
     ],
     queryFn: async () => {
       assertNotUndefined(activeAccount)
@@ -50,7 +45,6 @@ export const useImportAnyStuckFunds = (
         selectedCurrency,
         progressEvents: handleRecoveryEvent,
         feeState: defaultFeeState,
-        isDevnet: devnet,
         cBaseFeeMultiplier
       })
       return true

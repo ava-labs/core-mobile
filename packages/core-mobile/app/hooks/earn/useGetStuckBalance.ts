@@ -4,8 +4,6 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 
 export const useGetStuckBalance = (): TokenUnit | undefined => {
   const pChainBalance = usePChainBalance()
@@ -14,11 +12,7 @@ export const useGetStuckBalance = (): TokenUnit | undefined => {
   const hasErrors = pChainBalance.error || !pChainBalance.data
   const dataReady = !pChainBalance.isLoading && !hasErrors
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const { networkToken } = NetworkService.getAvalancheNetworkP(
-    isDeveloperMode,
-    isDevnet(activeNetwork)
-  )
+  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useMemo(() => {
     if (dataReady && atomicMemoryUnlockedNAvax !== undefined) {

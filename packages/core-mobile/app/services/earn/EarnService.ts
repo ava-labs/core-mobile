@@ -68,7 +68,6 @@ class EarnService {
     isDevMode,
     selectedCurrency,
     progressEvents,
-    isDevnet,
     feeState,
     cBaseFeeMultiplier
   }: {
@@ -76,15 +75,11 @@ class EarnService {
     isDevMode: boolean
     selectedCurrency: string
     progressEvents?: (events: RecoveryEvents) => void
-    isDevnet: boolean
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
-      isDevMode,
-      isDevnet
-    )
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
     const { pChainUtxo, cChainUtxo } = await retry({
       operation: retryIndex => {
@@ -107,7 +102,6 @@ class EarnService {
         activeAccount,
         isDevMode,
         selectedCurrency,
-        isDevnet,
         feeState
       })
       progressEvents?.(RecoveryEvents.ImportPFinish)
@@ -118,7 +112,6 @@ class EarnService {
       await importC({
         activeAccount,
         isDevMode,
-        isDevnet,
         cBaseFeeMultiplier
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
@@ -139,7 +132,6 @@ class EarnService {
     requiredAmount,
     activeAccount,
     isDevMode,
-    isDevnet,
     feeState,
     cBaseFeeMultiplier
   }: {
@@ -147,7 +139,6 @@ class EarnService {
     requiredAmount: TokenUnit
     activeAccount: Account
     isDevMode: boolean
-    isDevnet: boolean
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
   }): Promise<void> {
@@ -156,13 +147,11 @@ class EarnService {
       requiredAmount,
       activeAccount,
       isDevMode,
-      isDevnet,
       feeState
     })
     await importC({
       activeAccount,
       isDevMode,
-      isDevnet,
       cBaseFeeMultiplier
     })
   }
@@ -181,15 +170,11 @@ class EarnService {
     duration: Seconds,
     currentSupply: TokenUnit,
     delegationFee: number,
-    isDeveloperMode: boolean,
-    isDevnet: boolean
+    isDeveloperMode: boolean
   ): TokenUnit {
     const amount = AvaxXP.fromNanoAvax(amountNanoAvax)
 
-    const avaxPNetwork = NetworkService.getAvalancheNetworkP(
-      isDeveloperMode,
-      isDevnet
-    )
+    const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
     const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
     const minConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
@@ -212,12 +197,7 @@ class EarnService {
       avaxPNetwork.networkToken.symbol
     )
 
-    // TODO: https://ava-labs.atlassian.net/browse/CP-9539
-    // this is needed for devent to work
-    let unmintedSupply = supplyCap.sub(currentSupply)
-    if (unmintedSupply.lt(0) && isDevnet) {
-      unmintedSupply = unmintedSupply.mul(-1)
-    }
+    const unmintedSupply = supplyCap.sub(currentSupply)
 
     const fullReward = unmintedSupply
       .mul(stakeOverSupply)
@@ -235,16 +215,12 @@ class EarnService {
     startDate,
     endDate,
     isDevMode,
-    isDevnet,
     feeState,
     pFeeAdjustmentThreshold
   }: AddDelegatorTransactionProps): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(
-      isDevMode,
-      isDevnet
-    )
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
     const rewardAddress = activeAccount.addressPVM
 
     const unsignedTx = await WalletService.createAddDelegatorTx({
@@ -278,10 +254,7 @@ class EarnService {
     })
     Logger.trace('txID', txID)
 
-    const avaxProvider = await NetworkService.getAvalancheProviderXP(
-      isDevMode,
-      isDevnet
-    )
+    const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
     try {
       await retry({

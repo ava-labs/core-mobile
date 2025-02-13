@@ -24,8 +24,6 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { Text } from '@avalabs/k2-mobile'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
@@ -45,11 +43,7 @@ const ClaimRewards = (): JSX.Element | null => {
     setFormattedClaimableAmountInCurrency
   ] = useState<string>(UNKNOWN_AMOUNT)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const pNetwork = NetworkService.getAvalancheNetworkP(
-    isDeveloperMode,
-    isDevnet(activeNetwork)
-  )
+  const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const { getNetwork } = useNetworks()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const avaxNetwork = getNetwork(ChainId.AVALANCHE_MAINNET_ID)

@@ -12,17 +12,9 @@ export function isXPChain(chainId: number): boolean {
 }
 
 export function isPChain(chainId: number): boolean {
-  return [
-    ChainId.AVALANCHE_P,
-    ChainId.AVALANCHE_TEST_P,
-    ChainId.AVALANCHE_DEVNET_P
-  ].includes(chainId)
+  return [ChainId.AVALANCHE_P, ChainId.AVALANCHE_TEST_P].includes(chainId)
 }
 
 export function isXChain(chainId: number): boolean {
-  return [
-    ChainId.AVALANCHE_X,
-    ChainId.AVALANCHE_TEST_X,
-    ChainId.AVALANCHE_DEVNET_X
-  ].includes(chainId)
+  return [ChainId.AVALANCHE_X, ChainId.AVALANCHE_TEST_X].includes(chainId)
 }

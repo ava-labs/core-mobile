@@ -1,5 +1,4 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { isDevnet } from 'utils/isDevnet'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
@@ -10,7 +9,6 @@ import {
 
 export const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
 export const TESTNET_AVAX_ASSET_ID = Avalanche.FujiContext.avaxAssetID
-export const DEVNET_AVAX_ASSET_ID = Avalanche.DevnetContext.avaxAssetID
 
 export const isBtcTransactionRequest = (
   request: SignTransactionRequest
@@ -25,11 +23,7 @@ export const isAvalancheTransactionRequest = (
 }
 
 export const getAssetId = (avaxXPNetwork: Network): string => {
-  return isDevnet(avaxXPNetwork)
-    ? DEVNET_AVAX_ASSET_ID
-    : avaxXPNetwork.isTestnet
-    ? TESTNET_AVAX_ASSET_ID
-    : MAINNET_AVAX_ASSET_ID
+  return avaxXPNetwork.isTestnet ? TESTNET_AVAX_ASSET_ID : MAINNET_AVAX_ASSET_ID
 }
 
 // we add some buffer to C chain base fee to gain better speed

@@ -62,13 +62,12 @@ describe('earn/importC', () => {
       await importC({
         activeAccount: {} as Account,
         isDevMode: false,
-        isDevnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith({
         accountIndex: undefined,
         baseFeeInNAvax: BigInt(0.0005 * 10 ** 9),
-        avaxXPNetwork: NetworkService.getAvalancheNetworkP(false, false),
+        avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
         sourceChain: 'P',
         destinationAddress: undefined
       })
@@ -78,7 +77,6 @@ describe('earn/importC', () => {
       await importC({
         activeAccount: {} as Account,
         isDevMode: false,
-        isDevnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.sign).toHaveBeenCalled()
@@ -88,7 +86,6 @@ describe('earn/importC', () => {
       await importC({
         activeAccount: {} as Account,
         isDevMode: false,
-        isDevnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
