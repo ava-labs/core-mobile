@@ -130,40 +130,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
     )
   }
 
-  // return (
-  //   <BlurredBarsContentLayout>
-  //     <ScrollView
-  //       sx={{ marginBottom: -40 }}
-  //       showsVerticalScrollIndicator={false}
-  //       contentContainerSx={{
-  //         paddingTop: 16,
-  //         paddingHorizontal: 16,
-  //         gap: 16
-  //       }}
-  //       {...scrollViewProps}>
-  //       {renderHeader()}
-  //       {renderContent()}
-  //       <View />
-  //     </ScrollView>
-  //     <View sx={{ paddingHorizontal: 16 }}>
-  //       <LinearGradient
-  //         colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
-  //         style={{ height: 40 }}
-  //         start={{ x: 0.5, y: 0 }}
-  //         end={{ x: 0.5, y: 0.5 }}
-  //       />
-  //       <View
-  //         sx={{ paddingBottom: 16, backgroundColor: colors.$surfacePrimary }}>
-  //         <SegmentedControl
-  //           dynamicItemWidth={false}
-  //           items={['Assets', 'Collectibles', 'DeFi']}
-  //           selectedSegmentIndex={selectedSegmentIndex}
-  //           onSelectSegment={setSelectedSegmentIndex}
-  //         />
-  //       </View>
-  //     </View>
-  //   </BlurredBarsContentLayout>
-
   const handleScroll = (scrollX: number): void => {
     if (scrollX === Math.floor(scrollX)) {
       setSelectedSegmentIndex(scrollX)
