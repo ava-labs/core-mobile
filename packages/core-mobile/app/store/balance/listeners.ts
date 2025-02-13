@@ -58,8 +58,8 @@ export const PollingConfig = {
   allNetworks: __DEV__ ? 60000 : 30000
 }
 
-const AVAX_X_ID = 'AVAX-X'
-const AVAX_P_ID = 'AVAX-P'
+export const AVAX_X_ID = 'AVAX-X'
+export const AVAX_P_ID = 'AVAX-P'
 
 const allNetworksOperand =
   PollingConfig.allNetworks / PollingConfig.activeNetwork
@@ -292,19 +292,41 @@ const fetchBalanceForAccounts = async (
     balances.tokens = tokens.reduce((tokenBalance, token) => {
       if ('error' in token) {
         balances.dataAccurate = false
-        return tokenBalance
+        return {
+          ...tokenBalance,
+          isDataAccurate: false,
+          networkChainId: chainId
+        }
       }
       if (isPChain(chainId)) {
-        return [...tokenBalance, { ...token, localId: AVAX_P_ID }]
+        return [
+          ...tokenBalance,
+          {
+            ...token,
+            localId: AVAX_P_ID,
+            isDataAccurate: true,
+            networkChainId: chainId
+          }
+        ]
       }
       if (isXChain(chainId)) {
-        return [...tokenBalance, { ...token, localId: AVAX_X_ID }]
+        return [
+          ...tokenBalance,
+          {
+            ...token,
+            localId: AVAX_X_ID,
+            isDataAccurate: true,
+            networkChainId: chainId
+          }
+        ]
       }
       return [
         ...tokenBalance,
         {
           ...token,
-          localId: getLocalTokenId(token)
+          localId: getLocalTokenId(token),
+          isDataAccurate: true,
+          networkChainId: chainId
         }
       ]
     }, [] as LocalTokenWithBalance[])

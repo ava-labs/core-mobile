@@ -16,7 +16,8 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onSelectRow,
   onDeselectRow,
   onRequestClose,
-  isVisible
+  isVisible,
+  minWidth = 200
 }: {
   from: React.ReactNode | Rect
   sections: T[][]
@@ -27,6 +28,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onDeselectRow?: (indexPath: IndexPath) => void
   onRequestClose?: () => void
   isVisible?: boolean
+  minWidth?: number
 }): JSX.Element => {
   const { theme } = useTheme()
   const popoverRef = useRef<Popover>()
@@ -70,7 +72,8 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         shadowRadius: 30,
         shadowOpacity: 0.3,
         backgroundColor: 'transparent',
-        minWidth: 200
+        elevation: 4,
+        minWidth
       }}
       arrowSize={{ width: -10, height: 0 }}
       backgroundStyle={{ backgroundColor: 'transparent' }}>
