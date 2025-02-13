@@ -2,8 +2,7 @@ import { Easing, FadeInRight, FadeInUp } from 'react-native-reanimated'
 import {
   AssetBalanceSorts,
   AssetManageViews,
-  AssetNetworkFilters,
-  ActionButton
+  AssetNetworkFilters
 } from './types'
 
 export enum AssetNetworkFilter {
@@ -52,15 +51,6 @@ export enum ActionButtonTitle {
   Bridge = 'Bridge',
   Connect = 'Connect'
 }
-
-export const ACTION_BUTTONS: ActionButton[] = [
-  { title: ActionButtonTitle.Send, icon: 'send' },
-  { title: ActionButtonTitle.Swap, icon: 'swap' },
-  { title: ActionButtonTitle.Buy, icon: 'buy' },
-  { title: ActionButtonTitle.Stake, icon: 'stake' },
-  { title: ActionButtonTitle.Bridge, icon: 'bridge' },
-  { title: ActionButtonTitle.Connect, icon: 'connect' }
-]
 
 export const LIST_ITEM_HEIGHT = 60
 export const GRID_ITEM_HEIGHT = 170

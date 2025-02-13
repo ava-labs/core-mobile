@@ -1,10 +1,14 @@
 import React from 'react'
 import Animated, { LinearTransition } from 'react-native-reanimated'
-import { SquareButton } from '@avalabs/k2-alpine'
+import { SquareButton, SquareButtonIconType } from '@avalabs/k2-alpine'
 import { getItemEnteringAnimation } from './consts'
 import { ActionButtonTitle } from './consts'
-import { ActionButton as TActionButton } from './types'
 import { useOnPressAnimation } from './useOnPressAnimation'
+
+export type TActionButton = {
+  title: ActionButtonTitle
+  icon: SquareButtonIconType
+}
 
 type Props = {
   item: TActionButton

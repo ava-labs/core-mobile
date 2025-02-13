@@ -1,11 +1,5 @@
-import { SquareButtonIconType } from '@avalabs/k2-alpine'
 import { LocalTokenWithBalance } from 'store/balance'
-import {
-  AssetBalanceSort,
-  AssetManageView,
-  AssetNetworkFilter,
-  ActionButtonTitle
-} from './consts'
+import { AssetBalanceSort, AssetManageView, AssetNetworkFilter } from './consts'
 
 export type AssetBalanceSorts = AssetBalanceSort[][]
 export type AssetNetworkFilters = AssetNetworkFilter[][]
@@ -19,9 +13,4 @@ export interface TokenListViewProps {
   priceChange?: number
   formattedPrice: string
   status: 'up' | 'down' | 'equal'
-}
-
-export type ActionButton = {
-  title: ActionButtonTitle
-  icon: SquareButtonIconType
 }

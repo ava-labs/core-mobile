@@ -13,18 +13,20 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import { useSelector } from 'react-redux'
 import { useIsOnline } from 'common/hooks/useIsOnline'
 import { RootState } from 'store'
-import { ListFilterHeader } from '../../../../features/portfolio/components/ListFilterHeader'
-import { TokenListItem } from '../../../../features/portfolio/components/assets/TokenListItem'
-import { useFilterAndSort } from '../../../../features/portfolio/components/assets/useFilterAndSort'
-import { ActionButton as TSquareButton } from '../../../../features/portfolio/components/assets/types'
+import { ListFilterHeader } from 'features/portfolio/components/ListFilterHeader'
+import { TokenListItem } from 'features/portfolio/components/assets/TokenListItem'
+import { useFilterAndSort } from 'features/portfolio/components/assets/useFilterAndSort'
 import {
-  ACTION_BUTTONS,
+  ActionButtonTitle,
   AssetManageView
-} from '../../../../features/portfolio/components/assets/consts'
-import { ActionButton } from '../../../../features/portfolio/components/assets/ActionButton'
-import { LoadingState } from '../../../../features/portfolio/components/assets/LoadingState'
-import { ErrorState } from '../../../../features/portfolio/components/assets/ErrorState'
-import { EmptyAssets } from '../../../../features/portfolio/components/assets/EmptyAssets'
+} from 'features/portfolio/components/assets/consts'
+import {
+  ActionButton,
+  TActionButton
+} from 'features/portfolio/components/assets/ActionButton'
+import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
+import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
+import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
 
 export const PortfolioScreen = (): React.JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
@@ -62,7 +64,7 @@ export const PortfolioScreen = (): React.JSX.Element => {
   }
 
   const renderActionItem = (
-    item: TSquareButton,
+    item: TActionButton,
     index: number
   ): React.JSX.Element => {
     return <ActionButton item={item} index={index} key={index} />
@@ -130,3 +132,12 @@ export const PortfolioScreen = (): React.JSX.Element => {
     </View>
   )
 }
+
+const ACTION_BUTTONS = [
+  { title: ActionButtonTitle.Send, icon: 'send' },
+  { title: ActionButtonTitle.Swap, icon: 'swap' },
+  { title: ActionButtonTitle.Buy, icon: 'buy' },
+  { title: ActionButtonTitle.Stake, icon: 'stake' },
+  { title: ActionButtonTitle.Bridge, icon: 'bridge' },
+  { title: ActionButtonTitle.Connect, icon: 'connect' }
+]
