@@ -66,3 +66,5 @@ export const getListItemEnteringAnimation = (index: number): FadeInRight =>
     .delay(index * 50)
     .easing(Easing.bezierFn(0.25, 1, 0.5, 1))
     .springify()
+
+export const SEGMENT_CONTROL_HEIGHT = 40
