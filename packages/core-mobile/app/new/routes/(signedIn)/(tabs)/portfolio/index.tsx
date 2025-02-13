@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react'
 import {
-  ScrollView,
   View,
   BalanceHeader,
   NavigationTitleHeader,
@@ -9,8 +8,6 @@ import {
   alpha
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useSelector } from 'react-redux'
@@ -26,9 +23,12 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { RootState } from 'store'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import PortfolioDefiScreen from './defi'
-import { PortfolioScreen } from './assets'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { CollapsibleHeaderTabView } from 'react-native-scrollable-tab-view-collapsible-header'
 import PortfolioCollectiblesScreen from './collectibles'
+import { PortfolioScreen } from './assets'
+import PortfolioDefiScreen from './defi'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const {
@@ -93,7 +93,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
   }
 
-  const scrollViewProps = useFadingHeaderNavigation({
+  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: (
       <NavigationTitleHeader
         title={activeAccount?.name ?? ''}
@@ -103,51 +103,86 @@ const PortfolioHomeScreen = (): JSX.Element => {
     targetLayout: balanceHeaderLayout
   })
 
-  const renderHeader = (): React.JSX.Element | undefined => {
+  const renderHeader = (): JSX.Element => {
     return (
-      <BalanceHeader
-        accountName={activeAccount?.name ?? ''}
-        formattedBalance={formattedBalance}
-        currency={selectedCurrency}
-        onLayout={handleBalanceHeaderLayout}
-        priceChange={{
-          formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
-          status: indicatorStatus,
-          formattedPercent
+      <View
+        sx={{
+          padding: 16,
+          opacity: 1 - targetHiddenProgress,
+          backgroundColor: '$surfacePrimary'
         }}
-        errorMessage={
-          balanceAccurate ? undefined : 'Unable to load all balances'
-        }
-        isLoading={isLoading}
-      />
+        onLayout={handleBalanceHeaderLayout}>
+        <BalanceHeader
+          accountName={activeAccount?.name ?? ''}
+          formattedBalance={formattedBalance}
+          currency={selectedCurrency}
+          priceChange={{
+            formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
+            status: indicatorStatus,
+            formattedPercent
+          }}
+          errorMessage={
+            balanceAccurate ? undefined : 'Unable to load all balances'
+          }
+          isLoading={isLoading}
+        />
+      </View>
     )
   }
 
-  const renderContent = (): React.JSX.Element => {
-    if (selectedSegmentIndex === 2) {
-      return <PortfolioCollectiblesScreen />
-    } else if (selectedSegmentIndex === 1) {
-      return <PortfolioDefiScreen />
+  // return (
+  //   <BlurredBarsContentLayout>
+  //     <ScrollView
+  //       sx={{ marginBottom: -40 }}
+  //       showsVerticalScrollIndicator={false}
+  //       contentContainerSx={{
+  //         paddingTop: 16,
+  //         paddingHorizontal: 16,
+  //         gap: 16
+  //       }}
+  //       {...scrollViewProps}>
+  //       {renderHeader()}
+  //       {renderContent()}
+  //       <View />
+  //     </ScrollView>
+  //     <View sx={{ paddingHorizontal: 16 }}>
+  //       <LinearGradient
+  //         colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
+  //         style={{ height: 40 }}
+  //         start={{ x: 0.5, y: 0 }}
+  //         end={{ x: 0.5, y: 0.5 }}
+  //       />
+  //       <View
+  //         sx={{ paddingBottom: 16, backgroundColor: colors.$surfacePrimary }}>
+  //         <SegmentedControl
+  //           dynamicItemWidth={false}
+  //           items={['Assets', 'Collectibles', 'DeFi']}
+  //           selectedSegmentIndex={selectedSegmentIndex}
+  //           onSelectSegment={setSelectedSegmentIndex}
+  //         />
+  //       </View>
+  //     </View>
+  //   </BlurredBarsContentLayout>
+
+  const handleScroll = (scrollX: number): void => {
+    if (scrollX === Math.floor(scrollX)) {
+      setSelectedSegmentIndex(scrollX)
     }
-    return <PortfolioScreen />
   }
 
   return (
     <BlurredBarsContentLayout>
-      <ScrollView
-        sx={{ marginBottom: -40 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerSx={{
-          paddingTop: 16,
-          paddingHorizontal: 16,
-          gap: 16
-        }}
-        {...scrollViewProps}>
-        {renderHeader()}
-        {renderContent()}
-        <View />
-      </ScrollView>
-      <View sx={{ paddingHorizontal: 16 }}>
+      <CollapsibleHeaderTabView
+        renderScrollHeader={renderHeader}
+        renderTabBar={() => undefined}
+        contentProps={{ style: { overflow: 'visible' } }}
+        page={selectedSegmentIndex}
+        onScroll={handleScroll}>
+        <PortfolioScreen onScroll={onScroll} />
+        <PortfolioCollectiblesScreen onScroll={onScroll} />
+        <PortfolioDefiScreen onScroll={onScroll} />
+      </CollapsibleHeaderTabView>
+      <View sx={{ paddingHorizontal: 16, marginTop: 16 }}>
         <LinearGradient
           colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
           style={{ height: 40 }}

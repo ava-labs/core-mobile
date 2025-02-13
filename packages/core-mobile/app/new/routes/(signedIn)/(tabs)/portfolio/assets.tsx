@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   AssetManageView,
   LocalTokenWithBalance,
@@ -25,8 +25,14 @@ import {
 import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
+import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
+import { HFlatList } from 'react-native-head-tab-view'
 
-export const PortfolioScreen = (): React.JSX.Element => {
+export const PortfolioScreen = ({
+  onScroll
+}: {
+  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+}): React.JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
 
   const { refetch } = useSearchableTokenList()
@@ -45,20 +51,21 @@ export const PortfolioScreen = (): React.JSX.Element => {
   }
 
   const isGridView =
-    view.data[0]?.[view.selected.row] === AssetManageView.Hightlights
+    view.data[0]?.[view.selected.row] === AssetManageView.Highlights
 
   const renderItem = (
     token: LocalTokenWithBalance,
-    index: number,
-    gridView: boolean
+    index: number
   ): React.JSX.Element => {
     return (
-      <TokenListItem
-        token={token}
-        index={index}
-        onPress={goToTokenDetail}
-        isGridView={gridView}
-      />
+      <View sx={{ paddingHorizontal: isGridView ? 0 : 16 }}>
+        <TokenListItem
+          token={token}
+          index={index}
+          onPress={goToTokenDetail}
+          isGridView={isGridView}
+        />
+      </View>
     )
   }
 
@@ -73,7 +80,7 @@ export const PortfolioScreen = (): React.JSX.Element => {
     return <Space y={isGridView ? 16 : 10} />
   }
 
-  const renderContent = (): React.JSX.Element => {
+  const renderEmptyState = (): React.JSX.Element | undefined => {
     if (isBalanceLoading || isRefetchingBalance) {
       return <LoadingState />
     }
@@ -85,50 +92,51 @@ export const PortfolioScreen = (): React.JSX.Element => {
     if (tokens.length === 0) {
       return <EmptyAssets />
     }
-    return (
-      <>
-        <ListFilterHeader filter={filter} sort={sort} view={view} />
-        <Animated.FlatList
-          scrollEventThrottle={16}
-          data={data}
-          numColumns={isGridView ? 2 : 1}
-          renderItem={item =>
-            renderItem(
-              item.item as LocalTokenWithBalance,
-              item.index,
-              isGridView
-            )
-          }
-          ItemSeparatorComponent={renderSeparator}
-          showsVerticalScrollIndicator={false}
-          key={isGridView ? 'grid' : 'list'}
-          keyExtractor={item => (item as LocalTokenWithBalance).localId}
-          columnWrapperStyle={
-            isGridView && {
-              justifyContent: 'space-between',
-              gap: 16
-            }
-          }
-        />
-      </>
-    )
   }
 
+  const renderHeader = useMemo(() => {
+    return (
+      <View sx={{ paddingHorizontal: 16, overflow: 'visible' }}>
+        <Animated.FlatList
+          style={{ overflow: 'visible' }}
+          contentContainerStyle={{ gap: 10, overflow: 'visible' }}
+          horizontal
+          scrollEventThrottle={16}
+          data={ACTION_BUTTONS}
+          renderItem={item => renderActionItem(item.item, item.index)}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(_, index) => index.toString()}
+          itemLayoutAnimation={LinearTransition.springify()}
+        />
+        <ListFilterHeader filter={filter} sort={sort} view={view} />
+      </View>
+    )
+  }, [filter, sort, view])
+
   return (
-    <View sx={{ marginTop: 30 }}>
-      <Animated.FlatList
-        style={{ marginHorizontal: -16 }}
-        contentContainerStyle={{ gap: 10, paddingHorizontal: 16 }}
-        horizontal
-        scrollEventThrottle={16}
-        data={ACTION_BUTTONS}
-        renderItem={item => renderActionItem(item.item, item.index)}
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(_, index) => index.toString()}
-        itemLayoutAnimation={LinearTransition.springify()}
-      />
-      {renderContent()}
-    </View>
+    <HFlatList
+      onScroll={onScroll}
+      style={{ paddingTop: 30, overflow: 'visible' }}
+      index={0}
+      data={data}
+      numColumns={isGridView ? 2 : 1}
+      renderItem={item =>
+        renderItem(item.item as LocalTokenWithBalance, item.index)
+      }
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={renderEmptyState}
+      ItemSeparatorComponent={renderSeparator}
+      showsVerticalScrollIndicator={false}
+      key={isGridView ? 'grid' : 'list'}
+      keyExtractor={item => (item as LocalTokenWithBalance).localId}
+      columnWrapperStyle={
+        isGridView && {
+          paddingHorizontal: 16,
+          justifyContent: 'space-between',
+          gap: 16
+        }
+      }
+    />
   )
 }
 
