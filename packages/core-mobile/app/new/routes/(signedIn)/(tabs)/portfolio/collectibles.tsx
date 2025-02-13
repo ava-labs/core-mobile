@@ -1,23 +1,29 @@
 import React from 'react'
-import { View, ScrollView, Text } from '@avalabs/k2-alpine'
-import {} from 'react-native-gesture-handler'
+import { View, Text } from '@avalabs/k2-alpine'
+import { HScrollView } from 'react-native-head-tab-view'
+import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 
-const PortfolioCollectiblesScreen = (): JSX.Element => {
+const PortfolioCollectiblesScreen = ({
+  onScroll
+}: {
+  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+}): JSX.Element => {
   return (
-    <ScrollView
-      sx={{
+    <HScrollView
+      showsVerticalScrollIndicator={false}
+      index={1}
+      onScroll={onScroll}
+      style={{
         flex: 1
       }}
-      contentContainerSx={{
-        paddingTop: 16,
+      contentContainerStyle={{
         flex: 1,
-        alignItems: 'center',
-        gap: 16
+        alignItems: 'center'
       }}>
-      <View>
+      <View sx={{ alignItems: 'center', marginTop: 100 }}>
         <Text variant="heading3">Collectibles</Text>
       </View>
-    </ScrollView>
+    </HScrollView>
   )
 }
 

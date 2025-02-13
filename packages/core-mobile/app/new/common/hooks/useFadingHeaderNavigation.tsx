@@ -1,12 +1,11 @@
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { View } from '@avalabs/k2-alpine'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollViewProps
+  NativeSyntheticEvent
 } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { clamp } from 'react-native-reanimated'
@@ -17,12 +16,26 @@ export const useFadingHeaderNavigation = ({
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
-}): Partial<ScrollViewProps> => {
+}): {
+  onScroll: (
+    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent
+  ) => void
+  scrollEventThrottle: number
+  targetHiddenProgress: number
+} => {
   const navigation = useNavigation()
   const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
     LayoutRectangle | undefined
   >(undefined)
   const [targetHiddenProgress, setTargetHiddenProgress] = useState(0) // from 0 to 1, 0 = fully hidden, 1 = fully shown
+
+  // Ensures `handleScroll`, even when called inside `runJS`, always accesses
+  // the latest `targetLayout`. Using a ref prevents stale values from being
+  // captured in `useCallback` and keeps the layout data up to date.
+  const targetLayoutRef = useRef(targetLayout)
+  useEffect(() => {
+    targetLayoutRef.current = targetLayout
+  }, [targetLayout])
 
   const renderHeaderBackground = useCallback(
     () => (
@@ -38,14 +51,19 @@ export const useFadingHeaderNavigation = ({
   }
 
   const handleScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent>
+    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent
   ): void => {
-    if (targetLayout) {
+    const contentOffsetY =
+      'nativeEvent' in event
+        ? event.nativeEvent.contentOffset.y
+        : event.contentOffset.y
+    const latestTargetLayout = targetLayoutRef.current
+
+    if (latestTargetLayout && contentOffsetY !== undefined) {
       setTargetHiddenProgress(
         // calculate balance header's visibility based on the scroll position
         clamp(
-          event.nativeEvent.contentOffset.y /
-            (targetLayout.y + targetLayout.height),
+          contentOffsetY / (latestTargetLayout.y + latestTargetLayout.height),
           0,
           1
         )
@@ -88,5 +106,9 @@ export const useFadingHeaderNavigation = ({
     navigationHeaderLayout
   ])
 
-  return { onScroll: handleScroll, scrollEventThrottle: 16 }
+  return {
+    onScroll: handleScroll,
+    scrollEventThrottle: 16,
+    targetHiddenProgress
+  }
 }
