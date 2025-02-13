@@ -198,7 +198,7 @@ __metadata:
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 4.4.0
     "@ethereumjs/tx": 5.4.0
-    "@gorhom/bottom-sheet": 4.6.4
+    "@gorhom/bottom-sheet": 5.1.1
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
     "@lavamoat/allow-scripts": 3.2.1
@@ -6079,9 +6079,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gorhom/bottom-sheet@npm:4.6.4":
-  version: 4.6.4
-  resolution: "@gorhom/bottom-sheet@npm:4.6.4"
+"@gorhom/bottom-sheet@npm:5.1.1":
+  version: 5.1.1
+  resolution: "@gorhom/bottom-sheet@npm:5.1.1"
   dependencies:
     "@gorhom/portal": 1.0.14
     invariant: ^2.2.4
@@ -6090,14 +6090,14 @@ __metadata:
     "@types/react-native": "*"
     react: "*"
     react-native: "*"
-    react-native-gesture-handler: ">=1.10.1"
-    react-native-reanimated: ">=2.2.0"
+    react-native-gesture-handler: ">=2.16.1"
+    react-native-reanimated: ">=3.16.0"
   peerDependenciesMeta:
     "@types/react":
       optional: true
     "@types/react-native":
       optional: true
-  checksum: 2cea033c4f321b93fdbf61470b507b5efd51425a8ab927b49d7aaa1d9f0568cbcfb188e385311389dbffbafe47b941dbd3e60f74b1d663a1a2d73262e2719f85
+  checksum: 9c5c7aeb1c41ad5e887b73330b53a305255bfde82c104e1c7d50eb692d86932bb54a8c79cd65fc52a46437f21471ce71faeb6dc64af89697580675144135f994
   languageName: node
   linkType: hard
 
@@ -27083,7 +27083,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
+  checksum: ecfbbf63f96e6bbe22c062c35ec3469a5f46d855713e8cbd648807b97580983651bb4ea9ffbb3d3337c32bc5f5c27d82cb0c0d2bca04b2c080ac4e0ef2d8a6db
   languageName: node
   linkType: hard
 
