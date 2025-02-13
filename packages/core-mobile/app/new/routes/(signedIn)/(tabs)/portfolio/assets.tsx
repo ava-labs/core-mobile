@@ -73,7 +73,6 @@ export const PortfolioScreen = (): React.JSX.Element => {
   }
 
   const renderContent = (): React.JSX.Element => {
-    return <ErrorState onPress={refetch} />
     if (isBalanceLoading || isRefetchingBalance) {
       return <LoadingState />
     }
