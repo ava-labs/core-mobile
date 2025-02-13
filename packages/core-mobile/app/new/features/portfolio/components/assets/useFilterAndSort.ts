@@ -14,6 +14,7 @@ import {
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { TouchableOpacity } from 'react-native'
 import { Rect } from 'react-native-popover-view'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   AssetBalanceSort,
   AssetManageView,
@@ -109,9 +110,9 @@ export const useFilterAndSort = (
       return tokens.filter(
         token =>
           'chainId' in token &&
-          (token.chainId === 1 ||
-            token.chainId === 5 ||
-            token.chainId === 11155111)
+          (token.chainId === ChainId.ETHEREUM_HOMESTEAD ||
+            token.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
+            token.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
       )
     }
     if (filter === AssetNetworkFilter.BitcoinNetwork) {

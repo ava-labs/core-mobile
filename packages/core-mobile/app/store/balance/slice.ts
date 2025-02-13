@@ -218,17 +218,6 @@ export const selectBalanceForAccountIsAccurate =
     )
   }
 
-export const selectIsAllBalancesInaccurate =
-  (accountIndex: number) => (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
-    return (
-      tokens.length === 0 &&
-      !Object.values(state.balance.balances).some(
-        balance => balance.dataAccurate === true
-      )
-    )
-  }
-
 export const selectBalanceTotalInCurrencyForNetworkAndAccount =
   (
     chainId: number,

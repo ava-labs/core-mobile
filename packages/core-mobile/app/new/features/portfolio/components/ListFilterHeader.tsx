@@ -25,20 +25,17 @@ export const ListFilterHeader = ({
   const { theme } = useTheme()
   const tintColor = getTintColor('secondary', theme, false)
 
+  // Android needs to add the height of the anchorRect to the y position
+  // to make the popover appear below the Button
   const rect = sort.anchorRect
-    ? Platform.OS === 'ios'
-      ? new Rect(
-          sort.anchorRect.width + sort.anchorRect.x + 8,
-          sort.anchorRect.y,
-          sort.anchorRect.width,
-          sort.anchorRect.height
-        )
-      : new Rect(
-          sort.anchorRect.width + sort.anchorRect.x,
-          sort.anchorRect.y + sort.anchorRect.height,
-          sort.anchorRect.width,
-          sort.anchorRect.height
-        )
+    ? new Rect(
+        sort.anchorRect.width + sort.anchorRect.x + 16,
+        Platform.OS === 'ios'
+          ? sort.anchorRect.y
+          : sort.anchorRect.y + sort.anchorRect.height,
+        sort.anchorRect.width,
+        sort.anchorRect.height
+      )
     : undefined
 
   return (
@@ -67,6 +64,7 @@ export const ListFilterHeader = ({
           sections={filter.data}
           selectedRows={[filter.selected]}
           onSelectRow={filter.onSelected}
+          minWidth={250}
         />
 
         <View>
@@ -90,6 +88,7 @@ export const ListFilterHeader = ({
             onRequestClose={sort.onHidePopover}
             selectedRows={[sort.selected]}
             onSelectRow={sort.onSelected}
+            minWidth={250}
           />
         </View>
       </View>

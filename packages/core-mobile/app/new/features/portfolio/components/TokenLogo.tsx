@@ -3,8 +3,6 @@ import { Image, useTheme } from '@avalabs/k2-alpine'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { FC, useState } from 'react'
 import { TokenSymbol } from 'store/network'
-import EthereumSvg from 'components/svg/Ethereum'
-import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { isBase64Png } from 'screens/browser/utils'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import { SvgUri } from 'react-native-svg'
@@ -43,10 +41,6 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
         backgroundColor={colors.$textDanger}
       />
     )
-  } else if (symbol === TokenSymbol.ETH) {
-    return <EthereumSvg size={size} />
-  } else if (symbol === TokenSymbol.BTC) {
-    return <BitcoinSVG size={size} />
   }
 
   const hasValidLogoUri =

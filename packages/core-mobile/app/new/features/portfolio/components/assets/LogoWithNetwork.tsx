@@ -28,14 +28,14 @@ export const LogoWithNetwork = ({ token }: Props): React.JSX.Element => {
     t: LocalTokenWithBalance,
     n: Network
   ): React.JSX.Element | undefined => {
-    if (t.localId === AVAX_X_ID) {
+    if (t.localId === AVAX_P_ID) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK width={12} height={12} />
       ) : (
         <Icons.TokenLogos.AVAX_P_LIGHT width={12} height={12} />
       )
     }
-    if (t.localId === AVAX_P_ID) {
+    if (t.localId === AVAX_X_ID) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK width={12} height={12} />
       ) : (

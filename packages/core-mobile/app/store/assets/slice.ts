@@ -1,9 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { IndexPath } from '@avalabs/k2-alpine'
 import { initialState } from './types'
 
 const reducerName = 'assets'
+
+// currently we don't support importing from k2-alpine from outside app/new folder
+type IndexPath = {
+  section: number
+  row: number
+}
 
 export const assetsSlice = createSlice({
   name: reducerName,
