@@ -47,7 +47,7 @@ export const GroupList = ({
                 }}
                 onLayout={handleLayout}>
                 <Text
-                  variant="body1"
+                  variant="buttonMedium"
                   sx={{
                     color: '$textPrimary',
                     paddingVertical: 14
