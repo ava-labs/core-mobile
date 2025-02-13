@@ -47,7 +47,7 @@ export const useFilterAndSort = (): {
   })
   const [selectedView, setSelectedView] = useState<IndexPath>({
     section: 0,
-    row: 0
+    row: 1
   })
 
   const filterRef = useRef<TouchableOpacity>(null)
