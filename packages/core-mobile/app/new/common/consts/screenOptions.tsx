@@ -108,9 +108,8 @@ export const homeScreenOptions: StackNavigationOptions = {
   headerLeft: () => (
     <View
       sx={{
-        marginLeft: 12,
-        height: '100%',
-        justifyContent: 'center'
+        marginLeft: 14,
+        height: '100%'
       }}>
       <Link href="/settings/" asChild>
         <AccountSettingBarButton />
@@ -123,7 +122,7 @@ export const homeScreenOptions: StackNavigationOptions = {
         sx={{
           flexDirection: 'row',
           gap: 12,
-          marginRight: 12,
+          marginRight: 14,
           height: '100%',
           alignItems: 'center'
         }}>
