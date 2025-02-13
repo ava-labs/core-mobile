@@ -72,6 +72,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         shadowRadius: 30,
         shadowOpacity: 0.3,
         backgroundColor: 'transparent',
+        elevation: 4,
         minWidth
       }}
       arrowSize={{ width: -10, height: 0 }}
