@@ -27,7 +27,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { RootState } from 'store'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import PortfolioDefiScreen from './defi'
-import PortfolioAssetsScreen from './assets'
+import { PortfolioScreen } from './assets'
 import PortfolioCollectiblesScreen from './collectibles'
 
 const PortfolioHomeScreen = (): JSX.Element => {
@@ -129,7 +129,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     } else if (selectedSegmentIndex === 1) {
       return <PortfolioDefiScreen />
     }
-    return <PortfolioAssetsScreen />
+    return <PortfolioScreen />
   }
 
   return (
