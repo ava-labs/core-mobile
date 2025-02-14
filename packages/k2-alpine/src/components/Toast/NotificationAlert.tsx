@@ -44,11 +44,11 @@ export const NotificationAlert = ({
       case 'success':
         return <Icons.Action.CheckCircleOutline color={successColor} />
       case 'criticalError':
-        return <Icons.Alert.IconErrorOutline color={errorColor} />
+        return <Icons.Alert.ErrorOutline color={errorColor} />
       case 'error':
         return <Icons.Custom.Error color={titleColor} />
       case 'suspicious':
-        return <Icons.Device.IconGPPMaybe color={errorColor} />
+        return <Icons.Device.GPPMaybe color={errorColor} />
       case 'scam':
         return <Icons.Social.RemoveModerator color={errorColor} />
     }

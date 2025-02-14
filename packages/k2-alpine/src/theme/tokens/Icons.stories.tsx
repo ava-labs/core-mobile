@@ -34,7 +34,7 @@ export const Alert = (): JSX.Element => {
   return Template({
     icons: [
       Icons.Alert.Error,
-      Icons.Alert.IconErrorOutline,
+      Icons.Alert.ErrorOutline,
       theme.isDark ? Icons.Alert.AlertCircleDark : Icons.Alert.AlertCircleLight
     ],
     resourceURL:
@@ -44,7 +44,7 @@ export const Alert = (): JSX.Element => {
 
 export const Device = (): JSX.Element =>
   Template({
-    icons: [Icons.Device.IconGPPMaybe],
+    icons: [Icons.Device.GPPMaybe],
     resourceURL:
       'https://www.figma.com/design/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?node-id=376-17725&t=aSE6qCYReaOZSaNQ-0'
   })
@@ -94,7 +94,8 @@ export const Navigation = (): JSX.Element =>
       Icons.Navigation.Check,
       Icons.Navigation.ExpandMore,
       Icons.Navigation.ArrowForwardIOS,
-      Icons.Navigation.ChevronRight
+      Icons.Navigation.ChevronRight,
+      Icons.Navigation.ChevronRightV2
     ],
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
@@ -120,6 +121,7 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.ArrowDownHandleBar,
       Icons.Custom.Compass,
       Icons.Custom.Contactless,
+      Icons.Custom.Connect,
       Icons.Custom.KidStar,
       theme.isDark ? Icons.Custom.OutboundDark : Icons.Custom.OutboundLight,
       Icons.Custom.SearchCustom,
@@ -215,8 +217,10 @@ export const CurrencyFlags = (): JSX.Element =>
       'https://www.figma.com/design/aj9mmgDMaaxZXkuIRKLhIn/Core-Mobile-Redesign-2025?node-id=257-7379&t=IFcOba3yyNJLDjXt-0'
   })
 
-export const TokenLogos = (): JSX.Element =>
-  Template({
+export const TokenLogos = (): JSX.Element => {
+  const { theme } = useTheme()
+
+  return Template({
     icons: [
       Icons.TokenLogos.AAVE,
       Icons.TokenLogos.ADA,
@@ -259,10 +263,17 @@ export const TokenLogos = (): JSX.Element =>
       Icons.TokenLogos.VET,
       Icons.TokenLogos.XLM,
       Icons.TokenLogos.XRP,
-      Icons.TokenLogos.sAVAX
+      Icons.TokenLogos.sAVAX,
+      theme.isDark
+        ? Icons.TokenLogos.AVAX_P_DARK
+        : Icons.TokenLogos.AVAX_P_LIGHT,
+      theme.isDark
+        ? Icons.TokenLogos.AVAX_X_DARK
+        : Icons.TokenLogos.AVAX_X_LIGHT
     ],
     itemPadding: 16,
     numColumns: 2,
     resourceURL:
       'https://www.figma.com/design/aj9mmgDMaaxZXkuIRKLhIn/Core-Mobile-Redesign-2025?node-id=257-7376&t=IFcOba3yyNJLDjXt-0'
   })
+}

@@ -7,7 +7,7 @@ import {
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network'
-import { Network } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
@@ -15,7 +15,11 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenVisibility } from 'store/portfolio'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { sortUndefined } from 'new/common/utils/sortUndefined'
 import {
+  AssetBalanceSort,
+  AssetNetworkFilter,
   Balance,
   Balances,
   BalanceState,
@@ -97,8 +101,9 @@ export const selectIsLoadingBalances = (state: RootState): boolean =>
 export const selectIsRefetchingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.REFETCHING
 
-const _selectAllBalances = (state: RootState): Balances =>
-  state.balance.balances
+const _selectAllBalances = (state: RootState): Balances => {
+  return state.balance.balances
+}
 
 // get the list of tokens for the active network
 // each token will have info such as: balance, price, market cap,...
@@ -207,6 +212,7 @@ export const selectBalanceTotalInCurrencyForAccount =
         return total
       }, 0)
   }
+
 export const selectBalanceForAccountIsAccurate =
   (accountIndex: number) => (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
@@ -276,6 +282,70 @@ export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
       return nativeToken?.balance ?? 0n
     }
   )
+
+// use in k2-alpine
+export const selectNonNFTTokensWithBalanceForAccount = createSelector(
+  [selectTokensWithBalanceForAccount],
+  tokens =>
+    tokens.filter(
+      token =>
+        token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
+    )
+)
+
+export const selectFilteredTokensWithBalance =
+  (f: AssetNetworkFilter, accountIndex: number) => (state: RootState) => {
+    const tokens = selectNonNFTTokensWithBalanceForAccount(state, accountIndex)
+    if (f === AssetNetworkFilter.AvalancheCChain) {
+      return tokens.filter(
+        token =>
+          ('chainId' in token &&
+            token.chainId &&
+            isAvalancheCChainId(token.chainId)) ||
+          token.localId === 'AvalancheAVAX'
+      )
+    }
+    if (f === AssetNetworkFilter.Ethereum) {
+      return tokens.filter(
+        token =>
+          'chainId' in token &&
+          (token.chainId === ChainId.ETHEREUM_HOMESTEAD ||
+            token.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
+            token.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
+      )
+    }
+    if (f === AssetNetworkFilter.BitcoinNetwork) {
+      return tokens.filter(token => token.symbol === 'BTC')
+    }
+    return tokens
+  }
+
+export const selectFilteredAndSortedTokensWithBalance =
+  (sort: AssetBalanceSort, f: AssetNetworkFilter, accountIndex?: number) =>
+  (state: RootState) => {
+    if (accountIndex === undefined) return []
+    const filtered = selectFilteredTokensWithBalance(f, accountIndex)(state)
+    if (sort === AssetBalanceSort.LowToHigh) {
+      return filtered?.sort((a, b) =>
+        sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
+      )
+    }
+
+    return filtered?.sort((a, b) =>
+      sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
+    )
+  }
+
+export const selectIsAllBalancesInaccurate =
+  (accountIndex: number) => (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    return (
+      tokens.length === 0 &&
+      Object.values(state.balance.balances).every(
+        balance => balance.dataAccurate === false
+      )
+    )
+  }
 
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions
