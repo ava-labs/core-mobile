@@ -1,8 +1,8 @@
 import React, { FC } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import OwlLoader from 'components/OwlLoader'
 import { useRoute } from '@react-navigation/native'
+
 import SessionTimeout, {
   SessionTimeoutParams
 } from 'seedless/screens/SessionTimeout'
@@ -11,9 +11,10 @@ import { RefreshTokenScreenProps } from 'navigation/types'
 import WrongSocialAccount, {
   WrongSocialAccountParams
 } from 'seedless/screens/WrongSocialAccount'
+import LogoLoader from 'components/LogoLoader'
 
 export type RefreshTokenScreenStackParamList = {
-  [AppNavigation.RefreshToken.OwlLoader]: undefined
+  [AppNavigation.RefreshToken.LogoLoader]: undefined
   [AppNavigation.RefreshToken.SessionTimeout]: SessionTimeoutParams
   [AppNavigation.RefreshToken.WrongSocialAccount]: WrongSocialAccountParams
 }
@@ -31,8 +32,8 @@ const RefreshTokenScreenStack: FC = () => {
         cardStyle: { backgroundColor: theme.colors.$black }
       }}>
       <RefreshTokenScreenS.Screen
-        name={AppNavigation.RefreshToken.OwlLoader}
-        component={OwlLoader}
+        name={AppNavigation.RefreshToken.LogoLoader}
+        component={LogoLoader}
       />
       <RefreshTokenScreenS.Screen
         options={{ presentation: 'transparentModal' }}

@@ -1,11 +1,11 @@
 import React from 'react'
 import { StyleSheet, View, Dimensions } from 'react-native'
-import CoreOwlSVG from 'components/svg/CoreOwlSVG'
 import { hideModal, showModal } from 'utils/modal'
+import CoreLogo from '../assets/icons/core.svg'
 
 const { height: screenHeight } = Dimensions.get('window')
 
-const GlobalOwlLoader = (): JSX.Element => {
+const GlobalLogoLoader = (): JSX.Element => {
   return (
     <View
       style={{
@@ -15,16 +15,16 @@ const GlobalOwlLoader = (): JSX.Element => {
         alignItems: 'center',
         backgroundColor: 'black'
       }}>
-      <CoreOwlSVG />
+      <CoreLogo />
     </View>
   )
 }
 
-// use this to show a global owl modal (non-animated)
-export const showOwl = (): void => {
-  showModal(<GlobalOwlLoader />)
+// use this to show a global logo modal (non-animated)
+export const showLogo = (): void => {
+  showModal(<GlobalLogoLoader />)
 }
 
-export const hideOwl = (): void => {
+export const hideLogo = (): void => {
   hideModal()
 }

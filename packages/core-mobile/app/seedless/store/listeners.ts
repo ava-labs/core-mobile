@@ -111,7 +111,7 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
   Navigation.navigate({
     name: AppNavigation.Root.RefreshToken,
     params: {
-      screen: AppNavigation.RefreshToken.OwlLoader
+      screen: AppNavigation.RefreshToken.LogoLoader
     }
   })
   startRefreshSeedlessTokenFlow(SeedlessService.sessionManager)

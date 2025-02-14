@@ -8,7 +8,7 @@ import {
 } from 'react-native'
 import PinKey, { PinKeys } from 'screens/onboarding/PinKey'
 import { Space } from 'components/Space'
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
+import CoreLogo from 'assets/icons/core.svg'
 import { Subscription } from 'rxjs'
 import ReAnimated, {
   Easing,
@@ -154,7 +154,7 @@ export default function PinOrBiometryLogin({
             },
             logoTranslateYStyle
           ]}>
-          <CoreXLogoAnimated size={LOGO_HEIGHT} />
+          <CoreLogo height={LOGO_HEIGHT} />
           {mnemonic && <Text variant="subtitle1">Unlocking wallet...</Text>}
         </ReAnimated.View>
       )}
