@@ -21,7 +21,7 @@ enum OnboardScreens {
 }
 
 enum RefreshTokenScreens {
-  OwlLoader = 'RefreshTokenScreens.OwlLoader',
+  LogoLoader = 'RefreshTokenScreens.LogoLoader',
   SessionTimeout = 'RefreshTokenScreens.SessionTimeout',
   WrongSocialAccount = 'RefreshTokenScreens.WrongSocialAccount'
 }
@@ -244,7 +244,7 @@ enum SeedlessExportScreens {
   RecoveryPhrase = 'SeedlessExportScreens.RecoveryPhrase',
   ConfirmCancelModal = 'SeedlessExportScreens.ConfirmCancelModal',
   ConfirmCloseModal = 'SeedlessExportScreens.ConfirmCloseModal',
-  OwlLoader = 'SeedlessExportScreens.OwlLoader'
+  LogoLoader = 'SeedlessExportScreens.LogoLoader'
 }
 
 enum SettingRecoveryMethodsScreens {

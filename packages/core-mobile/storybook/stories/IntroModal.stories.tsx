@@ -3,7 +3,7 @@ import { useTheme } from '@avalabs/k2-mobile'
 import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
-import CoreOwl from 'assets/icons/core_owl.svg'
+import CoreLogo from 'assets/icons/core.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
 
@@ -26,7 +26,7 @@ export const Basic = (): JSX.Element => {
       text: 'On the website find “Connect” then tap Wallet Connect'
     },
     {
-      icon: <CoreOwl width={24} height={24} />,
+      icon: <CoreLogo width={24} height={24} />,
       text: 'Find Core and tap “Connect”'
     },
     {

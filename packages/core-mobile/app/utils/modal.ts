@@ -7,7 +7,7 @@ export const showModal = (element: JSX.Element): void => {
   // if there is already a modal shown, hide it first
   if (rootNode !== null) {
     Logger.warn(
-      'duplicate owl modal',
+      'duplicate logo modal',
       'there is already a modal shown, you should hide it first'
     )
     return

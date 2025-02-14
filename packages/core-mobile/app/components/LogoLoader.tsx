@@ -1,9 +1,9 @@
 import React from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
+import CoreLogo from '../assets/icons/core.svg'
 
-export default function OwlLoader(): JSX.Element {
+export default function LogoLoader(): JSX.Element {
   return (
     <View
       style={{
@@ -11,7 +11,7 @@ export default function OwlLoader(): JSX.Element {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-      <CoreXLogoAnimated size={100} />
+      <CoreLogo height={100} />
       <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>
     </View>
   )
