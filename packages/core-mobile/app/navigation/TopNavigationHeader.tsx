@@ -97,7 +97,7 @@ const TopNavigationHeader: FC<Props> = ({
   const renderAccountSelector: () => JSX.Element = () => (
     <View
       style={{
-        zIndex: 1,
+        zIndex: 10000,
         flex: 1,
         alignItems: 'center'
       }}>

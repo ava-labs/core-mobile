@@ -29,7 +29,7 @@ export default function WatchlistTab(): JSX.Element {
   const [searchText, setSearchText] = useState('')
   const [tabIndex, setTabIndex] = useState(isWatchlistFavoritesEmpty ? 1 : 0)
 
-  const renderCustomLabel = (title: string, focused: boolean): JSX.Element => {
+  const renderLabel = (title: string, focused: boolean): JSX.Element => {
     return <CustomLabel focused={focused} title={title} />
   }
 
@@ -60,7 +60,7 @@ export default function WatchlistTab(): JSX.Element {
         </>
       ) : (
         <TabViewAva
-          renderCustomLabel={renderCustomLabel}
+          renderLabel={renderLabel}
           currentTabIndex={tabIndex}
           onTabIndexChange={setTabIndex}>
           <TabViewAva.Item title={'Favorites'}>

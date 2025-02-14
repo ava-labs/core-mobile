@@ -4,7 +4,8 @@ import {
   StyleProp,
   StyleSheet,
   TouchableOpacity,
-  ViewStyle
+  ViewStyle,
+  View as RNView
 } from 'react-native'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
@@ -37,10 +38,7 @@ interface ButtonProps {
   rightIcon?: ButtonIconType | JSX.Element
 }
 
-export const Button = forwardRef<
-  TouchableOpacity,
-  ButtonProps & PropsWithChildren
->(
+export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
   (
     {
       type,

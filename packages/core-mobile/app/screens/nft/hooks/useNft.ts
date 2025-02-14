@@ -22,19 +22,20 @@ export const useNft = ({
   gcTime?: number
 }): { nft: NFTItemData | undefined; nftUpdatedAt: number } => {
   const fetchNft = useCallback(async () => {
-    const t = SentryWrapper.startTransaction('get-nft')
-    try {
-      return await NftService.fetchNft({
-        chainId: chainId,
-        address: address,
-        tokenId: tokenId
-      })
-    } catch (err) {
-      Logger.error(`failed to get nfts for chain ${chainId}`, err)
-      return undefined
-    } finally {
-      SentryWrapper.finish(t)
-    }
+    return SentryWrapper.startSpan({ name: 'get-nft' }, async span => {
+      try {
+        return await NftService.fetchNft({
+          chainId: chainId,
+          address: address,
+          tokenId: tokenId
+        })
+      } catch (err) {
+        Logger.error(`failed to get nfts for chain ${chainId}`, err)
+        return undefined
+      } finally {
+        span?.end()
+      }
+    })
   }, [chainId, address, tokenId])
 
   const query = useQuery({
