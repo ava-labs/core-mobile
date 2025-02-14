@@ -27,10 +27,13 @@ import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
 import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { HFlatList } from 'react-native-head-tab-view'
+import { PortfolioHomeScreenTab } from 'new/routes/(signedIn)/(tabs)/portfolio'
 
 export const AssetsScreen = ({
+  tabIndex,
   onScroll
 }: {
+  tabIndex: PortfolioHomeScreenTab
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
 }): React.JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
@@ -96,7 +99,7 @@ export const AssetsScreen = ({
 
   const renderHeader = useMemo(() => {
     return (
-      <View sx={{ paddingHorizontal: 16 }}>
+      <View sx={{ paddingHorizontal: 16, overflow: 'hidden' }}>
         <Animated.FlatList
           style={{ overflow: 'visible' }}
           contentContainerStyle={{ gap: 10 }}
@@ -117,7 +120,7 @@ export const AssetsScreen = ({
     <HFlatList
       onScroll={onScroll}
       style={{ paddingTop: 30, overflow: 'visible' }}
-      index={0}
+      index={tabIndex}
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={item =>

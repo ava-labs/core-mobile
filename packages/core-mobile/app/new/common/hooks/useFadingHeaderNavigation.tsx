@@ -1,5 +1,5 @@
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { View } from '@avalabs/k2-alpine'
 import {
   LayoutChangeEvent,
@@ -8,7 +8,12 @@ import {
   NativeSyntheticEvent
 } from 'react-native'
 import { useNavigation } from 'expo-router'
-import { clamp } from 'react-native-reanimated'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  SharedValue,
+  clamp
+} from 'react-native-reanimated'
 
 export const useFadingHeaderNavigation = ({
   header,
@@ -21,13 +26,14 @@ export const useFadingHeaderNavigation = ({
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent
   ) => void
   scrollEventThrottle: number
-  targetHiddenProgress: number
+  targetHiddenProgress: SharedValue<number>
 } => {
   const navigation = useNavigation()
   const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
     LayoutRectangle | undefined
   >(undefined)
-  const [targetHiddenProgress, setTargetHiddenProgress] = useState(0) // from 0 to 1, 0 = fully hidden, 1 = fully shown
+
+  const targetHiddenProgress = useSharedValue(0) // from 0 to 1, 0 = fully hidden, 1 = fully shown
 
   // Ensures `handleScroll`, even when called inside `runJS`, always accesses
   // the latest `targetLayout`. Using a ref prevents stale values from being
@@ -36,15 +42,6 @@ export const useFadingHeaderNavigation = ({
   useEffect(() => {
     targetLayoutRef.current = targetLayout
   }, [targetLayout])
-
-  const renderHeaderBackground = useCallback(
-    () => (
-      <BlurredBackgroundView
-        separator={{ position: 'bottom', opacity: targetHiddenProgress }}
-      />
-    ),
-    [targetHiddenProgress]
-  )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setNavigationHeaderLayout(event.nativeEvent.layout)
@@ -60,51 +57,49 @@ export const useFadingHeaderNavigation = ({
     const latestTargetLayout = targetLayoutRef.current
 
     if (latestTargetLayout && contentOffsetY !== undefined) {
-      setTargetHiddenProgress(
-        // calculate balance header's visibility based on the scroll position
-        clamp(
-          contentOffsetY / (latestTargetLayout.y + latestTargetLayout.height),
-          0,
-          1
-        )
+      targetHiddenProgress.value = clamp(
+        contentOffsetY / (latestTargetLayout.y + latestTargetLayout.height),
+        0,
+        1
       )
     }
   }
 
+  // Animated styles for header transformation
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: targetHiddenProgress.value,
+    transform: [
+      {
+        translateY:
+          (navigationHeaderLayout?.height ?? 0) *
+          (1 - targetHiddenProgress.value)
+      }
+    ]
+  }))
+
   useEffect(() => {
     navigation.setOptions({
-      headerBackground: renderHeaderBackground,
+      headerBackground: () => (
+        <BlurredBackgroundView
+          separator={{
+            position: 'bottom',
+            opacity: targetHiddenProgress
+          }}
+        />
+      ),
       title: header && (
         <View
           sx={{
             overflow: 'hidden',
             height: '100%',
             justifyContent: 'center'
-          }}>
-          <View
-            sx={{
-              opacity: targetHiddenProgress,
-              transform: [
-                {
-                  translateY:
-                    (navigationHeaderLayout?.height ?? 0) *
-                    (1 - targetHiddenProgress)
-                }
-              ]
-            }}
-            onLayout={handleLayout}>
-            {header}
-          </View>
+          }}
+          onLayout={handleLayout}>
+          <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
         </View>
       )
     })
-  }, [
-    navigation,
-    header,
-    renderHeaderBackground,
-    targetHiddenProgress,
-    navigationHeaderLayout
-  ])
+  }, [navigation, header, targetHiddenProgress, animatedHeaderStyle])
 
   return {
     onScroll: handleScroll,

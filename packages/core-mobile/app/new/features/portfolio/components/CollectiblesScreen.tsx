@@ -2,16 +2,19 @@ import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
 import { HScrollView } from 'react-native-head-tab-view'
 import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
+import { PortfolioHomeScreenTab } from 'new/routes/(signedIn)/(tabs)/portfolio'
 
 export const CollectiblesScreen = ({
+  tabIndex,
   onScroll
 }: {
+  tabIndex: PortfolioHomeScreenTab
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
 }): JSX.Element => {
   return (
     <HScrollView
       showsVerticalScrollIndicator={false}
-      index={1}
+      index={tabIndex}
       onScroll={onScroll}
       style={{
         flex: 1
