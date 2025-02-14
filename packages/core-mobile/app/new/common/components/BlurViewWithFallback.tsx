@@ -26,6 +26,8 @@ export const BlurViewWithFallback = ({
       {children}
     </BlurView>
   ) : (
-    <View sx={{ flex: 1, backgroundColor: '$surfacePrimary' }}>{children}</View>
+    <View style={[{ backgroundColor: theme.colors.$surfacePrimary }, style]}>
+      {children}
+    </View>
   )
 }
