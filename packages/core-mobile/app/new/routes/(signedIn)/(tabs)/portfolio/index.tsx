@@ -26,14 +26,14 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { CollapsibleHeaderTabView } from 'react-native-scrollable-tab-view-collapsible-header'
-import PortfolioCollectiblesScreen from './collectibles'
-import { PortfolioScreen } from './assets'
-import PortfolioDefiScreen from './defi'
+import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import { AssetsScreen } from 'features/portfolio/components/AssetsScreen'
+import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
+import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
+import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const { theme } = useTheme()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -103,14 +103,20 @@ const PortfolioHomeScreen = (): JSX.Element => {
     targetLayout: balanceHeaderLayout
   })
 
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: 1 - targetHiddenProgress.value
+  }))
+
   const renderHeader = (): JSX.Element => {
     return (
-      <View
-        sx={{
-          padding: 16,
-          opacity: 1 - targetHiddenProgress,
-          backgroundColor: '$surfacePrimary'
-        }}
+      <Animated.View
+        style={[
+          {
+            padding: 16,
+            backgroundColor: theme.colors.$surfacePrimary
+          },
+          animatedHeaderStyle
+        ]}
         onLayout={handleBalanceHeaderLayout}>
         <BalanceHeader
           accountName={activeAccount?.name ?? ''}
@@ -126,7 +132,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           }
           isLoading={isLoading}
         />
-      </View>
+      </Animated.View>
     )
   }
 
@@ -144,33 +150,61 @@ const PortfolioHomeScreen = (): JSX.Element => {
         contentProps={{ style: { overflow: 'visible' } }}
         page={selectedSegmentIndex}
         onScroll={handleScroll}>
-        <PortfolioScreen onScroll={onScroll} />
-        <PortfolioCollectiblesScreen onScroll={onScroll} />
-        <PortfolioDefiScreen onScroll={onScroll} />
+        <AssetsScreen
+          tabIndex={PortfolioHomeScreenTab.Assets}
+          onScroll={onScroll}
+        />
+        <CollectiblesScreen
+          tabIndex={PortfolioHomeScreenTab.Collectibles}
+          onScroll={onScroll}
+        />
+        <DeFiScreen
+          tabIndex={PortfolioHomeScreenTab.DeFi}
+          onScroll={onScroll}
+        />
       </CollapsibleHeaderTabView>
-      <View sx={{ marginTop: 16, marginBottom: -1 }}>
+      <View
+        sx={{
+          marginTop: 16,
+          marginBottom: -1,
+          paddingTop: 40
+        }}>
         <LinearGradient
-          colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
-          style={{ height: 40 }}
+          colors={[
+            alpha(theme.colors.$surfacePrimary, 0),
+            alpha(theme.colors.$surfacePrimary, 0.9)
+          ]}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 60
+          }}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 0.5 }}
         />
-        <View
-          sx={{
+        <BlurViewWithFallback
+          style={{
             paddingBottom: 16,
-            paddingHorizontal: 16,
-            backgroundColor: colors.$surfacePrimary
+            paddingHorizontal: 16
           }}>
           <SegmentedControl
-            dynamicItemWidth={false}
+            dynamicItemWidth={true}
             items={['Assets', 'Collectibles', 'DeFi']}
             selectedSegmentIndex={selectedSegmentIndex}
             onSelectSegment={setSelectedSegmentIndex}
           />
-        </View>
+        </BlurViewWithFallback>
       </View>
     </BlurredBarsContentLayout>
   )
+}
+
+export enum PortfolioHomeScreenTab {
+  Assets = 0,
+  Collectibles = 1,
+  DeFi = 2
 }
 
 export default PortfolioHomeScreen
