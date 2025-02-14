@@ -1,10 +1,8 @@
 import React from 'react'
-import OwlSVG from 'components/svg/OwlSVG'
-import CoreTextSVG from 'components/svg/CoreTextSVG'
+import CoreLogo from 'assets/icons/core.svg'
 import { View } from 'react-native'
-import { Space } from 'components/Space'
 
-const DrawerLogo = () => {
+const DrawerLogo = (): React.JSX.Element => {
   return (
     <View
       style={{
@@ -12,9 +10,7 @@ const DrawerLogo = () => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <OwlSVG />
-      <Space x={20} />
-      <CoreTextSVG />
+      <CoreLogo width={100} />
     </View>
   )
 }

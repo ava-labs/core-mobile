@@ -15,7 +15,7 @@ import PasskeyService from 'services/passkey/PasskeyService'
 import Logger from 'utils/Logger'
 import { FidoType } from 'services/passkey/types'
 import { showSimpleToast } from 'components/Snackbar'
-import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { hideLogo, showLogo } from 'components/GlobalLogoLoader'
 import { useSelector } from 'react-redux'
 import {
   selectIsSeedlessMfaAuthenticatorBlocked,
@@ -70,7 +70,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
   }): Promise<void> => {
     const passkeyName = name && name.length > 0 ? name : fidoType.toString()
 
-    showOwl()
+    showLogo()
 
     try {
       const withSecurityKey = fidoType === FidoType.YUBI_KEY
@@ -103,7 +103,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       Logger.error(`${fidoType} registration failed`, e)
       showSimpleToast(`Unable to register ${fidoType}`)
     } finally {
-      hideOwl()
+      hideLogo()
     }
   }
 

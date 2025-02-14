@@ -16,7 +16,7 @@ import {
 } from 'store/posthog'
 import Logger from 'utils/Logger'
 import PasskeyService from 'services/passkey/PasskeyService'
-import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { hideLogo, showLogo } from 'components/GlobalLogoLoader'
 import useVerifyMFA from './useVerifyMFA'
 
 type RegisterProps = {
@@ -176,7 +176,7 @@ export const useSeedlessRegister = (): ReturnType => {
         showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
       }
 
-      showOwl()
+      showLogo()
 
       try {
         await SeedlessService.sessionManager.approveFido(
@@ -186,10 +186,10 @@ export const useSeedlessRegister = (): ReturnType => {
         )
 
         AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
-        hideOwl()
+        hideLogo()
         onAccountVerified()
       } catch (e) {
-        hideOwl()
+        hideLogo()
         Logger.error('passkey authentication failed', e)
         showSimpleToast('Unable to authenticate')
       }
