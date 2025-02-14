@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
   View,
   BalanceHeader,
@@ -31,6 +31,10 @@ import { AssetsScreen } from 'features/portfolio/components/AssetsScreen'
 import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
+import {
+  ChangeTabProperties,
+  TabBarProps
+} from 'react-native-scrollable-tab-view'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -136,20 +140,28 @@ const PortfolioHomeScreen = (): JSX.Element => {
     )
   }
 
-  const handleScroll = (scrollX: number): void => {
-    if (scrollX === Math.floor(scrollX)) {
-      setSelectedSegmentIndex(scrollX)
+  const handleSelectSegment = (index: number): void => {
+    if (index !== selectedSegmentIndex) {
+      tabViewRef.current?.goToPage?.(index)
     }
   }
+
+  const handleChangeTab = (tab: ChangeTabProperties): void => {
+    setSelectedSegmentIndex(tab.i)
+  }
+
+  const renderEmptyTabBar = (): JSX.Element => <></>
+
+  const tabViewRef = useRef<CollapsibleHeaderTabView & TabBarProps>(null)
 
   return (
     <BlurredBarsContentLayout>
       <CollapsibleHeaderTabView
+        ref={tabViewRef}
         renderScrollHeader={renderHeader}
-        renderTabBar={() => undefined}
-        contentProps={{ style: { overflow: 'visible' } }}
-        page={selectedSegmentIndex}
-        onScroll={handleScroll}>
+        renderTabBar={renderEmptyTabBar}
+        onChangeTab={handleChangeTab}
+        contentProps={{ style: { overflow: 'visible' } }}>
         <AssetsScreen
           tabIndex={PortfolioHomeScreenTab.Assets}
           onScroll={onScroll}
@@ -193,7 +205,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             dynamicItemWidth={true}
             items={['Assets', 'Collectibles', 'DeFi']}
             selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={setSelectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
           />
         </BlurViewWithFallback>
       </View>
