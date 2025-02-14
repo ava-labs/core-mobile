@@ -368,7 +368,6 @@ __metadata:
     react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
     react-native-tab-view: 3.5.1
-    react-native-tab-view-collapsible-header: ^2.0.1
     react-native-toast-notifications: 3.4.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 3.8.0
@@ -27058,15 +27057,6 @@ __metadata:
   version: 1.0.5
   resolution: "react-native-swipe-gestures@npm:1.0.5"
   checksum: d637bc40baa50fa0ce3b6cf2b494efeceaea03cc3875cb7cf7d76922914a21d5e6b098d4a084fb291ce61bfbb0a241c03cff24b15bebf0cfae1c146f4ad10d92
-  languageName: node
-  linkType: hard
-
-"react-native-tab-view-collapsible-header@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "react-native-tab-view-collapsible-header@npm:2.0.1"
-  peerDependencies:
-    react-native-head-tab-view: ^4.0.0
-  checksum: 95e08ff35e35d729cd173a93b5b25da7d6ba5b8354c1636dffee4552066120799a3a2d9c279e772017e7f1ad60371b00e1a02fcb50a074527035fd89efb22cf4
   languageName: node
   linkType: hard
 
