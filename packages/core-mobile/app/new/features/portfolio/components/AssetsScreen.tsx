@@ -25,7 +25,11 @@ import {
 import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
-import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
+import {
+  ListRenderItemInfo,
+  NativeScrollEvent,
+  NativeSyntheticEvent
+} from 'react-native'
 import { HFlatList } from 'react-native-head-tab-view'
 import { PortfolioHomeScreenTab } from 'new/routes/(signedIn)/(tabs)/portfolio'
 
@@ -35,7 +39,7 @@ export const AssetsScreen = ({
 }: {
   tabIndex: PortfolioHomeScreenTab
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
-}): React.JSX.Element => {
+}): JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
 
   const { refetch } = useSearchableTokenList()
@@ -57,14 +61,13 @@ export const AssetsScreen = ({
     view.data[0]?.[view.selected.row] === AssetManageView.Highlights
 
   const renderItem = (
-    token: LocalTokenWithBalance,
-    index: number
-  ): React.JSX.Element => {
+    item: ListRenderItemInfo<LocalTokenWithBalance>
+  ): JSX.Element => {
     return (
       <View sx={{ paddingHorizontal: isGridView ? 0 : 16 }}>
         <TokenListItem
-          token={token}
-          index={index}
+          token={item.item}
+          index={item.index}
           onPress={goToTokenDetail}
           isGridView={isGridView}
         />
@@ -75,15 +78,15 @@ export const AssetsScreen = ({
   const renderActionItem = (
     item: TActionButton,
     index: number
-  ): React.JSX.Element => {
+  ): JSX.Element => {
     return <ActionButton item={item} index={index} key={index} />
   }
 
-  const renderSeparator = (): React.JSX.Element => {
+  const renderSeparator = (): JSX.Element => {
     return <Space y={isGridView ? 16 : 10} />
   }
 
-  const renderEmptyState = (): React.JSX.Element | undefined => {
+  const emptyState = useMemo(() => {
     if (isBalanceLoading || isRefetchingBalance) {
       return <LoadingState />
     }
@@ -95,9 +98,15 @@ export const AssetsScreen = ({
     if (tokens.length === 0) {
       return <EmptyAssets />
     }
-  }
+  }, [
+    isAllBalancesInaccurate,
+    isBalanceLoading,
+    isRefetchingBalance,
+    tokens,
+    refetch
+  ])
 
-  const renderHeader = useMemo(() => {
+  const header = useMemo(() => {
     return (
       <View sx={{ paddingHorizontal: 16, overflow: 'hidden' }}>
         <Animated.FlatList
@@ -123,11 +132,9 @@ export const AssetsScreen = ({
       index={tabIndex}
       data={data}
       numColumns={isGridView ? 2 : 1}
-      renderItem={item =>
-        renderItem(item.item as LocalTokenWithBalance, item.index)
-      }
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmptyState}
+      renderItem={renderItem}
+      ListHeaderComponent={header}
+      ListEmptyComponent={emptyState}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}
