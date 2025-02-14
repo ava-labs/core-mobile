@@ -10,7 +10,7 @@ const DrawerLogo = (): React.JSX.Element => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <CoreLogo />
+      <CoreLogo width={100} />
     </View>
   )
 }
