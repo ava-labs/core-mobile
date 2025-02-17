@@ -79,8 +79,8 @@ export enum AssetBalanceSort {
 }
 
 export enum AssetManageView {
-  Highlights = 'Highlights',
-  AssetList = 'Asset list',
+  Highlights = 'Grid',
+  AssetList = 'List view',
   ManageList = 'Manage list'
 }
 
