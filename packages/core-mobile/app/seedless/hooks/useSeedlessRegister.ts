@@ -72,7 +72,8 @@ export const useSeedlessRegister = (): ReturnType => {
     onRegisterMfaMethods,
     onVerifyMfaMethod,
     onAccountVerified
-  }: RegisterProps): Promise<void> => {
+  }: // eslint-disable-next-line sonarjs/cognitive-complexity
+  RegisterProps): Promise<void> => {
     setIsRegistering(true)
 
     try {
@@ -92,9 +93,10 @@ export const useSeedlessRegister = (): ReturnType => {
       await SecureStorageService.store(KeySlot.OidcUserId, identity.email)
       await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
 
+      const mfaId = signResponse.mfaId()
+
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-        if (isMfaRequired) {
-          const mfaId = signResponse.mfaId()
+        if (isMfaRequired && mfaId) {
           const mfaMethods = identity.user_info?.configured_mfa
 
           if (mfaMethods && mfaMethods.length > 0) {
@@ -115,8 +117,7 @@ export const useSeedlessRegister = (): ReturnType => {
           })
         }
       } else if (result === SeedlessUserRegistrationResult.APPROVED) {
-        if (isMfaRequired) {
-          const mfaId = signResponse.mfaId()
+        if (isMfaRequired && mfaId) {
           onRegisterMfaMethods({ oidcToken, mfaId })
           AnalyticsService.capture('SeedlessSignUp', {
             oidcProvider: oidcProvider

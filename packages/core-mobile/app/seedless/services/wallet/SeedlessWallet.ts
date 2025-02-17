@@ -39,19 +39,19 @@ import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet implements Wallet {
-  #session: cs.SignerSession
+  #session: cs.CubeSignerClient
   #addressPublicKey: PubKeyType
 
-  constructor(session: cs.SignerSession, addressPublicKey: PubKeyType) {
+  constructor(session: cs.CubeSignerClient, addressPublicKey: PubKeyType) {
     this.#session = session
     this.#addressPublicKey = addressPublicKey
   }
 
   private async getMnemonicId(): Promise<string> {
-    const keys = await this.#session.keys()
+    const keys = await this.#session.apiClient.sessionKeysList()
 
     const activeAccountKey = keys.find(
-      key => strip0x(key.publicKey) === this.#addressPublicKey?.evm
+      key => strip0x(key.public_key) === this.#addressPublicKey?.evm
     )
 
     const mnemonicId = activeAccountKey?.derivation_info?.mnemonic_id
@@ -66,7 +66,7 @@ export default class SeedlessWallet implements Wallet {
   private async getSigningKeyByAddress(
     lookupAddress: string
   ): Promise<cs.KeyInfo> {
-    const keys = await this.#session.keys()
+    const keys = await this.#session.apiClient.sessionKeysList()
 
     const key = keys.find(({ material_id }) => material_id === lookupAddress)
 
@@ -85,11 +85,11 @@ export default class SeedlessWallet implements Wallet {
       throw new Error('Public key not available')
     }
 
-    const keys = await this.#session.keys()
+    const keys = await this.#session.apiClient.sessionKeysList()
 
     const key = keys
       .filter(({ key_type }) => key_type === type)
-      .find(({ publicKey }) => strip0x(publicKey) === lookupPublicKey)
+      .find(({ public_key }) => strip0x(public_key) === lookupPublicKey)
 
     if (!key) {
       throw new Error('Signing key not found')
@@ -116,7 +116,7 @@ export default class SeedlessWallet implements Wallet {
 
     const key = await this.getSigningKeyByAddress(address)
 
-    const res = await this.#session.signBlob(key.key_id, blobReq)
+    const res = await this.#session.apiClient.signBlob(key.key_id, blobReq)
     return res.data().signature
   }
 
@@ -128,7 +128,7 @@ export default class SeedlessWallet implements Wallet {
       throw new Error('Account index must be greater than or equal to 1')
     }
 
-    const identityProof = await this.#session.proveIdentity()
+    const identityProof = await this.#session.apiClient.identityProve()
     const mnemonicId = await this.getMnemonicId()
 
     await CoreSeedlessAPIService.addAccount({
@@ -267,7 +267,7 @@ export default class SeedlessWallet implements Wallet {
           this.#addressPublicKey.xp
         )
 
-    const response = await this.#session.signBlob(key.key_id, {
+    const response = await this.#session.apiClient.signBlob(key.key_id, {
       message_base64: Buffer.from(sha256(transaction.tx.toBytes())).toString(
         'base64'
       )
