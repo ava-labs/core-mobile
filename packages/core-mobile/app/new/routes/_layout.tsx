@@ -36,7 +36,7 @@ export default function RootLayout(): JSX.Element | null {
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
   const navigationState = useRootNavigationState()
 
-  const canGoBackToWallet = navigationState.routes.some(
+  const canGoBackToWallet = navigationState?.routes.some(
     route => route.name === '(signedIn)'
   )
 

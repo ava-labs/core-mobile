@@ -331,6 +331,7 @@ __metadata:
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
+    react-native-collapsible-tab-view: 8.0.0
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
     react-native-fs: 2.20.0
@@ -16221,7 +16222,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dequal@npm:^2.0.2":
+"dequal@npm:2.0.3, dequal@npm:^2.0.2":
   version: 2.0.3
   resolution: "dequal@npm:2.0.3"
   checksum: 8679b850e1a3d0ebbc46ee780d5df7b478c23f335887464023a631d1b9af051ad4a6595a44220f9ff8ff95a8ddccf019b5ad778a976fd7bbf77383d36f412f90
@@ -26513,6 +26514,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-collapsible-tab-view@npm:8.0.0":
+  version: 8.0.0
+  resolution: "react-native-collapsible-tab-view@npm:8.0.0"
+  dependencies:
+    use-deep-compare: ^1.1.0
+  peerDependencies:
+    "@shopify/flash-list": ">=1.0.0"
+    react: "*"
+    react-native: "*"
+    react-native-pager-view: "*"
+    react-native-reanimated: ">=3.8.1"
+  peerDependenciesMeta:
+    "@shopify/flash-list":
+      optional: true
+  checksum: eae6b8bc3efcb16ec7334e4e8888f34deb416019699db1e026c485867b77753869d66221ea753c708a9103821fe5246165c21955d2cd31a3c2b2b9c41ff0d4ee
+  languageName: node
+  linkType: hard
+
 "react-native-collapsible@npm:1.6.2":
   version: 1.6.2
   resolution: "react-native-collapsible@npm:1.6.2"
@@ -30926,6 +30945,17 @@ react-native-webview@ava-labs/react-native-webview:
     "@types/react":
       optional: true
   checksum: df690f2032d56aabcea0400313a04621429f45bceb4d65d38829b3680cae3856470ce72958cb7224b332189d8faef54662a283c0867dd7c769f9a5beff61787d
+  languageName: node
+  linkType: hard
+
+"use-deep-compare@npm:^1.1.0":
+  version: 1.3.0
+  resolution: "use-deep-compare@npm:1.3.0"
+  dependencies:
+    dequal: 2.0.3
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: fada69c4562a92e1e81e406c40023a8adef2d020a84802ca05b9d9a476ee174087828e3f1224bfaac5059e6ef024c66a492260111a21f22f16581dc3cbfceb52
   languageName: node
   linkType: hard
 

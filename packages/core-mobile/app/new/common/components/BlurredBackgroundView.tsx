@@ -1,38 +1,39 @@
 import React from 'react'
-import { alpha, Separator, useTheme, View } from '@avalabs/k2-alpine'
-import { Platform } from 'react-native'
-import { BlurView } from 'expo-blur'
+import { Separator, View } from '@avalabs/k2-alpine'
+import Animated, {
+  SharedValue,
+  useAnimatedStyle
+} from 'react-native-reanimated'
+import { BlurViewWithFallback } from './BlurViewWithFallback'
 
 const BlurredBackgroundView = ({
   separator
 }: {
   separator?: {
-    opacity: number
+    opacity: SharedValue<number>
     position: 'top' | 'bottom'
   }
 }): JSX.Element => {
-  const { theme } = useTheme()
+  const animatedBorderStyle = useAnimatedStyle(() => ({
+    opacity: separator?.opacity.value
+  }))
 
   return (
     <View style={{ flex: 1 }}>
       {separator?.position === 'top' && (
-        <Separator sx={{ opacity: separator.opacity }} />
+        <Animated.View style={animatedBorderStyle}>
+          <Separator />
+        </Animated.View>
       )}
-      {Platform.OS === 'ios' ? (
-        <BlurView
-          style={{
-            flex: 1,
-            // alpha('#afafd0', 0.1) is a color value found through experimentation
-            // to make the blur effect appear the same as $surfacePrimary(neutral-850) in dark mode.
-            backgroundColor: theme.isDark ? alpha('#afafd0', 0.1) : undefined
-          }}
-          intensity={75}
-        />
-      ) : (
-        <View sx={{ flex: 1, backgroundColor: '$surfacePrimary' }} />
-      )}
+      <BlurViewWithFallback
+        style={{
+          flex: 1
+        }}
+      />
       {separator?.position === 'bottom' && (
-        <Separator sx={{ opacity: separator.opacity }} />
+        <Animated.View style={animatedBorderStyle}>
+          <Separator />
+        </Animated.View>
       )}
     </View>
   )
