@@ -29,20 +29,14 @@ export const All = (): JSX.Element => {
         <Text variant="heading6">
           Toggle Small + {smallToggleValue ? 'On' : 'Off'}
         </Text>
-        <Toggle
-          value={smallToggleValue}
-          variant="small"
-          onValueChange={setSmallToggleValue}
-        />
+        <Toggle value={smallToggleValue} onValueChange={setSmallToggleValue} />
         <Text variant="heading6">
           Toggle Large + {largeToggleValue ? 'On' : 'Off'}
         </Text>
-        <Toggle
-          value={largeToggleValue}
-          variant="large"
-          onValueChange={setLargeToggleValue}
-        />
-        <Text variant="heading6">Toggle Disabled</Text>
+        <Toggle value={largeToggleValue} onValueChange={setLargeToggleValue} />
+        <Text variant="heading6">Toggle On Disabled</Text>
+        <Toggle value={true} disabled />
+        <Text variant="heading6">Toggle Off Disabled</Text>
         <Toggle value={false} disabled />
       </ScrollView>
     </View>
