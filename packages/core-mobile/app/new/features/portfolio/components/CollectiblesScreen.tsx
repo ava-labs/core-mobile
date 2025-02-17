@@ -1,31 +1,30 @@
 import React from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
-import { HScrollView } from 'react-native-head-tab-view'
-import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
-import { PortfolioHomeScreenTab } from 'new/routes/(signedIn)/(tabs)/portfolio'
+import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
+import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
 
 export const CollectiblesScreen = ({
-  tabIndex,
   onScroll
 }: {
-  tabIndex: PortfolioHomeScreenTab
-  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+  onScroll: (scrollY: number) => void
 }): JSX.Element => {
+  const scrollY = useCurrentTabScrollY()
+
+  useAnimatedReaction(
+    () => scrollY.value,
+    (curr, prev) => {
+      if (curr !== prev) {
+        // Switch from UI thread to JS thread and pass the entire SharedValue
+        runOnJS(onScroll)(scrollY.value)
+      }
+    }
+  )
+
   return (
-    <HScrollView
-      showsVerticalScrollIndicator={false}
-      index={tabIndex}
-      onScroll={onScroll}
-      style={{
-        flex: 1
-      }}
-      contentContainerStyle={{
-        flex: 1,
-        alignItems: 'center'
-      }}>
+    <Tabs.ScrollView showsVerticalScrollIndicator={false}>
       <View sx={{ alignItems: 'center', marginTop: 100 }}>
         <Text variant="heading3">Collectibles</Text>
       </View>
-    </HScrollView>
+    </Tabs.ScrollView>
   )
 }

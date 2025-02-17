@@ -331,13 +331,13 @@ __metadata:
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
+    react-native-collapsible-tab-view: 8.0.0
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.20.0
     react-native-graph: 1.1.0
     react-native-haptic-feedback: 2.0.3
-    react-native-head-tab-view: 4.0.0-rc.13
     react-native-inappbrowser-reborn: 3.7.0
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.1
@@ -361,8 +361,6 @@ __metadata:
     react-native-root-siblings: 5.0.1
     react-native-safe-area-context: 4.11.0
     react-native-screens: 3.34.0
-    react-native-scrollable-tab-view: "onghwan/react-native-scrollable-tab-view#f2cf5cde76310acff77b690ac20dd438dc2bd324"
-    react-native-scrollable-tab-view-collapsible-header: 2.0.1
     react-native-sensors: 7.3.6
     react-native-sound: 0.11.2
     react-native-svg: 15.7.1
@@ -15612,16 +15610,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"create-react-class@npm:^15.6.2":
-  version: 15.7.0
-  resolution: "create-react-class@npm:15.7.0"
-  dependencies:
-    loose-envify: ^1.3.1
-    object-assign: ^4.1.1
-  checksum: 0c5f43da705fa9f67ec289051dd5780792652d440dfa17cd2c7d8423c1f604609596f895dabf46fda1960ddd93ee96fe1b61ef4d55a94fc4271b07d515486714
-  languageName: node
-  linkType: hard
-
 "create-require@npm:^1.1.0":
   version: 1.1.1
   resolution: "create-require@npm:1.1.1"
@@ -16234,7 +16222,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dequal@npm:^2.0.2":
+"dequal@npm:2.0.3, dequal@npm:^2.0.2":
   version: 2.0.3
   resolution: "dequal@npm:2.0.3"
   checksum: 8679b850e1a3d0ebbc46ee780d5df7b478c23f335887464023a631d1b9af051ad4a6595a44220f9ff8ff95a8ddccf019b5ad778a976fd7bbf77383d36f412f90
@@ -22711,7 +22699,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.3.1, loose-envify@npm:^1.4.0":
+"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -25854,7 +25842,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.6.0, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
+"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -26526,6 +26514,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-collapsible-tab-view@npm:8.0.0":
+  version: 8.0.0
+  resolution: "react-native-collapsible-tab-view@npm:8.0.0"
+  dependencies:
+    use-deep-compare: ^1.1.0
+  peerDependencies:
+    "@shopify/flash-list": ">=1.0.0"
+    react: "*"
+    react-native: "*"
+    react-native-pager-view: "*"
+    react-native-reanimated: ">=3.8.1"
+  peerDependenciesMeta:
+    "@shopify/flash-list":
+      optional: true
+  checksum: eae6b8bc3efcb16ec7334e4e8888f34deb416019699db1e026c485867b77753869d66221ea753c708a9103821fe5246165c21955d2cd31a3c2b2b9c41ff0d4ee
+  languageName: node
+  linkType: hard
+
 "react-native-collapsible@npm:1.6.2":
   version: 1.6.2
   resolution: "react-native-collapsible@npm:1.6.2"
@@ -26626,16 +26632,6 @@ __metadata:
   peerDependencies:
     react-native: ">=0.60.0"
   checksum: c0952135c54535439b3b307f4ecc11721eb208ef7210f56becd5471488d5ee130d78cdf0c8515aa80097ba284347925d2df3f402a09200e645522fe99fad3d64
-  languageName: node
-  linkType: hard
-
-"react-native-head-tab-view@npm:4.0.0-rc.13":
-  version: 4.0.0-rc.13
-  resolution: "react-native-head-tab-view@npm:4.0.0-rc.13"
-  peerDependencies:
-    react-native-gesture-handler: ^1.6.1
-    react-native-reanimated: ^2.0.1
-  checksum: dfb30472b81366c0db988dac98404afd12f268193fb6965288ca91d36212c4ce400fbd4fc71cec154238e333af42e2310b1f426966531225d12941f6f0453364
   languageName: node
   linkType: hard
 
@@ -26979,30 +26975,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-scrollable-tab-view-collapsible-header@npm:2.0.1":
-  version: 2.0.1
-  resolution: "react-native-scrollable-tab-view-collapsible-header@npm:2.0.1"
-  peerDependencies:
-    react-native-head-tab-view: ^4.0.0
-  checksum: e8bd835e270c4e2e1ceb9f459f593151257942eada367e927ea562d6440de4987339e71eee6a271789854c0c4fb974d2ea1b86abc4ba60348a75cafec5e18893
-  languageName: node
-  linkType: hard
-
-"react-native-scrollable-tab-view@onghwan/react-native-scrollable-tab-view#f2cf5cde76310acff77b690ac20dd438dc2bd324":
-  version: 1.1.0
-  resolution: "react-native-scrollable-tab-view@https://github.com/onghwan/react-native-scrollable-tab-view.git#commit=f2cf5cde76310acff77b690ac20dd438dc2bd324"
-  dependencies:
-    create-react-class: ^15.6.2
-    deprecated-react-native-prop-types: ^2.3.0
-    prop-types: ^15.6.0
-    react-native-pager-view: 6.4.1
-    react-timer-mixin: ^0.13.3
-  peerDependencies:
-    react-native: ">=0.20.0"
-  checksum: 44269014a0015468a84b7628b9a7dfb04f6f46ca3e5c7201ef0ec197289129859248588fca8b883cb707afd3a7745ad3fb6ac73ea944129dfcea38cfd760844b
-  languageName: node
-  linkType: hard
-
 "react-native-sensors@npm:7.3.6":
   version: 7.3.6
   resolution: "react-native-sensors@npm:7.3.6"
@@ -27318,13 +27290,6 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: ">=16.8.0"
   checksum: 800c45a7fbf181897971b15f0d7b226f35348a12c48f933afbc1112693101bf3966bd7d276e4cb9fdc922c1ea66d8cbeddb0268e1631d1e39aa4b062cba2a7d1
-  languageName: node
-  linkType: hard
-
-"react-timer-mixin@npm:^0.13.3":
-  version: 0.13.4
-  resolution: "react-timer-mixin@npm:0.13.4"
-  checksum: ff82e1f90fab1ab4569017572b29fd0fdf0ebdfbf7a9580927a7f6737913046af39005bc82a0d8c6628cd999aecb66f411d331fd4dee70c4dba5a995b9d2032b
   languageName: node
   linkType: hard
 
@@ -30980,6 +30945,17 @@ react-native-webview@ava-labs/react-native-webview:
     "@types/react":
       optional: true
   checksum: df690f2032d56aabcea0400313a04621429f45bceb4d65d38829b3680cae3856470ce72958cb7224b332189d8faef54662a283c0867dd7c769f9a5beff61787d
+  languageName: node
+  linkType: hard
+
+"use-deep-compare@npm:^1.1.0":
+  version: 1.3.0
+  resolution: "use-deep-compare@npm:1.3.0"
+  dependencies:
+    dequal: 2.0.3
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: fada69c4562a92e1e81e406c40023a8adef2d020a84802ca05b9d9a476ee174087828e3f1224bfaac5059e6ef024c66a492260111a21f22f16581dc3cbfceb52
   languageName: node
   linkType: hard
 

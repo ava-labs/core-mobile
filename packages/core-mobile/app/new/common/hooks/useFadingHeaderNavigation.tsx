@@ -22,9 +22,7 @@ export const useFadingHeaderNavigation = ({
   header?: JSX.Element
   targetLayout?: LayoutRectangle
 }): {
-  onScroll: (
-    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent
-  ) => void
+  onScroll: (event: number) => void
   scrollEventThrottle: number
   targetHiddenProgress: SharedValue<number>
 } => {
@@ -48,12 +46,21 @@ export const useFadingHeaderNavigation = ({
   }
 
   const handleScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent
+    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
   ): void => {
-    const contentOffsetY =
-      'nativeEvent' in event
-        ? event.nativeEvent.contentOffset.y
-        : event.contentOffset.y
+    let contentOffsetY: number | undefined
+
+    if (typeof event === 'number') {
+      // If event is just a numeric value, use it directly
+      contentOffsetY = event
+    } else if ('nativeEvent' in event) {
+      // If event is a NativeSyntheticEvent<NativeScrollEvent>
+      contentOffsetY = event.nativeEvent.contentOffset.y
+    } else {
+      // If event is a NativeScrollEvent
+      contentOffsetY = event.contentOffset.y
+    }
+
     const latestTargetLayout = targetLayoutRef.current
 
     if (latestTargetLayout && contentOffsetY !== undefined) {

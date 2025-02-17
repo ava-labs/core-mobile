@@ -9,7 +9,7 @@ import {
 } from 'store/balance'
 import { View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
 import { selectActiveAccount } from 'store/account'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { useSelector } from 'react-redux'
@@ -17,30 +17,29 @@ import { RootState } from 'store'
 import { ListFilterHeader } from 'features/portfolio/components/ListFilterHeader'
 import { TokenListItem } from 'features/portfolio/components/assets/TokenListItem'
 import { useFilterAndSort } from 'features/portfolio/components/assets/useFilterAndSort'
-import { ActionButtonTitle } from 'features/portfolio/components/assets/consts'
-import {
-  ActionButton,
-  TActionButton
-} from 'features/portfolio/components/assets/ActionButton'
 import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
-import {
-  ListRenderItemInfo,
-  NativeScrollEvent,
-  NativeSyntheticEvent
-} from 'react-native'
-import { HFlatList } from 'react-native-head-tab-view'
-import { PortfolioHomeScreenTab } from 'new/routes/(signedIn)/(tabs)/portfolio'
+import { ListRenderItemInfo } from 'react-native'
+import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
 
 export const AssetsScreen = ({
-  tabIndex,
   onScroll
 }: {
-  tabIndex: PortfolioHomeScreenTab
-  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+  onScroll: (contentOffsetY: number) => void
 }): JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
+
+  const scrollY = useCurrentTabScrollY()
+
+  useAnimatedReaction(
+    () => scrollY.value,
+    (curr, prev) => {
+      if (curr !== prev) {
+        runOnJS(onScroll)(scrollY.value)
+      }
+    }
+  )
 
   const { refetch } = useSearchableTokenList()
   const activeAccount = useSelector(selectActiveAccount)
@@ -75,13 +74,6 @@ export const AssetsScreen = ({
     )
   }
 
-  const renderActionItem = (
-    item: TActionButton,
-    index: number
-  ): JSX.Element => {
-    return <ActionButton item={item} index={index} key={index} />
-  }
-
   const renderSeparator = (): JSX.Element => {
     return <Space y={isGridView ? 16 : 10} />
   }
@@ -108,28 +100,18 @@ export const AssetsScreen = ({
 
   const header = useMemo(() => {
     return (
-      <View sx={{ paddingHorizontal: 16, overflow: 'hidden' }}>
-        <Animated.FlatList
-          style={{ overflow: 'visible' }}
-          contentContainerStyle={{ gap: 10 }}
-          horizontal
-          scrollEventThrottle={16}
-          data={ACTION_BUTTONS}
-          renderItem={item => renderActionItem(item.item, item.index)}
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(_, index) => index.toString()}
-          itemLayoutAnimation={LinearTransition.springify()}
-        />
+      <View
+        sx={{
+          paddingHorizontal: 16
+        }}>
         <ListFilterHeader filter={filter} sort={sort} view={view} />
       </View>
     )
   }, [filter, sort, view])
 
   return (
-    <HFlatList
-      onScroll={onScroll}
-      style={{ paddingTop: 30, overflow: 'visible' }}
-      index={tabIndex}
+    <Tabs.FlatList
+      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}
@@ -149,12 +131,3 @@ export const AssetsScreen = ({
     />
   )
 }
-
-const ACTION_BUTTONS = [
-  { title: ActionButtonTitle.Send, icon: 'send' },
-  { title: ActionButtonTitle.Swap, icon: 'swap' },
-  { title: ActionButtonTitle.Buy, icon: 'buy' },
-  { title: ActionButtonTitle.Stake, icon: 'stake' },
-  { title: ActionButtonTitle.Bridge, icon: 'bridge' },
-  { title: ActionButtonTitle.Connect, icon: 'connect' }
-]

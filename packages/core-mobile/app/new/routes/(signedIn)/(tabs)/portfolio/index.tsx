@@ -25,16 +25,18 @@ import { RootState } from 'store'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { CollapsibleHeaderTabView } from 'react-native-scrollable-tab-view-collapsible-header'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { AssetsScreen } from 'features/portfolio/components/AssetsScreen'
 import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
+import { CollapsibleRef, Tabs } from 'react-native-collapsible-tab-view'
 import {
-  ChangeTabProperties,
-  TabBarProps
-} from 'react-native-scrollable-tab-view'
+  ActionButton,
+  ActionButtons
+} from 'features/portfolio/components/ActionButtons'
+import { ActionButtonTitle } from 'features/portfolio/components/assets/consts'
+import { noop } from '@avalabs/core-utils-sdk'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -111,75 +113,89 @@ const PortfolioHomeScreen = (): JSX.Element => {
     opacity: 1 - targetHiddenProgress.value
   }))
 
+  const ACTION_BUTTONS: ActionButton[] = [
+    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
+    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
+    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
+    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
+  ]
+
   const renderHeader = (): JSX.Element => {
     return (
-      <Animated.View
-        style={[
-          {
-            padding: 16,
-            backgroundColor: theme.colors.$surfacePrimary
-          },
-          animatedHeaderStyle
-        ]}
-        onLayout={handleBalanceHeaderLayout}>
-        <BalanceHeader
-          accountName={activeAccount?.name ?? ''}
-          formattedBalance={formattedBalance}
-          currency={selectedCurrency}
-          priceChange={{
-            formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
-            status: indicatorStatus,
-            formattedPercent
-          }}
-          errorMessage={
-            balanceAccurate ? undefined : 'Unable to load all balances'
-          }
-          isLoading={isLoading}
-        />
-      </Animated.View>
+      <View>
+        <View onLayout={handleBalanceHeaderLayout}>
+          <Animated.View
+            style={[
+              {
+                padding: 16,
+                backgroundColor: theme.colors.$surfacePrimary
+              },
+              animatedHeaderStyle
+            ]}>
+            <BalanceHeader
+              accountName={activeAccount?.name ?? ''}
+              formattedBalance={formattedBalance}
+              currency={selectedCurrency}
+              priceChange={{
+                formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
+                status: indicatorStatus,
+                formattedPercent
+              }}
+              errorMessage={
+                balanceAccurate ? undefined : 'Unable to load all balances'
+              }
+              isLoading={isLoading}
+            />
+          </Animated.View>
+        </View>
+        <ActionButtons buttons={ACTION_BUTTONS} />
+      </View>
     )
   }
 
   const handleSelectSegment = (index: number): void => {
     if (index !== selectedSegmentIndex) {
-      tabViewRef.current?.goToPage?.(index)
+      tabViewRef.current?.setIndex(index)
     }
   }
 
-  const handleChangeTab = (tab: ChangeTabProperties): void => {
-    setSelectedSegmentIndex(tab.i)
+  const handleChangeTab = (index: number): void => {
+    setSelectedSegmentIndex(index)
   }
 
   const renderEmptyTabBar = (): JSX.Element => <></>
 
-  const tabViewRef = useRef<CollapsibleHeaderTabView & TabBarProps>(null)
+  const tabViewRef = useRef<CollapsibleRef>(null)
 
   return (
     <BlurredBarsContentLayout>
-      <CollapsibleHeaderTabView
+      <Tabs.Container
         ref={tabViewRef}
-        renderScrollHeader={renderHeader}
+        headerContainerStyle={{
+          shadowOpacity: 0,
+          elevation: 0,
+          overflow: 'visible'
+        }}
+        containerStyle={{ overflow: 'visible' }}
+        renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
-        onChangeTab={handleChangeTab}
-        contentProps={{ style: { overflow: 'visible' } }}>
-        <AssetsScreen
-          tabIndex={PortfolioHomeScreenTab.Assets}
-          onScroll={onScroll}
-        />
-        <CollectiblesScreen
-          tabIndex={PortfolioHomeScreenTab.Collectibles}
-          onScroll={onScroll}
-        />
-        <DeFiScreen
-          tabIndex={PortfolioHomeScreenTab.DeFi}
-          onScroll={onScroll}
-        />
-      </CollapsibleHeaderTabView>
+        pagerProps={{ style: { overflow: 'visible' } }}
+        onIndexChange={handleChangeTab}>
+        <Tabs.Tab name="Assets">
+          <AssetsScreen onScroll={onScroll} />
+        </Tabs.Tab>
+        <Tabs.Tab name="Collectibles">
+          <CollectiblesScreen onScroll={onScroll} />
+        </Tabs.Tab>
+        <Tabs.Tab name="DeFi">
+          <DeFiScreen onScroll={onScroll} />
+        </Tabs.Tab>
+      </Tabs.Container>
       <View
         sx={{
-          marginTop: 16,
-          marginBottom: -1,
-          paddingTop: 40
+          marginBottom: -1
         }}>
         <LinearGradient
           colors={[
@@ -188,7 +204,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           ]}
           style={{
             position: 'absolute',
-            top: 0,
+            top: -44,
             left: 0,
             right: 0,
             height: 60
