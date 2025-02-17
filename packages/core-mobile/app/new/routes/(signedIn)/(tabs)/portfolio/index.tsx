@@ -1,6 +1,5 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
-  ScrollView,
   View,
   BalanceHeader,
   NavigationTitleHeader,
@@ -9,8 +8,6 @@ import {
   alpha
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useSelector } from 'react-redux'
@@ -26,14 +23,26 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { RootState } from 'store'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import PortfolioDefiScreen from './defi'
-import { PortfolioScreen } from './assets'
-import PortfolioCollectiblesScreen from './collectibles'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import { AssetsScreen } from 'features/portfolio/components/AssetsScreen'
+import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
+import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
+import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
+import {
+  ActionButton,
+  ActionButtons
+} from 'features/portfolio/components/ActionButtons'
+import { ActionButtonTitle } from 'features/portfolio/components/assets/consts'
+import { noop } from '@avalabs/core-utils-sdk'
+import {
+  CollapsibleTabs,
+  CollapsibleTabsRef
+} from 'common/components/CollapsibleTabs'
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const { theme } = useTheme()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -93,7 +102,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
   }
 
-  const scrollViewProps = useFadingHeaderNavigation({
+  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: (
       <NavigationTitleHeader
         title={activeAccount?.name ?? ''}
@@ -103,69 +112,129 @@ const PortfolioHomeScreen = (): JSX.Element => {
     targetLayout: balanceHeaderLayout
   })
 
-  const renderHeader = (): React.JSX.Element | undefined => {
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: 1 - targetHiddenProgress.value
+  }))
+
+  const ACTION_BUTTONS: ActionButton[] = [
+    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
+    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
+    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
+    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
+  ]
+
+  const renderHeader = (): JSX.Element => {
     return (
-      <BalanceHeader
-        accountName={activeAccount?.name ?? ''}
-        formattedBalance={formattedBalance}
-        currency={selectedCurrency}
-        onLayout={handleBalanceHeaderLayout}
-        priceChange={{
-          formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
-          status: indicatorStatus,
-          formattedPercent
-        }}
-        errorMessage={
-          balanceAccurate ? undefined : 'Unable to load all balances'
-        }
-        isLoading={isLoading}
-      />
+      <View>
+        <View onLayout={handleBalanceHeaderLayout}>
+          <Animated.View
+            style={[
+              {
+                padding: 16,
+                backgroundColor: theme.colors.$surfacePrimary
+              },
+              animatedHeaderStyle
+            ]}>
+            <BalanceHeader
+              accountName={activeAccount?.name ?? ''}
+              formattedBalance={formattedBalance}
+              currency={selectedCurrency}
+              priceChange={{
+                formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
+                status: indicatorStatus,
+                formattedPercent
+              }}
+              errorMessage={
+                balanceAccurate ? undefined : 'Unable to load all balances'
+              }
+              isLoading={isLoading}
+            />
+          </Animated.View>
+        </View>
+        <ActionButtons buttons={ACTION_BUTTONS} />
+      </View>
     )
   }
 
-  const renderContent = (): React.JSX.Element => {
-    if (selectedSegmentIndex === 2) {
-      return <PortfolioCollectiblesScreen />
-    } else if (selectedSegmentIndex === 1) {
-      return <PortfolioDefiScreen />
+  const handleSelectSegment = (index: number): void => {
+    if (index !== selectedSegmentIndex) {
+      tabViewRef.current?.setIndex(index)
     }
-    return <PortfolioScreen />
   }
+
+  const handleChangeTab = (index: number): void => {
+    setSelectedSegmentIndex(index)
+  }
+
+  const renderEmptyTabBar = (): JSX.Element => <></>
+
+  const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
   return (
     <BlurredBarsContentLayout>
-      <ScrollView
-        sx={{ marginBottom: -40 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerSx={{
-          paddingTop: 16,
-          paddingHorizontal: 16,
-          gap: 16
-        }}
-        {...scrollViewProps}>
-        {renderHeader()}
-        {renderContent()}
-        <View />
-      </ScrollView>
-      <View sx={{ paddingHorizontal: 16 }}>
+      <CollapsibleTabs.Container
+        ref={tabViewRef}
+        renderHeader={renderHeader}
+        renderTabBar={renderEmptyTabBar}
+        onIndexChange={handleChangeTab}
+        onScroll={onScroll}
+        tabs={[
+          {
+            tabName: 'Assets',
+            component: <AssetsScreen />
+          },
+          {
+            tabName: 'Collectibles',
+            component: <CollectiblesScreen />
+          },
+          {
+            tabName: 'DeFi',
+            component: <DeFiScreen />
+          }
+        ]}
+      />
+      <View
+        sx={{
+          marginBottom: -1
+        }}>
         <LinearGradient
-          colors={[alpha(colors.$surfacePrimary, 0), colors.$surfacePrimary]}
-          style={{ height: 40 }}
+          colors={[
+            alpha(theme.colors.$surfacePrimary, 0),
+            alpha(theme.colors.$surfacePrimary, 0.9)
+          ]}
+          style={{
+            position: 'absolute',
+            top: -44,
+            left: 0,
+            right: 0,
+            height: 60
+          }}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 0.5 }}
         />
-        <View
-          sx={{ paddingBottom: 16, backgroundColor: colors.$surfacePrimary }}>
+        <BlurViewWithFallback
+          style={{
+            paddingBottom: 16,
+            paddingHorizontal: 16
+          }}>
           <SegmentedControl
-            dynamicItemWidth={false}
+            dynamicItemWidth={true}
             items={['Assets', 'Collectibles', 'DeFi']}
             selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={setSelectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
           />
-        </View>
+        </BlurViewWithFallback>
       </View>
     </BlurredBarsContentLayout>
   )
+}
+
+export enum PortfolioHomeScreenTab {
+  Assets = 0,
+  Collectibles = 1,
+  DeFi = 2
 }
 
 export default PortfolioHomeScreen
