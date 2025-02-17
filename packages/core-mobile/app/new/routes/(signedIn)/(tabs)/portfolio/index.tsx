@@ -30,13 +30,16 @@ import { AssetsScreen } from 'features/portfolio/components/AssetsScreen'
 import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
-import { CollapsibleRef, Tabs } from 'react-native-collapsible-tab-view'
 import {
   ActionButton,
   ActionButtons
 } from 'features/portfolio/components/ActionButtons'
 import { ActionButtonTitle } from 'features/portfolio/components/assets/consts'
 import { noop } from '@avalabs/core-utils-sdk'
+import {
+  CollapsibleTabs,
+  CollapsibleTabsRef
+} from 'common/components/CollapsibleTabs'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -167,32 +170,31 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const renderEmptyTabBar = (): JSX.Element => <></>
 
-  const tabViewRef = useRef<CollapsibleRef>(null)
+  const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
   return (
     <BlurredBarsContentLayout>
-      <Tabs.Container
+      <CollapsibleTabs.Container
         ref={tabViewRef}
-        headerContainerStyle={{
-          shadowOpacity: 0,
-          elevation: 0,
-          overflow: 'visible'
-        }}
-        containerStyle={{ overflow: 'visible' }}
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
-        pagerProps={{ style: { overflow: 'visible' } }}
-        onIndexChange={handleChangeTab}>
-        <Tabs.Tab name="Assets">
-          <AssetsScreen onScroll={onScroll} />
-        </Tabs.Tab>
-        <Tabs.Tab name="Collectibles">
-          <CollectiblesScreen onScroll={onScroll} />
-        </Tabs.Tab>
-        <Tabs.Tab name="DeFi">
-          <DeFiScreen onScroll={onScroll} />
-        </Tabs.Tab>
-      </Tabs.Container>
+        onIndexChange={handleChangeTab}
+        onScroll={onScroll}
+        tabs={[
+          {
+            tabName: 'Assets',
+            component: <AssetsScreen />
+          },
+          {
+            tabName: 'Collectibles',
+            component: <CollectiblesScreen />
+          },
+          {
+            tabName: 'DeFi',
+            component: <DeFiScreen />
+          }
+        ]}
+      />
       <View
         sx={{
           marginBottom: -1

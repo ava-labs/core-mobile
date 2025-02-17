@@ -9,7 +9,6 @@ import {
 } from 'store/balance'
 import { View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
-import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
 import { selectActiveAccount } from 'store/account'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { useSelector } from 'react-redux'
@@ -21,25 +20,10 @@ import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
 import { ListRenderItemInfo } from 'react-native'
-import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 
-export const AssetsScreen = ({
-  onScroll
-}: {
-  onScroll: (contentOffsetY: number) => void
-}): JSX.Element => {
+export const AssetsScreen = (): JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
-
-  const scrollY = useCurrentTabScrollY()
-
-  useAnimatedReaction(
-    () => scrollY.value,
-    (curr, prev) => {
-      if (curr !== prev) {
-        runOnJS(onScroll)(scrollY.value)
-      }
-    }
-  )
 
   const { refetch } = useSearchableTokenList()
   const activeAccount = useSelector(selectActiveAccount)
@@ -110,7 +94,7 @@ export const AssetsScreen = ({
   }, [filter, sort, view])
 
   return (
-    <Tabs.FlatList
+    <CollapsibleTabs.FlatList
       contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
       data={data}
       numColumns={isGridView ? 2 : 1}
