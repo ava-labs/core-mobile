@@ -19,7 +19,6 @@ export const TokenListView = ({
   index,
   onPress,
   formattedBalance,
-  priceChange,
   formattedPrice,
   status
 }: TokenListViewProps): React.JSX.Element => {
@@ -104,12 +103,10 @@ export const TokenListView = ({
                 {formattedBalance}
               </Text>
             </View>
-            {priceChange && (
-              <PriceChangeIndicator
-                formattedPrice={formattedPrice}
-                status={status}
-              />
-            )}
+            <PriceChangeIndicator
+              formattedPrice={formattedPrice}
+              status={status}
+            />
           </View>
         </View>
         <View
