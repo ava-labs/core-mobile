@@ -2,6 +2,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenGridView } from './TokenGridView'
 import { TokenListView } from './TokenListView'
 
@@ -36,7 +37,7 @@ export const TokenListItem = ({
       : undefined
   const formattedPrice = priceChange
     ? Math.abs(priceChange)?.toFixed(2).toString()
-    : ''
+    : UNKNOWN_AMOUNT
   const status = priceChange
     ? priceChange > 0
       ? 'up'
@@ -51,7 +52,6 @@ export const TokenListItem = ({
       index={index}
       onPress={onPress}
       status={status}
-      priceChange={priceChange}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
     />
@@ -61,7 +61,6 @@ export const TokenListItem = ({
       index={index}
       onPress={onPress}
       status={status}
-      priceChange={priceChange}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
     />

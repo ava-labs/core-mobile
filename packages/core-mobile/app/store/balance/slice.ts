@@ -284,18 +284,24 @@ export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
   )
 
 // use in k2-alpine
+
+// select non-NFT tokens without zero balance for account
 export const selectNonNFTTokensWithBalanceForAccount = createSelector(
   [selectTokensWithBalanceForAccount],
   tokens =>
     tokens.filter(
       token =>
-        token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
+        token.type !== TokenType.ERC1155 &&
+        token.type !== TokenType.ERC721 &&
+        token.balance > 0n
     )
 )
 
 export const selectFilteredTokensWithBalance =
   (f: AssetNetworkFilter, accountIndex: number) => (state: RootState) => {
     const tokens = selectNonNFTTokensWithBalanceForAccount(state, accountIndex)
+    if (tokens.length === 0) return []
+
     if (f === AssetNetworkFilter.AvalancheCChain) {
       return tokens.filter(
         token =>

@@ -130,7 +130,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const renderHeader = (): JSX.Element => {
     return (
-      <View>
+      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
         <View onLayout={handleBalanceHeaderLayout}>
           <Animated.View
             style={[
