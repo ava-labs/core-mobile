@@ -1,10 +1,6 @@
 import React from 'react'
 import Animated, { LinearTransition } from 'react-native-reanimated'
-import {
-  SquareButton,
-  SquareButtonIconType,
-  useTheme
-} from '@avalabs/k2-alpine'
+import { SquareButton, SquareButtonIconType } from '@avalabs/k2-alpine'
 import { useOnPressAnimation } from './assets/useOnPressAnimation'
 import { ActionButtonTitle, getItemEnteringAnimation } from './assets/consts'
 
@@ -13,9 +9,6 @@ export const ActionButtons = ({
 }: {
   buttons: ActionButton[]
 }): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const { animatedStyle } = useOnPressAnimation()
 
   const renderActionItem = (item: ActionButton, index: number): JSX.Element => {
@@ -36,7 +29,7 @@ export const ActionButtons = ({
 
   return (
     <Animated.FlatList
-      style={{ overflow: 'visible', backgroundColor: colors.$surfacePrimary }}
+      style={{ overflow: 'visible' }}
       contentContainerStyle={{ gap: 10, paddingHorizontal: 16 }}
       horizontal
       scrollEventThrottle={16}
