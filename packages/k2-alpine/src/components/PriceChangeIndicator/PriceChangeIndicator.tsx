@@ -71,17 +71,13 @@ export const PriceChangeIndicator = ({
               width={ICON_SIZE}
               height={ICON_SIZE}
             />
-          ) : (
+          ) : status === 'up' ? (
             <Icons.Custom.TrendingArrowUp
               width={ICON_SIZE}
               height={ICON_SIZE}
-              color={
-                status === 'equal'
-                  ? theme.colors.$textSecondary
-                  : colors.$accentTeal
-              }
+              color={colors.$accentTeal}
             />
-          )}
+          ) : null}
         </View>
       </View>
       {formattedPercent !== undefined && (
