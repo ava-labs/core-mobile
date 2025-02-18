@@ -7,13 +7,13 @@ import {
   RootStackScreenProps
 } from 'navigation/types'
 import { TotpErrors } from 'seedless/errors'
-import SeedlessSessionManager from 'seedless/services/SeedlessSessionManager'
+import SeedlessSession from 'seedless/services/SeedlessSession'
 import { MFA } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { Result } from 'types/result'
 import Logger from 'utils/Logger'
 
-function useVerifyMFA(sessionManager: SeedlessSessionManager): {
+function useVerifyMFA(session: SeedlessSession): {
   verifyMFA: VerifyMFAFunction
   verifyTotp: VerifyTotpFunction
   verifyFido: VerifyFidoFunction
@@ -31,7 +31,7 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
     if (mfa.type === 'totp') {
       verifyTotp({
         onVerifyCode: async code => {
-          return sessionManager.verifyApprovalCode(response, code)
+          return session.verifyApprovalCode(response, code)
         },
         onVerifySuccess: (res?: T) => {
           if (res) {
@@ -57,7 +57,7 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
     onVerifySuccess: (response: T) => void
     excludeFidoMfaId?: string
   }) => {
-    let mfaMethods = await sessionManager.userMfa()
+    let mfaMethods = await session.userMfa()
 
     if (excludeFidoMfaId) {
       mfaMethods = mfaMethods.filter(
@@ -108,7 +108,7 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
     response: CubeSignerResponse<T>
     onVerifySuccess: (response: T) => void
   }) => {
-    const challenge = await sessionManager.fidoApproveStart(mfaId)
+    const challenge = await session.fidoApproveStart(mfaId)
     const credential = await PasskeyService.getCredential(
       challenge.options,
       true
@@ -118,7 +118,7 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
     if (!mfaReceipt?.mfaConf) {
       throw new Error('FIDO authentication failed')
     }
-    const signedResponse = await SeedlessSessionManager.signWithMfaApproval(
+    const signedResponse = await SeedlessSession.signWithMfaApproval(
       mfaId,
       response,
       mfaReceipt.mfaConf

@@ -2,17 +2,20 @@ import {
   CubeSignerResponse,
   MemorySessionManager,
   MfaReceipt,
+  SessionData,
   UserExportCompleteResponse,
   UserExportInitResponse,
   userExportDecrypt,
   userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
-import SeedlessSessionManager from './SeedlessSessionManager'
+import SeedlessSession from './SeedlessSession'
 
 class SeedlessExportService {
-  sessionManager = new SeedlessSessionManager({
+  session = new SeedlessSession({
     scopes: ['export:user', 'manage:export:user', 'manage:mfa:vote'],
-    sessionManager: new MemorySessionManager()
+    // passing null as session data initially
+    // user will perform OIDC auth when the export flow starts
+    sessionManager: new MemorySessionManager(null as unknown as SessionData)
   })
 
   /**
@@ -22,7 +25,7 @@ class SeedlessExportService {
     keyId: string,
     mfaReceipt?: MfaReceipt
   ): Promise<CubeSignerResponse<UserExportInitResponse>> {
-    const signerSession = await this.sessionManager.getSignerClient()
+    const signerSession = await this.session.getSignerClient()
     return signerSession.apiClient.userExportInit(keyId, mfaReceipt)
   }
 
@@ -30,7 +33,7 @@ class SeedlessExportService {
    * Detele user export
    */
   async userExportDelete(keyId: string, userId?: string): Promise<void> {
-    const signerSession = await this.sessionManager.getSignerClient()
+    const signerSession = await this.session.getSignerClient()
     return signerSession.apiClient.userExportDelete(keyId, userId)
   }
 
@@ -38,7 +41,7 @@ class SeedlessExportService {
    * List user export
    */
   async userExportList(): Promise<UserExportInitResponse | undefined> {
-    const signerSession = await this.sessionManager.getSignerClient()
+    const signerSession = await this.session.getSignerClient()
     const paginator = signerSession.apiClient.userExportList()
     const [userExport] = await paginator.fetchAll()
     return userExport
@@ -51,7 +54,7 @@ class SeedlessExportService {
     keyId: string,
     pubKey: string
   ): Promise<CubeSignerResponse<UserExportCompleteResponse>> {
-    const signerSession = await this.sessionManager.getSignerClient()
+    const signerSession = await this.session.getSignerClient()
     return signerSession.apiClient.userExportComplete(keyId, pubKey)
   }
 

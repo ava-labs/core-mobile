@@ -286,7 +286,9 @@ export default class SeedlessWallet implements Wallet {
     provider: JsonRpcBatchInternal
   }): Promise<string> {
     const signer = new CsEthersSigner(
-      getEvmAddressFromPubKey(this.getPubKeyBufferC()),
+      // need to use lowercase address due to a bug in the cubist sdk
+      // TODO remove toLowerCase when the bug is fixed
+      getEvmAddressFromPubKey(this.getPubKeyBufferC()).toLowerCase(),
       this.#session,
       { provider }
     )

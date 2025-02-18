@@ -64,7 +64,7 @@ export const useSeedlessRegister = (): ReturnType => {
   const isSeedlessMfaYubikeyBlocked = useSelector(
     selectIsSeedlessMfaYubikeyBlocked
   )
-  const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyTotp } = useVerifyMFA(SeedlessService.session)
 
   const register = async ({
     getOidcToken,
@@ -78,11 +78,11 @@ export const useSeedlessRegister = (): ReturnType => {
 
     try {
       const { oidcToken } = await getOidcToken()
-      const identity = await SeedlessService.sessionManager.oidcProveIdentity(
+      const identity = await SeedlessService.session.oidcProveIdentity(
         oidcToken
       )
       const result = await CoreSeedlessAPIService.register(identity)
-      const signResponse = await SeedlessService.sessionManager.requestOidcAuth(
+      const signResponse = await SeedlessService.session.requestOidcAuth(
         oidcToken
       )
       const isMfaRequired = signResponse.requiresMfa()
@@ -154,7 +154,7 @@ export const useSeedlessRegister = (): ReturnType => {
       } else {
         verifyTotp({
           onVerifyCode: code =>
-            SeedlessService.sessionManager.verifyCode(
+            SeedlessService.session.verifyCode(
               oidcAuth.oidcToken,
               oidcAuth.mfaId,
               code
@@ -180,7 +180,7 @@ export const useSeedlessRegister = (): ReturnType => {
       showLogo()
 
       try {
-        await SeedlessService.sessionManager.approveFido(
+        await SeedlessService.session.approveFido(
           oidcAuth.oidcToken,
           oidcAuth.mfaId,
           true

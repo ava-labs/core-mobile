@@ -52,7 +52,7 @@ export const RecoveryMethodProvider = ({
       await totpChallenge?.answer(code)
 
       if (oidcAuth) {
-        return SeedlessService.sessionManager.verifyCode(
+        return SeedlessService.session.verifyCode(
           oidcAuth.oidcToken,
           oidcAuth.mfaId,
           code

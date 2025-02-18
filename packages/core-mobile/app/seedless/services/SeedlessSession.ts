@@ -11,22 +11,19 @@ import {
   MfaFidoChallenge,
   MfaReceipt,
   SessionData,
-  // SessionStorage,
-  // SignerSession,
-  // SignerSessionManager,
   TotpChallenge,
   UserInfo,
   envs,
-  ExclusiveSessionManager
+  ExclusiveSessionManager,
+  ErrResponse
 } from '@cubist-labs/cubesigner-sdk'
 import { hoursToSeconds, minutesToSeconds } from 'date-fns'
 import Config from 'react-native-config'
-import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
+import { TotpErrors } from 'seedless/errors'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { Result } from 'types/result'
 import { MFA } from 'seedless/types'
 import Logger from 'utils/Logger'
-import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 
 if (!Config.SEEDLESS_ORG_ID) {
   Logger.warn('SEEDLESS_ORG_ID is missing. Seedless is disabled.')
@@ -42,12 +39,14 @@ const SEEDLESS_ENVIRONMENT = Config.SEEDLESS_ENVIRONMENT
 
 const envInterface = envs[SEEDLESS_ENVIRONMENT as Environment]
 
-class SeedlessSessionManager {
+class SeedlessSession {
   private scopes: string[]
   private sessionManager: ExclusiveSessionManager
   private eventEmitter = new EventEmitter()
   private isTokenValid = false
-  private signerClient: CubeSignerClient
+  private signerClient: CubeSignerClient | null = null
+  private signerClientPromise: Promise<CubeSignerClient> | null = null
+  private onSessionExpired: undefined | (() => void)
 
   constructor({
     scopes,
@@ -58,6 +57,10 @@ class SeedlessSessionManager {
   }) {
     this.scopes = scopes
     this.sessionManager = sessionManager
+  }
+
+  setOnSessionExpired(onSessionExpired: () => void): void {
+    this.onSessionExpired = onSessionExpired
   }
 
   /**
@@ -96,7 +99,7 @@ class SeedlessSessionManager {
     oidcToken: string,
     mfaReceipt?: MfaReceipt | undefined
   ): Promise<CubeSignerResponse<SessionData>> {
-    return await CubeSignerClient.createOidcSession(
+    const response = await CubeSignerClient.createOidcSession(
       envInterface,
       SEEDLESS_ORG_ID,
       oidcToken,
@@ -112,53 +115,51 @@ class SeedlessSessionManager {
       },
       mfaReceipt
     )
+
+    if (response.requiresMfa()) {
+      // if MFA is required, we cannot access session data until MFA verification is complete
+      // thus, we are just storing the MFA client here (for verification operations)
+      const client = await response.mfaClient()
+      if (!client) throw new Error('MFA client is missing')
+      this.signerClient = client
+    } else {
+      // when MFA is not required or MFA verification is complete
+      // we can safely access session data
+      const sessionData = response.data()
+
+      // destroy outdated client instance
+      this.signerClient = null
+
+      // persist session data
+      await this.sessionManager.store(sessionData)
+    }
+
+    return response
   }
 
-  async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
+  async refreshToken(): Promise<Result<void, Error>> {
     this.setIsTokenValid(false)
 
-    const refreshResult = await retry({
-      operation: async _ => {
-        return await this.sessionManager.forceRefresh().catch(err => {
-          //if status is 403 means the token has expired and we need to refresh it
-          Logger.error('sessionMgr.refresh() failed', err)
+    try {
+      await this.sessionManager.forceRefresh()
+      this.setIsTokenValid(true)
+      return { success: true, value: undefined }
+    } catch (err) {
+      // the forceRefresh method does not emit a token expired event
+      // so we need to catch it manually here
+      if (
+        err instanceof ErrResponse &&
+        err.status === 403 &&
+        err.isSessionExpiredError()
+      ) {
+        this.onSessionExpired?.()
+      }
 
-          if ('status' in err && err.status === 403) {
-            return {
-              success: false,
-              error: new TokenRefreshErrors({
-                name: 'TokenExpired',
-                message: 'Token refresh failed'
-              })
-            }
-          }
-          //otherwise propagate error to retry()
-          throw err
-        })
-      },
-      backoffPolicy: RetryBackoffPolicy.constant(1),
-      isSuccess: result => {
-        //stop retry if refresh() passed without problems or we intercepted it in 403 logic
-        return result === undefined || 'success' in result
-      },
-      maxRetries: 10
-    }).catch(_ => {
-      //if retry() exceeded max retry catch it here
       return {
         success: false,
-        error: new TokenRefreshErrors({
-          name: 'RefreshFailed',
-          message: 'Token refresh failed'
-        })
+        error: err as Error
       }
-    })
-
-    this.setIsTokenValid(true)
-
-    return (refreshResult || { success: true, value: undefined }) as Result<
-      void,
-      TokenRefreshErrors
-    >
+    }
   }
 
   async totpResetInit(): Promise<CubeSignerResponse<TotpChallenge>> {
@@ -223,7 +224,7 @@ class SeedlessSessionManager {
         .totpApprove(code)
       const receipt = await status.receipt()
 
-      if (!receipt?.mfaConf) {
+      if (!receipt) {
         return {
           success: false,
           error: new TotpErrors({
@@ -267,20 +268,35 @@ class SeedlessSessionManager {
     cubeSignerResponse: CubeSignerResponse<T>,
     code: string
   ): Promise<Result<CubeSignerResponse<T>, TotpErrors>> {
-    const signerSession = await this.getSignerClient()
-    const response = await cubeSignerResponse.totpApprove(signerSession, code)
+    const signerClient = await this.getSignerClient()
+    const response = await cubeSignerResponse.totpApprove(signerClient, code)
     return { success: true, value: response }
   }
 
   /**
-   * Returns a CubeSigner instance
+   * Returns a CubeSignerClient instance
    */
   async getSignerClient(): Promise<CubeSignerClient> {
-    if (!this.signerClient) {
-      this.signerClient = await CubeSignerClient.create(this.sessionManager)
+    if (this.signerClient) {
+      return this.signerClient
     }
 
-    return this.signerClient
+    if (!this.signerClientPromise) {
+      this.signerClientPromise = (async () => {
+        const client = await CubeSignerClient.create(this.sessionManager)
+
+        if (this.onSessionExpired) {
+          client.addEventListener('session-expired', this.onSessionExpired)
+        }
+
+        this.signerClient = client
+        this.signerClientPromise = null // Reset the promise lock
+        return client
+      })()
+    }
+
+    // return a promise to prevent multiple client creation
+    return this.signerClientPromise
   }
 
   /**
@@ -309,20 +325,20 @@ class SeedlessSessionManager {
     this.isTokenValid = isTokenValid
 
     this.eventEmitter.emit(
-      SeedlessSessionManagerEvent.TokenStatusUpdated,
+      SeedlessSessionEvent.TokenStatusUpdated,
       this.isTokenValid
     )
   }
 
   addListener<T>(
-    event: SeedlessSessionManagerEvent,
+    event: SeedlessSessionEvent,
     callback: (data: T) => void
   ): void {
     this.eventEmitter.on(event, callback)
   }
 
   removeListener<T>(
-    event: SeedlessSessionManagerEvent,
+    event: SeedlessSessionEvent,
     handler: (data: T) => void
   ): void {
     this.eventEmitter.off(event, handler)
@@ -337,8 +353,8 @@ class SeedlessSessionManager {
   }
 }
 
-export enum SeedlessSessionManagerEvent {
+export enum SeedlessSessionEvent {
   TokenStatusUpdated = 'TokenStatusUpdated'
 }
 
-export default SeedlessSessionManager
+export default SeedlessSession

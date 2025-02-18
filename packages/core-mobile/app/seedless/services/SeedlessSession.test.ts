@@ -5,8 +5,8 @@ import {
   TotpChallenge
 } from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
-import SeedlessSessionManager from './SeedlessSessionManager'
-import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
+import SeedlessSession from './SeedlessSession'
+import { SeedlessSessionManager } from './storage/SeedlessSessionManager'
 
 const VALID_MFA_CODE = 'VALID_MFA_CODE'
 const INVALID_MFA_CODE = 'INVALID_MFA_CODE'
@@ -27,15 +27,15 @@ const cubistResponseNoMfa = {
   }
 } as CubeSignerResponse<TotpChallenge>
 
-const seedlessSessionManager = new SeedlessSessionManager({
+const seedlessSession = new SeedlessSession({
   scopes: ['manage:mfa', 'sign:*'],
-  sessionManager: new SeedlessSessionStorage()
+  sessionManager: new SeedlessSessionManager()
 })
 
 describe('SeedlessSessionManager', () => {
   jest
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .spyOn(seedlessSessionManager, 'getSignerClient' as any)
+    .spyOn(seedlessSession, 'getSignerClient' as any)
     .mockImplementation(async () => {
       return {
         resetTotp: () => cubistResponseNoMfa
@@ -43,7 +43,7 @@ describe('SeedlessSessionManager', () => {
     })
   describe('totpResetInit', () => {
     it('should return the totp challenge url', async () => {
-      const response = await seedlessSessionManager.totpResetInit()
+      const response = await seedlessSession.totpResetInit()
       const result = response.data()
       expect(result.url).toBe(mockTotpChallenge.url)
     })
@@ -51,7 +51,7 @@ describe('SeedlessSessionManager', () => {
     it('should throw wrong mfa code error from existing mfa', async () => {
       jest
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(seedlessSessionManager, 'getSignerClient' as any)
+        .spyOn(seedlessSession, 'getSignerClient' as any)
         .mockImplementation(async () => {
           return {
             resetTotp: () => cubistResponseNoMfa
@@ -63,11 +63,11 @@ describe('SeedlessSessionManager', () => {
           throw new Error('WrongMfaCode')
         })
 
-      const response = await seedlessSessionManager.totpResetInit()
+      const response = await seedlessSession.totpResetInit()
       const challenge = response.data()
       await challenge.answer(INVALID_MFA_CODE)
 
-      const result = await seedlessSessionManager.verifyCode(
+      const result = await seedlessSession.verifyCode(
         'oidcToken',
         'mfaId',
         INVALID_MFA_CODE
@@ -81,7 +81,7 @@ describe('SeedlessSessionManager', () => {
     it('should require valid code from existing mfa and succeed', async () => {
       jest
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(seedlessSessionManager, 'getSignerClient' as any)
+        .spyOn(seedlessSession, 'getSignerClient' as any)
         .mockImplementation(async () => {
           return {
             resetTotp: () => cubistResponseNoMfa,
@@ -98,15 +98,15 @@ describe('SeedlessSessionManager', () => {
         })
 
       jest
-        .spyOn(seedlessSessionManager, 'requestOidcAuth')
+        .spyOn(seedlessSession, 'requestOidcAuth')
         .mockReturnValueOnce('loggedin' as never)
 
-      const response = await seedlessSessionManager.totpResetInit()
+      const response = await seedlessSession.totpResetInit()
       const challenge = response.data()
 
       await challenge.answer(VALID_MFA_CODE)
 
-      const result = await seedlessSessionManager.verifyCode(
+      const result = await seedlessSession.verifyCode(
         'oidcToken',
         'mfaId',
         VALID_MFA_CODE
@@ -119,13 +119,13 @@ describe('SeedlessSessionManager', () => {
   it('should return identity proof', async () => {
     jest
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .spyOn(seedlessSessionManager, 'oidcProveIdentity' as any)
+      .spyOn(seedlessSession, 'oidcProveIdentity' as any)
       .mockResolvedValueOnce({
         exp_epoch: 0,
         id: 'test'
       })
 
-    const result = await seedlessSessionManager.oidcProveIdentity('oidcToken')
+    const result = await seedlessSession.oidcProveIdentity('oidcToken')
     expect(result).toEqual({
       exp_epoch: 0,
       id: 'test'
