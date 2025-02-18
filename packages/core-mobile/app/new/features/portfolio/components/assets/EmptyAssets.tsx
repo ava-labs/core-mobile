@@ -14,7 +14,7 @@ export const EmptyAssets = (): React.JSX.Element => {
         alignItems: 'center'
       }}>
       <Image
-        source={require('../../../../assets/icons/owl.png')}
+        source={require('../../../../assets/icons/empty_state_emoji.png')}
         sx={{ width: 42, height: 42 }}
       />
       <Text
