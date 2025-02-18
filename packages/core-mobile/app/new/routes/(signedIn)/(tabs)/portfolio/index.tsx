@@ -96,7 +96,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return (totalPriceChanged / balanceTotalInCurrency) * 100
   }, [balanceTotalInCurrency, totalPriceChanged])
 
-  const formattedPercent = totalPriceChangedInPercent.toFixed(2) + '%'
+  const formattedPercent =
+    (isNaN(totalPriceChangedInPercent)
+      ? UNKNOWN_AMOUNT
+      : totalPriceChangedInPercent.toFixed(2)) + '%'
 
   const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
