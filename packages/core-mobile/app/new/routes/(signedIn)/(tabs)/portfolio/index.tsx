@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   View,
   BalanceHeader,
@@ -26,7 +26,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
-import { AssetsScreen } from 'features/portfolio/components/AssetsScreen'
+import AssetsScreen from 'features/portfolio/components/AssetsScreen'
 import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
@@ -40,9 +40,11 @@ import {
   CollapsibleTabs,
   CollapsibleTabsRef
 } from 'common/components/CollapsibleTabs'
+import { useRouter } from 'expo-router'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const { navigate } = useRouter()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -171,6 +173,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
     setSelectedSegmentIndex(index)
   }
 
+  const handleGoToTokenDetail = useCallback((): void => {
+    // navigate to token detail
+  }, [])
+
+  const handleGoToTokenManagement = useCallback((): void => {
+    navigate('/tokenManagement')
+  }, [navigate])
+
   const renderEmptyTabBar = (): JSX.Element => <></>
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -186,7 +196,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
         tabs={[
           {
             tabName: 'Assets',
-            component: <AssetsScreen />
+            component: (
+              <AssetsScreen
+                goToTokenDetail={handleGoToTokenDetail}
+                goToTokenManagement={handleGoToTokenManagement}
+              />
+            )
           },
           {
             tabName: 'Collectibles',

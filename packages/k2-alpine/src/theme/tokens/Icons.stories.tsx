@@ -112,6 +112,7 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.Error,
       Icons.Custom.FaceID,
       Icons.Custom.TouchID,
+      Icons.Custom.QRCodeScanner,
       Icons.Custom.Pin,
       Icons.Custom.Psychiatry,
       Icons.Custom.Send,
@@ -123,8 +124,10 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.Contactless,
       Icons.Custom.Connect,
       Icons.Custom.KidStar,
+      Icons.Custom.RedExclamation,
       theme.isDark ? Icons.Custom.OutboundDark : Icons.Custom.OutboundLight,
       Icons.Custom.SearchCustom,
+      Icons.Custom.Search,
       Icons.Custom.SignPost,
       Icons.Custom.Signature,
       Icons.Custom.AvalabsTrademark

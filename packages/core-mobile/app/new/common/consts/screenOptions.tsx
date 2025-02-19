@@ -104,6 +104,16 @@ export const modalFirstScreenOptions: StackNavigationOptions = {
   headerBackImage: () => null
 }
 
+const HeaderBack = (): JSX.Element => (
+  <View sx={{ marginTop: 39 }}>
+    <BackBarButton />
+  </View>
+)
+
+export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
+  headerBackImage: HeaderBack
+}
+
 export const homeScreenOptions: StackNavigationOptions = {
   headerLeft: () => (
     <View
