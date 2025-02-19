@@ -27,7 +27,7 @@ describe('SeedlessBtcSigner', () => {
     utxos: [],
     network: {} as Network,
     // @ts-ignore
-    session: {
+    client: {
       apiClient: {
         signBtc: () => {
           return {
@@ -48,7 +48,7 @@ describe('SeedlessBtcSigner', () => {
         inputIndex: 0,
         utxos: [],
         network: {} as Network,
-        session: {} as cs.CubeSignerClient
+        client: {} as cs.CubeSignerClient
       })
     } catch (e) {
       expect((e as Error).message).toBe('Invalid public key')
@@ -108,7 +108,7 @@ describe('SeedlessBtcSigner', () => {
         utxos: [],
         network: {} as Network,
         // @ts-ignore
-        session: {
+        client: {
           apiClient: {
             signBtc: () => {
               return {

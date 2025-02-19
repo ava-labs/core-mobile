@@ -39,16 +39,16 @@ import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet implements Wallet {
-  #session: cs.CubeSignerClient
+  #client: cs.CubeSignerClient
   #addressPublicKey: PubKeyType
 
-  constructor(session: cs.CubeSignerClient, addressPublicKey: PubKeyType) {
-    this.#session = session
+  constructor(client: cs.CubeSignerClient, addressPublicKey: PubKeyType) {
+    this.#client = client
     this.#addressPublicKey = addressPublicKey
   }
 
   private async getMnemonicId(): Promise<string> {
-    const keys = await this.#session.apiClient.sessionKeysList()
+    const keys = await this.#client.apiClient.sessionKeysList()
 
     const activeAccountKey = keys.find(
       key => strip0x(key.public_key) === this.#addressPublicKey?.evm
@@ -66,7 +66,7 @@ export default class SeedlessWallet implements Wallet {
   private async getSigningKeyByAddress(
     lookupAddress: string
   ): Promise<cs.KeyInfo> {
-    const keys = await this.#session.apiClient.sessionKeysList()
+    const keys = await this.#client.apiClient.sessionKeysList()
 
     const key = keys.find(({ material_id }) => material_id === lookupAddress)
 
@@ -85,7 +85,7 @@ export default class SeedlessWallet implements Wallet {
       throw new Error('Public key not available')
     }
 
-    const keys = await this.#session.apiClient.sessionKeysList()
+    const keys = await this.#client.apiClient.sessionKeysList()
 
     const key = keys
       .filter(({ key_type }) => key_type === type)
@@ -116,7 +116,7 @@ export default class SeedlessWallet implements Wallet {
 
     const key = await this.getSigningKeyByAddress(address)
 
-    const res = await this.#session.apiClient.signBlob(key.key_id, blobReq)
+    const res = await this.#client.apiClient.signBlob(key.key_id, blobReq)
     return res.data().signature
   }
 
@@ -128,7 +128,7 @@ export default class SeedlessWallet implements Wallet {
       throw new Error('Account index must be greater than or equal to 1')
     }
 
-    const identityProof = await this.#session.apiClient.identityProve()
+    const identityProof = await this.#client.apiClient.identityProve()
     const mnemonicId = await this.getMnemonicId()
 
     await CoreSeedlessAPIService.addAccount({
@@ -231,7 +231,7 @@ export default class SeedlessWallet implements Wallet {
           inputIndex: i,
           utxos: transaction.inputs,
           network: btcNetwork,
-          session: this.#session
+          client: this.#client
         })
 
         return psbt.signInputAsync(i, signer)
@@ -267,7 +267,7 @@ export default class SeedlessWallet implements Wallet {
           this.#addressPublicKey.xp
         )
 
-    const response = await this.#session.apiClient.signBlob(key.key_id, {
+    const response = await this.#client.apiClient.signBlob(key.key_id, {
       message_base64: Buffer.from(sha256(transaction.tx.toBytes())).toString(
         'base64'
       )
@@ -289,7 +289,7 @@ export default class SeedlessWallet implements Wallet {
       // need to use lowercase address due to a bug in the cubist sdk
       // TODO remove toLowerCase when the bug is fixed
       getEvmAddressFromPubKey(this.getPubKeyBufferC()).toLowerCase(),
-      this.#session,
+      this.#client,
       { provider }
     )
     return signer.signTransaction(transaction)

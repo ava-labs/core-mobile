@@ -22,9 +22,9 @@ class WalletFactory {
           throw new Error(`Public key not available for index ${accountIndex}`)
         }
 
-        const session = await SeedlessService.session.getSignerClient()
+        const client = await SeedlessService.session.getSignerClient()
 
-        return new SeedlessWallet(session, addressPublicKey)
+        return new SeedlessWallet(client, addressPublicKey)
       }
       case WalletType.MNEMONIC:
         return MnemonicWalletInstance

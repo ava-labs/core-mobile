@@ -108,7 +108,7 @@ describe('SeedlessWallet', () => {
       }
     })
     it('should have thrown with unknown identity', async () => {
-      const signerSession = {
+      const client = {
         apiClient: {
           identityProve: jest
             .fn()
@@ -117,28 +117,28 @@ describe('SeedlessWallet', () => {
         }
       }
       // @ts-ignore
-      const walletWithMockSignerSession = new SeedlessWallet(signerSession, {
+      const walletWithMockClient = new SeedlessWallet(client, {
         evm: 'testPublicKey'
       })
       try {
-        await walletWithMockSignerSession.addAccount(1)
+        await walletWithMockClient.addAccount(1)
       } catch (error) {
         expect(error).toHaveProperty('message', 'Unknown identity')
       }
     })
     it('should have thrown with unknown mnemonic id', async () => {
-      const signerSession = {
+      const client = {
         apiClient: {
           identityProve: jest.fn(),
           sessionKeysList
         }
       }
       // @ts-ignore
-      const walletWithMockSignerSession = new SeedlessWallet(signerSession, {
+      const walletWithMockClient = new SeedlessWallet(client, {
         evm: 'testWrongPublicKey'
       })
       try {
-        await walletWithMockSignerSession.addAccount(1)
+        await walletWithMockClient.addAccount(1)
       } catch (error) {
         expect(error).toHaveProperty(
           'message',
