@@ -36,8 +36,11 @@ describe('SeedlessWallet', () => {
   it('should have thrown for not found mnemonic id ', async () => {
     wallet = new SeedlessWallet(
       {
-        // @ts-ignore
-        keys: () => []
+        apiClient: {
+          identityProve: jest.fn(),
+          // @ts-ignore
+          sessionKeysList: () => []
+        }
       },
       { evm: 'testPublicKey' }
     )
@@ -126,7 +129,7 @@ describe('SeedlessWallet', () => {
     it('should have thrown with unknown mnemonic id', async () => {
       const signerSession = {
         apiClient: {
-          identtyProve: jest.fn(),
+          identityProve: jest.fn(),
           sessionKeysList
         }
       }

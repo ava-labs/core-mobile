@@ -28,10 +28,12 @@ describe('SeedlessBtcSigner', () => {
     network: {} as Network,
     // @ts-ignore
     session: {
-      signBtc: () => {
-        return {
-          data: () => {
-            return { signature: MOCK_KEY }
+      apiClient: {
+        signBtc: () => {
+          return {
+            data: () => {
+              return { signature: MOCK_KEY }
+            }
           }
         }
       }
@@ -107,10 +109,12 @@ describe('SeedlessBtcSigner', () => {
         network: {} as Network,
         // @ts-ignore
         session: {
-          signBtc: () => {
-            return {
-              data: () => {
-                return { signature: 'MOCK_KEY' }
+          apiClient: {
+            signBtc: () => {
+              return {
+                data: () => {
+                  return { signature: 'MOCK_KEY' }
+                }
               }
             }
           }
