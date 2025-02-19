@@ -18,7 +18,7 @@ export const SettingAuthenticatorSetupScreen = (): JSX.Element => {
     useRoute<SettingAuthenticatorSetupScreenProps['route']>().params
   const { navigate } =
     useNavigation<SettingAuthenticatorSetupScreenProps['navigation']>()
-  const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyTotp } = useVerifyMFA(SeedlessService.session)
 
   const handleLearnMore = (): void => {
     if (!totpKey) return
@@ -49,10 +49,8 @@ export const SettingAuthenticatorSetupScreen = (): JSX.Element => {
   }
 
   const totpKey = useMemo(() => {
-    if (totpChallenge.totpUrl) {
-      return (
-        new URL(totpChallenge.totpUrl).searchParams.get('secret') ?? undefined
-      )
+    if (totpChallenge.url) {
+      return new URL(totpChallenge.url).searchParams.get('secret') ?? undefined
     }
   }, [totpChallenge])
 
