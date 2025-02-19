@@ -20,7 +20,8 @@
           "recordAudioAndroid": false
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "@config-plugins/detox"
     ],
     "experiments": {
       "typedRoutes": true
