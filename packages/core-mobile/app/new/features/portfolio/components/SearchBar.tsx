@@ -96,7 +96,7 @@ export const SearchBar: FC<Props> = ({
           alignItems: 'center',
           flexDirection: 'row',
           paddingHorizontal: 12,
-          marginVertical: 11
+          marginVertical: Platform.OS === 'ios' ? 11 : 0
         }}>
         <View
           sx={{
