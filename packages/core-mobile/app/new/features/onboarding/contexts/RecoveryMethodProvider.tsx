@@ -38,10 +38,8 @@ export const RecoveryMethodProvider = ({
   const [totpChallenge, setTotpChallenge] = useState<TotpChallenge>()
 
   const totpKey = useMemo(() => {
-    if (totpChallenge?.totpUrl) {
-      return (
-        new URL(totpChallenge.totpUrl).searchParams.get('secret') ?? undefined
-      )
+    if (totpChallenge?.url) {
+      return new URL(totpChallenge.url).searchParams.get('secret') ?? undefined
     }
   }, [totpChallenge])
 
@@ -54,7 +52,7 @@ export const RecoveryMethodProvider = ({
       await totpChallenge?.answer(code)
 
       if (oidcAuth) {
-        return SeedlessService.sessionManager.verifyCode(
+        return SeedlessService.session.verifyCode(
           oidcAuth.oidcToken,
           oidcAuth.mfaId,
           code

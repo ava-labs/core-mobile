@@ -64,7 +64,7 @@ export const useSeedlessRegister = (): ReturnType => {
   const isSeedlessMfaYubikeyBlocked = useSelector(
     selectIsSeedlessMfaYubikeyBlocked
   )
-  const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyTotp } = useVerifyMFA(SeedlessService.session)
 
   const register = async ({
     getOidcToken,
@@ -72,16 +72,17 @@ export const useSeedlessRegister = (): ReturnType => {
     onRegisterMfaMethods,
     onVerifyMfaMethod,
     onAccountVerified
-  }: RegisterProps): Promise<void> => {
+  }: // eslint-disable-next-line sonarjs/cognitive-complexity
+  RegisterProps): Promise<void> => {
     setIsRegistering(true)
 
     try {
       const { oidcToken } = await getOidcToken()
-      const identity = await SeedlessService.sessionManager.oidcProveIdentity(
+      const identity = await SeedlessService.session.oidcProveIdentity(
         oidcToken
       )
       const result = await CoreSeedlessAPIService.register(identity)
-      const signResponse = await SeedlessService.sessionManager.requestOidcAuth(
+      const signResponse = await SeedlessService.session.requestOidcAuth(
         oidcToken
       )
       const isMfaRequired = signResponse.requiresMfa()
@@ -92,9 +93,10 @@ export const useSeedlessRegister = (): ReturnType => {
       await SecureStorageService.store(KeySlot.OidcUserId, identity.email)
       await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
 
+      const mfaId = signResponse.mfaId()
+
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-        if (isMfaRequired) {
-          const mfaId = signResponse.mfaId()
+        if (isMfaRequired && mfaId) {
           const mfaMethods = identity.user_info?.configured_mfa
 
           if (mfaMethods && mfaMethods.length > 0) {
@@ -115,8 +117,7 @@ export const useSeedlessRegister = (): ReturnType => {
           })
         }
       } else if (result === SeedlessUserRegistrationResult.APPROVED) {
-        if (isMfaRequired) {
-          const mfaId = signResponse.mfaId()
+        if (isMfaRequired && mfaId) {
           onRegisterMfaMethods({ oidcToken, mfaId })
           AnalyticsService.capture('SeedlessSignUp', {
             oidcProvider: oidcProvider
@@ -153,7 +154,7 @@ export const useSeedlessRegister = (): ReturnType => {
       } else {
         verifyTotp({
           onVerifyCode: code =>
-            SeedlessService.sessionManager.verifyCode(
+            SeedlessService.session.verifyCode(
               oidcAuth.oidcToken,
               oidcAuth.mfaId,
               code
@@ -179,7 +180,7 @@ export const useSeedlessRegister = (): ReturnType => {
       showLogo()
 
       try {
-        await SeedlessService.sessionManager.approveFido(
+        await SeedlessService.session.approveFido(
           oidcAuth.oidcToken,
           oidcAuth.mfaId,
           true

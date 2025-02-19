@@ -47,6 +47,7 @@ export const VerifyCode = ({
       onVerifySuccess(result.value?.data())
       AnalyticsService.capture('TotpValidationSuccess')
     } catch (error) {
+      Logger.warn('handleVerifyCode', error)
       setShowError(true)
       setIsVerifying(false)
       AnalyticsService.capture('TotpValidationFailed', {

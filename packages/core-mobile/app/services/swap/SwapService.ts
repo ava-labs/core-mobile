@@ -125,10 +125,13 @@ class SwapService {
           throw new Error('Account address missing')
         }
 
+        const isFromTokenNative = network.networkToken.symbol === srcToken
+        const isDestTokenNative = network.networkToken.symbol === destToken
+
         return await this.getParaSwapSDK(network.chainId).swap.getRate(
           {
-            srcToken,
-            destToken,
+            srcToken: isFromTokenNative ? ETHER_ADDRESS : srcToken,
+            destToken: isDestTokenNative ? ETHER_ADDRESS : destToken,
             amount: srcAmount,
             userAddress: account.addressC,
             side: swapSide,
