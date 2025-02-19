@@ -37,6 +37,7 @@
     "@avalabs/vm-module-types": "1.4.1",
     "@blockaid/client": "0.27.4",
     "@coinbase/cbpay-js": "2.2.1",
+    "@config-plugins/detox": "9.0.0",
     "@cubist-labs/cubesigner-sdk": "0.3.29",
     "@cubist-labs/cubesigner-sdk-ethers-v6": "0.3.29",
     "@datadog/mobile-react-native": "2.4.3",
