@@ -4,10 +4,16 @@
 import { expect } from 'detox'
 import actions from './actions'
 
+let webviewId = 'myWebview' // 기본값 설정
+
+export const setWebViewId = (id: string) => {
+  webviewId = id
+}
+
 const wb =
   device.getPlatform() === 'ios'
-    ? web(by.id('myWebview'))
-    : web(by.type('android.webkit.WebView').withAncestor(by.id('myWebview')))
+    ? web(by.id(webviewId))
+    : web(by.type('android.webkit.WebView').withAncestor(by.id(webviewId)))
 
 // scripts in JavaScript to run on the web
 export enum WebScripts {
