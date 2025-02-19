@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenVisibility, toggleTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
 import { LocalTokenWithBalance } from 'store/balance'
-// import { isTokenMalicious } from 'utils/isTokenMalicious'
 import { Text, Toggle, View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import { LogoWithNetwork } from './assets/LogoWithNetwork'
@@ -16,7 +15,6 @@ const TokenManagementItem: FC<Props> = ({ token }) => {
   const dispatch = useDispatch()
   const tokenVisibility = useSelector(selectTokenVisibility)
   const isToggledOn = isTokenVisible(tokenVisibility, token)
-  // const isMalicious = isTokenMalicious(token)
 
   function handleChange(): void {
     dispatch(

@@ -291,12 +291,6 @@ export const selectIsAllBalancesInaccurate =
     )
   }
 
-// export const selectTokenWithBalanceByLocalId =
-//   (localId: string, accountIndex: number) => (state: RootState) => {
-//     const tokens = selectNonNFTTokensWithBalanceForAccount(state, accountIndex)
-//     return tokens.find(token => token.localId === localId)
-//   }
-
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions
 

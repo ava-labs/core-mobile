@@ -31,14 +31,14 @@ const DEFAULT_DEBOUNCE_MILLISECONDS = 150
  * SearchBar component. Text state is handled outside the
  * component except for when the text is cleared.
  *
- * Shows QRCodeScanner button when search bar is focused.
- * Shows cancel button when input is focused.
+ * Shows QRCodeScanner button when search bar has no search text.
+ * Shows Clear button when search bar has search text.
  *
  * @param onTextChanged callback to implementing view
  * @param searchText current search text
  * @param placeholder defaults to 'Search'
  * @param debounce if true, will delay calling 'onTextChanged' by default ms
- * @param textColor defaults to theme.colorText2
+ * @param textColor
  * @param rest all other props
  * @constructor
  */
