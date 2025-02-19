@@ -295,7 +295,7 @@ __metadata:
     coinselect: 3.1.13
     date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
-    detox: 20.27.2
+    detox: 20.33.0
     es6-promise: 4.2.8
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
@@ -16090,16 +16090,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detox-copilot@npm:^0.0.9":
-  version: 0.0.9
-  resolution: "detox-copilot@npm:0.0.9"
-  checksum: ba7a82191ccc0c642d54adbc601415283205885f444e91daca6b658a50392cdee0090fc95f876bef650f6e16be49f4a5ed89ad064dab405f45ba64d479a6d97c
+"detox-copilot@npm:^0.0.27":
+  version: 0.0.27
+  resolution: "detox-copilot@npm:0.0.27"
+  checksum: 4f01ed1f21fe3128ee50037b63085fe95ccdc9e723c6b034d53720fa325123e39d4f83d18b1ab88a11a679258b0ff734e74f0738118e260f10945fadbe205443
   languageName: node
   linkType: hard
 
-"detox@npm:20.27.2":
-  version: 20.27.2
-  resolution: "detox@npm:20.27.2"
+"detox@npm:20.33.0":
+  version: 20.33.0
+  resolution: "detox@npm:20.33.0"
   dependencies:
     ajv: ^8.6.3
     bunyan: ^1.8.12
@@ -16107,7 +16107,7 @@ __metadata:
     caf: ^15.0.1
     chalk: ^4.0.0
     child-process-promise: ^2.2.0
-    detox-copilot: ^0.0.9
+    detox-copilot: ^0.0.27
     execa: ^5.1.1
     find-up: ^5.0.0
     fs-extra: ^11.0.0
@@ -16144,7 +16144,7 @@ __metadata:
       optional: true
   bin:
     detox: local-cli/cli.js
-  checksum: a7bb8997c591b827c31176ba107b1ec23f7bb8b78ce08c781343937637439771a1cc8f1086844301fbbf0f34ada2e889827821adf5245aa8f4c5b4f5cad23248
+  checksum: 14a9a230f02c6e7e535e96223a9aacbef05c06c20887eac3d1f1df1aca612a1c529f94e265064df39d1c98ee700fbc2a26ebdd18affea5e60f17a527ae42d6e0
   languageName: node
   linkType: hard
 
@@ -26387,7 +26387,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 
