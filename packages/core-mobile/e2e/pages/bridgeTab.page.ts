@@ -143,6 +143,18 @@ class BridgeTabPage {
     return by.id(bridgeTab.error)
   }
 
+  get hollidayBannerTitle() {
+    return by.text(bridgeTab.hollidayBannerTitle)
+  }
+
+  get hollidayBannerWebView() {
+    return by.id(bridgeTab.hollidayBannerWebView)
+  }
+
+  get hollidayBannerContent() {
+    return by.text(bridgeTab.hollidayBannerContent)
+  }
+
   async tapBridgeBtn() {
     await delay(1000)
     await Actions.tap(this.bridgeBtn)
@@ -316,6 +328,16 @@ class BridgeTabPage {
   async goToBridge() {
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapBridgeButton()
+  }
+
+  async verifyHollidayBanner() {
+    await Actions.waitForElement(this.hollidayBannerTitle)
+    await Actions.waitForElement(this.hollidayBannerContent)
+  }
+
+  async tapHollidayBanner() {
+    await Actions.tap(this.hollidayBannerTitle)
+    await Actions.waitForElement(this.hollidayBannerWebView)
   }
 }
 
