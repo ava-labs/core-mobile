@@ -339,8 +339,6 @@ class BridgeTabPage {
     await Actions.tap(this.hollidayBannerTitle)
     await Actions.waitForElement(this.hollidayBannerWebView)
   }
-
-  holliday
 }
 
 export default new BridgeTabPage()

@@ -10,10 +10,11 @@ export const setWebViewId = (id: string) => {
   webviewId = id
 }
 
-const wb =
-  device.getPlatform() === 'ios'
+const getWebView = () => {
+  return device.getPlatform() === 'ios'
     ? web(by.id(webviewId))
     : web(by.type('android.webkit.WebView').withAncestor(by.id(webviewId)))
+}
 
 // scripts in JavaScript to run on the web
 export enum WebScripts {
@@ -56,26 +57,30 @@ export enum WebScripts {
 }
 
 const tap = async (item: Detox.WebMatcher) => {
-  await wb.element(item).tap()
+  await getWebView().element(item).tap()
 }
 
 const tapByXpath = async (xpath: string) => {
   await waitForEleByXpathToBeVisible(xpath)
-  await wb.element(by.web.xpath(xpath)).tap()
+  await getWebView().element(by.web.xpath(xpath)).tap()
 }
 
 const tapByDataTestId = async (dataTestId: string) => {
-  await wb.element(by.web.xpath(`//*[@data-testid="${dataTestId}"]`)).tap()
+  await getWebView()
+    .element(by.web.xpath(`//*[@data-testid="${dataTestId}"]`))
+    .tap()
 }
 
 const tapByText = async (text: string) => {
   await waitForEleByTextToBeVisible(text)
-  await wb.element(by.web.xpath(`//*[text()="${text}"]`)).tap()
+  await getWebView()
+    .element(by.web.xpath(`//*[text()="${text}"]`))
+    .tap()
 }
 
 const isTextVisible = async (text: string) => {
   await expect(
-    wb.element(by.web.xpath(`//*[contains(., "${text}")]`))
+    getWebView().element(by.web.xpath(`//*[contains(., "${text}")]`))
   ).toExist()
 }
 
@@ -89,10 +94,10 @@ const waitForWebElement = async (
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
       if (xpath) {
-        await expect(wb.element(by.web.xpath(xpath))).toExist()
+        await expect(getWebView().element(by.web.xpath(xpath))).toExist()
       } else if (text) {
         await expect(
-          wb.element(by.web.xpath(`//*[contains(., "${text}")]`))
+          getWebView().element(by.web.xpath(`//*[contains(., "${text}")]`))
         ).toExist()
       }
       return
@@ -113,7 +118,7 @@ const isVisibleByRunScript = async (
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      const ele = wb.element(by.web.tag(header))
+      const ele = getWebView().element(by.web.tag(header))
       const output = await ele.runScript(func)
       if (output) {
         console.log(`Element ${header} is visible`)
@@ -132,7 +137,7 @@ const isVisibleByXpath = async (xpath: string, timeout = 5000) => {
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      await expect(wb.element(by.web.xpath(xpath))).toExist()
+      await expect(getWebView().element(by.web.xpath(xpath))).toExist()
       return true
     } catch (e) {
       console.error(`isVisibleByXpath - ${xpath} is NOT visible yet`)
@@ -151,7 +156,7 @@ const waitAndRunScript = async (
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      await wb.element(by.web.cssSelector(header)).runScript(func)
+      await getWebView().element(by.web.cssSelector(header)).runScript(func)
       return
     } catch (e: any) {
       console.error(`waitAndRunScript - ${header} is NOT visible yet`)
@@ -170,7 +175,7 @@ const getElementTextByRunScript = async (
   while (Date.now() - start < timeout) {
     await new Promise(resolve => setTimeout(resolve, 100))
     try {
-      output = await wb.element(by.web.tag(header)).runScript(func)
+      output = await getWebView().element(by.web.tag(header)).runScript(func)
       if (output) break
     } catch (e: any) {
       console.error(`Element ${header} not visible`)
@@ -181,32 +186,34 @@ const getElementTextByRunScript = async (
 
 const verifyUrl = async (url: string, timeout = 5000) => {
   await actions.waitForCondition(
-    () => wb.element(by.web.tag('body')).getCurrentUrl(),
+    () => getWebView().element(by.web.tag('body')).getCurrentUrl(),
     (result: string) => result === url || result.includes(url),
     timeout
   )
 }
 
 const scrollToXpath = async (xpath: string) => {
-  await wb.element(by.web.xpath(xpath)).scrollToView()
+  await getWebView().element(by.web.xpath(xpath)).scrollToView()
 }
 
 const scrollToText = async (text: string) => {
   await waitForEleByTextToBeVisible(text)
-  await wb.element(by.web.xpath(`//*[text()="${text}"]`)).scrollToView()
+  await getWebView()
+    .element(by.web.xpath(`//*[text()="${text}"]`))
+    .scrollToView()
 }
 
 const waitForEleByXpathToBeVisible = async (xpath: string, timeout = 5000) => {
   await waitForWebElement(xpath, undefined, timeout)
 }
 
-const waitForEleByTextToBeVisible = async (text: string, timeout = 5000) => {
+const waitForEleByTextToBeVisible = async (text: string, timeout = 10000) => {
   await waitForWebElement(undefined, text, timeout)
 }
 
 const setInputText = async (xpath: string, text: string) => {
   await waitForEleByXpathToBeVisible(xpath)
-  await wb.element(by.web.xpath(xpath)).replaceText(text)
+  await getWebView().element(by.web.xpath(xpath)).replaceText(text)
 }
 
 export default {

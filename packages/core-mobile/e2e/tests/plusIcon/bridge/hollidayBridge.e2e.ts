@@ -1,12 +1,10 @@
 import { warmup } from '../../../helpers/warmup'
 import bridgeTabPage from '../../../pages/bridgeTab.page'
-import commonElsPage from '../../../pages/commonEls.page'
-import bridgeTabLoc from '../../../locators/bridgeTab.loc'
-import { setWebViewId } from '../../../helpers/web'
+import Wbs, { setWebViewId } from '../../../helpers/web'
+import browserPage from '../../../pages/browser.page'
+import connectToSitePage from '../../../pages/connectToSite.page'
+import popUpModalPage from '../../../pages/popUpModal.page'
 
-// Please note that the tests here are NOT for completing the bridge transactions,
-// but for verifying the bridge screen and its elements'
-// Since Bridge Transactions are expensive, we are just testing the flow between networks on e2e daily run.
 describe('Holliday Bridge Flow', () => {
   beforeAll(async () => {
     await warmup()
@@ -17,8 +15,20 @@ describe('Holliday Bridge Flow', () => {
     await bridgeTabPage.goToBridge()
     await bridgeTabPage.verifyHollidayBanner()
     await bridgeTabPage.tapHollidayBanner()
-    await bridgeTabPage.verifyBridgeScreen()
-    await bridgeTabPage.verifyFromNetwork(bridgeTabLoc.avalancheNetwork)
-    await commonElsPage.goBack()
+    await browserPage.tapAccept()
+    await browserPage.tapCoreConnectWallet()
+    await browserPage.connectTermAndContinue()
+    await browserPage.connectCore()
+    await connectToSitePage.selectAccountAndconnect()
+    await Wbs.waitForEleByTextToBeVisible('Buy Details')
+    await Wbs.tapByText('Choose the network where you want to buy tokens')
+    await Wbs.tapByText('Avalanche (C-Chain)')
+    await Wbs.tapByText('Which token do you want to buy?')
+    await Wbs.tapByText('AVAX')
+    await Wbs.tapByText('Continue to Halliday')
+    await Wbs.waitForEleByTextToBeVisible('Halliday Onramp')
+    await popUpModalPage.verifySignMessageModal()
+    await popUpModalPage.tapApproveBtn()
+    await Wbs.waitForEleByTextToBeVisible('Halliday Onramp')
   })
 })
