@@ -59,7 +59,9 @@ const AlertBanner = ({ alert }: { alert: Alert }): JSX.Element | null => {
         <Text sx={{ ...textStyle, fontWeight: '600' }}>
           {alert.details.title}
         </Text>
-        <Text sx={{ ...textStyle }}>{alert.details.description}</Text>
+        <Text sx={{ ...textStyle, marginRight: 16 }}>
+          {alert.details.description}
+        </Text>
       </View>
     </View>
   )

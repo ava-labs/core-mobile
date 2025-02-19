@@ -4,12 +4,11 @@ import { AppStartListening } from 'store/middleware/listener'
 import {
   onAppUnlocked,
   onLogOut,
-  onRehydrationComplete,
-  selectWalletType
+  selectWalletType,
+  onRehydrationComplete
 } from 'store/app'
 import { WalletType } from 'services/wallet/types'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { ErrorEvent, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import * as Navigation from 'utils/Navigation'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { addSeedlessListeners } from './listeners'
@@ -29,10 +28,12 @@ jest.mock('store/app', () => {
 })
 
 jest.mock('seedless/services/SeedlessService', () => ({
-  sessionManager: {
+  session: {
     refreshToken: jest.fn()
-  }
+  },
+  init: jest.fn()
 }))
+
 jest.mock('services/socialSignIn/google/GoogleSigninService', () => ({
   signOut: jest.fn()
 }))
@@ -74,9 +75,10 @@ describe('seedless - listeners', () => {
 
   it('should have called refresh token', async () => {
     store.dispatch(onAppUnlocked())
-    expect(SeedlessService.sessionManager.refreshToken).toHaveBeenCalled()
+    expect(SeedlessService.session.refreshToken).toHaveBeenCalled()
   })
-  it('should have dispatched onTokenExpired action', async () => {
+
+  it('should init SeedlessService on onRehydrationComplete action', async () => {
     const mockSelectWalletType =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       selectWalletType as jest.MockedFunction<any>
@@ -84,16 +86,12 @@ describe('seedless - listeners', () => {
       return WalletType.SEEDLESS
     })
     store.dispatch(onRehydrationComplete())
-    GlobalEvents.triggerErrorEvent({
-      status: 403,
-      isSessionExpiredError: () => true
-    } as ErrorEvent)
-    expect(mockNavigate).toHaveBeenCalledWith({
-      name: 'Root.RefreshToken',
-      params: expect.anything()
+
+    expect(SeedlessService.init).toHaveBeenCalledWith({
+      onSessionExpired: expect.any(Function)
     })
   })
-  it('should have not dispatched onTokenExpired action when wallet is not seedless', async () => {
+  it('should not init SeedlessService on onRehydrationComplete action when wallet is mnemonic', async () => {
     const mockSelectWalletType =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       selectWalletType as jest.MockedFunction<any>
@@ -101,13 +99,9 @@ describe('seedless - listeners', () => {
       return WalletType.MNEMONIC
     })
     store.dispatch(onRehydrationComplete())
-    GlobalEvents.triggerErrorEvent({
-      status: 403,
-      isSessionExpiredError: () => true
-    } as ErrorEvent)
-    expect(mockNavigate).not.toHaveBeenCalledWith({
-      name: 'Root.RefreshToken',
-      params: expect.anything()
+
+    expect(SeedlessService.init).not.toHaveBeenCalledWith({
+      onSessionExpired: expect.any(Function)
     })
   })
   it('should have signed out', async () => {

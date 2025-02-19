@@ -1,22 +1,20 @@
 import assert from 'assert'
 import {
-  CubeSignerApi,
+  ApiClient,
   CubeSignerResponse,
-  OidcClient,
-  SignerSession,
   TotpChallenge
 } from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
-import SeedlessSessionManager from './SeedlessSessionManager'
-import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
+import SeedlessSession from './SeedlessSession'
+import { SeedlessSessionManager } from './storage/SeedlessSessionManager'
 
 const VALID_MFA_CODE = 'VALID_MFA_CODE'
 const INVALID_MFA_CODE = 'INVALID_MFA_CODE'
 const mockAnswer: (code: string) => Promise<void> = jest.fn()
 
 const mockTotpChallenge = {
-  totpUrl: 'totp_url',
-  totpId: 'totp_id',
+  url: 'totp_url',
+  id: 'totp_id',
   answer: mockAnswer
 } as TotpChallenge
 
@@ -29,47 +27,47 @@ const cubistResponseNoMfa = {
   }
 } as CubeSignerResponse<TotpChallenge>
 
-const seedlessSessionManager = new SeedlessSessionManager({
+const seedlessSession = new SeedlessSession({
   scopes: ['manage:mfa', 'sign:*'],
-  sessionStorage: new SeedlessSessionStorage()
+  sessionManager: new SeedlessSessionManager()
 })
 
 describe('SeedlessSessionManager', () => {
   jest
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .spyOn(seedlessSessionManager, 'getCubeSignerClient' as any)
+    .spyOn(seedlessSession, 'getSignerClient' as any)
     .mockImplementation(async () => {
       return {
-        userTotpResetInit: () => cubistResponseNoMfa
+        resetTotp: () => cubistResponseNoMfa
       }
     })
   describe('totpResetInit', () => {
     it('should return the totp challenge url', async () => {
-      const response = await seedlessSessionManager.totpResetInit()
+      const response = await seedlessSession.totpResetInit()
       const result = response.data()
-      expect(result.totpUrl).toBe(mockTotpChallenge.totpUrl)
+      expect(result.url).toBe(mockTotpChallenge.url)
     })
 
     it('should throw wrong mfa code error from existing mfa', async () => {
       jest
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(seedlessSessionManager, 'getCubeSignerClient' as any)
+        .spyOn(seedlessSession, 'getSignerClient' as any)
         .mockImplementation(async () => {
           return {
-            userTotpResetInit: () => cubistResponseNoMfa
+            resetTotp: () => cubistResponseNoMfa
           }
         })
       jest
-        .spyOn(CubeSignerApi.prototype, 'userTotpVerify')
+        .spyOn(ApiClient.prototype, 'userTotpVerify')
         .mockImplementation(async () => {
           throw new Error('WrongMfaCode')
         })
 
-      const response = await seedlessSessionManager.totpResetInit()
+      const response = await seedlessSession.totpResetInit()
       const challenge = response.data()
       await challenge.answer(INVALID_MFA_CODE)
 
-      const result = await seedlessSessionManager.verifyCode(
+      const result = await seedlessSession.verifyCode(
         'oidcToken',
         'mfaId',
         INVALID_MFA_CODE
@@ -83,32 +81,32 @@ describe('SeedlessSessionManager', () => {
     it('should require valid code from existing mfa and succeed', async () => {
       jest
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(seedlessSessionManager, 'getCubeSignerClient' as any)
+        .spyOn(seedlessSession, 'getSignerClient' as any)
         .mockImplementation(async () => {
           return {
-            userTotpResetInit: () => cubistResponseNoMfa
+            resetTotp: () => cubistResponseNoMfa,
+            org: () => ({
+              getMfaRequest: () => ({
+                totpApprove: () => ({
+                  receipt: async () => ({
+                    mfaConf: 'confirmation'
+                  })
+                })
+              })
+            })
           }
         })
-      jest.spyOn(SignerSession, 'loadSignerSession').mockReturnValueOnce({
-        totpApprove: () => {
-          return {
-            receipt: {
-              confirmation: 'confirmation'
-            }
-          }
-        }
-      } as never)
 
       jest
-        .spyOn(seedlessSessionManager, 'requestOidcAuth')
+        .spyOn(seedlessSession, 'requestOidcAuth')
         .mockReturnValueOnce('loggedin' as never)
 
-      const response = await seedlessSessionManager.totpResetInit()
+      const response = await seedlessSession.totpResetInit()
       const challenge = response.data()
 
       await challenge.answer(VALID_MFA_CODE)
 
-      const result = await seedlessSessionManager.verifyCode(
+      const result = await seedlessSession.verifyCode(
         'oidcToken',
         'mfaId',
         VALID_MFA_CODE
@@ -119,11 +117,15 @@ describe('SeedlessSessionManager', () => {
   })
 
   it('should return identity proof', async () => {
-    jest.spyOn(OidcClient.prototype, 'identityProve').mockResolvedValueOnce({
-      exp_epoch: 0,
-      id: 'test'
-    })
-    const result = await seedlessSessionManager.oidcProveIdentity('oidcToken')
+    jest
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .spyOn(seedlessSession, 'oidcProveIdentity' as any)
+      .mockResolvedValueOnce({
+        exp_epoch: 0,
+        id: 'test'
+      })
+
+    const result = await seedlessSession.oidcProveIdentity('oidcToken')
     expect(result).toEqual({
       exp_epoch: 0,
       id: 'test'

@@ -6,7 +6,7 @@ import { showSimpleToast } from 'components/Snackbar'
 import { formatDistanceToNow } from 'date-fns'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import SeedlessExportService from 'seedless/services/SeedlessExportService'
-import SeedlessSessionManager from 'seedless/services/SeedlessSessionManager'
+import SeedlessSession from 'seedless/services/SeedlessSession'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
@@ -25,7 +25,7 @@ const HOURS_48 = 60 * 60 * 48
 const ONE_MINUTE = 60
 
 const EXPORT_DELAY =
-  SeedlessSessionManager.environment === 'prod' ? HOURS_48 : ONE_MINUTE
+  SeedlessSession.environment === 'prod' ? HOURS_48 : ONE_MINUTE
 
 type OnVerifyMfaSuccess<T> = (response: T) => void
 
@@ -47,7 +47,7 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
   const [timeLeft, setTimeLeft] = useState('')
 
   const seedlessExportService = useMemo(() => new SeedlessExportService(), [])
-  const { verifyMFA } = useVerifyMFA(seedlessExportService.sessionManager)
+  const { verifyMFA } = useVerifyMFA(seedlessExportService.session)
 
   const deleteExport = useCallback(async (): Promise<void> => {
     try {
@@ -159,7 +159,7 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
 
   useEffect(() => {
     const checkPendingExports = async (): Promise<void> => {
-      const mfa = await seedlessExportService.sessionManager.userMfa()
+      const mfa = await seedlessExportService.session.userMfa()
       if (mfa.length === 0) {
         Alert.alert(
           'Multi-factor authentication required',
@@ -182,7 +182,7 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
       setPendingRequest(pendingExport)
     }
 
-    startRefreshSeedlessTokenFlow(seedlessExportService.sessionManager)
+    startRefreshSeedlessTokenFlow(seedlessExportService.session)
       .then(result => {
         if (result.success) {
           checkPendingExports()

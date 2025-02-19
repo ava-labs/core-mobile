@@ -190,8 +190,8 @@ __metadata:
     "@babel/runtime": 7.25.7
     "@blockaid/client": 0.27.4
     "@coinbase/cbpay-js": 2.2.1
-    "@cubist-labs/cubesigner-sdk": 0.3.29
-    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.29
+    "@cubist-labs/cubesigner-sdk": 0.4.117-0
+    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.4.117-0
     "@datadog/mobile-react-native": 2.4.3
     "@datadog/mobile-react-navigation": 2.4.3
     "@date-fns/utc": 2.1.0
@@ -4375,26 +4375,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.29":
-  version: 0.3.29
-  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.29"
+"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.4.117-0":
+  version: 0.4.117-0
+  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.4.117-0"
   peerDependencies:
-    "@cubist-labs/cubesigner-sdk": ^0.3.29
-    ethers: 6.7.1
-  checksum: c87ceb39aeaf86cbee933d6dde2849a14484a6f708b6758ca2d3b75e9beaa0b4b5bcaaec61abdbdcb5e082e206f7efdb07ac02e4e5a4156114bef081c1072850
+    "@cubist-labs/cubesigner-sdk": ^0.4.117-0
+    ethers: 6.13.4
+  checksum: 2d1b44bfd6e60771b5004bdece501da2455207161a0b5aade570f78a44e817f48ce9c5b58c36f61408df3ab754dc3cb3118212e0b436b48ee8ec1e70f33c4ee2
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk@npm:0.3.29":
-  version: 0.3.29
-  resolution: "@cubist-labs/cubesigner-sdk@npm:0.3.29"
+"@cubist-labs/cubesigner-sdk@npm:0.4.117-0":
+  version: 0.4.117-0
+  resolution: "@cubist-labs/cubesigner-sdk@npm:0.4.117-0"
   dependencies:
     "@hpke/core": ^1.2.7
-    openapi-fetch: 0.6.1
+    openapi-fetch: 0.8.2
   dependenciesMeta:
     "@hpke/core":
       optional: true
-  checksum: 32d67140baa33598de390eba144bd419bed2cb78c86867727701ff924f87b278da09d8016cf089347596180176aa3f102d4f36e4a9666185ee1b3d057ffbae56
+  checksum: 6e64d54679482e015fbe6aa58ff859c56d058aaccc02a9a4454bf1ceb96588791ea31dac338a9aafcb6efeadbeeb98272562120b03b4011165d68df034f29c37
   languageName: node
   linkType: hard
 
@@ -24598,10 +24598,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openapi-fetch@npm:0.6.1":
-  version: 0.6.1
-  resolution: "openapi-fetch@npm:0.6.1"
-  checksum: 7da3d4092f7f544e63577d098745b570d550ec63932db6e4fd38ddf52f38efd25150ed65d7952a1842d89a0f548ff61c6f8bad45d277e8a044a56735e4a71b27
+"openapi-fetch@npm:0.8.2":
+  version: 0.8.2
+  resolution: "openapi-fetch@npm:0.8.2"
+  dependencies:
+    openapi-typescript-helpers: ^0.0.5
+  checksum: 05541a2559f51c86e3fdd5369596002fdf3230b481241211ea79965900b5a0428cb34b8062ea24cd7e4a974feec6e54287f4d64c194e93b68925024d7f488463
+  languageName: node
+  linkType: hard
+
+"openapi-typescript-helpers@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "openapi-typescript-helpers@npm:0.0.5"
+  checksum: 1c1024e552af9f3bdf3ab7a76bd7208f783f9af53b9cfebc86984e700e85df071a73cf5f560cb295a547a0dc88ccd87a689a7fd286781e3b04716af8aa583898
   languageName: node
   linkType: hard
 
