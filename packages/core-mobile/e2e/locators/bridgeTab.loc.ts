@@ -36,5 +36,9 @@ export default {
   selectedToken: 'selected_token',
   toNetwork: 'to_blockchain',
   fromNetwork: 'from_blockchain',
-  error: 'bridge_error'
+  error: 'bridge_error',
+  hollidayBannerWebView: 'halliday-bridge-webview',
+  hollidayBannerTitle: 'Bridge using Halliday',
+  hollidayBannerContent:
+    'Buy and bridge USD and other currencies directly to L1s using Halliday.'
 }
