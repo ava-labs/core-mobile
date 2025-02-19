@@ -21,7 +21,6 @@ export const TokenGridView = ({
   index,
   onPress,
   status,
-  priceChange,
   formattedBalance,
   formattedPrice
 }: TokenListViewProps): React.JSX.Element => {
@@ -55,11 +54,19 @@ export const TokenGridView = ({
             {token.name}
           </Text>
           <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
-            <Text variant="body2" sx={{ lineHeight: 16 }} ellipsizeMode="tail">
+            <Text
+              variant="body2"
+              sx={{ lineHeight: 16 }}
+              ellipsizeMode="tail"
+              numberOfLines={1}>
               {token.balanceDisplayValue}
             </Text>
             <Space x={4} />
-            <Text variant="body2" numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              variant="body2"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              sx={{ flex: 1 }}>
               {token.symbol}
             </Text>
           </View>
@@ -77,12 +84,10 @@ export const TokenGridView = ({
                 {formattedBalance}
               </Text>
             </View>
-            {priceChange && (
-              <PriceChangeIndicator
-                formattedPrice={formattedPrice}
-                status={status}
-              />
-            )}
+            <PriceChangeIndicator
+              formattedPrice={formattedPrice}
+              status={status}
+            />
           </View>
         </View>
       </TouchableOpacity>

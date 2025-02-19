@@ -19,7 +19,6 @@ export const TokenListView = ({
   index,
   onPress,
   formattedBalance,
-  priceChange,
   formattedPrice,
   status
 }: TokenListViewProps): React.JSX.Element => {
@@ -60,7 +59,7 @@ export const TokenListView = ({
             sx={{
               marginLeft: 8,
               marginRight: 16,
-              flexShrink: 1
+              flex: 2
             }}>
             <Text
               variant="buttonMedium"
@@ -72,11 +71,16 @@ export const TokenListView = ({
               <Text
                 variant="body2"
                 sx={{ lineHeight: 16 }}
-                ellipsizeMode="tail">
+                ellipsizeMode="tail"
+                numberOfLines={1}>
                 {token.balanceDisplayValue}
               </Text>
               <Space x={4} />
-              <Text variant="body2" numberOfLines={1} ellipsizeMode="tail">
+              <Text
+                variant="body2"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                sx={{ flex: 1 }}>
                 {token.symbol}
               </Text>
             </View>
@@ -85,7 +89,8 @@ export const TokenListView = ({
             sx={{
               alignItems: 'flex-end',
               flexShrink: 1,
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flex: 1
             }}>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
               {!token.isDataAccurate && (
@@ -98,12 +103,10 @@ export const TokenListView = ({
                 {formattedBalance}
               </Text>
             </View>
-            {priceChange && (
-              <PriceChangeIndicator
-                formattedPrice={formattedPrice}
-                status={status}
-              />
-            )}
+            <PriceChangeIndicator
+              formattedPrice={formattedPrice}
+              status={status}
+            />
           </View>
         </View>
         <View
