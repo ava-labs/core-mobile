@@ -36,7 +36,7 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
 }
 
 export const modalScreensOptions: StackNavigationOptions = {
-  presentation: 'modal',
+  presentation: 'transparentModal',
   cardStyle: {
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,

@@ -2,7 +2,6 @@ import React, { useCallback } from 'react'
 import { ListRenderItemInfo } from 'react-native'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
-  FlatList,
   Icons,
   Text,
   TouchableOpacity,
@@ -16,6 +15,7 @@ import { GlobalEmptyAssets } from 'common/components/GlobalEmptyState'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useRouter } from 'expo-router'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { FlatList } from 'react-native-gesture-handler'
 
 const TokenManagementScreen = (): JSX.Element => {
   const {
