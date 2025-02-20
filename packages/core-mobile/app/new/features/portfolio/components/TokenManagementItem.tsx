@@ -17,9 +17,7 @@ const TokenManagementItem: FC<Props> = ({ token }) => {
   const isToggledOn = isTokenVisible(tokenVisibility, token)
 
   function handleChange(): void {
-    dispatch(
-      toggleTokenVisibility({ tokenId: token.localId, value: !isToggledOn })
-    )
+    dispatch(toggleTokenVisibility({ tokenId: token.localId }))
   }
 
   return (

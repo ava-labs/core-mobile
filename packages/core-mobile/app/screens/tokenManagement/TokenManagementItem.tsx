@@ -24,9 +24,7 @@ const TokenManagementItem: FC<Props> = ({ token }) => {
   const isMalicious = isTokenMalicious(token)
 
   function handleChange(): void {
-    dispatch(
-      toggleTokenVisibility({ tokenId: token.localId, value: !isSwitchOn })
-    )
+    dispatch(toggleTokenVisibility({ tokenId: token.localId }))
   }
 
   const tokenLogo = (
