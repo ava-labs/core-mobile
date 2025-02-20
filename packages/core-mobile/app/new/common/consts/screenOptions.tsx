@@ -36,7 +36,7 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
 }
 
 export const modalScreensOptions: StackNavigationOptions = {
-  presentation: 'transparentModal',
+  presentation: 'modal',
   cardStyle: {
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
@@ -86,7 +86,7 @@ function forModalPresentationIOS({
 
   const overlayOpacity = progress.interpolate({
     inputRange: [0, 1, 1.0001, 2],
-    outputRange: [0, 0.5, 1, 1]
+    outputRange: [0, 0.5, 0.5, 0.5]
   })
 
   return {
