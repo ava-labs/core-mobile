@@ -12,6 +12,7 @@
 
 
 
+
 ### Minimum requirements
 Java version >= 17
 ```shell 
