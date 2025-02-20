@@ -11,6 +11,7 @@
 4. Run `yarn install && yarn setup` if you haven't
 
 
+
 ### Minimum requirements
 Java version >= 17
 ```shell 
