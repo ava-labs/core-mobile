@@ -43,7 +43,10 @@ export function useTokenSearch({
         )
 
         if (tokens.length > 0) {
-          setSearchResults({ tokens, prices: {}, charts: {} })
+          // we already have these tokens in the list
+          // no need to search for prices and charts
+          // it will reuse the existing prices and charts data in the screen
+          setSearchResults({ tokens, prices: undefined, charts: undefined })
           return
         }
 
