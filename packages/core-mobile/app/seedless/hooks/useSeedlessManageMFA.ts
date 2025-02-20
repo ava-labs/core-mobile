@@ -18,14 +18,14 @@ function useSeedlessManageMFA(): {
   ) => Promise<void>
   fidoDelete: (fidoId: string, onDelete: () => void) => Promise<void>
 } {
-  const { verifyMFA } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyMFA } = useVerifyMFA(SeedlessService.session)
 
   async function totpResetInit(
     onInitialized: (challenge: TotpChallenge) => void
   ): Promise<void> {
     try {
       const totpResetInitResponse =
-        await SeedlessService.sessionManager.totpResetInit()
+        await SeedlessService.session.totpResetInit()
 
       if (totpResetInitResponse.requiresMfa()) {
         const handleVerifySuccess: HandleVerifyMfaSuccess<
@@ -55,7 +55,7 @@ function useSeedlessManageMFA(): {
   ): Promise<void> {
     try {
       const fidoRegisterInitResponse =
-        await SeedlessService.sessionManager.fidoRegisterInit(name)
+        await SeedlessService.session.fidoRegisterInit(name)
 
       if (fidoRegisterInitResponse.requiresMfa()) {
         const handleVerifySuccess: HandleVerifyMfaSuccess<
@@ -83,9 +83,7 @@ function useSeedlessManageMFA(): {
     fidoId: string,
     onDelete: () => void
   ): Promise<void> {
-    const fidoDeleteResponse = await SeedlessService.sessionManager.deleteFido(
-      fidoId
-    )
+    const fidoDeleteResponse = await SeedlessService.session.deleteFido(fidoId)
 
     if (fidoDeleteResponse.requiresMfa()) {
       const handleVerifySuccess: HandleVerifyMfaSuccess<Empty> = async () => {

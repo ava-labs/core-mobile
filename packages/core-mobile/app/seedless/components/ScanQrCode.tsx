@@ -13,7 +13,7 @@ export const ScanQrCode = ({
   onPressEnterManually,
   onVeryfiCode
 }: {
-  totpUrl: string
+  totpUrl: string | undefined
   onPressEnterManually: () => void
   onVeryfiCode: () => void
 }): JSX.Element => {

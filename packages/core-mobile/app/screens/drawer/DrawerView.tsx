@@ -25,7 +25,7 @@ import FeedbackItem from 'screens/drawer/components/FeedbackItem'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 import { useFocusEffect } from '@react-navigation/native'
-import { SeedlessSessionManagerEvent } from 'seedless/services/SeedlessSessionManager'
+import { SeedlessSessionEvent } from 'seedless/services/SeedlessSession'
 import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
@@ -69,14 +69,14 @@ const Main = (): JSX.Element => {
     useState<boolean>(false)
 
   useEffect(() => {
-    SeedlessService.sessionManager.addListener(
-      SeedlessSessionManagerEvent.TokenStatusUpdated,
+    SeedlessService.session.addListener(
+      SeedlessSessionEvent.TokenStatusUpdated,
       setIsSeedlessTokenValid
     )
 
     return () => {
-      SeedlessService.sessionManager.removeListener(
-        SeedlessSessionManagerEvent.TokenStatusUpdated,
+      SeedlessService.session.removeListener(
+        SeedlessSessionEvent.TokenStatusUpdated,
         setIsSeedlessTokenValid
       )
     }
@@ -85,7 +85,7 @@ const Main = (): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       if (hasRecoveryMethods !== true && isSeedlessTokenValid) {
-        SeedlessService.sessionManager
+        SeedlessService.session
           .userMfa()
           .then(mfa => {
             setHasRecoveryMethods(mfa.length > 0)
