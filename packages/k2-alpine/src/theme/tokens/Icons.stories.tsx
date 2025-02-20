@@ -123,6 +123,7 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.Compass,
       Icons.Custom.Contactless,
       Icons.Custom.Connect,
+      Icons.Custom.CameraFrame,
       Icons.Custom.KidStar,
       Icons.Custom.RedExclamation,
       theme.isDark ? Icons.Custom.OutboundDark : Icons.Custom.OutboundLight,

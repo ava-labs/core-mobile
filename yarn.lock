@@ -327,7 +327,6 @@ __metadata:
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.1.4
-    react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -351,7 +350,6 @@ __metadata:
     react-native-permissions: 4.1.5
     react-native-popable: 0.4.3
     react-native-popover-view: 6.1.0
-    react-native-qrcode-scanner: 1.5.5
     react-native-qrcode-svg: 6.3.2
     react-native-quick-base64: 2.1.2
     react-native-quick-crypto: 0.6.1
@@ -369,6 +367,7 @@ __metadata:
     react-native-toast-notifications: 3.4.0
     react-native-url-polyfill: 2.0.0
     react-native-view-shot: 3.8.0
+    react-native-vision-camera: 4.6.4
     react-native-webview: ava-labs/react-native-webview
     react-native-webview-crypto: 0.0.26
     react-redux: 9.1.2
@@ -8723,17 +8722,6 @@ __metadata:
   peerDependencies:
     react-native: ^0.0.0-0 || >=0.65 <1.0
   checksum: 7007a411f13988594a3f9b5ebb29f1554ab65ff2bd90814fa8b125fa68b69c431bdfcd38769ae2dcb6505aec2bad9296f0a0fa1ac8f123007eda49c826f2d138
-  languageName: node
-  linkType: hard
-
-"@react-native-async-storage/async-storage@npm:^1.13.4":
-  version: 1.19.3
-  resolution: "@react-native-async-storage/async-storage@npm:1.19.3"
-  dependencies:
-    merge-options: ^3.0.4
-  peerDependencies:
-    react-native: ^0.0.0-0 || 0.60 - 0.72 || 1000.0.0
-  checksum: d849e5c8bb08d2130d95cc246749dae820cc1996b6b31defa063a1b67070524d72aed5a0e57ce2fafe3c3726712c09a5a3babaed1358182060ce7cfd8bd2c1a3
   languageName: node
   linkType: hard
 
@@ -25851,7 +25839,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
+"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -26486,15 +26474,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-camera@npm:4.2.1":
-  version: 4.2.1
-  resolution: "react-native-camera@npm:4.2.1"
-  dependencies:
-    prop-types: ^15.6.2
-  checksum: 0e84ce657774694d1cc49395c43a8f2caabc03df36aa77aacfb5c797ad8cfe0368f4807deccc54e82ff2b193e8c2d1ce7ad504eedf7a9fc4719b38e39958a804
-  languageName: node
-  linkType: hard
-
 "react-native-chart-kit@npm:6.12.0":
   version: 6.12.0
   resolution: "react-native-chart-kit@npm:6.12.0"
@@ -26795,16 +26774,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-permissions@npm:^2.0.2":
-  version: 2.2.2
-  resolution: "react-native-permissions@npm:2.2.2"
-  peerDependencies:
-    react: ">=16.8.6"
-    react-native: ">=0.60.0"
-  checksum: cfc2b9d9c1e70a965faea108f546b34909cff36bc453e854ea6f129d3fa41c67d0db2fedd13d6041417276f9fd30c03b1aa44e0e20ffb883be3135a28fc94993
-  languageName: node
-  linkType: hard
-
 "react-native-popable@npm:0.4.3":
   version: 0.4.3
   resolution: "react-native-popable@npm:0.4.3"
@@ -26822,19 +26791,6 @@ __metadata:
     deprecated-react-native-prop-types: ^2.3.0
     prop-types: ^15.8.1
   checksum: acf988e2ad4600c8ad17683909e245f55a600950ad744537218e69da289aa25634be71f26c159e84c735ba54cd384e7b17570707cbdeb213db797fd0e1c6650d
-  languageName: node
-  linkType: hard
-
-"react-native-qrcode-scanner@npm:1.5.5":
-  version: 1.5.5
-  resolution: "react-native-qrcode-scanner@npm:1.5.5"
-  dependencies:
-    "@react-native-async-storage/async-storage": ^1.13.4
-    prop-types: ^15.5.10
-    react-native-permissions: ^2.0.2
-  peerDependencies:
-    react-native-camera: ">=1.0.2"
-  checksum: 135a46a3ecc424b7b3be2f0637baba0e108fda10435299a15bad44dedff100fddaae8e31ddaf7dbd86296cc363e20195e7268bf58d8d7604e6de3243311cf8c3
   languageName: node
   linkType: hard
 
@@ -27084,6 +27040,26 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 9e3044da325b44c90238d1eac54ab0a0a9bdab9b7b93f05409e402890c982ee854ae93ff3b6f0d7befe8f2c53df7cf0c708782c007c4c3c4a007a4844b658fde
+  languageName: node
+  linkType: hard
+
+"react-native-vision-camera@npm:4.6.4":
+  version: 4.6.4
+  resolution: "react-native-vision-camera@npm:4.6.4"
+  peerDependencies:
+    "@shopify/react-native-skia": "*"
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: "*"
+    react-native-worklets-core: "*"
+  peerDependenciesMeta:
+    "@shopify/react-native-skia":
+      optional: true
+    react-native-reanimated:
+      optional: true
+    react-native-worklets-core:
+      optional: true
+  checksum: abcbb23fbc0488bece5e8c4f1732728f94ca8ab4cf4b77a3f8be5eadd6c27a1bbe3b374bcd2239773e284bd548bd644658e43c1869fdb228410ba4d86aa49e8d
   languageName: node
   linkType: hard
 

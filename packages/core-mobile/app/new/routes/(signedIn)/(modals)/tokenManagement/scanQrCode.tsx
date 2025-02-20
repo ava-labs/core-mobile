@@ -5,22 +5,21 @@ import { useRouter } from 'expo-router'
 
 const ScanQrCodeScreen = (): JSX.Element => {
   const { dismiss, setParams } = useRouter()
-  const handleOnSuccess = (data: string): void => {
+
+  const handleOnSuccess = (tokenAddress: string): void => {
     dismiss()
-    setParams({ tokenAddress: data })
+    setParams({ tokenAddress })
   }
 
   return (
-    <View sx={{ padding: 16, flex: 1 }}>
+    <View sx={{ paddingHorizontal: 16, paddingTop: 16, flex: 1 }}>
       <Text variant="heading2">Scan a QR code</Text>
       <QrCodeScanner
-        onSuccess={event => handleOnSuccess(event.data)}
+        onSuccess={handleOnSuccess}
         sx={{
-          flex: 1,
-          borderRadius: 18,
-          overflow: 'hidden',
-          marginTop: 21,
-          marginBottom: 83
+          height: '80%',
+          width: '100%',
+          marginTop: 21
         }}
       />
     </View>
