@@ -86,7 +86,7 @@ function forModalPresentationIOS({
 
   const overlayOpacity = progress.interpolate({
     inputRange: [0, 1, 1.0001, 2],
-    outputRange: [0, 0.5, 1, 1]
+    outputRange: [0, 0.5, 0.5, 0.5]
   })
 
   return {
@@ -102,6 +102,16 @@ function forModalPresentationIOS({
 // This screen does not have a back button, so we need to hide it.
 export const modalFirstScreenOptions: StackNavigationOptions = {
   headerBackImage: () => null
+}
+
+const HeaderBack = (): JSX.Element => (
+  <View sx={{ marginTop: 39 }}>
+    <BackBarButton />
+  </View>
+)
+
+export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
+  headerBackImage: HeaderBack
 }
 
 export const homeScreenOptions: StackNavigationOptions = {

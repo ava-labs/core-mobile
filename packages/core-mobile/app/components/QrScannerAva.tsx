@@ -1,8 +1,8 @@
 import React from 'react'
 import { SafeAreaView, StyleSheet } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 import { BarCodeReadEvent } from 'react-native-camera'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from './AvaButton'
 
 type Props = {
@@ -15,14 +15,14 @@ export default function QrScannerAva({
   onSuccess,
   onCancel,
   vibrate = false
-}: Props) {
+}: Props): JSX.Element {
   const context = useApplicationContext()
+  const theme = context.theme
 
   const handleSuccess = (e: BarCodeReadEvent): void => {
     onSuccess(e.data)
   }
 
-  const theme = context.theme
   return (
     <SafeAreaView style={[context.backgroundStyle, styles.container]}>
       <QRCodeScanner
@@ -31,9 +31,9 @@ export default function QrScannerAva({
           {
             borderColor: theme.colorPrimary1,
             borderRadius: 8,
+            shadowRadius: 8,
             shadowColor: theme.colorBg2,
-            shadowOffset: { width: 4, height: 4 },
-            shadowRadius: 8
+            shadowOffset: { width: 4, height: 4 }
           }
         ]}
         fadeIn={false}
