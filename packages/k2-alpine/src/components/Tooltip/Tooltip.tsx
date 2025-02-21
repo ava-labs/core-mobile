@@ -1,14 +1,9 @@
 import React from 'react'
-import {
-  Alert,
-  AlertButton,
-  AlertOptions,
-  Insets,
-  useColorScheme
-} from 'react-native'
-import { Icons } from '../../theme/tokens/Icons'
-import { TouchableOpacity } from '../Primitives'
+import { AlertButton, AlertOptions, Insets } from 'react-native'
 import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
+import { showAlert } from '../Alert/Alert'
+import { TouchableOpacity } from '../Primitives'
 
 interface TooltipProps {
   title: string
@@ -34,23 +29,25 @@ export const Tooltip = ({
 }: TooltipProps) => {
   const { theme } = useTheme()
 
-  const onIconPress = () => {
-    Alert.alert(
+  const onPress = () => {
+    showAlert({
       title,
       description,
-      [
+      buttons: [
         {
           text: 'Got it',
-          isPreferred: true,
           ...button
         }
       ],
-      { ...options, cancelable: true }
-    )
+      options: {
+        cancelable: true,
+        ...options
+      }
+    })
   }
 
   return (
-    <TouchableOpacity onPress={onIconPress} hitSlop={hitSlop}>
+    <TouchableOpacity onPress={onPress} hitSlop={hitSlop}>
       {theme.isDark ? (
         <Icons.Alert.AlertCircleDark width={size} height={size} />
       ) : (
