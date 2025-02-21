@@ -9,10 +9,10 @@ import { getNetworkContractTokens } from 'hooks/networks/utils/getNetworkContrac
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 
-export const useAvalancheContractTokens = (): NetworkContractToken[] => {
+export const useCChainContractTokens = (): NetworkContractToken[] => {
   const { allNetworks } = useNetworks()
 
-  const avalancheNetwork = useMemo(() => {
+  const cChainNetwork = useMemo(() => {
     return Object.values(allNetworks).find(network =>
       isAvalancheNetwork(network)
     )
@@ -22,9 +22,9 @@ export const useAvalancheContractTokens = (): NetworkContractToken[] => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const { data } = useQuery({
-    enabled: avalancheNetwork !== undefined,
-    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, avalancheNetwork],
-    queryFn: () => getNetworkContractTokens(avalancheNetwork),
+    enabled: cChainNetwork !== undefined,
+    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, cChainNetwork],
+    queryFn: () => getNetworkContractTokens(cChainNetwork),
     staleTime: Infinity,
     networkMode: 'offlineFirst'
   })
@@ -33,12 +33,12 @@ export const useAvalancheContractTokens = (): NetworkContractToken[] => {
     const t = data ?? []
 
     // if network is testnet, merge with custom tokens if exists
-    if (avalancheNetwork && avalancheNetwork.isTestnet === isDeveloperMode) {
-      const customTokens = allCustomTokens[avalancheNetwork.chainId]
+    if (cChainNetwork && cChainNetwork.isTestnet === isDeveloperMode) {
+      const customTokens = allCustomTokens[cChainNetwork.chainId]
       if (customTokens && customTokens.length > 0) {
         return [...t, ...customTokens]
       }
     }
     return t
-  }, [data, avalancheNetwork, isDeveloperMode, allCustomTokens])
+  }, [data, cChainNetwork, isDeveloperMode, allCustomTokens])
 }

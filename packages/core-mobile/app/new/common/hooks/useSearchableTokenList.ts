@@ -14,7 +14,7 @@ import { isErc20 } from 'common/utils/isErc20'
 import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store'
 import { useEthereumContractTokens } from './useEthereumContractTokens'
-import { useAvalancheContractTokens } from './useAvalancheContractTokens'
+import { useCChainContractTokens } from './useCChainContractTokens'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
@@ -47,7 +47,7 @@ export function useSearchableTokenList(
   refetch: () => void
   isRefetching: boolean
 } {
-  const avalancheContractTokens = useAvalancheContractTokens()
+  const avalancheContractTokens = useCChainContractTokens()
   const ethereumContractTokens = useEthereumContractTokens()
 
   const avalancheErc20ContractTokens = avalancheContractTokens.filter(token =>
