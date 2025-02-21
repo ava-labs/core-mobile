@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import { Icons } from '../../theme/tokens/Icons'
 import { TouchableOpacity } from '../Primitives'
+import { useTheme } from '../../hooks'
 
 interface TooltipProps {
   title: string
@@ -31,7 +32,7 @@ export const Tooltip = ({
     left: 13
   }
 }: TooltipProps) => {
-  const colorScheme = useColorScheme()
+  const { theme } = useTheme()
 
   const onIconPress = () => {
     Alert.alert(
@@ -50,7 +51,7 @@ export const Tooltip = ({
 
   return (
     <TouchableOpacity onPress={onIconPress} hitSlop={hitSlop}>
-      {colorScheme === 'dark' ? (
+      {theme.isDark ? (
         <Icons.Alert.AlertCircleDark width={size} height={size} />
       ) : (
         <Icons.Alert.AlertCircleLight width={size} height={size} />
