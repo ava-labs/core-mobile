@@ -15,7 +15,7 @@ export default function QrScannerAva({
   onSuccess,
   onCancel,
   vibrate = false
-}: Props): JSX.Element | undefined {
+}: Props): JSX.Element {
   const context = useApplicationContext()
   const theme = context.theme
 
@@ -30,7 +30,6 @@ export default function QrScannerAva({
         markerStyle={[
           {
             borderColor: theme.colorPrimary1,
-            borderWidth: 3,
             borderRadius: 8,
             shadowRadius: 8,
             shadowColor: theme.colorBg2,
