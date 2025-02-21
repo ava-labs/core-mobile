@@ -40,8 +40,14 @@ function useVerifyMFA(session: SeedlessSession): {
         }
       })
     } else if (mfa.type === 'fido') {
+      const mfaId = response.mfaId()
+
+      if (!mfaId) {
+        throw new Error('MFA ID is missing')
+      }
+
       verifyFido({
-        mfaId: mfa.id,
+        mfaId,
         response,
         onVerifySuccess
       })

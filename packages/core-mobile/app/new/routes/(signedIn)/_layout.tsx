@@ -12,6 +12,10 @@ export default function WalletLayout(): JSX.Element {
         name="(modals)/notifications"
         options={modalScreensOptions}
       />
+      <Stack.Screen
+        name="(modals)/tokenManagement"
+        options={modalScreensOptions}
+      />
     </Stack>
   )
 }

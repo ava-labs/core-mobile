@@ -1,18 +1,16 @@
-import React, { useMemo } from 'react'
+import React, { FC, memo, useCallback, useMemo } from 'react'
 import {
+  ASSET_MANAGE_VIEWS,
   AssetManageView,
   LocalTokenWithBalance,
   selectIsAllBalancesInaccurate,
   selectIsLoadingBalances,
-  selectIsRefetchingBalances,
-  selectNonNFTTokensWithBalanceForAccount
+  selectIsRefetchingBalances
 } from 'store/balance'
-import { View } from '@avalabs/k2-alpine'
+import { IndexPath, View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import { selectActiveAccount } from 'store/account'
-import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { useSelector } from 'react-redux'
-import { RootState } from 'store'
 import { ListFilterHeader } from 'features/portfolio/components/ListFilterHeader'
 import { TokenListItem } from 'features/portfolio/components/assets/TokenListItem'
 import { useFilterAndSort } from 'features/portfolio/components/assets/useFilterAndSort'
@@ -21,24 +19,40 @@ import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
 import { ListRenderItemInfo } from 'react-native'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 
-export const AssetsScreen = (): JSX.Element => {
+interface Props {
+  goToTokenDetail: (localId: string) => void
+  goToTokenManagement: () => void
+}
+
+const AssetsScreen: FC<Props> = ({
+  goToTokenDetail,
+  goToTokenManagement
+}): JSX.Element => {
   const { data, filter, sort, view } = useFilterAndSort()
 
-  const { refetch } = useSearchableTokenList()
+  const { refetch, filteredTokenList } = useSearchableTokenList()
   const activeAccount = useSelector(selectActiveAccount)
-  const tokens = useSelector((state: RootState) =>
-    selectNonNFTTokensWithBalanceForAccount(state, activeAccount?.index)
-  )
+
   const isAllBalancesInaccurate = useSelector(
     selectIsAllBalancesInaccurate(activeAccount?.index ?? 0)
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
 
-  const goToTokenDetail = (): void => {
-    // TODO: go to token detail
-  }
+  const handleManageList = useCallback(
+    (indexPath: IndexPath): void => {
+      const manageList =
+        ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
+      if (manageList === AssetManageView.ManageList) {
+        goToTokenManagement()
+        return
+      }
+      view.onSelected(indexPath)
+    },
+    [goToTokenManagement, view]
+  )
 
   const isGridView =
     view.data[0]?.[view.selected.row] === AssetManageView.Highlights
@@ -51,7 +65,7 @@ export const AssetsScreen = (): JSX.Element => {
         <TokenListItem
           token={item.item}
           index={item.index}
-          onPress={goToTokenDetail}
+          onPress={() => goToTokenDetail(item.item.localId)}
           isGridView={isGridView}
         />
       </View>
@@ -71,14 +85,14 @@ export const AssetsScreen = (): JSX.Element => {
       return <ErrorState onPress={refetch} />
     }
 
-    if (tokens.length === 0) {
+    if (filteredTokenList.length === 0) {
       return <EmptyAssets />
     }
   }, [
     isAllBalancesInaccurate,
     isBalanceLoading,
     isRefetchingBalance,
-    tokens,
+    filteredTokenList,
     refetch
   ])
 
@@ -88,10 +102,14 @@ export const AssetsScreen = (): JSX.Element => {
         sx={{
           paddingHorizontal: 16
         }}>
-        <ListFilterHeader filter={filter} sort={sort} view={view} />
+        <ListFilterHeader
+          filter={filter}
+          sort={sort}
+          view={{ ...view, onSelected: handleManageList }}
+        />
       </View>
     )
-  }, [filter, sort, view])
+  }, [filter, sort, view, handleManageList])
 
   return (
     <CollapsibleTabs.FlatList
@@ -115,3 +133,5 @@ export const AssetsScreen = (): JSX.Element => {
     />
   )
 }
+
+export default memo(AssetsScreen)

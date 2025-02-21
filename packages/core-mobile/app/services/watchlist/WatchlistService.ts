@@ -111,6 +111,7 @@ class WatchlistService {
     return prices
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async tokenSearch(
     query: string,
     currency: string
@@ -142,7 +143,17 @@ class WatchlistService {
           id: market.id,
           symbol: market.symbol,
           name: market.name,
-          logoUri: market.image
+          logoUri: market.image,
+          // also adding the price change 24h and price change percentage 24h
+          // since we don't always able to get those info when fetching prices (when doing a simple price request)
+          priceChange24h:
+            typeof market.price_change_24h === 'number'
+              ? market.price_change_24h
+              : undefined,
+          priceChangePercentage24h:
+            typeof market.price_change_percentage_24h === 'number'
+              ? market.price_change_percentage_24h
+              : undefined
         })
 
         if (market.sparkline_in_7d?.price) {
@@ -190,6 +201,7 @@ class WatchlistService {
     const cachedPriceData = await TokenService.getPriceWithMarketDataByCoinIds(
       coinIds
     )
+
     if (
       cachedPriceData === undefined ||
       Object.keys(cachedPriceData).length !== coinIds.length
