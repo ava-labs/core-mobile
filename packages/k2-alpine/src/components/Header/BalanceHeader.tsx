@@ -68,7 +68,10 @@ export const BalanceHeader = ({
   }
   return (
     <View onLayout={onLayout}>
-      <Text variant="heading2" sx={{ color: '$textSecondary', lineHeight: 38 }}>
+      <Text
+        variant="heading2"
+        sx={{ color: '$textSecondary', lineHeight: 38 }}
+        numberOfLines={1}>
         {accountName}
       </Text>
       {renderBalance()}
