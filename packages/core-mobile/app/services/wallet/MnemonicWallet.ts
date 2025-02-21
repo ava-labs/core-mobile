@@ -410,7 +410,7 @@ export class MnemonicWallet implements Wallet {
       message,
       chain: chainAlias
     })
-    return utils.base58check.encode(buffer)
+    return utils.base58check.encode(new Uint8Array(buffer))
   }
 }
 

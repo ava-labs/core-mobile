@@ -240,6 +240,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             multiline={multiline && mode === 'default'}
             style={[
               {
+                textAlign: 'left',
                 minHeight: minHeight,
                 flexGrow: 0,
                 color: colors.$neutral50,
