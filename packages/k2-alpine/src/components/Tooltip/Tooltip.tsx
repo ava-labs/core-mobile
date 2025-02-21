@@ -1,5 +1,11 @@
 import React from 'react'
-import { Alert, AlertButton, AlertOptions, Insets } from 'react-native'
+import {
+  Alert,
+  AlertButton,
+  AlertOptions,
+  Insets,
+  useColorScheme
+} from 'react-native'
 import { Icons } from '../../theme/tokens/Icons'
 import { TouchableOpacity } from '../Primitives'
 
@@ -25,6 +31,7 @@ export const Tooltip = ({
     left: 13
   }
 }: TooltipProps) => {
+  const colorScheme = useColorScheme()
   const onPress = () => {
     Alert.alert(
       title,
@@ -44,7 +51,11 @@ export const Tooltip = ({
 
   return (
     <TouchableOpacity onPress={onPress} hitSlop={hitSlop}>
-      <Icons.Alert.AlertCircleLight width={size} height={size} />
+      {colorScheme === 'dark' ? (
+        <Icons.Alert.AlertCircleDark width={size} height={size} />
+      ) : (
+        <Icons.Alert.AlertCircleLight width={size} height={size} />
+      )}
     </TouchableOpacity>
   )
 }
