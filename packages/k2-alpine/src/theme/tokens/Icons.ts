@@ -53,6 +53,10 @@ import IconAlertCircleDark from '../../assets/icons/alert_circle_dark.svg'
 import IconAlertCircleLight from '../../assets/icons/alert_circle_light.svg'
 import IconAvalabsTrademark from '../../assets/icons/avalabs_trademark.svg'
 import IconChevronRightV2 from '../../assets/icons/chevron_right_v2.svg'
+import IconQrCodeScanner from '../../assets/icons/qr_code_scanner.svg'
+import IconSearch from '../../assets/icons/search.svg'
+import IconRedExclamation from '../../assets/icons/red_exclamation.svg'
+import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -205,12 +209,16 @@ export const Icons = {
     ArrowDown: IconArrowDown,
     Connect: IconWalletConnect,
     Compass: IconCompass,
+    QRCodeScanner: IconQrCodeScanner,
     Contactless: IconContactLess,
     OutboundDark: IconOutboundDark,
+    RedExclamation: IconRedExclamation,
+    CameraFrame: IconCameraFrame,
     OutboundLight: IconOutboundLight,
     KidStar: IconKidStar,
     Signature: IconSignature,
     ArrowDownHandleBar: IconArrowDownHandleBar,
+    Search: IconSearch,
     SearchCustom: IconSearchCustom,
     AvalabsTrademark: IconAvalabsTrademark,
     SignPost: IconSignPost

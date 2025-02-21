@@ -1,5 +1,5 @@
 import React from 'react'
-import { Image, useTheme } from '@avalabs/k2-alpine'
+import { Icons, Image, useTheme, View } from '@avalabs/k2-alpine'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { FC, useState } from 'react'
 import { TokenSymbol } from 'store/network'
@@ -15,6 +15,7 @@ interface TokenAvatarProps {
   testID?: string
   backgroundColor?: string
   borderColor?: string
+  isMalicious?: boolean
 }
 
 const DEFAULT_SIZE = 32
@@ -24,7 +25,8 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   logoUri,
   borderColor,
   size = DEFAULT_SIZE,
-  backgroundColor
+  backgroundColor,
+  isMalicious
 }) => {
   const {
     theme: { colors }
@@ -32,6 +34,24 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   const [failedToLoad, setFailedToLoad] = useState(false)
 
   const borderWidth = borderColor ? 1 : 0
+
+  if (isMalicious) {
+    return (
+      <View
+        sx={{
+          width: size,
+          height: size,
+          borderRadius: size,
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden',
+          backgroundColor,
+          borderColor
+        }}>
+        <Icons.Custom.RedExclamation width={14} height={14} />
+      </View>
+    )
+  }
 
   if (symbol === TokenSymbol.AVAX || symbol === 'FAU') {
     return (
