@@ -35,7 +35,7 @@
     "@avalabs/k2-mobile": "workspace:*",
     "@avalabs/types": "3.1.0-alpha.34",
     "@avalabs/vm-module-types": "1.4.3",
-    "@blockaid/client": "0.27.4",
+    "@blockaid/client": "0.36.0",
     "@coinbase/cbpay-js": "2.2.1",
     "@cubist-labs/cubesigner-sdk": "0.4.117-0",
     "@cubist-labs/cubesigner-sdk-ethers-v6": "0.4.117-0",
