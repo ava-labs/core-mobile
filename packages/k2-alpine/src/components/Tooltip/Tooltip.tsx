@@ -12,7 +12,7 @@ import { TouchableOpacity } from '../Primitives'
 interface TooltipProps {
   title: string
   description: string
-  buttons?: AlertButton[]
+  button?: AlertButton
   options?: AlertOptions
   size?: number
   hitSlop?: Insets
@@ -21,7 +21,7 @@ interface TooltipProps {
 export const Tooltip = ({
   title,
   description,
-  buttons,
+  button,
   options,
   size = 18,
   hitSlop = {
@@ -32,25 +32,24 @@ export const Tooltip = ({
   }
 }: TooltipProps) => {
   const colorScheme = useColorScheme()
-  const onPress = () => {
+
+  const onIconPress = () => {
     Alert.alert(
       title,
       description,
-      buttons?.length
-        ? buttons
-        : [
-            {
-              text: 'Got it',
-              isPreferred: true,
-              onPress: () => console.log('OK Pressed')
-            }
-          ],
-      options
+      [
+        {
+          text: 'Got it',
+          isPreferred: true,
+          ...button
+        }
+      ],
+      { ...options, cancelable: true }
     )
   }
 
   return (
-    <TouchableOpacity onPress={onPress} hitSlop={hitSlop}>
+    <TouchableOpacity onPress={onIconPress} hitSlop={hitSlop}>
       {colorScheme === 'dark' ? (
         <Icons.Alert.AlertCircleDark width={size} height={size} />
       ) : (

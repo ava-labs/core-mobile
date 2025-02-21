@@ -2,7 +2,6 @@ import React from 'react'
 import { useTheme } from '../../hooks'
 import { ScrollView, Text, View } from '../Primitives'
 import { Tooltip } from './Tooltip'
-import { AlertButton } from 'react-native'
 
 export default {
   title: 'Tooltip'
@@ -13,34 +12,6 @@ export const All = (): JSX.Element => {
 
   const title = 'Title'
   const description = 'Description'
-
-  const twoButtons: AlertButton[] = [
-    {
-      text: 'Cancel',
-      style: 'cancel',
-      onPress: () => console.log('Cancel Pressed')
-    },
-    {
-      text: 'OK',
-      onPress: () => console.log('OK Pressed')
-    }
-  ]
-
-  const threeButtons: AlertButton[] = [
-    {
-      text: 'Cancel',
-      style: 'cancel',
-      onPress: () => console.log('Cancel Pressed')
-    },
-    {
-      text: 'Ask me later',
-      onPress: () => console.log('OK Pressed')
-    },
-    {
-      text: 'OK',
-      onPress: () => console.log('OK Pressed')
-    }
-  ]
 
   return (
     <View
@@ -58,14 +29,6 @@ export const All = (): JSX.Element => {
         }}>
         <Text variant="heading6">Default</Text>
         <Tooltip title={title} description={description} />
-        <Text variant="heading6">Two Buttons</Text>
-        <Tooltip title={title} description={description} buttons={twoButtons} />
-        <Text variant="heading6">Three Buttons</Text>
-        <Tooltip
-          title={title}
-          description={description}
-          buttons={threeButtons}
-        />
       </ScrollView>
     </View>
   )
