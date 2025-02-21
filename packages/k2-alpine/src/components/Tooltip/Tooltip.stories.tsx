@@ -14,13 +14,6 @@ export const All = (): JSX.Element => {
   const title = 'Title'
   const description = 'Description'
 
-  const oneButton: AlertButton[] = [
-    {
-      text: 'OK',
-      onPress: () => console.log('OK Pressed')
-    }
-  ]
-
   const twoButtons: AlertButton[] = [
     {
       text: 'Cancel',
@@ -63,10 +56,8 @@ export const All = (): JSX.Element => {
           gap: 16,
           alignItems: 'center'
         }}>
-        <Text variant="heading6">No Button</Text>
+        <Text variant="heading6">Default</Text>
         <Tooltip title={title} description={description} />
-        <Text variant="heading6">One Button</Text>
-        <Tooltip title={title} description={description} buttons={oneButton} />
         <Text variant="heading6">Two Buttons</Text>
         <Tooltip title={title} description={description} buttons={twoButtons} />
         <Text variant="heading6">Three Buttons</Text>
