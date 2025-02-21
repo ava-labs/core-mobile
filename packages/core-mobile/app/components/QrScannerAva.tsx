@@ -1,16 +1,8 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React from 'react'
 import { SafeAreaView, StyleSheet } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import {
-  Camera,
-  Code,
-  useCameraDevice,
-  useCameraPermission,
-  useCodeScanner
-} from 'react-native-vision-camera'
-import { useIsFocused } from '@react-navigation/native'
-import { View } from '@avalabs/k2-mobile'
-import { hapticFeedback } from 'utils/HapticFeedback'
+import QRCodeScanner from 'react-native-qrcode-scanner'
+import { BarCodeReadEvent } from 'react-native-camera'
 import AvaButton from './AvaButton'
 
 type Props = {
@@ -22,84 +14,34 @@ type Props = {
 export default function QrScannerAva({
   onSuccess,
   onCancel,
-  vibrate
+  vibrate = false
 }: Props): JSX.Element | undefined {
   const context = useApplicationContext()
   const theme = context.theme
 
-  const scannerEnabled = useRef(true)
-  const device = useCameraDevice('back')
-  const isFocused = useIsFocused()
-  const { hasPermission, requestPermission } = useCameraPermission()
-
-  useEffect(() => {
-    if (!hasPermission) {
-      requestPermission()
-    }
-  }, [hasPermission, requestPermission])
-
-  const onCodeScanned = useCallback(
-    (codes: Code[]) => {
-      const data = codes[0]?.value
-      if (data === undefined || scannerEnabled.current === false) return
-      scannerEnabled.current = false
-      onSuccess(data)
-      vibrate && hapticFeedback()
-    },
-    [onSuccess, vibrate]
-  )
-
-  const codeScanner = useCodeScanner({
-    codeTypes: ['qr'],
-    onCodeScanned
-  })
+  const handleSuccess = (e: BarCodeReadEvent): void => {
+    onSuccess(e.data)
+  }
 
   return (
     <SafeAreaView style={[context.backgroundStyle, styles.container]}>
-      <View
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 10,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <View
-          style={{
-            width: 200,
-            height: 200,
+      <QRCodeScanner
+        showMarker={true}
+        markerStyle={[
+          {
             borderColor: theme.colorPrimary1,
             borderWidth: 3,
             borderRadius: 8,
             shadowRadius: 8,
             shadowColor: theme.colorBg2,
             shadowOffset: { width: 4, height: 4 }
-          }}
-        />
-      </View>
-      {device !== undefined && hasPermission ? (
-        <Camera
-          style={{
-            width: '100%',
-            height: '100%',
-            zIndex: 1
-          }}
-          device={device}
-          isActive={isFocused}
-          codeScanner={codeScanner}
-        />
-      ) : (
-        <View
-          style={{
-            width: '100%',
-            height: '100%',
-            zIndex: 1
-          }}
-        />
-      )}
+          }
+        ]}
+        fadeIn={false}
+        onRead={handleSuccess}
+        cameraType={'back'}
+        vibrate={vibrate}
+      />
       {onCancel && (
         <AvaButton.PrimaryLarge onPress={onCancel} style={{ margin: 16 }}>
           Cancel

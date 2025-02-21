@@ -16,6 +16,7 @@ const ScanQrCodeScreen = (): JSX.Element => {
       <Text variant="heading2">Scan a QR code</Text>
       <QrCodeScanner
         onSuccess={handleOnSuccess}
+        vibrate={true}
         sx={{
           height: '80%',
           width: '100%',

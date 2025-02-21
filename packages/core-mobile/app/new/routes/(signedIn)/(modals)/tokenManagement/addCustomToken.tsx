@@ -37,8 +37,10 @@ const AddCustomTokenScreen = (): JSX.Element => {
   } = useAddCustomToken(showSuccess)
 
   useEffect(() => {
-    params.tokenAddress && setTokenAddress(params.tokenAddress)
-  }, [params.tokenAddress, setTokenAddress])
+    if (params.tokenAddress) {
+      setTokenAddress(params.tokenAddress)
+    }
+  }, [setTokenAddress, params.tokenAddress])
 
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token || isLoading)

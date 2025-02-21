@@ -1,13 +1,7 @@
-import React, { useCallback, useRef } from 'react'
+import React from 'react'
 import { Icons, SxProp, View } from '@avalabs/k2-alpine'
-import {
-  useCameraDevice,
-  useCodeScanner,
-  Camera,
-  type Code
-} from 'react-native-vision-camera'
-import { useIsFocused } from '@react-navigation/native'
-import { hapticFeedback } from 'utils/HapticFeedback'
+import QRCodeScanner from 'react-native-qrcode-scanner'
+import { BarCodeReadEvent } from 'react-native-camera'
 
 type Props = {
   onSuccess: (data: string) => void
@@ -20,25 +14,9 @@ export const QrCodeScanner = ({
   vibrate = false,
   sx
 }: Props): React.JSX.Element | undefined => {
-  const scannerEnabled = useRef(true)
-  const device = useCameraDevice('back')
-  const isFocused = useIsFocused()
-
-  const onCodeScanned = useCallback(
-    (codes: Code[]) => {
-      const data = codes[0]?.value
-      if (data === undefined || scannerEnabled.current === false) return
-      scannerEnabled.current = false
-      onSuccess(data)
-      vibrate && hapticFeedback()
-    },
-    [onSuccess, vibrate]
-  )
-
-  const codeScanner = useCodeScanner({
-    codeTypes: ['qr'],
-    onCodeScanned
-  })
+  const handleSuccess = (e: BarCodeReadEvent): void => {
+    onSuccess(e.data)
+  }
 
   return (
     <View
@@ -62,27 +40,16 @@ export const QrCodeScanner = ({
         }}>
         <Icons.Custom.CameraFrame />
       </View>
-      {device !== undefined ? (
-        <Camera
-          style={{
-            width: '100%',
-            height: '100%',
-            zIndex: 1
-          }}
-          device={device}
-          isActive={isFocused}
-          codeScanner={codeScanner}
-        />
-      ) : (
-        <View
-          sx={{
-            width: '100%',
-            height: '100%',
-            zIndex: 1,
-            backgroundColor: '$textPrimary'
-          }}
-        />
-      )}
+      <QRCodeScanner
+        cameraStyle={{
+          flex: 1
+        }}
+        showMarker={false}
+        fadeIn={false}
+        onRead={handleSuccess}
+        cameraType={'back'}
+        vibrate={vibrate}
+      />
     </View>
   )
 }
