@@ -192,7 +192,7 @@ __metadata:
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.4.117-0
-    "@datadog/mobile-react-native": 2.4.3
+    "@datadog/mobile-react-native": 2.6.2
     "@datadog/mobile-react-navigation": 2.4.3
     "@date-fns/utc": 2.1.0
     "@dlenroc/testrail": 1.9.1
@@ -4408,13 +4408,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/mobile-react-native@npm:2.4.3":
-  version: 2.4.3
-  resolution: "@datadog/mobile-react-native@npm:2.4.3"
+"@datadog/mobile-react-native@npm:2.6.2":
+  version: 2.6.2
+  resolution: "@datadog/mobile-react-native@npm:2.6.2"
+  dependencies:
+    big-integer: ^1.6.52
   peerDependencies:
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
-  checksum: c1baa070ce4ebc88c6e0e5237704a7cf16df343cf735cbe04494b32b9de9bdacdb93d0c218cad8bc074f29709d54a356b5bdd09573c9343c242f7093698bd100
+  checksum: 071de89b04df2e14393a2f671c08c66ba993957a7830723c98f3a3a0a6599ac1236a69845dee5016429d8ea6a2b6ebbbb10b01c8588611bca3b8a771451c43c0
   languageName: node
   linkType: hard
 
@@ -13756,7 +13758,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"big-integer@npm:1.6.x":
+"big-integer@npm:1.6.x, big-integer@npm:^1.6.52":
   version: 1.6.52
   resolution: "big-integer@npm:1.6.52"
   checksum: 6e86885787a20fed96521958ae9086960e4e4b5e74d04f3ef7513d4d0ad631a9f3bde2730fc8aaa4b00419fc865f6ec573e5320234531ef37505da7da192c40b
@@ -27100,7 +27102,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 156b1954d97f7c3805316b05b5132d1cf028d197bf8ddc5aa5190ae676c50395c922a641853b1b0b478f9182f900eafffd3a7d785812e15813fa93a218801578
   languageName: node
   linkType: hard
 
