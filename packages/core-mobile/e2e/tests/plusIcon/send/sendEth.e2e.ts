@@ -12,18 +12,27 @@ describe('Send ETH', () => {
   beforeAll(async () => {
     await warmup()
     await accountManagePage.createSecondAccount()
+    await bottomTabsPage.tapPortfolioTab()
+    await portfolioPage.tapNetworksDropdown()
+    await portfolioPage.tapNetworksDropdownETH()
   })
 
   afterAll(async () => {
     await cleanup()
   })
 
-  it('Should send Eth on MainNet', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.tapNetworksDropdown()
-    await portfolioPage.tapNetworksDropdownETH()
+  it('Should send ETH on MainNet', async () => {
     await sendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
+      sendLoc.sendingAmount,
+      false
+    )
+    await sendPage.verifySuccessToast()
+  })
+
+  it('should send Wrapped Ether on MainNet', async () => {
+    await sendPage.sendTokenTo2ndAccount(
+      sendLoc.wrappedEthToken,
       sendLoc.sendingAmount,
       false
     )
