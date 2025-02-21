@@ -27,7 +27,7 @@ export const All = (): JSX.Element => {
           gap: 16,
           alignItems: 'center'
         }}>
-        <Text variant="heading6">Default</Text>
+        <Text variant="heading6">Tooltip</Text>
         <Tooltip title={title} description={description} />
       </ScrollView>
     </View>
