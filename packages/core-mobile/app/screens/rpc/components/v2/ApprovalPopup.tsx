@@ -10,7 +10,10 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
-import { selectIsSeedlessSigningBlocked } from 'store/posthog'
+import {
+  selectIsGaslessBlocked,
+  selectIsSeedlessSigningBlocked
+} from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { Eip1559Fees } from 'utils/Utils'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
@@ -54,6 +57,7 @@ const ApprovalPopup = (): JSX.Element => {
   const network = getNetwork(chainId)
   const [isGaslessEligible, setIsGaslessEligible] = useState(false)
   const [gaslessEnabled, setGaslessEnabled] = useState(false)
+  const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
 
   useEffect(() => {
     const checkGaslessEligibility = async (): Promise<void> => {
@@ -420,6 +424,7 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   const renderGasless = (): JSX.Element | null => {
+    if (isGaslessBlocked) return null
     return (
       <Row style={{ justifyContent: 'space-between' }}>
         <Text variant="body2">Enable Free Gas</Text>
