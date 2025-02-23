@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { TokenType } from '@avalabs/vm-module-types'
+import { SigningData_EthSendTx, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
@@ -20,7 +20,6 @@ import {
   selectAccountByIndex,
   selectActiveAccount
 } from 'store/account/slice'
-import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
@@ -30,12 +29,15 @@ import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import Switch from 'components/Switch'
+import GaslessService from 'services/gasless/GaslessService'
+import { showAlert } from '@avalabs/k2-alpine'
+import Logger from 'utils/Logger'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
 import AlertBanner from './AlertBanner'
-
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
 >
@@ -50,6 +52,23 @@ const ApprovalPopup = (): JSX.Element => {
   const caip2ChainId = request.chainId
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
+  const [isGaslessEligible, setIsGaslessEligible] = useState(false)
+  const [gaslessEnabled, setGaslessEnabled] = useState(false)
+
+  useEffect(() => {
+    const checkGaslessEligibility = async (): Promise<void> => {
+      if (!chainId) {
+        setIsGaslessEligible(false)
+        return
+      }
+      const isEligible = await GaslessService.isEligibleForChain(
+        chainId.toString()
+      )
+      Logger.info('ApprovalPopup: Gasless eligibility', isEligible)
+      setIsGaslessEligible(isEligible)
+    }
+    checkGaslessEligibility()
+  }, [chainId, request.chainId])
 
   const accountSelector =
     'account' in signingData
@@ -132,23 +151,92 @@ const ApprovalPopup = (): JSX.Element => {
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
+  const handleGaslessTx = async (): Promise<string | undefined> => {
+    let attempts = 0
+    const MAX_ATTEMPTS = 1
+
+    while (attempts <= MAX_ATTEMPTS) {
+      const result = await GaslessService.fundTx(
+        signingData as SigningData_EthSendTx,
+        account?.addressC ?? ''
+      )
+
+      if (result.txHash) {
+        return result.txHash
+      }
+
+      if (result.error) {
+        if (result.error.category === 'DO_NOT_RETRY') {
+          setSubmitting(false)
+          showAlert({
+            title: 'Gasless Error',
+            description:
+              'There was an error processing your transaction. Please try again.',
+            buttons: [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // dismiss the alert
+                }
+              }
+            ]
+          })
+          return undefined
+        }
+
+        if (
+          result.error.category === 'RETRY_WITH_NEW_CHALLENGE' &&
+          attempts === MAX_ATTEMPTS
+        ) {
+          setSubmitting(false)
+          showAlert({
+            title: 'Gasless Error',
+            description:
+              'Failed to process transaction after retry. Please try again.',
+            buttons: [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // dismiss the alert
+                }
+              }
+            ]
+          })
+          return undefined
+        }
+      }
+
+      attempts++
+    }
+    return undefined
+  }
+
   const onHandleApprove = async (): Promise<void> => {
     if (approveDisabled) return
-
     setSubmitting(true)
 
-    onApprove({
-      network,
-      account,
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      overrideData: hashedCustomSpend
-    })
-      .catch(Logger.error)
-      .finally(() => {
+    if (gaslessEnabled) {
+      const txHash = await handleGaslessTx()
+      if (!txHash) {
         setSubmitting(false)
-        goBack()
+        return
+      }
+    }
+
+    try {
+      await onApprove({
+        network,
+        account,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        overrideData: hashedCustomSpend
       })
+      goBack()
+    } catch (error: unknown) {
+      Logger.error('Error approving transaction', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const renderAlert = (): JSX.Element | null => {
@@ -331,7 +419,20 @@ const ApprovalPopup = (): JSX.Element => {
     return <BalanceChange balanceChange={balanceChange} />
   }
 
+  const renderGasless = (): JSX.Element | null => {
+    return (
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Text variant="body2">Enable Free Gas</Text>
+        <Switch
+          value={gaslessEnabled}
+          onValueChange={() => setGaslessEnabled(prevState => !prevState)}
+        />
+      </Row>
+    )
+  }
+
   const renderNetworkFeeSelector = (): JSX.Element | null => {
+    if (gaslessEnabled && isGaslessEligible) return null
     if (!showNetworkFeeSelector || !chainId) return null
 
     let gasLimit: number | undefined
@@ -387,6 +488,7 @@ const ApprovalPopup = (): JSX.Element => {
           {renderDetails()}
           {renderSpendLimits()}
           {renderBalanceChange()}
+          {isGaslessEligible && renderGasless()}
           {renderNetworkFeeSelector()}
           {renderDisclaimer()}
         </ScrollView>
