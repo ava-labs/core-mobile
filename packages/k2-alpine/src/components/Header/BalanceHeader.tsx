@@ -1,22 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import { Text, View } from '../Primitives'
-import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
+import Animated, { LinearTransition } from 'react-native-reanimated'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
-import { BalanceLoader } from './BalanceHeaderLoader'
 import { PriceChange } from '../PriceChange/PriceChange'
-import Animated, {
-  Easing,
-  FadeOut,
-  LinearTransition,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withSpring,
-  withTiming
-} from 'react-native-reanimated'
+import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
+import { Text, View } from '../Primitives'
+import { BalanceLoader } from './BalanceHeaderLoader'
 
 export const BalanceHeader = ({
   accountName,

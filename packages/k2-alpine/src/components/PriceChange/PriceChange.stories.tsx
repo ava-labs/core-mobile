@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ScrollView, Text, View } from '../Primitives'
+import { ScrollView, Text } from '../Primitives'
 import { PriceChange } from './PriceChange'
 
 export default {
