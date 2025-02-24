@@ -1,10 +1,6 @@
-import React, { useEffect, useState } from 'react'
 import MaskedView from '@react-native-masked-view/masked-view'
 import { LinearGradient } from 'expo-linear-gradient'
-import { Text, View } from '../Primitives'
-import { Icons } from '../../theme/tokens/Icons'
-import { useTheme } from '../../hooks'
-import { colors } from '../../theme/tokens/colors'
+import React, { useEffect, useState } from 'react'
 import Animated, {
   Easing,
   FadeOut,
@@ -14,6 +10,10 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
+import { useTheme } from '../../hooks'
+import { colors } from '../../theme/tokens/colors'
+import { Icons } from '../../theme/tokens/Icons'
+import { Text, View } from '../Primitives'
 
 export const PriceChangeIndicator = ({
   formattedPrice,
