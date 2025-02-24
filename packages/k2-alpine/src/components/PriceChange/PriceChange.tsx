@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
+
 import Animated, {
   Easing,
   FadeOut,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSpring,
-  withTiming
+  withTiming,
+  LinearTransition
 } from 'react-native-reanimated'
-import { View } from '../Primitives'
+import { Text } from '../Primitives'
 
 export const PriceChange = ({ formattedPrice }: { formattedPrice: string }) => {
   return (
-    <View
+    <Animated.View
+      layout={LinearTransition.springify()}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'
@@ -23,33 +25,32 @@ export const PriceChange = ({ formattedPrice }: { formattedPrice: string }) => {
         .split('')
         .map((character, index) => {
           return (
-            <AnimatedCharacter
-              key={`${character}-${index}`}
-              character={character}
-              delay={index * 30}
-            />
+            <AnimateFadeScale key={`${character}-${index}`} delay={index * 30}>
+              <Text variant="heading2">{character}</Text>
+            </AnimateFadeScale>
           )
         })}
-    </View>
+    </Animated.View>
   )
 }
 
-const AnimatedCharacter = ({
-  character,
-  delay
+export const AnimateFadeScale = ({
+  children,
+  delay = 0,
+  dependency
 }: {
-  character: string
-  delay: number
+  children: JSX.Element
+  delay?: number
+  dependency?: any
 }) => {
-  const [animatedValue, setAnimatedValue] = useState(character)
   const opacity = useSharedValue(0)
   const scale = useSharedValue(0.8)
 
   useEffect(() => {
-    animateCharacter()
-  }, [character])
+    animate()
+  }, [children, dependency])
 
-  const animateCharacter = () => {
+  const animate = () => {
     'worklet'
     opacity.value = withDelay(
       delay,
@@ -60,9 +61,7 @@ const AnimatedCharacter = ({
     )
     scale.value = withDelay(
       delay,
-      withSpring(1, { damping: 10, stiffness: 200, mass: 0.5 }, () => {
-        runOnJS(setAnimatedValue)(character)
-      })
+      withSpring(1, { damping: 10, stiffness: 200, mass: 0.5 })
     )
   }
 
@@ -74,17 +73,13 @@ const AnimatedCharacter = ({
   })
 
   return (
-    <Animated.Text
+    <Animated.View
       exiting={FadeOut}
       style={[
         animatedStyle,
-        {
-          fontSize: 36,
-          lineHeight: 36,
-          fontFamily: 'Aeonik-Bold'
-        }
+        { justifyContent: 'flex-start', alignItems: 'flex-start' }
       ]}>
-      {animatedValue}
-    </Animated.Text>
+      {children}
+    </Animated.View>
   )
 }
