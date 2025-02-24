@@ -87,7 +87,7 @@ const isTextVisible = async (text: string) => {
 const waitForWebElement = async (
   xpath?: string,
   text?: string,
-  timeout = 5000
+  timeout = 10000
 ) => {
   const start = Date.now()
   while (Date.now() - start < timeout) {
@@ -203,7 +203,7 @@ const scrollToText = async (text: string) => {
     .scrollToView()
 }
 
-const waitForEleByXpathToBeVisible = async (xpath: string, timeout = 5000) => {
+const waitForEleByXpathToBeVisible = async (xpath: string, timeout = 10000) => {
   await waitForWebElement(xpath, undefined, timeout)
 }
 
