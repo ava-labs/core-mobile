@@ -47,8 +47,9 @@ export const DeFiCommonRow = ({
               imageUrls={maxDisplayedTokens}
               size={imageSize}
               style={{
-                borderColor: theme.colors.$surfacePrimary,
-                borderWidth: 1
+                borderColor: theme.colors.$surfaceSecondary,
+                borderWidth: 1,
+                backgroundColor: theme.colors.$surfaceSecondary
               }}
             />
           </View>
