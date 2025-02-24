@@ -26,15 +26,15 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
-import AssetsScreen from 'features/portfolio/components/AssetsScreen'
-import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
-import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
+import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
+import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
+import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import {
   ActionButton,
   ActionButtons
-} from 'features/portfolio/components/ActionButtons'
-import { ActionButtonTitle } from 'features/portfolio/components/assets/consts'
+} from 'features/portfolio/assets/components/ActionButtons'
+import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { noop } from '@avalabs/core-utils-sdk'
 import {
   CollapsibleTabs,
@@ -48,6 +48,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+
   const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)

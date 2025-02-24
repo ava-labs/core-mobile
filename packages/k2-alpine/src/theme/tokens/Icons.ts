@@ -37,8 +37,7 @@ import IconArrowDown from '../../assets/icons/arrow_down.svg'
 import IconCompass from '../../assets/icons/compass.svg'
 import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
-import IconOutboundDark from '../../assets/icons/outbound_filled_dark.svg'
-import IconOutboundLight from '../../assets/icons/outbound_filled_light.svg'
+import IconOutbound from '../../assets/icons/outbound_filled.svg'
 import IconKidStar from '../../assets/icons/kid_star.svg'
 import IconStarOutline from '../../assets/icons/star_outline.svg'
 import IconStarFilled from '../../assets/icons/star_filled.svg'
@@ -57,6 +56,7 @@ import IconQrCodeScanner from '../../assets/icons/qr_code_scanner.svg'
 import IconSearch from '../../assets/icons/search.svg'
 import IconRedExclamation from '../../assets/icons/red_exclamation.svg'
 import IconCameraFrame from '../../assets/icons/camera_frame.svg'
+import IconLayer from '../../assets/icons/layer.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -211,10 +211,9 @@ export const Icons = {
     Compass: IconCompass,
     QRCodeScanner: IconQrCodeScanner,
     Contactless: IconContactLess,
-    OutboundDark: IconOutboundDark,
     RedExclamation: IconRedExclamation,
     CameraFrame: IconCameraFrame,
-    OutboundLight: IconOutboundLight,
+    Outbound: IconOutbound,
     KidStar: IconKidStar,
     Signature: IconSignature,
     ArrowDownHandleBar: IconArrowDownHandleBar,
@@ -331,5 +330,8 @@ export const Icons = {
     USD: USD,
     VND: VND,
     ZAR: ZAR
+  },
+  Maps: {
+    Layer: IconLayer
   }
 }
