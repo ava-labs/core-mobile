@@ -59,25 +59,30 @@ export const BalanceHeader = ({
           </Text>
         </Animated.View>
 
-        {errorMessage ? (
-          <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
-            <Icons.Alert.Error
-              width={16}
-              height={16}
-              color={colors.$accentDanger}
+        <View
+          style={{
+            alignSelf: 'flex-start'
+          }}>
+          {errorMessage ? (
+            <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
+              <Icons.Alert.Error
+                width={16}
+                height={16}
+                color={colors.$accentDanger}
+              />
+              <Text variant="buttonMedium" sx={{ color: colors.$accentDanger }}>
+                {errorMessage}
+              </Text>
+            </View>
+          ) : (
+            <PriceChangeIndicator
+              formattedPrice={priceChange?.formattedPrice}
+              status={priceChange.status}
+              formattedPercent={priceChange.formattedPercent}
+              textVariant="buttonMedium"
             />
-            <Text variant="buttonMedium" sx={{ color: colors.$accentDanger }}>
-              {errorMessage}
-            </Text>
-          </View>
-        ) : (
-          <PriceChangeIndicator
-            formattedPrice={priceChange?.formattedPrice}
-            status={priceChange.status}
-            formattedPercent={priceChange.formattedPercent}
-            textVariant="buttonMedium"
-          />
-        )}
+          )}
+        </View>
       </View>
     )
   }

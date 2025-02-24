@@ -75,7 +75,6 @@ export const PriceChangeIndicator = ({
       style={[
         footerStyle,
         {
-          alignSelf: 'flex-start',
           flexDirection: 'row',
           alignItems: 'center',
           gap: 4
