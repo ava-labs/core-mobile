@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router'
 import React, { useCallback } from 'react'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
+import { Icons } from '@avalabs/k2-alpine'
 
 export default function TabLayout(): JSX.Element {
   const tabBarBackground = useCallback(() => <BlurredBackgroundView />, [])
@@ -17,33 +18,47 @@ export default function TabLayout(): JSX.Element {
       <Tabs.Screen
         name="portfolio"
         options={{
-          title: 'Portfolio'
+          title: 'Portfolio',
+          tabBarIcon: PortfolioTabBarIcon
         }}
       />
       <Tabs.Screen
         name="track"
         options={{
-          title: 'Track'
+          title: 'Track',
+          tabBarIcon: TrackTabBarIcon
         }}
       />
       <Tabs.Screen
         name="stake"
         options={{
-          title: 'Stake'
-        }}
-      />
-      <Tabs.Screen
-        name="contacts"
-        options={{
-          title: 'Contacts'
+          title: 'Stake',
+          tabBarIcon: StakeTabBarIcon
         }}
       />
       <Tabs.Screen
         name="browser"
         options={{
-          title: 'Browser'
+          title: 'Browser',
+          tabBarIcon: BrowserTabBarIcon
         }}
       />
     </Tabs>
   )
 }
+
+const PortfolioTabBarIcon = ({ color }: { color: string }): JSX.Element => (
+  <Icons.Maps.Layer color={color} />
+)
+
+const TrackTabBarIcon = ({ color }: { color: string }): JSX.Element => (
+  <Icons.Custom.SearchCustom color={color} />
+)
+
+const StakeTabBarIcon = ({ color }: { color: string }): JSX.Element => (
+  <Icons.Custom.Psychiatry color={color} />
+)
+
+const BrowserTabBarIcon = ({ color }: { color: string }): JSX.Element => (
+  <Icons.Custom.Compass color={color} />
+)

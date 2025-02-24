@@ -11,15 +11,15 @@ import { IndexPath, View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
-import { ListFilterHeader } from 'features/portfolio/components/ListFilterHeader'
-import { TokenListItem } from 'features/portfolio/components/assets/TokenListItem'
-import { useFilterAndSort } from 'features/portfolio/components/assets/useFilterAndSort'
-import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
-import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
-import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { useFilterAndSort } from 'features/portfolio/assets/hooks/useFilterAndSort'
+import { LoadingState } from 'common/components/LoadingState'
 import { ListRenderItemInfo } from 'react-native'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { ErrorState } from 'common/components/ErrorState'
+import { portfolioTabContentHeight } from '../../utils'
+import { AssetsHeader } from './AssetsHeader'
+import { TokenListItem } from './TokenListItem'
 
 interface Props {
   goToTokenDetail: (localId: string) => void
@@ -76,24 +76,39 @@ const AssetsScreen: FC<Props> = ({
     return <Space y={isGridView ? 16 : 10} />
   }
 
-  const emptyState = useMemo(() => {
+  const emptyComponent = useMemo(() => {
     if (isBalanceLoading || isRefetchingBalance) {
-      return <LoadingState />
+      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
     if (isAllBalancesInaccurate) {
-      return <ErrorState onPress={refetch} />
+      return (
+        <ErrorState
+          sx={{ height: portfolioTabContentHeight }}
+          description="Please hit refresh or try again later"
+          button={{
+            title: 'Refresh',
+            onPress: refetch
+          }}
+        />
+      )
     }
 
     if (filteredTokenList.length === 0) {
-      return <EmptyAssets />
+      return (
+        <ErrorState
+          sx={{ height: portfolioTabContentHeight }}
+          title="No Assets yet"
+          description="Add your crypto tokens to track your portfolio’s performance and stay updated on your investments"
+        />
+      )
     }
   }, [
-    isAllBalancesInaccurate,
     isBalanceLoading,
     isRefetchingBalance,
     filteredTokenList,
-    refetch
+    refetch,
+    isAllBalancesInaccurate
   ])
 
   const header = useMemo(() => {
@@ -102,7 +117,7 @@ const AssetsScreen: FC<Props> = ({
         sx={{
           paddingHorizontal: 16
         }}>
-        <ListFilterHeader
+        <AssetsHeader
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}
@@ -118,7 +133,7 @@ const AssetsScreen: FC<Props> = ({
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}
       ListHeaderComponent={header}
-      ListEmptyComponent={emptyState}
+      ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}

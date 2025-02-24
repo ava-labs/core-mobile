@@ -1,6 +1,5 @@
-import { View } from '@avalabs/k2-mobile'
 import React, { FC } from 'react'
-import { ViewProps } from 'react-native'
+import { ViewProps, View } from 'react-native'
 
 export const Row: FC<ViewProps> = ({ style, children, testID }) => {
   return (

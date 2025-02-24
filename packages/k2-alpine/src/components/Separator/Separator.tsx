@@ -7,6 +7,12 @@ export const Separator = ({ sx }: { sx?: SxProp }): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   return (
-    <View sx={{ height: 1, backgroundColor: colors.$borderPrimary, ...sx }} />
+    <View
+      sx={{
+        height: 1,
+        backgroundColor: colors.$borderPrimary,
+        ...sx
+      }}
+    />
   )
 }
