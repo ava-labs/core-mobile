@@ -17,6 +17,7 @@
     ],
     "android": {
       "permissions": ["android.permission.DETECT_SCREEN_CAPTURE"]
-    }
+    },
+    "newArchEnabled": true
   }
 }
