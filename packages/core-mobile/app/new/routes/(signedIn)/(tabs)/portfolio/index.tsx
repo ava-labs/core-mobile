@@ -4,12 +4,10 @@ import {
   BalanceHeader,
   NavigationTitleHeader,
   useTheme,
-  SegmentedControl,
-  alpha
+  SegmentedControl
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -29,7 +27,6 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import {
   ActionButton,
   ActionButtons
@@ -41,6 +38,7 @@ import {
   CollapsibleTabsRef
 } from 'common/components/CollapsibleTabs'
 import { useRouter } from 'expo-router'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -214,38 +212,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
           }
         ]}
       />
-      <View
-        sx={{
-          marginBottom: -1
-        }}>
-        <LinearGradient
-          colors={[
-            alpha(theme.colors.$surfacePrimary, 0),
-            alpha(theme.colors.$surfacePrimary, 0.9)
-          ]}
-          style={{
-            position: 'absolute',
-            top: -44,
-            left: 0,
-            right: 0,
-            height: 60
-          }}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
+      <LinearGradientBottomWrapper>
+        <SegmentedControl
+          dynamicItemWidth={true}
+          items={['Assets', 'Collectibles', 'DeFi']}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={{ marginHorizontal: 16, marginBottom: 16 }}
         />
-        <BlurViewWithFallback
-          style={{
-            paddingBottom: 16,
-            paddingHorizontal: 16
-          }}>
-          <SegmentedControl
-            dynamicItemWidth={true}
-            items={['Assets', 'Collectibles', 'DeFi']}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-          />
-        </BlurViewWithFallback>
-      </View>
+      </LinearGradientBottomWrapper>
     </BlurredBarsContentLayout>
   )
 }

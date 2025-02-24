@@ -20,6 +20,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { LogoWithNetwork } from 'features/portfolio/defi/components/LogoWithNetwork'
 import { DeFiPortfolioItemGroup } from 'features/portfolio/defi/components/DeFiPortfolioItemGroup'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 
 const DeFiDetailScreen = (): JSX.Element => {
   const { back } = useRouter()
@@ -105,8 +106,9 @@ const DeFiDetailScreen = (): JSX.Element => {
         </View>
         {portfolioItemList}
       </ScrollView>
-      <View sx={{ padding: 16 }}>
+      <LinearGradientBottomWrapper>
         <Button
+          style={{ marginHorizontal: 16, marginBottom: 16 }}
           size="large"
           type="primary"
           rightIcon={
@@ -118,7 +120,7 @@ const DeFiDetailScreen = (): JSX.Element => {
           onPress={goToProtocolPage}>
           {`Go to ${data?.name ?? protocolId}`}
         </Button>
-      </View>
+      </LinearGradientBottomWrapper>
     </BlurredBarsContentLayout>
   )
 }

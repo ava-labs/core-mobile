@@ -50,8 +50,9 @@ export const DeFiPortfolioPerpetual = ({
                     imageUrls={imageUrls}
                     size={IMAGE_SIZE}
                     style={{
-                      borderColor: theme.colors.$surfacePrimary,
-                      borderWidth: 1
+                      borderColor: theme.colors.$surfaceSecondary,
+                      borderWidth: 1,
+                      backgroundColor: theme.colors.$surfaceSecondary
                     }}
                   />
                   <Text variant="body1" sx={{ color: '$textSecondary' }}>
