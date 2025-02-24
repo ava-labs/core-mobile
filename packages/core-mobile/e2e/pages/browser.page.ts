@@ -275,9 +275,7 @@ class BrowserPage {
     await delay(1000)
     await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
     await this.setDappSwapAmount('[data-testid="amount-input-in"]')
-    await Wbs.tapByXpath(
-      '//div[not(@aria-disabled="true")]/span[text()="Review"]'
-    )
+    await Wbs.tapByXpath('//span[text()="Review"]')
     while (
       await Wbs.isVisibleByXpath(
         '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
@@ -290,8 +288,7 @@ class BrowserPage {
   }
 
   async swapLFJ() {
-    await bottomTabsPage.tapBrowserTab()
-    await Wbs.tapByXpath("//a[@href='/avalanche/trade']")
+    await Wbs.tapByXpath("//a[@href='/trade']")
     await Wbs.tapByXpath("//button[contains(text(), 'Select token')]")
     await Wbs.setInputText(
       "//input[@data-cy='currency-picker-search-bar']",
