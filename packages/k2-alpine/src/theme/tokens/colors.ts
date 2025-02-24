@@ -8,6 +8,7 @@ export const colors = {
   // neutral
   $neutralWhite: '#FFFFFF',
   $neutral50: '#F5F5F6',
+  $neutral800: '#3E3E43',
   $neutral850: '#28282E',
   $neutral900: '#1B1B1D',
   $neutral950: '#121213',
@@ -45,7 +46,7 @@ export const darkModeColors = {
 
   // surface
   $surfacePrimary: colors.$neutral850,
-  $surfaceSecondary: alpha(colors.$neutralWhite, 0.1),
+  $surfaceSecondary: colors.$neutral800,
   $surfaceTertiary: colors.$neutral900,
 
   // border

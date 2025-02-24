@@ -7,7 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import React from 'react'
-import { Selection } from './assets/useFilterAndSort'
+import { Selection } from '../hooks/useFilterAndSort'
 
 interface Props {
   filter: Selection
@@ -15,7 +15,7 @@ interface Props {
   view: Selection
 }
 
-export const ListFilterHeader = ({
+export const AssetsHeader = ({
   filter,
   sort,
   view

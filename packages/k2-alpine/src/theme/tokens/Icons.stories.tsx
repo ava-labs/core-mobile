@@ -102,8 +102,6 @@ export const Navigation = (): JSX.Element =>
   })
 
 export const Custom = (): JSX.Element => {
-  const { theme } = useTheme()
-
   return Template({
     icons: [
       Icons.Custom.ArrowDown,
@@ -126,7 +124,7 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.CameraFrame,
       Icons.Custom.KidStar,
       Icons.Custom.RedExclamation,
-      theme.isDark ? Icons.Custom.OutboundDark : Icons.Custom.OutboundLight,
+      Icons.Custom.Outbound,
       Icons.Custom.SearchCustom,
       Icons.Custom.Search,
       Icons.Custom.SignPost,
