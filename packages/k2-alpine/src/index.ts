@@ -5,7 +5,3 @@ export * from './theme/ThemeProvider'
 export { Icons } from './theme/tokens/Icons'
 export { Logos } from './theme/tokens/Logos'
 export * from './utils'
-
-import { registerRootComponent } from 'expo'
-import App from '../App'
-registerRootComponent(App)
