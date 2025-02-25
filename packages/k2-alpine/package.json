@@ -22,6 +22,7 @@
     "dripsy": "4.3.7",
     "expo": "52.0.9",
     "expo-blur": "14.0.3",
+    "expo-constants": "17.0.4",
     "expo-font": "13.0.2",
     "expo-linear-gradient": "14.0.2",
     "expo-splash-screen": "0.29.18",
