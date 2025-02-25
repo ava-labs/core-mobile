@@ -19,7 +19,7 @@ export const warmup = async (
         '.*cloudflare-ipfs.*',
         '.*[ipfs.io/ipfs].*',
         '.*[amazonaws.com].*',
-        '*com.facebook.react.NetworkingQueue*'
+        '*facebook.react.*'
       ]
     }
   }
