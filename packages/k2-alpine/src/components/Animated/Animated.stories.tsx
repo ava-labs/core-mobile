@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { ScrollView, Text } from '../Primitives'
-import { PriceChange } from './PriceChange'
+import { AnimatedText } from './AnimatedText'
 
 export default {
-  title: 'PriceChange'
+  title: 'Animated'
 }
 
 export const All = (): JSX.Element => {
@@ -24,8 +24,8 @@ export const All = (): JSX.Element => {
         width: '100%'
       }}
       contentContainerStyle={{ padding: 16, gap: 16, alignItems: 'center' }}>
-      <Text variant="heading6">Price Change</Text>
-      <PriceChange formattedPrice={`$${characters}`} />
+      <Text variant="heading6">Animated Text</Text>
+      <AnimatedText characters={`$${characters}`} />
     </ScrollView>
   )
 }

@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react'
 
-import Animated, {
+import Animated, { LinearTransition } from 'react-native-reanimated'
+import { Text } from '../Primitives'
+import {
   Easing,
   FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSpring,
-  withTiming,
-  LinearTransition
+  withTiming
 } from 'react-native-reanimated'
-import { Text } from '../Primitives'
 
-export const PriceChange = ({ formattedPrice }: { formattedPrice: string }) => {
+export const AnimatedText = ({ characters }: { characters: string }) => {
   return (
     <Animated.View
       layout={LinearTransition.springify()}
@@ -20,7 +20,7 @@ export const PriceChange = ({ formattedPrice }: { formattedPrice: string }) => {
         flexDirection: 'row',
         alignItems: 'flex-end'
       }}>
-      {formattedPrice
+      {characters
         .toString()
         .split('')
         .map((character, index) => {
@@ -36,19 +36,17 @@ export const PriceChange = ({ formattedPrice }: { formattedPrice: string }) => {
 
 export const AnimateFadeScale = ({
   children,
-  delay = 0,
-  dependency
+  delay = 0
 }: {
   children: JSX.Element
   delay?: number
-  dependency?: any
 }) => {
   const opacity = useSharedValue(0)
   const scale = useSharedValue(0.8)
 
   useEffect(() => {
     animate()
-  }, [children, dependency])
+  }, [children])
 
   const animate = () => {
     'worklet'

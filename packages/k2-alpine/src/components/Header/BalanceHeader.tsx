@@ -3,7 +3,7 @@ import { LayoutChangeEvent } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
-import { PriceChange } from '../PriceChange/PriceChange'
+import { AnimatedText } from '../Animated/AnimatedText'
 import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
 import { Text, View } from '../Primitives'
 import { BalanceLoader } from './BalanceHeaderLoader'
@@ -42,7 +42,7 @@ export const BalanceHeader = ({
         <Animated.View
           layout={LinearTransition.springify()}
           style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-          <PriceChange formattedPrice={formattedBalance} />
+          <AnimatedText characters={formattedBalance} />
           <Text
             sx={{ fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }}>
             {` ${currency}`}
