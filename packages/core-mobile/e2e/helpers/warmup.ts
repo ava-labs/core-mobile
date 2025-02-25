@@ -18,7 +18,8 @@ export const warmup = async (
       detoxURLBlacklistRegex: [
         '.*cloudflare-ipfs.*',
         '.*[ipfs.io/ipfs].*',
-        '.*[amazonaws.com].*'
+        '.*[amazonaws.com].*',
+        'com.facebook.react.NetworkingQueue'
       ]
     }
   }

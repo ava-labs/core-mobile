@@ -9,9 +9,7 @@ npm rebuild detox
 
 ./node_modules/.bin/detox reset-lock-file
 
-xcrun simctl create iPhone-15-Pro com.apple.CoreSimulator.SimRuntime.iOS-16-4 com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro 
-xcrun simctl boot iPhone-15-Pro
-xcrun simctl bootstatus iPhone-15-Pro -w booted
+xcrun simctl boot 'iPhone 15 Pro'
 
 if [ "$IS_INTERNAL_BUILD" = true ]; then
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.regression.ci --headless --max-workers 3; test_result=$?
