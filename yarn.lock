@@ -560,7 +560,7 @@ __metadata:
     react-native-gesture-handler: 2.20.0
     react-native-popover-view: 6.1.0
     react-native-reanimated: 3.16.7
-    react-native-reanimated-carousel: v4.0.0-canary.22
+    react-native-reanimated-carousel: v4.0.2
     react-native-safe-area-context: 4.12.0
     react-native-svg: 15.8.0
     react-native-svg-transformer: 1.5.0
@@ -26562,15 +26562,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated-carousel@npm:v4.0.0-canary.22":
-  version: 4.0.0-canary.22
-  resolution: "react-native-reanimated-carousel@npm:4.0.0-canary.22"
+"react-native-reanimated-carousel@npm:v4.0.2":
+  version: 4.0.2
+  resolution: "react-native-reanimated-carousel@npm:4.0.2"
   peerDependencies:
     react: ">=18.0.0"
     react-native: ">=0.70.3"
     react-native-gesture-handler: ">=2.9.0"
     react-native-reanimated: ">=3.0.0"
-  checksum: 52d4f3c66ea46b6309518bb98547b48302d9852d6ffd7db3f470e3edf342cc289d206c015cf9ba0c31b768e1a15b48f5170b4de678bdcb5f7a29791ef948bd0a
+  checksum: 1f3d0434410a9e365420d2aa029d7af087a7dee6edd9be62019cbb3e14b13bb25a5ea4790fcc9a158208b027a3e7203ff02e62184753e6c3cb692392f8dcfdf4
   languageName: node
   linkType: hard
 
