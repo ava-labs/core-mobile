@@ -1086,6 +1086,7 @@ workflows:
       - _set-version
       - _pull_app_files
       - _pull_external_app_files  
+      - _build-ios-simulator
       after_run:
       - _upload-detox-artifacts
       - _send-test-result-notification-slack
