@@ -36,6 +36,9 @@ import Switch from 'components/Switch'
 import GaslessService from 'services/gasless/GaslessService'
 import { showAlert } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
+import { SendErrorMessage } from 'screens/send/utils/types'
+import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
+import { TransactionRequest } from 'ethers'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
@@ -58,6 +61,8 @@ const ApprovalPopup = (): JSX.Element => {
   const [isGaslessEligible, setIsGaslessEligible] = useState(false)
   const [gaslessEnabled, setGaslessEnabled] = useState(false)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
+  const [amountError, setAmountError] = useState<string | undefined>()
+  const nativeToken = useNativeTokenWithBalance()
 
   useEffect(() => {
     const checkGaslessEligibility = async (): Promise<void> => {
@@ -67,7 +72,10 @@ const ApprovalPopup = (): JSX.Element => {
       }
       const isEligible = await GaslessService.isEligibleForChain(
         chainId.toString()
-      )
+      ).catch(err => {
+        Logger.error('Error checking gasless eligibility', err)
+        return false
+      })
       Logger.info('ApprovalPopup: Gasless eligibility', isEligible)
       setIsGaslessEligible(isEligible)
     }
@@ -97,7 +105,8 @@ const ApprovalPopup = (): JSX.Element => {
     !account ||
     (displayData.networkFeeSelector && maxFeePerGas === undefined) ||
     (displayData.networkFeeSelector && maxPriorityFeePerGas === undefined) ||
-    submitting
+    submitting ||
+    amountError !== undefined
 
   const showNetworkFeeSelector = displayData.networkFeeSelector
 
@@ -474,6 +483,42 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const validateTransactionAmount = useCallback(() => {
+    if (!signingData || !network?.networkToken || !nativeToken) return
+    if (signingData.type !== 'eth_sendTransaction') return
+    const ethSendTx = signingData.data as TransactionRequest
+
+    try {
+      const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n
+      const maxFee = maxFeePerGas || 0n
+      const totalFee = gasLimit * maxFee
+
+      // For native token transfers, we need to account for both the transfer amount and gas fee
+      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
+      const totalRequired = amount + totalFee
+
+      if (nativeToken.balance < totalRequired) {
+        throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
+      }
+
+      setAmountError(undefined)
+    } catch (err) {
+      if (err instanceof Error) {
+        setAmountError(err.message)
+      } else {
+        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
+      }
+    }
+  }, [signingData, network, maxFeePerGas, nativeToken])
+
+  useEffect(() => {
+    if (gaslessEnabled) {
+      setAmountError(undefined)
+      return
+    }
+    validateTransactionAmount()
+  }, [validateTransactionAmount, gaslessEnabled])
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -496,6 +541,17 @@ const ApprovalPopup = (): JSX.Element => {
           {isGaslessEligible && renderGasless()}
           {renderNetworkFeeSelector()}
           {renderDisclaimer()}
+          {amountError && (
+            <Text
+              variant="body2"
+              sx={{
+                color: '$dangerMain',
+                maxWidth: '55%',
+                marginTop: 8
+              }}>
+              {amountError}
+            </Text>
+          )}
         </ScrollView>
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
