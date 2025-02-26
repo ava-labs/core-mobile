@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react'
+import React, { memo, useCallback, useEffect } from 'react'
 
 import { SxProp } from 'dripsy'
 import { LayoutChangeEvent } from 'react-native'
@@ -26,7 +26,7 @@ export const AnimatedText = ({
   variant?: TextVariant
   sx?: SxProp
   onLayout?: (event: LayoutChangeEvent) => void
-}) => {
+}): JSX.Element => {
   return (
     <Animated.View
       layout={LinearTransition.springify()}
@@ -56,11 +56,11 @@ export const AnimateFadeScale = memo(
     const opacity = useSharedValue(0)
     const scale = useSharedValue(0.8)
 
-    const animate = () => {
+    const animate = useCallback(() => {
       'worklet'
       opacity.value = withDelay(delay, withTiming(1, ANIMATED.TIMING_CONFIG))
       scale.value = withDelay(delay, withSpring(1, ANIMATED.SPRING_CONFIG))
-    }
+    }, [delay, opacity, scale])
 
     useEffect(() => {
       animate()

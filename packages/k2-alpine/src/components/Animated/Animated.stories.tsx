@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
+import { showAlert } from '../Alert/Alert'
 import { ScrollView, Text, View } from '../Primitives'
 import { AnimatedPressable } from './AnimatedPressable'
 import { AnimatedText } from './AnimatedText'
-import { showAlert } from '../Alert/Alert'
 
 export default {
   title: 'Animated'
@@ -50,8 +50,7 @@ export const All = (): JSX.Element => {
               title: 'Pressed',
               buttons: [
                 {
-                  text: 'OK',
-                  onPress: () => {}
+                  text: 'OK'
                 }
               ]
             })

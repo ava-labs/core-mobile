@@ -1,4 +1,4 @@
-import { Easing } from "react-native-reanimated"
+import { Easing } from 'react-native-reanimated'
 
 export const SCALE = 0.96
 export const EASING = Easing.bezier(0.25, 1, 0.5, 1) // EaseOutQuart

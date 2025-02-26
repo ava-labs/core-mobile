@@ -22,13 +22,13 @@ export const AnimatedPressable = memo(
     const opacity = useSharedValue(1)
     const scale = useSharedValue(1)
 
-    const onPressIn = () => {
+    const onPressIn = (): void => {
       'worklet'
       opacity.value = withTiming(0.5, ANIMATED.TIMING_CONFIG)
       scale.value = withSpring(ANIMATED.SCALE, ANIMATED.SPRING_CONFIG)
     }
 
-    const onPressOut = (event: GestureResponderEvent) => {
+    const onPressOut = (event: GestureResponderEvent): void => {
       'worklet'
       opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
       scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
@@ -39,13 +39,15 @@ export const AnimatedPressable = memo(
     }
 
     const onPressEvent = useCallback(
-      throttle(
-        (event: GestureResponderEvent) => {
-          onPress?.(event)
-        },
-        1000,
-        { leading: true, trailing: false }
-      ),
+      (event: GestureResponderEvent) => {
+        throttle(
+          () => {
+            onPress?.(event)
+          },
+          1000,
+          { leading: true, trailing: false }
+        )
+      },
       [onPress]
     )
 
