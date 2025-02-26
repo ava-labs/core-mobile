@@ -9,7 +9,7 @@ npm rebuild detox
 
 ./node_modules/.bin/detox reset-lock-file
 
-xcrun simctl boot 'iPhone 15 Pro' && sleep 10
+xcrun simctl boot 'iPhone 16' && sleep 10
 
 open -a Simulator
 
