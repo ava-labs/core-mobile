@@ -333,7 +333,7 @@ __metadata:
     react-native-collapsible: 1.6.2
     react-native-collapsible-tab-view: 8.0.0
     react-native-config: 1.5.3
-    react-native-device-info: 13.0.0
+    react-native-device-info: 14.0.4
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.20.0
     react-native-graph: 1.1.0
@@ -26552,12 +26552,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-device-info@npm:13.0.0":
-  version: 13.0.0
-  resolution: "react-native-device-info@npm:13.0.0"
+"react-native-device-info@npm:14.0.4":
+  version: 14.0.4
+  resolution: "react-native-device-info@npm:14.0.4"
   peerDependencies:
     react-native: "*"
-  checksum: c86822bcdad1bb9d3b93bd750e199964c562d83e076df2f0984e24cadd19db7f8258e125ddede102be2314ed8349d2da2b671c998f70571027b84449773c583a
+  checksum: aa839dbe7df1246a4b5f9bcfeb3d4cc4be585f13a0d3ff6a03f57a0c2cfe7590291ac292dda4c51fd8765f94c870857676463e8e2f1660b057f3ae2b4335db29
   languageName: node
   linkType: hard
 
@@ -27100,7 +27100,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
+  checksum: 9b8a0bd80864c745ba6b897f5591c0f8b8e433b771ad7b2d3991ebbbc12d9d58836ec23d0229e23c1f17e2c5aa49b1fbbde3d227a1a16beb5d9e51ab55e2335d
   languageName: node
   linkType: hard
 
