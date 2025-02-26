@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useCallback } from 'react'
 import { Pressable } from 'dripsy'
 import Animated, {
   runOnJS,
@@ -7,12 +7,15 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
+import { throttle } from 'lodash'
 import { ANIMATED } from '../../utils'
 import { GestureResponderEvent, PressableProps } from 'react-native'
 
 interface AnimatedPressable extends PressableProps {
   children: JSX.Element
 }
+
+const AnimatedPress = Animated.createAnimatedComponent(Pressable)
 
 export const AnimatedPressable = memo(
   ({ children, onPress, ...props }: AnimatedPressable) => {
@@ -30,10 +33,21 @@ export const AnimatedPressable = memo(
       opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
       scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
         if (onPress) {
-          runOnJS(onPress)(event)
+          runOnJS(onPressEvent)(event)
         }
       })
     }
+
+    const onPressEvent = useCallback(
+      throttle(
+        (event: GestureResponderEvent) => {
+          onPress?.(event)
+        },
+        1000,
+        { leading: true, trailing: false }
+      ),
+      [onPress]
+    )
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
@@ -43,9 +57,13 @@ export const AnimatedPressable = memo(
     })
 
     return (
-      <Pressable onPressIn={onPressIn} onPressOut={onPressOut} {...props}>
-        <Animated.View style={[animatedStyle]}>{children}</Animated.View>
-      </Pressable>
+      <AnimatedPress
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        {...props}
+        style={[animatedStyle, props.style]}>
+        {children}
+      </AnimatedPress>
     )
   }
 )

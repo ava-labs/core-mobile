@@ -44,7 +44,7 @@ export const All = (): JSX.Element => {
           alignItems: 'center'
         }}>
         <Text variant="heading6">Animated Pressable</Text>
-        <AnimatedPressable onPress={() => Alert.alert('Pressed')}>
+        <AnimatedPressable onPress={() => console.warn('Pressed')}>
           <View
             sx={{
               width: 100,
