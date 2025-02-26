@@ -9,10 +9,10 @@ import {
 } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import Animated, { LinearTransition } from 'react-native-reanimated'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useOnPressAnimation } from 'common/hooks/useOnPressAnimation'
+import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
-import { TokenListViewProps } from './types'
-import { getListItemEnteringAnimation } from './consts'
-import { useOnPressAnimation } from './useOnPressAnimation'
 
 export const TokenListView = ({
   token,
