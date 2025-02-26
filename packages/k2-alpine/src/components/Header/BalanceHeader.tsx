@@ -1,6 +1,6 @@
 import React from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
 import { AnimatedText } from '../Animated/AnimatedText'
@@ -39,15 +39,19 @@ export const BalanceHeader = ({
           flexDirection: 'column',
           gap: 5
         }}>
-        <Animated.View
-          layout={LinearTransition.springify()}
-          style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
           <AnimatedText characters={formattedBalance} />
-          <Text
-            sx={{ fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }}>
-            {` ${currency}`}
-          </Text>
-        </Animated.View>
+          <Animated.View
+            entering={FadeIn.delay(250)}
+            layout={LinearTransition.springify().damping(100)}>
+            <Text
+              style={[
+                { fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }
+              ]}>
+              {` ${currency}`}
+            </Text>
+          </Animated.View>
+        </View>
 
         <View
           style={{

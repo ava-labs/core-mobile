@@ -12,15 +12,15 @@ export const All = (): JSX.Element => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCounter(prev => prev + 1.23)
+      setCounter(prev => prev + 1.25)
     }, 2000)
     return () => {
       clearInterval(interval)
     }
   }, [])
 
-  const formattedBalance = `$${(7377.37 + counter).toFixed(2)}`
-  const formattedPrice = `$${12.7 + counter}`
+  const formattedBalance = `$${(7377.25 + counter).toFixed(2)}`
+  const formattedPrice = `$${12.5 + counter}`
 
   return (
     <ScrollView
@@ -29,6 +29,16 @@ export const All = (): JSX.Element => {
       }}
       contentContainerStyle={{ padding: 16 }}>
       <View style={{ marginTop: 0, gap: 12 }}>
+        <BalanceHeader
+          accountName="Account 1"
+          formattedBalance={'7337.25'}
+          currency="USD"
+          priceChange={{
+            formattedPrice: '$12.5',
+            status: 'up',
+            formattedPercent: '3.7%'
+          }}
+        />
         <BalanceHeader
           accountName="Account 1"
           formattedBalance={formattedBalance}

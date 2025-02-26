@@ -1,32 +1,49 @@
 import React, { useEffect } from 'react'
 
-import Animated, { LinearTransition } from 'react-native-reanimated'
-import { Text } from '../Primitives'
-import {
+import { SxProp } from 'dripsy'
+import { LayoutChangeEvent } from 'react-native'
+import Animated, {
   Easing,
+  FadeIn,
   FadeOut,
+  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSpring,
   withTiming
 } from 'react-native-reanimated'
+import { TextVariant } from '../../theme/tokens/text'
+import { Text } from '../Primitives'
 
-export const AnimatedText = ({ characters }: { characters: string }) => {
+export const AnimatedText = ({
+  variant = 'heading2',
+  characters,
+  sx,
+  onLayout
+}: {
+  characters: string
+  variant?: TextVariant
+  sx?: SxProp
+  onLayout?: (event: LayoutChangeEvent) => void
+}) => {
   return (
     <Animated.View
       layout={LinearTransition.springify()}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'
-      }}>
+      }}
+      onLayout={onLayout}>
       {characters
         .toString()
         .split('')
         .map((character, index) => {
           return (
             <AnimateFadeScale key={`${character}-${index}`} delay={index * 30}>
-              <Text variant="heading2">{character}</Text>
+              <Text variant={variant} sx={sx}>
+                {character}
+              </Text>
             </AnimateFadeScale>
           )
         })}
@@ -46,7 +63,7 @@ export const AnimateFadeScale = ({
 
   useEffect(() => {
     animate()
-  }, [children])
+  }, [])
 
   const animate = () => {
     'worklet'
@@ -68,10 +85,11 @@ export const AnimateFadeScale = ({
       opacity: opacity.value,
       transform: [{ scale: scale.value }]
     }
-  })
+  }, [])
 
   return (
     <Animated.View
+      entering={FadeIn}
       exiting={FadeOut}
       style={[
         animatedStyle,
