@@ -4,7 +4,6 @@ import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
 import {
   ChartData,
-  ContractMarketChartResponse,
   Error,
   SimplePriceResponse,
   RawSimplePriceResponse,
@@ -45,11 +44,11 @@ export const transformSparklineData = (data: SparklineData | []): ChartData => {
   }
 }
 
-export const transformContractMarketChartResponse = (
-  rawData: ContractMarketChartResponse
+export const transformMartketChartRawPrices = (
+  pricesRaw: [number, number][]
 ): ChartData => {
-  const dates = rawData.prices.map(value => value[0])
-  const prices = rawData.prices.map(value => value[1])
+  const dates = pricesRaw.map(value => value[0])
+  const prices = pricesRaw.map(value => value[1])
 
   const minDate = Math.min(...dates)
   const maxDate = Math.max(...dates)
@@ -70,7 +69,7 @@ export const transformContractMarketChartResponse = (
       diffValue,
       percentChange
     },
-    dataPoints: rawData.prices.map(tu => {
+    dataPoints: pricesRaw.map(tu => {
       return { date: new Date(tu[0]), value: tu[1] }
     })
   }
