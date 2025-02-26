@@ -38,17 +38,22 @@ export const AnimatedPressable = memo(
       })
     }
 
-    const onPressEvent = useCallback(
-      (event: GestureResponderEvent) => {
-        throttle(
-          () => {
-            onPress?.(event)
-          },
-          1000,
-          { leading: true, trailing: false }
-        )
+    const throttledOnPress = throttle(
+      event => {
+        onPress?.(event)
       },
-      [onPress]
+      1000,
+      {
+        leading: true,
+        trailing: false
+      }
+    )
+
+    const onPressEvent = useCallback(
+      (event: GestureResponderEvent): void => {
+        throttledOnPress(event)
+      },
+      [throttledOnPress]
     )
 
     const animatedStyle = useAnimatedStyle(() => {
