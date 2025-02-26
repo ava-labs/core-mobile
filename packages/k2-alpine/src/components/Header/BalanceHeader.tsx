@@ -1,9 +1,11 @@
 import React from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import { Text, View } from '../Primitives'
-import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
+import { AnimatedText } from '../Animated/AnimatedText'
+import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
+import { Text, View } from '../Primitives'
 import { BalanceLoader } from './BalanceHeaderLoader'
 
 export const BalanceHeader = ({
@@ -32,17 +34,29 @@ export const BalanceHeader = ({
       return <BalanceLoader />
     }
     return (
-      <View>
-        <View sx={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-          <Text variant="heading2" sx={{ lineHeight: 38 }}>
-            {formattedBalance}
-          </Text>
-          <Text
-            sx={{ fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }}>
-            {currency}
-          </Text>
+      <View
+        style={{
+          flexDirection: 'column',
+          gap: 5
+        }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+          <AnimatedText characters={formattedBalance} />
+          <Animated.View
+            entering={FadeIn.delay(250)}
+            layout={LinearTransition.springify().damping(100)}>
+            <Text
+              style={[
+                { fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }
+              ]}>
+              {` ${currency}`}
+            </Text>
+          </Animated.View>
         </View>
-        <View sx={{ marginTop: 5 }}>
+
+        <View
+          style={{
+            alignSelf: 'flex-start'
+          }}>
           {errorMessage ? (
             <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
               <Icons.Alert.Error
@@ -56,7 +70,7 @@ export const BalanceHeader = ({
             </View>
           ) : (
             <PriceChangeIndicator
-              formattedPrice={priceChange.formattedPrice}
+              formattedPrice={priceChange?.formattedPrice}
               status={priceChange.status}
               formattedPercent={priceChange.formattedPercent}
               textVariant="buttonMedium"
