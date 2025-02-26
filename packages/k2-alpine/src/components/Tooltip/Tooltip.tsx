@@ -26,10 +26,10 @@ export const Tooltip = ({
     bottom: 13,
     left: 13
   }
-}: TooltipProps) => {
+}: TooltipProps): JSX.Element => {
   const { theme } = useTheme()
 
-  const onPress = () => {
+  const onPress = (): void => {
     showAlert({
       title,
       description,
