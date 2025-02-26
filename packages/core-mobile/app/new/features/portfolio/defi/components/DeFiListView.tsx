@@ -64,7 +64,7 @@ export const DeFiListView = ({
               </View>
             </View>
           </View>
-          <TouchableOpacity onPress={onPressArrow}>
+          <TouchableOpacity onPress={onPressArrow} hitSlop={10}>
             <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
           </TouchableOpacity>
         </View>

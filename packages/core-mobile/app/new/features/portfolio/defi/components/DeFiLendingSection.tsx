@@ -34,7 +34,7 @@ export const DeFiLendingSection = ({
       {tokens.map((token, index) => (
         <View key={index}>
           <DeFiRowItem key={token.symbol}>
-            <Row style={{ flex: 1, alignItems: 'center', gap: 8 }}>
+            <Row style={{ flex: 1, alignItems: 'center', gap: 12 }}>
               <Image
                 source={{ uri: token.logoUrl }}
                 style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
@@ -43,7 +43,7 @@ export const DeFiLendingSection = ({
                 variant="body1"
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                sx={{ color: '$textSecondary' }}>
+                sx={{ color: '$textSecondary', flexShrink: 1 }}>
                 {token.symbol}
               </Text>
             </Row>

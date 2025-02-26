@@ -41,7 +41,7 @@ export const DeFiPortfolioVesting = ({ items }: Props): JSX.Element => {
                 <Text
                   numberOfLines={1}
                   ellipsizeMode="tail"
-                  sx={{ color: '$textSecondary' }}>
+                  sx={{ color: '$textSecondary', flexShrink: 1 }}>
                   {token.name}
                 </Text>
               </Row>
@@ -79,7 +79,6 @@ export const DeFiPortfolioVesting = ({ items }: Props): JSX.Element => {
           </Card>
         )
       })}
-      {/* </View> */}
     </View>
   )
 }

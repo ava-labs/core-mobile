@@ -55,7 +55,9 @@ export const DeFiPortfolioPerpetual = ({
                       backgroundColor: theme.colors.$surfaceSecondary
                     }}
                   />
-                  <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                  <Text
+                    variant="body1"
+                    sx={{ color: '$textSecondary', flexShrink: 1 }}>
                     {positionToken.symbol}/{marginToken.symbol}
                   </Text>
                 </Row>

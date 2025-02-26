@@ -8,7 +8,7 @@ import {
   Icons,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useDeFiProtocol } from 'hooks/defi/useDeFiProtocol'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
@@ -24,16 +24,16 @@ import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBot
 
 const DeFiDetailScreen = (): JSX.Element => {
   const { back } = useRouter()
-  const { protocolId } = useGlobalSearchParams()
+  const { protocolId } = useLocalSearchParams<{ protocolId: string }>()
+
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const { theme } = useTheme()
   const getAmount = useExchangedAmount()
 
-  const { data, isLoading, error, isPaused, isSuccess } = useDeFiProtocol(
-    protocolId as string
-  )
+  const { data, isLoading, error, isPaused, isSuccess } =
+    useDeFiProtocol(protocolId)
   const { data: chainList } = useDeFiChainList()
 
   const memoizedChain = useMemo(() => {
