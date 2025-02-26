@@ -34,8 +34,22 @@ export const getGridCardHeight = (
   }
 }
 
+// function useCollectibles(): {
+//   data: NFTItem[]
+//   filter: string
+//   sort: string
+// } {
+//   return {
+//     data: [],
+//     filter: '',
+//     sort: ''
+//   }
+// }
+
 export const CollectiblesScreen = (): JSX.Element => {
   const data: NFTItem[] = []
+
+  // const { data, filter, sort } = useCollectibles()
 
   const renderItem: ListRenderItem<NFTItem> = ({ item, index }) => {
     return (
