@@ -5,8 +5,13 @@ import WatchList from './components/WatchList'
 import { WatchListType } from './types'
 
 export const TrendingTokens = (): React.JSX.Element => {
-  const { trendingTokens: tokens, prices, charts } = useWatchlist()
-  const isFetchingTokens = tokens.length === 0
+  const {
+    trendingTokens: tokens,
+    prices,
+    charts,
+    isLoadingTrendingTokens
+  } = useWatchlist()
+  const isFetchingTokens = tokens.length === 0 && isLoadingTrendingTokens
 
   return (
     <>

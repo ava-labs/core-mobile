@@ -10,7 +10,6 @@ import {
   defaultPrice
 } from 'store/watchlist/types'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
-import isEmpty from 'lodash.isempty'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useWatchlistContext } from 'contexts/WatchlistContext'
@@ -64,13 +63,19 @@ const renderPriceFilterSelection = (
 )
 
 export const WatchlistTokens = (): React.JSX.Element => {
-  const { topTokens: tokens, prices, charts } = useWatchlist()
+  const {
+    topTokens: tokens,
+    prices,
+    charts,
+    isLoadingTopTokens
+  } = useWatchlist()
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
 
-  const isFetchingTokens = tokens.length === 0
+  const isFetchingTokens = tokens.length === 0 && isLoadingTopTokens
 
   return (
     <WatchlistUI
+      type={WatchListType.TOP}
       tokens={tokens}
       prices={prices}
       charts={charts}
@@ -96,33 +101,33 @@ export const TokenSearchResults = (): React.JSX.Element => {
 
   return (
     <WatchlistUI
-      tokens={searchResults?.tokens ?? allTokens}
+      type={WatchListType.SEARCH}
+      tokens={searchResults?.tokens ?? []}
       prices={searchResults?.prices ?? prices}
       charts={searchResults?.charts ?? charts}
       filterBy={filterBy}
       setFilterBy={setFilterBy}
       isFetching={isFetchingTokens || isSearchingTokens}
-      isSearching={!isEmpty(searchText)}
     />
   )
 }
 
 const WatchlistUI = ({
+  type,
   tokens,
   prices,
   charts,
   filterBy,
   setFilterBy,
-  isFetching,
-  isSearching = false
+  isFetching
 }: {
+  type: WatchListType
   tokens: MarketToken[]
   prices: Prices
   charts: Charts
   filterBy: WatchlistFilter
   setFilterBy: (filter: WatchlistFilter) => void
   isFetching: boolean
-  isSearching?: boolean
 }): React.JSX.Element => {
   const sortedTokens = useMemo(() => {
     if (Object.keys(prices).length === 0) return tokens
@@ -167,11 +172,10 @@ const WatchlistUI = ({
         <WatchListLoader />
       ) : (
         <WatchList
-          type={WatchListType.ALL}
+          type={type}
           tokens={sortedTokens}
           charts={charts}
           prices={prices}
-          isSearching={isSearching}
           testID="watchlist_item"
         />
       )}

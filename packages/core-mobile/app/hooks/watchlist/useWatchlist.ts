@@ -27,6 +27,8 @@ type UseWatchListReturnType = {
   getMarketTokenBySymbol: (symbol: string) => MarketToken | undefined
   getMarketTokenById: (id: string) => MarketToken | undefined
   isLoadingFavorites: boolean
+  isLoadingTrendingTokens: boolean
+  isLoadingTopTokens: boolean
 }
 
 export const useWatchlist = (): UseWatchListReturnType => {
@@ -35,7 +37,6 @@ export const useWatchlist = (): UseWatchListReturnType => {
     useGetTokensAndCharts()
   const { data: trendingTokensResponse, isLoading: isLoadingTrendingTokens } =
     useGetTrendingTokens()
-
   const isLoading = isLoadingTopTokens || isLoadingTrendingTokens
 
   const transformedTrendingTokens = useMemo(
@@ -134,6 +135,8 @@ export const useWatchlist = (): UseWatchListReturnType => {
     getWatchlistChart,
     getMarketTokenBySymbol,
     getMarketTokenById,
-    isLoadingFavorites
+    isLoadingFavorites,
+    isLoadingTrendingTokens,
+    isLoadingTopTokens
   }
 }

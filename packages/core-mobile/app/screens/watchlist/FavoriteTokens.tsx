@@ -9,9 +9,10 @@ export const FavoriteTokens = ({
 }: {
   onTabIndexChanged?: Dispatch<number>
 }): React.JSX.Element => {
-  const { favorites, prices, charts, allTokens } = useWatchlist()
+  const { favorites, prices, charts, allTokens, isLoadingFavorites } =
+    useWatchlist()
 
-  const isFetchingTokens = allTokens.length === 0
+  const isFetchingTokens = allTokens.length === 0 && isLoadingFavorites
 
   return (
     <>
@@ -24,7 +25,7 @@ export const FavoriteTokens = ({
             tokens={favorites}
             charts={charts}
             prices={prices}
-            onExploreAllTokens={() => onTabIndexChanged?.(1)}
+            onExploreAllTokens={() => onTabIndexChanged?.(2)}
             testID="watchlist_item"
           />
         </>

@@ -8,6 +8,7 @@ export enum WatchlistFilter {
 
 export enum WatchListType {
   FAVORITES = 'FAVORITES',
-  ALL = 'ALL',
-  TRENDING = 'TRENDING'
+  TOP = 'TOP',
+  TRENDING = 'TRENDING',
+  SEARCH = 'SEARCH'
 }

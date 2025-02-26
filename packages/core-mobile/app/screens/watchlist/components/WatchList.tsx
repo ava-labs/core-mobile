@@ -51,10 +51,8 @@ const WatchList: React.FC<Props> = ({
   prices,
   charts,
   type,
-  isSearching,
   onExploreAllTokens
 }) => {
-  const isShowingFavorites = type === WatchListType.FAVORITES
   const navigation = useNavigation<NavigationProp>()
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const dispatch = useDispatch()
@@ -89,17 +87,21 @@ const WatchList: React.FC<Props> = ({
   }
 
   const EmptyComponent =
-    isShowingFavorites && !isSearching ? (
+    type === WatchListType.FAVORITES ? (
       <ZeroState.NoWatchlistFavorites exploreAllTokens={onExploreAllTokens} />
-    ) : (
+    ) : type === WatchListType.SEARCH ? (
       <ZeroState.NoResultsTextual
         message={
           'There are no tokens that match your search. Please try again.'
         }
       />
+    ) : (
+      <View style={{ marginTop: '15%' }}>
+        <ZeroState.SomethingWentWrong />
+      </View>
     )
 
-  if (isShowingFavorites) {
+  if (type === WatchListType.FAVORITES) {
     return (
       <DraggableList
         data={tokens || []}
