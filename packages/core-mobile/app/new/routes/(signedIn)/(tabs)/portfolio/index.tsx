@@ -1,16 +1,35 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { noop } from '@avalabs/core-utils-sdk'
 import {
-  View,
   BalanceHeader,
   NavigationTitleHeader,
-  useTheme,
   SegmentedControl,
-  alpha
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import {
+  CollapsibleTabs,
+  CollapsibleTabsRef
+} from 'common/components/CollapsibleTabs'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { LinearGradient } from 'expo-linear-gradient'
+import { useRouter } from 'expo-router'
+import {
+  ActionButton,
+  ActionButtons
+} from 'features/portfolio/assets/components/ActionButtons'
+import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
+import { ActionButtonTitle } from 'features/portfolio/assets/consts'
+import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
+import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
+import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
@@ -20,27 +39,6 @@ import {
   selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { RootState } from 'store'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
-import AssetsScreen from 'features/portfolio/components/AssetsScreen'
-import { CollectiblesScreen } from 'features/portfolio/components/collectibles/CollectiblesScreen'
-import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
-import {
-  ActionButton,
-  ActionButtons
-} from 'features/portfolio/components/ActionButtons'
-import { ActionButtonTitle } from 'features/portfolio/components/assets/consts'
-import { noop } from '@avalabs/core-utils-sdk'
-import {
-  CollapsibleTabs,
-  CollapsibleTabsRef
-} from 'common/components/CollapsibleTabs'
-import { useRouter } from 'expo-router'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -48,6 +46,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+
   const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
@@ -213,38 +212,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
           }
         ]}
       />
-      <View
-        sx={{
-          marginBottom: -1
-        }}>
-        <LinearGradient
-          colors={[
-            alpha(theme.colors.$surfacePrimary, 0),
-            alpha(theme.colors.$surfacePrimary, 0.9)
-          ]}
-          style={{
-            position: 'absolute',
-            top: -44,
-            left: 0,
-            right: 0,
-            height: 60
-          }}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
+      <LinearGradientBottomWrapper>
+        <SegmentedControl
+          dynamicItemWidth={true}
+          items={['Assets', 'Collectibles', 'DeFi']}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={{ marginHorizontal: 16, marginBottom: 16 }}
         />
-        <BlurViewWithFallback
-          style={{
-            paddingBottom: 16,
-            paddingHorizontal: 16
-          }}>
-          <SegmentedControl
-            dynamicItemWidth={true}
-            items={['Assets', 'Collectibles', 'DeFi']}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-          />
-        </BlurViewWithFallback>
-      </View>
+      </LinearGradientBottomWrapper>
     </BlurredBarsContentLayout>
   )
 }

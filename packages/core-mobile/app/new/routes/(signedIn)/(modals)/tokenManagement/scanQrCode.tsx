@@ -1,7 +1,7 @@
 import { Text, View } from '@avalabs/k2-alpine'
-import { QrCodeScanner } from 'features/portfolio/components/QrCodeScanner'
 import React from 'react'
 import { useRouter } from 'expo-router'
+import { QrCodeScanner } from 'features/portfolio/assets/components/QrCodeScanner'
 
 const ScanQrCodeScreen = (): JSX.Element => {
   const { dismiss, setParams } = useRouter()
