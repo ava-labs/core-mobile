@@ -78,17 +78,19 @@ const MOCK_SESSION_KEYS_LIST = [
 const mockSessionKeysList = jest.fn()
 
 jest
-  .spyOn(SeedlessService.sessionManager, 'getSignerSession')
+  .spyOn(SeedlessService.session, 'getSignerClient')
   .mockImplementation(() => {
     return {
-      sessionKeysList: mockSessionKeysList.mockReturnValue(
-        MOCK_SESSION_KEYS_LIST
-      )
+      apiClient: {
+        sessionKeysList: mockSessionKeysList.mockReturnValue(
+          MOCK_SESSION_KEYS_LIST
+        )
+      }
     }
   })
 
 const mockSetMetadataProperty = jest.fn()
-jest.spyOn(SeedlessService.sessionManager, 'getKey').mockImplementation(() => {
+jest.spyOn(SeedlessService.session, 'getKey').mockImplementation(() => {
   return {
     setMetadataProperty: mockSetMetadataProperty
   }

@@ -1,5 +1,6 @@
 import React, { forwardRef, PropsWithChildren, useMemo } from 'react'
 import {
+  Insets,
   Platform,
   StyleProp,
   StyleSheet,
@@ -35,6 +36,7 @@ interface ButtonProps {
   size: ButtonSize
   leftIcon?: ButtonIconType | JSX.Element
   rightIcon?: ButtonIconType | JSX.Element
+  hitSlop?: number | Insets
 }
 
 export const Button = forwardRef<

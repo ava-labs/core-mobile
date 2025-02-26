@@ -68,8 +68,13 @@ const ContextApp = (): JSX.Element => {
         </ContextProviders>
       ) : (
         <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <CoreSplash />
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'black'
+          }}>
+          <CoreSplash width={300} height={300} />
         </View>
       )}
     </Sentry.ErrorBoundary>

@@ -5,6 +5,7 @@ import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 import { TokenLogo } from '../TokenLogo'
 
 interface Props {
@@ -18,6 +19,7 @@ export const LogoWithNetwork = ({ token }: Props): React.JSX.Element => {
   const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
 
   const network = useSelector(selectNetwork(token.networkChainId))
+  const isMalicious = isTokenMalicious(token)
 
   const shouldShowNetworkLogo =
     token.type !== TokenType.NATIVE ||
@@ -54,6 +56,7 @@ export const LogoWithNetwork = ({ token }: Props): React.JSX.Element => {
         logoUri={token.logoUri}
         backgroundColor={colors.$borderPrimary}
         borderColor={borderColor}
+        isMalicious={isMalicious}
       />
       {shouldShowNetworkLogo && network ? (
         <View

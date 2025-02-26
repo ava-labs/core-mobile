@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { KeyboardTypeOptions } from 'react-native'
+import { AlertOptions, KeyboardTypeOptions } from 'react-native'
 import Dialog from 'react-native-dialog'
 import { Alert as NativeAlert } from 'react-native'
 
@@ -81,12 +81,14 @@ type AlertButton<T> = {
 export function showAlert({
   title,
   description,
-  buttons
+  buttons,
+  options
 }: {
   title: string
   description?: string
   buttons: AlertButton<string | undefined>[]
+  options?: AlertOptions
 }): void {
   // use react-native's Alert for now
-  NativeAlert.alert(title, description, buttons)
+  NativeAlert.alert(title, description, buttons, options)
 }

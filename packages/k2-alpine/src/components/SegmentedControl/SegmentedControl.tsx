@@ -104,40 +104,43 @@ export const SegmentedControl = ({
   ])
 
   return (
-    <View
-      style={[
-        {
-          borderRadius: 100,
-          backgroundColor: alpha(theme.colors.$textPrimary, 0.2),
-          flexDirection: 'row'
-        },
-        style
-      ]}
-      onLayout={handleLayout}>
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            backgroundColor: theme.colors.$textPrimary,
-            borderRadius: 100
-          },
-          selectionIndicatorAnimatedStyle
-        ]}
-      />
-      {items.map((item, index) => {
-        return (
-          <Segment
-            key={index}
-            ratio={textRatios[index]}
-            text={item}
-            selected={index === selectedSegmentIndex}
-            onTextWidthChange={width => handleTextWidthChange(index, width)}
-            onPress={() => onSelectSegment(index)}
+    <View style={style}>
+      <View sx={{ backgroundColor: '$surfacePrimary', borderRadius: 100 }}>
+        <View
+          style={[
+            {
+              borderRadius: 100,
+              backgroundColor: alpha(theme.colors.$textPrimary, 0.2),
+              flexDirection: 'row'
+            }
+          ]}
+          onLayout={handleLayout}>
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                backgroundColor: theme.colors.$textPrimary,
+                borderRadius: 100
+              },
+              selectionIndicatorAnimatedStyle
+            ]}
           />
-        )
-      })}
+          {items.map((item, index) => {
+            return (
+              <Segment
+                key={index}
+                ratio={textRatios[index]}
+                text={item}
+                selected={index === selectedSegmentIndex}
+                onTextWidthChange={width => handleTextWidthChange(index, width)}
+                onPress={() => onSelectSegment(index)}
+              />
+            )
+          })}
+        </View>
+      </View>
     </View>
   )
 }

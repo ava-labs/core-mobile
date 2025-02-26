@@ -1,30 +1,23 @@
-import { IndexPath, usePopoverAnchor } from '@avalabs/k2-alpine'
-import { RefObject, useMemo, useRef, useState } from 'react'
+import { IndexPath } from '@avalabs/k2-alpine'
+import { useCallback, useMemo, useState } from 'react'
 import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
   ASSET_NETWORK_FILTERS,
   AssetBalanceSort,
-  AssetManageView,
   AssetNetworkFilter,
-  LocalTokenWithBalance,
-  selectFilteredAndSortedTokensWithBalance
+  LocalTokenWithBalance
 } from 'store/balance'
-import { useSelector } from 'react-redux'
-import { TouchableOpacity } from 'react-native'
-import { Rect } from 'react-native-popover-view'
-import { selectActiveAccount } from 'store/account'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { ChainId } from '@avalabs/core-chains-sdk'
+import { sortUndefined } from 'common/utils/sortUndefined'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 
 export type Selection = {
   title: string
   data: string[][]
   selected: IndexPath
   onSelected: (index: IndexPath) => void
-  ref: RefObject<TouchableOpacity>
-  anchorRect: Rect | undefined
-  isPopoverVisible: boolean
-  onShowPopover: () => void
-  onHidePopover: () => void
 }
 
 export const useFilterAndSort = (): {
@@ -33,7 +26,7 @@ export const useFilterAndSort = (): {
   sort: Selection
   view: Selection
 } => {
-  const activeAccount = useSelector(selectActiveAccount)
+  const { filteredTokenList } = useSearchableTokenList()
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
@@ -47,10 +40,6 @@ export const useFilterAndSort = (): {
     section: 0,
     row: 1
   })
-
-  const filterRef = useRef<TouchableOpacity>(null)
-  const sortRef = useRef<TouchableOpacity>(null)
-  const viewRef = useRef<TouchableOpacity>(null)
 
   const filterOption = useMemo(() => {
     return (
@@ -66,77 +55,72 @@ export const useFilterAndSort = (): {
     )
   }, [selectedSort])
 
-  const filteredAndSorted = useSelector(
-    selectFilteredAndSortedTokensWithBalance(
-      sortOption,
-      filterOption,
-      activeAccount?.index
-    )
+  const getFiltered = useCallback(() => {
+    if (filteredTokenList.length === 0) {
+      return []
+    }
+    switch (filterOption) {
+      case AssetNetworkFilter.AvalancheCChain:
+        return filteredTokenList.filter(
+          token =>
+            ('chainId' in token &&
+              token.chainId &&
+              isAvalancheCChainId(token.chainId)) ||
+            token.localId === 'AvalancheAVAX'
+        )
+      case AssetNetworkFilter.Ethereum:
+        return filteredTokenList.filter(
+          token =>
+            'chainId' in token &&
+            (token.chainId === ChainId.ETHEREUM_HOMESTEAD ||
+              token.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
+              token.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
+        )
+      case AssetNetworkFilter.BitcoinNetwork:
+        return filteredTokenList.filter(token => token.symbol === 'BTC')
+      default:
+        return filteredTokenList
+    }
+  }, [filterOption, filteredTokenList])
+
+  const getSorted = useCallback(
+    (filtered: LocalTokenWithBalance[]) => {
+      if (sortOption === AssetBalanceSort.LowToHigh) {
+        return filtered?.sort((a, b) =>
+          sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
+        )
+      }
+
+      return filtered?.sort((a, b) =>
+        sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
+      )
+    },
+    [sortOption]
   )
 
-  const {
-    anchorRect: filterAnchorRect,
-    isPopoverVisible: isFilterPopoverVisible,
-    onShowPopover: onShowFilterPopover,
-    onHidePopover: onHideFilterPopover
-  } = usePopoverAnchor(filterRef)
-
-  const {
-    anchorRect: sortAnchorRect,
-    isPopoverVisible: isSortPopoverVisible,
-    onShowPopover: onShowSortPopover,
-    onHidePopover: onHideSortPopover
-  } = usePopoverAnchor(sortRef)
-
-  const {
-    anchorRect: viewAnchorRect,
-    isPopoverVisible: isViewPopoverVisible,
-    onShowPopover: onShowViewPopover,
-    onHidePopover: onHideViewPopover
-  } = usePopoverAnchor(viewRef)
-
-  const onSelectedView = (indexPath: IndexPath): void => {
-    const manageList = ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
-    if (manageList === AssetManageView.ManageList) {
-      // TODO: navigate to manage list
-      return
-    }
-    setSelectedView(indexPath)
-  }
+  const filteredAndSorted = useMemo(() => {
+    const filtered = getFiltered()
+    return getSorted(filtered)
+  }, [getFiltered, getSorted])
 
   return {
     filter: {
       title: 'Filter',
       data: ASSET_NETWORK_FILTERS,
-      ref: filterRef,
-      anchorRect: filterAnchorRect,
-      isPopoverVisible: isFilterPopoverVisible,
-      onShowPopover: onShowFilterPopover,
-      onHidePopover: onHideFilterPopover,
       selected: selectedFilter,
       onSelected: setSelectedFilter
     },
     sort: {
       title: 'Sort',
       data: ASSET_BALANCE_SORTS,
-      ref: sortRef,
-      anchorRect: sortAnchorRect,
-      isPopoverVisible: isSortPopoverVisible,
-      onShowPopover: onShowSortPopover,
-      onHidePopover: onHideSortPopover,
       selected: selectedSort,
       onSelected: setSelectedSort
     },
     view: {
       title: 'View',
       data: ASSET_MANAGE_VIEWS,
-      ref: viewRef,
-      anchorRect: viewAnchorRect,
-      isPopoverVisible: isViewPopoverVisible,
-      onShowPopover: onShowViewPopover,
-      onHidePopover: onHideViewPopover,
       selected: selectedView,
-      onSelected: onSelectedView
+      onSelected: setSelectedView
     },
     data: filteredAndSorted
   }
