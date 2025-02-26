@@ -182,9 +182,9 @@ const ApprovalPopup = (): JSX.Element => {
         if (result.error.category === 'DO_NOT_RETRY') {
           setSubmitting(false)
           showAlert({
-            title: 'Gasless Error',
+            title: 'Free Gas Error',
             description:
-              'There was an error processing your transaction. Please try again.',
+              'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
             buttons: [
               {
                 text: 'OK',
@@ -203,9 +203,9 @@ const ApprovalPopup = (): JSX.Element => {
         ) {
           setSubmitting(false)
           showAlert({
-            title: 'Gasless Error',
+            title: 'Free Gas Error',
             description:
-              'Failed to process transaction after retry. Please try again.',
+              'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
             buttons: [
               {
                 text: 'OK',
@@ -436,7 +436,7 @@ const ApprovalPopup = (): JSX.Element => {
     if (isGaslessBlocked) return null
     return (
       <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="body2">Enable Free Gas</Text>
+        <Text variant="body2">Get Free Gas</Text>
         <Switch
           value={gaslessEnabled}
           onValueChange={() => setGaslessEnabled(prevState => !prevState)}
