@@ -9,10 +9,10 @@ import {
 import { Space } from 'components/Space'
 import { Dimensions } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useOnPressAnimation } from 'common/hooks/useOnPressAnimation'
+import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
-import { TokenListViewProps } from './types'
-import { getListItemEnteringAnimation } from './consts'
-import { useOnPressAnimation } from './useOnPressAnimation'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 

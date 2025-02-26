@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isTokenMalicious } from 'utils/isTokenMalicious'
-import { TokenLogo } from '../TokenLogo'
+import { TokenLogo } from './TokenLogo'
 
 interface Props {
   token: LocalTokenWithBalance

@@ -9,11 +9,11 @@ import {
 import { showSnackbar } from 'common/utils/toast'
 import React, { useCallback, useEffect } from 'react'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
-import { SearchBar } from 'features/portfolio/components/SearchBar'
-import { LogoWithNetwork } from 'features/portfolio/components/assets/LogoWithNetwork'
 import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { SearchBar } from 'features/portfolio/assets/components/SearchBar'
+import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 
 const AddCustomTokenScreen = (): JSX.Element => {
   const {
