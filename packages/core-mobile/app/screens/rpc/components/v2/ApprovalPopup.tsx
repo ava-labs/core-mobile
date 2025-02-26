@@ -39,6 +39,8 @@ import Logger from 'utils/Logger'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
 import { TransactionRequest } from 'ethers'
+import { Tooltip } from 'components/Tooltip'
+import InfoSVG from 'components/svg/InfoSVG'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
@@ -421,8 +423,17 @@ const ApprovalPopup = (): JSX.Element => {
       return null
     }
     return (
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="body2">Get Free Gas</Text>
+      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        <Row style={{ alignItems: 'center' }}>
+          <Text variant="body2">Get Free Gas</Text>
+          <Space x={4} />
+          <Tooltip
+            content="Core will cover the gas fees for this transaction"
+            position="right"
+            style={{ width: 200 }}
+            icon={<InfoSVG size={14} />}
+          />
+        </Row>
         <Switch
           value={gaslessEnabled}
           onValueChange={() => setGaslessEnabled(prevState => !prevState)}
