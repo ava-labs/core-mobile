@@ -30,7 +30,7 @@ export const ActionButtons = ({
   return (
     <Animated.FlatList
       style={{ overflow: 'visible' }}
-      contentContainerStyle={{ gap: 10, paddingHorizontal: 16 }}
+      contentContainerStyle={{ gap: 10 }}
       horizontal
       scrollEventThrottle={16}
       data={buttons}

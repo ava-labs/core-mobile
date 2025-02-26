@@ -13,7 +13,7 @@ import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { ListFilterHeader } from 'features/portfolio/components/ListFilterHeader'
 import { TokenListItem } from 'features/portfolio/components/assets/TokenListItem'
-import { useFilterAndSort } from 'features/portfolio/components/assets/useFilterAndSort'
+import { useAssetsFilterAndSort } from 'features/portfolio/components/assets/useAssetsFilterAndSort'
 import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
 import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { EmptyAssets } from 'features/portfolio/components/assets/EmptyAssets'
@@ -30,9 +30,9 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement
 }): JSX.Element => {
-  const { data, filter, sort, view } = useFilterAndSort()
+  const { data, filter, sort, view } = useAssetsFilterAndSort()
 
-  const { refetch, filteredTokenList } = useSearchableTokenList()
+  const { refetch, filteredTokenList } = useSearchableTokenList({})
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
