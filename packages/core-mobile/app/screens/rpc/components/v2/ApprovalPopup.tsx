@@ -187,10 +187,7 @@ const ApprovalPopup = (): JSX.Element => {
               'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
             buttons: [
               {
-                text: 'OK',
-                onPress: () => {
-                  // dismiss the alert
-                }
+                text: 'OK'
               }
             ]
           })
@@ -208,10 +205,7 @@ const ApprovalPopup = (): JSX.Element => {
               'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
             buttons: [
               {
-                text: 'OK',
-                onPress: () => {
-                  // dismiss the alert
-                }
+                text: 'OK'
               }
             ]
           })
