@@ -4,18 +4,6 @@ import {
 } from '@avalabs/vm-module-types'
 import { ActivityTransactionType } from 'store/transaction'
 
-// const isPChainTransaction = (
-//   txType: ActivityTransactionType
-// ): txType is PChainTransactionType => {
-//   return txType in PChainTransactionType
-// }
-
-// const isXChainTransaction = (
-//   txType: ActivityTransactionType
-// ): txType is XChainTransactionType => {
-//   return txType in XChainTransactionType
-// }
-
 export const isXpTransaction = (txType: ActivityTransactionType): boolean => {
   return (
     txType === PChainTransactionType.ADD_DELEGATOR_TX ||
