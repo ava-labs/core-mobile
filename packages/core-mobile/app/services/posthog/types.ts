@@ -33,7 +33,8 @@ export enum FeatureGates {
   BLOCKAID_DAPP_SCAN = 'blockaid-dapp-scan',
   ALL_NOTIFICATIONS = 'all-notifications',
   ENABLE_NOTIFICATION_PROMPT = 'enable-notification-prompt',
-  HALLIDAY_BRIDGE_BANNER = 'halliday-bridge-banner'
+  HALLIDAY_BRIDGE_BANNER = 'halliday-bridge-banner',
+  GASLESS = 'gasless-feature'
 }
 
 export enum FeatureVars {

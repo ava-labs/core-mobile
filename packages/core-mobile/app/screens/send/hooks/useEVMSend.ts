@@ -6,6 +6,8 @@ import { assertNotUndefined } from 'utils/assertions'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
 import { bigIntToString } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
+import { selectIsGaslessBlocked } from 'store/posthog'
+import { useSelector } from 'react-redux'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -36,6 +38,7 @@ const useEVMSend: SendAdapterEVM = ({
     canValidate
   } = useSendContext()
   const provider = useEVMProvider(network)
+  const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
 
   const send = useCallback(async () => {
     try {
@@ -71,12 +74,19 @@ const useEVMSend: SendAdapterEVM = ({
   const handleError = useCallback(
     (err: unknown) => {
       if (err instanceof Error) {
+        if (
+          !isGaslessBlocked &&
+          err.message === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+        ) {
+          setError(undefined)
+          return
+        }
         setError(err.message)
       } else {
         setError(SendErrorMessage.UNKNOWN_ERROR)
       }
     },
-    [setError]
+    [setError, isGaslessBlocked]
   )
 
   const validate = useCallback(async () => {

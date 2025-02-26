@@ -334,6 +334,14 @@ export const selectIsHallidayBridgeBannerBlocked = (
   )
 }
 
+export const selectIsGaslessBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.GASLESS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { TokenType } from '@avalabs/vm-module-types'
+import { SigningData_EthSendTx, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
@@ -10,7 +10,10 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
-import { selectIsSeedlessSigningBlocked } from 'store/posthog'
+import {
+  selectIsGaslessBlocked,
+  selectIsSeedlessSigningBlocked
+} from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { Eip1559Fees } from 'utils/Utils'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
@@ -20,7 +23,6 @@ import {
   selectAccountByIndex,
   selectActiveAccount
 } from 'store/account/slice'
-import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
@@ -30,12 +32,18 @@ import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import Switch from 'components/Switch'
+import GaslessService from 'services/gasless/GaslessService'
+import { showAlert } from '@avalabs/k2-alpine'
+import Logger from 'utils/Logger'
+import { SendErrorMessage } from 'screens/send/utils/types'
+import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
+import { TransactionRequest } from 'ethers'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
 import AlertBanner from './AlertBanner'
-
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
 >
@@ -50,6 +58,29 @@ const ApprovalPopup = (): JSX.Element => {
   const caip2ChainId = request.chainId
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
+  const [isGaslessEligible, setIsGaslessEligible] = useState(false)
+  const [gaslessEnabled, setGaslessEnabled] = useState(false)
+  const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
+  const [amountError, setAmountError] = useState<string | undefined>()
+  const nativeToken = useNativeTokenWithBalance()
+
+  useEffect(() => {
+    const checkGaslessEligibility = async (): Promise<void> => {
+      if (!chainId) {
+        setIsGaslessEligible(false)
+        return
+      }
+      const isEligible = await GaslessService.isEligibleForChain(
+        chainId.toString()
+      ).catch(err => {
+        Logger.error('Error checking gasless eligibility', err)
+        return false
+      })
+      Logger.info('ApprovalPopup: Gasless eligibility', isEligible)
+      setIsGaslessEligible(isEligible)
+    }
+    checkGaslessEligibility()
+  }, [chainId, request.chainId])
 
   const accountSelector =
     'account' in signingData
@@ -74,7 +105,8 @@ const ApprovalPopup = (): JSX.Element => {
     !account ||
     (displayData.networkFeeSelector && maxFeePerGas === undefined) ||
     (displayData.networkFeeSelector && maxPriorityFeePerGas === undefined) ||
-    submitting
+    submitting ||
+    amountError !== undefined
 
   const showNetworkFeeSelector = displayData.networkFeeSelector
 
@@ -132,23 +164,92 @@ const ApprovalPopup = (): JSX.Element => {
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
+  const handleGaslessTx = async (): Promise<string | undefined> => {
+    let attempts = 0
+    const MAX_ATTEMPTS = 1
+
+    while (attempts <= MAX_ATTEMPTS) {
+      const result = await GaslessService.fundTx(
+        signingData as SigningData_EthSendTx,
+        account?.addressC ?? ''
+      )
+
+      if (result.txHash) {
+        return result.txHash
+      }
+
+      if (result.error) {
+        if (result.error.category === 'DO_NOT_RETRY') {
+          setSubmitting(false)
+          showAlert({
+            title: 'Gasless Error',
+            description:
+              'There was an error processing your transaction. Please try again.',
+            buttons: [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // dismiss the alert
+                }
+              }
+            ]
+          })
+          return undefined
+        }
+
+        if (
+          result.error.category === 'RETRY_WITH_NEW_CHALLENGE' &&
+          attempts === MAX_ATTEMPTS
+        ) {
+          setSubmitting(false)
+          showAlert({
+            title: 'Gasless Error',
+            description:
+              'Failed to process transaction after retry. Please try again.',
+            buttons: [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // dismiss the alert
+                }
+              }
+            ]
+          })
+          return undefined
+        }
+      }
+
+      attempts++
+    }
+    return undefined
+  }
+
   const onHandleApprove = async (): Promise<void> => {
     if (approveDisabled) return
-
     setSubmitting(true)
 
-    onApprove({
-      network,
-      account,
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      overrideData: hashedCustomSpend
-    })
-      .catch(Logger.error)
-      .finally(() => {
+    if (gaslessEnabled) {
+      const txHash = await handleGaslessTx()
+      if (!txHash) {
         setSubmitting(false)
-        goBack()
+        return
+      }
+    }
+
+    try {
+      await onApprove({
+        network,
+        account,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        overrideData: hashedCustomSpend
       })
+      goBack()
+    } catch (error: unknown) {
+      Logger.error('Error approving transaction', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const renderAlert = (): JSX.Element | null => {
@@ -331,7 +432,21 @@ const ApprovalPopup = (): JSX.Element => {
     return <BalanceChange balanceChange={balanceChange} />
   }
 
+  const renderGasless = (): JSX.Element | null => {
+    if (isGaslessBlocked) return null
+    return (
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Text variant="body2">Enable Free Gas</Text>
+        <Switch
+          value={gaslessEnabled}
+          onValueChange={() => setGaslessEnabled(prevState => !prevState)}
+        />
+      </Row>
+    )
+  }
+
   const renderNetworkFeeSelector = (): JSX.Element | null => {
+    if (gaslessEnabled && isGaslessEligible) return null
     if (!showNetworkFeeSelector || !chainId) return null
 
     let gasLimit: number | undefined
@@ -368,6 +483,42 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const validateTransactionAmount = useCallback(() => {
+    if (!signingData || !network?.networkToken || !nativeToken) return
+    if (signingData.type !== 'eth_sendTransaction') return
+    const ethSendTx = signingData.data as TransactionRequest
+
+    try {
+      const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n
+      const maxFee = maxFeePerGas || 0n
+      const totalFee = gasLimit * maxFee
+
+      // For native token transfers, we need to account for both the transfer amount and gas fee
+      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
+      const totalRequired = amount + totalFee
+
+      if (nativeToken.balance < totalRequired) {
+        throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
+      }
+
+      setAmountError(undefined)
+    } catch (err) {
+      if (err instanceof Error) {
+        setAmountError(err.message)
+      } else {
+        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
+      }
+    }
+  }, [signingData, network, maxFeePerGas, nativeToken])
+
+  useEffect(() => {
+    if (gaslessEnabled) {
+      setAmountError(undefined)
+      return
+    }
+    validateTransactionAmount()
+  }, [validateTransactionAmount, gaslessEnabled])
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -387,8 +538,20 @@ const ApprovalPopup = (): JSX.Element => {
           {renderDetails()}
           {renderSpendLimits()}
           {renderBalanceChange()}
+          {isGaslessEligible && renderGasless()}
           {renderNetworkFeeSelector()}
           {renderDisclaimer()}
+          {amountError && (
+            <Text
+              variant="body2"
+              sx={{
+                color: '$dangerMain',
+                maxWidth: '55%',
+                marginTop: 8
+              }}>
+              {amountError}
+            </Text>
+          )}
         </ScrollView>
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
