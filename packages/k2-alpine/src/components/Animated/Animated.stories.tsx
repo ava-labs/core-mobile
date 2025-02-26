@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { ScrollView, Text, View } from '../Primitives'
-import { AnimatedText } from './AnimatedText'
-import { AnimatedPressable } from './AnimatedPressable'
-import { Alert } from 'react-native'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
+import { ScrollView, Text, View } from '../Primitives'
+import { AnimatedPressable } from './AnimatedPressable'
+import { AnimatedText } from './AnimatedText'
 
 export default {
   title: 'Animated'
