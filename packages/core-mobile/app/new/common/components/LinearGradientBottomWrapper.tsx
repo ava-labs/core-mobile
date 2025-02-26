@@ -7,7 +7,7 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 export const LinearGradientBottomWrapper = ({
   children
 }: {
-  children: React.ReactNode
+  children?: React.ReactNode
 }): React.JSX.Element => {
   const { theme } = useTheme()
 

@@ -1,4 +1,4 @@
-import { alpha, FlatList, Image, useTheme, View } from '@avalabs/k2-alpine'
+import { FlatList, Image, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenHeader } from 'common/components/TokenHeader'
 import React, { FC, memo, useCallback, useMemo } from 'react'
 import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
@@ -11,13 +11,13 @@ import {
   NativeSyntheticEvent
 } from 'react-native'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
-import { LinearGradient } from 'expo-linear-gradient'
 import { RefreshControl } from 'common/components/RefreshControl'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
 import { TokenType } from '@avalabs/vm-module-types'
 import { DropdownSelection } from 'common/types'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { XpActivityListItem } from './XpActivityListItem'
 import { NftActivityListItem } from './NftActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
@@ -208,21 +208,7 @@ const TokenDetail: FC<Props> = ({
         sx={{
           marginBottom: -1
         }}>
-        <LinearGradient
-          colors={[
-            alpha(colors.$surfacePrimary, 0),
-            alpha(colors.$surfacePrimary, 0.9)
-          ]}
-          style={{
-            position: 'absolute',
-            top: -44,
-            left: 0,
-            right: 0,
-            height: 60
-          }}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
-        />
+        <LinearGradientBottomWrapper />
       </View>
     </BlurredBarsContentLayout>
   )
