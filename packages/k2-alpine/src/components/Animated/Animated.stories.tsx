@@ -4,6 +4,7 @@ import { alpha } from '../../utils'
 import { ScrollView, Text, View } from '../Primitives'
 import { AnimatedPressable } from './AnimatedPressable'
 import { AnimatedText } from './AnimatedText'
+import { showAlert } from '../Alert/Alert'
 
 export default {
   title: 'Animated'
@@ -43,7 +44,18 @@ export const All = (): JSX.Element => {
           alignItems: 'center'
         }}>
         <Text variant="heading6">Animated Pressable</Text>
-        <AnimatedPressable onPress={() => console.warn('Pressed')}>
+        <AnimatedPressable
+          onPress={() =>
+            showAlert({
+              title: 'Pressed',
+              buttons: [
+                {
+                  text: 'OK',
+                  onPress: () => {}
+                }
+              ]
+            })
+          }>
           <View
             sx={{
               width: 100,

@@ -1,4 +1,5 @@
 import React, { memo, useCallback } from 'react'
+import { GestureResponderEvent, PressableProps } from 'react-native'
 import { Pressable } from 'dripsy'
 import Animated, {
   runOnJS,
@@ -9,7 +10,6 @@ import Animated, {
 } from 'react-native-reanimated'
 import { throttle } from 'lodash'
 import { ANIMATED } from '../../utils'
-import { GestureResponderEvent, PressableProps } from 'react-native'
 
 interface AnimatedPressable extends PressableProps {
   children: JSX.Element
