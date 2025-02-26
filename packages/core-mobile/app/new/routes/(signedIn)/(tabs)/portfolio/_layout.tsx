@@ -10,6 +10,7 @@ export default function PortfolioLayout(): JSX.Element {
     <Stack screenOptions={stackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={homeScreenOptions} />
       <Stack.Screen name="defiDetail" />
+      <Stack.Screen name="tokenDetail" />
     </Stack>
   )
 }

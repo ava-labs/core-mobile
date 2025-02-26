@@ -291,6 +291,24 @@ export const selectIsAllBalancesInaccurate =
     )
   }
 
+export const selectIsBalancesAccurateByNetwork =
+  (chainId?: number) =>
+  (state: RootState): boolean => {
+    const activeAccount = selectActiveAccount(state)
+
+    if (!chainId) return false
+    if (!activeAccount) return false
+
+    const key = getKey(chainId, activeAccount.index)
+    return state.balance.balances[key]?.dataAccurate ?? false
+  }
+
+// export const selectTokenWithBalanceByLocalId =
+//   (accountIndex?: number, localId?: string) => (state: RootState) => {
+//     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+//     return tokens.find(token => token.localId === localId)
+//   }
+
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions
 

@@ -12,12 +12,12 @@ import { Space } from 'components/Space'
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useFilterAndSort } from 'features/portfolio/assets/hooks/useFilterAndSort'
 import { LoadingState } from 'common/components/LoadingState'
 import { ListRenderItemInfo } from 'react-native'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { portfolioTabContentHeight } from '../../utils'
+import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { AssetsHeader } from './AssetsHeader'
 import { TokenListItem } from './TokenListItem'
 
@@ -30,9 +30,9 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement
 }): JSX.Element => {
-  const { data, filter, sort, view } = useFilterAndSort()
+  const { data, filter, sort, view } = useAssetsFilterAndSort()
 
-  const { refetch, filteredTokenList } = useSearchableTokenList()
+  const { refetch, filteredTokenList } = useSearchableTokenList({})
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
