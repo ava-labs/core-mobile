@@ -176,7 +176,7 @@ const TokenDetail: FC<Props> = ({
         }
         contentContainerStyle={{
           overflow: 'visible',
-          paddingBottom: 16
+          paddingBottom: 26
         }}
         data={data}
         renderItem={item => renderItem(item.item as Transaction, item.index)}
