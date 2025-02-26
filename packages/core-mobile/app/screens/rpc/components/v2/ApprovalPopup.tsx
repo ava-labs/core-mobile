@@ -429,7 +429,9 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   const renderGasless = (): JSX.Element | null => {
-    if (isGaslessBlocked) return null
+    if (!isGaslessEligible || isGaslessBlocked) {
+      return null
+    }
     return (
       <Row style={{ justifyContent: 'space-between' }}>
         <Text variant="body2">Get Free Gas</Text>
@@ -539,7 +541,7 @@ const ApprovalPopup = (): JSX.Element => {
           {renderDetails()}
           {renderSpendLimits()}
           {renderBalanceChange()}
-          {isGaslessEligible && renderGasless()}
+          {renderGasless()}
           {renderNetworkFeeSelector()}
           {renderDisclaimer()}
           {amountError && (
