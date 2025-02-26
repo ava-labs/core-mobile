@@ -147,7 +147,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
               priceChange={{
-                formattedPrice: Math.abs(totalPriceChanged).toFixed(2),
+                formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(2)}`,
                 status: indicatorStatus,
                 formattedPercent
               }}
