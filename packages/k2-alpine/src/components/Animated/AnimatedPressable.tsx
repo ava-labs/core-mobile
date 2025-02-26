@@ -61,7 +61,7 @@ export const AnimatedPressable = memo(
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         {...props}
-        style={[animatedStyle, props.style]}>
+        style={[props.style, animatedStyle]}>
         {children}
       </AnimatedPress>
     )
