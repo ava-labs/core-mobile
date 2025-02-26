@@ -1,57 +1,15 @@
-import {
-  alpha,
-  Icons,
-  Pressable,
-  useTheme,
-  View,
-  Text
-} from '@avalabs/k2-alpine'
+import { alpha, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { Image } from 'expo-image'
-import React from 'react'
-import { Platform, ScaledSize, ViewStyle } from 'react-native'
+import React, { ReactNode } from 'react'
+import { Platform, Pressable, ScaledSize, ViewStyle } from 'react-native'
 import { MasonryFlashList } from 'react-native-collapsible-tab-view'
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming
-} from 'react-native-reanimated'
 import { NFTItem } from 'store/nft'
 
 const HORIZONTAL_MARGIN = 16
 const HORIZONTAL_ITEM_GAP = 14
 const VERTICAL_ITEM_GAP = 12
 const LIST_CARD_HEIGHT = 100
-
-const data: Partial<NFTItem>[] = [
-  {
-    name: 'Test',
-    address: '0x123'
-  },
-  {
-    name: 'Test'
-  },
-  {
-    name: 'Test'
-  },
-  {
-    name: 'Test'
-  },
-  {
-    name: 'Test'
-  },
-  {
-    name: 'Test'
-  },
-  {
-    name: 'Test'
-  },
-  {
-    name: 'Test'
-  }
-]
 
 export const getGridCardHeight = (
   type: 'grid' | 'list' | 'columns',
@@ -70,7 +28,9 @@ export const getGridCardHeight = (
 }
 
 export const CollectiblesScreen = (): JSX.Element => {
-  const renderItem: ListRenderItem<Partial<NFTItem>> = ({ item, index }) => {
+  const data: NFTItem[] = []
+
+  const renderItem: ListRenderItem<NFTItem> = ({ item, index }) => {
     return (
       <View>
         <NftCard nft={item} index={index} type="grid" />
@@ -111,37 +71,59 @@ const NftCard = ({
   type,
   index
 }: {
-  nft: Partial<NFTItem>
+  nft: NFTItem
   type: 'grid' | 'list'
   index: number
 }) => {
   return (
-    <PressableAnimation>
+    <Pressable>
       <CardContainer
         style={{
           height: index % 3 === 0 ? 220 : 180,
           marginHorizontal: type === 'grid' ? HORIZONTAL_ITEM_GAP / 2 : 0,
           marginVertical: type === 'grid' ? VERTICAL_ITEM_GAP / 2 : 0
         }}>
-        {/* <Text>{collectible.processedMetadata?.imageUri}</Text> */}
-        <ContentRenderer height={index % 3 === 0 ? 220 : 180} />
+        <Text>{nft.metadata?.imageUri}</Text>
+        <ContentRenderer
+          imageUrl={nft.imageData?.image}
+          height={index % 3 === 0 ? 220 : 180}
+        />
       </CardContainer>
-    </PressableAnimation>
+    </Pressable>
   )
 }
 
-const EaseOutQuart = Easing.bezier(0.25, 1, 0.5, 1)
-const DEFAULT_DURATION = 500
-const SPRING_CONFIG = {
-  damping: 10,
-  stiffness: 200,
-  mass: 0.5
+const ContentRenderer = ({
+  style,
+  width = 200,
+  height,
+  imageUrl
+}: {
+  style?: ViewStyle
+  width?: number
+  height: number
+  imageUrl?: string
+}) => {
+  return (
+    <View
+      style={{
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        ...style
+      }}>
+      <Image
+        style={{
+          flex: 1,
+          width: '100%',
+          borderRadius: 18
+        }}
+        source={imageUrl ?? `https://picsum.photos/${width}/${height}`}
+        contentFit="cover"
+      />
+    </View>
+  )
 }
-const TIMING_CONFIG = {
-  duration: DEFAULT_DURATION,
-  easing: EaseOutQuart
-}
-const DEFAULT_SCALE = 0.96
 
 const EmptyCollectibles = () => {
   return (
@@ -157,14 +139,14 @@ const EmptyCollectibles = () => {
           flex: 1,
           gap: VERTICAL_ITEM_GAP
         }}>
-        <PressableAnimation>
+        <Pressable>
           <CardContainer
             style={{
               height: 220
             }}>
             <Icons.Custom.Search color={'#000000'} />
           </CardContainer>
-        </PressableAnimation>
+        </Pressable>
 
         <CardContainer
           style={{
@@ -197,7 +179,7 @@ const CardContainer = ({
   children
 }: {
   style: ViewStyle
-  children?: JSX.Element
+  children?: ReactNode
 }) => {
   const {
     theme: { isDark }
@@ -215,66 +197,6 @@ const CardContainer = ({
         ...style
       }}>
       {children}
-    </View>
-  )
-}
-
-const PressableAnimation = ({ children }: { children: JSX.Element }) => {
-  const opacity = useSharedValue(1)
-  const scale = useSharedValue(1)
-
-  const onPressIn = () => {
-    'worklet'
-    opacity.value = withTiming(0.5, TIMING_CONFIG)
-    scale.value = withSpring(DEFAULT_SCALE, SPRING_CONFIG)
-  }
-
-  const onPressOut = () => {
-    'worklet'
-    opacity.value = withTiming(1, TIMING_CONFIG)
-    scale.value = withSpring(1, SPRING_CONFIG)
-  }
-
-  const pressStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ scale: scale.value }]
-    }
-  })
-
-  return (
-    <Pressable onPressIn={onPressIn} onPressOut={onPressOut}>
-      <Animated.View style={[pressStyle]}>{children}</Animated.View>
-    </Pressable>
-  )
-}
-
-const ContentRenderer = ({
-  style,
-  width = 200,
-  height
-}: {
-  style?: ViewStyle
-  width?: number
-  height: number
-}) => {
-  return (
-    <View
-      style={{
-        flex: 1,
-        width: '100%',
-        height: '100%',
-        ...style
-      }}>
-      <Image
-        style={{
-          flex: 1,
-          width: '100%',
-          borderRadius: 18
-        }}
-        source={`https://picsum.photos/${width}/${height}`}
-        contentFit="cover"
-      />
     </View>
   )
 }

@@ -27,7 +27,7 @@ import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import AssetsScreen from 'features/portfolio/components/AssetsScreen'
-import { CollectiblesScreen } from 'features/portfolio/components/CollectiblesScreen'
+import { CollectiblesScreen } from 'features/portfolio/components/collectibles/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/components/DeFiScreen'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import {
