@@ -14,7 +14,7 @@ xcrun simctl boot 'iPhone 15 Pro' && sleep 10
 open -a Simulator
 
 if [ "$IS_INTERNAL_BUILD" = true ]; then
-  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.regression.ci --headless --max-workers 3; test_result=$?
+  QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.regression.ci --headless --max-workers 2; test_result=$?
 else
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.external.release.ci --headless --max-workers 2; test_result=$?
 fi
