@@ -1,8 +1,9 @@
 import React from 'react'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { SquareButton, SquareButtonIconType } from '@avalabs/k2-alpine'
-import { useOnPressAnimation } from './assets/useOnPressAnimation'
-import { ActionButtonTitle, getItemEnteringAnimation } from './assets/consts'
+import { getItemEnteringAnimation } from 'common/utils/animations'
+import { useOnPressAnimation } from 'common/hooks/useOnPressAnimation'
+import { ActionButtonTitle } from '../consts'
 
 export const ActionButtons = ({
   buttons

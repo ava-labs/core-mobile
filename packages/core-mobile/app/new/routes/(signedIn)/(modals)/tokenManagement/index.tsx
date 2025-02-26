@@ -8,14 +8,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import TokenManagementItem from 'features/portfolio/components/TokenManagementItem'
-import { SearchBar } from 'features/portfolio/components/SearchBar'
 import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
 import { GlobalEmptyAssets } from 'common/components/GlobalEmptyState'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useRouter } from 'expo-router'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { FlatList } from 'react-native-gesture-handler'
+import { SearchBar } from 'features/portfolio/assets/components/SearchBar'
+import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
 
 const TokenManagementScreen = (): JSX.Element => {
   const {
