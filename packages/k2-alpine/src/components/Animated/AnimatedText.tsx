@@ -56,15 +56,15 @@ export const AnimateFadeScale = memo(
     const opacity = useSharedValue(0)
     const scale = useSharedValue(0.8)
 
-    useEffect(() => {
-      animate()
-    }, [])
-
     const animate = () => {
       'worklet'
       opacity.value = withDelay(delay, withTiming(1, ANIMATED.TIMING_CONFIG))
       scale.value = withDelay(delay, withSpring(1, ANIMATED.SPRING_CONFIG))
     }
+
+    useEffect(() => {
+      animate()
+    }, [animate])
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
