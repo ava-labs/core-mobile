@@ -1,31 +1,30 @@
-import { alpha, FlatList, useTheme, View } from '@avalabs/k2-alpine'
+import { alpha, FlatList, Image, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenHeader } from 'common/components/TokenHeader'
 import React, { FC, memo, useCallback, useMemo } from 'react'
 import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
-import {
-  ActionButton,
-  ActionButtons
-} from 'features/portfolio/components/ActionButtons'
-import { ListFilterHeader } from 'features/portfolio/components/ListFilterHeader'
-import { LoadingState } from 'features/portfolio/components/assets/LoadingState'
-import { ErrorState } from 'features/portfolio/components/assets/ErrorState'
 import { Transaction } from 'store/transaction'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
+  Dimensions,
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent
 } from 'react-native'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
-import { TxHistoryEmptyState } from 'features/portfolio/components/TxHistoryEmptyState'
 import { RefreshControl } from 'common/components/RefreshControl'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
 import { TokenType } from '@avalabs/vm-module-types'
-import { DropdownSelection } from './assets/useTokenDetailFilterAndSort'
-import { XpActivityListItem } from './assets/XpActivityListItem'
-import { NftActivityListItem } from './assets/NftActivityListItem'
-import { TokenActivityListItem } from './assets/TokenActivityListItem'
+import { DropdownSelection } from 'common/types'
+import { ErrorState } from 'common/components/ErrorState'
+import { LoadingState } from 'common/components/LoadingState'
+import { XpActivityListItem } from './XpActivityListItem'
+import { NftActivityListItem } from './NftActivityListItem'
+import { TokenActivityListItem } from './TokenActivityListItem'
+import { ActionButton, ActionButtons } from './ActionButtons'
+import { AssetsHeader } from './AssetsHeader'
+
+const EMPTY_STATE_HEIGHT = Dimensions.get('window').height / 2 - 32
 
 interface Props {
   onScroll: (
@@ -118,7 +117,7 @@ const TokenDetail: FC<Props> = ({
     return (
       <>
         {renderHeader()}
-        <ListFilterHeader
+        <AssetsHeader
           filter={filter}
           sort={sort}
           sx={{ paddingHorizontal: 16 }}
@@ -129,15 +128,36 @@ const TokenDetail: FC<Props> = ({
 
   const emptyState = useMemo(() => {
     if (isLoading || isRefreshing) {
-      return <LoadingState />
+      return <LoadingState sx={{ height: EMPTY_STATE_HEIGHT }} />
     }
 
     if (isError) {
-      return <ErrorState onPress={refresh} />
+      return (
+        <ErrorState
+          sx={{ height: EMPTY_STATE_HEIGHT }}
+          description="Please hit refresh or try again later"
+          button={{
+            title: 'Refresh',
+            onPress: refresh
+          }}
+        />
+      )
     }
 
     if (data.length === 0) {
-      return <TxHistoryEmptyState />
+      return (
+        <ErrorState
+          sx={{ height: EMPTY_STATE_HEIGHT }}
+          icon={
+            <Image
+              source={require('../../../../assets/icons/unamused_emoji.png')}
+              sx={{ width: 42, height: 42 }}
+            />
+          }
+          title="No recent transactions"
+          description="Interact with this token onchain and see your activity here"
+        />
+      )
     }
   }, [isError, isLoading, isRefreshing, data, refresh])
 
@@ -176,7 +196,7 @@ const TokenDetail: FC<Props> = ({
         }
         contentContainerStyle={{
           overflow: 'visible',
-          paddingBottom: 16
+          paddingBottom: 26
         }}
         data={data}
         renderItem={item => renderItem(item.item as Transaction, item.index)}

@@ -7,7 +7,7 @@ import {
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
-import { IndexPath, View } from '@avalabs/k2-alpine'
+import { Image, IndexPath, View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
@@ -98,6 +98,12 @@ const AssetsScreen: FC<Props> = ({
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
+          icon={
+            <Image
+              source={require('../../../../assets/icons/unamused_emoji.png')}
+              sx={{ width: 42, height: 42 }}
+            />
+          }
           title="No Assets yet"
           description="Add your crypto tokens to track your portfolio’s performance and stay updated on your investments"
         />

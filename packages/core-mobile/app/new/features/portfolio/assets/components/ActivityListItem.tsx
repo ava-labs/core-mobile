@@ -30,7 +30,7 @@ const ActivityListItem: FC<Props> = ({
   index
 }) => {
   const {
-    theme: { colors, isDark }
+    theme: { colors }
   } = useTheme()
 
   const textColor =
@@ -87,11 +87,7 @@ const ActivityListItem: FC<Props> = ({
                 {subtitle}
               </Text>
             </View>
-            {isDark ? (
-              <Icons.Custom.OutboundDark />
-            ) : (
-              <Icons.Custom.OutboundLight />
-            )}
+            <Icons.Custom.Outbound />
           </View>
         </View>
         {!isLastItem && (

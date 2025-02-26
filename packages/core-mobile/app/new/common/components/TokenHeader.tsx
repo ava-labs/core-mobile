@@ -1,9 +1,9 @@
 import React from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Text, View, Icons, BalanceLoader, useTheme } from '@avalabs/k2-alpine'
-import { LogoWithNetwork } from 'features/portfolio/components/assets/LogoWithNetwork'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { AVAX_P_ID, AVAX_X_ID } from 'store/balance'
+import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
 
 export const TokenHeader = ({
