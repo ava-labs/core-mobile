@@ -164,6 +164,19 @@ const ApprovalPopup = (): JSX.Element => {
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
+  const showGaslessError = (): void => {
+    showAlert({
+      title: 'Free Gas Error',
+      description:
+        'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
+      buttons: [
+        {
+          text: 'OK'
+        }
+      ]
+    })
+  }
+
   const handleGaslessTx = async (
     addressFrom: string
   ): Promise<string | undefined> => {
@@ -176,43 +189,18 @@ const ApprovalPopup = (): JSX.Element => {
         addressFrom
       )
 
-      if (result.txHash) {
-        return result.txHash
-      }
+      if (result.txHash) return result.txHash
 
-      if (result.error) {
-        if (result.error.category === 'DO_NOT_RETRY') {
-          setSubmitting(false)
-          showAlert({
-            title: 'Free Gas Error',
-            description:
-              'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
-            buttons: [
-              {
-                text: 'OK'
-              }
-            ]
-          })
-          return undefined
-        }
-
-        if (
-          result.error.category === 'RETRY_WITH_NEW_CHALLENGE' &&
-          attempts === MAX_ATTEMPTS
-        ) {
-          setSubmitting(false)
-          showAlert({
-            title: 'Free Gas Error',
-            description:
-              'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
-            buttons: [
-              {
-                text: 'OK'
-              }
-            ]
-          })
-          return undefined
-        }
+      // Show error and stop if we get a DO_NOT_RETRY error or
+      // if we've hit max attempts with a RETRY_WITH_NEW_CHALLENGE error
+      if (
+        result.error?.category === 'DO_NOT_RETRY' ||
+        (result.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
+          attempts === MAX_ATTEMPTS)
+      ) {
+        setSubmitting(false)
+        showGaslessError()
+        return undefined
       }
 
       attempts++
