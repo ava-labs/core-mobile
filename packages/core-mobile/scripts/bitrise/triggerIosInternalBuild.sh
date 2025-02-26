@@ -54,7 +54,3 @@ if [[ "$build_number" != "$build_number_two" ]] && [[ "$build_triggered_at" != "
 else
   echo "Build already in progress"
 fi
-
-
-
-
