@@ -423,7 +423,12 @@ const ApprovalPopup = (): JSX.Element => {
       return null
     }
     return (
-      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: 8
+        }}>
         <Row style={{ alignItems: 'center' }}>
           <Text variant="body2">Get Free Gas</Text>
           <Space x={4} />
