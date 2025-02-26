@@ -428,7 +428,7 @@ const ApprovalPopup = (): JSX.Element => {
           <Text variant="body2">Get Free Gas</Text>
           <Space x={4} />
           <Tooltip
-            content="Core will cover the gas fees for this transaction"
+            content="When toggled Core will pay the network fee for this transaction."
             position="right"
             style={{ width: 200 }}
             icon={<InfoSVG size={14} />}
