@@ -22,14 +22,14 @@ export const TokenListItem = ({
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
 
   const { balanceDisplayValue, balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
     ? currencyFormatter(balanceInCurrency)
     : `${balanceDisplayValue} ${symbol}`
 
-  const marketToken = getMarketToken(symbol)
+  const marketToken = getMarketTokenBySymbol(symbol)
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined
   const priceChange =
     percentChange && balanceInCurrency

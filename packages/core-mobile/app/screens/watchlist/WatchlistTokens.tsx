@@ -1,17 +1,22 @@
-import React, { Dispatch, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
-import { MarketToken, defaultPrice } from 'store/watchlist'
-import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import {
+  MarketToken,
+  Prices,
+  Charts,
+  defaultPrice
+} from 'store/watchlist/types'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useWatchlistContext } from 'contexts/WatchlistContext'
 import { WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
+import { WatchListType } from './types'
 
 const comparePercentChange = (
   token1: MarketToken,
@@ -21,13 +26,6 @@ const comparePercentChange = (
   const percentChange2 = token2.priceChangePercentage24h ?? 0
 
   return percentChange1 - percentChange2
-}
-
-interface Props {
-  showFavorites?: boolean
-  searchText?: string
-  onTabIndexChanged?: Dispatch<number>
-  testID?: string
 }
 
 const filterPriceOptions = [
@@ -65,39 +63,73 @@ const renderPriceFilterSelection = (
   />
 )
 
-const WatchlistView: React.FC<Props> = ({ searchText }) => {
-  const { tokens, prices, charts } = useWatchlist()
-  const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
+export const WatchlistTokens = (): React.JSX.Element => {
+  const { topTokens: tokens, prices, charts } = useWatchlist()
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
-  const isSearching = !isEmpty(searchText)
 
   const isFetchingTokens = tokens.length === 0
 
+  return (
+    <WatchlistUI
+      tokens={tokens}
+      prices={prices}
+      charts={charts}
+      filterBy={filterBy}
+      setFilterBy={setFilterBy}
+      isFetching={isFetchingTokens}
+    />
+  )
+}
+
+export const TokenSearchResults = (): React.JSX.Element => {
+  const { searchText } = useWatchlistContext()
+  const { allTokens, prices, charts } = useWatchlist()
+  const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
+
+  const isFetchingTokens = allTokens.length === 0
+
   const { isSearchingTokens, searchResults } = useTokenSearch({
     isFetchingTokens,
-    items: tokens,
-    searchText,
-    currency
+    items: allTokens,
+    searchText
   })
-  const showLoader = isSearchingTokens || isFetchingTokens
-  const tokensToDisplay = useMemo(() => {
-    return searchResults?.tokens ?? tokens
-  }, [searchResults?.tokens, tokens])
 
-  const pricesToDisplay = useMemo(() => {
-    return searchResults?.prices ?? prices
-  }, [searchResults?.prices, prices])
+  return (
+    <WatchlistUI
+      tokens={searchResults?.tokens ?? allTokens}
+      prices={searchResults?.prices ?? prices}
+      charts={searchResults?.charts ?? charts}
+      filterBy={filterBy}
+      setFilterBy={setFilterBy}
+      isFetching={isFetchingTokens || isSearchingTokens}
+      isSearching={!isEmpty(searchText)}
+    />
+  )
+}
 
-  const chartsToDisplay = useMemo(() => {
-    return searchResults?.charts ?? charts
-  }, [searchResults?.charts, charts])
-
+const WatchlistUI = ({
+  tokens,
+  prices,
+  charts,
+  filterBy,
+  setFilterBy,
+  isFetching,
+  isSearching = false
+}: {
+  tokens: MarketToken[]
+  prices: Prices
+  charts: Charts
+  filterBy: WatchlistFilter
+  setFilterBy: (filter: WatchlistFilter) => void
+  isFetching: boolean
+  isSearching?: boolean
+}): React.JSX.Element => {
   const sortedTokens = useMemo(() => {
-    if (Object.keys(pricesToDisplay).length === 0) return tokensToDisplay
+    if (Object.keys(prices).length === 0) return tokens
 
-    return tokensToDisplay.slice().sort((a, b) => {
-      const priceB = pricesToDisplay[b.id] ?? defaultPrice
-      const priceA = pricesToDisplay[a.id] ?? defaultPrice
+    return tokens.slice().sort((a, b) => {
+      const priceB = prices[b.id] ?? defaultPrice
+      const priceA = prices[a.id] ?? defaultPrice
 
       switch (filterBy) {
         case WatchlistFilter.MARKET_CAP:
@@ -113,7 +145,7 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
           return priceB.priceInCurrency - priceA.priceInCurrency
       }
     })
-  }, [filterBy, pricesToDisplay, tokensToDisplay])
+  }, [filterBy, prices, tokens])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy
@@ -131,19 +163,17 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
           selectionRenderItem={renderPriceFilterSelection}
         />
       </View>
-      {showLoader ? (
+      {isFetching ? (
         <WatchListLoader />
       ) : (
-        <>
-          <WatchList
-            tokens={sortedTokens}
-            charts={chartsToDisplay}
-            prices={pricesToDisplay}
-            filterBy={filterBy}
-            isSearching={isSearching}
-            testID="watchlist_item"
-          />
-        </>
+        <WatchList
+          type={WatchListType.ALL}
+          tokens={sortedTokens}
+          charts={charts}
+          prices={prices}
+          isSearching={isSearching}
+          testID="watchlist_item"
+        />
       )}
     </>
   )
@@ -173,5 +203,3 @@ const styles = StyleSheet.create({
     fontSize: 16
   }
 })
-
-export default WatchlistView

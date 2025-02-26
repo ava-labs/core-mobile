@@ -17,7 +17,7 @@ import { Fab } from 'components/Fab'
 import { addTab, selectActiveTab, selectAllTabs } from 'store/browser'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import WatchlistTab from 'screens/watchlist/WatchlistTabView'
+import { WatchlistScreen } from 'screens/watchlist/WatchlistScreen'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -177,7 +177,7 @@ const TabNavigator: () => JSX.Element = () => {
             },
             tabPress: () => setCurrentTab(AppNavigation.Tabs.Watchlist)
           })}
-          component={WatchlistTab}
+          component={WatchlistScreen}
         />
         {renderEarnTab()}
         {renderBrowserTab()}

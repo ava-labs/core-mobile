@@ -58,8 +58,8 @@ const PortfolioListItem: FC<Props> = ({
     />
   )
 
-  const { getMarketToken } = useWatchlist()
-  const marketToken = getMarketToken(symbol)
+  const { getMarketTokenBySymbol } = useWatchlist()
+  const marketToken = getMarketTokenBySymbol(symbol)
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined
   const priceChange = percentChange
     ? (tokenPriceInCurrency * percentChange) / 100

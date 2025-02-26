@@ -29,7 +29,7 @@ export const DetailSectionView = ({
   detailSection: DetailSection
   onPressDataItem: (data: string) => void
 }): JSX.Element => {
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
 
@@ -84,7 +84,7 @@ export const DetailSectionView = ({
     decimals: number,
     symbol: string
   ): JSX.Element => {
-    const marketToken = getMarketToken(symbol)
+    const marketToken = getMarketTokenBySymbol(symbol)
 
     return (
       <View sx={{ alignItems: 'flex-end' }}>
