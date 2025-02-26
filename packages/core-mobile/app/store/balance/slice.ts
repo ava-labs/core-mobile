@@ -291,6 +291,18 @@ export const selectIsAllBalancesInaccurate =
     )
   }
 
+export const selectIsBalancesAccurateByNetwork =
+  (chainId?: number) =>
+  (state: RootState): boolean => {
+    const activeAccount = selectActiveAccount(state)
+
+    if (!chainId) return false
+    if (!activeAccount) return false
+
+    const key = getKey(chainId, activeAccount.index)
+    return state.balance.balances[key]?.dataAccurate ?? false
+  }
+
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions
 

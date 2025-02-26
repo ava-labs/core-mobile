@@ -20,13 +20,13 @@ export type Selection = {
   onSelected: (index: IndexPath) => void
 }
 
-export const useFilterAndSort = (): {
+export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
   filter: Selection
   sort: Selection
   view: Selection
 } => {
-  const { filteredTokenList } = useSearchableTokenList()
+  const { filteredTokenList } = useSearchableTokenList({})
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
