@@ -479,9 +479,14 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
-  const validateTransactionAmount = useCallback(() => {
-    if (!signingData || !network?.networkToken || !nativeToken) return
-    if (signingData.type !== 'eth_sendTransaction') return
+  const validateEthSendTransaction = useCallback(() => {
+    if (
+      !signingData ||
+      !network?.networkToken ||
+      !nativeToken ||
+      signingData.type !== 'eth_sendTransaction'
+    )
+      return
     const ethSendTx = signingData.data as TransactionRequest
 
     try {
@@ -512,8 +517,8 @@ const ApprovalPopup = (): JSX.Element => {
       setAmountError(undefined)
       return
     }
-    validateTransactionAmount()
-  }, [validateTransactionAmount, gaslessEnabled])
+    validateEthSendTransaction()
+  }, [validateEthSendTransaction, gaslessEnabled])
 
   return (
     <>
