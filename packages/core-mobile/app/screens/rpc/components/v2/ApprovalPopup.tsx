@@ -164,14 +164,16 @@ const ApprovalPopup = (): JSX.Element => {
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
-  const handleGaslessTx = async (): Promise<string | undefined> => {
+  const handleGaslessTx = async (
+    addressFrom: string
+  ): Promise<string | undefined> => {
     let attempts = 0
     const MAX_ATTEMPTS = 1
 
     while (attempts <= MAX_ATTEMPTS) {
       const result = await GaslessService.fundTx(
         signingData as SigningData_EthSendTx,
-        account?.addressC ?? ''
+        addressFrom
       )
 
       if (result.txHash) {
@@ -223,7 +225,7 @@ const ApprovalPopup = (): JSX.Element => {
     setSubmitting(true)
 
     if (gaslessEnabled) {
-      const txHash = await handleGaslessTx()
+      const txHash = await handleGaslessTx(account.addressC)
       if (!txHash) {
         setSubmitting(false)
         return
