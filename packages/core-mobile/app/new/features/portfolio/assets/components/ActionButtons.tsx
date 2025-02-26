@@ -2,7 +2,6 @@ import React from 'react'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { SquareButton, SquareButtonIconType } from '@avalabs/k2-alpine'
 import { getItemEnteringAnimation } from 'common/utils/animations'
-import { useOnPressAnimation } from 'common/hooks/useOnPressAnimation'
 import { ActionButtonTitle } from '../consts'
 
 export const ActionButtons = ({
@@ -10,12 +9,9 @@ export const ActionButtons = ({
 }: {
   buttons: ActionButton[]
 }): JSX.Element => {
-  const { animatedStyle } = useOnPressAnimation()
-
   const renderActionItem = (item: ActionButton, index: number): JSX.Element => {
     return (
       <Animated.View
-        style={animatedStyle}
         entering={getItemEnteringAnimation(index)}
         layout={LinearTransition.springify()}>
         <SquareButton
