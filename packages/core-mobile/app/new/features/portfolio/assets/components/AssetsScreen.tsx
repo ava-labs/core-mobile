@@ -115,7 +115,8 @@ const AssetsScreen: FC<Props> = ({
     return (
       <View
         sx={{
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          marginBottom: 16
         }}>
         <AssetsHeader
           filter={filter}
@@ -128,7 +129,11 @@ const AssetsScreen: FC<Props> = ({
 
   return (
     <CollapsibleTabs.FlatList
-      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
+      contentContainerStyle={{
+        overflow: 'visible',
+        paddingTop: 16 + 4,
+        paddingBottom: 16
+      }}
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}

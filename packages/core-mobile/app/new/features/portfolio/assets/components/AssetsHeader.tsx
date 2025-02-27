@@ -26,8 +26,6 @@ export const AssetsHeader = ({
   return (
     <View
       sx={{
-        marginTop: 19,
-        marginBottom: 16,
         justifyContent: 'space-between',
         flexDirection: 'row'
       }}>

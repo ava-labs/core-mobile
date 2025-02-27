@@ -104,3 +104,53 @@ export const ASSET_MANAGE_VIEWS: AssetManageViews = [
   [AssetManageView.Highlights, AssetManageView.AssetList],
   [AssetManageView.ManageList]
 ]
+
+// Collectibles
+export enum CollectibleNetworkFilter {
+  AllNetworks = 'All networks',
+  AvalancheCChain = 'Avalanche C-Chain',
+  BitcoinNetwork = 'Bitcoin network',
+  Ethereum = 'Ethereum'
+}
+
+export enum CollectibleSort {
+  NameAToZ = 'Name A to Z',
+  NameZToA = 'Name Z to A',
+  DateAdded = 'Date Added'
+}
+
+export enum CollectibleView {
+  LargeGrid = 'Large Grid',
+  CompactGrid = 'Compact Grid',
+  ListView = 'List View',
+  ManageList = 'Manage list'
+}
+
+export type CollectibleSorts = CollectibleSort[][]
+export type CollectibleNetworkFilters = CollectibleNetworkFilter[][]
+export type CollectibleViews = CollectibleView[][]
+
+export const COLLECTIBLE_NETWORK_FILTERS: CollectibleNetworkFilters = [
+  [
+    CollectibleNetworkFilter.AllNetworks,
+    CollectibleNetworkFilter.AvalancheCChain,
+    CollectibleNetworkFilter.BitcoinNetwork,
+    CollectibleNetworkFilter.Ethereum
+  ]
+]
+export const COLLECTIBLE_SORTS: CollectibleSorts = [
+  [
+    CollectibleSort.NameAToZ,
+    CollectibleSort.NameZToA,
+    CollectibleSort.DateAdded
+  ]
+]
+
+export const COLLECTIBLE_VIEWS: CollectibleViews = [
+  [
+    CollectibleView.LargeGrid,
+    CollectibleView.CompactGrid,
+    CollectibleView.ListView
+  ],
+  [CollectibleView.ManageList]
+]
