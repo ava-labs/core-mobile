@@ -3,6 +3,7 @@ import { ListRenderItemInfo } from 'react-native'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   Icons,
+  SearchBar,
   Text,
   TouchableOpacity,
   useTheme,
@@ -14,7 +15,6 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { useRouter } from 'expo-router'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { FlatList } from 'react-native-gesture-handler'
-import { SearchBar } from 'features/portfolio/assets/components/SearchBar'
 import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
 
 const TokenManagementScreen = (): JSX.Element => {

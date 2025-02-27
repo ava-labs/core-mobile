@@ -1,6 +1,7 @@
 import {
   Button,
   Icons,
+  SearchBar,
   Text,
   TouchableOpacity,
   useTheme,
@@ -12,7 +13,6 @@ import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { SearchBar } from 'features/portfolio/assets/components/SearchBar'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 
 const AddCustomTokenScreen = (): JSX.Element => {
@@ -86,7 +86,7 @@ const AddCustomTokenScreen = (): JSX.Element => {
             onTextChanged={setTokenAddress}
             searchText={tokenAddress}
             placeholder="Token contract address"
-            rightIconWhenBlur={
+            rightComponent={
               <TouchableOpacity
                 onPress={goToScanQrCode}
                 hitSlop={16}

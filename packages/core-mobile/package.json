@@ -116,6 +116,7 @@
     "jail-monkey": "2.8.0",
     "jimp": "1.6.0",
     "jsc-android": "294992.0.0",
+    "lodash.debounce": "4.0.8",
     "lodash.isempty": "4.4.0",
     "lodash.isstring": "4.0.1",
     "lodash.merge": "4.6.2",
