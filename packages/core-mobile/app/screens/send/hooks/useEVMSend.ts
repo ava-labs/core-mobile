@@ -16,6 +16,7 @@ import {
   validateERC1155,
   validateERC721,
   validateAmount,
+  validateFee,
   validateGasLimit,
   validateSupportedToken
 } from '../utils/evm/validate'
@@ -119,11 +120,15 @@ const useEVMSend: SendAdapterEVM = ({
         token.type === TokenType.ERC20
       ) {
         validateAmount({
-          gasLimit,
           amount: amount?.bn,
-          token,
+          token
+        })
+        validateFee({
+          gasLimit,
           maxFee,
-          nativeToken
+          amount: amount?.bn,
+          nativeToken,
+          token
         })
       }
 

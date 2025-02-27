@@ -41,6 +41,7 @@ import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWith
 import { TransactionRequest } from 'ethers'
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
+import { validateFee } from 'screens/send/utils/evm/validate'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
@@ -497,16 +498,15 @@ const ApprovalPopup = (): JSX.Element => {
 
     try {
       const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n
-      const maxFee = maxFeePerGas || 0n
-      const totalFee = gasLimit * maxFee
-
-      // For native token transfers, we need to account for both the transfer amount and gas fee
       const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
-      const totalRequired = amount + totalFee
 
-      if (nativeToken.balance < totalRequired) {
-        throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
-      }
+      validateFee({
+        gasLimit,
+        maxFee: maxFeePerGas || 0n,
+        amount,
+        nativeToken,
+        token: nativeToken
+      })
 
       setAmountError(undefined)
     } catch (err) {
