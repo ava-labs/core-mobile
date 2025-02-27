@@ -1,6 +1,7 @@
-import React, { memo, useCallback } from 'react'
-import { GestureResponderEvent, PressableProps } from 'react-native'
 import { Pressable } from 'dripsy'
+import { throttle } from 'lodash'
+import React, { memo, ReactNode, useCallback } from 'react'
+import { GestureResponderEvent, PressableProps } from 'react-native'
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -8,11 +9,10 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
-import { throttle } from 'lodash'
 import { ANIMATED } from '../../utils'
 
 interface AnimatedPressable extends PressableProps {
-  children: JSX.Element
+  children: ReactNode
 }
 
 const AnimatedPress = Animated.createAnimatedComponent(Pressable)
@@ -38,17 +38,22 @@ export const AnimatedPressable = memo(
       })
     }
 
-    const onPressEvent = useCallback(
-      (event: GestureResponderEvent) => {
-        throttle(
-          () => {
-            onPress?.(event)
-          },
-          1000,
-          { leading: true, trailing: false }
-        )
+    const throttledOnPress = throttle(
+      event => {
+        onPress?.(event)
       },
-      [onPress]
+      1000,
+      {
+        leading: true,
+        trailing: false
+      }
+    )
+
+    const onPressEvent = useCallback(
+      (event: GestureResponderEvent): void => {
+        throttledOnPress(event)
+      },
+      [throttledOnPress]
     )
 
     const animatedStyle = useAnimatedStyle(() => {

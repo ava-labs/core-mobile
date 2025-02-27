@@ -57,6 +57,8 @@ import IconSearch from '../../assets/icons/search.svg'
 import IconRedExclamation from '../../assets/icons/red_exclamation.svg'
 import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 import IconLayer from '../../assets/icons/layer.svg'
+import IconHideImage from '../../assets/icons/hide_image.svg'
+import IconClose from '../../assets/icons/close.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -188,7 +190,9 @@ export const Icons = {
     QRCode2: IconQRCode2
   },
   Content: {
-    Add: IconAdd
+    Add: IconAdd,
+    HideImage: IconHideImage,
+    Close: IconClose
   },
   Toggle: {
     StarOutline: IconStarOutline,
