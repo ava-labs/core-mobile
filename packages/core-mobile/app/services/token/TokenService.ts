@@ -32,11 +32,12 @@ import {
   SimplePriceResponse,
   CoinsSearchResponse,
   ContractMarketChartResponse,
-  CoinsInfoResponse
+  CoinsInfoResponse,
+  TrendingToken
 } from './types'
 import {
   coingeckoRetry,
-  transformContractMarketChartResponse,
+  transformMartketChartRawPrices,
   transformSimplePriceResponse
 } from './utils'
 
@@ -431,6 +432,19 @@ export class TokenService {
     return data
   }
 
+  async getTrendingTokens(): Promise<TrendingToken[]> {
+    let data: TrendingToken[] | undefined
+    const cacheId = `getTrendingTokens`
+
+    data = getCache(cacheId)
+
+    if (data === undefined) {
+      data = await watchListCacheClient.trending()
+      setCache(cacheId, data)
+    }
+    return data
+  }
+
   private async fetchCoinInfo(
     coingeckoId: string,
     useCoingeckoProxy = false
@@ -476,7 +490,7 @@ export class TokenService {
         days
       })
     }
-    return rawData ? transformContractMarketChartResponse(rawData) : undefined
+    return rawData ? transformMartketChartRawPrices(rawData.prices) : undefined
   }
 
   private async coinsMarket({

@@ -8,7 +8,9 @@ import {
 } from 'react-native'
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
 import debounce from 'lodash.debounce'
-import { Icons, TouchableOpacity, View, useTheme } from '@avalabs/k2-alpine'
+import { TouchableOpacity, View } from '../Primitives'
+import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
 
 interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   onTextChanged: (value: string) => void
@@ -20,18 +22,19 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   testID?: string
   setSearchBarFocused?: (value: boolean) => void
   containerStyle?: ViewStyle
-  rightIconWhenBlur?: JSX.Element
+  rightComponent?: JSX.Element
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const INPUT_SIZE = SCREEN_WIDTH - 106
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
+const HEIGHT = 40
 
 /**
  * SearchBar component. Text state is handled outside the
  * component except for when the text is cleared.
  *
- * Shows QRCodeScanner button when search bar has no search text.
+ * Shows custom right component when search bar has no search text and a right component is provided.
  * Shows Clear button when search bar has search text.
  *
  * @param onTextChanged callback to implementing view
@@ -39,6 +42,7 @@ const DEFAULT_DEBOUNCE_MILLISECONDS = 150
  * @param placeholder defaults to 'Search'
  * @param debounce if true, will delay calling 'onTextChanged' by default ms
  * @param textColor
+ * @param rightComponent custom right component to show when search text is empty
  * @param rest all other props
  * @constructor
  */
@@ -51,7 +55,7 @@ export const SearchBar: FC<Props> = ({
   textColor,
   setSearchBarFocused,
   containerStyle,
-  rightIconWhenBlur,
+  rightComponent,
   ...rest
 }) => {
   const textInputRef = useRef<TextInput>(null)
@@ -85,15 +89,35 @@ export const SearchBar: FC<Props> = ({
     }
   }
 
+  const renderRightComponent = (): React.JSX.Element | undefined => {
+    if (searchText.length > 0) {
+      return (
+        <TouchableOpacity onPress={clearText} hitSlop={16}>
+          <Icons.Action.Clear color={colors.$textSecondary} />
+        </TouchableOpacity>
+      )
+    }
+    if (
+      (searchText === undefined || searchText.length === 0) &&
+      rightComponent
+    ) {
+      return rightComponent
+    }
+  }
+
   return (
     <View
       style={[
-        { backgroundColor: colors.$surfaceSecondary, borderRadius: 1000 },
+        {
+          backgroundColor: colors.$surfaceSecondary,
+          borderRadius: 1000,
+          height: HEIGHT,
+          justifyContent: 'center'
+        },
         containerStyle
       ]}>
       <View
         style={{
-          alignItems: 'center',
           flexDirection: 'row',
           paddingHorizontal: 12,
           marginVertical: Platform.OS === 'ios' ? 11 : 0
@@ -129,13 +153,7 @@ export const SearchBar: FC<Props> = ({
             {...rest}
           />
         </View>
-        {searchText && searchText.length > 0 ? (
-          <TouchableOpacity onPress={clearText} hitSlop={16}>
-            <Icons.Action.Clear color={colors.$textSecondary} />
-          </TouchableOpacity>
-        ) : (
-          rightIconWhenBlur
-        )}
+        {renderRightComponent()}
       </View>
     </View>
   )

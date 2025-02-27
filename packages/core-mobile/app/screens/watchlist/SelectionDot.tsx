@@ -7,7 +7,7 @@ import {
   withSpring
 } from 'react-native-reanimated'
 import type { SelectionDotProps } from 'react-native-graph'
-import { CHART_HEIGHT } from './TokenDetails/TokenDetail'
+import { CHART_HEIGHT } from './TokenDetails/TokenDetails'
 
 export function SelectionDot({
   isActive,

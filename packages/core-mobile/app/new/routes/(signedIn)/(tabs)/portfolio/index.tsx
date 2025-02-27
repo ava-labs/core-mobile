@@ -72,7 +72,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const formattedBalance = currencyBalance.replace(selectedCurrency, '')
 
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
   const tokens = useSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
   )
@@ -80,14 +80,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const totalPriceChanged = useMemo(
     () =>
       tokens.reduce((acc, token) => {
-        const marketToken = getMarketToken(token.symbol)
+        const marketToken = getMarketTokenBySymbol(token.symbol)
         const percentChange = marketToken?.priceChangePercentage24h ?? 0
         const priceChange = token.balanceInCurrency
           ? (token.balanceInCurrency * percentChange) / 100
           : 0
         return acc + priceChange
       }, 0),
-    [getMarketToken, tokens]
+    [getMarketTokenBySymbol, tokens]
   )
 
   const indicatorStatus =

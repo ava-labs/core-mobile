@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { formatLargeNumber, truncateNodeId } from 'utils/Utils'
+import { truncateNodeId } from 'utils/Utils'
 import { Row } from 'components/Row'
 import CollapsibleSection from 'components/CollapsibleSection'
 import CarrotSVG from 'components/svg/CarrotSVG'
@@ -25,6 +25,7 @@ import { usePeers } from 'hooks/earn/usePeers'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { UTCDate } from '@date-fns/utc'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -180,7 +181,7 @@ export const NodeCard = ({
               contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {formatLargeNumber(validatorWeight.toString(), 4)}
+              {formatNumber(validatorWeight.toString())}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
@@ -190,7 +191,7 @@ export const NodeCard = ({
               contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {formatLargeNumber(availableDelegationWeight.toString(), 4)}
+              {formatNumber(availableDelegationWeight.toString())}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>

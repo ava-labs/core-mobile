@@ -22,7 +22,7 @@ import { DragEndParams } from 'components/draggableList/types'
 import DraggableList from 'components/draggableList/DraggableList'
 import BigList from 'components/BigList'
 import FlashList from 'components/FlashList'
-import { WatchlistFilter } from '../types'
+import { WatchListType } from '../types'
 
 const getDisplayValue = (
   price: PriceData,
@@ -36,8 +36,7 @@ interface Props {
   tokens: MarketToken[]
   prices: Prices
   charts: Charts
-  filterBy: WatchlistFilter
-  isShowingFavorites?: boolean
+  type: WatchListType
   isSearching?: boolean
   onExploreAllTokens?: () => void
   testID?: string
@@ -51,9 +50,7 @@ const WatchList: React.FC<Props> = ({
   tokens,
   prices,
   charts,
-  filterBy,
-  isShowingFavorites,
-  isSearching,
+  type,
   onExploreAllTokens
 }) => {
   const navigation = useNavigation<NavigationProp>()
@@ -73,10 +70,11 @@ const WatchList: React.FC<Props> = ({
       <View style={styles.item} key={token.id}>
         {!isFirstItem && <SeparatorComponent />}
         <WatchListItem
+          index={index}
           token={token}
+          type={type}
           chartData={chartData}
           value={displayValue}
-          filterBy={filterBy}
           testID={`watchlist_item__${token.symbol}`}
           onPress={() => {
             navigation.navigate(AppNavigation.Wallet.TokenDetail, {
@@ -89,17 +87,21 @@ const WatchList: React.FC<Props> = ({
   }
 
   const EmptyComponent =
-    isShowingFavorites && !isSearching ? (
+    type === WatchListType.FAVORITES ? (
       <ZeroState.NoWatchlistFavorites exploreAllTokens={onExploreAllTokens} />
-    ) : (
+    ) : type === WatchListType.SEARCH ? (
       <ZeroState.NoResultsTextual
         message={
           'There are no tokens that match your search. Please try again.'
         }
       />
+    ) : (
+      <View style={{ marginTop: '15%' }}>
+        <ZeroState.SomethingWentWrong />
+      </View>
     )
 
-  if (isShowingFavorites) {
+  if (type === WatchListType.FAVORITES) {
     return (
       <DraggableList
         data={tokens || []}
