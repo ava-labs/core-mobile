@@ -1,6 +1,7 @@
 import { AndroidChannel, AndroidImportance } from '@notifee/react-native'
 
 export enum ChannelId {
+  DEFAULT = 'miscellaneous',
   STAKING_COMPLETE = 'stakeComplete',
   BALANCE_CHANGES = 'balanceChanges',
   PRODUCT_ANNOUNCEMENTS = 'productAnnouncements',

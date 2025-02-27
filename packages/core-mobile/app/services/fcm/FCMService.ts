@@ -7,13 +7,13 @@ import {
   PROTOCOLS
 } from 'contexts/DeeplinkContext/types'
 import {
-  BalanceChangeEvents,
-  NotificationPayload,
   BalanceChangeData,
+  BalanceChangeEvents,
   NewsData,
+  NewsEvents,
+  NotificationPayload,
   NotificationPayloadSchema,
-  NotificationTypes,
-  NewsEvents
+  NotificationTypes
 } from 'services/fcm/types'
 import { Platform } from 'react-native'
 import { DisplayNotificationParams } from 'services/notifications/types'
@@ -28,6 +28,7 @@ const EVENT_TO_CH_ID: Record<string, ChannelId> = {
   [BalanceChangeEvents.ALLOWANCE_APPROVED]: ChannelId.BALANCE_CHANGES,
   [BalanceChangeEvents.BALANCES_SPENT]: ChannelId.BALANCE_CHANGES,
   [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES,
+  [BalanceChangeEvents.BALANCES_TRANSFERRED]: ChannelId.BALANCE_CHANGES,
   [NewsEvents.MARKET_NEWS]: ChannelId.MARKET_NEWS,
   [NewsEvents.OFFERS_AND_PROMOTIONS]: ChannelId.OFFERS_AND_PROMOTIONS,
   [NewsEvents.PRICE_ALERTS]: ChannelId.PRICE_ALERTS,
@@ -93,7 +94,7 @@ class FCMService {
     if (!fcmData.title) throw Error('No notification title')
     const data = this.#extractDeepLinkData(fcmData)
     return {
-      channelId: EVENT_TO_CH_ID[fcmData.event],
+      channelId: EVENT_TO_CH_ID[fcmData.event] ?? ChannelId.DEFAULT,
       title: fcmData.title,
       body: fcmData.body,
       data
