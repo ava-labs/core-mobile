@@ -1,15 +1,15 @@
 import { LocalTokenWithBalance } from 'store/balance/types'
-import { MarketToken } from 'store/watchlist'
+import { MarketToken } from 'store/watchlist/types'
 import { useWatchlist } from '../watchlist/useWatchlist'
 
 export const useTokenPortfolioPriceChange = (
   tokens: LocalTokenWithBalance[]
 ): { tokenPortfolioPriceChange: number } => {
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
 
   const tokensWithPrices = tokens
     .map(token => {
-      const tokenInWatchlist = getMarketToken(token.symbol)
+      const tokenInWatchlist = getMarketTokenBySymbol(token.symbol)
 
       if (tokenInWatchlist) {
         return { ...token, ...tokenInWatchlist }

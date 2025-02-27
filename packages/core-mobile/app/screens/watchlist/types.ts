@@ -5,3 +5,10 @@ export enum WatchlistFilter {
   GAINERS = 'Gainers',
   LOSERS = 'Losers'
 }
+
+export enum WatchListType {
+  FAVORITES = 'FAVORITES',
+  TOP = 'TOP',
+  TRENDING = 'TRENDING',
+  SEARCH = 'SEARCH'
+}

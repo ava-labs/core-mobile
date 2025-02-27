@@ -38,7 +38,7 @@ import SwapScreenStack, {
 import AddressBookStack, {
   AddressBookStackParamList
 } from 'navigation/wallet/AddressBookStack'
-import TokenDetail from 'screens/watchlist/TokenDetails/TokenDetail'
+import TokenDetails from 'screens/watchlist/TokenDetails/TokenDetails'
 import OwnedTokenDetail from 'screens/portfolio/ownedTokenDetail/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'
 import NFTScreenStack, {
@@ -289,7 +289,7 @@ function WalletScreenStack(props: Props): JSX.Element {
               ...MainHeaderOptions()
             }}
             name={AppNavigation.Wallet.TokenDetail}
-            component={TokenDetail}
+            component={TokenDetails}
           />
           <WalletScreenS.Screen
             options={{

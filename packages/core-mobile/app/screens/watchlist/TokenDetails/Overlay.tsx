@@ -21,13 +21,12 @@ export const Overlay = ({
   chartData,
   shouldShowInstruction,
   onInstructionRead
-}: Props) => {
+}: Props): React.JSX.Element | null => {
   let content
-
   if (!chartData) {
     // chart data is loading
     content = <ActivityIndicator />
-  } else if (chartData.length === 0) {
+  } else if (chartData.length < 2) {
     // chart data is empty, could not be retrieved
     content = (
       <>

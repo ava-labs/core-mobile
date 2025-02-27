@@ -2,7 +2,6 @@ import React, { FC } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import MarketTriangleSVG from 'components/MarketTriangleSVG'
 import AvaText from 'components/AvaText'
-import { WatchlistFilter } from 'screens/watchlist/types'
 import { formatLargeCurrency } from 'utils/Utils'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
@@ -15,7 +14,6 @@ interface Props {
   hideDifference?: boolean
   hidePercentage?: boolean
   hideCurrencyCode?: boolean
-  filterBy?: WatchlistFilter
   testID?: string
 }
 
@@ -25,11 +23,10 @@ const MarketMovement: FC<Props> = ({
   hideDifference,
   hidePercentage,
   hideCurrencyCode,
-  testID,
-  filterBy = WatchlistFilter.PRICE
+  testID
 }) => {
   const theme = useApplicationContext().theme
-  const { currencyFormatter } = useApplicationContext().appHook
+  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
   if (priceChange === 0 && percentChange === 0) {
@@ -41,16 +38,11 @@ const MarketMovement: FC<Props> = ({
     return <AvaText.Caption textStyle={textStyle}>$ -</AvaText.Caption>
   }
 
-  const negative = priceChange < 0
+  const negative = priceChange < 0 || percentChange < 0
   const textColor = negative ? theme.colorError : theme.colorSuccess
 
-  const textStyle = {
-    color: textColor
-  }
-
   let formattedPrice = formatLargeCurrency(
-    currencyFormatter(Math.abs(priceChange)),
-    filterBy === WatchlistFilter.PRICE ? 2 : 3
+    tokenInCurrencyFormatter(Math.abs(priceChange))
   )
 
   if (hideCurrencyCode)
@@ -70,7 +62,9 @@ const MarketMovement: FC<Props> = ({
         direction={negative ? 'down' : 'up'}
         color={textColor}
       />
-      <AvaText.Caption textStyle={textStyle} testID={testID}>
+      <AvaText.Caption
+        textStyle={{ color: textColor, fontWeight: '500' }}
+        testID={testID}>
         {' ' + textToDisplay}
       </AvaText.Caption>
     </Row>
