@@ -27,7 +27,7 @@
   "@avalabs/core-bridge-sdk": "3.1.0-alpha.34",
   "@avalabs/core-chains-sdk": "3.1.0-alpha.34",
   "@avalabs/core-coingecko-sdk": "3.1.0-alpha.34",
-  "@avalabs/core-gasless-sdk": "3.1.0-canary.88df3e1.0",
+  "@avalabs/core-gasless-sdk": "v3.1.0-alpha.39",
   "@avalabs/core-utils-sdk": "3.1.0-alpha.34",
   "@avalabs/core-wallets-sdk": "3.1.0-alpha.34",
     "@avalabs/evm-module": "1.4.3",

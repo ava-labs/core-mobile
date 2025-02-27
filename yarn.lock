@@ -159,13 +159,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/core-gasless-sdk@npm:3.1.0-canary.88df3e1.0":
-  version: 3.1.0-canary.88df3e1.0
-  resolution: "@avalabs/core-gasless-sdk@npm:3.1.0-canary.88df3e1.0"
+"@avalabs/core-gasless-sdk@npm:v3.1.0-alpha.39":
+  version: 3.1.0-alpha.39
+  resolution: "@avalabs/core-gasless-sdk@npm:3.1.0-alpha.39"
   dependencies:
     "@noble/hashes": 1.7.1
     zod: 3.23.8
-  checksum: 3097f2bce7c4c2fd90ee1c21b9f1e2b649e02f60a876de949a5f8b4f63369ce280cd06411db4876e19a72f11aa56ec0a034a8fc16be1b30e191bea8cdec3cc6b
+  checksum: 0f256adade56c6920be242733f5c1c35c64279f7e9c7f6e939d0d1a0fc62602b58dff493a52040db6a9897a0f058509b54fbb7046a1fdab79d082fb2c630ef7f
   languageName: node
   linkType: hard
 
@@ -180,7 +180,7 @@ __metadata:
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.34
     "@avalabs/core-chains-sdk": 3.1.0-alpha.34
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.34
-    "@avalabs/core-gasless-sdk": 3.1.0-canary.88df3e1.0
+    "@avalabs/core-gasless-sdk": v3.1.0-alpha.39
     "@avalabs/core-utils-sdk": 3.1.0-alpha.34
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.34
     "@avalabs/evm-module": 1.4.3
