@@ -32,6 +32,8 @@ import { AnimatedText } from 'components/AnimatedText'
 import { useDispatch, useSelector } from 'react-redux'
 import { GraphPoint } from 'react-native-graph'
 import { NotFoundError } from 'components/NotFoundError'
+import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
+import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -42,18 +44,6 @@ const CHART_WIDTH = WINDOW_WIDTH - 32
 const CHART_THICKNESS = 4
 
 type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
-
-const isValidNumber = (value: unknown): value is number => {
-  return typeof value === 'number' && !isNaN(value) && value > 0
-}
-
-// https://www.google.com/ -> google.com
-const stripUrl = (url: string): string => {
-  return url
-    ?.replace(/^https?:\/\//, '')
-    ?.replace(/^www\./, '')
-    ?.replace(/\/$/, '')
-}
 
 const TokenDetails: FC = () => {
   const {
@@ -259,7 +249,7 @@ const TokenDetails: FC = () => {
           }
           titleAlignment={'flex-start'}
           rightComponent={
-            isValidNumber(tokenInfo?.marketCapRank) ? (
+            isPositiveNumber(tokenInfo?.marketCapRank) ? (
               <OvalTagBg
                 testID="token_detail__rank_icon"
                 color={theme.neutral850}
@@ -274,7 +264,7 @@ const TokenDetails: FC = () => {
           }
         />
         <Row style={styles.marketCap}>
-          {isValidNumber(tokenInfo?.marketCap) && (
+          {isPositiveNumber(tokenInfo?.marketCap) && (
             <DataItem
               title={'MarketCap'}
               value={formatMarketNumbers(tokenInfo.marketCap)}
@@ -294,7 +284,7 @@ const TokenDetails: FC = () => {
           )}
         </Row>
         <Row style={styles.row}>
-          {isValidNumber(tokenInfo?.marketVolume) && (
+          {isPositiveNumber(tokenInfo?.marketVolume) && (
             <DataItem
               testID="token_detail__24h_volume"
               title={'24h Volume'}
@@ -312,14 +302,14 @@ const TokenDetails: FC = () => {
                   onPress={() => {
                     tokenInfo.urlHostname && openWebsite(tokenInfo.urlHostname)
                   }}>
-                  {stripUrl(tokenInfo.urlHostname)}
+                  {getDomainFromUrl(tokenInfo.urlHostname)}
                 </AvaText.Heading3>
               }
             />
           )}
         </Row>
         <Row style={styles.row}>
-          {isValidNumber(tokenInfo?.marketCirculatingSupply) && (
+          {isPositiveNumber(tokenInfo?.marketCirculatingSupply) && (
             <DataItem
               testID={'token_detail__available_supply'}
               title={'Available Supply'}
@@ -341,7 +331,7 @@ const TokenDetails: FC = () => {
             />
           )}
         </Row>
-        {isValidNumber(tokenInfo?.marketTotalSupply) && (
+        {isPositiveNumber(tokenInfo?.marketTotalSupply) && (
           <Row style={styles.totalSupply}>
             <DataItem
               testID={'token_detail__total_supply'}

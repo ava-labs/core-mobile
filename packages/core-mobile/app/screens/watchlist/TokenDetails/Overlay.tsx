@@ -26,7 +26,7 @@ export const Overlay = ({
   if (!chartData) {
     // chart data is loading
     content = <ActivityIndicator />
-  } else if (chartData.length === 0 || chartData.length < 2) {
+  } else if (chartData.length < 2) {
     // chart data is empty, could not be retrieved
     content = (
       <>
