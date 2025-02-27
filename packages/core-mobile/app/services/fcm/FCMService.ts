@@ -17,7 +17,10 @@ import {
 } from 'services/fcm/types'
 import { Platform } from 'react-native'
 import { DisplayNotificationParams } from 'services/notifications/types'
-import { ChannelId } from 'services/notifications/channels'
+import {
+  ChannelId,
+  DEFAULT_ANDROID_CHANNEL
+} from 'services/notifications/channels'
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { openInAppBrowser } from 'utils/openInAppBrowser'
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
@@ -94,7 +97,7 @@ class FCMService {
     if (!fcmData.title) throw Error('No notification title')
     const data = this.#extractDeepLinkData(fcmData)
     return {
-      channelId: EVENT_TO_CH_ID[fcmData.event] ?? ChannelId.DEFAULT,
+      channelId: EVENT_TO_CH_ID[fcmData.event] ?? DEFAULT_ANDROID_CHANNEL,
       title: fcmData.title,
       body: fcmData.body,
       data

@@ -1,7 +1,6 @@
 import { AndroidChannel, AndroidImportance } from '@notifee/react-native'
 
 export enum ChannelId {
-  DEFAULT = 'miscellaneous',
   STAKING_COMPLETE = 'stakeComplete',
   BALANCE_CHANGES = 'balanceChanges',
   PRODUCT_ANNOUNCEMENTS = 'productAnnouncements',
@@ -16,6 +15,9 @@ export enum NewsChannelId {
   MARKET_NEWS = 'marketNews',
   PRICE_ALERTS = 'priceAlerts'
 }
+
+//This is system default channel, we don't need to create it, just use it's id
+export const DEFAULT_ANDROID_CHANNEL = 'miscellaneous'
 
 export interface AvaxAndroidChannel extends AndroidChannel {
   id: ChannelId
