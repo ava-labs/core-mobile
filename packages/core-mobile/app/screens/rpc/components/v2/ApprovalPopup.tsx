@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, StyleSheet, ScrollView, Alert } from 'react-native'
-import { SigningData_EthSendTx, TokenType } from '@avalabs/vm-module-types'
+import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
+import {
+  Alert,
+  AlertType,
+  SigningData_EthSendTx,
+  TokenType
+} from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
@@ -64,6 +69,7 @@ const ApprovalPopup = (): JSX.Element => {
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalance()
+  const [gaslessError, setGaslessError] = useState<Alert | null>(null)
 
   useEffect(() => {
     const checkGaslessEligibility = async (): Promise<void> => {
@@ -165,18 +171,6 @@ const ApprovalPopup = (): JSX.Element => {
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
-  const showGaslessError = (): void => {
-    Alert.alert(
-      'Free Gas Error',
-      'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
-      [
-        {
-          text: 'OK'
-        }
-      ]
-    )
-  }
-
   const handleGaslessTx = async (
     addressFrom: string
   ): Promise<string | undefined> => {
@@ -189,7 +183,10 @@ const ApprovalPopup = (): JSX.Element => {
         addressFrom
       )
 
-      if (result.txHash) return result.txHash
+      if (result.txHash) {
+        setGaslessError(null)
+        return result.txHash
+      }
 
       // Show error and stop if we get a DO_NOT_RETRY error or
       // if we've hit max attempts with a RETRY_WITH_NEW_CHALLENGE error
@@ -198,8 +195,15 @@ const ApprovalPopup = (): JSX.Element => {
         (result.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
+        setGaslessError({
+          type: AlertType.INFO,
+          details: {
+            title: 'Free Gas Error',
+            description:
+              'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
+          }
+        })
         setSubmitting(false)
-        showGaslessError()
         return undefined
       }
 
@@ -242,6 +246,22 @@ const ApprovalPopup = (): JSX.Element => {
     return (
       <View sx={{ marginVertical: 12 }}>
         <AlertBanner alert={displayData.alert} />
+      </View>
+    )
+  }
+
+  const renderGaslessAlert = (): JSX.Element | null => {
+    if (!gaslessError) return null
+    return (
+      <View sx={{ marginVertical: 12 }}>
+        <AlertBanner
+          alert={gaslessError}
+          customStyle={{
+            borderColor: '$dangerLight',
+            backgroundColor: '$transparent',
+            iconColor: colors.$white
+          }}
+        />
       </View>
     )
   }
@@ -535,6 +555,7 @@ const ApprovalPopup = (): JSX.Element => {
           <Text variant="heading4">{displayData.title}</Text>
           <Space y={12} />
           {renderAlert()}
+          {renderGaslessAlert()}
           <Space y={12} />
           {renderDappInfo()}
           {renderNetwork()}
