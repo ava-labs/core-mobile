@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
+import { ActivityIndicator, StyleSheet, ScrollView, Alert } from 'react-native'
 import { SigningData_EthSendTx, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -34,11 +34,9 @@ import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Switch from 'components/Switch'
 import GaslessService from 'services/gasless/GaslessService'
-import { showAlert } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
-import { TransactionRequest } from 'ethers'
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
 import { validateFee } from 'screens/send/utils/evm/validate'
@@ -168,16 +166,15 @@ const ApprovalPopup = (): JSX.Element => {
   }, [])
 
   const showGaslessError = (): void => {
-    showAlert({
-      title: 'Free Gas Error',
-      description:
-        'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
-      buttons: [
+    Alert.alert(
+      'Free Gas Error',
+      'Core was unable to fund the gas for this transaction. Disable free gas and try again.',
+      [
         {
           text: 'OK'
         }
       ]
-    })
+    )
   }
 
   const handleGaslessTx = async (
@@ -494,7 +491,7 @@ const ApprovalPopup = (): JSX.Element => {
       signingData.type !== 'eth_sendTransaction'
     )
       return
-    const ethSendTx = signingData.data as TransactionRequest
+    const ethSendTx = signingData.data
 
     try {
       const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n

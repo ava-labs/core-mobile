@@ -1,10 +1,9 @@
 import { FundResult, GaslessSdk } from '@avalabs/core-gasless-sdk'
 import { SigningData_EthSendTx } from '@avalabs/vm-module-types'
-import { Transaction } from 'ethers'
-import { TransactionLike } from 'ethers/src.ts/transaction/transaction'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
+import { Transaction, TransactionLike } from 'ethers'
 
 if (!Config.GAS_STATION_URL) {
   Logger.warn(
