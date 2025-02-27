@@ -1,18 +1,18 @@
 import React, { Dispatch } from 'react'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
-import { WatchlistFilter } from 'screens/watchlist/types'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import WatchList from './components/WatchList'
+import { WatchListType } from './types'
 
-interface Props {
+export const FavoriteTokens = ({
+  onTabIndexChanged
+}: {
   onTabIndexChanged?: Dispatch<number>
-  testID?: string
-}
+}): React.JSX.Element => {
+  const { favorites, prices, charts, allTokens, isLoadingFavorites } =
+    useWatchlist()
 
-const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
-  const { favorites, prices, charts, tokens } = useWatchlist()
-
-  const isFetchingTokens = tokens.length === 0
+  const isFetchingTokens = allTokens.length === 0 && isLoadingFavorites
 
   return (
     <>
@@ -21,12 +21,11 @@ const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
       ) : (
         <>
           <WatchList
+            type={WatchListType.FAVORITES}
             tokens={favorites}
             charts={charts}
             prices={prices}
-            isShowingFavorites={true}
-            onExploreAllTokens={() => onTabIndexChanged?.(1)}
-            filterBy={WatchlistFilter.MARKET_CAP}
+            onExploreAllTokens={() => onTabIndexChanged?.(2)}
             testID="watchlist_item"
           />
         </>
@@ -34,5 +33,3 @@ const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
     </>
   )
 }
-
-export default FavoriteWatchlistView

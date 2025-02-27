@@ -9,7 +9,7 @@ import { useRoute } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
 import OvalTagBg from 'components/OvalTagBg'
 import AvaButton from 'components/AvaButton'
-import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
+import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
 import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
@@ -20,7 +20,8 @@ import {
 } from 'store/viewOnce'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
-import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
+import { formatLargeCurrency } from 'utils/Utils'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { TokenSymbol } from 'store/network'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useSharedValue } from 'react-native-reanimated'
@@ -31,6 +32,8 @@ import { AnimatedText } from 'components/AnimatedText'
 import { useDispatch, useSelector } from 'react-redux'
 import { GraphPoint } from 'react-native-graph'
 import { NotFoundError } from 'components/NotFoundError'
+import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
+import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -42,7 +45,7 @@ const CHART_THICKNESS = 4
 
 type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
 
-const TokenDetail: FC = () => {
+const TokenDetails: FC = () => {
   const {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
@@ -71,26 +74,16 @@ const TokenDetail: FC = () => {
 
   const {
     noData,
+    tokenInfo,
     isFavorite,
     openMoonPay,
     openUrl,
-    urlHostname,
     handleFavorite,
-    marketTotalSupply,
-    twitterHandle,
-    marketCirculatingSupply,
-    marketVolume,
-    marketCapRank,
-    marketCap,
     chartData,
     ranges,
-    symbol,
-    name,
-    logoUri,
     priceInCurrency,
-    contractAddress,
     changeChartDays
-  } = useTokenDetail(tokenId)
+  } = useTokenDetails(tokenId)
 
   const yRange: [number, number] = [ranges.minPrice, ranges.maxPrice]
 
@@ -101,20 +94,17 @@ const TokenDetail: FC = () => {
   }, [animatedPrice, animatedDate, priceInCurrency, tokenInCurrencyFormatter])
 
   const openTwitter = (): void => {
-    twitterHandle && openUrl(`https://twitter.com/${twitterHandle}`)
+    tokenInfo?.twitterHandle &&
+      openUrl(`https://x.com/${tokenInfo.twitterHandle}`)
   }
 
-  const openWebsite = (): void => {
-    if (urlHostname) {
-      openUrl('https://' + urlHostname)
-    }
+  const openWebsite = (url: string): void => {
+    openUrl(url)
   }
 
   const formatMarketNumbers = useCallback(
     (value: number) => {
-      return value === 0
-        ? ' -'
-        : formatLargeCurrency(currencyFormatter(value), 1)
+      return value === 0 ? ' -' : formatLargeCurrency(currencyFormatter(value))
     },
     [currencyFormatter]
   )
@@ -179,17 +169,17 @@ const TokenDetail: FC = () => {
     <ScrollView style={styles.container}>
       <View>
         <AvaListItem.Base
-          title={<AvaText.Heading5>{name}</AvaText.Heading5>}
+          title={<AvaText.Heading5>{tokenInfo?.name}</AvaText.Heading5>}
           titleAlignment={'flex-start'}
-          subtitle={symbol}
+          subtitle={tokenInfo?.symbol}
           leftComponent={
-            name &&
-            symbol &&
-            logoUri && (
+            tokenInfo?.name &&
+            tokenInfo?.symbol &&
+            tokenInfo?.logoUri && (
               <Avatar.Token
-                name={name}
-                symbol={symbol}
-                logoUri={logoUri}
+                name={tokenInfo.name}
+                symbol={tokenInfo.symbol}
+                logoUri={tokenInfo.logoUri}
                 size={48}
                 backgroundColor="white"
               />
@@ -214,7 +204,6 @@ const TokenDetail: FC = () => {
             testID="token_detail__price_movement"
           />
         </View>
-
         <View style={styles.chartContainer}>
           <View>
             <SparklineChart
@@ -236,17 +225,20 @@ const TokenDetail: FC = () => {
           />
         </View>
         {/* this will change once data component purpose and interaction is defined */}
-        <TabViewAva
-          renderCustomLabel={(title, selected, color) => (
-            <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
-          )}
-          onTabIndexChange={onTabChanged}>
-          <TabViewAva.Item title={'24H'} testID="token_detail__24H" />
-          <TabViewAva.Item title={'1W'} testID="token_detail__1W" />
-          <TabViewAva.Item title={'1M'} testID="token_detail__1M" />
-          <TabViewAva.Item title={'3M'} testID="token_detail__3M" />
-          <TabViewAva.Item title={'1Y'} testID="token_detail__1Y" />
-        </TabViewAva>
+
+        {tokenInfo?.has24hChartDataOnly === false && (
+          <TabViewAva
+            renderCustomLabel={(title, selected, color) => (
+              <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
+            )}
+            onTabIndexChange={onTabChanged}>
+            <TabViewAva.Item title={'24H'} testID="token_detail__24H" />
+            <TabViewAva.Item title={'1W'} testID="token_detail__1W" />
+            <TabViewAva.Item title={'1M'} testID="token_detail__1M" />
+            <TabViewAva.Item title={'3M'} testID="token_detail__3M" />
+            <TabViewAva.Item title={'1Y'} testID="token_detail__1Y" />
+          </TabViewAva>
+        )}
 
         {/* Market Data & Rank */}
         <AvaListItem.Base
@@ -257,85 +249,103 @@ const TokenDetail: FC = () => {
           }
           titleAlignment={'flex-start'}
           rightComponent={
-            <OvalTagBg
-              testID="token_detail__rank_icon"
-              color={theme.neutral850}
-              style={styles.rank}>
-              <AvaText.Body2
-                testID="token_detail__rank"
-                textStyle={{
-                  color: theme.colorText3
-                }}>{`Rank: ${marketCapRank}`}</AvaText.Body2>
-            </OvalTagBg>
+            isPositiveNumber(tokenInfo?.marketCapRank) ? (
+              <OvalTagBg
+                testID="token_detail__rank_icon"
+                color={theme.neutral850}
+                style={styles.rank}>
+                <AvaText.Body2
+                  testID="token_detail__rank"
+                  textStyle={{
+                    color: theme.colorText3
+                  }}>{`Rank: ${tokenInfo.marketCapRank}`}</AvaText.Body2>
+              </OvalTagBg>
+            ) : null
           }
         />
         <Row style={styles.marketCap}>
-          <DataItem
-            title={'MarketCap'}
-            value={formatMarketNumbers(marketCap)}
-            testID={'token_detail__market_cap'}
-          />
-          {contractAddress && (
+          {isPositiveNumber(tokenInfo?.marketCap) && (
+            <DataItem
+              title={'MarketCap'}
+              value={formatMarketNumbers(tokenInfo.marketCap)}
+              testID={'token_detail__market_cap'}
+            />
+          )}
+          {tokenInfo?.contractAddress && (
             <DataItem
               title={'Contract Address'}
               value={
-                <TokenAddress address={contractAddress} textType={'Heading'} />
+                <TokenAddress
+                  address={tokenInfo.contractAddress}
+                  textType={'Heading'}
+                />
               }
             />
           )}
         </Row>
         <Row style={styles.row}>
-          <DataItem
-            testID="token_detail__24h_volume"
-            title={'24h Volume'}
-            value={formatMarketNumbers(marketVolume)}
-          />
-          <DataItem
-            testID={'token_detail__website'}
-            title={'Website'}
-            value={
-              <AvaText.Heading3
-                testID={'token_detail__website_url'}
-                textStyle={hyperLinkStyle}
-                onPress={openWebsite}>
-                {urlHostname}
-              </AvaText.Heading3>
-            }
-          />
+          {isPositiveNumber(tokenInfo?.marketVolume) && (
+            <DataItem
+              testID="token_detail__24h_volume"
+              title={'24h Volume'}
+              value={formatMarketNumbers(tokenInfo.marketVolume)}
+            />
+          )}
+          {tokenInfo?.urlHostname && tokenInfo.urlHostname && (
+            <DataItem
+              testID={'token_detail__website'}
+              title={'Website'}
+              value={
+                <AvaText.Heading3
+                  testID={'token_detail__website_url'}
+                  textStyle={hyperLinkStyle}
+                  onPress={() => {
+                    tokenInfo.urlHostname && openWebsite(tokenInfo.urlHostname)
+                  }}>
+                  {getDomainFromUrl(tokenInfo.urlHostname)}
+                </AvaText.Heading3>
+              }
+            />
+          )}
         </Row>
         <Row style={styles.row}>
-          <DataItem
-            testID={'token_detail__available_supply'}
-            title={'Available Supply'}
-            value={formatLargeNumber(marketCirculatingSupply)}
-          />
-          <DataItem
-            testID="token_detail__twitter"
-            title={'Twitter'}
-            value={
-              <AvaText.Heading3
-                testID={'token_detail__twitter_handle'}
-                textStyle={hyperLinkStyle}
-                onPress={openTwitter}>
-                {twitterHandle ? `@${twitterHandle}` : ''}
-              </AvaText.Heading3>
-            }
-          />
+          {isPositiveNumber(tokenInfo?.marketCirculatingSupply) && (
+            <DataItem
+              testID={'token_detail__available_supply'}
+              title={'Available Supply'}
+              value={formatNumber(tokenInfo.marketCirculatingSupply)}
+            />
+          )}
+          {tokenInfo?.twitterHandle && (
+            <DataItem
+              testID="token_detail__twitter"
+              title={'Twitter'}
+              value={
+                <AvaText.Heading3
+                  testID={'token_detail__twitter_handle'}
+                  textStyle={hyperLinkStyle}
+                  onPress={openTwitter}>
+                  {`@${tokenInfo.twitterHandle}`}
+                </AvaText.Heading3>
+              }
+            />
+          )}
         </Row>
-        <Row style={styles.totalSupply}>
-          <DataItem
-            testID={'token_detail__total_supply'}
-            title={'Total Supply'}
-            value={formatLargeNumber(marketTotalSupply)}
-          />
-        </Row>
-
-        {symbol === TokenSymbol.AVAX && !buyDisabled && (
+        {isPositiveNumber(tokenInfo?.marketTotalSupply) && (
+          <Row style={styles.totalSupply}>
+            <DataItem
+              testID={'token_detail__total_supply'}
+              title={'Total Supply'}
+              value={formatNumber(tokenInfo.marketTotalSupply)}
+            />
+          </Row>
+        )}
+        {tokenInfo?.symbol === TokenSymbol.AVAX && !buyDisabled && (
           <AvaButton.SecondaryLarge
             testID="token_detail__buy_button"
             onPress={openMoonPay}
             style={styles.buyBtn}>
-            Buy {symbol}
+            Buy {tokenInfo.symbol}
           </AvaButton.SecondaryLarge>
         )}
       </View>
@@ -367,4 +377,4 @@ const styles = StyleSheet.create({
   marketMovement: { marginLeft: 16 }
 })
 
-export default TokenDetail
+export default TokenDetails

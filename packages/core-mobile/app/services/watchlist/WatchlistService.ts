@@ -3,10 +3,17 @@ import TokenService from 'services/token/TokenService'
 import {
   SimplePriceResponse,
   CoinMarket,
-  SimplePriceInCurrencyResponse
+  SimplePriceInCurrencyResponse,
+  TrendingToken
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
-import { Charts, MarketToken, PriceData, Prices } from 'store/watchlist'
+import {
+  Charts,
+  MarketToken,
+  MarketType,
+  PriceData,
+  Prices
+} from 'store/watchlist/types'
 import Logger from 'utils/Logger'
 
 /*
@@ -56,6 +63,7 @@ class WatchlistService {
     // get tokens and chart from cached and fetched tokens
     cachedTokens.concat(otherTokens).forEach(token => {
       const tokenToAdd = {
+        marketType: MarketType.TOP,
         id: token.id,
         symbol: token.symbol,
         name: token.name,
@@ -140,6 +148,7 @@ class WatchlistService {
 
       marketsRaw.forEach(market => {
         tokens.push({
+          marketType: MarketType.TOP,
           id: market.id,
           symbol: market.symbol,
           name: market.name,
@@ -179,6 +188,10 @@ class WatchlistService {
     }
 
     return undefined
+  }
+
+  async getTrendingTokens(): Promise<TrendingToken[]> {
+    return TokenService.getTrendingTokens()
   }
 
   private getPriceInCurrency(

@@ -16,7 +16,7 @@ const Tokens = (): JSX.Element => {
 
   const tokensToDisplay = tokens.slice(0, 4)
 
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
 
   const renderToken = (
     token: TokenWithBalance,
@@ -30,7 +30,7 @@ const Tokens = (): JSX.Element => {
       ? currencyFormatter(balanceInCurrency)
       : `${balanceDisplayValue} ${symbol}`
 
-    const marketToken = getMarketToken(symbol)
+    const marketToken = getMarketTokenBySymbol(symbol)
     const percentChange = marketToken?.priceChangePercentage24h ?? undefined
     const priceChange =
       percentChange && balanceInCurrency
