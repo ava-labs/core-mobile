@@ -437,7 +437,7 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   const renderGasless = (): JSX.Element | null => {
-    if (!isGaslessEligible || isGaslessBlocked) {
+    if (!isGaslessEligible || isGaslessBlocked || gaslessError) {
       return null
     }
     return (
