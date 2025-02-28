@@ -159,6 +159,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@avalabs/core-gasless-sdk@npm:3.1.0-alpha.40":
+  version: 3.1.0-alpha.40
+  resolution: "@avalabs/core-gasless-sdk@npm:3.1.0-alpha.40"
+  dependencies:
+    "@noble/hashes": 1.7.1
+    zod: 3.23.8
+  checksum: 4e571c8830adaad07076ed82e4a1abfaf7224f335b873879794b171151a2ddc4c5b7e3d95467d188938306b0d07ed8cdea54ba3897a0801710e49fd61a8f3183
+  languageName: node
+  linkType: hard
+
 "@avalabs/core-mobile@workspace:packages/core-mobile":
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
@@ -170,6 +180,7 @@ __metadata:
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.34
     "@avalabs/core-chains-sdk": 3.1.0-alpha.34
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.34
+    "@avalabs/core-gasless-sdk": 3.1.0-alpha.40
     "@avalabs/core-utils-sdk": 3.1.0-alpha.34
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.34
     "@avalabs/evm-module": 1.4.3
@@ -27103,7 +27114,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 

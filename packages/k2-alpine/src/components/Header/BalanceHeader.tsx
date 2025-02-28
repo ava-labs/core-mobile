@@ -4,7 +4,10 @@ import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
 import { AnimatedText } from '../Animated/AnimatedText'
-import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
+import {
+  PriceChange,
+  PriceChangeIndicator
+} from '../PriceChangeIndicator/PriceChangeIndicator'
 import { Text, View } from '../Primitives'
 import { BalanceLoader } from './BalanceHeaderLoader'
 
@@ -21,11 +24,7 @@ export const BalanceHeader = ({
   formattedBalance: string
   currency: string
   errorMessage?: string
-  priceChange: {
-    formattedPrice: string
-    status: 'up' | 'down' | 'equal'
-    formattedPercent?: string
-  }
+  priceChange: PriceChange
   onLayout?: (event: LayoutChangeEvent) => void
   isLoading?: boolean
 }): React.JSX.Element => {
