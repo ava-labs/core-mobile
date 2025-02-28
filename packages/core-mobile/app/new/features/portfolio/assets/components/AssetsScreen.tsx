@@ -16,9 +16,9 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ListRenderItemInfo } from 'react-native'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
+import { DropdownSelections } from 'common/components/DropdownSelections'
 import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
-import { AssetsHeader } from './AssetsHeader'
 import { TokenListItem } from './TokenListItem'
 
 interface Props {
@@ -122,7 +122,7 @@ const AssetsScreen: FC<Props> = ({
         sx={{
           paddingHorizontal: 16
         }}>
-        <AssetsHeader
+        <DropdownSelections
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}

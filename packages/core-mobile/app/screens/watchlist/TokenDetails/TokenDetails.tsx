@@ -365,7 +365,6 @@ const TokenDetails: FC = () => {
               <StarButton onPress={handleFavorite} selected={isFavorite} />
             }
           />
-
           <AvaListItem.Base
             title={AnimatedDate}
             titleAlignment={'flex-start'}
