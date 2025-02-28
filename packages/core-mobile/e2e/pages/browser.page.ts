@@ -140,7 +140,9 @@ class BrowserPage {
   async connectLFJ() {
     await this.connectTo('https://lfj.gg/avalanche', false, false)
     await Wbs.tapByText('I read and accept')
-    await Wbs.tapByXpath('//button[@data-testid="rk-wallet-option-core"]')
+    await Wbs.tapByXpath('//button[@data-cy="connector-walletConnect"]')
+    const qrUri = await this.getQrUri()
+    await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
     await popUpModalPage.verifySuccessToast()
   }
@@ -189,6 +191,18 @@ class BrowserPage {
     await Wbs.scrollToXpath(dropdownOption)
     await Wbs.tapByXpath(dropdownOption)
     await this.dismissiOSKeyboard()
+  }
+
+  async enterAvalancheTransactions(call: string) {
+    await Wbs.waitForEleByXpathToBeVisible(
+      '//input[@placeholder="Select a transaction..."]'
+    )
+    await Wbs.tapByXpath('//input[@placeholder="Select a transaction..."]')
+    const dropdownOption = `//li/span[contains(., "${call}")]`
+    await Wbs.scrollToXpath(dropdownOption)
+    await Wbs.tapByXpath(dropdownOption)
+    await this.dismissiOSKeyboard()
+    await Wbs.tapByText('Execute transaction(s)')
   }
 
   async dismissiOSKeyboard() {
@@ -309,6 +323,25 @@ class BrowserPage {
       'input',
       '(ele) => ele.getAttribute("value")'
     )
+  }
+
+  async fundPChain() {
+    await this.connectTo(
+      'https://ava-labs.github.io/extension-avalanche-playground/',
+      false,
+      false
+    )
+    const qrUri = await this.getPlaygroundUri()
+    console.log(qrUri)
+    await plusMenuPage.connectWallet(qrUri)
+    await connectToSitePage.selectAccountAndconnect()
+    await bottomTabsPage.tapBrowserTab()
+    await Wbs.tapByText('Avalanche Transactions')
+    await this.enterAvalancheTransactions('Export from C to P')
+    await Actions.waitForElement(by.text('Approve Export'), 40000)
+    await popUpModalPage.tapApproveBtn()
+    await Actions.waitForElement(by.text('Approve Import'), 40000)
+    await popUpModalPage.tapApproveBtn()
   }
 }
 

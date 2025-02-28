@@ -39,24 +39,23 @@ class ManageTokensPage {
     await Action.setInputText(this.inputContractAddress, address, 0)
   }
 
-  async showToken(token: string, isOn = true) {
+  async hideToken(token: string) {
     await commonElsPage.typeSearchBar(token)
-    // Set `isOn` false if you want to hide token.
-    // Toggle it if it's already displayed or blocked
-    const oppositeStatus = isOn ? 'displayed' : 'blocked'
-    const expectedStatus = isOn ? 'blocked' : 'displayed'
-    try {
-      await Action.waitForElement(by.id(`${token}_${oppositeStatus}`))
-      await Action.tap(by.id(`${token}_${oppositeStatus}`))
-      console.log(
-        `The token was ${oppositeStatus} and now it's ${expectedStatus}`
-      )
-    } catch (e) {
-      console.log(`The token is currently ${expectedStatus}`)
+    let isShown = await Action.isVisible(by.id(`${token}_displayed`), 0)
+    while (isShown) {
+      await Action.tap(by.id(`${token}_displayed`))
+      isShown = await Action.isVisible(by.id(`${token}_displayed`), 0)
     }
-    // Display the token
-    await Action.tap(by.id(`${token}_${expectedStatus}`))
-    console.log(`The token is now ${oppositeStatus}`)
+    await commonElsPage.goBack()
+  }
+
+  async showToken(token: string) {
+    await commonElsPage.typeSearchBar(token)
+    let isHidden = await Action.isVisible(by.id(`${token}_blocked`), 0)
+    while (isHidden) {
+      await Action.tap(by.id(`${token}_blocked`))
+      isHidden = await Action.isVisible(by.id(`${token}_blocked`), 0)
+    }
     await commonElsPage.goBack()
   }
 }
