@@ -1,5 +1,6 @@
 import React from 'react'
-import { Platform, StyleSheet, View } from 'react-native'
+import { Platform, StyleSheet, View, StyleProp, ViewStyle } from 'react-native'
+import { ContentStyle } from '@shopify/flash-list'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -22,12 +23,16 @@ import { DragEndParams } from 'components/draggableList/types'
 import DraggableList from 'components/draggableList/DraggableList'
 import BigList from 'components/BigList'
 import FlashList from 'components/FlashList'
+import { AppHook } from 'AppHook'
 import { WatchListType } from '../types'
 
-const getDisplayValue = (
-  price: PriceData,
-  currencyFormatter: (num: number) => string
-): string => {
+const getDisplayValue = ({
+  price,
+  currencyFormatter
+}: {
+  price: PriceData
+  currencyFormatter: AppHook['tokenInCurrencyFormatter']
+}): string => {
   const priceInCurrency = price.priceInCurrency
   return currencyFormatter(priceInCurrency)
 }
@@ -40,6 +45,7 @@ interface Props {
   isSearching?: boolean
   onExploreAllTokens?: () => void
   testID?: string
+  contentContainerStyle?: StyleProp<ViewStyle>
 }
 
 type NavigationProp = TabsScreenProps<
@@ -51,7 +57,8 @@ const WatchList: React.FC<Props> = ({
   prices,
   charts,
   type,
-  onExploreAllTokens
+  onExploreAllTokens,
+  contentContainerStyle
 }) => {
   const navigation = useNavigation<NavigationProp>()
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
@@ -62,7 +69,11 @@ const WatchList: React.FC<Props> = ({
   function renderItem(token: MarketToken, index: number): React.JSX.Element {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
-    const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
+
+    const displayValue = getDisplayValue({
+      price,
+      currencyFormatter: tokenInCurrencyFormatter
+    })
 
     const isFirstItem = index === 0
 
@@ -126,6 +137,7 @@ const WatchList: React.FC<Props> = ({
         onRefresh={() => dispatch(fetchWatchlist)}
         keyExtractor={keyExtractor}
         estimatedItemSize={64}
+        contentContainerStyle={contentContainerStyle as ContentStyle}
       />
     )
   }
@@ -139,6 +151,7 @@ const WatchList: React.FC<Props> = ({
       onRefresh={() => dispatch(fetchWatchlist)}
       keyExtractor={keyExtractor}
       estimatedItemSize={64}
+      contentContainerStyle={contentContainerStyle}
     />
   )
 }

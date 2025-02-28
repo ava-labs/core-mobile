@@ -11,7 +11,7 @@ import {
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Watchlist is disabled.')
 
-const baseUrl = Config.PROXY_URL + '/watchlist'
+const baseUrl = 'https://proxy-api.avax.network' + '/watchlist'
 
 export const watchListCacheClient = new Zodios(
   baseUrl,
