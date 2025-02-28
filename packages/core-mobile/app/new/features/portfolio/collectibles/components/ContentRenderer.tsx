@@ -1,4 +1,4 @@
-import { Icons, View } from '@avalabs/k2-alpine'
+import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { Image } from 'expo-image'
 import React from 'react'
 import { ViewStyle } from 'react-native'
@@ -12,6 +12,9 @@ export const ContentRenderer = ({
   imageUrl?: string
   videoUrl?: string
 }): JSX.Element | JSX.Element[] => {
+  const {
+    theme: { colors }
+  } = useTheme()
   return (
     <View
       style={{
@@ -40,7 +43,11 @@ export const ContentRenderer = ({
         contentFit="cover"
       />
 
-      <Icons.Content.HideImage width={24} height={24} />
+      <Icons.Content.HideImage
+        color={colors.$textPrimary}
+        width={24}
+        height={24}
+      />
     </View>
   )
 }

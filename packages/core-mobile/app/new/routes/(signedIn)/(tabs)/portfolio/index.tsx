@@ -180,6 +180,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/tokenManagement')
   }, [navigate])
 
+  const handleGoToCollectibleDetail = useCallback((): void => {
+    // navigate to token detail
+  }, [])
+
+  const handleGoToCollectibleManagement = useCallback((): void => {
+    navigate('/collectibleManagement')
+  }, [navigate])
+
   const renderEmptyTabBar = (): JSX.Element => <></>
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -204,7 +212,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
           },
           {
             tabName: 'Collectibles',
-            component: <CollectiblesScreen />
+            component: (
+              <CollectiblesScreen
+                goToCollectibleDetail={handleGoToCollectibleDetail}
+                goToCollectibleManagement={handleGoToCollectibleManagement}
+              />
+            )
           },
           {
             tabName: 'DeFi',

@@ -18,6 +18,6 @@
     "jest.config.js",
     ".prettierrc.js",
     "../k2-mobile/src/theme.d.ts"
-  ],
+, "../k2-alpine/src/components/Video/Video.tsx"  ],
   "exclude": ["node_modules", "./e2e/artifacts/*", "./ios/DerivedData"]
 }

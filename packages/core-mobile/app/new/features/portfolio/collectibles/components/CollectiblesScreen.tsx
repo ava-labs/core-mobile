@@ -1,36 +1,27 @@
+import { ChainId } from '@avalabs/core-chains-sdk'
 import {
-  alpha,
   AnimatedPressable,
   Icons,
   IndexPath,
-  Pressable,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
-import { RefreshControl } from 'components/RefreshControl'
-import React, {
-  memo,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
-import {
-  Platform,
-  ScaledSize,
-  useWindowDimensions,
-  ViewStyle
-} from 'react-native'
-// import { MasonryFlashList } from 'react-native-collapsible-tab-view'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { RefreshControl } from 'components/RefreshControl'
 import { AssetsHeader } from 'features/portfolio/assets/components/AssetsHeader'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { Platform, useWindowDimensions } from 'react-native'
+import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+
+import ContentLoader, { Rect } from 'react-content-loader/native'
+import { Dimensions } from 'react-native'
+
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
@@ -43,74 +34,37 @@ import {
 } from 'store/balance'
 import { NFTItem } from 'store/nft'
 import { useCollectiblesContext } from '../CollectiblesContext'
-import { ContentRenderer } from './ContentRenderer'
+import {
+  HORIZONTAL_ITEM_GAP,
+  HORIZONTAL_MARGIN,
+  VERTICAL_ITEM_GAP
+} from '../consts'
+import { CardContainer } from './CardContainer'
+import { CollectibleGridItem } from './CollectibleItem'
+import { LoadingState } from 'common/components/LoadingState'
 
-const HORIZONTAL_MARGIN = 16
-const HORIZONTAL_ITEM_GAP = 14
-const VERTICAL_ITEM_GAP = 12
-const LIST_CARD_HEIGHT = 64
-
-export const getGridCardHeight = (
-  type: CollectibleView,
-  dimensions: ScaledSize,
-  index: number
-): number => {
-  switch (type) {
-    case CollectibleView.ListView:
-      return LIST_CARD_HEIGHT
-    case CollectibleView.CompactGrid: {
-      if (index === 1 || (index % 5 === 0 && index > 0))
-        return (
-          (dimensions.width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 3) / 3
-        )
-      if (index % 4 === 0) {
-        return (
-          (dimensions.width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 3) / 2
-        )
-      }
-      return (
-        (dimensions.width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 3) / 2.5
-      )
-    }
-    case CollectibleView.LargeGrid: {
-      if (index === 1 || (index % 5 === 0 && index > 0))
-        return (
-          (dimensions.width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 2) / 2
-        )
-
-      if (index % 3 === 0 || index % 3 === 1)
-        return (
-          (dimensions.width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 2) / 1.6
-        )
-
-      return (
-        (dimensions.width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 2) / 1.8
-      )
-    }
-    default: {
-      return LIST_CARD_HEIGHT
-    }
-  }
+export type Selection = {
+  title: string
+  data: string[][]
+  selected: IndexPath
+  onSelected: (index: IndexPath) => void
 }
 
-function useCollectibles(): {
-  data: NFTItem[]
-  filter: Selection
-  sort: Selection
-  view: Selection
-  isLoading: boolean
-  isRefetching: boolean
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  refetch: () => void
-  fetchNextPage: () => void
-} {
+export const CollectiblesScreen = ({
+  goToCollectibleDetail,
+  goToCollectibleManagement
+}: {
+  goToCollectibleDetail: (localId: string) => void
+  goToCollectibleManagement: () => void
+}): JSX.Element => {
+  const dimensions = useWindowDimensions()
   const {
     collectibles,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
     isRefetching,
+    isError,
     fetchNextPage,
     refetch,
     setNftsLoadEnabled
@@ -147,6 +101,42 @@ function useCollectibles(): {
       CollectibleSort.NameAToZ
     )
   }, [selectedSort])
+
+  const filter = useMemo(
+    () => ({
+      title: 'Filter',
+      data: COLLECTIBLE_NETWORK_FILTERS,
+      selected: selectedFilter,
+      onSelected: setSelectedFilter
+    }),
+    [selectedFilter]
+  )
+  const sort = useMemo(
+    () => ({
+      title: 'Sort',
+      data: COLLECTIBLE_SORTS,
+      selected: selectedSort,
+      onSelected: setSelectedSort
+    }),
+    [selectedSort]
+  )
+  const view = useMemo(
+    () => ({
+      title: 'View',
+      data: COLLECTIBLE_VIEWS,
+      selected: selectedView,
+      onSelected: setSelectedView
+    }),
+    [selectedView]
+  )
+
+  const listType = view.data[0]?.[view.selected.row] as CollectibleView
+  const columns =
+    listType === CollectibleView.CompactGrid
+      ? 3
+      : listType === CollectibleView.LargeGrid
+      ? 2
+      : 1
 
   const getFiltered = useCallback(() => {
     if (collectibles.length === 0) {
@@ -205,62 +195,17 @@ function useCollectibles(): {
     return getSorted(filtered)
   }, [getFiltered, getSorted])
 
-  return {
-    data: filteredAndSorted,
-    hasNextPage,
-    isFetchingNextPage,
-    isRefetching,
-    isLoading,
-    refetch,
-    fetchNextPage,
-    filter: {
-      title: 'Filter',
-      data: COLLECTIBLE_NETWORK_FILTERS,
-      selected: selectedFilter,
-      onSelected: setSelectedFilter
-    },
-    sort: {
-      title: 'Sort',
-      data: COLLECTIBLE_SORTS,
-      selected: selectedSort,
-      onSelected: setSelectedSort
-    },
-    view: {
-      title: 'View',
-      data: COLLECTIBLE_VIEWS,
-      selected: selectedView,
-      onSelected: setSelectedView
-    }
-  }
-}
-
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
-
-export const CollectiblesScreen = (): JSX.Element => {
-  const dimensions = useWindowDimensions()
-  const {
-    view,
-    data,
-    isLoading,
-    hasNextPage,
-    isFetchingNextPage,
-    isRefetching,
-    filter,
-    sort,
-    fetchNextPage,
-    refetch
-  } = useCollectibles()
-
-  const listType = view.data[0]?.[view.selected.row] as CollectibleView
-
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  const onRefresh = (): void => {
+    refetch()
+  }
+
+  const onResetFilter = (): void => {
+    setSelectedFilter({ section: 0, row: 0 })
+  }
 
   const renderItem: ListRenderItem<NFTItem> = ({ item, index }) => {
     return (
@@ -269,6 +214,37 @@ export const CollectiblesScreen = (): JSX.Element => {
   }
 
   const renderEmpty = (): JSX.Element => {
+    if (isError)
+      return (
+        <ErrorState
+          sx={{
+            height: portfolioTabContentHeight
+          }}
+          title="No Collectibles found"
+          description="
+            Try changing the filter settings or reset the filter to see all assets."
+          button={{
+            title: 'Refresh',
+            onPress: onRefresh
+          }}
+        />
+      )
+
+    if (filter.selected.row !== 0)
+      return (
+        <ErrorState
+          sx={{
+            height: portfolioTabContentHeight
+          }}
+          title="No Collectibles found"
+          description="
+            Try changing the filter settings or reset the filter to see all assets."
+          button={{
+            title: 'Reset filter',
+            onPress: onResetFilter
+          }}
+        />
+      )
     return <EmptyCollectibles />
   }
 
@@ -277,235 +253,74 @@ export const CollectiblesScreen = (): JSX.Element => {
       const manageList =
         ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
       if (manageList === AssetManageView.ManageList) {
-        // goToTokenManagement()
+        goToCollectibleManagement()
         return
       }
       view.onSelected(indexPath)
     },
-    [view]
+    [goToCollectibleManagement, view]
   )
 
-  const renderHeader = useMemo(() => {
-    return (
-      <View
-        sx={{
-          alignSelf: 'center',
-          marginBottom: 8,
-          width: dimensions.width - HORIZONTAL_MARGIN * 2
-        }}>
-        <AssetsHeader
-          filter={filter}
-          sort={sort}
-          view={{ ...view, onSelected: handleManageList }}
-        />
-      </View>
-    )
-  }, [dimensions.width, filter, sort, view, handleManageList])
+  const headerStyle = useAnimatedStyle(() => {
+    return {}
+  })
 
   if (isLoading)
-    return <View sx={{ paddingHorizontal: 16 }}>{/* <NftListLoader /> */}</View>
+    return <LoadingState sx={{ height: portfolioTabContentHeight }} />
 
   return (
-    <CollapsibleTabs.MasonryList
-      key={`collectibles-list-${listType}`}
-      extraData={{
-        listType,
-        sort,
-        filter
-      }}
-      data={data}
-      keyExtractor={(item: NFTItem) => `collectibles-list-${item.uid}`}
-      renderItem={renderItem}
-      numColumns={
-        listType === CollectibleView.CompactGrid
-          ? 3
-          : listType === CollectibleView.LargeGrid
-          ? 2
-          : 1
-      }
-      estimatedItemSize={180}
-      showsVerticalScrollIndicator={false}
-      overScrollMode="never"
-      scrollEnabled={data?.length > 0}
-      removeClippedSubviews={Platform.OS === 'android'}
-      ListEmptyComponent={renderEmpty}
-      ListHeaderComponent={renderHeader}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.8}
-      nestedScrollEnabled
-      refreshControl={
-        <RefreshControl onRefresh={refetch} refreshing={isRefetching} />
-      }
-      style={{
-        overflow: 'visible'
-      }}
-      contentContainerStyle={{
-        padding: data?.length ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2 : 0,
-        paddingTop: HORIZONTAL_MARGIN + 4,
-        paddingBottom: HORIZONTAL_MARGIN
-      }}
-    />
-  )
-}
-
-const CollectibleGridItem = ({
-  collectible,
-  type,
-  index
-}: {
-  collectible: NFTItem
-  type: CollectibleView
-  index: number
-}): JSX.Element | JSX.Element[] => {
-  const {
-    theme: { isDark, colors }
-  } = useTheme()
-  const dimensions = useWindowDimensions()
-  const height = getGridCardHeight(type, dimensions, index)
-
-  if (type === CollectibleView.ListView) {
-    return (
-      <Animated.View
-        entering={getListItemEnteringAnimation(0)}
-        layout={LinearTransition.springify()}>
-        <Pressable
-          style={{
-            height,
-            marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: HORIZONTAL_ITEM_GAP
-          }}>
-          <CardContainer
-            style={{
-              height: 48,
-              width: 48,
-              borderRadius: 12
-            }}>
-            <ContentRenderer
-              imageUrl={collectible.imageData?.image}
-              videoUrl={collectible.imageData?.image}
+    <View style={{ flex: 1, position: 'relative' }}>
+      <CollapsibleTabs.MasonryList
+        data={filteredAndSorted}
+        extraData={{
+          listType,
+          sort,
+          filter
+        }}
+        key={`collectibles-list-${listType}`}
+        keyExtractor={(item: NFTItem) => `collectibles-list-${item.uid}`}
+        renderItem={renderItem}
+        numColumns={columns}
+        estimatedItemSize={180}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={filteredAndSorted?.length > 0}
+        removeClippedSubviews={Platform.OS === 'android'}
+        ListEmptyComponent={renderEmpty}
+        ListHeaderComponent={
+          <Animated.View
+            style={[
+              headerStyle,
+              {
+                alignSelf: 'center',
+                marginBottom: 8,
+                width: dimensions.width - HORIZONTAL_MARGIN * 2,
+                zIndex: 10
+              }
+            ]}>
+            <AssetsHeader
+              filter={filter}
+              sort={sort}
+              view={{ ...view, onSelected: handleManageList }}
             />
-          </CardContainer>
-          <View
-            style={{
-              flex: 1,
-              height: '100%',
-              borderBottomWidth: 0.5,
-              borderColor: '#CCCCCC',
-              alignItems: 'center',
-              flexDirection: 'row',
-              gap: HORIZONTAL_ITEM_GAP
-            }}>
-            <View
-              style={{
-                flex: 1,
-                justifyContent: 'space-between',
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}>
-              <View>
-                <Text variant="buttonMedium" numberOfLines={1}>
-                  {collectible.tokenId ?? 'TokenId'}
-                </Text>
-                <Text
-                  variant="subtitle2"
-                  numberOfLines={1}
-                  style={{
-                    color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
-                  }}>
-                  {collectible.processedMetadata?.name ?? 'Collectible Name'}
-                </Text>
-              </View>
-              <AnimatedPressable>
-                <Pill text="123" />
-              </AnimatedPressable>
-            </View>
-            <Icons.Navigation.ChevronRightV2
-              color={colors.$textSecondary}
-              style={{
-                marginRight: -4
-              }}
-            />
-          </View>
-        </Pressable>
-      </Animated.View>
-    )
-  }
-
-  return (
-    <AnimatedPressable
-      entering={getListItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
-      <CardContainer
+          </Animated.View>
+        }
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.8}
+        nestedScrollEnabled
+        refreshControl={
+          <RefreshControl onRefresh={onRefresh} refreshing={isRefetching} />
+        }
         style={{
-          height,
-          marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
-          marginVertical: VERTICAL_ITEM_GAP / 2
-        }}>
-        <AnimatedPressable
-          style={{
-            position: 'absolute',
-            zIndex: 1,
-            right: HORIZONTAL_MARGIN,
-            top: HORIZONTAL_MARGIN
-          }}>
-          <Pill text="123" />
-        </AnimatedPressable>
-
-        <ContentRenderer
-          imageUrl={collectible.imageData?.image}
-          videoUrl={collectible.imageData?.image}
-        />
-      </CardContainer>
-    </AnimatedPressable>
-  )
-}
-
-const Pill = ({ text }: { text: string }): JSX.Element => {
-  return (
-    <View
-      style={{
-        backgroundColor: alpha('#58585B', 0.8),
-        borderRadius: 100,
-        paddingHorizontal: 8,
-        flexDirection: 'row',
-        alignItems: 'center'
-      }}>
-      <Icons.Content.Close />
-      <Text
-        variant="buttonSmall"
-        sx={{ lineHeight: 20, color: '$surfacePrimary' }}
-        numberOfLines={1}>
-        {text}
-      </Text>
-    </View>
-  )
-}
-
-const CardContainer = ({
-  style,
-  children
-}: {
-  style: ViewStyle
-  children?: ReactNode
-}): JSX.Element => {
-  const {
-    theme: { isDark }
-  } = useTheme()
-  return (
-    <View
-      style={{
-        height: 220,
-        backgroundColor: alpha(isDark ? '#3F3F42' : '#F6F6F6', 0.8),
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: alpha(isDark ? '#fff' : '#000', 0.1),
-        borderRadius: 18,
-        ...style
-      }}>
-      {children}
+          overflow: 'visible'
+        }}
+        contentContainerStyle={{
+          padding: filteredAndSorted?.length
+            ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
+            : 0,
+          paddingTop: HORIZONTAL_MARGIN + 4,
+          paddingBottom: HORIZONTAL_MARGIN
+        }}
+      />
     </View>
   )
 }
@@ -573,3 +388,33 @@ const EmptyCollectibles = memo((): JSX.Element => {
     </View>
   )
 })
+
+const deviceWidth = Dimensions.get('screen').width
+const aspectRatio = 343 / 424
+
+export const NftListLoader = (): JSX.Element => {
+  return (
+    <View
+      style={{
+        alignItems: 'center',
+        width: deviceWidth - 32,
+        aspectRatio: aspectRatio,
+        marginTop: 6
+      }}>
+      <ContentLoader
+        speed={1}
+        width="100%"
+        height="100%"
+        viewBox="0 0 343 424"
+        backgroundColor={'#1A1A1C'}
+        foregroundColor={'#2A2A2D'}>
+        <Rect x="0" y="0" rx="8" ry="8" width="343" height="64" />
+        <Rect x="0" y="72" rx="8" ry="8" width="343" height="64" />
+        <Rect x="0" y="144" rx="8" ry="8" width="343" height="64" />
+        <Rect x="0" y="216" rx="8" ry="8" width="343" height="64" />
+        <Rect x="0" y="288" rx="8" ry="8" width="343" height="64" />
+        <Rect x="0" y="360" rx="8" ry="8" width="343" height="64" />
+      </ContentLoader>
+    </View>
+  )
+}

@@ -30,6 +30,7 @@ type CollectiblesContextState = {
   isFetchingNextPage: boolean
   isRefetching: boolean
   isLoading: boolean
+  isError: boolean
 
   refetch: () => void
   isCollectibleRefreshing: (uid: string) => boolean
@@ -264,6 +265,7 @@ export const CollectiblesProvider = ({
         refetch: query.refetch,
         isRefetching: query.isRefetching,
         isLoading: query.isLoading,
+        isError: query.isError,
         setNftsLoadEnabled
       }}>
       {children}
