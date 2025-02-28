@@ -12,11 +12,13 @@ export type BalanceItemProps = {
   testID?: string
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const BalanceItem = ({
   balanceType,
   iconColor,
   balance,
-  poppableItem
+  poppableItem,
+  testID = 'balance_item'
 }: BalanceItemProps) => {
   const { theme } = useApplicationContext()
 
@@ -29,7 +31,7 @@ export const BalanceItem = ({
           lineHeight: 24.5,
           marginHorizontal: 8
         }}
-        testID="balance_item">
+        testID={testID}>
         {`${balance} AVAX`}
       </AvaText.Subtitle2>
       <AvaText.Caption
