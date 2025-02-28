@@ -76,6 +76,7 @@ import TestnetBanner from 'components/TestnetBanner'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NFTMetadataProvider } from 'contexts/NFTItemsContext'
 import { BridgeProvider } from 'contexts/BridgeContext'
+import { HallidayWebView } from 'screens/bridge/components/HallidayWebView'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
@@ -119,6 +120,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Buy]:
     | NavigatorScreenParams<BuyStackParamList>
     | undefined
+  [AppNavigation.Wallet.Halliday]: undefined
   [AppNavigation.Wallet.Bridge]:
     | NavigatorScreenParams<BridgeStackParamList>
     | undefined
@@ -304,6 +306,13 @@ function WalletScreenStack(props: Props): JSX.Element {
             }}
             name={AppNavigation.Wallet.Swap}
             component={SwapScreenStack}
+          />
+          <WalletScreenS.Screen
+            options={{
+              ...MainHeaderOptions({ title: 'Halliday' })
+            }}
+            name={AppNavigation.Wallet.Halliday}
+            component={HallidayWebView}
           />
           <WalletScreenS.Screen
             options={{

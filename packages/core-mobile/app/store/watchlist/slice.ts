@@ -1,8 +1,17 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
+import {
+  AVAX_COINGECKO_ID,
+  BITCOIN_COINGECKO_ID,
+  ETHEREUM_COINGECKO_ID
+} from 'consts/coingecko'
 import { initialState } from './types'
 
-const DEFAULT_WATCHLIST_FAVORITES = ['ethereum', 'bitcoin', 'avalanche-2']
+const DEFAULT_WATCHLIST_FAVORITES = [
+  ETHEREUM_COINGECKO_ID,
+  BITCOIN_COINGECKO_ID,
+  AVAX_COINGECKO_ID
+]
 
 export const reducerName = 'watchlist'
 
