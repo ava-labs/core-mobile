@@ -28,7 +28,7 @@ export const SegmentedControl = ({
   onSelectSegment: (index: number) => void
   dynamicItemWidth: boolean
   style?: ViewStyle
-  type: 'default' | 'thin'
+  type?: 'default' | 'thin'
 }): JSX.Element => {
   const { theme } = useTheme()
   const [viewWidth, setViewWidth] = useState<number>(0)
