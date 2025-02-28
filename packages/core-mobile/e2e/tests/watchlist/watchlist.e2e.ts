@@ -23,7 +23,7 @@ describe('Watchlist', () => {
   })
 
   it('should verify Trending tab', async () => {
-    // Favorite tab > Verify the default favorites
+    // Trending tab > Verify the tredning tab navigation and the tokens
     await BottomTabsPage.tapWatchlistTab()
     await actions.waitForElementNoSync(watchlistPage.trendingTab, 20000)
     await watchlistPage.verifyTrendingTokenNavigation()
