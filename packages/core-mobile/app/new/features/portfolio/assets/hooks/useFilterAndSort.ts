@@ -13,13 +13,6 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
-
 export const useFilterAndSort = (): {
   data: LocalTokenWithBalance[]
   filter: Selection

@@ -4,12 +4,7 @@ import { GraphPoint, LineGraph } from 'react-native-graph'
 import { SelectionDot } from 'screens/watchlist/SelectionDot'
 import { hapticFeedback } from 'utils/HapticFeedback'
 import { AxisLabel } from './AxisLabel'
-import {
-  NEGATIVE_GRADIENT_FILL_COLORS,
-  POSITIVE_GRADIENT_FILL_COLORS,
-  POSITIVE_SHADOW_COLOR,
-  yToX
-} from './utils'
+import { POSITIVE_SHADOW_COLOR, yToX } from './utils'
 
 interface Props {
   width?: number
@@ -21,6 +16,7 @@ interface Props {
   interactive?: boolean
   onPointSelected?: (p: GraphPoint) => void
   onInteractionEnded?: () => void
+  gradientFillColors?: string[]
 }
 
 const SparklineChart: FC<Props> = ({
@@ -32,13 +28,10 @@ const SparklineChart: FC<Props> = ({
   negative = false,
   interactive = false,
   onPointSelected,
-  onInteractionEnded
+  onInteractionEnded,
+  gradientFillColors
 }) => {
   const theme = useApplicationContext().theme
-
-  const gradientFillColors = negative
-    ? NEGATIVE_GRADIENT_FILL_COLORS
-    : POSITIVE_GRADIENT_FILL_COLORS
 
   const color = negative ? theme.colorError : theme.colorSuccess
 

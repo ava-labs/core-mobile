@@ -12,10 +12,10 @@ import { DeFiSimpleProtocol } from 'services/defi/types'
 import { Space } from 'components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
+import { DropdownSelections } from 'common/components/DropdownSelections'
 import { portfolioTabContentHeight } from '../../utils'
 import { DeFiViewOption } from '../types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
-import { DeFiHeader } from './DeFiHeader'
 import { DeFiListItem } from './DeFiListItem'
 
 export const DeFiScreen = (): JSX.Element => {
@@ -125,7 +125,7 @@ export const DeFiScreen = (): JSX.Element => {
         sx={{
           paddingHorizontal: 16
         }}>
-        <DeFiHeader sort={sort} view={view} />
+        <DropdownSelections sort={sort} view={view} />
       </View>
     )
   }, [sort, view])
