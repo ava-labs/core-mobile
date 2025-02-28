@@ -2,22 +2,29 @@ import {
   Button,
   getTintColor,
   Icons,
+  IndexPath,
   SimpleDropdown,
   SxProp,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { DropdownSelection } from 'common/types'
 import React from 'react'
 
+export type DropdownSelection = {
+  title: string
+  data: string[][]
+  selected: IndexPath
+  onSelected: (index: IndexPath) => void
+}
+
 interface Props {
-  filter: DropdownSelection
-  sort: DropdownSelection
+  filter?: DropdownSelection
+  sort?: DropdownSelection
   view?: DropdownSelection
   sx?: SxProp
 }
 
-export const AssetsHeader = ({
+export const DropdownSelections = ({
   filter,
   sort,
   view,
@@ -36,28 +43,29 @@ export const AssetsHeader = ({
         ...sx
       }}>
       <View sx={{ flexDirection: 'row', gap: 8 }}>
-        <SimpleDropdown
-          from={
-            <Button
-              size="small"
-              type="secondary"
-              hitSlop={8}
-              rightIcon={
-                <Icons.Custom.ArrowDown
-                  style={{ marginLeft: 5 }}
-                  color={tintColor}
-                />
-              }>
-              {filter.title}
-            </Button>
-          }
-          sections={filter.data}
-          selectedRows={[filter.selected]}
-          onSelectRow={filter.onSelected}
-          minWidth={250}
-        />
-
-        <View>
+        {filter && (
+          <SimpleDropdown
+            from={
+              <Button
+                size="small"
+                type="secondary"
+                hitSlop={8}
+                rightIcon={
+                  <Icons.Custom.ArrowDown
+                    style={{ marginLeft: 5 }}
+                    color={tintColor}
+                  />
+                }>
+                {filter.title}
+              </Button>
+            }
+            sections={filter.data}
+            selectedRows={[filter.selected]}
+            onSelectRow={filter.onSelected}
+            minWidth={250}
+          />
+        )}
+        {sort && (
           <SimpleDropdown
             from={
               <Button
@@ -78,7 +86,7 @@ export const AssetsHeader = ({
             onSelectRow={sort.onSelected}
             minWidth={250}
           />
-        </View>
+        )}
       </View>
       {view && (
         <SimpleDropdown

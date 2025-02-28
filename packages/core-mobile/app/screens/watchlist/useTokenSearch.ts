@@ -7,7 +7,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { selectSelectedCurrency } from 'store/settings/currency'
 
-type TokenSearchType = {
+export type TokenSearchType = {
   tokens: MarketToken[] | undefined
   charts: Charts | undefined
   prices: Prices | undefined

@@ -1,49 +1,139 @@
-import React from 'react'
-import { Text, ScrollView, Button } from '@avalabs/k2-alpine'
+import React, { useCallback, useRef, useState } from 'react'
+import {
+  View,
+  NavigationTitleHeader,
+  useTheme,
+  SegmentedControl,
+  Text,
+  SearchBar
+} from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { useRouter } from 'expo-router'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import {
+  CollapsibleTabs,
+  CollapsibleTabsRef
+} from 'common/components/CollapsibleTabs'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
+import { FavoritesScreen } from 'features/track/favorites/components/FavoritesScreen'
+import MarketScreen from 'features/track/market/components/MarketScreen'
 
 const TrackHomeScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
-
-  const handleTrack = (tokenId: string): void => {
-    navigate({
-      pathname: '/trackTokenDetail',
-      params: { tokenId }
-    })
+  const { theme } = useTheme()
+  const [searchText, setSearchText] = useState('')
+  const tabViewRef = useRef<CollapsibleTabsRef>(null)
+  const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+  const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
+  const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
+    setBalanceHeaderLayout(event.nativeEvent.layout)
   }
+
+  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
+    header: <NavigationTitleHeader title={'Track'} />,
+    targetLayout: balanceHeaderLayout
+  })
+
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: 1 - targetHiddenProgress.value
+  }))
+
+  const renderHeader = (): JSX.Element => {
+    return (
+      <View
+        style={{ backgroundColor: theme.colors.$surfacePrimary, padding: 16 }}>
+        <View onLayout={handleBalanceHeaderLayout}>
+          <Animated.View
+            style={[
+              {
+                paddingBottom: 16,
+                backgroundColor: theme.colors.$surfacePrimary
+              },
+              animatedHeaderStyle
+            ]}>
+            <Text variant="heading2">Track</Text>
+          </Animated.View>
+        </View>
+        <SearchBar
+          onTextChanged={setSearchText}
+          searchText={searchText}
+          placeholder="Search"
+        />
+      </View>
+    )
+  }
+
+  const handleSelectSegment = (index: number): void => {
+    if (index !== selectedSegmentIndex) {
+      tabViewRef.current?.setIndex(index)
+    }
+  }
+
+  const handleChangeTab = (index: number): void => {
+    setSearchText('')
+    setSelectedSegmentIndex(index)
+  }
+
+  const handleGotoMarketDetail = useCallback((): void => {
+    // TODO: navigate to market detail
+  }, [])
+
+  const renderEmptyTabBar = (): JSX.Element => <></>
 
   return (
     <BlurredBarsContentLayout>
-      <ScrollView
-        contentContainerSx={{
-          paddingTop: 16,
-          flex: 1,
-          alignItems: 'center',
-          gap: 16
-        }}>
-        <Text variant="heading3">Track</Text>
-        <Button
-          type="primary"
-          size="small"
-          onPress={() => handleTrack('avalanche-2')}>
-          Avax
-        </Button>
-        <Button
-          type="primary"
-          size="small"
-          onPress={() => handleTrack('bitcoin')}>
-          Bitcoin
-        </Button>
-        <Button
-          type="primary"
-          size="small"
-          onPress={() => handleTrack('ethereum')}>
-          Ethereum
-        </Button>
-      </ScrollView>
+      <CollapsibleTabs.Container
+        ref={tabViewRef}
+        renderHeader={renderHeader}
+        renderTabBar={renderEmptyTabBar}
+        onIndexChange={handleChangeTab}
+        onScroll={onScroll}
+        tabs={[
+          {
+            tabName: 'Trending',
+            component: <TrendingScreen />
+          },
+          {
+            tabName: 'Favorites',
+            component: <FavoritesScreen />
+          },
+          {
+            tabName: 'Market',
+            component: (
+              <MarketScreen
+                goToMarketDetail={handleGotoMarketDetail}
+                searchText={searchText}
+              />
+            )
+          }
+        ]}
+      />
+      <LinearGradientBottomWrapper>
+        <SegmentedControl
+          dynamicItemWidth={true}
+          items={['Trending', 'Favorites', 'Market']}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={{ marginHorizontal: 16, marginBottom: 16 }}
+        />
+      </LinearGradientBottomWrapper>
     </BlurredBarsContentLayout>
   )
 }
+
+export enum TrackHomeScreenTab {
+  Trending = 0,
+  Favorites = 1,
+  Market = 2
+}
+
+// export enum TrackHomeScreenTab {
+//   Trending = 'Trending',
+//   Favorites = 'Favorites',
+//   Market = 'Market'
+// }
 
 export default TrackHomeScreen

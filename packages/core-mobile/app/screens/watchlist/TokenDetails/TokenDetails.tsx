@@ -34,6 +34,10 @@ import { GraphPoint } from 'react-native-graph'
 import { NotFoundError } from 'components/NotFoundError'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
+import {
+  NEGATIVE_GRADIENT_FILL_COLORS,
+  POSITIVE_GRADIENT_FILL_COLORS
+} from 'components/SparklineChart/utils'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -86,6 +90,11 @@ const TokenDetails: FC = () => {
   } = useTokenDetails(tokenId)
 
   const yRange: [number, number] = [ranges.minPrice, ranges.maxPrice]
+
+  const negative = ranges.diffValue < 0
+  const gradientFillColors = negative
+    ? NEGATIVE_GRADIENT_FILL_COLORS
+    : POSITIVE_GRADIENT_FILL_COLORS
 
   const resetPriceAndDate = useCallback(() => {
     const amountInCurrency = tokenInCurrencyFormatter(priceInCurrency ?? 0)
@@ -210,12 +219,13 @@ const TokenDetails: FC = () => {
               interactive
               data={chartData ?? []}
               yRange={yRange}
-              negative={ranges.diffValue < 0}
+              negative={negative}
               width={CHART_WIDTH}
               height={CHART_HEIGHT}
               lineThickness={CHART_THICKNESS}
               onPointSelected={updatePriceAndDate}
               onInteractionEnded={resetPriceAndDate}
+              gradientFillColors={gradientFillColors}
             />
           </View>
           <Overlay
