@@ -5,9 +5,10 @@ import {
 } from '@avalabs/glacier-sdk'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Transaction } from 'store/transaction'
-import { alpha, Icons, useTheme, View } from '@avalabs/k2-alpine'
+import { alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { AmountIndicator } from 'common/types'
 import ActivityListItem from './ActivityListItem'
+import { TransactionTypeIcon } from './TransactionTypeIcon'
 
 const ICON_SIZE = 36
 
@@ -89,10 +90,13 @@ export const XpActivityListItem: FC<Props> = ({
           backgroundColor,
           borderColor
         }}>
-        <Icons.Custom.Compare width={14} height={14} />
+        <TransactionTypeIcon
+          txType={tx.txType}
+          isContractCall={tx.isContractCall}
+        />
       </View>
     )
-  }, [backgroundColor, borderColor])
+  }, [backgroundColor, borderColor, tx.isContractCall, tx.txType])
 
   return (
     <ActivityListItem

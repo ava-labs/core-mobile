@@ -1,7 +1,7 @@
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType } from 'store/transaction'
 import { TransactionType, Transaction } from '@avalabs/vm-module-types'
-import { useTheme, alpha, Icons, View } from '@avalabs/k2-alpine'
+import { useTheme, alpha, View } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
@@ -10,6 +10,7 @@ import { formatCurrency } from 'utils/FormatCurrency'
 import { AmountIndicator } from 'common/types'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import ActivityListItem from './ActivityListItem'
+import { TransactionTypeIcon } from './TransactionTypeIcon'
 
 const ICON_SIZE = 36
 
@@ -118,10 +119,13 @@ export const TokenActivityListItem: FC<Props> = ({
           backgroundColor,
           borderColor
         }}>
-        <Icons.Custom.ArrowDown width={14} height={14} />
+        <TransactionTypeIcon
+          txType={tx.txType}
+          isContractCall={tx.isContractCall}
+        />
       </View>
     )
-  }, [backgroundColor, borderColor])
+  }, [backgroundColor, borderColor, tx.isContractCall, tx.txType])
 
   return (
     <ActivityListItem
