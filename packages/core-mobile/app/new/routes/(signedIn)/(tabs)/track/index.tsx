@@ -17,11 +17,12 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
-import { FavoritesScreen } from 'features/track/favorites/components/FavoritesScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 
 const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const { favorites, tokens } = useWatchlist()
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -93,17 +94,24 @@ const TrackHomeScreen = (): JSX.Element => {
         onScroll={onScroll}
         tabs={[
           {
-            tabName: 'Trending',
+            tabName: TrackHomeScreenTab.Trending,
             component: <TrendingScreen />
           },
           {
-            tabName: 'Favorites',
-            component: <FavoritesScreen />
-          },
-          {
-            tabName: 'Market',
+            tabName: TrackHomeScreenTab.Favorites,
             component: (
               <MarketScreen
+                tokens={favorites}
+                goToMarketDetail={handleGotoMarketDetail}
+                searchText={searchText}
+              />
+            )
+          },
+          {
+            tabName: TrackHomeScreenTab.Market,
+            component: (
+              <MarketScreen
+                tokens={tokens}
                 goToMarketDetail={handleGotoMarketDetail}
                 searchText={searchText}
               />
@@ -114,7 +122,11 @@ const TrackHomeScreen = (): JSX.Element => {
       <LinearGradientBottomWrapper>
         <SegmentedControl
           dynamicItemWidth={true}
-          items={['Trending', 'Favorites', 'Market']}
+          items={[
+            TrackHomeScreenTab.Trending,
+            TrackHomeScreenTab.Favorites,
+            TrackHomeScreenTab.Market
+          ]}
           selectedSegmentIndex={selectedSegmentIndex}
           onSelectSegment={handleSelectSegment}
           style={{ marginHorizontal: 16, marginBottom: 16 }}
@@ -125,15 +137,9 @@ const TrackHomeScreen = (): JSX.Element => {
 }
 
 export enum TrackHomeScreenTab {
-  Trending = 0,
-  Favorites = 1,
-  Market = 2
+  Trending = 'Trending',
+  Favorites = 'Favorites',
+  Market = 'Market'
 }
-
-// export enum TrackHomeScreenTab {
-//   Trending = 'Trending',
-//   Favorites = 'Favorites',
-//   Market = 'Market'
-// }
 
 export default TrackHomeScreen
