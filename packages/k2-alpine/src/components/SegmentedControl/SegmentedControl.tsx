@@ -133,7 +133,7 @@ export const SegmentedControl = ({
           {items.map((item, index) => {
             return (
               <Segment
-                sx={type === 'thin' ? { paddingVertical: 8 } : {}}
+                sx={{ paddingVertical: type === 'thin' ? 8 : 12 }}
                 key={index}
                 ratio={textRatios[index]}
                 text={item}
@@ -204,7 +204,6 @@ const Segment = ({
     <Pressable style={{ flex: ratio }} onPress={onPress}>
       <View
         sx={{
-          paddingVertical: 12,
           alignItems: 'center',
           backgroundColor,
           ...sx
