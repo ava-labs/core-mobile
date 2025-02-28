@@ -7,8 +7,8 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { MarketToken } from 'store/watchlist'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 
 export const TokenHeader = ({
   token,
@@ -19,9 +19,7 @@ export const TokenHeader = ({
   priceChange?: PriceChange
   onLayout?: (event: LayoutChangeEvent) => void
 }): React.JSX.Element => {
-  const {
-    appHook: { tokenInCurrencyFormatter }
-  } = useApplicationContext()
+  const { formatTokenInCurrency } = useFormatCurrency()
 
   const renderBalance = (): React.JSX.Element => {
     return (
@@ -32,7 +30,7 @@ export const TokenHeader = ({
         }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
           <Text variant="heading2">
-            {tokenInCurrencyFormatter(token.currentPrice ?? 0)}
+            {formatTokenInCurrency(token.currentPrice ?? 0)}
           </Text>
         </View>
         <View sx={{ opacity: priceChange ? 1 : 0 }}>

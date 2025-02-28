@@ -16,7 +16,6 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
 import { formatLargeCurrency } from 'utils/Utils'
 import { format } from 'date-fns'
@@ -29,6 +28,7 @@ import {
 } from 'store/viewOnce'
 import { StyleSheet } from 'react-native'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
@@ -41,9 +41,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     value: number
     date: Date
   }>()
-  const {
-    appHook: { tokenInCurrencyFormatter }
-  } = useApplicationContext()
+  const { formatTokenInCurrency } = useFormatCurrency()
   const hasBeenViewedChart = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.CHART_INTERACTION)
   )
@@ -105,7 +103,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       ? undefined
       : {
           formattedPrice: formatLargeCurrency(
-            tokenInCurrencyFormatter(Math.abs(ranges.diffValue))
+            formatTokenInCurrency(Math.abs(ranges.diffValue))
           ),
           status:
             ranges.diffValue < 0

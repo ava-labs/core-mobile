@@ -1,8 +1,8 @@
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useMemo } from 'react'
 import { getDayString } from 'utils/date/getDayString'
 import { Text, View } from '@avalabs/k2-alpine'
 import { format } from 'date-fns'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 
 export const SelectedChartDataIndicator = ({
   selectedData,
@@ -14,9 +14,7 @@ export const SelectedChartDataIndicator = ({
   }
   currentPrice?: number
 }): JSX.Element => {
-  const {
-    appHook: { tokenInCurrencyFormatter }
-  } = useApplicationContext()
+  const { formatTokenInCurrency } = useFormatCurrency()
 
   const percentChange = useMemo(() => {
     if (!currentPrice || !selectedData?.value) {
@@ -40,7 +38,7 @@ export const SelectedChartDataIndicator = ({
         {formattedPercentChange}
       </Text>
       <Text variant="heading2">
-        {tokenInCurrencyFormatter(selectedData?.value ?? 0)}
+        {formatTokenInCurrency(selectedData?.value ?? 0)}
       </Text>
       {selectedData?.date && (
         <Text
