@@ -7,6 +7,7 @@ import bottomTabsPage from './bottomTabs.page'
 import connectToSitePage from './connectToSite.page'
 import plusMenuPage from './plusMenu.page'
 import popUpModalPage from './popUpModal.page'
+import stakePage from './Stake/stake.page'
 
 class BrowserPage {
   get searchBar() {
@@ -326,22 +327,31 @@ class BrowserPage {
   }
 
   async fundPChain() {
-    await this.connectTo(
-      'https://ava-labs.github.io/extension-avalanche-playground/',
-      false,
-      false
+    await bottomTabsPage.tapStakeTab()
+    const pChainBalanceText =
+      (await Actions.getElementText(stakePage.claimableBalance)) || '0 AVAX'
+    const pChainBalance: number = parseFloat(
+      pChainBalanceText.replace(' AVAX', '')
     )
-    const qrUri = await this.getPlaygroundUri()
-    console.log(qrUri)
-    await plusMenuPage.connectWallet(qrUri)
-    await connectToSitePage.selectAccountAndconnect()
-    await bottomTabsPage.tapBrowserTab()
-    await Wbs.tapByText('Avalanche Transactions')
-    await this.enterAvalancheTransactions('Export from C to P')
-    await Actions.waitForElement(by.text('Approve Export'), 40000)
-    await popUpModalPage.tapApproveBtn()
-    await Actions.waitForElement(by.text('Approve Import'), 40000)
-    await popUpModalPage.tapApproveBtn()
+    console.log(`${pChainBalance} AVAX in P-Chain...`)
+    if (pChainBalance < 0.1) {
+      await this.connectTo(
+        'https://ava-labs.github.io/extension-avalanche-playground/',
+        false,
+        false
+      )
+      const qrUri = await this.getPlaygroundUri()
+      console.log(qrUri)
+      await plusMenuPage.connectWallet(qrUri)
+      await connectToSitePage.selectAccountAndconnect()
+      await bottomTabsPage.tapBrowserTab()
+      await Wbs.tapByText('Avalanche Transactions')
+      await this.enterAvalancheTransactions('Export from C to P')
+      await Actions.waitForElement(by.text('Approve Export'), 40000)
+      await popUpModalPage.tapApproveBtn()
+      await Actions.waitForElement(by.text('Approve Import'), 40000)
+      await popUpModalPage.tapApproveBtn()
+    }
   }
 }
 

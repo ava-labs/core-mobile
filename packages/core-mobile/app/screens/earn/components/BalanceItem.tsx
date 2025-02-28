@@ -16,8 +16,9 @@ export const BalanceItem = ({
   balanceType,
   iconColor,
   balance,
-  poppableItem
-}: BalanceItemProps) => {
+  poppableItem,
+  testID = 'balance_item'
+}: BalanceItemProps): React.JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
@@ -29,7 +30,7 @@ export const BalanceItem = ({
           lineHeight: 24.5,
           marginHorizontal: 8
         }}
-        testID="balance_item">
+        testID={testID}>
         {`${balance} AVAX`}
       </AvaText.Subtitle2>
       <AvaText.Caption
