@@ -19,7 +19,8 @@ import { selectBalanceTotalInCurrencyForAccount } from 'store/balance/slice'
 import { selectTokenVisibility } from 'store/portfolio/slice'
 import { selectActiveAccount } from 'store/account/slice'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { AVAX_TOKEN_ID } from 'consts/swap'
 import { WatchListType } from '../types'
 
 const DEVICE_WIDTH = Dimensions.get('window').width
@@ -62,11 +63,21 @@ const WatchListItem: FC<Props> = ({
   )
   const isZeroBalance = balanceTotalInCurrency === 0
 
-  const { symbol, name } = token
+  const { symbol, name, id } = token
 
   if (type === WatchListType.TRENDING) {
     const handleBuyPressed = (): void => {
-      isZeroBalance && navigate(AppNavigation.Wallet.Buy)
+      if (isZeroBalance) {
+        navigate(AppNavigation.Wallet.Buy)
+      } else {
+        navigate(AppNavigation.Wallet.Swap, {
+          screen: AppNavigation.Swap.Swap,
+          params: {
+            initialTokenIdFrom: AVAX_TOKEN_ID,
+            initialTokenIdTo: id // the contract address of the token
+          }
+        })
+      }
     }
     return (
       <AvaListItem.Base
