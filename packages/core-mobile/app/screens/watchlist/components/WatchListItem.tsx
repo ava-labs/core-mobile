@@ -56,7 +56,6 @@ const WatchListItem: FC<Props> = ({
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
-  const buyDisabled = useIsUIDisabled(UI.Buy)
   const swapDisabled = useIsUIDisabled(UI.Swap)
   const balanceTotalInCurrency = useFocusedSelector(
     selectBalanceTotalInCurrencyForAccount(
@@ -70,13 +69,8 @@ const WatchListItem: FC<Props> = ({
   if (type === WatchListType.TRENDING) {
     const isZeroBalance = balanceTotalInCurrency === 0
 
-    // only render buy button when either
-    // - the balance is zero and buy is not disabled
-    // - the balance is not zero and swap is not disabled
-    const shouldRenderBuyButton = isZeroBalance ? !buyDisabled : !swapDisabled
-
     const handleBuyPressed = (): void => {
-      if (isZeroBalance) {
+      if (isZeroBalance || swapDisabled) {
         navigate(AppNavigation.Wallet.Buy)
       } else {
         navigate(AppNavigation.Wallet.Swap, {
@@ -119,14 +113,12 @@ const WatchListItem: FC<Props> = ({
         rightComponentMaxWidth={RIGHT_COMPONENT_MAX_WIDTH_FOR_TRENDING}
         leftComponent={<TokenLogo token={token} testID={testID} />}
         rightComponent={
-          shouldRenderBuyButton ? (
-            <PriceAndBuyButton
-              token={token}
-              value={value}
-              onPress={handleBuyPressed}
-              testID={`trending_token_value__${index + 1}`}
-            />
-          ) : null
+          <PriceAndBuyButton
+            token={token}
+            value={value}
+            onPress={handleBuyPressed}
+            testID={`trending_token_value__${index + 1}`}
+          />
         }
         onPress={onPress}
       />
