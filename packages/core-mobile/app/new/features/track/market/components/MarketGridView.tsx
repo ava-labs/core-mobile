@@ -58,16 +58,13 @@ const MarketGridView = ({
             width: (SCREEN_WIDTH - 16 * 3) / 2,
             padding: 16
           }}>
-          <View sx={{ justifyContent: 'space-between', flexDirection: 'row' }}>
-            <TokenLogo
-              size={36}
-              symbol={token.symbol}
-              logoUri={token.logoUri}
-              backgroundColor={colors.$borderPrimary}
-              borderColor={borderColor}
-            />
-            <View sx={{ width: 40, height: 40, backgroundColor: 'yellow' }} />
-          </View>
+          <TokenLogo
+            size={36}
+            symbol={token.symbol}
+            logoUri={token.logoUri}
+            backgroundColor={colors.$borderPrimary}
+            borderColor={borderColor}
+          />
           <View sx={{ marginTop: 8 }}>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Text variant="buttonMedium" numberOfLines={1}>
