@@ -66,18 +66,18 @@ const MarketGridView = ({
             borderColor={borderColor}
           />
           <View sx={{ marginTop: 8 }}>
+            <Text variant="buttonMedium" numberOfLines={1}>
+              {token.name}
+            </Text>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text variant="buttonMedium" numberOfLines={1}>
-                {token.name}
+              <Text
+                variant="body2"
+                sx={{ color: '$textSecondary', lineHeight: 18 }}
+                numberOfLines={1}>
+                {token.symbol.toUpperCase()}
               </Text>
               {isFavorite && <Icons.Toggle.StarFilled width={12} height={12} />}
             </View>
-            <Text
-              variant="body2"
-              sx={{ color: '$textSecondary', lineHeight: 18 }}
-              numberOfLines={1}>
-              {token.symbol.toUpperCase()}
-            </Text>
           </View>
           <View sx={{ marginTop: 16 }}>
             <SparklineChart
