@@ -17,7 +17,6 @@ import { useSelector } from 'react-redux'
 import { selectIsBridgeBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Bridge from 'screens/bridge/Bridge'
-import { HallidayWebView } from 'screens/bridge/components/HallidayWebView'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: { initialTokenSymbol: string } | undefined
@@ -27,7 +26,6 @@ export type BridgeStackParamList = {
     bridgeTokenList: AssetBalance[] | undefined
   }
   [AppNavigation.Bridge.HideWarning]: undefined
-  [AppNavigation.Bridge.Halliday]: undefined
 }
 
 const BridgeStack = createStackNavigator<BridgeStackParamList>()
@@ -67,13 +65,6 @@ function BridgeScreenStack(): JSX.Element {
             options={{ presentation: 'transparentModal', headerShown: false }}
             name={AppNavigation.Bridge.HideWarning}
             component={HideTransactionWarningModal}
-          />
-          <BridgeStack.Screen
-            options={{
-              ...SubHeaderOptions('Halliday')
-            }}
-            name={AppNavigation.Bridge.Halliday}
-            component={HallidayWebView}
           />
         </BridgeStack.Group>
       </BridgeStack.Navigator>

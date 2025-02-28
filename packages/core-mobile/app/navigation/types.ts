@@ -109,7 +109,7 @@ export type UpdateContactV2Params = {
 }
 
 export type BuyCarefullyParams = {
-  tokenType: string
+  provider: string
 }
 
 export type ApprovalPopupParams = {

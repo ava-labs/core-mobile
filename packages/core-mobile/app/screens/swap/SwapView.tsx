@@ -28,7 +28,7 @@ export default function SwapView(): JSX.Element {
   const navigation = useNavigation<NavigationProps['navigation']>()
   const { theme } = useTheme()
   const { params } = useRoute<NavigationProps['route']>()
-  const { filteredTokenList } = useSearchableTokenList()
+  const { filteredTokenList } = useSearchableTokenList(false)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const {
     swap,
@@ -68,7 +68,8 @@ export default function SwapView(): JSX.Element {
   useEffect(() => {
     if (!fromToken && params?.initialTokenIdFrom) {
       const token = filteredTokenList.find(
-        tk => tk.localId === params.initialTokenIdFrom
+        tk =>
+          tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
       )
       if (token) {
         setFromToken(token)
@@ -76,7 +77,8 @@ export default function SwapView(): JSX.Element {
     }
     if (!toToken && params?.initialTokenIdTo) {
       const token = filteredTokenList.find(
-        tk => tk.localId === params.initialTokenIdTo
+        tk =>
+          tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
       )
       if (token) {
         setToToken(token)

@@ -14,8 +14,8 @@ it('should handle very small numbers (< 0.01)', () => {
 
 it('should format numbers less than 1 million with fixed decimal places', () => {
   expect(formatNumber(123.456)).toBe('123.46')
-  expect(formatNumber(999999.999)).toBe('1000000.00')
-  expect(formatNumber(-999999.999)).toBe('1000000.00')
+  expect(formatNumber(999999.999)).toBe('1,000,000.00')
+  expect(formatNumber(-999999.999)).toBe('1,000,000.00')
 })
 
 it('should format numbers greater than or equal to 1 million using shorthand notation', () => {
@@ -29,5 +29,5 @@ it('should format numbers greater than or equal to 1 million using shorthand not
 it('should handle string inputs', () => {
   expect(formatNumber('1234567')).toBe('1.23M')
   expect(formatNumber('0.00000624')).toBe('0.000006')
-  expect(formatNumber('999999.999')).toBe('1000000.00')
+  expect(formatNumber('999999.999')).toBe('1,000,000.00')
 })

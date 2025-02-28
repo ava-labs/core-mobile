@@ -190,8 +190,10 @@ class WatchlistService {
     return undefined
   }
 
-  async getTrendingTokens(): Promise<TrendingToken[]> {
-    return TokenService.getTrendingTokens()
+  async getTrendingTokens(
+    exchangeRate: number | undefined
+  ): Promise<TrendingToken[]> {
+    return TokenService.getTrendingTokens(exchangeRate)
   }
 
   private getPriceInCurrency(

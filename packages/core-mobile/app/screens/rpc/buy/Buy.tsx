@@ -9,10 +9,12 @@ import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { TokenType } from './BuyCarefully'
+import { Icons } from '@avalabs/k2-mobile'
+import { Provider } from './BuyCarefully'
 
 const MoonPayLogo = require('assets/icons/moonpay-icon.png')
 const CoinbaseLogo = require('assets/icons/coinbase.png')
+const LOGO_SIZE = 64
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Modal.SelectToken
@@ -23,14 +25,19 @@ const Buy: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const { coinbasePayBlocked } = usePosthogContext()
 
-  const onPaySelection = (type: TokenType): void => {
+  const openHalliday = async (): Promise<void> => {
+    AnalyticsService.capture('HallidayBuyClicked')
+    navigation.navigate(AppNavigation.Wallet.Halliday)
+  }
+
+  const onPaySelection = (provider: Provider): void => {
     AnalyticsService.capture(
-      type === TokenType.COINBASE
+      provider === Provider.COINBASE
         ? 'CoinbasePayBuyClicked'
         : 'MoonpayBuyClicked'
     )
     navigation.navigate(AppNavigation.Modal.BuyCarefully, {
-      tokenType: type
+      provider
     })
   }
 
@@ -46,7 +53,7 @@ const Buy: FC = () => {
         </AvaText.Heading3>
         <View style={style.buttonsContainer}>
           <AvaButton.Base
-            onPress={() => onPaySelection(TokenType.MOONPAY)}
+            onPress={() => onPaySelection(Provider.MOONPAY)}
             style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
             <Space y={14} />
             <AvaText.ButtonLarge
@@ -68,7 +75,7 @@ const Buy: FC = () => {
           </AvaButton.Base>
           {!coinbasePayBlocked && (
             <AvaButton.Base
-              onPress={() => onPaySelection(TokenType.COINBASE)}
+              onPress={() => onPaySelection(Provider.COINBASE)}
               style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
               <Space y={14} />
               <AvaText.ButtonLarge
@@ -90,6 +97,32 @@ const Buy: FC = () => {
             </AvaButton.Base>
           )}
         </View>
+        <Space y={20} />
+
+        <AvaButton.Base
+          onPress={() => openHalliday()}
+          style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
+          <Space y={14} />
+          <AvaText.ButtonLarge
+            textStyle={[
+              style.buttonLabel,
+              {
+                color: theme.colorText1
+              }
+            ]}>
+            Halliday
+          </AvaText.ButtonLarge>
+          <View
+            style={{ borderRadius: 32, overflow: 'hidden' }}
+            testID="halliday_logo">
+            <Icons.Logos.Halliday
+              accessibilityRole="image"
+              width={LOGO_SIZE}
+              height={LOGO_SIZE}
+            />
+          </View>
+          <Space y={16} />
+        </AvaButton.Base>
       </View>
     </ScrollView>
   )
@@ -121,8 +154,8 @@ const style = StyleSheet.create({
     marginBottom: 24
   },
   logo: {
-    height: 64,
-    width: 64,
+    height: LOGO_SIZE,
+    width: LOGO_SIZE,
     resizeMode: 'contain'
   }
 })
