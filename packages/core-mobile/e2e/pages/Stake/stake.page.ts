@@ -297,6 +297,10 @@ class StakePage {
     return by.text(stakeScreenLoc.durationScreenTitle)
   }
 
+  get claimableBalance() {
+    return by.id(stakeScreenLoc.claimableBalance)
+  }
+
   async tapActiveTab() {
     await Actions.tap(this.activeTab)
   }

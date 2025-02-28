@@ -43,7 +43,9 @@ const WatchListItem: FC<Props> = ({
     return (
       <AvaListItem.Base
         title={
-          <AvaText.Heading2 ellipsizeMode={'tail'}>
+          <AvaText.Heading2
+            ellipsizeMode={'tail'}
+            testID={`trending_token_index__${index + 1}`}>
             {`${index + 1}. ${symbol.toUpperCase()}`}
           </AvaText.Heading2>
         }
@@ -53,7 +55,13 @@ const WatchListItem: FC<Props> = ({
         embedInCard={false}
         rightComponentMaxWidth={RIGHT_COMPONENT_MAX_WIDTH_FOR_TRENDING}
         leftComponent={<TokenLogo token={token} testID={testID} />}
-        rightComponent={<PriceAndBuyButton token={token} value={value} />}
+        rightComponent={
+          <PriceAndBuyButton
+            token={token}
+            value={value}
+            testID={`trending_token_value__${index + 1}`}
+          />
+        }
         onPress={onPress}
       />
     )
@@ -188,11 +196,13 @@ const Chart = ({ dataPoints, ranges }: ChartProps): JSX.Element => {
 type PriceAndBuyButtonProps = {
   token: MarketToken
   value?: string
+  testID?: string
 }
 
 const PriceAndBuyButton = ({
   token,
-  value
+  value,
+  testID = 'watchlist_price'
 }: PriceAndBuyButtonProps): JSX.Element | null => {
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
@@ -207,7 +217,7 @@ const PriceAndBuyButton = ({
           flex: 1
         }}>
         <Row style={{ alignItems: 'flex-end' }}>
-          <AvaText.Heading3 testID="watchlist_price" ellipsizeMode={'tail'}>
+          <AvaText.Heading3 testID={testID} ellipsizeMode={'tail'}>
             {value.replace(selectedCurrency, '')}
           </AvaText.Heading3>
           <Space x={4} />
