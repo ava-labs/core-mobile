@@ -16,13 +16,15 @@ import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketListItem from './MarketListItem'
 
 const MarketScreen = ({
+  tokens,
   goToMarketDetail,
   searchText
 }: {
+  tokens: MarketToken[]
   goToMarketDetail: () => void
   searchText: string
 }): JSX.Element => {
-  const { tokens, prices, charts } = useWatchlist()
+  const { prices, charts } = useWatchlist()
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const isFetchingTokens = tokens.length === 0
   const { isSearchingTokens, searchResults } = useTokenSearch({
