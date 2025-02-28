@@ -89,10 +89,10 @@ const OwnedTokenDetail: FC = () => {
     </Row>
   )
 
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
 
   const renderMarketTrend = (balance: number, symbol: string): JSX.Element => {
-    const marketToken = getMarketToken(symbol)
+    const marketToken = getMarketTokenBySymbol(symbol)
     const percentChange = marketToken?.priceChangePercentage24h ?? 0
     const priceChange = (balance * percentChange) / 100
 

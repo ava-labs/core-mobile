@@ -23,10 +23,7 @@ const PriceChangeIndicator: FC<Props> = ({
     theme: { colors }
   } = useTheme()
 
-  const formattedPrice = formatLargeCurrency(
-    currencyFormatter(Math.abs(price)),
-    2
-  )
+  const formattedPrice = formatLargeCurrency(currencyFormatter(Math.abs(price)))
 
   const formattedPercent = percent
     ? `${isHorizontal ? ' ' : ''}${percent < 0 ? '-' : '+'}${Math.abs(

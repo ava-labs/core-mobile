@@ -1,10 +1,16 @@
-import React from 'react'
 import MaskedView from '@react-native-masked-view/masked-view'
 import { LinearGradient } from 'expo-linear-gradient'
-import { Text, View } from '../Primitives'
-import { Icons } from '../../theme/tokens/Icons'
+import React from 'react'
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition
+} from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
 import { colors } from '../../theme/tokens/colors'
+import { Icons } from '../../theme/tokens/Icons'
+import { AnimatedText } from '../Animated/AnimatedText'
+import { View } from '../Primitives'
 
 export const PriceChangeIndicator = ({
   formattedPrice,
@@ -24,45 +30,62 @@ export const PriceChangeIndicator = ({
   const iconMarginLeft = formattedPercent === undefined ? 4 : 1
 
   return (
-    <View
-      sx={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4
-      }}>
-      <View sx={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-        <MaskedView
-          maskElement={
-            <Text variant={textVariant}>
-              {signIndicator}
-              {formattedPrice}
-            </Text>
-          }>
-          <View>
-            <Text variant={textVariant} sx={{ opacity: 0 }}>
-              {signIndicator}
-              {formattedPrice}
-            </Text>
-            <LinearGradient
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0
-              }}
-              colors={
-                status === 'down'
-                  ? [colors.$accentRed, colors.$accentDanger]
-                  : status === 'up'
-                  ? [colors.$accentTeal, theme.colors.$textSuccess]
-                  : [theme.colors.$textSecondary, theme.colors.$textSecondary]
-              }
-              start={{ x: 1, y: 0.5 }}
-              end={{ x: 0, y: 0.5 }}
-            />
-          </View>
-        </MaskedView>
+    <Animated.View
+      exiting={FadeOut}
+      entering={FadeIn}
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 2
+        }
+      ]}>
+      <MaskedView
+        maskElement={
+          <AnimatedText
+            variant={textVariant}
+            characters={`${signIndicator}${formattedPrice}`}
+          />
+        }>
+        <View
+          style={{
+            position: 'relative'
+          }}>
+          <AnimatedText
+            variant={textVariant}
+            characters={`${signIndicator}${formattedPrice}`}
+          />
+
+          <LinearGradient
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0
+            }}
+            colors={
+              status === 'down'
+                ? [colors.$accentDanger, colors?.$accentRed]
+                : status === 'up'
+                ? [colors.$accentTeal, theme.colors.$textSuccess]
+                : [theme.colors.$textSecondary, theme.colors.$textSecondary]
+            }
+            start={{ x: 1, y: 0 }}
+            end={{ x: 0, y: 0 }}
+          />
+        </View>
+      </MaskedView>
+
+      <Animated.View
+        layout={LinearTransition.springify().damping(100)}
+        style={[
+          {
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            gap: 4
+          }
+        ]}>
         <View
           sx={{ marginBottom: iconMarginBottom, marginLeft: iconMarginLeft }}>
           {status === 'down' ? (
@@ -79,17 +102,18 @@ export const PriceChangeIndicator = ({
             />
           ) : null}
         </View>
-      </View>
-      {formattedPercent !== undefined && (
-        <Text
-          variant={textVariant}
-          sx={{
-            color: status === 'equal' ? '$textSecondary' : '$textPrimary'
-          }}>
-          {formattedPercent}
-        </Text>
-      )}
-    </View>
+
+        {formattedPercent !== undefined && (
+          <AnimatedText
+            variant={textVariant}
+            characters={formattedPercent}
+            sx={{
+              color: status === 'equal' ? '$textSecondary' : '$textPrimary'
+            }}
+          />
+        )}
+      </Animated.View>
+    </Animated.View>
   )
 }
 

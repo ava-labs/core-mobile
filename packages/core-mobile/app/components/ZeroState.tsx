@@ -19,7 +19,7 @@ interface BaseProps {
 const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
   const { theme } = useApplicationContext()
 
-  function renderImage() {
+  function renderImage(): JSX.Element | null {
     if (!image) {
       return null
     }
@@ -41,7 +41,7 @@ const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
     )
   }
 
-  function renderTitle() {
+  function renderTitle(): JSX.Element {
     if (typeof title === 'string') {
       return (
         <AvaText.Heading2 textStyle={{ marginTop: 16 }}>
@@ -52,7 +52,7 @@ const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
     return <View style={{ marginTop: 16 }}>{title}</View>
   }
 
-  function renderMessage() {
+  function renderMessage(): JSX.Element {
     if (typeof message === 'string') {
       return (
         <AvaText.Body2
@@ -64,7 +64,7 @@ const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
     return <View>{message}</View>
   }
 
-  function renderButton() {
+  function renderButton(): JSX.Element | null {
     if (!button) return null
 
     return (
@@ -93,7 +93,11 @@ const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
   )
 }
 
-function ZeroStateNetworkTokens({ goToReceive }: { goToReceive: () => void }) {
+function ZeroStateNetworkTokens({
+  goToReceive
+}: {
+  goToReceive: () => void
+}): JSX.Element {
   const title = 'No assets'
   const message = 'Add assets by clicking the button below.'
 
@@ -109,14 +113,14 @@ function ZeroStateNetworkTokens({ goToReceive }: { goToReceive: () => void }) {
   return <ZeroStateBase title={title} message={message} button={button} />
 }
 
-function ZeroStateCollectibles() {
+function ZeroStateCollectibles(): JSX.Element {
   const title = 'No Collectibles'
   const message = 'You don’t have any collectibles yet.'
 
   return <ZeroStateBase title={title} message={message} />
 }
 
-function ZeroStateNoRecentAccounts() {
+function ZeroStateNoRecentAccounts(): JSX.Element {
   const title = 'No recent recipients'
   const message = 'Enter the address in the field above.'
 
@@ -127,7 +131,7 @@ function ZeroStateEmptyAddressBook({
   onGoToAddressBook
 }: {
   onGoToAddressBook: () => void
-}) {
+}): JSX.Element {
   const title = 'No addresses'
   const message = 'You can add addresses in Address Book'
 
@@ -146,17 +150,21 @@ function ZeroStateEmptyAddressBook({
 
 type NoResultsProps = Pick<BaseProps, 'message'>
 
-// removed "man with lantern" as per ux request
-function ZeroStateNoResults({ message }: NoResultsProps) {
+function ZeroStateNoResults({ message }: NoResultsProps): JSX.Element {
   const title = 'No results found'
   return <ZeroStateBase title={title} message={message} />
 }
 
-function ZeroStateComingSoon() {
+function ZeroStateSomethingWentWrong(): JSX.Element {
+  const title = 'Oops! Something went wrong'
+  return <ZeroStateBase title={title} message={'Please try again later'} />
+}
+
+function ZeroStateComingSoon(): JSX.Element {
   return <ZeroStateBase title={'Coming soon!'} />
 }
 
-function ZeroStateNoTransactions() {
+function ZeroStateNoTransactions(): JSX.Element {
   const title = 'No recent activity'
   const message = 'New transactions will show here'
 
@@ -167,7 +175,7 @@ function ZeroStateNoWatchlistFavorites({
   exploreAllTokens
 }: {
   exploreAllTokens?: () => void
-}) {
+}): JSX.Element {
   const title = 'No Favorites'
   const message = 'Click the star icon on any token to mark it as a favorite.'
 
@@ -185,7 +193,11 @@ function ZeroStateNoWatchlistFavorites({
   )
 }
 
-function ZeroStateNoContacts({ addContact }: { addContact: () => void }) {
+function ZeroStateNoContacts({
+  addContact
+}: {
+  addContact: () => void
+}): JSX.Element {
   const title = 'No Addresses Saved'
   const message = 'Tap the button below to add an address.'
   const button = (
@@ -210,7 +222,7 @@ function ZeroStateSites({
   onAddNewConnection
 }: {
   onAddNewConnection: () => void
-}) {
+}): JSX.Element {
   const title = 'No Connected Sites'
   const message = 'Tap the button below to scan QR code and connect.'
 
@@ -243,7 +255,8 @@ const ZeroState = {
   NoWatchlistFavorites: ZeroStateNoWatchlistFavorites,
   EmptyAddressBook: ZeroStateEmptyAddressBook, // used in Send screens
   NoContacts: ZeroStateNoContacts, // used in Contacts screen
-  Sites: ZeroStateSites
+  Sites: ZeroStateSites,
+  SomethingWentWrong: ZeroStateSomethingWentWrong
 }
 
 export default ZeroState

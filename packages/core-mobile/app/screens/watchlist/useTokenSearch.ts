@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 type TokenSearchType = {
   tokens: MarketToken[] | undefined
@@ -15,18 +17,17 @@ type Props = {
   isFetchingTokens: boolean
   items: MarketToken[]
   searchText: string | undefined
-  currency: string
 }
 
 export function useTokenSearch({
   isFetchingTokens,
   items,
-  searchText,
-  currency
+  searchText
 }: Props): {
   isSearchingTokens: boolean
   searchResults: TokenSearchType | undefined
 } {
+  const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const dispatch = useDispatch()
   const [isSearchingTokens, setIsSearchingTokens] = useState(false)
   const [searchResults, setSearchResults] = useState<TokenSearchType>()
