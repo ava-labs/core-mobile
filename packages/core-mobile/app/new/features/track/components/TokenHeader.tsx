@@ -9,6 +9,7 @@ import {
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 export const TokenHeader = ({
   token,
@@ -35,9 +36,9 @@ export const TokenHeader = ({
         </View>
         <View sx={{ opacity: priceChange ? 1 : 0 }}>
           <PriceChangeIndicator
-            formattedPrice={priceChange?.formattedPrice ?? '$0.00'}
+            formattedPrice={priceChange?.formattedPrice ?? UNKNOWN_AMOUNT}
             status={priceChange?.status ?? 'equal'}
-            formattedPercent={priceChange?.formattedPercent ?? '0.00%'}
+            formattedPercent={priceChange?.formattedPercent ?? UNKNOWN_AMOUNT}
             textVariant="buttonMedium"
           />
         </View>

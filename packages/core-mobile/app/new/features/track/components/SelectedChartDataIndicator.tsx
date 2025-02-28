@@ -33,7 +33,12 @@ export const SelectedChartDataIndicator = ({
       <Text
         variant="subtitle2"
         sx={{
-          color: percentChange < 0 ? '$textDanger' : '$textSuccess'
+          color:
+            percentChange < 0
+              ? '$textDanger'
+              : percentChange === 0
+              ? '$textSecondary'
+              : '$textSuccess'
         }}>
         {formattedPercentChange}
       </Text>
