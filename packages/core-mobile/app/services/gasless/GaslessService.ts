@@ -32,7 +32,7 @@ class GaslessService {
   isEligibleForChain = async (chainId: string): Promise<boolean> => {
     const sdk = await this.getSdk()
     if (!sdk) return false
-    return await sdk.isEligibleForChain(chainId)
+    return await sdk.isEligibleForChain({ chainId })
   }
 
   fundTx = async (
