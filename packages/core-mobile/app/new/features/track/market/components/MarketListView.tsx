@@ -1,10 +1,10 @@
 import React from 'react'
 import {
   alpha,
-  AnimatedPressable,
   Icons,
   PriceChangeIndicator,
   Text,
+  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -41,7 +41,7 @@ const MarketListView = ({
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
       layout={LinearTransition.springify()}>
-      <AnimatedPressable onPress={onPress}>
+      <TouchableOpacity onPress={onPress}>
         <View
           sx={{
             paddingHorizontal: 16,
@@ -50,7 +50,13 @@ const MarketListView = ({
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              flex: 1
+            }}>
             <TokenLogo
               size={36}
               symbol={token.symbol}
@@ -58,27 +64,24 @@ const MarketListView = ({
               backgroundColor={colors.$borderPrimary}
               borderColor={borderColor}
             />
-            <View>
-              <View
-                sx={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6
-                }}>
-                <Text variant="buttonMedium" numberOfLines={1}>
-                  {token.name}
-                </Text>
-                {isFavorite && (
-                  <Icons.Toggle.StarFilled width={12} height={12} />
-                )}
-              </View>
+            <View sx={{ flexShrink: 1 }}>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {token.name}
+              </Text>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text
                   variant="body2"
                   sx={{ color: '$textSecondary', lineHeight: 18 }}
-                  numberOfLines={1}>
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
                   {token.symbol.toUpperCase()}
                 </Text>
+                {isFavorite && (
+                  <Icons.Toggle.StarFilled width={12} height={12} />
+                )}
               </View>
             </View>
           </View>
@@ -88,7 +91,10 @@ const MarketListView = ({
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end'
               }}>
-              <Text variant="buttonMedium" numberOfLines={1}>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                ellipsizeMode="tail">
                 {formattedPrice}
               </Text>
               <PriceChangeIndicator
@@ -100,7 +106,7 @@ const MarketListView = ({
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
           </View>
         </View>
-      </AnimatedPressable>
+      </TouchableOpacity>
     </Animated.View>
   )
 }

@@ -96,27 +96,25 @@ const MarketScreen = ({
   }
 
   return (
-    <CollapsibleTabs.ScrollView showsVerticalScrollIndicator={false}>
-      <CollapsibleTabs.FlatList
-        contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
-        data={data}
-        numColumns={isGridView ? 2 : 1}
-        renderItem={item => renderItem({ item: item.item, index: item.index })}
-        ListHeaderComponent={header}
-        ListEmptyComponent={emptyComponent}
-        ItemSeparatorComponent={renderSeparator}
-        showsVerticalScrollIndicator={false}
-        key={isGridView ? 'grid' : 'list'}
-        keyExtractor={item => item.id}
-        columnWrapperStyle={
-          isGridView && {
-            paddingHorizontal: 16,
-            justifyContent: 'space-between',
-            gap: 14
-          }
+    <CollapsibleTabs.FlatList
+      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
+      data={data}
+      numColumns={isGridView ? 2 : 1}
+      renderItem={item => renderItem({ item: item.item, index: item.index })}
+      ListHeaderComponent={header}
+      ListEmptyComponent={emptyComponent}
+      ItemSeparatorComponent={renderSeparator}
+      showsVerticalScrollIndicator={false}
+      key={isGridView ? 'grid' : 'list'}
+      keyExtractor={item => item.id}
+      columnWrapperStyle={
+        isGridView && {
+          paddingHorizontal: 16,
+          justifyContent: 'space-between',
+          gap: 14
         }
-      />
-    </CollapsibleTabs.ScrollView>
+      }
+    />
   )
 }
 
