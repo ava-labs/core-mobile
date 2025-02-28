@@ -22,10 +22,19 @@ describe('Watchlist', () => {
     await device.disableSynchronization()
   })
 
+  it('should verify Trending tab', async () => {
+    // Favorite tab > Verify the default favorites
+    await BottomTabsPage.tapWatchlistTab()
+    await actions.waitForElementNoSync(watchlistPage.trendingTab, 20000)
+    await watchlistPage.verifyTrendingTokenNavigation()
+    await watchlistPage.verifyTrendingTokens()
+  })
+
   it('should verify Favorites tab', async () => {
     // Favorite tab > Verify the default favorites
     await BottomTabsPage.tapWatchlistTab()
     await actions.waitForElementNoSync(watchlistPage.favoritesTab, 20000)
+    await actions.tap(watchlistPage.favoritesTab)
     await watchlistPage.verifyFavorites(['AVAX', 'BTC', 'ETH'])
   })
 
