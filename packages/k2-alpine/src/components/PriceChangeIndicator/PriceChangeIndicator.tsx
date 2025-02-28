@@ -17,10 +17,7 @@ export const PriceChangeIndicator = ({
   status,
   formattedPercent,
   textVariant = 'buttonSmall'
-}: {
-  formattedPrice: string
-  status: 'up' | 'down' | 'equal'
-  formattedPercent?: string
+}: PriceChange & {
   textVariant?: 'buttonMedium' | 'buttonSmall'
   testID?: string
 }): JSX.Element => {
@@ -118,3 +115,9 @@ export const PriceChangeIndicator = ({
 }
 
 const ICON_SIZE = 10
+
+export type PriceChange = {
+  formattedPrice: string
+  status: 'up' | 'down' | 'equal'
+  formattedPercent?: string
+}
