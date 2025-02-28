@@ -25,7 +25,7 @@ const TokenManagementScreen = (): JSX.Element => {
     refetch,
     isRefetching,
     isLoading
-  } = useSearchableTokenList({ hideZeroBalance: true, hideBlacklist: false })
+  } = useSearchableTokenList({ hideBlacklist: false })
   const {
     theme: { colors }
   } = useTheme()
