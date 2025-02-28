@@ -12,14 +12,13 @@ export type BalanceItemProps = {
   testID?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const BalanceItem = ({
   balanceType,
   iconColor,
   balance,
   poppableItem,
   testID = 'balance_item'
-}: BalanceItemProps) => {
+}: BalanceItemProps): React.JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
