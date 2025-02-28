@@ -3,6 +3,7 @@ import { getDayString } from 'utils/date/getDayString'
 import { Text, View } from '@avalabs/k2-alpine'
 import { format } from 'date-fns'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 export const SelectedChartDataIndicator = ({
   selectedData,
@@ -18,15 +19,17 @@ export const SelectedChartDataIndicator = ({
 
   const percentChange = useMemo(() => {
     if (!currentPrice || !selectedData?.value) {
-      return 0
+      return undefined
     }
     return ((selectedData.value - currentPrice) / currentPrice) * 100
   }, [selectedData, currentPrice])
-  const sign = percentChange > 0 ? '+' : percentChange < 0 ? '-' : ''
 
-  const formattedPercentChange = `${sign}${percentChange
-    .toFixed(2)
-    .replace('-', '')}%`
+  const formattedPercentChange =
+    percentChange === undefined
+      ? UNKNOWN_AMOUNT
+      : `${
+          percentChange > 0 ? '+' : percentChange < 0 ? '-' : ''
+        }${percentChange.toFixed(2).replace('-', '')}%`
 
   return (
     <View sx={{ alignItems: 'center' }}>
@@ -34,10 +37,10 @@ export const SelectedChartDataIndicator = ({
         variant="subtitle2"
         sx={{
           color:
-            percentChange < 0
+            percentChange === undefined || percentChange === 0
+              ? 'textSecondary'
+              : percentChange < 0
               ? '$textDanger'
-              : percentChange === 0
-              ? '$textSecondary'
               : '$textSuccess'
         }}>
         {formattedPercentChange}
