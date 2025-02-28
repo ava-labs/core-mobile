@@ -14,6 +14,11 @@ const viewOnceSlice = createSlice({
       if (Object.values(ViewOnceKey).includes(action.payload)) {
         state.data[action.payload] = true
       }
+    },
+    resetViewOnce: (state, action: PayloadAction<ViewOnceKey>) => {
+      if (Object.values(ViewOnceKey).includes(action.payload)) {
+        state.data[action.payload] = false
+      }
     }
   }
 })
@@ -25,6 +30,6 @@ export const selectHasBeenViewedOnce =
     state.viewOnce.data[key] === true
 
 // actions
-export const { setViewOnce } = viewOnceSlice.actions
+export const { setViewOnce, resetViewOnce } = viewOnceSlice.actions
 
 export const viewOnceReducer = viewOnceSlice.reducer
