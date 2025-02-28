@@ -17,11 +17,12 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
-import { FavoritesScreen } from 'features/track/favorites/components/FavoritesScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 
 const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const { favorites, tokens } = useWatchlist()
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -98,12 +99,19 @@ const TrackHomeScreen = (): JSX.Element => {
           },
           {
             tabName: TrackHomeScreenTab.Favorites,
-            component: <FavoritesScreen />
+            component: (
+              <MarketScreen
+                tokens={favorites}
+                goToMarketDetail={handleGotoMarketDetail}
+                searchText={searchText}
+              />
+            )
           },
           {
             tabName: TrackHomeScreenTab.Market,
             component: (
               <MarketScreen
+                tokens={tokens}
                 goToMarketDetail={handleGotoMarketDetail}
                 searchText={searchText}
               />
