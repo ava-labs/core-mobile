@@ -1,15 +1,10 @@
 import { useNavigation } from '@react-navigation/native'
-import { useCChainBalance } from 'hooks/earn/useCChainBalance'
-import useStakingParams from 'hooks/earn/useStakingParams'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
-import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
+import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import NotEnoughAvax from './NotEnoughAvax'
 import StakingAmount from './StakingAmount'
 
@@ -25,38 +20,18 @@ enum BalanceStates {
 
 const SmartStakeAmount = (): React.JSX.Element => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const { minStakeAmount } = useStakingParams()
-  const cChainBalance = useCChainBalance()
+  const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const [balanceState, setBalanceState] = useState(BalanceStates.UNKNOWN)
-  const claimableBalance = useGetClaimableBalance()
-  const cChainNetwork = useCChainNetwork()
-  const stuckBalance = useGetStuckBalance()
-  const cChainNetworkToken = cChainNetwork?.networkToken
 
   useEffect(() => {
-    if (cChainBalance.data?.balance !== undefined && cChainNetworkToken) {
-      const availableAvax = new TokenUnit(
-        cChainBalance.data.balance,
-        cChainNetworkToken.decimals,
-        cChainNetworkToken.symbol
-      )
-        .add(claimableBalance ?? 0)
-        .add(stuckBalance ?? 0)
-      const notEnoughAvax = availableAvax.lt(minStakeAmount)
+    if (hasEnoughAvax === undefined) return
 
-      if (notEnoughAvax) {
-        setBalanceState(BalanceStates.INSUFFICIENT)
-      } else {
-        setBalanceState(BalanceStates.SUFFICIENT)
-      }
+    if (hasEnoughAvax) {
+      setBalanceState(BalanceStates.SUFFICIENT)
+    } else {
+      setBalanceState(BalanceStates.INSUFFICIENT)
     }
-  }, [
-    cChainBalance?.data?.balance,
-    minStakeAmount,
-    stuckBalance,
-    claimableBalance,
-    cChainNetworkToken
-  ])
+  }, [hasEnoughAvax])
 
   const renderNotEnoughAvax = (): React.JSX.Element => {
     const navToBuy = (): void => {
