@@ -12,21 +12,15 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { DropdownSelection } from 'common/types'
 
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
-
-export const useFilterAndSort = (): {
+export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
-  filter: Selection
-  sort: Selection
-  view: Selection
+  filter: DropdownSelection
+  sort: DropdownSelection
+  view: DropdownSelection
 } => {
-  const { filteredTokenList } = useSearchableTokenList()
+  const { filteredTokenList } = useSearchableTokenList({})
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,

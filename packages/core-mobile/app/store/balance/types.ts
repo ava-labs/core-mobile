@@ -67,12 +67,14 @@ export const assetXDisplayNames: Record<string, string> = {
   atomicMemoryUnlocked: 'Atomic Memory Unlocked'
 }
 
+// Assets
 export enum AssetNetworkFilter {
   AllNetworks = 'All networks',
   AvalancheCChain = 'Avalanche C-Chain',
   BitcoinNetwork = 'Bitcoin network',
   Ethereum = 'Ethereum'
 }
+
 export enum AssetBalanceSort {
   HighToLow = 'High to low balance',
   LowToHigh = 'Low to high balance'
@@ -103,4 +105,35 @@ export const ASSET_BALANCE_SORTS: AssetBalanceSorts = [
 export const ASSET_MANAGE_VIEWS: AssetManageViews = [
   [AssetManageView.Highlights, AssetManageView.AssetList],
   [AssetManageView.ManageList]
+]
+
+// Token Detail
+export enum TokenDetailFilter {
+  All = 'All',
+  Sent = 'Sent',
+  Received = 'Received',
+  Bridge = 'Bridge',
+  Swap = 'Swap'
+}
+
+export enum TokenDetailSort {
+  NewToOld = 'Newest to oldest',
+  OldToNew = 'Oldest to newest'
+}
+
+export type TokenDetailFilters = TokenDetailFilter[][]
+export type TokenDetailSorts = TokenDetailSort[][]
+
+export const TOKEN_DETAIL_FILTERS: TokenDetailFilters = [
+  [
+    TokenDetailFilter.All,
+    TokenDetailFilter.Sent,
+    TokenDetailFilter.Received,
+    TokenDetailFilter.Swap,
+    TokenDetailFilter.Bridge
+  ]
+]
+
+export const TOKEN_DETAIL_SORTS: TokenDetailSorts = [
+  [TokenDetailSort.NewToOld, TokenDetailSort.OldToNew]
 ]

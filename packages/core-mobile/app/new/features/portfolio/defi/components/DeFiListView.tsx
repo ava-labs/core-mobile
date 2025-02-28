@@ -9,7 +9,6 @@ import {
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useOnPressAnimation } from 'common/hooks/useOnPressAnimation'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const DeFiListView = ({
@@ -28,46 +27,39 @@ export const DeFiListView = ({
   onPressArrow: () => void
 }): React.JSX.Element => {
   const { theme } = useTheme()
-  const { animatedStyle } = useOnPressAnimation()
-
-  const handleOnPress = (): void => {
-    onPress()
-  }
 
   return (
     <Animated.View
-      style={animatedStyle}
       entering={getListItemEnteringAnimation(index)}
       layout={LinearTransition.springify()}>
-      <TouchableOpacity onPress={handleOnPress}>
-        <View
-          sx={{
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <LogoWithNetwork item={item} chain={chain} size="small" />
-            <View>
-              <Text variant="buttonMedium" numberOfLines={1}>
-                {item.name}
+      <TouchableOpacity
+        onPress={onPress}
+        sx={{
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <LogoWithNetwork item={item} chain={chain} size="small" />
+          <View>
+            <Text variant="buttonMedium" numberOfLines={1}>
+              {item.name}
+            </Text>
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text
+                variant="body2"
+                sx={{ color: '$textSecondary', lineHeight: 18 }}
+                numberOfLines={1}>
+                {formattedPrice}
               </Text>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text
-                  variant="body2"
-                  sx={{ color: '$textSecondary', lineHeight: 18 }}
-                  numberOfLines={1}>
-                  {formattedPrice}
-                </Text>
-              </View>
             </View>
           </View>
-          <TouchableOpacity onPress={onPressArrow} hitSlop={10}>
-            <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
-          </TouchableOpacity>
         </View>
+        <TouchableOpacity onPress={onPressArrow} hitSlop={10}>
+          <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
+        </TouchableOpacity>
       </TouchableOpacity>
     </Animated.View>
   )

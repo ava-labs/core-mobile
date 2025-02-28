@@ -6,12 +6,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { DropdownSelection } from 'common/types'
 import React from 'react'
-import { Selection } from '../../assets/hooks/useFilterAndSort'
 
 interface Props {
-  sort: Selection
-  view: Selection
+  sort: DropdownSelection
+  view: DropdownSelection
 }
 
 export const DeFiHeader = ({ sort, view }: Props): React.JSX.Element => {

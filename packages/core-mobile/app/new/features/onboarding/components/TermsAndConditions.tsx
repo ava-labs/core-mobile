@@ -1,17 +1,10 @@
 import React, { useState } from 'react'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  alpha,
-  Button,
-  ScrollView,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Button, ScrollView, Text, View } from '@avalabs/k2-alpine'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 
 export const TermsAndConditions = ({
   onAgreeAndContinue
@@ -19,7 +12,6 @@ export const TermsAndConditions = ({
   onAgreeAndContinue: () => void
 }): JSX.Element => {
   const { bottom } = useSafeAreaInsets()
-  const { theme } = useTheme()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -108,25 +100,18 @@ export const TermsAndConditions = ({
         </View>
       </ScrollView>
       <View>
-        <LinearGradient
-          colors={[
-            alpha(theme.colors.$surfacePrimary, 0),
-            theme.colors.$surfacePrimary
-          ]}
-          style={{ height: 40 }}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
-        />
-        <View
-          sx={{
-            paddingHorizontal: 16,
-            paddingBottom: 16 + bottom,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button size="large" type="primary" onPress={onAgreeAndContinue}>
-            Agree and continue
-          </Button>
-        </View>
+        <LinearGradientBottomWrapper>
+          <View
+            sx={{
+              paddingHorizontal: 16,
+              paddingBottom: 16 + bottom,
+              backgroundColor: '$surfacePrimary'
+            }}>
+            <Button size="large" type="primary" onPress={onAgreeAndContinue}>
+              Agree and continue
+            </Button>
+          </View>
+        </LinearGradientBottomWrapper>
       </View>
     </BlurredBarsContentLayout>
   )

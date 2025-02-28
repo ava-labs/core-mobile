@@ -22,7 +22,9 @@ export const useFadingHeaderNavigation = ({
   header?: JSX.Element
   targetLayout?: LayoutRectangle
 }): {
-  onScroll: (event: number) => void
+  onScroll: (
+    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
+  ) => void
   scrollEventThrottle: number
   targetHiddenProgress: SharedValue<number>
 } => {

@@ -10,10 +10,10 @@ import {
 import { showSnackbar } from 'common/utils/toast'
 import React, { useCallback, useEffect } from 'react'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
-import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
+import { LoadingState } from 'common/components/LoadingState'
 
 const AddCustomTokenScreen = (): JSX.Element => {
   const {
@@ -51,7 +51,7 @@ const AddCustomTokenScreen = (): JSX.Element => {
 
   const renderToken = (): JSX.Element | undefined => {
     if (isLoading) {
-      return <GlobalLoadingState />
+      return <LoadingState sx={{ flex: 1 }} />
     }
 
     if (!token) {

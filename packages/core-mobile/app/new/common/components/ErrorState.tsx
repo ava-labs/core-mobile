@@ -6,7 +6,7 @@ export const ErrorState = ({
   sx,
   icon = (
     <Image
-      source={require('../../assets/icons/error_state_emoji.png')}
+      source={require('../../assets/icons/weary_emoji.png')}
       sx={{ width: 42, height: 42 }}
     />
   ),

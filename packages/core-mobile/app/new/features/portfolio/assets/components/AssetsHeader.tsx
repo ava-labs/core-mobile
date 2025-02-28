@@ -3,22 +3,25 @@ import {
   getTintColor,
   Icons,
   SimpleDropdown,
+  SxProp,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { DropdownSelection } from 'common/types'
 import React from 'react'
-import { Selection } from '../hooks/useFilterAndSort'
 
 interface Props {
-  filter: Selection
-  sort: Selection
-  view: Selection
+  filter: DropdownSelection
+  sort: DropdownSelection
+  view?: DropdownSelection
+  sx?: SxProp
 }
 
 export const AssetsHeader = ({
   filter,
   sort,
-  view
+  view,
+  sx
 }: Props): React.JSX.Element => {
   const { theme } = useTheme()
   const tintColor = getTintColor('secondary', theme, false)
@@ -29,7 +32,8 @@ export const AssetsHeader = ({
         marginTop: 19,
         marginBottom: 16,
         justifyContent: 'space-between',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        ...sx
       }}>
       <View sx={{ flexDirection: 'row', gap: 8 }}>
         <SimpleDropdown
@@ -76,16 +80,18 @@ export const AssetsHeader = ({
           />
         </View>
       </View>
-      <SimpleDropdown
-        from={
-          <Button size="small" type="secondary" hitSlop={8}>
-            {view.title}
-          </Button>
-        }
-        sections={view.data}
-        selectedRows={[view.selected]}
-        onSelectRow={view.onSelected}
-      />
+      {view && (
+        <SimpleDropdown
+          from={
+            <Button size="small" type="secondary" hitSlop={8}>
+              {view.title}
+            </Button>
+          }
+          sections={view.data}
+          selectedRows={[view.selected]}
+          onSelectRow={view.onSelected}
+        />
+      )}
     </View>
   )
 }
