@@ -17,16 +17,10 @@ const ICON_SIZE = 36
 type Props = {
   tx: Omit<Transaction, 'txType'> & { txType: ActivityTransactionType }
   index: number
-  isLastItem: boolean
   onPress?: () => void
 }
 
-export const TokenActivityListItem: FC<Props> = ({
-  tx,
-  onPress,
-  isLastItem,
-  index
-}) => {
+export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
   const {
     theme: { colors, isDark }
   } = useTheme()
@@ -133,7 +127,6 @@ export const TokenActivityListItem: FC<Props> = ({
       subtitle={subtitle}
       icon={transactionTypeIcon}
       onPress={onPress}
-      isLastItem={isLastItem}
       index={index}
       amountIndicator={amountIndicator}
     />

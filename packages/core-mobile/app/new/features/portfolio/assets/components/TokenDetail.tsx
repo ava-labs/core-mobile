@@ -1,4 +1,4 @@
-import { FlatList, Image, useTheme, View } from '@avalabs/k2-alpine'
+import { FlatList, Image, Separator, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenHeader } from 'common/components/TokenHeader'
 import React, { FC, memo, useCallback, useMemo } from 'react'
 import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
@@ -162,7 +162,6 @@ const TokenDetail: FC<Props> = ({
   }, [isError, isLoading, isRefreshing, data, refresh])
 
   const renderItem = (item: Transaction, index: number): React.JSX.Element => {
-    const isLastItem = data.length - 1 === index
     const isNft =
       item.tokens[0]?.type === TokenType.ERC1155 ||
       item.tokens[0]?.type === TokenType.ERC721
@@ -172,7 +171,6 @@ const TokenDetail: FC<Props> = ({
 
     const props = {
       tx: item,
-      isLastItem,
       index,
       onPress: () => handleExplorerLink(item.explorerLink)
     }
@@ -184,6 +182,10 @@ const TokenDetail: FC<Props> = ({
       return <NftActivityListItem {...props} key={item.hash} />
     }
     return <TokenActivityListItem {...props} key={item.hash} />
+  }
+
+  const renderSeparator = (): JSX.Element => {
+    return <Separator sx={{ marginLeft: 63 }} />
   }
 
   return (
@@ -203,6 +205,7 @@ const TokenDetail: FC<Props> = ({
         ListHeaderComponent={header}
         ListEmptyComponent={emptyState}
         showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={renderSeparator}
       />
       <View
         sx={{

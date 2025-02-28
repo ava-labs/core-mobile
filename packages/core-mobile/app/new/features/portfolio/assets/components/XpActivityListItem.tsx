@@ -15,16 +15,10 @@ const ICON_SIZE = 36
 type Props = {
   tx: Transaction
   index: number
-  isLastItem: boolean
   onPress?: () => void
 }
 
-export const XpActivityListItem: FC<Props> = ({
-  tx,
-  onPress,
-  isLastItem,
-  index
-}) => {
+export const XpActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
   const {
     theme: { isDark, colors }
   } = useTheme()
@@ -104,7 +98,6 @@ export const XpActivityListItem: FC<Props> = ({
       subtitle={subtitle}
       icon={transactionTypeIcon}
       onPress={onPress}
-      isLastItem={isLastItem}
       index={index}
       amountIndicator={AmountIndicator.Neutral}
     />

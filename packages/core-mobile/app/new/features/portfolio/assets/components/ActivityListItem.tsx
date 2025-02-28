@@ -15,7 +15,6 @@ type Props = {
   subtitle: string
   icon?: React.JSX.Element
   index: number
-  isLastItem: boolean
   amountIndicator: AmountIndicator
   onPress?: () => void
 }
@@ -25,7 +24,6 @@ const ActivityListItem: FC<Props> = ({
   subtitle,
   icon,
   onPress,
-  isLastItem,
   amountIndicator,
   index
 }) => {
@@ -46,7 +44,7 @@ const ActivityListItem: FC<Props> = ({
       layout={LinearTransition.springify()}>
       <TouchableOpacity
         onPress={onPress}
-        sx={{ overflow: 'visible' }}
+        sx={{ overflow: 'visible', marginTop: 14, marginBottom: 9 }}
         testID="activityListItem">
         <View
           style={{
@@ -90,17 +88,6 @@ const ActivityListItem: FC<Props> = ({
             <Icons.Custom.Outbound />
           </View>
         </View>
-        {!isLastItem && (
-          <View
-            sx={{
-              height: 1,
-              backgroundColor: '$borderPrimary',
-              marginTop: 14,
-              marginBottom: 9,
-              marginLeft: 63
-            }}
-          />
-        )}
       </TouchableOpacity>
     </Animated.View>
   )

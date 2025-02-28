@@ -15,16 +15,10 @@ const ICON_SIZE = 36
 type Props = {
   tx: Transaction
   index: number
-  isLastItem: boolean
   onPress?: () => void
 }
 
-export const NftActivityListItem: FC<Props> = ({
-  tx,
-  onPress,
-  isLastItem,
-  index
-}) => {
+export const NftActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
   const {
     theme: { colors, isDark }
   } = useTheme()
@@ -106,7 +100,6 @@ export const NftActivityListItem: FC<Props> = ({
       subtitle={subtitle}
       icon={transactionTypeIcon}
       onPress={onPress}
-      isLastItem={isLastItem}
       index={index}
       amountIndicator={amountIndicator}
     />
