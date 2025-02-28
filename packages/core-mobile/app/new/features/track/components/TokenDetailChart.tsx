@@ -73,7 +73,7 @@ const DashedLine = (): JSX.Element => {
   const { theme } = useTheme()
 
   return (
-    <Svg height="1" width="100%">
+    <Svg height="2" width="100%">
       <Line
         x1="0"
         y1="1"
@@ -81,7 +81,7 @@ const DashedLine = (): JSX.Element => {
         y2="1"
         stroke={theme.colors.$borderPrimary}
         strokeWidth="2"
-        strokeDasharray="1,4"
+        strokeDasharray="0.3,4"
         strokeLinecap="round"
       />
     </Svg>

@@ -23,7 +23,6 @@ import { format } from 'date-fns'
 import { ChartOverlay } from 'features/track/components/ChartOverlay'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  resetViewOnce,
   selectHasBeenViewedOnce,
   setViewOnce,
   ViewOnceKey
@@ -52,33 +51,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const { getMarketTokenById } = useWatchlist()
 
-  useEffect(() => {
-    dispatch(resetViewOnce(ViewOnceKey.CHART_INTERACTION))
-  }, [dispatch])
-
-  const {
-    // noData,
-    // isFavorite,
-    // openMoonPay,
-    // openUrl,
-    // urlHostname,
-    // handleFavorite,
-    // marketTotalSupply,
-    // twitterHandle,
-    // marketCirculatingSupply,
-    // marketVolume,
-    // marketCapRank,
-    // marketCap,
-    chartData,
-    chartDays,
-    ranges,
-    // symbol,
-    // name,
-    // logoUri,
-    // priceInCurrency,
-    // contractAddress,
-    changeChartDays
-  } = useTokenDetails(tokenId ?? '')
+  const { chartData, chartDays, ranges, changeChartDays } = useTokenDetails(
+    tokenId ?? ''
+  )
 
   const handleDataSelected = (point: { value: number; date: Date }): void => {
     setSelectedData(point)
