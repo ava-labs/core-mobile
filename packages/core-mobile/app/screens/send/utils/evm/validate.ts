@@ -40,31 +40,39 @@ export const validateERC1155 = (
 }
 
 export const validateAmount = ({
-  gasLimit,
   amount,
-  token,
-  maxFee,
-  nativeToken
+  token
 }: {
-  gasLimit: bigint
   amount: bigint | undefined
   token: TokenWithBalanceERC20 | NetworkTokenWithBalance
-  maxFee: bigint
-  nativeToken: NetworkTokenWithBalance
 }): void => {
   if (amount && token.balance < amount) {
     throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
   }
 
+  if (!amount || (amount && amount <= 0n)) {
+    throw new Error(SendErrorMessage.AMOUNT_REQUIRED)
+  }
+}
+
+export const validateFee = ({
+  gasLimit,
+  maxFee,
+  amount,
+  nativeToken,
+  token
+}: {
+  gasLimit: bigint
+  maxFee: bigint
+  amount: bigint | undefined
+  nativeToken: NetworkTokenWithBalance
+  token: TokenWithBalanceEVM
+}): void => {
   const totalFee = gasLimit * maxFee
   const remainingBalance = nativeToken.balance - (amount ?? 0n)
 
   if (token.type === TokenType.NATIVE && remainingBalance < totalFee) {
     throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
-  }
-
-  if (!amount || (amount && amount <= 0n)) {
-    throw new Error(SendErrorMessage.AMOUNT_REQUIRED)
   }
 }
 
