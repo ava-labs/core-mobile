@@ -7,17 +7,20 @@ import {
   PROTOCOLS
 } from 'contexts/DeeplinkContext/types'
 import {
-  BalanceChangeEvents,
-  NotificationPayload,
   BalanceChangeData,
+  BalanceChangeEvents,
   NewsData,
+  NewsEvents,
+  NotificationPayload,
   NotificationPayloadSchema,
-  NotificationTypes,
-  NewsEvents
+  NotificationTypes
 } from 'services/fcm/types'
 import { Platform } from 'react-native'
 import { DisplayNotificationParams } from 'services/notifications/types'
-import { ChannelId } from 'services/notifications/channels'
+import {
+  ChannelId,
+  DEFAULT_ANDROID_CHANNEL
+} from 'services/notifications/channels'
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { openInAppBrowser } from 'utils/openInAppBrowser'
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
@@ -28,6 +31,7 @@ const EVENT_TO_CH_ID: Record<string, ChannelId> = {
   [BalanceChangeEvents.ALLOWANCE_APPROVED]: ChannelId.BALANCE_CHANGES,
   [BalanceChangeEvents.BALANCES_SPENT]: ChannelId.BALANCE_CHANGES,
   [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES,
+  [BalanceChangeEvents.BALANCES_TRANSFERRED]: ChannelId.BALANCE_CHANGES,
   [NewsEvents.MARKET_NEWS]: ChannelId.MARKET_NEWS,
   [NewsEvents.OFFERS_AND_PROMOTIONS]: ChannelId.OFFERS_AND_PROMOTIONS,
   [NewsEvents.PRICE_ALERTS]: ChannelId.PRICE_ALERTS,
@@ -93,7 +97,7 @@ class FCMService {
     if (!fcmData.title) throw Error('No notification title')
     const data = this.#extractDeepLinkData(fcmData)
     return {
-      channelId: EVENT_TO_CH_ID[fcmData.event],
+      channelId: EVENT_TO_CH_ID[fcmData.event] ?? DEFAULT_ANDROID_CHANNEL,
       title: fcmData.title,
       body: fcmData.body,
       data
