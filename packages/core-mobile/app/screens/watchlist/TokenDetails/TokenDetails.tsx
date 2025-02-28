@@ -22,7 +22,6 @@ import {
 import TokenAddress from 'components/TokenAddress'
 import { formatLargeCurrency } from 'utils/Utils'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
-import { TokenSymbol } from 'store/network'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useSharedValue } from 'react-native-reanimated'
 import { styles as AvaTextStyles } from 'components/AvaText'
@@ -42,6 +41,8 @@ import { selectActiveAccount } from 'store/account/slice'
 import { selectIsEarnBlocked } from 'store/posthog/slice'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import { AVAX_TOKEN_ID } from 'consts/swap'
+import { AVAX_COINGECKO_ID } from 'consts/coingecko'
+import { MarketType } from 'store/watchlist'
 import { DataItem } from './DataItem'
 import { Overlay, OverlayType } from './Overlay'
 
@@ -75,7 +76,6 @@ const TokenDetails: FC = () => {
   const earnBlocked = useSelector(selectIsEarnBlocked)
   const animatedDate = useSharedValue('Price')
   const animatedPrice = useSharedValue('')
-
   const activeAccount = useSelector(selectActiveAccount)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
@@ -209,7 +209,7 @@ const TokenDetails: FC = () => {
       </Button>
     )
 
-    const swapButton = (
+    const generateSwapButton = (initialTokenIdTo?: string): JSX.Element => (
       <Button
         type={'primary'}
         size={'xlarge'}
@@ -218,7 +218,7 @@ const TokenDetails: FC = () => {
             screen: AppNavigation.Swap.Swap,
             params: {
               initialTokenIdFrom: AVAX_TOKEN_ID,
-              initialTokenIdTo: undefined
+              initialTokenIdTo
             }
           })
         }}
@@ -230,13 +230,26 @@ const TokenDetails: FC = () => {
     const actions = []
 
     if (isZeroBalance) {
+      // only show buy button if the user has zero balance
       !buyDisabled && actions.push(buyButton)
-    } else if (tokenInfo?.symbol === TokenSymbol.AVAX && hasEnoughAvax) {
-      !earnBlocked && actions.push(stakeButton)
-      !swapDisabled && actions.push(swapButton)
+    } else if (tokenId === AVAX_COINGECKO_ID) {
+      // for AVAX, show stake instead of buy button if user has enough AVAX
+      hasEnoughAvax
+        ? !earnBlocked && actions.push(stakeButton)
+        : !buyDisabled && actions.push(buyButton)
+
+      // always show swap button for AVAX
+      !swapDisabled && actions.push(generateSwapButton())
     } else {
+      // user has some balance, show both buy and swap button for all other tokens
       !buyDisabled && actions.push(buyButton)
-      !swapDisabled && actions.push(swapButton)
+
+      // however, only show swap button if the token is a trending one
+      // as we currently only support swapping on Avanlanche network
+      // (all trending tokens are on Avalanche network)
+      tokenInfo?.marketType === MarketType.TRENDING &&
+        !swapDisabled &&
+        actions.push(generateSwapButton(tokenInfo?.contractAddress))
     }
 
     if (actions.length === 0) {
@@ -278,10 +291,12 @@ const TokenDetails: FC = () => {
     navigate,
     hasEnoughAvax,
     isZeroBalance,
-    tokenInfo?.symbol,
     buyDisabled,
     earnBlocked,
-    swapDisabled
+    swapDisabled,
+    tokenInfo?.marketType,
+    tokenInfo?.contractAddress,
+    tokenId
   ])
 
   const verifiedChartData: {

@@ -19,6 +19,7 @@ const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
 
 type TokenInfo = {
+  marketType: MarketType
   marketTotalSupply?: number
   twitterHandle: string | undefined
   marketCirculatingSupply?: number
@@ -147,6 +148,7 @@ export const useTokenDetails = (
     const extractMarketDetails = (): void => {
       trendingTokenData &&
         setTokenInfo({
+          marketType: MarketType.TRENDING,
           twitterHandle: trendingTokenData.twitter
             ? getSocialHandle(trendingTokenData.twitter)
             : undefined,
@@ -169,6 +171,7 @@ export const useTokenDetails = (
       if (!data) return
 
       setTokenInfo({
+        marketType: MarketType.TOP,
         // @ts-ignore total_supply exists in CoinsInfoResponse
         marketTotalSupply: data.market_data.total_supply ?? 0,
         twitterHandle: data.links?.twitter_screen_name ?? undefined,
