@@ -24,12 +24,12 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(tx)
 
   const currency = useSelector(selectSelectedCurrency)
   const currentPrice = tx.tokens[0]?.symbol
-    ? getMarketToken(tx.tokens[0].symbol)?.currentPrice
+    ? getMarketTokenBySymbol(tx.tokens[0].symbol)?.currentPrice
     : undefined
   const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
   const backgroundColor = colors.$borderPrimary
