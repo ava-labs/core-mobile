@@ -13,13 +13,11 @@ import {
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { RefreshControl } from 'common/components/RefreshControl'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { TokenType } from '@avalabs/vm-module-types'
 import { DropdownSelection } from 'common/types'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { XpActivityListItem } from './XpActivityListItem'
-import { NftActivityListItem } from './NftActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
 import { ActionButton, ActionButtons } from './ActionButtons'
 import { AssetsHeader } from './AssetsHeader'
@@ -162,9 +160,6 @@ const TokenDetail: FC<Props> = ({
   }, [isError, isLoading, isRefreshing, data, refresh])
 
   const renderItem = (item: Transaction, index: number): React.JSX.Element => {
-    const isNft =
-      item.tokens[0]?.type === TokenType.ERC1155 ||
-      item.tokens[0]?.type === TokenType.ERC721
     const isXpTx =
       isXpTransaction(item.txType) &&
       (token?.localId === AVAX_P_ID || token?.localId === AVAX_X_ID)
@@ -177,9 +172,6 @@ const TokenDetail: FC<Props> = ({
 
     if (isXpTx) {
       return <XpActivityListItem {...props} key={item.hash} />
-    }
-    if (isNft) {
-      return <NftActivityListItem {...props} key={item.hash} />
     }
     return <TokenActivityListItem {...props} key={item.hash} />
   }
