@@ -254,7 +254,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@tanstack/query-sync-storage-persister": 5.59.6
-    "@tanstack/react-query": 5.59.8
+    "@tanstack/react-query": 5.66.11
     "@tanstack/react-query-persist-client": 5.59.6
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
@@ -10909,6 +10909,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.66.11":
+  version: 5.66.11
+  resolution: "@tanstack/query-core@npm:5.66.11"
+  checksum: 59485647ab6c6c52e610a673406fdd368d4ac55ce76dbacd96ed051c3a826f114a3ac554ef12efdfbbf1683ed12493ef1d04c2be31d6cb6c5709f359986f2bb9
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-persist-client-core@npm:5.59.6":
   version: 5.59.6
   resolution: "@tanstack/query-persist-client-core@npm:5.59.6"
@@ -10940,14 +10947,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:5.59.8":
-  version: 5.59.8
-  resolution: "@tanstack/react-query@npm:5.59.8"
+"@tanstack/react-query@npm:5.66.11":
+  version: 5.66.11
+  resolution: "@tanstack/react-query@npm:5.66.11"
   dependencies:
-    "@tanstack/query-core": 5.59.6
+    "@tanstack/query-core": 5.66.11
   peerDependencies:
     react: ^18 || ^19
-  checksum: 584fa340f197d3afd8dc9639ab5fa0238eea41050b2ddd642f3be94d5c8a16cb7773da3fc6e90b3c1b473c9170fb4eedd83460270ce014a004cf97df3ab36f15
+  checksum: 73622890bf730e2d53c700eb355134c8b7e8693e96d246641000ef6039fafb70b53c3a68f51371b3710c08c90d335268eff8f13d573e4cd531fddb98288f10e3
   languageName: node
   linkType: hard
 
@@ -27114,7 +27121,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
+  checksum: f4a702a84036a2d4a949da5e04b4eee81bccd6d6819b1a545f304b3b54c10503d4d2f07da3da00cb3b4cd02f54071b5c2e9bcb2d7ca0a5a025526743306a7770
   languageName: node
   linkType: hard
 
