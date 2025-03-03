@@ -13,8 +13,8 @@ import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
-import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { ChartData } from 'services/token/types'
+import MiniSparklineChart from 'features/track/components/MiniSparklineChart'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const CHART_WIDTH = ((SCREEN_WIDTH - 46) / 2) * 0.6
@@ -80,11 +80,9 @@ const MarketGridView = ({
             </View>
           </View>
           <View sx={{ marginTop: 16 }}>
-            <SparklineChart
+            <MiniSparklineChart
               width={CHART_WIDTH}
               height={30}
-              interactive={false}
-              lineThickness={3}
               data={dataPoints}
               negative={ranges.diffValue < 0}
             />

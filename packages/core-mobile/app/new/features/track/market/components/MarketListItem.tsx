@@ -37,7 +37,11 @@ const MarketListItem = ({
   const percentChange = token.priceChangePercentage24h ?? undefined
   const priceChange = token.priceChange24h ?? undefined
   const formattedPriceChange = priceChange
-    ? Math.abs(priceChange)?.toFixed(2).toString()
+    ? formatCurrency({
+        amount: Math.abs(priceChange),
+        currency,
+        boostSmallNumberPrecision: true
+      })
     : UNKNOWN_AMOUNT
 
   const formattedPercent = percentChange

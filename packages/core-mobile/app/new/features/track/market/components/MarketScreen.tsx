@@ -7,8 +7,6 @@ import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
-import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { Space } from 'components/Space'
 import { MarketView } from '../consts'
@@ -25,13 +23,11 @@ const MarketScreen = ({
   searchText: string
 }): JSX.Element => {
   const { prices, charts } = useWatchlist()
-  const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const isFetchingTokens = tokens.length === 0
   const { isSearchingTokens, searchResults } = useTokenSearch({
     isFetchingTokens,
     items: tokens,
-    searchText,
-    currency
+    searchText
   })
 
   const tokensToDisplay = useMemo(() => {

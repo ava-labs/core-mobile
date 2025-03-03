@@ -22,7 +22,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 
 const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { favorites, tokens } = useWatchlist()
+  const { favorites, topTokens } = useWatchlist()
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -111,7 +111,7 @@ const TrackHomeScreen = (): JSX.Element => {
             tabName: TrackHomeScreenTab.Market,
             component: (
               <MarketScreen
-                tokens={tokens}
+                tokens={topTokens}
                 goToMarketDetail={handleGotoMarketDetail}
                 searchText={searchText}
               />
