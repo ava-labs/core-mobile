@@ -1,5 +1,8 @@
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
-import { transformSimplePriceResponse, convertTrendingTokens } from './utils'
+import {
+  transformSimplePriceResponse,
+  applyExchangeRateToTrendingTokens
+} from './utils'
 
 const MOCK_DATA = {
   bitcoin: {
@@ -39,7 +42,7 @@ describe('transformSimplePriceResponse', () => {
   })
 })
 
-describe('convertTrendingTokens', () => {
+describe('applyExchangeRateToTrendingTokens', () => {
   it('should correctly convert all numeric values using the exchange rate', () => {
     const trendingTokens = [
       {
@@ -70,7 +73,10 @@ describe('convertTrendingTokens', () => {
     ]
 
     const exchangeRate = 0.85
-    const converted = convertTrendingTokens(trendingTokens, exchangeRate)
+    const converted = applyExchangeRateToTrendingTokens(
+      trendingTokens,
+      exchangeRate
+    )
 
     expect(converted[0]?.price).toBe(8.5)
     expect(converted[0]?.marketcap).toBe(425000)
@@ -107,7 +113,10 @@ describe('convertTrendingTokens', () => {
     ]
 
     const exchangeRate = 0.85
-    const converted = convertTrendingTokens(trendingTokens, exchangeRate)
+    const converted = applyExchangeRateToTrendingTokens(
+      trendingTokens,
+      exchangeRate
+    )
 
     expect(converted[0]?.liquidity).toBe(null)
     expect(converted[0]?.volume24hUSD).toBe(null)
@@ -118,7 +127,7 @@ describe('convertTrendingTokens', () => {
   })
 
   it('should handle an empty array gracefully', () => {
-    const converted = convertTrendingTokens([], 0.85)
+    const converted = applyExchangeRateToTrendingTokens([], 0.85)
     expect(converted).toEqual([])
   })
 })

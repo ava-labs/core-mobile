@@ -37,7 +37,7 @@ import {
 } from './types'
 import {
   coingeckoRetry,
-  convertTrendingTokens,
+  applyExchangeRateToTrendingTokens,
   transformMartketChartRawPrices,
   transformSimplePriceResponse
 } from './utils'
@@ -445,7 +445,7 @@ export class TokenService {
       data = await watchListCacheClient.trending()
 
       if (exchangeRate && exchangeRate !== 1) {
-        data = convertTrendingTokens(data, exchangeRate)
+        data = applyExchangeRateToTrendingTokens(data, exchangeRate)
       }
 
       setCache(cacheId, data)

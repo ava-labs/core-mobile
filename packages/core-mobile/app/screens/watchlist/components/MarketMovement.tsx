@@ -53,6 +53,12 @@ const MarketMovement: FC<Props> = ({
     ? `${percentChange.toFixed(2).replace('-', '')}%`
     : `(${percentChange.toFixed(2).replace('-', '')}%)`
 
+  const textToDisplay =
+    ' ' +
+    `${hideDifference ? '' : formattedPrice} ${
+      hidePercentage ? '' : formattedPercent
+    }`.trim()
+
   return (
     <Row style={[styles.container, style]} testID={testID}>
       <MarketTriangleSVG
@@ -61,17 +67,10 @@ const MarketMovement: FC<Props> = ({
       />
       <Text
         style={{ color: textColor, fontWeight: '500', lineHeight: 15 }}
-        variant="caption">
-        {' '}
-      </Text>
-      <Text
-        style={{ color: textColor, fontWeight: '500', lineHeight: 15 }}
         variant="caption"
         numberOfLines={1}
         ellipsizeMode="middle">
-        {`${hideDifference ? '' : formattedPrice} ${
-          hidePercentage ? '' : formattedPercent
-        }`.trim()}
+        {textToDisplay}
       </Text>
     </Row>
   )

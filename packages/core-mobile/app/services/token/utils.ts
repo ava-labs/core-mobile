@@ -115,7 +115,7 @@ export const transformSimplePriceResponse = (
   return formattedData
 }
 
-export const convertTrendingTokens = (
+export const applyExchangeRateToTrendingTokens = (
   trendingTokens: TrendingToken[],
   exchangeRate: number
 ): TrendingToken[] => {
