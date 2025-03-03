@@ -4,13 +4,17 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { BuyScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Icons, Text, useTheme, View } from '@avalabs/k2-mobile'
 import InfoSVG from 'components/svg/InfoSVG'
+import {
+  selectIsCoinbasePayBlocked,
+  selectIsHallidayBridgeBannerBlocked
+} from 'store/posthog/slice'
+import { useSelector } from 'react-redux'
 import { Provider } from './BuyCarefully'
 
 const MoonPayLogo = require('assets/icons/moonpay-icon.png')
@@ -24,7 +28,10 @@ const Buy: FC = () => {
   const { theme: k2Theme } = useTheme()
   const navigation = useNavigation<ScreenProps['navigation']>()
   const { params } = useRoute<ScreenProps['route']>()
-  const { coinbasePayBlocked } = usePosthogContext()
+  const isCoinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
+  const isHallidayBannerBlocked = useSelector(
+    selectIsHallidayBridgeBannerBlocked
+  )
 
   const openHalliday = async (): Promise<void> => {
     AnalyticsService.capture('HallidayBuyClicked')
@@ -108,7 +115,7 @@ const Buy: FC = () => {
             />
             <Space y={16} />
           </AvaButton.Base>
-          {!coinbasePayBlocked && (
+          {!isCoinbasePayBlocked && (
             <AvaButton.Base
               onPress={() => onPaySelection(Provider.COINBASE)}
               style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
@@ -133,31 +140,32 @@ const Buy: FC = () => {
           )}
         </View>
         <Space y={20} />
-
-        <AvaButton.Base
-          onPress={() => openHalliday()}
-          style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
-          <Space y={14} />
-          <AvaText.ButtonLarge
-            textStyle={[
-              style.buttonLabel,
-              {
-                color: theme.colorText1
-              }
-            ]}>
-            Halliday
-          </AvaText.ButtonLarge>
-          <View
-            style={{ borderRadius: 32, overflow: 'hidden' }}
-            testID="halliday_logo">
-            <Icons.Logos.Halliday
-              accessibilityRole="image"
-              width={LOGO_SIZE}
-              height={LOGO_SIZE}
-            />
-          </View>
-          <Space y={16} />
-        </AvaButton.Base>
+        {!isHallidayBannerBlocked && (
+          <AvaButton.Base
+            onPress={() => openHalliday()}
+            style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
+            <Space y={14} />
+            <AvaText.ButtonLarge
+              textStyle={[
+                style.buttonLabel,
+                {
+                  color: theme.colorText1
+                }
+              ]}>
+              Halliday
+            </AvaText.ButtonLarge>
+            <View
+              style={{ borderRadius: 32, overflow: 'hidden' }}
+              testID="halliday_logo">
+              <Icons.Logos.Halliday
+                accessibilityRole="image"
+                width={LOGO_SIZE}
+                height={LOGO_SIZE}
+              />
+            </View>
+            <Space y={16} />
+          </AvaButton.Base>
+        )}
       </View>
     </ScrollView>
   )

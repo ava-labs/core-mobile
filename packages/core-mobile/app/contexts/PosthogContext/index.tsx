@@ -14,7 +14,6 @@ import {
   selectIsBridgeBtcBlocked,
   selectIsBridgeEthBlocked,
   selectIsBrowserBlocked,
-  selectIsCoinbasePayBlocked,
   selectIsEarnBlocked,
   selectIsEventsBlocked,
   selectIsSendNftBlockedAndroid,
@@ -39,7 +38,6 @@ export interface PosthogContextState {
   sendNftBlockediOS: boolean
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
-  coinbasePayBlocked: boolean
 }
 
 export const PosthogContextProvider = ({
@@ -58,7 +56,6 @@ export const PosthogContextProvider = ({
   const sendNftBlockedAndroid = useSelector(selectIsSendNftBlockedAndroid)
   const eventsBlocked = useSelector(selectIsEventsBlocked)
   const sentrySampleRate = useSelector(selectSentrySampleRate)
-  const coinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
   const browserBlocked = useSelector(selectIsBrowserBlocked)
 
   const { timeoutPassed } = useAppBackgroundTracker({
@@ -122,7 +119,6 @@ export const PosthogContextProvider = ({
         sendNftBlockediOS,
         sendNftBlockedAndroid,
         sentrySampleRate,
-        coinbasePayBlocked,
         browserBlocked
       }}>
       {children}
