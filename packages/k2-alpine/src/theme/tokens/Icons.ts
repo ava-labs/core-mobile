@@ -25,7 +25,6 @@ import IconMicrosoftAuthenticator from '../../assets/icons/microsoft_authenticat
 import IconAuthenticatorApp from '../../assets/icons/authenticator_app.svg'
 import IconChevronRight from '../../assets/icons/chevron_right.svg'
 import IconSwitchRight from '../../assets/icons/switch_right.svg'
-import IconCompare from '../../assets/icons/compare.svg'
 import IconSend from '../../assets/icons/send.svg'
 import IconTrendingArrowUp from '../../assets/icons/trending_arrow_up.svg'
 import IconTrendingArrowDown from '../../assets/icons/trending_arrow_down.svg'
@@ -58,19 +57,19 @@ import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 import IconLayer from '../../assets/icons/layer.svg'
 
 // Transaction types
-import IconTxTypeAdd from '../../assets/icons/transaction-types/add.svg'
-import IconTxTypeAdvanceTime from '../../assets/icons/transaction-types/advance-time.svg'
-import IconTxTypeAirdrop from '../../assets/icons/transaction-types/airdrop.svg'
-import IconTxTypeApprove from '../../assets/icons/transaction-types/approve.svg'
-import IconTxTypeContractCall from '../../assets/icons/transaction-types/contract-call.svg'
-import IconTxTypeReceive from '../../assets/icons/transaction-types/receive.svg'
-import IconTxTypeSend from '../../assets/icons/transaction-types/send.svg'
-import IconTxTypeSwap from '../../assets/icons/transaction-types/swap-transfer.svg'
-import IconTxTypeBridge from '../../assets/icons/transaction-types/transaction-bridge.svg'
-import IconTxTypeSubnet from '../../assets/icons/transaction-types/transaction-subnet.svg'
-import IconTxTypeUnwrap from '../../assets/icons/transaction-types/unwrap.svg'
-import IconTxTypeUnknown from '../../assets/icons/transaction-types/unknown.svg'
-import IconTxTypeStake from '../../assets/icons/transaction-types/stake.svg'
+import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
+import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
+import IconTxTypeAirdrop from '../../assets/icons/airdrop.svg'
+import IconTxTypeApprove from '../../assets/icons/approve.svg'
+import IconTxTypeContractCall from '../../assets/icons/contract-call.svg'
+import IconTxTypeReceive from '../../assets/icons/receive.svg'
+import IconTxTypeSend from '../../assets/icons/tx-type-send.svg'
+import IconTxTypeSwap from '../../assets/icons/swap-transfer.svg'
+import IconTxTypeBridge from '../../assets/icons/transaction-bridge.svg'
+import IconTxTypeSubnet from '../../assets/icons/transaction-subnet.svg'
+import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
+import IconTxTypeUnknown from '../../assets/icons/unknown.svg'
+import IconTxTypeStake from '../../assets/icons/stake.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -210,13 +209,12 @@ export const Icons = {
   },
   Custom: {
     BackArrowCustom: IconBackArrowCustom,
-    Compare: IconCompare,
     FaceID: IconFaceID,
     TouchID: IconTouchID,
     Send: IconSend,
     SwitchRight: IconSwitchRight,
     Pin: IconPin,
-    Psychiatry: IconTxTypeStake,
+    Stake: IconTxTypeStake,
     Error: IconError,
     TrendingArrowUp: IconTrendingArrowUp,
     TrendingArrowDown: IconTrendingArrowDown,
@@ -234,7 +232,19 @@ export const Icons = {
     Search: IconSearch,
     SearchCustom: IconSearchCustom,
     AvalabsTrademark: IconAvalabsTrademark,
-    SignPost: IconSignPost
+    SignPost: IconSignPost,
+    TxTypeAdd: IconTxTypeAdd,
+    AdvanceTime: IconTxTypeAdvanceTime,
+    Airdrop: IconTxTypeAirdrop,
+    Approve: IconTxTypeApprove,
+    ContractCall: IconTxTypeContractCall,
+    Receive: IconTxTypeReceive,
+    TxTypeSend: IconTxTypeSend,
+    Swap: IconTxTypeSwap,
+    Bridge: IconTxTypeBridge,
+    Subnet: IconTxTypeSubnet,
+    Unwrap: IconTxTypeUnwrap,
+    Unknown: IconTxTypeUnknown
   },
   RecoveryMethod: {
     Passkey: IconPasskey,
@@ -347,20 +357,5 @@ export const Icons = {
   },
   Maps: {
     Layer: IconLayer
-  },
-  TransactionTypes: {
-    Add: IconTxTypeAdd,
-    AdvanceTime: IconTxTypeAdvanceTime,
-    Airdrop: IconTxTypeAirdrop,
-    Approve: IconTxTypeApprove,
-    ContractCall: IconTxTypeContractCall,
-    Receive: IconTxTypeReceive,
-    Send: IconTxTypeSend,
-    Swap: IconTxTypeSwap,
-    Bridge: IconTxTypeBridge,
-    Subnet: IconTxTypeSubnet,
-    Unwrap: IconTxTypeUnwrap,
-    Unknown: IconTxTypeUnknown,
-    Stake: IconTxTypeStake
   }
 }

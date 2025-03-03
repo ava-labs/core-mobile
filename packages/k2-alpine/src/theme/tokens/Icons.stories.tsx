@@ -17,29 +17,6 @@ export const All = (): JSX.Element => {
   )
 }
 
-export const TransactionTypes = (): JSX.Element =>
-  Template({
-    icons: [
-      Icons.TransactionTypes.Add,
-      Icons.TransactionTypes.AdvanceTime,
-      Icons.TransactionTypes.Airdrop,
-      Icons.TransactionTypes.Approve,
-      Icons.TransactionTypes.Bridge,
-      Icons.TransactionTypes.ContractCall,
-      Icons.TransactionTypes.Receive,
-      Icons.TransactionTypes.Send,
-      Icons.TransactionTypes.Stake,
-      Icons.TransactionTypes.Subnet,
-      Icons.TransactionTypes.Swap,
-      Icons.TransactionTypes.Unknown,
-      Icons.TransactionTypes.Unwrap
-    ],
-    itemPadding: 8,
-    numColumns: 4,
-    resourceURL:
-      'https://www.figma.com/design/opZ4C1UGzcoGRjxE4ZIE3J/K2-Alpine?node-id=2083-1184&t=AhmFSiGoNxFP0ZGO-0'
-  })
-
 export const Action = (): JSX.Element =>
   Template({
     icons: [
@@ -129,13 +106,12 @@ export const Custom = (): JSX.Element => {
     icons: [
       Icons.Custom.ArrowDown,
       Icons.Custom.BackArrowCustom,
-      Icons.Custom.Compare,
       Icons.Custom.Error,
       Icons.Custom.FaceID,
       Icons.Custom.TouchID,
       Icons.Custom.QRCodeScanner,
       Icons.Custom.Pin,
-      Icons.Custom.Psychiatry,
+      Icons.Custom.Stake,
       Icons.Custom.Send,
       Icons.Custom.SwitchRight,
       Icons.Custom.TrendingArrowDown,
@@ -152,7 +128,20 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.Search,
       Icons.Custom.SignPost,
       Icons.Custom.Signature,
-      Icons.Custom.AvalabsTrademark
+      Icons.Custom.AvalabsTrademark,
+      Icons.Custom.TxTypeAdd,
+      Icons.Custom.AdvanceTime,
+      Icons.Custom.Airdrop,
+      Icons.Custom.Approve,
+      Icons.Custom.Bridge,
+      Icons.Custom.ContractCall,
+      Icons.Custom.Receive,
+      Icons.Custom.TxTypeSend,
+      Icons.Custom.Stake,
+      Icons.Custom.Subnet,
+      Icons.Custom.Swap,
+      Icons.Custom.Unknown,
+      Icons.Custom.Unwrap
     ],
     itemPadding: 16,
     numColumns: 2,

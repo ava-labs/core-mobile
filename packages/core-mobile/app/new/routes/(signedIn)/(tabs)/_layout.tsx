@@ -56,7 +56,7 @@ const TrackTabBarIcon = ({ color }: { color: string }): JSX.Element => (
 )
 
 const StakeTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.Psychiatry color={color} />
+  <Icons.Custom.Stake color={color} />
 )
 
 const BrowserTabBarIcon = ({ color }: { color: string }): JSX.Element => (
