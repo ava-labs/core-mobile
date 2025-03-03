@@ -106,34 +106,3 @@ export const ASSET_MANAGE_VIEWS: AssetManageViews = [
   [AssetManageView.Grid, AssetManageView.List],
   [AssetManageView.ManageList]
 ]
-
-// Token Detail
-export enum TokenDetailFilter {
-  All = 'All',
-  Sent = 'Sent',
-  Received = 'Received',
-  Bridge = 'Bridge',
-  Swap = 'Swap'
-}
-
-export enum TokenDetailSort {
-  NewToOld = 'Newest to oldest',
-  OldToNew = 'Oldest to newest'
-}
-
-export type TokenDetailFilters = TokenDetailFilter[][]
-export type TokenDetailSorts = TokenDetailSort[][]
-
-export const TOKEN_DETAIL_FILTERS: TokenDetailFilters = [
-  [
-    TokenDetailFilter.All,
-    TokenDetailFilter.Sent,
-    TokenDetailFilter.Received,
-    TokenDetailFilter.Swap,
-    TokenDetailFilter.Bridge
-  ]
-]
-
-export const TOKEN_DETAIL_SORTS: TokenDetailSorts = [
-  [TokenDetailSort.NewToOld, TokenDetailSort.OldToNew]
-]

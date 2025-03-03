@@ -1,7 +1,7 @@
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType } from 'store/transaction'
 import { TransactionType, Transaction } from '@avalabs/vm-module-types'
-import { useTheme, alpha, View, PriceChangeStatus } from '@avalabs/k2-alpine'
+import { useTheme, View, PriceChangeStatus } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
@@ -21,7 +21,7 @@ type Props = {
 
 export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
   const {
-    theme: { colors, isDark }
+    theme: { colors }
   } = useTheme()
   const { getMarketTokenBySymbol } = useWatchlist()
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(tx)
@@ -30,8 +30,6 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
   const currentPrice = tx.tokens[0]?.symbol
     ? getMarketTokenBySymbol(tx.tokens[0].symbol)?.currentPrice
     : undefined
-  const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
-  const backgroundColor = colors.$borderPrimary
 
   const title = useMemo(() => {
     switch (tx.txType) {
@@ -99,32 +97,28 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
     return amountPrefix + formattedAmount + ' ' + currency
   }, [status, currency, currentPrice, tx.tokens])
 
-  const transactionTypeIcon = useMemo(() => {
-    return (
-      <View
-        sx={{
-          width: ICON_SIZE,
-          height: ICON_SIZE,
-          borderRadius: ICON_SIZE,
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          backgroundColor,
-          borderColor
-        }}>
-        <TransactionTypeIcon
-          txType={tx.txType}
-          isContractCall={tx.isContractCall}
-        />
-      </View>
-    )
-  }, [backgroundColor, borderColor, tx.isContractCall, tx.txType])
-
   return (
     <ActivityListItem
       title={title}
       subtitle={subtitle}
-      icon={transactionTypeIcon}
+      icon={
+        <View
+          sx={{
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            borderRadius: ICON_SIZE,
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden',
+            backgroundColor: colors.$borderPrimary,
+            borderColor: colors.$borderPrimary
+          }}>
+          <TransactionTypeIcon
+            txType={tx.txType}
+            isContractCall={tx.isContractCall}
+          />
+        </View>
+      }
       onPress={onPress}
       index={index}
       status={status}

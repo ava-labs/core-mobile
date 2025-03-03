@@ -42,16 +42,15 @@ const ActivityListItem: FC<Props> = ({
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
       layout={LinearTransition.springify()}>
-      <TouchableOpacity
-        onPress={onPress}
-        sx={{ overflow: 'visible', marginTop: 14, marginBottom: 9 }}
-        testID="activityListItem">
+      <TouchableOpacity onPress={onPress} testID="activityListItem">
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 11,
-            paddingHorizontal: 16
+            paddingHorizontal: 16,
+            paddingTop: 14,
+            paddingBottom: 9
           }}>
           {icon}
           <View
