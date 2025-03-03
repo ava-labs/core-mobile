@@ -110,6 +110,7 @@ const TrackHomeScreen = (): JSX.Element => {
             component: (
               <MarketScreen
                 tokens={favorites}
+                isRefetchingTopTokens={isRefetchingTopTokens}
                 isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
                 searchText={searchText}
