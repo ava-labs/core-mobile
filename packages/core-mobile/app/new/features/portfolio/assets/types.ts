@@ -12,8 +12,6 @@ import IconTxTypeBridge from '../../../assets/icons/transaction-types/transactio
 import IconTxTypeSubnet from '../../../assets/icons/transaction-types/transaction-subnet.svg'
 import IconTxTypeUnwrap from '../../../assets/icons/transaction-types/unwrap.svg'
 import IconTxTypeUnknown from '../../../assets/icons/transaction-types/unknown.svg'
-import IconTxTypeExport from '../../../assets/icons/transaction-types/export.svg'
-import IconTxTypeImport from '../../../assets/icons/transaction-types/import.svg'
 import IconTxTypeStake from '../../../assets/icons/transaction-types/stake.svg'
 
 export interface TokenListViewProps {
@@ -38,7 +36,5 @@ export const TransactionTypes = {
   Subnet: IconTxTypeSubnet,
   Unwrap: IconTxTypeUnwrap,
   Unknown: IconTxTypeUnknown,
-  Export: IconTxTypeExport,
-  Import: IconTxTypeImport,
   Stake: IconTxTypeStake
 }
