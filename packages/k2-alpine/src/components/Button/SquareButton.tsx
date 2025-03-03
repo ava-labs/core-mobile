@@ -60,9 +60,9 @@ export type SquareButtonIconType =
 
 const iconComponents = {
   bridge: Icons.Custom.SwitchRight,
-  swap: Icons.Custom.Swap,
+  swap: Icons.Custom.Compare,
   send: Icons.Custom.Send,
-  stake: Icons.Custom.Stake,
+  stake: Icons.Custom.Psychiatry,
   buy: Icons.Content.Add,
   connect: Icons.Custom.Connect
 }

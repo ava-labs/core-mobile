@@ -60,16 +60,16 @@ import IconLayer from '../../assets/icons/layer.svg'
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
 import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
 import IconTxTypeAirdrop from '../../assets/icons/airdrop.svg'
-import IconTxTypeApprove from '../../assets/icons/approve.svg'
+import IconCheckSmall from '../../assets/icons/check_small.svg'
 import IconTxTypeContractCall from '../../assets/icons/contract-call.svg'
 import IconTxTypeReceive from '../../assets/icons/receive.svg'
 import IconTxTypeSend from '../../assets/icons/tx-type-send.svg'
-import IconTxTypeSwap from '../../assets/icons/swap-transfer.svg'
+import IconCompare from '../../assets/icons/compare.svg'
 import IconTxTypeBridge from '../../assets/icons/transaction-bridge.svg'
 import IconTxTypeSubnet from '../../assets/icons/transaction-subnet.svg'
 import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
 import IconTxTypeUnknown from '../../assets/icons/unknown.svg'
-import IconTxTypeStake from '../../assets/icons/stake.svg'
+import IconPsychiatry from '../../assets/icons/psychiatry.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -214,7 +214,7 @@ export const Icons = {
     Send: IconSend,
     SwitchRight: IconSwitchRight,
     Pin: IconPin,
-    Stake: IconTxTypeStake,
+    Psychiatry: IconPsychiatry,
     Error: IconError,
     TrendingArrowUp: IconTrendingArrowUp,
     TrendingArrowDown: IconTrendingArrowDown,
@@ -236,11 +236,11 @@ export const Icons = {
     TxTypeAdd: IconTxTypeAdd,
     AdvanceTime: IconTxTypeAdvanceTime,
     Airdrop: IconTxTypeAirdrop,
-    Approve: IconTxTypeApprove,
+    CheckSmall: IconCheckSmall,
     ContractCall: IconTxTypeContractCall,
     Receive: IconTxTypeReceive,
     TxTypeSend: IconTxTypeSend,
-    Swap: IconTxTypeSwap,
+    Compare: IconCompare,
     Bridge: IconTxTypeBridge,
     Subnet: IconTxTypeSubnet,
     Unwrap: IconTxTypeUnwrap,
