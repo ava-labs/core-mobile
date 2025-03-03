@@ -3,6 +3,7 @@ import {
   alpha,
   Icons,
   PriceChangeIndicator,
+  PriceChangeStatus,
   Text,
   TouchableOpacity,
   useTheme,
@@ -29,7 +30,7 @@ const MarketListView = ({
   formattedPrice: string
   formattedPriceChange: string
   formattedPercentChange: string
-  status: 'up' | 'down' | 'equal'
+  status: PriceChangeStatus
   onPress: () => void
 }): React.JSX.Element => {
   const {

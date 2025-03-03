@@ -4,6 +4,7 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
+  PriceChangeStatus,
   Text,
   useTheme,
   View
@@ -37,7 +38,7 @@ const MarketGridView = ({
   formattedPrice: string
   formattedPriceChange: string
   formattedPercentChange: string
-  status: 'up' | 'down' | 'equal'
+  status: PriceChangeStatus
   isFavorite?: boolean
 }): React.JSX.Element => {
   const {

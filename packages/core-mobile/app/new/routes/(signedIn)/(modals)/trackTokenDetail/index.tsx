@@ -1,5 +1,6 @@
 import {
   PriceChange,
+  PriceChangeStatus,
   ScrollView,
   SegmentedControl,
   Text,
@@ -107,10 +108,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           ),
           status:
             ranges.diffValue < 0
-              ? 'down'
+              ? PriceChangeStatus.Down
               : ranges.diffValue === 0
-              ? 'equal'
-              : 'up',
+              ? PriceChangeStatus.Neutral
+              : PriceChangeStatus.Up,
           formattedPercent: `${ranges.percentChange
             .toFixed(2)
             .replace('-', '')}%`
