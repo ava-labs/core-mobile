@@ -5,10 +5,11 @@ import {
   useTheme,
   SegmentedControl,
   Text,
-  SearchBar
+  SearchBar,
+  Image
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { Dimensions, LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import {
@@ -19,10 +20,17 @@ import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBot
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { ErrorState } from 'common/components/ErrorState'
 
 const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { favorites, topTokens } = useWatchlist()
+  const {
+    favorites,
+    topTokens,
+    refetchTopTokens,
+    isRefetchingTopTokens,
+    isLoadingTopTokens
+  } = useWatchlist()
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -102,8 +110,22 @@ const TrackHomeScreen = (): JSX.Element => {
             component: (
               <MarketScreen
                 tokens={favorites}
+                isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
                 searchText={searchText}
+                errorState={
+                  <ErrorState
+                    sx={{ height: portfolioTabContentHeight }}
+                    icon={
+                      <Image
+                        source={require('../../../../assets/icons/star_struck_emoji.png')}
+                        sx={{ width: 42, height: 42 }}
+                      />
+                    }
+                    title="No favorite tokens"
+                    description="Star any token to add it to this screen"
+                  />
+                }
               />
             )
           },
@@ -112,8 +134,19 @@ const TrackHomeScreen = (): JSX.Element => {
             component: (
               <MarketScreen
                 tokens={topTokens}
+                isRefetchingTopTokens={isRefetchingTopTokens}
+                isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
                 searchText={searchText}
+                errorState={
+                  <ErrorState
+                    sx={{ height: portfolioTabContentHeight }}
+                    button={{
+                      title: 'Refresh',
+                      onPress: refetchTopTokens
+                    }}
+                  />
+                }
               />
             )
           }
@@ -141,5 +174,7 @@ export enum TrackHomeScreenTab {
   Favorites = 'Favorites',
   Market = 'Market'
 }
+
+const portfolioTabContentHeight = Dimensions.get('window').height / 2
 
 export default TrackHomeScreen

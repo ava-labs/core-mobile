@@ -4,7 +4,6 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { MarketToken } from 'store/watchlist'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -16,16 +15,21 @@ import MarketListItem from './MarketListItem'
 const MarketScreen = ({
   tokens,
   goToMarketDetail,
-  searchText
+  searchText,
+  errorState,
+  isLoadingTopTokens,
+  isRefetchingTopTokens
 }: {
   tokens: MarketToken[]
   goToMarketDetail: () => void
   searchText: string
+  errorState?: React.JSX.Element
+  isLoadingTopTokens: boolean
+  isRefetchingTopTokens: boolean
 }): JSX.Element => {
   const { prices, charts } = useWatchlist()
-  const isFetchingTokens = tokens.length === 0
   const { isSearchingTokens, searchResults } = useTokenSearch({
-    isFetchingTokens,
+    isFetchingTokens: isLoadingTopTokens || isRefetchingTopTokens,
     items: tokens,
     searchText
   })
@@ -48,7 +52,6 @@ const MarketScreen = ({
   )
 
   const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
-  const showLoader = isSearchingTokens || isFetchingTokens
 
   const header = useMemo(() => {
     return (
@@ -62,14 +65,20 @@ const MarketScreen = ({
   }, [sort, view])
 
   const emptyComponent = useMemo(() => {
-    if (showLoader) {
+    if (isSearchingTokens || isLoadingTopTokens || isRefetchingTopTokens) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
     if (data.length === 0) {
-      return <ErrorState />
+      return errorState
     }
-  }, [showLoader, data])
+  }, [
+    isSearchingTokens,
+    isLoadingTopTokens,
+    isRefetchingTopTokens,
+    data.length,
+    errorState
+  ])
 
   const renderSeparator = (): JSX.Element => {
     return isGridView ? <Space y={16} /> : <Separator sx={{ marginLeft: 62 }} />

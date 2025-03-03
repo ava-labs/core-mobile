@@ -17,10 +17,10 @@ import { DropdownSelection } from 'common/types'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { DropdownSelections } from 'common/components/DropdownSelections'
 import { XpActivityListItem } from './XpActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
 import { ActionButton, ActionButtons } from './ActionButtons'
-import { AssetsHeader } from './AssetsHeader'
 
 const EMPTY_STATE_HEIGHT = Dimensions.get('window').height / 2 - 32
 
@@ -115,7 +115,7 @@ const TokenDetail: FC<Props> = ({
     return (
       <>
         {renderHeader()}
-        <AssetsHeader
+        <DropdownSelections
           filter={filter}
           sort={sort}
           sx={{ paddingHorizontal: 16 }}
