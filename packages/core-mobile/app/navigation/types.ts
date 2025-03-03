@@ -54,6 +54,7 @@ import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScr
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
 import { SettingRecoveryMethodsStackParamList } from './wallet/SettingRecoveryMethodsStack'
+import { BuyStackParamList } from './wallet/BuyScreenStack'
 
 export type { RootScreenStackParamList }
 
@@ -109,7 +110,7 @@ export type UpdateContactV2Params = {
 }
 
 export type BuyCarefullyParams = {
-  tokenType: string
+  provider: string
 }
 
 export type ApprovalPopupParams = {
@@ -225,6 +226,13 @@ export type WalletScreenProps<T extends keyof WalletScreenStackParams> =
   CompositeScreenProps<
     StackScreenProps<WalletScreenStackParams, T>,
     RootStackScreenProps<keyof RootScreenStackParamList>
+  >
+
+/** ROOT -> WALLET -> BUY **/
+export type BuyScreenProps<T extends keyof BuyStackParamList> =
+  CompositeScreenProps<
+    StackScreenProps<BuyStackParamList, T>,
+    WalletScreenProps<keyof WalletScreenStackParams>
   >
 
 /** ROOT -> WALLET -> DRAWER **/
