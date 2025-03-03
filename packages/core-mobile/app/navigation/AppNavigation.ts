@@ -72,7 +72,8 @@ enum WalletScreens {
   Earn = 'WalletScreens.Earn',
   Notifications = 'WalletScreens.Notifications',
   DeFiProtocolDetails = 'WalletScreens.DeFiProtocolDetails',
-  SendFeedback = 'WalletScreens.SendFeedback'
+  SendFeedback = 'WalletScreens.SendFeedback',
+  Halliday = 'WalletScreens.Halliday'
 }
 
 enum ReceiveTokensScreens {

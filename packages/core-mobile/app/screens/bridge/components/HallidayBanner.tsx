@@ -4,6 +4,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { BridgeScreenProps } from 'navigation/types'
 import React from 'react'
 import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 
 type NavigationProps = BridgeScreenProps<typeof AppNavigation.Bridge.Bridge>
@@ -16,7 +17,8 @@ export const HallidayBanner = (): React.JSX.Element => {
   const { navigate } = useNavigation<NavigationProps['navigation']>()
 
   const openHalliday = async (): Promise<void> => {
-    navigate(AppNavigation.Bridge.Halliday)
+    AnalyticsService.capture('HallidayBuyClicked')
+    navigate(AppNavigation.Wallet.Halliday)
   }
 
   const dismissHallidayBanner = (): void => {

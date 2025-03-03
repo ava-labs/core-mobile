@@ -37,6 +37,7 @@ import {
 } from './types'
 import {
   coingeckoRetry,
+  applyExchangeRateToTrendingTokens,
   transformMartketChartRawPrices,
   transformSimplePriceResponse
 } from './utils'
@@ -432,16 +433,24 @@ export class TokenService {
     return data
   }
 
-  async getTrendingTokens(): Promise<TrendingToken[]> {
+  async getTrendingTokens(
+    exchangeRate: number | undefined
+  ): Promise<TrendingToken[]> {
     let data: TrendingToken[] | undefined
-    const cacheId = `getTrendingTokens`
+    const cacheId = `getTrendingTokens-${exchangeRate}`
 
     data = getCache(cacheId)
 
     if (data === undefined) {
       data = await watchListCacheClient.trending()
+
+      if (exchangeRate && exchangeRate !== 1) {
+        data = applyExchangeRateToTrendingTokens(data, exchangeRate)
+      }
+
       setCache(cacheId, data)
     }
+
     return data
   }
 

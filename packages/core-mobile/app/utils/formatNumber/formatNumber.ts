@@ -1,5 +1,10 @@
-const bigNumberFormatter = Intl.NumberFormat('en', {
+const bigNumberFormatter = Intl.NumberFormat('en-us', {
   notation: 'compact',
+  maximumFractionDigits: 2
+})
+
+const normalNumberFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
   maximumFractionDigits: 2
 })
 
@@ -44,6 +49,6 @@ export function formatNumber(num: number | string): string {
     return roundToFirstNonZeroDecimal(rawValue)
   } else {
     // handle normal numbers
-    return rawValue.toFixed(2)
+    return normalNumberFormatter.format(rawValue)
   }
 }
