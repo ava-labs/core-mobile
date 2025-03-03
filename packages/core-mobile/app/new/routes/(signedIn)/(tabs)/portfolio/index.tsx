@@ -4,7 +4,8 @@ import {
   BalanceHeader,
   NavigationTitleHeader,
   useTheme,
-  SegmentedControl
+  SegmentedControl,
+  PriceChangeStatus
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -91,7 +92,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const indicatorStatus =
-    totalPriceChanged > 0 ? 'up' : totalPriceChanged < 0 ? 'down' : 'equal'
+    totalPriceChanged > 0
+      ? PriceChangeStatus.Up
+      : totalPriceChanged < 0
+      ? PriceChangeStatus.Down
+      : PriceChangeStatus.Neutral
 
   const totalPriceChangedInPercent = useMemo(() => {
     return (totalPriceChanged / balanceTotalInCurrency) * 100

@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import MarketGridView from './MarketGridView'
 import MarketListView from './MarketListView'
 
@@ -50,11 +51,11 @@ const MarketListItem = ({
 
   const status = priceChange
     ? priceChange > 0
-      ? 'up'
+      ? PriceChangeStatus.Up
       : priceChange < 0
-      ? 'down'
-      : 'equal'
-    : 'equal'
+      ? PriceChangeStatus.Down
+      : PriceChangeStatus.Neutral
+    : PriceChangeStatus.Neutral
 
   const isFavorite = useSelector(selectIsWatchlistFavorite(token.id))
   const chartData = charts[token.id] ?? defaultChartData
