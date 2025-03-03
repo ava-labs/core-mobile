@@ -5,8 +5,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Transaction } from 'store/transaction'
-import { alpha, useTheme, View } from '@avalabs/k2-alpine'
-import { AmountIndicator } from 'common/types'
+import { alpha, PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
 
@@ -99,7 +98,7 @@ export const XpActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
       icon={transactionTypeIcon}
       onPress={onPress}
       index={index}
-      amountIndicator={AmountIndicator.Neutral}
+      status={PriceChangeStatus.Neutral}
     />
   )
 }

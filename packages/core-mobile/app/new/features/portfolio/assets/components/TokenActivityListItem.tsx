@@ -1,13 +1,12 @@
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType } from 'store/transaction'
 import { TransactionType, Transaction } from '@avalabs/vm-module-types'
-import { useTheme, alpha, View } from '@avalabs/k2-alpine'
+import { useTheme, alpha, View, PriceChangeStatus } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
-import { AmountIndicator } from 'common/types'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
@@ -68,15 +67,15 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
     }
   }, [tx, sourceBlockchain, targetBlockchain])
 
-  const amountIndicator = useMemo(() => {
+  const status = useMemo(() => {
     switch (tx.txType) {
       case TransactionType.TRANSFER:
       case TransactionType.SEND:
-        return AmountIndicator.Down
+        return PriceChangeStatus.Down
       case TransactionType.RECEIVE:
-        return AmountIndicator.Up
+        return PriceChangeStatus.Up
       default:
-        return AmountIndicator.Neutral
+        return PriceChangeStatus.Neutral
     }
   }, [tx.txType])
 
@@ -92,13 +91,13 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
       boostSmallNumberPrecision: true
     })
     const amountPrefix =
-      amountIndicator === AmountIndicator.Up
+      status === PriceChangeStatus.Up
         ? '+'
-        : amountIndicator === AmountIndicator.Down
+        : status === PriceChangeStatus.Down
         ? '-'
         : ''
     return amountPrefix + formattedAmount + ' ' + currency
-  }, [amountIndicator, currency, currentPrice, tx.tokens])
+  }, [status, currency, currentPrice, tx.tokens])
 
   const transactionTypeIcon = useMemo(() => {
     return (
@@ -128,7 +127,7 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
       icon={transactionTypeIcon}
       onPress={onPress}
       index={index}
-      amountIndicator={amountIndicator}
+      status={status}
     />
   )
 }

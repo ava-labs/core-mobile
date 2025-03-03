@@ -199,12 +199,7 @@ const TokenDetail: FC<Props> = ({
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={renderSeparator}
       />
-      <View
-        sx={{
-          marginBottom: -1
-        }}>
-        <LinearGradientBottomWrapper />
-      </View>
+      <LinearGradientBottomWrapper />
     </BlurredBarsContentLayout>
   )
 }

@@ -3,6 +3,7 @@ import { LayoutChangeEvent } from 'react-native'
 import {
   PriceChange,
   PriceChangeIndicator,
+  PriceChangeStatus,
   Text,
   View
 } from '@avalabs/k2-alpine'
@@ -37,7 +38,7 @@ export const TokenHeader = ({
         <View sx={{ opacity: priceChange ? 1 : 0 }}>
           <PriceChangeIndicator
             formattedPrice={priceChange?.formattedPrice ?? UNKNOWN_AMOUNT}
-            status={priceChange?.status ?? 'equal'}
+            status={priceChange?.status ?? PriceChangeStatus.Neutral}
             formattedPercent={priceChange?.formattedPercent ?? UNKNOWN_AMOUNT}
             textVariant="buttonMedium"
           />

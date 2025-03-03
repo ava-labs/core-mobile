@@ -4,10 +4,10 @@ import {
   View,
   Text,
   Icons,
-  TouchableOpacity
+  TouchableOpacity,
+  PriceChangeStatus
 } from '@avalabs/k2-alpine'
 import Animated, { LinearTransition } from 'react-native-reanimated'
-import { AmountIndicator } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
   subtitle: string
   icon?: React.JSX.Element
   index: number
-  amountIndicator: AmountIndicator
+  status: PriceChangeStatus
   onPress?: () => void
 }
 
@@ -24,7 +24,7 @@ const ActivityListItem: FC<Props> = ({
   subtitle,
   icon,
   onPress,
-  amountIndicator,
+  status,
   index
 }) => {
   const {
@@ -32,9 +32,9 @@ const ActivityListItem: FC<Props> = ({
   } = useTheme()
 
   const textColor =
-    amountIndicator === AmountIndicator.Up
+    status === PriceChangeStatus.Up
       ? '#47C4AF'
-      : amountIndicator === AmountIndicator.Down
+      : status === PriceChangeStatus.Down
       ? colors.$textDanger
       : colors.$textSecondary
 

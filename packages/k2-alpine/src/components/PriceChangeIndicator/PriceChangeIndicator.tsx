@@ -11,6 +11,7 @@ import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedText } from '../Animated/AnimatedText'
 import { View } from '../Primitives'
+import { PriceChange, PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
   formattedPrice,
@@ -22,7 +23,12 @@ export const PriceChangeIndicator = ({
   testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
-  const signIndicator = status === 'up' ? '+' : status === 'down' ? '-' : ''
+  const signIndicator =
+    status === PriceChangeStatus.Up
+      ? '+'
+      : status === PriceChangeStatus.Down
+      ? '-'
+      : ''
   const iconMarginBottom = textVariant === 'buttonMedium' ? 3 : 2
   const iconMarginLeft = formattedPercent === undefined ? 4 : 1
 
@@ -62,9 +68,9 @@ export const PriceChangeIndicator = ({
               bottom: 0
             }}
             colors={
-              status === 'down'
+              status === PriceChangeStatus.Down
                 ? [colors.$accentDanger, colors?.$accentRed]
-                : status === 'up'
+                : status === PriceChangeStatus.Up
                 ? [colors.$accentTeal, theme.colors.$textSuccess]
                 : [theme.colors.$textSecondary, theme.colors.$textSecondary]
             }
@@ -85,13 +91,13 @@ export const PriceChangeIndicator = ({
         ]}>
         <View
           sx={{ marginBottom: iconMarginBottom, marginLeft: iconMarginLeft }}>
-          {status === 'down' ? (
+          {status === PriceChangeStatus.Down ? (
             <Icons.Custom.TrendingArrowDown
               color={colors.$accentDanger}
               width={ICON_SIZE}
               height={ICON_SIZE}
             />
-          ) : status === 'up' ? (
+          ) : status === PriceChangeStatus.Up ? (
             <Icons.Custom.TrendingArrowUp
               width={ICON_SIZE}
               height={ICON_SIZE}
@@ -105,7 +111,10 @@ export const PriceChangeIndicator = ({
             variant={textVariant}
             characters={formattedPercent}
             sx={{
-              color: status === 'equal' ? '$textSecondary' : '$textPrimary'
+              color:
+                status === PriceChangeStatus.Neutral
+                  ? '$textSecondary'
+                  : '$textPrimary'
             }}
           />
         )}
@@ -115,9 +124,3 @@ export const PriceChangeIndicator = ({
 }
 
 const ICON_SIZE = 10
-
-export type PriceChange = {
-  formattedPrice: string
-  status: 'up' | 'down' | 'equal'
-  formattedPercent?: string
-}

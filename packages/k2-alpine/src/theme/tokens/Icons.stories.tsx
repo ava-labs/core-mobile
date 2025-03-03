@@ -17,31 +17,6 @@ export const All = (): JSX.Element => {
   )
 }
 
-export const TransactionTypes = (): JSX.Element =>
-  Template({
-    icons: [
-      Icons.TransactionTypes.Add,
-      Icons.TransactionTypes.AdvanceTime,
-      Icons.TransactionTypes.Airdrop,
-      Icons.TransactionTypes.Approve,
-      Icons.TransactionTypes.Bridge,
-      Icons.TransactionTypes.ContractCall,
-      Icons.TransactionTypes.Export,
-      Icons.TransactionTypes.Import,
-      Icons.TransactionTypes.Receive,
-      Icons.TransactionTypes.Send,
-      Icons.TransactionTypes.Stake,
-      Icons.TransactionTypes.Subnet,
-      Icons.TransactionTypes.Swap,
-      Icons.TransactionTypes.Unknown,
-      Icons.TransactionTypes.Unwrap
-    ],
-    itemPadding: 8,
-    numColumns: 4,
-    resourceURL:
-      'https://www.figma.com/design/opZ4C1UGzcoGRjxE4ZIE3J/K2-Alpine?node-id=2083-1184&t=AhmFSiGoNxFP0ZGO-0'
-  })
-
 export const Action = (): JSX.Element =>
   Template({
     icons: [

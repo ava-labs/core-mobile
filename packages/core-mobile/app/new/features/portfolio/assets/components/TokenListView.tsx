@@ -91,7 +91,7 @@ export const TokenListView = ({
                 <Text
                   variant="buttonMedium"
                   numberOfLines={1}
-                  sx={{ fontWeight: '500', lineHeight: 16 }}>
+                  sx={{ lineHeight: 16 }}>
                   {formattedBalance}
                 </Text>
               </View>
