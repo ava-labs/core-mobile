@@ -17,10 +17,12 @@ import Animated, {
 
 export const useFadingHeaderNavigation = ({
   header,
-  targetLayout
+  targetLayout,
+  hasSeparator = true
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
+  hasSeparator?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -90,10 +92,14 @@ export const useFadingHeaderNavigation = ({
     navigation.setOptions({
       headerBackground: () => (
         <BlurredBackgroundView
-          separator={{
-            position: 'bottom',
-            opacity: targetHiddenProgress
-          }}
+          separator={
+            hasSeparator
+              ? {
+                  position: 'bottom',
+                  opacity: targetHiddenProgress
+                }
+              : undefined
+          }
         />
       ),
       title: header && (
@@ -108,7 +114,13 @@ export const useFadingHeaderNavigation = ({
         </View>
       )
     })
-  }, [navigation, header, targetHiddenProgress, animatedHeaderStyle])
+  }, [
+    navigation,
+    header,
+    targetHiddenProgress,
+    animatedHeaderStyle,
+    hasSeparator
+  ])
 
   return {
     onScroll: handleScroll,

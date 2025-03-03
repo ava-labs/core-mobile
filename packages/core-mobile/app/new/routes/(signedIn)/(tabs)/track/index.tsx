@@ -5,7 +5,6 @@ import {
   useTheme,
   SegmentedControl,
   Text,
-  SearchBar,
   Image
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -31,7 +30,6 @@ const TrackHomeScreen = (): JSX.Element => {
     isRefetchingTopTokens,
     isLoadingTopTokens
   } = useWatchlist()
-  const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -43,7 +41,8 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={'Track'} />,
-    targetLayout: balanceHeaderLayout
+    targetLayout: balanceHeaderLayout,
+    hasSeparator: false
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
@@ -66,11 +65,6 @@ const TrackHomeScreen = (): JSX.Element => {
             <Text variant="heading2">Track</Text>
           </Animated.View>
         </View>
-        <SearchBar
-          onTextChanged={setSearchText}
-          searchText={searchText}
-          placeholder="Search"
-        />
       </View>
     )
   }
@@ -82,7 +76,6 @@ const TrackHomeScreen = (): JSX.Element => {
   }
 
   const handleChangeTab = (index: number): void => {
-    setSearchText('')
     setSelectedSegmentIndex(index)
   }
 
@@ -113,7 +106,6 @@ const TrackHomeScreen = (): JSX.Element => {
                 isRefetchingTopTokens={isRefetchingTopTokens}
                 isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
-                searchText={searchText}
                 errorState={
                   <ErrorState
                     sx={{ height: portfolioTabContentHeight }}
@@ -138,7 +130,6 @@ const TrackHomeScreen = (): JSX.Element => {
                 isRefetchingTopTokens={isRefetchingTopTokens}
                 isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
-                searchText={searchText}
                 errorState={
                   <ErrorState
                     sx={{ height: portfolioTabContentHeight }}

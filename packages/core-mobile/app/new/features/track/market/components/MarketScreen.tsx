@@ -1,5 +1,5 @@
-import React, { memo, useMemo } from 'react'
-import { Separator, View } from '@avalabs/k2-alpine'
+import React, { memo, useMemo, useState } from 'react'
+import { SearchBar, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { MarketToken } from 'store/watchlist'
 import { DropdownSelections } from 'common/components/DropdownSelections'
@@ -7,26 +7,32 @@ import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { LoadingState } from 'common/components/LoadingState'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { Space } from 'components/Space'
+import { RenderTarget, RenderTargetOptions } from '@shopify/flash-list'
+import { Dimensions } from 'react-native'
 import { MarketView } from '../consts'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketListItem from './MarketListItem'
 
+enum ItemType {
+  StickyHeader = 'StickyHeader',
+  Dropdowns = 'Dropdowns',
+  Empty = 'Empty'
+}
+
 const MarketScreen = ({
   tokens,
   goToMarketDetail,
-  searchText,
   errorState,
   isLoadingTopTokens,
   isRefetchingTopTokens
 }: {
   tokens: MarketToken[]
   goToMarketDetail: () => void
-  searchText: string
   errorState?: React.JSX.Element
   isLoadingTopTokens: boolean
   isRefetchingTopTokens: boolean
 }): JSX.Element => {
+  const [searchText, setSearchText] = useState('')
   const { prices, charts } = useWatchlist()
   const { isSearchingTokens, searchResults } = useTokenSearch({
     isFetchingTokens: isLoadingTopTokens || isRefetchingTopTokens,
@@ -51,12 +57,21 @@ const MarketScreen = ({
     pricesToDisplay
   )
 
+  const dataWithHeaders = [
+    ItemType.StickyHeader,
+    ItemType.Empty,
+    ItemType.Dropdowns,
+    ItemType.Empty,
+    ...data
+  ]
+
   const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
 
-  const header = useMemo(() => {
+  const dropdowns = useMemo(() => {
     return (
       <View
         sx={{
+          width: WIDTH,
           paddingHorizontal: 16
         }}>
         <DropdownSelections sort={sort} view={view} />
@@ -80,17 +95,42 @@ const MarketScreen = ({
     errorState
   ])
 
-  const renderSeparator = (): JSX.Element => {
-    return isGridView ? <Space y={16} /> : <Separator sx={{ marginLeft: 62 }} />
-  }
-
   const renderItem = ({
     item,
-    index
+    index,
+    target
   }: {
-    item: MarketToken
+    item: MarketToken | ItemType
     index: number
+    target: RenderTarget
   }): React.JSX.Element => {
+    if (item === ItemType.Empty) {
+      return <></>
+    }
+    if (item === ItemType.StickyHeader) {
+      return (
+        <View
+          sx={{
+            width: WIDTH,
+            backgroundColor: '$surfacePrimary',
+            paddingHorizontal: 16,
+            ...(target === RenderTargetOptions.StickyHeader && {
+              paddingBottom: 8,
+              borderBottomColor: '$surfaceSecondary',
+              borderBottomWidth: 1
+            })
+          }}>
+          <SearchBar
+            onTextChanged={setSearchText}
+            searchText={searchText}
+            placeholder="Search"
+          />
+        </View>
+      )
+    }
+    if (item === ItemType.Dropdowns) {
+      return dropdowns
+    }
     return (
       <MarketListItem
         token={item}
@@ -98,31 +138,30 @@ const MarketScreen = ({
         index={index}
         isGridView={isGridView}
         onPress={goToMarketDetail}
+        isLastItem={index === dataWithHeaders.length - 1}
       />
     )
   }
 
   return (
-    <CollapsibleTabs.FlatList
-      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
-      data={data}
+    <CollapsibleTabs.FlashList
+      stickyHeaderIndices={[0]}
+      contentContainerStyle={{ paddingBottom: 16 }}
+      data={dataWithHeaders}
       numColumns={isGridView ? 2 : 1}
-      renderItem={item => renderItem({ item: item.item, index: item.index })}
-      ListHeaderComponent={header}
+      renderItem={renderItem}
       ListEmptyComponent={emptyComponent}
-      ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}
-      keyExtractor={item => item.id}
-      columnWrapperStyle={
-        isGridView && {
-          paddingHorizontal: 16,
-          justifyContent: 'space-between',
-          gap: 14
-        }
+      getItemType={item => (typeof item === 'string' ? item : 'row')}
+      estimatedItemSize={isGridView ? 200 : 100}
+      keyExtractor={(item, index) =>
+        typeof item === 'string' ? index.toString() : item.id
       }
     />
   )
 }
+
+const WIDTH = Dimensions.get('window').width
 
 export default memo(MarketScreen)
