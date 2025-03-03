@@ -7,7 +7,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Space } from 'components/Space'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { TokenListViewProps } from '../types'
@@ -65,15 +64,7 @@ export const TokenListView = ({
                   sx={{ lineHeight: 16 }}
                   ellipsizeMode="tail"
                   numberOfLines={1}>
-                  {token.balanceDisplayValue}
-                </Text>
-                <Space x={4} />
-                <Text
-                  variant="body2"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                  sx={{ flex: 1 }}>
-                  {token.symbol}
+                  {token.balanceDisplayValue} {token.symbol}
                 </Text>
               </View>
             </View>
@@ -86,7 +77,11 @@ export const TokenListView = ({
               }}>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                 {!token.isDataAccurate && (
-                  <Icons.Alert.Error width={16} height={16} color={'#E84142'} />
+                  <Icons.Alert.Error
+                    width={16}
+                    height={16}
+                    color={colors.$textDanger}
+                  />
                 )}
                 <Text
                   variant="buttonMedium"
