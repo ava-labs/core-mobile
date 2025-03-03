@@ -85,7 +85,7 @@ const ActivityListItem: FC<Props> = ({
                 {subtitle}
               </Text>
             </View>
-            <Icons.Custom.Outbound />
+            <Icons.Custom.Outbound color={colors.$textPrimary} />
           </View>
         </View>
       </TouchableOpacity>

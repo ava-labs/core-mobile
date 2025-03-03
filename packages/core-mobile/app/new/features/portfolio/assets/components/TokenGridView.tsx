@@ -4,9 +4,9 @@ import {
   Icons,
   PriceChangeIndicator,
   Text,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Space } from 'components/Space'
 import { Dimensions } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -19,10 +19,14 @@ export const TokenGridView = ({
   token,
   index,
   onPress,
-  status,
+  priceChangeStatus,
   formattedBalance,
   formattedPrice
 }: TokenListViewProps): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
@@ -50,15 +54,7 @@ export const TokenGridView = ({
                 sx={{ lineHeight: 16 }}
                 ellipsizeMode="tail"
                 numberOfLines={1}>
-                {token.balanceDisplayValue}
-              </Text>
-              <Space x={4} />
-              <Text
-                variant="body2"
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                sx={{ flex: 1 }}>
-                {token.symbol}
+                {token.balanceDisplayValue} {token.symbol}
               </Text>
             </View>
           </View>
@@ -66,18 +62,22 @@ export const TokenGridView = ({
             <View>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                 {!token.isDataAccurate && (
-                  <Icons.Alert.Error width={16} height={16} color={'#E84142'} />
+                  <Icons.Alert.Error
+                    width={16}
+                    height={16}
+                    color={colors.$textDanger}
+                  />
                 )}
                 <Text
                   variant="buttonMedium"
                   numberOfLines={1}
-                  sx={{ lineHeight: 16 }}>
+                  sx={{ lineHeight: 18, marginBottom: 1 }}>
                   {formattedBalance}
                 </Text>
               </View>
               <PriceChangeIndicator
                 formattedPrice={formattedPrice}
-                status={status}
+                status={priceChangeStatus}
               />
             </View>
           </View>

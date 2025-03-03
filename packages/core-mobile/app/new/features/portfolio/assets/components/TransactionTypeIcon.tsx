@@ -1,15 +1,10 @@
-import React from 'react'
-import { useTheme } from '@avalabs/k2-alpine'
-import { TransactionType } from '@avalabs/vm-module-types'
-import {
-  PChainTransactionType,
-  XChainTransactionType
-} from '@avalabs/glacier-sdk'
+import React, { useMemo } from 'react'
+import { Icons, useTheme } from '@avalabs/k2-alpine'
 import { ActivityTransactionType } from 'store/transaction'
-import { TransactionTypes } from '../types'
+import { SvgProps } from 'react-native-svg'
 
 export interface TransactionTypeIconProp {
-  txType: ActivityTransactionType
+  txType?: ActivityTransactionType
   isContractCall: boolean
 }
 
@@ -21,54 +16,55 @@ export const TransactionTypeIcon = ({
     theme: { colors }
   } = useTheme()
 
-  switch (txType) {
-    case TransactionType.BRIDGE:
-      return <TransactionTypes.Bridge color={colors.$textPrimary} />
-    case TransactionType.AIRDROP:
-      return <TransactionTypes.Airdrop color={colors.$textPrimary} />
-    case TransactionType.APPROVE:
-    case TransactionType.FILL_ORDER:
-      return <TransactionTypes.Approve color={colors.$textPrimary} />
-    case TransactionType.UNWRAP:
-      return <TransactionTypes.Unwrap color={colors.$textPrimary} />
-    case TransactionType.SWAP:
-    case TransactionType.TRANSFER:
-      return <TransactionTypes.Swap color={colors.$textPrimary} />
-    case TransactionType.SEND:
-    case PChainTransactionType.EXPORT_TX:
-      return <TransactionTypes.Send color={colors.$textPrimary} />
-    case TransactionType.RECEIVE:
-    case PChainTransactionType.IMPORT_TX:
-      return <TransactionTypes.Receive color={colors.$textPrimary} />
-    case PChainTransactionType.ADD_SUBNET_VALIDATOR_TX:
-    case PChainTransactionType.CREATE_SUBNET_TX:
-    case PChainTransactionType.REMOVE_SUBNET_VALIDATOR_TX:
-    case PChainTransactionType.TRANSFER_SUBNET_OWNERSHIP_TX:
-    case PChainTransactionType.TRANSFORM_SUBNET_TX:
-    case PChainTransactionType.CONVERT_SUBNET_TO_L1TX:
-      return <TransactionTypes.Subnet color={colors.$textPrimary} />
-    case PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX:
-    case PChainTransactionType.ADD_PERMISSIONLESS_VALIDATOR_TX:
-    case PChainTransactionType.CREATE_CHAIN_TX:
-    case XChainTransactionType.CREATE_ASSET_TX:
-    case PChainTransactionType.ADD_VALIDATOR_TX:
-    case PChainTransactionType.ADD_DELEGATOR_TX:
-      return <TransactionTypes.Add color={colors.$textPrimary} />
-    case PChainTransactionType.ADVANCE_TIME_TX:
-      return <TransactionTypes.AdvanceTime color={colors.$textPrimary} />
-    case PChainTransactionType.BASE_TX:
-    case XChainTransactionType.OPERATION_TX:
-      return <TransactionTypes.ContractCall color={colors.$textPrimary} />
-    case PChainTransactionType.REWARD_VALIDATOR_TX:
-    case PChainTransactionType.DISABLE_L1VALIDATOR_TX:
-    case PChainTransactionType.INCREASE_L1VALIDATOR_BALANCE_TX:
-    case PChainTransactionType.REGISTER_L1VALIDATOR_TX:
-    case PChainTransactionType.SET_L1VALIDATOR_WEIGHT_TX:
-      return <TransactionTypes.Stake color={colors.$textPrimary} />
-    case TransactionType.UNKNOWN:
-    default:
-      if (isContractCall)
-        return <TransactionTypes.ContractCall color={colors.$textPrimary} />
-      return <TransactionTypes.Unknown color={colors.$textPrimary} />
-  }
+  const Icon = useMemo(() => {
+    if (txType && METHOD_NAME_TO_ICON[txType]) {
+      return METHOD_NAME_TO_ICON[txType]
+    }
+    if (isContractCall) return Icons.TransactionTypes.ContractCall
+    return Icons.TransactionTypes.Unknown
+  }, [txType, isContractCall])
+
+  return <Icon color={colors.$textPrimary} />
+}
+
+const METHOD_NAME_TO_ICON: Record<
+  ActivityTransactionType,
+  React.FC<SvgProps> | undefined
+> = {
+  Swap: Icons.TransactionTypes.Swap,
+  Send: Icons.TransactionTypes.Send,
+  Receive: Icons.TransactionTypes.Receive,
+  Airdrop: Icons.TransactionTypes.Airdrop,
+  ImportTx: Icons.TransactionTypes.Receive,
+  ExportTx: Icons.TransactionTypes.Send,
+  BaseTx: Icons.TransactionTypes.ContractCall,
+  CreateAssetTx: Icons.TransactionTypes.Subnet,
+  OperationTx: Icons.TransactionTypes.ContractCall,
+  AddPermissionlessDelegatorTx: Icons.TransactionTypes.Add,
+  AddValidatorTx: Icons.TransactionTypes.Add,
+  AddSubnetValidatorTx: Icons.TransactionTypes.Subnet,
+  TransferSubnetOwnershipTx: Icons.TransactionTypes.Subnet,
+  AddDelegatorTx: Icons.TransactionTypes.Add,
+  CreateSubnetTx: Icons.TransactionTypes.Subnet,
+  CreateChainTx: Icons.TransactionTypes.Add,
+  TransformSubnetTx: Icons.TransactionTypes.Subnet,
+  AddPermissionlessValidatorTx: Icons.TransactionTypes.Add,
+  RemoveSubnetValidatorTx: Icons.TransactionTypes.Subnet,
+  RewardValidatorTx: Icons.TransactionTypes.Stake,
+  AdvanceTimeTx: Icons.TransactionTypes.AdvanceTime,
+  Bridge: Icons.TransactionTypes.Bridge,
+  Approve: Icons.TransactionTypes.Approve,
+  Transfer: Icons.TransactionTypes.Swap,
+  FillOrder: Icons.TransactionTypes.Approve,
+  Unwrap: Icons.TransactionTypes.Unwrap,
+  ConvertSubnetToL1Tx: Icons.TransactionTypes.Subnet,
+  RegisterL1ValidatorTx: Icons.TransactionTypes.Stake,
+  SetL1ValidatorWeightTx: Icons.TransactionTypes.Stake,
+  DisableL1ValidatorTx: Icons.TransactionTypes.Stake,
+  IncreaseL1ValidatorBalanceTx: Icons.TransactionTypes.Stake,
+
+  NFTBuy: undefined,
+  NFTReceive: undefined,
+  NFTSend: undefined,
+  UNKNOWN: undefined
 }

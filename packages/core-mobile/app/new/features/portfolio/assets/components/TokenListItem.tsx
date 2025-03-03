@@ -52,7 +52,7 @@ export const TokenListItem = ({
       token={token}
       index={index}
       onPress={onPress}
-      status={status}
+      priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
     />
@@ -61,7 +61,7 @@ export const TokenListItem = ({
       token={token}
       index={index}
       onPress={onPress}
-      status={status}
+      priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
     />

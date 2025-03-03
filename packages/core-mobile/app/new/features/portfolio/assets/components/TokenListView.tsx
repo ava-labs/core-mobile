@@ -19,7 +19,7 @@ export const TokenListView = ({
   onPress,
   formattedBalance,
   formattedPrice,
-  status
+  priceChangeStatus
 }: TokenListViewProps): React.JSX.Element => {
   const {
     theme: { colors }
@@ -91,13 +91,13 @@ export const TokenListView = ({
                 <Text
                   variant="buttonMedium"
                   numberOfLines={1}
-                  sx={{ lineHeight: 16 }}>
+                  sx={{ lineHeight: 18, marginBottom: 1 }}>
                   {formattedBalance}
                 </Text>
               </View>
               <PriceChangeIndicator
                 formattedPrice={formattedPrice}
-                status={status}
+                status={priceChangeStatus}
               />
             </View>
           </View>

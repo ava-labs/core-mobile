@@ -54,8 +54,7 @@ const AssetsScreen: FC<Props> = ({
     [goToTokenManagement, view]
   )
 
-  const isGridView =
-    view.data[0]?.[view.selected.row] === AssetManageView.Highlights
+  const isGridView = view.data[0]?.[view.selected.row] === AssetManageView.Grid
 
   const renderItem = (
     item: ListRenderItemInfo<LocalTokenWithBalance>

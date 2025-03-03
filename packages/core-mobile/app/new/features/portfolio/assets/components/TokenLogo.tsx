@@ -9,7 +9,7 @@ import { SvgUri } from 'react-native-svg'
 import { FallbackTokenLogo } from './FallbackTokenLogo'
 
 interface TokenAvatarProps {
-  symbol?: string
+  symbol: string
   logoUri: string | undefined
   size?: number
   testID?: string

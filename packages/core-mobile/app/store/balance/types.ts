@@ -81,8 +81,8 @@ export enum AssetBalanceSort {
 }
 
 export enum AssetManageView {
-  Highlights = 'Grid',
-  AssetList = 'List view',
+  Grid = 'Grid view',
+  List = 'List view',
   ManageList = 'Manage list'
 }
 
@@ -103,7 +103,7 @@ export const ASSET_BALANCE_SORTS: AssetBalanceSorts = [
 ]
 
 export const ASSET_MANAGE_VIEWS: AssetManageViews = [
-  [AssetManageView.Highlights, AssetManageView.AssetList],
+  [AssetManageView.Grid, AssetManageView.List],
   [AssetManageView.ManageList]
 ]
 
