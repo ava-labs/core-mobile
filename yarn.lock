@@ -199,7 +199,7 @@ __metadata:
     "@babel/preset-env": 7.25.7
     "@babel/preset-typescript": 7.25.7
     "@babel/runtime": 7.25.7
-    "@blockaid/client": 0.27.4
+    "@blockaid/client": 0.38.0
     "@coinbase/cbpay-js": 2.2.1
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.4.117-0
@@ -4353,9 +4353,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@blockaid/client@npm:0.27.4":
-  version: 0.27.4
-  resolution: "@blockaid/client@npm:0.27.4"
+"@blockaid/client@npm:0.38.0":
+  version: 0.38.0
+  resolution: "@blockaid/client@npm:0.38.0"
   dependencies:
     "@types/node": ^18.11.18
     "@types/node-fetch": ^2.6.4
@@ -4364,7 +4364,7 @@ __metadata:
     form-data-encoder: 1.7.2
     formdata-node: ^4.3.2
     node-fetch: ^2.6.7
-  checksum: c89fe4467fe77e9bcac401f7ddb30c646e86000d5e4913ba6e11560c349fde71ad200551c4ec277fd6e3aad0d9f11cf137194e9568472eb78a2c0617d6011136
+  checksum: a23e8bb9bf5656a1f9e653734f492d8da0b579eadccf5f678eb7126ef387acca5d271fad20ed669949608ace6e45cd67b820832f1de33703040ddc98d39bdfe9
   languageName: node
   linkType: hard
 
@@ -27114,7 +27114,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 63cac1f11ba6dab7170bda157608f6ae0dd70aadca923d3ca95a1373886b7f3ae511bf179b0120d7c95ae4b4c19f386860a06ba01057ef48747736d29f0b4733
   languageName: node
   linkType: hard
 
