@@ -1,28 +1,29 @@
 import React, { FC } from 'react'
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { Image, ScrollView, StyleSheet } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { WalletScreenProps } from 'navigation/types'
+import { BuyScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Icons } from '@avalabs/k2-mobile'
+import { Icons, Text, useTheme, View } from '@avalabs/k2-mobile'
+import InfoSVG from 'components/svg/InfoSVG'
 import { Provider } from './BuyCarefully'
 
 const MoonPayLogo = require('assets/icons/moonpay-icon.png')
 const CoinbaseLogo = require('assets/icons/coinbase.png')
 const LOGO_SIZE = 64
 
-type NavigationProp = WalletScreenProps<
-  typeof AppNavigation.Modal.SelectToken
->['navigation']
+type ScreenProps = BuyScreenProps<typeof AppNavigation.Buy.Buy>
 
 const Buy: FC = () => {
   const { theme } = useApplicationContext()
-  const navigation = useNavigation<NavigationProp>()
+  const { theme: k2Theme } = useTheme()
+  const navigation = useNavigation<ScreenProps['navigation']>()
+  const { params } = useRoute<ScreenProps['route']>()
   const { coinbasePayBlocked } = usePosthogContext()
 
   const openHalliday = async (): Promise<void> => {
@@ -41,12 +42,46 @@ const Buy: FC = () => {
     })
   }
 
+  const renderAvaxWarning = (): React.JSX.Element | undefined => {
+    if (params?.showAvaxWarning)
+      return (
+        <View style={{ marginHorizontal: 16, marginTop: 20 }}>
+          <View
+            sx={{
+              padding: 16,
+              borderRadius: 8,
+              backgroundColor: '$dangerLight',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12
+            }}>
+            <InfoSVG color={k2Theme.colors.$black} size={24} />
+            <View sx={{ flex: 1 }}>
+              <Text
+                variant="alertDescription"
+                sx={{
+                  color: '$black',
+                  fontSize: 13,
+                  lineHeight: 16,
+                  fontWeight: '500'
+                }}>
+                Make sure to buy AVAX native token for transactions
+              </Text>
+            </View>
+          </View>
+        </View>
+      )
+  }
+
+  const title = params?.showAvaxWarning ? 'Buy AVAX' : 'Buy'
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
-        Buy
+        {title}
       </AvaText.LargeTitleBold>
-      <Space y={20} />
+      {renderAvaxWarning()}
+      <Space y={12} />
       <View style={style.mainContainer}>
         <AvaText.Heading3 textStyle={style.title}>
           Continue with...

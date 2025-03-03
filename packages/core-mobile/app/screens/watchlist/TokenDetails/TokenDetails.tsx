@@ -187,7 +187,10 @@ const TokenDetails: FC = () => {
         type={'primary'}
         size={'xlarge'}
         onPress={() => {
-          navigate(AppNavigation.Wallet.Buy)
+          navigate(AppNavigation.Wallet.Buy, {
+            screen: AppNavigation.Buy.Buy,
+            params: { showAvaxWarning: true }
+          })
         }}
         style={{ flex: 1 }}>
         Buy

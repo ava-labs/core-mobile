@@ -35,7 +35,10 @@ const SmartStakeAmount = (): React.JSX.Element => {
 
   const renderNotEnoughAvax = (): React.JSX.Element => {
     const navToBuy = (): void => {
-      navigate(AppNavigation.Wallet.Buy)
+      navigate(AppNavigation.Wallet.Buy, {
+        screen: AppNavigation.Buy.Buy,
+        params: { showAvaxWarning: true }
+      })
     }
     const navToReceive = (): void => {
       navigate(AppNavigation.Wallet.ReceiveTokens)

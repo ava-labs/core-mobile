@@ -71,7 +71,10 @@ const WatchListItem: FC<Props> = ({
 
     const handleBuyPressed = (): void => {
       if (isZeroBalance || swapDisabled) {
-        navigate(AppNavigation.Wallet.Buy)
+        navigate(AppNavigation.Wallet.Buy, {
+          screen: AppNavigation.Buy.Buy,
+          params: { showAvaxWarning: true }
+        })
       } else {
         navigate(AppNavigation.Wallet.Swap, {
           screen: AppNavigation.Swap.Swap,
