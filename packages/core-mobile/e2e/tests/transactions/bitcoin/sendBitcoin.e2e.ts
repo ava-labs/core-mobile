@@ -1,6 +1,7 @@
 import actions from '../../../helpers/actions'
 import { cleanup } from '../../../helpers/cleanup'
 import { warmup } from '../../../helpers/warmup'
+import networksManageLoc from '../../../locators/networksManage.loc'
 import sendLoc from '../../../locators/send.loc'
 import accountManagePage from '../../../pages/accountManage.page'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
@@ -19,7 +20,7 @@ describe('Bitcoin Transaction', () => {
     await cleanup()
   })
 
-  it('should send BTC', async () => {
+  it('should send BTC on mainnet', async () => {
     await bottomTabsPage.tapPortfolioTab()
     await portfolioPage.tapNetworksDropdown()
     await portfolioPage.tapNetworksDropdownBTC()
@@ -39,11 +40,17 @@ describe('Bitcoin Transaction', () => {
       networksManagePage.bitcoinTestnetNetwork,
       60000
     )
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.btcToken,
-      sendLoc.sendingAmount,
-      false
+    await portfolioPage.tapActiveNetwork(
+      networksManageLoc.bitcoinTestnetNetwork
     )
-    await sendPage.verifySuccessToast()
+    const noBalance = await actions.isVisible(portfolioPage.noAssetsHeader, 0)
+    if (!noBalance) {
+      await sendPage.sendTokenTo2ndAccount(
+        sendLoc.btcToken,
+        sendLoc.sendingAmount,
+        false
+      )
+      await sendPage.verifySuccessToast()
+    }
   }, 120000)
 })

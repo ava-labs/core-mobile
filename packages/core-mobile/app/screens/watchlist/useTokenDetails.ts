@@ -52,6 +52,7 @@ export const useTokenDetails = (
     diffValue: number
     percentChange: number
   }
+  chartDays: number
   changeChartDays: (days: number) => void
   priceInCurrency: number | undefined
   id: string
@@ -221,6 +222,7 @@ export const useTokenDetails = (
     tokenInfo,
     chartData,
     ranges,
+    chartDays,
     changeChartDays,
     priceInCurrency: price?.priceInCurrency,
     id: tokenId,

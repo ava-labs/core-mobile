@@ -216,6 +216,7 @@ export const Balance = (): JSX.Element | null => {
               }
             />
             <BalanceItem
+              testID="claimable_balance"
               balanceType={StakeTypeEnum.Claimable}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Claimable, theme)}
               balance={

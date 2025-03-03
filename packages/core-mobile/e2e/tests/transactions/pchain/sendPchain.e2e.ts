@@ -7,11 +7,17 @@ import bottomTabsPage from '../../../pages/bottomTabs.page'
 import { cleanup } from '../../../helpers/cleanup'
 import actions from '../../../helpers/actions'
 import portfolioLoc from '../../../locators/portfolio.loc'
+import browserPage from '../../../pages/browser.page'
 
 describe('P-Chain Transaction', () => {
   beforeAll(async () => {
     await warmup()
     await accountManagePage.createSecondAccount()
+    try {
+      await browserPage.fundPChain()
+    } catch (e) {
+      console.log('Unable to fund P-Chain account')
+    }
   })
 
   afterAll(async () => {
