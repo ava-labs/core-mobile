@@ -7,17 +7,17 @@ import {
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
-import { IndexPath, View } from '@avalabs/k2-alpine'
+import { Image, IndexPath, View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useFilterAndSort } from 'features/portfolio/assets/hooks/useFilterAndSort'
 import { LoadingState } from 'common/components/LoadingState'
 import { ListRenderItemInfo } from 'react-native'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { portfolioTabContentHeight } from '../../utils'
+import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { AssetsHeader } from './AssetsHeader'
 import { TokenListItem } from './TokenListItem'
 
@@ -30,9 +30,9 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement
 }): JSX.Element => {
-  const { data, filter, sort, view } = useFilterAndSort()
+  const { data, filter, sort, view } = useAssetsFilterAndSort()
 
-  const { refetch, filteredTokenList } = useSearchableTokenList()
+  const { refetch, filteredTokenList } = useSearchableTokenList({})
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
@@ -54,8 +54,7 @@ const AssetsScreen: FC<Props> = ({
     [goToTokenManagement, view]
   )
 
-  const isGridView =
-    view.data[0]?.[view.selected.row] === AssetManageView.Highlights
+  const isGridView = view.data[0]?.[view.selected.row] === AssetManageView.Grid
 
   const renderItem = (
     item: ListRenderItemInfo<LocalTokenWithBalance>
@@ -98,6 +97,12 @@ const AssetsScreen: FC<Props> = ({
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
+          icon={
+            <Image
+              source={require('../../../../assets/icons/unamused_emoji.png')}
+              sx={{ width: 42, height: 42 }}
+            />
+          }
           title="No Assets yet"
           description="Add your crypto tokens to track your portfolio’s performance and stay updated on your investments"
         />

@@ -67,20 +67,22 @@ export const assetXDisplayNames: Record<string, string> = {
   atomicMemoryUnlocked: 'Atomic Memory Unlocked'
 }
 
+// Assets
 export enum AssetNetworkFilter {
   AllNetworks = 'All networks',
   AvalancheCChain = 'Avalanche C-Chain',
   BitcoinNetwork = 'Bitcoin network',
   Ethereum = 'Ethereum'
 }
+
 export enum AssetBalanceSort {
   HighToLow = 'High to low balance',
   LowToHigh = 'Low to high balance'
 }
 
 export enum AssetManageView {
-  Highlights = 'Grid',
-  AssetList = 'List view',
+  Grid = 'Grid view',
+  List = 'List view',
   ManageList = 'Manage list'
 }
 
@@ -101,6 +103,6 @@ export const ASSET_BALANCE_SORTS: AssetBalanceSorts = [
 ]
 
 export const ASSET_MANAGE_VIEWS: AssetManageViews = [
-  [AssetManageView.Highlights, AssetManageView.AssetList],
+  [AssetManageView.Grid, AssetManageView.List],
   [AssetManageView.ManageList]
 ]

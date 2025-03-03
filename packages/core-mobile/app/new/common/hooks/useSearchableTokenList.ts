@@ -35,11 +35,15 @@ const containSearchText = (text: string) => (token: LocalTokenWithBalance) => {
   )
 }
 
-export function useSearchableTokenList(
+export function useSearchableTokenList({
   hideZeroBalance = true,
   hideBlacklist = true,
   hideNft = true
-): {
+}: {
+  hideZeroBalance?: boolean
+  hideBlacklist?: boolean
+  hideNft?: boolean
+}): {
   searchText: string
   filteredTokenList: LocalTokenWithBalance[]
   setSearchText: (value: ((prevState: string) => string) | string) => void

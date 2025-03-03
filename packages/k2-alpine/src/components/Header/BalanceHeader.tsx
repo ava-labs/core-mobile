@@ -4,11 +4,9 @@ import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
 import { AnimatedText } from '../Animated/AnimatedText'
-import {
-  PriceChange,
-  PriceChangeIndicator
-} from '../PriceChangeIndicator/PriceChangeIndicator'
+import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
 import { Text, View } from '../Primitives'
+import { PriceChange } from '../PriceChangeIndicator/types'
 import { BalanceLoader } from './BalanceHeaderLoader'
 
 export const BalanceHeader = ({

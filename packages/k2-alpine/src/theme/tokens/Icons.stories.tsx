@@ -106,7 +106,6 @@ export const Custom = (): JSX.Element => {
     icons: [
       Icons.Custom.ArrowDown,
       Icons.Custom.BackArrowCustom,
-      Icons.Custom.Compare,
       Icons.Custom.Error,
       Icons.Custom.FaceID,
       Icons.Custom.TouchID,
@@ -129,7 +128,19 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.Search,
       Icons.Custom.SignPost,
       Icons.Custom.Signature,
-      Icons.Custom.AvalabsTrademark
+      Icons.Custom.AvalabsTrademark,
+      Icons.Custom.TxTypeAdd,
+      Icons.Custom.AdvanceTime,
+      Icons.Custom.Airdrop,
+      Icons.Custom.CheckSmall,
+      Icons.Custom.Bridge,
+      Icons.Custom.ContractCall,
+      Icons.Custom.Receive,
+      Icons.Custom.TxTypeSend,
+      Icons.Custom.Subnet,
+      Icons.Custom.Compare,
+      Icons.Custom.Unknown,
+      Icons.Custom.Unwrap
     ],
     itemPadding: 16,
     numColumns: 2,

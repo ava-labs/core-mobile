@@ -1,8 +1,9 @@
 import React from 'react'
 import { ViewStyle } from 'react-native'
 import { Icons } from '../../theme/tokens/Icons'
-import { Text, TouchableOpacity, View } from '../Primitives'
+import { Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
+import { AnimatedPressable } from '../Animated/AnimatedPressable'
 
 export const SquareButton = ({
   title,
@@ -18,7 +19,7 @@ export const SquareButton = ({
   const { theme } = useTheme()
 
   return (
-    <TouchableOpacity style={style} onPress={onPress}>
+    <AnimatedPressable style={style} onPress={onPress}>
       <View
         sx={{
           borderRadius: 12,
@@ -45,7 +46,7 @@ export const SquareButton = ({
           {title}
         </Text>
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   )
 }
 

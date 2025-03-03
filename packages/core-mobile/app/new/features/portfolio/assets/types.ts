@@ -1,3 +1,4 @@
+import type { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { LocalTokenWithBalance } from 'store/balance'
 
 export interface TokenListViewProps {
@@ -6,5 +7,5 @@ export interface TokenListViewProps {
   formattedBalance: string
   onPress: () => void
   formattedPrice: string
-  status: 'up' | 'down' | 'equal'
+  priceChangeStatus: PriceChangeStatus
 }
