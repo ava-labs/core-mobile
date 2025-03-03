@@ -72,6 +72,8 @@ export enum AssetNetworkFilter {
   AllNetworks = 'All networks',
   AvalancheCChain = 'Avalanche C-Chain',
   BitcoinNetwork = 'Bitcoin network',
+  AvalanchePChain = 'Avalanche P-Chain',
+  AvalancheXChain = 'Avalanche X-Chain',
   Ethereum = 'Ethereum'
 }
 
@@ -94,6 +96,8 @@ export const ASSET_NETWORK_FILTERS: AssetNetworkFilters = [
   [
     AssetNetworkFilter.AllNetworks,
     AssetNetworkFilter.AvalancheCChain,
+    AssetNetworkFilter.AvalanchePChain,
+    AssetNetworkFilter.AvalancheXChain,
     AssetNetworkFilter.BitcoinNetwork,
     AssetNetworkFilter.Ethereum
   ]

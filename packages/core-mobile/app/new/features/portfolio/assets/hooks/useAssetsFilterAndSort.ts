@@ -6,6 +6,8 @@ import {
   ASSET_NETWORK_FILTERS,
   AssetBalanceSort,
   AssetNetworkFilter,
+  AVAX_P_ID,
+  AVAX_X_ID,
   LocalTokenWithBalance
 } from 'store/balance'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
@@ -62,6 +64,10 @@ export const useAssetsFilterAndSort = (): {
               isAvalancheCChainId(token.chainId)) ||
             token.localId === 'AvalancheAVAX'
         )
+      case AssetNetworkFilter.AvalanchePChain:
+        return filteredTokenList.filter(token => token.localId === AVAX_P_ID)
+      case AssetNetworkFilter.AvalancheXChain:
+        return filteredTokenList.filter(token => token.localId === AVAX_X_ID)
       case AssetNetworkFilter.Ethereum:
         return filteredTokenList.filter(
           token =>
