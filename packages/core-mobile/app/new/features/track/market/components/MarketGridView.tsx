@@ -16,6 +16,7 @@ import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
 import { ChartData } from 'services/token/types'
 import MiniSparklineChart from 'features/track/components/MiniSparklineChart'
+import { Space } from 'components/Space'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const CHART_WIDTH = ((SCREEN_WIDTH - 46) / 2) * 0.6
@@ -57,7 +58,8 @@ const MarketGridView = ({
             borderRadius: 18,
             backgroundColor: '$surfaceSecondary',
             width: (SCREEN_WIDTH - 16 * 3) / 2,
-            padding: 16
+            padding: 16,
+            marginLeft: index % 2 === 0 ? 16 : 8
           }}>
           <TokenLogo
             size={36}
@@ -105,6 +107,7 @@ const MarketGridView = ({
           </View>
         </View>
       </AnimatedPressable>
+      <Space y={16} />
     </Animated.View>
   )
 }

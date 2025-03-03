@@ -22,7 +22,8 @@ const MarketListView = ({
   formattedPrice,
   formattedPriceChange,
   formattedPercentChange,
-  status
+  status,
+  isLastItem
 }: {
   token: MarketToken
   isFavorite?: boolean
@@ -32,6 +33,7 @@ const MarketListView = ({
   formattedPercentChange: string
   status: PriceChangeStatus
   onPress: () => void
+  isLastItem?: boolean
 }): React.JSX.Element => {
   const {
     theme: { colors, isDark }
@@ -108,6 +110,15 @@ const MarketListView = ({
           </View>
         </View>
       </TouchableOpacity>
+      {!isLastItem && (
+        <View
+          sx={{
+            height: 1,
+            backgroundColor: colors.$borderPrimary,
+            marginLeft: 62
+          }}
+        />
+      )}
     </Animated.View>
   )
 }
