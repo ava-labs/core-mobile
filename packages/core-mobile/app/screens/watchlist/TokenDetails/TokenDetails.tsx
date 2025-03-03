@@ -40,7 +40,7 @@ import { selectTokenVisibility } from 'store/portfolio/slice'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectIsEarnBlocked } from 'store/posthog/slice'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
-import { AVAX_TOKEN_ID } from 'consts/swap'
+import { AVAX_TOKEN_ID, USDC_TOKEN_ID } from 'consts/swap'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { MarketType } from 'store/watchlist'
 import { DataItem } from './DataItem'
@@ -239,7 +239,7 @@ const TokenDetails: FC = () => {
         : !buyDisabled && actions.push(buyButton)
 
       // always show swap button for AVAX
-      !swapDisabled && actions.push(generateSwapButton())
+      !swapDisabled && actions.push(generateSwapButton(USDC_TOKEN_ID))
     } else {
       // user has some balance, show both buy and swap button for all other tokens
       !buyDisabled && actions.push(buyButton)
