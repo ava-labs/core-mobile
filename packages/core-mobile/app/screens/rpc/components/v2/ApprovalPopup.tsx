@@ -45,6 +45,8 @@ import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWith
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
 import { validateFee } from 'screens/send/utils/evm/validate'
+import NetworkService from 'services/network/NetworkService'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
@@ -70,6 +72,9 @@ const ApprovalPopup = (): JSX.Element => {
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalance()
   const [gaslessError, setGaslessError] = useState<Alert | null>(null)
+  const showGaslessSwitch = useMemo(() => {
+    return !isGaslessBlocked && !gaslessError && isGaslessEligible
+  }, [gaslessError, isGaslessBlocked, isGaslessEligible])
 
   useEffect(() => {
     const checkGaslessEligibility = async (): Promise<void> => {
@@ -171,16 +176,38 @@ const ApprovalPopup = (): JSX.Element => {
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
+  function showGaslessError(): void {
+    setGaslessError({
+      type: AlertType.INFO,
+      details: {
+        title: 'Free Gas Error',
+        description:
+          'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
+      }
+    })
+  }
+
   const handleGaslessTx = async (
     addressFrom: string
   ): Promise<string | undefined> => {
     let attempts = 0
     const MAX_ATTEMPTS = 1
 
+    if (!network) {
+      showGaslessError()
+      return undefined
+    }
+    const provider = await NetworkService.getProviderForNetwork(network)
+    if (!(provider instanceof JsonRpcBatchInternal)) {
+      showGaslessError()
+      return undefined
+    }
+
     while (attempts <= MAX_ATTEMPTS) {
       const result = await GaslessService.fundTx(
         signingData as SigningData_EthSendTx,
-        addressFrom
+        addressFrom,
+        provider
       )
 
       if (result.txHash) {
@@ -195,14 +222,7 @@ const ApprovalPopup = (): JSX.Element => {
         (result.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
-        setGaslessError({
-          type: AlertType.INFO,
-          details: {
-            title: 'Free Gas Error',
-            description:
-              'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
-          }
-        })
+        showGaslessError()
         setSubmitting(false)
         return undefined
       }
@@ -437,7 +457,7 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   const renderGasless = (): JSX.Element | null => {
-    if (!isGaslessEligible || isGaslessBlocked || gaslessError) {
+    if (!showGaslessSwitch) {
       return null
     }
     return (
@@ -466,7 +486,7 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   const renderNetworkFeeSelector = (): JSX.Element | null => {
-    if (gaslessEnabled && isGaslessEligible) return null
+    if (gaslessEnabled && showGaslessSwitch) return null
     if (!showNetworkFeeSelector || !chainId) return null
 
     let gasLimit: number | undefined
