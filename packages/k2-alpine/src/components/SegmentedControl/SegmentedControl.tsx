@@ -10,7 +10,6 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { SxProp } from 'dripsy'
-import { alpha } from '../../utils/colors'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { useTheme } from '../../hooks'
@@ -108,12 +107,15 @@ export const SegmentedControl = ({
 
   return (
     <View style={style}>
-      <View sx={{ backgroundColor: '$surfacePrimary', borderRadius: 100 }}>
+      <View
+        sx={{
+          borderRadius: 100,
+          backgroundColor: theme.isDark ? '#C5C5C840' : '#99999940'
+        }}>
         <View
           style={[
             {
               borderRadius: 100,
-              backgroundColor: alpha(theme.colors.$textPrimary, 0.2),
               flexDirection: 'row'
             }
           ]}

@@ -41,6 +41,26 @@ const TrackHomeScreen = (): JSX.Element => {
           onPress={() => handleTrack('ethereum')}>
           Ethereum
         </Button>
+        <Button
+          type="primary"
+          size="small"
+          onPress={() => handleTrack('tether')}>
+          USDT
+        </Button>
+        <Button
+          type="primary"
+          size="small"
+          onPress={() => handleTrack('tezos')}>
+          Tezos
+        </Button>
+        <Button
+          type="primary"
+          size="small"
+          onPress={() =>
+            handleTrack('0x69260B9483F9871ca57f81A90D91E2F96c2Cd11d')
+          }>
+          Trending - GoGoPool
+        </Button>
       </ScrollView>
     </BlurredBarsContentLayout>
   )

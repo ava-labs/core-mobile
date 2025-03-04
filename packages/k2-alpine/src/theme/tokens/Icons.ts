@@ -46,8 +46,7 @@ import IconSync from '../../assets/icons/sync.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
 import IconSearchCustom from '../../assets/icons/search_custom.svg'
-import IconAlertCircleDark from '../../assets/icons/alert_circle_dark.svg'
-import IconAlertCircleLight from '../../assets/icons/alert_circle_light.svg'
+import IconAlertCircle from '../../assets/icons/alert_circle.svg'
 import IconAvalabsTrademark from '../../assets/icons/avalabs_trademark.svg'
 import IconChevronRightV2 from '../../assets/icons/chevron_right_v2.svg'
 import IconQrCodeScanner from '../../assets/icons/qr_code_scanner.svg'
@@ -176,8 +175,7 @@ export const Icons = {
   Alert: {
     ErrorOutline: IconErrorOutline,
     Error: IconAlertError,
-    AlertCircleDark: IconAlertCircleDark,
-    AlertCircleLight: IconAlertCircleLight
+    AlertCircle: IconAlertCircle
   },
   Device: {
     GPPMaybe: IconGPPMaybe

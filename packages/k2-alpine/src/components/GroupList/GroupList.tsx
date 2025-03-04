@@ -27,60 +27,70 @@ export const GroupList = ({
         overflow: 'hidden',
         backgroundColor: '$surfaceSecondary'
       }}>
-      {data.map(({ leftIcon, title, value, accessory, onPress }, index) => (
-        <View key={index}>
-          <TouchableOpacity onPress={onPress}>
-            <View
-              sx={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                minHeight: itemHeight
-              }}>
-              {leftIcon && <View sx={{ marginLeft: 16 }}>{leftIcon}</View>}
+      {data.map(
+        ({ leftIcon, rightIcon, title, value, accessory, onPress }, index) => (
+          <View key={index}>
+            <TouchableOpacity onPress={onPress}>
               <View
                 sx={{
-                  flexGrow: 1,
                   flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginLeft: 15
-                }}
-                onLayout={handleLayout}>
-                <Text
-                  variant="buttonMedium"
-                  sx={{
-                    color: '$textPrimary',
-                    paddingVertical: 14
-                  }}>
-                  {title}
-                </Text>
+                  minHeight: itemHeight
+                }}>
+                {leftIcon && <View sx={{ marginLeft: 16 }}>{leftIcon}</View>}
                 <View
                   sx={{
+                    flexGrow: 1,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    marginRight: 15,
-                    gap: 4
-                  }}>
-                  {value !== undefined && (
-                    <Text variant="body1" sx={{ color: '$textSecondary' }}>
-                      {value}
+                    justifyContent: 'space-between',
+                    marginLeft: 15
+                  }}
+                  onLayout={handleLayout}>
+                  <View
+                    sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text
+                      variant="buttonMedium"
+                      sx={{
+                        color: '$textPrimary',
+                        paddingVertical: 14
+                      }}>
+                      {title}
                     </Text>
-                  )}
-                  {accessory !== undefined && accessory}
-                  {accessory === undefined && onPress !== undefined && (
-                    <Icons.Navigation.ChevronRight
-                      color={theme.colors.$textSecondary}
-                    />
-                  )}
+                    {rightIcon !== undefined && rightIcon}
+                  </View>
+                  <View
+                    sx={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginRight: 15,
+                      gap: 4,
+                      flexShrink: 1
+                    }}>
+                    {value !== undefined && (
+                      <Text
+                        variant="body1"
+                        numberOfLines={1}
+                        sx={{ color: '$textSecondary' }}>
+                        {value}
+                      </Text>
+                    )}
+                    {accessory !== undefined && accessory}
+                    {accessory === undefined && onPress !== undefined && (
+                      <Icons.Navigation.ChevronRight
+                        color={theme.colors.$textSecondary}
+                      />
+                    )}
+                  </View>
                 </View>
               </View>
-            </View>
-          </TouchableOpacity>
-          {index < data.length - 1 && (
-            <Separator sx={{ marginLeft: textMarginLeft }} />
-          )}
-        </View>
-      ))}
+            </TouchableOpacity>
+            {index < data.length - 1 && (
+              <Separator sx={{ marginLeft: textMarginLeft }} />
+            )}
+          </View>
+        )
+      )}
     </View>
   )
 }
@@ -90,5 +100,6 @@ export type GroupListItem = {
   value?: string
   onPress?: () => void
   leftIcon?: JSX.Element
+  rightIcon?: JSX.Element
   accessory?: JSX.Element
 }

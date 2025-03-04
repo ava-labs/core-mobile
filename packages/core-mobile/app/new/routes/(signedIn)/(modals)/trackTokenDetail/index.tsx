@@ -1,12 +1,19 @@
 import {
-  PriceChange,
+  Card,
+  GroupList,
+  GroupListItem,
+  Icons,
+  NavigationTitleHeader,
   ScrollView,
   SegmentedControl,
+  showAlert,
   Text,
+  TouchableOpacity,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useNavigation } from 'expo-router'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -19,20 +26,24 @@ import Animated, {
 import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
 import { formatLargeCurrency } from 'utils/Utils'
 import { format } from 'date-fns'
-import { ChartOverlay } from 'features/track/components/ChartOverlay'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  selectHasBeenViewedOnce,
-  setViewOnce,
-  ViewOnceKey
-} from 'store/viewOnce'
-import { StyleSheet } from 'react-native'
+import { LayoutRectangle, StyleSheet } from 'react-native'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
+import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
+import TokenAddress from 'common/components/TokenAddress'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { LayoutChangeEvent } from 'react-native'
+import { ShareBarButton } from 'common/components/ShareBarButton'
+import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
+import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
+  const { theme } = useTheme()
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
+  const navigation = useNavigation()
   const headerOpacity = useSharedValue(1)
   const selectedDataIndicatorOpacity = useDerivedValue(
     () => 1 - headerOpacity.value
@@ -41,37 +52,48 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     value: number
     date: Date
   }>()
-  const { formatTokenInCurrency } = useFormatCurrency()
-  const hasBeenViewedChart = useSelector(
-    selectHasBeenViewedOnce(ViewOnceKey.CHART_INTERACTION)
-  )
-  const dispatch = useDispatch()
-
+  const { formatCurrency } = useFormatCurrency()
+  const [headerLayout, setHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const { getMarketTokenById } = useWatchlist()
-
-  const { chartData, chartDays, ranges, changeChartDays } = useTokenDetails(
-    tokenId ?? ''
-  )
-
-  const handleDataSelected = (point: { value: number; date: Date }): void => {
-    setSelectedData(point)
-  }
-
+  const {
+    chartData,
+    chartDays,
+    ranges,
+    changeChartDays,
+    tokenInfo,
+    isFavorite,
+    handleFavorite,
+    openUrl
+  } = useTokenDetails(tokenId ?? '')
   const token = tokenId ? getMarketTokenById(tokenId) : undefined
-
-  const handleChartGestureStart = (): void => {
-    setIsChartInteracting(true)
-  }
-
-  const handleChartGestureEnd = (): void => {
-    setIsChartInteracting(false)
-  }
-
   const selectedSegmentIndex = useMemo(() => {
     return Object.keys(SEGMENT_INDEX_MAP).findIndex(
       key => SEGMENT_INDEX_MAP[Number(key)] === chartDays
     )
   }, [chartDays])
+  const scrollViewProps = useFadingHeaderNavigation({
+    header: <NavigationTitleHeader title={token?.symbol.toUpperCase() ?? ''} />,
+    targetLayout: headerLayout,
+    shouldHeaderHaveGrabber: true
+  })
+  const lastUpdatedDate = chartData?.[chartData.length - 1]?.date
+
+  const formatMarketNumbers = useCallback(
+    (value: number) => {
+      return value === 0 ? ' -' : formatLargeCurrency(formatCurrency(value))
+    },
+    [formatCurrency]
+  )
+
+  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
+    setHeaderLayout(event.nativeEvent.layout)
+  }
+
+  const handleDataSelected = (point: { value: number; date: Date }): void => {
+    setSelectedData(point)
+  }
 
   const handleSelectSegment = useCallback(
     (index: number) => {
@@ -82,9 +104,163 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     [changeChartDays]
   )
 
-  const handleInstructionRead = (): void => {
-    dispatch(setViewOnce(ViewOnceKey.CHART_INTERACTION))
+  const handleChartGestureStart = (): void => {
+    setIsChartInteracting(true)
   }
+
+  const handleChartGestureEnd = (): void => {
+    setIsChartInteracting(false)
+  }
+
+  const handlePressAbout = (): void => {
+    showAlert({
+      title: `About ${token?.symbol.toUpperCase()}`,
+      description: tokenInfo?.description,
+      buttons: [
+        {
+          text: 'Close'
+        }
+      ]
+    })
+  }
+
+  const handleMarketCapIconPress = (): void => {
+    showAlert({
+      title: 'Market Cap',
+      description: `Total market value of a cryptocurrency's circulating supply. Similar to the stock market's measurement of multiplying price per share by shares readily available in the market.`,
+      buttons: [
+        {
+          text: 'Got it'
+        }
+      ]
+    })
+  }
+
+  const handlePressTwitter = useCallback(() => {
+    tokenInfo?.twitterHandle &&
+      openUrl(`https://x.com/${tokenInfo.twitterHandle}`)
+  }, [openUrl, tokenInfo?.twitterHandle])
+
+  const handlePressWebsite = useCallback(() => {
+    tokenInfo?.urlHostname && openUrl(tokenInfo.urlHostname)
+  }, [openUrl, tokenInfo?.urlHostname])
+
+  const handleBuy = (): void => {
+    // navigate(AppNavigation.Wallet.Buy, {
+    //   screen: AppNavigation.Buy.Buy,
+    //   params: { showAvaxWarning: true }
+    // })
+  }
+
+  const handleStake = (): void => {
+    // @ts-ignore
+    // navigate(AppNavigation.Wallet.Earn, {
+    //   screen: AppNavigation.Earn.StakeSetup
+    // })
+  }
+
+  const handleSwap = (_?: string): void => {
+    // navigate(AppNavigation.Wallet.Swap, {
+    //   screen: AppNavigation.Swap.Swap,
+    //   params: {
+    //     initialTokenIdFrom: AVAX_TOKEN_ID,
+    //     initialTokenIdTo
+    //   }
+    // })
+  }
+
+  const marketData = useMemo(() => {
+    const data: GroupListItem[] = []
+
+    if (isPositiveNumber(tokenInfo?.marketCap)) {
+      data.push({
+        title: 'Market Cap',
+        rightIcon: (
+          <TouchableOpacity onPress={handleMarketCapIconPress}>
+            <Icons.Alert.AlertCircle color={theme.colors.$textPrimary} />
+          </TouchableOpacity>
+        ),
+        value: formatMarketNumbers(tokenInfo.marketCap)
+      })
+    }
+
+    if (isPositiveNumber(tokenInfo?.marketVolume)) {
+      data.push({
+        title: '24-hr volume',
+        value: formatMarketNumbers(tokenInfo?.marketVolume)
+      })
+    }
+
+    if (isPositiveNumber(tokenInfo?.marketCirculatingSupply)) {
+      data.push({
+        title: 'Available supply',
+        value: formatMarketNumbers(tokenInfo.marketCirculatingSupply)
+      })
+    }
+
+    if (isPositiveNumber(tokenInfo?.marketTotalSupply)) {
+      data.push({
+        title: 'Total supply',
+        value: formatMarketNumbers(tokenInfo.marketTotalSupply)
+      })
+    }
+
+    return data
+  }, [tokenInfo, formatMarketNumbers, theme])
+
+  const metaData = useMemo(() => {
+    const data: GroupListItem[] = []
+
+    if (tokenInfo?.contractAddress) {
+      data.push({
+        title: 'Contract Address',
+        accessory: (
+          <TokenAddress
+            textVariant="body1"
+            address={tokenInfo.contractAddress}
+            textColor={theme.colors.$textSecondary}
+          />
+        ),
+        onPress: () => copyToClipboard(tokenInfo.contractAddress)
+      })
+    }
+
+    if (tokenInfo?.urlHostname) {
+      data.push({
+        title: 'Website',
+        value: getDomainFromUrl(tokenInfo.urlHostname),
+        accessory: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
+        onPress: handlePressWebsite
+      })
+    }
+
+    if (tokenInfo?.twitterHandle) {
+      data.push({
+        title: 'X / Twitter',
+        value: `@${tokenInfo.twitterHandle}`,
+        accessory: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
+        onPress: handlePressTwitter
+      })
+    }
+
+    return data
+  }, [tokenInfo, theme, handlePressWebsite, handlePressTwitter])
+
+  const renderHeaderRight = useCallback(() => {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: 16,
+          marginTop: 14,
+          marginRight: 18,
+          alignItems: 'center'
+        }}>
+        <FavoriteBarButton isFavorite={isFavorite} onPress={handleFavorite} />
+        <ShareBarButton />
+      </View>
+    )
+  }, [isFavorite, handleFavorite])
 
   useEffect(() => {
     headerOpacity.value = withTiming(isChartInteracting ? 0 : 1, {
@@ -92,52 +268,53 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     })
   }, [isChartInteracting, headerOpacity])
 
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: renderHeaderRight
+    })
+  }, [renderHeaderRight, navigation])
+
   if (!tokenId || !token) {
     return <LoadingState />
   }
 
-  const lastUpdatedDate = chartData?.[chartData.length - 1]?.date
-
-  const priceChange: PriceChange | undefined =
-    ranges.minDate === 0 && ranges.maxDate === 0
-      ? undefined
-      : {
-          formattedPrice: formatLargeCurrency(
-            formatTokenInCurrency(Math.abs(ranges.diffValue))
-          ),
-          status:
-            ranges.diffValue < 0
-              ? 'down'
-              : ranges.diffValue === 0
-              ? 'equal'
-              : 'up',
-          formattedPercent: `${ranges.percentChange
-            .toFixed(2)
-            .replace('-', '')}%`
-        }
-
   return (
-    <ScrollView>
-      <View sx={{ paddingHorizontal: 16, paddingBottom: 4 }}>
-        <Animated.View style={{ opacity: headerOpacity }}>
-          <TokenHeader token={token} priceChange={priceChange} />
-        </Animated.View>
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: selectedDataIndicatorOpacity
-            }
-          ]}>
-          <SelectedChartDataIndicator
-            selectedData={selectedData}
-            currentPrice={chartData?.[0]?.value}
-          />
-        </Animated.View>
-      </View>
-      <View>
+    <View sx={{ flex: 1 }}>
+      <ScrollView
+        sx={{ flex: 1 }}
+        contentContainerSx={{ paddingBottom: 60 }}
+        {...scrollViewProps}>
+        <View sx={{ paddingHorizontal: 16, paddingBottom: 4 }}>
+          <Animated.View
+            style={{ opacity: headerOpacity }}
+            onLayout={handleHeaderLayout}>
+            <TokenHeader
+              logoUri={token.logoUri}
+              symbol={token.symbol}
+              currentPrice={token.currentPrice}
+              ranges={
+                ranges.minDate === 0 && ranges.maxDate === 0
+                  ? undefined
+                  : ranges
+              }
+              rank={tokenInfo?.marketCapRank}
+            />
+          </Animated.View>
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: selectedDataIndicatorOpacity
+              }
+            ]}>
+            <SelectedChartDataIndicator
+              selectedData={selectedData}
+              currentPrice={chartData?.[0]?.value}
+            />
+          </Animated.View>
+        </View>
         <TokenDetailChart
           chartData={chartData}
           negative={ranges.diffValue < 0}
@@ -145,40 +322,59 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           onGestureStart={handleChartGestureStart}
           onGestureEnd={handleChartGestureEnd}
         />
-        <ChartOverlay
-          chartData={chartData}
-          shouldShowInstruction={!hasBeenViewedChart}
-          onInstructionRead={handleInstructionRead}
-        />
-      </View>
-      <View sx={{ paddingTop: 40, marginTop: 8 }}>
-        {lastUpdatedDate && (
-          <Animated.View
-            style={{
-              alignSelf: 'center',
-              position: 'absolute',
-              opacity: headerOpacity
-            }}>
-            <Text
-              variant="caption"
-              sx={{
-                color: '$textSecondary'
+        <View sx={{ paddingTop: 40, marginTop: 8 }}>
+          {lastUpdatedDate && (
+            <Animated.View
+              style={{
+                alignSelf: 'center',
+                position: 'absolute',
+                opacity: headerOpacity
               }}>
-              Last updated:{' '}
-              {format(lastUpdatedDate, 'E, MMM dd, yyyy, H:mm aa')}
-            </Text>
-          </Animated.View>
-        )}
-      </View>
-      <SegmentedControl
-        type="thin"
-        dynamicItemWidth={false}
-        items={['24H', '1W', '1M', '3M', '1Y']}
-        style={{ marginHorizontal: 16 }}
-        selectedSegmentIndex={selectedSegmentIndex}
-        onSelectSegment={handleSelectSegment}
+              <Text
+                variant="caption"
+                sx={{
+                  color: '$textSecondary'
+                }}>
+                Last updated:{' '}
+                {format(lastUpdatedDate, 'E, MMM dd, yyyy, H:mm aa')}
+              </Text>
+            </Animated.View>
+          )}
+        </View>
+        <SegmentedControl
+          type="thin"
+          dynamicItemWidth={false}
+          items={['24H', '1W', '1M', '3M', '1Y']}
+          style={{ marginHorizontal: 16 }}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+        />
+        <View sx={{ paddingHorizontal: 16, marginTop: 25, gap: 20 }}>
+          {tokenInfo?.description && (
+            <TouchableOpacity onPress={handlePressAbout}>
+              <Card sx={{ alignItems: undefined, gap: 3 }}>
+                <Text variant="heading4">About</Text>
+                <Text
+                  variant="subtitle2"
+                  sx={{ color: '$textSecondary' }}
+                  numberOfLines={6}>
+                  {tokenInfo?.description}
+                </Text>
+              </Card>
+            </TouchableOpacity>
+          )}
+          {marketData.length > 0 && <GroupList data={marketData} />}
+          {metaData.length > 0 && <GroupList data={metaData} />}
+        </View>
+      </ScrollView>
+      <TokenDetailFooter
+        tokenId={tokenId}
+        tokenInfo={tokenInfo}
+        onBuy={handleBuy}
+        onStake={handleStake}
+        onSwap={handleSwap}
       />
-    </ScrollView>
+    </View>
   )
 }
 
