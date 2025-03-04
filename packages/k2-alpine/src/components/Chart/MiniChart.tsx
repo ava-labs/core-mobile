@@ -34,7 +34,7 @@ export const MiniChart = ({
     { width: 0, height: 0 }
   )
 
-  const smoothedData = useMemo(() => {
+  const downsampledData = useMemo(() => {
     if (downsampleTo === Number.POSITIVE_INFINITY) {
       return data
     }
@@ -48,12 +48,15 @@ export const MiniChart = ({
   const { path, lastPoint } = useMemo(
     () =>
       makeLineGraph({
-        data: smoothedData.map((item, index) => ({ index, value: item.value })),
+        data: downsampledData.map((item, index) => ({
+          index,
+          value: item.value
+        })),
         size: graphSize,
         xPadding: CIRCLE_RADIUS,
         yPadding: CIRCLE_RADIUS
       }),
-    [graphSize, smoothedData]
+    [graphSize, downsampledData]
   )
 
   const circleColor = negative ? NEGATIVE_COLOR_RIGHT : POSITIVE_COLOR_RIGHT
