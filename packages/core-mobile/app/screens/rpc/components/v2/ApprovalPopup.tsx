@@ -234,7 +234,7 @@ const ApprovalPopup = (): JSX.Element => {
     if (approveDisabled) return
     setSubmitting(true)
 
-    if (gaslessEnabled) {
+    if (showGaslessSwitch && gaslessEnabled) {
       const txHash = await handleGaslessTx(account.addressC)
       if (!txHash) {
         setSubmitting(false)
