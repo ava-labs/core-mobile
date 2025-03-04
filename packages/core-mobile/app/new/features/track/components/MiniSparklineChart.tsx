@@ -1,9 +1,6 @@
 import React, { FC } from 'react'
 import { LineGraph } from 'react-native-graph'
 
-// const NEGATIVE_GRADIENT_FILL_COLORS = ['#EA4542', '#F5643B']
-// const POSITIVE_GRADIENT_FILL_COLORS = ['#1FC626', '#42C49F']
-
 const MiniSparklineChart: FC<Props> = ({
   width,
   height,
