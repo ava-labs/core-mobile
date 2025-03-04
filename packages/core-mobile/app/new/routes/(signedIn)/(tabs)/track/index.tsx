@@ -5,12 +5,16 @@ import {
   useTheme,
   SegmentedControl,
   Text,
-  Image
+  Image,
+  SearchBar
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { Dimensions, LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import Animated, {
+  interpolate,
+  useAnimatedStyle
+} from 'react-native-reanimated'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef
@@ -26,10 +30,13 @@ const TrackHomeScreen = (): JSX.Element => {
   const {
     favorites,
     topTokens,
+    prices,
+    charts,
     refetchTopTokens,
     isRefetchingTopTokens,
     isLoadingTopTokens
   } = useWatchlist()
+  const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -49,15 +56,45 @@ const TrackHomeScreen = (): JSX.Element => {
     opacity: 1 - targetHiddenProgress.value
   }))
 
+  const animatedSearchbarStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      targetHiddenProgress.value,
+      [0, 1],
+      [0, 50],
+      'clamp'
+    )
+    return {
+      transform: [{ translateY }]
+    }
+  })
+
+  const animatedSeparatorStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      targetHiddenProgress.value,
+      [0, 1],
+      [0, 50],
+      'clamp'
+    )
+    const opacity = interpolate(
+      targetHiddenProgress.value,
+      [0, 1],
+      [0, 1],
+      'clamp'
+    )
+    return {
+      transform: [{ translateY }],
+      opacity
+    }
+  })
+
   const renderHeader = (): JSX.Element => {
     return (
-      <View
-        style={{ backgroundColor: theme.colors.$surfacePrimary, padding: 16 }}>
+      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
         <View onLayout={handleBalanceHeaderLayout}>
           <Animated.View
             style={[
               {
-                paddingBottom: 16,
+                paddingHorizontal: 16,
                 backgroundColor: theme.colors.$surfacePrimary
               },
               animatedHeaderStyle
@@ -65,6 +102,29 @@ const TrackHomeScreen = (): JSX.Element => {
             <Text variant="heading2">Track</Text>
           </Animated.View>
         </View>
+        <Animated.View
+          style={[
+            animatedSearchbarStyle,
+            {
+              paddingHorizontal: 16,
+              paddingTop: 16,
+              paddingBottom: 8,
+              backgroundColor: theme.colors.$surfacePrimary
+            }
+          ]}>
+          <SearchBar
+            onTextChanged={setSearchText}
+            searchText={searchText}
+            placeholder="Search"
+            useDebounce={true}
+          />
+        </Animated.View>
+        <Animated.View
+          style={[
+            { height: 1, backgroundColor: theme.colors.$surfaceSecondary },
+            animatedSeparatorStyle
+          ]}
+        />
       </View>
     )
   }
@@ -76,6 +136,7 @@ const TrackHomeScreen = (): JSX.Element => {
   }
 
   const handleChangeTab = (index: number): void => {
+    setSearchText('')
     setSelectedSegmentIndex(index)
   }
 
@@ -103,6 +164,10 @@ const TrackHomeScreen = (): JSX.Element => {
             component: (
               <MarketScreen
                 tokens={favorites}
+                prices={prices}
+                charts={charts}
+                searchText={searchText}
+                isFavorites={true}
                 isRefetchingTopTokens={isRefetchingTopTokens}
                 isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
@@ -127,6 +192,9 @@ const TrackHomeScreen = (): JSX.Element => {
             component: (
               <MarketScreen
                 tokens={topTokens}
+                prices={prices}
+                charts={charts}
+                searchText={searchText}
                 isRefetchingTopTokens={isRefetchingTopTokens}
                 isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}

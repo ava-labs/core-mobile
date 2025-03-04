@@ -17,10 +17,12 @@ type Props = {
   isFetchingTokens: boolean
   items: MarketToken[]
   searchText: string | undefined
+  isSearchingFavorites?: boolean
 }
 
 export function useTokenSearch({
   isFetchingTokens,
+  isSearchingFavorites = false,
   items,
   searchText
 }: Props): {
@@ -32,6 +34,7 @@ export function useTokenSearch({
   const [isSearchingTokens, setIsSearchingTokens] = useState(false)
   const [searchResults, setSearchResults] = useState<TokenSearchType>()
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     async function searchAsync(): Promise<void> {
       if (isFetchingTokens) return
@@ -48,6 +51,12 @@ export function useTokenSearch({
           // no need to search for prices and charts
           // it will reuse the existing prices and charts data in the screen
           setSearchResults({ tokens, prices: undefined, charts: undefined })
+          return
+        }
+
+        // if we are searching favorites, we don't want to run the token search query
+        if (isSearchingFavorites) {
+          setSearchResults({ tokens: [], prices: undefined, charts: undefined })
           return
         }
 
@@ -72,7 +81,14 @@ export function useTokenSearch({
     }
 
     searchAsync()
-  }, [isFetchingTokens, items, searchText, currency, dispatch])
+  }, [
+    isFetchingTokens,
+    items,
+    searchText,
+    currency,
+    dispatch,
+    isSearchingFavorites
+  ])
 
   return {
     isSearchingTokens,
