@@ -173,7 +173,7 @@ const TrackHomeScreen = (): JSX.Element => {
                 goToMarketDetail={handleGotoMarketDetail}
                 errorState={
                   <ErrorState
-                    sx={{ height: portfolioTabContentHeight }}
+                    sx={{ height: contentHeight }}
                     icon={
                       <Image
                         source={require('../../../../assets/icons/star_struck_emoji.png')}
@@ -200,7 +200,7 @@ const TrackHomeScreen = (): JSX.Element => {
                 goToMarketDetail={handleGotoMarketDetail}
                 errorState={
                   <ErrorState
-                    sx={{ height: portfolioTabContentHeight }}
+                    sx={{ height: contentHeight }}
                     button={{
                       title: 'Refresh',
                       onPress: refetchTopTokens
@@ -235,6 +235,6 @@ export enum TrackHomeScreenTab {
   Market = 'Market'
 }
 
-const portfolioTabContentHeight = Dimensions.get('window').height / 2
+const contentHeight = Dimensions.get('window').height / 2
 
 export default TrackHomeScreen
