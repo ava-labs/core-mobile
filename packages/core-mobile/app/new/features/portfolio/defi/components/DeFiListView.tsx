@@ -54,12 +54,13 @@ export const DeFiListView = ({
                 numberOfLines={1}>
                 {formattedPrice}
               </Text>
+              <TouchableOpacity onPress={onPressArrow} hitSlop={10}>
+                <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
-        <TouchableOpacity onPress={onPressArrow} hitSlop={10}>
-          <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
-        </TouchableOpacity>
+        <Icons.Navigation.ChevronRightV2 color={theme.colors.$textSecondary} />
       </TouchableOpacity>
     </Animated.View>
   )
