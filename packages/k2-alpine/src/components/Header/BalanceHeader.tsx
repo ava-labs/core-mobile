@@ -27,6 +27,8 @@ export const BalanceHeader = ({
   isLoading?: boolean
 }): React.JSX.Element => {
   const renderBalance = (): React.JSX.Element => {
+    return <BalanceLoader />
+
     if (isLoading) {
       return <BalanceLoader />
     }
