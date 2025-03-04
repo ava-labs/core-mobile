@@ -50,7 +50,7 @@ class GaslessService {
   isEthSendTx = (
     signingData: SigningData
   ): signingData is SigningData_EthSendTx => {
-    return signingData.type !== RpcMethod.ETH_SEND_TRANSACTION
+    return signingData.type === RpcMethod.ETH_SEND_TRANSACTION
   }
 
   fundTx = async (
