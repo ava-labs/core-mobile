@@ -17,10 +17,7 @@ if (!Config.GAS_STATION_URL) {
   )
 }
 
-const SUPPORTED_GASLESS_METHODS = [
-  RpcMethod.ETH_SEND_TRANSACTION,
-  RpcMethod.ETH_SEND_TRANSACTION_BATCH
-]
+const SUPPORTED_GASLESS_METHODS = [RpcMethod.ETH_SEND_TRANSACTION]
 
 class GaslessService {
   private sdk: GaslessSdk | null = null
@@ -53,15 +50,7 @@ class GaslessService {
   isEthSendTx = (
     signingData: SigningData
   ): signingData is SigningData_EthSendTx => {
-    if (signingData.type !== RpcMethod.ETH_SEND_TRANSACTION) return false
-
-    return (
-      'data' in signingData &&
-      typeof signingData.data === 'object' &&
-      signingData.data !== null &&
-      'to' in signingData.data &&
-      'value' in signingData.data
-    )
+    return signingData.type !== RpcMethod.ETH_SEND_TRANSACTION
   }
 
   fundTx = async (
