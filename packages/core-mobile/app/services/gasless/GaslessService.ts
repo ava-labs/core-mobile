@@ -1,5 +1,9 @@
 import { FundResult, GaslessSdk } from '@avalabs/core-gasless-sdk'
-import { SigningData_EthSendTx } from '@avalabs/vm-module-types'
+import {
+  RpcMethod,
+  SigningData,
+  SigningData_EthSendTx
+} from '@avalabs/vm-module-types'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
@@ -12,6 +16,11 @@ if (!Config.GAS_STATION_URL) {
     'GAS_STATION_URL is missing. Gasless service may not work properly.'
   )
 }
+
+const SUPPORTED_GASLESS_METHODS = [
+  RpcMethod.ETH_SEND_TRANSACTION,
+  RpcMethod.ETH_SEND_TRANSACTION_BATCH
+]
 
 class GaslessService {
   private sdk: GaslessSdk | null = null
@@ -37,8 +46,26 @@ class GaslessService {
     return await sdk.isEligibleForChain({ chainId })
   }
 
+  isEligibleForTxType = (signingData: SigningData): boolean => {
+    return SUPPORTED_GASLESS_METHODS.includes(signingData.type)
+  }
+
+  isEthSendTx = (
+    signingData: SigningData
+  ): signingData is SigningData_EthSendTx => {
+    if (signingData.type !== RpcMethod.ETH_SEND_TRANSACTION) return false
+
+    return (
+      'data' in signingData &&
+      typeof signingData.data === 'object' &&
+      signingData.data !== null &&
+      'to' in signingData.data &&
+      'value' in signingData.data
+    )
+  }
+
   fundTx = async (
-    signingData: SigningData_EthSendTx,
+    signingData: SigningData,
     addressFrom: string,
     provider: JsonRpcBatchInternal
   ): Promise<FundResult> => {
@@ -48,6 +75,15 @@ class GaslessService {
         error: {
           category: 'DO_NOT_RETRY',
           message: 'INTERNAL_ERROR'
+        }
+      }
+    }
+
+    if (!this.isEthSendTx(signingData)) {
+      return {
+        error: {
+          category: 'DO_NOT_RETRY',
+          message: 'INVALID_PAYLOAD'
         }
       }
     }
