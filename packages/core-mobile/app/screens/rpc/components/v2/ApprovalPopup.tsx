@@ -1,11 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import {
-  Alert,
-  AlertType,
-  SigningData_EthSendTx,
-  TokenType
-} from '@avalabs/vm-module-types'
+import { Alert, AlertType, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
@@ -47,6 +42,7 @@ import InfoSVG from 'components/svg/InfoSVG'
 import { validateFee } from 'screens/send/utils/evm/validate'
 import NetworkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { resolve } from '@avalabs/core-utils-sdk'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
@@ -82,17 +78,20 @@ const ApprovalPopup = (): JSX.Element => {
         setIsGaslessEligible(false)
         return
       }
-      const isEligible = await GaslessService.isEligibleForChain(
+      const isEligibleForChain = await GaslessService.isEligibleForChain(
         chainId.toString()
       ).catch(err => {
         Logger.error('Error checking gasless eligibility', err)
         return false
       })
+      const isEligibleForTxType =
+        GaslessService.isEligibleForTxType(signingData)
+      const isEligible = isEligibleForTxType && isEligibleForChain
       Logger.info('ApprovalPopup: Gasless eligibility', isEligible)
       setIsGaslessEligible(isEligible)
     }
     checkGaslessEligibility()
-  }, [chainId, request.chainId])
+  }, [chainId, request.chainId, signingData])
 
   const accountSelector =
     'account' in signingData
@@ -204,13 +203,11 @@ const ApprovalPopup = (): JSX.Element => {
     }
 
     while (attempts <= MAX_ATTEMPTS) {
-      const result = await GaslessService.fundTx(
-        signingData as SigningData_EthSendTx,
-        addressFrom,
-        provider
+      const [result, error] = await resolve(
+        GaslessService.fundTx(signingData, addressFrom, provider)
       )
 
-      if (result.txHash) {
+      if (result?.txHash) {
         setGaslessError(null)
         return result.txHash
       }
@@ -218,8 +215,9 @@ const ApprovalPopup = (): JSX.Element => {
       // Show error and stop if we get a DO_NOT_RETRY error or
       // if we've hit max attempts with a RETRY_WITH_NEW_CHALLENGE error
       if (
-        result.error?.category === 'DO_NOT_RETRY' ||
-        (result.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
+        error ||
+        result?.error?.category === 'DO_NOT_RETRY' ||
+        (result?.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
         showGaslessError()
