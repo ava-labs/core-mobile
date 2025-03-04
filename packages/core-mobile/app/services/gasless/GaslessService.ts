@@ -4,6 +4,8 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
 import { Transaction, TransactionLike } from 'ethers'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { resolve } from '@avalabs/core-utils-sdk'
 
 if (!Config.GAS_STATION_URL) {
   Logger.warn(
@@ -37,7 +39,8 @@ class GaslessService {
 
   fundTx = async (
     signingData: SigningData_EthSendTx,
-    addressFrom: string
+    addressFrom: string,
+    provider: JsonRpcBatchInternal
   ): Promise<FundResult> => {
     const sdk = await this.getSdk()
     if (!sdk) {
@@ -55,12 +58,46 @@ class GaslessService {
       ...signingData.data,
       from: null
     } as TransactionLike).unsignedSerialized
-    return await sdk.fundTx({
+
+    const result = await sdk.fundTx({
       challengeHex,
       solutionHex,
       txHex,
       from: addressFrom
     })
+
+    if (result.txHash) {
+      const isConfirmed = await this.waitForConfirmation(
+        result.txHash,
+        provider
+      )
+      if (!isConfirmed) {
+        return {
+          error: {
+            category: 'DO_NOT_RETRY',
+            message: 'INTERNAL_ERROR'
+          }
+        }
+      }
+    }
+
+    return result
+  }
+
+  private waitForConfirmation = async (
+    txHash: string,
+    provider: JsonRpcBatchInternal
+  ): Promise<boolean> => {
+    const [receipt, error] = await resolve(
+      provider.waitForTransaction(txHash, 1, 30 * 1000)
+    )
+
+    if (error) {
+      Logger.error('Gasless: Error waiting for transaction confirmation', error)
+      return false
+    }
+
+    return receipt?.status === 1
   }
 }
 
