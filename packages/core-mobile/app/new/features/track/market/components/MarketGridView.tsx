@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import {
   alpha,
   AnimatedPressable,
@@ -58,8 +58,7 @@ const MarketGridView = ({
             borderRadius: 18,
             backgroundColor: '$surfaceSecondary',
             width: (SCREEN_WIDTH - 16 * 3) / 2,
-            padding: 16,
-            marginLeft: index % 2 === 0 ? 16 : 8
+            padding: 16
           }}>
           <TokenLogo
             size={36}
@@ -112,4 +111,4 @@ const MarketGridView = ({
   )
 }
 
-export default MarketGridView
+export default memo(MarketGridView)

@@ -69,6 +69,10 @@ export const SearchBar: FC<Props> = ({
     setSearchBarFocused?.(isFocused)
   }, [isFocused, setSearchBarFocused])
 
+  useEffect(() => {
+    _setSearchText(searchText)
+  }, [searchText])
+
   /**
    * Clears the input by reference and state,
    */

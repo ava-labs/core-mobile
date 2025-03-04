@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import {
   Charts,
   defaultChartData,
@@ -18,14 +18,12 @@ const MarketListItem = ({
   charts,
   index,
   isGridView,
-  onPress,
-  isLastItem
+  onPress
 }: {
   token: MarketToken
   charts: Charts
   index: number
   isGridView?: boolean
-  isLastItem?: boolean
   onPress: () => void
 }): React.JSX.Element => {
   const currency = useSelector(selectSelectedCurrency)
@@ -84,9 +82,8 @@ const MarketListItem = ({
       status={status}
       formattedPrice={formattedPrice}
       isFavorite={isFavorite}
-      isLastItem={isLastItem}
     />
   )
 }
 
-export default MarketListItem
+export default memo(MarketListItem)

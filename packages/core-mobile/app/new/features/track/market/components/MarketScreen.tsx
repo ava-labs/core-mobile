@@ -1,12 +1,12 @@
-import React, { memo, useMemo } from 'react'
-import { View } from '@avalabs/k2-alpine'
+import React, { memo, useMemo, useCallback } from 'react'
+import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { Charts, MarketToken, Prices } from 'store/watchlist'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { LoadingState } from 'common/components/LoadingState'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
-import { Dimensions } from 'react-native'
+import { Space } from 'components/Space'
 import { MarketView } from '../consts'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketListItem from './MarketListItem'
@@ -60,11 +60,7 @@ const MarketScreen = ({
 
   const dropdowns = useMemo(() => {
     return (
-      <View
-        sx={{
-          width: WIDTH,
-          paddingHorizontal: 16
-        }}>
+      <View sx={{ paddingHorizontal: 16 }}>
         <DropdownSelections sort={sort} view={view} />
       </View>
     )
@@ -86,41 +82,57 @@ const MarketScreen = ({
     errorState
   ])
 
-  const renderItem = ({
-    item,
-    index
-  }: {
-    item: MarketToken
-    index: number
-  }): React.JSX.Element => {
-    return (
-      <MarketListItem
-        token={item}
-        charts={chartsToDisplay}
-        index={index}
-        isGridView={isGridView}
-        onPress={goToMarketDetail}
-        isLastItem={index === data.length - 1}
-      />
-    )
+  const renderItem = useCallback(
+    ({
+      item,
+      index
+    }: {
+      item: MarketToken
+      index: number
+    }): React.JSX.Element => {
+      return (
+        <MarketListItem
+          token={item}
+          charts={chartsToDisplay}
+          index={index}
+          isGridView={isGridView}
+          onPress={goToMarketDetail}
+        />
+      )
+    },
+    [chartsToDisplay, goToMarketDetail, isGridView]
+  )
+
+  const renderSeparator = (): JSX.Element => {
+    return isGridView ? <Space y={16} /> : <Separator sx={{ marginLeft: 62 }} />
   }
 
   return (
-    <CollapsibleTabs.FlashList
+    <CollapsibleTabs.FlatList
       contentContainerStyle={{ paddingBottom: 16 }}
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}
       ListHeaderComponent={dropdowns}
       ListEmptyComponent={emptyComponent}
+      ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}
-      estimatedItemSize={isGridView ? 200 : 100}
       keyExtractor={item => item.id}
+      getItemLayout={(_, index) => ({
+        length: isGridView ? 200 : 120,
+        offset: (isGridView ? 200 : 120) * index,
+        index
+      })}
+      columnWrapperStyle={
+        isGridView && {
+          paddingHorizontal: 16,
+          justifyContent: 'space-between',
+          gap: 14
+        }
+      }
     />
   )
 }
-
-const WIDTH = Dimensions.get('window').width
 
 export default memo(MarketScreen)
