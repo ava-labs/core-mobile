@@ -11,6 +11,9 @@ export default function TabLayout(): JSX.Element {
       screenOptions={{
         headerShown: false,
         tabBarBackground,
+        tabBarLabelStyle: {
+          fontFamily: 'Inter-SemiBold'
+        },
         tabBarStyle: {
           position: 'absolute'
         }

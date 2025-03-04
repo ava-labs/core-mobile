@@ -1,5 +1,5 @@
 import React from 'react'
-import { Separator, View } from '@avalabs/k2-alpine'
+import { Separator, useTheme, View } from '@avalabs/k2-alpine'
 import Animated, {
   SharedValue,
   useAnimatedStyle
@@ -17,12 +17,16 @@ const BlurredBackgroundView = ({
     position: 'top' | 'bottom'
   }
 }): JSX.Element => {
+  const {
+    theme: { isDark }
+  } = useTheme()
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
   }))
 
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      style={{ flex: 1, backgroundColor: isDark ? '#1E1E2499' : '#FFFFFFCC' }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />
