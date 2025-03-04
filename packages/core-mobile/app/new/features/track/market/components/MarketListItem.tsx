@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React from 'react'
 import {
   Charts,
   defaultChartData,
@@ -10,10 +10,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
-import MarketGridView from './MarketGridView'
-import MarketListView from './MarketListView'
+import { MarketGridView } from './MarketGridView'
+import { MarketListView } from './MarketListView'
 
-const MarketListItem = ({
+export const MarketListItem = ({
   token,
   charts,
   index,
@@ -86,4 +86,4 @@ const MarketListItem = ({
   )
 }
 
-export default memo(MarketListItem)
+export default MarketListItem

@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { Charts, MarketToken, Prices } from 'store/watchlist'
@@ -135,4 +135,4 @@ const MarketScreen = ({
   )
 }
 
-export default memo(MarketScreen)
+export default MarketScreen

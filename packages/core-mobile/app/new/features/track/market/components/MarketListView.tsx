@@ -14,102 +14,111 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
 
-const MarketListView = ({
-  token,
-  isFavorite,
-  index,
-  onPress,
-  formattedPrice,
-  formattedPriceChange,
-  formattedPercentChange,
-  status
-}: {
-  token: MarketToken
-  isFavorite?: boolean
-  index: number
-  formattedPrice: string
-  formattedPriceChange: string
-  formattedPercentChange: string
-  status: PriceChangeStatus
-  onPress: () => void
-}): React.JSX.Element => {
-  const {
-    theme: { colors, isDark }
-  } = useTheme()
-  const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
+export const MarketListView = memo(
+  ({
+    token,
+    isFavorite,
+    index,
+    onPress,
+    formattedPrice,
+    formattedPriceChange,
+    formattedPercentChange,
+    status
+  }: {
+    token: MarketToken
+    isFavorite?: boolean
+    index: number
+    formattedPrice: string
+    formattedPriceChange: string
+    formattedPercentChange: string
+    status: PriceChangeStatus
+    onPress: () => void
+  }) => {
+    const {
+      theme: { colors, isDark }
+    } = useTheme()
+    const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
 
-  return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
-      <TouchableOpacity onPress={onPress}>
-        <View
-          sx={{
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
+    return (
+      <Animated.View
+        entering={getListItemEnteringAnimation(index)}
+        layout={LinearTransition.springify()}>
+        <TouchableOpacity onPress={onPress}>
           <View
             sx={{
+              paddingHorizontal: 16,
+              paddingVertical: 12,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 10,
-              flex: 1
+              justifyContent: 'space-between'
             }}>
-            <TokenLogo
-              size={36}
-              symbol={token.symbol}
-              logoUri={token.logoUri}
-              backgroundColor={colors.$borderPrimary}
-              borderColor={borderColor}
-            />
-            <View sx={{ flexShrink: 1 }}>
-              <Text
-                variant="buttonMedium"
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {token.name}
-              </Text>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text
-                  variant="body2"
-                  sx={{ color: '$textSecondary', lineHeight: 18 }}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {token.symbol.toUpperCase()}
-                </Text>
-                {isFavorite && (
-                  <Icons.Toggle.StarFilled width={12} height={12} />
-                )}
-              </View>
-            </View>
-          </View>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
             <View
               sx={{
-                justifyContent: 'flex-end',
-                alignItems: 'flex-end'
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                flex: 1
               }}>
-              <Text
-                variant="buttonMedium"
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {formattedPrice}
-              </Text>
-              <PriceChangeIndicator
-                formattedPrice={formattedPriceChange}
-                formattedPercent={formattedPercentChange}
-                status={status}
+              <TokenLogo
+                size={36}
+                symbol={token.symbol}
+                logoUri={token.logoUri}
+                backgroundColor={colors.$borderPrimary}
+                borderColor={borderColor}
               />
+              <View sx={{ flexShrink: 1 }}>
+                <Text
+                  variant="buttonMedium"
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {token.name}
+                </Text>
+                <View
+                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text
+                    variant="body2"
+                    sx={{ color: '$textSecondary', lineHeight: 18 }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {token.symbol.toUpperCase()}
+                  </Text>
+                  {isFavorite && (
+                    <Icons.Toggle.StarFilled width={12} height={12} />
+                  )}
+                </View>
+              </View>
             </View>
-            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+              <View
+                sx={{
+                  justifyContent: 'flex-end',
+                  alignItems: 'flex-end'
+                }}>
+                <Text
+                  variant="buttonMedium"
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {formattedPrice}
+                </Text>
+                <PriceChangeIndicator
+                  formattedPrice={formattedPriceChange}
+                  formattedPercent={formattedPercentChange}
+                  status={status}
+                />
+              </View>
+              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            </View>
           </View>
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  )
-}
-
-export default memo(MarketListView)
+        </TouchableOpacity>
+      </Animated.View>
+    )
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.formattedPrice === nextProps.formattedPrice ||
+      prevProps.formattedPriceChange === nextProps.formattedPriceChange ||
+      prevProps.formattedPercentChange === nextProps.formattedPercentChange ||
+      prevProps.isFavorite === nextProps.isFavorite
+    )
+  }
+)
