@@ -1,14 +1,24 @@
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useExchangeRates } from 'hooks/defi/useExchangeRates'
+import { useSelector } from 'react-redux'
 import { TrendingToken } from 'services/token/types'
 import WatchlistService from 'services/watchlist/WatchlistService'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 export const useGetTrendingTokens = <TData = TrendingToken[]>(
   select?: (data: TrendingToken[]) => TData
 ): UseQueryResult<TData, Error> => {
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { data } = useExchangeRates()
+  const exchangeRate = data?.usd?.[selectedCurrency.toLowerCase()]
+
   return useQuery({
-    queryKey: [ReactQueryKeys.WATCHLIST_TRENDING_TOKENS_AND_CHARTS],
-    queryFn: async () => WatchlistService.getTrendingTokens(),
+    queryKey: [
+      ReactQueryKeys.WATCHLIST_TRENDING_TOKENS_AND_CHARTS,
+      exchangeRate
+    ],
+    queryFn: async () => WatchlistService.getTrendingTokens(exchangeRate),
     refetchInterval: 120000, // 2 mins
     select
   })

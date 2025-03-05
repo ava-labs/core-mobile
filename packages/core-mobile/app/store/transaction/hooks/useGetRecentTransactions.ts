@@ -1,5 +1,4 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { useIsFocused } from '@react-navigation/native'
 import { useState, useCallback } from 'react'
 import { selectActiveAccount } from 'store/account/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
@@ -7,7 +6,7 @@ import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
 import { popBridgeTransaction } from 'store/bridge/slice'
 import { selectIsLocked } from 'store/app/slice'
-import { useNetworks } from 'hooks/networks/useNetworks'
+import { Network } from '@avalabs/core-chains-sdk'
 import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
 
@@ -31,28 +30,33 @@ const emptyArr: Transaction[] = []
  *  - refetch transactions whenever the app is switched from another screen to portfolio screen
  *    except from react-native-tab-view screens
  */
-export const useGetRecentTransactions = (): {
+export const useGetRecentTransactions = (
+  network?: Network
+): {
   transactions: Transaction[]
   isLoading: boolean
   isRefreshing: boolean
+  isError: boolean
   refresh: () => void
 } => {
   const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
   const isAppLocked = useSelector(selectIsLocked)
-  const isFocused = useIsFocused()
   const {
     currentData: data,
     isFetching,
-    refetch
+    refetch,
+    isError
   } = useGetRecentsTransactionsQuery(
     {
-      network: activeNetwork,
+      network,
       account
     },
-    { skip: isAppLocked || !isFocused, pollingInterval: POLLING_INTERVAL_IN_MS }
+    {
+      skip: isAppLocked,
+      pollingInterval: POLLING_INTERVAL_IN_MS
+    }
   )
 
   // whenever the subscribed component is in focus
@@ -92,6 +96,7 @@ export const useGetRecentTransactions = (): {
     transactions: data ?? emptyArr,
     isLoading,
     isRefreshing,
+    isError,
     refresh
   }
 }

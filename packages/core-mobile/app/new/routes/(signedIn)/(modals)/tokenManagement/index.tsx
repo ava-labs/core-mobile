@@ -9,13 +9,13 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
-import { GlobalEmptyAssets } from 'common/components/GlobalEmptyState'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useRouter } from 'expo-router'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { FlatList } from 'react-native-gesture-handler'
 import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
+import { LoadingState } from 'common/components/LoadingState'
+import { ErrorState } from 'common/components/ErrorState'
 
 const TokenManagementScreen = (): JSX.Element => {
   const {
@@ -25,7 +25,7 @@ const TokenManagementScreen = (): JSX.Element => {
     refetch,
     isRefetching,
     isLoading
-  } = useSearchableTokenList(true, false)
+  } = useSearchableTokenList({ hideBlacklist: false })
   const {
     theme: { colors }
   } = useTheme()
@@ -49,12 +49,13 @@ const TokenManagementScreen = (): JSX.Element => {
 
   const renderContent = useCallback(() => {
     if (isLoading || isRefetching) {
-      return <GlobalLoadingState />
+      return <LoadingState sx={{ flex: 1 }} />
     }
 
     if (tokenList.length === 0) {
       return (
-        <GlobalEmptyAssets
+        <ErrorState
+          sx={{ flex: 1 }}
           title="No Assets yet"
           description="Add your crypto tokens to track your portfolio’s performance and stay
       updated on your investments"

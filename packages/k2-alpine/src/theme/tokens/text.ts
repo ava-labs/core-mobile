@@ -18,9 +18,9 @@ export const text = {
     lineHeight: 27
   },
   heading4: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 21,
-    lineHeight: 24,
+    fontFamily: 'Aeonik-Bold',
+    fontSize: 24,
+    lineHeight: 27,
     letterSpacing: -0.5
   },
   heading5: {

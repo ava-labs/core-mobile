@@ -24,7 +24,7 @@ export const Placeholder = ({
         alignItems: 'center',
         ...sx
       }}>
-      <View sx={{ maxWidth: 300, alignItems: 'center' }}>
+      <View sx={{ width: '100%', alignItems: 'center' }}>
         {icon}
         <Text
           variant="heading6"

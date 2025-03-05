@@ -12,12 +12,12 @@ import { AnalyzeTxResult } from '@avalabs/bridge-unified'
 
 export type GetTransactionsArgs = {
   nextPageToken?: string
-  network: Network
+  network?: Network
   account: Account | undefined
 }
 
 export type GetRecentTransactionsArgs = {
-  network: Network
+  network?: Network
   account: Account | undefined
 }
 

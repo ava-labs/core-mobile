@@ -25,9 +25,7 @@ import IconMicrosoftAuthenticator from '../../assets/icons/microsoft_authenticat
 import IconAuthenticatorApp from '../../assets/icons/authenticator_app.svg'
 import IconChevronRight from '../../assets/icons/chevron_right.svg'
 import IconSwitchRight from '../../assets/icons/switch_right.svg'
-import IconCompare from '../../assets/icons/compare.svg'
 import IconSend from '../../assets/icons/send.svg'
-import IconPsychiatry from '../../assets/icons/psychiatry.svg'
 import IconTrendingArrowUp from '../../assets/icons/trending_arrow_up.svg'
 import IconTrendingArrowDown from '../../assets/icons/trending_arrow_down.svg'
 import IconQRCode2 from '../../assets/icons/qr_code_2.svg'
@@ -48,8 +46,7 @@ import IconSync from '../../assets/icons/sync.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
 import IconSearchCustom from '../../assets/icons/search_custom.svg'
-import IconAlertCircleDark from '../../assets/icons/alert_circle_dark.svg'
-import IconAlertCircleLight from '../../assets/icons/alert_circle_light.svg'
+import IconAlertCircle from '../../assets/icons/alert_circle.svg'
 import IconAvalabsTrademark from '../../assets/icons/avalabs_trademark.svg'
 import IconChevronRightV2 from '../../assets/icons/chevron_right_v2.svg'
 import IconQrCodeScanner from '../../assets/icons/qr_code_scanner.svg'
@@ -57,6 +54,21 @@ import IconSearch from '../../assets/icons/search.svg'
 import IconRedExclamation from '../../assets/icons/red_exclamation.svg'
 import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 import IconLayer from '../../assets/icons/layer.svg'
+
+// Transaction types
+import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
+import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
+import IconTxTypeAirdrop from '../../assets/icons/airdrop.svg'
+import IconCheckSmall from '../../assets/icons/check_small.svg'
+import IconTxTypeContractCall from '../../assets/icons/contract-call.svg'
+import IconTxTypeReceive from '../../assets/icons/receive.svg'
+import IconTxTypeSend from '../../assets/icons/tx-type-send.svg'
+import IconCompare from '../../assets/icons/compare.svg'
+import IconTxTypeBridge from '../../assets/icons/transaction-bridge.svg'
+import IconTxTypeSubnet from '../../assets/icons/transaction-subnet.svg'
+import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
+import IconTxTypeUnknown from '../../assets/icons/unknown.svg'
+import IconPsychiatry from '../../assets/icons/psychiatry.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -163,8 +175,7 @@ export const Icons = {
   Alert: {
     ErrorOutline: IconErrorOutline,
     Error: IconAlertError,
-    AlertCircleDark: IconAlertCircleDark,
-    AlertCircleLight: IconAlertCircleLight
+    AlertCircle: IconAlertCircle
   },
   Device: {
     GPPMaybe: IconGPPMaybe
@@ -196,7 +207,6 @@ export const Icons = {
   },
   Custom: {
     BackArrowCustom: IconBackArrowCustom,
-    Compare: IconCompare,
     FaceID: IconFaceID,
     TouchID: IconTouchID,
     Send: IconSend,
@@ -220,7 +230,19 @@ export const Icons = {
     Search: IconSearch,
     SearchCustom: IconSearchCustom,
     AvalabsTrademark: IconAvalabsTrademark,
-    SignPost: IconSignPost
+    SignPost: IconSignPost,
+    TxTypeAdd: IconTxTypeAdd,
+    AdvanceTime: IconTxTypeAdvanceTime,
+    Airdrop: IconTxTypeAirdrop,
+    CheckSmall: IconCheckSmall,
+    ContractCall: IconTxTypeContractCall,
+    Receive: IconTxTypeReceive,
+    TxTypeSend: IconTxTypeSend,
+    Compare: IconCompare,
+    Bridge: IconTxTypeBridge,
+    Subnet: IconTxTypeSubnet,
+    Unwrap: IconTxTypeUnwrap,
+    Unknown: IconTxTypeUnknown
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

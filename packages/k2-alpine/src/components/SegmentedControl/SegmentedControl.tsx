@@ -9,7 +9,7 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
-import { alpha } from '../../utils/colors'
+import { SxProp } from 'dripsy'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { useTheme } from '../../hooks'
@@ -19,13 +19,15 @@ export const SegmentedControl = ({
   selectedSegmentIndex,
   onSelectSegment,
   dynamicItemWidth,
-  style
+  style,
+  type = 'default'
 }: {
   items: string[]
   selectedSegmentIndex: number
   onSelectSegment: (index: number) => void
   dynamicItemWidth: boolean
   style?: ViewStyle
+  type?: 'default' | 'thin'
 }): JSX.Element => {
   const { theme } = useTheme()
   const [viewWidth, setViewWidth] = useState<number>(0)
@@ -105,12 +107,15 @@ export const SegmentedControl = ({
 
   return (
     <View style={style}>
-      <View sx={{ backgroundColor: '$surfacePrimary', borderRadius: 100 }}>
+      <View
+        sx={{
+          borderRadius: 100,
+          backgroundColor: theme.isDark ? '#C5C5C840' : '#99999940'
+        }}>
         <View
           style={[
             {
               borderRadius: 100,
-              backgroundColor: alpha(theme.colors.$textPrimary, 0.2),
               flexDirection: 'row'
             }
           ]}
@@ -130,6 +135,7 @@ export const SegmentedControl = ({
           {items.map((item, index) => {
             return (
               <Segment
+                sx={{ paddingVertical: type === 'thin' ? 8 : 12 }}
                 key={index}
                 ratio={textRatios[index]}
                 text={item}
@@ -146,6 +152,7 @@ export const SegmentedControl = ({
 }
 
 const Segment = ({
+  sx,
   ratio,
   text,
   selected,
@@ -153,6 +160,7 @@ const Segment = ({
   onTextWidthChange,
   onPress
 }: {
+  sx?: SxProp
   ratio?: number
   text: string
   selected: boolean
@@ -198,16 +206,16 @@ const Segment = ({
     <Pressable style={{ flex: ratio }} onPress={onPress}>
       <View
         sx={{
-          paddingVertical: 12,
           alignItems: 'center',
-          backgroundColor
+          backgroundColor,
+          ...sx
         }}>
         <Animated.Text
           onLayout={handleTextLayout}
           style={[
             {
               fontFamily: 'Inter-SemiBold',
-              fontSize: 15,
+              fontSize: 14,
               lineHeight: 18
             },
             textColorAnimatedStyle

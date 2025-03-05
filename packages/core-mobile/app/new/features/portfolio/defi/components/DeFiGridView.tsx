@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  AnimatedPressable,
   Icons,
   Text,
   TouchableOpacity,
@@ -9,7 +10,6 @@ import {
 import { Dimensions } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
-import { useOnPressAnimation } from 'common/hooks/useOnPressAnimation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -29,19 +29,12 @@ export const DeFiGridView = ({
   onPressArrow: () => void
 }): React.JSX.Element => {
   const { theme } = useTheme()
-  const { handleOnPressAnimation, animatedStyle } = useOnPressAnimation()
-
-  const handleOnPress = (): void => {
-    handleOnPressAnimation()
-    onPress()
-  }
 
   return (
     <Animated.View
-      style={animatedStyle}
       entering={getListItemEnteringAnimation(index)}
       layout={LinearTransition.springify()}>
-      <TouchableOpacity onPress={handleOnPress}>
+      <AnimatedPressable onPress={onPress}>
         <View
           sx={{
             borderRadius: 18,
@@ -70,7 +63,7 @@ export const DeFiGridView = ({
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </AnimatedPressable>
     </Animated.View>
   )
 }

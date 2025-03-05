@@ -3,6 +3,7 @@ import React from 'react'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { TokenGridView } from './TokenGridView'
 import { TokenListView } from './TokenListView'
 
@@ -36,22 +37,22 @@ export const TokenListItem = ({
       ? (balanceInCurrency * percentChange) / 100
       : undefined
   const formattedPrice = priceChange
-    ? Math.abs(priceChange)?.toFixed(2).toString()
+    ? '$' + Math.abs(priceChange)?.toFixed(2).toString()
     : UNKNOWN_AMOUNT
   const status = priceChange
     ? priceChange > 0
-      ? 'up'
+      ? PriceChangeStatus.Up
       : priceChange < 0
-      ? 'down'
-      : 'equal'
-    : 'equal'
+      ? PriceChangeStatus.Down
+      : PriceChangeStatus.Neutral
+    : PriceChangeStatus.Neutral
 
   return isGridView ? (
     <TokenGridView
       token={token}
       index={index}
       onPress={onPress}
-      status={status}
+      priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
     />
@@ -60,7 +61,7 @@ export const TokenListItem = ({
       token={token}
       index={index}
       onPress={onPress}
-      status={status}
+      priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
     />
