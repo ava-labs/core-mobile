@@ -28,9 +28,21 @@ export const GroupList = ({
         backgroundColor: '$surfaceSecondary'
       }}>
       {data.map(
-        ({ leftIcon, rightIcon, title, value, accessory, onPress }, index) => (
+        (
+          {
+            leftIcon,
+            rightIcon,
+            title,
+            value,
+            accessory,
+            onPress,
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onLongPress = () => {}
+          },
+          index
+        ) => (
           <View key={index}>
-            <TouchableOpacity onPress={onPress}>
+            <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
               <View
                 sx={{
                   flexDirection: 'row',
@@ -99,6 +111,7 @@ export type GroupListItem = {
   title: string
   value?: string
   onPress?: () => void
+  onLongPress?: () => void
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   accessory?: JSX.Element

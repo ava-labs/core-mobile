@@ -31,7 +31,6 @@ import { SelectedChartDataIndicator } from 'features/track/components/SelectedCh
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
-import TokenAddress from 'common/components/TokenAddress'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent } from 'react-native'
@@ -126,7 +125,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handleMarketCapIconPress = (): void => {
     showAlert({
-      title: 'Market Cap',
+      title: 'Market cap',
       description: `Total market value of a cryptocurrency's circulating supply. Similar to the stock market's measurement of multiplying price per share by shares readily available in the market.`,
       buttons: [
         {
@@ -174,7 +173,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
     if (isPositiveNumber(tokenInfo?.marketCap)) {
       data.push({
-        title: 'Market Cap',
+        title: 'Market cap',
         rightIcon: (
           <TouchableOpacity onPress={handleMarketCapIconPress}>
             <Icons.Alert.AlertCircle color={theme.colors.$textPrimary} />
@@ -213,15 +212,24 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
     if (tokenInfo?.contractAddress) {
       data.push({
-        title: 'Contract Address',
+        title: 'Contract address',
         accessory: (
-          <TokenAddress
-            textVariant="body1"
-            address={tokenInfo.contractAddress}
-            textColor={theme.colors.$textSecondary}
-          />
+          <Text
+            selectable
+            variant="body1"
+            ellipsizeMode={'middle'}
+            sx={{
+              color: '$textSecondary',
+              maxWidth: 120,
+              fontFamily: 'DejaVuSansMono'
+            }}
+            numberOfLines={1}
+            testID="account_address">
+            {tokenInfo.contractAddress}
+          </Text>
         ),
-        onPress: () => copyToClipboard(tokenInfo.contractAddress)
+        onPress: () =>
+          copyToClipboard(tokenInfo.contractAddress, 'Contract address copied')
       })
     }
 
