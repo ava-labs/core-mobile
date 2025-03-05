@@ -1,6 +1,6 @@
 import { MarketToken } from 'store/watchlist'
 
-export const comparePercentChange = (
+export const compareTokenPriceChangePercentage24h = (
   token1: MarketToken,
   token2: MarketToken
 ): number => {

@@ -24,8 +24,10 @@ import { TrendingScreen } from 'features/track/trending/components/TrendingScree
 import MarketScreen from 'features/track/market/components/MarketScreen'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { ErrorState } from 'common/components/ErrorState'
+import { useRouter } from 'expo-router'
 
 const TrackHomeScreen = (): JSX.Element => {
+  const { navigate } = useRouter()
   const { theme } = useTheme()
   const {
     favorites,
@@ -140,9 +142,15 @@ const TrackHomeScreen = (): JSX.Element => {
     setSelectedSegmentIndex(index)
   }
 
-  const handleGotoMarketDetail = useCallback((): void => {
-    // TODO: navigate to market detail
-  }, [])
+  const handleGotoMarketDetail = useCallback(
+    (tokenId: string): void => {
+      navigate({
+        pathname: '/trackTokenDetail',
+        params: { tokenId }
+      })
+    },
+    [navigate]
+  )
 
   const renderEmptyTabBar = (): JSX.Element => <></>
 

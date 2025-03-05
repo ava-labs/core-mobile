@@ -25,7 +25,7 @@ const MarketScreen = ({
   tokens: MarketToken[]
   prices: Prices
   charts: Charts
-  goToMarketDetail: () => void
+  goToMarketDetail: (tokenId: string) => void
   errorState?: React.JSX.Element
   isLoadingTopTokens: boolean
   searchText: string
@@ -96,7 +96,7 @@ const MarketScreen = ({
           charts={chartsToDisplay}
           index={index}
           isGridView={isGridView}
-          onPress={goToMarketDetail}
+          onPress={() => goToMarketDetail(item.id)}
         />
       )
     },

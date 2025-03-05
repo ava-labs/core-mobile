@@ -1,9 +1,8 @@
 import { IndexPath } from '@avalabs/k2-alpine'
 import { useMemo, useState } from 'react'
 import { defaultPrice, MarketToken, Prices } from 'store/watchlist'
-import { comparePercentChange } from 'features/track/utils'
+import { compareTokenPriceChangePercentage24h } from 'features/track/utils'
 import { DropdownSelection } from 'common/components/DropdownSelections'
-import { MARKET_SORTS, MARKET_VIEWS, MarketSort } from '../consts'
 
 export const useTrackSortAndView = (
   tokens: MarketToken[],
@@ -42,9 +41,9 @@ export const useTrackSortAndView = (
         case MarketSort.Volume:
           return priceB.vol24 - priceA.vol24
         case MarketSort.TopGainers:
-          return comparePercentChange(b, a)
+          return compareTokenPriceChangePercentage24h(b, a)
         case MarketSort.TopLosers:
-          return comparePercentChange(a, b)
+          return compareTokenPriceChangePercentage24h(a, b)
         case MarketSort.Price:
         default:
           return priceB.priceInCurrency - priceA.priceInCurrency
@@ -68,3 +67,31 @@ export const useTrackSortAndView = (
     data: sortedTokens
   }
 }
+
+enum MarketSort {
+  Price = 'Price',
+  MarketCap = 'Market cap',
+  Volume = 'Volume',
+  TopGainers = 'Top gainers',
+  TopLosers = 'Top losers'
+}
+
+enum MarketView {
+  Grid = 'Grid view',
+  List = 'List view'
+}
+
+type MarketSorts = MarketSort[][]
+type MarketViews = MarketView[][]
+
+const MARKET_SORTS: MarketSorts = [
+  [
+    MarketSort.Price,
+    MarketSort.MarketCap,
+    MarketSort.Volume,
+    MarketSort.TopGainers,
+    MarketSort.TopLosers
+  ]
+]
+
+const MARKET_VIEWS: MarketViews = [[MarketView.Grid, MarketView.List]]
