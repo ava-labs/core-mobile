@@ -17,10 +17,14 @@ import Animated, {
 
 export const useFadingHeaderNavigation = ({
   header,
-  targetLayout
+  targetLayout,
+  shouldHeaderHaveGrabber = false,
+  hasSeparator = true
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
+  shouldHeaderHaveGrabber?: boolean
+  hasSeparator?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -90,25 +94,38 @@ export const useFadingHeaderNavigation = ({
     navigation.setOptions({
       headerBackground: () => (
         <BlurredBackgroundView
-          separator={{
-            position: 'bottom',
-            opacity: targetHiddenProgress
-          }}
+          separator={
+            hasSeparator
+              ? {
+                  position: 'bottom',
+                  opacity: targetHiddenProgress
+                }
+              : undefined
+          }
         />
       ),
       title: header && (
-        <View
-          sx={{
-            overflow: 'hidden',
-            height: '100%',
-            justifyContent: 'center'
-          }}
-          onLayout={handleLayout}>
-          <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
+        <View sx={{ paddingTop: shouldHeaderHaveGrabber ? 23 : 0 }}>
+          <View
+            sx={{
+              overflow: 'hidden',
+              height: '100%',
+              justifyContent: 'center'
+            }}
+            onLayout={handleLayout}>
+            <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
+          </View>
         </View>
       )
     })
-  }, [navigation, header, targetHiddenProgress, animatedHeaderStyle])
+  }, [
+    navigation,
+    header,
+    targetHiddenProgress,
+    animatedHeaderStyle,
+    shouldHeaderHaveGrabber,
+    hasSeparator
+  ])
 
   return {
     onScroll: handleScroll,

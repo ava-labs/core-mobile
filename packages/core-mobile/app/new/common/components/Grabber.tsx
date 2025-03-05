@@ -8,8 +8,9 @@ const Grabber = (): JSX.Element => (
       width: 50,
       borderRadius: 10,
       backgroundColor: 'lightgray',
-      position: 'relative',
-      top: -12
+      position: 'absolute',
+      alignSelf: 'center',
+      top: 9
     }}
   />
 )

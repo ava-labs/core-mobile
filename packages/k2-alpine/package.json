@@ -17,6 +17,8 @@
     "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
+    "@shopify/react-native-skia": "0.1.233",
+    "d3": "7.9.0",
     "dripsy": "4.3.7",
     "expo": "50.0.21",
     "expo-blur": "12.9.2",
@@ -37,6 +39,7 @@
   },
   "peerDependencies": {
     "@react-native-masked-view/masked-view": "0.3.0",
+    "@shopify/react-native-skia": "0.1.233",
     "expo-blur": "12.9.2",
     "expo-image": "1.10.6",
     "expo-linear-gradient": "12.7.2",
@@ -58,6 +61,7 @@
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
+    "@types/d3": "7.4.3",
     "@types/lodash.debounce": "4.0.9",
     "@types/react": "18.3.11",
     "@types/tinycolor2": "1.4.5",

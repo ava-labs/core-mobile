@@ -48,11 +48,11 @@ export const Tooltip = ({
 
   return (
     <TouchableOpacity onPress={onPress} hitSlop={hitSlop}>
-      {theme.isDark ? (
-        <Icons.Alert.AlertCircleDark width={size} height={size} />
-      ) : (
-        <Icons.Alert.AlertCircleLight width={size} height={size} />
-      )}
+      <Icons.Alert.AlertCircle
+        width={size}
+        height={size}
+        color={theme.colors.$textPrimary}
+      />
     </TouchableOpacity>
   )
 }

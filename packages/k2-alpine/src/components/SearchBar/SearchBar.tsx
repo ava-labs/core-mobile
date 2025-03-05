@@ -69,6 +69,10 @@ export const SearchBar: FC<Props> = ({
     setSearchBarFocused?.(isFocused)
   }, [isFocused, setSearchBarFocused])
 
+  useEffect(() => {
+    _setSearchText(searchText)
+  }, [searchText])
+
   /**
    * Clears the input by reference and state,
    */
@@ -92,7 +96,10 @@ export const SearchBar: FC<Props> = ({
   const renderRightComponent = (): React.JSX.Element | undefined => {
     if (searchText.length > 0) {
       return (
-        <TouchableOpacity onPress={clearText} hitSlop={16}>
+        <TouchableOpacity
+          onPress={clearText}
+          hitSlop={16}
+          sx={{ justifyContent: 'center', alignItems: 'center' }}>
           <Icons.Action.Clear color={colors.$textSecondary} />
         </TouchableOpacity>
       )
