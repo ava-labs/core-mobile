@@ -29,12 +29,18 @@ type UseWatchListReturnType = {
   isLoadingFavorites: boolean
   isLoadingTrendingTokens: boolean
   isLoadingTopTokens: boolean
+  refetchTopTokens: () => void
+  isRefetchingTopTokens: boolean
 }
 
 export const useWatchlist = (): UseWatchListReturnType => {
   const favoriteIds = useSelector(selectWatchlistFavoriteIds)
-  const { data: topTokensResponse, isLoading: isLoadingTopTokens } =
-    useGetTokensAndCharts()
+  const {
+    data: topTokensResponse,
+    isLoading: isLoadingTopTokens,
+    refetch: refetchTopTokens,
+    isRefetching: isRefetchingTopTokens
+  } = useGetTokensAndCharts()
   const { data: trendingTokensResponse, isLoading: isLoadingTrendingTokens } =
     useGetTrendingTokens()
   const isLoading = isLoadingTopTokens || isLoadingTrendingTokens
@@ -137,6 +143,8 @@ export const useWatchlist = (): UseWatchListReturnType => {
     getMarketTokenById,
     isLoadingFavorites,
     isLoadingTrendingTokens,
-    isLoadingTopTokens
+    isLoadingTopTokens,
+    refetchTopTokens,
+    isRefetchingTopTokens
   }
 }
