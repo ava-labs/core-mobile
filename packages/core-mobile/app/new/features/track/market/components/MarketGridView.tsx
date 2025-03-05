@@ -3,6 +3,7 @@ import {
   alpha,
   AnimatedPressable,
   Icons,
+  MiniChart,
   PriceChangeIndicator,
   PriceChangeStatus,
   Text,
@@ -15,11 +16,11 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
 import { ChartData } from 'services/token/types'
-import MiniSparklineChart from 'features/track/components/MiniSparklineChart'
 import { Space } from 'components/Space'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
-const CHART_WIDTH = ((SCREEN_WIDTH - 46) / 2) * 0.6
+const CHART_WIDTH = 90
+const CHART_HEIGHT = 30
 
 export const MarketGridView = memo(
   ({
@@ -85,9 +86,8 @@ export const MarketGridView = memo(
               </View>
             </View>
             <View sx={{ marginTop: 16 }}>
-              <MiniSparklineChart
-                width={CHART_WIDTH}
-                height={30}
+              <MiniChart
+                style={{ width: CHART_WIDTH, height: CHART_HEIGHT }}
                 data={dataPoints}
                 negative={ranges.diffValue < 0}
               />
