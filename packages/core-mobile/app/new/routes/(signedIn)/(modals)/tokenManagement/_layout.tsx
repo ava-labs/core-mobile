@@ -5,19 +5,12 @@ import {
   modalScreenOptionsWithHeaderBack,
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
-import { useTheme } from '@avalabs/k2-alpine'
 
 export default function TokenManagementLayout(): JSX.Element {
-  const {
-    theme: { colors }
-  } = useTheme()
   return (
     <Stack
       screenOptions={{
-        ...modalStackNavigatorScreenOptions,
-        headerStyle: {
-          backgroundColor: colors.$surfacePrimary
-        }
+        ...modalStackNavigatorScreenOptions
       }}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
       <Stack.Screen

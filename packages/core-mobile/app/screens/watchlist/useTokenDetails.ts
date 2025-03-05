@@ -32,6 +32,7 @@ type TokenInfo = {
   contractAddress: string | undefined
   urlHostname: string | undefined
   has24hChartDataOnly: boolean
+  description?: string
 }
 
 export const useTokenDetails = (
@@ -185,7 +186,8 @@ export const useTokenDetails = (
         // @ts-ignore contract_address exists in CoinsInfoResponse
         contractAddress: data.contract_address,
         urlHostname: data?.links?.homepage?.[0],
-        has24hChartDataOnly: false
+        has24hChartDataOnly: false,
+        description: data.description?.en ?? undefined
       })
     }
 
