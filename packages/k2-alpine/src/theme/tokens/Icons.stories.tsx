@@ -30,12 +30,11 @@ export const Action = (): JSX.Element =>
   })
 
 export const Alert = (): JSX.Element => {
-  const { theme } = useTheme()
   return Template({
     icons: [
       Icons.Alert.Error,
       Icons.Alert.ErrorOutline,
-      theme.isDark ? Icons.Alert.AlertCircleDark : Icons.Alert.AlertCircleLight
+      Icons.Alert.AlertCircle
     ],
     resourceURL:
       'https://www.figma.com/design/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?node-id=376-11711&t=aSE6qCYReaOZSaNQ-0'

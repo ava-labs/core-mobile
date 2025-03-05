@@ -38,7 +38,7 @@ export const SelectedChartDataIndicator = ({
         sx={{
           color:
             percentChange === undefined || percentChange === 0
-              ? 'textSecondary'
+              ? '$textSecondary'
               : percentChange < 0
               ? '$textDanger'
               : '$textSuccess'

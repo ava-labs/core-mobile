@@ -85,6 +85,7 @@ export const Button = forwardRef<
         accessible={false}
         testID={testID}
         disabled={disabled}
+        style={style}
         {...rest}>
         <View
           style={[
@@ -92,8 +93,7 @@ export const Button = forwardRef<
               borderRadius: 1000,
               alignItems: 'center',
               overflow: 'hidden'
-            },
-            style
+            }
           ]}>
           <WrapperComponent
             style={{

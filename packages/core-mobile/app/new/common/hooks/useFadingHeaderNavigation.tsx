@@ -17,10 +17,12 @@ import Animated, {
 
 export const useFadingHeaderNavigation = ({
   header,
-  targetLayout
+  targetLayout,
+  shouldHeaderHaveGrabber = false
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
+  shouldHeaderHaveGrabber?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -94,21 +96,30 @@ export const useFadingHeaderNavigation = ({
             position: 'bottom',
             opacity: targetHiddenProgress
           }}
+          hasGrabber={shouldHeaderHaveGrabber}
         />
       ),
       title: header && (
-        <View
-          sx={{
-            overflow: 'hidden',
-            height: '100%',
-            justifyContent: 'center'
-          }}
-          onLayout={handleLayout}>
-          <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
+        <View sx={{ paddingTop: shouldHeaderHaveGrabber ? 23 : 0 }}>
+          <View
+            sx={{
+              overflow: 'hidden',
+              height: '100%',
+              justifyContent: 'center'
+            }}
+            onLayout={handleLayout}>
+            <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
+          </View>
         </View>
       )
     })
-  }, [navigation, header, targetHiddenProgress, animatedHeaderStyle])
+  }, [
+    navigation,
+    header,
+    targetHiddenProgress,
+    animatedHeaderStyle,
+    shouldHeaderHaveGrabber
+  ])
 
   return {
     onScroll: handleScroll,
