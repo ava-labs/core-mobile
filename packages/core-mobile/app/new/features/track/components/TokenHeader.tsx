@@ -77,7 +77,9 @@ export const TokenHeader = ({
             }}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
               <Text variant="heading2">
-                {formatTokenInCurrency(currentPrice ?? 0)}
+                {currentPrice !== undefined
+                  ? formatTokenInCurrency(currentPrice)
+                  : UNKNOWN_AMOUNT}
               </Text>
             </View>
           </View>

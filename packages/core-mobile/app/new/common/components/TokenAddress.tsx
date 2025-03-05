@@ -51,8 +51,7 @@ const TokenAddress: FC<Props> = ({
       onPress={() => (hideCopy ? noop : copyAddressToClipboard())}
       style={{
         flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: 0
+        alignItems: 'center'
       }}
       testID="receive_token_address">
       {showIcon && isBech32Address(address) && (
