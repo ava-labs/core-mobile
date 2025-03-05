@@ -36,8 +36,7 @@ export const GroupList = ({
             value,
             accessory,
             onPress,
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onLongPress = () => {}
+            onLongPress
           },
           index
         ) => (

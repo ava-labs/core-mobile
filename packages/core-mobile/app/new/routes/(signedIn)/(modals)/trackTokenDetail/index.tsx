@@ -229,7 +229,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           </Text>
         ),
         onPress: () =>
-          copyToClipboard(tokenInfo.contractAddress, 'Contract address copied')
+          copyToClipboard(tokenInfo.contractAddress, 'Contract address copied'),
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onLongPress: () => {}
       })
     }
 
