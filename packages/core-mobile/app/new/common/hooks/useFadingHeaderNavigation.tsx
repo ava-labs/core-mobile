@@ -18,11 +18,13 @@ import Animated, {
 export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
-  shouldHeaderHaveGrabber = false
+  shouldHeaderHaveGrabber = false,
+  hasSeparator = true
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
   shouldHeaderHaveGrabber?: boolean
+  hasSeparator?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -92,11 +94,14 @@ export const useFadingHeaderNavigation = ({
     navigation.setOptions({
       headerBackground: () => (
         <BlurredBackgroundView
-          separator={{
-            position: 'bottom',
-            opacity: targetHiddenProgress
-          }}
-          hasGrabber={shouldHeaderHaveGrabber}
+          separator={
+            hasSeparator
+              ? {
+                  position: 'bottom',
+                  opacity: targetHiddenProgress
+                }
+              : undefined
+          }
         />
       ),
       title: header && (
@@ -118,7 +123,8 @@ export const useFadingHeaderNavigation = ({
     header,
     targetHiddenProgress,
     animatedHeaderStyle,
-    shouldHeaderHaveGrabber
+    shouldHeaderHaveGrabber,
+    hasSeparator
   ])
 
   return {
