@@ -5,11 +5,10 @@ import {
   useTheme,
   SegmentedControl,
   Text,
-  Image,
   SearchBar
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { Dimensions, LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle, TextInput } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, {
   interpolate,
@@ -22,22 +21,14 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { ErrorState } from 'common/components/ErrorState'
 import { useRouter } from 'expo-router'
+import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const {
-    favorites,
-    topTokens,
-    prices,
-    charts,
-    refetchTopTokens,
-    isRefetchingTopTokens,
-    isLoadingTopTokens
-  } = useWatchlist()
+  const searchBarRef = useRef<TextInput>(null)
+  const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -115,6 +106,8 @@ const TrackHomeScreen = (): JSX.Element => {
             }
           ]}>
           <SearchBar
+            ref={searchBarRef}
+            setSearchBarFocused={setSearchBarFocused}
             onTextChanged={setSearchText}
             searchText={searchText}
             placeholder="Search"
@@ -139,6 +132,8 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const handleChangeTab = (index: number): void => {
     setSearchText('')
+    searchBarRef.current?.clear()
+    searchBarRef.current?.blur()
     setSelectedSegmentIndex(index)
   }
 
@@ -170,28 +165,9 @@ const TrackHomeScreen = (): JSX.Element => {
           {
             tabName: TrackHomeScreenTab.Favorites,
             component: (
-              <MarketScreen
-                tokens={favorites}
-                prices={prices}
-                charts={charts}
+              <FavoriteScreen
                 searchText={searchText}
-                isFavorites={true}
-                isRefetchingTopTokens={isRefetchingTopTokens}
-                isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
-                errorState={
-                  <ErrorState
-                    sx={{ height: contentHeight }}
-                    icon={
-                      <Image
-                        source={require('../../../../assets/icons/star_struck_emoji.png')}
-                        sx={{ width: 42, height: 42 }}
-                      />
-                    }
-                    title="No favorite tokens"
-                    description="Star any token to add it to this screen"
-                  />
-                }
               />
             )
           },
@@ -199,22 +175,9 @@ const TrackHomeScreen = (): JSX.Element => {
             tabName: TrackHomeScreenTab.Market,
             component: (
               <MarketScreen
-                tokens={topTokens}
-                prices={prices}
-                charts={charts}
+                isSearchBarFocused={isSearchBarFocused}
                 searchText={searchText}
-                isRefetchingTopTokens={isRefetchingTopTokens}
-                isLoadingTopTokens={isLoadingTopTokens}
                 goToMarketDetail={handleGotoMarketDetail}
-                errorState={
-                  <ErrorState
-                    sx={{ height: contentHeight }}
-                    button={{
-                      title: 'Refresh',
-                      onPress: refetchTopTokens
-                    }}
-                  />
-                }
               />
             )
           }
@@ -242,7 +205,5 @@ export enum TrackHomeScreenTab {
   Favorites = 'Favorites',
   Market = 'Market'
 }
-
-const contentHeight = Dimensions.get('window').height / 2
 
 export default TrackHomeScreen

@@ -6,13 +6,21 @@ import {
   ViewStyle,
   TextInput
 } from 'react-native'
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  FC,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import debounce from 'lodash.debounce'
 import { TouchableOpacity, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 
 interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
+  ref?: RefObject<TextInput>
   onTextChanged: (value: string) => void
   searchText: string
   placeholder?: string
@@ -47,6 +55,7 @@ const HEIGHT = 40
  * @constructor
  */
 export const SearchBar: FC<Props> = ({
+  ref,
   onTextChanged,
   searchText,
   placeholder = 'Search',
@@ -58,7 +67,8 @@ export const SearchBar: FC<Props> = ({
   rightComponent,
   ...rest
 }) => {
-  const textInputRef = useRef<TextInput>(null)
+  const _textInputRef = useRef<TextInput>(null)
+  const textInputRef = ref || _textInputRef
   const {
     theme: { colors }
   } = useTheme()
@@ -78,6 +88,7 @@ export const SearchBar: FC<Props> = ({
    */
   function clearText(): void {
     textInputRef?.current?.clear()
+    textInputRef.current?.blur()
     onTextChanged('')
   }
 

@@ -1,53 +1,54 @@
-import React, { useMemo, useCallback } from 'react'
-import { Separator, View } from '@avalabs/k2-alpine'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { Charts, MarketToken, Prices } from 'store/watchlist'
-import { DropdownSelections } from 'common/components/DropdownSelections'
+import React, { useMemo } from 'react'
+import { Image } from '@avalabs/k2-alpine'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { LoadingState } from 'common/components/LoadingState'
-import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
-import { Space } from 'components/Space'
-import { MarketView, useTrackSortAndView } from '../hooks/useTrackSortAndView'
-import MarketListItem from './MarketListItem'
+import { ErrorState } from 'common/components/ErrorState'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { Dimensions } from 'react-native'
+import { useTokenSearch } from 'common/hooks/useTokenSearch'
+import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
+import TrackScreen from './TrackScreen'
 
 const MarketScreen = ({
-  tokens,
-  prices,
-  charts,
   goToMarketDetail,
-  errorState,
-  isLoadingTopTokens,
   searchText,
-  isFavorites = false,
-  isRefetchingTopTokens
+  isSearchBarFocused = false
 }: {
-  tokens: MarketToken[]
-  prices: Prices
-  charts: Charts
   goToMarketDetail: (tokenId: string) => void
-  errorState?: React.JSX.Element
-  isLoadingTopTokens: boolean
   searchText: string
-  isFavorites?: boolean
-  isRefetchingTopTokens: boolean
+  isSearchBarFocused?: boolean
 }): JSX.Element => {
-  const { isSearchingTokens, searchResults } = useTokenSearch({
+  const {
+    topTokens,
+    prices,
+    charts,
+    isRefetchingTopTokens,
+    isLoadingTopTokens,
+    refetchTopTokens
+  } = useWatchlist()
+  const { data: searchResults, isLoading: isSearchingTokens } = useTokenSearch({
     isFetchingTokens: isLoadingTopTokens || isRefetchingTopTokens,
-    items: tokens,
-    searchText,
-    isSearchingFavorites: isFavorites
+    items: topTokens,
+    searchText
   })
 
   const tokensToDisplay = useMemo(() => {
-    return searchResults?.tokens ?? tokens
-  }, [searchResults?.tokens, tokens])
+    if (searchResults?.tokens?.length && searchResults.tokens.length > 0) {
+      return searchResults?.tokens
+    }
+    return isSearchBarFocused ? [] : topTokens
+  }, [isSearchBarFocused, searchResults?.tokens, topTokens])
 
   const pricesToDisplay = useMemo(() => {
-    return searchResults?.prices ?? prices
+    return searchResults?.prices && Object.keys(searchResults.prices).length > 0
+      ? searchResults.prices
+      : prices
   }, [searchResults?.prices, prices])
 
   const chartsToDisplay = useMemo(() => {
-    return searchResults?.charts ?? charts
+    return searchResults?.charts && Object.keys(searchResults.charts).length > 0
+      ? searchResults.charts
+      : charts
   }, [searchResults?.charts, charts])
 
   const { data, sort, view } = useTrackSortAndView(
@@ -55,83 +56,65 @@ const MarketScreen = ({
     pricesToDisplay
   )
 
-  const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
-
-  const dropdowns = useMemo(() => {
-    return (
-      <View sx={{ paddingHorizontal: 16 }}>
-        <DropdownSelections sort={sort} view={view} />
-      </View>
-    )
-  }, [sort, view])
-
   const emptyComponent = useMemo(() => {
     if (isSearchingTokens || isLoadingTopTokens || isRefetchingTopTokens) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
-    if (data.length === 0) {
-      return errorState
-    }
-  }, [
-    isSearchingTokens,
-    isLoadingTopTokens,
-    isRefetchingTopTokens,
-    data.length,
-    errorState
-  ])
-
-  const renderItem = useCallback(
-    ({
-      item,
-      index
-    }: {
-      item: MarketToken
-      index: number
-    }): React.JSX.Element => {
+    if (isSearchBarFocused) {
       return (
-        <MarketListItem
-          token={item}
-          charts={chartsToDisplay}
-          index={index}
-          isGridView={isGridView}
-          onPress={() => goToMarketDetail(item.id)}
+        <ErrorState
+          sx={{ height: contentHeight }}
+          icon={
+            <Image
+              source={
+                searchText.length === 0
+                  ? require('../../../../assets/icons/magnifying_glass.png')
+                  : require('../../../../assets/icons/cactus.png')
+              }
+              sx={{ width: 42, height: 42 }}
+            />
+          }
+          title={
+            searchText.length === 0
+              ? 'Find tokens by name or symbol'
+              : 'No results found'
+          }
+          description=""
         />
       )
-    },
-    [chartsToDisplay, goToMarketDetail, isGridView]
-  )
+    }
 
-  const renderSeparator = (): JSX.Element => {
-    return isGridView ? <Space y={16} /> : <Separator sx={{ marginLeft: 62 }} />
-  }
+    return (
+      <ErrorState
+        sx={{ height: contentHeight }}
+        button={{
+          title: 'Refresh',
+          onPress: refetchTopTokens
+        }}
+      />
+    )
+  }, [
+    isSearchingTokens,
+    isRefetchingTopTokens,
+    isLoadingTopTokens,
+    isSearchBarFocused,
+    refetchTopTokens,
+    searchText.length
+  ])
 
   return (
-    <CollapsibleTabs.FlatList
-      contentContainerStyle={{ paddingBottom: 16 }}
+    <TrackScreen
       data={data}
-      numColumns={isGridView ? 2 : 1}
-      renderItem={renderItem}
-      ListHeaderComponent={dropdowns}
-      ListEmptyComponent={emptyComponent}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
-      key={isGridView ? 'grid' : 'list'}
-      keyExtractor={item => item.id}
-      getItemLayout={(_, index) => ({
-        length: isGridView ? 200 : 120,
-        offset: (isGridView ? 200 : 120) * index,
-        index
-      })}
-      columnWrapperStyle={
-        isGridView && {
-          paddingHorizontal: 16,
-          justifyContent: 'space-between',
-          gap: 14
-        }
-      }
+      charts={chartsToDisplay}
+      sort={sort}
+      view={view}
+      goToMarketDetail={goToMarketDetail}
+      emptyComponent={emptyComponent}
     />
   )
 }
+
+const contentHeight = Dimensions.get('window').height / 2
 
 export default MarketScreen

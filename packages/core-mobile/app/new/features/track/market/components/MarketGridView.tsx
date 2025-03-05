@@ -16,7 +16,6 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
 import { ChartData } from 'services/token/types'
-import { Space } from 'components/Space'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const CHART_WIDTH = 90
@@ -59,7 +58,7 @@ export const MarketGridView = memo(
             sx={{
               borderRadius: 18,
               backgroundColor: '$surfaceSecondary',
-              width: (SCREEN_WIDTH - 16 * 3) / 2,
+              width: (SCREEN_WIDTH - 16 * 2 - 14) / 2,
               padding: 16
             }}>
             <TokenLogo
@@ -109,7 +108,6 @@ export const MarketGridView = memo(
             </View>
           </View>
         </AnimatedPressable>
-        <Space y={16} />
       </Animated.View>
     )
   },
