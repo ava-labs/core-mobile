@@ -76,7 +76,7 @@ enum MarketSort {
   TopLosers = 'Top losers'
 }
 
-enum MarketView {
+export enum MarketView {
   Grid = 'Grid view',
   List = 'List view'
 }

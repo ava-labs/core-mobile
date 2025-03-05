@@ -7,8 +7,7 @@ import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { LoadingState } from 'common/components/LoadingState'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
 import { Space } from 'components/Space'
-import { MarketView } from '../consts'
-import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
+import { MarketView, useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketListItem from './MarketListItem'
 
 const MarketScreen = ({
