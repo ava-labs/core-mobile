@@ -15,13 +15,7 @@ const FavoriteScreen = ({
   goToMarketDetail: (tokenId: string) => void
   searchText: string
 }): JSX.Element => {
-  const {
-    favorites,
-    prices,
-    charts,
-    isRefetchingTopTokens,
-    isLoadingTopTokens
-  } = useWatchlist()
+  const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
   const searchResults = useMemo(() => {
     if (searchText && searchText.length > 0) {
@@ -41,7 +35,7 @@ const FavoriteScreen = ({
   const { data, sort, view } = useTrackSortAndView(tokensToDisplay, prices)
 
   const emptyComponent = useMemo(() => {
-    if (isLoadingTopTokens || isRefetchingTopTokens) {
+    if (isLoadingFavorites) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
@@ -74,7 +68,7 @@ const FavoriteScreen = ({
         description="Star any token to add it to this screen"
       />
     )
-  }, [favorites.length, isLoadingTopTokens, isRefetchingTopTokens, searchText])
+  }, [favorites.length, isLoadingFavorites, searchText])
 
   return (
     <TrackScreen

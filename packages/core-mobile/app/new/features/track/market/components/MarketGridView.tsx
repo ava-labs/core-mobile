@@ -19,7 +19,7 @@ import { ChartData } from 'services/token/types'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const CHART_WIDTH = 90
-const CHART_HEIGHT = 30
+const CHART_HEIGHT = 24
 
 export const MarketGridView = memo(
   ({
