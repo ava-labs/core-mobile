@@ -1,4 +1,3 @@
-import { NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
 import { ShowSnackBar, showSimpleToast } from 'components/Snackbar'
 import React, {
   createContext,
@@ -11,264 +10,246 @@ import React, {
 import { useSelector } from 'react-redux'
 import { useNfts } from 'screens/nft/hooks/useNfts'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
+import GlacierNftProvider from 'services/nft/GlacierNftProvider'
 import NftProcessor from 'services/nft/NftProcessor'
-import NftService from 'services/nft/NftService'
-import { getTokenUri, isErc721 } from 'services/nft/utils'
 import {
-  NFTImageData,
-  NFTItem,
-  NFTItemData,
-  NFTMetadata,
-  selectHiddenNftUIDs
-} from 'store/nft'
+  NftImageData,
+  UnprocessedNftItem,
+  NftItemExternalData,
+  NftLocalId,
+  NftItem
+} from 'services/nft/types'
+import { getTokenUri } from 'services/nft/utils'
+import { selectHiddenNftLocalIds } from 'store/nft/slice'
+import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import Logger from 'utils/Logger'
 
-type NFTItemsContextState = {
-  nftItems: NFTItem[]
-  filteredNftItems: NFTItem[]
-  getNftItem: (uid: string) => NFTItem | undefined
-  refreshNftMetadata: (nftData: NFTItemData, chainId: number) => Promise<void>
+type NftItemsContextState = {
+  nftItems: NftItem[]
+  filteredNftItems: NftItem[]
+  getNftItem: (localId: NftLocalId) => NftItem | undefined
+  refreshNftMetadata: (nftData: NftItem, chainId: number) => Promise<void>
   isNftRefreshing: (uid: string) => boolean
-  checkIfNftRefreshed: (nftData: NFTItemData) => void
-  fetchNextPage: () => void
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
   refetchNfts: () => void
   isNftsRefetching: boolean
   isNftsLoading: boolean
   setNftsLoadEnabled: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export const NFTItemsContext = createContext<NFTItemsContextState>(
-  {} as NFTItemsContextState
+export const NftItemsContext = createContext<NftItemsContextState>(
+  {} as NftItemsContextState
 )
 
-export const NFTMetadataProvider = ({
+export const NftMetadataProvider = ({
   children
 }: {
   children: React.ReactNode
 }): JSX.Element => {
-  const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
-  const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
-  const [reindexedAt, setReindexedAt] = useState<Record<string, number>>({})
+  const [lastUpdatedTimestamp, setLastUpdatedTimestamp] = useState<
+    Record<NftLocalId, number>
+  >({})
+  const [processedMetadata, setProcessedMetadata] = useState<
+    Record<NftLocalId, NftItemExternalData>
+  >({})
+  const [imageData, setImageData] = useState<Record<NftLocalId, NftImageData>>(
+    {}
+  )
+  const [isRefreshing, setIsRefreshing] = useState<Record<NftLocalId, boolean>>(
+    {}
+  )
   const [nftsLoadEnabled, setNftsLoadEnabled] = useState<boolean>(false)
-  const hiddenNfts = useSelector(selectHiddenNftUIDs)
-  const processImageData = useCallback((items: NFTItemData[]): void => {
-    items.forEach(nft => {
-      if (nft.metadata.imageUri) {
-        NftProcessor.fetchImageAndAspect(nft.metadata.imageUri)
+  const hiddenNfts = useSelector(selectHiddenNftLocalIds)
+
+  const processImageData = useCallback(
+    (localId: NftLocalId, logoUri: string): void => {
+      logoUri &&
+        NftProcessor.fetchImageAndAspect(logoUri)
           .then(result => {
             setImageData(prevData => ({
               ...prevData,
-              [nft.uid]: result
+              [localId]: result
             }))
           })
-          .catch(Logger.error)
-      }
-    })
-  }, [])
+          .catch(e => {
+            Logger.error(e)
+          })
+    },
+    []
+  )
+  const processMetadata = useCallback(
+    ({
+      localId,
+      tokenId,
+      tokenUri
+    }: {
+      localId: string
+      tokenId: string
+      tokenUri: string
+    }): void => {
+      tokenUri &&
+        NftProcessor.fetchMetadata(getTokenUri({ tokenId, tokenUri }))
+          .then(result => {
+            processImageData(localId, result.image)
 
-  const processUnindexedNftMetadata = useCallback(
-    (nft: NFTItemData): void => {
-      NftProcessor.fetchMetadata(getTokenUri(nft))
-        .then(result => {
-          const updatedNft: NFTItemData = {
-            ...nft,
-            metadata: {
-              ...nft.metadata,
-              externalUrl: result.external_url ?? '',
-              name: result.name ?? '',
-              imageUri: result.image ?? '',
-              description: result.description ?? '',
-              animationUri: result.animation_url ?? ''
-            }
-          }
-
-          if (updatedNft.metadata.imageUri) {
-            processImageData([updatedNft])
-          }
-
-          const newMetadata: NFTMetadata = {
-            ...updatedNft.metadata,
-            attributes: result.attributes ?? []
-          }
-
-          setMetadata(prevData => ({
-            ...prevData,
-            [nft.uid]: newMetadata
-          }))
-        })
-        .catch(Logger.error)
+            setProcessedMetadata(prevData => ({
+              ...prevData,
+              [localId]: result
+            }))
+          })
+          .catch(e => {
+            Logger.error(e)
+          })
     },
     [processImageData]
   )
 
-  const processIndexedNftMetadata = useCallback((nft: NFTItemData): void => {
-    let newMetadata: NFTMetadata
-    try {
-      newMetadata = {
-        ...nft.metadata,
-        attributes:
-          JSON.parse(
-            (isErc721(nft)
-              ? nft.metadata.attributes
-              : nft.metadata.properties) || ''
-          ) ?? []
-      }
-    } catch (e) {
-      newMetadata = {
-        ...nft.metadata,
-        attributes: []
-      }
-    }
-
-    setMetadata(prevData => ({
-      ...prevData,
-      [nft.uid]: newMetadata
-    }))
-  }, [])
-
-  const processMetadata = useCallback(
-    (items: NFTItemData[]): void => {
-      items.forEach(nft => {
-        if (nft.metadata.indexStatus === NftTokenMetadataStatus.INDEXED) {
-          processIndexedNftMetadata(nft)
-        } else {
-          processUnindexedNftMetadata(nft)
-        }
-      })
-    },
-    [processUnindexedNftMetadata, processIndexedNftMetadata]
-  )
-
   const process = useCallback(
-    (items: NFTItemData[]): void => {
-      processMetadata(items)
-      processImageData(items)
+    (items: UnprocessedNftItem[]): void => {
+      for (const item of items) {
+        // if logoUri is present, no need to fetch metadata
+        if (!item.logoUri) {
+          processMetadata({
+            localId: item.localId,
+            tokenId: item.tokenId,
+            tokenUri: item.tokenUri
+          })
+        }
+        processImageData(item.localId, item.logoUri)
+      }
     },
-    [processImageData, processMetadata]
+    [processMetadata, processImageData]
   )
 
   const query = useNfts(nftsLoadEnabled)
 
-  const nftItems = useMemo(() => {
-    return query.nfts.map(nft => ({
-      ...nft,
-      imageData: imageData[nft.uid],
-      processedMetadata: metadata[nft.uid] ?? {
-        ...nft.metadata,
-        attributes: []
-      }
-    }))
-  }, [query.nfts, imageData, metadata])
+  const nftItems: NftItem[] = useMemo(() => {
+    return (
+      query.data?.map(nft => {
+        return {
+          ...nft,
+          metadata: {
+            ...nft.metadata,
+            lastUpdatedTimestamp:
+              nft.metadata?.lastUpdatedTimestamp ||
+              lastUpdatedTimestamp[nft.localId]
+          },
+          imageData: imageData[nft.localId],
+          processedMetadata: processedMetadata[nft.localId]
+        }
+      }) ?? []
+    )
+  }, [query.data, lastUpdatedTimestamp, imageData, processedMetadata])
 
   const getNftItem = useCallback(
-    (uid: string): NFTItem | undefined => {
-      return nftItems.find(nft => nft.uid === uid)
+    (localId: NftLocalId): NftItem | undefined => {
+      return nftItems.find(nft => nft.localId === localId)
     },
     [nftItems]
   )
 
   const refreshNftMetadata = async (
-    nftData: NFTItemData,
+    nft: NftItem,
     chainId: number
   ): Promise<void> => {
-    await NftService.reindexNft(nftData.address, chainId, nftData.tokenId)
-
-    setReindexedAt(prevData => ({
+    setIsRefreshing(prevData => ({
       ...prevData,
-      [nftData.uid]: Math.floor(Date.now() / 1000)
+      [nft.localId]: true
     }))
+
+    try {
+      const newMetadata = await GlacierNftProvider.reindexNft(
+        nft.address,
+        chainId,
+        nft.tokenId
+      )
+
+      newMetadata.imageUri &&
+        processImageData(nft.localId, newMetadata.imageUri)
+
+      const updatedTimestamp = newMetadata.metadataLastUpdatedTimestamp
+
+      if (isPositiveNumber(updatedTimestamp)) {
+        setLastUpdatedTimestamp(prevData => ({
+          ...prevData,
+          [nft.localId]: updatedTimestamp
+        }))
+      }
+
+      setProcessedMetadata(prevData => {
+        const existingMetaData = prevData[nft.localId]
+
+        if (!existingMetaData) return prevData
+
+        return {
+          ...prevData,
+          [nft.localId]: {
+            ...existingMetaData,
+            ...(newMetadata.description && {
+              description: newMetadata.description
+            }),
+            ...(newMetadata.name && { name: newMetadata.name }),
+            ...(newMetadata.imageUri && { image: newMetadata.imageUri }),
+            ...(newMetadata.externalUrl && {
+              external_url: newMetadata.externalUrl
+            }),
+            ...(newMetadata.animationUri && {
+              animation_url: newMetadata.animationUri
+            })
+          }
+        }
+      })
+
+      ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
+    } catch (e) {
+      Logger.error('Failed to refresh nft', e)
+      showSimpleToast(
+        'This is taking longer than expected. Please try again later.'
+      )
+    } finally {
+      setIsRefreshing(prevData => ({
+        ...prevData,
+        [nft.localId]: false
+      }))
+    }
   }
 
   const isNftRefreshing = useCallback(
-    (uid: string) => {
-      return reindexedAt[uid] !== undefined
+    (localId: NftLocalId) => {
+      return isRefreshing[localId] === true
     },
-    [reindexedAt]
-  )
-
-  const checkIfNftRefreshed = useCallback(
-    (nftData: NFTItemData) => {
-      const nftReindexedAt = reindexedAt[nftData.uid]
-      if (!nftReindexedAt) {
-        // If the NFT was not requested to be refreshed, it might have been failed
-        // due to an error. We process it to check if it has been indexed.
-        process([nftData])
-        return
-      }
-
-      const currentTimestamp = Math.floor(Date.now() / 1000)
-      const metadataUpdatedAt = nftData?.metadata.metadataLastUpdatedTimestamp
-      if (
-        metadataUpdatedAt !== undefined &&
-        metadataUpdatedAt >= nftReindexedAt
-      ) {
-        setReindexedAt(prevData => {
-          const newReindexedAt = { ...prevData }
-          delete newReindexedAt[nftData.uid]
-          return newReindexedAt
-        })
-
-        process([nftData])
-
-        ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
-      } else if (nftReindexedAt < currentTimestamp - 20) {
-        // If the metadata was not updated after 20 seconds, we assume the
-        // reindexing failed and remove the refresh request.
-        setReindexedAt(prevData => {
-          const newReindexedAt = { ...prevData }
-          delete newReindexedAt[nftData.uid]
-          return newReindexedAt
-        })
-
-        showSimpleToast(
-          'This is taking longer than expected. Please try again later.'
-        )
-      }
-    },
-    [reindexedAt, process]
+    [isRefreshing]
   )
 
   const filteredNftItems = useMemo(() => {
-    return nftItems.filter(value => !hiddenNfts[value.uid])
+    return nftItems.filter(value => {
+      return !hiddenNfts[value.localId]
+    })
   }, [hiddenNfts, nftItems])
 
   useEffect(() => {
-    if (query.data && query.data.pages.length > 0) {
-      // It runs every time new data is fetched by useInfiniteQuery, specifically
-      // when a new page is added, to ensure the newly fetched NFTs are processed.
-      const lastPageIndex = query.data.pages.length - 1
-
-      const lastPageNfts = query.data.pages[lastPageIndex]?.nfts ?? []
-      if (lastPageNfts.length > 0) {
-        process(lastPageNfts)
-      }
+    if (query.data !== undefined) {
+      process(query.data)
     }
   }, [query.data, process])
 
   return (
-    <NFTItemsContext.Provider
+    <NftItemsContext.Provider
       value={{
         nftItems,
         filteredNftItems,
         getNftItem,
         refreshNftMetadata,
         isNftRefreshing,
-        checkIfNftRefreshed,
-        fetchNextPage: query.fetchNextPage,
-        hasNextPage: query.hasNextPage,
-        isFetchingNextPage: query.isFetchingNextPage,
         refetchNfts: query.refetch,
         isNftsRefetching: query.isRefetching,
         isNftsLoading: query.isLoading,
         setNftsLoadEnabled
       }}>
       {children}
-    </NFTItemsContext.Provider>
+    </NftItemsContext.Provider>
   )
 }
 
-export function useNftItemsContext(): NFTItemsContextState {
-  return useContext(NFTItemsContext)
+export function useNftItemsContext(): NftItemsContextState {
+  return useContext(NftItemsContext)
 }

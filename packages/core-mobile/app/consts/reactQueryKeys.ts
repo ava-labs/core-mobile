@@ -8,7 +8,6 @@ export enum ReactQueryKeys {
 
   NETWORK_FEE = 'networkFee',
   NFTS = 'nfts',
-  NFT = 'nft',
 
   NETWORKS = 'networks',
   NETWORK_CONTRACT_TOKENS = 'networkContractTokens',
