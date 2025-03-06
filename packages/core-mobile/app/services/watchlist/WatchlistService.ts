@@ -123,7 +123,9 @@ class WatchlistService {
   async tokenSearch(
     query: string,
     currency: string
-  ): Promise<{ tokens: MarketToken[]; charts: Charts; prices: Prices }> {
+  ): Promise<
+    { tokens: MarketToken[]; charts: Charts; prices: Prices } | undefined
+  > {
     const coins = await TokenService.getTokenSearch(query)
 
     const coinIds = coins?.map(tk => tk.id)
@@ -186,7 +188,7 @@ class WatchlistService {
       return { tokens, charts, prices }
     }
 
-    return { tokens: [], charts: {}, prices: {} }
+    return undefined
   }
 
   async getTrendingTokens(

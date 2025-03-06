@@ -5,7 +5,17 @@ import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 
-const EMPTY_DATA = { tokens: [], prices: {}, charts: {} }
+type TokenSearchType = {
+  tokens: MarketToken[] | undefined
+  charts: Charts | undefined
+  prices: Prices | undefined
+}
+
+const EMPTY_DATA: TokenSearchType = {
+  tokens: [],
+  prices: undefined,
+  charts: undefined
+}
 
 type Props = {
   isFetchingTokens: boolean
@@ -18,7 +28,7 @@ export function useTokenSearch({
   items,
   searchText
 }: Props): UseQueryResult<
-  { tokens: MarketToken[]; prices: Prices; charts: Charts },
+  { tokens: MarketToken[]; prices?: Prices; charts?: Charts },
   Error
 > {
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
@@ -49,7 +59,7 @@ export function useTokenSearch({
         // we already have these tokens in the list
         // no need to search for prices and charts
         // it will reuse the existing prices and charts data in the screen
-        return { tokens, prices: {}, charts: {} }
+        return { tokens, prices: undefined, charts: undefined }
       }
 
       try {

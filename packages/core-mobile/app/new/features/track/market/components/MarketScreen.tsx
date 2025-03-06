@@ -40,15 +40,11 @@ const MarketScreen = ({
   }, [isSearchBarFocused, searchResults?.tokens, topTokens])
 
   const pricesToDisplay = useMemo(() => {
-    return searchResults?.prices && Object.keys(searchResults.prices).length > 0
-      ? searchResults.prices
-      : prices
+    return searchResults?.prices ?? prices
   }, [searchResults?.prices, prices])
 
   const chartsToDisplay = useMemo(() => {
-    return searchResults?.charts && Object.keys(searchResults.charts).length > 0
-      ? searchResults.charts
-      : charts
+    return searchResults?.charts ?? charts
   }, [searchResults?.charts, charts])
 
   const { data, sort, view } = useTrackSortAndView(
