@@ -204,7 +204,12 @@ const ApprovalPopup = (): JSX.Element => {
 
     while (attempts <= MAX_ATTEMPTS) {
       const [result, error] = await resolve(
-        GaslessService.fundTx(signingData, addressFrom, provider)
+        GaslessService.fundTx({
+          signingData,
+          addressFrom,
+          maxFeePerGas,
+          provider
+        })
       )
 
       if (result?.txHash) {
@@ -220,6 +225,9 @@ const ApprovalPopup = (): JSX.Element => {
         (result?.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
+        Logger.error(
+          `[ApprovalPopup.tsx][handleGaslessTx]${error}`
+        )
         showGaslessError()
         setSubmitting(false)
         return undefined
