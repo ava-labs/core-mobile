@@ -43,6 +43,7 @@ import { validateFee } from 'screens/send/utils/evm/validate'
 import NetworkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
@@ -213,6 +214,7 @@ const ApprovalPopup = (): JSX.Element => {
       )
 
       if (result?.txHash) {
+        AnalyticsService.capture('GaslessFundSuccessful')
         setGaslessError(null)
         return result.txHash
       }
@@ -225,6 +227,7 @@ const ApprovalPopup = (): JSX.Element => {
         (result?.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
+        AnalyticsService.capture('GaslessFundFailed')
         Logger.error(`[ApprovalPopup.tsx][handleGaslessTx]${error}`)
         showGaslessError()
         setSubmitting(false)
