@@ -24,7 +24,6 @@ export function useTokenSearch({
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
 
   return useQuery({
-    initialData: { tokens: items, prices: {}, charts: {} },
     enabled: searchText !== undefined && searchText.length > 0,
     queryKey: [
       ReactQueryKeys.WATCHLIST_TOKEN_SEARCH,
