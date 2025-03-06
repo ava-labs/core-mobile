@@ -70,6 +70,8 @@ const TrackScreen = ({
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}
       keyExtractor={item => item.id}
+      windowSize={5}
+      removeClippedSubviews={true}
       getItemLayout={(_, index) => ({
         length: isGridView ? 200 : 120,
         offset: (isGridView ? 200 : 120) * index,
