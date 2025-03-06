@@ -46,8 +46,12 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
-import { selectIsHallidayBridgeBannerBlocked } from 'store/posthog'
+import {
+  selectIsHallidayBridgeBannerBlocked,
+  selectIsGaslessBlocked
+} from 'store/posthog'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import GaslessService from 'services/gasless/GaslessService'
 import { AssetBalance } from './utils/types'
 import BridgeTypeFootnote from './components/BridgeTypeFootnote'
 import { HallidayBanner } from './components/HallidayBanner'
@@ -119,13 +123,8 @@ const Bridge: FC = () => {
   const { currencyFormatter } = useApplicationContext().appHook
   const isAmountTooLow = amount !== 0n && minimum && amount < minimum
   const isAmountTooLarge = amount !== 0n && maximum && amount > maximum
-  const isNativeBalanceNotEnoughForNetworkFee = Boolean(
-    amount !== 0n &&
-      networkFee &&
-      nativeTokenBalance <
-        networkFee +
-          (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
-  )
+  const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
+  const [isGaslessEligible, setIsGaslessEligible] = useState(false)
 
   const hasValidAmount = !isAmountTooLow && amount > 0n
 
@@ -159,6 +158,17 @@ const Bridge: FC = () => {
             .toNumber()
         )
       : UNKNOWN_AMOUNT
+
+  const shouldCheckNativeBalance = isGaslessBlocked || !isGaslessEligible
+
+  const isNativeBalanceNotEnoughForNetworkFee = Boolean(
+    shouldCheckNativeBalance &&
+      amount !== 0n &&
+      networkFee &&
+      nativeTokenBalance <
+        networkFee +
+          (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
+  )
 
   const transferDisabled =
     isPending ||
@@ -203,6 +213,27 @@ const Bridge: FC = () => {
       setBridgeError(error.message)
     }
   }, [error])
+
+  useEffect(() => {
+    const checkGaslessEligibility = async (): Promise<void> => {
+      if (!sourceNetwork?.chainId || !selectedBridgeAsset) {
+        setIsGaslessEligible(false)
+        return
+      }
+
+      try {
+        const isEligible = await GaslessService.isEligibleForChain(
+          sourceNetwork.chainId.toString()
+        )
+        setIsGaslessEligible(isEligible)
+      } catch (err) {
+        Logger.error(`[Bridge.tsx][checkGaslessEligibility]${err}`)
+        setIsGaslessEligible(false)
+      }
+    }
+
+    checkGaslessEligibility()
+  }, [sourceNetwork?.chainId, selectedBridgeAsset])
 
   const bridgeTokenList = useMemo(
     () =>
@@ -646,7 +677,7 @@ const Bridge: FC = () => {
         </Text>
       )
 
-    if (isNativeBalanceNotEnoughForNetworkFee)
+    if (isNativeBalanceNotEnoughForNetworkFee) {
       return (
         <Text
           testID="bridge_error"
@@ -655,6 +686,7 @@ const Bridge: FC = () => {
             color: '$dangerDark'
           }}>{`Insufficient balance to cover gas costs.\nPlease add ${sourceNetwork?.networkToken.symbol}.`}</Text>
       )
+    }
 
     return null
   }
