@@ -225,9 +225,7 @@ const ApprovalPopup = (): JSX.Element => {
         (result?.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
-        Logger.error(
-          `[ApprovalPopup.tsx][handleGaslessTx]${error}`
-        )
+        Logger.error(`[ApprovalPopup.tsx][handleGaslessTx]${error}`)
         showGaslessError()
         setSubmitting(false)
         return undefined
@@ -590,19 +588,19 @@ const ApprovalPopup = (): JSX.Element => {
           {renderSpendLimits()}
           {renderBalanceChange()}
           {renderGasless()}
-          {renderNetworkFeeSelector()}
-          {renderDisclaimer()}
           {amountError && (
             <Text
               variant="body2"
               sx={{
                 color: '$dangerMain',
                 maxWidth: '55%',
-                marginTop: 8
+                marginVertical: 8
               }}>
               {amountError}
             </Text>
           )}
+          {renderNetworkFeeSelector()}
+          {renderDisclaimer()}
         </ScrollView>
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
