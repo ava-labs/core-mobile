@@ -9,50 +9,17 @@ import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import TrackScreen from './TrackScreen'
 
 const FavoriteScreen = ({
-  goToMarketDetail,
-  searchText
+  goToMarketDetail
 }: {
   goToMarketDetail: (tokenId: string) => void
-  searchText: string
 }): JSX.Element => {
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
-  const searchResults = useMemo(() => {
-    if (searchText && searchText.length > 0) {
-      return favorites.filter(
-        i =>
-          i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          i.symbol?.toLowerCase().includes(searchText.toLowerCase())
-      )
-    }
-    return favorites
-  }, [favorites, searchText])
-
-  const tokensToDisplay = useMemo(() => {
-    return searchResults ?? favorites
-  }, [favorites, searchResults])
-
-  const { data, sort, view } = useTrackSortAndView(tokensToDisplay, prices)
+  const { data, sort, view } = useTrackSortAndView(favorites, prices)
 
   const emptyComponent = useMemo(() => {
     if (isLoadingFavorites) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
-    }
-
-    if (searchText && searchText.length > 0 && favorites.length > 0) {
-      return (
-        <ErrorState
-          sx={{ height: contentHeight }}
-          icon={
-            <Image
-              source={require('../../../../assets/icons/cactus.png')}
-              sx={{ width: 42, height: 42 }}
-            />
-          }
-          title="No results found"
-          description=""
-        />
-      )
     }
 
     return (
@@ -68,7 +35,7 @@ const FavoriteScreen = ({
         description="Star any token to add it to this screen"
       />
     )
-  }, [favorites.length, isLoadingFavorites, searchText])
+  }, [isLoadingFavorites])
 
   return (
     <TrackScreen

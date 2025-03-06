@@ -8,7 +8,7 @@ import {
   SearchBar
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { LayoutChangeEvent, LayoutRectangle, TextInput } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, {
   interpolate,
@@ -23,11 +23,11 @@ import { TrendingScreen } from 'features/track/trending/components/TrendingScree
 import MarketScreen from 'features/track/market/components/MarketScreen'
 import { useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
+import SearchResultScreen from 'features/track/market/components/SearchResultScreen'
 
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const searchBarRef = useRef<TextInput>(null)
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -38,6 +38,8 @@ const TrackHomeScreen = (): JSX.Element => {
   const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
   }
+
+  const showSearchResults = isSearchBarFocused || searchText.length > 0
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={'Track'} />,
@@ -53,7 +55,7 @@ const TrackHomeScreen = (): JSX.Element => {
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 1],
-      [0, 50],
+      [0, 60],
       'clamp'
     )
     return {
@@ -65,7 +67,7 @@ const TrackHomeScreen = (): JSX.Element => {
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 1],
-      [0, 50],
+      [0, 60],
       'clamp'
     )
     const opacity = interpolate(
@@ -106,12 +108,12 @@ const TrackHomeScreen = (): JSX.Element => {
             }
           ]}>
           <SearchBar
-            ref={searchBarRef}
             setSearchBarFocused={setSearchBarFocused}
             onTextChanged={setSearchText}
             searchText={searchText}
             placeholder="Search"
             useDebounce={true}
+            useCancel
           />
         </Animated.View>
         <Animated.View
@@ -124,16 +126,16 @@ const TrackHomeScreen = (): JSX.Element => {
     )
   }
 
-  const handleSelectSegment = (index: number): void => {
-    if (index !== selectedSegmentIndex) {
-      tabViewRef.current?.setIndex(index)
-    }
-  }
+  const handleSelectSegment = useCallback(
+    (index: number): void => {
+      if (index !== selectedSegmentIndex) {
+        tabViewRef.current?.setIndex(index)
+      }
+    },
+    [selectedSegmentIndex]
+  )
 
   const handleChangeTab = (index: number): void => {
-    setSearchText('')
-    searchBarRef.current?.clear()
-    searchBarRef.current?.blur()
     setSelectedSegmentIndex(index)
   }
 
@@ -149,58 +151,77 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const renderEmptyTabBar = (): JSX.Element => <></>
 
+  const renderSearchResults = useCallback(() => {
+    return (
+      <SearchResultScreen
+        isSearchBarFocused={isSearchBarFocused}
+        searchText={searchText}
+        goToMarketDetail={handleGotoMarketDetail}
+      />
+    )
+  }, [handleGotoMarketDetail, isSearchBarFocused, searchText])
+
+  const renderTabs = useCallback(() => {
+    return [
+      {
+        tabName: TrackHomeScreenTab.Trending,
+        component: showSearchResults ? (
+          renderSearchResults()
+        ) : (
+          <TrendingScreen />
+        )
+      },
+      {
+        tabName: TrackHomeScreenTab.Favorites,
+        component: showSearchResults ? (
+          renderSearchResults()
+        ) : (
+          <FavoriteScreen goToMarketDetail={handleGotoMarketDetail} />
+        )
+      },
+      {
+        tabName: TrackHomeScreenTab.Market,
+        component: showSearchResults ? (
+          renderSearchResults()
+        ) : (
+          <MarketScreen goToMarketDetail={handleGotoMarketDetail} />
+        )
+      }
+    ]
+  }, [handleGotoMarketDetail, renderSearchResults, showSearchResults])
+
   return (
     <BlurredBarsContentLayout>
-      <CollapsibleTabs.Container
-        ref={tabViewRef}
-        renderHeader={renderHeader}
-        renderTabBar={renderEmptyTabBar}
-        onIndexChange={handleChangeTab}
-        onScroll={onScroll}
-        tabs={[
-          {
-            tabName: TrackHomeScreenTab.Trending,
-            component: <TrendingScreen />
-          },
-          {
-            tabName: TrackHomeScreenTab.Favorites,
-            component: (
-              <FavoriteScreen
-                searchText={searchText}
-                goToMarketDetail={handleGotoMarketDetail}
-              />
-            )
-          },
-          {
-            tabName: TrackHomeScreenTab.Market,
-            component: (
-              <MarketScreen
-                isSearchBarFocused={isSearchBarFocused}
-                searchText={searchText}
-                goToMarketDetail={handleGotoMarketDetail}
-              />
-            )
-          }
-        ]}
-      />
-      <LinearGradientBottomWrapper>
-        <SegmentedControl
-          dynamicItemWidth={true}
-          items={[
-            TrackHomeScreenTab.Trending,
-            TrackHomeScreenTab.Favorites,
-            TrackHomeScreenTab.Market
-          ]}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-          style={{ marginHorizontal: 16, marginBottom: 16 }}
+      <>
+        <CollapsibleTabs.Container
+          ref={tabViewRef}
+          renderHeader={renderHeader}
+          renderTabBar={renderEmptyTabBar}
+          onIndexChange={handleChangeTab}
+          onScroll={onScroll}
+          tabs={renderTabs()}
         />
-      </LinearGradientBottomWrapper>
+        {!showSearchResults && (
+          <LinearGradientBottomWrapper>
+            <SegmentedControl
+              dynamicItemWidth={true}
+              items={[
+                TrackHomeScreenTab.Trending,
+                TrackHomeScreenTab.Favorites,
+                TrackHomeScreenTab.Market
+              ]}
+              selectedSegmentIndex={selectedSegmentIndex}
+              onSelectSegment={handleSelectSegment}
+              style={{ marginHorizontal: 16, marginBottom: 16 }}
+            />
+          </LinearGradientBottomWrapper>
+        )}
+      </>
     </BlurredBarsContentLayout>
   )
 }
 
-export enum TrackHomeScreenTab {
+enum TrackHomeScreenTab {
   Trending = 'Trending',
   Favorites = 'Favorites',
   Market = 'Market'
