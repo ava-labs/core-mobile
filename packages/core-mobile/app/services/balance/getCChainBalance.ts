@@ -1,9 +1,11 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { TokenWithBalanceEVM } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalanceEVM } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
+
+const TOKEN_TYPES = [TokenType.NATIVE]
 
 export const getCChainBalance = async ({
   cChainNetwork,
@@ -23,7 +25,8 @@ export const getCChainBalance = async ({
     addresses: [cAddress],
     currency,
     network: mapToVmNetwork(cChainNetwork),
-    storage: coingeckoInMemoryCache
+    storage: coingeckoInMemoryCache,
+    tokenTypes: TOKEN_TYPES
   })
 
   const cChainBalanceResponse = balancesResponse[cAddress]
