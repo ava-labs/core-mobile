@@ -45,7 +45,7 @@ const FavoriteScreen = ({
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
-    if (searchText && searchText.length > 0) {
+    if (searchText && searchText.length > 0 && favorites.length > 0) {
       return (
         <ErrorState
           sx={{ height: contentHeight }}
@@ -74,7 +74,7 @@ const FavoriteScreen = ({
         description="Star any token to add it to this screen"
       />
     )
-  }, [isLoadingTopTokens, isRefetchingTopTokens, searchText])
+  }, [favorites.length, isLoadingTopTokens, isRefetchingTopTokens, searchText])
 
   return (
     <TrackScreen
