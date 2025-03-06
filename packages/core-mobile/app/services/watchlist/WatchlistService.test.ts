@@ -112,13 +112,13 @@ describe('tokenSearch', () => {
     const result = await WatchlistService.tokenSearch('test', 'usd')
     expect(getPriceWithMarketDataByCoinIdsMock).toHaveBeenCalledTimes(1)
     expect(getMarketsFromWatchlistCacheMock).toHaveBeenCalledTimes(1)
-    expect(Object.keys(result?.tokens).length).toEqual(3)
+    expect(Object.keys(result?.tokens as never).length).toEqual(3)
   })
 
   it('should return undefined if query does not match any token', async () => {
     getTokenSearchMock.mockImplementationOnce(async () => [])
     const result = await WatchlistService.tokenSearch('unknown', 'usd')
-    expect(result.tokens.length).toEqual(0)
+    expect(result).toBeUndefined()
     expect(getPriceWithMarketDataByCoinIdsMock).not.toHaveBeenCalled()
     expect(getMarketsFromWatchlistCacheMock).not.toHaveBeenCalled()
   })
