@@ -1,127 +1,218 @@
+import { ChainId } from '@avalabs/core-chains-sdk'
 import { IndexPath } from '@avalabs/k2-alpine'
 import { useCallback, useMemo, useState } from 'react'
-import {
-  ASSET_BALANCE_SORTS,
-  ASSET_MANAGE_VIEWS,
-  ASSET_NETWORK_FILTERS,
-  AssetBalanceSort,
-  AssetNetworkFilter,
-  LocalTokenWithBalance
-} from 'store/balance'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { sortUndefined } from 'common/utils/sortUndefined'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import {
+  COLLECTIBLE_FILTERS,
+  COLLECTIBLE_SORTS,
+  COLLECTIBLE_VIEWS,
+  CollectibleNetworkFilter,
+  CollectibleSort,
+  CollectibleTypeFilter
+} from 'store/balance'
+import { NftContentType, NFTItem } from 'store/nft'
 
 export type Selection = {
   title: string
   data: string[][]
-  selected: IndexPath
+  selected: IndexPath | IndexPath[]
   onSelected: (index: IndexPath) => void
+  onDeselect?: (index: IndexPath) => void
 }
 
-export const useFilterAndSort = (): {
-  data: LocalTokenWithBalance[]
+export const useFilterAndSort = (
+  collectibles: NFTItem[]
+): {
+  filteredAndSorted: NFTItem[]
   filter: Selection
   sort: Selection
   view: Selection
+  onResetFilter: () => void
 } => {
-  const { filteredTokenList } = useSearchableTokenList()
+  const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<IndexPath>(
+    {
+      section: 0,
+      row: 0
+    }
+  )
+  const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
+    useState<IndexPath>({
+      section: 0,
+      row: 0
+    })
 
-  const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
   const [selectedSort, setSelectedSort] = useState<IndexPath>({
     section: 0,
-    row: 0
+    row: 2
   })
   const [selectedView, setSelectedView] = useState<IndexPath>({
     section: 0,
-    row: 1
+    row: 0
   })
 
   const filterOption = useMemo(() => {
-    return (
-      ASSET_NETWORK_FILTERS?.[selectedFilter.section]?.[selectedFilter.row] ??
-      AssetNetworkFilter.AllNetworks
-    )
-  }, [selectedFilter])
+    return [
+      COLLECTIBLE_FILTERS?.[selectedNetworkFilter.section]?.[
+        selectedNetworkFilter.row
+      ] ?? CollectibleNetworkFilter.AllNetworks,
+      COLLECTIBLE_FILTERS?.[selectedContentTypeFilter.section]?.[
+        selectedContentTypeFilter.row
+      ] ?? undefined
+    ]
+  }, [selectedContentTypeFilter, selectedNetworkFilter])
 
   const sortOption = useMemo(() => {
     return (
-      ASSET_BALANCE_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
-      AssetBalanceSort.HighToLow
+      COLLECTIBLE_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
+      CollectibleSort.NameAToZ
     )
   }, [selectedSort])
 
-  const getFiltered = useCallback(() => {
-    if (filteredTokenList.length === 0) {
-      return []
-    }
-    switch (filterOption) {
-      case AssetNetworkFilter.AvalancheCChain:
-        return filteredTokenList.filter(
-          token =>
-            ('chainId' in token &&
-              token.chainId &&
-              isAvalancheCChainId(token.chainId)) ||
-            token.localId === 'AvalancheAVAX'
-        )
-      case AssetNetworkFilter.Ethereum:
-        return filteredTokenList.filter(
-          token =>
-            'chainId' in token &&
-            (token.chainId === ChainId.ETHEREUM_HOMESTEAD ||
-              token.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
-              token.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
-        )
-      case AssetNetworkFilter.BitcoinNetwork:
-        return filteredTokenList.filter(token => token.symbol === 'BTC')
-      default:
-        return filteredTokenList
-    }
-  }, [filterOption, filteredTokenList])
+  const filter: Selection = useMemo(
+    () => ({
+      title: 'Filter',
+      data: COLLECTIBLE_FILTERS,
+      selected: [selectedNetworkFilter, selectedContentTypeFilter],
+      onSelected: (value: IndexPath) => {
+        if (value.section === 0) setSelectedNetworkFilter(value)
+        else if (value.section === 1) setSelectedContentTypeFilter(value)
+      },
+      onDeselect: (value: IndexPath) => {
+        if (value.section === 1)
+          setSelectedContentTypeFilter({
+            section: 0,
+            row: 0
+          })
+      }
+    }),
+    [selectedContentTypeFilter, selectedNetworkFilter]
+  )
+  const sort = useMemo(
+    () => ({
+      title: 'Sort',
+      data: COLLECTIBLE_SORTS,
+      selected: selectedSort,
+      onSelected: setSelectedSort
+    }),
+    [selectedSort]
+  )
+  const view = useMemo(
+    () => ({
+      title: 'View',
+      data: COLLECTIBLE_VIEWS,
+      selected: selectedView,
+      onSelected: setSelectedView
+    }),
+    [selectedView]
+  )
+
+  const getFilteredNetworks = useCallback(
+    (items: NFTItem[]) => {
+      switch (filterOption[0]) {
+        case CollectibleNetworkFilter.AvalancheCChain:
+          return items.filter(
+            collectible =>
+              'chainId' in collectible &&
+              collectible.chainId &&
+              isAvalancheCChainId(Number(collectible.chainId))
+          )
+        case CollectibleNetworkFilter.Ethereum:
+          return items.filter(
+            collectible =>
+              'chainId' in collectible &&
+              (Number(collectible.chainId) === ChainId.ETHEREUM_HOMESTEAD ||
+                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_GOERLY ||
+                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_SEPOLIA)
+          )
+        case CollectibleNetworkFilter.BitcoinNetwork:
+          return items.filter(
+            collectible =>
+              'chainId' in collectible &&
+              (Number(collectible.chainId) === ChainId.BITCOIN ||
+                Number(collectible.chainId) === ChainId.BITCOIN_TESTNET)
+          )
+        default:
+          return items
+      }
+    },
+    [filterOption]
+  )
+
+  const getFilteredContentType = useCallback(
+    (items: NFTItem[]) => {
+      switch (filterOption[1]) {
+        case CollectibleTypeFilter.Videos:
+          return items.filter(
+            collectible => collectible.imageData?.type === NftContentType.MP4
+          )
+        case CollectibleTypeFilter.Pictures:
+          return items.filter(
+            collectible =>
+              collectible.imageData?.type === NftContentType.JPG ||
+              collectible.imageData?.type === NftContentType.PNG ||
+              // try to display as picture if the type is unknown
+              collectible.imageData?.type === NftContentType.Unknown
+          )
+        case CollectibleTypeFilter.GIFs:
+          return items.filter(
+            collectible => collectible.imageData?.type === NftContentType.GIF
+          )
+        default:
+          return items
+      }
+    },
+    [filterOption]
+  )
+
+  const getFiltered = useCallback(
+    (nfts: NFTItem[]) => {
+      if (nfts.length === 0) {
+        return []
+      }
+      const filteredNetworks = getFilteredNetworks(nfts)
+      return getFilteredContentType(filteredNetworks)
+    },
+    [getFilteredNetworks, getFilteredContentType]
+  )
 
   const getSorted = useCallback(
-    (filtered: LocalTokenWithBalance[]) => {
-      if (sortOption === AssetBalanceSort.LowToHigh) {
-        return filtered?.sort((a, b) =>
-          sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
-        )
-      }
+    (filtered: NFTItem[]) => {
+      if (sortOption === CollectibleSort.NameAToZ)
+        return filtered?.sort((a, b) => {
+          return (a.processedMetadata?.name ?? '') >
+            (b.processedMetadata?.name ?? '')
+            ? 1
+            : -1
+        })
 
-      return filtered?.sort((a, b) =>
-        sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
-      )
+      if (sortOption === CollectibleSort.NameZToA)
+        return filtered?.sort((a, b) => {
+          return (a.processedMetadata?.name ?? '') <
+            (b.processedMetadata?.name ?? '')
+            ? 1
+            : -1
+        })
+
+      return filtered
     },
     [sortOption]
   )
 
+  const onResetFilter = (): void => {
+    setSelectedNetworkFilter({ section: 0, row: 0 })
+    setSelectedContentTypeFilter({ section: 0, row: 0 })
+  }
+
   const filteredAndSorted = useMemo(() => {
-    const filtered = getFiltered()
+    const filtered = getFiltered(collectibles)
     return getSorted(filtered)
-  }, [getFiltered, getSorted])
+  }, [collectibles, getFiltered, getSorted])
 
   return {
-    filter: {
-      title: 'Filter',
-      data: ASSET_NETWORK_FILTERS,
-      selected: selectedFilter,
-      onSelected: setSelectedFilter
-    },
-    sort: {
-      title: 'Sort',
-      data: ASSET_BALANCE_SORTS,
-      selected: selectedSort,
-      onSelected: setSelectedSort
-    },
-    view: {
-      title: 'View',
-      data: ASSET_MANAGE_VIEWS,
-      selected: selectedView,
-      onSelected: setSelectedView
-    },
-    data: filteredAndSorted
+    filteredAndSorted,
+    filter,
+    sort,
+    view,
+    onResetFilter
   }
 }

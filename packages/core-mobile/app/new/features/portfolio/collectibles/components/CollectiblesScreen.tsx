@@ -1,4 +1,3 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   AnimatedPressable,
   Icons,
@@ -13,31 +12,25 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { RefreshControl } from 'components/RefreshControl'
 import { AssetsHeader } from 'features/portfolio/assets/components/AssetsHeader'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 
 import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
 import { LoadingState } from 'common/components/LoadingState'
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
-  COLLECTIBLE_FILTERS,
-  COLLECTIBLE_SORTS,
-  COLLECTIBLE_VIEWS,
-  CollectibleNetworkFilter,
-  CollectibleSort,
-  CollectibleTypeFilter,
   CollectibleView
 } from 'store/balance'
-import { NftContentType, NFTItem } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import {
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
   VERTICAL_ITEM_GAP
 } from '../consts'
+import { useFilterAndSort } from '../hooks/useFilterAndSort'
 import { CardContainer } from './CardContainer'
 import { CollectibleGridItem } from './CollectibleItem'
 
@@ -72,82 +65,8 @@ export const CollectiblesScreen = ({
     setNftsLoadEnabled(true)
   }, [setNftsLoadEnabled])
 
-  const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<IndexPath>(
-    {
-      section: 0,
-      row: 0
-    }
-  )
-  const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
-    useState<IndexPath>({
-      section: 0,
-      row: 0
-    })
-
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 2
-  })
-  const [selectedView, setSelectedView] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-
-  const filterOption = useMemo(() => {
-    return [
-      COLLECTIBLE_FILTERS?.[selectedNetworkFilter.section]?.[
-        selectedNetworkFilter.row
-      ] ?? CollectibleNetworkFilter.AllNetworks,
-      COLLECTIBLE_FILTERS?.[selectedContentTypeFilter.section]?.[
-        selectedContentTypeFilter.row
-      ] ?? undefined
-    ]
-  }, [selectedContentTypeFilter, selectedNetworkFilter])
-
-  const sortOption = useMemo(() => {
-    return (
-      COLLECTIBLE_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
-      CollectibleSort.NameAToZ
-    )
-  }, [selectedSort])
-
-  const filter = useMemo(
-    () => ({
-      title: 'Filter',
-      data: COLLECTIBLE_FILTERS,
-      selected: [selectedNetworkFilter, selectedContentTypeFilter],
-      onSelected: (value: IndexPath) => {
-        if (value.section === 0) setSelectedNetworkFilter(value)
-        else if (value.section === 1) setSelectedContentTypeFilter(value)
-      },
-      onDeselect: (value: IndexPath) => {
-        if (value.section === 1)
-          setSelectedContentTypeFilter({
-            section: 0,
-            row: 0
-          })
-      }
-    }),
-    [selectedContentTypeFilter, selectedNetworkFilter]
-  )
-  const sort = useMemo(
-    () => ({
-      title: 'Sort',
-      data: COLLECTIBLE_SORTS,
-      selected: selectedSort,
-      onSelected: setSelectedSort
-    }),
-    [selectedSort]
-  )
-  const view = useMemo(
-    () => ({
-      title: 'View',
-      data: COLLECTIBLE_VIEWS,
-      selected: selectedView,
-      onSelected: setSelectedView
-    }),
-    [selectedView]
-  )
+  const { filter, view, sort, filteredAndSorted, onResetFilter } =
+    useFilterAndSort(collectibles)
 
   const listType = view.data[0]?.[view.selected.row] as CollectibleView
   const columns =
@@ -157,114 +76,12 @@ export const CollectiblesScreen = ({
       ? 2
       : 1
 
-  const getFilteredNetworks = useCallback(
-    (items: NFTItem[]) => {
-      switch (filterOption[0]) {
-        case CollectibleNetworkFilter.AvalancheCChain:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              collectible.chainId &&
-              isAvalancheCChainId(Number(collectible.chainId))
-          )
-        case CollectibleNetworkFilter.Ethereum:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              (Number(collectible.chainId) === ChainId.ETHEREUM_HOMESTEAD ||
-                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_GOERLY ||
-                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_SEPOLIA)
-          )
-        case CollectibleNetworkFilter.BitcoinNetwork:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              (Number(collectible.chainId) === ChainId.BITCOIN ||
-                Number(collectible.chainId) === ChainId.BITCOIN_TESTNET)
-          )
-        default:
-          return items
-      }
-    },
-    [filterOption]
-  )
-
-  const getFilteredContentType = useCallback(
-    (items: NFTItem[]) => {
-      switch (filterOption[1]) {
-        case CollectibleTypeFilter.Videos:
-          return items.filter(
-            collectible => collectible.imageData?.type === NftContentType.MP4
-          )
-        case CollectibleTypeFilter.Pictures:
-          return items.filter(
-            collectible =>
-              collectible.imageData?.type === NftContentType.JPG ||
-              collectible.imageData?.type === NftContentType.PNG ||
-              // try to display as picture if the type is unknown
-              collectible.imageData?.type === NftContentType.Unknown
-          )
-        case CollectibleTypeFilter.GIFs:
-          return items.filter(
-            collectible => collectible.imageData?.type === NftContentType.GIF
-          )
-        default:
-          return items
-      }
-    },
-    [filterOption]
-  )
-
-  const getFiltered = useCallback(
-    (nfts: NFTItem[]) => {
-      if (nfts.length === 0) {
-        return []
-      }
-      const filteredNetworks = getFilteredNetworks(nfts)
-      return getFilteredContentType(filteredNetworks)
-    },
-    [getFilteredNetworks, getFilteredContentType]
-  )
-
-  const getSorted = useCallback(
-    (filtered: NFTItem[]) => {
-      if (sortOption === CollectibleSort.NameAToZ)
-        return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') >
-            (b.processedMetadata?.name ?? '')
-            ? 1
-            : -1
-        })
-
-      if (sortOption === CollectibleSort.NameZToA)
-        return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') <
-            (b.processedMetadata?.name ?? '')
-            ? 1
-            : -1
-        })
-
-      return filtered
-    },
-    [sortOption]
-  )
-
-  const filteredAndSorted = useMemo(() => {
-    const filtered = getFiltered(collectibles)
-    return getSorted(filtered)
-  }, [collectibles, getFiltered, getSorted])
-
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   const onRefresh = (): void => {
     refetch()
-  }
-
-  const onResetFilter = (): void => {
-    setSelectedNetworkFilter({ section: 0, row: 0 })
-    setSelectedContentTypeFilter({ section: 0, row: 0 })
   }
 
   const renderItem: ListRenderItem<NFTItem> = ({ item, index }) => {
@@ -290,7 +107,10 @@ export const CollectiblesScreen = ({
         />
       )
 
-    if (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
+    if (
+      filter.selected instanceof Array &&
+      (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
+    )
       return (
         <ErrorState
           sx={{
