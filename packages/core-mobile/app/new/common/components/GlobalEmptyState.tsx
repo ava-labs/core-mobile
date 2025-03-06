@@ -1,21 +1,25 @@
 import { Image, Text, View } from '@avalabs/k2-alpine'
 import React, { FC } from 'react'
+import { ViewStyle } from 'react-native'
 
 interface Props {
   title: string
   description: string
+  style?: ViewStyle
 }
 
 export const GlobalEmptyAssets: FC<Props> = ({
   title,
-  description
+  description,
+  style
 }): React.JSX.Element => {
   return (
     <View
       sx={{
         justifyContent: 'center',
         alignItems: 'center',
-        flex: 1
+        flex: 1,
+        ...style
       }}>
       <Image
         source={require('../../assets/icons/empty_state_emoji.png')}

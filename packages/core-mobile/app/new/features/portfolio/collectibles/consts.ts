@@ -1,5 +1,5 @@
-import { ScaledSize } from "react-native"
-import { CollectibleView } from "store/balance"
+import { ScaledSize } from 'react-native'
+import { CollectibleView } from 'store/balance'
 
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14

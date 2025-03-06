@@ -16,8 +16,9 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 export type Selection = {
   title: string
   data: string[][]
-  selected: IndexPath
+  selected: IndexPath | IndexPath[]
   onSelected: (index: IndexPath) => void
+  onDeselect?: (index: IndexPath) => void
 }
 
 export const useFilterAndSort = (): {

@@ -1,81 +1,71 @@
-import {
-  Icons,
-  SearchBar,
-  Text,
-  TouchableOpacity,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { SearchBar, Text, View } from '@avalabs/k2-alpine'
+import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import { GlobalEmptyAssets } from 'common/components/GlobalEmptyState'
 import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useRouter } from 'expo-router'
-import { CollectibleGridItem } from 'features/portfolio/collectibles/components/CollectibleItem'
-import React, { useCallback } from 'react'
-import { ListRenderItemInfo } from 'react-native'
-import { FlatList } from 'react-native-gesture-handler'
-import { CollectibleView } from 'store/balance/types'
+import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
+import { CollectibleManagementItem } from 'features/portfolio/collectibles/components/CollectibleManagementItem'
+import { LIST_CARD_HEIGHT } from 'features/portfolio/collectibles/consts'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NFTItem } from 'store/nft'
 
 const CollectibleManagementScreen = (): JSX.Element => {
+  const insets = useSafeAreaInsets()
   const {
-    filteredTokenList,
-    searchText,
-    setSearchText,
-    refetch,
+    collectibles,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
     isRefetching,
-    isLoading
-  } = useSearchableTokenList(true, false)
+    refetch
+  } = useCollectiblesContext()
 
-  const {
-    theme: { colors }
-  } = useTheme()
-  const { push } = useRouter()
+  const [searchText, setSearchText] = useState('')
 
-  // only show erc20 tokens here
-
-  const renderItem = (item: ListRenderItemInfo<NFTItem>): JSX.Element => {
-    return (
-      <CollectibleGridItem
-        index={item.index}
-        collectible={item.item}
-        type={CollectibleView.ListView}
-      />
-    )
-  }
+  const filteredCollectibles = useMemo(() => {
+    if (searchText.length)
+      return collectibles?.filter(
+        collectible =>
+          collectible.processedMetadata?.name
+            ?.toLowerCase()
+            .includes(searchText.toLowerCase()) ||
+          collectible.processedMetadata?.description
+            ?.toLowerCase()
+            .includes(searchText.toLowerCase())
+      )
+    return collectibles || []
+  }, [collectibles, searchText])
 
   const handleSearch = (text: string): void => {
     setSearchText(text)
   }
 
-  const renderContent = useCallback(() => {
-    if (isLoading || isRefetching) {
-      return <GlobalLoadingState />
-    }
+  const onEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-    if (filteredTokenList.length === 0) {
-      return (
-        <GlobalEmptyAssets
-          title="No Assets yet"
-          description="Add your crypto tokens to track your portfolio’s performance and stay
-      updated on your investments"
-        />
-      )
-    }
+  const renderItem: ListRenderItem<NFTItem> = ({
+    item,
+    index
+  }): JSX.Element => {
+    return <CollectibleManagementItem index={index} collectible={item} />
+  }
 
+  const renderEmpty = useMemo(() => {
+    if (isLoading || isRefetching) return <GlobalLoadingState />
     return (
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        style={{ width: '100%' }}
-        data={filteredTokenList}
-        renderItem={renderItem}
-        onRefresh={refetch}
-        refreshing={false}
-        keyExtractor={item => item.uid}
-        keyboardDismissMode="interactive"
+      <GlobalEmptyAssets
+        style={{
+          // TODO: Fix this height calculation
+          height: portfolioTabContentHeight + 140
+        }}
+        title="No Collectibles found"
+        description="Try changing the search term"
       />
     )
-  }, [isLoading, isRefetching, filteredTokenList, refetch])
+  }, [isLoading, isRefetching])
 
   return (
     <View
@@ -92,8 +82,24 @@ const CollectibleManagementScreen = (): JSX.Element => {
         }}>
         <Text variant="heading2">Manage list</Text>
       </View>
+
       <SearchBar onTextChanged={handleSearch} searchText={searchText} />
-      {renderContent()}
+
+      <FlashList
+        keyExtractor={item => `collectibles-manage-${item.uid}`}
+        data={filteredCollectibles}
+        renderItem={renderItem}
+        estimatedItemSize={LIST_CARD_HEIGHT}
+        ListEmptyComponent={renderEmpty}
+        onRefresh={refetch}
+        onEndReached={onEndReached}
+        refreshing={false}
+        keyboardDismissMode="interactive"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom
+        }}
+      />
     </View>
   )
 }

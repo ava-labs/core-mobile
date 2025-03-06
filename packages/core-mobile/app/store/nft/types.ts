@@ -22,10 +22,21 @@ export type NFTItemData = NftTokenTypes & {
   uid: string
 }
 
+export enum NftContentType {
+  Unknown = 'unknown',
+  MP4 = 'video/mp4',
+  JPG = 'image/jpeg',
+  PNG = 'image/png',
+  GIF = 'image/gif',
+  SVG = 'image/svg+xml'
+}
+
 export type NFTImageData = {
   aspect: number
   isSvg: boolean
-  image: string
+  image?: string
+  video?: string
+  type?: NftContentType
 }
 
 export type NFTMetadata = (Erc721TokenMetadata | Erc1155TokenMetadata) & {

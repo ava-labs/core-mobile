@@ -106,6 +106,15 @@ export const ASSET_MANAGE_VIEWS: AssetManageViews = [
 ]
 
 // Collectibles
+export enum CollectibleStatus {
+  Hidden = 'Show hidden NFTS'
+}
+
+export enum CollectibleTypeFilter {
+  Pictures = 'Pictures',
+  GIFs = 'GIFs',
+  Videos = 'Videos'
+}
 export enum CollectibleNetworkFilter {
   AllNetworks = 'All networks',
   AvalancheCChain = 'Avalanche C-Chain',
@@ -127,17 +136,31 @@ export enum CollectibleView {
 }
 
 export type CollectibleSorts = CollectibleSort[][]
-export type CollectibleNetworkFilters = CollectibleNetworkFilter[][]
+export type CollectibleFilters = (
+  | (CollectibleNetworkFilter | CollectibleStatus)[]
+  | (CollectibleTypeFilter | CollectibleStatus)[]
+)[]
 export type CollectibleViews = CollectibleView[][]
 
-export const COLLECTIBLE_NETWORK_FILTERS: CollectibleNetworkFilters = [
-  [
-    CollectibleNetworkFilter.AllNetworks,
-    CollectibleNetworkFilter.AvalancheCChain,
-    CollectibleNetworkFilter.BitcoinNetwork,
-    CollectibleNetworkFilter.Ethereum
-  ]
+export const COLLECTIBLE_NETWORK_FILTERS = [
+  CollectibleNetworkFilter.AllNetworks,
+  CollectibleNetworkFilter.AvalancheCChain,
+  CollectibleNetworkFilter.BitcoinNetwork,
+  CollectibleNetworkFilter.Ethereum
 ]
+
+export const COLLECTIBLE_TYPE_FILTERS = [
+  CollectibleTypeFilter.Pictures,
+  CollectibleTypeFilter.GIFs,
+  CollectibleTypeFilter.Videos,
+  CollectibleStatus.Hidden
+]
+
+export const COLLECTIBLE_FILTERS: CollectibleFilters = [
+  COLLECTIBLE_NETWORK_FILTERS,
+  COLLECTIBLE_TYPE_FILTERS
+]
+
 export const COLLECTIBLE_SORTS: CollectibleSorts = [
   [
     CollectibleSort.NameAToZ,

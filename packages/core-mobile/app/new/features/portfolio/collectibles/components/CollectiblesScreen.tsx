@@ -3,7 +3,6 @@ import {
   AnimatedPressable,
   Icons,
   IndexPath,
-  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -16,23 +15,23 @@ import { AssetsHeader } from 'features/portfolio/assets/components/AssetsHeader'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 
-import ContentLoader, { Rect } from 'react-content-loader/native'
-import { Dimensions } from 'react-native'
-
+import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
+import { LoadingState } from 'common/components/LoadingState'
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
-  COLLECTIBLE_NETWORK_FILTERS,
+  COLLECTIBLE_FILTERS,
   COLLECTIBLE_SORTS,
   COLLECTIBLE_VIEWS,
   CollectibleNetworkFilter,
   CollectibleSort,
+  CollectibleTypeFilter,
   CollectibleView
 } from 'store/balance'
-import { NFTItem } from 'store/nft'
+import { NftContentType, NFTItem } from 'store/nft'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import {
   HORIZONTAL_ITEM_GAP,
@@ -41,7 +40,6 @@ import {
 } from '../consts'
 import { CardContainer } from './CardContainer'
 import { CollectibleGridItem } from './CollectibleItem'
-import { LoadingState } from 'common/components/LoadingState'
 
 export type Selection = {
   title: string
@@ -74,10 +72,18 @@ export const CollectiblesScreen = ({
     setNftsLoadEnabled(true)
   }, [setNftsLoadEnabled])
 
-  const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<IndexPath>(
+    {
+      section: 0,
+      row: 0
+    }
+  )
+  const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
+    useState<IndexPath>({
+      section: 0,
+      row: 0
+    })
+
   const [selectedSort, setSelectedSort] = useState<IndexPath>({
     section: 0,
     row: 2
@@ -88,12 +94,15 @@ export const CollectiblesScreen = ({
   })
 
   const filterOption = useMemo(() => {
-    return (
-      COLLECTIBLE_NETWORK_FILTERS?.[selectedFilter.section]?.[
-        selectedFilter.row
-      ] ?? CollectibleNetworkFilter.AllNetworks
-    )
-  }, [selectedFilter])
+    return [
+      COLLECTIBLE_FILTERS?.[selectedNetworkFilter.section]?.[
+        selectedNetworkFilter.row
+      ] ?? CollectibleNetworkFilter.AllNetworks,
+      COLLECTIBLE_FILTERS?.[selectedContentTypeFilter.section]?.[
+        selectedContentTypeFilter.row
+      ] ?? undefined
+    ]
+  }, [selectedContentTypeFilter, selectedNetworkFilter])
 
   const sortOption = useMemo(() => {
     return (
@@ -105,11 +114,21 @@ export const CollectiblesScreen = ({
   const filter = useMemo(
     () => ({
       title: 'Filter',
-      data: COLLECTIBLE_NETWORK_FILTERS,
-      selected: selectedFilter,
-      onSelected: setSelectedFilter
+      data: COLLECTIBLE_FILTERS,
+      selected: [selectedNetworkFilter, selectedContentTypeFilter],
+      onSelected: (value: IndexPath) => {
+        if (value.section === 0) setSelectedNetworkFilter(value)
+        else if (value.section === 1) setSelectedContentTypeFilter(value)
+      },
+      onDeselect: (value: IndexPath) => {
+        if (value.section === 1)
+          setSelectedContentTypeFilter({
+            section: 0,
+            row: 0
+          })
+      }
     }),
-    [selectedFilter]
+    [selectedContentTypeFilter, selectedNetworkFilter]
   )
   const sort = useMemo(
     () => ({
@@ -138,34 +157,74 @@ export const CollectiblesScreen = ({
       ? 2
       : 1
 
-  const getFiltered = useCallback(() => {
-    if (collectibles.length === 0) {
-      return []
-    }
-    switch (filterOption) {
-      case CollectibleNetworkFilter.AvalancheCChain:
-        return collectibles.filter(
-          nft =>
-            ('chainId' in nft &&
-              nft.chainId &&
-              isAvalancheCChainId(Number(nft.chainId))) ||
-            nft.localId === 'AvalancheAVAX'
-        )
-      case CollectibleNetworkFilter.Ethereum:
-        return collectibles.filter(
-          token =>
-            'chainId' in token &&
-            (Number(token.chainId) === ChainId.ETHEREUM_HOMESTEAD ||
-              Number(token.chainId) === ChainId.ETHEREUM_TEST_GOERLY ||
-              Number(token.chainId) === ChainId.ETHEREUM_TEST_SEPOLIA)
-        )
-      case CollectibleNetworkFilter.BitcoinNetwork:
-        // token.tokenId?
-        return collectibles.filter(token => token.symbol === 'BTC')
-      default:
-        return collectibles
-    }
-  }, [filterOption, collectibles])
+  const getFilteredNetworks = useCallback(
+    (items: NFTItem[]) => {
+      switch (filterOption[0]) {
+        case CollectibleNetworkFilter.AvalancheCChain:
+          return items.filter(
+            collectible =>
+              'chainId' in collectible &&
+              collectible.chainId &&
+              isAvalancheCChainId(Number(collectible.chainId))
+          )
+        case CollectibleNetworkFilter.Ethereum:
+          return items.filter(
+            collectible =>
+              'chainId' in collectible &&
+              (Number(collectible.chainId) === ChainId.ETHEREUM_HOMESTEAD ||
+                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_GOERLY ||
+                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_SEPOLIA)
+          )
+        case CollectibleNetworkFilter.BitcoinNetwork:
+          return items.filter(
+            collectible =>
+              'chainId' in collectible &&
+              (Number(collectible.chainId) === ChainId.BITCOIN ||
+                Number(collectible.chainId) === ChainId.BITCOIN_TESTNET)
+          )
+        default:
+          return items
+      }
+    },
+    [filterOption]
+  )
+
+  const getFilteredContentType = useCallback(
+    (items: NFTItem[]) => {
+      switch (filterOption[1]) {
+        case CollectibleTypeFilter.Videos:
+          return items.filter(
+            collectible => collectible.imageData?.type === NftContentType.MP4
+          )
+        case CollectibleTypeFilter.Pictures:
+          return items.filter(
+            collectible =>
+              collectible.imageData?.type === NftContentType.JPG ||
+              collectible.imageData?.type === NftContentType.PNG ||
+              // try to display as picture if the type is unknown
+              collectible.imageData?.type === NftContentType.Unknown
+          )
+        case CollectibleTypeFilter.GIFs:
+          return items.filter(
+            collectible => collectible.imageData?.type === NftContentType.GIF
+          )
+        default:
+          return items
+      }
+    },
+    [filterOption]
+  )
+
+  const getFiltered = useCallback(
+    (nfts: NFTItem[]) => {
+      if (nfts.length === 0) {
+        return []
+      }
+      const filteredNetworks = getFilteredNetworks(nfts)
+      return getFilteredContentType(filteredNetworks)
+    },
+    [getFilteredNetworks, getFilteredContentType]
+  )
 
   const getSorted = useCallback(
     (filtered: NFTItem[]) => {
@@ -191,9 +250,9 @@ export const CollectiblesScreen = ({
   )
 
   const filteredAndSorted = useMemo(() => {
-    const filtered = getFiltered()
+    const filtered = getFiltered(collectibles)
     return getSorted(filtered)
-  }, [getFiltered, getSorted])
+  }, [collectibles, getFiltered, getSorted])
 
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
@@ -204,7 +263,8 @@ export const CollectiblesScreen = ({
   }
 
   const onResetFilter = (): void => {
-    setSelectedFilter({ section: 0, row: 0 })
+    setSelectedNetworkFilter({ section: 0, row: 0 })
+    setSelectedContentTypeFilter({ section: 0, row: 0 })
   }
 
   const renderItem: ListRenderItem<NFTItem> = ({ item, index }) => {
@@ -230,7 +290,7 @@ export const CollectiblesScreen = ({
         />
       )
 
-    if (filter.selected.row !== 0)
+    if (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
       return (
         <ErrorState
           sx={{
@@ -245,6 +305,7 @@ export const CollectiblesScreen = ({
           }}
         />
       )
+
     return <EmptyCollectibles />
   }
 
@@ -261,9 +322,10 @@ export const CollectiblesScreen = ({
     [goToCollectibleManagement, view]
   )
 
-  const headerStyle = useAnimatedStyle(() => {
-    return {}
-  })
+  const renderLoadingMore = useMemo(() => {
+    if (isLoading) return <GlobalLoadingState />
+    return null
+  }, [isLoading])
 
   if (isLoading)
     return <LoadingState sx={{ height: portfolioTabContentHeight }} />
@@ -287,9 +349,8 @@ export const CollectiblesScreen = ({
         removeClippedSubviews={Platform.OS === 'android'}
         ListEmptyComponent={renderEmpty}
         ListHeaderComponent={
-          <Animated.View
+          <View
             style={[
-              headerStyle,
               {
                 alignSelf: 'center',
                 marginBottom: 8,
@@ -302,10 +363,11 @@ export const CollectiblesScreen = ({
               sort={sort}
               view={{ ...view, onSelected: handleManageList }}
             />
-          </Animated.View>
+          </View>
         }
         onEndReached={onEndReached}
         onEndReachedThreshold={0.8}
+        ListFooterComponent={renderLoadingMore}
         nestedScrollEnabled
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={isRefetching} />
@@ -388,33 +450,3 @@ const EmptyCollectibles = memo((): JSX.Element => {
     </View>
   )
 })
-
-const deviceWidth = Dimensions.get('screen').width
-const aspectRatio = 343 / 424
-
-export const NftListLoader = (): JSX.Element => {
-  return (
-    <View
-      style={{
-        alignItems: 'center',
-        width: deviceWidth - 32,
-        aspectRatio: aspectRatio,
-        marginTop: 6
-      }}>
-      <ContentLoader
-        speed={1}
-        width="100%"
-        height="100%"
-        viewBox="0 0 343 424"
-        backgroundColor={'#1A1A1C'}
-        foregroundColor={'#2A2A2D'}>
-        <Rect x="0" y="0" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="72" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="144" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="216" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="288" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="360" rx="8" ry="8" width="343" height="64" />
-      </ContentLoader>
-    </View>
-  )
-}

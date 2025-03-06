@@ -2,6 +2,7 @@ import {
   Button,
   getTintColor,
   Icons,
+  IndexPath,
   SimpleDropdown,
   useTheme,
   View
@@ -46,8 +47,13 @@ export const AssetsHeader = ({
             </Button>
           }
           sections={filter.data}
-          selectedRows={[filter.selected]}
+          selectedRows={
+            filter.selected instanceof Array
+              ? (filter.selected as IndexPath[])
+              : [filter.selected]
+          }
           onSelectRow={filter.onSelected}
+          onDeselectRow={filter.onDeselect}
           minWidth={250}
         />
 
@@ -68,7 +74,7 @@ export const AssetsHeader = ({
               </Button>
             }
             sections={sort.data}
-            selectedRows={[sort.selected]}
+            selectedRows={[sort.selected as IndexPath]}
             onSelectRow={sort.onSelected}
             minWidth={250}
           />
@@ -81,7 +87,7 @@ export const AssetsHeader = ({
           </Button>
         }
         sections={view.data}
-        selectedRows={[view.selected]}
+        selectedRows={[view.selected as IndexPath]}
         onSelectRow={view.onSelected}
       />
     </View>

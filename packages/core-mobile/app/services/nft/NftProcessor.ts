@@ -1,5 +1,5 @@
 import { Image } from 'react-native'
-import { NFTItemExternalData, NFTImageData } from 'store/nft'
+import { NFTItemExternalData, NFTImageData, NftContentType } from 'store/nft'
 import { HttpClient } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { convertIPFSResolver } from './utils'
@@ -15,42 +15,65 @@ export class NftProcessor {
         const svg = this.decodeBase64Svg(imageData)
         const trimmed = this.removeSvgNamespace(svg)
         const aspect = this.extractSvgAspect(trimmed) ?? 1
-        resolve({ image: svg, aspect, isSvg: true })
+        resolve({ image: svg, aspect, isSvg: true, type: NftContentType.SVG })
       } else {
         const imageUrl = convertIPFSResolver(imageData)
-        if (imageUrl.endsWith('.svg')) {
-          fetch(imageUrl)
-            .then(rsp => {
-              rsp
-                .text()
-                .then(svg => {
-                  const trimmed = this.removeSvgNamespace(svg)
-                  const aspect = this.extractSvgAspect(trimmed) ?? 1
-                  resolve({ image: trimmed, aspect: aspect, isSvg: true })
+        this.identifyByMagicNumber(imageUrl)
+          .then(type => {
+            if (type === NftContentType.SVG) {
+              resolve({
+                video: imageUrl,
+                aspect: 1,
+                isSvg: false,
+                type
+              })
+            } else if (type === NftContentType.MP4) {
+              fetch(imageUrl)
+                .then(rsp => {
+                  rsp
+                    .text()
+                    .then(svg => {
+                      const trimmed = this.removeSvgNamespace(svg)
+                      const aspect = this.extractSvgAspect(trimmed) ?? 1
+
+                      resolve({
+                        image: trimmed,
+                        aspect: aspect,
+                        isSvg: true,
+                        type
+                      })
+                    })
+                    .catch(Logger.error)
                 })
                 .catch(Logger.error)
-            })
-            .catch(Logger.error)
-        } else if (imageUrl.endsWith('.mp4')) {
-          // we don't support mp4 yet
-          resolve({ image: '', aspect: 1, isSvg: false })
-        } else {
-          // assume this is just a normal image
-          Image.getSize(
-            imageUrl,
-            (width: number, height: number) => {
-              const aspect = height / width
-              resolve({
-                image: imageUrl,
-                aspect: isNaN(aspect) ? 1 : aspect,
-                isSvg: false
-              })
-            },
-            _ => {
-              resolve({ image: imageUrl, aspect: 1, isSvg: false })
+            } else {
+              Image.getSize(
+                imageUrl,
+                (width: number, height: number) => {
+                  const aspect = height / width
+                  resolve({
+                    image: imageUrl,
+                    aspect: isNaN(aspect) ? 1 : aspect,
+                    isSvg: false,
+                    type
+                  })
+                },
+                error => {
+                  resolve({ image: imageUrl, aspect: 1, isSvg: false, type })
+                  Logger.error(error)
+                }
+              )
             }
-          )
-        }
+          })
+          .catch(error => {
+            Logger.error('Error fetching image and aspect:', error)
+            resolve({
+              image: '',
+              aspect: 1,
+              isSvg: false,
+              type: NftContentType.Unknown
+            })
+          })
       }
     })
   }
@@ -82,6 +105,64 @@ export class NftProcessor {
       }
     }
     return undefined
+  }
+
+  private async identifyByMagicNumber(url: string): Promise<NftContentType> {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { Range: 'bytes=0-100' }
+      })
+      const buffer = await response.arrayBuffer()
+      const uint8Array = new Uint8Array(buffer)
+      const textDecoder = new TextDecoder()
+      const snippet = textDecoder.decode(buffer)
+
+      // JPEG: FF D8 FF
+      if (
+        uint8Array[0] === 0xff &&
+        uint8Array[1] === 0xd8 &&
+        uint8Array[2] === 0xff
+      ) {
+        return NftContentType.JPG
+      }
+      // PNG: 89 50 4E 47
+      if (
+        uint8Array[0] === 0x89 &&
+        uint8Array[1] === 0x50 &&
+        uint8Array[2] === 0x4e &&
+        uint8Array[3] === 0x47
+      ) {
+        return NftContentType.PNG
+      }
+      // GIF: 47 49 46 38 (GIF8) followed by either 37 61 (7a - GIF87a) or 39 61 (9a - GIF89a)
+      if (
+        uint8Array[0] === 0x47 &&
+        uint8Array[1] === 0x49 &&
+        uint8Array[2] === 0x46 &&
+        uint8Array[3] === 0x38 &&
+        ((uint8Array[4] === 0x37 && uint8Array[5] === 0x61) || // GIF87a
+          (uint8Array[4] === 0x39 && uint8Array[5] === 0x61)) // GIF89a
+      ) {
+        return NftContentType.GIF
+      }
+      // SVG: Check for <?xml or <svg at the start
+      if (
+        snippet.trimStart().startsWith('<?xml') ||
+        snippet.trimStart().toLowerCase().includes('<svg') ||
+        snippet.trimStart().includes('data:image/svg+xml')
+      ) {
+        return NftContentType.SVG
+      }
+      // MP4: ftyp
+      if (snippet.includes('ftyp')) {
+        return NftContentType.MP4
+      }
+      return NftContentType.Unknown
+    } catch (error) {
+      // console.error("Error identifying content by magic number:", error);
+      return NftContentType.Unknown
+    }
   }
 
   async fetchMetadata(tokenUri: string): Promise<NFTItemExternalData> {
