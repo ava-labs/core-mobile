@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
+import { Image } from 'expo-image'
 import { Text, Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
@@ -223,6 +224,8 @@ export default function NftSend({
 
 const CollectibleItem = ({ nft }: { nft: NftItem }): JSX.Element => {
   const { theme } = useApplicationContext()
+  const width = 80
+  const height = 80 * (nft.imageData?.aspect ?? 1)
   return (
     <View
       style={[
@@ -232,24 +235,20 @@ const CollectibleItem = ({ nft }: { nft: NftItem }): JSX.Element => {
         }
       ]}>
       <Row>
-        <View style={{ borderRadius: 8 }}>
-          {nft.imageData?.isSvg ? (
-            <View style={{ alignItems: 'center' }}>
-              <SvgXml
-                xml={nft.imageData?.image ?? null}
-                width={80}
-                height={80 * (nft.imageData?.aspect ?? 1)}
-              />
-            </View>
-          ) : (
-            <Image
-              style={styles.nftImage}
-              source={{ uri: nft.imageData?.image }}
-              width={80}
-              height={80}
+        {nft.imageData?.isSvg ? (
+          <View style={{ borderRadius: 8, alignItems: 'center' }}>
+            <SvgXml
+              xml={nft.imageData?.image ?? null}
+              width={width}
+              height={height}
             />
-          )}
-        </View>
+          </View>
+        ) : (
+          <Image
+            style={[styles.nftImage, { width, height: height }]}
+            source={{ uri: nft.imageData?.image }}
+          />
+        )}
         <Space x={16} />
         <View style={{ flex: 1 }}>
           <Text
@@ -283,6 +282,7 @@ const styles = StyleSheet.create({
     padding: 16
   },
   nftImage: {
-    borderRadius: 8
+    borderRadius: 8,
+    resizeMode: 'contain'
   }
 })

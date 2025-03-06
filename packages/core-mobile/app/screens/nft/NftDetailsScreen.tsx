@@ -21,6 +21,7 @@ import { Tooltip } from 'components/Tooltip'
 import { Image } from 'expo-image'
 import { useNftItemsContext } from 'contexts/NftItemsContext'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import NftAttributes from './components/NftAttributes'
 
 type NftDetailsScreenProps = NFTDetailsScreenProps<
@@ -97,10 +98,13 @@ const NftDetailsScreen = (): JSX.Element | null => {
   }, [colors, handleRefresh, canRefreshMetadata, isRefreshing])
 
   useEffect(() => {
-    setOptions({
-      headerRight: renderHeaderRight
-    })
-  }, [setOptions, renderHeaderRight])
+    // glacier reindexing only applies to Avalanche NFTs only
+    if (isAvalancheNetwork(activeNetwork)) {
+      setOptions({
+        headerRight: renderHeaderRight
+      })
+    }
+  }, [setOptions, renderHeaderRight, activeNetwork])
 
   if (!nftItem) return null
 
