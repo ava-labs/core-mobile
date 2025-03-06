@@ -7,7 +7,7 @@ import { useTokenSearch } from 'common/hooks/useTokenSearch'
 import { Image } from '@avalabs/k2-alpine'
 import { SEGMENT_CONTROL_HEIGHT } from 'features/portfolio/assets/consts'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
-import TrackScreen from './TrackScreen'
+import MarketTokensScreen from './MarketTokensScreen'
 
 const SearchResultScreen = ({
   searchText,
@@ -84,7 +84,7 @@ const SearchResultScreen = ({
   ])
 
   return (
-    <TrackScreen
+    <MarketTokensScreen
       data={data}
       charts={chartsToDisplay}
       sort={sort}

@@ -8,7 +8,7 @@ import { DropdownSelection } from 'common/types'
 import { MarketView } from '../hooks/useTrackSortAndView'
 import MarketListItem from './MarketListItem'
 
-const TrackScreen = ({
+const MarketTokensScreen = ({
   data,
   charts,
   sort,
@@ -87,4 +87,4 @@ const TrackScreen = ({
   )
 }
 
-export default TrackScreen
+export default MarketTokensScreen

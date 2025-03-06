@@ -5,7 +5,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { Dimensions } from 'react-native'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
-import TrackScreen from './TrackScreen'
+import MarketTokensScreen from './MarketTokensScreen'
 
 const MarketScreen = ({
   goToMarketDetail
@@ -40,7 +40,7 @@ const MarketScreen = ({
   }, [isRefetchingTopTokens, isLoadingTopTokens, refetchTopTokens])
 
   return (
-    <TrackScreen
+    <MarketTokensScreen
       data={data}
       charts={charts}
       sort={sort}

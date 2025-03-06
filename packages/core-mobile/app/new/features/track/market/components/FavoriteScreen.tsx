@@ -6,7 +6,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { ErrorState } from 'common/components/ErrorState'
 import { Dimensions } from 'react-native'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
-import TrackScreen from './TrackScreen'
+import MarketTokensScreen from './MarketTokensScreen'
 
 const FavoriteScreen = ({
   goToMarketDetail
@@ -38,7 +38,7 @@ const FavoriteScreen = ({
   }, [isLoadingFavorites])
 
   return (
-    <TrackScreen
+    <MarketTokensScreen
       data={data}
       charts={charts}
       sort={sort}
