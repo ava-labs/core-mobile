@@ -26,7 +26,7 @@ const SearchResultScreen = ({
     allTokens
   } = useWatchlist()
 
-  const isFocused = isSearchBarFocused || searchText.length === 0
+  const isFocused = isSearchBarFocused && searchText.length === 0
 
   const { data: searchResults, isLoading: isSearchingTokens } = useTokenSearch({
     isFetchingTokens: isLoadingTopTokens || isLoadingTrendingTokens,

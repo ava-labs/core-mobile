@@ -63,7 +63,8 @@ export function useTokenSearch({
       }
 
       try {
-        return watchlistService.tokenSearch(searchText, currency)
+        const result = await watchlistService.tokenSearch(searchText, currency)
+        return result ?? EMPTY_DATA
       } catch {
         return EMPTY_DATA
       }
