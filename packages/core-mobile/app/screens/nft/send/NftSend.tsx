@@ -13,7 +13,6 @@ import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { Account, selectActiveAccount } from 'store/account'
-import { NFTItem } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -32,6 +31,8 @@ import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
 import { useSendContext } from 'contexts/SendContext'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
+import { getNftTitle } from 'services/nft/utils'
+import { NftItem } from 'services/nft/types'
 
 type NftSendScreenProps = {
   onOpenAddressBook: () => void
@@ -220,9 +221,8 @@ export default function NftSend({
   )
 }
 
-const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
+const CollectibleItem = ({ nft }: { nft: NftItem }): JSX.Element => {
   const { theme } = useApplicationContext()
-
   return (
     <View
       style={[
@@ -264,7 +264,7 @@ const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
             testID="NftTokenName"
             numberOfLines={1}
             ellipsizeMode="tail">
-            {nft.processedMetadata.name}
+            {getNftTitle(nft)}
           </Text>
         </View>
       </Row>
