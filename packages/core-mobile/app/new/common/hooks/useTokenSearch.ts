@@ -24,32 +24,40 @@ export function useTokenSearch({
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
 
   return useQuery({
+    initialData: { tokens: items, prices: {}, charts: {} },
+    enabled: searchText !== undefined && searchText.length > 0,
     queryKey: [
       ReactQueryKeys.WATCHLIST_TOKEN_SEARCH,
       currency,
       searchText,
       isFetchingTokens
     ],
-    queryFn: () => {
-      if (isFetchingTokens) return
+    queryFn: async () => {
+      if (
+        isFetchingTokens ||
+        searchText === undefined ||
+        searchText.length === 0
+      )
+        return EMPTY_DATA
 
-      if (searchText && searchText.length > 0) {
-        const tokens = items.filter(
-          i =>
-            i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-            i.symbol?.toLowerCase().includes(searchText.toLowerCase())
-        )
+      const tokens = items.filter(
+        i =>
+          i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+          i.symbol?.toLowerCase().includes(searchText.toLowerCase())
+      )
 
-        if (tokens.length > 0) {
-          // we already have these tokens in the list
-          // no need to search for prices and charts
-          // it will reuse the existing prices and charts data in the screen
-          return { tokens, prices: {}, charts: {} }
-        }
-
-        return watchlistService.tokenSearch(searchText, currency) ?? EMPTY_DATA
+      if (tokens.length > 0) {
+        // we already have these tokens in the list
+        // no need to search for prices and charts
+        // it will reuse the existing prices and charts data in the screen
+        return { tokens, prices: {}, charts: {} }
       }
-      return EMPTY_DATA
+
+      try {
+        return watchlistService.tokenSearch(searchText, currency)
+      } catch {
+        return EMPTY_DATA
+      }
     }
   })
 }

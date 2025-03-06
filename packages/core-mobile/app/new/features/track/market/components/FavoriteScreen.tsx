@@ -45,6 +45,22 @@ const FavoriteScreen = ({
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
+    if (searchText && searchText.length > 0) {
+      return (
+        <ErrorState
+          sx={{ height: contentHeight }}
+          icon={
+            <Image
+              source={require('../../../../assets/icons/cactus.png')}
+              sx={{ width: 42, height: 42 }}
+            />
+          }
+          title="No results found"
+          description=""
+        />
+      )
+    }
+
     return (
       <ErrorState
         sx={{ height: contentHeight }}
@@ -58,7 +74,7 @@ const FavoriteScreen = ({
         description="Star any token to add it to this screen"
       />
     )
-  }, [isLoadingTopTokens, isRefetchingTopTokens])
+  }, [isLoadingTopTokens, isRefetchingTopTokens, searchText])
 
   return (
     <TrackScreen
