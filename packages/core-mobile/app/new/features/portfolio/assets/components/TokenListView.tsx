@@ -32,7 +32,8 @@ export const TokenListView = ({
         <View
           sx={{
             borderRadius: 18,
-            paddingHorizontal: 17,
+            paddingLeft: 16,
+            paddingRight: 12,
             paddingVertical: 12,
             flexDirection: 'row',
             alignItems: 'center',
@@ -43,39 +44,20 @@ export const TokenListView = ({
             sx={{
               flexGrow: 1,
               flexShrink: 1,
-              flexDirection: 'row',
-              justifyContent: 'space-between'
+              marginHorizontal: 12
             }}>
             <View
               sx={{
-                marginLeft: 8,
-                marginRight: 16,
-                flex: 2
+                flexShrink: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 24
               }}>
-              <Text
-                variant="buttonMedium"
-                numberOfLines={1}
-                sx={{ lineHeight: 16 }}>
+              <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
                 {token.name}
               </Text>
-              <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
-                <Text
-                  variant="body2"
-                  sx={{ lineHeight: 16 }}
-                  ellipsizeMode="tail"
-                  numberOfLines={1}>
-                  {token.balanceDisplayValue} {token.symbol}
-                </Text>
-              </View>
-            </View>
-            <View
-              sx={{
-                alignItems: 'flex-end',
-                flexShrink: 1,
-                justifyContent: 'center',
-                flex: 1
-              }}>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 {!token.isDataAccurate && (
                   <Icons.Alert.Error
                     width={16}
@@ -90,6 +72,22 @@ export const TokenListView = ({
                   {formattedBalance}
                 </Text>
               </View>
+            </View>
+            <View
+              sx={{
+                flexDirection: 'row',
+                flexShrink: 1,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 24
+              }}>
+              <Text
+                variant="body2"
+                sx={{ lineHeight: 16, flex: 1 }}
+                ellipsizeMode="tail"
+                numberOfLines={1}>
+                {token.balanceDisplayValue} {token.symbol}
+              </Text>
               <PriceChangeIndicator
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
@@ -99,8 +97,7 @@ export const TokenListView = ({
           <View
             sx={{
               alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: 13
+              justifyContent: 'center'
             }}>
             <Icons.Navigation.ChevronRightV2 color={colors.$textSecondary} />
           </View>

@@ -68,7 +68,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const currencyBalance =
     !balanceAccurate && balanceTotalInCurrency === 0
-      ? UNKNOWN_AMOUNT
+      ? '$' + UNKNOWN_AMOUNT
       : currencyFormatter(balanceTotalInCurrency)
 
   const formattedBalance = currencyBalance.replace(selectedCurrency, '')
@@ -103,9 +103,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [balanceTotalInCurrency, totalPriceChanged])
 
   const formattedPercent =
-    (isNaN(totalPriceChangedInPercent)
-      ? UNKNOWN_AMOUNT
-      : totalPriceChangedInPercent.toFixed(2)) + '%'
+    isNaN(totalPriceChangedInPercent) || totalPriceChangedInPercent === 0
+      ? undefined
+      : totalPriceChangedInPercent.toFixed(2) + '%'
 
   const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
@@ -183,7 +183,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleGoToTokenDetail = useCallback(
     (localId: string): void => {
-      navigate(`/portfolio/tokenDetail?localId=${localId}`)
+      navigate({ pathname: '/tokenDetail', params: { localId } })
     },
     [navigate]
   )

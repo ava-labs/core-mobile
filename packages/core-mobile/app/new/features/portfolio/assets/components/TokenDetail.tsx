@@ -1,207 +1,194 @@
-import { FlatList, Image, Separator, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenHeader } from 'common/components/TokenHeader'
-import React, { FC, memo, useCallback, useMemo } from 'react'
-import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
-import { Transaction } from 'store/transaction'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import React, { FC, useCallback, useMemo } from 'react'
+import Animated, { LinearTransition } from 'react-native-reanimated'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
 import {
-  Dimensions,
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent
-} from 'react-native'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
-import { RefreshControl } from 'common/components/RefreshControl'
-import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { DropdownSelection } from 'common/types'
-import { ErrorState } from 'common/components/ErrorState'
-import { LoadingState } from 'common/components/LoadingState'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { DropdownSelections } from 'common/components/DropdownSelections'
-import { XpActivityListItem } from './XpActivityListItem'
-import { TokenActivityListItem } from './TokenActivityListItem'
-import { ActionButton, ActionButtons } from './ActionButtons'
+  assetPDisplayNames,
+  assetXDisplayNames,
+  LocalTokenWithBalance
+} from 'store/balance'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
+import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { xpChainToken } from 'utils/units/knownTokens'
+import { LogoWithNetwork } from './LogoWithNetwork'
 
-const EMPTY_STATE_HEIGHT = Dimensions.get('window').height / 2 - 32
+type PChainBalanceType = keyof PChainBalance
+type XChainBalanceType = keyof XChainBalances
 
 interface Props {
-  onScroll: (
-    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
-  ) => void
-  animatedHeaderStyle: ReturnType<typeof useAnimatedStyle>
-  formattedBalance: string
-  handleBalanceHeaderLayout: (event: LayoutChangeEvent) => void
-  data: Transaction[]
-  filter: DropdownSelection
-  sort: DropdownSelection
-  actionButtons: ActionButton[]
   token?: LocalTokenWithBalance
-  handleExplorerLink: (explorerLink: string) => void
-  isLoading: boolean
-  isRefreshing: boolean
-  isError: boolean
-  refresh: () => void
-  isBalanceLoading: boolean
-  isBalanceAccurate: boolean
-  selectedCurrency: string
 }
 
-const TokenDetail: FC<Props> = ({
-  data,
-  filter,
-  sort,
-  onScroll,
-  animatedHeaderStyle,
-  formattedBalance,
-  actionButtons,
-  handleBalanceHeaderLayout,
-  handleExplorerLink,
-  token,
-  isLoading,
-  isBalanceLoading,
-  isBalanceAccurate,
-  isRefreshing,
-  selectedCurrency,
-  isError,
-  refresh
-}): React.JSX.Element => {
+const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-
-  const renderHeader = useCallback((): JSX.Element => {
-    return (
-      <View
-        style={{
-          backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16
-        }}>
-        <View onLayout={handleBalanceHeaderLayout}>
-          <Animated.View
-            style={[
-              {
-                paddingBottom: 16,
-                backgroundColor: colors.$surfacePrimary
-              },
-              animatedHeaderStyle
-            ]}>
-            <TokenHeader
-              token={token}
-              formattedBalance={formattedBalance}
-              currency={selectedCurrency}
-              errorMessage={
-                isBalanceAccurate ? undefined : 'Unable to load all balances'
-              }
-              isLoading={isBalanceLoading}
-            />
-          </Animated.View>
-        </View>
-        <ActionButtons buttons={actionButtons} />
-      </View>
-    )
-  }, [
-    actionButtons,
-    animatedHeaderStyle,
-    colors.$surfacePrimary,
-    formattedBalance,
-    handleBalanceHeaderLayout,
-    isBalanceAccurate,
-    isBalanceLoading,
-    selectedCurrency,
-    token
-  ])
-
-  const header = useMemo(() => {
-    return (
-      <>
-        {renderHeader()}
-        <DropdownSelections
-          filter={filter}
-          sort={sort}
-          sx={{ paddingHorizontal: 16 }}
-        />
-      </>
-    )
-  }, [filter, renderHeader, sort])
-
-  const emptyState = useMemo(() => {
-    if (isLoading || isRefreshing) {
-      return <LoadingState sx={{ height: EMPTY_STATE_HEIGHT }} />
+  const assetTypes = useMemo(() => {
+    if (token && isTokenWithBalancePVM(token)) {
+      return Object.keys(token.balancePerType)
+        .sort((a, b) => {
+          return Number(
+            (token.balancePerType[b as PChainBalanceType] ?? 0n) -
+              (token.balancePerType[a as PChainBalanceType] ?? 0n)
+          )
+        })
+        .filter(k => (token.balancePerType[k as PChainBalanceType] ?? 0) > 0)
     }
+    if (token && isTokenWithBalanceAVM(token)) {
+      return Object.keys(token.balancePerType)
+        .sort((a, b) => {
+          return Number(
+            (token.balancePerType[b as XChainBalanceType] ?? 0n) -
+              (token.balancePerType[a as XChainBalanceType] ?? 0n)
+          )
+        })
+        .filter(k => (token.balancePerType[k as XChainBalanceType] ?? 0) > 0)
+    }
+    return []
+  }, [token])
 
-    if (isError) {
+  const getBalanceAndAssetName = useCallback(
+    (item: string) => {
+      const balance =
+        token && isTokenWithBalancePVM(token)
+          ? token.balancePerType[item as PChainBalanceType]
+          : token && isTokenWithBalanceAVM(token)
+          ? token.balancePerType[item as XChainBalanceType]
+          : 0
+      const assetName =
+        token && isTokenWithBalancePVM(token)
+          ? assetPDisplayNames[item]
+          : token && isTokenWithBalanceAVM(token)
+          ? assetXDisplayNames[item]
+          : ''
+      return { balance, assetName }
+    },
+    [token]
+  )
+
+  const renderItem = useCallback(
+    (item: string, index: number): React.JSX.Element => {
+      const { balance, assetName } = getBalanceAndAssetName(item)
+
+      const balanceInAvax = balance
+        ? new TokenUnit(balance, xpChainToken.maxDecimals, xpChainToken.symbol)
+        : undefined
+      const formattedBalance =
+        balanceInAvax && token?.priceInCurrency
+          ? '$' +
+            balanceInAvax
+              ?.mul(token?.priceInCurrency ?? 0)
+              .toDisplay({ fixedDp: 2 })
+          : UNKNOWN_AMOUNT
+
+      const isAvailableBalanceType =
+        item === 'unlockedUnstaked' || item === 'unlocked'
+
       return (
-        <ErrorState
-          sx={{ height: EMPTY_STATE_HEIGHT }}
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refresh
-          }}
-        />
+        <Animated.View
+          entering={getListItemEnteringAnimation(index)}
+          layout={LinearTransition.springify()}>
+          <View>
+            <View
+              sx={{
+                borderRadius: 18,
+                paddingLeft: 16,
+                paddingRight: 12,
+                paddingVertical: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '$surfaceSecondary',
+                marginBottom: 12
+              }}>
+              {token && isAvailableBalanceType ? (
+                <LogoWithNetwork token={token} />
+              ) : (
+                <View
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    backgroundColor: '$borderPrimary',
+                    borderColor: '$borderPrimary'
+                  }}>
+                  <Icons.Custom.Psychiatry
+                    width={24}
+                    height={24}
+                    color={colors.$textPrimary}
+                  />
+                </View>
+              )}
+              <View
+                sx={{
+                  flexGrow: 1,
+                  marginHorizontal: 12,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between'
+                }}>
+                <View
+                  sx={{
+                    flexShrink: 1
+                  }}>
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    sx={{ flex: 1 }}>
+                    {assetName}
+                  </Text>
+                  <Text
+                    variant="body2"
+                    sx={{ lineHeight: 16, flex: 1 }}
+                    ellipsizeMode="tail"
+                    numberOfLines={1}>
+                    {balanceInAvax?.toDisplay()} {xpChainToken.symbol}
+                  </Text>
+                </View>
+                <View
+                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    sx={{ lineHeight: 18, marginBottom: 1 }}>
+                    {formattedBalance}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Animated.View>
       )
-    }
+    },
+    [colors.$textPrimary, getBalanceAndAssetName, token]
+  )
 
-    if (data.length === 0) {
-      return (
-        <ErrorState
-          sx={{ height: EMPTY_STATE_HEIGHT }}
-          icon={
-            <Image
-              source={require('../../../../assets/icons/unamused_emoji.png')}
-              sx={{ width: 42, height: 42 }}
-            />
-          }
-          title="No recent transactions"
-          description="Interact with this token onchain and see your activity here"
-        />
-      )
-    }
-  }, [isError, isLoading, isRefreshing, data, refresh])
-
-  const renderItem = (item: Transaction, index: number): React.JSX.Element => {
-    const isXpTx =
-      isXpTransaction(item.txType) &&
-      (token?.localId === AVAX_P_ID || token?.localId === AVAX_X_ID)
-
-    const props = {
-      tx: item,
-      index,
-      onPress: () => handleExplorerLink(item.explorerLink)
-    }
-
-    if (isXpTx) {
-      return <XpActivityListItem {...props} key={item.hash} />
-    }
-    return <TokenActivityListItem {...props} key={item.hash} />
-  }
-
-  const renderSeparator = (): JSX.Element => {
-    return <Separator sx={{ marginLeft: 63 }} />
+  const renderHeader = (): JSX.Element => {
+    return (
+      <Text variant="heading3" sx={{ marginBottom: 12 }}>
+        Token breakdown
+      </Text>
+    )
   }
 
   return (
-    <BlurredBarsContentLayout>
-      <FlatList
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
-        }
-        contentContainerStyle={{
-          overflow: 'visible',
-          paddingBottom: 26
-        }}
-        data={data}
-        renderItem={item => renderItem(item.item as Transaction, item.index)}
-        ListHeaderComponent={header}
-        ListEmptyComponent={emptyState}
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={renderSeparator}
-      />
-      <LinearGradientBottomWrapper />
-    </BlurredBarsContentLayout>
+    <CollapsibleTabs.FlatList
+      style={{ paddingHorizontal: 16, marginTop: 23 }}
+      contentContainerStyle={{ paddingBottom: 16 }}
+      data={assetTypes}
+      renderItem={item => renderItem(item.item, item.index)}
+      ListHeaderComponent={renderHeader()}
+      showsVerticalScrollIndicator={false}
+      keyExtractor={item => item}
+    />
   )
 }
 
-export default memo(TokenDetail)
+export default TokenDetail

@@ -1,9 +1,13 @@
 import React from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
+import { useTheme } from '../../hooks'
 
 export const BalanceLoader = (): React.JSX.Element => {
-  const backgroundColor = '#D9D9D9'
-  const foregroundColor = '#F2F2F3'
+  const {
+    theme: { isDark }
+  } = useTheme()
+  const backgroundColor = isDark ? '#3E3E43' : '#F2F2F3'
+  const foregroundColor = isDark ? '#69696D' : '#D9D9D9'
 
   return (
     <ContentLoader

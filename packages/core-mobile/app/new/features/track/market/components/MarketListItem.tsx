@@ -35,19 +35,16 @@ export const MarketListItem = ({
         boostSmallNumberPrecision: true
       })
     : UNKNOWN_AMOUNT
-  const percentChange = token.priceChangePercentage24h ?? undefined
-  const priceChange = token.priceChange24h ?? undefined
-  const formattedPriceChange = priceChange
-    ? formatCurrency({
-        amount: Math.abs(priceChange),
-        currency,
-        boostSmallNumberPrecision: true
-      })
-    : UNKNOWN_AMOUNT
+  const priceChange = token.priceChange24h ?? 0
+  const formattedPriceChange = formatCurrency({
+    amount: Math.abs(priceChange),
+    currency,
+    boostSmallNumberPrecision: true
+  })
 
-  const formattedPercent = percentChange
-    ? Math.abs(percentChange)?.toFixed(2).toString() + '%'
-    : ''
+  const formattedPercent = token.priceChangePercentage24h
+    ? Math.abs(token.priceChangePercentage24h)?.toFixed(2).toString() + '%'
+    : undefined
 
   const status = priceChange
     ? priceChange > 0

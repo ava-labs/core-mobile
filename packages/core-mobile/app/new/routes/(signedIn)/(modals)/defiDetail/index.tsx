@@ -108,7 +108,7 @@ const DeFiDetailScreen = (): JSX.Element => {
       </ScrollView>
       <LinearGradientBottomWrapper>
         <Button
-          style={{ marginHorizontal: 16, marginBottom: 16 }}
+          style={{ marginHorizontal: 16, marginBottom: 52 }}
           size="large"
           type="primary"
           rightIcon={

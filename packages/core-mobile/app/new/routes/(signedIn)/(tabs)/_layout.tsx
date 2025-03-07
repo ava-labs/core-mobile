@@ -1,16 +1,26 @@
 import { Tabs } from 'expo-router'
 import React, { useCallback } from 'react'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { Icons } from '@avalabs/k2-alpine'
+import { Icons, useTheme } from '@avalabs/k2-alpine'
 
 export default function TabLayout(): JSX.Element {
-  const tabBarBackground = useCallback(() => <BlurredBackgroundView />, [])
+  const {
+    theme: { isDark }
+  } = useTheme()
+  const backgroundColor = isDark ? '#1E1E2499' : '#FFFFFFCC'
+  const tabBarBackground = useCallback(
+    () => <BlurredBackgroundView backgroundColor={backgroundColor} />,
+    [backgroundColor]
+  )
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarBackground,
+        tabBarLabelStyle: {
+          fontFamily: 'Inter-SemiBold'
+        },
         tabBarStyle: {
           position: 'absolute'
         }

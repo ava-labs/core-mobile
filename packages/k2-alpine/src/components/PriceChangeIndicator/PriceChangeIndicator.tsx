@@ -29,7 +29,14 @@ export const PriceChangeIndicator = ({
       : status === PriceChangeStatus.Down
       ? '-'
       : ''
-  const iconMarginBottom = textVariant === 'buttonMedium' ? 3 : 2
+
+  const iconMarginBottom =
+    textVariant === 'buttonMedium'
+      ? status === PriceChangeStatus.Up
+        ? 3
+        : 5
+      : 1
+
   const iconMarginLeft = formattedPercent === undefined ? 4 : 1
 
   return (
