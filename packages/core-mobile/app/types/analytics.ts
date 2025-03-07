@@ -208,4 +208,8 @@ export type AnalyticsEvents = {
     fromAddress?: string
     toAddress?: string
   }
+
+  //Gasless
+  GaslessFundSuccessful: { fundTxHash: string }
+  GaslessFundFailed: undefined
 }
