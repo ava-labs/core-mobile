@@ -62,13 +62,13 @@ class BuyPage {
     } else {
       await Actions.waitForElement(this.buyTitle)
     }
-    await Actions.waitForElementNoSync(this.continueWith)
-    await Actions.waitForElementNoSync(this.moonPay)
-    await Actions.waitForElementNoSync(this.moonPayLogo)
-    await Actions.waitForElementNoSync(this.coinbasePay)
-    await Actions.waitForElementNoSync(this.coinbasePayLogo)
-    await Actions.waitForElementNoSync(this.halliday)
-    await Actions.waitForElementNoSync(this.hallidayLogo)
+    await assertions.isVisible(this.continueWith)
+    await assertions.isVisible(this.moonPay)
+    await assertions.isVisible(this.moonPayLogo)
+    await assertions.isVisible(this.coinbasePay)
+    await assertions.isVisible(this.coinbasePayLogo)
+    await assertions.isVisible(this.halliday)
+    await assertions.isVisible(this.hallidayLogo)
   }
 
   async tapMoonPay() {
