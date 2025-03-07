@@ -8,33 +8,21 @@ import { NFTItem } from 'store/nft'
 
 export const CollectibleRenderer = ({
   collectible,
-  style,
-  imageUrl,
-  videoUrl
+  style
 }: {
   collectible: NFTItem
   style?: ViewStyle
-  imageUrl?: string
-  videoUrl?: string
 }): JSX.Element | JSX.Element[] => {
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
 
   const [isLoading, setIsLoading] = useState(
-    !collectible?.imageData?.image ||
-      !collectible?.imageData?.video ||
-      !videoUrl ||
-      !imageUrl
+    !collectible?.imageData?.image?.length ||
+      !collectible?.imageData?.video?.length
   )
   const [error, setError] = useState<string | null>(null)
   const [layout, setLayout] = useState({ width: 0, height: 0 })
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(isLoading ? 0 : 1, ANIMATED.TIMING_CONFIG)
-    }
-  })
 
   const onLoadEnd = (): void => {
     setIsLoading(false)
@@ -54,8 +42,14 @@ export const CollectibleRenderer = ({
     setLayout({ width, height })
   }
 
-  if (collectible?.imageData?.video || videoUrl) {
-    return <Text variant="body1">{videoUrl}</Text>
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isLoading ? 0 : 1, ANIMATED.TIMING_CONFIG)
+    }
+  })
+
+  if (collectible?.imageData?.video) {
+    return <Text variant="body1">{collectible?.imageData?.video}</Text>
   }
 
   return (
@@ -84,11 +78,12 @@ export const CollectibleRenderer = ({
           <Text variant="body1">{error}</Text>
         ) : isLoading ? (
           <ContentLoader
+            speed={1}
             width={layout.width}
             height={layout.height}
             viewBox={`0 0 ${layout.width} ${layout.height}`}
-            foregroundColor={'#D9D9D9'}
-            backgroundColor={'#F2F2F3'}>
+            foregroundColor={isDark ? '#69696D' : '#D9D9D9'}
+            backgroundColor={isDark ? '#3E3E43' : '#F2F2F3'}>
             <Rect x="0" y="0" width={layout.width} height={layout.height} />
           </ContentLoader>
         ) : (
@@ -112,6 +107,12 @@ export const CollectibleRenderer = ({
         <Image
           key={`image-${collectible.uid}`}
           recyclingKey={`image-${collectible.uid}`}
+          source={collectible?.imageData?.image}
+          onLoadEnd={onLoadEnd}
+          onLoadStart={onLoadStart}
+          onError={onError}
+          cachePolicy="memory-disk"
+          contentFit="cover"
           style={{
             flex: 1,
             width: '100%',
@@ -122,12 +123,6 @@ export const CollectibleRenderer = ({
             right: 0,
             bottom: 0
           }}
-          cachePolicy="memory-disk"
-          source={collectible?.imageData?.image || imageUrl}
-          contentFit="cover"
-          onLoadEnd={onLoadEnd}
-          onLoadStart={onLoadStart}
-          onError={onError}
         />
       </Animated.View>
     </View>

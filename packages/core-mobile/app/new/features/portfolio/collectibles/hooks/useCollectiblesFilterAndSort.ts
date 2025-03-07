@@ -187,14 +187,19 @@ export const useCollectiblesFilterAndSort = (
       const filteredNetworks = getFilteredNetworks(filteredByHidden)
       return getFilteredContentType(filteredNetworks)
     },
-    [getFilteredNetworks, getFilteredContentType, collectiblesVisibility]
+    [
+      getFilteredNetworks,
+      getFilteredContentType,
+      filterOption,
+      collectiblesVisibility
+    ]
   )
 
   const getSorted = useCallback(
     (filtered: NFTItem[]) => {
       if (sortOption === CollectibleSort.NameAToZ)
         return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') >
+          return (a.processedMetadata?.name ?? '') <
             (b.processedMetadata?.name ?? '')
             ? 1
             : -1
@@ -202,7 +207,7 @@ export const useCollectiblesFilterAndSort = (
 
       if (sortOption === CollectibleSort.NameZToA)
         return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') <
+          return (a.processedMetadata?.name ?? '') >
             (b.processedMetadata?.name ?? '')
             ? 1
             : -1
