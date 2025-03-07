@@ -10,6 +10,7 @@ import {
 import { Dimensions } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { GRID_GAP } from 'common/consts'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -38,7 +39,7 @@ export const TokenGridView = ({
             padding: 16,
             backgroundColor: '$surfaceSecondary',
             gap: 8,
-            width: (SCREEN_WIDTH - 16 * 2 - 14) / 2
+            width: (SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2
           }}>
           <LogoWithNetwork token={token} />
           <View>

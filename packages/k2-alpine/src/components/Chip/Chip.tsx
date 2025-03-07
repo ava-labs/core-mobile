@@ -57,8 +57,7 @@ export const Chip = forwardRef<TouchableOpacity, ChipProps & PropsWithChildren>(
           variant={'buttonSmall'}
           adjustsFontSizeToFit={Platform.OS === 'ios'}
           style={{
-            color: tintColor,
-            lineHeight: 14.52
+            color: tintColor
           }}>
           {children}
         </Text>
