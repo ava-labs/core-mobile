@@ -7,6 +7,7 @@ import { Coin } from '../helpers/tokens'
 import commonElsPage from './commonEls.page'
 import buyPage from './buy.page'
 import swapTabPage from './swapTab.page'
+import tokenDetailPage from './tokenDetail.page'
 
 class WatchListPage {
   get allTab() {
@@ -165,9 +166,8 @@ class WatchListPage {
   async topTrendingTokenBuyFlow(symbol: string) {
     await Action.tap(this.topTrendingTokenBuyBtn)
     await swapTabPage.verifySwapScreen()
-    await Action.waitForElement(by.text('Swap'))
-    const toToken = await Action.getElementText(by.id('to_token_selector'))
-    const fromToken = await Action.getElementText(by.id('from_token_selector'))
+    const toToken = await Action.getElementText(swapTabPage.toTokenSelector)
+    const fromToken = await Action.getElementText(swapTabPage.fromTokenSelector)
     assert(fromToken === 'AVAX', 'From token should be AVAX')
     assert(toToken === symbol, `${toToken} !== ${symbol}`)
     await commonElsPage.goBack()
@@ -176,21 +176,15 @@ class WatchListPage {
   async topTrendingTokenDetailBuyFlow() {
     await Action.waitForElementNoSync(this.topTrendingTokenName, 20000)
     await Action.tap(this.topTrendingTokenName)
-    await Action.waitForElementNoSync(
-      by.id('token_detail_footer_buy_btn'),
-      20000
-    )
-    await Action.tap(by.id('token_detail_footer_buy_btn'))
+    await Action.waitForElementNoSync(tokenDetailPage.footerBuyBtn, 20000)
+    await Action.tap(tokenDetailPage.footerBuyBtn)
     await buyPage.verifyBuyPage(true)
     await commonElsPage.goBack()
   }
 
   async topTrendingTokenDetailSwapFlow() {
-    await Action.waitForElementNoSync(
-      by.id('token_detail_footer_swap_btn'),
-      20000
-    )
-    await Action.tap(by.id('token_detail_footer_swap_btn'))
+    await Action.waitForElementNoSync(tokenDetailPage.footerSwapBtn, 20000)
+    await Action.tap(tokenDetailPage.footerSwapBtn)
     await swapTabPage.verifySwapScreen()
     await commonElsPage.goBack()
   }

@@ -15,6 +15,10 @@ describe('Watchlist trending tab', () => {
     await device.disableSynchronization()
   })
 
+  afterAll(async () => {
+    await device.enableSynchronization()
+  })
+
   it('should verify top trending token detail', async () => {
     await BottomTabsPage.tapWatchlistTab()
     await actions.waitForElementNoSync(watchlist.trendingTab, 20000)

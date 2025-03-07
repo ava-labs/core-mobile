@@ -103,6 +103,18 @@ class TokenDetailsPage {
     return by.id(tokenDetail.lineGraph)
   }
 
+  get footerBuyBtn() {
+    return by.id(tokenDetail.footerBuyBtn)
+  }
+
+  get footerSwapBtn() {
+    return by.id(tokenDetail.footerSwapBtn)
+  }
+
+  get footerStakeBtn() {
+    return by.id(tokenDetail.footerStakeBtn)
+  }
+
   async verifyTokenDetailScreen() {
     await Assert.isVisible(this.totalSupply)
     await Assert.isVisible(this.rank)
