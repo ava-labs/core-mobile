@@ -10,15 +10,15 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
 import { Pressable, useWindowDimensions } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
+import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
-import { NFTItem } from 'store/nft'
 import {
   getGridCardHeight,
   HORIZONTAL_ITEM_GAP,
   VERTICAL_ITEM_GAP
 } from '../consts'
 import { CardContainer } from './CardContainer'
-import { CollectibleRenderer } from './ContentRenderer'
+import { CollectibleRenderer } from './CollectibleRenderer'
 
 export const CollectibleItem = memo(
   ({
@@ -26,7 +26,7 @@ export const CollectibleItem = memo(
     type,
     index
   }: {
-    collectible: NFTItem
+    collectible: NftItem
     type: CollectibleView
     index: number
   }): ReactNode => {
@@ -48,7 +48,7 @@ export const CollectibleListItem = memo(
     collectible,
     index
   }: {
-    collectible: NFTItem
+    collectible: NftItem
     index: number
   }): ReactNode => {
     const {
@@ -136,7 +136,7 @@ export const CollectibleGridItem = memo(
     type,
     index
   }: {
-    collectible: NFTItem
+    collectible: NftItem
     type: CollectibleView
     index: number
   }): ReactNode => {

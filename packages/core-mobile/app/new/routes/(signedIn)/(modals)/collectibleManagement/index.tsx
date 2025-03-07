@@ -5,21 +5,14 @@ import { useCollectiblesContext } from 'features/portfolio/collectibles/Collecti
 import { CollectibleManagementItem } from 'features/portfolio/collectibles/components/CollectibleManagementItem'
 import { LIST_ITEM_HEIGHT } from 'features/portfolio/collectibles/consts'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NFTItem } from 'store/nft'
+import { NftItem } from 'services/nft/types'
 
 const CollectibleManagementScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const {
-    collectibles,
-    isLoading,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    isRefetching,
-    refetch
-  } = useCollectiblesContext()
+  const { collectibles, isLoading, isRefetching, refetch } =
+    useCollectiblesContext()
 
   const [searchText, setSearchText] = useState('')
 
@@ -41,11 +34,7 @@ const CollectibleManagementScreen = (): JSX.Element => {
     setSearchText(text)
   }
 
-  const onEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
-
-  const renderItem: ListRenderItem<NFTItem> = ({
+  const renderItem: ListRenderItem<NftItem> = ({
     item,
     index
   }): JSX.Element => {
@@ -75,23 +64,20 @@ const CollectibleManagementScreen = (): JSX.Element => {
 
       <SearchBar onTextChanged={handleSearch} searchText={searchText} />
 
-      <View style={{ height: '100%' }}>
-        <FlashList
-          keyExtractor={item => `collectibles-manage-${item.uid}`}
-          data={filteredCollectibles}
-          renderItem={renderItem}
-          estimatedItemSize={LIST_ITEM_HEIGHT}
-          ListEmptyComponent={renderEmpty}
-          onRefresh={refetch}
-          onEndReached={onEndReached}
-          refreshing={isRefetching}
-          keyboardDismissMode="interactive"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom
-          }}
-        />
-      </View>
+      <FlashList
+        keyExtractor={item => `collectibles-manage-${item.localId}`}
+        data={filteredCollectibles}
+        renderItem={renderItem}
+        estimatedItemSize={LIST_ITEM_HEIGHT}
+        ListEmptyComponent={renderEmpty}
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        keyboardDismissMode="interactive"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom
+        }}
+      />
     </View>
   )
 }

@@ -9,7 +9,6 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { RefreshControl } from 'components/RefreshControl'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { memo, ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
@@ -17,12 +16,12 @@ import Animated from 'react-native-reanimated'
 
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
+import { NftItem } from 'services/nft/types'
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
   CollectibleView
 } from 'store/balance'
-import { NFTItem } from 'store/nft'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import {
   HORIZONTAL_ITEM_GAP,
@@ -42,24 +41,16 @@ export const CollectiblesScreen = ({
   goToCollectibleManagement: () => void
 }): ReactNode => {
   const dimensions = useWindowDimensions()
-  const {
-    collectibles,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isRefetching,
-    isError,
-    fetchNextPage,
-    refetch,
-    setNftsLoadEnabled
-  } = useCollectiblesContext()
+  const { collectibles, isLoading, setNftsLoadEnabled } =
+    useCollectiblesContext()
+
+  const { filter, view, sort, filteredAndSorted, onResetFilter } =
+    useCollectiblesFilterAndSort(collectibles)
 
   useEffect(() => {
     setNftsLoadEnabled(true)
   }, [setNftsLoadEnabled])
 
-  const { filter, view, sort, filteredAndSorted, onResetFilter } =
-    useCollectiblesFilterAndSort(collectibles)
   const listType = view.data[0]?.[view.selected.row] as CollectibleView
   const columns =
     listType === CollectibleView.CompactGrid
@@ -74,37 +65,13 @@ export const CollectiblesScreen = ({
       ? 120
       : 190
 
-  const onEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
-
-  const onRefresh = useCallback((): void => {
-    refetch()
-  }, [refetch])
-
-  const renderItem: ListRenderItem<NFTItem> = ({ item, index }) => {
+  const renderItem: ListRenderItem<NftItem> = ({ item, index }) => {
     return <CollectibleItem collectible={item} index={index} type={listType} />
   }
 
   const renderEmpty = useMemo((): JSX.Element => {
     if (isLoading)
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
-
-    if (isError)
-      return (
-        <ErrorState
-          sx={{
-            height: portfolioTabContentHeight
-          }}
-          title="No Collectibles found"
-          description="
-            Try changing the filter settings or reset the filter to see all assets."
-          button={{
-            title: 'Refresh',
-            onPress: onRefresh
-          }}
-        />
-      )
 
     if (
       Array.isArray(filter.selected) &&
@@ -126,7 +93,7 @@ export const CollectiblesScreen = ({
       )
 
     return <EmptyCollectibles />
-  }, [filter.selected, isError, isLoading, onRefresh, onResetFilter])
+  }, [filter.selected, isLoading, onResetFilter])
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {
@@ -140,12 +107,6 @@ export const CollectiblesScreen = ({
     },
     [goToCollectibleManagement, view]
   )
-
-  const renderLoadingMore = useMemo(() => {
-    if (hasNextPage && isFetchingNextPage)
-      return <LoadingState sx={{ height: LIST_ITEM_HEIGHT }} />
-    return null
-  }, [hasNextPage, isFetchingNextPage])
 
   const renderHeader = useMemo((): JSX.Element => {
     return (
@@ -179,11 +140,10 @@ export const CollectiblesScreen = ({
           filter
         }}
         key={`collectibles-list-${listType}`}
-        keyExtractor={(item: NFTItem) => `collectibles-list-${item.uid}`}
+        keyExtractor={(item: NftItem) => `collectibles-list-${item.localId}`}
         renderItem={renderItem}
         ListEmptyComponent={renderEmpty}
         ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderLoadingMore}
         numColumns={columns}
         style={{
           overflow: 'visible'
@@ -197,11 +157,6 @@ export const CollectiblesScreen = ({
         scrollEnabled={filteredAndSorted?.length > 0}
         estimatedItemSize={estimatedItemSize}
         removeClippedSubviews={Platform.OS === 'android'}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.8}
-        refreshControl={
-          <RefreshControl onRefresh={onRefresh} refreshing={isRefetching} />
-        }
         showsVerticalScrollIndicator={false}
       />
     </View>

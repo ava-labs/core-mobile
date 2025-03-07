@@ -1,15 +1,15 @@
 import { CollectibleVisibility } from 'store/portfolio'
-import { NFTItem } from './types'
+import { NftItem } from 'services/nft/types'
 
-export function getLocalCollectibleId(collectible: NFTItem): string {
-  return collectible.uid.toLowerCase()
+export function getLocalCollectibleId(collectible: NftItem): string {
+  return collectible.localId.toLowerCase()
 }
 
 export function isCollectibleVisible(
   collectibleVisibility: CollectibleVisibility,
-  collectible: NFTItem
+  collectible: NftItem
 ): boolean {
   const collectibleVisible =
-    collectibleVisibility?.[collectible?.uid?.toLowerCase()]
+    collectibleVisibility?.[collectible?.localId?.toLowerCase()]
   return collectibleVisible !== undefined ? collectibleVisible : true
 }

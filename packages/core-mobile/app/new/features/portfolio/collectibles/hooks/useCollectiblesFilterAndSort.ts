@@ -3,24 +3,26 @@ import { IndexPath } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { NftItem } from 'services/nft/types'
 import {
+  AssetNetworkFilter,
+  AVAX_P_ID,
+  AVAX_X_ID,
   COLLECTIBLE_FILTERS,
   COLLECTIBLE_SORTS,
   COLLECTIBLE_VIEWS,
-  CollectibleNetworkFilter,
   CollectibleSort,
   CollectibleStatus,
   CollectibleTypeFilter
 } from 'store/balance'
-import { NftContentType, NFTItem } from 'store/nft'
+import { NftContentType } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
 import { selectCollectibleVisibility } from 'store/portfolio'
 
 export const useCollectiblesFilterAndSort = (
-  collectibles: NFTItem[]
+  collectibles: NftItem[]
 ): {
-  filteredAndSorted: NFTItem[]
+  filteredAndSorted: NftItem[]
   filter: DropdownSelection & { selected: IndexPath[] }
   sort: DropdownSelection
   view: DropdownSelection
@@ -116,30 +118,25 @@ export const useCollectiblesFilterAndSort = (
   )
 
   const getFilteredNetworks = useCallback(
-    (items: NFTItem[]) => {
+    (items: NftItem[]) => {
       switch (filterOption[0]) {
-        case CollectibleNetworkFilter.AvalancheCChain:
+        case AssetNetworkFilter.AvalancheCChain:
           return items.filter(
             collectible =>
               'chainId' in collectible &&
-              collectible.chainId &&
-              isAvalancheCChainId(Number(collectible.chainId))
+              (collectible.chainId === ChainId.AVALANCHE_MAINNET_ID || 
+              collectible.chainId === ChainId.AVALANCHE_TESTNET_ID)
           )
-        case CollectibleNetworkFilter.Ethereum:
+        case AssetNetworkFilter.Ethereum:
           return items.filter(
             collectible =>
               'chainId' in collectible &&
-              (Number(collectible.chainId) === ChainId.ETHEREUM_HOMESTEAD ||
-                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_GOERLY ||
-                Number(collectible.chainId) === ChainId.ETHEREUM_TEST_SEPOLIA)
+              (collectible.chainId === ChainId.ETHEREUM_HOMESTEAD ||
+                collectible.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
+                collectible.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
           )
-        case CollectibleNetworkFilter.BitcoinNetwork:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              (Number(collectible.chainId) === ChainId.BITCOIN ||
-                Number(collectible.chainId) === ChainId.BITCOIN_TESTNET)
-          )
+        case AssetNetworkFilter.BitcoinNetwork:
+          return items.filter(collectible => collectible.symbol === 'BTC')
         default:
           return items
       }
@@ -148,7 +145,7 @@ export const useCollectiblesFilterAndSort = (
   )
 
   const getFilteredContentType = useCallback(
-    (items: NFTItem[]) => {
+    (items: NftItem[]) => {
       switch (filterOption[1]) {
         case CollectibleTypeFilter.Videos:
           return items.filter(
@@ -174,11 +171,11 @@ export const useCollectiblesFilterAndSort = (
   )
 
   const getFiltered = useCallback(
-    (nfts: NFTItem[]) => {
+    (nfts: NftItem[]) => {
       if (nfts.length === 0) {
         return []
       }
-      const filteredByHidden = nfts.filter((nft: NFTItem) => {
+      const filteredByHidden = nfts.filter((nft: NftItem) => {
         if (filterOption[1] !== CollectibleStatus.Hidden) {
           return isCollectibleVisible(collectiblesVisibility, nft)
         }
@@ -196,7 +193,7 @@ export const useCollectiblesFilterAndSort = (
   )
 
   const getSorted = useCallback(
-    (filtered: NFTItem[]) => {
+    (filtered: NftItem[]) => {
       if (sortOption === CollectibleSort.NameAToZ)
         return filtered?.sort((a, b) => {
           return (a.processedMetadata?.name ?? '') <

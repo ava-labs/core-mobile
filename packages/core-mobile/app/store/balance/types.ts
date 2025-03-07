@@ -121,12 +121,6 @@ export enum CollectibleTypeFilter {
   GIFs = 'GIFs',
   Videos = 'Videos'
 }
-export enum CollectibleNetworkFilter {
-  AllNetworks = 'All networks',
-  AvalancheCChain = 'Avalanche C-Chain',
-  BitcoinNetwork = 'Bitcoin network',
-  Ethereum = 'Ethereum'
-}
 
 export enum CollectibleSort {
   NameAToZ = 'Name A to Z',
@@ -143,16 +137,15 @@ export enum CollectibleView {
 
 export type CollectibleSorts = CollectibleSort[][]
 export type CollectibleFilters = (
-  | (CollectibleNetworkFilter | CollectibleStatus)[]
+  | (AssetNetworkFilter | CollectibleStatus)[]
   | (CollectibleTypeFilter | CollectibleStatus)[]
 )[]
 export type CollectibleViews = CollectibleView[][]
 
 export const COLLECTIBLE_NETWORK_FILTERS = [
-  CollectibleNetworkFilter.AllNetworks,
-  CollectibleNetworkFilter.AvalancheCChain,
-  CollectibleNetworkFilter.BitcoinNetwork,
-  CollectibleNetworkFilter.Ethereum
+  AssetNetworkFilter.AllNetworks,
+  AssetNetworkFilter.AvalancheCChain,
+  AssetNetworkFilter.Ethereum
 ]
 
 export const COLLECTIBLE_TYPE_FILTERS = [

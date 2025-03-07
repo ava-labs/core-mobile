@@ -1,25 +1,24 @@
-import { Text, Toggle, View } from '@avalabs/k2-alpine'
+import { Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
 import { alpha } from '@avalabs/k2-mobile'
 import React, { ReactNode } from 'react'
 import { Pressable, useWindowDimensions } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
-import { NFTItem } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
 import {
   selectCollectibleVisibility,
   toggleCollectibleVisibility
 } from 'store/portfolio'
-import { useTheme } from '@avalabs/k2-alpine'
 import { getGridCardHeight, HORIZONTAL_ITEM_GAP } from '../consts'
 import { CardContainer } from './CardContainer'
-import { CollectibleRenderer } from './ContentRenderer'
+import { CollectibleRenderer } from './CollectibleRenderer'
 
 export const CollectibleManagementItem = ({
   collectible,
   index
 }: {
-  collectible: NFTItem
+  collectible: NftItem
   index: number
 }): ReactNode => {
   const dispatch = useDispatch()
@@ -33,7 +32,7 @@ export const CollectibleManagementItem = ({
   const isToggledOn = isCollectibleVisible(collectibleVisibility, collectible)
 
   function handleChange(): void {
-    dispatch(toggleCollectibleVisibility({ uid: collectible.uid }))
+    dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
   }
 
   return (
@@ -96,8 +95,8 @@ export const CollectibleManagementItem = ({
           <Toggle
             testID={
               isToggledOn
-                ? `${collectible?.uid}_displayed`
-                : `${collectible?.uid}_blocked`
+                ? `${collectible?.localId}_displayed`
+                : `${collectible?.localId}_blocked`
             }
             value={isToggledOn}
             onValueChange={handleChange}
