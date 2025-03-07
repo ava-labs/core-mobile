@@ -127,6 +127,7 @@ class WatchlistService {
     { tokens: MarketToken[]; charts: Charts; prices: Prices } | undefined
   > {
     const coins = await TokenService.getTokenSearch(query)
+
     const coinIds = coins?.map(tk => tk.id)
 
     if (coinIds && coinIds.length > 0) {

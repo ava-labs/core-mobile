@@ -49,8 +49,11 @@ type TabViewNavigationProp = BrowserScreenProps<
 export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const dispatch = useDispatch()
   const { setPendingDeepLink } = useDeeplink()
-  const [urlEntry, setUrlEntry] = useState('')
-  const [urlToLoad, setUrlToLoad] = useState('')
+  const activeTab = useSelector(selectTab(tabId))
+  const activeHistory = activeTab?.activeHistory
+  const activeHistoryUrl = activeHistory?.url ?? ''
+  const [urlEntry, setUrlEntry] = useState(activeHistoryUrl)
+  const [urlToLoad, setUrlToLoad] = useState(activeHistoryUrl)
   const clipboard = useClipboardWatcher()
   const {
     injectCoreAsRecent,
@@ -59,8 +62,6 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     injectCustomWindowOpen,
     injectCustomPrompt
   } = useInjectedJavascript()
-  const activeTab = useSelector(selectTab(tabId))
-  const activeHistory = activeTab?.activeHistory
   const webViewRef = useRef<RNWebView>(null)
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const [description, setDescription] = useState('')
@@ -265,7 +266,11 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         }
         url={urlToLoad}
         onLoad={event => {
-          if (event.nativeEvent.url.startsWith('about:blank')) return
+          if (
+            event.nativeEvent.url.startsWith('about:blank') ||
+            event.nativeEvent.loading
+          )
+            return
           const includeDescriptionAndFavicon =
             description !== '' && favicon !== undefined
           const history: AddHistoryPayload = includeDescriptionAndFavicon

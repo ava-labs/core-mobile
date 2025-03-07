@@ -8,7 +8,7 @@ import {
 } from 'react-native'
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
 import debounce from 'lodash.debounce'
-import { TouchableOpacity, View } from '../Primitives'
+import { Text, TouchableOpacity, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 
@@ -23,12 +23,15 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   setSearchBarFocused?: (value: boolean) => void
   containerStyle?: ViewStyle
   rightComponent?: JSX.Element
+  useCancel?: boolean
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
-const INPUT_SIZE = SCREEN_WIDTH - 106
+const INPUT_SIZE = SCREEN_WIDTH - 32
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
 const HEIGHT = 40
+
+const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 106
 
 /**
  * SearchBar component. Text state is handled outside the
@@ -46,6 +49,7 @@ const HEIGHT = 40
  * @param rest all other props
  * @constructor
  */
+
 export const SearchBar: FC<Props> = ({
   onTextChanged,
   searchText,
@@ -56,6 +60,7 @@ export const SearchBar: FC<Props> = ({
   setSearchBarFocused,
   containerStyle,
   rightComponent,
+  useCancel,
   ...rest
 }) => {
   const textInputRef = useRef<TextInput>(null)
@@ -79,6 +84,16 @@ export const SearchBar: FC<Props> = ({
   function clearText(): void {
     textInputRef?.current?.clear()
     onTextChanged('')
+  }
+
+  /**
+   * Sets the behavior for when the user cancels
+   * the search
+   */
+  function onCancel(): void {
+    setIsFocused(false)
+    clearText()
+    textInputRef.current?.blur()
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,15 +131,17 @@ export const SearchBar: FC<Props> = ({
     <View
       style={[
         {
-          backgroundColor: colors.$surfaceSecondary,
-          borderRadius: 1000,
-          height: HEIGHT,
-          justifyContent: 'center'
+          justifyContent: 'center',
+          flexDirection: 'row'
         },
         containerStyle
       ]}>
       <View
         style={{
+          height: HEIGHT,
+          borderRadius: 1000,
+          width: isFocused && useCancel ? INPUT_SIZE_FOCUSED : INPUT_SIZE,
+          backgroundColor: colors.$surfaceSecondary,
           flexDirection: 'row',
           paddingHorizontal: 12,
           marginVertical: Platform.OS === 'ios' ? 11 : 0
@@ -143,7 +160,10 @@ export const SearchBar: FC<Props> = ({
             autoComplete="off"
             autoCapitalize="none"
             ref={textInputRef}
-            style={{ width: INPUT_SIZE, color: colors.$textPrimary }}
+            style={{
+              flex: 1,
+              color: colors.$textPrimary
+            }}
             placeholder={placeholder}
             placeholderTextColor={colors.$textSecondary}
             value={_searchText}
@@ -162,6 +182,21 @@ export const SearchBar: FC<Props> = ({
         </View>
         {renderRightComponent()}
       </View>
+      {isFocused && useCancel && (
+        <Text
+          variant="body1"
+          style={{
+            fontSize: 16,
+            lineHeight: 21,
+            color: colors.$textPrimary,
+            marginStart: 16,
+            alignSelf: 'center',
+            alignItems: 'center'
+          }}
+          onPress={onCancel}>
+          Cancel
+        </Text>
+      )}
     </View>
   )
 }
