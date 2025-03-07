@@ -1,11 +1,12 @@
 import React from 'react'
 import { Icons, SxProp, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
-import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isTokenMalicious } from 'utils/isTokenMalicious'
+import { isPLocalId, isXLocalId, isXpLocalId } from 'features/portfolio/utils'
 import { TokenLogo } from './TokenLogo'
 
 interface Props {
@@ -21,22 +22,20 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
   const isMalicious = isTokenMalicious(token)
 
   const shouldShowNetworkLogo =
-    token.type !== TokenType.NATIVE ||
-    token.localId === AVAX_X_ID ||
-    token.localId === AVAX_P_ID
+    token.type !== TokenType.NATIVE || isXpLocalId(token.localId)
 
   const renderNetworkLogo = (
     t: LocalTokenWithBalance,
     n: Network
   ): React.JSX.Element | undefined => {
-    if (t.localId === AVAX_P_ID) {
+    if (isPLocalId(t.localId)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK width={12} height={12} />
       ) : (
         <Icons.TokenLogos.AVAX_P_LIGHT width={12} height={12} />
       )
     }
-    if (t.localId === AVAX_X_ID) {
+    if (isXLocalId(t.localId)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK width={12} height={12} />
       ) : (

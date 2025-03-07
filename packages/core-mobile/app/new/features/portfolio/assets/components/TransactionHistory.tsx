@@ -1,15 +1,9 @@
-import { FlatList, Image, Separator, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenHeader } from 'common/components/TokenHeader'
+import { FlatList, Image, Separator } from '@avalabs/k2-alpine'
 import React, { FC, useCallback, useMemo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction } from 'store/transaction'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent
-} from 'react-native'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { RefreshControl } from 'common/components/RefreshControl'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
 import { DropdownSelection } from 'common/types'
@@ -22,28 +16,20 @@ import {
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { XpActivityListItem } from './XpActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
-import { ActionButton, ActionButtons } from './ActionButtons'
 
 interface Props {
-  onScroll: (
-    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
-  ) => void
-  animatedHeaderStyle: ReturnType<typeof useAnimatedStyle>
-  formattedBalance: string
-  handleBalanceHeaderLayout: (event: LayoutChangeEvent) => void
   data: Transaction[]
   filter: DropdownSelection
   sort: DropdownSelection
-  actionButtons: ActionButton[]
+  onScroll: (
+    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
+  ) => void
   token?: LocalTokenWithBalance
   handleExplorerLink: (explorerLink: string) => void
   isLoading: boolean
   isRefreshing: boolean
   isError: boolean
   refresh: () => void
-  isBalanceLoading: boolean
-  isBalanceAccurate: boolean
-  selectedCurrency: string
 }
 
 const TokenDetail: FC<Props> = ({
@@ -51,80 +37,22 @@ const TokenDetail: FC<Props> = ({
   filter,
   sort,
   onScroll,
-  animatedHeaderStyle,
-  formattedBalance,
-  actionButtons,
-  handleBalanceHeaderLayout,
   handleExplorerLink,
   token,
   isLoading,
-  isBalanceLoading,
-  isBalanceAccurate,
   isRefreshing,
-  selectedCurrency,
   isError,
   refresh
 }): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
-
-  const renderHeader = useCallback((): JSX.Element => {
+  const dropdowns = useMemo(() => {
     return (
-      <View
-        style={{
-          backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16
-        }}>
-        <View onLayout={handleBalanceHeaderLayout}>
-          <Animated.View
-            style={[
-              {
-                paddingBottom: 16,
-                backgroundColor: colors.$surfacePrimary
-              },
-              animatedHeaderStyle
-            ]}>
-            <TokenHeader
-              token={token}
-              formattedBalance={formattedBalance}
-              currency={selectedCurrency}
-              errorMessage={
-                isBalanceAccurate ? undefined : 'Unable to load all balances'
-              }
-              isLoading={isBalanceLoading}
-            />
-          </Animated.View>
-        </View>
-        <ActionButtons buttons={actionButtons} />
-      </View>
+      <DropdownSelections
+        filter={filter}
+        sort={sort}
+        sx={{ paddingHorizontal: 16 }}
+      />
     )
-  }, [
-    actionButtons,
-    animatedHeaderStyle,
-    colors.$surfacePrimary,
-    formattedBalance,
-    handleBalanceHeaderLayout,
-    isBalanceAccurate,
-    isBalanceLoading,
-    selectedCurrency,
-    token
-  ])
-
-  const header = useMemo(() => {
-    return (
-      <>
-        {renderHeader()}
-        {data.length > 0 && (
-          <DropdownSelections
-            filter={filter}
-            sort={sort}
-            sx={{ paddingHorizontal: 16 }}
-          />
-        )}
-      </>
-    )
-  }, [data.length, filter, renderHeader, sort])
+  }, [filter, sort])
 
   const emptyState = useMemo(() => {
     if (isLoading || isRefreshing) {
@@ -195,7 +123,7 @@ const TokenDetail: FC<Props> = ({
         }}
         data={data}
         renderItem={item => renderItem(item.item as Transaction, item.index)}
-        ListHeaderComponent={header}
+        ListHeaderComponent={data.length > 0 ? dropdowns : undefined}
         ListEmptyComponent={emptyState}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={renderSeparator}
