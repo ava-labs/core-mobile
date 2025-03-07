@@ -3,10 +3,11 @@ import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import type {
-  NetworkContractToken,
-  TokenWithBalance,
-  Error
+import {
+  type NetworkContractToken,
+  type TokenWithBalance,
+  type Error,
+  TokenType
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -44,8 +45,10 @@ export class BalanceService {
           addresses: [accountAddress],
           currency,
           network: mapToVmNetwork(network),
-          storage: coingeckoInMemoryCache
+          storage: coingeckoInMemoryCache,
+          tokenTypes: [TokenType.NATIVE, TokenType.ERC20]
         })
+
         const balances = balancesResponse[accountAddress] ?? {}
         if ('error' in balances) {
           return {

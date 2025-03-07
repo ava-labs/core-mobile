@@ -1,8 +1,11 @@
-import { Erc1155TokenBalance, Erc721TokenBalance } from '@avalabs/glacier-sdk'
-import { NFTItem, NFTItemData, NftTokenTypes } from 'store/nft'
 import { ipfsResolver } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
-import { NftUID } from './types'
+import {
+  NftTokenWithBalance,
+  TokenType,
+  TokenWithBalance
+} from '@avalabs/vm-module-types'
+import { NftItem, NftLocalId } from './types'
 
 const CLOUDFLARE_IPFS_URL = 'https://ipfs.io'
 
@@ -15,41 +18,44 @@ export const convertIPFSResolver = (url: string): string => {
   }
 }
 
-export const addMissingFields = (
-  nft: { address: string; tokenId: string },
-  address: string
-): NFTItemData => {
-  return {
-    ...nft,
-    uid: getNftUID(nft),
-    owner: address
-  } as NFTItemData
+const isNftTokenType = (type: TokenType): boolean => {
+  return type === TokenType.ERC721 || type === TokenType.ERC1155
 }
 
-export const getNftUID = (nft: {
+export const isNft = (
+  token: TokenWithBalance
+): token is NftTokenWithBalance => {
+  return isNftTokenType(token.type)
+}
+
+export const getNftLocalId = (nft: {
   address: string
   tokenId: string
-}): NftUID => {
+}): NftLocalId => {
   return nft.address + nft.tokenId
 }
 
-export const isErc721 = (nft: NftTokenTypes): nft is Erc721TokenBalance => {
-  return nft.ercType === 'ERC-721'
+export const isErc1155 = (nft: NftItem): boolean => {
+  return nft.type === TokenType.ERC1155
 }
 
-export const isErc1155 = (nft: NftTokenTypes): nft is Erc1155TokenBalance => {
-  return nft.ercType === 'ERC-1155'
-}
-
-export const getTokenUri = (nft: NftTokenTypes): string => {
+export const getTokenUri = ({
+  tokenUri,
+  tokenId
+}: {
+  tokenUri: string
+  tokenId: string
+}): string => {
   // Some Opensea ERC-1155s have an `0x{id}` placeholder in their URL
-  return nft.tokenUri.replace(/0x{id}|{id}/g, nft.tokenId)
+  return tokenUri.replace(/0x{id}|{id}/g, tokenId)
 }
 
-export const getNftTitle = (nftItem: NFTItem): string | undefined => {
-  if (isErc721(nftItem)) {
-    return nftItem.name
-  }
+export const getNftTitle = (nftItem: NftItem): string => {
+  return (
+    nftItem.name || nftItem.processedMetadata?.name || nftItem.collectionName
+  )
+}
 
-  return nftItem.processedMetadata.name ?? nftItem.metadata.name
+export const getNftImage = (nftItem: NftItem): string | undefined => {
+  return nftItem.imageData?.image
 }
