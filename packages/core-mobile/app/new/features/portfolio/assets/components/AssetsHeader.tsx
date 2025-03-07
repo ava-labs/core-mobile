@@ -7,13 +7,13 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { DropdownSelection } from 'common/types'
 import React from 'react'
-import { Selection } from '../hooks/useFilterAndSort'
 
 interface Props {
-  filter: Selection
-  sort: Selection
-  view: Selection
+  filter: DropdownSelection
+  sort: DropdownSelection
+  view: DropdownSelection
 }
 
 export const AssetsHeader = ({

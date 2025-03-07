@@ -16,7 +16,6 @@ import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 
-import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
 import { LoadingState } from 'common/components/LoadingState'
 import {
   ASSET_MANAGE_VIEWS,
@@ -143,12 +142,9 @@ export const CollectiblesScreen = ({
   )
 
   const renderLoadingMore = useMemo(() => {
-    if (isLoading) return <GlobalLoadingState />
+    if (isLoading) return <LoadingState />
     return null
   }, [isLoading])
-
-  if (isLoading)
-    return <LoadingState sx={{ height: portfolioTabContentHeight }} />
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>

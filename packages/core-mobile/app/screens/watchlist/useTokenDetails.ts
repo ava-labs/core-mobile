@@ -13,13 +13,13 @@ import { InteractionManager } from 'react-native'
 import TokenService from 'services/token/TokenService'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useGetTrendingToken } from 'hooks/watchlist/useGetTrendingTokens'
-import { NotationTypes } from 'consts/FormatNumberTypes'
 import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
 
 type TokenInfo = {
+  marketType: MarketType
   marketTotalSupply?: number
   twitterHandle: string | undefined
   marketCirculatingSupply?: number
@@ -32,15 +32,14 @@ type TokenInfo = {
   contractAddress: string | undefined
   urlHostname: string | undefined
   has24hChartDataOnly: boolean
+  description?: string
 }
 
 export const useTokenDetails = (
   tokenId: string
 ): {
   isFavorite: boolean
-  openMoonPay: () => void
   openUrl: (url: string) => void
-  currencyFormatter: (num: number, notation?: NotationTypes) => string
   handleFavorite: () => void
   tokenInfo: TokenInfo | undefined
   chartData: { date: Date; value: number }[] | undefined
@@ -52,9 +51,9 @@ export const useTokenDetails = (
     diffValue: number
     percentChange: number
   }
+  chartDays: number
   changeChartDays: (days: number) => void
   priceInCurrency: number | undefined
-  id: string
   noData: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
@@ -67,9 +66,11 @@ export const useTokenDetails = (
   const coingeckoId = token?.marketType === MarketType.TOP ? token.id : ''
   const dispatch = useDispatch()
   const isFavorite = useSelector(selectIsWatchlistFavorite(tokenId))
-  const { openMoonPay, openUrl } = useInAppBrowser()
-  const { selectedCurrency, currencyFormatter } =
-    useApplicationContext().appHook
+  const { openUrl } = useInAppBrowser()
+  const { selectedCurrency } = useApplicationContext().appHook
+
+  const currency = selectedCurrency.toLowerCase() as VsCurrencyType
+
   const [tokenInfo, setTokenInfo] = useState<TokenInfo>()
   const [chartData, setChartData] = useState<{ date: Date; value: number }[]>()
   const [chartDays, setChartDays] = useState(1)
@@ -88,14 +89,13 @@ export const useTokenDetails = (
     diffValue: 0,
     percentChange: 0
   })
-  const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 
   const price = useMemo(() => {
     if (isTrendingToken(token)) {
       return (
         trendingTokenData && {
           priceInCurrency: trendingTokenData.price,
-          change24: 0, // TODO check if we can get this on backend
+          change24: 0,
           marketCap: trendingTokenData.marketcap ?? 0,
           vol24: trendingTokenData.volume24hUSD ?? 0
         }
@@ -123,7 +123,7 @@ export const useTokenDetails = (
       const data = await TokenService.getChartDataForCoinId({
         coingeckoId,
         days: chartDays,
-        currency: currency
+        currency
       })
 
       if (data) {
@@ -149,6 +149,7 @@ export const useTokenDetails = (
     const extractMarketDetails = (): void => {
       trendingTokenData &&
         setTokenInfo({
+          marketType: MarketType.TRENDING,
           twitterHandle: trendingTokenData.twitter
             ? getSocialHandle(trendingTokenData.twitter)
             : undefined,
@@ -171,6 +172,7 @@ export const useTokenDetails = (
       if (!data) return
 
       setTokenInfo({
+        marketType: MarketType.TOP,
         // @ts-ignore total_supply exists in CoinsInfoResponse
         marketTotalSupply: data.market_data.total_supply ?? 0,
         twitterHandle: data.links?.twitter_screen_name ?? undefined,
@@ -184,7 +186,8 @@ export const useTokenDetails = (
         // @ts-ignore contract_address exists in CoinsInfoResponse
         contractAddress: data.contract_address,
         urlHostname: data?.links?.homepage?.[0],
-        has24hChartDataOnly: false
+        has24hChartDataOnly: false,
+        description: data.description?.en ?? undefined
       })
     }
 
@@ -214,16 +217,14 @@ export const useTokenDetails = (
 
   return {
     isFavorite,
-    openMoonPay,
     openUrl,
-    currencyFormatter,
     handleFavorite,
     tokenInfo,
     chartData,
     ranges,
+    chartDays,
     changeChartDays,
     priceInCurrency: price?.priceInCurrency,
-    id: tokenId,
     noData: chartData?.length === 0 && !tokenInfo
   }
 }

@@ -1,6 +1,7 @@
 import React from 'react'
 import { ScrollView, View } from '../Primitives'
 import { PriceChangeIndicator } from './PriceChangeIndicator'
+import { PriceChangeStatus } from './types'
 
 export default {
   title: 'PriceChangeIndicator'
@@ -17,27 +18,36 @@ export const All = (): JSX.Element => {
         <View sx={{ gap: 8 }}>
           <PriceChangeIndicator
             formattedPrice="$12.7"
-            status="up"
+            status={PriceChangeStatus.Up}
             formattedPercent="3.7%"
             textVariant="buttonMedium"
           />
           <PriceChangeIndicator
             formattedPrice="$12.7"
-            status="down"
+            status={PriceChangeStatus.Down}
             formattedPercent="3.7%"
             textVariant="buttonMedium"
           />
           <PriceChangeIndicator
             formattedPrice="$0.0"
-            status="equal"
+            status={PriceChangeStatus.Neutral}
             formattedPercent="0%"
             textVariant="buttonMedium"
           />
         </View>
         <View sx={{ gap: 8 }}>
-          <PriceChangeIndicator formattedPrice="$12.7" status="up" />
-          <PriceChangeIndicator formattedPrice="$12.7" status="down" />
-          <PriceChangeIndicator formattedPrice="$0.0" status="equal" />
+          <PriceChangeIndicator
+            formattedPrice="$12.7"
+            status={PriceChangeStatus.Up}
+          />
+          <PriceChangeIndicator
+            formattedPrice="$12.7"
+            status={PriceChangeStatus.Down}
+          />
+          <PriceChangeIndicator
+            formattedPrice="$0.0"
+            status={PriceChangeStatus.Neutral}
+          />
         </View>
       </View>
     </ScrollView>

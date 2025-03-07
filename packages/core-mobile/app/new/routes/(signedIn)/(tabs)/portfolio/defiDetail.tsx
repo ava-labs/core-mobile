@@ -118,7 +118,7 @@ const DeFiDetailScreen = (): JSX.Element => {
             />
           }
           onPress={goToProtocolPage}>
-          {`Go to ${data?.name ?? protocolId}`}
+          {`See details in ${data?.name ?? protocolId}`}
         </Button>
       </LinearGradientBottomWrapper>
     </BlurredBarsContentLayout>

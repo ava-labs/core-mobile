@@ -18,7 +18,7 @@ type BuyCarefullyScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BuyCarefully
 >
 
-export enum TokenType {
+export enum Provider {
   COINBASE = 'coinbase',
   MOONPAY = 'moonpay'
 }
@@ -27,9 +27,9 @@ const BuyCarefully = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const { goBack } = useNavigation<BuyCarefullyScreenProps['navigation']>()
 
-  const { tokenType } = useRoute<BuyCarefullyScreenProps['route']>().params
+  const { provider } = useRoute<BuyCarefullyScreenProps['route']>().params
 
-  const isCoinbasePay = tokenType === TokenType.COINBASE
+  const isCoinbasePay = provider === Provider.COINBASE
   const { openMoonPay, openCoinBasePay } = useInAppBrowser()
 
   const onCoinBasePay = (): void => {

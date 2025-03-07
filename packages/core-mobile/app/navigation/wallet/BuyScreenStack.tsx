@@ -8,12 +8,14 @@ import AppNavigation from 'navigation/AppNavigation'
 import Buy from 'screens/rpc/buy/Buy'
 
 export type BuyStackParamList = {
-  [AppNavigation.Buy.Buy]: undefined
+  [AppNavigation.Buy.Buy]: {
+    showAvaxWarning?: boolean
+  }
 }
 
 const BuyStack = createStackNavigator<BuyStackParamList>()
 
-const BuyScreenStack = () => {
+const BuyScreenStack = (): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
@@ -30,11 +32,9 @@ const BuyScreenStack = () => {
         },
         ...TransitionPresets.SlideFromRightIOS
       }}>
-      <BuyStack.Screen name={AppNavigation.Buy.Buy} component={BuyScreen} />
+      <BuyStack.Screen name={AppNavigation.Buy.Buy} component={Buy} />
     </BuyStack.Navigator>
   )
 }
-
-const BuyScreen = () => <Buy />
 
 export default BuyScreenStack

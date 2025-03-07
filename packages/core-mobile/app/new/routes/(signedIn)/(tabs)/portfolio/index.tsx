@@ -4,6 +4,7 @@ import {
   NavigationTitleHeader,
   SegmentedControl,
   useTheme,
+  PriceChangeStatus,
   View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -91,7 +92,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const indicatorStatus =
-    totalPriceChanged > 0 ? 'up' : totalPriceChanged < 0 ? 'down' : 'equal'
+    totalPriceChanged > 0
+      ? PriceChangeStatus.Up
+      : totalPriceChanged < 0
+      ? PriceChangeStatus.Down
+      : PriceChangeStatus.Neutral
 
   const totalPriceChangedInPercent = useMemo(() => {
     return (totalPriceChanged / balanceTotalInCurrency) * 100
@@ -131,12 +136,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const renderHeader = (): JSX.Element => {
     return (
-      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        style={{
+          backgroundColor: theme.colors.$surfacePrimary,
+          paddingHorizontal: 16
+        }}>
         <View onLayout={handleBalanceHeaderLayout}>
           <Animated.View
             style={[
               {
-                padding: 16,
+                paddingBottom: 16,
                 backgroundColor: theme.colors.$surfacePrimary
               },
               animatedHeaderStyle
@@ -172,9 +181,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     setSelectedSegmentIndex(index)
   }
 
-  const handleGoToTokenDetail = useCallback((): void => {
-    // navigate to token detail
-  }, [])
+  const handleGoToTokenDetail = useCallback(
+    (localId: string): void => {
+      navigate(`/portfolio/tokenDetail?localId=${localId}`)
+    },
+    [navigate]
+  )
 
   const handleGoToTokenManagement = useCallback((): void => {
     navigate('/tokenManagement')

@@ -16,6 +16,9 @@ export enum NewsChannelId {
   PRICE_ALERTS = 'priceAlerts'
 }
 
+//This is system default channel, we don't need to create it, just use it's id
+export const DEFAULT_ANDROID_CHANNEL = 'miscellaneous'
+
 export interface AvaxAndroidChannel extends AndroidChannel {
   id: ChannelId
   title: string

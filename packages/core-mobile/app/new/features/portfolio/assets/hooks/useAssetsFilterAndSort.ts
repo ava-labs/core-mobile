@@ -6,28 +6,23 @@ import {
   ASSET_NETWORK_FILTERS,
   AssetBalanceSort,
   AssetNetworkFilter,
+  AVAX_P_ID,
+  AVAX_X_ID,
   LocalTokenWithBalance
 } from 'store/balance'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { DropdownSelection } from 'common/types'
 
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath | IndexPath[]
-  onSelected: (index: IndexPath) => void
-  onDeselect?: (index: IndexPath) => void
-}
-
-export const useFilterAndSort = (): {
+export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
-  filter: Selection
-  sort: Selection
-  view: Selection
+  filter: DropdownSelection
+  sort: DropdownSelection
+  view: DropdownSelection
 } => {
-  const { filteredTokenList } = useSearchableTokenList()
+  const { filteredTokenList } = useSearchableTokenList({})
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
@@ -69,6 +64,10 @@ export const useFilterAndSort = (): {
               isAvalancheCChainId(token.chainId)) ||
             token.localId === 'AvalancheAVAX'
         )
+      case AssetNetworkFilter.AvalanchePChain:
+        return filteredTokenList.filter(token => token.localId === AVAX_P_ID)
+      case AssetNetworkFilter.AvalancheXChain:
+        return filteredTokenList.filter(token => token.localId === AVAX_X_ID)
       case AssetNetworkFilter.Ethereum:
         return filteredTokenList.filter(
           token =>

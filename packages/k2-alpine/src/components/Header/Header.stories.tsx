@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ScrollView, View } from '../Primitives'
+import { PriceChangeStatus } from '../PriceChangeIndicator/types'
 import { BalanceHeader } from './BalanceHeader'
 import { NavigationTitleHeader } from './NavigationTitleHeader'
 
@@ -35,7 +36,7 @@ export const All = (): JSX.Element => {
           currency="USD"
           priceChange={{
             formattedPrice: '$12.5',
-            status: 'up',
+            status: PriceChangeStatus.Up,
             formattedPercent: '3.7%'
           }}
         />
@@ -45,7 +46,7 @@ export const All = (): JSX.Element => {
           currency="USD"
           priceChange={{
             formattedPrice: formattedPrice,
-            status: 'up',
+            status: PriceChangeStatus.Up,
             formattedPercent: '3.7%'
           }}
         />
@@ -55,7 +56,7 @@ export const All = (): JSX.Element => {
           currency="USD"
           priceChange={{
             formattedPrice: formattedPrice,
-            status: 'down',
+            status: PriceChangeStatus.Down,
             formattedPercent: '3.7%'
           }}
         />
@@ -66,7 +67,7 @@ export const All = (): JSX.Element => {
           currency="USD"
           priceChange={{
             formattedPrice: formattedPrice,
-            status: 'up',
+            status: PriceChangeStatus.Up,
             formattedPercent: '3.7%'
           }}
         />

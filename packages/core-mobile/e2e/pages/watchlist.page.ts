@@ -4,6 +4,7 @@ import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import delay from '../helpers/waits'
 import { Coin } from '../helpers/tokens'
+import commonElsPage from './commonEls.page'
 
 class WatchListPage {
   get allTab() {
@@ -16,6 +17,10 @@ class WatchListPage {
 
   get favoritesTab() {
     return by.text(watchlist.favoritesTab)
+  }
+
+  get trendingTab() {
+    return by.text(watchlist.trendingTab)
   }
 
   get newWalletBtn() {
@@ -109,6 +114,39 @@ class WatchListPage {
         10000
       )
     }
+  }
+
+  async verifyTrendingTokens() {
+    for (let i = 1; i <= 20; i++) {
+      await Action.waitForElement(by.id(`trending_token_index__${i}`))
+      if (i % 3 === 0) {
+        await Action.swipeUp(
+          by.id(`trending_token_index__${i}`),
+          'slow',
+          0.3,
+          0
+        )
+      }
+    }
+  }
+
+  async verifyTrendingTokenNavigation() {
+    let tokenName = await Action.getElementText(
+      by.id('trending_token_index__1'),
+      0
+    )
+    const tokenValue = await Action.getElementText(
+      by.id('trending_token_value__1'),
+      0
+    )
+    tokenName = tokenName?.split('. ')[1]
+    await Action.tap(by.id('trending_token_index__1'))
+    if (tokenName && tokenValue) {
+      console.log(`testing ${tokenName} & ${tokenValue}...`)
+      await Action.waitForElement(by.text(tokenName))
+      await Action.waitForElement(by.text(tokenValue))
+    }
+    await commonElsPage.goBack()
   }
 
   async searchToken(tokenSymbol: string) {

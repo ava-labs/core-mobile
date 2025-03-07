@@ -1,7 +1,6 @@
 import { SearchBar, Text, View } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
-import { GlobalEmptyAssets } from 'common/components/GlobalEmptyState'
-import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
+import { LoadingState } from 'common/components/LoadingState'
 import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
 import { CollectibleManagementItem } from 'features/portfolio/collectibles/components/CollectibleManagementItem'
 import { LIST_CARD_HEIGHT } from 'features/portfolio/collectibles/consts'
@@ -54,17 +53,18 @@ const CollectibleManagementScreen = (): JSX.Element => {
   }
 
   const renderEmpty = useMemo(() => {
-    if (isLoading || isRefetching) return <GlobalLoadingState />
-    return (
-      <GlobalEmptyAssets
-        style={{
-          // TODO: Fix this height calculation
-          height: portfolioTabContentHeight + 140
-        }}
-        title="No Collectibles found"
-        description="Try changing the search term"
-      />
-    )
+    if (isLoading || isRefetching) return <LoadingState />
+    // return (
+    //   <GlobalEmptyAssets
+    //     style={{
+    //       // TODO: Fix this height calculation
+    //       height: portfolioTabContentHeight + 140
+    //     }}
+    //     title="No Collectibles found"
+    //     description="Try changing the search term"
+    //   />
+    // )
+    return null
   }, [isLoading, isRefetching])
 
   return (

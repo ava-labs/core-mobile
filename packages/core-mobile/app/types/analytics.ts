@@ -43,6 +43,7 @@ export type AnalyticsEvents = {
   ChangePasswordClicked: undefined
   ChangePasswordSucceeded: undefined
   ChangePasswordFailed: undefined
+  HallidayBuyClicked: undefined
   CoinbasePayBuyClicked: undefined
   CollectibleItemClicked: { chainId: string }
   CollectibleSendClicked: { chainId: string }

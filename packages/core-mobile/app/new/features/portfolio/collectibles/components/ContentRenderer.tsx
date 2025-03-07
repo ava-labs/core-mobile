@@ -1,5 +1,5 @@
 import { ANIMATED, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { GlobalLoadingState } from 'common/components/GlobalLoadingState'
+import { LoadingState } from 'common/components/LoadingState'
 import { Image, ImageErrorEventData } from 'expo-image'
 import React, { useState } from 'react'
 import { ViewStyle } from 'react-native'
@@ -69,7 +69,7 @@ export const CollectibleRenderer = ({
         {error ? (
           <Text>{error}</Text>
         ) : isLoading ? (
-          <GlobalLoadingState />
+          <LoadingState />
         ) : (
           <Icons.Content.HideImage
             color={colors.$textPrimary}

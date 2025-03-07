@@ -15,7 +15,7 @@ export const GlobalEmptyAssets: FC<Props> = ({
 }): React.JSX.Element => {
   return (
     <View
-      sx={{
+      style={{
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1,

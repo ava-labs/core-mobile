@@ -6,7 +6,6 @@ import {
   TransitionPresets
 } from '@react-navigation/stack'
 import { Animated } from 'react-native'
-import Grabber from 'common/components/Grabber'
 import BackBarButton from 'common/components/BackBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { View } from '@avalabs/k2-alpine'
@@ -32,7 +31,10 @@ export const stackNavigatorScreenOptions: StackNavigationOptions = {
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  headerTitle: () => <Grabber />
+  headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
+  headerStyle: {
+    height: 72
+  }
 }
 
 export const modalScreensOptions: StackNavigationOptions = {
