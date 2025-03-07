@@ -212,7 +212,7 @@ __metadata:
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.1
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
@@ -506,7 +506,7 @@ __metadata:
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.1
     "@react-native-async-storage/async-storage": 1.24.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.3
@@ -570,7 +570,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
     "@babel/runtime": 7.25.7
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.1
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.3
@@ -6954,31 +6954,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lavamoat/aa@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "@lavamoat/aa@npm:4.3.0"
+"@lavamoat/aa@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "@lavamoat/aa@npm:4.3.1"
   dependencies:
     resolve: 1.22.8
   bin:
     lavamoat-ls: src/cli.js
-  checksum: 41d83b512a88db71bbb3634febd5840614f1f39fa0b614499af2d6e9963180891b0350d8c38ce8d499142c9a6663711f983a3960f232f0d20f601c2a64912c30
+  checksum: 462e4e20c91f01f980f148f203864625f85336a58dc22159c498a9e9ba12d75753d0687494928bdf94df3bb10d1e45ab7ffbf25409bfbc290ac5a45dc8479554
   languageName: node
   linkType: hard
 
-"@lavamoat/allow-scripts@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@lavamoat/allow-scripts@npm:3.2.1"
+"@lavamoat/allow-scripts@npm:3.3.1":
+  version: 3.3.1
+  resolution: "@lavamoat/allow-scripts@npm:3.3.1"
   dependencies:
-    "@lavamoat/aa": ^4.3.0
+    "@lavamoat/aa": ^4.3.1
     "@npmcli/run-script": 8.1.0
     bin-links: 4.0.4
     npm-normalize-package-bin: 3.0.1
+    type-fest: 4.30.0
     yargs: 17.7.2
   peerDependencies:
     "@lavamoat/preinstall-always-fail": "*"
   bin:
     allow-scripts: src/cli.js
-  checksum: e3a619845cac89b0553b89ef2f4a642e5203efbb0615ba06b87b0ebd48f291cc943b372ca3115b9efec762e4afb371836300762b9851470f7b9bf578d7678bcb
+  checksum: 8000926d9cc5f6098a044871037a6e38e4be6e1666fa0a081ca8e9c600ee83a3649ce0f9afe399eaf5cb7da05d9e04a91e190fb6981909fe0bd170d9beafd60a
   languageName: node
   linkType: hard
 
@@ -17648,7 +17649,7 @@ __metadata:
   resolution: "eslint-plugin-avalabs-mobile@workspace:packages/eslint-mobile"
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.1
     "@react-native-community/eslint-config": 3.0.3
     "@tanstack/eslint-plugin-query": 5.59.7
     "@types/node": 22.7.5
@@ -27451,7 +27452,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 2e9b36af2a73d226caa876f8f4210d13818eb08391019b88237df0a28a8269d6d753d816153f160a4696a2ceef5463952db698e565a5ff46dcf0456b739c7fbb
   languageName: node
   linkType: hard
 
@@ -30669,6 +30670,13 @@ react-native-webview@ava-labs/react-native-webview:
   version: 4.26.1
   resolution: "type-fest@npm:4.26.1"
   checksum: 7188db3bca82afa62c69a8043fb7c5eb74e63c45e7e28efb986da1629d844286f7181bc5a8185f38989fffff0d6c96be66fd13529b01932d1b6ebe725181d31a
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:4.30.0":
+  version: 4.30.0
+  resolution: "type-fest@npm:4.30.0"
+  checksum: 2ce3b08265acbdf864267e1468cdcc8dbfa4e86c2fd5e4622a20a83358b5e21fcb49a41beada95d29d8ff1ed8aacb27d10ec0b7623d546f9399b529a153724b0
   languageName: node
   linkType: hard
 
