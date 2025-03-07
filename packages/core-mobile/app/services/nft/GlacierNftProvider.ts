@@ -6,12 +6,9 @@ import {
 } from '@avalabs/glacier-sdk'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import GlacierService from 'services/GlacierService'
+import delay from 'utils/js/delay'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
-
-const wait = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 export class GlacierNftProvider {
   async fetchNft(
@@ -45,7 +42,7 @@ export class GlacierNftProvider {
     let shouldPoll = true
 
     do {
-      await wait(2000) // Wait 2 seconds before trying to fetch refreshed data.
+      await delay(2000) // Wait 2 seconds before trying to fetch refreshed data.
       fetchCount += 1
 
       token = await this.fetchNft(address, chainId, tokenId)

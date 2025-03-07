@@ -20,8 +20,6 @@ export type BalancesForAccount = {
   tokens: (TokenWithBalance | Error)[]
 }
 
-const TOKEN_TYPES = [TokenType.NATIVE, TokenType.ERC20]
-
 export class BalanceService {
   async getBalancesForAccount({
     network,
@@ -48,7 +46,7 @@ export class BalanceService {
           currency,
           network: mapToVmNetwork(network),
           storage: coingeckoInMemoryCache,
-          tokenTypes: TOKEN_TYPES
+          tokenTypes: [TokenType.NATIVE, TokenType.ERC20]
         })
 
         const balances = balancesResponse[accountAddress] ?? {}

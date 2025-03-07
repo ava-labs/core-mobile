@@ -7,8 +7,6 @@ import Logger from 'utils/Logger'
 import { getNftLocalId, isNFT } from './utils'
 import { UnprocessedNftItem } from './types'
 
-const TOKEN_TYPES = [TokenType.ERC721, TokenType.ERC1155]
-
 export class NftService {
   async fetchNfts({
     network,
@@ -26,7 +24,7 @@ export class NftService {
       currency,
       network: mapToVmNetwork(network),
       storage: coingeckoInMemoryCache,
-      tokenTypes: TOKEN_TYPES
+      tokenTypes: [TokenType.ERC721, TokenType.ERC1155]
     })
 
     const balances = balancesResponse[address]

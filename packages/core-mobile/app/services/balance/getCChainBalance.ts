@@ -5,8 +5,6 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
 
-const TOKEN_TYPES = [TokenType.NATIVE]
-
 export const getCChainBalance = async ({
   cChainNetwork,
   cAddress,
@@ -26,7 +24,7 @@ export const getCChainBalance = async ({
     currency,
     network: mapToVmNetwork(cChainNetwork),
     storage: coingeckoInMemoryCache,
-    tokenTypes: TOKEN_TYPES
+    tokenTypes: [TokenType.NATIVE]
   })
 
   const cChainBalanceResponse = balancesResponse[cAddress]
