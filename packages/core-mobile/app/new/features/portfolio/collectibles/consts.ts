@@ -4,7 +4,7 @@ import { CollectibleView } from 'store/balance'
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
 export const VERTICAL_ITEM_GAP = 12
-export const LIST_CARD_HEIGHT = 64
+export const LIST_ITEM_HEIGHT = 64
 
 export const getGridCardHeight = (
   type: CollectibleView,
@@ -13,7 +13,7 @@ export const getGridCardHeight = (
 ): number => {
   switch (type) {
     case CollectibleView.ListView:
-      return LIST_CARD_HEIGHT
+      return LIST_ITEM_HEIGHT
     case CollectibleView.CompactGrid: {
       if (index === 1 || (index % 5 === 0 && index > 0))
         return (
@@ -44,7 +44,7 @@ export const getGridCardHeight = (
       )
     }
     default: {
-      return LIST_CARD_HEIGHT
+      return LIST_ITEM_HEIGHT
     }
   }
 }

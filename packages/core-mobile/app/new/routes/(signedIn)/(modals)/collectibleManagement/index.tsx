@@ -3,7 +3,7 @@ import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
 import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
 import { CollectibleManagementItem } from 'features/portfolio/collectibles/components/CollectibleManagementItem'
-import { LIST_CARD_HEIGHT } from 'features/portfolio/collectibles/consts'
+import { LIST_ITEM_HEIGHT } from 'features/portfolio/collectibles/consts'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -54,17 +54,7 @@ const CollectibleManagementScreen = (): JSX.Element => {
 
   const renderEmpty = useMemo(() => {
     if (isLoading || isRefetching) return <LoadingState />
-    // return (
-    //   <GlobalEmptyAssets
-    //     style={{
-    //       // TODO: Fix this height calculation
-    //       height: portfolioTabContentHeight + 140
-    //     }}
-    //     title="No Collectibles found"
-    //     description="Try changing the search term"
-    //   />
-    // )
-    return null
+    return <LoadingState sx={{ height: portfolioTabContentHeight }} />
   }, [isLoading, isRefetching])
 
   return (
@@ -89,7 +79,7 @@ const CollectibleManagementScreen = (): JSX.Element => {
         keyExtractor={item => `collectibles-manage-${item.uid}`}
         data={filteredCollectibles}
         renderItem={renderItem}
-        estimatedItemSize={LIST_CARD_HEIGHT}
+        estimatedItemSize={LIST_ITEM_HEIGHT}
         ListEmptyComponent={renderEmpty}
         onRefresh={refetch}
         onEndReached={onEndReached}

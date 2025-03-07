@@ -1,8 +1,8 @@
 import { ANIMATED, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { LoadingState } from 'common/components/LoadingState'
 import { Image, ImageErrorEventData } from 'expo-image'
 import React, { useState } from 'react'
-import { ViewStyle } from 'react-native'
+import ContentLoader, { Rect } from 'react-content-loader/native'
+import { LayoutChangeEvent, ViewStyle } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { NFTItem } from 'store/nft'
 
@@ -20,8 +20,15 @@ export const CollectibleRenderer = ({
   const {
     theme: { colors }
   } = useTheme()
-  const [isLoading, setIsLoading] = useState(true)
+
+  const [isLoading, setIsLoading] = useState(
+    !collectible?.imageData?.image ||
+      !collectible?.imageData?.video ||
+      !videoUrl ||
+      !imageUrl
+  )
   const [error, setError] = useState<string | null>(null)
+  const [layout, setLayout] = useState({ width: 0, height: 0 })
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -39,6 +46,12 @@ export const CollectibleRenderer = ({
 
   const onError = (err: ImageErrorEventData): void => {
     setError(err.error)
+    setIsLoading(false)
+  }
+
+  const onLayout = (event: LayoutChangeEvent): void => {
+    const { width, height } = event.nativeEvent.layout
+    setLayout({ width, height })
   }
 
   if (collectible?.imageData?.video || videoUrl) {
@@ -47,6 +60,7 @@ export const CollectibleRenderer = ({
 
   return (
     <View
+      onLayout={onLayout}
       style={[
         {
           flex: 1,
@@ -67,9 +81,16 @@ export const CollectibleRenderer = ({
           alignItems: 'center'
         }}>
         {error ? (
-          <Text>{error}</Text>
+          <Text variant="body1">{error}</Text>
         ) : isLoading ? (
-          <LoadingState />
+          <ContentLoader
+            width={layout.width}
+            height={layout.height}
+            viewBox={`0 0 ${layout.width} ${layout.height}`}
+            foregroundColor={'#D9D9D9'}
+            backgroundColor={'#F2F2F3'}>
+            <Rect x="0" y="0" width={layout.width} height={layout.height} />
+          </ContentLoader>
         ) : (
           <Icons.Content.HideImage
             color={colors.$textPrimary}
@@ -94,7 +115,6 @@ export const CollectibleRenderer = ({
           style={{
             flex: 1,
             width: '100%',
-            borderRadius: 18,
             position: 'absolute',
             zIndex: 1,
             top: 0,

@@ -12,7 +12,7 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { RefreshControl } from 'components/RefreshControl'
 import { AssetsHeader } from 'features/portfolio/assets/components/AssetsHeader'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import React, { memo, ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 
@@ -27,18 +27,12 @@ import { useCollectiblesContext } from '../CollectiblesContext'
 import {
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
+  LIST_ITEM_HEIGHT,
   VERTICAL_ITEM_GAP
 } from '../consts'
 import { useFilterAndSort } from '../hooks/useFilterAndSort'
 import { CardContainer } from './CardContainer'
-import { CollectibleGridItem } from './CollectibleItem'
-
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
+import { CollectibleItem } from './CollectibleItem'
 
 export const CollectiblesScreen = ({
   goToCollectibleDetail,
@@ -46,7 +40,7 @@ export const CollectiblesScreen = ({
 }: {
   goToCollectibleDetail: (localId: string) => void
   goToCollectibleManagement: () => void
-}): JSX.Element => {
+}): ReactNode => {
   const dimensions = useWindowDimensions()
   const {
     collectibles,
@@ -75,21 +69,25 @@ export const CollectiblesScreen = ({
       ? 2
       : 1
 
+  const estimatedItemSize =
+    listType === CollectibleView.ListView ? LIST_ITEM_HEIGHT : 190
+
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  const onRefresh = (): void => {
+  const onRefresh = useCallback((): void => {
     refetch()
-  }
+  }, [refetch])
 
   const renderItem: ListRenderItem<NFTItem> = ({ item, index }) => {
-    return (
-      <CollectibleGridItem collectible={item} index={index} type={listType} />
-    )
+    return <CollectibleItem collectible={item} index={index} type={listType} />
   }
 
-  const renderEmpty = (): JSX.Element => {
+  const renderEmpty = useMemo((): JSX.Element => {
+    if (isLoading)
+      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+
     if (isError)
       return (
         <ErrorState
@@ -126,7 +124,7 @@ export const CollectiblesScreen = ({
       )
 
     return <EmptyCollectibles />
-  }
+  }, [filter.selected, isError, isLoading, onRefresh, onResetFilter])
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {
@@ -142,9 +140,30 @@ export const CollectiblesScreen = ({
   )
 
   const renderLoadingMore = useMemo(() => {
-    if (isLoading) return <LoadingState />
+    if (hasNextPage && isFetchingNextPage)
+      return <LoadingState sx={{ height: LIST_ITEM_HEIGHT }} />
     return null
-  }, [isLoading])
+  }, [hasNextPage, isFetchingNextPage])
+
+  const renderHeader = useMemo((): JSX.Element => {
+    return (
+      <View
+        style={[
+          {
+            alignSelf: 'center',
+            marginBottom: 8,
+            width: dimensions.width - HORIZONTAL_MARGIN * 2,
+            zIndex: 10
+          }
+        ]}>
+        <AssetsHeader
+          filter={filter}
+          sort={sort}
+          view={{ ...view, onSelected: handleManageList }}
+        />
+      </View>
+    )
+  }, [dimensions.width, filter, handleManageList, sort, view])
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>
@@ -159,32 +178,15 @@ export const CollectiblesScreen = ({
         keyExtractor={(item: NFTItem) => `collectibles-list-${item.uid}`}
         renderItem={renderItem}
         numColumns={columns}
-        estimatedItemSize={180}
         showsVerticalScrollIndicator={false}
         scrollEnabled={filteredAndSorted?.length > 0}
         removeClippedSubviews={Platform.OS === 'android'}
         ListEmptyComponent={renderEmpty}
-        ListHeaderComponent={
-          <View
-            style={[
-              {
-                alignSelf: 'center',
-                marginBottom: 8,
-                width: dimensions.width - HORIZONTAL_MARGIN * 2,
-                zIndex: 10
-              }
-            ]}>
-            <AssetsHeader
-              filter={filter}
-              sort={sort}
-              view={{ ...view, onSelected: handleManageList }}
-            />
-          </View>
-        }
+        ListHeaderComponent={renderHeader}
+        estimatedItemSize={estimatedItemSize}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.8}
         ListFooterComponent={renderLoadingMore}
-        nestedScrollEnabled
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={isRefetching} />
         }

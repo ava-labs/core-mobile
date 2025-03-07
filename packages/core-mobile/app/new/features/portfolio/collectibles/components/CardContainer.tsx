@@ -23,6 +23,7 @@ export const CardContainer = ({
         borderWidth: 1,
         borderColor: alpha(isDark ? '#fff' : '#000', 0.1),
         borderRadius: 18,
+        overflow: 'hidden',
         ...style
       }}>
       {children}
