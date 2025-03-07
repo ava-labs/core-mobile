@@ -40,7 +40,7 @@ export const DeFiGridView = ({
             borderRadius: 18,
             backgroundColor: '$surfaceSecondary',
             gap: 16,
-            width: (SCREEN_WIDTH - 16 * 3) / 2,
+            width: (SCREEN_WIDTH - 16 * 2 - 14) / 2,
             paddingTop: 40,
             paddingBottom: 36,
             alignItems: 'center'

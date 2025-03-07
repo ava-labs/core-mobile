@@ -131,7 +131,7 @@ export const DeFiScreen = (): JSX.Element => {
   }, [sort, view])
 
   const renderSeparator = (): JSX.Element => {
-    return isGridView ? <Space y={16} /> : <Separator sx={{ marginLeft: 62 }} />
+    return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />
   }
 
   return (
@@ -151,7 +151,7 @@ export const DeFiScreen = (): JSX.Element => {
       columnWrapperStyle={
         isGridView && {
           paddingHorizontal: 16,
-          gap: 16
+          gap: 14
         }
       }
     />
