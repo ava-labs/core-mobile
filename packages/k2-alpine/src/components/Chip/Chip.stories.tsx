@@ -2,35 +2,14 @@ import React from 'react'
 import { ScrollView, View } from '../Primitives'
 import Link from '../../utils/Link'
 import { useTheme } from '../..'
-import { Chip, ChipSize } from './Chip'
+import { Chip } from './Chip'
 
 export default {
   title: 'Chip'
 }
 
 export const All = (): JSX.Element => {
-  const sizes: ChipSize[] = ['large', 'small']
   const { theme } = useTheme()
-
-  const renderRow = (hasIcon?: boolean): JSX.Element => {
-    return (
-      <View
-        sx={{
-          alignItems: 'center',
-          flexDirection: 'row'
-        }}>
-        {sizes.map((size, index) => (
-          <Chip
-            size={size}
-            key={index}
-            rightIcon={hasIcon ? 'expandMore' : undefined}
-            style={{ marginRight: index !== sizes.length - 1 ? 10 : 0 }}>
-            sort
-          </Chip>
-        ))}
-      </View>
-    )
-  }
 
   return (
     <View
