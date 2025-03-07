@@ -22,7 +22,7 @@ const isNftTokenType = (type: TokenType): boolean => {
   return type === TokenType.ERC721 || type === TokenType.ERC1155
 }
 
-export const isNFT = (
+export const isNft = (
   token: TokenWithBalance
 ): token is NftTokenWithBalance => {
   return isNftTokenType(token.type)

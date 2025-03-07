@@ -4,7 +4,7 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
-import { getNftLocalId, isNFT } from './utils'
+import { getNftLocalId, isNft } from './utils'
 import { UnprocessedNftItem } from './types'
 
 export class NftService {
@@ -43,7 +43,7 @@ export class NftService {
         continue
       }
 
-      if (isNFT(token)) {
+      if (isNft(token)) {
         nfts.push({
           ...token,
           localId: getNftLocalId(token)
