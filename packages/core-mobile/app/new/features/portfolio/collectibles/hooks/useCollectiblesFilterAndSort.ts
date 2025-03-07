@@ -6,8 +6,6 @@ import { useSelector } from 'react-redux'
 import { NftItem } from 'services/nft/types'
 import {
   AssetNetworkFilter,
-  AVAX_P_ID,
-  AVAX_X_ID,
   COLLECTIBLE_FILTERS,
   COLLECTIBLE_SORTS,
   COLLECTIBLE_VIEWS,
@@ -124,8 +122,8 @@ export const useCollectiblesFilterAndSort = (
           return items.filter(
             collectible =>
               'chainId' in collectible &&
-              (collectible.chainId === ChainId.AVALANCHE_MAINNET_ID || 
-              collectible.chainId === ChainId.AVALANCHE_TESTNET_ID)
+              (collectible.chainId === ChainId.AVALANCHE_MAINNET_ID ||
+                collectible.chainId === ChainId.AVALANCHE_TESTNET_ID)
           )
         case AssetNetworkFilter.Ethereum:
           return items.filter(

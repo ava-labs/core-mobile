@@ -1,18 +1,10 @@
-import {
-  AnimatedPressable,
-  Icons,
-  IndexPath,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { IndexPath, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import React, { memo, ReactNode, useCallback, useEffect, useMemo } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
-import Animated from 'react-native-reanimated'
 
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
@@ -26,15 +18,14 @@ import { useCollectiblesContext } from '../CollectiblesContext'
 import {
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
-  LIST_ITEM_HEIGHT,
-  VERTICAL_ITEM_GAP
+  LIST_ITEM_HEIGHT
 } from '../consts'
 import { useCollectiblesFilterAndSort } from '../hooks/useCollectiblesFilterAndSort'
-import { CardContainer } from './CardContainer'
 import { CollectibleItem } from './CollectibleItem'
+import { CollectiblesNone } from './CollectiblesNone'
 
 export const CollectiblesScreen = ({
-  goToCollectibleDetail,
+  // goToCollectibleDetail,
   goToCollectibleManagement
 }: {
   goToCollectibleDetail: (localId: string) => void
@@ -92,7 +83,7 @@ export const CollectiblesScreen = ({
         />
       )
 
-    return <EmptyCollectibles />
+    return <CollectiblesNone />
   }, [filter.selected, isLoading, onResetFilter])
 
   const handleManageList = useCallback(
@@ -162,67 +153,3 @@ export const CollectiblesScreen = ({
     </View>
   )
 }
-
-const EmptyCollectibles = memo((): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
-
-  return (
-    <View
-      sx={{
-        flex: 1,
-        flexDirection: 'row',
-        gap: HORIZONTAL_MARGIN,
-        padding: HORIZONTAL_MARGIN,
-        paddingTop: 0
-      }}>
-      <View
-        style={{
-          flex: 1,
-          gap: VERTICAL_ITEM_GAP
-        }}>
-        <AnimatedPressable entering={getListItemEnteringAnimation(0)}>
-          <CardContainer
-            style={{
-              height: 220
-            }}>
-            <Icons.Content.Add
-              color={colors.$textPrimary}
-              width={40}
-              height={40}
-            />
-          </CardContainer>
-        </AnimatedPressable>
-
-        <Animated.View entering={getListItemEnteringAnimation(1)}>
-          <CardContainer
-            style={{
-              height: 180
-            }}
-          />
-        </Animated.View>
-      </View>
-      <View
-        style={{
-          flex: 1,
-          gap: VERTICAL_ITEM_GAP
-        }}>
-        <Animated.View entering={getListItemEnteringAnimation(2)}>
-          <CardContainer
-            style={{
-              height: 190
-            }}
-          />
-        </Animated.View>
-        <Animated.View entering={getListItemEnteringAnimation(3)}>
-          <CardContainer
-            style={{
-              height: 190
-            }}
-          />
-        </Animated.View>
-      </View>
-    </View>
-  )
-})

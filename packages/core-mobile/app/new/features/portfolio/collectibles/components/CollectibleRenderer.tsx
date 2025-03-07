@@ -8,9 +8,11 @@ import { NftItem } from 'services/nft/types'
 
 export const CollectibleRenderer = ({
   collectible,
+  children,
   style
 }: {
   collectible: NftItem
+  children?: ReactNode
   style?: ViewStyle
 }): JSX.Element | JSX.Element[] => {
   const {
@@ -145,6 +147,9 @@ export const CollectibleRenderer = ({
           }
         ]}>
         {renderContent}
+        {collectible?.imageData?.image || collectible?.imageData?.video
+          ? children
+          : null}
       </Animated.View>
     </View>
   )

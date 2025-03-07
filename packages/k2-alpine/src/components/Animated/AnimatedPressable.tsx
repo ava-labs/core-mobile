@@ -79,6 +79,7 @@ export const AnimatedPressable = memo(
       )
       if (moveY > SCROLL_THRESHOLD || moveX > SCROLL_THRESHOLD) {
         isScrolling.current = true
+        resetAnimation()
       }
     }
 

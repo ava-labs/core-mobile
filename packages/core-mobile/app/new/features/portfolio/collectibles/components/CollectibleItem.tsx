@@ -111,11 +111,13 @@ export const CollectibleListItem = memo(
                   style={{
                     color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
                   }}>
-                  {collectible.processedMetadata?.name ?? 'Name'}
+                  {collectible.name ?? 'Name'}
                 </Text>
               </View>
 
-              <Pill text="123" />
+              {collectible.balance ? (
+                <Pill text={collectible.balance.toString()} />
+              ) : null}
             </View>
             <Icons.Navigation.ChevronRightV2
               color={colors.$textPrimary}
@@ -153,18 +155,19 @@ export const CollectibleGridItem = memo(
             marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
             marginBottom: VERTICAL_ITEM_GAP
           }}>
-          <View
-            style={{
-              position: 'absolute',
-              zIndex: 1,
-              right: 10,
-              top: 10
-            }}>
-            {/* TODO: add balance? */}
-            {/* <Pill text={collectible.imageData?.type} /> */}
-          </View>
-
-          <CollectibleRenderer collectible={collectible} />
+          <CollectibleRenderer collectible={collectible}>
+            <View
+              style={{
+                position: 'absolute',
+                zIndex: 1,
+                right: 10,
+                top: 10
+              }}>
+              {collectible.balance ? (
+                <Pill text={collectible.balance.toString()} />
+              ) : null}
+            </View>
+          </CollectibleRenderer>
         </CardContainer>
       </AnimatedPressable>
     )
