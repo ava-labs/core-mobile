@@ -16,12 +16,10 @@ type Props = {
   isFetchingTokens: boolean
   items: MarketToken[]
   searchText: string | undefined
-  isSearchingFavorites?: boolean
 }
 
 export function useTokenSearch({
   isFetchingTokens,
-  isSearchingFavorites = false,
   items,
   searchText
 }: Props): {
@@ -50,12 +48,6 @@ export function useTokenSearch({
         return
       }
 
-      // if we are searching favorites, we don't want to run the token search query
-      if (isSearchingFavorites) {
-        setSearchResults({ tokens: [], prices: undefined, charts: undefined })
-        return
-      }
-
       setIsSearchingTokens(true)
 
       const searchResult = await queryClient.fetchQuery({
@@ -70,7 +62,7 @@ export function useTokenSearch({
     } else {
       setSearchResults(undefined)
     }
-  }, [currency, isFetchingTokens, isSearchingFavorites, items, searchText])
+  }, [currency, isFetchingTokens, items, searchText])
 
   useEffect(() => {
     searchAsync()
