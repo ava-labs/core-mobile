@@ -285,7 +285,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [renderHeaderRight, navigation])
 
   if (!tokenId || !token) {
-    return <LoadingState />
+    return <LoadingState sx={{ flex: 1 }} />
   }
 
   return (
