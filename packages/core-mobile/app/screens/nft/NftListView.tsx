@@ -6,15 +6,15 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import ListSVG from 'components/svg/ListSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { NFTItem } from 'store/nft'
-import { useNftItemsContext } from 'contexts/NFTItemsContext'
+import { useNftItemsContext } from 'contexts/NftItemsContext'
+import { NftItem } from 'services/nft/types'
 import { NftList } from './components/NftList/NftList'
 import { NftGrid } from './components/NftGrid/NftGrid'
 
 type ListType = 'grid' | 'list'
 
 type Props = {
-  onItemSelected: (item: NFTItem) => void
+  onItemSelected: (item: NftItem) => void
   onManagePressed: () => void
 }
 
