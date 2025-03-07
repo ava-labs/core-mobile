@@ -214,7 +214,9 @@ const ApprovalPopup = (): JSX.Element => {
       )
 
       if (result?.txHash) {
-        AnalyticsService.capture('GaslessFundSuccessful')
+        AnalyticsService.capture('GaslessFundSuccessful', {
+          fundTxHash: result?.txHash
+        })
         setGaslessError(null)
         return result.txHash
       }

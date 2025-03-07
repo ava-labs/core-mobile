@@ -210,6 +210,6 @@ export type AnalyticsEvents = {
   }
 
   //Gasless
-  GaslessFundSuccessful: undefined
+  GaslessFundSuccessful: { fundTxHash: string }
   GaslessFundFailed: undefined
 }
