@@ -99,33 +99,30 @@ export async function performSwap({
     }
 
     if (allowance < BigInt(sourceAmount)) {
-      const [approveGasLimit] = await resolve(
-        contract.approve?.estimateGas(spenderAddress, sourceAmount) ??
-          Promise.resolve(null)
-      )
-
       const { data } =
         (await contract.approve?.populateTransaction(
           spenderAddress,
           sourceAmount
         )) ?? {}
 
-      const gas = bigIntToHex(
-        approveGasLimit
-          ? approveGasLimit
-          : BigInt(Number(priceRoute.gasCost ?? 0))
+      const tx = {
+        from: userAddress,
+        to: sourceTokenAddress,
+        data
+      }
+
+      const [approveGasLimit, approveGasLimitError] = await resolve(
+        provider.estimateGas(tx)
       )
-      const txParams: [TransactionParams] = [
-        {
-          from: userAddress,
-          to: sourceTokenAddress,
-          gas,
-          data
-        }
-      ]
+
+      if (approveGasLimitError || !approveGasLimit) {
+        throw swapError.approvalTxFailed(approveGasLimitError)
+      }
+
+      const gas = bigIntToHex(approveGasLimit)
 
       const [approvalTxHash, approvalTxError] = await resolve(
-        signAndSend(txParams)
+        signAndSend([{ ...tx, gas }])
       )
 
       if (!approvalTxHash || approvalTxError) {

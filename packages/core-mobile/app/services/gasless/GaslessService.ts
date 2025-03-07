@@ -10,6 +10,7 @@ import AppCheckService from 'services/fcm/AppCheckService'
 import { Transaction, TransactionLike } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
+import { FundTxParams } from 'services/gasless/types'
 
 if (!Config.GAS_STATION_URL) {
   Logger.warn(
@@ -53,11 +54,12 @@ class GaslessService {
     return signingData.type === RpcMethod.ETH_SEND_TRANSACTION
   }
 
-  fundTx = async (
-    signingData: SigningData,
-    addressFrom: string,
-    provider: JsonRpcBatchInternal
-  ): Promise<FundResult> => {
+  fundTx = async ({
+    signingData,
+    addressFrom,
+    provider,
+    maxFeePerGas
+  }: FundTxParams): Promise<FundResult> => {
     const sdk = await this.getSdk()
     if (!sdk) {
       return {
@@ -81,6 +83,7 @@ class GaslessService {
     const { solutionHex } = await sdk.solveChallenge(challengeHex, difficulty)
     const txHex = Transaction.from({
       ...signingData.data,
+      maxFeePerGas,
       from: null
     } as TransactionLike).unsignedSerialized
 
