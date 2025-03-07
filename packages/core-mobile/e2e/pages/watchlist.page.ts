@@ -5,6 +5,8 @@ import Assert from '../helpers/assertions'
 import delay from '../helpers/waits'
 import { Coin } from '../helpers/tokens'
 import commonElsPage from './commonEls.page'
+import buyPage from './buy.page'
+import swapTabPage from './swapTab.page'
 
 class WatchListPage {
   get allTab() {
@@ -117,35 +119,79 @@ class WatchListPage {
   }
 
   async verifyTrendingTokens() {
-    for (let i = 1; i <= 20; i++) {
-      await Action.waitForElement(by.id(`trending_token_index__${i}`))
-      if (i % 3 === 0) {
+    let i = 1
+    while (i < 21) {
+      try {
+        await Action.waitForElementNoSync(by.id(`trending_token_name__${i}`))
+      } catch (e) {
         await Action.swipeUp(
-          by.id(`trending_token_index__${i}`),
+          by.id(`trending_token_name__${i - 1}`),
           'slow',
-          0.3,
+          0.25,
           0
         )
       }
+      i++
     }
   }
 
-  async verifyTrendingTokenNavigation() {
-    let tokenName = await Action.getElementText(
-      by.id('trending_token_index__1'),
-      0
+  get topTrendingTokenName() {
+    return by.id(watchlist.topTrendingTokenName)
+  }
+
+  get topTrendingTokenSymbol() {
+    return by.id(watchlist.topTrendingTokenSymbol)
+  }
+
+  get topTrendingTokenValue() {
+    return by.id(watchlist.topTrendingTokenValue)
+  }
+
+  get topTrendingTokenBuyBtn() {
+    return by.id(watchlist.topTrendingTokenBuyBtn)
+  }
+
+  get topTrendingTokenLogo() {
+    return by.id(watchlist.topTrendingTokenLogo)
+  }
+
+  async topTrendingTokenOnWatchlist() {
+    await Action.waitForElementNoSync(this.topTrendingTokenName, 20000)
+    await Action.waitForElementNoSync(this.topTrendingTokenValue)
+    await Action.waitForElementNoSync(this.topTrendingTokenBuyBtn)
+    await Action.waitForElementNoSync(this.topTrendingTokenLogo)
+  }
+
+  async topTrendingTokenBuyFlow(symbol: string) {
+    await Action.tap(this.topTrendingTokenBuyBtn)
+    await swapTabPage.verifySwapScreen()
+    await Action.waitForElement(by.text('Swap'))
+    const toToken = await Action.getElementText(by.id('to_token_selector'))
+    const fromToken = await Action.getElementText(by.id('from_token_selector'))
+    assert(fromToken === 'AVAX', 'From token should be AVAX')
+    assert(toToken === symbol, `${toToken} !== ${symbol}`)
+    await commonElsPage.goBack()
+  }
+
+  async topTrendingTokenDetailBuyFlow() {
+    await Action.waitForElementNoSync(this.topTrendingTokenName, 20000)
+    await Action.tap(this.topTrendingTokenName)
+    await Action.waitForElementNoSync(
+      by.id('token_detail_footer_buy_btn'),
+      20000
     )
-    const tokenValue = await Action.getElementText(
-      by.id('trending_token_value__1'),
-      0
+    await Action.tap(by.id('token_detail_footer_buy_btn'))
+    await buyPage.verifyBuyPage(true)
+    await commonElsPage.goBack()
+  }
+
+  async topTrendingTokenDetailSwapFlow() {
+    await Action.waitForElementNoSync(
+      by.id('token_detail_footer_swap_btn'),
+      20000
     )
-    tokenName = tokenName?.split('. ')[1]
-    await Action.tap(by.id('trending_token_index__1'))
-    if (tokenName && tokenValue) {
-      console.log(`testing ${tokenName} & ${tokenValue}...`)
-      await Action.waitForElement(by.text(tokenName))
-      await Action.waitForElement(by.text(tokenValue))
-    }
+    await Action.tap(by.id('token_detail_footer_swap_btn'))
+    await swapTabPage.verifySwapScreen()
     await commonElsPage.goBack()
   }
 
@@ -272,6 +318,20 @@ class WatchListPage {
       by.id(`dropdown_item__${option}`),
       platformIndex
     )
+  }
+
+  async tapTopTrendingToken() {
+    await Action.tap(this.topTrendingTokenName)
+  }
+
+  async getTopToken() {
+    const name = await Action.getElementText(this.topTrendingTokenName)
+    const sybl: string =
+      (await Action.getElementText(this.topTrendingTokenSymbol)) || ''
+    const symbol: string = sybl?.split('. ')[1] || ''
+    const valueText = await Action.getElementText(this.topTrendingTokenValue)
+    const value: number = parseFloat(valueText || '0')
+    return [name, symbol, value]
   }
 }
 

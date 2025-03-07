@@ -21,6 +21,7 @@ const BuyScreenStack = (): JSX.Element => {
   return (
     <BuyStack.Navigator
       screenOptions={{
+        headerBackTestID: 'header_back',
         presentation: 'card',
         headerBackTitleVisible: false,
         headerTitleAlign: 'center',

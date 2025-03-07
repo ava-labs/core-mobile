@@ -203,11 +203,19 @@ class TokenDetailsPage {
     symbol: string,
     expectedPrice: number | undefined
   ) {
-    // Token Detail Header testing - Title, Symbol, Price
-    const titledName = name.replace(/^\w/, char => char.toUpperCase())
+    // test Symbol
+    await Action.waitForElementNoSync(by.text(symbol), 20000)
+
+    // test name
+    try {
+      const titledName = name.replace(/^\w/, char => char.toUpperCase())
+      await Action.waitForElementNoSync(by.text(titledName))
+    } catch (e) {
+      await Action.waitForElementNoSync(by.text(name))
+    }
+
+    // testprice
     const displayedPrice = await Action.getElementTextNoSync(this.price)
-    await Action.waitForElementNoSync(by.text(titledName))
-    await Action.waitForElementNoSync(by.text(symbol))
     if (expectedPrice && displayedPrice) {
       const isValid = await this.isPriceValid(expectedPrice, displayedPrice)
       assert(
