@@ -13,7 +13,10 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
-import { isPLocalId, isXLocalId } from 'features/portfolio/utils'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 
 export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
@@ -64,9 +67,9 @@ export const useAssetsFilterAndSort = (): {
             token.localId === 'AvalancheAVAX'
         )
       case AssetNetworkFilter.AvalanchePChain:
-        return filteredTokenList.filter(token => isPLocalId(token.localId))
+        return filteredTokenList.filter(token => isTokenWithBalancePVM(token))
       case AssetNetworkFilter.AvalancheXChain:
-        return filteredTokenList.filter(token => isXLocalId(token.localId))
+        return filteredTokenList.filter(token => isTokenWithBalanceAVM(token))
       case AssetNetworkFilter.Ethereum:
         return filteredTokenList.filter(
           token =>

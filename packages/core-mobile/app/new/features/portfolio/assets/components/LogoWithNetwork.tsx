@@ -6,7 +6,10 @@ import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isTokenMalicious } from 'utils/isTokenMalicious'
-import { isPLocalId, isXLocalId, isXpLocalId } from 'features/portfolio/utils'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { TokenLogo } from './TokenLogo'
 
 interface Props {
@@ -22,20 +25,22 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
   const isMalicious = isTokenMalicious(token)
 
   const shouldShowNetworkLogo =
-    token.type !== TokenType.NATIVE || isXpLocalId(token.localId)
+    token.type !== TokenType.NATIVE ||
+    isTokenWithBalanceAVM(token) ||
+    isTokenWithBalancePVM(token)
 
   const renderNetworkLogo = (
     t: LocalTokenWithBalance,
     n: Network
   ): React.JSX.Element | undefined => {
-    if (isPLocalId(t.localId)) {
+    if (isTokenWithBalancePVM(token)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK width={12} height={12} />
       ) : (
         <Icons.TokenLogos.AVAX_P_LIGHT width={12} height={12} />
       )
     }
-    if (isXLocalId(t.localId)) {
+    if (isTokenWithBalanceAVM(token)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK width={12} height={12} />
       ) : (

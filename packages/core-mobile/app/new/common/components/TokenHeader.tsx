@@ -3,7 +3,10 @@ import { LayoutChangeEvent } from 'react-native'
 import { Text, View, Icons, BalanceLoader, useTheme } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { isPLocalId, isXLocalId } from 'features/portfolio/utils'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
 
 export const TokenHeader = ({
@@ -25,11 +28,12 @@ export const TokenHeader = ({
     theme: { colors }
   } = useTheme()
 
-  const tokenName = isXLocalId(token?.localId)
-    ? 'Avalanche (X-Chain)'
-    : isPLocalId(token?.localId)
-    ? 'Avalanche (P-Chain)'
-    : token?.name
+  const tokenName =
+    token && isTokenWithBalanceAVM(token)
+      ? 'Avalanche (X-Chain)'
+      : token && isTokenWithBalancePVM(token)
+      ? 'Avalanche (P-Chain)'
+      : token?.name
 
   const renderBalance = (): React.JSX.Element => {
     if (isLoading) {

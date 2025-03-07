@@ -1,49 +1,53 @@
-import { FlatList, Image, Separator } from '@avalabs/k2-alpine'
+import { Image, Separator } from '@avalabs/k2-alpine'
 import React, { FC, useCallback, useMemo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
-import { Transaction } from 'store/transaction'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
-import { RefreshControl } from 'common/components/RefreshControl'
+import { Transaction, useGetRecentTransactions } from 'store/transaction'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { DropdownSelection } from 'common/types'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
-import {
-  isXpLocalId,
-  portfolioTabContentHeight
-} from 'features/portfolio/utils'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { DropdownSelections } from 'common/components/DropdownSelections'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
+import { useTokenDetailFilterAndSort } from '../hooks/useTokenDetailFilterAndSort'
 import { XpActivityListItem } from './XpActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
 
 interface Props {
-  data: Transaction[]
-  filter: DropdownSelection
-  sort: DropdownSelection
-  onScroll: (
-    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
-  ) => void
   token?: LocalTokenWithBalance
   handleExplorerLink: (explorerLink: string) => void
-  isLoading: boolean
-  isRefreshing: boolean
-  isError: boolean
-  refresh: () => void
 }
 
-const TokenDetail: FC<Props> = ({
-  data,
-  filter,
-  sort,
-  onScroll,
-  handleExplorerLink,
+const TransactionHistory: FC<Props> = ({
   token,
-  isLoading,
-  isRefreshing,
-  isError,
-  refresh
+  handleExplorerLink
 }): React.JSX.Element => {
+  const { getNetwork } = useNetworks()
+
+  const network = useMemo(() => {
+    return getNetwork(token?.networkChainId)
+  }, [token, getNetwork])
+
+  const { transactions, refresh, isLoading, isRefreshing, isError } =
+    useGetRecentTransactions(network)
+
+  const transactionsBySymbol = useMemo(() => {
+    return transactions.filter(tx => {
+      return (
+        !token?.symbol ||
+        (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol)
+      )
+    })
+  }, [token, transactions])
+
+  const { data, filter, sort } = useTokenDetailFilterAndSort({
+    transactions: transactionsBySymbol
+  })
+
   const dropdowns = useMemo(() => {
     return (
       <DropdownSelections
@@ -54,7 +58,7 @@ const TokenDetail: FC<Props> = ({
     )
   }, [filter, sort])
 
-  const emptyState = useMemo(() => {
+  const emptyComponent = useMemo(() => {
     if (isLoading || isRefreshing) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
@@ -89,7 +93,10 @@ const TokenDetail: FC<Props> = ({
 
   const renderItem = useCallback(
     (item: Transaction, index: number): React.JSX.Element => {
-      const isXpTx = isXpTransaction(item.txType) && isXpLocalId(token?.localId)
+      const isXpTx =
+        isXpTransaction(item.txType) &&
+        token &&
+        (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
 
       const props = {
         tx: item,
@@ -110,26 +117,17 @@ const TokenDetail: FC<Props> = ({
   }
 
   return (
-    <BlurredBarsContentLayout>
-      <FlatList
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
-        }
-        contentContainerStyle={{
-          overflow: 'visible',
-          paddingBottom: 26
-        }}
-        data={data}
-        renderItem={item => renderItem(item.item as Transaction, item.index)}
-        ListHeaderComponent={data.length > 0 ? dropdowns : undefined}
-        ListEmptyComponent={emptyState}
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={renderSeparator}
-      />
-    </BlurredBarsContentLayout>
+    <CollapsibleTabs.FlatList
+      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
+      data={data}
+      renderItem={item => renderItem(item.item, item.index)}
+      ListHeaderComponent={data.length > 0 ? dropdowns : undefined}
+      ListEmptyComponent={emptyComponent}
+      ItemSeparatorComponent={renderSeparator}
+      showsVerticalScrollIndicator={false}
+      keyExtractor={item => item.hash}
+    />
   )
 }
 
-export default TokenDetail
+export default TransactionHistory
