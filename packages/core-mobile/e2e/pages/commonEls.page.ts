@@ -154,6 +154,7 @@ class CommonElsPage {
     } catch (e) {
       await Actions.tapElementAtIndex(this.backButton, 1)
     }
+    await delay(1500)
   }
 
   async tapDropdownItem(item: string, index = 0) {

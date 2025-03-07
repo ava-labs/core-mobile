@@ -7,5 +7,9 @@ export default {
   continueWith: 'Continue with...',
   readCarefully: 'Read Carefully',
   confirm: 'Confirm',
-  cancel: 'Cancel'
+  cancel: 'Cancel',
+  buyAvax: 'Buy AVAX',
+  alert: 'Make sure to buy AVAX native token for transactions',
+  halliday: 'Halliday',
+  hallidayLogo: 'halliday_logo'
 }
