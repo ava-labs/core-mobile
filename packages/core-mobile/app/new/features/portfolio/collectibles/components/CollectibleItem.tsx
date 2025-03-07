@@ -151,7 +151,7 @@ export const CollectibleGridItem = memo(
           style={{
             height,
             marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
-            marginVertical: VERTICAL_ITEM_GAP / 2
+            marginBottom: VERTICAL_ITEM_GAP
           }}>
           <View
             style={{

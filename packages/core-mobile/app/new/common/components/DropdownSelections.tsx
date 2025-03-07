@@ -8,17 +8,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { DropdownSelection } from 'common/types'
 import React from 'react'
 
-export type DropdownSelection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
-
 interface Props {
-  filter?: DropdownSelection
+  filter?: DropdownSelection & { selected: IndexPath | IndexPath[] }
   sort?: DropdownSelection
   view?: DropdownSelection
   sx?: SxProp
@@ -60,8 +54,13 @@ export const DropdownSelections = ({
               </Button>
             }
             sections={filter.data}
-            selectedRows={[filter.selected]}
+            selectedRows={
+              Array.isArray(filter.selected)
+                ? filter.selected
+                : [filter.selected]
+            }
             onSelectRow={filter.onSelected}
+            onDeselectRow={filter?.onDeselect}
             minWidth={250}
           />
         )}

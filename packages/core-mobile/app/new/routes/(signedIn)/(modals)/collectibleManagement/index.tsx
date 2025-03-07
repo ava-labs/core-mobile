@@ -75,21 +75,23 @@ const CollectibleManagementScreen = (): JSX.Element => {
 
       <SearchBar onTextChanged={handleSearch} searchText={searchText} />
 
-      <FlashList
-        keyExtractor={item => `collectibles-manage-${item.uid}`}
-        data={filteredCollectibles}
-        renderItem={renderItem}
-        estimatedItemSize={LIST_ITEM_HEIGHT}
-        ListEmptyComponent={renderEmpty}
-        onRefresh={refetch}
-        onEndReached={onEndReached}
-        refreshing={false}
-        keyboardDismissMode="interactive"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: insets.bottom
-        }}
-      />
+      <View style={{ height: '100%' }}>
+        <FlashList
+          keyExtractor={item => `collectibles-manage-${item.uid}`}
+          data={filteredCollectibles}
+          renderItem={renderItem}
+          estimatedItemSize={LIST_ITEM_HEIGHT}
+          ListEmptyComponent={renderEmpty}
+          onRefresh={refetch}
+          onEndReached={onEndReached}
+          refreshing={isRefetching}
+          keyboardDismissMode="interactive"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom
+          }}
+        />
+      </View>
     </View>
   )
 }

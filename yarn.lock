@@ -307,6 +307,7 @@ __metadata:
     expo-image: 1.10.6
     expo-linear-gradient: 12.7.2
     expo-linking: 6.2.2
+    expo-navigation-bar: 2.8.1
     expo-router: 3.4.10
     expo-status-bar: 1.11.1
     https-browserify: 1.0.0
@@ -18411,6 +18412,18 @@ __metadata:
   dependencies:
     invariant: ^2.2.4
   checksum: 2fce3481b4cd632693e31412844acad84463da7bc7f104ff065295b68623801a3f97f044d7511fec2d125e06ed81e494a1fc6ebd274e2595c015976ec1788fa8
+  languageName: node
+  linkType: hard
+
+"expo-navigation-bar@npm:2.8.1":
+  version: 2.8.1
+  resolution: "expo-navigation-bar@npm:2.8.1"
+  dependencies:
+    "@react-native/normalize-color": ^2.0.0
+    debug: ^4.3.2
+  peerDependencies:
+    expo: "*"
+  checksum: b1081f7bcada49a29f6c21aef466d30a3c45b8e4892c85801514ced8933194785e1b0cb715eb1552b09772431207969ffe9f279da1796b2bd13016336a0f0bbf
   languageName: node
   linkType: hard
 

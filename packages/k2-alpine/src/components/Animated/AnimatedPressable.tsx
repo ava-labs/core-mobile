@@ -25,7 +25,10 @@ export const AnimatedPressable = memo(
     const opacity = useSharedValue(1)
     const scale = useSharedValue(1)
     const isScrolling = useRef(false)
-    const touchStartY = useRef(0)
+    const touchStartPosition = useRef({
+      x: 0,
+      y: 0
+    })
 
     const throttledOnPress = throttle(
       event => {
@@ -55,7 +58,10 @@ export const AnimatedPressable = memo(
     }
 
     const onTouchStart = (event: GestureResponderEvent): void => {
-      touchStartY.current = event.nativeEvent.pageY
+      touchStartPosition.current = {
+        x: event.nativeEvent.pageX,
+        y: event.nativeEvent.pageY
+      }
       isScrolling.current = false
 
       if (isScrolling.current) {
@@ -65,8 +71,13 @@ export const AnimatedPressable = memo(
     }
 
     const onTouchMove = (event: GestureResponderEvent): void => {
-      const moveY = Math.abs(event.nativeEvent.pageY - touchStartY.current)
-      if (moveY > SCROLL_THRESHOLD) {
+      const moveY = Math.abs(
+        event.nativeEvent.pageY - touchStartPosition.current.y
+      )
+      const moveX = Math.abs(
+        event.nativeEvent.pageX - touchStartPosition.current.x
+      )
+      if (moveY > SCROLL_THRESHOLD || moveX > SCROLL_THRESHOLD) {
         isScrolling.current = true
       }
     }

@@ -1,6 +1,8 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { IndexPath } from '@avalabs/k2-alpine'
+import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import {
   COLLECTIBLE_FILTERS,
@@ -8,33 +10,30 @@ import {
   COLLECTIBLE_VIEWS,
   CollectibleNetworkFilter,
   CollectibleSort,
+  CollectibleStatus,
   CollectibleTypeFilter
 } from 'store/balance'
 import { NftContentType, NFTItem } from 'store/nft'
+import { isCollectibleVisible } from 'store/nft/utils'
+import { selectCollectibleVisibility } from 'store/portfolio'
 
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath | IndexPath[]
-  onSelected: (index: IndexPath) => void
-  onDeselect?: (index: IndexPath) => void
-}
-
-export const useFilterAndSort = (
+export const useCollectiblesFilterAndSort = (
   collectibles: NFTItem[]
 ): {
   filteredAndSorted: NFTItem[]
-  filter: Selection
-  sort: Selection
-  view: Selection
+  filter: DropdownSelection & { selected: IndexPath[] }
+  sort: DropdownSelection
+  view: DropdownSelection
   onResetFilter: () => void
 } => {
+  const collectiblesVisibility = useSelector(selectCollectibleVisibility)
   const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<IndexPath>(
     {
       section: 0,
       row: 0
     }
   )
+
   const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
     useState<IndexPath>({
       section: 0,
@@ -45,6 +44,7 @@ export const useFilterAndSort = (
     section: 0,
     row: 2
   })
+
   const [selectedView, setSelectedView] = useState<IndexPath>({
     section: 0,
     row: 0
@@ -54,7 +54,7 @@ export const useFilterAndSort = (
     return [
       COLLECTIBLE_FILTERS?.[selectedNetworkFilter.section]?.[
         selectedNetworkFilter.row
-      ] ?? CollectibleNetworkFilter.AllNetworks,
+      ] ?? undefined,
       COLLECTIBLE_FILTERS?.[selectedContentTypeFilter.section]?.[
         selectedContentTypeFilter.row
       ] ?? undefined
@@ -68,16 +68,25 @@ export const useFilterAndSort = (
     )
   }, [selectedSort])
 
-  const filter: Selection = useMemo(
+  const filter = useMemo(
     () => ({
       title: 'Filter',
       data: COLLECTIBLE_FILTERS,
       selected: [selectedNetworkFilter, selectedContentTypeFilter],
       onSelected: (value: IndexPath) => {
-        if (value.section === 0) setSelectedNetworkFilter(value)
-        else if (value.section === 1) setSelectedContentTypeFilter(value)
+        if (value.section === 0) {
+          setSelectedNetworkFilter(value)
+        } else if (value.section === 1) {
+          setSelectedContentTypeFilter(value)
+        }
       },
       onDeselect: (value: IndexPath) => {
+        if (value.section === 0) {
+          setSelectedNetworkFilter({
+            section: 0,
+            row: 0
+          })
+        }
         if (value.section === 1)
           setSelectedContentTypeFilter({
             section: 0,
@@ -169,10 +178,16 @@ export const useFilterAndSort = (
       if (nfts.length === 0) {
         return []
       }
-      const filteredNetworks = getFilteredNetworks(nfts)
+      const filteredByHidden = nfts.filter((nft: NFTItem) => {
+        if (filterOption[1] !== CollectibleStatus.Hidden) {
+          return isCollectibleVisible(collectiblesVisibility, nft)
+        }
+        return true
+      })
+      const filteredNetworks = getFilteredNetworks(filteredByHidden)
       return getFilteredContentType(filteredNetworks)
     },
-    [getFilteredNetworks, getFilteredContentType]
+    [getFilteredNetworks, getFilteredContentType, collectiblesVisibility]
   )
 
   const getSorted = useCallback(
@@ -210,7 +225,7 @@ export const useFilterAndSort = (
 
   return {
     filteredAndSorted,
-    filter,
+    filter: filter as DropdownSelection & { selected: IndexPath[] },
     sort,
     view,
     onResetFilter

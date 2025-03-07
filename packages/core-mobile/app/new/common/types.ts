@@ -3,7 +3,7 @@ import { IndexPath } from '@avalabs/k2-alpine'
 export type DropdownSelection = {
   title: string
   data: string[][]
-  selected: IndexPath | IndexPath[]
+  selected: IndexPath
   onSelected: (index: IndexPath) => void
   onDeselect?: (index: IndexPath) => void
 }

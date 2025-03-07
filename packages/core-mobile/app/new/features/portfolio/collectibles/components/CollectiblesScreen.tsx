@@ -10,12 +10,12 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { RefreshControl } from 'components/RefreshControl'
-import { AssetsHeader } from 'features/portfolio/assets/components/AssetsHeader'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { memo, ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, useWindowDimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 
+import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import {
   ASSET_MANAGE_VIEWS,
@@ -30,7 +30,7 @@ import {
   LIST_ITEM_HEIGHT,
   VERTICAL_ITEM_GAP
 } from '../consts'
-import { useFilterAndSort } from '../hooks/useFilterAndSort'
+import { useCollectiblesFilterAndSort } from '../hooks/useCollectiblesFilterAndSort'
 import { CardContainer } from './CardContainer'
 import { CollectibleItem } from './CollectibleItem'
 
@@ -59,8 +59,7 @@ export const CollectiblesScreen = ({
   }, [setNftsLoadEnabled])
 
   const { filter, view, sort, filteredAndSorted, onResetFilter } =
-    useFilterAndSort(collectibles)
-
+    useCollectiblesFilterAndSort(collectibles)
   const listType = view.data[0]?.[view.selected.row] as CollectibleView
   const columns =
     listType === CollectibleView.CompactGrid
@@ -68,9 +67,12 @@ export const CollectiblesScreen = ({
       : listType === CollectibleView.LargeGrid
       ? 2
       : 1
-
   const estimatedItemSize =
-    listType === CollectibleView.ListView ? LIST_ITEM_HEIGHT : 190
+    listType === CollectibleView.ListView
+      ? LIST_ITEM_HEIGHT
+      : listType === CollectibleView.CompactGrid
+      ? 120
+      : 190
 
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
@@ -105,7 +107,7 @@ export const CollectiblesScreen = ({
       )
 
     if (
-      filter.selected instanceof Array &&
+      Array.isArray(filter.selected) &&
       (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
     )
       return (
@@ -151,12 +153,11 @@ export const CollectiblesScreen = ({
         style={[
           {
             alignSelf: 'center',
-            marginBottom: 8,
             width: dimensions.width - HORIZONTAL_MARGIN * 2,
             zIndex: 10
           }
         ]}>
-        <AssetsHeader
+        <DropdownSelections
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}
@@ -166,7 +167,10 @@ export const CollectiblesScreen = ({
   }, [dimensions.width, filter, handleManageList, sort, view])
 
   return (
-    <View style={{ flex: 1, position: 'relative' }}>
+    <View
+      style={{
+        height: '100%'
+      }}>
       <CollapsibleTabs.MasonryList
         data={filteredAndSorted}
         extraData={{
@@ -177,29 +181,28 @@ export const CollectiblesScreen = ({
         key={`collectibles-list-${listType}`}
         keyExtractor={(item: NFTItem) => `collectibles-list-${item.uid}`}
         renderItem={renderItem}
-        numColumns={columns}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={filteredAndSorted?.length > 0}
-        removeClippedSubviews={Platform.OS === 'android'}
         ListEmptyComponent={renderEmpty}
         ListHeaderComponent={renderHeader}
-        estimatedItemSize={estimatedItemSize}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.8}
         ListFooterComponent={renderLoadingMore}
-        refreshControl={
-          <RefreshControl onRefresh={onRefresh} refreshing={isRefetching} />
-        }
+        numColumns={columns}
         style={{
           overflow: 'visible'
         }}
         contentContainerStyle={{
-          padding: filteredAndSorted?.length
+          paddingHorizontal: filteredAndSorted?.length
             ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
             : 0,
-          paddingTop: HORIZONTAL_MARGIN + 4,
           paddingBottom: HORIZONTAL_MARGIN
         }}
+        scrollEnabled={filteredAndSorted?.length > 0}
+        estimatedItemSize={estimatedItemSize}
+        removeClippedSubviews={Platform.OS === 'android'}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.8}
+        refreshControl={
+          <RefreshControl onRefresh={onRefresh} refreshing={isRefetching} />
+        }
+        showsVerticalScrollIndicator={false}
       />
     </View>
   )
@@ -217,7 +220,7 @@ const EmptyCollectibles = memo((): JSX.Element => {
         flexDirection: 'row',
         gap: HORIZONTAL_MARGIN,
         padding: HORIZONTAL_MARGIN,
-        paddingTop: 8
+        paddingTop: 0
       }}>
       <View
         style={{

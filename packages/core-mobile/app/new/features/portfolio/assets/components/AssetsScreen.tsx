@@ -120,8 +120,7 @@ const AssetsScreen: FC<Props> = ({
     return (
       <View
         sx={{
-          paddingHorizontal: 16,
-          marginBottom: 16
+          paddingHorizontal: 16
         }}>
         <DropdownSelections
           filter={filter}
@@ -136,7 +135,6 @@ const AssetsScreen: FC<Props> = ({
     <CollapsibleTabs.FlatList
       contentContainerStyle={{
         overflow: 'visible',
-        paddingTop: 16 + 4,
         paddingBottom: 16
       }}
       data={data}
