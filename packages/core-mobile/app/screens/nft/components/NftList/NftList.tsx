@@ -1,36 +1,20 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
-import { NFTItem } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useNftItemsContext } from 'contexts/NFTItemsContext'
-import { FetchingNextIndicator } from '../FetchingNextIndicator'
+import { useNftItemsContext } from 'contexts/NftItemsContext'
+import { NftItem } from 'services/nft/types'
 import { NftListLoader } from './NftListLoader'
 import { ListItem } from './ListItem'
 
 type Props = {
-  onItemSelected: (item: NFTItem) => void
+  onItemSelected: (item: NftItem) => void
 }
 
 export const NftList = ({ onItemSelected }: Props): JSX.Element => {
-  const {
-    filteredNftItems,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isNftsLoading,
-    isNftsRefetching,
-    refetchNfts
-  } = useNftItemsContext()
-
-  const onEndReached = useCallback(
-    ({ distanceFromEnd }: { distanceFromEnd: number }) => {
-      if (distanceFromEnd > 0 && hasNextPage && !isFetchingNextPage)
-        fetchNextPage()
-    },
-    [fetchNextPage, hasNextPage, isFetchingNextPage]
-  )
+  const { filteredNftItems, isNftsLoading, isNftsRefetching, refetchNfts } =
+    useNftItemsContext()
 
   if (isNftsLoading)
     return (
@@ -44,15 +28,10 @@ export const NftList = ({ onItemSelected }: Props): JSX.Element => {
       testID="nft_list_view"
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.8}
       data={filteredNftItems}
       ListEmptyComponent={<ZeroState.Collectibles />}
-      keyExtractor={item => item.uid}
+      keyExtractor={item => item.tokenId}
       ItemSeparatorComponent={Separator}
-      ListFooterComponent={
-        <FetchingNextIndicator isVisible={isFetchingNextPage} />
-      }
       renderItem={info =>
         renderItem({
           item: info.item,
@@ -71,8 +50,8 @@ const renderItem = ({
   item,
   onItemSelected
 }: {
-  item: NFTItem
-  onItemSelected: (item: NFTItem) => void
+  item: NftItem
+  onItemSelected: (item: NftItem) => void
 }): JSX.Element => {
   return (
     <ListItem testID="nft_item" item={item} onItemSelected={onItemSelected} />

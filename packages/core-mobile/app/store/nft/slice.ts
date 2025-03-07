@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { NftUID } from 'services/nft/types'
+import { NftLocalId } from 'services/nft/types'
 import { RootState } from 'store'
 
 import { initialState } from './types'
@@ -13,21 +13,21 @@ export const nftSlice = createSlice({
     setHidden: (
       state,
       action: PayloadAction<{
-        tokenUid: NftUID
+        localId: NftLocalId
       }>
     ) => {
-      const { tokenUid } = action.payload
-      if (state.hiddenNfts[tokenUid]) {
-        delete state.hiddenNfts[tokenUid]
+      const { localId } = action.payload
+      if (state.hiddenNfts[localId]) {
+        delete state.hiddenNfts[localId]
       } else {
-        state.hiddenNfts[tokenUid] = true
+        state.hiddenNfts[localId] = true
       }
     }
   }
 })
 
 // selectors
-export const selectHiddenNftUIDs = (
+export const selectHiddenNftLocalIds = (
   state: RootState
 ): Record<string, boolean> => state.nft.hiddenNfts
 
