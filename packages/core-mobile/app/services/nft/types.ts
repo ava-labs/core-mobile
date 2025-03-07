@@ -1,26 +1,37 @@
-import { NFTItemData, NftResponse } from 'store/nft'
+import { NftTokenWithBalance } from '@avalabs/vm-module-types'
+import { NftContentType } from 'store/nft'
 
-export type NftUID = string
+export type NftLocalId = string
 
-export interface NftProvider {
-  isProviderFor(chainId: number): Promise<boolean>
+export type NftImageData = {
+  aspect: number
+  isSvg: boolean
+  image?: string
+  video?: string
+  type: NftContentType
+}
 
-  fetchNfts(
-    chainId: number,
-    address: string,
-    pageToken?:
-      | {
-          erc1155?: string
-          erc721?: string
-        }
-      | string
-  ): Promise<NftResponse>
+export type UnprocessedNftItem = NftTokenWithBalance & {
+  localId: string // address + tokenId
+}
 
-  fetchNft(
-    chainId: number,
-    address: string,
-    tokenId: string
-  ): Promise<NFTItemData>
+export type NftItem = UnprocessedNftItem & {
+  imageData?: NftImageData
+  processedMetadata?: NftItemExternalData
+}
 
-  reindexNft(address: string, chainId: number, tokenId: string): Promise<void>
+export type NftItemExternalData = {
+  name: string
+  image: string
+  image_256: string
+  attributes: NftItemExternalDataAttribute[]
+  description: string
+  external_url: string
+  animation_url: string | null
+}
+
+export type NftItemExternalDataAttribute = {
+  trait_type: string
+  value: string
+  percentOwned: number
 }

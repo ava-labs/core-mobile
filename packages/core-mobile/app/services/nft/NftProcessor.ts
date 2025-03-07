@@ -1,16 +1,15 @@
 import { Image } from 'react-native'
-import { NFTItemExternalData, NFTImageData, NftContentType } from 'store/nft'
-import { HttpClient } from '@avalabs/core-utils-sdk'
+import { NFTItemExternalData, NftContentType } from 'store/nft'
 import Logger from 'utils/Logger'
+import { NftImageData, NftItemExternalData } from './types'
 import { convertIPFSResolver } from './utils'
 
 export class NftProcessor {
   private base64 = require('base-64')
   private base64Prefix = 'data:image/svg+xml;base64,'
-  private metadataHttpClient = new HttpClient(``, {})
 
-  fetchImageAndAspect(imageData: string): Promise<NFTImageData> {
-    return new Promise<NFTImageData>(resolve => {
+  fetchImageAndAspect(imageData: string): Promise<NftImageData> {
+    return new Promise<NftImageData>(resolve => {
       if (this.isBase64Svg(imageData)) {
         const svg = this.decodeBase64Svg(imageData)
         const trimmed = this.removeSvgNamespace(svg)
@@ -172,14 +171,13 @@ export class NftProcessor {
       const metadata = JSON.parse(
         Buffer.from(base64Metadata, 'base64').toString()
       )
-      return metadata as NFTItemExternalData
+      return metadata as NftItemExternalData
     } else {
       const ipfsPath = convertIPFSResolver(tokenUri)
-      const metadata: NFTItemExternalData = await this.metadataHttpClient.get(
-        ipfsPath
-      )
 
-      return metadata
+      const response = await fetch(ipfsPath)
+
+      return await response.json()
     }
   }
 }

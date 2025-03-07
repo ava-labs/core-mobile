@@ -137,6 +137,7 @@ describe('validate evm send', () => {
   describe('validate ERC1155 send', () => {
     const mockERC1155TokenWithBalance: NftTokenWithBalance = {
       ...convertNativeToTokenWithBalance(tokenWithBalance),
+      balance: 10n,
       type: TokenType.ERC1155,
       address: mockActiveAccount.addressC,
       tokenId: '1',
@@ -157,6 +158,17 @@ describe('validate evm send', () => {
     })
     it('should succeed when all requirements met', async () => {
       validateERC1155(mockERC1155TokenWithBalance, mockNativeTokenWithBalance)
+    })
+
+    it('should fail for insufficient balance', async () => {
+      expect(() =>
+        validateERC1155(
+          { ...mockERC1155TokenWithBalance, balance: 0n },
+          {
+            ...mockNativeTokenWithBalance
+          }
+        )
+      ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
     })
 
     it('should fail for insufficient balance for network fee', async () => {

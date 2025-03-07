@@ -28,11 +28,9 @@ export const validateERC1155 = (
   token: TokenWithBalanceEVM,
   nativeToken: NetworkTokenWithBalance
 ): void => {
-  // TODO: uncomment this after migrating vm-module's nft balance fetching
-  // https://ava-labs.atlassian.net/browse/CP-9276
-  // if (token.balance === 0n) {
-  //   throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
-  // }
+  if (token.balance === 0n) {
+    throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
+  }
 
   if (nativeToken.balance === 0n) {
     throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)

@@ -1,19 +1,13 @@
-import {
-  Erc1155TokenBalance,
-  Erc721TokenBalance,
-  Erc721TokenMetadata,
-  Erc1155TokenMetadata
-} from '@avalabs/glacier-sdk'
-import { NftUID } from 'services/nft/types'
+import { NftLocalId } from 'services/nft/types'
 
 export const initialState = {
   hiddenNfts: {}
 } as NftState
 
 export type NftState = {
-  hiddenNfts: Record<NftUID, boolean>
-  nfts: Record<NftUID, NFTItemData>
+  hiddenNfts: Record<NftLocalId, boolean>
 }
+<<<<<<< HEAD
 
 export type NftTokenTypes = Erc721TokenBalance | Erc1155TokenBalance
 
@@ -75,3 +69,5 @@ export type NftPageParam =
       erc721?: string
     }
   | string
+=======
+>>>>>>> main
