@@ -39,7 +39,7 @@ export const MarketGridView = memo(
     onPress: () => void
     formattedPrice: string
     formattedPriceChange: string
-    formattedPercentChange: string
+    formattedPercentChange?: string
     status: PriceChangeStatus
     isFavorite?: boolean
   }): React.JSX.Element => {

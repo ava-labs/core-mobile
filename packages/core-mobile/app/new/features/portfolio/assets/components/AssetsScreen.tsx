@@ -32,7 +32,7 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { data, filter, sort, view } = useAssetsFilterAndSort()
 
-  const { refetch, filteredTokenList } = useSearchableTokenList({})
+  const { refetch } = useSearchableTokenList({})
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
@@ -72,7 +72,7 @@ const AssetsScreen: FC<Props> = ({
   }
 
   const renderSeparator = (): JSX.Element => {
-    return <Space y={isGridView ? 16 : 10} />
+    return <Space y={isGridView ? 12 : 10} />
   }
 
   const emptyComponent = useMemo(() => {
@@ -93,28 +93,20 @@ const AssetsScreen: FC<Props> = ({
       )
     }
 
-    if (filteredTokenList.length === 0) {
-      return (
-        <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
-          icon={
-            <Image
-              source={require('../../../../assets/icons/unamused_emoji.png')}
-              sx={{ width: 42, height: 42 }}
-            />
-          }
-          title="No Assets yet"
-          description="Add your crypto tokens to track your portfolio’s performance and stay updated on your investments"
-        />
-      )
-    }
-  }, [
-    isBalanceLoading,
-    isRefetchingBalance,
-    filteredTokenList,
-    refetch,
-    isAllBalancesInaccurate
-  ])
+    return (
+      <ErrorState
+        sx={{ height: portfolioTabContentHeight }}
+        icon={
+          <Image
+            source={require('../../../../assets/icons/unamused_emoji.png')}
+            sx={{ width: 42, height: 42 }}
+          />
+        }
+        title="No Assets yet"
+        description="Add your crypto tokens to track your portfolio’s performance and stay updated on your investments"
+      />
+    )
+  }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])
 
   const header = useMemo(() => {
     return (
@@ -137,7 +129,7 @@ const AssetsScreen: FC<Props> = ({
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}
-      ListHeaderComponent={header}
+      ListHeaderComponent={data.length > 0 ? header : undefined}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
@@ -146,8 +138,7 @@ const AssetsScreen: FC<Props> = ({
       columnWrapperStyle={
         isGridView && {
           paddingHorizontal: 16,
-          justifyContent: 'space-between',
-          gap: 16
+          justifyContent: 'space-between'
         }
       }
     />

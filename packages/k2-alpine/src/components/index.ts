@@ -26,5 +26,6 @@ export * from './Animated/AnimatedPressable'
 export * from './SearchBar/SearchBar'
 export * from './Header/BalanceHeaderLoader'
 export * from './Chart/MiniChart'
+export * from './Chip/Chip'
 
 export * from './PriceChangeIndicator/types'

@@ -44,7 +44,10 @@ export const TokenHeader = ({
             alignItems: 'flex-end',
             gap: 4
           }}>
-          <Text variant="heading2" sx={{ lineHeight: 38 }}>
+          <Text
+            variant="heading2"
+            sx={{ lineHeight: 38, flexShrink: 1 }}
+            numberOfLines={1}>
             {token?.balanceDisplayValue ?? UNKNOWN_AMOUNT}
           </Text>
           <Text

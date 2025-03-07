@@ -31,6 +31,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const { localId } = useLocalSearchParams<{
     localId: string
   }>()
+
   const { filteredTokenList } = useSearchableTokenList({})
 
   const token = useMemo(() => {

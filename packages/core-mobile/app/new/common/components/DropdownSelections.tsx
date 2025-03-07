@@ -1,11 +1,8 @@
 import {
-  Button,
-  getTintColor,
-  Icons,
+  Chip,
   IndexPath,
   SimpleDropdown,
   SxProp,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import React from 'react'
@@ -30,9 +27,6 @@ export const DropdownSelections = ({
   view,
   sx
 }: Props): React.JSX.Element => {
-  const { theme } = useTheme()
-  const tintColor = getTintColor('secondary', theme, false)
-
   return (
     <View
       sx={{
@@ -46,18 +40,9 @@ export const DropdownSelections = ({
         {filter && (
           <SimpleDropdown
             from={
-              <Button
-                size="small"
-                type="secondary"
-                hitSlop={8}
-                rightIcon={
-                  <Icons.Custom.ArrowDown
-                    style={{ marginLeft: 5 }}
-                    color={tintColor}
-                  />
-                }>
+              <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
                 {filter.title}
-              </Button>
+              </Chip>
             }
             sections={filter.data}
             selectedRows={[filter.selected]}
@@ -68,18 +53,9 @@ export const DropdownSelections = ({
         {sort && (
           <SimpleDropdown
             from={
-              <Button
-                size="small"
-                type="secondary"
-                hitSlop={8}
-                rightIcon={
-                  <Icons.Custom.ArrowDown
-                    style={{ marginLeft: 5 }}
-                    color={tintColor}
-                  />
-                }>
+              <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
                 {sort.title}
-              </Button>
+              </Chip>
             }
             sections={sort.data}
             selectedRows={[sort.selected]}
@@ -91,9 +67,9 @@ export const DropdownSelections = ({
       {view && (
         <SimpleDropdown
           from={
-            <Button size="small" type="secondary" hitSlop={8}>
+            <Chip size="large" hitSlop={8}>
               {view.title}
-            </Button>
+            </Chip>
           }
           sections={view.data}
           selectedRows={[view.selected]}

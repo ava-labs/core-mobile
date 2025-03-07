@@ -49,7 +49,7 @@ export const DeFiScreen = (): JSX.Element => {
 
   const handlePressDeFiItem = (item: DeFiSimpleProtocol): void => {
     navigate({
-      pathname: '/portfolio/defiDetail',
+      pathname: '/defiDetail',
       params: { protocolId: item.id }
     })
     AnalyticsService.capture('DeFiCardClicked')
@@ -140,7 +140,7 @@ export const DeFiScreen = (): JSX.Element => {
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}
-      ListHeaderComponent={header}
+      ListHeaderComponent={data.length > 0 ? header : undefined}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
