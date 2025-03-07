@@ -165,30 +165,38 @@ const TrackHomeScreen = (): JSX.Element => {
     return [
       {
         tabName: TrackHomeScreenTab.Trending,
-        component: showSearchResults ? (
-          renderSearchResults()
-        ) : (
-          <TrendingScreen />
-        )
+        component:
+          showSearchResults && selectedSegmentIndex === 0 ? (
+            renderSearchResults()
+          ) : (
+            <TrendingScreen />
+          )
       },
       {
         tabName: TrackHomeScreenTab.Favorites,
-        component: showSearchResults ? (
-          renderSearchResults()
-        ) : (
-          <FavoriteScreen goToMarketDetail={handleGotoMarketDetail} />
-        )
+        component:
+          showSearchResults && selectedSegmentIndex === 1 ? (
+            renderSearchResults()
+          ) : (
+            <FavoriteScreen goToMarketDetail={handleGotoMarketDetail} />
+          )
       },
       {
         tabName: TrackHomeScreenTab.Market,
-        component: showSearchResults ? (
-          renderSearchResults()
-        ) : (
-          <MarketScreen goToMarketDetail={handleGotoMarketDetail} />
-        )
+        component:
+          showSearchResults && selectedSegmentIndex === 2 ? (
+            renderSearchResults()
+          ) : (
+            <MarketScreen goToMarketDetail={handleGotoMarketDetail} />
+          )
       }
     ]
-  }, [handleGotoMarketDetail, renderSearchResults, showSearchResults])
+  }, [
+    handleGotoMarketDetail,
+    renderSearchResults,
+    selectedSegmentIndex,
+    showSearchResults
+  ])
 
   return (
     <BlurredBarsContentLayout>
