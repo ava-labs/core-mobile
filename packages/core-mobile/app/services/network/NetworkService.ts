@@ -13,7 +13,6 @@ import {
 } from '@avalabs/core-chains-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
 import { ChainID, Networks } from 'store/network/types'
@@ -21,6 +20,8 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { DebankNetwork } from 'services/network/types'
 import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
+import { SpanName } from 'services/sentry/types'
+import { HyperSDKClient } from 'hypersdk-client'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -54,7 +55,10 @@ class NetworkService {
   async getProviderForNetwork(
     network: Network
   ): Promise<
-    JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
+    | JsonRpcBatchInternal
+    | BitcoinProvider
+    | Avalanche.JsonRpcProvider
+    | HyperSDKClient
   > {
     const module = await ModuleManager.loadModuleByNetwork(network)
     return module.getProvider(network)
@@ -63,17 +67,17 @@ class NetworkService {
   async sendTransaction({
     signedTx,
     network,
-    sentryTrx,
+    sentrySpanName,
     handleWaitToPost
   }: {
     signedTx: string | avaxSerial.SignedTx
     network: Network
-    sentryTrx?: Transaction
+    sentrySpanName?: SpanName
     handleWaitToPost?: (txResponse: TransactionResponse) => void
   }): Promise<string> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.network.send_transaction')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      { name: sentrySpanName, contextName: 'svc.network.send_transaction' },
+      async () => {
         if (!network) {
           throw new Error('No active network')
         }
@@ -101,7 +105,8 @@ class NetworkService {
         }
 
         return txID
-      })
+      }
+    )
   }
 
   /**

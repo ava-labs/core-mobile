@@ -6,8 +6,7 @@ index 9ae7d20..6a7a34e 100644
  import "fast-text-encoding";
  
  // Polyfill crypto.getRandomvalues
--import "react-native-get-random-values";
-+// import "react-native-get-random-values";
+ import "react-native-get-random-values";
  
  // Polyfill URL()
 -import "react-native-url-polyfill/auto";

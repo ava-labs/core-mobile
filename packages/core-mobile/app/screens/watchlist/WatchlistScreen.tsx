@@ -47,7 +47,7 @@ const Content = (): React.JSX.Element => {
   const { searchText } = useWatchlistContext()
   const [tabIndex, setTabIndex] = useState(0)
 
-  const renderCustomLabel = (title: string, focused: boolean): JSX.Element => {
+  const renderLabel = (title: string, focused: boolean): JSX.Element => {
     return <CustomLabel focused={focused} title={title} />
   }
 
@@ -63,7 +63,7 @@ const Content = (): React.JSX.Element => {
         </>
       ) : (
         <TabViewAva
-          renderCustomLabel={renderCustomLabel}
+          renderLabel={renderLabel}
           currentTabIndex={tabIndex}
           onTabIndexChange={setTabIndex}>
           <TabViewAva.Item title={'Trending'}>

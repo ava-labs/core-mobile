@@ -5,7 +5,9 @@
     "module": "esnext",
     "baseUrl": "./app",
     "paths": {
-      "tests/*": ["../tests/*"]
+      "tests/*": [
+        "../tests/*"
+      ]
     }
   },
   "include": [
@@ -17,7 +19,13 @@
     ".eslintrc.js",
     "jest.config.js",
     ".prettierrc.js",
-    "../k2-mobile/src/theme.d.ts"
+    "../k2-mobile/src/theme.d.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ],
-  "exclude": ["node_modules", "./e2e/artifacts/*", "./ios/DerivedData"]
+  "exclude": [
+    "node_modules",
+    "./e2e/artifacts/*",
+    "./ios/DerivedData"
+  ]
 }
