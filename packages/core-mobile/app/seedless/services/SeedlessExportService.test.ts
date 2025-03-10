@@ -63,14 +63,14 @@ describe('SeedlessExportService', () => {
 
   it('userExportComplete', async () => {
     await expect(
-      service.userExportComplete('key_id', 'pub_key')
+      service.userExportComplete('key_id', 'pub_key' as unknown as CryptoKey)
     ).resolves.toEqual(TEST_RESPONSE)
   })
 
   it('userExportDecrypt - should fail with missing mnemonic', async () => {
     mockUserExportDecrypt.mockResolvedValue({})
     await expect(
-      service.userExportDecrypt('mock_private_key', {
+      service.userExportDecrypt('mock_private_key' as unknown as CryptoKey, {
         encrypted_key_material: 'abc',
         ephemeral_public_key: 'def',
         user_id: '1'
@@ -81,7 +81,7 @@ describe('SeedlessExportService', () => {
   it('userExportDecrypt - should succeed with mnemonic', async () => {
     mockUserExportDecrypt.mockResolvedValue({ mnemonic: 'mock_mnemonic' })
     const exportDecrypted = await service.userExportDecrypt(
-      'mock_private_key',
+      'mock_private_key' as unknown as CryptoKey,
       {
         encrypted_key_material: 'abc',
         ephemeral_public_key: 'def',

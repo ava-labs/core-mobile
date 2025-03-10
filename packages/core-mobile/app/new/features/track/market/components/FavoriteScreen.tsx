@@ -1,43 +1,41 @@
 import React, { useMemo } from 'react'
+import { Image } from '@avalabs/k2-alpine'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { LoadingState } from 'common/components/LoadingState'
-import { ErrorState } from 'common/components/ErrorState'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { ErrorState } from 'common/components/ErrorState'
 import { Dimensions } from 'react-native'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
-const MarketScreen = ({
+const FavoriteScreen = ({
   goToMarketDetail
 }: {
   goToMarketDetail: (tokenId: string) => void
 }): JSX.Element => {
-  const {
-    topTokens,
-    prices,
-    charts,
-    isRefetchingTopTokens,
-    isLoadingTopTokens,
-    refetchTopTokens
-  } = useWatchlist()
+  const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
-  const { data, sort, view } = useTrackSortAndView(topTokens, prices)
+  const { data, sort, view } = useTrackSortAndView(favorites, prices)
 
   const emptyComponent = useMemo(() => {
-    if (isLoadingTopTokens || isRefetchingTopTokens) {
+    if (isLoadingFavorites) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
     return (
       <ErrorState
         sx={{ height: contentHeight }}
-        button={{
-          title: 'Refresh',
-          onPress: refetchTopTokens
-        }}
+        icon={
+          <Image
+            source={require('../../../../assets/icons/star_struck_emoji.png')}
+            sx={{ width: 42, height: 42 }}
+          />
+        }
+        title="No favorite tokens"
+        description="Star any token to add it to this screen"
       />
     )
-  }, [isRefetchingTopTokens, isLoadingTopTokens, refetchTopTokens])
+  }, [isLoadingFavorites])
 
   return (
     <MarketTokensScreen
@@ -53,4 +51,4 @@ const MarketScreen = ({
 
 const contentHeight = Dimensions.get('window').height / 2
 
-export default MarketScreen
+export default FavoriteScreen

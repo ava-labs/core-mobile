@@ -1,29 +1,37 @@
 import * as Sentry from '@sentry/react-native'
-import { CustomSamplingContext, Transaction } from '@sentry/types'
-import { Span } from 'services/sentry/Span'
-import { TransactionName } from 'services/sentry/types'
+import { OpName, SpanName } from 'services/sentry/types'
 
 class SentryWrapper {
   private sampleRate = DefaultSampleRate
 
-  public setSampleRate(rate: number) {
+  public setSampleRate(rate: number): void {
     if (!isNaN(rate)) {
       this.sampleRate = rate
     }
   }
 
-  public startTransaction(name: TransactionName): Transaction {
-    return Sentry.startTransaction({ name, op: name }, {
-      sampleRate: this.sampleRate
-    } as CustomSamplingContext)
-  }
+  public startSpan<T>(
+    props: { name?: SpanName; contextName?: OpName },
+    callback: (span?: Sentry.Span) => T
+  ): T {
+    if (props.name === undefined) {
+      return callback(undefined)
+    }
 
-  public finish(transaction: Transaction) {
-    transaction.finish()
-  }
+    if (props.contextName !== undefined) {
+      Sentry.setContext(props.contextName, null)
+    }
 
-  public createSpanFor(sentryTrx?: Transaction): Span {
-    return new Span(sentryTrx)
+    return Sentry.startSpan(
+      {
+        name: props.name,
+        op: props.name,
+        attributes: {
+          'sentry.sample_rate': this.sampleRate
+        }
+      },
+      callback
+    )
   }
 }
 

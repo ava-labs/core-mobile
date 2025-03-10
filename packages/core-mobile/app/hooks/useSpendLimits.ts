@@ -111,7 +111,7 @@ export const useSpendLimits = (
       const hashed =
         limitAmount &&
         contract.methods
-          .approve(spendLimit.tokenApproval.spenderAddress, limitAmount)
+          .approve?.(spendLimit.tokenApproval.spenderAddress, limitAmount)
           .encodeABI()
 
       setHashedCustomSpend(hashed)

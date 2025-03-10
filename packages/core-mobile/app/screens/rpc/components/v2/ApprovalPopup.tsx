@@ -43,6 +43,7 @@ import { validateFee } from 'screens/send/utils/evm/validate'
 import NetworkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
@@ -204,10 +205,18 @@ const ApprovalPopup = (): JSX.Element => {
 
     while (attempts <= MAX_ATTEMPTS) {
       const [result, error] = await resolve(
-        GaslessService.fundTx(signingData, addressFrom, provider)
+        GaslessService.fundTx({
+          signingData,
+          addressFrom,
+          maxFeePerGas,
+          provider
+        })
       )
 
       if (result?.txHash) {
+        AnalyticsService.capture('GaslessFundSuccessful', {
+          fundTxHash: result?.txHash
+        })
         setGaslessError(null)
         return result.txHash
       }
@@ -220,6 +229,8 @@ const ApprovalPopup = (): JSX.Element => {
         (result?.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
+        AnalyticsService.capture('GaslessFundFailed')
+        Logger.error(`[ApprovalPopup.tsx][handleGaslessTx]${error}`)
         showGaslessError()
         setSubmitting(false)
         return undefined
@@ -582,19 +593,19 @@ const ApprovalPopup = (): JSX.Element => {
           {renderSpendLimits()}
           {renderBalanceChange()}
           {renderGasless()}
-          {renderNetworkFeeSelector()}
-          {renderDisclaimer()}
           {amountError && (
             <Text
               variant="body2"
               sx={{
                 color: '$dangerMain',
                 maxWidth: '55%',
-                marginTop: 8
+                marginVertical: 8
               }}>
               {amountError}
             </Text>
           )}
+          {renderNetworkFeeSelector()}
+          {renderDisclaimer()}
         </ScrollView>
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
