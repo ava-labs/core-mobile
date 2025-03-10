@@ -2,7 +2,6 @@ import React, { memo, useCallback } from 'react'
 import { GestureResponderEvent, PressableProps } from 'react-native'
 import { Pressable } from 'dripsy'
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -28,14 +27,10 @@ export const AnimatedPressable = memo(
       scale.value = withSpring(ANIMATED.SCALE, ANIMATED.SPRING_CONFIG)
     }
 
-    const onPressOut = (event: GestureResponderEvent): void => {
+    const onPressOut = (): void => {
       'worklet'
       opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
-      scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
-        if (onPress) {
-          runOnJS(onPressEvent)(event)
-        }
-      })
+      scale.value = withSpring(1, ANIMATED.SPRING_CONFIG)
     }
 
     const throttledOnPress = throttle(
@@ -67,6 +62,7 @@ export const AnimatedPressable = memo(
       <AnimatedPress
         onPressIn={onPressIn}
         onPressOut={onPressOut}
+        onPress={onPressEvent}
         {...props}
         style={[props.style, animatedStyle]}>
         {children}

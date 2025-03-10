@@ -144,7 +144,7 @@ export const SearchBar: FC<Props> = ({
           backgroundColor: colors.$surfaceSecondary,
           flexDirection: 'row',
           paddingHorizontal: 12,
-          marginVertical: Platform.OS === 'ios' ? 11 : 0
+          marginVertical: 11
         }}>
         <View
           sx={{

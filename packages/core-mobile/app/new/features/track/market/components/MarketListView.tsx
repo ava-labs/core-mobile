@@ -30,7 +30,7 @@ export const MarketListView = memo(
     index: number
     formattedPrice: string
     formattedPriceChange: string
-    formattedPercentChange: string
+    formattedPercentChange?: string
     status: PriceChangeStatus
     onPress: () => void
   }) => {

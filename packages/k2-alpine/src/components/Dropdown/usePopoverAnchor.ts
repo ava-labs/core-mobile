@@ -16,8 +16,8 @@ export const usePopoverAnchor = (
   const showPopover = (): void => {
     if (sourceRef.current) {
       // eslint-disable-next-line max-params
-      sourceRef.current.measureInWindow((x, y, width, height) => {
-        setAnchorRect(new Rect(x, y, width, height))
+      sourceRef.current.measure((_x, _y, width, height, pageX, pageY) => {
+        setAnchorRect(new Rect(pageX, pageY, width, height))
       })
     }
   }

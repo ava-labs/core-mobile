@@ -6,8 +6,6 @@ import {
   ASSET_NETWORK_FILTERS,
   AssetBalanceSort,
   AssetNetworkFilter,
-  AVAX_P_ID,
-  AVAX_X_ID,
   LocalTokenWithBalance
 } from 'store/balance'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
@@ -15,6 +13,10 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 
 export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
@@ -65,9 +67,9 @@ export const useAssetsFilterAndSort = (): {
             token.localId === 'AvalancheAVAX'
         )
       case AssetNetworkFilter.AvalanchePChain:
-        return filteredTokenList.filter(token => token.localId === AVAX_P_ID)
+        return filteredTokenList.filter(token => isTokenWithBalancePVM(token))
       case AssetNetworkFilter.AvalancheXChain:
-        return filteredTokenList.filter(token => token.localId === AVAX_X_ID)
+        return filteredTokenList.filter(token => isTokenWithBalanceAVM(token))
       case AssetNetworkFilter.Ethereum:
         return filteredTokenList.filter(
           token =>
@@ -114,7 +116,8 @@ export const useAssetsFilterAndSort = (): {
       title: 'Sort',
       data: ASSET_BALANCE_SORTS,
       selected: selectedSort,
-      onSelected: setSelectedSort
+      onSelected: setSelectedSort,
+      useAnchorRect: true
     },
     view: {
       title: 'View',

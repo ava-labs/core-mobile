@@ -2,8 +2,11 @@ import React from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Text, View, Icons, BalanceLoader, useTheme } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { AVAX_P_ID, AVAX_X_ID } from 'store/balance'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
 
 export const TokenHeader = ({
@@ -26,9 +29,9 @@ export const TokenHeader = ({
   } = useTheme()
 
   const tokenName =
-    token?.localId === AVAX_X_ID
+    token && isTokenWithBalanceAVM(token)
       ? 'Avalanche (X-Chain)'
-      : token?.localId === AVAX_P_ID
+      : token && isTokenWithBalancePVM(token)
       ? 'Avalanche (P-Chain)'
       : token?.name
 
@@ -44,7 +47,10 @@ export const TokenHeader = ({
             alignItems: 'flex-end',
             gap: 4
           }}>
-          <Text variant="heading2" sx={{ lineHeight: 38 }}>
+          <Text
+            variant="heading2"
+            sx={{ lineHeight: 38, flexShrink: 1 }}
+            numberOfLines={1}>
             {token?.balanceDisplayValue ?? UNKNOWN_AMOUNT}
           </Text>
           <Text

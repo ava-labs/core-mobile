@@ -40,6 +40,7 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { useRouter } from 'expo-router'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { Platform } from 'react-native'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -68,7 +69,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const currencyBalance =
     !balanceAccurate && balanceTotalInCurrency === 0
-      ? UNKNOWN_AMOUNT
+      ? '$' + UNKNOWN_AMOUNT
       : currencyFormatter(balanceTotalInCurrency)
 
   const formattedBalance = currencyBalance.replace(selectedCurrency, '')
@@ -103,9 +104,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [balanceTotalInCurrency, totalPriceChanged])
 
   const formattedPercent =
-    (isNaN(totalPriceChangedInPercent)
-      ? UNKNOWN_AMOUNT
-      : totalPriceChangedInPercent.toFixed(2)) + '%'
+    isNaN(totalPriceChangedInPercent) || totalPriceChangedInPercent === 0
+      ? undefined
+      : totalPriceChangedInPercent.toFixed(2) + '%'
 
   const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
@@ -146,7 +147,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
             style={[
               {
                 paddingBottom: 16,
-                backgroundColor: theme.colors.$surfacePrimary
+                backgroundColor: theme.colors.$surfacePrimary,
+                marginTop: Platform.OS === 'ios' ? 24 : 8
               },
               animatedHeaderStyle
             ]}>
@@ -183,7 +185,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleGoToTokenDetail = useCallback(
     (localId: string): void => {
-      navigate(`/portfolio/tokenDetail?localId=${localId}`)
+      navigate({ pathname: '/tokenDetail', params: { localId } })
     },
     [navigate]
   )
