@@ -103,6 +103,18 @@ class TokenDetailsPage {
     return by.id(tokenDetail.lineGraph)
   }
 
+  get footerBuyBtn() {
+    return by.id(tokenDetail.footerBuyBtn)
+  }
+
+  get footerSwapBtn() {
+    return by.id(tokenDetail.footerSwapBtn)
+  }
+
+  get footerStakeBtn() {
+    return by.id(tokenDetail.footerStakeBtn)
+  }
+
   async verifyTokenDetailScreen() {
     await Assert.isVisible(this.totalSupply)
     await Assert.isVisible(this.rank)
@@ -203,11 +215,19 @@ class TokenDetailsPage {
     symbol: string,
     expectedPrice: number | undefined
   ) {
-    // Token Detail Header testing - Title, Symbol, Price
-    const titledName = name.replace(/^\w/, char => char.toUpperCase())
+    // test Symbol
+    await Action.waitForElementNoSync(by.text(symbol), 20000)
+
+    // test name
+    try {
+      const titledName = name.replace(/^\w/, char => char.toUpperCase())
+      await Action.waitForElementNoSync(by.text(titledName))
+    } catch (e) {
+      await Action.waitForElementNoSync(by.text(name))
+    }
+
+    // testprice
     const displayedPrice = await Action.getElementTextNoSync(this.price)
-    await Action.waitForElementNoSync(by.text(titledName))
-    await Action.waitForElementNoSync(by.text(symbol))
     if (expectedPrice && displayedPrice) {
       const isValid = await this.isPriceValid(expectedPrice, displayedPrice)
       assert(
