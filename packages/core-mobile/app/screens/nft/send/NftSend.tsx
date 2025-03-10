@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
-import { Image } from 'expo-image'
+import FastImage from 'react-native-fast-image'
 import { Text, Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
@@ -244,7 +244,7 @@ const CollectibleItem = ({ nft }: { nft: NftItem }): JSX.Element => {
             />
           </View>
         ) : (
-          <Image
+          <FastImage
             style={[styles.nftImage, { width, height: height }]}
             source={{ uri: nft.imageData?.image }}
           />
