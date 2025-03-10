@@ -77,10 +77,10 @@ export const CollectibleListItem = memo(
         <Pressable
           style={{
             height,
-            marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
             flexDirection: 'row',
             alignItems: 'center',
-            gap: HORIZONTAL_ITEM_GAP
+            gap: HORIZONTAL_ITEM_GAP,
+            marginHorizontal: HORIZONTAL_ITEM_GAP / 2
           }}>
           <CardContainer
             style={{

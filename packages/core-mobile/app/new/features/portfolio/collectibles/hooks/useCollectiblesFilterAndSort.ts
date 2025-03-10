@@ -133,8 +133,6 @@ export const useCollectiblesFilterAndSort = (
                 collectible.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
                 collectible.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
           )
-        case AssetNetworkFilter.BitcoinNetwork:
-          return items.filter(collectible => collectible.symbol === 'BTC')
         default:
           return items
       }

@@ -3,7 +3,10 @@ import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
 import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
 import { CollectibleManagementItem } from 'features/portfolio/collectibles/components/CollectibleManagementItem'
-import { LIST_ITEM_HEIGHT } from 'features/portfolio/collectibles/consts'
+import {
+  HORIZONTAL_MARGIN,
+  LIST_ITEM_HEIGHT
+} from 'features/portfolio/collectibles/consts'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -51,14 +54,14 @@ const CollectibleManagementScreen = (): JSX.Element => {
     <View
       sx={{
         flex: 1,
-        gap: 16,
-        paddingHorizontal: 16
+        gap: 16
       }}>
       <View
         sx={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          paddingHorizontal: HORIZONTAL_MARGIN
         }}>
         <Text variant="heading2">Manage list</Text>
       </View>

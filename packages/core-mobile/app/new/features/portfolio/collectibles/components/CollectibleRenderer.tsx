@@ -21,7 +21,7 @@ export const CollectibleRenderer = ({
   collectible: NftItem
   children?: ReactNode
   style?: ViewStyle
-}): JSX.Element | JSX.Element[] => {
+}): ReactNode => {
   const {
     theme: { colors, isDark }
   } = useTheme()

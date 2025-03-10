@@ -25,19 +25,23 @@ export const All = (): JSX.Element => {
           alignItems: 'center'
         }}>
         <Text variant="heading6">Video</Text>
-        <Video
-          source="https://www.w3schools.com/html/mov.mp4"
-          style={{
-            width: 200,
-            height: 200
-          }}
-          onLoadEnd={(): void => {
-            return
-          }}
-          onError={(): void => {
-            return
-          }}
-        />
+        <View>
+          <Video
+            source="https://www.w3schools.com/html/mov_bbb.mp4"
+            style={{
+              width: 200,
+              height: 200
+            }}
+            autoPlay
+            muted
+            onLoadEnd={(): void => {
+              return
+            }}
+            onError={(): void => {
+              return
+            }}
+          />
+        </View>
       </ScrollView>
     </View>
   )

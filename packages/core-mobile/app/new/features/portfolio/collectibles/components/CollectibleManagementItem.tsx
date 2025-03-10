@@ -10,7 +10,11 @@ import {
   selectCollectibleVisibility,
   toggleCollectibleVisibility
 } from 'store/portfolio'
-import { getGridCardHeight, HORIZONTAL_ITEM_GAP } from '../consts'
+import {
+  getGridCardHeight,
+  HORIZONTAL_ITEM_GAP,
+  HORIZONTAL_MARGIN
+} from '../consts'
 import { CardContainer } from './CardContainer'
 import { CollectibleRenderer } from './CollectibleRenderer'
 
@@ -48,7 +52,7 @@ export const CollectibleManagementItem = ({
     <Pressable
       style={{
         height,
-        marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
+        marginHorizontal: HORIZONTAL_MARGIN,
         flexDirection: 'row',
         alignItems: 'center',
         gap: HORIZONTAL_ITEM_GAP
@@ -62,11 +66,11 @@ export const CollectibleManagementItem = ({
         <CollectibleRenderer collectible={collectible} />
       </CardContainer>
       <View
-        style={{
+        sx={{
           flex: 1,
           height: '100%',
           borderBottomWidth: 0.5,
-          borderColor: isDark ? alpha('#CCCCCC', 0.2) : '#CCCCCC',
+          borderColor: '$borderPrimary',
           alignItems: 'center',
           flexDirection: 'row',
           gap: HORIZONTAL_ITEM_GAP

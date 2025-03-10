@@ -29,6 +29,7 @@ export class NftProcessor {
             } else if (type === NftContentType.MP4) {
               resolve({
                 video: imageUrl,
+                image: '',
                 aspect: 1,
                 isSvg: false,
                 type

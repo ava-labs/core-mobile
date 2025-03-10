@@ -6,7 +6,7 @@ export type NftLocalId = string
 export type NftImageData = {
   aspect: number
   isSvg: boolean
-  image?: string
+  image: string
   video?: string
   type: NftContentType
 }

@@ -3,11 +3,7 @@ import { Pressable } from 'dripsy'
 import { Image } from 'expo-image'
 import { VideoView, VideoViewProps, useVideoPlayer } from 'expo-video'
 import { useEffect, useState } from 'react'
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-  withTiming
-} from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { TIMING_CONFIG } from '../../utils'
 import { View } from '../Primitives'
 
@@ -16,12 +12,16 @@ export const Video = ({
   thumbnail,
   hideControls,
   onLoadEnd,
+  autoPlay,
+  muted,
   onError,
   ...props
 }: {
   source: string
   thumbnail?: string
   hideControls?: boolean
+  muted?: boolean
+  autoPlay?: boolean
   onLoadEnd: () => void
   onError: () => void
 } & Omit<VideoViewProps, 'player'>): JSX.Element => {
@@ -29,18 +29,8 @@ export const Video = ({
 
   const player = useVideoPlayer(source, videoPlayer => {
     videoPlayer.loop = true
-  })
-
-  const playButtonStyle = useAnimatedStyle(() => {
-    const scale = withSpring(isPlaying ? 0.8 : 1, {
-      mass: 0.5,
-      damping: 15
-    })
-
-    return {
-      // opacity,
-      transform: [{ scale }]
-    }
+    videoPlayer.muted = muted ?? false
+    if (autoPlay) videoPlayer.play()
   })
 
   const thumbnailStyle = useAnimatedStyle(() => {
@@ -78,7 +68,6 @@ export const Video = ({
   return (
     <View
       style={{
-        flex: 1,
         position: 'relative',
         justifyContent: 'center',
         alignItems: 'center'
@@ -109,16 +98,14 @@ export const Video = ({
         </Animated.View>
       )}
       {hideControls ? null : (
-        <Animated.View style={[{ position: 'absolute' }, playButtonStyle]}>
+        <View
+          style={[
+            { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
+          ]}>
           <Pressable
             onPress={togglePlay}
             style={{
-              width: 30,
-              height: 30,
-              borderRadius: 30,
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              alignItems: 'center',
-              justifyContent: 'center'
+              flex: 1
             }}>
             {/* <Ionicons
             name={isPlaying ? 'pause' : 'play'}
@@ -126,7 +113,7 @@ export const Video = ({
             color="white"
           /> */}
           </Pressable>
-        </Animated.View>
+        </View>
       )}
     </View>
   )
