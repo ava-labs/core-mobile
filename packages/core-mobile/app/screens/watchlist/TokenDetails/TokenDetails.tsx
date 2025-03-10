@@ -184,6 +184,7 @@ const TokenDetails: FC = () => {
   const renderActionButtons = useCallback(() => {
     const buyButton = (
       <Button
+        testID="token_detail_footer_buy_btn"
         type={'primary'}
         size={'xlarge'}
         onPress={() => {
@@ -199,6 +200,7 @@ const TokenDetails: FC = () => {
 
     const stakeButton = (
       <Button
+        testID="token_detail_footer_stake_btn"
         type={'primary'}
         size={'xlarge'}
         onPress={() => {
@@ -214,6 +216,7 @@ const TokenDetails: FC = () => {
 
     const generateSwapButton = (initialTokenIdTo?: string): JSX.Element => (
       <Button
+        testID="token_detail_footer_swap_btn"
         type={'primary'}
         size={'xlarge'}
         onPress={() => {

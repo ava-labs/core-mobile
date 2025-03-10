@@ -92,7 +92,7 @@ const WatchListItem: FC<Props> = ({
             variant="heading6"
             ellipsizeMode={'tail'}
             numberOfLines={1}
-            testID={`trending_token_index__${index + 1}`}
+            testID={`trending_token_symbol__${index + 1}`}
             style={{ width: '100%' }}>
             {`${index + 1}. ${symbol.toUpperCase()}`}
           </Text>
@@ -101,6 +101,7 @@ const WatchListItem: FC<Props> = ({
         titleAlignment={'flex-start'}
         subtitle={
           <Text
+            testID={`trending_token_name__${index + 1}`}
             variant="body2"
             ellipsizeMode={'tail'}
             numberOfLines={1}
@@ -114,7 +115,12 @@ const WatchListItem: FC<Props> = ({
         }
         embedInCard={false}
         rightComponentMaxWidth={RIGHT_COMPONENT_MAX_WIDTH_FOR_TRENDING}
-        leftComponent={<TokenLogo token={token} testID={testID} />}
+        leftComponent={
+          <TokenLogo
+            token={token}
+            testID={`trending_token_logo__${index + 1}`}
+          />
+        }
         rightComponent={
           <PriceAndBuyButton
             token={token}
@@ -321,6 +327,7 @@ const PriceAndBuyButton = ({
       </View>
       <View style={{ marginLeft: 8 }}>
         <Button
+          testID={`${testID}_buy_btn`}
           type={'secondary'}
           size={'small'}
           style={{ paddingVertical: 6 }}

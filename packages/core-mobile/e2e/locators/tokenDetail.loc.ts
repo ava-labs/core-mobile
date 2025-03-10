@@ -21,5 +21,8 @@ export default {
   holdAndDrag: 'Hold and Drag',
   holdAndDragContent: 'Hold and drag over chart for precise price and date',
   gotItBtn: 'Got it',
-  lineGraph: 'line_graph'
+  lineGraph: 'line_graph',
+  footerBuyBtn: 'token_detail_footer_buy_btn',
+  footerSwapBtn: 'token_detail_footer_swap_btn',
+  footerStakeBtn: 'token_detail_footer_stake_btn'
 }
