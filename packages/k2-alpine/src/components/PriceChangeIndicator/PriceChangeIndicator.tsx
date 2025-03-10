@@ -11,18 +11,22 @@ import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedText } from '../Animated/AnimatedText'
 import { View } from '../Primitives'
+import { K2AlpineTheme } from '../../theme/theme'
 import { PriceChange, PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
   formattedPrice,
   status,
   formattedPercent,
-  textVariant = 'buttonSmall'
+  textVariant = 'buttonSmall',
+  overrideTheme
 }: PriceChange & {
   textVariant?: 'buttonMedium' | 'buttonSmall'
   testID?: string
+  overrideTheme?: K2AlpineTheme
 }): JSX.Element => {
-  const { theme } = useTheme()
+  const { theme: defaultTheme } = useTheme()
+  const theme = overrideTheme ?? defaultTheme
   const signIndicator =
     status === PriceChangeStatus.Up
       ? '+'
@@ -113,8 +117,8 @@ export const PriceChangeIndicator = ({
             sx={{
               color:
                 status === PriceChangeStatus.Neutral
-                  ? '$textSecondary'
-                  : '$textPrimary'
+                  ? theme.colors.$textSecondary
+                  : theme.colors.$textPrimary
             }}
           />
         )}

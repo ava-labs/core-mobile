@@ -13,7 +13,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -43,6 +43,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const navigation = useNavigation()
+  const { navigate } = useRouter()
   const headerOpacity = useSharedValue(1)
   const selectedDataIndicatorOpacity = useDerivedValue(
     () => 1 - headerOpacity.value
@@ -168,6 +169,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     // })
   }
 
+  const handleShare = useCallback(() => {
+    navigate({ pathname: '/trackTokenDetail/share', params: { tokenId } })
+  }, [navigate, tokenId])
+
   const marketData = useMemo(() => {
     const data: GroupListItem[] = []
 
@@ -267,10 +272,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           alignItems: 'center'
         }}>
         <FavoriteBarButton isFavorite={isFavorite} onPress={handleFavorite} />
-        <ShareBarButton />
+        <ShareBarButton onPress={handleShare} />
       </View>
     )
-  }, [isFavorite, handleFavorite])
+  }, [isFavorite, handleFavorite, handleShare])
 
   useEffect(() => {
     headerOpacity.value = withTiming(isChartInteracting ? 0 : 1, {

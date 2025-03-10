@@ -53,7 +53,7 @@ export const TokenHeader = ({
         }
 
   return (
-    <View onLayout={onLayout}>
+    <View sx={{}} onLayout={onLayout}>
       {logoUri !== undefined && (
         <TokenLogo symbol={symbol} logoUri={logoUri} size={42} />
       )}

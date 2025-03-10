@@ -374,6 +374,7 @@ __metadata:
     react-native-safe-area-context: 4.11.0
     react-native-screens: 3.34.0
     react-native-sensors: 7.3.6
+    react-native-share: 12.0.9
     react-native-sound: 0.11.2
     react-native-svg: 15.7.1
     react-native-svg-transformer: 1.5.0
@@ -27336,6 +27337,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-share@npm:12.0.9":
+  version: 12.0.9
+  resolution: "react-native-share@npm:12.0.9"
+  checksum: 837e7162d3e9b44bb225029d08abebc9b064c4dee54ebad5bbe017fba5c9f1be02451dd87d96f937d79bfe2b2e6424cb638ec469cdafb33b4a7d4ef069bfa60a
+  languageName: node
+  linkType: hard
+
 "react-native-sound@npm:0.11.2":
   version: 0.11.2
   resolution: "react-native-sound@npm:0.11.2"
@@ -27451,7 +27459,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 

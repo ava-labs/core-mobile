@@ -54,6 +54,7 @@ import IconSearch from '../../assets/icons/search.svg'
 import IconRedExclamation from '../../assets/icons/red_exclamation.svg'
 import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 import IconLayer from '../../assets/icons/layer.svg'
+import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -185,7 +186,8 @@ export const Icons = {
     ChevronRightV2: IconChevronRightV2,
     ChevronRight: IconChevronRight,
     Check: IconCheck,
-    ExpandMore: IconExpandMore
+    ExpandMore: IconExpandMore,
+    MoreHoriz: IconMoreHoriz
   },
   Notification: {
     Sync: IconSync
