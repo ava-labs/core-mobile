@@ -103,7 +103,7 @@ export const CollectibleListItem = memo(
                   flex: 1
                 }}>
                 <Text variant="buttonMedium" numberOfLines={1}>
-                  {collectible.name.length ? collectible.name : 'ID'}
+                  {collectible.name.length ? collectible.name : 'Untitled'}
                 </Text>
                 <Text
                   variant="subtitle2"
@@ -112,8 +112,10 @@ export const CollectibleListItem = memo(
                     color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
                   }}>
                   {collectible.collectionName.length
-                    ? collectible.collectionName
-                    : 'Name'}
+                    ? ['Unknown', 'Unkown'].includes(collectible.collectionName)
+                      ? 'Unknown Collection'
+                      : collectible.collectionName
+                    : 'Unknown Collection'}
                 </Text>
               </View>
 
@@ -190,7 +192,9 @@ const Pill = ({ text }: { text: string }): ReactNode => {
         paddingLeft: 8,
         flexDirection: 'row',
         alignItems: 'center',
-        maxWidth: 100
+        maxWidth: 100,
+        minWidth: 30,
+        justifyContent: 'center'
       }}>
       <Text
         variant="buttonSmall"
