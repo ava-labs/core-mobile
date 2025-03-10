@@ -116,7 +116,8 @@ export const useAssetsFilterAndSort = (): {
       title: 'Sort',
       data: ASSET_BALANCE_SORTS,
       selected: selectedSort,
-      onSelected: setSelectedSort
+      onSelected: setSelectedSort,
+      useAnchorRect: true
     },
     view: {
       title: 'View',

@@ -1,18 +1,17 @@
 import {
   Chip,
-  IndexPath,
   SimpleDropdown,
   SxProp,
+  usePopoverAnchor,
   View
 } from '@avalabs/k2-alpine'
-import React from 'react'
+import { DropdownSelection } from 'common/types'
+import React, { useRef } from 'react'
+import { TouchableOpacity } from 'react-native'
 
-export type DropdownSelection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
+const SEPARATOR_HEIGHT = 1
+const POPOVER_HEIGHT = 40
+const POPOVER_WIDTH = 250
 
 interface Props {
   filter?: DropdownSelection
@@ -27,6 +26,71 @@ export const DropdownSelections = ({
   view,
   sx
 }: Props): React.JSX.Element => {
+  const sortRef = useRef<TouchableOpacity>(null)
+
+  const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
+    usePopoverAnchor(sortRef)
+
+  const renderSortOption = (): React.JSX.Element | undefined => {
+    if (sort === undefined) return
+
+    if (sort.useAnchorRect === true) {
+      const numberOfItems = sort.data[0]?.length ?? 2
+      const separatorHeight = (numberOfItems - 1) * SEPARATOR_HEIGHT
+      const displayAreaHeight = numberOfItems * POPOVER_HEIGHT + separatorHeight
+
+      return (
+        <>
+          <Chip
+            ref={sortRef}
+            size="large"
+            hitSlop={8}
+            rightIcon={'expandMore'}
+            onPress={onShowPopover}>
+            {sort.title}
+          </Chip>
+          <SimpleDropdown
+            displayArea={
+              anchorRect
+                ? {
+                    x: anchorRect.x,
+                    y: anchorRect.y + anchorRect.height,
+                    width: POPOVER_WIDTH,
+                    height: displayAreaHeight
+                  }
+                : undefined
+            }
+            isVisible={isPopoverVisible}
+            onRequestClose={onHidePopover}
+            sections={sort.data}
+            selectedRows={[sort.selected]}
+            onSelectRow={sort.onSelected}
+            minWidth={POPOVER_WIDTH}
+          />
+        </>
+      )
+    }
+
+    return (
+      <SimpleDropdown
+        from={
+          <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+            {sort.title}
+          </Chip>
+        }
+        sections={sort.data}
+        selectedRows={[sort.selected]}
+        onSelectRow={sort.onSelected}
+        minWidth={POPOVER_WIDTH}
+      />
+    )
+  }
+
+  // const handleFilterLayout = (event: LayoutChangeEvent): void => {
+  //   console.log('filterRef.current.measure')
+  //   setFilterLayout(event.nativeEvent.layout)
+  // }
+
   return (
     <View
       sx={{
@@ -47,22 +111,10 @@ export const DropdownSelections = ({
             sections={filter.data}
             selectedRows={[filter.selected]}
             onSelectRow={filter.onSelected}
-            minWidth={250}
+            minWidth={POPOVER_WIDTH}
           />
         )}
-        {sort && (
-          <SimpleDropdown
-            from={
-              <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-                {sort.title}
-              </Chip>
-            }
-            sections={sort.data}
-            selectedRows={[sort.selected]}
-            onSelectRow={sort.onSelected}
-            minWidth={250}
-          />
-        )}
+        {renderSortOption()}
       </View>
       {view && (
         <SimpleDropdown
