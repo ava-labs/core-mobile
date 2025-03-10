@@ -39,13 +39,36 @@ class BuyPage {
     return by.text(buyLoc.cancel)
   }
 
-  async verifyBuyPage() {
-    await Actions.waitForElement(this.buyTitle)
+  get buyAvaxTitle() {
+    return by.text(buyLoc.buyAvax)
+  }
+
+  get buyAlert() {
+    return by.text(buyLoc.alert)
+  }
+
+  get halliday() {
+    return by.text(buyLoc.halliday)
+  }
+
+  get hallidayLogo() {
+    return by.id(buyLoc.hallidayLogo)
+  }
+
+  async verifyBuyPage(isWatchlistFlow = false) {
+    if (isWatchlistFlow) {
+      await Actions.waitForElementNoSync(this.buyAvaxTitle)
+      await Actions.waitForElementNoSync(this.buyAlert)
+    } else {
+      await Actions.waitForElement(this.buyTitle)
+    }
     await assertions.isVisible(this.continueWith)
     await assertions.isVisible(this.moonPay)
     await assertions.isVisible(this.moonPayLogo)
     await assertions.isVisible(this.coinbasePay)
     await assertions.isVisible(this.coinbasePayLogo)
+    await assertions.isVisible(this.halliday)
+    await assertions.isVisible(this.hallidayLogo)
   }
 
   async tapMoonPay() {
