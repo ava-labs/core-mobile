@@ -290,7 +290,7 @@ __metadata:
     "@zodios/core": 10.9.6
     assert: 2.1.0
     asyncstorage-down: 4.2.0
-    axios: 1.7.7
+    axios: 1.8.2
     babel-jest: 29.7.0
     babel-loader: 9.2.1
     babel-plugin-inline-dotenv: 1.7.0
@@ -13524,14 +13524,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.7.7":
-  version: 1.7.7
-  resolution: "axios@npm:1.7.7"
+"axios@npm:1.8.2":
+  version: 1.8.2
+  resolution: "axios@npm:1.8.2"
   dependencies:
     follow-redirects: ^1.15.6
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
-  checksum: 882d4fe0ec694a07c7f5c1f68205eb6dc5a62aecdb632cc7a4a3d0985188ce3030e0b277e1a8260ac3f194d314ae342117660a151fabffdc5081ca0b5a8b47fe
+  checksum: c47a43b79a058aa9e53a65bec9ade35c9f6e76a3999c795a79a2d205fb5f803fd4245497a0209a9727cbbe4f558791dd852ad2c168c5fc030259c11598ed8fd7
   languageName: node
   linkType: hard
 
@@ -26791,7 +26791,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
+  checksum: c66f3bab27cd848abd6694eb0c18d89677ec0e29d7163148b3cf3158091c0a4e5281dcb66a918f5829309127b9b405324f3a6ad706d06a8ab7a32e2311d41d77
   languageName: node
   linkType: hard
 
