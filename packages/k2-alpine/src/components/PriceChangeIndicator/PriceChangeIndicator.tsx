@@ -11,6 +11,7 @@ import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedText } from '../Animated/AnimatedText'
 import { View, Text } from '../Primitives'
+import { K2AlpineTheme } from '../../theme/theme'
 import { PriceChange, PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
@@ -18,13 +19,16 @@ export const PriceChangeIndicator = ({
   status,
   formattedPercent,
   textVariant = 'buttonSmall',
-  animated = false
+  animated = false,
+  overrideTheme
 }: PriceChange & {
   textVariant?: 'buttonMedium' | 'buttonSmall'
   animated?: boolean
   testID?: string
+  overrideTheme?: K2AlpineTheme
 }): JSX.Element => {
-  const { theme } = useTheme()
+  const { theme: defaultTheme } = useTheme()
+  const theme = overrideTheme ?? defaultTheme
 
   const tintColor =
     status === PriceChangeStatus.Down
