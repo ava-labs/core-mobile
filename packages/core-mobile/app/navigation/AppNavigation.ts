@@ -258,6 +258,11 @@ enum SettingRecoveryMethodsScreens {
   RemovePasskeyConfirmation = 'SettingRecoveryMethodsScreens.RemovePasskeyConfirmation'
 }
 
+enum DebugScreens {
+  Menu = 'DebugScreens.Menu',
+  DeviceInfo = 'DebugScreens.DeviceInfo'
+}
+
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
@@ -286,7 +291,8 @@ const AppNavigation = {
   SendFeedback: SendFeedbackScreens,
   RecoveryMethods: RecoveryMethodsScreens,
   SeedlessExport: SeedlessExportScreens,
-  SettingRecoveryMethods: SettingRecoveryMethodsScreens
+  SettingRecoveryMethods: SettingRecoveryMethodsScreens,
+  Debug: DebugScreens
 }
 
 export default AppNavigation

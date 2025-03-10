@@ -33,6 +33,7 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
 import { ProposalTypes } from '@walletconnect/types'
+import { DebugStackParamList } from 'debug/navigation/DebugStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -355,3 +356,7 @@ export type SettingRecoveryMethodsScreenProps<
   StackScreenProps<SettingRecoveryMethodsStackParamList, T>,
   SecurityPrivacyScreenProps<keyof SecurityStackParamList>
 >
+
+/** ROOT -> DEBUG **/
+export type DebugScreenProps<T extends keyof DebugStackParamList> =
+  StackScreenProps<DebugStackParamList, T>
