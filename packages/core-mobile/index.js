@@ -2,9 +2,9 @@ import {
   AppRegistry,
   Text,
   TextInput,
+  LogBox,
   Platform,
-  UIManager,
-  LogBox
+  UIManager
 } from 'react-native'
 import './polyfills'
 import Big from 'big.js'
@@ -15,7 +15,7 @@ import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import { AppSwitcher } from './AppSwitcher'
-import { name as appName } from './app.json'
+import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
 
 if (__DEV__) {
@@ -63,7 +63,7 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 AppCheckService.init()
 FCMService.listenForMessagesBackground()
 
-AppRegistry.registerComponent(appName, () => AppEntryPoint)
+AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen({

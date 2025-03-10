@@ -28,7 +28,7 @@ function App(): JSX.Element {
 
   const handleNavigationReady = useCallback(() => {
     routeNameRef.current = navigationRef.current?.getCurrentRoute?.()?.name
-    SentryService.routingInstrumentation.registerNavigationContainer(
+    SentryService.navigationIntegration.registerNavigationContainer(
       navigationRef
     )
     DataDogService.init(navigationRef).catch(Logger.error)

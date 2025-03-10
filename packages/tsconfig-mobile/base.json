@@ -8,7 +8,7 @@
       "experimentalDecorators": true,
       "isolatedModules": true,
       "jsx": "react",
-      "lib": ["es7", "ES2021.String"],
+      "lib": ["DOM", "ESNext"],
       "skipLibCheck": true,
       "moduleResolution": "node",
       "noEmit": true,

@@ -26,7 +26,7 @@ workflows:
         - set_java_version: "17"
     - install-missing-android-tools@3:
         inputs:
-        - ndk_version: 25.1.8937393
+        - ndk_version: 26.1.10909125
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
     - android-build@1:
@@ -72,7 +72,7 @@ workflows:
         - set_java_version: "17"
     - install-missing-android-tools@3:
         inputs:
-        - ndk_version: 25.1.8937393
+        - ndk_version: 26.1.10909125
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
     - script-runner@0:
@@ -149,7 +149,7 @@ workflows:
         - set_java_version: "17"
     - install-missing-android-tools@3:
         inputs:
-        - ndk_version: 25.1.8937393
+        - ndk_version: 26.1.10909125
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
     - script-runner@0:
@@ -308,7 +308,7 @@ workflows:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
   _install-and-set-env:
     before_run:
-    - _install-node-18
+    - _install-node-20
     steps:
     - restore-cache@1:
         title: Restore NPM Cache
@@ -342,23 +342,23 @@ workflows:
           title: Trigger iOS Internal Build
           inputs:
             - file_path: packages/core-mobile/scripts/bitrise/triggerIosInternalBuild.sh
-  _install-node-18:
+  _install-node-20:
     steps:
     - restore-cache@1:
-        title: Restore Node 18 Cache
+        title: Restore Node 20 Cache
         inputs:
-        - key: node-18-{{ .OS }}-{{ .Arch }}
+        - key: node-20-{{ .OS }}-{{ .Arch }}
     - nvm@1:
         inputs:
-        - node_version: 18.14.1
+        - node_version: 20.11.1
     - save-cache@1:
-        title: Save Node 18 Cache
+        title: Save Node 20 Cache
         inputs:
         - paths: |-
             /Users/vagrant/.nvm/*
             /root/.nvm/*
         - is_key_unique: "true"
-        - key: node-18-{{ .OS }}-{{ .Arch }}
+        - key: node-20-{{ .OS }}-{{ .Arch }}
   _run_android_core_web_tests:
     steps:
     - script-runner@0:

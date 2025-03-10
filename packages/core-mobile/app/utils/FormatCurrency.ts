@@ -21,30 +21,31 @@ export function formatCurrency({
   currency,
   boostSmallNumberPrecision,
   notation
-}: FormatCurrencyProps) {
+}: FormatCurrencyProps): string {
   const formatter = selectCurrencyFormat({
     amount,
     currency,
     boostSmallNumberPrecision,
     notation
   })
-  const parts = formatter.formatToParts(amount)
-  // match "CHF 10"
-  if (parts[0]?.value === currency) {
-    const flatArray = parts.map(x => x.value)
-    flatArray.push(` ${flatArray.shift() || ''}`)
-    return flatArray.join('').trim()
-  }
-  // match "-CHF 10"
-  if (parts[1]?.value === currency) {
-    const flatArray = parts.map(x => x.value)
-    // remove the currency code after the sign
-    flatArray.splice(1, 1)
-    flatArray.push(` ${currency}`)
-    return flatArray.join('').trim()
+  const formatted = formatter.format(amount)
+
+  // Check if the currency appears at the beginning
+  if (formatted.startsWith(currency)) {
+    // Move the currency to the end
+    return `${formatted.slice(currency.length).trim()} ${currency}`
   }
 
-  return formatter.format(amount)
+  // Check if the currency appears after a sign (e.g., "-CHF 10")
+  const signMatch = formatted.match(/^([-+])\s*([A-Z]{3})\s*(.*)/)
+  if (signMatch && signMatch[2] === currency) {
+    const sign = signMatch[1]
+    const number = signMatch[3] ?? ''
+    return `${sign}${number.trim()} ${currency}`
+  }
+
+  // Default case: return the formatted string as is
+  return formatted
 }
 
 const getCurrencyNumberFormat = memoize(
@@ -88,7 +89,7 @@ const selectCurrencyFormat = ({
   currency,
   boostSmallNumberPrecision,
   notation
-}: FormatCurrencyProps) => {
+}: FormatCurrencyProps): Intl.NumberFormat => {
   if (notation === 'compact') {
     return getCompactCurrencyNumberFormat(currency)
   }

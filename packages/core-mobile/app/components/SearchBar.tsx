@@ -184,7 +184,11 @@ const SearchBar: FC<Props> = ({
           ref={textInputRef}
           style={[
             styles.searchInput,
-            { color: textColor ?? theme.colorText2, width: textInputWidth }
+            {
+              color: textColor ?? theme.colorText2,
+              width: textInputWidth,
+              textAlign: 'left'
+            }
           ]}
           placeholder={placeholder}
           placeholderTextColor={theme.colorText2}
