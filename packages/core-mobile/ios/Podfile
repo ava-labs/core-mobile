@@ -3,8 +3,6 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 # to prevent error "Unable to find a specification for `React-hermes` depended upon by `RNSentry`"
 ENV['USE_HERMES'] = '0'
 
-use_modular_headers!
-
 # Resolve react_native_pods.rb with node to allow for hoisting
 def node_require(script)
   # Resolve script with node to allow for hoisting
@@ -44,13 +42,13 @@ setup_permissions([
   # 'StoreKit',
 ])
 
-platform :ios, '14'
+platform :ios, '15.1'
 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
+# linkage = ENV['USE_FRAMEWORKS']
+# if linkage != nil
+#   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+#   use_frameworks! :linkage => linkage.to_sym
+# end
 
 abstract_target 'common' do
   use_expo_modules!
@@ -63,16 +61,24 @@ abstract_target 'common' do
   end
   
   # put common target configuration here
-  config = use_native_modules!
-
-  # Flags change depending on the env values.
-  flags = get_default_flags()
+  config_command = [
+    'node',
+    '--no-warnings',
+    '--eval',
+    'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
+    'react-native-config',
+    '--json',
+    '--platform',
+    'ios'
+  ]
+ 
+  config = use_native_modules!(config_command)
 
   use_react_native!(
     :path => config[:reactNativePath],
     # Enables or disables Hermes; if flag is omitted Hermes will be enabled by default.
-    :hermes_enabled => false,
-    :fabric_enabled => flags[:fabric_enabled],
+    :hermes_enabled => true,
+    :fabric_enabled => true,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -81,6 +87,8 @@ abstract_target 'common' do
   
   # specify OpenSSL version explicitly due to https://github.com/margelo/react-native-quick-crypto/issues/189
   pod "OpenSSL-Universal", "1.1.1100"
+  pod 'GoogleUtilities', :modular_headers => true;
+  pod 'FirebaseCore', :modular_headers => true
   
   target 'AvaxWallet' do
   end
@@ -94,14 +102,48 @@ abstract_target 'common' do
       installer,
       config[:reactNativePath],
       :mac_catalyst_enabled => false
-    )
-  
-    installer.pods_project.targets.each do |target|
-      # https://github.com/facebook/react-native/issues/34106#issuecomment-1417685116
-      target.build_configurations.each do |config|
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14'
-      end  
-    end 
+    ) 
+
+    # Modify RCT-Folly Portability.h to disable coroutines
+    Dir.glob(installer.sandbox.root + "RCT-Folly/folly/Portability.h") do |file|
+      begin
+        # First try to make the file writable
+        system "chmod +w #{file}"
+        
+        contents = File.read(file)
+        modified_contents = contents.gsub(/#define FOLLY_HAS_COROUTINES 1/, '#define FOLLY_HAS_COROUTINES 0')
+        
+        # Try writing with elevated privileges if needed
+        if !File.writable?(file)
+          system "sudo chmod +w #{file}"
+        end
+        
+        File.write(file, modified_contents)
+        
+        # Optionally restore original permissions
+        system "chmod -w #{file}"
+      rescue => e
+        Pod::UI.warn "Failed to modify Portability.h: #{e.message}"
+      end
+    end
+
+    # Strip bitcode from OpenSSL framework
+    # https://medium.com/@abdulahad2024/fixing-bitcode-issues-in-xcode-16-how-to-resolve-invalid-executable-errors-when-uploading-ios-da07a5a39c7c
+    bitcode_strip_path = `xcrun --find bitcode_strip`.chop!
+    def strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+      framework_path = File.join(Dir.pwd, framework_relative_path)
+      command = "#{bitcode_strip_path} #{framework_path} -r -o #{framework_path}"
+      puts "Stripping bitcode: #{command}"
+      system(command)
+    end
+
+    framework_paths = [
+      "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64_armv7/OpenSSL.framework/OpenSSL",
+    ]
+
+    framework_paths.each do |framework_relative_path|
+      strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+    end
   end
   
 end

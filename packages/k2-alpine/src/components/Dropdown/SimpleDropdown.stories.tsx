@@ -192,7 +192,7 @@ const LeftAlignedDropdown = (): JSX.Element => {
     section: 0,
     row: 0
   })
-  const sourceRef = useRef<TouchableOpacity>(null)
+  const sourceRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null)
 
   const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
     usePopoverAnchor(sourceRef)
@@ -235,7 +235,7 @@ const RightAlignedDropdown = (): JSX.Element => {
     section: 0,
     row: 0
   })
-  const sourceRef = useRef<TouchableOpacity>(null)
+  const sourceRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null)
 
   const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
     usePopoverAnchor(sourceRef)

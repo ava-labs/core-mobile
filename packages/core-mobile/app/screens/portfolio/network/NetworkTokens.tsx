@@ -231,7 +231,7 @@ const NetworkTokens = (): JSX.Element => {
     <View style={{ flex: 1 }}>
       <NetworkTokensHeader />
       <TabViewAva
-        renderCustomLabel={renderTabViewLabel}
+        renderLabel={renderTabViewLabel}
         currentTabIndex={params?.tabIndex}
         onTabIndexChange={capturePosthogEvents}>
         <TabViewAva.Item title={TabLabel.Tokens}>
