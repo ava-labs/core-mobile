@@ -25,12 +25,13 @@ import { useNfts } from './hooks/useNfts'
 type CollectiblesContextState = {
   collectibles: NftItem[]
   isLoading: boolean
+  isEnabled: boolean
   isRefetching: boolean
   getCollectible: (localId: NftLocalId) => NftItem | undefined
   refreshMetadata: (nftData: NftItem, chainId: number) => Promise<void>
   isCollectibleRefreshing: (uid: string) => boolean
   refetch: () => void
-  setNftsLoadEnabled: React.Dispatch<React.SetStateAction<boolean>>
+  setIsEnabled: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const CollectiblesContext = createContext<CollectiblesContextState>(
@@ -54,9 +55,9 @@ export const CollectiblesProvider = ({
   const [isRefreshing, setIsRefreshing] = useState<Record<NftLocalId, boolean>>(
     {}
   )
-  const [nftsLoadEnabled, setNftsLoadEnabled] = useState<boolean>(false)
+  const [isEnabled, setIsEnabled] = useState<boolean>(false)
 
-  const query = useNfts(nftsLoadEnabled)
+  const query = useNfts(isEnabled)
 
   const collectibles: NftItem[] = useMemo(() => {
     return (
@@ -232,7 +233,8 @@ export const CollectiblesProvider = ({
         refetch: query.refetch,
         isRefetching: query.isRefetching,
         isLoading: query.isLoading,
-        setNftsLoadEnabled
+        setIsEnabled,
+        isEnabled
       }}>
       {children}
     </CollectiblesContext.Provider>

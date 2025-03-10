@@ -32,15 +32,15 @@ export const CollectiblesScreen = ({
   goToCollectibleManagement: () => void
 }): ReactNode => {
   const dimensions = useWindowDimensions()
-  const { collectibles, isLoading, setNftsLoadEnabled } =
+  const { collectibles, isLoading, isEnabled, setIsEnabled } =
     useCollectiblesContext()
 
   const { filter, view, sort, filteredAndSorted, onResetFilter } =
     useCollectiblesFilterAndSort(collectibles)
 
   useEffect(() => {
-    setNftsLoadEnabled(true)
-  }, [setNftsLoadEnabled])
+    setIsEnabled(true)
+  }, [isEnabled, setIsEnabled])
 
   const listType = view.data[0]?.[view.selected.row] as CollectibleView
   const columns =
@@ -61,7 +61,7 @@ export const CollectiblesScreen = ({
   }
 
   const renderEmpty = useMemo((): JSX.Element => {
-    if (isLoading)
+    if (isLoading || !isEnabled)
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
 
     if (
@@ -84,7 +84,7 @@ export const CollectiblesScreen = ({
       )
 
     return <CollectiblesNone />
-  }, [filter.selected, isLoading, onResetFilter])
+  }, [filter.selected, isEnabled, isLoading, onResetFilter])
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {

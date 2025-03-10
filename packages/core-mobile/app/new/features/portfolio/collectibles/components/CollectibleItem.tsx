@@ -103,7 +103,7 @@ export const CollectibleListItem = memo(
                   flex: 1
                 }}>
                 <Text variant="buttonMedium" numberOfLines={1}>
-                  {collectible.tokenId ?? 'ID'}
+                  {collectible.name.length ? collectible.name : 'ID'}
                 </Text>
                 <Text
                   variant="subtitle2"
@@ -111,11 +111,15 @@ export const CollectibleListItem = memo(
                   style={{
                     color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
                   }}>
-                  {collectible.name ?? 'Name'}
+                  {collectible.collectionName.length
+                    ? collectible.collectionName
+                    : 'Name'}
                 </Text>
               </View>
 
-              {collectible.balance ? (
+              {(collectible?.imageData?.image ||
+                collectible?.imageData?.video) &&
+              collectible.balance ? (
                 <Pill text={collectible.balance.toString()} />
               ) : null}
             </View>
@@ -175,19 +179,27 @@ export const CollectibleGridItem = memo(
 )
 
 const Pill = ({ text }: { text: string }): ReactNode => {
+  const {
+    theme: { isDark }
+  } = useTheme()
   return (
     <View
       style={{
         backgroundColor: alpha('#58585B', 0.8),
         borderRadius: 100,
-        paddingHorizontal: 8,
+        paddingLeft: 8,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        maxWidth: 100
       }}>
       <Icons.Content.Close />
       <Text
         variant="buttonSmall"
-        sx={{ lineHeight: 20, color: '$surfacePrimary' }}
+        sx={{
+          lineHeight: 20,
+          color: isDark ? '$textPrimary' : '$surfacePrimary',
+          paddingRight: 8
+        }}
         numberOfLines={1}>
         {text}
       </Text>
