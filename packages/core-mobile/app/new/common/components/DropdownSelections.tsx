@@ -26,7 +26,7 @@ export const DropdownSelections = ({
   view,
   sx
 }: Props): React.JSX.Element => {
-  const sortRef = useRef<TouchableOpacity>(null)
+  const sortRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null)
 
   const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
     usePopoverAnchor(sortRef)
