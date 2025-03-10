@@ -11,17 +11,17 @@ export const CardContainer = ({
   children?: ReactNode
 }): JSX.Element => {
   const {
-    theme: { isDark }
+    theme: { colors }
   } = useTheme()
   return (
     <View
       style={{
         height: 220,
-        backgroundColor: alpha(isDark ? '#3F3F42' : '#F6F6F6', 0.8),
+        backgroundColor: alpha(colors.$surfaceSecondary, 0.8),
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: alpha(isDark ? '#fff' : '#000', 0.1),
+        borderColor: colors.$borderPrimary,
         borderRadius: 18,
         overflow: 'hidden',
         ...style

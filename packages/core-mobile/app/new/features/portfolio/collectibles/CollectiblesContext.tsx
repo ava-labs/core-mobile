@@ -1,4 +1,4 @@
-import { ShowSnackBar, showSimpleToast } from 'components/Snackbar'
+import { showSnackbar } from 'common/utils/toast'
 import React, {
   createContext,
   useCallback,
@@ -7,7 +7,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import GlacierNftProvider from 'services/nft/GlacierNftProvider'
 import NftProcessor from 'services/nft/NftProcessor'
 import {
@@ -196,10 +195,10 @@ export const CollectiblesProvider = ({
         }
       })
 
-      ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
+      showSnackbar('NFT refreshed successfully')
     } catch (e) {
       Logger.error('Failed to refresh nft', e)
-      showSimpleToast(
+      showSnackbar(
         'This is taking longer than expected. Please try again later.'
       )
     } finally {
