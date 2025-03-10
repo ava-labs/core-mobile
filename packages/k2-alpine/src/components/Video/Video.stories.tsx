@@ -32,10 +32,10 @@ export const All = (): JSX.Element => {
             height: 200
           }}
           onLoadEnd={(): void => {
-            return null
+            return
           }}
           onError={(): void => {
-            return null
+            return
           }}
         />
       </ScrollView>
