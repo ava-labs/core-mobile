@@ -93,7 +93,7 @@ const TrackHomeScreen = (): JSX.Element => {
             style={[
               {
                 paddingHorizontal: 16,
-                marginTop: Platform.OS === 'ios' ? 16 : 8,
+                marginTop: Platform.OS === 'ios' ? 24 : 8,
                 backgroundColor: theme.colors.$surfacePrimary
               },
               animatedHeaderStyle

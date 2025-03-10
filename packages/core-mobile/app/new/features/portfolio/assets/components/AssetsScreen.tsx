@@ -98,12 +98,18 @@ const AssetsScreen: FC<Props> = ({
         sx={{ height: portfolioTabContentHeight }}
         icon={
           <Image
-            source={require('../../../../assets/icons/unamused_emoji.png')}
+            source={require('../../../../assets/icons/rocket.png')}
             sx={{ width: 42, height: 42 }}
           />
         }
         title="No Assets yet"
-        description="Add your crypto tokens to track your portfolio’s performance and stay updated on your investments"
+        description="On-ramp using Core in two minutes"
+        button={{
+          title: 'Let’s go!',
+          onPress: () => {
+            // TODO: navigate to buy on-ramp
+          }
+        }}
       />
     )
   }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])

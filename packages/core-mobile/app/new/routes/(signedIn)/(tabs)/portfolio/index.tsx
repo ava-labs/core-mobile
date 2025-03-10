@@ -40,6 +40,7 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { useRouter } from 'expo-router'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { Platform } from 'react-native'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -146,7 +147,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
             style={[
               {
                 paddingBottom: 16,
-                backgroundColor: theme.colors.$surfacePrimary
+                backgroundColor: theme.colors.$surfacePrimary,
+                marginTop: Platform.OS === 'ios' ? 24 : 8
               },
               animatedHeaderStyle
             ]}>
