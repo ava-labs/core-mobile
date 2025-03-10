@@ -52,7 +52,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
     [favoriteNetworks, filterBySearchText]
   )
 
-  const renderCustomLabel = (
+  const renderLabel = (
     label: string,
     selected: boolean,
     color: string
@@ -115,7 +115,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
         searchText={searchText}
         testID="network_manager__search_input"
       />
-      <TabViewAva renderCustomLabel={renderCustomLabel}>
+      <TabViewAva renderLabel={renderLabel}>
         <TabViewAva.Item title="Favorites">
           <FlatList
             data={favorites}

@@ -13,7 +13,7 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import { Popable, PopableManager } from 'react-native-popable'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import isString from 'lodash.isstring'
-import { BlurView } from '@react-native-community/blur'
+import { BlurView } from 'expo-blur'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import Separator from 'components/Separator'
@@ -103,9 +103,8 @@ function DropDown<ItemT>({
       <>
         <BlurView
           style={[StyleSheet.absoluteFill, { borderRadius: BORDER_RADIUS }]}
-          blurType={'dark'}
-          blurAmount={10}
-          reducedTransparencyFallbackColor={'black'}
+          tint={'dark'}
+          intensity={75}
         />
         <View
           style={[

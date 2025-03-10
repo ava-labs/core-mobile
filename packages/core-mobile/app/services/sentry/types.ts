@@ -1,7 +1,7 @@
 /**
  * Keeps track of all possible transaction names
  */
-export type TransactionName =
+export type SpanName =
   | 'get-balances'
   | 'get-nft'
   | 'get-nfts'
