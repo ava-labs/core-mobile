@@ -260,7 +260,8 @@ enum SettingRecoveryMethodsScreens {
 
 enum DebugScreens {
   Menu = 'DebugScreens.Menu',
-  DeviceInfo = 'DebugScreens.DeviceInfo'
+  DeviceInfo = 'DebugScreens.DeviceInfo',
+  PowBenchmark = 'DebugScreens.PowBenchmark'
 }
 
 const AppNavigation = {

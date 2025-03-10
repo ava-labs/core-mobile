@@ -22,6 +22,13 @@ export default function DebugMenuScreen(): React.JSX.Element {
         onPress={() => navigation.navigate(AppNavigation.Debug.DeviceInfo)}
         testID="debug_menu__device_info"
       />
+      <AvaListItem.Base
+        title="POW Benchmark"
+        titleAlignment="flex-start"
+        showNavigationArrow
+        onPress={() => navigation.navigate(AppNavigation.Debug.PowBenchmark)}
+        testID="debug_menu__pow_benchmark"
+      />
       {/* Add more debug menu items here */}
     </ScrollView>
   )
