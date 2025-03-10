@@ -35,6 +35,15 @@ export const CollectibleManagementItem = ({
     dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
   }
 
+  const collectibleName =
+    collectible.name.length > 0 ? collectible.name : 'Untitled'
+
+  const collectionName =
+    collectible.collectionName.length === 0 ||
+    ['Unknown', 'Unkown'].includes(collectible.collectionName)
+      ? 'Unknown collection'
+      : collectible.collectionName
+
   return (
     <Pressable
       style={{
@@ -74,7 +83,7 @@ export const CollectibleManagementItem = ({
               flex: 1
             }}>
             <Text variant="buttonMedium" numberOfLines={1}>
-              {collectible.name.length > 0 ? collectible.name : 'Untitled'}
+              {collectibleName}
             </Text>
             <Text
               variant="subtitle2"
@@ -82,11 +91,7 @@ export const CollectibleManagementItem = ({
               style={{
                 color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
               }}>
-              {collectible.collectionName.length
-                ? ['Unknown', 'Unkown'].includes(collectible.collectionName)
-                  ? 'Unknown collection'
-                  : collectible.collectionName
-                : 'Unknown collection'}
+              {collectionName}
             </Text>
           </View>
         </View>

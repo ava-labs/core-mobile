@@ -61,6 +61,15 @@ export const CollectibleListItem = memo(
       index
     )
 
+    const collectibleName =
+      collectible.name.length > 0 ? collectible.name : 'Untitled'
+
+    const collectionName =
+      collectible.collectionName.length === 0 ||
+      ['Unknown', 'Unkown'].includes(collectible.collectionName)
+        ? 'Unknown collection'
+        : collectible.collectionName
+
     return (
       <Animated.View
         entering={getListItemEnteringAnimation(0)}
@@ -103,7 +112,7 @@ export const CollectibleListItem = memo(
                   flex: 1
                 }}>
                 <Text variant="buttonMedium" numberOfLines={1}>
-                  {collectible.name.length > 0 ? collectible.name : 'Untitled'}
+                  {collectibleName}
                 </Text>
                 <Text
                   variant="subtitle2"
@@ -111,11 +120,7 @@ export const CollectibleListItem = memo(
                   sx={{
                     color: '$textSecondary'
                   }}>
-                  {collectible.collectionName.length
-                    ? ['Unknown', 'Unkown'].includes(collectible.collectionName)
-                      ? 'Unknown collection'
-                      : collectible.collectionName
-                    : 'Unknown collection'}
+                  {collectionName}
                 </Text>
               </View>
 
