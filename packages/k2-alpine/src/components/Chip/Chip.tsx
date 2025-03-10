@@ -25,56 +25,57 @@ interface ChipProps {
   hitSlop?: number | Insets
 }
 
-export const Chip = forwardRef<TouchableOpacity, ChipProps & PropsWithChildren>(
-  ({ size, rightIcon, style, children, testID, ...rest }, ref) => {
-    const { theme } = useTheme()
+export const Chip = forwardRef<
+  React.ElementRef<typeof TouchableOpacity>,
+  ChipProps & PropsWithChildren
+>(({ size, rightIcon, style, children, testID, ...rest }, ref) => {
+  const { theme } = useTheme()
 
-    const tintColor = theme.colors.$textPrimary
-    const backgroundColor = theme.colors.$surfaceSecondary
-    const iconWidth = { large: 20, small: 16 }[size]
+  const tintColor = theme.colors.$textPrimary
+  const backgroundColor = theme.colors.$surfaceSecondary
+  const iconWidth = { large: 20, small: 16 }[size]
 
-    return (
-      <TouchableOpacity
-        ref={ref}
-        accessible={false}
-        testID={testID}
-        style={[
-          {
-            ...sizeStyles[size],
-            borderRadius: 1000,
-            backgroundColor,
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden',
-            flexDirection: 'row',
-            alignSelf: 'flex-start'
-          },
-          style
-        ]}
-        {...rest}>
-        <Text
-          numberOfLines={1}
-          variant={'buttonSmall'}
-          adjustsFontSizeToFit={Platform.OS === 'ios'}
-          style={{
-            color: tintColor
-          }}>
-          {children}
-        </Text>
-        {React.isValidElement(rightIcon) ? (
-          rightIcon
-        ) : typeof rightIcon === 'string' ? (
-          <Icons.Navigation.ExpandMore
-            width={iconWidth}
-            height={iconWidth}
-            color={alpha(theme.colors.$borderPrimary, 0.5)}
-            style={{ marginLeft: 4 }}
-          />
-        ) : null}
-      </TouchableOpacity>
-    )
-  }
-)
+  return (
+    <TouchableOpacity
+      ref={ref}
+      accessible={false}
+      testID={testID}
+      style={[
+        {
+          ...sizeStyles[size],
+          borderRadius: 1000,
+          backgroundColor,
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden',
+          flexDirection: 'row',
+          alignSelf: 'flex-start'
+        },
+        style
+      ]}
+      {...rest}>
+      <Text
+        numberOfLines={1}
+        variant={'buttonSmall'}
+        adjustsFontSizeToFit={Platform.OS === 'ios'}
+        style={{
+          color: tintColor
+        }}>
+        {children}
+      </Text>
+      {React.isValidElement(rightIcon) ? (
+        rightIcon
+      ) : typeof rightIcon === 'string' ? (
+        <Icons.Navigation.ExpandMore
+          width={iconWidth}
+          height={iconWidth}
+          color={alpha(theme.colors.$borderPrimary, 0.5)}
+          style={{ marginLeft: 4 }}
+        />
+      ) : null}
+    </TouchableOpacity>
+  )
+})
 
 const sizeStyles = StyleSheet.create({
   large: {
