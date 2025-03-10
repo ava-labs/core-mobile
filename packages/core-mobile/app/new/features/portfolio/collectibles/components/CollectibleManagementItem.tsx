@@ -74,7 +74,7 @@ export const CollectibleManagementItem = ({
               flex: 1
             }}>
             <Text variant="buttonMedium" numberOfLines={1}>
-              {collectible.name.length ? collectible.name : 'Untitled'}
+              {collectible.name.length > 0 ? collectible.name : 'Untitled'}
             </Text>
             <Text
               variant="subtitle2"

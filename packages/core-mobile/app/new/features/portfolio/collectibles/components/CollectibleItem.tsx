@@ -103,13 +103,13 @@ export const CollectibleListItem = memo(
                   flex: 1
                 }}>
                 <Text variant="buttonMedium" numberOfLines={1}>
-                  {collectible.name.length ? collectible.name : 'Untitled'}
+                  {collectible.name.length > 0 ? collectible.name : 'Untitled'}
                 </Text>
                 <Text
                   variant="subtitle2"
                   numberOfLines={1}
-                  style={{
-                    color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
+                  sx={{
+                    color: '$textSecondary'
                   }}>
                   {collectible.collectionName.length
                     ? ['Unknown', 'Unkown'].includes(collectible.collectionName)
