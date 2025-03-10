@@ -21,30 +21,18 @@ export class NftProcessor {
           .then(type => {
             if (type === NftContentType.SVG) {
               resolve({
-                video: imageUrl,
+                image: imageUrl,
                 aspect: 1,
                 isSvg: false,
                 type
               })
             } else if (type === NftContentType.MP4) {
-              fetch(imageUrl)
-                .then(rsp => {
-                  rsp
-                    .text()
-                    .then(svg => {
-                      const trimmed = this.removeSvgNamespace(svg)
-                      const aspect = this.extractSvgAspect(trimmed) ?? 1
-
-                      resolve({
-                        image: trimmed,
-                        aspect: aspect,
-                        isSvg: true,
-                        type
-                      })
-                    })
-                    .catch(Logger.error)
-                })
-                .catch(Logger.error)
+              resolve({
+                video: imageUrl,
+                aspect: 1,
+                isSvg: false,
+                type
+              })
             } else {
               Image.getSize(
                 imageUrl,
@@ -110,58 +98,67 @@ export class NftProcessor {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: { Range: 'bytes=0-100' }
+        headers: { Range: 'bytes=0-256' } // Increased range for better detection
       })
+
+      if (!response.ok) return NftContentType.Unknown
+
       const buffer = await response.arrayBuffer()
       const uint8Array = new Uint8Array(buffer)
       const textDecoder = new TextDecoder()
-      const snippet = textDecoder.decode(buffer)
+      const snippet = textDecoder.decode(buffer).trimStart()
 
-      // JPEG: FF D8 FF
-      if (
-        uint8Array[0] === 0xff &&
-        uint8Array[1] === 0xd8 &&
-        uint8Array[2] === 0xff
-      ) {
-        return NftContentType.JPG
-      }
-      // PNG: 89 50 4E 47
-      if (
-        uint8Array[0] === 0x89 &&
-        uint8Array[1] === 0x50 &&
-        uint8Array[2] === 0x4e &&
-        uint8Array[3] === 0x47
-      ) {
-        return NftContentType.PNG
-      }
-      // GIF: 47 49 46 38 (GIF8) followed by either 37 61 (7a - GIF87a) or 39 61 (9a - GIF89a)
-      if (
-        uint8Array[0] === 0x47 &&
-        uint8Array[1] === 0x49 &&
-        uint8Array[2] === 0x46 &&
-        uint8Array[3] === 0x38 &&
-        ((uint8Array[4] === 0x37 && uint8Array[5] === 0x61) || // GIF87a
-          (uint8Array[4] === 0x39 && uint8Array[5] === 0x61)) // GIF89a
-      ) {
-        return NftContentType.GIF
-      }
-      // SVG: Check for <?xml or <svg at the start
-      if (
-        snippet.trimStart().startsWith('<?xml') ||
-        snippet.trimStart().toLowerCase().includes('<svg') ||
-        snippet.trimStart().includes('data:image/svg+xml')
-      ) {
-        return NftContentType.SVG
-      }
-      // MP4: ftyp
-      if (snippet.includes('ftyp')) {
-        return NftContentType.MP4
-      }
+      if (this.isJpeg(uint8Array)) return NftContentType.JPG
+      if (this.isPng(uint8Array)) return NftContentType.PNG
+      if (this.isGif(uint8Array)) return NftContentType.GIF
+      if (this.isSvg(snippet)) return NftContentType.SVG
+      if (this.isMp4(uint8Array)) return NftContentType.MP4
+
       return NftContentType.Unknown
     } catch (error) {
-      // console.error("Error identifying content by magic number:", error);
       return NftContentType.Unknown
     }
+  }
+
+  private isJpeg(uint8Array: Uint8Array): boolean {
+    return (
+      uint8Array[0] === 0xff && uint8Array[1] === 0xd8 && uint8Array[2] === 0xff
+    )
+  }
+
+  private isPng(uint8Array: Uint8Array): boolean {
+    return (
+      uint8Array[0] === 0x89 &&
+      uint8Array[1] === 0x50 &&
+      uint8Array[2] === 0x4e &&
+      uint8Array[3] === 0x47
+    )
+  }
+
+  private isGif(uint8Array: Uint8Array): boolean {
+    return (
+      uint8Array[0] === 0x47 &&
+      uint8Array[1] === 0x49 &&
+      uint8Array[2] === 0x46 &&
+      uint8Array[3] === 0x38 &&
+      ((uint8Array[4] === 0x37 && uint8Array[5] === 0x61) || // GIF87a
+        (uint8Array[4] === 0x39 && uint8Array[5] === 0x61)) // GIF89a
+    )
+  }
+
+  private isSvg(snippet: string): boolean {
+    return snippet.startsWith('<?xml') || snippet.startsWith('<svg')
+  }
+
+  private isMp4(uint8Array: Uint8Array): boolean {
+    return (
+      String.fromCharCode(
+        uint8Array[4] ?? 0,
+        uint8Array[5] ?? 0,
+        uint8Array[6] ?? 0,
+        uint8Array[7] ?? 0
+      ) === 'ftyp'
+    )
   }
 
   async fetchMetadata(tokenUri: string): Promise<NFTItemExternalData> {

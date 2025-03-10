@@ -74,14 +74,14 @@ export const AnimateFadeScale = memo(
     }, [])
 
     return (
-      <Animated.View
-        entering={FadeIn}
-        exiting={FadeOut}
-        style={[
-          animatedStyle,
-          { justifyContent: 'flex-start', alignItems: 'flex-start' }
-        ]}>
-        {children}
+      <Animated.View entering={FadeIn} exiting={FadeOut}>
+        <Animated.View
+          style={[
+            animatedStyle,
+            { justifyContent: 'flex-start', alignItems: 'flex-start' }
+          ]}>
+          {children}
+        </Animated.View>
       </Animated.View>
     )
   }

@@ -1,8 +1,15 @@
-import { ANIMATED, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { ANIMATED, Icons, Text, useTheme } from '@avalabs/k2-alpine'
+import { Video } from '@avalabs/k2-alpine/src/components/Video/Video'
 import { Image, ImageErrorEventData } from 'expo-image'
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, {
+  ReactNode,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
-import { LayoutChangeEvent, ViewStyle } from 'react-native'
+import { ViewStyle, View } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 
@@ -34,14 +41,14 @@ export const CollectibleRenderer = ({
     setIsLoading(true)
   }
 
-  const onError = (err: ImageErrorEventData): void => {
+  const onImageError = (err: ImageErrorEventData): void => {
     setError(err.error)
     setIsLoading(false)
   }
 
-  const onLayout = (event: LayoutChangeEvent): void => {
-    const { width, height } = event.nativeEvent.layout
-    setLayout({ width, height })
+  const onVideoError = (): void => {
+    // setError("Something went wrong. We couldn't load the video.")
+    setIsLoading(false)
   }
 
   const contentStyle = useAnimatedStyle(() => {
@@ -51,7 +58,7 @@ export const CollectibleRenderer = ({
   })
 
   const renderEdgeCases = useMemo((): ReactNode => {
-    if (error) return <Text variant="body1">{error}</Text>
+    if (error) return <Text variant="body2">{error}</Text>
     if (isLoading)
       return (
         <ContentLoader
@@ -82,7 +89,15 @@ export const CollectibleRenderer = ({
   ])
 
   const renderContent = useMemo(() => {
-    if (collectible?.imageData?.video) return <Text variant="body1">Video</Text>
+    if (collectible?.imageData?.video)
+      return (
+        <Video
+          source={collectible?.imageData?.video}
+          thumbnail={collectible?.imageData?.image}
+          onLoadEnd={onLoadEnd}
+          onError={onVideoError}
+        />
+      )
 
     return (
       <Image
@@ -91,7 +106,7 @@ export const CollectibleRenderer = ({
         source={collectible?.imageData?.image}
         onLoadEnd={onLoadEnd}
         onLoadStart={onLoadStart}
-        onError={onError}
+        onError={onImageError}
         cachePolicy="memory-disk"
         contentFit="cover"
         style={{
@@ -112,9 +127,21 @@ export const CollectibleRenderer = ({
     collectible.localId
   ])
 
+  const contentRef = useRef<View>(null)
+
+  useLayoutEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.measure(
+        (x: number, y: number, width: number, height: number) => {
+          setLayout({ width, height })
+        }
+      )
+    }
+  }, [])
+
   return (
     <View
-      onLayout={onLayout}
+      ref={contentRef}
       style={[
         {
           flex: 1,

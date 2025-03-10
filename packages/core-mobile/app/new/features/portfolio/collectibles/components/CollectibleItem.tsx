@@ -192,7 +192,6 @@ const Pill = ({ text }: { text: string }): ReactNode => {
         alignItems: 'center',
         maxWidth: 100
       }}>
-      <Icons.Content.Close />
       <Text
         variant="buttonSmall"
         sx={{

@@ -14,19 +14,21 @@ import { View } from '../Primitives'
 export const Video = ({
   source,
   thumbnail,
+  hideControls,
   onLoadEnd,
   onError,
   ...props
 }: {
   source: string
   thumbnail?: string
+  hideControls?: boolean
   onLoadEnd: () => void
   onError: () => void
 } & Omit<VideoViewProps, 'player'>): JSX.Element => {
   const [isPlaying, setIsPlaying] = useState(false)
 
-  const player = useVideoPlayer(source, player => {
-    player.loop = true
+  const player = useVideoPlayer(source, videoPlayer => {
+    videoPlayer.loop = true
   })
 
   const playButtonStyle = useAnimatedStyle(() => {
@@ -91,6 +93,7 @@ export const Video = ({
           right: 0,
           bottom: 0
         }}
+        contentFit="cover"
         nativeControls={false}
         player={player}
         {...props}
@@ -105,24 +108,26 @@ export const Video = ({
           />
         </Animated.View>
       )}
-      <Animated.View style={[{ position: 'absolute' }, playButtonStyle]}>
-        <Pressable
-          onPress={togglePlay}
-          style={{
-            width: 30,
-            height: 30,
-            borderRadius: 30,
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-          {/* <Ionicons
+      {hideControls ? null : (
+        <Animated.View style={[{ position: 'absolute' }, playButtonStyle]}>
+          <Pressable
+            onPress={togglePlay}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 30,
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+            {/* <Ionicons
             name={isPlaying ? 'pause' : 'play'}
             size={14}
             color="white"
           /> */}
-        </Pressable>
-      </Animated.View>
+          </Pressable>
+        </Animated.View>
+      )}
     </View>
   )
 }
