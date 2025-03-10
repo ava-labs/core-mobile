@@ -53,7 +53,7 @@ const TransactionHistory: FC<Props> = ({
       <DropdownSelections
         filter={filter}
         sort={sort}
-        sx={{ paddingHorizontal: 16 }}
+        sx={{ paddingHorizontal: 16, marginTop: 14, marginBottom: 16 }}
       />
     )
   }, [filter, sort])
