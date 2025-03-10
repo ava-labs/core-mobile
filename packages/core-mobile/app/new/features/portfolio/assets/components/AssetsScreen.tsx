@@ -102,7 +102,7 @@ const AssetsScreen: FC<Props> = ({
             sx={{ width: 42, height: 42 }}
           />
         }
-        title="No Assets yet"
+        title="No assets yet"
         description="On-ramp using Core in two minutes"
         button={{
           title: 'Let’s go!',
