@@ -72,11 +72,11 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         onRequestClose={onRequestClose}
         popoverStyle={{
           borderRadius: backgroundBorderRadius,
-          shadowOffset: { width: 0, height: 15 },
+          shadowOffset: { width: 0, height: 5 },
           shadowRadius: 30,
-          shadowOpacity: 0.3,
+          shadowOpacity: 0.5,
           backgroundColor: 'transparent',
-          elevation: 4,
+          elevation: 16,
           minWidth
         }}
         arrowSize={{ width: -10, height: 0 }}

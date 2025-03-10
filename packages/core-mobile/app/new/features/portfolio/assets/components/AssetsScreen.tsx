@@ -115,6 +115,7 @@ const AssetsScreen: FC<Props> = ({
           paddingHorizontal: 16
         }}>
         <DropdownSelections
+          sx={{ marginTop: 14, marginBottom: 16 }}
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}

@@ -24,6 +24,9 @@ import MarketScreen from 'features/track/market/components/MarketScreen'
 import { useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import SearchResultScreen from 'features/track/market/components/SearchResultScreen'
+import { Platform } from 'react-native'
+
+const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -55,7 +58,7 @@ const TrackHomeScreen = (): JSX.Element => {
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 1],
-      [0, 60],
+      [0, SEARCH_BAR_MARGIN_TOP],
       'clamp'
     )
     return {
@@ -67,7 +70,7 @@ const TrackHomeScreen = (): JSX.Element => {
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 1],
-      [0, 60],
+      [0, SEARCH_BAR_MARGIN_TOP],
       'clamp'
     )
     const opacity = interpolate(
@@ -90,6 +93,7 @@ const TrackHomeScreen = (): JSX.Element => {
             style={[
               {
                 paddingHorizontal: 16,
+                marginTop: Platform.OS === 'ios' ? 16 : 8,
                 backgroundColor: theme.colors.$surfacePrimary
               },
               animatedHeaderStyle
@@ -102,8 +106,6 @@ const TrackHomeScreen = (): JSX.Element => {
             animatedSearchbarStyle,
             {
               paddingHorizontal: 16,
-              paddingTop: 16,
-              paddingBottom: 8,
               backgroundColor: theme.colors.$surfacePrimary
             }
           ]}>

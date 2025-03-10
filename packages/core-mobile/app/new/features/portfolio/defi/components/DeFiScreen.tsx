@@ -125,7 +125,11 @@ export const DeFiScreen = (): JSX.Element => {
         sx={{
           paddingHorizontal: 16
         }}>
-        <DropdownSelections sort={sort} view={view} />
+        <DropdownSelections
+          sort={sort}
+          view={view}
+          sx={{ marginTop: 14, marginBottom: 16 }}
+        />
       </View>
     )
   }, [sort, view])

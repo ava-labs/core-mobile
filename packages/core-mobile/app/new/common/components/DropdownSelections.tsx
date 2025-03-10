@@ -86,16 +86,9 @@ export const DropdownSelections = ({
     )
   }
 
-  // const handleFilterLayout = (event: LayoutChangeEvent): void => {
-  //   console.log('filterRef.current.measure')
-  //   setFilterLayout(event.nativeEvent.layout)
-  // }
-
   return (
     <View
       sx={{
-        marginTop: 19,
-        marginBottom: 16,
         justifyContent: 'space-between',
         flexDirection: 'row',
         ...sx
