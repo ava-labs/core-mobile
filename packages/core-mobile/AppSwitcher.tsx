@@ -56,7 +56,9 @@ export const AppSwitcher = (): React.JSX.Element => {
   if (!isInternalBuild && !__DEV__) return <OldApp />
 
   return (
-    <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+    <View
+      style={{ flex: 1, backgroundColor: '#000000' }}
+      {...panResponder.panHandlers}>
       {DevDebuggingConfig.K2_ALPINE || isNewApp ? <NewApp /> : <OldApp />}
     </View>
   )

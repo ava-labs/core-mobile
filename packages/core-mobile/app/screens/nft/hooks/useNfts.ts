@@ -23,19 +23,21 @@ export const useNfts = (enabled: boolean) => {
       throw new Error('unable to get NFTs')
     }
 
-    const t = SentryWrapper.startTransaction('get-nfts')
-    try {
-      return await NftService.fetchNfts({
-        network: activeNetwork,
-        address: account.addressC,
-        currency
-      })
-    } catch (err) {
-      Logger.error(`Failed to get NFTs for chain ${activeNetwork.chainId}`, err)
-      return []
-    } finally {
-      SentryWrapper.finish(t)
-    }
+    return SentryWrapper.startSpan({ name: 'get-nfts' }, async () => {
+      try {
+        return await NftService.fetchNfts({
+          network: activeNetwork,
+          address: account.addressC,
+          currency
+        })
+      } catch (err) {
+        Logger.error(
+          `Failed to get NFTs for chain ${activeNetwork.chainId}`,
+          err
+        )
+        return []
+      }
+    })
   }, [account, activeNetwork, currency])
 
   return useQuery({

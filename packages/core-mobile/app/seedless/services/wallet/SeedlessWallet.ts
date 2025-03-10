@@ -360,6 +360,6 @@ export default class SeedlessWallet implements Wallet {
       ),
       'hex'
     )
-    return utils.base58check.encode(buffer)
+    return utils.base58check.encode(new Uint8Array(buffer))
   }
 }

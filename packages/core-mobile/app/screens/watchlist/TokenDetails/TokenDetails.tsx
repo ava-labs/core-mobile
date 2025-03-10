@@ -402,7 +402,7 @@ const TokenDetails: FC = () => {
 
           {tokenInfo?.has24hChartDataOnly === false && (
             <TabViewAva
-              renderCustomLabel={(title, selected, color) => (
+              renderLabel={(title, selected, color) => (
                 <AvaText.Heading3 textStyle={{ color }}>
                   {title}
                 </AvaText.Heading3>

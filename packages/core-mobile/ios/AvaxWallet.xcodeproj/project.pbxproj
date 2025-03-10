@@ -389,6 +389,7 @@
 				8E3793782CA2790500D3A9B4 /* Embed Foundation Extensions */,
 				885709289025CB5D63C44517 /* [CP] Embed Pods Frameworks */,
 				B9FF033946FC3982968370FA /* [CP] Copy Pods Resources */,
+				505BAB192D4AB5CD00E383D3 /* Relocate assets */,
 			);
 			buildRules = (
 			);
@@ -451,6 +452,7 @@
 				815E551D2C92197B000F8E0F /* CopyFiles */,
 				0E581F34410E185E3A1CB4B3 /* [CP] Embed Pods Frameworks */,
 				0F912A47AA75A6BE904008DB /* [CP] Copy Pods Resources */,
+				505BAB182D4AB00800E383D3 /* Relocate assets */,
 			);
 			buildRules = (
 			);
@@ -636,6 +638,42 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		505BAB182D4AB00800E383D3 /* Relocate assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Relocate assets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\nAPP_BUNDLE_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nSOURCE_DIR=\"${APP_BUNDLE_PATH}/assets/packages/core-mobile\"\nDEST_DIR=\"${APP_BUNDLE_PATH}/assets\"\n\necho \"📂 Copying assets from ${SOURCE_DIR} to ${DEST_DIR}...\"\n\nmkdir -p \"${DEST_DIR}\"\n\nmv \"${SOURCE_DIR}\"/* \"${DEST_DIR}/\"\n\nrm -rf \"${SOURCE_DIR}\"\n\necho \"✅ Assets copied successfully!\"\n";
+		};
+		505BAB192D4AB5CD00E383D3 /* Relocate assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Relocate assets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\nAPP_BUNDLE_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nSOURCE_DIR=\"${APP_BUNDLE_PATH}/assets/packages/core-mobile\"\nDEST_DIR=\"${APP_BUNDLE_PATH}/assets\"\n\necho \"📂 Copying assets from ${SOURCE_DIR} to ${DEST_DIR}...\"\n\nmkdir -p \"${DEST_DIR}\"\n\nmv \"${SOURCE_DIR}\"/* \"${DEST_DIR}/\"\n\nrm -rf \"${SOURCE_DIR}\"\n\necho \"✅ Assets copied successfully!\"\n";
+		};
 		589A471A19994272BE3D2FE3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -757,7 +795,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\n../node_modules/@sentry/cli/bin/sentry-cli upload-dsym\n";
+			shellScript = "/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh\n";
 		};
 		B9FF033946FC3982968370FA /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -889,7 +927,6 @@
 			baseConfigurationReference = 697B58F8BD672087EA40A6C2 /* Pods-common-AvaxWallet.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWallet.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -900,7 +937,7 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = AvaxWallet/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -933,7 +970,6 @@
 			baseConfigurationReference = 659278F1AA86EBEA21508CE5 /* Pods-common-AvaxWallet.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWalletRelease.entitlements;
 				CODE_SIGN_STYLE = Manual;
@@ -948,7 +984,7 @@
 					"\"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL-Universal\"",
 				);
 				INFOPLIST_FILE = AvaxWallet/InfoRelease.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1000,7 +1036,7 @@
 				INFOPLIST_FILE = NotificationServiceExtensionInternal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtensionInternal;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1045,7 +1081,7 @@
 				INFOPLIST_FILE = NotificationServiceExtensionInternal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtensionInternal;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1093,7 +1129,7 @@
 				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1138,7 +1174,7 @@
 				INFOPLIST_FILE = NotificationServiceExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NotificationServiceExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1222,7 +1258,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -1239,7 +1275,8 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				USE_HERMES = false;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				USE_HERMES = true;
 			};
 			name = Debug;
 		};
@@ -1300,7 +1337,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -1316,7 +1353,7 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				USE_HERMES = false;
+				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
