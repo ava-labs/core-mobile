@@ -20,14 +20,15 @@ const CollectibleManagementScreen = (): JSX.Element => {
     if (searchText.length)
       return collectibles?.filter(
         collectible =>
-          collectible.processedMetadata?.name
+          collectible?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+          collectible?.description
             ?.toLowerCase()
             .includes(searchText.toLowerCase()) ||
-          collectible.processedMetadata?.description
+          collectible?.collectionName
             ?.toLowerCase()
             .includes(searchText.toLowerCase())
       )
-    return collectibles || []
+    return collectibles
   }, [collectibles, searchText])
 
   const handleSearch = (text: string): void => {

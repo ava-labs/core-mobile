@@ -113,9 +113,9 @@ export const CollectibleListItem = memo(
                   }}>
                   {collectible.collectionName.length
                     ? ['Unknown', 'Unkown'].includes(collectible.collectionName)
-                      ? 'Unknown Collection'
+                      ? 'Unknown collection'
                       : collectible.collectionName
-                    : 'Unknown Collection'}
+                    : 'Unknown collection'}
                 </Text>
               </View>
 

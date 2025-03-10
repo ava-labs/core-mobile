@@ -74,7 +74,7 @@ export const CollectibleManagementItem = ({
               flex: 1
             }}>
             <Text variant="buttonMedium" numberOfLines={1}>
-              {collectible.tokenId ?? 'ID'}
+              {collectible.name.length ? collectible.name : 'Untitled'}
             </Text>
             <Text
               variant="subtitle2"
@@ -82,7 +82,11 @@ export const CollectibleManagementItem = ({
               style={{
                 color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
               }}>
-              {collectible.processedMetadata?.name ?? 'Name'}
+              {collectible.collectionName.length
+                ? ['Unknown', 'Unkown'].includes(collectible.collectionName)
+                  ? 'Unknown collection'
+                  : collectible.collectionName
+                : 'Unknown collection'}
             </Text>
           </View>
         </View>
