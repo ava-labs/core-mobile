@@ -1,6 +1,5 @@
-import React from 'react'
-import { alpha, useTheme, View } from '@avalabs/k2-alpine'
-import { ReactNode } from 'react'
+import { useTheme, View } from '@avalabs/k2-alpine'
+import React, { ReactNode } from 'react'
 import { ViewStyle } from 'react-native'
 
 export const CardContainer = ({
@@ -17,7 +16,7 @@ export const CardContainer = ({
     <View
       style={{
         height: 220,
-        backgroundColor: alpha(colors.$surfaceSecondary, 0.8),
+        backgroundColor: colors.$surfaceSecondary,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
