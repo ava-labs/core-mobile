@@ -78,6 +78,12 @@ const SessionProposal = (): JSX.Element => {
       )
   }
 
+  const renderNetworks = (): React.JSX.Element => {
+    const hasMore = chainIds.length > 6
+    const chainIdsToDisplay = hasMore ? chainIds.slice(0, 6) : chainIds
+    return <Networks chainIds={chainIdsToDisplay} hasMore={hasMore} />
+  }
+
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
       <NativeViewGestureHandler>
@@ -109,8 +115,8 @@ const SessionProposal = (): JSX.Element => {
               }}>
               <Avatar.Custom
                 name={'dapp'}
-                logoUri={peerMeta?.icons[0]}
-                size={48}
+                logoUri={peerMeta?.icons[1]}
+                size={80}
               />
             </OvalTagBg>
             <View style={styles.domainUrlContainer}>
@@ -125,7 +131,7 @@ const SessionProposal = (): JSX.Element => {
             <Space y={16} />
           </View>
           <Space y={16} />
-          <Networks chainIds={chainIds} />
+          {renderNetworks()}
           <Space y={16} />
           <SelectAccounts
             onSelect={onSelect}

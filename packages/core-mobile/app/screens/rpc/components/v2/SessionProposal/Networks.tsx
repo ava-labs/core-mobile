@@ -4,12 +4,14 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import AddSVG from 'components/svg/AddSVG'
 
 type Props = {
   chainIds: number[]
+  hasMore?: boolean
 }
 
-const Networks = ({ chainIds }: Props): JSX.Element => {
+const Networks = ({ chainIds, hasMore = false }: Props): JSX.Element => {
   const { getSomeNetworks } = useNetworks()
   const networks = getSomeNetworks(chainIds)
   const theme = useApplicationContext().theme
@@ -35,6 +37,7 @@ const Networks = ({ chainIds }: Props): JSX.Element => {
             }}
           />
         ))}
+        {hasMore && <AddSVG color={theme.colorIcon1} hideCircle size={24} />}
       </Row>
     </Row>
   )
