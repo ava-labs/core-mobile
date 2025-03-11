@@ -1,7 +1,6 @@
 import React, { forwardRef, PropsWithChildren } from 'react'
 import {
   Insets,
-  Platform,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
@@ -57,7 +56,6 @@ export const Chip = forwardRef<
       <Text
         numberOfLines={1}
         variant={'buttonSmall'}
-        adjustsFontSizeToFit={Platform.OS === 'ios'}
         style={{
           color: tintColor
         }}>
