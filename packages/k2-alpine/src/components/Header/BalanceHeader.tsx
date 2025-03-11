@@ -71,6 +71,7 @@ export const BalanceHeader = ({
               status={priceChange.status}
               formattedPercent={priceChange.formattedPercent}
               textVariant="buttonMedium"
+              animated={true}
             />
           )}
         </View>
