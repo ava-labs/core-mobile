@@ -98,22 +98,16 @@ export const Video = ({
           />
         </Animated.View>
       )}
-      <View
-        style={[
-          { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
-        ]}>
-        <Pressable
-          onPress={togglePlay}
-          style={{
-            flex: 1
-          }}>
-          {/* <Ionicons
-            name={isPlaying ? 'pause' : 'play'}
-            size={14}
-            color="white"
-          /> */}
-        </Pressable>
-      </View>
+      <Pressable
+        onPress={togglePlay}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0
+        }}
+      />
     </View>
   )
 }

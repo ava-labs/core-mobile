@@ -129,9 +129,9 @@ export enum CollectibleSort {
 }
 
 export enum CollectibleView {
-  LargeGrid = 'Large Grid',
-  CompactGrid = 'Compact Grid',
-  ListView = 'List View',
+  LargeGrid = 'Large grid',
+  CompactGrid = 'Compact grid',
+  ListView = 'List view',
   ManageList = 'Manage list'
 }
 
