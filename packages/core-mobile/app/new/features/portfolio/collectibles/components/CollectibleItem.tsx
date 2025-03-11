@@ -92,11 +92,11 @@ export const CollectibleListItem = memo(
             <CollectibleRenderer collectible={collectible} />
           </CardContainer>
           <View
-            style={{
+            sx={{
               flex: 1,
               height: '100%',
               borderBottomWidth: 0.5,
-              borderColor: colors?.$borderPrimary,
+              borderColor: '$borderPrimary',
               alignItems: 'center',
               flexDirection: 'row',
               gap: HORIZONTAL_ITEM_GAP,
