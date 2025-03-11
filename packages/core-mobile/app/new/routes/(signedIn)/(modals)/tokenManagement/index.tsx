@@ -56,7 +56,7 @@ const TokenManagementScreen = (): JSX.Element => {
       return (
         <ErrorState
           sx={{ flex: 1 }}
-          title="No Assets yet"
+          title="No assets yet"
           description="Add your crypto tokens to track your portfolio’s performance and stay
       updated on your investments"
         />

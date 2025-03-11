@@ -1,61 +1,63 @@
 import React from 'react'
-import { alpha, Icons, useTheme, View } from '@avalabs/k2-alpine'
+import { Icons, SxProp, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
-import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isTokenMalicious } from 'utils/isTokenMalicious'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { TokenLogo } from './TokenLogo'
 
 interface Props {
   token: LocalTokenWithBalance
+  sx?: SxProp
 }
 
-export const LogoWithNetwork = ({ token }: Props): React.JSX.Element => {
+export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
-
   const network = useSelector(selectNetwork(token.networkChainId))
   const isMalicious = isTokenMalicious(token)
 
   const shouldShowNetworkLogo =
     token.type !== TokenType.NATIVE ||
-    token.localId === AVAX_X_ID ||
-    token.localId === AVAX_P_ID
+    isTokenWithBalanceAVM(token) ||
+    isTokenWithBalancePVM(token)
 
   const renderNetworkLogo = (
     t: LocalTokenWithBalance,
     n: Network
   ): React.JSX.Element | undefined => {
-    if (t.localId === AVAX_P_ID) {
+    if (isTokenWithBalancePVM(token)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK width={12} height={12} />
       ) : (
         <Icons.TokenLogos.AVAX_P_LIGHT width={12} height={12} />
       )
     }
-    if (t.localId === AVAX_X_ID) {
+    if (isTokenWithBalanceAVM(token)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK width={12} height={12} />
       ) : (
         <Icons.TokenLogos.AVAX_X_LIGHT width={12} height={12} />
       )
     }
-
     return <TokenLogo size={12} symbol={token.symbol} logoUri={n.logoUri} />
   }
 
   return (
-    <View style={{ marginRight: 16, width: 36 }}>
+    <View sx={{ width: 36, ...sx }}>
       <TokenLogo
         size={36}
         symbol={token.symbol}
         logoUri={token.logoUri}
         backgroundColor={colors.$borderPrimary}
-        borderColor={borderColor}
+        borderColor={colors.$borderPrimary}
         isMalicious={isMalicious}
       />
       {shouldShowNetworkLogo && network ? (
@@ -75,7 +77,7 @@ export const LogoWithNetwork = ({ token }: Props): React.JSX.Element => {
           testID="network_logo">
           <View
             sx={{
-              borderColor: borderColor,
+              borderColor: colors.$borderPrimary,
               borderWidth: 1,
               width: 14,
               height: 14,
