@@ -18,6 +18,17 @@ export default function VersionItem(): React.JSX.Element {
   const [showDebugMenu, setShowDebugMenu] = useState(false)
   const navigation = useNavigation<DebugNavigationProp>()
 
+  // Reset tap count after 2 seconds of inactivity
+  useEffect(() => {
+    if (tapCount === 0) return
+
+    const timeout = setTimeout(() => {
+      setTapCount(0)
+    }, 2000)
+
+    return () => clearTimeout(timeout)
+  }, [tapCount])
+
   const handleVersionPress = (): void => {
     if (!isDebugOrInternalBuild()) return
 
@@ -28,11 +39,6 @@ export default function VersionItem(): React.JSX.Element {
       setShowDebugMenu(true)
       setTapCount(0)
     }
-
-    // Reset tap count after 2 seconds of inactivity
-    setTimeout(() => {
-      setTapCount(0)
-    }, 2000)
   }
 
   useEffect(() => {
