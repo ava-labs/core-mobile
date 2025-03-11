@@ -94,6 +94,7 @@ export const useFadingHeaderNavigation = ({
     navigation.setOptions({
       headerBackground: () => (
         <BlurredBackgroundView
+          hasGrabber={shouldHeaderHaveGrabber}
           separator={
             hasSeparator
               ? {
