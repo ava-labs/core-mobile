@@ -15,6 +15,7 @@ import { CollectibleView } from 'store/balance'
 import {
   getGridCardHeight,
   HORIZONTAL_ITEM_GAP,
+  HORIZONTAL_MARGIN,
   VERTICAL_ITEM_GAP
 } from '../consts'
 import { CardContainer } from './CardContainer'
@@ -52,7 +53,7 @@ export const CollectibleListItem = memo(
     index: number
   }): ReactNode => {
     const {
-      theme: { isDark, colors }
+      theme: { colors }
     } = useTheme()
     const dimensions = useWindowDimensions()
     const height = getGridCardHeight(
@@ -80,7 +81,7 @@ export const CollectibleListItem = memo(
             flexDirection: 'row',
             alignItems: 'center',
             gap: HORIZONTAL_ITEM_GAP,
-            marginHorizontal: HORIZONTAL_ITEM_GAP / 2
+            paddingLeft: HORIZONTAL_MARGIN
           }}>
           <CardContainer
             style={{
@@ -95,10 +96,11 @@ export const CollectibleListItem = memo(
               flex: 1,
               height: '100%',
               borderBottomWidth: 0.5,
-              borderColor: isDark ? alpha('#CCCCCC', 0.2) : '#CCCCCC',
+              borderColor: '$borderPrimary',
               alignItems: 'center',
               flexDirection: 'row',
-              gap: HORIZONTAL_ITEM_GAP
+              gap: HORIZONTAL_ITEM_GAP,
+              paddingRight: HORIZONTAL_MARGIN
             }}>
             <View
               style={{
@@ -130,12 +132,7 @@ export const CollectibleListItem = memo(
                 <Pill text={collectible.balance.toString()} />
               ) : null}
             </View>
-            <Icons.Navigation.ChevronRightV2
-              color={colors.$textPrimary}
-              style={{
-                marginRight: -4
-              }}
-            />
+            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
           </View>
         </Pressable>
       </Animated.View>

@@ -45,6 +45,7 @@ export const Video = ({
   })
 
   const togglePlay = (): void => {
+    if (hideControls) return
     if (isPlaying) {
       player.pause()
     } else {
@@ -97,24 +98,22 @@ export const Video = ({
           />
         </Animated.View>
       )}
-      {hideControls ? null : (
-        <View
-          style={[
-            { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
-          ]}>
-          <Pressable
-            onPress={togglePlay}
-            style={{
-              flex: 1
-            }}>
-            {/* <Ionicons
+      <View
+        style={[
+          { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }
+        ]}>
+        <Pressable
+          onPress={togglePlay}
+          style={{
+            flex: 1
+          }}>
+          {/* <Ionicons
             name={isPlaying ? 'pause' : 'play'}
             size={14}
             color="white"
           /> */}
-          </Pressable>
-        </View>
-      )}
+        </Pressable>
+      </View>
     </View>
   )
 }

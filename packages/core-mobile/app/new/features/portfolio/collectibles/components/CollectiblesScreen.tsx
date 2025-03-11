@@ -174,7 +174,11 @@ export const CollectiblesScreen = ({
   ])
 
   const renderHeader = useMemo((): JSX.Element => {
-    if (filteredAndSorted.length === 0) return <></>
+    if (
+      filteredAndSorted.length === 0 &&
+      (!isEnabled || noCollectiblesFound || !isLoading)
+    )
+      return <></>
     return (
       <View
         style={[
@@ -196,6 +200,9 @@ export const CollectiblesScreen = ({
     filter,
     filteredAndSorted.length,
     handleManageList,
+    isEnabled,
+    isLoading,
+    noCollectiblesFound,
     sort,
     view
   ])
@@ -218,9 +225,12 @@ export const CollectiblesScreen = ({
         overflow: 'visible'
       }}
       contentContainerStyle={{
-        paddingHorizontal: filteredAndSorted?.length
-          ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
-          : 0,
+        paddingHorizontal:
+          listType === CollectibleView.ListView
+            ? 0
+            : filteredAndSorted?.length
+            ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
+            : 0,
         paddingBottom: HORIZONTAL_MARGIN
       }}
       scrollEnabled={filteredAndSorted?.length > 0}

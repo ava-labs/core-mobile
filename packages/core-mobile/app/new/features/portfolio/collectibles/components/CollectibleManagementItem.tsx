@@ -52,10 +52,10 @@ export const CollectibleManagementItem = ({
     <Pressable
       style={{
         height,
-        marginHorizontal: HORIZONTAL_MARGIN,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: HORIZONTAL_ITEM_GAP
+        gap: HORIZONTAL_ITEM_GAP,
+        paddingLeft: HORIZONTAL_MARGIN
       }}>
       <CardContainer
         style={{
@@ -73,7 +73,8 @@ export const CollectibleManagementItem = ({
           borderColor: '$borderPrimary',
           alignItems: 'center',
           flexDirection: 'row',
-          gap: HORIZONTAL_ITEM_GAP
+          gap: HORIZONTAL_ITEM_GAP,
+          paddingRight: HORIZONTAL_MARGIN
         }}>
         <View
           style={{

@@ -47,7 +47,6 @@ export const CollectibleRenderer = ({
   }
 
   const onVideoError = (): void => {
-    // setError("Something went wrong. We couldn't load the video.")
     setIsLoading(false)
   }
 
@@ -96,6 +95,9 @@ export const CollectibleRenderer = ({
           thumbnail={collectible?.imageData?.image}
           onLoadEnd={onLoadEnd}
           onError={onVideoError}
+          autoPlay={false}
+          muted
+          hideControls
         />
       )
 
