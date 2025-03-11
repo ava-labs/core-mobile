@@ -9,20 +9,22 @@ import Grabber from './Grabber'
 
 const BlurredBackgroundView = ({
   hasGrabber = false,
-  separator
+  separator,
+  backgroundColor
 }: {
   hasGrabber?: boolean
   separator?: {
     opacity: SharedValue<number>
     position: 'top' | 'bottom'
   }
+  backgroundColor?: string
 }): JSX.Element => {
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
   }))
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />

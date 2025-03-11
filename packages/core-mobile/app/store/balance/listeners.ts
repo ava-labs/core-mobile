@@ -26,7 +26,6 @@ import {
 } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
-import SentryWrapper from 'services/sentry/SentryWrapper'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
 import NetworkService from 'services/network/NetworkService'
@@ -34,6 +33,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -129,8 +129,6 @@ const onBalanceUpdateCore = async ({
     return
   }
 
-  const sentryTrx = SentryWrapper.startTransaction('get-balances')
-
   dispatch(setStatus(queryStatus))
 
   const currency = selectSelectedCurrency(state).toLowerCase()
@@ -140,55 +138,58 @@ const onBalanceUpdateCore = async ({
   // fetch the first network balances first
   if (firstNetwork === undefined) return
 
-  const balanceKeyedPromises = accounts.map(account => {
-    return {
-      key: getKey(firstNetwork.chainId, account.index),
-      promise: BalanceService.getBalancesForAccount({
-        network: firstNetwork,
-        account,
-        currency,
-        sentryTrx
+  SentryWrapper.startSpan(
+    { name: 'get-balances', contextName: 'svc.balance.get_for_account' },
+    async span => {
+      const balanceKeyedPromises = accounts.map(account => {
+        return {
+          key: getKey(firstNetwork.chainId, account.index),
+          promise: BalanceService.getBalancesForAccount({
+            network: firstNetwork,
+            account,
+            currency
+          })
+        }
       })
-    }
-  })
-  const balances = await fetchBalanceForAccounts(balanceKeyedPromises)
+      const balances = await fetchBalanceForAccounts(balanceKeyedPromises)
 
-  dispatch(setBalances(balances))
+      dispatch(setBalances(balances))
 
-  // fetch all other network balances
-  if (restNetworks.length > 0) {
-    const customTokens = selectAllCustomTokens(state)
-    const inactiveNetworkPromises: {
-      key: string
-      promise: Promise<BalancesForAccount>
-    }[] = []
+      // fetch all other network balances
+      if (restNetworks.length > 0) {
+        const customTokens = selectAllCustomTokens(state)
+        const inactiveNetworkPromises: {
+          key: string
+          promise: Promise<BalancesForAccount>
+        }[] = []
 
-    for (const n of restNetworks) {
-      const customTokensByChainIdAndNetwork =
-        customTokens[n.chainId.toString()] ?? []
-      inactiveNetworkPromises.push(
-        ...accounts.map(account => {
-          return {
-            key: getKey(n.chainId, account.index),
-            promise: BalanceService.getBalancesForAccount({
-              network: n,
-              account,
-              currency,
-              sentryTrx,
-              customTokens: customTokensByChainIdAndNetwork
+        for (const n of restNetworks) {
+          const customTokensByChainIdAndNetwork =
+            customTokens[n.chainId.toString()] ?? []
+          inactiveNetworkPromises.push(
+            ...accounts.map(account => {
+              return {
+                key: getKey(n.chainId, account.index),
+                promise: BalanceService.getBalancesForAccount({
+                  network: n,
+                  account,
+                  currency,
+                  customTokens: customTokensByChainIdAndNetwork
+                })
+              }
             })
-          }
-        })
-      )
-    }
-    const inactiveNetworkBalances = await fetchBalanceForAccounts(
-      inactiveNetworkPromises
-    )
-    dispatch(setBalances(inactiveNetworkBalances))
-  }
+          )
+        }
+        const inactiveNetworkBalances = await fetchBalanceForAccounts(
+          inactiveNetworkPromises
+        )
+        dispatch(setBalances(inactiveNetworkBalances))
+      }
 
-  dispatch(setStatus(QueryStatus.IDLE))
-  SentryWrapper.finish(sentryTrx)
+      dispatch(setStatus(QueryStatus.IDLE))
+      span?.end()
+    }
+  )
 }
 
 const fetchBalancePeriodically = async (
