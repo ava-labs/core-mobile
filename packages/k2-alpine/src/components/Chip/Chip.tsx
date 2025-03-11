@@ -57,7 +57,6 @@ export const Chip = forwardRef<
       <Text
         numberOfLines={1}
         variant={'buttonSmall'}
-        adjustsFontSizeToFit={Platform.OS === 'ios'}
         style={{
           color: tintColor
         }}>
