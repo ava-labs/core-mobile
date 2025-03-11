@@ -10,7 +10,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
-import { Switch } from 'react-native'
+import { Switch, InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
 
 export const CreatePin = ({
@@ -45,7 +45,9 @@ export const CreatePin = ({
   useFocusEffect(
     useCallback(() => {
       resetPin()
-      ref.current?.focus()
+      InteractionManager.runAfterInteractions(() => {
+        ref.current?.focus()
+      })
     }, [resetPin])
   )
 

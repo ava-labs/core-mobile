@@ -164,13 +164,13 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       let sub: Subscription
-      if (bioType) {
-        InteractionManager.runAfterInteractions(() => {
+      InteractionManager.runAfterInteractions(() => {
+        if (bioType) {
           sub = handlePromptBioLogin()
-        })
-      } else {
-        focusPinInput()
-      }
+        } else {
+          focusPinInput()
+        }
+      })
 
       return () => {
         blurPinInput()
