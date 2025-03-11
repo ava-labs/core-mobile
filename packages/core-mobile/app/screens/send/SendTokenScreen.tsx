@@ -9,7 +9,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showTransactionErrorToast } from 'utils/toast'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { useSelector } from 'react-redux'
 import {
   NetworkTokenWithBalance,
