@@ -291,6 +291,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   return (
     <View sx={{ flex: 1 }}>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         sx={{ flex: 1 }}
         contentContainerSx={{ paddingBottom: 60 }}
         {...scrollViewProps}>
