@@ -27,7 +27,7 @@ export const CollectibleManagementItem = ({
 }): ReactNode => {
   const dispatch = useDispatch()
   const {
-    theme: { isDark }
+    theme: { colors }
   } = useTheme()
   const dimensions = useWindowDimensions()
   const height = getGridCardHeight(CollectibleView.ListView, dimensions, index)
@@ -70,7 +70,7 @@ export const CollectibleManagementItem = ({
           flex: 1,
           height: '100%',
           borderBottomWidth: 0.5,
-          borderColor: '$borderPrimary',
+          borderColor: colors?.$borderPrimary,
           alignItems: 'center',
           flexDirection: 'row',
           gap: HORIZONTAL_ITEM_GAP,
@@ -93,8 +93,8 @@ export const CollectibleManagementItem = ({
             <Text
               variant="subtitle2"
               numberOfLines={1}
-              style={{
-                color: alpha(isDark ? '#FFFFFF' : '#1E1E24', 0.6)
+              sx={{
+                color: alpha(colors?.$textSecondary, 0.6)
               }}>
               {collectionName}
             </Text>

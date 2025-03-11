@@ -96,7 +96,7 @@ export const CollectibleListItem = memo(
               flex: 1,
               height: '100%',
               borderBottomWidth: 0.5,
-              borderColor: '$borderPrimary',
+              borderColor: colors?.$borderPrimary,
               alignItems: 'center',
               flexDirection: 'row',
               gap: HORIZONTAL_ITEM_GAP,
