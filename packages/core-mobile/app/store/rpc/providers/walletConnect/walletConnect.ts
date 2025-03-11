@@ -11,7 +11,7 @@ import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showDappConnectionSuccessToast } from 'utils/toast'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
