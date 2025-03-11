@@ -11,8 +11,6 @@ export default function PortfolioLayout(): JSX.Element {
     <CollectiblesProvider>
       <Stack screenOptions={stackNavigatorScreenOptions}>
         <Stack.Screen name="index" options={homeScreenOptions} />
-        <Stack.Screen name="defiDetail" />
-        <Stack.Screen name="tokenDetail" />
       </Stack>
     </CollectiblesProvider>
   )

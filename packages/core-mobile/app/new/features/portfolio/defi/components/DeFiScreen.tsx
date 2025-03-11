@@ -49,7 +49,7 @@ export const DeFiScreen = (): JSX.Element => {
 
   const handlePressDeFiItem = (item: DeFiSimpleProtocol): void => {
     navigate({
-      pathname: '/portfolio/defiDetail',
+      pathname: '/defiDetail',
       params: { protocolId: item.id }
     })
     AnalyticsService.capture('DeFiCardClicked')
@@ -125,13 +125,20 @@ export const DeFiScreen = (): JSX.Element => {
         sx={{
           paddingHorizontal: 16
         }}>
-        <DropdownSelections sort={sort} view={view} />
+        <DropdownSelections
+          sort={sort}
+          view={view}
+          sx={{
+            marginTop: 20,
+            marginBottom: isGridView ? 16 : 8
+          }}
+        />
       </View>
     )
-  }, [sort, view])
+  }, [isGridView, sort, view])
 
   const renderSeparator = (): JSX.Element => {
-    return isGridView ? <Space y={16} /> : <Separator sx={{ marginLeft: 62 }} />
+    return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />
   }
 
   return (
@@ -140,7 +147,7 @@ export const DeFiScreen = (): JSX.Element => {
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}
-      ListHeaderComponent={header}
+      ListHeaderComponent={data.length > 0 ? header : undefined}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
@@ -151,7 +158,7 @@ export const DeFiScreen = (): JSX.Element => {
       columnWrapperStyle={
         isGridView && {
           paddingHorizontal: 16,
-          gap: 16
+          gap: 14
         }
       }
     />

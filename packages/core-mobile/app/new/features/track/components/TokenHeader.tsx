@@ -96,6 +96,7 @@ export const TokenHeader = ({
           status={priceChange?.status ?? PriceChangeStatus.Neutral}
           formattedPercent={priceChange?.formattedPercent ?? UNKNOWN_AMOUNT}
           textVariant="buttonMedium"
+          animated={true}
         />
       </View>
     </View>

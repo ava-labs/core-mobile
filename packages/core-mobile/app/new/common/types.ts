@@ -6,4 +6,5 @@ export type DropdownSelection = {
   selected: IndexPath
   onSelected: (index: IndexPath) => void
   onDeselect?: (index: IndexPath) => void
+  useAnchorRect?: boolean
 }

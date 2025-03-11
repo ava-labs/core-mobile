@@ -185,7 +185,9 @@ export const CollectiblesScreen = ({
           {
             alignSelf: 'center',
             width: dimensions.width - HORIZONTAL_MARGIN * 2,
-            zIndex: 10
+            zIndex: 10,
+            marginTop: 20,
+            marginBottom: CollectibleView.ListView === listType ? 8 : 16
           }
         ]}>
         <DropdownSelections
@@ -202,6 +204,7 @@ export const CollectiblesScreen = ({
     handleManageList,
     isEnabled,
     isLoading,
+    listType,
     noCollectiblesFound,
     sort,
     view
