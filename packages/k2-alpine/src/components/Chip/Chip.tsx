@@ -1,7 +1,6 @@
 import React, { forwardRef, PropsWithChildren } from 'react'
 import {
   Insets,
-  Platform,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
