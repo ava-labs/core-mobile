@@ -1,7 +1,6 @@
 import Big from 'big.js'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { NetworkToken } from '@avalabs/core-chains-sdk'
-import { Platform } from 'react-native'
 import DeviceInfo from 'react-native-device-info'
 import { formatNumber } from './formatNumber/formatNumber'
 
@@ -140,10 +139,5 @@ export async function findAsyncSequential<T>(
 }
 
 export const isDebugOrInternalBuild = (): boolean => {
-  return (
-    __DEV__ ||
-    (Platform.OS === 'android' &&
-      DeviceInfo.getBundleId().includes('.internal')) ||
-    (Platform.OS === 'ios' && DeviceInfo.getBundleId().includes('.internal'))
-  )
+  return __DEV__ || DeviceInfo.getBundleId().includes('.internal')
 }
