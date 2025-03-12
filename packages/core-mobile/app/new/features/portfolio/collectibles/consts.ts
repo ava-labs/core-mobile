@@ -6,10 +6,9 @@ export const HORIZONTAL_ITEM_GAP = 14
 export const VERTICAL_ITEM_GAP = 12
 export const LIST_ITEM_HEIGHT = 64
 
-export const getCompactGridCardHeight = (
-  width: number,
-  index: number
-): number => {
+const width = Dimensions.get('window').width
+
+export const getCompactGridCardHeight = (index: number): number => {
   if (index === 1 || (index % 5 === 0 && index > 0))
     return (width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 3) / 3
   if (index % 4 === 0)
@@ -17,10 +16,7 @@ export const getCompactGridCardHeight = (
   return (width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 3) / 2.5
 }
 
-export const getLargeGridCardHeight = (
-  width: number,
-  index: number
-): number => {
+export const getLargeGridCardHeight = (index: number): number => {
   if (index === 1 || (index % 5 === 0 && index > 0))
     return (width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 2) / 2
 
@@ -34,15 +30,14 @@ export const getGridCardHeight = (
   type: CollectibleView,
   index: number
 ): number => {
-  const width = Dimensions.get('window').width
   switch (type) {
     case CollectibleView.ListView:
       return LIST_ITEM_HEIGHT
     case CollectibleView.CompactGrid: {
-      return getCompactGridCardHeight(width, index)
+      return getCompactGridCardHeight(index)
     }
     case CollectibleView.LargeGrid: {
-      return getLargeGridCardHeight(width, index)
+      return getLargeGridCardHeight(index)
     }
     default: {
       return LIST_ITEM_HEIGHT
