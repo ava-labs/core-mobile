@@ -37,6 +37,7 @@ import { LayoutChangeEvent } from 'react-native'
 import { ShareBarButton } from 'common/components/ShareBarButton'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
+import { MarketToken } from 'store/watchlist'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -55,6 +56,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const [token, setToken] = useState<MarketToken | undefined>()
   const { getMarketTokenById } = useWatchlist()
   const {
     chartData,
@@ -66,12 +68,20 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleFavorite,
     openUrl
   } = useTokenDetails(tokenId ?? '')
-  const token = tokenId ? getMarketTokenById(tokenId) : undefined
+
+  useEffect(() => {
+    if (tokenId && token === undefined) {
+      const _token = getMarketTokenById(tokenId)
+      setToken(_token)
+    }
+  }, [getMarketTokenById, token, tokenId])
+
   const selectedSegmentIndex = useDerivedValue(() => {
     return Object.keys(SEGMENT_INDEX_MAP).findIndex(
       key => SEGMENT_INDEX_MAP[Number(key)] === chartDays
     )
   }, [chartDays])
+
   const scrollViewProps = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={token?.symbol.toUpperCase() ?? ''} />,
     targetLayout: headerLayout,

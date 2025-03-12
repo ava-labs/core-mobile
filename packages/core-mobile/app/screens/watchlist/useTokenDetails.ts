@@ -14,6 +14,7 @@ import TokenService from 'services/token/TokenService'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useGetTrendingToken } from 'hooks/watchlist/useGetTrendingTokens'
 import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
+import { Ranges } from 'services/token/types'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
@@ -74,14 +75,7 @@ export const useTokenDetails = (
   const [tokenInfo, setTokenInfo] = useState<TokenInfo>()
   const [chartData, setChartData] = useState<{ date: Date; value: number }[]>()
   const [chartDays, setChartDays] = useState(1)
-  const [ranges, setRanges] = useState<{
-    minDate: number
-    maxDate: number
-    minPrice: number
-    maxPrice: number
-    diffValue: number
-    percentChange: number
-  }>({
+  const [ranges, setRanges] = useState<Ranges>({
     minDate: 0,
     maxDate: 0,
     minPrice: 0,
