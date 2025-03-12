@@ -16,7 +16,6 @@ import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Animated, {
   useDerivedValue,
@@ -37,7 +36,6 @@ import { LayoutChangeEvent } from 'react-native'
 import { ShareBarButton } from 'common/components/ShareBarButton'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
-import { MarketToken } from 'store/watchlist'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -56,8 +54,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const [token, setToken] = useState<MarketToken | undefined>()
-  const { getMarketTokenById } = useWatchlist()
   const {
     chartData,
     chartDays,
@@ -69,13 +65,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     openUrl
   } = useTokenDetails(tokenId ?? '')
 
-  useEffect(() => {
-    if (tokenId && token === undefined) {
-      const _token = getMarketTokenById(tokenId)
-      setToken(_token)
-    }
-  }, [getMarketTokenById, token, tokenId])
-
   const selectedSegmentIndex = useDerivedValue(() => {
     return Object.keys(SEGMENT_INDEX_MAP).findIndex(
       key => SEGMENT_INDEX_MAP[Number(key)] === chartDays
@@ -83,7 +72,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [chartDays])
 
   const scrollViewProps = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={token?.symbol.toUpperCase() ?? ''} />,
+    header: (
+      <NavigationTitleHeader title={tokenInfo?.symbol.toUpperCase() ?? ''} />
+    ),
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
@@ -123,7 +114,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handlePressAbout = (): void => {
     showAlert({
-      title: `About ${token?.symbol.toUpperCase()}`,
+      title: `About ${tokenInfo?.symbol.toUpperCase()}`,
       description: tokenInfo?.description,
       buttons: [
         {
@@ -294,7 +285,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     })
   }, [renderHeaderRight, navigation])
 
-  if (!tokenId || !token) {
+  if (!tokenId || !tokenInfo) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 
@@ -310,9 +301,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             style={{ opacity: headerOpacity }}
             onLayout={handleHeaderLayout}>
             <TokenHeader
-              logoUri={token.logoUri}
-              symbol={token.symbol}
-              currentPrice={token.currentPrice}
+              logoUri={tokenInfo.logoUri}
+              symbol={tokenInfo.symbol ?? ''}
+              currentPrice={tokenInfo.currentPrice}
               ranges={
                 ranges.minDate === 0 && ranges.maxDate === 0
                   ? undefined

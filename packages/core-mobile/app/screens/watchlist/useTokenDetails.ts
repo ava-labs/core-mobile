@@ -34,6 +34,7 @@ type TokenInfo = {
   urlHostname: string | undefined
   has24hChartDataOnly: boolean
   description?: string
+  currentPrice?: number
 }
 
 export const useTokenDetails = (
@@ -154,7 +155,8 @@ export const useTokenDetails = (
           logoUri: trendingTokenData.logoURI ?? undefined,
           contractAddress: trendingTokenData.address,
           urlHostname: trendingTokenData.website ?? undefined,
-          has24hChartDataOnly: true
+          has24hChartDataOnly: true,
+          currentPrice: trendingTokenData.price
         })
     }
 
@@ -181,7 +183,8 @@ export const useTokenDetails = (
         contractAddress: data.contract_address,
         urlHostname: data?.links?.homepage?.[0],
         has24hChartDataOnly: false,
-        description: data.description?.en ?? undefined
+        description: data.description?.en ?? undefined,
+        currentPrice: price?.priceInCurrency
       })
     }
 
@@ -198,7 +201,8 @@ export const useTokenDetails = (
     getWatchlistChart,
     trendingTokenData,
     token,
-    tokenId
+    tokenId,
+    price
   ])
 
   const handleFavorite = useCallback(() => {
