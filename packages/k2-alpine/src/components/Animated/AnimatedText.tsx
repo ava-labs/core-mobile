@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useEffect } from 'react'
 
 import { SxProp } from 'dripsy'
-import { LayoutChangeEvent } from 'react-native'
 import Animated, {
   FadeIn,
   FadeOut,
@@ -19,13 +18,11 @@ import { Text } from '../Primitives'
 export const AnimatedText = ({
   variant = 'heading2',
   characters,
-  sx,
-  onLayout
+  sx
 }: {
   characters: string
   variant?: TextVariant
   sx?: SxProp
-  onLayout?: (event: LayoutChangeEvent) => void
 }): JSX.Element => {
   return (
     <Animated.View
@@ -33,8 +30,7 @@ export const AnimatedText = ({
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'
-      }}
-      onLayout={onLayout}>
+      }}>
       {characters
         .toString()
         .split('')
@@ -74,14 +70,14 @@ export const AnimateFadeScale = memo(
     }, [])
 
     return (
-      <Animated.View
-        entering={FadeIn}
-        exiting={FadeOut}
-        style={[
-          animatedStyle,
-          { justifyContent: 'flex-start', alignItems: 'flex-start' }
-        ]}>
-        {children}
+      <Animated.View entering={FadeIn} exiting={FadeOut}>
+        <Animated.View
+          style={[
+            animatedStyle,
+            { justifyContent: 'flex-start', alignItems: 'flex-start' }
+          ]}>
+          {children}
+        </Animated.View>
       </Animated.View>
     )
   }

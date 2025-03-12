@@ -1,4 +1,14 @@
+import { Image, IndexPath, View } from '@avalabs/k2-alpine'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { DropdownSelections } from 'common/components/DropdownSelections'
+import { ErrorState } from 'common/components/ErrorState'
+import { LoadingState } from 'common/components/LoadingState'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { Space } from 'components/Space'
 import React, { FC, memo, useCallback, useMemo } from 'react'
+import { ListRenderItemInfo } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
@@ -7,16 +17,6 @@ import {
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
-import { Image, IndexPath, View } from '@avalabs/k2-alpine'
-import { Space } from 'components/Space'
-import { selectActiveAccount } from 'store/account'
-import { useSelector } from 'react-redux'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { LoadingState } from 'common/components/LoadingState'
-import { ListRenderItemInfo } from 'react-native'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { ErrorState } from 'common/components/ErrorState'
-import { DropdownSelections } from 'common/components/DropdownSelections'
 import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
@@ -121,7 +121,7 @@ const AssetsScreen: FC<Props> = ({
           paddingHorizontal: 16
         }}>
         <DropdownSelections
-          sx={{ marginTop: 14, marginBottom: 16 }}
+          sx={{ marginTop: 20, marginBottom: 16 }}
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}
@@ -132,7 +132,10 @@ const AssetsScreen: FC<Props> = ({
 
   return (
     <CollapsibleTabs.FlatList
-      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
+      contentContainerStyle={{
+        overflow: 'visible',
+        paddingBottom: 16
+      }}
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}

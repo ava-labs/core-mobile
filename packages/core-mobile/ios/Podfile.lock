@@ -325,6 +325,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - ExpoVideo (2.0.5):
+    - ExpoModulesCore
   - EXSplashScreen (0.26.5):
     - DoubleConversion
     - ExpoModulesCore
@@ -2801,6 +2803,7 @@ DEPENDENCIES:
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - ExpoVideo (from `../node_modules/expo-video/ios`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -3010,6 +3013,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-linking/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
+  ExpoVideo:
+    :path: "../node_modules/expo-video/ios"
   EXSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
   EXUpdatesInterface:
@@ -3270,6 +3275,7 @@ SPEC CHECKSUMS:
   ExpoLinearGradient: ee9efc5acb988b911320e964fab9b4cbdeb198c4
   ExpoLinking: a9e64f08d2bb4fc42e7441174f15cc535bb390ba
   ExpoModulesCore: 28ce5c3193da2ff32648d023a282f65131ade10a
+  ExpoVideo: 6860956b8fc77af4e69165236af5fc037a060a02
   EXSplashScreen: 86d063b7d50223c04cf6fb1bd9e601436b50274b
   EXUpdatesInterface: 1dcebac98ac5dad4289e6ff2bd5616822e894397
   FBLazyVector: be509404b5de73a64a74284edcaf73a5d1e128b1
