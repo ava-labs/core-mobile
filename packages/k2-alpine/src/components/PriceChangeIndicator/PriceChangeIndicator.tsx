@@ -74,6 +74,8 @@ const AnimatedComponent = ({
   formattedPercent,
   status
 }: ComponentProps): JSX.Element => {
+  const showArrow =
+    status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
   const iconMarginBottom =
     textVariant === 'buttonMedium'
       ? status === PriceChangeStatus.Up
@@ -94,13 +96,15 @@ const AnimatedComponent = ({
       <Animated.View
         layout={LinearTransition.springify().damping(100)}
         style={styles.innerWrapper}>
-        <Arrow
-          sx={{
-            marginBottom: iconMarginBottom,
-            marginLeft: iconMarginLeft
-          }}
-          status={status}
-        />
+        {showArrow && (
+          <Arrow
+            sx={{
+              marginBottom: iconMarginBottom,
+              marginLeft: iconMarginLeft
+            }}
+            status={status}
+          />
+        )}
         {formattedPercent !== undefined && (
           <AnimatedText
             variant={textVariant}
@@ -123,6 +127,8 @@ const PlainComponent = ({
   formattedPercent,
   status
 }: ComponentProps): JSX.Element => {
+  const showArrow =
+    status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
   const iconMarginBottom =
     textVariant === 'buttonMedium'
       ? status === PriceChangeStatus.Up
@@ -141,13 +147,15 @@ const PlainComponent = ({
         }}
       />
       <View style={styles.innerWrapper}>
-        <Arrow
-          sx={{
-            marginBottom: iconMarginBottom,
-            marginLeft: iconMarginLeft
-          }}
-          status={status}
-        />
+        {showArrow && (
+          <Arrow
+            sx={{
+              marginBottom: iconMarginBottom,
+              marginLeft: iconMarginLeft
+            }}
+            status={status}
+          />
+        )}
         {formattedPercent !== undefined && (
           <AnimatedText
             variant={textVariant}

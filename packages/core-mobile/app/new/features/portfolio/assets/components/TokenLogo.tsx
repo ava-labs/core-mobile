@@ -51,7 +51,8 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
           alignItems: 'center',
           overflow: 'hidden',
           backgroundColor,
-          borderColor
+          borderColor,
+          borderWidth
         }}>
         <Icons.Custom.RedExclamation width={14} height={14} />
       </View>
