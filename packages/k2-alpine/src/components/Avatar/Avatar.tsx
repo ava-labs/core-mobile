@@ -39,7 +39,7 @@ export const Avatar = ({
 
   const pressedAnimation = useSharedValue(1)
   const pressedAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pressedAnimation.value }]
+    transform: [{ scale: pressedAnimation.get() }]
   }))
   // to cancel out the blur effect on the backgroundColor, we need to use a darker background color for the blur view
   const surfacePrimaryBlurBgMap = theme.isDark

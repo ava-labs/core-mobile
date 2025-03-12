@@ -45,7 +45,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const navigation = useNavigation()
   const headerOpacity = useSharedValue(1)
   const selectedDataIndicatorOpacity = useDerivedValue(
-    () => 1 - headerOpacity.value
+    () => 1 - headerOpacity.get()
   )
   const [selectedData, setSelectedData] = useState<{
     value: number
@@ -67,7 +67,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     openUrl
   } = useTokenDetails(tokenId ?? '')
   const token = tokenId ? getMarketTokenById(tokenId) : undefined
-  const selectedSegmentIndex = useMemo(() => {
+  const selectedSegmentIndex = useDerivedValue(() => {
     return Object.keys(SEGMENT_INDEX_MAP).findIndex(
       key => SEGMENT_INDEX_MAP[Number(key)] === chartDays
     )

@@ -20,7 +20,7 @@ const BlurredBackgroundView = ({
   backgroundColor?: string
 }): JSX.Element => {
   const animatedBorderStyle = useAnimatedStyle(() => ({
-    opacity: separator?.opacity.value
+    opacity: separator?.opacity.get()
   }))
 
   return (

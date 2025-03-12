@@ -19,7 +19,11 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import Animated, {
+  useAnimatedStyle,
+  SharedValue,
+  useSharedValue
+} from 'react-native-reanimated'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import {
@@ -80,10 +84,10 @@ const TokenDetailScreen = (): React.JSX.Element => {
     header: <NavigationTitleHeader title={token?.name ?? ''} />,
     targetLayout: tokenHeaderLayout
   })
-  const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
+  const selectedSegmentIndex = useSharedValue(0)
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
+    opacity: 1 - targetHiddenProgress.get()
   }))
 
   const formattedBalance = useMemo(() => {
@@ -104,13 +108,17 @@ const TokenDetailScreen = (): React.JSX.Element => {
   )
 
   const handleSelectSegment = (index: number): void => {
-    if (index !== selectedSegmentIndex) {
+    if (tabViewRef.current?.getCurrentIndex() !== index) {
       tabViewRef.current?.setIndex(index)
     }
   }
 
   const handleChangeTab = (index: number): void => {
-    setSelectedSegmentIndex(index)
+    selectedSegmentIndex.value = index
+  }
+
+  const handleScrollTab = (tabIndex: SharedValue<number>): void => {
+    selectedSegmentIndex.value = tabIndex.value
   }
 
   const renderEmptyTabBar = (): JSX.Element => <></>
@@ -194,7 +202,8 @@ const TokenDetailScreen = (): React.JSX.Element => {
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
         onIndexChange={handleChangeTab}
-        onScroll={onScroll}
+        onScrollY={onScroll}
+        onScrollTab={handleScrollTab}
         tabs={renderTabs()}
       />
       {isXpToken && (

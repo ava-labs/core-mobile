@@ -22,11 +22,11 @@ export function SelectionDot({
   const color = colorScheme === 'dark' ? '#ffffff' : '#28282E'
 
   const point1 = useDerivedValue(() => {
-    return vec(circleX.value, 1000)
+    return vec(circleX.get(), 1000)
   }, [circleX])
 
   const point2 = useDerivedValue(() => {
-    return vec(circleX.value, 0)
+    return vec(circleX.get(), 0)
   }, [circleX])
 
   const setIsActive = useCallback(
@@ -42,7 +42,7 @@ export function SelectionDot({
   )
 
   useAnimatedReaction(
-    () => isActive.value,
+    () => isActive.get(),
     active => {
       runOnJS(setIsActive)(active)
     },

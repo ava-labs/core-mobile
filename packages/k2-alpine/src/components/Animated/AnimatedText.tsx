@@ -68,8 +68,8 @@ export const AnimateFadeScale = memo(
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
-        opacity: opacity.value,
-        transform: [{ scale: scale.value }]
+        opacity: opacity.get(),
+        transform: [{ scale: scale.get() }]
       }
     }, [])
 

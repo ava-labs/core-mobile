@@ -43,7 +43,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         )
 
         return Promise.all(animationPromises).then(() => {
-          if (isLoading.value) {
+          if (isLoading.get()) {
             runOnJS(triggerAnimations)()
           }
         })
@@ -138,7 +138,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
     const wrongPinAnimatedStyle = useAnimatedStyle(() => ({
       transform: [
         {
-          translateX: wrongPinAnimation.value
+          translateX: wrongPinAnimation.get()
         }
       ]
     }))
@@ -224,7 +224,7 @@ const AnimatedDot = ({
   const { theme } = useTheme()
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: sharedValue.value }]
+    transform: [{ translateY: sharedValue.get() }]
   }))
 
   return (

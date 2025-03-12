@@ -90,7 +90,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   const pinInputOpacity = useSharedValue(0)
   const pinInputOpacityStyle = useAnimatedStyle(() => {
     return {
-      opacity: pinInputOpacity.value
+      opacity: pinInputOpacity.get()
     }
   })
 
@@ -99,7 +99,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   )
   const buttonContainerStyle = useAnimatedStyle(() => {
     return {
-      paddingBottom: buttonContainerPaddingBottom.value
+      paddingBottom: buttonContainerPaddingBottom.get()
     }
   })
 

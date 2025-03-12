@@ -1,23 +1,30 @@
 import React, { forwardRef } from 'react'
 import {
   CollapsibleRef,
+  TabBarProps,
   Tabs,
+  useAnimatedTabIndex,
   useCurrentTabScrollY
 } from 'react-native-collapsible-tab-view'
-import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
+import {
+  runOnJS,
+  useAnimatedReaction,
+  SharedValue
+} from 'react-native-reanimated'
 
 export const CollapsibleTabsContainer = forwardRef<
   CollapsibleRef,
   {
     renderHeader: () => JSX.Element
-    renderTabBar: () => JSX.Element
+    renderTabBar: (props: TabBarProps) => JSX.Element
     onIndexChange?: (index: number) => void
-    onScroll?: (contentOffsetY: number) => void
+    onScrollTab?: (tabIndex: SharedValue<number>) => void
+    onScrollY?: (contentOffsetY: number) => void
     tabs: { tabName: string; component: JSX.Element }[]
   }
 >(
   (
-    { tabs, renderHeader, renderTabBar, onIndexChange, onScroll },
+    { tabs, renderHeader, renderTabBar, onIndexChange, onScrollTab, onScrollY },
     ref
   ): JSX.Element => {
     return (
@@ -37,7 +44,8 @@ export const CollapsibleTabsContainer = forwardRef<
           <Tabs.Tab key={tab.tabName} name={tab.tabName}>
             <CollapsibleTabWrapper
               component={tab.component}
-              onScroll={onScroll}
+              onScrollTab={onScrollTab}
+              onScrollY={onScrollY}
             />
           </Tabs.Tab>
         ))}
@@ -48,18 +56,30 @@ export const CollapsibleTabsContainer = forwardRef<
 
 const CollapsibleTabWrapper = ({
   component,
-  onScroll
+  onScrollTab,
+  onScrollY
 }: {
   component: JSX.Element
-  onScroll?: (contentOffsetY: number) => void
+  onScrollTab?: (tabIndex: SharedValue<number>) => void
+  onScrollY?: (contentOffsetY: number) => void
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
+  const tabIndex = useAnimatedTabIndex()
 
   useAnimatedReaction(
-    () => scrollY.value,
+    () => scrollY.get(),
     (curr, prev) => {
-      if (curr !== prev && onScroll) {
-        runOnJS(onScroll)(scrollY.value)
+      if (curr !== prev && onScrollY) {
+        runOnJS(onScrollY)(scrollY.get())
+      }
+    }
+  )
+
+  useAnimatedReaction(
+    () => tabIndex.get(),
+    (curr, prev) => {
+      if (curr !== prev && onScrollTab) {
+        runOnJS(onScrollTab)(tabIndex)
       }
     }
   )

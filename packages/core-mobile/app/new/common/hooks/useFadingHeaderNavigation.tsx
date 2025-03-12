@@ -79,16 +79,20 @@ export const useFadingHeaderNavigation = ({
   }
 
   // Animated styles for header transformation
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: targetHiddenProgress.value,
-    transform: [
-      {
-        translateY:
-          (navigationHeaderLayout?.height ?? 0) *
-          (1 - targetHiddenProgress.value)
-      }
-    ]
-  }))
+  const animatedHeaderStyle = useAnimatedStyle(() => {
+    const targetHiddenProgressValue = targetHiddenProgress.get()
+
+    return {
+      opacity: targetHiddenProgressValue,
+      transform: [
+        {
+          translateY:
+            (navigationHeaderLayout?.height ?? 0) *
+            (1 - targetHiddenProgressValue)
+        }
+      ]
+    }
+  })
 
   useEffect(() => {
     navigation.setOptions({

@@ -54,7 +54,7 @@ export const PageControl = ({
     return {
       transform: [
         {
-          translateX: translationAnimation.value
+          translateX: translationAnimation.get()
         }
       ]
     }

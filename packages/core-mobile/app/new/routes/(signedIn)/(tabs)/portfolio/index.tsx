@@ -24,7 +24,11 @@ import { RootState } from 'store'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import Animated, {
+  useAnimatedStyle,
+  SharedValue,
+  useSharedValue
+} from 'react-native-reanimated'
 import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
@@ -49,7 +53,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     LayoutRectangle | undefined
   >()
 
-  const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
+  const selectedSegmentIndex = useSharedValue(0)
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
@@ -123,7 +127,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
+    opacity: 1 - targetHiddenProgress.get()
   }))
 
   const ACTION_BUTTONS: ActionButton[] = [
@@ -174,13 +178,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }
 
   const handleSelectSegment = (index: number): void => {
-    if (index !== selectedSegmentIndex) {
+    if (tabViewRef.current?.getCurrentIndex() !== index) {
       tabViewRef.current?.setIndex(index)
     }
   }
 
   const handleChangeTab = (index: number): void => {
-    setSelectedSegmentIndex(index)
+    selectedSegmentIndex.value = index
   }
 
   const handleGoToTokenDetail = useCallback(
@@ -194,6 +198,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/tokenManagement')
   }, [navigate])
 
+  const handleScrollTab = (tabIndex: SharedValue<number>): void => {
+    selectedSegmentIndex.value = tabIndex.value
+  }
+
   const renderEmptyTabBar = (): JSX.Element => <></>
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -205,7 +213,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
         onIndexChange={handleChangeTab}
-        onScroll={onScroll}
+        onScrollTab={handleScrollTab}
+        onScrollY={onScroll}
         tabs={[
           {
             tabName: 'Assets',

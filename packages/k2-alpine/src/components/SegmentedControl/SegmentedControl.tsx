@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { LayoutChangeEvent, Pressable, ViewStyle } from 'react-native'
 import Animated, {
-  Easing,
   interpolateColor,
   useAnimatedStyle,
-  useSharedValue,
-  withDelay,
   withSpring,
-  withTiming
+  withTiming,
+  useDerivedValue,
+  SharedValue,
+  DerivedValue
 } from 'react-native-reanimated'
 import { SxProp } from 'dripsy'
 import { View } from '../Primitives'
@@ -16,14 +16,14 @@ import { useTheme } from '../../hooks'
 
 export const SegmentedControl = ({
   items,
-  selectedSegmentIndex,
+  selectedSegmentIndex, // now SharedValue<number>
   onSelectSegment,
   dynamicItemWidth,
   style,
   type = 'default'
 }: {
   items: string[]
-  selectedSegmentIndex: number
+  selectedSegmentIndex: SharedValue<number> | DerivedValue<number>
   onSelectSegment: (index: number) => void
   dynamicItemWidth: boolean
   style?: ViewStyle
@@ -31,9 +31,6 @@ export const SegmentedControl = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const [viewWidth, setViewWidth] = useState<number>(0)
-  const translationAnimation = useSharedValue(0)
-  const selectionIndicatorWidthAnimation = useSharedValue(0)
-  const selectionIndicatorOpacityAnimation = useSharedValue(0)
   const [textWidths, setTextWidths] = useState<number[]>(
     Array.from({ length: items.length }, () => 0)
   )
@@ -49,15 +46,52 @@ export const SegmentedControl = ({
     return textWidths.map(textWidth => textWidth / textWidthSum)
   }, [textWidths, items.length, dynamicItemWidth])
 
+  const translationAnimation = useDerivedValue(() => {
+    if (viewWidth === 0) return 0
+
+    const value = selectedSegmentIndex.get()
+
+    return withSpring(
+      viewWidth *
+        textRatios.slice(0, Math.floor(value)).reduce((a, b) => a + b, 0) +
+        viewWidth *
+          (textRatios[Math.floor(value)] ?? 0) *
+          (value - Math.floor(value)),
+      Configuration.animation.indicatorWidthSpringConfig
+    )
+  }, [textRatios, viewWidth])
+
+  const selectionIndicatorWidthAnimation = useDerivedValue(() => {
+    if (viewWidth === 0) return 0
+
+    const value = selectedSegmentIndex.get()
+
+    return (
+      viewWidth *
+        (textRatios[Math.floor(value)] ?? 0) *
+        (1 - getFractionalPart(value)) +
+      viewWidth * (textRatios[Math.ceil(value)] ?? 0) * getFractionalPart(value)
+    )
+  }, [viewWidth, textRatios])
+
+  const selectionIndicatorOpacityAnimation = useDerivedValue(() => {
+    if (viewWidth !== 0 && textRatios[0] !== 0) {
+      return withTiming(1, {
+        duration: Configuration.animation.indicatorTranslation.duration
+      })
+    }
+    return 0
+  }, [viewWidth, textRatios])
+
   const selectionIndicatorAnimatedStyle = useAnimatedStyle(() => {
     return {
-      width: selectionIndicatorWidthAnimation.value,
+      width: selectionIndicatorWidthAnimation.get(),
       transform: [
         {
-          translateX: translationAnimation.value
+          translateX: translationAnimation.get()
         }
       ],
-      opacity: selectionIndicatorOpacityAnimation.value
+      opacity: selectionIndicatorOpacityAnimation.get()
     }
   })
 
@@ -73,38 +107,6 @@ export const SegmentedControl = ({
     setViewWidth(event.nativeEvent.layout.width)
   }
 
-  useEffect(() => {
-    const x =
-      viewWidth *
-      textRatios.slice(0, selectedSegmentIndex).reduce((a, b) => a + b, 0)
-    translationAnimation.value = withSpring(
-      x,
-      Configuration.animation.indicatorWidthSpringConfig
-    )
-
-    selectionIndicatorWidthAnimation.value = withTiming(
-      viewWidth * (textRatios[selectedSegmentIndex] ?? 0),
-      {
-        duration: Configuration.animation.indicatorTranslation.duration,
-        easing: Easing.inOut(Easing.cubic)
-      },
-      isFinished => {
-        if (isFinished && textRatios[0] !== 0) {
-          selectionIndicatorOpacityAnimation.value = withTiming(1, {
-            duration: Configuration.animation.indicatorTranslation.duration
-          })
-        }
-      }
-    )
-  }, [
-    selectionIndicatorOpacityAnimation,
-    translationAnimation,
-    selectedSegmentIndex,
-    textRatios,
-    viewWidth,
-    selectionIndicatorWidthAnimation
-  ])
-
   return (
     <View style={style}>
       <View
@@ -113,12 +115,7 @@ export const SegmentedControl = ({
           backgroundColor: theme.isDark ? '#C5C5C840' : '#99999940'
         }}>
         <View
-          style={[
-            {
-              borderRadius: 100,
-              flexDirection: 'row'
-            }
-          ]}
+          style={{ borderRadius: 100, flexDirection: 'row' }}
           onLayout={handleLayout}>
           <Animated.View
             style={[
@@ -139,7 +136,8 @@ export const SegmentedControl = ({
                 key={index}
                 ratio={textRatios[index]}
                 text={item}
-                selected={index === selectedSegmentIndex}
+                index={index}
+                selectedIndex={selectedSegmentIndex}
                 onTextWidthChange={width => handleTextWidthChange(index, width)}
                 onPress={() => onSelectSegment(index)}
               />
@@ -155,7 +153,8 @@ const Segment = ({
   sx,
   ratio,
   text,
-  selected,
+  index,
+  selectedIndex,
   backgroundColor,
   onTextWidthChange,
   onPress
@@ -163,7 +162,8 @@ const Segment = ({
   sx?: SxProp
   ratio?: number
   text: string
-  selected: boolean
+  index: number
+  selectedIndex: SharedValue<number>
   backgroundColor?: string
   onTextWidthChange: (width: number) => void
   onPress: () => void
@@ -174,20 +174,9 @@ const Segment = ({
     onTextWidthChange(event.nativeEvent.layout.width + 64)
   }
 
-  const textColorAnimation = useSharedValue(0)
-
-  useEffect(() => {
-    textColorAnimation.value = withDelay(
-      Configuration.animation.selectedTextColor.delay,
-      withTiming(selected ? 1 : 0, {
-        duration: Configuration.animation.selectedTextColor.duration
-      })
-    )
-  }, [textColorAnimation, selected])
-
   const textColorAnimatedStyle = useAnimatedStyle(() => {
     const color = interpolateColor(
-      textColorAnimation.value,
+      Math.max(1 - Math.abs(selectedIndex.get() - index), 0),
       [0, 1],
       [
         theme.colors.$textPrimary,
@@ -196,28 +185,16 @@ const Segment = ({
           : darkModeColors.$textPrimary
       ]
     )
-
-    return {
-      color
-    }
+    return { color }
   })
 
   return (
     <Pressable style={{ flex: ratio }} onPress={onPress}>
-      <View
-        sx={{
-          alignItems: 'center',
-          backgroundColor,
-          ...sx
-        }}>
+      <View sx={{ alignItems: 'center', backgroundColor, ...sx }}>
         <Animated.Text
           onLayout={handleTextLayout}
           style={[
-            {
-              fontFamily: 'Inter-SemiBold',
-              fontSize: 14,
-              lineHeight: 18
-            },
+            { fontFamily: 'Inter-SemiBold', fontSize: 14, lineHeight: 18 },
             textColorAnimatedStyle
           ]}>
           {text}
@@ -243,4 +220,10 @@ const Configuration = {
       duration: 250
     }
   }
+}
+
+const getFractionalPart = (num: number): number => {
+  'worklet'
+  const fraction = num - Math.floor(num)
+  return fraction === 0 ? 1 : fraction
 }

@@ -109,7 +109,7 @@ export const VerifyRecoveryPhrase = ({
   }, [mnemonics, opacity])
 
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(opacity.value, { duration: 300 })
+    opacity: withTiming(opacity.get(), { duration: 300 })
   }))
 
   useEffect(() => {
