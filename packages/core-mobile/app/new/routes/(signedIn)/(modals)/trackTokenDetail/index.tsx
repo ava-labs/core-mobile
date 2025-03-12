@@ -67,7 +67,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     openUrl
   } = useTokenDetails(tokenId ?? '')
   const token = tokenId ? getMarketTokenById(tokenId) : undefined
-  const selectedSegmentIndex = useMemo(() => {
+  const selectedSegmentIndex = useDerivedValue(() => {
     return Object.keys(SEGMENT_INDEX_MAP).findIndex(
       key => SEGMENT_INDEX_MAP[Number(key)] === chartDays
     )

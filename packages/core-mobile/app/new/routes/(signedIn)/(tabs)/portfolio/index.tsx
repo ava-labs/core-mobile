@@ -28,7 +28,11 @@ import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  SharedValue
+} from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
@@ -48,7 +52,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     LayoutRectangle | undefined
   >()
 
-  const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
+  const selectedSegmentIndex = useSharedValue(0)
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
@@ -173,13 +177,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }
 
   const handleSelectSegment = (index: number): void => {
-    if (index !== selectedSegmentIndex) {
+    if (tabViewRef.current?.getCurrentIndex() !== index) {
       tabViewRef.current?.setIndex(index)
     }
   }
 
   const handleChangeTab = (index: number): void => {
-    setSelectedSegmentIndex(index)
+    selectedSegmentIndex.value = index
   }
 
   const handleGoToTokenDetail = useCallback(
@@ -201,6 +205,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/collectibleManagement')
   }, [navigate])
 
+  const handleScrollTab = (tabIndex: SharedValue<number>): void => {
+    selectedSegmentIndex.value = tabIndex.value
+  }
+
   const renderEmptyTabBar = (): JSX.Element => <></>
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -212,7 +220,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
         onIndexChange={handleChangeTab}
-        onScroll={onScroll}
+        onScrollTab={handleScrollTab}
+        onScrollY={onScroll}
         tabs={[
           {
             tabName: 'Assets',
