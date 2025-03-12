@@ -552,7 +552,7 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-splash-screen: 0.29.18
     expo-status-bar: 2.0.1
-    expo-video: ^2.0.5
+    expo-video: 2.0.5
     json-stringify-pretty-compact: 4.0.0
     lodash.debounce: 4.0.8
     patch-package: 8.0.0
@@ -17828,7 +17828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-video@npm:2.0.5, expo-video@npm:^2.0.5":
+"expo-video@npm:2.0.5":
   version: 2.0.5
   resolution: "expo-video@npm:2.0.5"
   peerDependencies:
