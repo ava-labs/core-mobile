@@ -1,5 +1,5 @@
-import { rpcErrors, JsonRpcError } from '@metamask/rpc-errors'
-import { isError } from 'ethers'
+import { JsonRpcError, rpcErrors } from '@metamask/rpc-errors'
+import { parseJsonRpcError } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 
 enum SwapErrorCode {
   MISSING_PARAM = 'MISSING_PARAM',
@@ -84,18 +84,15 @@ export function humanizeSwapError(err: unknown): string {
   }
 
   if (errorString.includes('-32000')) {
-    return 'Another transaction is pending. Raise gas price to overwrite it.'
+    return 'Another transaction is pending. Increase gas price to overwrite it.'
   }
 
   if (errorString.toLowerCase().includes('network error')) {
     return 'Network error, please try again later.'
   }
 
-  if (err instanceof JsonRpcError) {
-    if (isError(err.cause, 'INSUFFICIENT_FUNDS'))
-      return 'Insufficient amount for gas. Reduce swap quantity and try again.'
-
-    return err.message
+  if (err instanceof JsonRpcError && err.data.cause instanceof JsonRpcError) {
+    return parseJsonRpcError(err.data.cause, err.message)
   }
 
   return errorString || 'An unknown error occurred'
