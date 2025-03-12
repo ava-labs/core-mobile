@@ -1,7 +1,7 @@
 import { Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
 import { alpha } from '@avalabs/k2-mobile'
 import React, { ReactNode } from 'react'
-import { Pressable, useWindowDimensions } from 'react-native'
+import { Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
@@ -29,8 +29,7 @@ export const CollectibleManagementItem = ({
   const {
     theme: { colors }
   } = useTheme()
-  const dimensions = useWindowDimensions()
-  const height = getGridCardHeight(CollectibleView.ListView, dimensions, index)
+  const height = getGridCardHeight(CollectibleView.ListView, index)
 
   const collectibleVisibility = useSelector(selectCollectibleVisibility)
   const isToggledOn = isCollectibleVisible(collectibleVisibility, collectible)

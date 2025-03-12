@@ -1,5 +1,5 @@
-import { ScaledSize } from 'react-native'
 import { CollectibleView } from 'store/balance'
+import { Dimensions } from 'react-native'
 
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
@@ -32,17 +32,17 @@ export const getLargeGridCardHeight = (
 
 export const getGridCardHeight = (
   type: CollectibleView,
-  dimensions: ScaledSize,
   index: number
 ): number => {
+  const width = Dimensions.get('window').width
   switch (type) {
     case CollectibleView.ListView:
       return LIST_ITEM_HEIGHT
     case CollectibleView.CompactGrid: {
-      return getCompactGridCardHeight(dimensions.width, index)
+      return getCompactGridCardHeight(width, index)
     }
     case CollectibleView.LargeGrid: {
-      return getLargeGridCardHeight(dimensions.width, index)
+      return getLargeGridCardHeight(width, index)
     }
     default: {
       return LIST_ITEM_HEIGHT

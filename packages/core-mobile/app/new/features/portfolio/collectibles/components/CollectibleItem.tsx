@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
-import { Pressable, useWindowDimensions } from 'react-native'
+import { Pressable } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
@@ -55,12 +55,7 @@ export const CollectibleListItem = memo(
     const {
       theme: { colors }
     } = useTheme()
-    const dimensions = useWindowDimensions()
-    const height = getGridCardHeight(
-      CollectibleView.ListView,
-      dimensions,
-      index
-    )
+    const height = getGridCardHeight(CollectibleView.ListView, index)
 
     const collectibleName =
       collectible.name.length > 0 ? collectible.name : 'Untitled'
@@ -150,8 +145,7 @@ export const CollectibleGridItem = memo(
     type: CollectibleView
     index: number
   }): ReactNode => {
-    const dimensions = useWindowDimensions()
-    const height = getGridCardHeight(type, dimensions, index)
+    const height = getGridCardHeight(type, index)
 
     return (
       <AnimatedPressable
