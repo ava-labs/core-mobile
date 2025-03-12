@@ -13,15 +13,19 @@ import {
 
 export type SparklineData = number[]
 
+const RangesSchema = object({
+  minDate: number(),
+  maxDate: number(),
+  minPrice: number(),
+  maxPrice: number(),
+  diffValue: number(),
+  percentChange: number()
+})
+
+export type Ranges = z.infer<typeof RangesSchema>
+
 export const ChartDataSchema = object({
-  ranges: object({
-    minDate: number(),
-    maxDate: number(),
-    minPrice: number(),
-    maxPrice: number(),
-    diffValue: number(),
-    percentChange: number()
-  }),
+  ranges: RangesSchema,
   dataPoints: object({
     date: string()
       .or(date())

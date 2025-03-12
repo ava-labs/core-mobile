@@ -16,7 +16,6 @@ import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Animated, {
   useDerivedValue,
@@ -55,7 +54,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const { getMarketTokenById } = useWatchlist()
   const {
     chartData,
     chartDays,
@@ -66,14 +64,17 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleFavorite,
     openUrl
   } = useTokenDetails(tokenId ?? '')
-  const token = tokenId ? getMarketTokenById(tokenId) : undefined
+
   const selectedSegmentIndex = useDerivedValue(() => {
     return Object.keys(SEGMENT_INDEX_MAP).findIndex(
       key => SEGMENT_INDEX_MAP[Number(key)] === chartDays
     )
   }, [chartDays])
+
   const scrollViewProps = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={token?.symbol.toUpperCase() ?? ''} />,
+    header: (
+      <NavigationTitleHeader title={tokenInfo?.symbol.toUpperCase() ?? ''} />
+    ),
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
@@ -113,7 +114,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handlePressAbout = (): void => {
     showAlert({
-      title: `About ${token?.symbol.toUpperCase()}`,
+      title: `About ${tokenInfo?.symbol.toUpperCase()}`,
       description: tokenInfo?.description,
       buttons: [
         {
@@ -284,13 +285,14 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     })
   }, [renderHeaderRight, navigation])
 
-  if (!tokenId || !token) {
+  if (!tokenId || !tokenInfo) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 
   return (
     <View sx={{ flex: 1 }}>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         sx={{ flex: 1 }}
         contentContainerSx={{ paddingBottom: 60 }}
         {...scrollViewProps}>
@@ -299,9 +301,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             style={{ opacity: headerOpacity }}
             onLayout={handleHeaderLayout}>
             <TokenHeader
-              logoUri={token.logoUri}
-              symbol={token.symbol}
-              currentPrice={token.currentPrice}
+              logoUri={tokenInfo.logoUri}
+              symbol={tokenInfo.symbol ?? ''}
+              currentPrice={tokenInfo.currentPrice}
               ranges={
                 ranges.minDate === 0 && ranges.maxDate === 0
                   ? undefined
@@ -310,20 +312,24 @@ const TrackTokenDetailScreen = (): JSX.Element => {
               rank={tokenInfo?.marketCapRank}
             />
           </Animated.View>
-          <Animated.View
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: selectedDataIndicatorOpacity
-              }
-            ]}>
-            <SelectedChartDataIndicator
-              selectedData={selectedData}
-              currentPrice={chartData?.[0]?.value}
-            />
-          </Animated.View>
+          {isChartInteracting && (
+            <>
+              <Animated.View
+                style={[
+                  StyleSheet.absoluteFill,
+                  {
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: selectedDataIndicatorOpacity
+                  }
+                ]}>
+                <SelectedChartDataIndicator
+                  selectedData={selectedData}
+                  currentPrice={chartData?.[0]?.value}
+                />
+              </Animated.View>
+            </>
+          )}
         </View>
         <TokenDetailChart
           chartData={chartData}
