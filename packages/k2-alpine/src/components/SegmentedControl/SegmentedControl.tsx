@@ -224,9 +224,3 @@ const Configuration = {
     }
   }
 }
-
-const getFractionalPart = (num: number): number => {
-  'worklet'
-  const fraction = num - Math.floor(num)
-  return fraction === 0 ? 1 : fraction
-}
