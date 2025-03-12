@@ -12,7 +12,9 @@ import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, {
   interpolate,
-  useAnimatedStyle
+  useAnimatedStyle,
+  useSharedValue,
+  SharedValue
 } from 'react-native-reanimated'
 import {
   CollapsibleTabs,
@@ -37,7 +39,7 @@ const TrackHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
+  const selectedSegmentIndex = useSharedValue(0)
   const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
     setBalanceHeaderLayout(event.nativeEvent.layout)
   }
@@ -128,17 +130,14 @@ const TrackHomeScreen = (): JSX.Element => {
     )
   }
 
-  const handleSelectSegment = useCallback(
-    (index: number): void => {
-      if (index !== selectedSegmentIndex) {
-        tabViewRef.current?.setIndex(index)
-      }
-    },
-    [selectedSegmentIndex]
-  )
+  const handleSelectSegment = (index: number): void => {
+    if (tabViewRef.current?.getCurrentIndex() !== index) {
+      tabViewRef.current?.setIndex(index)
+    }
+  }
 
   const handleChangeTab = (index: number): void => {
-    setSelectedSegmentIndex(index)
+    selectedSegmentIndex.value = index
   }
 
   const handleGotoMarketDetail = useCallback(
@@ -150,6 +149,10 @@ const TrackHomeScreen = (): JSX.Element => {
     },
     [navigate]
   )
+
+  const handleScrollTab = (tabIndex: SharedValue<number>): void => {
+    selectedSegmentIndex.value = tabIndex.value
+  }
 
   const renderEmptyTabBar = (): JSX.Element => <></>
 
@@ -168,7 +171,7 @@ const TrackHomeScreen = (): JSX.Element => {
       {
         tabName: TrackHomeScreenTab.Trending,
         component:
-          showSearchResults && selectedSegmentIndex === 0 ? (
+          showSearchResults && selectedSegmentIndex.get() === 0 ? (
             renderSearchResults()
           ) : (
             <TrendingScreen />
@@ -177,7 +180,7 @@ const TrackHomeScreen = (): JSX.Element => {
       {
         tabName: TrackHomeScreenTab.Favorites,
         component:
-          showSearchResults && selectedSegmentIndex === 1 ? (
+          showSearchResults && selectedSegmentIndex.get() === 1 ? (
             renderSearchResults()
           ) : (
             <FavoriteScreen goToMarketDetail={handleGotoMarketDetail} />
@@ -186,7 +189,7 @@ const TrackHomeScreen = (): JSX.Element => {
       {
         tabName: TrackHomeScreenTab.Market,
         component:
-          showSearchResults && selectedSegmentIndex === 2 ? (
+          showSearchResults && selectedSegmentIndex.get() === 2 ? (
             renderSearchResults()
           ) : (
             <MarketScreen goToMarketDetail={handleGotoMarketDetail} />
@@ -202,31 +205,30 @@ const TrackHomeScreen = (): JSX.Element => {
 
   return (
     <BlurredBarsContentLayout>
-      <>
-        <CollapsibleTabs.Container
-          ref={tabViewRef}
-          renderHeader={renderHeader}
-          renderTabBar={renderEmptyTabBar}
-          onIndexChange={handleChangeTab}
-          onScroll={onScroll}
-          tabs={renderTabs()}
-        />
-        {!showSearchResults && (
-          <LinearGradientBottomWrapper>
-            <SegmentedControl
-              dynamicItemWidth={true}
-              items={[
-                TrackHomeScreenTab.Trending,
-                TrackHomeScreenTab.Favorites,
-                TrackHomeScreenTab.Market
-              ]}
-              selectedSegmentIndex={selectedSegmentIndex}
-              onSelectSegment={handleSelectSegment}
-              style={{ marginHorizontal: 16, marginBottom: 16 }}
-            />
-          </LinearGradientBottomWrapper>
-        )}
-      </>
+      <CollapsibleTabs.Container
+        ref={tabViewRef}
+        renderHeader={renderHeader}
+        renderTabBar={renderEmptyTabBar}
+        onIndexChange={handleChangeTab}
+        onScrollY={onScroll}
+        onScrollTab={handleScrollTab}
+        tabs={renderTabs()}
+      />
+      {!showSearchResults && (
+        <LinearGradientBottomWrapper>
+          <SegmentedControl
+            dynamicItemWidth={true}
+            items={[
+              TrackHomeScreenTab.Trending,
+              TrackHomeScreenTab.Favorites,
+              TrackHomeScreenTab.Market
+            ]}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+            style={{ marginHorizontal: 16, marginBottom: 16 }}
+          />
+        </LinearGradientBottomWrapper>
+      )}
     </BlurredBarsContentLayout>
   )
 }

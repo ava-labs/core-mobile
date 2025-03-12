@@ -43,7 +43,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         )
 
         return Promise.all(animationPromises).then(() => {
-          if (isLoading.value) {
+          if (isLoading.get()) {
             runOnJS(triggerAnimations)()
           }
         })

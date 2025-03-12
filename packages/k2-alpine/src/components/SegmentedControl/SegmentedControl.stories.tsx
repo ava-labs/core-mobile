@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Switch } from 'react-native'
+import { useSharedValue } from 'react-native-reanimated'
 import { ScrollView, Text, View } from '../Primitives'
 import { useTheme } from '../..'
 import { SegmentedControl } from './SegmentedControl'
@@ -57,7 +58,7 @@ const SegmentedControlStory = ({
   items: string[]
   dynamicItemWidth: boolean
 }): JSX.Element => {
-  const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0)
+  const selectedSegmentIndex = useSharedValue(0)
 
   return (
     <View
@@ -66,12 +67,17 @@ const SegmentedControlStory = ({
         alignItems: 'center'
       }}>
       <SegmentedControl
+        style={{ width: '100%' }}
         dynamicItemWidth={dynamicItemWidth}
         items={items}
         selectedSegmentIndex={selectedSegmentIndex}
-        onSelectSegment={setSelectedSegmentIndex}
+        onSelectSegment={index => {
+          selectedSegmentIndex.value = index
+        }}
       />
-      <Text variant="body2">{items[selectedSegmentIndex]}</Text>
+      <Text variant="body2">
+        {items[Math.floor(selectedSegmentIndex.get())]}
+      </Text>
     </View>
   )
 }
