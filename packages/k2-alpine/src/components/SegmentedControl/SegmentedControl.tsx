@@ -64,14 +64,17 @@ export const SegmentedControl = ({
   const selectionIndicatorWidthAnimation = useDerivedValue(() => {
     if (viewWidth === 0) return 0
 
-    const value = selectedSegmentIndex.get()
+    const selectedSegmentIndexValue = selectedSegmentIndex.get()
+    const indexFloor = Math.floor(selectedSegmentIndexValue)
+    const indexCeil = Math.ceil(selectedSegmentIndexValue)
+    const fraction = selectedSegmentIndexValue - indexFloor
+    // If fraction is 0 (i.e. value is an integer), weight becomes 1.
+    const weight = fraction || 1
 
-    return (
-      viewWidth *
-        (textRatios[Math.floor(value)] ?? 0) *
-        (1 - getFractionalPart(value)) +
-      viewWidth * (textRatios[Math.ceil(value)] ?? 0) * getFractionalPart(value)
-    )
+    const widthFloor = textRatios[indexFloor] ?? 0
+    const widthCeil = textRatios[indexCeil] ?? 0
+
+    return viewWidth * (widthFloor * (1 - weight) + widthCeil * weight)
   }, [viewWidth, textRatios])
 
   const selectionIndicatorOpacityAnimation = useDerivedValue(() => {
