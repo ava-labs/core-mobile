@@ -5,6 +5,7 @@ import {
   PriceChangeIndicator,
   PriceChangeStatus,
   Text,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
@@ -12,6 +13,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { formatLargeCurrency } from 'utils/Utils'
 import Animated, { FadeIn } from 'react-native-reanimated'
+import { hasLocalTokenLogo } from 'common/utils/hasLocalTokenLogo'
 import { RankView } from './RankView'
 
 export const TokenHeader = ({
@@ -32,6 +34,9 @@ export const TokenHeader = ({
   rank?: number
   onLayout?: (event: LayoutChangeEvent) => void
 }): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const { formatTokenInCurrency } = useFormatCurrency()
 
   const priceChange: PriceChange | undefined =
@@ -54,8 +59,13 @@ export const TokenHeader = ({
 
   return (
     <View onLayout={onLayout}>
-      {logoUri !== undefined && (
-        <TokenLogo symbol={symbol} logoUri={logoUri} size={42} />
+      {(logoUri !== undefined || hasLocalTokenLogo(symbol)) && (
+        <TokenLogo
+          symbol={symbol}
+          logoUri={logoUri}
+          size={42}
+          borderColor={colors.$borderPrimary}
+        />
       )}
       <View
         sx={{
