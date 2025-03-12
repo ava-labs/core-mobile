@@ -36,15 +36,12 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   const popoverRef = useRef<Popover>()
 
   const handlePress = (indexPath: IndexPath): void => {
-    if (allowsMultipleSelection) {
-      if (isSelected(indexPath)) {
-        onDeselectRow?.(indexPath)
-      } else {
-        onSelectRow(indexPath)
-      }
+    if (isSelected(indexPath)) {
+      onDeselectRow?.(indexPath)
     } else {
       onSelectRow(indexPath)
-
+    }
+    if (!allowsMultipleSelection) {
       popoverRef.current?.requestClose()
     }
   }

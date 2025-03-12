@@ -91,6 +91,7 @@ export const CollapsibleTabs = {
   Container: CollapsibleTabsContainer,
   Tab: Tabs.Tab,
   FlatList: Tabs.FlatList,
+  MasonryList: Tabs.MasonryFlashList,
   ScrollView: Tabs.ScrollView
 }
 

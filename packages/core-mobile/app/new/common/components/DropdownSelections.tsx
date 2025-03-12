@@ -1,5 +1,6 @@
 import {
   Chip,
+  IndexPath,
   SimpleDropdown,
   SxProp,
   usePopoverAnchor,
@@ -14,7 +15,7 @@ const POPOVER_HEIGHT = 40
 const POPOVER_WIDTH = 250
 
 interface Props {
-  filter?: DropdownSelection
+  filter?: DropdownSelection & { selected: IndexPath | IndexPath[] }
   sort?: DropdownSelection
   view?: DropdownSelection
   sx?: SxProp
@@ -102,8 +103,13 @@ export const DropdownSelections = ({
               </Chip>
             }
             sections={filter.data}
-            selectedRows={[filter.selected]}
+            selectedRows={
+              Array.isArray(filter.selected)
+                ? filter.selected
+                : [filter.selected]
+            }
             onSelectRow={filter.onSelected}
+            onDeselectRow={filter.onDeselect}
             minWidth={POPOVER_WIDTH}
           />
         )}
