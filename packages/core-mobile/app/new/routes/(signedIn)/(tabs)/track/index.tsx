@@ -53,12 +53,12 @@ const TrackHomeScreen = (): JSX.Element => {
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.get()
+    opacity: 1 - targetHiddenProgress.value
   }))
 
   const animatedSearchbarStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
-      targetHiddenProgress.get(),
+      targetHiddenProgress.value,
       [0, 1],
       [0, SEARCH_BAR_MARGIN_TOP],
       'clamp'
@@ -70,13 +70,13 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const animatedSeparatorStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
-      targetHiddenProgress.get(),
+      targetHiddenProgress.value,
       [0, 1],
       [0, SEARCH_BAR_MARGIN_TOP],
       'clamp'
     )
     const opacity = interpolate(
-      targetHiddenProgress.get(),
+      targetHiddenProgress.value,
       [0, 1],
       [0, 1],
       'clamp'

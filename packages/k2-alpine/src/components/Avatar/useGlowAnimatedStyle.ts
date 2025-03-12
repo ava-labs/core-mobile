@@ -40,10 +40,10 @@ export const useGlowAnimatedStyle = (
   }, [opacity, rotation, delay])
 
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
+    opacity: opacity.value,
     transform: [
       {
-        rotate: `${rotation.get()}deg`
+        rotate: `${rotation.value}deg`
       }
     ]
   }))

@@ -127,7 +127,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.get()
+    opacity: 1 - targetHiddenProgress.value
   }))
 
   const ACTION_BUTTONS: ActionButton[] = [

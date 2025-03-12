@@ -80,7 +80,7 @@ export const useFadingHeaderNavigation = ({
 
   // Animated styles for header transformation
   const animatedHeaderStyle = useAnimatedStyle(() => {
-    const targetHiddenProgressValue = targetHiddenProgress.get()
+    const targetHiddenProgressValue = targetHiddenProgress.value
 
     return {
       opacity: targetHiddenProgressValue,

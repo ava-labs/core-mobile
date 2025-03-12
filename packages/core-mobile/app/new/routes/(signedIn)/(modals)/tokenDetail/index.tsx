@@ -87,7 +87,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const selectedSegmentIndex = useSharedValue(0)
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.get()
+    opacity: 1 - targetHiddenProgress.value
   }))
 
   const formattedBalance = useMemo(() => {

@@ -49,7 +49,7 @@ export const SegmentedControl = ({
   const translationAnimation = useDerivedValue(() => {
     if (viewWidth === 0) return 0
 
-    const value = selectedSegmentIndex.get()
+    const value = selectedSegmentIndex.value
 
     return withSpring(
       viewWidth *
@@ -64,7 +64,7 @@ export const SegmentedControl = ({
   const selectionIndicatorWidthAnimation = useDerivedValue(() => {
     if (viewWidth === 0) return 0
 
-    const selectedSegmentIndexValue = selectedSegmentIndex.get()
+    const selectedSegmentIndexValue = selectedSegmentIndex.value
     const indexFloor = Math.floor(selectedSegmentIndexValue)
     const indexCeil = Math.ceil(selectedSegmentIndexValue)
     const fraction = selectedSegmentIndexValue - indexFloor
@@ -88,13 +88,13 @@ export const SegmentedControl = ({
 
   const selectionIndicatorAnimatedStyle = useAnimatedStyle(() => {
     return {
-      width: selectionIndicatorWidthAnimation.get(),
+      width: selectionIndicatorWidthAnimation.value,
       transform: [
         {
-          translateX: translationAnimation.get()
+          translateX: translationAnimation.value
         }
       ],
-      opacity: selectionIndicatorOpacityAnimation.get()
+      opacity: selectionIndicatorOpacityAnimation.value
     }
   })
 
@@ -179,7 +179,7 @@ const Segment = ({
 
   const textColorAnimatedStyle = useAnimatedStyle(() => {
     const color = interpolateColor(
-      Math.max(1 - Math.abs(selectedIndex.get() - index), 0),
+      Math.max(1 - Math.abs(selectedIndex.value - index), 0),
       [0, 1],
       [
         theme.colors.$textPrimary,

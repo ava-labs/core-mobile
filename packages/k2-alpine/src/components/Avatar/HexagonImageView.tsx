@@ -37,7 +37,7 @@ export const HexagonImageView = ({
   const { theme } = useTheme()
   const selectedAnimation = useSharedValue(0)
   const selectedAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: selectedAnimation.get()
+    opacity: selectedAnimation.value
   }))
   const [isLoading, setIsLoading] = useState(false)
 
@@ -133,7 +133,7 @@ const Arrow = ({ isSelected }: { isSelected?: boolean }): JSX.Element => {
     Platform.OS === 'ios' ? arrowPath.length : 0
   )
   const arrowAnimatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: arrowAnimation.get()
+    strokeDashoffset: arrowAnimation.value
   }))
 
   useEffect(() => {
@@ -208,7 +208,7 @@ const LoadingView = ({ style }: { style: ViewStyle }): JSX.Element => {
 
   const animatedStyle = useAnimatedStyle(() => {
     const backgroundColor = interpolateColor(
-      backgroundAnimation.get(),
+      backgroundAnimation.value,
       [0, 1],
       [theme.colors.$surfacePrimary, theme.colors.$surfaceSecondary]
     )

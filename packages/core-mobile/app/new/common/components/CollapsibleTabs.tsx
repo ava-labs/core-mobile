@@ -67,16 +67,16 @@ const CollapsibleTabWrapper = ({
   const tabIndex = useAnimatedTabIndex()
 
   useAnimatedReaction(
-    () => scrollY.get(),
+    () => scrollY.value,
     (curr, prev) => {
       if (curr !== prev && onScrollY) {
-        runOnJS(onScrollY)(scrollY.get())
+        runOnJS(onScrollY)(scrollY.value)
       }
     }
   )
 
   useAnimatedReaction(
-    () => tabIndex.get(),
+    () => tabIndex.value,
     (curr, prev) => {
       if (curr !== prev && onScrollTab) {
         runOnJS(onScrollTab)(tabIndex)

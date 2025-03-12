@@ -45,7 +45,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const navigation = useNavigation()
   const headerOpacity = useSharedValue(1)
   const selectedDataIndicatorOpacity = useDerivedValue(
-    () => 1 - headerOpacity.get()
+    () => 1 - headerOpacity.value
   )
   const [selectedData, setSelectedData] = useState<{
     value: number

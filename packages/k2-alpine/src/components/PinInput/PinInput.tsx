@@ -138,7 +138,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
     const wrongPinAnimatedStyle = useAnimatedStyle(() => ({
       transform: [
         {
-          translateX: wrongPinAnimation.get()
+          translateX: wrongPinAnimation.value
         }
       ]
     }))
@@ -224,7 +224,7 @@ const AnimatedDot = ({
   const { theme } = useTheme()
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: sharedValue.get() }]
+    transform: [{ translateY: sharedValue.value }]
   }))
 
   return (

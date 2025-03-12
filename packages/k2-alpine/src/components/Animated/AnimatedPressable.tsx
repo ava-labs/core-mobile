@@ -58,8 +58,8 @@ export const AnimatedPressable = memo(
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
-        opacity: opacity.get(),
-        transform: [{ scale: scale.get() }]
+        opacity: opacity.value,
+        transform: [{ scale: scale.value }]
       }
     })
 
