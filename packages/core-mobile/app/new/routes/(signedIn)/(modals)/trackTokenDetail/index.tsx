@@ -311,20 +311,24 @@ const TrackTokenDetailScreen = (): JSX.Element => {
               rank={tokenInfo?.marketCapRank}
             />
           </Animated.View>
-          <Animated.View
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: selectedDataIndicatorOpacity
-              }
-            ]}>
-            <SelectedChartDataIndicator
-              selectedData={selectedData}
-              currentPrice={chartData?.[0]?.value}
-            />
-          </Animated.View>
+          {isChartInteracting && (
+            <>
+              <Animated.View
+                style={[
+                  StyleSheet.absoluteFill,
+                  {
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: selectedDataIndicatorOpacity
+                  }
+                ]}>
+                <SelectedChartDataIndicator
+                  selectedData={selectedData}
+                  currentPrice={chartData?.[0]?.value}
+                />
+              </Animated.View>
+            </>
+          )}
         </View>
         <TokenDetailChart
           chartData={chartData}
