@@ -5,9 +5,10 @@ import {
   Text,
   Icons,
   TouchableOpacity,
-  PriceChangeStatus
+  PriceChangeStatus,
+  SPRING_LINEAR_TRANSITION
 } from '@avalabs/k2-alpine'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 
 type Props = {
@@ -41,7 +42,7 @@ const ActivityListItem: FC<Props> = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
+      layout={SPRING_LINEAR_TRANSITION}>
       <TouchableOpacity onPress={onPress} testID="activityListItem">
         <View
           style={{

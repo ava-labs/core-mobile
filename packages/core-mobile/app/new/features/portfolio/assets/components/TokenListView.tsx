@@ -3,11 +3,12 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
+  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
@@ -27,7 +28,7 @@ export const TokenListView = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
+      layout={SPRING_LINEAR_TRANSITION}>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{

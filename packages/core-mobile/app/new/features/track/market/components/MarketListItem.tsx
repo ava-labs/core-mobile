@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   Charts,
   defaultChartData,
@@ -28,23 +28,37 @@ export const MarketListItem = ({
 }): React.JSX.Element => {
   const currency = useSelector(selectSelectedCurrency)
 
-  const formattedPrice = token.currentPrice
-    ? formatCurrency({
-        amount: token.currentPrice,
+  const formattedPrice = useMemo(
+    () =>
+      token.currentPrice
+        ? formatCurrency({
+            amount: token.currentPrice,
+            currency,
+            boostSmallNumberPrecision: true
+          })
+        : UNKNOWN_AMOUNT,
+    [currency, token.currentPrice]
+  )
+
+  const priceChange = token.priceChange24h ?? 0
+
+  const formattedPriceChange = useMemo(
+    () =>
+      formatCurrency({
+        amount: Math.abs(priceChange),
         currency,
         boostSmallNumberPrecision: true
-      })
-    : UNKNOWN_AMOUNT
-  const priceChange = token.priceChange24h ?? 0
-  const formattedPriceChange = formatCurrency({
-    amount: Math.abs(priceChange),
-    currency,
-    boostSmallNumberPrecision: true
-  })
+      }),
+    [currency, priceChange]
+  )
 
-  const formattedPercent = token.priceChangePercentage24h
-    ? Math.abs(token.priceChangePercentage24h)?.toFixed(2).toString() + '%'
-    : undefined
+  const formattedPercent = useMemo(
+    () =>
+      token.priceChangePercentage24h
+        ? Math.abs(token.priceChangePercentage24h)?.toFixed(2).toString() + '%'
+        : undefined,
+    [token.priceChangePercentage24h]
+  )
 
   const status = priceChange
     ? priceChange > 0

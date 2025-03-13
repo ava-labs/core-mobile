@@ -23,7 +23,7 @@ const BuyScreenStack = (): JSX.Element => {
       screenOptions={{
         headerBackTestID: 'header_back',
         presentation: 'card',
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTitleAlign: 'center',
         title: '',
         headerStyle: {

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect } from 'react'
+import React, { memo, useCallback, useMemo, useEffect } from 'react'
 
 import { SxProp } from 'dripsy'
 import Animated, {
@@ -15,6 +15,8 @@ import { TextVariant } from '../../theme/tokens/text'
 import { ANIMATED } from '../../utils'
 import { Text } from '../Primitives'
 
+const springTransition = LinearTransition.springify()
+
 export const AnimatedText = ({
   variant = 'heading2',
   characters,
@@ -24,25 +26,29 @@ export const AnimatedText = ({
   variant?: TextVariant
   sx?: SxProp
 }): JSX.Element => {
+  const content = useMemo(() => {
+    return characters
+      .toString()
+      .split('')
+      .map((character, index) => {
+        return (
+          <AnimateFadeScale key={`${character}-${index}`} delay={index * 30}>
+            <Text variant={variant} sx={sx}>
+              {character}
+            </Text>
+          </AnimateFadeScale>
+        )
+      })
+  }, [characters, sx, variant])
+
   return (
     <Animated.View
-      layout={LinearTransition.springify()}
+      layout={springTransition}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'
       }}>
-      {characters
-        .toString()
-        .split('')
-        .map((character, index) => {
-          return (
-            <AnimateFadeScale key={`${character}-${index}`} delay={index * 30}>
-              <Text variant={variant} sx={sx}>
-                {character}
-              </Text>
-            </AnimateFadeScale>
-          )
-        })}
+      {content}
     </Animated.View>
   )
 }

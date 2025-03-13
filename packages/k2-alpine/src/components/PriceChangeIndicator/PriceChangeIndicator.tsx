@@ -10,7 +10,7 @@ import { useTheme } from '../../hooks'
 import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedText } from '../Animated/AnimatedText'
-import { View } from '../Primitives'
+import { View, Text } from '../Primitives'
 import { PriceChange, PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
@@ -139,13 +139,13 @@ const PlainComponent = ({
 
   return (
     <View style={styles.container}>
-      <AnimatedText
+      <Text
         variant={textVariant}
-        characters={formattedPrice}
         sx={{
           color: tintColor
-        }}
-      />
+        }}>
+        {formattedPrice}
+      </Text>
       <View style={styles.innerWrapper}>
         {showArrow && (
           <Arrow
@@ -157,13 +157,13 @@ const PlainComponent = ({
           />
         )}
         {formattedPercent !== undefined && (
-          <AnimatedText
+          <Text
             variant={textVariant}
-            characters={formattedPercent}
             sx={{
               color: percentChangeColor
-            }}
-          />
+            }}>
+            {formattedPercent}
+          </Text>
         )}
       </View>
     </View>

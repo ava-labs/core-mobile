@@ -36,7 +36,7 @@ function EarnScreenStack(): JSX.Element {
       screenOptions={{
         headerShown: true,
         title: '',
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTitleAlign: 'center',
         headerLeftContainerStyle: {
           paddingLeft: 8
