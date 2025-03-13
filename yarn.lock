@@ -326,6 +326,7 @@ __metadata:
     expo-linking: 7.0.5
     expo-navigation-bar: 4.0.8
     expo-router: 4.0.18
+    expo-sms: 13.0.1
     expo-status-bar: 2.0.1
     expo-video: 2.0.5
     https-browserify: 1.0.0
@@ -18066,6 +18067,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-sms@npm:13.0.1":
+  version: 13.0.1
+  resolution: "expo-sms@npm:13.0.1"
+  peerDependencies:
+    expo: "*"
+  checksum: ac249e8f950dd23aa484f8bafd380b0ec1f1539a3331a54790e7ea2bbbdf449e02ef229974b763c41649928368149778b4e80b9b585c499b2d0d3bb3866de584
+  languageName: node
+  linkType: hard
+
 "expo-splash-screen@npm:0.29.18":
   version: 0.29.18
   resolution: "expo-splash-screen@npm:0.29.18"
@@ -26414,7 +26424,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 

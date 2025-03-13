@@ -18,13 +18,7 @@ import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 
-export const Content = ({
-  tokenId,
-  scale
-}: {
-  tokenId: string
-  scale: number
-}): JSX.Element => {
+export const Content = ({ tokenId }: { tokenId: string }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
   const { chartData, ranges } = useTokenDetails(tokenId ?? '')
@@ -35,13 +29,8 @@ export const Content = ({
     <View
       sx={{
         width: CONTENT_SIZE,
-        height: CONTENT_SIZE,
-        borderRadius: 18 / scale,
-        borderWidth: 1,
-        borderColor: theme.colors.$borderPrimary,
-        overflow: 'hidden'
+        height: CONTENT_SIZE
       }}>
-      {/* {isLoading === false ? ( */}
       {!token || (chartData ?? []).length === 0 ? (
         <View
           sx={{
@@ -175,12 +164,12 @@ const TokenHeader = ({
           </View>
         </View>
       </View>
-      <View sx={{ opacity: priceChange ? 1 : 0, marginTop: 5 }}>
+      <View sx={{ opacity: priceChange ? 1 : 0, marginTop: 9 }}>
         <PriceChangeIndicator
           formattedPrice={priceChange?.formattedPrice ?? UNKNOWN_AMOUNT}
           status={priceChange?.status ?? PriceChangeStatus.Neutral}
           formattedPercent={priceChange?.formattedPercent ?? UNKNOWN_AMOUNT}
-          textVariant="buttonMedium"
+          textVariant="priceChangeIndicatorLarge"
           overrideTheme={inversedTheme}
         />
       </View>

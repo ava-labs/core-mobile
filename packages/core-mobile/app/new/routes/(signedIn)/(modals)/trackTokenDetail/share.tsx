@@ -1,17 +1,24 @@
-import { ScrollView, Text, View } from '@avalabs/k2-alpine'
+import { ScrollView, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams } from 'expo-router'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useRef, useState } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, PixelRatio } from 'react-native'
 import { Content, CONTENT_SIZE } from 'features/track/components/Content'
-import { ShareFooter } from 'features/track/components/ShareFooter'
-import ViewShot from 'react-native-view-shot'
+import {
+  AvailableSocial,
+  ShareFooter
+} from 'features/track/components/ShareFooter'
+import ViewShot, { captureRef } from 'react-native-view-shot'
 import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
 import Share from 'react-native-share'
 import * as FileSystem from 'expo-file-system'
+import Logger from 'utils/Logger'
+import { copyToClipboard } from 'common/utils/clipboard'
+import * as SMS from 'expo-sms'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
+  const { theme } = useTheme()
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
   const { getMarketTokenById } = useWatchlist()
   const token = tokenId ? getMarketTokenById(tokenId) : undefined
@@ -29,48 +36,118 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     ? (CONTENT_SIZE - actualViewWidth) / 2
     : 0
 
-  const handleMore = (): void => {
-    viewShotRef.current?.capture?.().then(async uri => {
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64
-      })
+  const urlToShare = tokenInfo?.urlHostname
+  const title = 'some title'
+  const message = 'some message'
 
-      Share.open({
-        title: tokenInfo?.urlHostname,
-        url: `data:image/png;base64,${base64}`
-      })
+  const handleMore = async (): Promise<void> => {
+    const url = await captureImageInBase64Url()
+
+    Share.open({
+      title,
+      url
     })
   }
 
+  const handleCopyLink = (link: string | undefined): void => {
+    if (link) {
+      copyToClipboard(link)
+    }
+  }
+
+  const handleSendMessage = async (): Promise<void> => {
+    const uri = await captureImage()
+
+    await SMS.sendSMSAsync([], message, {
+      attachments: {
+        uri: uri,
+        mimeType: 'image/png',
+        filename: 'image.png'
+      }
+    })
+  }
+
+  const handleShare = async (social: AvailableSocial): Promise<void> => {
+    try {
+      const url = await captureImageInBase64Url()
+
+      await Share.shareSingle({
+        title,
+        message,
+        url,
+        social
+      })
+    } catch (error) {
+      Logger.error('Error sharing', error)
+    }
+  }
+
+  const captureImage = async (): Promise<string> => {
+    const imageSize = CONTENT_SIZE / PixelRatio.get()
+    return await captureRef(viewShotRef, {
+      width: imageSize,
+      height: imageSize
+    })
+  }
+
+  const captureImageInBase64Url = async (): Promise<string> => {
+    const uri = await captureImage()
+
+    const data = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64
+    })
+
+    return `data:image/png;base64,${data}`
+  }
+
   if (!tokenId || !token) {
-    return <LoadingState />
+    return <LoadingState sx={{ flex: 1 }} />
   }
 
   return (
     <View sx={{ flex: 1 }} onLayout={handleLayout}>
       <ScrollView sx={{ flex: 1 }} contentContainerSx={{ paddingBottom: 60 }}>
-        <View
-          sx={{
-            transform: [{ scale: scale }],
-            alignItems: 'center',
-            marginTop: -cancellingVerticalMargin + 30
-          }}>
-          <ViewShot ref={viewShotRef}>
-            <Content tokenId={tokenId} scale={scale} />
-          </ViewShot>
-        </View>
-        <View
-          sx={{
-            marginTop: -cancellingVerticalMargin + 26,
-            marginHorizontal: 33
-          }}>
-          <Text variant="body1" sx={{ color: '$textSecondary' }}>
-            Keep track of any AVAX price changes with Core. Customize push
-            notifications lorem ipsum dolor sit amet lorem ipsum dolor
-          </Text>
-        </View>
+        {actualViewWidth !== undefined && (
+          <>
+            <View
+              sx={{
+                transform: [{ scale: scale }],
+                alignItems: 'center',
+                marginTop: -cancellingVerticalMargin + 30
+              }}>
+              <View
+                sx={{
+                  borderRadius: 18 / scale,
+                  borderWidth: 1,
+                  borderColor: theme.colors.$borderPrimary,
+                  overflow: 'hidden'
+                }}>
+                <ViewShot ref={viewShotRef}>
+                  <Content tokenId={tokenId} />
+                </ViewShot>
+              </View>
+            </View>
+            <View
+              sx={{
+                marginTop: -cancellingVerticalMargin + 26,
+                marginHorizontal: 33
+              }}>
+              <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                Don’t miss out on {tokenInfo?.name} price changes. Download Core
+                from the App Store or Google Play store to receive alerts on{' '}
+                {tokenInfo?.name} and other popular tokens.
+              </Text>
+            </View>
+          </>
+        )}
       </ScrollView>
-      <ShareFooter onMore={handleMore} />
+      <ShareFooter
+        url={urlToShare}
+        onMore={handleMore}
+        onCopyLink={handleCopyLink}
+        onSendMessage={handleSendMessage}
+        onShare={handleShare}
+      />
     </View>
   )
 }

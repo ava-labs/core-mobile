@@ -22,7 +22,7 @@ export const PriceChangeIndicator = ({
   animated = false,
   overrideTheme
 }: PriceChange & {
-  textVariant?: 'buttonMedium' | 'buttonSmall'
+  textVariant?: TextVariants
   animated?: boolean
   testID?: string
   overrideTheme?: K2AlpineTheme
@@ -49,6 +49,10 @@ export const PriceChangeIndicator = ({
 
   const formattedPriceText = `${signIndicator}${formattedPrice}`
 
+  const arrowSx = getArrowMargin(textVariant, status, formattedPercent)
+
+  const arrowSize = textVariant === 'priceChangeIndicatorLarge' ? 20 : ICON_SIZE
+
   return animated === true ? (
     <AnimatedComponent
       textVariant={textVariant}
@@ -57,6 +61,8 @@ export const PriceChangeIndicator = ({
       formattedPrice={formattedPriceText}
       formattedPercent={formattedPercent}
       status={status}
+      arrowSx={arrowSx}
+      arrowSize={arrowSize}
     />
   ) : (
     <PlainComponent
@@ -66,6 +72,8 @@ export const PriceChangeIndicator = ({
       formattedPrice={formattedPriceText}
       formattedPercent={formattedPercent}
       status={status}
+      arrowSx={arrowSx}
+      arrowSize={arrowSize}
     />
   )
 }
@@ -76,18 +84,12 @@ const AnimatedComponent = ({
   percentChangeColor,
   formattedPrice,
   formattedPercent,
-  status
+  status,
+  arrowSx,
+  arrowSize
 }: ComponentProps): JSX.Element => {
   const showArrow =
     status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
-  const iconMarginBottom =
-    textVariant === 'buttonMedium'
-      ? status === PriceChangeStatus.Up
-        ? 3
-        : 5
-      : 1
-  const iconMarginLeft = formattedPercent === undefined ? 4 : 1
-
   return (
     <Animated.View exiting={FadeOut} entering={FadeIn} style={styles.container}>
       <AnimatedText
@@ -100,15 +102,7 @@ const AnimatedComponent = ({
       <Animated.View
         layout={LinearTransition.springify().damping(100)}
         style={styles.innerWrapper}>
-        {showArrow && (
-          <Arrow
-            sx={{
-              marginBottom: iconMarginBottom,
-              marginLeft: iconMarginLeft
-            }}
-            status={status}
-          />
-        )}
+        {showArrow && <Arrow sx={arrowSx} status={status} size={arrowSize} />}
         {formattedPercent !== undefined && (
           <AnimatedText
             variant={textVariant}
@@ -129,17 +123,12 @@ const PlainComponent = ({
   percentChangeColor,
   formattedPrice,
   formattedPercent,
-  status
+  status,
+  arrowSx,
+  arrowSize
 }: ComponentProps): JSX.Element => {
   const showArrow =
     status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
-  const iconMarginBottom =
-    textVariant === 'buttonMedium'
-      ? status === PriceChangeStatus.Up
-        ? 3
-        : 5
-      : 1
-  const iconMarginLeft = formattedPercent === undefined ? 4 : 1
 
   return (
     <View style={styles.container}>
@@ -151,15 +140,7 @@ const PlainComponent = ({
         {formattedPrice}
       </Text>
       <View style={styles.innerWrapper}>
-        {showArrow && (
-          <Arrow
-            sx={{
-              marginBottom: iconMarginBottom,
-              marginLeft: iconMarginLeft
-            }}
-            status={status}
-          />
-        )}
+        {showArrow && <Arrow sx={arrowSx} status={status} size={arrowSize} />}
         {formattedPercent !== undefined && (
           <Text
             variant={textVariant}
@@ -176,23 +157,25 @@ const PlainComponent = ({
 
 const Arrow = ({
   sx,
-  status
+  status,
+  size
 }: {
-  sx: SxProp
+  sx?: SxProp
   status: PriceChangeStatus
+  size: number
 }): JSX.Element => {
   return (
     <View sx={sx}>
       {status === PriceChangeStatus.Down ? (
         <Icons.Custom.TrendingArrowDown
           color={colors.$accentDanger}
-          width={ICON_SIZE}
-          height={ICON_SIZE}
+          width={size}
+          height={size}
         />
       ) : status === PriceChangeStatus.Up ? (
         <Icons.Custom.TrendingArrowUp
-          width={ICON_SIZE}
-          height={ICON_SIZE}
+          width={size}
+          height={size}
           color={colors.$accentTeal}
         />
       ) : null}
@@ -201,12 +184,14 @@ const Arrow = ({
 }
 
 type ComponentProps = {
-  textVariant?: 'buttonMedium' | 'buttonSmall'
+  textVariant?: TextVariants
   tintColor: string
   percentChangeColor: string
   formattedPrice: string
   formattedPercent?: string
   status: PriceChangeStatus
+  arrowSx: SxProp
+  arrowSize: number
 }
 
 const ICON_SIZE = 10
@@ -223,3 +208,47 @@ const styles = StyleSheet.create({
     gap: 4
   }
 })
+
+type TextVariants = 'buttonMedium' | 'buttonSmall' | 'priceChangeIndicatorLarge'
+
+function getArrowMarginBottom(
+  textVariant: TextVariants,
+  status: PriceChangeStatus
+): number {
+  if (textVariant === 'priceChangeIndicatorLarge') {
+    return 4
+  }
+
+  return textVariant === 'buttonMedium'
+    ? status === PriceChangeStatus.Up
+      ? 3
+      : 5
+    : 1
+}
+
+function getArrowMarginLeft(
+  textVariant: TextVariants,
+  formattedPercent: string | undefined
+): number {
+  return formattedPercent === undefined
+    ? 4
+    : textVariant === 'priceChangeIndicatorLarge'
+    ? 5
+    : 1
+}
+
+function getArrowMarginRight(textVariant: TextVariants): number {
+  return textVariant === 'priceChangeIndicatorLarge' ? 4 : 0
+}
+
+function getArrowMargin(
+  textVariant: TextVariants,
+  status: PriceChangeStatus,
+  formattedPercent: string | undefined
+): SxProp {
+  return {
+    marginBottom: getArrowMarginBottom(textVariant, status),
+    marginLeft: getArrowMarginLeft(textVariant, formattedPercent),
+    marginRight: getArrowMarginRight(textVariant)
+  }
+}
