@@ -6,12 +6,13 @@ import {
   MiniChart,
   PriceChangeIndicator,
   PriceChangeStatus,
+  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { Dimensions } from 'react-native'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
@@ -53,7 +54,7 @@ export const MarketGridView = memo(
     return (
       <Animated.View
         entering={getListItemEnteringAnimation(index)}
-        layout={LinearTransition.springify()}>
+        layout={SPRING_LINEAR_TRANSITION}>
         <AnimatedPressable onPress={onPress}>
           <View
             sx={{
