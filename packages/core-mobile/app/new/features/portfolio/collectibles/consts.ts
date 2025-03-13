@@ -1,5 +1,12 @@
-import { CollectibleView } from 'store/balance'
+import {
+  AssetNetworkFilter,
+  CollectibleTypeFilter,
+  CollectibleView
+} from 'store/balance'
 import { Dimensions } from 'react-native'
+import { NftContentType } from 'store/nft'
+import { ChainId } from '@avalabs/core-chains-sdk'
+import { NftItem } from 'services/nft/types'
 
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
@@ -44,5 +51,56 @@ export const getGridCardHeight = (
     default: {
       return LIST_ITEM_HEIGHT
     }
+  }
+}
+
+export function getFilteredNetworks(
+  items: NftItem[],
+  network: AssetNetworkFilter
+): NftItem[] {
+  switch (network) {
+    case AssetNetworkFilter.AvalancheCChain:
+      return items.filter(
+        collectible =>
+          'chainId' in collectible &&
+          (collectible.chainId === ChainId.AVALANCHE_MAINNET_ID ||
+            collectible.chainId === ChainId.AVALANCHE_TESTNET_ID)
+      )
+    case AssetNetworkFilter.Ethereum:
+      return items.filter(
+        collectible =>
+          'chainId' in collectible &&
+          (collectible.chainId === ChainId.ETHEREUM_HOMESTEAD ||
+            collectible.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
+            collectible.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
+      )
+    default:
+      return items
+  }
+}
+
+export function getFilteredContentType(
+  items: NftItem[],
+  contentType: CollectibleTypeFilter
+): NftItem[] {
+  switch (contentType) {
+    case CollectibleTypeFilter.Videos:
+      return items.filter(
+        collectible => collectible.imageData?.type === NftContentType.MP4
+      )
+    case CollectibleTypeFilter.Pictures:
+      return items.filter(
+        collectible =>
+          collectible.imageData?.type === NftContentType.JPG ||
+          collectible.imageData?.type === NftContentType.PNG ||
+          // try to display as picture if the type is unknown
+          collectible.imageData?.type === NftContentType.Unknown
+      )
+    case CollectibleTypeFilter.GIFs:
+      return items.filter(
+        collectible => collectible.imageData?.type === NftContentType.GIF
+      )
+    default:
+      return items
   }
 }

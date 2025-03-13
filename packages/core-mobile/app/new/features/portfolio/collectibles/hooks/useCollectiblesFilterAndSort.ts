@@ -1,4 +1,3 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { IndexPath } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
@@ -13,9 +12,9 @@ import {
   CollectibleStatus,
   CollectibleTypeFilter
 } from 'store/balance'
-import { NftContentType } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
 import { selectCollectibleVisibility } from 'store/portfolio'
+import { getFilteredContentType, getFilteredNetworks } from '../consts'
 
 export const useCollectiblesFilterAndSort = (
   collectibles: NftItem[]
@@ -115,57 +114,6 @@ export const useCollectiblesFilterAndSort = (
     [selectedView]
   )
 
-  const getFilteredNetworks = useCallback(
-    (items: NftItem[]) => {
-      switch (filterOption[0]) {
-        case AssetNetworkFilter.AvalancheCChain:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              (collectible.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-                collectible.chainId === ChainId.AVALANCHE_TESTNET_ID)
-          )
-        case AssetNetworkFilter.Ethereum:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              (collectible.chainId === ChainId.ETHEREUM_HOMESTEAD ||
-                collectible.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
-                collectible.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
-          )
-        default:
-          return items
-      }
-    },
-    [filterOption]
-  )
-
-  const getFilteredContentType = useCallback(
-    (items: NftItem[]) => {
-      switch (filterOption[1]) {
-        case CollectibleTypeFilter.Videos:
-          return items.filter(
-            collectible => collectible.imageData?.type === NftContentType.MP4
-          )
-        case CollectibleTypeFilter.Pictures:
-          return items.filter(
-            collectible =>
-              collectible.imageData?.type === NftContentType.JPG ||
-              collectible.imageData?.type === NftContentType.PNG ||
-              // try to display as picture if the type is unknown
-              collectible.imageData?.type === NftContentType.Unknown
-          )
-        case CollectibleTypeFilter.GIFs:
-          return items.filter(
-            collectible => collectible.imageData?.type === NftContentType.GIF
-          )
-        default:
-          return items
-      }
-    },
-    [filterOption]
-  )
-
   const getFiltered = useCallback(
     (nfts: NftItem[]) => {
       if (nfts.length === 0) {
@@ -177,33 +125,28 @@ export const useCollectiblesFilterAndSort = (
         }
         return true
       })
-      const filteredNetworks = getFilteredNetworks(filteredByHidden)
-      return getFilteredContentType(filteredNetworks)
+      const filteredNetworks = getFilteredNetworks(
+        filteredByHidden,
+        filterOption[0] as AssetNetworkFilter
+      )
+      return getFilteredContentType(
+        filteredNetworks,
+        filterOption[1] as CollectibleTypeFilter
+      )
     },
-    [
-      getFilteredNetworks,
-      getFilteredContentType,
-      filterOption,
-      collectiblesVisibility
-    ]
+    [filterOption, collectiblesVisibility]
   )
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
       if (sortOption === CollectibleSort.NameAToZ)
         return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') <
-            (b.processedMetadata?.name ?? '')
-            ? 1
-            : -1
+          return (a?.name ?? '') < (b?.name ?? '') ? 1 : -1
         })
 
       if (sortOption === CollectibleSort.NameZToA)
         return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') >
-            (b.processedMetadata?.name ?? '')
-            ? 1
-            : -1
+          return (a?.name ?? '') > (b?.name ?? '') ? 1 : -1
         })
 
       return filtered

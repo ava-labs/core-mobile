@@ -104,7 +104,7 @@ export const CollectibleRenderer = ({
     return (
       <Image
         key={`image-${collectible.localId}`}
-        recyclingKey={`image-${collectible.localId}`}
+        // recyclingKey={`image-${collectible.localId}`}
         source={collectible?.imageData?.image}
         onLoadEnd={onLoadEnd}
         onLoadStart={onLoadStart}
@@ -141,9 +141,20 @@ export const CollectibleRenderer = ({
     }
   }, [])
 
+  const onLayout = (): void => {
+    if (contentRef.current) {
+      contentRef.current.measure(
+        (x: number, y: number, width: number, height: number) => {
+          setLayout({ width, height })
+        }
+      )
+    }
+  }
+
   return (
     <View
       ref={contentRef}
+      onLayout={onLayout}
       style={[
         {
           flex: 1,

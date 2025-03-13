@@ -34,6 +34,7 @@ import { CardContainer } from './CardContainer'
 import { CollectibleItem } from './CollectibleItem'
 
 export const CollectiblesScreen = ({
+  goToCollectibleDetail,
   goToCollectibleManagement
 }: {
   goToCollectibleDetail: (localId: string) => void
@@ -81,7 +82,14 @@ export const CollectiblesScreen = ({
   )
 
   const renderItem: ListRenderItem<NftItem> = ({ item, index }) => {
-    return <CollectibleItem collectible={item} index={index} type={listType} />
+    return (
+      <CollectibleItem
+        onPress={() => goToCollectibleDetail(item.localId)}
+        collectible={item}
+        index={index}
+        type={listType}
+      />
+    )
   }
 
   const noCollectiblesFound =

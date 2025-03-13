@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
-import { Pressable } from 'react-native'
+import { Pressable, ViewStyle } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
@@ -25,20 +25,33 @@ export const CollectibleItem = memo(
   ({
     collectible,
     type,
-    index
+    index,
+    onPress
   }: {
     collectible: NftItem
     type: CollectibleView
     index: number
+    onPress?: () => void
   }): ReactNode => {
     if (type === CollectibleView.ListView)
-      return <CollectibleListItem collectible={collectible} index={index} />
+      return (
+        <CollectibleListItem
+          onPress={onPress}
+          collectible={collectible}
+          index={index}
+        />
+      )
 
     return (
       <CollectibleGridItem
         type={type}
         collectible={collectible}
         index={index}
+        onPress={onPress}
+        style={{
+          marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
+          marginBottom: VERTICAL_ITEM_GAP
+        }}
       />
     )
   }
@@ -47,10 +60,12 @@ export const CollectibleItem = memo(
 export const CollectibleListItem = memo(
   ({
     collectible,
-    index
+    index,
+    onPress
   }: {
     collectible: NftItem
     index: number
+    onPress?: () => void
   }): ReactNode => {
     const {
       theme: { colors }
@@ -71,6 +86,7 @@ export const CollectibleListItem = memo(
         entering={getListItemEnteringAnimation(0)}
         layout={LinearTransition.springify()}>
         <Pressable
+          onPress={onPress}
           style={{
             height,
             flexDirection: 'row',
@@ -139,24 +155,30 @@ export const CollectibleGridItem = memo(
   ({
     collectible,
     type,
-    index
+    index,
+    style,
+    onPress
   }: {
     collectible: NftItem
     type: CollectibleView
     index: number
+    style?: ViewStyle
+    onPress?: () => void
   }): ReactNode => {
     const height = getGridCardHeight(type, index)
 
     return (
       <AnimatedPressable
         entering={getListItemEnteringAnimation(index)}
-        layout={LinearTransition.springify()}>
+        layout={LinearTransition.springify()}
+        onPress={onPress}>
         <CardContainer
-          style={{
-            height,
-            marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
-            marginBottom: VERTICAL_ITEM_GAP
-          }}>
+          style={[
+            {
+              height
+            },
+            style
+          ]}>
           <CollectibleRenderer collectible={collectible}>
             <View
               style={{

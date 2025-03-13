@@ -67,7 +67,7 @@ export const AnimatedPressable = memo(
       if (isScrolling.current) {
         return
       }
-      startAnimation()
+      if (onPress) startAnimation()
     }
 
     const onTouchMove = (event: GestureResponderEvent): void => {

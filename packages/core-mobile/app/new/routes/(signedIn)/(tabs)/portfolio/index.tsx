@@ -197,9 +197,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/tokenManagement')
   }, [navigate])
 
-  const handleGoToCollectibleDetail = useCallback((): void => {
-    // navigate to token detail
-  }, [])
+  const handleGoToCollectibleDetail = useCallback(
+    (localId: string): void => {
+      navigate({ pathname: '/collectibleDetail', params: { localId } })
+    },
+    [navigate]
+  )
 
   const handleGoToCollectibleManagement = useCallback((): void => {
     navigate('/collectibleManagement')
