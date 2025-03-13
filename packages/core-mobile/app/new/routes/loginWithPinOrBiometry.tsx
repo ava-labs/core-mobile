@@ -246,7 +246,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   source={{
                     uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
                   }}
-                  hasBlur={!(Platform.OS === 'android' && isEnteringPin)}
+                  hasBlur={Platform.OS !== 'android'}
                   backgroundColor={theme.colors.$surfacePrimary}
                 />
               </Reanimated.View>

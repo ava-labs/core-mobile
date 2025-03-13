@@ -82,7 +82,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
       encoding: FileSystem.EncodingType.Base64
     })
 
-    return `data:image/png;base64,${data.replace(/(\r\n|\n|\r)/gm, '')}`
+    return `data:image/png;base64,${data}`
   }
 
   if (!tokenId || !token) {
