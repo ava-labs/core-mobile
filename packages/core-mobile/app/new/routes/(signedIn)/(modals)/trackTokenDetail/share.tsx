@@ -36,14 +36,12 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     : 0
 
   const urlToShare = tokenInfo?.urlHostname
-  const title = 'some title'
-  const message = 'some message'
+  const message = `Don't miss out on ${tokenInfo?.name} price changes. Download Core from the App Store or Google Play store to receive alerts on ${tokenInfo?.name} and other popular tokens.`
 
   const handleMore = async (): Promise<void> => {
     const url = await captureImageInBase64Url()
 
     Share.open({
-      title,
       url,
       message
     })
@@ -60,7 +58,6 @@ const ShareMarketTokenScreen = (): JSX.Element => {
       const url = await captureImageInBase64Url()
 
       await Share.shareSingle({
-        title,
         message,
         url,
         social
@@ -121,9 +118,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
                 marginHorizontal: 33
               }}>
               <Text variant="body1" sx={{ color: '$textSecondary' }}>
-                Don’t miss out on {tokenInfo?.name} price changes. Download Core
-                from the App Store or Google Play store to receive alerts on{' '}
-                {tokenInfo?.name} and other popular tokens.
+                {message}
               </Text>
             </View>
           </>
