@@ -7,6 +7,7 @@ import Avatar from 'components/Avatar'
 import { Checkbox } from 'components/Checkbox'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { getLogoIconUrl } from 'utils/getLogoIconUrl'
 import { Dapp } from './types'
 
 interface Props {
@@ -31,20 +32,6 @@ export const DappItem = ({
     return item.dapp.peer.metadata
   }, [item])
 
-  const getIconUrl = (): string | undefined => {
-    const icons = peerMeta.icons
-    const iconCount = icons.length
-
-    // try to get the icon with the highest resolution
-    return iconCount > 2
-      ? icons[2]
-      : iconCount > 1
-      ? icons[1]
-      : iconCount === 1
-      ? icons[0]
-      : undefined
-  }
-
   return (
     <AvaListItem.Base
       key={item.id}
@@ -58,7 +45,7 @@ export const DappItem = ({
           )}
           <Avatar.Custom
             name={peerMeta.name}
-            logoUri={getIconUrl()}
+            logoUri={getLogoIconUrl(peerMeta.icons)}
             testID="dapp_item__avatar"
           />
         </Row>
