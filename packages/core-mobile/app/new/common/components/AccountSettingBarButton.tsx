@@ -6,7 +6,7 @@ export const AccountSettingBarButton = forwardRef<RNView>(
   ({ onPress }: { onPress?: () => void }, ref): JSX.Element => {
     return (
       <TouchableOpacity ref={ref} onPress={onPress}>
-        <View sx={{ marginTop: 5 }}>
+        <View>
           <Avatar
             backgroundColor="transparent"
             size={32}

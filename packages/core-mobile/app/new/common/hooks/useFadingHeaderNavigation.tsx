@@ -5,7 +5,8 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent
+  NativeSyntheticEvent,
+  Platform
 } from 'react-native'
 import Animated, {
   useSharedValue,
@@ -116,12 +117,17 @@ export const useFadingHeaderNavigation = ({
         />
       ),
       title: header && (
-        <View sx={{ paddingTop: shouldHeaderHaveGrabber ? 23 : 0 }}>
+        <View
+          sx={{
+            paddingTop: shouldHeaderHaveGrabber ? 23 : 0,
+            transform: [{ translateY: BOTTOM_INSET }],
+            marginBottom: BOTTOM_INSET
+          }}>
           <View
             sx={{
               overflow: 'hidden',
-              height: '100%',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              height: '100%'
             }}
             onLayout={handleLayout}>
             <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
@@ -144,3 +150,5 @@ export const useFadingHeaderNavigation = ({
     targetHiddenProgress
   }
 }
+
+const BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0
