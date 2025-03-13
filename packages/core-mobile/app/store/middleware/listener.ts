@@ -19,6 +19,7 @@ import { addNotificationsListeners } from 'store/notifications/listeners/listene
 import { addSeedlessListeners } from 'seedless/store/listeners'
 import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
+import { addNotificationsTokenChangeListeners } from 'services/notifications/tokenChange/store/listeners'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
@@ -57,6 +58,8 @@ addBrowserListener(startListening)
 addSeedlessListeners(startListening)
 
 addWatchlistListeners(startListening)
+
+addNotificationsTokenChangeListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 
