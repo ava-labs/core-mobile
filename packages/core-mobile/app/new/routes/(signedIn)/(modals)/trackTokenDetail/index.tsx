@@ -13,7 +13,14 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
+/**
+ * Temporarily import "useNavigation" from @react-navigation/native.
+ * This is a workaround due to a render bug in the expo-router version.
+ * See: https://github.com/expo/expo/issues/35383
+ * TODO: Adjust import back to expo-router once the bug is resolved.
+ */
+import { useNavigation } from '@react-navigation/native'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'

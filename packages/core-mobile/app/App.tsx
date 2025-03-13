@@ -48,6 +48,7 @@ function App(): JSX.Element {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <NavigationContainer
+          navigationInChildEnabled
           theme={context.navContainerTheme}
           ref={navigationRef}
           onStateChange={handleNavigationStateChange}

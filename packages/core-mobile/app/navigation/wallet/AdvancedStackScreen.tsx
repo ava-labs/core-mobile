@@ -10,11 +10,11 @@ export type AdvancedStackParamList = {
 
 const AdvancedStack = createStackNavigator<AdvancedStackParamList>()
 
-const AdvancedStackScreen = () => {
+const AdvancedStackScreen = (): JSX.Element => {
   return (
     <AdvancedStack.Navigator
       screenOptions={{
-        headerBackTitleVisible: false
+        headerBackButtonDisplayMode: 'minimal'
       }}>
       <AdvancedStack.Screen
         options={MainHeaderOptions({

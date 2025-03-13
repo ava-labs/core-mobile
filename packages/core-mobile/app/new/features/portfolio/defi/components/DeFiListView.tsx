@@ -1,12 +1,13 @@
 import React from 'react'
 import {
   Icons,
+  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { LogoWithNetwork } from './LogoWithNetwork'
@@ -31,7 +32,7 @@ export const DeFiListView = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
+      layout={SPRING_LINEAR_TRANSITION}>
       <TouchableOpacity
         onPress={onPress}
         sx={{

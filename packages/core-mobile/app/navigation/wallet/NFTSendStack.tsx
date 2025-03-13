@@ -36,7 +36,7 @@ export default function NFTSendScreenStack(): JSX.Element | null {
           presentation: 'card',
           headerShown: true,
           title: '',
-          headerBackTitleVisible: false,
+          headerBackButtonDisplayMode: 'minimal',
           headerTitleAlign: 'center'
         }}>
         <NFTSendStack.Screen

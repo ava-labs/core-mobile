@@ -14,14 +14,14 @@ export type ReceiveStackParamList = {
 
 const ReceiveStack = createStackNavigator<ReceiveStackParamList>()
 
-const ReceiveScreenStack = () => {
+const ReceiveScreenStack = (): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
     <ReceiveStack.Navigator
       screenOptions={{
         presentation: 'card',
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTitleAlign: 'center',
         headerStyle: {
           elevation: 0,
@@ -41,7 +41,7 @@ const ReceiveScreenStack = () => {
   )
 }
 
-const ReceiveTokenScreen = () => <ReceiveToken embedded={false} />
-const TopNavigation = () => <TopNavigationHeader showBackButton />
+const ReceiveTokenScreen = (): JSX.Element => <ReceiveToken embedded={false} />
+const TopNavigation = (): JSX.Element => <TopNavigationHeader showBackButton />
 
 export default ReceiveScreenStack

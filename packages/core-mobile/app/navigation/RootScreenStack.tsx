@@ -139,22 +139,18 @@ const RootScreenStack: FC = () => {
     <RootStack.Navigator
       screenOptions={{
         headerShown: false,
-        animationEnabled: false
+        animation: 'none'
       }}>
       {walletState === WalletState.NONEXISTENT ? (
         <RootStack.Screen
           name={AppNavigation.Root.Onboard}
           component={OnboardScreenStack}
-          options={{
-            animationEnabled: false
-          }}
         />
       ) : (
         <RootStack.Screen
           name={AppNavigation.Root.Wallet}
           component={WalletScreenStackWithContext}
           options={{
-            animationEnabled: false,
             presentation: 'card'
           }}
         />
@@ -162,23 +158,16 @@ const RootScreenStack: FC = () => {
       <RootStack.Screen
         name={AppNavigation.Root.RefreshToken}
         component={RefreshTokenScreenStack}
-        options={{
-          animationEnabled: false
-        }}
       />
       <RootStack.Screen
         name={AppNavigation.Root.RecoveryMethods}
         component={RecoveryMethodsStack}
-        options={{
-          animationEnabled: true
-        }}
       />
       <RootStack.Screen
         name={AppNavigation.Root.SelectRecoveryMethods}
         component={SelectRecoveryMethods}
         options={{
           ...MainHeaderOptions(),
-          animationEnabled: true,
           presentation: 'modal'
         }}
       />

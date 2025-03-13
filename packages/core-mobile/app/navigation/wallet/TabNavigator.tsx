@@ -67,6 +67,7 @@ const TabNavigator: () => JSX.Element = () => {
             AnalyticsService.capture('StakeOpened')
             if (!isEarnDashboardEnabled) {
               e.preventDefault()
+              // @ts-ignore
               navigation.navigate(AppNavigation.Wallet.Earn, {
                 screen: AppNavigation.Earn.StakeSetup
               })
