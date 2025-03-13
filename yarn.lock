@@ -324,8 +324,10 @@ __metadata:
     expo-image: 2.0.6
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
+    expo-navigation-bar: 4.0.8
     expo-router: 4.0.18
     expo-status-bar: 2.0.1
+    expo-video: 2.0.5
     https-browserify: 1.0.0
     hypersdk-client: 0.4.16
     jail-monkey: 2.8.0
@@ -550,6 +552,7 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-splash-screen: 0.29.18
     expo-status-bar: 2.0.1
+    expo-video: 2.0.5
     json-stringify-pretty-compact: 4.0.0
     lodash.debounce: 4.0.8
     patch-package: 8.0.0
@@ -18012,6 +18015,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-navigation-bar@npm:4.0.8":
+  version: 4.0.8
+  resolution: "expo-navigation-bar@npm:4.0.8"
+  dependencies:
+    "@react-native/normalize-colors": 0.76.7
+    debug: ^4.3.2
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: cb43df98f075945c8699ec3eafc0deb3fb3a77d025418ac349e1571e23a49664d212b14644c53512e48977654971a5255bba376a44b737909a22d80f74cdbcbb
+  languageName: node
+  linkType: hard
+
 "expo-router@npm:4.0.18":
   version: 4.0.18
   resolution: "expo-router@npm:4.0.18"
@@ -18075,6 +18092,17 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 0bcab3a2b533014b445bdb3900094a9ba36cbbee7573584e410efdd12641b6782de419cb0688897e0617ac671f9fba1976a1125388688fe5aa2e453de705ee16
+  languageName: node
+  linkType: hard
+
+"expo-video@npm:2.0.5":
+  version: 2.0.5
+  resolution: "expo-video@npm:2.0.5"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: a9205efda451f078dadd59aefdf12db1f6583024928a953f3e16798b33ed6dd38443e1cb5367cb8ab1ceadc0daeb7e9ce84d615c5ea8fbd9f3c11a1487fe5dda
   languageName: node
   linkType: hard
 
