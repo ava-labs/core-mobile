@@ -26,16 +26,16 @@
         "react-native-share",
         {
           "ios": [
-            "fb",
-            "instagram",
             "twitter",
-            "tiktoksharesdk"
+            "fb-messenger",
+            "tg",
+            "whatsapp"
           ],
           "android": [
-            "com.facebook.katana",
-            "com.instagram.android",
             "com.twitter.android",
-            "com.zhiliaoapp.musically"
+            "com.facebook.orca",
+            "org.telegram.messenger",
+            "com.whatsapp"
           ],
           "enableBase64ShareAndroid": true
         }
