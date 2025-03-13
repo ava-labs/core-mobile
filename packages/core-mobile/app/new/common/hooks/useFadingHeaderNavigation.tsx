@@ -13,6 +13,12 @@ import Animated, {
   SharedValue,
   clamp
 } from 'react-native-reanimated'
+/**
+ * Temporarily import "useNavigation" from @react-navigation/native.
+ * This is a workaround due to a render bug in the expo-router version.
+ * See: https://github.com/expo/expo/issues/35383
+ * TODO: Adjust import back to expo-router once the bug is resolved.
+ */
 import { useNavigation } from '@react-navigation/native'
 
 export const useFadingHeaderNavigation = ({

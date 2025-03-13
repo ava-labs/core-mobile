@@ -11,6 +11,12 @@ import { useSelector } from 'react-redux'
 import { useBgDetect } from 'navigation/useBgDetect'
 import { useFocusEffect, useRootNavigationState, useRouter } from 'expo-router'
 import { Platform } from 'react-native'
+/**
+ * Temporarily import "useNavigation" from @react-navigation/native.
+ * This is a workaround due to a render bug in the expo-router version.
+ * See: https://github.com/expo/expo/issues/35383
+ * TODO: Adjust import back to expo-router once the bug is resolved.
+ */
 import { useNavigation } from '@react-navigation/native'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import { StackActions } from '@react-navigation/native'
