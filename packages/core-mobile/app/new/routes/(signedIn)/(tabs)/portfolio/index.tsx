@@ -1,15 +1,40 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { noop } from '@avalabs/core-utils-sdk'
 import {
-  View,
   BalanceHeader,
   NavigationTitleHeader,
-  useTheme,
   SegmentedControl,
-  PriceChangeStatus
+  useTheme,
+  PriceChangeStatus,
+  View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import {
+  CollapsibleTabs,
+  CollapsibleTabsRef
+} from 'common/components/CollapsibleTabs'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useRouter } from 'expo-router'
+import {
+  ActionButton,
+  ActionButtons
+} from 'features/portfolio/assets/components/ActionButtons'
+import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
+import { ActionButtonTitle } from 'features/portfolio/assets/consts'
+import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
+import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  SharedValue
+} from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
+import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
@@ -19,32 +44,6 @@ import {
   selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { RootState } from 'store'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import Animated, {
-  useAnimatedStyle,
-  SharedValue,
-  useSharedValue
-} from 'react-native-reanimated'
-import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
-import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
-import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
-import {
-  ActionButton,
-  ActionButtons
-} from 'features/portfolio/assets/components/ActionButtons'
-import { ActionButtonTitle } from 'features/portfolio/assets/consts'
-import { noop } from '@avalabs/core-utils-sdk'
-import {
-  CollapsibleTabs,
-  CollapsibleTabsRef
-} from 'common/components/CollapsibleTabs'
-import { useRouter } from 'expo-router'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { Platform } from 'react-native'
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -198,6 +197,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/tokenManagement')
   }, [navigate])
 
+  const handleGoToCollectibleDetail = useCallback((): void => {
+    // navigate to token detail
+  }, [])
+
+  const handleGoToCollectibleManagement = useCallback((): void => {
+    navigate('/collectibleManagement')
+  }, [navigate])
+
   const handleScrollTab = (tabIndex: SharedValue<number>): void => {
     selectedSegmentIndex.value = tabIndex.value
   }
@@ -227,7 +234,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
           },
           {
             tabName: 'Collectibles',
-            component: <CollectiblesScreen />
+            component: (
+              <CollectiblesScreen
+                goToCollectibleDetail={handleGoToCollectibleDetail}
+                goToCollectibleManagement={handleGoToCollectibleManagement}
+              />
+            )
           },
           {
             tabName: 'DeFi',

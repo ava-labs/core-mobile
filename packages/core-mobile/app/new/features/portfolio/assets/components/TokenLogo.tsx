@@ -1,11 +1,14 @@
 import React from 'react'
-import { Icons, Image, useTheme, View } from '@avalabs/k2-alpine'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
+import { Icons, Image, View } from '@avalabs/k2-alpine'
 import { FC, useState } from 'react'
-import { TokenSymbol } from 'store/network'
 import { isBase64Png } from 'screens/browser/utils'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import { SvgUri } from 'react-native-svg'
+import { TokenIcon } from 'common/components/TokenIcon'
+import {
+  hasLocalNetworkTokenLogo,
+  hasLocalTokenLogo
+} from 'common/utils/hasLocalTokenLogo'
 import { FallbackTokenLogo } from './FallbackTokenLogo'
 
 interface TokenAvatarProps {
@@ -16,6 +19,7 @@ interface TokenAvatarProps {
   backgroundColor?: string
   borderColor?: string
   isMalicious?: boolean
+  isNetworkToken?: boolean
 }
 
 const DEFAULT_SIZE = 32
@@ -26,11 +30,12 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   borderColor,
   size = DEFAULT_SIZE,
   backgroundColor,
-  isMalicious
+  isMalicious,
+  isNetworkToken = false
 }) => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const useLocalNetworkTokenLogo =
+    isNetworkToken && hasLocalNetworkTokenLogo(symbol)
+
   const [failedToLoad, setFailedToLoad] = useState(false)
 
   const borderWidth = borderColor ? 1 : 0
@@ -46,20 +51,34 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
           alignItems: 'center',
           overflow: 'hidden',
           backgroundColor,
-          borderColor
+          borderColor,
+          borderWidth
         }}>
         <Icons.Custom.RedExclamation width={14} height={14} />
       </View>
     )
   }
 
-  if (symbol === TokenSymbol.AVAX || symbol === 'FAU') {
+  if (hasLocalTokenLogo(symbol) || useLocalNetworkTokenLogo) {
     return (
-      <AvaLogoSVG
-        size={size}
-        logoColor={'#FFFFFF'} // Avalanche logo shoud be white
-        backgroundColor={colors.$textDanger}
-      />
+      <View
+        sx={{
+          width: size,
+          height: size,
+          borderRadius: size,
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden',
+          backgroundColor,
+          borderColor,
+          borderWidth
+        }}>
+        <TokenIcon
+          size={size}
+          symbol={symbol}
+          isNetworkTokenSymbol={useLocalNetworkTokenLogo}
+        />
+      </View>
     )
   }
 

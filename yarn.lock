@@ -324,8 +324,10 @@ __metadata:
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.4
+    expo-navigation-bar: ^4.0.8
     expo-router: 3.4.10
     expo-status-bar: 2.0.1
+    expo-video: 2.0.5
     https-browserify: 1.0.0
     hypersdk-client: 0.4.16
     jail-monkey: 2.8.0
@@ -550,6 +552,7 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-splash-screen: 0.29.18
     expo-status-bar: 2.0.1
+    expo-video: 2.0.5
     json-stringify-pretty-compact: 4.0.0
     lodash.debounce: 4.0.8
     patch-package: 8.0.0
@@ -9155,6 +9158,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native/normalize-colors@npm:0.76.7":
+  version: 0.76.7
+  resolution: "@react-native/normalize-colors@npm:0.76.7"
+  checksum: 4840d1f3852d908520aa77733dae07bd7bcfaa393e0245ea74716246d626785a6abe3add9c4975cbdabc45f5eaf56bbb133fd63e471b48e975a07ca5c346c9bb
+  languageName: node
+  linkType: hard
+
 "@react-native/normalize-colors@npm:^0.73.0":
   version: 0.73.2
   resolution: "@react-native/normalize-colors@npm:0.73.2"
@@ -17730,6 +17740,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-navigation-bar@npm:^4.0.8":
+  version: 4.0.8
+  resolution: "expo-navigation-bar@npm:4.0.8"
+  dependencies:
+    "@react-native/normalize-colors": 0.76.7
+    debug: ^4.3.2
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: cb43df98f075945c8699ec3eafc0deb3fb3a77d025418ac349e1571e23a49664d212b14644c53512e48977654971a5255bba376a44b737909a22d80f74cdbcbb
+  languageName: node
+  linkType: hard
+
 "expo-router@npm:3.4.10":
   version: 3.4.10
   resolution: "expo-router@npm:3.4.10"
@@ -17801,6 +17825,17 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 0bcab3a2b533014b445bdb3900094a9ba36cbbee7573584e410efdd12641b6782de419cb0688897e0617ac671f9fba1976a1125388688fe5aa2e453de705ee16
+  languageName: node
+  linkType: hard
+
+"expo-video@npm:2.0.5":
+  version: 2.0.5
+  resolution: "expo-video@npm:2.0.5"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: a9205efda451f078dadd59aefdf12db1f6583024928a953f3e16798b33ed6dd38443e1cb5367cb8ab1ceadc0daeb7e9ce84d615c5ea8fbd9f3c11a1487fe5dda
   languageName: node
   linkType: hard
 
@@ -25996,7 +26031,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
   languageName: node
   linkType: hard
 

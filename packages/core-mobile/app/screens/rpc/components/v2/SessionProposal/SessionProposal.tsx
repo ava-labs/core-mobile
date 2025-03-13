@@ -18,7 +18,7 @@ import { Button, Text } from '@avalabs/k2-mobile'
 import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AlertType } from '@avalabs/vm-module-types'
 import { CorePrimaryAccount } from '@avalabs/types'
-import { CoreTypes } from '@walletconnect/types'
+import { getLogoIconUrl } from 'utils/getLogoIconUrl'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
 import AlertBanner from '../AlertBanner'
 import SelectAccounts from './SelectAccounts'
@@ -85,14 +85,6 @@ const SessionProposal = (): JSX.Element => {
     return <Networks chainIds={chainIdsToDisplay} hasMore={hasMore} />
   }
 
-  const getPngFromMetadata = (
-    metadata: CoreTypes.Metadata
-  ): string | undefined => {
-    return metadata.icons.find(
-      icon => icon.endsWith('.png') || icon.endsWith('.ico')
-    )
-  }
-
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
       <NativeViewGestureHandler>
@@ -124,7 +116,7 @@ const SessionProposal = (): JSX.Element => {
               }}>
               <Avatar.Custom
                 name={peerMeta.name}
-                logoUri={getPngFromMetadata(peerMeta)}
+                logoUri={getLogoIconUrl(peerMeta.icons)}
                 size={80}
               />
             </OvalTagBg>

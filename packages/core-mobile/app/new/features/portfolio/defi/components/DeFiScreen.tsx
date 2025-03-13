@@ -128,11 +128,14 @@ export const DeFiScreen = (): JSX.Element => {
         <DropdownSelections
           sort={sort}
           view={view}
-          sx={{ marginTop: 14, marginBottom: 16 }}
+          sx={{
+            marginTop: 20,
+            marginBottom: isGridView ? 16 : 8
+          }}
         />
       </View>
     )
-  }, [sort, view])
+  }, [isGridView, sort, view])
 
   const renderSeparator = (): JSX.Element => {
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />
