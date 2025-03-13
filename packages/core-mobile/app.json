@@ -43,6 +43,22 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "android": {
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "ios": {
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": [
+          "twitter",
+          "fb-messenger",
+          "tg",
+          "whatsapp"
+        ]
+      }
     }
   }
 }
