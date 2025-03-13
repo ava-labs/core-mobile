@@ -33,21 +33,29 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
     t: LocalTokenWithBalance,
     n: Network
   ): React.JSX.Element | undefined => {
-    if (isTokenWithBalancePVM(token)) {
+    if (isTokenWithBalancePVM(t)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK width={12} height={12} />
       ) : (
         <Icons.TokenLogos.AVAX_P_LIGHT width={12} height={12} />
       )
     }
-    if (isTokenWithBalanceAVM(token)) {
+    if (isTokenWithBalanceAVM(t)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK width={12} height={12} />
       ) : (
         <Icons.TokenLogos.AVAX_X_LIGHT width={12} height={12} />
       )
     }
-    return <TokenLogo size={12} symbol={token.symbol} logoUri={n.logoUri} />
+    return (
+      <TokenLogo
+        size={12}
+        symbol={n.networkToken.symbol}
+        logoUri={n.logoUri}
+        borderColor={colors.$borderPrimary}
+        isNetworkToken
+      />
+    )
   }
 
   return (
