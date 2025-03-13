@@ -7,13 +7,13 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent
 } from 'react-native'
-import { useNavigation } from 'expo-router'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   SharedValue,
   clamp
 } from 'react-native-reanimated'
+import { useNavigation } from '@react-navigation/native'
 
 export const useFadingHeaderNavigation = ({
   header,
