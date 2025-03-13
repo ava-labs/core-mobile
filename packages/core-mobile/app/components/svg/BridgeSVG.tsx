@@ -6,9 +6,10 @@ interface Prop {
   selected?: boolean
   size?: number
   color?: string
+  testID?: string
 }
 
-function BridgeSVG({ selected, color, size = 30 }: Prop) {
+function BridgeSVG({ testID, selected, color, size = 30 }: Prop): JSX.Element {
   const context = useApplicationContext()
 
   const svgColor = color
@@ -17,7 +18,12 @@ function BridgeSVG({ selected, color, size = 30 }: Prop) {
     ? context.theme.alternateBackground
     : context.theme.colorIcon4
   return (
-    <Svg width={size} height={size} viewBox="0 0 30 31" fill="none">
+    <Svg
+      testID={testID}
+      width={size}
+      height={size}
+      viewBox="0 0 30 31"
+      fill="none">
       <Circle
         cx="15"
         cy="14.9999"

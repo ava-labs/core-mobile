@@ -59,6 +59,7 @@ const tapElementAtIndexNoSync = async (
 }
 
 const longPress = async (item: Detox.NativeMatcher) => {
+  await waitForElement(item)
   await element(item).longPress()
 }
 

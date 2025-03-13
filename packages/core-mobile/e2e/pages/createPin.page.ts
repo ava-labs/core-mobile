@@ -67,6 +67,7 @@ class CreatePinPage {
       await this.tapSkipBtn()
     }
     await Action.tapElementAtIndex(this.agreeAndContinueBtn, 0)
+    console.log('yo')
   }
 
   async tapNumpadZero6Times() {

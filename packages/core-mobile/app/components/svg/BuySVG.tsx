@@ -5,13 +5,19 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 interface Prop {
   color?: string
   size?: number
+  testID?: string
 }
 
-function BuySVG({ color, size = 32 }: Prop) {
+function BuySVG({ testID, color, size = 32 }: Prop): JSX.Element {
   const theme = useApplicationContext().theme
   const iconColor = color ?? theme.alternateBackground
   return (
-    <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+    <Svg
+      testID={testID}
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none">
       <G clip-path="url(#clip0_2961_5605)">
         <G clip-path="url(#clip1_2961_5605)">
           <Path

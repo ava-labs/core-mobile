@@ -47,14 +47,18 @@ export const Fab: FC = () => {
     actions.Send = {
       image: (
         <View
-          testID="tab_navigator__send_button"
           sx={{
             width: 24,
             height: 24,
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <ArrowSVG rotate={180} color={colors.$black} size={17} />
+          <ArrowSVG
+            testID="tab_navigator__send_button"
+            rotate={180}
+            color={colors.$black}
+            size={17}
+          />
         </View>
       ),
       onPress: () => {
@@ -67,14 +71,17 @@ export const Fab: FC = () => {
     actions.Receive = {
       image: (
         <View
-          testID="tab_navigator__receive_button"
           sx={{
             width: 24,
             height: 24,
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <QRCodeSVG color={colors.$black} size={24} />
+          <QRCodeSVG
+            testID="tab_navigator__receive_button"
+            color={colors.$black}
+            size={24}
+          />
         </View>
       ),
       onPress: () => {
@@ -86,14 +93,17 @@ export const Fab: FC = () => {
       actions.Buy = {
         image: (
           <View
-            testID="tab_navigator__buy_button"
             sx={{
               width: 24,
               height: 24,
               justifyContent: 'center',
               alignItems: 'center'
             }}>
-            <BuySVG color={colors.$black} size={24} />
+            <BuySVG
+              testID="tab_navigator__buy_button"
+              color={colors.$black}
+              size={24}
+            />
           </View>
         ),
         onPress: () => {
@@ -106,14 +116,17 @@ export const Fab: FC = () => {
       actions.Swap = {
         image: (
           <View
-            testID="tab_navigator__swap_button"
             sx={{
               width: 24,
               height: 24,
               justifyContent: 'center',
               alignItems: 'center'
             }}>
-            <SwapSVG color={colors.$black} size={24} />
+            <SwapSVG
+              testID="tab_navigator__swap_button"
+              color={colors.$black}
+              size={24}
+            />
           </View>
         ),
         onPress: () => {
@@ -141,8 +154,12 @@ export const Fab: FC = () => {
     }
     actions.Bridge = {
       image: (
-        <View testID="tab_navigator__bridge_button">
-          <BridgeSVG color={colors.$black} size={24} />
+        <View>
+          <BridgeSVG
+            testID="tab_navigator__bridge_button"
+            color={colors.$black}
+            size={24}
+          />
         </View>
       ),
       onPress: () => {

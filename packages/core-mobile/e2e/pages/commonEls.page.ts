@@ -88,6 +88,7 @@ class CommonElsPage {
   }
 
   async tapGetStartedButton() {
+    await Actions.waitForElement(this.getStartedButton, 5000)
     await Actions.tap(this.getStartedButton)
   }
 
@@ -184,6 +185,11 @@ class CommonElsPage {
 
   async tapReloadSVG(index = 0) {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
+  }
+
+  async exitMetro() {
+    await Actions.tap(by.text(/.*8081.*/i))
+    await Actions.tap(by.id(/.*x-icon.*/i))
   }
 }
 

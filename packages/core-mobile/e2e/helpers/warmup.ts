@@ -2,6 +2,7 @@ import { device } from 'detox'
 import { DeviceLaunchAppConfig, DevicePermissions } from 'detox/detox'
 import CommonElsPage from '../pages/commonEls.page'
 import Assert from '../helpers/assertions'
+import commonElsPage from '../pages/commonEls.page'
 import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
@@ -34,6 +35,11 @@ export const warmup = async (
     await Action.tapElementAtIndex(by.text('Ok'), 0)
     await Action.waitForElementNotVisible(CommonElsPage.jailbrokenWarning)
     console.log('Jailbroken warning handled!!!')
+  }
+  try {
+    await commonElsPage.exitMetro()
+  } catch (e) {
+    console.log('Metro dev menu is not found...')
   }
   try {
     await loginRecoverWallet.recoverWalletLogin(

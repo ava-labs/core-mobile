@@ -5,15 +5,21 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 interface Prop {
   color?: string
   size?: number
+  testID?: string
 }
 
-function SwapSVG({ color, size = 24 }: Prop) {
+function SwapSVG({ testID, color, size = 24 }: Prop): JSX.Element {
   const context = useApplicationContext()
 
   const svgColor = color ? color : context.theme.colorText1
 
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Svg
+      testID={testID}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none">
       <Path
         fillRule="evenodd"
         clipRule="evenodd"
