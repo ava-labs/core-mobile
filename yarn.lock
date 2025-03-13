@@ -326,7 +326,6 @@ __metadata:
     expo-linking: 7.0.5
     expo-navigation-bar: 4.0.8
     expo-router: 4.0.18
-    expo-sms: 13.0.1
     expo-status-bar: 2.0.1
     expo-video: 2.0.5
     https-browserify: 1.0.0
@@ -18064,15 +18063,6 @@ __metadata:
     react-native-reanimated:
       optional: true
   checksum: 7e0ac4592a074ee7be150638baeee007971fe782040e809ba68ee764073befe9a618dba532c9ff47a9b502d16e9fc3ffd859bb64b87cbf03d725a7a5903e19fe
-  languageName: node
-  linkType: hard
-
-"expo-sms@npm:13.0.1":
-  version: 13.0.1
-  resolution: "expo-sms@npm:13.0.1"
-  peerDependencies:
-    expo: "*"
-  checksum: ac249e8f950dd23aa484f8bafd380b0ec1f1539a3331a54790e7ea2bbbdf449e02ef229974b763c41649928368149778b4e80b9b585c499b2d0d3bb3866de584
   languageName: node
   linkType: hard
 

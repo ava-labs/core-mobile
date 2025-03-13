@@ -15,7 +15,6 @@ import Share from 'react-native-share'
 import * as FileSystem from 'expo-file-system'
 import Logger from 'utils/Logger'
 import { copyToClipboard } from 'common/utils/clipboard'
-import * as SMS from 'expo-sms'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -45,7 +44,8 @@ const ShareMarketTokenScreen = (): JSX.Element => {
 
     Share.open({
       title,
-      url
+      url,
+      message
     })
   }
 
@@ -53,18 +53,6 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     if (link) {
       copyToClipboard(link)
     }
-  }
-
-  const handleSendMessage = async (): Promise<void> => {
-    const uri = await captureImage()
-
-    await SMS.sendSMSAsync([], message, {
-      attachments: {
-        uri: uri,
-        mimeType: 'image/png',
-        filename: 'image.png'
-      }
-    })
   }
 
   const handleShare = async (social: AvailableSocial): Promise<void> => {
@@ -97,7 +85,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
       encoding: FileSystem.EncodingType.Base64
     })
 
-    return `data:image/png;base64,${data}`
+    return `data:image/png;base64,${data.replace(/(\r\n|\n|\r)/gm, '')}`
   }
 
   if (!tokenId || !token) {
@@ -145,7 +133,6 @@ const ShareMarketTokenScreen = (): JSX.Element => {
         url={urlToShare}
         onMore={handleMore}
         onCopyLink={handleCopyLink}
-        onSendMessage={handleSendMessage}
         onShare={handleShare}
       />
     </View>
