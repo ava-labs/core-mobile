@@ -50,6 +50,7 @@ class LoginRecoverWallet {
     )
 
     if (isVisibleNo) {
+      console.log('forgot pin button is visible')
       await this.enterPin()
       await accountManagePage.switchToFirstAccount()
     } else {

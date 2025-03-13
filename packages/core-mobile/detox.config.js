@@ -17,8 +17,7 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 15 Pro',
-        os: 'iOS 17.5'
+        type: 'iPhone 15 Pro'
       }
     },
     emulator_ci: {
@@ -40,7 +39,7 @@ module.exports = {
     'ios.internal.debug': {
       type: 'ios.app',
       binaryPath:
-        'ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+        'ios/DerivedData/AvaxWallet/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
     },
     'ios.internal.release': {
       type: 'ios.app',

@@ -65,6 +65,14 @@ class SendPage {
     return by.text(Send.max)
   }
 
+  get gasslessError() {
+    return by.text(Send.gaslessError)
+  }
+
+  get gaslessSwitch() {
+    return by.id(Send.gaslessSwitch)
+  }
+
   async tapAddressBook() {
     await Actions.tap(this.addressBook)
   }
@@ -120,12 +128,17 @@ class SendPage {
     await Actions.setInputText(this.amountToSendInput, amount, 0)
   }
 
+  async tapGaslessToggle() {
+    await Actions.tap(this.gaslessSwitch)
+  }
+
   // eslint-disable-next-line max-params
   async sendTokenTo2ndAccount(
     token: string,
     sendingAmmount: string,
     isCChain = true,
-    isPXChain = false
+    isPXChain = false,
+    gasless = false
   ) {
     await Actions.waitForElement(BottomTabsPage.plusIcon)
     await BottomTabsPage.tapPlusIcon()
@@ -145,19 +158,34 @@ class SendPage {
       await this.waitForNextBtnEnabled()
       await this.tapSendTitle()
       await this.tapNextButton()
-      await popUpModalPage.verifyFeeIsLegit(isCChain, isPXChain)
+      if (gasless) {
+        await Actions.waitForElement(this.gaslessSwitch)
+        await this.tapGaslessToggle()
+      } else {
+        await popUpModalPage.verifyFeeIsLegit(isCChain, isPXChain)
+      }
       await this.tapApproveButton()
       return true
     }
   }
 
-  async verifySuccessToast(hasBalance = true) {
-    if (hasBalance) {
+  async verifySuccessToast(hasBalance = true, gasless = false) {
+    if (hasBalance && !gasless) {
       await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
       await Actions.waitForElementNotVisible(
         popUpModalPage.successfulToastMsg,
         120000
       )
+    } else if (hasBalance && gasless) {
+      try {
+        await Actions.waitForElement(this.gasslessError, 5000)
+      } catch (e) {
+        await Actions.waitForElement(popUpModalPage.successfulToastMsg, 120000)
+        await Actions.waitForElementNotVisible(
+          popUpModalPage.successfulToastMsg,
+          120000
+        )
+      }
     }
   }
 

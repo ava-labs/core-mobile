@@ -19,5 +19,8 @@ export default {
   searchBarOnSelectToken: 'search_bar__select_token',
   selectTokenTitle: 'Select Token',
   sendTo: 'Send To',
-  max: 'Max'
+  max: 'Max',
+  gaslessError:
+    'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction.',
+  gaslessSwitch: 'gasless_switch'
 }

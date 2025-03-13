@@ -85,10 +85,14 @@ const ApprovalPopup = (): JSX.Element => {
         Logger.error('Error checking gasless eligibility', err)
         return false
       })
+      Logger.info(`Gasless is eligible for chain ${isEligibleForChain}`)
       const isEligibleForTxType =
         GaslessService.isEligibleForTxType(signingData)
       const isEligible = isEligibleForTxType && isEligibleForChain
       Logger.info('ApprovalPopup: Gasless eligibility', isEligible)
+      Logger.info(
+        `Gasless is eligible for tx type ${isEligibleForTxType} and is eligible for chain ${isEligibleForChain}`
+      )
       setIsGaslessEligible(isEligible)
     }
     checkGaslessEligibility()
@@ -489,6 +493,7 @@ const ApprovalPopup = (): JSX.Element => {
         <Switch
           value={gaslessEnabled}
           onValueChange={() => setGaslessEnabled(prevState => !prevState)}
+          testID="gasless_switch"
         />
       </Row>
     )
