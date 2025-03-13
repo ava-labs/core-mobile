@@ -1,18 +1,21 @@
-import React, { memo, useCallback } from 'react'
-import { GestureResponderEvent, PressableProps } from 'react-native'
 import { Pressable } from 'dripsy'
+import { throttle } from 'lodash'
+import React, { memo, useCallback, useRef } from 'react'
+import { GestureResponderEvent, PressableProps } from 'react-native'
 import Animated, {
+  AnimatedProps,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming
 } from 'react-native-reanimated'
-import { throttle } from 'lodash'
 import { ANIMATED } from '../../utils'
 
-interface AnimatedPressable extends PressableProps {
-  children: JSX.Element
+const SCROLL_THRESHOLD = 2 // pixels
+
+interface AnimatedPressable extends AnimatedProps<PressableProps> {
+  onPress?: (event: GestureResponderEvent) => void
 }
 
 const AnimatedPress = Animated.createAnimatedComponent(Pressable)
@@ -21,22 +24,11 @@ export const AnimatedPressable = memo(
   ({ children, onPress, ...props }: AnimatedPressable) => {
     const opacity = useSharedValue(1)
     const scale = useSharedValue(1)
-
-    const onPressIn = (): void => {
-      'worklet'
-      opacity.value = withTiming(0.5, ANIMATED.TIMING_CONFIG)
-      scale.value = withSpring(ANIMATED.SCALE, ANIMATED.SPRING_CONFIG)
-    }
-
-    const onPressOut = (event: GestureResponderEvent): void => {
-      'worklet'
-      opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
-      scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
-        if (onPress) {
-          runOnJS(onPressEvent)(event)
-        }
-      })
-    }
+    const isScrolling = useRef(false)
+    const touchStartPosition = useRef({
+      x: 0,
+      y: 0
+    })
 
     const throttledOnPress = throttle(
       event => {
@@ -49,12 +41,69 @@ export const AnimatedPressable = memo(
       }
     )
 
-    const onPressEvent = useCallback(
+    const onPressThrottled = useCallback(
       (event: GestureResponderEvent): void => {
         throttledOnPress(event)
       },
       [throttledOnPress]
     )
+
+    const onPressOut = (event: GestureResponderEvent): void => {
+      if (isScrolling.current) {
+        resetAnimation()
+        return
+      }
+
+      endAnimation(event)
+    }
+
+    const onTouchStart = (event: GestureResponderEvent): void => {
+      touchStartPosition.current = {
+        x: event.nativeEvent.pageX,
+        y: event.nativeEvent.pageY
+      }
+      isScrolling.current = false
+
+      if (isScrolling.current) {
+        return
+      }
+      startAnimation()
+    }
+
+    const onTouchMove = (event: GestureResponderEvent): void => {
+      const moveY = Math.abs(
+        event.nativeEvent.pageY - touchStartPosition.current.y
+      )
+      const moveX = Math.abs(
+        event.nativeEvent.pageX - touchStartPosition.current.x
+      )
+      if (moveY > SCROLL_THRESHOLD || moveX > SCROLL_THRESHOLD) {
+        isScrolling.current = true
+        resetAnimation()
+      }
+    }
+
+    const startAnimation = (): void => {
+      'worklet'
+      opacity.value = withTiming(0.5, ANIMATED.TIMING_CONFIG)
+      scale.value = withSpring(ANIMATED.SCALE, ANIMATED.SPRING_CONFIG)
+    }
+
+    const endAnimation = (event: GestureResponderEvent): void => {
+      'worklet'
+      opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
+      scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
+        if (onPress) {
+          runOnJS(onPressThrottled)(event)
+        }
+      })
+    }
+
+    const resetAnimation = (): void => {
+      'worklet'
+      opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
+      scale.value = withSpring(1, ANIMATED.SPRING_CONFIG)
+    }
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
@@ -65,7 +114,8 @@ export const AnimatedPressable = memo(
 
     return (
       <AnimatedPress
-        onPressIn={onPressIn}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
         onPressOut={onPressOut}
         {...props}
         style={[props.style, animatedStyle]}>

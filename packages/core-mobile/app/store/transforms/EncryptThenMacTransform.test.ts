@@ -165,6 +165,7 @@ const initialState = {
     advanced: advancedState
   },
   portfolio: {
-    tokenVisibility: {}
+    tokenVisibility: {},
+    collectibleVisibility: {}
   } as PortfolioState
 } as RootState

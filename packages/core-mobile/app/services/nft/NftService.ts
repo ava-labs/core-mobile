@@ -46,7 +46,8 @@ export class NftService {
       if (isNft(token)) {
         nfts.push({
           ...token,
-          localId: getNftLocalId(token)
+          localId: getNftLocalId(token),
+          chainId: network.chainId
         })
       }
     }

@@ -1,4 +1,5 @@
 import { NftTokenWithBalance } from '@avalabs/vm-module-types'
+import { NftContentType } from 'store/nft'
 
 export type NftLocalId = string
 
@@ -6,6 +7,8 @@ export type NftImageData = {
   aspect: number
   isSvg: boolean
   image: string
+  video?: string
+  type: NftContentType
 }
 
 export type UnprocessedNftItem = NftTokenWithBalance & {
