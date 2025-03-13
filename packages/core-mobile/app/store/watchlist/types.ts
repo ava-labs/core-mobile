@@ -56,6 +56,8 @@ export type TokensAndCharts = {
   charts: Charts
 }
 
+export type CoingeckoId = string
+
 export type WatchListFavoriteState = {
-  favorites: string[]
+  favorites: CoingeckoId[]
 }
