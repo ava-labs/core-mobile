@@ -21,7 +21,7 @@ function NFTScreenStack(): JSX.Element {
         presentation: 'card',
         headerShown: true,
         title: '',
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTitleAlign: 'center'
       }}>
       <NFTStack.Screen

@@ -16,7 +16,7 @@ import { AccountSettingBarButton } from 'common/components/AccountSettingBarButt
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
-  headerBackTitleVisible: false,
+  headerBackButtonDisplayMode: 'minimal',
   headerShadowVisible: false,
   headerTitleAlign: 'center',
   headerBackImage: () => <BackBarButton />,
@@ -147,5 +147,5 @@ export const homeScreenOptions: StackNavigationOptions = {
       </View>
     )
   },
-  animationEnabled: false
+  animation: 'none'
 }

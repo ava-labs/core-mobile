@@ -1,6 +1,10 @@
 import React from 'react'
-import Animated, { LinearTransition } from 'react-native-reanimated'
-import { SquareButton, SquareButtonIconType } from '@avalabs/k2-alpine'
+import Animated from 'react-native-reanimated'
+import {
+  SPRING_LINEAR_TRANSITION,
+  SquareButton,
+  SquareButtonIconType
+} from '@avalabs/k2-alpine'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import { ActionButtonTitle } from '../consts'
 
@@ -13,7 +17,7 @@ export const ActionButtons = ({
     return (
       <Animated.View
         entering={getItemEnteringAnimation(index)}
-        layout={LinearTransition.springify()}>
+        layout={SPRING_LINEAR_TRANSITION}>
         <SquareButton
           key={index}
           title={item.title}

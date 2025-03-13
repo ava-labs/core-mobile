@@ -9,6 +9,9 @@ import { Text, View } from '../Primitives'
 import { PriceChange } from '../PriceChangeIndicator/types'
 import { BalanceLoader } from './BalanceHeaderLoader'
 
+const fadeInTransition = FadeIn.delay(250)
+const springTransition = LinearTransition.springify().damping(100)
+
 export const BalanceHeader = ({
   accountName,
   formattedBalance,
@@ -38,9 +41,7 @@ export const BalanceHeader = ({
         }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
           <AnimatedText characters={formattedBalance} />
-          <Animated.View
-            entering={FadeIn.delay(250)}
-            layout={LinearTransition.springify().damping(100)}>
+          <Animated.View entering={fadeInTransition} layout={springTransition}>
             <Text
               style={[
                 { fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }

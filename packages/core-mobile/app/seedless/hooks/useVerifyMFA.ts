@@ -97,10 +97,9 @@ function useVerifyMFA(session: SeedlessSession): {
     ) => Promise<Result<CubeSignerResponse<T> | undefined, TotpErrors>>
     onVerifySuccess: (response?: T) => void
   }) => {
+    // @ts-ignore
     navigate(AppNavigation.Root.VerifyTotpCode, {
-      // @ts-ignore
       onVerifyCode: onVerifyCode,
-      // @ts-ignore
       onVerifySuccess: onVerifySuccess
     })
   }

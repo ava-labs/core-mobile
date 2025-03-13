@@ -4,12 +4,13 @@ import {
   Icons,
   PriceChangeIndicator,
   PriceChangeStatus,
+  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
@@ -42,7 +43,7 @@ export const MarketListView = memo(
     return (
       <Animated.View
         entering={getListItemEnteringAnimation(index)}
-        layout={LinearTransition.springify()}>
+        layout={SPRING_LINEAR_TRANSITION}>
         <TouchableOpacity onPress={onPress}>
           <View
             sx={{

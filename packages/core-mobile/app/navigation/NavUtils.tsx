@@ -42,7 +42,7 @@ export const MainHeaderOptions = (
     headerLeftContainerStyle: {
       paddingLeft: Platform.OS === 'ios' ? 8 : 0
     },
-    headerBackTitleVisible: false,
+    headerBackButtonDisplayMode: 'minimal',
     headerRight: actionComponent ? () => actionComponent : undefined,
     headerStyle: {
       shadowColor: 'transparent',
@@ -64,7 +64,7 @@ export const SubHeaderOptions = (
     headerTitle: () => <Text variant="heading5">{title}</Text>,
     headerTitleAlign: 'center',
     headerLeft: hideHeaderLeft ? () => null : undefined,
-    headerBackTitleVisible: false,
+    headerBackButtonDisplayMode: 'minimal',
     headerStyle: {
       shadowColor: 'transparent',
       elevation: 0,
@@ -108,11 +108,16 @@ export const TabButton = ({
   focused
 }: TabButtonProps): JSX.Element => {
   return (
-    <View style={{ justifyContent: 'center', alignItems: 'center', top: 2 }}>
+    <View
+      style={{
+        alignItems: 'center',
+        height: '100%',
+        marginTop: 8
+      }}>
       {image}
       <Text
         variant="bottomNavigationSmall"
-        sx={{ color: focused ? '$neutral50' : '$neutral600' }}
+        sx={{ color: focused ? '$neutral50' : '$neutral600', width: '100%' }}
         testID={`navutils_normal_tab_button__${routeName.toLowerCase()}`}>
         {routeName}
       </Text>
@@ -121,10 +126,5 @@ export const TabButton = ({
 }
 
 export const getModalOptions = (): Partial<StackNavigationOptions> => ({
-  presentation: 'transparentModal',
-  // on Android, for some reason, when animation is enabled, the modal will not appear
-  // as a temp solution, we disable the animation on Android for now
-  // this also doesn't seem to be affecting all modals, only some
-  // TODO: remove this when the issue is resolved
-  animationEnabled: Platform.OS === 'android' ? false : true
+  presentation: 'transparentModal'
 })
