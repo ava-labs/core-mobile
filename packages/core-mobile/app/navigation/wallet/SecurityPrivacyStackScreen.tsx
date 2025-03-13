@@ -45,7 +45,7 @@ function SecurityPrivacyStackScreen(): JSX.Element {
   return (
     <SecurityStack.Navigator
       screenOptions={{
-        headerBackTitleVisible: false
+        headerBackButtonDisplayMode: 'minimal'
       }}>
       <SecurityStack.Group>
         <SecurityStack.Screen

@@ -111,7 +111,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         name={AppNavigation.Modal.BrowserTabsList}
         options={{
           presentation: 'modal',
-          animationEnabled: true,
           cardStyleInterpolator: ({ current: { progress } }) => {
             return {
               cardStyle: {
@@ -125,16 +124,14 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.BrowserTabCloseAll}
         options={{
-          presentation: 'transparentModal',
-          animationEnabled: true
+          presentation: 'transparentModal'
         }}
         component={AreYouSureModal}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.UseWalletConnect}
         options={{
-          presentation: 'transparentModal',
-          animationEnabled: true
+          presentation: 'transparentModal'
         }}
         component={UseWalletConnectModal}
       />
