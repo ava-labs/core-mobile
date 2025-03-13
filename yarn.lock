@@ -307,7 +307,7 @@ __metadata:
     coinselect: 3.1.13
     date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
-    detox: 20.33.0
+    detox: 20.34.5
     es6-promise: 4.2.8
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
@@ -14475,17 +14475,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"child-process-promise@npm:^2.2.0":
-  version: 2.2.1
-  resolution: "child-process-promise@npm:2.2.1"
-  dependencies:
-    cross-spawn: ^4.0.2
-    node-version: ^1.0.0
-    promise-polyfill: ^6.0.1
-  checksum: fb72dda7ee78099f106d57bf3d7cc3225c16c9ddfe8e364e3535a52396482ee81aecd3eff0da7131ca17b7ba9fcbb8af827da63a03f0c3262c76268696898642
-  languageName: node
-  linkType: hard
-
 "chokidar@npm:^3.4.2":
   version: 3.6.0
   resolution: "chokidar@npm:3.6.0"
@@ -15189,16 +15178,6 @@ __metadata:
   dependencies:
     node-fetch: ^2.7.0
   checksum: c02fa85d59f83e50dbd769ee472c9cc984060c403ee5ec8654659f61a525c1a655eef1c7a35e365c1a107b4e72d76e786718b673d1cb3c97f61d4644cb0a9f9d
-  languageName: node
-  linkType: hard
-
-"cross-spawn@npm:^4.0.2":
-  version: 4.0.2
-  resolution: "cross-spawn@npm:4.0.2"
-  dependencies:
-    lru-cache: ^4.0.1
-    which: ^1.2.9
-  checksum: 8ce57b3e11c5c798542a21ddfdc1edef33ab6fe001958b31f3340a6ff684e3334a8baad2751efa78b6200aad442cf12b939396d758b0dd5c42c9b782c28fe06e
   languageName: node
   linkType: hard
 
@@ -16115,16 +16094,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detox@npm:20.33.0":
-  version: 20.33.0
-  resolution: "detox@npm:20.33.0"
+"detox@npm:20.34.5":
+  version: 20.34.5
+  resolution: "detox@npm:20.34.5"
   dependencies:
     ajv: ^8.6.3
     bunyan: ^1.8.12
     bunyan-debug-stream: ^3.1.0
     caf: ^15.0.1
     chalk: ^4.0.0
-    child-process-promise: ^2.2.0
     detox-copilot: ^0.0.27
     execa: ^5.1.1
     find-up: ^5.0.0
@@ -16138,6 +16116,7 @@ __metadata:
     multi-sort-stream: ^1.0.3
     multipipe: ^4.0.0
     node-ipc: 9.2.1
+    promisify-child-process: ^4.1.2
     proper-lockfile: ^3.0.2
     resolve-from: ^5.0.0
     sanitize-filename: ^1.6.1
@@ -16162,7 +16141,7 @@ __metadata:
       optional: true
   bin:
     detox: local-cli/cli.js
-  checksum: 14a9a230f02c6e7e535e96223a9aacbef05c06c20887eac3d1f1df1aca612a1c529f94e265064df39d1c98ee700fbc2a26ebdd18affea5e60f17a527ae42d6e0
+  checksum: f2e6b42fbd22467cefbd63a0674b515674a83100d201f56ee416a9d5b0acb32f19c02d2db7ad545b395b8f0c3f05f0788b91101a2d6af5c227c107ff75b1a234
   languageName: node
   linkType: hard
 
@@ -22382,16 +22361,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^4.0.1":
-  version: 4.1.5
-  resolution: "lru-cache@npm:4.1.5"
-  dependencies:
-    pseudomap: ^1.0.2
-    yallist: ^2.1.2
-  checksum: 4bb4b58a36cd7dc4dcec74cbe6a8f766a38b7426f1ff59d4cf7d82a2aa9b9565cd1cb98f6ff60ce5cd174524868d7bc9b7b1c294371851356066ca9ac4cf135a
-  languageName: node
-  linkType: hard
-
 "lru-cache@npm:^5.1.1":
   version: 5.1.1
   resolution: "lru-cache@npm:5.1.1"
@@ -23767,13 +23736,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-version@npm:^1.0.0":
-  version: 1.2.0
-  resolution: "node-version@npm:1.2.0"
-  checksum: 74e92d2a7f0fe0fce3aafd6dcc30b3b440999df68b3d92fcefcad2a52b37bc29c6b542f33760229390bfdc1a4d993fb65b9c199b1f0d568969d07fc1c04bc1e7
-  languageName: node
-  linkType: hard
-
 "nopt@npm:^6.0.0":
   version: 6.0.0
   resolution: "nopt@npm:6.0.0"
@@ -25132,13 +25094,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"promise-polyfill@npm:^6.0.1":
-  version: 6.1.0
-  resolution: "promise-polyfill@npm:6.1.0"
-  checksum: 6f1899cca37e48f67a424842282acd525d8d99d3536f2d97e37a117cfc4a0006683330ceaf5a15fbc09b4450f319a680292f9970a5f8e9cf90acbce0bdb0f751
-  languageName: node
-  linkType: hard
-
 "promise-retry@npm:^2.0.1":
   version: 2.0.1
   resolution: "promise-retry@npm:2.0.1"
@@ -25164,6 +25119,13 @@ __metadata:
   dependencies:
     asap: ~2.0.6
   checksum: a69f0ddbddf78ffc529cffee7ad950d307347615970564b17988ce43fbe767af5c738a9439660b24a9a8cbea106c0dcbb6c2b20e23b7e96a8e89e5c2679e94d5
+  languageName: node
+  linkType: hard
+
+"promisify-child-process@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "promisify-child-process@npm:4.1.2"
+  checksum: 5ad721801dfdc129f3c711104597b5f27db89df42e71a647a18cda3a4155e1343154f4ed87bbd1e3922d9386d03f4e8e1a8509f87f748f69e63f33fef839284c
   languageName: node
   linkType: hard
 
@@ -25237,13 +25199,6 @@ __metadata:
   version: 1.0.1
   resolution: "prr@npm:1.0.1"
   checksum: 3bca2db0479fd38f8c4c9439139b0c42dcaadcc2fbb7bb8e0e6afaa1383457f1d19aea9e5f961d5b080f1cfc05bfa1fe9e45c97a1d3fd6d421950a73d3108381
-  languageName: node
-  linkType: hard
-
-"pseudomap@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "pseudomap@npm:1.0.2"
-  checksum: 856c0aae0ff2ad60881168334448e898ad7a0e45fe7386d114b150084254c01e200c957cf378378025df4e052c7890c5bd933939b0e0d2ecfcc1dc2f0b2991f5
   languageName: node
   linkType: hard
 
@@ -26406,7 +26361,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 6b1e90e46bde42b0720a29c9d963c68bc8b2750768f2fef4641f5b5d019e13b4d0cffecfec80e6a785029e1d2f83eab6f1919f75c45ca648f5213c38696ecbbd
   languageName: node
   linkType: hard
 
@@ -31224,13 +31179,6 @@ react-native-webview@ava-labs/react-native-webview:
   version: 5.0.8
   resolution: "y18n@npm:5.0.8"
   checksum: 54f0fb95621ee60898a38c572c515659e51cc9d9f787fb109cef6fde4befbe1c4602dc999d30110feee37456ad0f1660fa2edcfde6a9a740f86a290999550d30
-  languageName: node
-  linkType: hard
-
-"yallist@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "yallist@npm:2.1.2"
-  checksum: 9ba99409209f485b6fcb970330908a6d41fa1c933f75e08250316cce19383179a6b70a7e0721b89672ebb6199cc377bf3e432f55100da6a7d6e11902b0a642cb
   languageName: node
   linkType: hard
 
