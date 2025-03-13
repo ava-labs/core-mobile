@@ -76,6 +76,13 @@
 		<string>Aeonik-Medium.otf</string>
 		<string>DejaVuSansMono.ttf</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>twitter</string>
+		<string>fb-messenger</string>
+		<string>tg</string>
+		<string>whatsapp</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
