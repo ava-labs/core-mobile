@@ -24,6 +24,7 @@ import { LogoModal } from 'common/components/LogoModal'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { OnboardingProvider } from 'features/onboarding/contexts/OnboardingProvider'
+import { useLoadFonts } from 'common/hooks/useLoadFonts'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -40,6 +41,8 @@ export default function RootLayout(): JSX.Element | null {
   const canGoBackToWallet = navigationState?.routes.some(
     route => route.name === '(signedIn)'
   )
+
+  useLoadFonts()
 
   useEffect(() => {
     if (walletState === WalletState.NONEXISTENT) {

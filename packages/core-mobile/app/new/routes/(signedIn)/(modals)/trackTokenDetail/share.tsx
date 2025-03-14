@@ -3,7 +3,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams } from 'expo-router'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useRef, useState } from 'react'
-import { LayoutChangeEvent, PixelRatio } from 'react-native'
+import { LayoutChangeEvent, PixelRatio, Platform } from 'react-native'
 import { Content, CONTENT_SIZE } from 'features/track/components/Content'
 import {
   AvailableSocial,
@@ -15,6 +15,7 @@ import Share from 'react-native-share'
 import * as FileSystem from 'expo-file-system'
 import Logger from 'utils/Logger'
 import { copyToClipboard } from 'common/utils/clipboard'
+import * as SMS from 'expo-sms'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -65,6 +66,23 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     } catch (error) {
       Logger.error('Error sharing', error)
     }
+  }
+
+  const handleSendMessage = async (): Promise<void> => {
+    const uri = await captureImage()
+
+    const fileUri =
+      Platform.OS === 'ios'
+        ? `file://${uri}`
+        : await FileSystem.getContentUriAsync(uri)
+
+    await SMS.sendSMSAsync([], message, {
+      attachments: {
+        uri: fileUri,
+        mimeType: 'image/png',
+        filename: `${tokenInfo?.name ?? 'token'}.png`
+      }
+    })
   }
 
   const captureImage = async (): Promise<string> => {
@@ -126,6 +144,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
       </ScrollView>
       <ShareFooter
         url={urlToShare}
+        onSendMessage={handleSendMessage}
         onMore={handleMore}
         onCopyLink={handleCopyLink}
         onShare={handleShare}

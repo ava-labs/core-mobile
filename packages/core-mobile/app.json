@@ -20,7 +20,14 @@
           "recordAudioAndroid": false
         }
       ],
-      "expo-asset",
+      [
+        "expo-asset",
+        {
+          "assets": [
+            "./app/assets", "./app/new/assets"
+          ]
+        }
+      ],
       "@config-plugins/detox",
       [
         "react-native-share",
