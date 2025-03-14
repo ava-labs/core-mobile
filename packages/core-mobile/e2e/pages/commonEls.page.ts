@@ -191,6 +191,10 @@ class CommonElsPage {
     await Actions.tap(by.text(/.*8081.*/i))
     await Actions.tap(by.id(/.*x-icon.*/i))
   }
+
+  async switchToNewGen() {
+    await element(by.id('core_logo')).pinch(1)
+  }
 }
 
 export default new CommonElsPage()

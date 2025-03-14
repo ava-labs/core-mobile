@@ -159,6 +159,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         activeOpacity={1}>
         {/* Hidden TextInput for capturing input */}
         <TextInput
+          testID="pin_input"
           ref={textInputRef}
           style={{ position: 'absolute', opacity: 0 }}
           value={value}

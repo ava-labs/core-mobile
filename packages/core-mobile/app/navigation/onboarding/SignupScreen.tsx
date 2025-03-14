@@ -195,7 +195,7 @@ const SignupScreen: FC = () => {
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-        <CoreLogo width={180} />
+        <CoreLogo testID="core_logo" width={180} />
       </View>
       <View sx={{ padding: 16, marginBottom: 46, gap: 35 }}>
         {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}

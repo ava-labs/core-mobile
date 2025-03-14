@@ -84,7 +84,7 @@ export default function Signup(): JSX.Element {
           type="tertiary"
           size="large"
           onPress={handleAccessExistingWallet}>
-          Access existing Wallet
+          Access existing wallet
         </Button>
       </View>
     )

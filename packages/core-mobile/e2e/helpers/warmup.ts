@@ -6,12 +6,9 @@ import commonElsPage from '../pages/commonEls.page'
 import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
+import delay from './waits'
 
-export const warmup = async (
-  newInstance = false,
-  isBalanceNotificationOn = false,
-  isCoreAnalyticsOn = false
-) => {
+export const warmup = async (newInstance = false) => {
   const permissions: DevicePermissions = { notifications: 'YES', camera: 'YES' }
   const initialArgs: DeviceLaunchAppConfig = {
     permissions: permissions,
@@ -29,26 +26,27 @@ export const warmup = async (
   }
   await device.launchApp(initialArgs)
 
-  // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
+  // Jailbreak Check
   if (await Action.isVisible(CommonElsPage.jailbrokenWarning, 0)) {
     console.log('Handling Jailbroken warning...')
     await Action.tapElementAtIndex(by.text('Ok'), 0)
     await Action.waitForElementNotVisible(CommonElsPage.jailbrokenWarning)
     console.log('Jailbroken warning handled!!!')
   }
+
+  // Metro Dev Menu Check
   try {
     await commonElsPage.exitMetro()
   } catch (e) {
     console.log('Metro dev menu is not found...')
   }
-  try {
-    await loginRecoverWallet.recoverWalletLogin(
-      isBalanceNotificationOn,
-      isCoreAnalyticsOn
-    )
-  } catch (e) {
-    console.log('Skipped login process...')
-  }
+  await delay(30000)
+  // Login Check
+  // try {
+  await loginRecoverWallet.recoverWalletLogin()
+  // } catch (e) {
+  //   console.log('Skipped login process...')
+  // }
 }
 
 export const handleJailbrokenWarning = async () => {

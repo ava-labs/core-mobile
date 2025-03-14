@@ -18,6 +18,10 @@ class CreatePinPage {
     return by.text(createPinLoc.nextBtn)
   }
 
+  get letsgo() {
+    return by.text(createPinLoc.letsgo)
+  }
+
   get enterYourPinHeader() {
     return by.text(createPinLoc.enterYourPinHeader)
   }
@@ -43,7 +47,9 @@ class CreatePinPage {
   }
 
   async tapNumpadZero() {
-    await Action.multiTap(this.numpadZero, 6, 0)
+    await Action.setInputText(by.id('pin_input'), '000000')
+
+    // await Action.multiTap(this.numpadZero, 6, 0)
   }
 
   async tapNumpadZero5Times() {
@@ -56,6 +62,10 @@ class CreatePinPage {
 
   async tapNextBtn() {
     await Action.tap(this.nextBtn)
+  }
+
+  async tapLetsGo() {
+    await Action.tap(this.letsgo)
   }
 
   async tapSkipBtn() {
