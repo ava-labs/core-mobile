@@ -101,8 +101,8 @@ import NEAR from '../../assets/tokenLogos/NEAR.svg'
 import OKB from '../../assets/tokenLogos/OKB.svg'
 import ONDO from '../../assets/tokenLogos/ONDO.svg'
 import QNT from '../../assets/tokenLogos/QNT.svg'
-import sAVAX from '../../assets/tokenLogos/sAVAX.svg'
-import wAVAX from '../../assets/tokenLogos/AVAX-1.svg'
+import SAVAX from '../../assets/tokenLogos/SAVAX.svg'
+import WAVAX from '../../assets/tokenLogos/WAVAX.svg'
 import SHIB from '../../assets/tokenLogos/SHIB.svg'
 import SOL from '../../assets/tokenLogos/SOL.svg'
 import STX from '../../assets/tokenLogos/STX.svg'
@@ -291,8 +291,8 @@ export const Icons = {
     OKB: OKB,
     ONDO: ONDO,
     QNT: QNT,
-    sAVAX: sAVAX,
-    wAVAX: wAVAX,
+    SAVAX: SAVAX,
+    WAVAX: WAVAX,
     SHIB: SHIB,
     SOL: SOL,
     STX: STX,

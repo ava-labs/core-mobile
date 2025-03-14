@@ -240,7 +240,7 @@ export const TokenLogos = (): JSX.Element => {
       Icons.TokenLogos.ARB,
       Icons.TokenLogos.ATOM,
       Icons.TokenLogos.AVAX,
-      Icons.TokenLogos.wAVAX,
+      Icons.TokenLogos.WAVAX,
       Icons.TokenLogos.BCH,
       Icons.TokenLogos.BNB,
       Icons.TokenLogos.BTC,
@@ -275,7 +275,7 @@ export const TokenLogos = (): JSX.Element => {
       Icons.TokenLogos.VET,
       Icons.TokenLogos.XLM,
       Icons.TokenLogos.XRP,
-      Icons.TokenLogos.sAVAX,
+      Icons.TokenLogos.SAVAX,
       theme.isDark
         ? Icons.TokenLogos.AVAX_P_DARK
         : Icons.TokenLogos.AVAX_P_LIGHT,

@@ -50,7 +50,7 @@ const TOKEN_SYMBOL_TO_ICON: Record<TokenSymbol, React.FC<SvgProps>> = {
   OKB: Icons.TokenLogos.OKB,
   ONDO: Icons.TokenLogos.ONDO,
   QNT: Icons.TokenLogos.QNT,
-  SAVAX: Icons.TokenLogos.sAVAX,
+  SAVAX: Icons.TokenLogos.SAVAX,
   SHIB: Icons.TokenLogos.SHIB,
   SOL: Icons.TokenLogos.SOL,
   STX: Icons.TokenLogos.STX,
@@ -63,7 +63,7 @@ const TOKEN_SYMBOL_TO_ICON: Record<TokenSymbol, React.FC<SvgProps>> = {
   VET: Icons.TokenLogos.VET,
   XLM: Icons.TokenLogos.XLM,
   XRP: Icons.TokenLogos.XRP,
-  WAVAX: Icons.TokenLogos.wAVAX
+  WAVAX: Icons.TokenLogos.WAVAX
 }
 
 type NetworkTokenSymbols =
