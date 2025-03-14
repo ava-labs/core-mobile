@@ -20,8 +20,27 @@
           "recordAudioAndroid": false
         }
       ],
-      "expo-asset",
-      "@config-plugins/detox"
+      [
+        "expo-asset",
+        {
+          "assets": [
+            "./app/assets", "./app/new/assets"
+          ]
+        }
+      ],
+      "@config-plugins/detox",
+      [
+        "react-native-share",
+        {
+          "ios": [
+            "twitter"
+          ],
+          "android": [
+            "com.twitter.android"
+          ],
+          "enableBase64ShareAndroid": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

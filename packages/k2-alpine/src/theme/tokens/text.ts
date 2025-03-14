@@ -77,6 +77,11 @@ export const text = {
     fontFamily: 'Inter-SemiBold',
     fontSize: 12,
     lineHeight: 14
+  },
+  priceChangeIndicatorLarge: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 24,
+    lineHeight: 24
   }
 }
 
