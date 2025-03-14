@@ -240,7 +240,7 @@ export const TokenLogos = (): JSX.Element => {
       Icons.TokenLogos.ARB,
       Icons.TokenLogos.ATOM,
       Icons.TokenLogos.AVAX,
-      Icons.TokenLogos.AVAX1,
+      Icons.TokenLogos.wAVAX,
       Icons.TokenLogos.BCH,
       Icons.TokenLogos.BNB,
       Icons.TokenLogos.BTC,

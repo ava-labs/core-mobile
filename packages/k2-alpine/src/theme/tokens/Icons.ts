@@ -78,7 +78,6 @@ import ADA from '../../assets/tokenLogos/ADA.svg'
 import APT from '../../assets/tokenLogos/APT.svg'
 import ARB from '../../assets/tokenLogos/ARB.svg'
 import ATOM from '../../assets/tokenLogos/ATOM.svg'
-import AVAX1 from '../../assets/tokenLogos/AVAX-1.svg'
 import AVAX from '../../assets/tokenLogos/AVAX.svg'
 import BCH from '../../assets/tokenLogos/BCH.svg'
 import BNB from '../../assets/tokenLogos/BNB.svg'
@@ -103,6 +102,7 @@ import OKB from '../../assets/tokenLogos/OKB.svg'
 import ONDO from '../../assets/tokenLogos/ONDO.svg'
 import QNT from '../../assets/tokenLogos/QNT.svg'
 import sAVAX from '../../assets/tokenLogos/sAVAX.svg'
+import wAVAX from '../../assets/tokenLogos/AVAX-1.svg'
 import SHIB from '../../assets/tokenLogos/SHIB.svg'
 import SOL from '../../assets/tokenLogos/SOL.svg'
 import STX from '../../assets/tokenLogos/STX.svg'
@@ -268,7 +268,6 @@ export const Icons = {
     APT: APT,
     ARB: ARB,
     ATOM: ATOM,
-    AVAX1: AVAX1,
     AVAX: AVAX,
     BCH: BCH,
     BNB: BNB,
@@ -293,6 +292,7 @@ export const Icons = {
     ONDO: ONDO,
     QNT: QNT,
     sAVAX: sAVAX,
+    wAVAX: wAVAX,
     SHIB: SHIB,
     SOL: SOL,
     STX: STX,
