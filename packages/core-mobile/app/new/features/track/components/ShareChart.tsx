@@ -18,7 +18,7 @@ import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 
-export const Content = ({ tokenId }: { tokenId: string }): JSX.Element => {
+export const ShareChart = ({ tokenId }: { tokenId: string }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
   const { chartData, ranges } = useTokenDetails(tokenId ?? '')
@@ -28,8 +28,8 @@ export const Content = ({ tokenId }: { tokenId: string }): JSX.Element => {
   return (
     <View
       sx={{
-        width: CONTENT_SIZE,
-        height: CONTENT_SIZE
+        width: CHART_IMAGE_SIZE,
+        height: CHART_IMAGE_SIZE
       }}>
       {!token || (chartData ?? []).length === 0 ? (
         <View
@@ -82,7 +82,7 @@ export const Content = ({ tokenId }: { tokenId: string }): JSX.Element => {
   )
 }
 
-export const CONTENT_SIZE = 512
+export const CHART_IMAGE_SIZE = 512
 
 const TokenHeader = ({
   currentPrice,

@@ -120,14 +120,14 @@ export const useFadingHeaderNavigation = ({
         <View
           sx={{
             paddingTop: shouldHeaderHaveGrabber ? 23 : 0,
-            transform: [{ translateY: BOTTOM_INSET }],
-            marginBottom: BOTTOM_INSET
+            transform: [{ translateY: HEADER_BOTTOM_INSET }],
+            marginBottom: HEADER_BOTTOM_INSET
           }}>
           <View
             sx={{
               overflow: 'hidden',
-              justifyContent: 'center',
-              height: '100%'
+              height: '100%',
+              justifyContent: 'center'
             }}
             onLayout={handleLayout}>
             <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
@@ -151,4 +151,4 @@ export const useFadingHeaderNavigation = ({
   }
 }
 
-const BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0
+const HEADER_BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0

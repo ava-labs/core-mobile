@@ -121,7 +121,7 @@ export const homeScreenOptions: StackNavigationOptions = {
     <View
       sx={{
         marginLeft: 14,
-        marginBottom: BOTTOM_MARGIN,
+        marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
         alignItems: 'center'
       }}>
       <Link href="/settings/" asChild>
@@ -136,7 +136,7 @@ export const homeScreenOptions: StackNavigationOptions = {
           flexDirection: 'row',
           gap: 12,
           marginRight: 14,
-          marginBottom: BOTTOM_MARGIN,
+          marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
           alignItems: 'center'
         }}>
         <Link href="/receive/" asChild>
@@ -155,4 +155,4 @@ export function forNoAnimation(): StackCardInterpolatedStyle {
   return {}
 }
 
-const BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
+const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
