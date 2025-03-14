@@ -79,9 +79,6 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>twitter</string>
-		<string>fb-messenger</string>
-		<string>tg</string>
-		<string>whatsapp</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

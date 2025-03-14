@@ -33,16 +33,10 @@
         "react-native-share",
         {
           "ios": [
-            "twitter",
-            "fb-messenger",
-            "tg",
-            "whatsapp"
+            "twitter"
           ],
           "android": [
-            "com.twitter.android",
-            "com.facebook.orca",
-            "org.telegram.messenger",
-            "com.whatsapp"
+            "com.twitter.android"
           ],
           "enableBase64ShareAndroid": true
         }

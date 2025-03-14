@@ -13,9 +13,6 @@
 
     <queries>
         <package android:name="com.twitter.android" />
-        <package android:name="com.facebook.orca" />
-        <package android:name="org.telegram.messenger" />
-        <package android:name="com.whatsapp" />
     </queries>
 
     <application
