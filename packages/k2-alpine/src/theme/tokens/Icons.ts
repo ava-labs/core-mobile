@@ -43,6 +43,7 @@ import IconSignature from '../../assets/icons/signature.svg'
 import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
+import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
 import IconSearchCustom from '../../assets/icons/search_custom.svg'
@@ -174,6 +175,7 @@ export const Icons = {
     Info: IconInfo,
     CheckCircleOutline: IconCheckCircleOutline,
     Clear: IconClear,
+    VisibilityOn: IconVisibilityOn,
     VisibilityOff: IconVisibilityOff
   },
   Alert: {
