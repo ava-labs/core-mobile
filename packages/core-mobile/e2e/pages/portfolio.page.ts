@@ -161,12 +161,35 @@ class PortfolioPage {
     return by.id(portfolio.portfolioTokenList)
   }
 
+  get portfolioTab() {
+    return by.id(portfolio.portfolioTab)
+  }
+
+  get trackTab() {
+    return by.id(portfolio.trackTab)
+  }
+
+  get stakingTab() {
+    return by.id(portfolio.stakingTab)
+  }
+
+  get browserTab() {
+    return by.id(portfolio.browserTab)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
     await Assert.isVisible(this.networksHeader)
     await Assert.isVisible(this.assetsTab)
     await Assert.isVisible(this.colectiblesTab)
+  }
+
+  async verifyNavTabs() {
+    await Action.waitForElement(this.portfolioTab, 5000)
+    await Assert.isVisible(this.trackTab)
+    await Assert.isVisible(this.stakingTab)
+    await Assert.isVisible(this.browserTab)
   }
 
   async verifySubTab(tab: string) {

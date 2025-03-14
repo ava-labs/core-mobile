@@ -26,8 +26,8 @@ class ExistingRecoveryPhrasePage {
     return by.text(recoveryPhraseLoc.forgotPinButton)
   }
 
-  get signInBtn() {
-    return by.text(recoveryPhraseLoc.signInBtn)
+  get import() {
+    return by.text(recoveryPhraseLoc.import)
   }
 
   get recoveryPhraseHeader() {
@@ -52,6 +52,10 @@ class ExistingRecoveryPhrasePage {
 
   get recoveryPhrase() {
     return by.text(recoveryPhraseLoc.recoveryPhrase)
+  }
+
+  get agreeAndContinue() {
+    return by.text(recoveryPhraseLoc.agreeAndContinue)
   }
 
   get chooseWalletTitle() {
@@ -86,6 +90,10 @@ class ExistingRecoveryPhrasePage {
     await Action.tap(this.recoveryPhrase)
   }
 
+  async tapAgreeAndContinue() {
+    await Action.tap(this.agreeAndContinue)
+  }
+
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
   }
@@ -100,7 +108,7 @@ class ExistingRecoveryPhrasePage {
 
   async verifyExistingRecoveryPhrasePage() {
     await Assert.isVisible(this.recoveryPhraseTextInput)
-    await Assert.isVisible(this.signInBtn)
+    await Assert.isVisible(this.import)
     await Assert.isVisible(this.recoveryPhraseHeader)
     await Assert.isVisible(this.cancelButton)
   }
@@ -109,8 +117,8 @@ class ExistingRecoveryPhrasePage {
     await Action.setInputText(this.recoveryPhraseTextInput, recoveryPhrase, 0)
   }
 
-  async tapSignInBtn() {
-    await Action.tap(this.signInBtn)
+  async tapImport() {
+    await Action.tap(this.import)
   }
 
   async recoverMnemonicWallet(recoveryPhrase: string) {
@@ -119,7 +127,7 @@ class ExistingRecoveryPhrasePage {
     await AnalyticsConsentPage.tapNoThanksBtn()
     await Action.waitForElement(this.recoveryPhraseTextInput)
     await this.enterRecoveryPhrase(recoveryPhrase)
-    await this.tapSignInBtn()
+    await this.tapImport()
     await nameWalletPage.enterWalletName('testWallet1\n')
     await Action.waitForElement(CreatePinPage.numpadOne)
     await CreatePinPage.tapNumpadZero()

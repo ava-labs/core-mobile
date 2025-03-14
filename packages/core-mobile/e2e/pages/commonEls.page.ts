@@ -185,6 +185,12 @@ class CommonElsPage {
   async tapReloadSVG(index = 0) {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
   }
+  async exitMetro() {
+    if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
+      await Actions.tap(by.text(/.*8081.*/i))
+    }
+    await Actions.tap(by.id(/.*x-icon.*/i))
+  }
 }
 
 export default new CommonElsPage()

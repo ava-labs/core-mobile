@@ -10,5 +10,6 @@ export default {
   signInWithRecoveryPhraseBtn: 'btnTextMedium',
   fingerprint: 'Fingerprint',
   skipBtn: 'Skip',
-  modalTitle: 'Terms and Condition'
+  modalTitle: 'Terms and Condition',
+  letsgo: 'Let’s go!'
 }

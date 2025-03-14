@@ -58,17 +58,17 @@ export default function TabLayout(): JSX.Element {
 }
 
 const PortfolioTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Maps.Layer color={color} />
+  <Icons.Maps.Layer testID="portfolio_tab" color={color} />
 )
 
 const TrackTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.SearchCustom color={color} />
+  <Icons.Custom.SearchCustom testID="track_tab" color={color} />
 )
 
 const StakeTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.Psychiatry color={color} />
+  <Icons.Custom.Psychiatry testID="stake_tab" color={color} />
 )
 
 const BrowserTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.Compass color={color} />
+  <Icons.Custom.Compass testID="browser_tab" color={color} />
 )
