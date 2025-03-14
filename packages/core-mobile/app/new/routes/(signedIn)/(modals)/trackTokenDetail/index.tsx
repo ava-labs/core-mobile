@@ -364,7 +364,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
                   color: '$textSecondary'
                 }}>
                 Last updated:{' '}
-                {format(lastUpdatedDate, 'E, MMM dd, yyyy, H:mm aa')}
+                {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
               </Text>
             </Animated.View>
           )}
