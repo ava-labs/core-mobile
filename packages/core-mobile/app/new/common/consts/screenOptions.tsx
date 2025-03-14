@@ -123,7 +123,7 @@ export const homeScreenOptions: StackNavigationOptions = {
         marginLeft: 14,
         height: '100%'
       }}>
-      <Link href="/settings/" asChild>
+      <Link href="/accountSettings/" asChild>
         <AccountSettingBarButton />
       </Link>
     </View>
