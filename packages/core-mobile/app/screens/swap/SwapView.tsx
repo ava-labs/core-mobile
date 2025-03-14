@@ -21,6 +21,7 @@ import { useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import { selectActiveAccount } from 'store/account'
 
 type NavigationProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
 
@@ -30,6 +31,7 @@ export default function SwapView(): JSX.Element {
   const { params } = useRoute<NavigationProps['route']>()
   const { filteredTokenList } = useSearchableTokenList(false)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
+  const activeAccount = useSelector(selectActiveAccount)
   const {
     swap,
     fromToken,
@@ -64,27 +66,22 @@ export default function SwapView(): JSX.Element {
 
   useEffect(validateInputsFx, [fromTokenValue, maxFromValue])
   useEffect(applyOptimalRateFx, [optimalRate])
-  useEffect(calculateMaxFx, [fromToken])
-  useEffect(() => {
-    if (!fromToken && params?.initialTokenIdFrom) {
-      const token = filteredTokenList.find(
-        tk =>
-          tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
-      )
-      if (token) {
-        setFromToken(token)
-      }
-    }
-    if (!toToken && params?.initialTokenIdTo) {
-      const token = filteredTokenList.find(
-        tk =>
-          tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
-      )
-      if (token) {
-        setToToken(token)
-      }
-    }
-  }, [params, filteredTokenList, setFromToken, setToToken, fromToken, toToken])
+  useEffect(calculateMaxFx, [fromToken, activeAccount])
+  useEffect(setInitialTokensFx, [
+    params,
+    filteredTokenList,
+    setFromToken,
+    setToToken,
+    fromToken,
+    toToken
+  ])
+  useEffect(updateTokensOnAccountChangeFx, [
+    filteredTokenList,
+    fromToken,
+    setFromToken,
+    setToToken,
+    toToken
+  ])
 
   function validateInputsFx(): void {
     if (fromTokenValue && fromTokenValue.bn === 0n) {
@@ -112,6 +109,59 @@ export default function SwapView(): JSX.Element {
           bn: BigInt(optimalRate.srcAmount),
           amount: optimalRate.srcAmount
         })
+      }
+    }
+  }
+
+  function setInitialTokensFx(): void {
+    if (!fromToken && params?.initialTokenIdFrom) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
+      )
+      if (token) {
+        setFromToken(token)
+      }
+    }
+    if (!toToken && params?.initialTokenIdTo) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
+      )
+      if (token) {
+        setToToken(token)
+      }
+    }
+  }
+
+  function updateTokensOnAccountChangeFx(): void {
+    if (
+      fromToken &&
+      'localId' in fromToken &&
+      !!fromToken.localId &&
+      typeof fromToken.localId === 'string'
+    ) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() ===
+          (fromToken.localId as string).toLowerCase()
+      )
+      if (token) {
+        setFromToken(token)
+      }
+    }
+    if (
+      toToken &&
+      'localId' in toToken &&
+      !!toToken.localId &&
+      typeof toToken.localId === 'string'
+    ) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() === (toToken.localId as string).toLowerCase()
+      )
+      if (token) {
+        setToToken(token)
       }
     }
   }
