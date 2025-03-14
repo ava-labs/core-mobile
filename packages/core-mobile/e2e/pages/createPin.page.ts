@@ -38,12 +38,20 @@ class CreatePinPage {
     return by.text(createPinLoc.skipBtn)
   }
 
+  get letsgo() {
+    return by.text(createPinLoc.letsgo)
+  }
+
+  async tapLetsGo() {
+    await Action.tap(this.letsgo)
+  }
+
   async tapSignInWithRecoveryPhraseBtn() {
     await Action.tap(this.signInWithRecoveryPhraseBtn)
   }
 
   async tapNumpadZero() {
-    await Action.multiTap(this.numpadZero, 6, 0)
+    await Action.setInputText(by.id('pin_input'), '000000')
   }
 
   async tapNumpadZero5Times() {

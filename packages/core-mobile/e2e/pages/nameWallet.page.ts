@@ -21,7 +21,8 @@ class NameWalletPage {
   }
 
   async enterWalletName(walletName: string) {
-    await element(this.nameWalletInput).typeText(walletName)
+    await actions.waitForElement(this.nameWalletInput)
+    await element(this.nameWalletInput).replaceText(walletName)
   }
 
   async tapGoBtn() {
