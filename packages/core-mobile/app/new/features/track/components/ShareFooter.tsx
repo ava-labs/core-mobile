@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as SMS from 'expo-sms'
 import Logger from 'utils/Logger'
 import { Social } from 'react-native-share'
+import { Platform } from 'react-native'
 
 export const ShareFooter = ({
   url,
@@ -68,14 +69,19 @@ export const ShareFooter = ({
       type: AvailableSocial
       title: string
       key: string
-    }[] = [
-      {
-        icon: require('../../../assets/icons/x.png'),
-        type: Social.Twitter,
-        title: 'X',
-        key: 'x'
-      }
-    ]
+    }[] =
+      // twitter sharing via react-native-share doesn't work on Android.
+      Platform.OS === 'ios'
+        ? [
+            {
+              icon: require('../../../assets/icons/x.png'),
+              type: Social.Twitter,
+              title: 'X',
+              key: 'x'
+            }
+          ]
+        : []
+
     socials.forEach(({ icon, type, title, key }) => {
       result.push(
         <ActionButton onPress={() => onShare(type)} title={title} key={key}>

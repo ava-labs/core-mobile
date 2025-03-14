@@ -4,7 +4,10 @@ import { useLocalSearchParams } from 'expo-router'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useRef, useState } from 'react'
 import { LayoutChangeEvent, PixelRatio, Platform } from 'react-native'
-import { Content, CONTENT_SIZE } from 'features/track/components/Content'
+import {
+  ShareChart,
+  CHART_IMAGE_SIZE
+} from 'features/track/components/ShareChart'
 import {
   AvailableSocial,
   ShareFooter
@@ -31,9 +34,9 @@ const ShareMarketTokenScreen = (): JSX.Element => {
   }
 
   const actualViewWidth = viewWidth ? viewWidth - 60 : undefined
-  const scale = actualViewWidth ? actualViewWidth / CONTENT_SIZE : 1
+  const scale = actualViewWidth ? actualViewWidth / CHART_IMAGE_SIZE : 1
   const cancellingVerticalMargin = actualViewWidth
-    ? (CONTENT_SIZE - actualViewWidth) / 2
+    ? (CHART_IMAGE_SIZE - actualViewWidth) / 2
     : 0
 
   const urlToShare = tokenInfo?.urlHostname
@@ -86,7 +89,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
   }
 
   const captureImage = async (): Promise<string> => {
-    const imageSize = CONTENT_SIZE / PixelRatio.get()
+    const imageSize = CHART_IMAGE_SIZE / PixelRatio.get()
     return await captureRef(viewShotRef, {
       width: imageSize,
       height: imageSize
@@ -126,7 +129,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
                   overflow: 'hidden'
                 }}>
                 <ViewShot ref={viewShotRef}>
-                  <Content tokenId={tokenId} />
+                  <ShareChart tokenId={tokenId} />
                 </ViewShot>
               </View>
             </View>
