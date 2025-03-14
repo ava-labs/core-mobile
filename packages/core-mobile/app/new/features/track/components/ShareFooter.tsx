@@ -3,7 +3,6 @@ import React, { useMemo, useState, useEffect } from 'react'
 import {
   CircularButton,
   Icons,
-  ScrollView,
   TouchableOpacity,
   Image,
   CIRCULAR_BUTTON_WIDTH,
@@ -108,16 +107,17 @@ export const ShareFooter = ({
 
   return (
     <LinearGradientBottomWrapper>
-      <ScrollView
-        sx={{
-          paddingBottom: bottom + 12,
-          flexDirection: 'row'
-        }}
-        contentContainerSx={{ paddingHorizontal: 28, gap: 20 }}
-        horizontal
-        showsHorizontalScrollIndicator={false}>
-        {actions}
-      </ScrollView>
+      <View sx={{ alignItems: 'center' }}>
+        <View
+          sx={{
+            paddingBottom: bottom + 12,
+            flexDirection: 'row',
+            paddingHorizontal: 28,
+            gap: 20
+          }}>
+          {actions}
+        </View>
+      </View>
     </LinearGradientBottomWrapper>
   )
 }
