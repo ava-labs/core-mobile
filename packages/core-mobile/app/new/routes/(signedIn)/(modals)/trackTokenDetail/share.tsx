@@ -39,6 +39,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     ? (CHART_IMAGE_SIZE - actualViewWidth) / 2
     : 0
 
+  // CP-10000: use a universal url for token after supporting it on Android
   const urlToShare = tokenInfo?.urlHostname
   const message = `Don't miss out on ${tokenInfo?.name} price changes. Download Core from the App Store or Google Play store to receive alerts on ${tokenInfo?.name} and other popular tokens.`
 
