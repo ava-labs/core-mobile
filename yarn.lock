@@ -5510,14 +5510,14 @@ __metadata:
   linkType: hard
 
 "@expo/server@npm:^0.5.2":
-  version: 0.5.3
-  resolution: "@expo/server@npm:0.5.3"
+  version: 0.5.2
+  resolution: "@expo/server@npm:0.5.2"
   dependencies:
     abort-controller: ^3.0.0
     debug: ^4.3.4
     source-map-support: ~0.5.21
-    undici: ^6.18.2
-  checksum: 9f16b7c4eb9085d103b5f0da01db5dd9f4c47757760b97b0e7c376432c092ba414a02367d2b2933cb2cfb648fdfe6c95572a6887e967b1184c25f5badfb1a5bc
+    undici: ^6.18.2 || ^7.0.0
+  checksum: dc528f172ed0075612d0321c65f942e3f1fa311fd94e807cba7c65953a36b6a9acbcf099423d17af2fccf717134516dba2361781bc462b698623caa292fbdc0d
   languageName: node
   linkType: hard
 
@@ -29788,6 +29788,13 @@ react-native-webview@ava-labs/react-native-webview:
   version: 6.21.0
   resolution: "undici@npm:6.21.0"
   checksum: bc2eb26c4b010a4f816314d48d4529f62b1116405097b2c5f0ac68247c56049a857d11a9f05b237818f04ce4f51d6f5e8d6fcc6aae2ab816c2b7318a9706727c
+  languageName: node
+  linkType: hard
+
+"undici@npm:^6.18.2 || ^7.0.0":
+  version: 7.5.0
+  resolution: "undici@npm:7.5.0"
+  checksum: 796498f9d134a14a513282915109ebcb96605069e8a2b0d58271fe05cb42a5cf76f5dfa416c21e0ebfaf9df57a17a09d5a778906e7e25581df66b28f97437158
   languageName: node
   linkType: hard
 
