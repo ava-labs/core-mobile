@@ -2,6 +2,7 @@ import React from 'react'
 import { useTheme, Text, Icons, View, GroupList } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { CurrencyIcon } from 'common/components/CurrencyIcon'
 
 export const AppAppearance = ({
   selectAppAppearance,
@@ -30,7 +31,7 @@ export const AppAppearance = ({
               borderRadius: 21,
               overflow: 'hidden'
             }}>
-            <Icons.Currencies.USD width={21} height={21} />
+            <CurrencyIcon symbol={currency} size={21} />
           </View>
           <Text
             variant="body2"

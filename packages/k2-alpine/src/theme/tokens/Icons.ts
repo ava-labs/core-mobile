@@ -127,7 +127,7 @@ import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
 import ARS from '../../assets/currency-flagKit/currency-ars.svg'
 import AUD from '../../assets/currency-flagKit/currency-aud.svg'
-import bdt from '../../assets/currency-flagKit/currency-bdt.svg'
+import BDT from '../../assets/currency-flagKit/currency-bdt.svg'
 import BGN from '../../assets/currency-flagKit/currency-bgn.svg'
 import BRL from '../../assets/currency-flagKit/currency-brl.svg'
 import CAD from '../../assets/currency-flagKit/currency-cad.svg'
@@ -320,7 +320,7 @@ export const Icons = {
     AED: AED,
     ARS: ARS,
     AUD: AUD,
-    BDT: bdt,
+    BDT: BDT,
     BGN: BGN,
     BRL: BRL,
     CAD: CAD,

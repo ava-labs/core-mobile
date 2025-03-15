@@ -10,6 +10,7 @@ export default function AccountSettingsLayout(): JSX.Element {
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
       <Stack.Screen name="account" />
+      <Stack.Screen name="currency" />
     </Stack>
   )
 }
