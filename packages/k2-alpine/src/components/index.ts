@@ -29,3 +29,6 @@ export * from './Chart/MiniChart'
 export * from './Chip/Chip'
 
 export * from './PriceChangeIndicator/types'
+
+export * from './AnimatedBalance/AnimatedBalance'
+export * from './PrivacyAwareText/PrivacyAwareText'

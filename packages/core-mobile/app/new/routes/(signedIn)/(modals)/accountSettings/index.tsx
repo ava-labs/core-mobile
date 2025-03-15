@@ -1,5 +1,5 @@
 import {
-  AnimatedText,
+  AnimatedBalance,
   Avatar,
   Icons,
   Logos,
@@ -7,18 +7,15 @@ import {
   ScrollView,
   showAlert,
   Text,
+  Toggle,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { useNavigation, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
-import Animated, {
-  useSharedValue,
-  FadeIn,
-  LinearTransition
-} from 'react-native-reanimated'
-import { LayoutRectangle } from 'react-native'
+import Animated, { useSharedValue } from 'react-native-reanimated'
+import { LayoutRectangle, Dimensions } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent } from 'react-native'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
@@ -32,15 +29,23 @@ import { UserPreferences } from 'features/accountSettings/components/UserPrefere
 import { About } from 'features/accountSettings/components/About'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
 import {
-  selectIsBalanceVisibilityOn,
-  toggleBalanceVisibility
+  selectIsPrivacyModeEnabled,
+  togglePrivacyMode
 } from 'store/settings/securityPrivacy'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
-  const toggleVisibility = useSelector(toggleBalanceVisibility)
-  const isBalanceVisibilityOn = useSelector(selectIsBalanceVisibilityOn)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const togglePrivacy = useSelector(togglePrivacyMode)
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const activeAccount = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useTotalBalanceInCurrencyForAccount(
     activeAccount?.index ?? 0
@@ -74,12 +79,12 @@ const AccountSettingsScreen = (): JSX.Element => {
           marginRight: 18
         }}>
         <VisibilityBarButton
-          isVisible={isBalanceVisibilityOn}
-          onPress={() => dispatch(toggleVisibility)}
+          isPrivacyModeEnabled={isPrivacyModeEnabled}
+          onPress={() => dispatch(togglePrivacy)}
         />
       </View>
     )
-  }, [dispatch, isBalanceVisibilityOn, toggleVisibility])
+  }, [dispatch, isPrivacyModeEnabled, togglePrivacy])
 
   useEffect(() => {
     setOptions({
@@ -123,6 +128,13 @@ const AccountSettingsScreen = (): JSX.Element => {
     navigate('./sendFeedback')
   }, [navigate])
 
+  const onTestnetChange = (value: boolean): void => {
+    AnalyticsService.capture(
+      value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled'
+    )
+    dispatch(toggleDeveloperMode())
+  }
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -158,29 +170,19 @@ const AccountSettingsScreen = (): JSX.Element => {
               />
             </TouchableOpacity>
           </Animated.View>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'flex-end',
-              marginTop: 23
-            }}>
-            <AnimatedText
-              characters={totalBalanceInCurrency}
-              variant="heading2"
-              sx={{ lineHeight: 38 }}
+          <View style={{ marginTop: 23 }}>
+            <AnimatedBalance
+              balance={totalBalanceInCurrency}
+              currency={` ${selectedCurrency}`}
+              isPrivacyModeEnabled={isPrivacyModeEnabled}
+              privacyMaskWidth={100}
+              balanceSx={{ lineHeight: 38 }}
+              currencySx={{
+                fontFamily: 'Aeonik-Medium',
+                fontSize: 18,
+                lineHeight: 28
+              }}
             />
-            <Animated.View
-              entering={FadeIn.delay(250)}
-              layout={LinearTransition.springify().damping(100)}>
-              <Text
-                style={{
-                  fontFamily: 'Aeonik-Medium',
-                  fontSize: 18,
-                  lineHeight: 38
-                }}>
-                {` ${selectedCurrency}`}
-              </Text>
-            </Animated.View>
           </View>
           <Text variant="body1" sx={{ marginTop: 2 }}>
             Total net worth
@@ -193,6 +195,36 @@ const AccountSettingsScreen = (): JSX.Element => {
         {/* Settings */}
         <View sx={{ gap: 24 }}>
           <View sx={{ gap: 12 }}>
+            {/* Testnet mode */}
+            <View
+              sx={{
+                backgroundColor: colors.$surfaceSecondary,
+                borderRadius: 12,
+                width: SCREEN_WIDTH - 32
+              }}>
+              <View
+                sx={{
+                  alignItems: 'center',
+                  paddingHorizontal: 16,
+                  paddingVertical: 13,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between'
+                }}>
+                <Text
+                  variant="body2"
+                  sx={{
+                    color: colors.$textPrimary,
+                    fontSize: 16,
+                    lineHeight: 22
+                  }}>
+                  Testnet mode
+                </Text>
+                <Toggle
+                  onValueChange={onTestnetChange}
+                  value={isDeveloperMode}
+                />
+              </View>
+            </View>
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectAppIcon={goToAppIcon}

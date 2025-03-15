@@ -11,6 +11,9 @@ import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedText } from '../Animated/AnimatedText'
 import { View, Text } from '../Primitives'
+import { PrivacyMask } from '../PrivacyMask/PrivacyMask'
+import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
+import { getLineHeight } from '../../utils/getLineHeight'
 import { PriceChange, PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
@@ -18,11 +21,15 @@ export const PriceChangeIndicator = ({
   status,
   formattedPercent,
   textVariant = 'buttonSmall',
-  animated = false
+  animated = false,
+  isPrivacyModeEnabled = false,
+  privacyMaskWidth
 }: PriceChange & {
   textVariant?: 'buttonMedium' | 'buttonSmall'
   animated?: boolean
   testID?: string
+  isPrivacyModeEnabled?: boolean
+  privacyMaskWidth?: number
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -44,6 +51,16 @@ export const PriceChangeIndicator = ({
       : ''
 
   const formattedPriceText = `${signIndicator}${formattedPrice}`
+
+  if (isPrivacyModeEnabled) {
+    const privacyMaskHeight = getLineHeight(textVariant)
+
+    return (
+      <AnimateFadeScale delay={200}>
+        <PrivacyMask width={privacyMaskWidth} height={privacyMaskHeight} />
+      </AnimateFadeScale>
+    )
+  }
 
   return animated === true ? (
     <AnimatedComponent

@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   AnimatedPressable,
   useTheme,
-  alpha
+  alpha,
+  AnimatedBalance
 } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectTokenVisibility } from 'store/portfolio'
@@ -15,6 +16,8 @@ import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = ({
@@ -30,6 +33,7 @@ export const AccountItem = ({
   onSelectAccount: (accountIndex: number) => void
   gotoAccountDetails: (accountIndex: number) => void
 }): React.JSX.Element => {
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors, isDark }
   } = useTheme()
@@ -37,6 +41,7 @@ export const AccountItem = ({
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
   )
+  const { formatCurrency } = useFormatCurrency()
 
   const containerBackgroundColor = isActive
     ? colors.$textPrimary
@@ -49,10 +54,18 @@ export const AccountItem = ({
   const subtitleColor = isActive
     ? isDark
       ? alpha('#28282E', 0.6)
-      : alpha('#FFFFFF', 0.6)
+      : '#83838D'
     : isDark // inactive
     ? alpha('#FFFFFF', 0.6)
     : alpha('#28282E', 0.6)
+
+  const backgroundColor = isActive
+    ? isDark
+      ? alpha('#28282E', 0.1)
+      : alpha('#FFFFFF', 0.1)
+    : isDark // inactive
+    ? alpha('#FFFFFF', 0.1)
+    : alpha('#28282E', 0.1)
 
   const iconColor = isActive ? colors.$surfacePrimary : colors.$textPrimary
 
@@ -72,7 +85,13 @@ export const AccountItem = ({
         }}>
         <View>
           <Text sx={{ color: accountNameColor }}>{account.name}</Text>
-          <Text sx={{ color: subtitleColor }}>{accountBalance.toFixed(2)}</Text>
+          <AnimatedBalance
+            variant="body1"
+            balance={formatCurrency(accountBalance)}
+            isPrivacyModeEnabled={isPrivacyModeEnabled}
+            balanceSx={{ color: subtitleColor, lineHeight: 18 }}
+            privacyMaskbackgroundColor={backgroundColor}
+          />
         </View>
         <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text

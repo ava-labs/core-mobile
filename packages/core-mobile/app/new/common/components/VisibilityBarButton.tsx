@@ -2,24 +2,24 @@ import { Icons, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
 
 export const VisibilityBarButton = ({
-  isVisible,
+  isPrivacyModeEnabled,
   onPress
 }: {
-  isVisible: boolean
+  isPrivacyModeEnabled: boolean
   onPress?: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
 
   return (
     <TouchableOpacity onPress={onPress}>
-      {isVisible === true ? (
-        <Icons.Action.VisibilityOn
+      {isPrivacyModeEnabled ? (
+        <Icons.Action.VisibilityOff
           color={theme.colors.$textPrimary}
           width={22}
           height={22}
         />
       ) : (
-        <Icons.Action.VisibilityOff
+        <Icons.Action.VisibilityOn
           color={theme.colors.$textPrimary}
           width={22}
           height={22}

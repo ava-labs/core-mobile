@@ -3,6 +3,7 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
+  PrivacyAwareText,
   SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
@@ -12,6 +13,8 @@ import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { GRID_GAP } from 'common/consts'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useSelector } from 'react-redux'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -25,6 +28,8 @@ export const TokenGridView = ({
   formattedBalance,
   formattedPrice
 }: TokenListViewProps): React.JSX.Element => {
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+
   const {
     theme: { colors }
   } = useTheme()
@@ -51,33 +56,44 @@ export const TokenGridView = ({
               {token.name}
             </Text>
             <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
-              <Text
-                variant="body2"
-                sx={{ lineHeight: 16 }}
+              <PrivacyAwareText
+                isPrivacyModeEnabled={isPrivacyModeEnabled}
+                privacyMaskWidth={65}
+                numberOfLines={1}
                 ellipsizeMode="tail"
-                numberOfLines={1}>
+                sx={{ lineHeight: 16 }}>
                 {token.balanceDisplayValue} {token.symbol}
-              </Text>
+              </PrivacyAwareText>
             </View>
           </View>
           <View sx={{ marginTop: 19 }}>
             <View>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                {!token.isDataAccurate && (
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 3,
+                  marginBottom: 1
+                }}>
+                {!token.isDataAccurate && !isPrivacyModeEnabled && (
                   <Icons.Alert.Error
                     width={16}
                     height={16}
                     color={colors.$textDanger}
                   />
                 )}
-                <Text
+                <PrivacyAwareText
                   variant="buttonLarge"
+                  isPrivacyModeEnabled={isPrivacyModeEnabled}
+                  privacyMaskWidth={85}
                   numberOfLines={1}
-                  sx={{ lineHeight: 21, marginBottom: 1 }}>
+                  sx={{ lineHeight: 21 }}>
                   {formattedBalance}
-                </Text>
+                </PrivacyAwareText>
               </View>
               <PriceChangeIndicator
+                isPrivacyModeEnabled={isPrivacyModeEnabled}
+                privacyMaskWidth={40}
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
               />

@@ -17,8 +17,8 @@ export const securityPrivacySlice = createSlice({
     setTouAndPpConsent: (state, action: PayloadAction<boolean>) => {
       state.consentToTOUnPP = action.payload
     },
-    toggleBalanceVisibility: state => {
-      state.balanceVisibility = !state.balanceVisibility
+    togglePrivacyMode: state => {
+      state.privacyModeEnabled = !state.privacyModeEnabled
     }
   }
 })
@@ -35,11 +35,11 @@ export const selectCoreAnalyticsConsent = (
 export const selectTouAndPpConsent = (state: RootState): boolean =>
   state.settings.securityPrivacy.consentToTOUnPP
 
-export const selectIsBalanceVisibilityOn = (state: RootState): boolean =>
-  state.settings.securityPrivacy.balanceVisibility
+export const selectIsPrivacyModeEnabled = (state: RootState): boolean =>
+  state.settings.securityPrivacy.privacyModeEnabled
 
 // actions
-export const { setCoreAnalytics, setTouAndPpConsent, toggleBalanceVisibility } =
+export const { setCoreAnalytics, setTouAndPpConsent, togglePrivacyMode } =
   securityPrivacySlice.actions
 
 export const securityPrivacyReducer = securityPrivacySlice.reducer

@@ -44,8 +44,10 @@ import {
   selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const { navigate } = useRouter()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -168,6 +170,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
                 balanceAccurate ? undefined : 'Unable to load all balances'
               }
               isLoading={isLoading}
+              isPrivacyModeEnabled={isPrivacyModeEnabled}
             />
           </Animated.View>
         </View>
