@@ -43,7 +43,7 @@ export const AccountList = (): React.JSX.Element => {
     [dispatch]
   )
 
-  const addAccountAndSetActive = async (): Promise<void> => {
+  const addAccountAndSetActive = useCallback(async (): Promise<void> => {
     if (isAddingAccount) return
 
     try {
@@ -68,7 +68,7 @@ export const AccountList = (): React.JSX.Element => {
     } finally {
       setIsAddingAccount(false)
     }
-  }
+  }, [accounts, dispatch, isAddingAccount])
 
   const gotoAccountDetails = useCallback(
     (accountIndex: number): void => {
@@ -86,16 +86,34 @@ export const AccountList = (): React.JSX.Element => {
     return accounts.length < 3 ? 'center' : undefined
   }, [accounts.length])
 
+  const renderItem = useCallback(
+    ({ item, index }: { item: Account; index: number }) => (
+      <AccountItem
+        index={index}
+        isActive={index === activeAccount?.index}
+        account={item as Account}
+        onSelectAccount={onSelectAccount}
+        gotoAccountDetails={gotoAccountDetails}
+      />
+    ),
+    [activeAccount?.index, gotoAccountDetails, onSelectAccount]
+  )
+
+  const onContentSizeChange = useCallback(() => {
+    flatListRef.current?.scrollToOffset({
+      offset:
+        (ACCOUNT_CARD_SIZE + 16) * (activeAccount?.index ?? accounts.length)
+    })
+  }, [activeAccount?.index, accounts.length])
+
   return (
     <View sx={{ flexDirection: 'row', height: ACCOUNT_CARD_SIZE }}>
       <Animated.FlatList
-        onContentSizeChange={() => {
-          flatListRef.current?.scrollToOffset({
-            offset:
-              (ACCOUNT_CARD_SIZE + 16) *
-              (activeAccount?.index ?? accounts.length)
-          })
-        }}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        updateCellsBatchingPeriod={100}
+        removeClippedSubviews={true}
+        onContentSizeChange={onContentSizeChange}
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: contentContainerJustifyContent
@@ -106,15 +124,7 @@ export const AccountList = (): React.JSX.Element => {
         style={{ overflow: 'visible', flexGrow: 1 }}
         horizontal
         data={accounts}
-        renderItem={item => (
-          <AccountItem
-            index={item.index}
-            isActive={item.index === activeAccount?.index}
-            account={item.item as Account}
-            onSelectAccount={onSelectAccount}
-            gotoAccountDetails={gotoAccountDetails}
-          />
-        )}
+        renderItem={renderItem}
         getItemLayout={(_, index) => ({
           length: ACCOUNT_CARD_SIZE,
           offset: ACCOUNT_CARD_SIZE * index,

@@ -62,7 +62,13 @@ export const TokenListView = ({
               <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
                 {token.name}
               </Text>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  marginBottom: 1
+                }}>
                 {!token.isDataAccurate && !isPrivacyModeEnabled && (
                   <Icons.Alert.Error
                     width={16}
@@ -75,7 +81,7 @@ export const TokenListView = ({
                   isPrivacyModeEnabled={isPrivacyModeEnabled}
                   privacyMaskWidth={64}
                   numberOfLines={1}
-                  sx={{ lineHeight: 18, marginBottom: 1 }}>
+                  sx={{ lineHeight: 18 }}>
                   {formattedBalance}
                 </PrivacyAwareText>
               </View>
