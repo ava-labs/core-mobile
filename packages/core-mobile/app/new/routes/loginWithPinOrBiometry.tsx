@@ -250,34 +250,26 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   backgroundColor={theme.colors.$surfacePrimary}
                 />
               </Reanimated.View>
-              <View
-                pointerEvents={
-                  isEnteringPin || disableKeypad ? 'auto' : 'none'
-                }>
-                <Reanimated.View style={[pinInputOpacityStyle]}>
-                  {disableKeypad === false && (
-                    <PinInput
-                      ref={pinInputRef}
-                      style={{ paddingTop: 40, paddingBottom: 20 }}
-                      length={6}
-                      onChangePin={onEnterPin}
-                      value={enteredPin}
-                    />
-                  )}
-                </Reanimated.View>
-                <Reanimated.View
-                  style={[
-                    disableKeypad ? { marginTop: 60 } : {},
-                    forgotPinButtonOpacityStyle
-                  ]}>
-                  <Button
-                    size="medium"
-                    type="tertiary"
-                    onPress={handleForgotPin}>
-                    Forgot PIN?
-                  </Button>
-                </Reanimated.View>
-              </View>
+              <Reanimated.View style={[pinInputOpacityStyle]}>
+                {disableKeypad === false && (
+                  <PinInput
+                    ref={pinInputRef}
+                    style={{ paddingTop: 40, paddingBottom: 20 }}
+                    length={6}
+                    onChangePin={onEnterPin}
+                    value={enteredPin}
+                  />
+                )}
+              </Reanimated.View>
+              <Reanimated.View
+                style={[
+                  disableKeypad ? { marginTop: 60 } : {},
+                  forgotPinButtonOpacityStyle
+                ]}>
+                <Button size="medium" type="tertiary" onPress={handleForgotPin}>
+                  Forgot PIN?
+                </Button>
+              </Reanimated.View>
             </View>
             <Reanimated.View
               style={[
