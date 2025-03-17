@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as SMS from 'expo-sms'
 import Logger from 'utils/Logger'
 import { Social } from 'react-native-share'
-import { Platform } from 'react-native'
+import { Platform, ImageRequireSource } from 'react-native'
 
 export const ShareFooter = ({
   url,
@@ -63,8 +63,7 @@ export const ShareFooter = ({
     }
 
     const socials: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      icon: any
+      icon: ImageRequireSource
       type: AvailableSocial
       title: string
       key: string
@@ -142,9 +141,4 @@ const ActionButton: React.FC<{
   )
 }
 
-export type AvailableSocial =
-  | Social.Twitter
-  | Social.Instagram
-  | Social.Whatsapp
-  | Social.Telegram
-  | Social.Messenger
+export type AvailableSocial = Social.Twitter

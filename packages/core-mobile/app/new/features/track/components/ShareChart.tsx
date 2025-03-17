@@ -168,7 +168,7 @@ const TokenHeader = ({
         <PriceChangeIndicator
           formattedPrice={priceChange?.formattedPrice ?? UNKNOWN_AMOUNT}
           status={priceChange?.status ?? PriceChangeStatus.Neutral}
-          formattedPercent={priceChange?.formattedPercent ?? UNKNOWN_AMOUNT}
+          formattedPercent={priceChange?.formattedPercent}
           textVariant="priceChangeIndicatorLarge"
           overrideTheme={inversedTheme}
         />
