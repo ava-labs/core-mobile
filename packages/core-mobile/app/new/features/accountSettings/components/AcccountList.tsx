@@ -15,10 +15,12 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'common/utils/toast'
-import { FlatList } from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
 import { AccountItem } from './AccountItem'
 
 export const ACCOUNT_CARD_SIZE = 140
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 export const AccountList = (): React.JSX.Element => {
   const {
@@ -111,7 +113,7 @@ export const AccountList = (): React.JSX.Element => {
 
   return (
     <View sx={{ flexDirection: 'row', height: ACCOUNT_CARD_SIZE }}>
-      <Animated.FlatList
+      <AnimatedFlatList
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         updateCellsBatchingPeriod={100}
@@ -127,7 +129,12 @@ export const AccountList = (): React.JSX.Element => {
         style={{ overflow: 'visible', flexGrow: 1 }}
         horizontal
         data={accounts}
-        renderItem={renderItem}
+        renderItem={item =>
+          renderItem({
+            item: item.item as Account,
+            index: item.index
+          })
+        }
         getItemLayout={(_, index) => ({
           length: ACCOUNT_CARD_SIZE,
           offset: ACCOUNT_CARD_SIZE * index,

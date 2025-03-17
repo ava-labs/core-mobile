@@ -4,7 +4,6 @@ import {
   Icons,
   Logos,
   NavigationTitleHeader,
-  ScrollView,
   showAlert,
   Text,
   Toggle,
@@ -37,6 +36,7 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { ScrollView } from 'react-native-gesture-handler'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
@@ -138,7 +138,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerSx={{ paddingBottom: 60 }}
+      contentContainerStyle={{ paddingBottom: 60 }}
       {...scrollViewProps}>
       <View
         sx={{
