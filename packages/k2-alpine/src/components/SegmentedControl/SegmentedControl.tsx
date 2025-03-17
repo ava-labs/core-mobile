@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   LayoutChangeEvent,
   Pressable,
@@ -16,6 +16,7 @@ import Animated, {
   DerivedValue,
   useSharedValue
 } from 'react-native-reanimated'
+import throttle from 'lodash/throttle'
 import { SxProp } from 'dripsy'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
@@ -154,6 +155,8 @@ export const SegmentedControl = ({
   )
 }
 
+const THROTTLE_DURATION = 100
+
 const Segment = ({
   sx,
   ratio,
@@ -174,6 +177,21 @@ const Segment = ({
   onPress: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
+
+  const throttledOnPress = useMemo(
+    () =>
+      throttle(onPress, THROTTLE_DURATION, {
+        leading: true,
+        trailing: false
+      }),
+    [onPress]
+  )
+
+  useEffect(() => {
+    return () => {
+      throttledOnPress.cancel()
+    }
+  }, [throttledOnPress])
 
   const flexStyle = useAnimatedStyle(() => ({
     flex: typeof ratio === 'number' ? ratio : ratio.value[index] || 1
@@ -200,7 +218,7 @@ const Segment = ({
 
   return (
     <Animated.View style={flexStyle}>
-      <Pressable onPress={onPress}>
+      <Pressable onPress={throttledOnPress}>
         <View sx={{ alignItems: 'center', backgroundColor, ...sx }}>
           <Animated.Text
             onLayout={handleTextLayout}
