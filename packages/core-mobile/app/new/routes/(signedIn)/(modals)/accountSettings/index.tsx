@@ -1,6 +1,7 @@
 import {
   AnimatedBalance,
   Avatar,
+  GroupList,
   Icons,
   Logos,
   NavigationTitleHeader,
@@ -14,7 +15,7 @@ import {
 import { useNavigation, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
-import { LayoutRectangle, Dimensions } from 'react-native'
+import { LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent } from 'react-native'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
@@ -37,8 +38,6 @@ import {
 } from 'store/settings/advanced'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
-
-const SCREEN_WIDTH = Dimensions.get('window').width
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -196,35 +195,26 @@ const AccountSettingsScreen = (): JSX.Element => {
         <View sx={{ gap: 24 }}>
           <View sx={{ gap: 12 }}>
             {/* Testnet mode */}
-            <View
-              sx={{
-                backgroundColor: colors.$surfaceSecondary,
-                borderRadius: 12,
-                width: SCREEN_WIDTH - 32
-              }}>
-              <View
-                sx={{
-                  alignItems: 'center',
-                  paddingHorizontal: 16,
-                  paddingVertical: 13,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between'
-                }}>
-                <Text
-                  variant="body2"
-                  sx={{
-                    color: colors.$textPrimary,
-                    fontSize: 16,
-                    lineHeight: 22
-                  }}>
-                  Testnet mode
-                </Text>
-                <Toggle
-                  onValueChange={onTestnetChange}
-                  value={isDeveloperMode}
-                />
-              </View>
-            </View>
+            <GroupList
+              data={[
+                {
+                  title: 'Testnet mode',
+                  value: (
+                    <Toggle
+                      onValueChange={onTestnetChange}
+                      value={isDeveloperMode}
+                    />
+                  )
+                }
+              ]}
+              titleSx={{
+                fontSize: 16,
+                lineHeight: 22,
+                fontFamily: 'Inter-Regular'
+              }}
+              valueSx={{ fontSize: 16, lineHeight: 22 }}
+              separatorMarginRight={16}
+            />
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectAppIcon={goToAppIcon}
