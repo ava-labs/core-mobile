@@ -1,5 +1,11 @@
-import React, { useMemo, useState } from 'react'
-import { LayoutChangeEvent, Pressable, ViewStyle } from 'react-native'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  LayoutChangeEvent,
+  Pressable,
+  ViewStyle,
+  StyleSheet,
+  InteractionManager
+} from 'react-native'
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -7,8 +13,10 @@ import Animated, {
   withTiming,
   useDerivedValue,
   SharedValue,
-  DerivedValue
+  DerivedValue,
+  useSharedValue
 } from 'react-native-reanimated'
+import throttle from 'lodash/throttle'
 import { SxProp } from 'dripsy'
 import { View } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
@@ -16,7 +24,7 @@ import { useTheme } from '../../hooks'
 
 export const SegmentedControl = ({
   items,
-  selectedSegmentIndex, // now SharedValue<number>
+  selectedSegmentIndex,
   onSelectSegment,
   dynamicItemWidth,
   style,
@@ -28,86 +36,86 @@ export const SegmentedControl = ({
   dynamicItemWidth: boolean
   style?: ViewStyle
   type?: 'default' | 'thin'
-}): JSX.Element => {
+}): JSX.Element | null => {
+  const [isReady, setIsReady] = useState(true)
   const { theme } = useTheme()
-  const [viewWidth, setViewWidth] = useState<number>(0)
-  const [textWidths, setTextWidths] = useState<number[]>(
-    Array.from({ length: items.length }, () => 0)
-  )
-  const textRatios = useMemo(() => {
-    if (!dynamicItemWidth) {
-      return Array.from({ length: items.length }, () => 1 / items.length)
-    }
 
-    const textWidthSum = textWidths.reduce((a, b) => a + b, 0)
-    if (textWidthSum === 0) {
-      return Array.from({ length: items.length }, () => 0)
-    }
-    return textWidths.map(textWidth => textWidth / textWidthSum)
-  }, [textWidths, items.length, dynamicItemWidth])
+  const viewWidth = useSharedValue(0)
+  const textWidths = useSharedValue(Array(items.length).fill(0))
+
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsReady(true)
+    })
+    return () => task.cancel()
+  }, [])
+
+  const textRatios = useDerivedValue(() => {
+    if (!dynamicItemWidth) return Array(items.length).fill(1 / items.length)
+    const sum = textWidths.value.reduce((a: number, b: number) => a + b, 0)
+    return sum === 0
+      ? Array(items.length).fill(0)
+      : textWidths.value.map((w: number) => w / sum)
+  }, [dynamicItemWidth, items.length])
 
   const translationAnimation = useDerivedValue(() => {
-    if (viewWidth === 0) return 0
-
+    if (viewWidth.value === 0) return 0
     const value = selectedSegmentIndex.value
-
+    const ratios = textRatios.value
+    const floor = Math.floor(value)
     return withSpring(
-      viewWidth *
-        textRatios.slice(0, Math.floor(value)).reduce((a, b) => a + b, 0) +
-        viewWidth *
-          (textRatios[Math.floor(value)] ?? 0) *
-          (value - Math.floor(value)),
+      viewWidth.value *
+        ratios.slice(0, floor).reduce((a: number, b: number) => a + b, 0) +
+        viewWidth.value * (ratios[floor] || 0) * (value - floor),
       Configuration.animation.indicatorWidthSpringConfig
     )
-  }, [textRatios, viewWidth])
-
-  const selectionIndicatorWidthAnimation = useDerivedValue(() => {
-    if (viewWidth === 0) return 0
-
-    const selectedSegmentIndexValue = selectedSegmentIndex.value
-    const indexFloor = Math.floor(selectedSegmentIndexValue)
-    const indexCeil = Math.ceil(selectedSegmentIndexValue)
-    const fraction = selectedSegmentIndexValue - indexFloor
-    // If fraction is 0 (i.e. value is an integer), weight becomes 1.
-    const weight = fraction || 1
-
-    const widthFloor = textRatios[indexFloor] ?? 0
-    const widthCeil = textRatios[indexCeil] ?? 0
-
-    return viewWidth * (widthFloor * (1 - weight) + widthCeil * weight)
-  }, [viewWidth, textRatios])
-
-  const selectionIndicatorOpacityAnimation = useDerivedValue(() => {
-    if (viewWidth !== 0 && textRatios[0] !== 0) {
-      return withTiming(1, {
-        duration: Configuration.animation.indicatorTranslation.duration
-      })
-    }
-    return 0
-  }, [viewWidth, textRatios])
-
-  const selectionIndicatorAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      width: selectionIndicatorWidthAnimation.value,
-      transform: [
-        {
-          translateX: translationAnimation.value
-        }
-      ],
-      opacity: selectionIndicatorOpacityAnimation.value
-    }
   })
 
-  const handleTextWidthChange = (index: number, width: number): void => {
-    setTextWidths(prev => {
-      const newWidths = [...prev]
-      newWidths[index] = width
-      return newWidths
-    })
-  }
+  const selectionIndicatorWidthAnimation = useDerivedValue(() => {
+    if (viewWidth.value === 0) return 0
+    const value = selectedSegmentIndex.value
+    const floor = Math.floor(value)
+    const ceil = Math.ceil(value)
+    const fraction = value - floor
+    // If fraction is 0 (i.e. value is an integer), weight becomes 1.
+    const weight = fraction || 1
+    const ratios = textRatios.value
+    return (
+      viewWidth.value *
+      ((ratios[floor] || 0) * (1 - weight) + (ratios[ceil] || 0) * weight)
+    )
+  })
 
-  const handleLayout = (event: LayoutChangeEvent): void => {
-    setViewWidth(event.nativeEvent.layout.width)
+  const selectionIndicatorOpacityAnimation = useDerivedValue(() => {
+    return viewWidth.value !== 0 && textRatios.value[0] !== 0
+      ? withTiming(1, Configuration.animation.indicatorTranslation)
+      : 0
+  })
+
+  const selectionIndicatorAnimatedStyle = useAnimatedStyle(() => ({
+    width: selectionIndicatorWidthAnimation.value,
+    transform: [{ translateX: translationAnimation.value }],
+    opacity: selectionIndicatorOpacityAnimation.value
+  }))
+
+  const handleLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      viewWidth.value = event.nativeEvent.layout.width
+    },
+    [viewWidth]
+  )
+
+  const handleTextWidthChange = useCallback(
+    (index: number, width: number) => {
+      textWidths.value = textWidths.value.map((w, i) =>
+        i === index ? width : w
+      )
+    },
+    [textWidths]
+  )
+
+  if (!isReady) {
+    return null
   }
 
   return (
@@ -117,18 +125,11 @@ export const SegmentedControl = ({
           borderRadius: 100,
           backgroundColor: theme.isDark ? '#C5C5C840' : '#99999940'
         }}>
-        <View
-          style={{ borderRadius: 100, flexDirection: 'row' }}
-          onLayout={handleLayout}>
+        <View style={styles.container} onLayout={handleLayout}>
           <Animated.View
             style={[
-              {
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                backgroundColor: theme.colors.$textPrimary,
-                borderRadius: 100
-              },
+              styles.indicator,
+              { backgroundColor: theme.colors.$textPrimary },
               selectionIndicatorAnimatedStyle
             ]}
           />
@@ -137,11 +138,13 @@ export const SegmentedControl = ({
               <Segment
                 sx={{ paddingVertical: type === 'thin' ? 8 : 12 }}
                 key={index}
-                ratio={textRatios[index]}
+                ratio={dynamicItemWidth ? textRatios : 1 / items.length}
                 text={item}
                 index={index}
                 selectedIndex={selectedSegmentIndex}
-                onTextWidthChange={width => handleTextWidthChange(index, width)}
+                onTextWidthChange={
+                  dynamicItemWidth ? handleTextWidthChange : undefined
+                }
                 onPress={() => onSelectSegment(index)}
               />
             )
@@ -151,6 +154,8 @@ export const SegmentedControl = ({
     </View>
   )
 }
+
+const THROTTLE_DURATION = 100
 
 const Segment = ({
   sx,
@@ -163,22 +168,37 @@ const Segment = ({
   onPress
 }: {
   sx?: SxProp
-  ratio?: number
+  ratio: number | DerivedValue<number[]>
   text: string
   index: number
   selectedIndex: SharedValue<number>
   backgroundColor?: string
-  onTextWidthChange: (width: number) => void
+  onTextWidthChange?: (index: number, width: number) => void
   onPress: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
 
-  const handleTextLayout = (event: LayoutChangeEvent): void => {
-    onTextWidthChange(event.nativeEvent.layout.width + 64)
-  }
+  const throttledOnPress = useMemo(
+    () =>
+      throttle(onPress, THROTTLE_DURATION, {
+        leading: true,
+        trailing: false
+      }),
+    [onPress]
+  )
 
-  const textColorAnimatedStyle = useAnimatedStyle(() => {
-    const color = interpolateColor(
+  useEffect(() => {
+    return () => {
+      throttledOnPress.cancel()
+    }
+  }, [throttledOnPress])
+
+  const flexStyle = useAnimatedStyle(() => ({
+    flex: typeof ratio === 'number' ? ratio : ratio.value[index] || 1
+  }))
+
+  const textColorAnimatedStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
       Math.max(1 - Math.abs(selectedIndex.value - index), 0),
       [0, 1],
       [
@@ -188,24 +208,34 @@ const Segment = ({
           : darkModeColors.$textPrimary
       ]
     )
-    return { color }
-  })
+  }))
+
+  const handleTextLayout = onTextWidthChange
+    ? (event: LayoutChangeEvent) => {
+        onTextWidthChange(index, event.nativeEvent.layout.width + 64)
+      }
+    : undefined
 
   return (
-    <Pressable style={{ flex: ratio }} onPress={onPress}>
-      <View sx={{ alignItems: 'center', backgroundColor, ...sx }}>
-        <Animated.Text
-          onLayout={handleTextLayout}
-          style={[
-            { fontFamily: 'Inter-SemiBold', fontSize: 14, lineHeight: 18 },
-            textColorAnimatedStyle
-          ]}>
-          {text}
-        </Animated.Text>
-      </View>
-    </Pressable>
+    <Animated.View style={flexStyle}>
+      <Pressable onPress={throttledOnPress}>
+        <View sx={{ alignItems: 'center', backgroundColor, ...sx }}>
+          <Animated.Text
+            onLayout={handleTextLayout}
+            style={[styles.text, textColorAnimatedStyle]}>
+            {text}
+          </Animated.Text>
+        </View>
+      </Pressable>
+    </Animated.View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: { borderRadius: 100, flexDirection: 'row' },
+  indicator: { position: 'absolute', top: 0, bottom: 0, borderRadius: 100 },
+  text: { fontFamily: 'Inter-SemiBold', fontSize: 14, lineHeight: 18 }
+})
 
 const Configuration = {
   animation: {

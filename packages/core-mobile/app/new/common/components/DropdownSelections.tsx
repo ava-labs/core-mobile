@@ -7,8 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
-import React, { useRef } from 'react'
-import { TouchableOpacity } from 'react-native'
+import React, { useRef, useMemo, memo } from 'react'
 
 const SEPARATOR_HEIGHT = 1
 const POPOVER_HEIGHT = 40
@@ -27,65 +26,22 @@ export const DropdownSelections = ({
   view,
   sx
 }: Props): React.JSX.Element => {
-  const sortRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null)
-
-  const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
-    usePopoverAnchor(sortRef)
-
-  const renderSortOption = (): React.JSX.Element | undefined => {
-    if (sort === undefined) return
-
-    if (sort.useAnchorRect === true) {
-      const numberOfItems = sort.data[0]?.length ?? 2
-      const separatorHeight = (numberOfItems - 1) * SEPARATOR_HEIGHT
-      const displayAreaHeight = numberOfItems * POPOVER_HEIGHT + separatorHeight
-
-      return (
-        <>
-          <Chip
-            ref={sortRef}
-            size="large"
-            hitSlop={8}
-            rightIcon={'expandMore'}
-            onPress={onShowPopover}>
-            {sort.title}
-          </Chip>
-          <SimpleDropdown
-            displayArea={
-              anchorRect
-                ? {
-                    x: anchorRect.x,
-                    y: anchorRect.y + anchorRect.height,
-                    width: POPOVER_WIDTH,
-                    height: displayAreaHeight
-                  }
-                : undefined
-            }
-            isVisible={isPopoverVisible}
-            onRequestClose={onHidePopover}
-            sections={sort.data}
-            selectedRows={[sort.selected]}
-            onSelectRow={sort.onSelected}
-            minWidth={POPOVER_WIDTH}
-          />
-        </>
-      )
-    }
+  const viewDropdown = useMemo(() => {
+    if (!view) return
 
     return (
       <SimpleDropdown
         from={
-          <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-            {sort.title}
+          <Chip size="large" hitSlop={8}>
+            {view.title}
           </Chip>
         }
-        sections={sort.data}
-        selectedRows={[sort.selected]}
-        onSelectRow={sort.onSelected}
-        minWidth={POPOVER_WIDTH}
+        sections={view.data}
+        selectedRows={[view.selected]}
+        onSelectRow={view.onSelected}
       />
     )
-  }
+  }, [view])
 
   return (
     <View
@@ -96,37 +52,150 @@ export const DropdownSelections = ({
       }}>
       <View sx={{ flexDirection: 'row', gap: 8 }}>
         {filter && (
-          <SimpleDropdown
-            from={
-              <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-                {filter.title}
-              </Chip>
-            }
-            sections={filter.data}
-            selectedRows={
-              Array.isArray(filter.selected)
-                ? filter.selected
-                : [filter.selected]
-            }
-            onSelectRow={filter.onSelected}
-            onDeselectRow={filter.onDeselect}
-            minWidth={POPOVER_WIDTH}
+          <Filters
+            title={filter.title}
+            data={filter.data}
+            selected={filter.selected}
+            onSelected={filter.onSelected}
+            onDeselect={filter.onDeselect}
           />
         )}
-        {renderSortOption()}
+        {sort && (
+          <Sorts
+            useAnchorRect={sort.useAnchorRect}
+            title={sort.title}
+            data={sort.data}
+            selected={sort.selected}
+            onSelected={sort.onSelected}
+          />
+        )}
       </View>
-      {view && (
-        <SimpleDropdown
-          from={
-            <Chip size="large" hitSlop={8}>
-              {view.title}
-            </Chip>
-          }
-          sections={view.data}
-          selectedRows={[view.selected]}
-          onSelectRow={view.onSelected}
-        />
-      )}
+      {viewDropdown}
     </View>
   )
 }
+
+const Filters = memo(
+  ({
+    title,
+    data,
+    selected,
+    onSelected,
+    onDeselect
+  }: {
+    title: DropdownSelection['title']
+    data: DropdownSelection['data']
+    selected: DropdownSelection['selected']
+    onSelected: DropdownSelection['onSelected']
+    onDeselect: DropdownSelection['onDeselect']
+  }) => {
+    const selectedRows = useMemo(
+      () => (Array.isArray(selected) ? selected : [selected]),
+      [selected]
+    )
+
+    const chip = useMemo(() => {
+      return (
+        <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+          {title}
+        </Chip>
+      )
+    }, [title])
+
+    return (
+      <SimpleDropdown
+        from={chip}
+        sections={data}
+        selectedRows={selectedRows}
+        onSelectRow={onSelected}
+        onDeselectRow={onDeselect}
+        minWidth={POPOVER_WIDTH}
+      />
+    )
+  }
+)
+
+const Sorts = memo(
+  ({
+    useAnchorRect,
+    title,
+    data,
+    selected,
+    onSelected
+  }: {
+    useAnchorRect: DropdownSelection['useAnchorRect']
+    title: DropdownSelection['title']
+    data: DropdownSelection['data']
+    selected: DropdownSelection['selected']
+    onSelected: DropdownSelection['onSelected']
+  }) => {
+    const sortRef = useRef<React.ElementRef<typeof View>>(null)
+
+    const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
+      usePopoverAnchor(sortRef)
+
+    const numberOfItems = data[0]?.length ?? 2
+
+    const selectedRows = useMemo(() => {
+      return [selected]
+    }, [selected])
+
+    const chip = useMemo(() => {
+      if (!useAnchorRect) return null
+
+      return (
+        <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+          {title}
+        </Chip>
+      )
+    }, [title, useAnchorRect])
+
+    const displayArea = useMemo(() => {
+      if (!anchorRect) return
+
+      const separatorHeight = (numberOfItems - 1) * SEPARATOR_HEIGHT
+      const displayAreaHeight = numberOfItems * POPOVER_HEIGHT + separatorHeight
+
+      return {
+        x: anchorRect.x,
+        y: anchorRect.y + anchorRect.height,
+        width: POPOVER_WIDTH,
+        height: displayAreaHeight
+      }
+    }, [anchorRect, numberOfItems])
+
+    if (useAnchorRect === true) {
+      return (
+        <>
+          <Chip
+            ref={sortRef}
+            size="large"
+            hitSlop={8}
+            rightIcon={'expandMore'}
+            onPress={onShowPopover}>
+            {title}
+          </Chip>
+          <SimpleDropdown
+            displayArea={displayArea}
+            isVisible={isPopoverVisible}
+            onRequestClose={onHidePopover}
+            sections={data}
+            selectedRows={selectedRows}
+            onSelectRow={onSelected}
+            minWidth={POPOVER_WIDTH}
+          />
+        </>
+      )
+    }
+
+    return (
+      <SimpleDropdown
+        from={chip}
+        sections={data}
+        selectedRows={selectedRows}
+        onSelectRow={onSelected}
+        minWidth={POPOVER_WIDTH}
+      />
+    )
+  }
+)

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { NativeMethods } from 'react-native'
 import { Rect } from 'react-native-popover-view'
 
@@ -13,18 +13,18 @@ export const usePopoverAnchor = (
   const [isPopoverVisible, setIsPopoverVisible] = useState(false)
   const [anchorRect, setAnchorRect] = useState<Rect>()
 
-  const showPopover = (): void => {
+  const showPopover = useCallback((): void => {
     if (sourceRef.current) {
       // eslint-disable-next-line max-params
       sourceRef.current.measure((_x, _y, width, height, pageX, pageY) => {
         setAnchorRect(new Rect(pageX, pageY, width, height))
       })
     }
-  }
+  }, [sourceRef])
 
-  const hidePopover = (): void => {
+  const hidePopover = useCallback((): void => {
     setAnchorRect(undefined)
-  }
+  }, [])
 
   useEffect(() => {
     if (anchorRect) {
