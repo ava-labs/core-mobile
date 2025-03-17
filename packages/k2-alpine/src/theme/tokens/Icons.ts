@@ -56,6 +56,8 @@ import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 import IconLayer from '../../assets/icons/layer.svg'
 import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
+import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
+import IconLink from '../../assets/icons/link.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -187,7 +189,8 @@ export const Icons = {
     ChevronRightV2: IconChevronRightV2,
     ChevronRight: IconChevronRight,
     Check: IconCheck,
-    ExpandMore: IconExpandMore
+    ExpandMore: IconExpandMore,
+    MoreHoriz: IconMoreHoriz
   },
   Notification: {
     Sync: IconSync
@@ -203,7 +206,8 @@ export const Icons = {
   Content: {
     Add: IconAdd,
     HideImage: IconHideImage,
-    Close: IconClose
+    Close: IconClose,
+    Link: IconLink
   },
   Toggle: {
     StarOutline: IconStarOutline,
