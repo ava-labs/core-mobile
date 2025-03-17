@@ -22,7 +22,10 @@ import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import { StackActions } from '@react-navigation/native'
 import { LogoModal } from 'common/components/LogoModal'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import {
+  forNoAnimation,
+  stackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import { OnboardingProvider } from 'features/onboarding/contexts/OnboardingProvider'
 
 export default function RootLayout(): JSX.Element | null {
@@ -111,7 +114,7 @@ export default function RootLayout(): JSX.Element | null {
                     presentation: 'modal',
                     headerShown: false,
                     gestureEnabled: false,
-                    animation: 'none'
+                    cardStyleInterpolator: forNoAnimation
                   }}
                 />
                 <Stack.Screen
