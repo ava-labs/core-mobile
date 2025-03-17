@@ -10,7 +10,8 @@ import {
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
-  CollapsibleTabsRef
+  CollapsibleTabsRef,
+  OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -27,11 +28,16 @@ import { CollectiblesScreen } from 'features/portfolio/collectibles/components/C
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform,
+  StyleSheet,
+  InteractionManager
+} from 'react-native'
 import Animated, {
   useAnimatedStyle,
-  useSharedValue,
-  SharedValue
+  useSharedValue
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { RootState } from 'store'
@@ -45,6 +51,8 @@ import {
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+
+const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -72,12 +80,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
 
-  const currencyBalance =
-    !balanceAccurate && balanceTotalInCurrency === 0
+  const currencyBalance = useMemo(() => {
+    return !balanceAccurate && balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
       : currencyFormatter(balanceTotalInCurrency)
+  }, [balanceAccurate, balanceTotalInCurrency, currencyFormatter])
 
-  const formattedBalance = currencyBalance.replace(selectedCurrency, '')
+  const formattedBalance = useMemo(
+    () => currencyBalance.replace(selectedCurrency, ''),
+    [currencyBalance, selectedCurrency]
+  )
 
   const { getMarketTokenBySymbol } = useWatchlist()
   const tokens = useSelector((state: RootState) =>
@@ -108,22 +120,33 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return (totalPriceChanged / balanceTotalInCurrency) * 100
   }, [balanceTotalInCurrency, totalPriceChanged])
 
-  const formattedPercent =
-    isNaN(totalPriceChangedInPercent) || totalPriceChangedInPercent === 0
-      ? undefined
-      : totalPriceChangedInPercent.toFixed(2) + '%'
+  const formattedPercent = useMemo(
+    () =>
+      isNaN(totalPriceChangedInPercent) || totalPriceChangedInPercent === 0
+        ? undefined
+        : totalPriceChangedInPercent.toFixed(2) + '%',
+    [totalPriceChangedInPercent]
+  )
 
-  const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
-    setBalanceHeaderLayout(event.nativeEvent.layout)
-  }
+  const handleBalanceHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setBalanceHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
 
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: (
+  const header = useMemo(
+    () => (
       <NavigationTitleHeader
         title={activeAccount?.name ?? ''}
         subtitle={formattedBalance}
       />
     ),
+    [activeAccount?.name, formattedBalance]
+  )
+
+  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
+    header,
     targetLayout: balanceHeaderLayout
   })
 
@@ -131,16 +154,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
     opacity: 1 - targetHiddenProgress.value
   }))
 
-  const ACTION_BUTTONS: ActionButton[] = [
-    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
-    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-  ]
+  const ACTION_BUTTONS: ActionButton[] = useMemo(
+    () => [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
+      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
+      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+      { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
+      { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
+    ],
+    []
+  )
 
-  const renderHeader = (): JSX.Element => {
+  const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
         style={{
@@ -177,17 +203,42 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <ActionButtons buttons={ACTION_BUTTONS} />
       </View>
     )
-  }
+  }, [
+    ACTION_BUTTONS,
+    animatedHeaderStyle,
+    formattedBalance,
+    isLoading,
+    activeAccount?.name,
+    selectedCurrency,
+    theme.colors.$surfacePrimary,
+    totalPriceChanged,
+    indicatorStatus,
+    formattedPercent,
+    balanceAccurate,
+    handleBalanceHeaderLayout
+  ])
 
-  const handleSelectSegment = (index: number): void => {
-    if (tabViewRef.current?.getCurrentIndex() !== index) {
-      tabViewRef.current?.setIndex(index)
-    }
-  }
+  const handleSelectSegment = useCallback(
+    (index: number): void => {
+      selectedSegmentIndex.value = index
 
-  const handleChangeTab = (index: number): void => {
-    selectedSegmentIndex.value = index
-  }
+      InteractionManager.runAfterInteractions(() => {
+        if (tabViewRef.current?.getCurrentIndex() !== index) {
+          tabViewRef.current?.setIndex(index)
+        }
+      })
+    },
+    [selectedSegmentIndex]
+  )
+
+  const handleTabChange: OnTabChange = useCallback(
+    data => {
+      if (selectedSegmentIndex.value === data.prevIndex) {
+        selectedSegmentIndex.value = data.index
+      }
+    },
+    [selectedSegmentIndex]
+  )
 
   const handleGoToTokenDetail = useCallback(
     (localId: string): void => {
@@ -208,13 +259,41 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/collectibleManagement')
   }, [navigate])
 
-  const handleScrollTab = (tabIndex: SharedValue<number>): void => {
-    selectedSegmentIndex.value = tabIndex.value
-  }
-
-  const renderEmptyTabBar = (): JSX.Element => <></>
+  const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+
+  const tabs = useMemo(() => {
+    return [
+      {
+        tabName: 'Assets',
+        component: (
+          <AssetsScreen
+            goToTokenDetail={handleGoToTokenDetail}
+            goToTokenManagement={handleGoToTokenManagement}
+          />
+        )
+      },
+      {
+        tabName: 'Collectibles',
+        component: (
+          <CollectiblesScreen
+            goToCollectibleDetail={handleGoToCollectibleDetail}
+            goToCollectibleManagement={handleGoToCollectibleManagement}
+          />
+        )
+      },
+      {
+        tabName: 'DeFi',
+        component: <DeFiScreen />
+      }
+    ]
+  }, [
+    handleGoToCollectibleDetail,
+    handleGoToTokenDetail,
+    handleGoToTokenManagement,
+    handleGoToCollectibleManagement
+  ])
 
   return (
     <BlurredBarsContentLayout>
@@ -222,46 +301,26 @@ const PortfolioHomeScreen = (): JSX.Element => {
         ref={tabViewRef}
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
-        onIndexChange={handleChangeTab}
-        onScrollTab={handleScrollTab}
+        onTabChange={handleTabChange}
         onScrollY={onScroll}
-        tabs={[
-          {
-            tabName: 'Assets',
-            component: (
-              <AssetsScreen
-                goToTokenDetail={handleGoToTokenDetail}
-                goToTokenManagement={handleGoToTokenManagement}
-              />
-            )
-          },
-          {
-            tabName: 'Collectibles',
-            component: (
-              <CollectiblesScreen
-                goToCollectibleDetail={handleGoToCollectibleDetail}
-                goToCollectibleManagement={handleGoToCollectibleManagement}
-              />
-            )
-          },
-          {
-            tabName: 'DeFi',
-            component: <DeFiScreen />
-          }
-        ]}
+        tabs={tabs}
       />
       <LinearGradientBottomWrapper>
         <SegmentedControl
-          dynamicItemWidth={true}
-          items={['Assets', 'Collectibles', 'DeFi']}
+          dynamicItemWidth={false}
+          items={SEGMENT_ITEMS}
           selectedSegmentIndex={selectedSegmentIndex}
           onSelectSegment={handleSelectSegment}
-          style={{ marginHorizontal: 16, marginBottom: 16 }}
+          style={styles.segmentedControl}
         />
       </LinearGradientBottomWrapper>
     </BlurredBarsContentLayout>
   )
 }
+
+const styles = StyleSheet.create({
+  segmentedControl: { marginHorizontal: 16, marginBottom: 16 }
+})
 
 export enum PortfolioHomeScreenTab {
   Assets = 0,

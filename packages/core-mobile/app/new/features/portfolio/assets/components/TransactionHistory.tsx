@@ -1,5 +1,6 @@
 import { Image, Separator } from '@avalabs/k2-alpine'
 import React, { FC, useCallback, useMemo } from 'react'
+import { StyleSheet } from 'react-native'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
@@ -47,16 +48,6 @@ const TransactionHistory: FC<Props> = ({
   const { data, filter, sort } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol
   })
-
-  const dropdowns = useMemo(() => {
-    return (
-      <DropdownSelections
-        filter={filter}
-        sort={sort}
-        sx={{ paddingHorizontal: 16, marginTop: 14, marginBottom: 16 }}
-      />
-    )
-  }, [filter, sort])
 
   const emptyComponent = useMemo(() => {
     if (isLoading || isRefreshing) {
@@ -112,16 +103,26 @@ const TransactionHistory: FC<Props> = ({
     [handleExplorerLink, token]
   )
 
-  const renderSeparator = (): JSX.Element => {
+  const dataLength = data.length
+
+  const dropdowns = useMemo(() => {
+    if (dataLength === 0) return
+
+    return (
+      <DropdownSelections filter={filter} sort={sort} sx={styles.dropdown} />
+    )
+  }, [dataLength, filter, sort])
+
+  const renderSeparator = useCallback((): JSX.Element => {
     return <Separator sx={{ marginLeft: 63 }} />
-  }
+  }, [])
 
   return (
     <CollapsibleTabs.FlatList
       contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
       data={data}
       renderItem={item => renderItem(item.item, item.index)}
-      ListHeaderComponent={data.length > 0 ? dropdowns : undefined}
+      ListHeaderComponent={dropdowns}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
@@ -129,5 +130,9 @@ const TransactionHistory: FC<Props> = ({
     />
   )
 }
+
+const styles = StyleSheet.create({
+  dropdown: { paddingHorizontal: 16, marginTop: 14, marginBottom: 16 }
+})
 
 export default TransactionHistory

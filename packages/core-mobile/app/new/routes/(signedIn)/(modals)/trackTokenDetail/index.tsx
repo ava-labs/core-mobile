@@ -64,7 +64,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   >()
   const {
     chartData,
-    chartDays,
     ranges,
     changeChartDays,
     tokenInfo,
@@ -73,16 +72,17 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     openUrl
   } = useTokenDetails(tokenId ?? '')
 
-  const selectedSegmentIndex = useDerivedValue(() => {
-    return Object.keys(SEGMENT_INDEX_MAP).findIndex(
-      key => SEGMENT_INDEX_MAP[Number(key)] === chartDays
-    )
-  }, [chartDays])
+  const selectedSegmentIndex = useSharedValue(0)
 
-  const scrollViewProps = useFadingHeaderNavigation({
-    header: (
+  const header = useMemo(
+    () => (
       <NavigationTitleHeader title={tokenInfo?.symbol.toUpperCase() ?? ''} />
     ),
+    [tokenInfo?.symbol]
+  )
+
+  const scrollViewProps = useFadingHeaderNavigation({
+    header,
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
@@ -95,32 +95,37 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     [formatCurrency]
   )
 
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
     setHeaderLayout(event.nativeEvent.layout)
-  }
+  }, [])
 
-  const handleDataSelected = (point: { value: number; date: Date }): void => {
-    setSelectedData(point)
-  }
+  const handleDataSelected = useCallback(
+    (point: { value: number; date: Date }): void => {
+      setSelectedData(point)
+    },
+    []
+  )
 
   const handleSelectSegment = useCallback(
     (index: number) => {
+      selectedSegmentIndex.value = index
+
       changeChartDays(
         SEGMENT_INDEX_MAP[index] ?? 1 // default to 1 day if index is not found
       )
     },
-    [changeChartDays]
+    [selectedSegmentIndex, changeChartDays]
   )
 
-  const handleChartGestureStart = (): void => {
+  const handleChartGestureStart = useCallback((): void => {
     setIsChartInteracting(true)
-  }
+  }, [])
 
-  const handleChartGestureEnd = (): void => {
+  const handleChartGestureEnd = useCallback((): void => {
     setIsChartInteracting(false)
-  }
+  }, [])
 
-  const handlePressAbout = (): void => {
+  const handlePressAbout = useCallback((): void => {
     showAlert({
       title: `About ${tokenInfo?.symbol.toUpperCase()}`,
       description: tokenInfo?.description,
@@ -130,9 +135,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         }
       ]
     })
-  }
+  }, [tokenInfo?.symbol, tokenInfo?.description])
 
-  const handleMarketCapIconPress = (): void => {
+  const handleMarketCapIconPress = useCallback((): void => {
     showAlert({
       title: 'Market cap',
       description: `Total market value of a cryptocurrency's circulating supply. Similar to the stock market's measurement of multiplying price per share by shares readily available in the market.`,
@@ -142,7 +147,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         }
       ]
     })
-  }
+  }, [])
 
   const handlePressTwitter = useCallback(() => {
     tokenInfo?.twitterHandle &&
@@ -153,21 +158,21 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     tokenInfo?.urlHostname && openUrl(tokenInfo.urlHostname)
   }, [openUrl, tokenInfo?.urlHostname])
 
-  const handleBuy = (): void => {
+  const handleBuy = useCallback((): void => {
     // navigate(AppNavigation.Wallet.Buy, {
     //   screen: AppNavigation.Buy.Buy,
     //   params: { showAvaxWarning: true }
     // })
-  }
+  }, [])
 
-  const handleStake = (): void => {
+  const handleStake = useCallback((): void => {
     // @ts-ignore
     // navigate(AppNavigation.Wallet.Earn, {
     //   screen: AppNavigation.Earn.StakeSetup
     // })
-  }
+  }, [])
 
-  const handleSwap = (_?: string): void => {
+  const handleSwap = useCallback((_?: string): void => {
     // navigate(AppNavigation.Wallet.Swap, {
     //   screen: AppNavigation.Swap.Swap,
     //   params: {
@@ -175,7 +180,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     //     initialTokenIdTo
     //   }
     // })
-  }
+  }, [])
 
   const handleShare = useCallback(() => {
     navigate({ pathname: '/trackTokenDetail/share', params: { tokenId } })
@@ -218,7 +223,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     }
 
     return data
-  }, [tokenInfo, formatMarketNumbers, theme])
+  }, [tokenInfo, formatMarketNumbers, theme, handleMarketCapIconPress])
 
   const metaData = useMemo(() => {
     const data: GroupListItem[] = []
@@ -298,17 +303,17 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [renderHeaderRight, navigation])
 
   if (!tokenId || !tokenInfo) {
-    return <LoadingState sx={{ flex: 1 }} />
+    return <LoadingState sx={styles.container} />
   }
 
   return (
-    <View sx={{ flex: 1 }}>
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 60 }}
+        style={styles.container}
+        contentContainerStyle={styles.scrollviewContent}
         {...scrollViewProps}>
-        <View sx={{ paddingHorizontal: 16, paddingBottom: 4 }}>
+        <View style={styles.chartContainer}>
           <Animated.View
             style={{ opacity: headerOpacity }}
             onLayout={handleHeaderLayout}>
@@ -350,7 +355,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           onGestureStart={handleChartGestureStart}
           onGestureEnd={handleChartGestureEnd}
         />
-        <View sx={{ paddingTop: 40, marginTop: 8 }}>
+        <View sx={styles.lastUpdatedContainer}>
           {lastUpdatedDate && (
             <Animated.View
               style={{
@@ -372,15 +377,15 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         <SegmentedControl
           type="thin"
           dynamicItemWidth={false}
-          items={['24H', '1W', '1M', '3M', '1Y']}
-          style={{ marginHorizontal: 16 }}
+          items={SEGMENT_ITEMS}
+          style={styles.segmentedControl}
           selectedSegmentIndex={selectedSegmentIndex}
           onSelectSegment={handleSelectSegment}
         />
-        <View sx={{ paddingHorizontal: 16, marginTop: 25, gap: 20 }}>
+        <View sx={styles.aboutContainer}>
           {tokenInfo?.description && (
             <TouchableOpacity onPress={handlePressAbout}>
-              <Card sx={{ alignItems: undefined, gap: 3 }}>
+              <Card sx={styles.aboutCard}>
                 <Text variant="heading4">About</Text>
                 <Text
                   variant="subtitle2"
@@ -413,5 +418,17 @@ const SEGMENT_INDEX_MAP: Record<number, number> = {
   3: 90, // 3M
   4: 365 // 1Y
 }
+
+const SEGMENT_ITEMS = ['24H', '1W', '1M', '3M', '1Y']
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  aboutContainer: { paddingHorizontal: 16, marginTop: 25, gap: 20 },
+  aboutCard: { alignItems: undefined, gap: 3 },
+  segmentedControl: { marginHorizontal: 16 },
+  scrollviewContent: { paddingBottom: 60 },
+  chartContainer: { paddingHorizontal: 16, paddingBottom: 4 },
+  lastUpdatedContainer: { paddingTop: 40, marginTop: 8 }
+})
 
 export default TrackTokenDetailScreen
