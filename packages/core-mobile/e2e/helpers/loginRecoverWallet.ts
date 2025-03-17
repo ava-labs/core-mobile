@@ -5,6 +5,8 @@ import commonElsPage from '../pages/commonEls.page'
 import nameWalletPage from '../pages/nameWallet.page'
 import existingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import Actions from '../helpers/actions'
+import onboardingPage from '../pages/onboarding.page'
+import onboardingLoc from '../locators/onboarding.loc'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet() {
@@ -15,13 +17,13 @@ class LoginRecoverWallet {
     await AnalyticsConsentPage.tapUnlockBtn()
     await existingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await existingRecoveryPhrasePage.tapImport()
-    await Actions.waitForElement(by.text('Secure your wallet with a PIN'))
-    await CreatePinPage.tapNumpadZero()
-    await Actions.waitForElement(by.text('Confirm your PIN code'))
-    await CreatePinPage.tapNumpadZero()
-    await nameWalletPage.enterWalletName('testWallet1\n')
+    await Actions.waitForElement(onboardingPage.enterPinFirstScreenTitle)
+    await CreatePinPage.setPinNumber()
+    await Actions.waitForElement(onboardingPage.enterPinSecondScreenTitle)
+    await CreatePinPage.setPinNumber()
+    await nameWalletPage.enterWalletName(onboardingLoc.walletName)
     await CreatePinPage.tapNextBtn()
-    await Actions.waitForElement(by.text('Select your\npersonal avatar'))
+    await Actions.waitForElement(onboardingPage.selectAvatarTitle)
     await CreatePinPage.tapNextBtn()
     await CreatePinPage.tapLetsGo()
     await PortfolioPage.verifyNavTabs()

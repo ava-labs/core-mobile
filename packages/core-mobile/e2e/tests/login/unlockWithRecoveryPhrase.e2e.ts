@@ -24,7 +24,7 @@ describe('Login with Mnemonic wallet', () => {
     await burgerMenuPage.swipeToLogout()
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
-    await ExistingRecoveryPhrasePage.tapSignInBtn()
+    await ExistingRecoveryPhrasePage.tapImport()
     await nameWalletPage.enterWalletName('testWallet1\n')
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()

@@ -41,7 +41,7 @@ export const warmup = async (newInstance = false) => {
   }
 
   // Switch to the new gen for 15 secs on your local machine.
-  // I'll remove delay(15000) once the new gen is set by default
+  // I'll remove delay(15000) once the new gen is set to default
   await delay(15000)
   await loginRecoverWallet.recoverWalletLogin()
 }

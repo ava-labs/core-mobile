@@ -11,5 +11,6 @@ export default {
   fingerprint: 'Fingerprint',
   skipBtn: 'Skip',
   modalTitle: 'Terms and Condition',
-  letsgo: 'Let’s go!'
+  letsgo: 'Let’s go!',
+  pinInputField: 'pin_input'
 }

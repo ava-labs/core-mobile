@@ -19,6 +19,22 @@ class OnboardingPage {
     return by.id(onboardingLoc.accessExistingWallet)
   }
 
+  get enterPinFirstScreenTitle() {
+    return by.text(onboardingLoc.enterPinFirstScreenTitle)
+  }
+
+  get enterPinSecondScreenTitle() {
+    return by.text(onboardingLoc.enterPinSecondScreenTitle)
+  }
+
+  get walletName() {
+    return by.text(onboardingLoc.walletName)
+  }
+
+  get selectAvatarTitle() {
+    return by.text(onboardingLoc.selectAvatarTitle)
+  }
+
   async verifyOnboardingPage() {
     await Assert.isVisible(this.continueWithGoogle)
     await Assert.isVisible(this.continueWithApple)

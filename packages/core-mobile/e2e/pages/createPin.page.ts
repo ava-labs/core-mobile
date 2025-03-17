@@ -42,6 +42,10 @@ class CreatePinPage {
     return by.text(createPinLoc.letsgo)
   }
 
+  get pinInputField() {
+    return by.id(createPinLoc.pinInputField)
+  }
+
   async tapLetsGo() {
     await Action.tap(this.letsgo)
   }
@@ -51,7 +55,11 @@ class CreatePinPage {
   }
 
   async tapNumpadZero() {
-    await Action.setInputText(by.id('pin_input'), '000000')
+    await Action.multiTap(this.numpadZero, 6, 0)
+  }
+
+  async setPinNumber(pin = '000000') {
+    await Action.setInputText(this.pinInputField, pin)
   }
 
   async tapNumpadZero5Times() {
