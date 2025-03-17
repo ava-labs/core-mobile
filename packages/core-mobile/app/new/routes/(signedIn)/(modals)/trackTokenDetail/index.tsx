@@ -4,7 +4,6 @@ import {
   GroupListItem,
   Icons,
   NavigationTitleHeader,
-  ScrollView,
   SegmentedControl,
   showAlert,
   Text,
@@ -43,6 +42,7 @@ import { LayoutChangeEvent } from 'react-native'
 import { ShareBarButton } from 'common/components/ShareBarButton'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
+import { ScrollView } from 'react-native-gesture-handler'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -305,8 +305,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     <View sx={{ flex: 1 }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        sx={{ flex: 1 }}
-        contentContainerSx={{ paddingBottom: 60 }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 60 }}
         {...scrollViewProps}>
         <View sx={{ paddingHorizontal: 16, paddingBottom: 4 }}>
           <Animated.View

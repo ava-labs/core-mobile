@@ -12,6 +12,7 @@ import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedText } from '../Animated/AnimatedText'
 import { View, Text } from '../Primitives'
 import { K2AlpineTheme } from '../../theme/theme'
+import { MaskedView } from '../MaskedView/MaskedView'
 import { PriceChange, PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
@@ -20,12 +21,16 @@ export const PriceChangeIndicator = ({
   formattedPercent,
   textVariant = 'buttonSmall',
   animated = false,
-  overrideTheme
+  overrideTheme,
+  shouldMask = false,
+  maskWidth
 }: PriceChange & {
   textVariant?: TextVariants
   animated?: boolean
   testID?: string
   overrideTheme?: K2AlpineTheme
+  shouldMask?: boolean
+  maskWidth?: number
 }): JSX.Element => {
   const { theme: defaultTheme } = useTheme()
   const theme = overrideTheme ?? defaultTheme
@@ -52,6 +57,15 @@ export const PriceChangeIndicator = ({
   const arrowSx = getArrowMargin(textVariant, status, formattedPercent)
 
   const arrowSize = textVariant === 'priceChangeIndicatorLarge' ? 20 : ICON_SIZE
+
+  if (shouldMask) {
+    return (
+      <MaskedView
+        variant={textVariant}
+        sx={{ width: maskWidth, backgroundColor: theme.colors.$borderPrimary }}
+      />
+    )
+  }
 
   return animated === true ? (
     <AnimatedComponent

@@ -11,7 +11,7 @@ export const NavigationTitleHeader = memo(
             fontSize: 17,
             lineHeight: 20,
             fontFamily: 'Inter-SemiBold',
-            maxWidth: 150
+            maxWidth: 200
           }}>
           {title}
         </Text>

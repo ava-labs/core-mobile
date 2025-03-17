@@ -124,7 +124,7 @@ export const homeScreenOptions: StackNavigationOptions = {
         marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
         alignItems: 'center'
       }}>
-      <Link href="/settings/" asChild>
+      <Link href="/accountSettings/" asChild>
         <AccountSettingBarButton />
       </Link>
     </View>
