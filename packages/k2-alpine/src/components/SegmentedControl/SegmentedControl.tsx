@@ -1,9 +1,10 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   LayoutChangeEvent,
   Pressable,
   ViewStyle,
-  StyleSheet
+  StyleSheet,
+  InteractionManager
 } from 'react-native'
 import Animated, {
   interpolateColor,
@@ -22,7 +23,7 @@ import { useTheme } from '../../hooks'
 
 export const SegmentedControl = ({
   items,
-  selectedSegmentIndex, // now SharedValue<number>
+  selectedSegmentIndex,
   onSelectSegment,
   dynamicItemWidth,
   style,
@@ -34,11 +35,19 @@ export const SegmentedControl = ({
   dynamicItemWidth: boolean
   style?: ViewStyle
   type?: 'default' | 'thin'
-}): JSX.Element => {
+}): JSX.Element | null => {
+  const [isReady, setIsReady] = useState(true)
   const { theme } = useTheme()
 
   const viewWidth = useSharedValue(0)
   const textWidths = useSharedValue(Array(items.length).fill(0))
+
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsReady(true)
+    })
+    return () => task.cancel()
+  }, [])
 
   const textRatios = useDerivedValue(() => {
     if (!dynamicItemWidth) return Array(items.length).fill(1 / items.length)
@@ -103,6 +112,10 @@ export const SegmentedControl = ({
     },
     [textWidths]
   )
+
+  if (!isReady) {
+    return null
+  }
 
   return (
     <View style={style}>
