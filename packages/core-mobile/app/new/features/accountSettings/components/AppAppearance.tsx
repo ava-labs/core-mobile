@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTheme, Text, Icons, View, GroupList } from '@avalabs/k2-alpine'
+import { useTheme, Text, View, GroupList } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
