@@ -3,6 +3,7 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
+  MaskedText,
   SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
@@ -10,6 +11,8 @@ import {
 } from '@avalabs/k2-alpine'
 import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useSelector } from 'react-redux'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -24,6 +27,7 @@ export const TokenListView = ({
   const {
     theme: { colors }
   } = useTheme()
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   return (
     <Animated.View
@@ -58,20 +62,28 @@ export const TokenListView = ({
               <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
                 {token.name}
               </Text>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                {!token.isDataAccurate && (
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  marginBottom: 1
+                }}>
+                {!token.isDataAccurate && !isPrivacyModeEnabled && (
                   <Icons.Alert.Error
                     width={16}
                     height={16}
                     color={colors.$textDanger}
                   />
                 )}
-                <Text
+                <MaskedText
                   variant="buttonMedium"
+                  shouldMask={isPrivacyModeEnabled}
+                  maskWidth={64}
                   numberOfLines={1}
-                  sx={{ lineHeight: 18, marginBottom: 1 }}>
+                  sx={{ lineHeight: 18 }}>
                   {formattedBalance}
-                </Text>
+                </MaskedText>
               </View>
             </View>
             <View
@@ -82,16 +94,19 @@ export const TokenListView = ({
                 alignItems: 'center',
                 gap: 24
               }}>
-              <Text
-                variant="body2"
+              <MaskedText
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={55}
                 sx={{ lineHeight: 16, flex: 1 }}
                 ellipsizeMode="tail"
                 numberOfLines={1}>
                 {token.balanceDisplayValue} {token.symbol}
-              </Text>
+              </MaskedText>
               <PriceChangeIndicator
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={40}
               />
             </View>
           </View>

@@ -7,10 +7,11 @@ import {
   PinInputActions,
   SafeAreaView,
   ScrollView,
+  Toggle,
   View
 } from '@avalabs/k2-alpine'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
-import { Switch, InteractionManager } from 'react-native'
+import { InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
 
 export const CreatePin = ({
@@ -105,9 +106,9 @@ export const CreatePin = ({
                 {
                   title: 'Unlock with Face ID',
                   accessory: (
-                    <Switch
-                      value={useBiometrics}
+                    <Toggle
                       onValueChange={setUseBiometrics}
+                      value={useBiometrics}
                     />
                   )
                 }
