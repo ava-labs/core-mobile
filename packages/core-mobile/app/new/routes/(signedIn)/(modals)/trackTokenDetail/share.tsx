@@ -19,6 +19,7 @@ import * as FileSystem from 'expo-file-system'
 import Logger from 'utils/Logger'
 import { copyToClipboard } from 'common/utils/clipboard'
 import * as SMS from 'expo-sms'
+import { CORE_WEB_URL } from 'common/consts'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -39,7 +40,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     ? (CHART_IMAGE_SIZE - actualViewWidth) / 2
     : 0
 
-  const urlToShare = 'https://core.app'
+  const urlToShare = CORE_WEB_URL
   const message = `Don't miss out on ${tokenInfo?.name} price changes. Download Core from the App Store or Google Play store to receive alerts on ${tokenInfo?.name} and other popular tokens. ${urlToShare}`
 
   const handleMore = async (): Promise<void> => {
