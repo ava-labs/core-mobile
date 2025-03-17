@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as SMS from 'expo-sms'
 import Logger from 'utils/Logger'
 import { Social } from 'react-native-share'
-import { Platform, ImageRequireSource } from 'react-native'
+import { Platform, ImageRequireSource, Linking } from 'react-native'
 
 export const ShareFooter = ({
   url,
@@ -30,6 +30,7 @@ export const ShareFooter = ({
 }): JSX.Element | null => {
   const { bottom } = useSafeAreaInsets()
   const [canSendSMS, setCanSendSMS] = useState(false)
+  const [canShareTwitter, setCanShareTwitter] = useState(false)
 
   const actions = useMemo(() => {
     const result = [
@@ -67,18 +68,16 @@ export const ShareFooter = ({
       type: AvailableSocial
       title: string
       key: string
-    }[] =
-      // twitter sharing via react-native-share doesn't work on Android.
-      Platform.OS === 'ios'
-        ? [
-            {
-              icon: require('../../../assets/icons/x.png'),
-              type: Social.Twitter,
-              title: 'X',
-              key: 'x'
-            }
-          ]
-        : []
+    }[] = canShareTwitter
+      ? [
+          {
+            icon: require('../../../assets/icons/x.png'),
+            type: Social.Twitter,
+            title: 'X',
+            key: 'x'
+          }
+        ]
+      : []
 
     socials.forEach(({ icon, type, title, key }) => {
       result.push(
@@ -92,12 +91,31 @@ export const ShareFooter = ({
     })
 
     return result
-  }, [onMore, onCopyLink, onSendMessage, url, canSendSMS, onShare])
+  }, [
+    onMore,
+    onCopyLink,
+    onSendMessage,
+    onShare,
+    url,
+    canSendSMS,
+    canShareTwitter
+  ])
 
   useEffect(() => {
     SMS.isAvailableAsync()
       .then(result => setCanSendSMS(result))
       .catch(Logger.error)
+  }, [])
+
+  useEffect(() => {
+    // twitter sharing via react-native-share doesn't work on Android.
+    if (Platform.OS === 'ios') {
+      Linking.canOpenURL('twitter://')
+        .then(result => {
+          setCanShareTwitter(result)
+        })
+        .catch(Logger.error)
+    }
   }, [])
 
   if (actions.length === 0) {
