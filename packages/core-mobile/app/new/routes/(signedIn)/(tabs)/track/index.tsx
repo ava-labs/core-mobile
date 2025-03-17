@@ -217,7 +217,7 @@ const TrackHomeScreen = (): JSX.Element => {
       {!showSearchResults && (
         <LinearGradientBottomWrapper>
           <SegmentedControl
-            dynamicItemWidth={true}
+            dynamicItemWidth={false}
             items={[
               TrackHomeScreenTab.Trending,
               TrackHomeScreenTab.Favorites,

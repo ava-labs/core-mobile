@@ -209,7 +209,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
       {isXpToken && (
         <LinearGradientBottomWrapper>
           <SegmentedControl
-            dynamicItemWidth={true}
+            dynamicItemWidth={false}
             items={[TokenDetailTab.Tokens, TokenDetailTab.Activity]}
             selectedSegmentIndex={selectedSegmentIndex}
             onSelectSegment={handleSelectSegment}
