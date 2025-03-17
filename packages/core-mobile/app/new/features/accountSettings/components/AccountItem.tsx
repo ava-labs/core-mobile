@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Account } from 'store/account'
 import {
   View,
@@ -20,90 +20,93 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
-export const AccountItem = ({
-  index,
-  isActive,
-  account,
-  onSelectAccount,
-  gotoAccountDetails
-}: {
-  index: number
-  isActive: boolean
-  account: Account
-  onSelectAccount: (accountIndex: number) => void
-  gotoAccountDetails: (accountIndex: number) => void
-}): React.JSX.Element => {
-  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  const {
-    theme: { colors, isDark }
-  } = useTheme()
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
-  )
-  const { formatCurrency } = useFormatCurrency()
+export const AccountItem = memo(
+  ({
+    index,
+    isActive,
+    account,
+    onSelectAccount,
+    gotoAccountDetails
+  }: {
+    index: number
+    isActive: boolean
+    account: Account
+    onSelectAccount: (accountIndex: number) => void
+    gotoAccountDetails: (accountIndex: number) => void
+  }): React.JSX.Element => {
+    const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+    const {
+      theme: { colors, isDark }
+    } = useTheme()
 
-  const containerBackgroundColor = isActive
-    ? colors.$textPrimary
-    : colors.$surfaceSecondary
+    const tokenVisibility = useSelector(selectTokenVisibility)
+    const accountBalance = useSelector(
+      selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
+    )
+    const { formatCurrency } = useFormatCurrency()
 
-  const accountNameColor = isActive
-    ? colors.$surfacePrimary
-    : colors.$textPrimary
+    const containerBackgroundColor = isActive
+      ? colors.$textPrimary
+      : colors.$surfaceSecondary
 
-  const subtitleColor = isActive
-    ? isDark
-      ? alpha('#28282E', 0.6)
-      : '#83838D'
-    : isDark // inactive
-    ? alpha('#FFFFFF', 0.6)
-    : alpha('#28282E', 0.6)
+    const accountNameColor = isActive
+      ? colors.$surfacePrimary
+      : colors.$textPrimary
 
-  const backgroundColor = isActive
-    ? isDark
-      ? alpha('#28282E', 0.1)
-      : alpha('#FFFFFF', 0.1)
-    : isDark // inactive
-    ? alpha('#FFFFFF', 0.1)
-    : alpha('#28282E', 0.1)
+    const subtitleColor = isActive
+      ? isDark
+        ? alpha('#28282E', 0.6)
+        : '#83838D'
+      : isDark // inactive
+      ? alpha('#FFFFFF', 0.6)
+      : alpha('#28282E', 0.6)
 
-  const iconColor = isActive ? colors.$surfacePrimary : colors.$textPrimary
+    const backgroundColor = isActive
+      ? isDark
+        ? alpha('#28282E', 0.1)
+        : alpha('#FFFFFF', 0.1)
+      : isDark // inactive
+      ? alpha('#FFFFFF', 0.1)
+      : alpha('#28282E', 0.1)
 
-  return (
-    <Animated.View
-      entering={getItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
-      <AnimatedPressable
-        onPress={() => onSelectAccount(account.index)}
-        style={{
-          backgroundColor: containerBackgroundColor,
-          width: ACCOUNT_CARD_SIZE,
-          height: ACCOUNT_CARD_SIZE,
-          borderRadius: 18,
-          padding: 16,
-          justifyContent: 'space-between'
-        }}>
-        <View>
-          <Text sx={{ color: accountNameColor }}>{account.name}</Text>
-          <AnimatedBalance
-            variant="body1"
-            balance={formatCurrency(accountBalance)}
-            isPrivacyModeEnabled={isPrivacyModeEnabled}
-            balanceSx={{ color: subtitleColor, lineHeight: 18 }}
-            privacyMaskbackgroundColor={backgroundColor}
-          />
-        </View>
-        <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text
-            variant="subtitle2"
-            sx={{ color: subtitleColor, lineHeight: 16, marginRight: 8 }}>
-            {truncateAddress(account.addressC)}
-          </Text>
-          <TouchableOpacity onPress={() => gotoAccountDetails(account.index)}>
-            <Icons.Alert.AlertCircle color={iconColor} />
-          </TouchableOpacity>
-        </View>
-      </AnimatedPressable>
-    </Animated.View>
-  )
-}
+    const iconColor = isActive ? colors.$surfacePrimary : colors.$textPrimary
+
+    return (
+      <Animated.View
+        entering={getItemEnteringAnimation(index)}
+        layout={LinearTransition.springify()}>
+        <AnimatedPressable
+          onPress={() => onSelectAccount(account.index)}
+          style={{
+            backgroundColor: containerBackgroundColor,
+            width: ACCOUNT_CARD_SIZE,
+            height: ACCOUNT_CARD_SIZE,
+            borderRadius: 18,
+            padding: 16,
+            justifyContent: 'space-between'
+          }}>
+          <View>
+            <Text sx={{ color: accountNameColor }}>{account.name}</Text>
+            <AnimatedBalance
+              variant="body1"
+              balance={formatCurrency(accountBalance)}
+              isPrivacyModeEnabled={isPrivacyModeEnabled}
+              balanceSx={{ color: subtitleColor, lineHeight: 18 }}
+              privacyMaskbackgroundColor={backgroundColor}
+            />
+          </View>
+          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text
+              variant="subtitle2"
+              sx={{ color: subtitleColor, lineHeight: 16, marginRight: 8 }}>
+              {truncateAddress(account.addressC)}
+            </Text>
+            <TouchableOpacity onPress={() => gotoAccountDetails(account.index)}>
+              <Icons.Alert.AlertCircle color={iconColor} />
+            </TouchableOpacity>
+          </View>
+        </AnimatedPressable>
+      </Animated.View>
+    )
+  }
+)

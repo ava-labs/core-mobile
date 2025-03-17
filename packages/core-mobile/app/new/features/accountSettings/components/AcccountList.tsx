@@ -38,6 +38,9 @@ export const AccountList = (): React.JSX.Element => {
 
   const onSelectAccount = useCallback(
     (accountIndex: number): void => {
+      AnalyticsService.capture('AccountSelectorAccountSwitched', {
+        accountIndex
+      })
       dispatch(setActiveAccountIndex(accountIndex))
     },
     [dispatch]
