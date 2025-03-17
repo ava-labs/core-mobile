@@ -10,7 +10,7 @@ import {
   useTheme,
   TouchableOpacity
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
@@ -54,10 +54,21 @@ const CurrencyScreen = (): JSX.Element => {
     setHeaderLayout(event.nativeEvent.layout)
   }
 
+  const searchResults = useMemo(() => {
+    if (searchText === '') {
+      return currencies
+    }
+    return currencies.filter(
+      currency =>
+        currency.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        currency.symbol.toLowerCase().includes(searchText.toLowerCase())
+    )
+  }, [searchText])
+
   const renderItem = useCallback(
     (item: Currency, index: number): React.JSX.Element => {
       const { name, symbol } = item
-      const isLastItem = index === currencies.length - 1
+      const isLastItem = index === searchResults.length - 1
       const isSelected = symbol === selectedCurrencySymbol
       return (
         <Animated.View
@@ -126,7 +137,14 @@ const CurrencyScreen = (): JSX.Element => {
         </Animated.View>
       )
     },
-    [back, canGoBack, colors.$textPrimary, dispatch, selectedCurrencySymbol]
+    [
+      back,
+      canGoBack,
+      colors.$textPrimary,
+      dispatch,
+      searchResults.length,
+      selectedCurrencySymbol
+    ]
   )
 
   return (
@@ -134,7 +152,7 @@ const CurrencyScreen = (): JSX.Element => {
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
       onScroll={onScroll}
-      data={currencies}
+      data={searchResults}
       contentContainerStyle={{ paddingBottom: 60 }}
       keyExtractor={(item): string => (item as Currency).symbol}
       ListHeaderComponent={
