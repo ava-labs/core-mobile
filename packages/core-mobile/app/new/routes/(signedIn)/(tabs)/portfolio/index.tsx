@@ -10,7 +10,8 @@ import {
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
-  CollapsibleTabsRef
+  CollapsibleTabsRef,
+  OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -230,10 +231,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
     [selectedSegmentIndex]
   )
 
-  const handleChangeTab = useCallback(
-    (index: number): void => {
-      if (selectedSegmentIndex.value !== index)
-        selectedSegmentIndex.value = index
+  const handleTabChange: OnTabChange = useCallback(
+    data => {
+      if (selectedSegmentIndex.value === data.prevIndex) {
+        selectedSegmentIndex.value = data.index
+      }
     },
     [selectedSegmentIndex]
   )
@@ -299,7 +301,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         ref={tabViewRef}
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
-        onIndexChange={handleChangeTab}
+        onTabChange={handleTabChange}
         onScrollY={onScroll}
         tabs={tabs}
       />

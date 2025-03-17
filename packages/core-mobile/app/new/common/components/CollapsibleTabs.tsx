@@ -1,6 +1,7 @@
 import React, { forwardRef, useMemo } from 'react'
 import {
   CollapsibleRef,
+  OnTabChangeCallback,
   TabBarProps,
   Tabs,
   useCurrentTabScrollY
@@ -8,18 +9,21 @@ import {
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
 import { StyleSheet } from 'react-native'
 
+export type OnTabChange = OnTabChangeCallback<string>
+
 export const CollapsibleTabsContainer = forwardRef<
   CollapsibleRef,
   {
     renderHeader: () => JSX.Element
     renderTabBar: (props: TabBarProps) => JSX.Element
     onIndexChange?: (index: number) => void
+    onTabChange?: OnTabChange
     onScrollY?: (contentOffsetY: number) => void
     tabs: { tabName: string; component: JSX.Element }[]
   }
 >(
   (
-    { tabs, renderHeader, renderTabBar, onIndexChange, onScrollY },
+    { tabs, renderHeader, renderTabBar, onIndexChange, onTabChange, onScrollY },
     ref
   ): JSX.Element => {
     const content = useMemo(() => {
@@ -34,7 +38,9 @@ export const CollapsibleTabsContainer = forwardRef<
     }, [onScrollY, tabs])
 
     const pagerProps = useMemo(() => {
-      return { style: styles.overflow }
+      return {
+        style: styles.overflow
+      }
     }, [])
 
     return (
@@ -45,6 +51,7 @@ export const CollapsibleTabsContainer = forwardRef<
         renderHeader={renderHeader}
         renderTabBar={renderTabBar}
         pagerProps={pagerProps}
+        onTabChange={onTabChange}
         onIndexChange={onIndexChange}>
         {content}
       </Tabs.Container>
