@@ -8,7 +8,8 @@ import {
   SPRING_LINEAR_TRANSITION,
   Separator,
   useTheme,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from '@avalabs/k2-alpine'
 import React, { useCallback, useState, useMemo } from 'react'
 import Animated, {
@@ -27,6 +28,7 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'expo-router'
+import { ErrorState } from 'common/components/ErrorState'
 
 const CurrencyScreen = (): JSX.Element => {
   const {
@@ -153,8 +155,21 @@ const CurrencyScreen = (): JSX.Element => {
       scrollEventThrottle={16}
       onScroll={onScroll}
       data={searchResults}
-      contentContainerStyle={{ paddingBottom: 60 }}
+      contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
       keyExtractor={(item): string => (item as Currency).symbol}
+      ListEmptyComponent={
+        <ErrorState
+          sx={{ flex: 1 }}
+          icon={
+            <Image
+              source={require('../../../../assets/icons/melting_face.png')}
+              sx={{ width: 42, height: 42 }}
+            />
+          }
+          title="No currency found."
+          description=""
+        />
+      }
       ListHeaderComponent={
         <View sx={{ gap: 16, marginHorizontal: 16, marginBottom: 16 }}>
           <Animated.View
