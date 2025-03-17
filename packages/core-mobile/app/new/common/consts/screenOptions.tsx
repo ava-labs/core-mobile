@@ -149,3 +149,7 @@ export const homeScreenOptions: StackNavigationOptions = {
   },
   animation: 'none'
 }
+
+export function forNoAnimation(): StackCardInterpolatedStyle {
+  return {}
+}
