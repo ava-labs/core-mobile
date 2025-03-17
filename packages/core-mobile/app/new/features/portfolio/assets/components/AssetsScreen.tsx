@@ -151,6 +151,7 @@ const AssetsScreen: FC<Props> = ({
       contentContainerStyle={{ paddingBottom: 16 }}
       data={data}
       numColumns={numColumns}
+      estimatedItemSize={isGridView ? 183 : 73} // these numbers are suggested by FlashList at runtime
       renderItem={item => renderItem(item.item, item.index)}
       ListHeaderComponent={header}
       ListEmptyComponent={emptyComponent}
