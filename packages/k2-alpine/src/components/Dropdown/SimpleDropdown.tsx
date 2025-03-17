@@ -69,7 +69,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   )
 
   const content = useMemo(() => {
-    return sections.map((section, sectionIndex) => {
+    return sections?.map((section, sectionIndex) => {
       return (
         <View key={sectionIndex}>
           {section.map((row, rowIndex) => {

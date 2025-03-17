@@ -5,6 +5,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'components/Space'
 import React, { FC, memo, useCallback, useMemo } from 'react'
+import { StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -128,21 +129,22 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])
 
+  const dataLength = data.length
+
   const header = useMemo(() => {
+    if (dataLength === 0) return
+
     return (
-      <View
-        sx={{
-          paddingHorizontal: 16
-        }}>
+      <View sx={styles.dropdownContainer}>
         <DropdownSelections
-          sx={{ marginTop: 20, marginBottom: 16 }}
+          sx={styles.dropdown}
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
     )
-  }, [filter, sort, view, handleManageList])
+  }, [dataLength, filter, sort, view, handleManageList])
 
   return (
     <CollapsibleTabs.FlashList
@@ -150,7 +152,7 @@ const AssetsScreen: FC<Props> = ({
       data={data}
       numColumns={numColumns}
       renderItem={item => renderItem(item.item, item.index)}
-      ListHeaderComponent={data.length > 0 ? header : undefined}
+      ListHeaderComponent={header}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
@@ -159,5 +161,15 @@ const AssetsScreen: FC<Props> = ({
     />
   )
 }
+
+const styles = StyleSheet.create({
+  dropdownContainer: {
+    paddingHorizontal: 16
+  },
+  dropdown: {
+    marginTop: 20,
+    marginBottom: 16
+  }
+})
 
 export default memo(AssetsScreen)
