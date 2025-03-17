@@ -31,7 +31,8 @@ export const MaskedText = ({
         variant={variant}
         sx={{
           backgroundColor: maskbackgroundColor ?? colors.$borderPrimary,
-          width: maskWidth
+          width: maskWidth,
+          ...sx
         }}
       />
     )

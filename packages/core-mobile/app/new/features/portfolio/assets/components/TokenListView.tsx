@@ -106,7 +106,7 @@ export const TokenListView = ({
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
                 shouldMask={isPrivacyModeEnabled}
-                privacyMaskWidth={40}
+                maskWidth={40}
               />
             </View>
           </View>

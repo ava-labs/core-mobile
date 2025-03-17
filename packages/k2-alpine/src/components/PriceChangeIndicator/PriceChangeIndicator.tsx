@@ -23,7 +23,7 @@ export const PriceChangeIndicator = ({
   animated = false,
   overrideTheme,
   shouldMask = false,
-  maskWidth = 60
+  maskWidth
 }: PriceChange & {
   textVariant?: TextVariants
   animated?: boolean
@@ -59,7 +59,12 @@ export const PriceChangeIndicator = ({
   const arrowSize = textVariant === 'priceChangeIndicatorLarge' ? 20 : ICON_SIZE
 
   if (shouldMask) {
-    return <MaskedView variant={textVariant} sx={{ width: maskWidth }} />
+    return (
+      <MaskedView
+        variant={textVariant}
+        sx={{ width: maskWidth, backgroundColor: theme.colors.$borderPrimary }}
+      />
+    )
   }
 
   return animated === true ? (
