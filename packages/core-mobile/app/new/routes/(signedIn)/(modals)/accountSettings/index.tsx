@@ -104,7 +104,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToCurrency = useCallback(() => {
-    navigate('./accountSettings/currency')
+    navigate('./accountSettings/selectCurrency')
   }, [navigate])
 
   const goToNotificationPreferences = useCallback(() => {

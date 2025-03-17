@@ -30,7 +30,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 
-const CurrencyScreen = (): JSX.Element => {
+const SelectCurrencyScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
@@ -190,4 +190,4 @@ const CurrencyScreen = (): JSX.Element => {
   )
 }
 
-export default CurrencyScreen
+export default SelectCurrencyScreen
