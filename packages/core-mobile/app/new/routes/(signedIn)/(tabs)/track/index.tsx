@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState, useMemo } from 'react'
 import {
   View,
   NavigationTitleHeader,
@@ -8,17 +8,22 @@ import {
   SearchBar
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  StyleSheet,
+  InteractionManager
+} from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, {
   interpolate,
   useAnimatedStyle,
-  useSharedValue,
-  SharedValue
+  useSharedValue
 } from 'react-native-reanimated'
 import {
   CollapsibleTabs,
-  CollapsibleTabsRef
+  CollapsibleTabsRef,
+  OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
@@ -40,14 +45,20 @@ const TrackHomeScreen = (): JSX.Element => {
     LayoutRectangle | undefined
   >()
   const selectedSegmentIndex = useSharedValue(0)
-  const handleBalanceHeaderLayout = (event: LayoutChangeEvent): void => {
-    setBalanceHeaderLayout(event.nativeEvent.layout)
-  }
+
+  const handleBalanceHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setBalanceHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
 
   const showSearchResults = isSearchBarFocused || searchText.length > 0
 
+  const header = useMemo(() => <NavigationTitleHeader title={'Track'} />, [])
+
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={'Track'} />,
+    header: header,
     targetLayout: balanceHeaderLayout,
     hasSeparator: false
   })
@@ -87,7 +98,7 @@ const TrackHomeScreen = (): JSX.Element => {
     }
   })
 
-  const renderHeader = (): JSX.Element => {
+  const renderHeader = useCallback((): JSX.Element => {
     return (
       <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
         <View onLayout={handleBalanceHeaderLayout}>
@@ -129,17 +140,39 @@ const TrackHomeScreen = (): JSX.Element => {
         />
       </View>
     )
-  }
+  }, [
+    handleBalanceHeaderLayout,
+    animatedHeaderStyle,
+    animatedSearchbarStyle,
+    animatedSeparatorStyle,
+    setSearchBarFocused,
+    setSearchText,
+    searchText,
+    theme.colors.$surfacePrimary,
+    theme.colors.$surfaceSecondary
+  ])
 
-  const handleSelectSegment = (index: number): void => {
-    if (tabViewRef.current?.getCurrentIndex() !== index) {
-      tabViewRef.current?.setIndex(index)
-    }
-  }
+  const handleSelectSegment = useCallback(
+    (index: number): void => {
+      selectedSegmentIndex.value = index
 
-  const handleChangeTab = (index: number): void => {
-    selectedSegmentIndex.value = index
-  }
+      InteractionManager.runAfterInteractions(() => {
+        if (tabViewRef.current?.getCurrentIndex() !== index) {
+          tabViewRef.current?.setIndex(index)
+        }
+      })
+    },
+    [selectedSegmentIndex]
+  )
+
+  const handleTabChange: OnTabChange = useCallback(
+    data => {
+      if (selectedSegmentIndex.value === data.prevIndex) {
+        selectedSegmentIndex.value = data.index
+      }
+    },
+    [selectedSegmentIndex]
+  )
 
   const handleGotoMarketDetail = useCallback(
     (tokenId: string): void => {
@@ -151,11 +184,7 @@ const TrackHomeScreen = (): JSX.Element => {
     [navigate]
   )
 
-  const handleScrollTab = (tabIndex: SharedValue<number>): void => {
-    selectedSegmentIndex.value = tabIndex.value
-  }
-
-  const renderEmptyTabBar = (): JSX.Element => <></>
+  const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderSearchResults = useCallback(() => {
     return (
@@ -167,7 +196,7 @@ const TrackHomeScreen = (): JSX.Element => {
     )
   }, [handleGotoMarketDetail, isSearchBarFocused, searchText])
 
-  const renderTabs = useCallback(() => {
+  const tabs = useMemo(() => {
     return [
       {
         tabName: TrackHomeScreenTab.Trending,
@@ -210,23 +239,18 @@ const TrackHomeScreen = (): JSX.Element => {
         ref={tabViewRef}
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
-        onIndexChange={handleChangeTab}
+        onTabChange={handleTabChange}
         onScrollY={onScroll}
-        onScrollTab={handleScrollTab}
-        tabs={renderTabs()}
+        tabs={tabs}
       />
       {!showSearchResults && (
         <LinearGradientBottomWrapper>
           <SegmentedControl
-            dynamicItemWidth={true}
-            items={[
-              TrackHomeScreenTab.Trending,
-              TrackHomeScreenTab.Favorites,
-              TrackHomeScreenTab.Market
-            ]}
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
             selectedSegmentIndex={selectedSegmentIndex}
             onSelectSegment={handleSelectSegment}
-            style={{ marginHorizontal: 16, marginBottom: 16 }}
+            style={styles.segmentedControl}
           />
         </LinearGradientBottomWrapper>
       )}
@@ -239,5 +263,15 @@ enum TrackHomeScreenTab {
   Favorites = 'Favorites',
   Market = 'Market'
 }
+
+const SEGMENT_ITEMS = [
+  TrackHomeScreenTab.Trending,
+  TrackHomeScreenTab.Favorites,
+  TrackHomeScreenTab.Market
+]
+
+const styles = StyleSheet.create({
+  segmentedControl: { marginHorizontal: 16, marginBottom: 16 }
+})
 
 export default TrackHomeScreen

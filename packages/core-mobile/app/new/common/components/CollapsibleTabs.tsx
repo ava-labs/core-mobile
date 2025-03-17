@@ -1,16 +1,15 @@
-import React, { forwardRef } from 'react'
+import React, { forwardRef, useMemo } from 'react'
 import {
   CollapsibleRef,
+  OnTabChangeCallback,
   TabBarProps,
   Tabs,
-  useAnimatedTabIndex,
   useCurrentTabScrollY
 } from 'react-native-collapsible-tab-view'
-import {
-  runOnJS,
-  useAnimatedReaction,
-  SharedValue
-} from 'react-native-reanimated'
+import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
+import { StyleSheet } from 'react-native'
+
+export type OnTabChange = OnTabChangeCallback<string>
 
 export const CollapsibleTabsContainer = forwardRef<
   CollapsibleRef,
@@ -18,37 +17,43 @@ export const CollapsibleTabsContainer = forwardRef<
     renderHeader: () => JSX.Element
     renderTabBar: (props: TabBarProps) => JSX.Element
     onIndexChange?: (index: number) => void
-    onScrollTab?: (tabIndex: SharedValue<number>) => void
+    onTabChange?: OnTabChange
     onScrollY?: (contentOffsetY: number) => void
     tabs: { tabName: string; component: JSX.Element }[]
   }
 >(
   (
-    { tabs, renderHeader, renderTabBar, onIndexChange, onScrollTab, onScrollY },
+    { tabs, renderHeader, renderTabBar, onIndexChange, onTabChange, onScrollY },
     ref
   ): JSX.Element => {
+    const content = useMemo(() => {
+      return tabs.map(tab => (
+        <Tabs.Tab key={tab.tabName} name={tab.tabName}>
+          <CollapsibleTabWrapper
+            component={tab.component}
+            onScrollY={onScrollY}
+          />
+        </Tabs.Tab>
+      ))
+    }, [onScrollY, tabs])
+
+    const pagerProps = useMemo(() => {
+      return {
+        style: styles.overflow
+      }
+    }, [])
+
     return (
       <Tabs.Container
         ref={ref}
-        headerContainerStyle={{
-          shadowOpacity: 0,
-          elevation: 0,
-          overflow: 'visible'
-        }}
-        containerStyle={{ overflow: 'visible' }}
+        headerContainerStyle={styles.tabsContainer}
+        containerStyle={styles.overflow}
         renderHeader={renderHeader}
         renderTabBar={renderTabBar}
-        pagerProps={{ style: { overflow: 'visible' } }}
+        pagerProps={pagerProps}
+        onTabChange={onTabChange}
         onIndexChange={onIndexChange}>
-        {tabs.map(tab => (
-          <Tabs.Tab key={tab.tabName} name={tab.tabName}>
-            <CollapsibleTabWrapper
-              component={tab.component}
-              onScrollTab={onScrollTab}
-              onScrollY={onScrollY}
-            />
-          </Tabs.Tab>
-        ))}
+        {content}
       </Tabs.Container>
     )
   }
@@ -56,30 +61,18 @@ export const CollapsibleTabsContainer = forwardRef<
 
 const CollapsibleTabWrapper = ({
   component,
-  onScrollTab,
   onScrollY
 }: {
   component: JSX.Element
-  onScrollTab?: (tabIndex: SharedValue<number>) => void
   onScrollY?: (contentOffsetY: number) => void
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
-  const tabIndex = useAnimatedTabIndex()
 
   useAnimatedReaction(
     () => scrollY.value,
     (curr, prev) => {
       if (curr !== prev && onScrollY) {
         runOnJS(onScrollY)(scrollY.value)
-      }
-    }
-  )
-
-  useAnimatedReaction(
-    () => tabIndex.value,
-    (curr, prev) => {
-      if (curr !== prev && onScrollTab) {
-        runOnJS(onScrollTab)(tabIndex)
       }
     }
   )
@@ -97,3 +90,14 @@ export const CollapsibleTabs = {
 }
 
 export type CollapsibleTabsRef = CollapsibleRef
+
+const styles = StyleSheet.create({
+  overflow: {
+    overflow: 'visible'
+  },
+  tabsContainer: {
+    shadowOpacity: 0,
+    elevation: 0,
+    overflow: 'visible'
+  }
+})
