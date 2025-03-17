@@ -174,8 +174,8 @@ const AccountSettingsScreen = (): JSX.Element => {
             <AnimatedBalance
               balance={totalBalanceInCurrency}
               currency={` ${selectedCurrency}`}
-              isPrivacyModeEnabled={isPrivacyModeEnabled}
-              privacyMaskWidth={100}
+              shouldMask={isPrivacyModeEnabled}
+              maskWidth={100}
               balanceSx={{ lineHeight: 38 }}
               currencySx={{
                 fontFamily: 'Aeonik-Medium',

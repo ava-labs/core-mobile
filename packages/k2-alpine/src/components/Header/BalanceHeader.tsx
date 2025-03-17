@@ -88,8 +88,8 @@ export const BalanceHeader = ({
         <AnimatedBalance
           balance={formattedBalance}
           currency={` ${currency}`}
-          isPrivacyModeEnabled={isPrivacyModeEnabled}
-          privacyMaskWidth={200}
+          shouldMask={isPrivacyModeEnabled}
+          maskWidth={200}
           balanceSx={{ lineHeight: 38 }}
           currencySx={{
             fontFamily: 'Aeonik-Medium',

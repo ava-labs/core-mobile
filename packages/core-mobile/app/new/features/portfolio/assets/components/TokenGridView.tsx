@@ -3,7 +3,7 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
-  PrivacyAwareText,
+  MaskedText,
   SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
@@ -56,14 +56,14 @@ export const TokenGridView = ({
               {token.name}
             </Text>
             <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
-              <PrivacyAwareText
-                isPrivacyModeEnabled={isPrivacyModeEnabled}
-                privacyMaskWidth={65}
+              <MaskedText
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={65}
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 sx={{ lineHeight: 16 }}>
                 {token.balanceDisplayValue} {token.symbol}
-              </PrivacyAwareText>
+              </MaskedText>
             </View>
           </View>
           <View sx={{ marginTop: 19 }}>
@@ -82,18 +82,18 @@ export const TokenGridView = ({
                     color={colors.$textDanger}
                   />
                 )}
-                <PrivacyAwareText
+                <MaskedText
                   variant="buttonLarge"
-                  isPrivacyModeEnabled={isPrivacyModeEnabled}
-                  privacyMaskWidth={85}
+                  shouldMask={isPrivacyModeEnabled}
+                  maskWidth={85}
                   numberOfLines={1}
                   sx={{ lineHeight: 21 }}>
                   {formattedBalance}
-                </PrivacyAwareText>
+                </MaskedText>
               </View>
               <PriceChangeIndicator
-                isPrivacyModeEnabled={isPrivacyModeEnabled}
-                privacyMaskWidth={40}
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={40}
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
               />

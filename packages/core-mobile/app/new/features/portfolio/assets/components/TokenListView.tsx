@@ -3,7 +3,7 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
-  PrivacyAwareText,
+  MaskedText,
   SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
@@ -76,14 +76,14 @@ export const TokenListView = ({
                     color={colors.$textDanger}
                   />
                 )}
-                <PrivacyAwareText
+                <MaskedText
                   variant="buttonMedium"
-                  isPrivacyModeEnabled={isPrivacyModeEnabled}
-                  privacyMaskWidth={64}
+                  shouldMask={isPrivacyModeEnabled}
+                  maskWidth={64}
                   numberOfLines={1}
                   sx={{ lineHeight: 18 }}>
                   {formattedBalance}
-                </PrivacyAwareText>
+                </MaskedText>
               </View>
             </View>
             <View
@@ -94,18 +94,18 @@ export const TokenListView = ({
                 alignItems: 'center',
                 gap: 24
               }}>
-              <PrivacyAwareText
-                isPrivacyModeEnabled={isPrivacyModeEnabled}
-                privacyMaskWidth={55}
+              <MaskedText
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={55}
                 sx={{ lineHeight: 16, flex: 1 }}
                 ellipsizeMode="tail"
                 numberOfLines={1}>
                 {token.balanceDisplayValue} {token.symbol}
-              </PrivacyAwareText>
+              </MaskedText>
               <PriceChangeIndicator
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
-                isPrivacyModeEnabled={isPrivacyModeEnabled}
+                shouldMask={isPrivacyModeEnabled}
                 privacyMaskWidth={40}
               />
             </View>

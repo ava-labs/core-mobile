@@ -12,9 +12,7 @@ import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedText } from '../Animated/AnimatedText'
 import { View, Text } from '../Primitives'
 import { K2AlpineTheme } from '../../theme/theme'
-import { PrivacyMask } from '../PrivacyMask/PrivacyMask'
-import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
-import { getLineHeight } from '../../utils/getLineHeight'
+import { MaskedView } from '../MaskedView/MaskedView'
 import { PriceChange, PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
@@ -24,15 +22,15 @@ export const PriceChangeIndicator = ({
   textVariant = 'buttonSmall',
   animated = false,
   overrideTheme,
-  isPrivacyModeEnabled = false,
-  privacyMaskWidth
+  shouldMask = false,
+  maskWidth = 60
 }: PriceChange & {
   textVariant?: TextVariants
   animated?: boolean
   testID?: string
   overrideTheme?: K2AlpineTheme
-  isPrivacyModeEnabled?: boolean
-  privacyMaskWidth?: number
+  shouldMask?: boolean
+  maskWidth?: number
 }): JSX.Element => {
   const { theme: defaultTheme } = useTheme()
   const theme = overrideTheme ?? defaultTheme
@@ -60,14 +58,8 @@ export const PriceChangeIndicator = ({
 
   const arrowSize = textVariant === 'priceChangeIndicatorLarge' ? 20 : ICON_SIZE
 
-  if (isPrivacyModeEnabled) {
-    const privacyMaskHeight = getLineHeight(textVariant)
-
-    return (
-      <AnimateFadeScale delay={200}>
-        <PrivacyMask width={privacyMaskWidth} height={privacyMaskHeight} />
-      </AnimateFadeScale>
-    )
+  if (shouldMask) {
+    return <MaskedView variant={textVariant} sx={{ width: maskWidth }} />
   }
 
   return animated === true ? (

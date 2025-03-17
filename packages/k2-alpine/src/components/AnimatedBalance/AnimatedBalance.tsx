@@ -1,34 +1,34 @@
 import React, { useMemo } from 'react'
 import { SxProp } from 'dripsy'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { TextVariant } from '../../theme/tokens/text'
 import { Text } from '../Primitives'
-import { PrivacyMask } from '../PrivacyMask/PrivacyMask'
 import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
-import { getLineHeight } from '../../utils/getLineHeight'
-
-const springTransition = LinearTransition.springify()
+import { SPRING_LINEAR_TRANSITION } from '../../utils'
+import { MaskedText } from '../MaskedText/MaskedText'
 
 export const AnimatedBalance = ({
   variant = 'heading2',
   balance,
   currency,
-  isPrivacyModeEnabled = false,
-  privacyMaskWidth = 60,
-  privacyMaskbackgroundColor,
+  shouldMask = false,
+  maskWidth = 60,
   balanceSx,
-  currencySx
+  currencySx,
+  maskbackgroundColor
 }: {
   balance: string
   currency?: string
   variant?: TextVariant
-  isPrivacyModeEnabled?: boolean
-  privacyMaskWidth?: number
-  privacyMaskbackgroundColor?: string
+  shouldMask?: boolean
+  maskWidth?: number
   balanceSx?: SxProp
   currencySx?: SxProp
+  maskbackgroundColor?: string
 }): JSX.Element => {
   const animatedBalance = useMemo(() => {
+    if (shouldMask) return
+
     return balance
       .toString()
       .split('')
@@ -41,10 +41,10 @@ export const AnimatedBalance = ({
           </AnimateFadeScale>
         )
       })
-  }, [balance, balanceSx, variant])
+  }, [balance, balanceSx, shouldMask, variant])
 
   const animatedCurrency = useMemo(() => {
-    if (currency === undefined) return
+    if (currency === undefined || shouldMask) return
     return currency
       .toString()
       .split('')
@@ -59,25 +59,24 @@ export const AnimatedBalance = ({
           </AnimateFadeScale>
         )
       })
-  }, [balance.length, currency, currencySx, variant])
+  }, [balance.length, currency, currencySx, shouldMask, variant])
 
-  if (isPrivacyModeEnabled) {
-    const privacyMaskHeight = getLineHeight(variant, balanceSx)
-
+  if (shouldMask) {
     return (
-      <AnimateFadeScale delay={200}>
-        <PrivacyMask
-          width={privacyMaskWidth}
-          height={privacyMaskHeight}
-          backgroundColor={privacyMaskbackgroundColor}
-        />
-      </AnimateFadeScale>
+      <MaskedText
+        sx={balanceSx}
+        variant={variant}
+        shouldMask={shouldMask}
+        maskWidth={maskWidth}
+        numberOfLines={1}
+        maskbackgroundColor={maskbackgroundColor}
+      />
     )
   }
 
   return (
     <Animated.View
-      layout={springTransition}
+      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'

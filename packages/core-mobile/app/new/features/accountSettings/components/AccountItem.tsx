@@ -90,9 +90,9 @@ export const AccountItem = memo(
             <AnimatedBalance
               variant="body1"
               balance={formatCurrency(accountBalance)}
-              isPrivacyModeEnabled={isPrivacyModeEnabled}
+              shouldMask={isPrivacyModeEnabled}
               balanceSx={{ color: subtitleColor, lineHeight: 18 }}
-              privacyMaskbackgroundColor={backgroundColor}
+              maskbackgroundColor={backgroundColor}
             />
           </View>
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
