@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
+import { SxProp } from 'dripsy'
 import { View, Text, TouchableOpacity } from '../Primitives'
 import { Separator } from '../Separator/Separator'
 import { Icons } from '../../theme/tokens/Icons'
@@ -7,10 +8,16 @@ import { useTheme } from '../../hooks'
 
 export const GroupList = ({
   data,
-  itemHeight
+  itemHeight,
+  titleSx,
+  valueSx,
+  separatorMarginRight
 }: {
   data: GroupListItem[]
   itemHeight?: number
+  titleSx?: SxProp
+  valueSx?: SxProp
+  separatorMarginRight?: number
 }): JSX.Element => {
   const { theme } = useTheme()
   const [textMarginLeft, setTextMarginLeft] = useState(0)
@@ -64,7 +71,8 @@ export const GroupList = ({
                       variant="buttonMedium"
                       sx={{
                         color: '$textPrimary',
-                        paddingVertical: 14
+                        paddingVertical: 14,
+                        ...titleSx
                       }}>
                       {title}
                     </Text>
@@ -78,14 +86,17 @@ export const GroupList = ({
                       gap: 4,
                       flexShrink: 1
                     }}>
-                    {value !== undefined && (
-                      <Text
-                        variant="body1"
-                        numberOfLines={1}
-                        sx={{ color: '$textSecondary' }}>
-                        {value}
-                      </Text>
-                    )}
+                    {value !== undefined &&
+                      (typeof value === 'string' ? (
+                        <Text
+                          variant="body1"
+                          numberOfLines={1}
+                          sx={{ color: '$textSecondary', ...valueSx }}>
+                          {value}
+                        </Text>
+                      ) : (
+                        value
+                      ))}
                     {accessory !== undefined && accessory}
                     {accessory === undefined && onPress !== undefined && (
                       <Icons.Navigation.ChevronRight
@@ -97,7 +108,12 @@ export const GroupList = ({
               </View>
             </TouchableOpacity>
             {index < data.length - 1 && (
-              <Separator sx={{ marginLeft: textMarginLeft }} />
+              <Separator
+                sx={{
+                  marginLeft: textMarginLeft,
+                  marginRight: separatorMarginRight
+                }}
+              />
             )}
           </View>
         )
@@ -108,7 +124,7 @@ export const GroupList = ({
 
 export type GroupListItem = {
   title: string
-  value?: string
+  value?: React.ReactNode
   onPress?: () => void
   onLongPress?: () => void
   leftIcon?: JSX.Element
