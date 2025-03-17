@@ -166,7 +166,7 @@ const SelectCurrencyScreen = (): JSX.Element => {
               sx={{ width: 42, height: 42 }}
             />
           }
-          title="No currency found."
+          title="No currency found"
           description=""
         />
       }
