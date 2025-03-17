@@ -5,7 +5,7 @@ import {
   StackNavigationOptions,
   TransitionPresets
 } from '@react-navigation/stack'
-import { Animated } from 'react-native'
+import { Animated, Platform } from 'react-native'
 import BackBarButton from 'common/components/BackBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { View } from '@avalabs/k2-alpine'
@@ -121,7 +121,8 @@ export const homeScreenOptions: StackNavigationOptions = {
     <View
       sx={{
         marginLeft: 14,
-        height: '100%'
+        marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
+        alignItems: 'center'
       }}>
       <Link href="/settings/" asChild>
         <AccountSettingBarButton />
@@ -135,7 +136,7 @@ export const homeScreenOptions: StackNavigationOptions = {
           flexDirection: 'row',
           gap: 12,
           marginRight: 14,
-          height: '100%',
+          marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
           alignItems: 'center'
         }}>
         <Link href="/receive/" asChild>
@@ -149,3 +150,9 @@ export const homeScreenOptions: StackNavigationOptions = {
   },
   animation: 'none'
 }
+
+export function forNoAnimation(): StackCardInterpolatedStyle {
+  return {}
+}
+
+const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
