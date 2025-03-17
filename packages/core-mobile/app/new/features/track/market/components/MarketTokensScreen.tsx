@@ -1,4 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
+import { StyleSheet } from 'react-native'
 import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { Charts, MarketToken } from 'store/watchlist'
@@ -26,17 +27,17 @@ const MarketTokensScreen = ({
   const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
   const numColumns = isGridView ? 2 : 1
 
+  const dataLength = data.length
+
   const dropdowns = useMemo(() => {
+    if (dataLength === 0) return
+
     return (
-      <View sx={{ paddingHorizontal: 16 }}>
-        <DropdownSelections
-          sort={sort}
-          view={view}
-          sx={{ marginTop: 14, marginBottom: 16 }}
-        />
+      <View sx={styles.dropdownContainer}>
+        <DropdownSelections sort={sort} view={view} sx={styles.dropdown} />
       </View>
     )
-  }, [sort, view])
+  }, [dataLength, sort, view])
 
   const renderItem = useCallback(
     ({
@@ -84,11 +85,11 @@ const MarketTokensScreen = ({
 
   return (
     <CollapsibleTabs.FlashList
-      contentContainerStyle={{ paddingBottom: 16 }}
+      contentContainerStyle={styles.container}
       data={data}
       numColumns={numColumns}
       renderItem={renderItem}
-      ListHeaderComponent={data.length > 0 ? dropdowns : undefined}
+      ListHeaderComponent={dropdowns}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
@@ -99,5 +100,11 @@ const MarketTokensScreen = ({
     />
   )
 }
+
+const styles = StyleSheet.create({
+  container: { paddingBottom: 16 },
+  dropdownContainer: { paddingHorizontal: 16 },
+  dropdown: { marginTop: 14, marginBottom: 16 }
+})
 
 export default MarketTokensScreen
