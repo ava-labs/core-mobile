@@ -75,7 +75,7 @@ export default function SwapView(): JSX.Element {
     fromToken,
     toToken
   ])
-  useEffect(updateTokensOnAccountChangeFx, [
+  useEffect(updateTokensOnTokenListChangeFx, [
     filteredTokenList,
     fromToken,
     setFromToken,
@@ -134,7 +134,7 @@ export default function SwapView(): JSX.Element {
     }
   }
 
-  function updateTokensOnAccountChangeFx(): void {
+  function updateTokensOnTokenListChangeFx(): void {
     if (
       fromToken &&
       'localId' in fromToken &&
