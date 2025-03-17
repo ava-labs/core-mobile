@@ -15,7 +15,7 @@ export const AnimatedBalance = ({
   maskWidth = 60,
   balanceSx,
   currencySx,
-  maskbackgroundColor
+  maskBackgroundColor
 }: {
   balance: string
   currency?: string
@@ -24,7 +24,7 @@ export const AnimatedBalance = ({
   maskWidth?: number
   balanceSx?: SxProp
   currencySx?: SxProp
-  maskbackgroundColor?: string
+  maskBackgroundColor?: string
 }): JSX.Element => {
   const animatedBalance = useMemo(() => {
     if (shouldMask) return
@@ -69,7 +69,7 @@ export const AnimatedBalance = ({
         shouldMask={shouldMask}
         maskWidth={maskWidth}
         numberOfLines={1}
-        maskbackgroundColor={maskbackgroundColor}
+        maskBackgroundColor={maskBackgroundColor}
       />
     )
   }

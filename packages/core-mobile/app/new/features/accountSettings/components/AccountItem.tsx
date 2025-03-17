@@ -92,7 +92,7 @@ export const AccountItem = memo(
               balance={formatCurrency(accountBalance)}
               shouldMask={isPrivacyModeEnabled}
               balanceSx={{ color: subtitleColor, lineHeight: 18 }}
-              maskbackgroundColor={backgroundColor}
+              maskBackgroundColor={backgroundColor}
             />
           </View>
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>

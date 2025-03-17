@@ -11,14 +11,14 @@ export const MaskedText = ({
   children,
   shouldMask = false,
   maskWidth = 50,
-  maskbackgroundColor,
+  maskBackgroundColor,
   sx,
   ...rest
 }: {
   variant?: TextVariant
   shouldMask: boolean
   maskWidth?: number
-  maskbackgroundColor?: string
+  maskBackgroundColor?: string
   sx?: SxProp
 } & PropsWithChildren &
   TextProps): React.JSX.Element => {
@@ -30,7 +30,7 @@ export const MaskedText = ({
       <MaskedView
         variant={variant}
         sx={{
-          backgroundColor: maskbackgroundColor ?? colors.$borderPrimary,
+          backgroundColor: maskBackgroundColor ?? colors.$borderPrimary,
           width: maskWidth,
           ...sx
         }}
