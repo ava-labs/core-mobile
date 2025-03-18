@@ -246,38 +246,30 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   source={{
                     uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
                   }}
-                  hasBlur={!(Platform.OS === 'android' && isEnteringPin)}
+                  hasBlur={Platform.OS !== 'android'}
                   backgroundColor={theme.colors.$surfacePrimary}
                 />
               </Reanimated.View>
-              <View
-                pointerEvents={
-                  isEnteringPin || disableKeypad ? 'auto' : 'none'
-                }>
-                <Reanimated.View style={[pinInputOpacityStyle]}>
-                  {disableKeypad === false && (
-                    <PinInput
-                      ref={pinInputRef}
-                      style={{ paddingTop: 40, paddingBottom: 20 }}
-                      length={6}
-                      onChangePin={onEnterPin}
-                      value={enteredPin}
-                    />
-                  )}
-                </Reanimated.View>
-                <Reanimated.View
-                  style={[
-                    disableKeypad ? { marginTop: 60 } : {},
-                    forgotPinButtonOpacityStyle
-                  ]}>
-                  <Button
-                    size="medium"
-                    type="tertiary"
-                    onPress={handleForgotPin}>
-                    Forgot PIN?
-                  </Button>
-                </Reanimated.View>
-              </View>
+              <Reanimated.View style={[pinInputOpacityStyle]}>
+                {disableKeypad === false && (
+                  <PinInput
+                    ref={pinInputRef}
+                    style={{ paddingTop: 40, paddingBottom: 20 }}
+                    length={6}
+                    onChangePin={onEnterPin}
+                    value={enteredPin}
+                  />
+                )}
+              </Reanimated.View>
+              <Reanimated.View
+                style={[
+                  disableKeypad ? { marginTop: 60 } : {},
+                  forgotPinButtonOpacityStyle
+                ]}>
+                <Button size="medium" type="tertiary" onPress={handleForgotPin}>
+                  Forgot PIN?
+                </Button>
+              </Reanimated.View>
             </View>
             <Reanimated.View
               style={[

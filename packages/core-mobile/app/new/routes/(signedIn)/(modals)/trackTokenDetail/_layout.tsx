@@ -12,6 +12,7 @@ export default function TrackTokenDetailLayout(): JSX.Element {
         ...modalStackNavigatorScreenOptions
       }}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen name="share" />
     </Stack>
   )
 }

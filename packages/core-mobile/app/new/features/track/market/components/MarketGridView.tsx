@@ -115,10 +115,11 @@ export const MarketGridView = memo(
   },
   (prevProps, nextProps) => {
     return (
-      prevProps.formattedPrice === nextProps.formattedPrice ||
-      prevProps.formattedPriceChange === nextProps.formattedPriceChange ||
-      prevProps.formattedPercentChange === nextProps.formattedPercentChange ||
-      prevProps.status === nextProps.status
+      prevProps.token.id === nextProps.token.id &&
+      (prevProps.formattedPrice === nextProps.formattedPrice ||
+        prevProps.formattedPriceChange === nextProps.formattedPriceChange ||
+        prevProps.formattedPercentChange === nextProps.formattedPercentChange ||
+        prevProps.status === nextProps.status)
     )
   }
 )

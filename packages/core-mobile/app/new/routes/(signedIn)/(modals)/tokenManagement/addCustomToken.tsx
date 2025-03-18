@@ -79,7 +79,7 @@ const AddCustomTokenScreen = (): JSX.Element => {
 
   return (
     <View sx={{ justifyContent: 'space-between', padding: 16, flex: 1 }}>
-      <View sx={{ gap: 26 }}>
+      <View sx={{ gap: 16 }}>
         <Text variant="heading2">Add a custom token</Text>
         <View>
           <SearchBar
@@ -90,7 +90,11 @@ const AddCustomTokenScreen = (): JSX.Element => {
               <TouchableOpacity
                 onPress={goToScanQrCode}
                 hitSlop={16}
-                sx={{ marginRight: 9 }}>
+                sx={{
+                  marginRight: 9,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
                 <Icons.Custom.QRCodeScanner
                   color={colors.$textSecondary}
                   width={20}

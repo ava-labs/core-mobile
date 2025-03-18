@@ -6,7 +6,10 @@ export default function WalletLayout(): JSX.Element {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-      <Stack.Screen name="(modals)/settings" options={modalScreensOptions} />
+      <Stack.Screen
+        name="(modals)/accountSettings"
+        options={modalScreensOptions}
+      />
       <Stack.Screen name="(modals)/receive" options={modalScreensOptions} />
       <Stack.Screen
         name="(modals)/notifications"

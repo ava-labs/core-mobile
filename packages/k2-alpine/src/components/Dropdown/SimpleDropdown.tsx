@@ -1,11 +1,14 @@
-import React, { useRef } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import Popover, { Rect } from 'react-native-popover-view'
-import { Platform } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
 import { Text, View, TouchableOpacity } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Separator } from '../Separator/Separator'
 import { Icons } from '../../theme/tokens/Icons'
 import { DropdownBackground } from './DropdownBackground'
+
+const groupSeparatorHeight = Platform.OS === 'ios' ? 6 : 1
+const backgroundBorderRadius = Platform.OS === 'ios' ? 10 : 4
 
 export const SimpleDropdown = <T extends { toString(): string }>({
   from,
@@ -35,27 +38,83 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   const { theme } = useTheme()
   const popoverRef = useRef<Popover>()
 
-  const handlePress = (indexPath: IndexPath): void => {
-    if (isSelected(indexPath)) {
-      onDeselectRow?.(indexPath)
-    } else {
-      onSelectRow(indexPath)
-    }
-    if (!allowsMultipleSelection) {
-      popoverRef.current?.requestClose()
-    }
-  }
+  const isSelected = useCallback(
+    (indexPath: IndexPath): boolean => {
+      return selectedRows.some(
+        selectedRow =>
+          selectedRow.section === indexPath.section &&
+          selectedRow.row === indexPath.row
+      )
+    },
+    [selectedRows]
+  )
 
-  const isSelected = (indexPath: IndexPath): boolean => {
-    return selectedRows.some(
-      selectedRow =>
-        selectedRow.section === indexPath.section &&
-        selectedRow.row === indexPath.row
-    )
-  }
+  const handlePress = useCallback(
+    (indexPath: IndexPath): void => {
+      if (isSelected(indexPath)) {
+        onDeselectRow?.(indexPath)
+      } else {
+        onSelectRow(indexPath)
+      }
+      if (!allowsMultipleSelection) {
+        popoverRef.current?.requestClose()
+      }
+    },
+    [allowsMultipleSelection, onDeselectRow, onSelectRow, isSelected]
+  )
 
-  const groupSeparatorHeight = Platform.OS === 'ios' ? 6 : 1
-  const backgroundBorderRadius = Platform.OS === 'ios' ? 10 : 4
+  const popoverStyle = useMemo(
+    () => [styles.popoverStyle, { minWidth }],
+    [minWidth]
+  )
+
+  const content = useMemo(() => {
+    return sections?.map((section, sectionIndex) => {
+      return (
+        <View key={sectionIndex}>
+          {section.map((row, rowIndex) => {
+            return (
+              <View key={rowIndex}>
+                <TouchableOpacity
+                  onPress={() =>
+                    handlePress({ section: sectionIndex, row: rowIndex })
+                  }>
+                  <View style={styles.section}>
+                    <Text sx={styles.sectionText}>{row.toString()}</Text>
+                    {isSelected({
+                      section: sectionIndex,
+                      row: rowIndex
+                    }) && (
+                      <Icons.Navigation.Check
+                        color={theme.colors.$textPrimary}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+                {rowIndex !== section.length - 1 && Platform.OS === 'ios' && (
+                  <Separator />
+                )}
+              </View>
+            )
+          })}
+          {sectionIndex !== sections.length - 1 && (
+            <View
+              sx={{
+                height: groupSeparatorHeight,
+                backgroundColor: theme.colors.$borderPrimary
+              }}
+            />
+          )}
+        </View>
+      )
+    })
+  }, [
+    sections,
+    isSelected,
+    handlePress,
+    theme.colors.$borderPrimary,
+    theme.colors.$textPrimary
+  ])
 
   return (
     <View>
@@ -67,76 +126,42 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         isVisible={isVisible}
         offset={offset}
         onRequestClose={onRequestClose}
-        popoverStyle={{
-          borderRadius: backgroundBorderRadius,
-          shadowOffset: { width: 0, height: 5 },
-          shadowRadius: 30,
-          shadowOpacity: 0.5,
-          backgroundColor: 'transparent',
-          elevation: 4,
-          minWidth
-        }}
-        arrowSize={{ width: -10, height: 0 }}
+        popoverStyle={popoverStyle}
+        arrowSize={styles.arrow}
         backgroundStyle={{ backgroundColor: 'transparent' }}>
-        <DropdownBackground>
-          {sections.map((section, sectionIndex) => {
-            return (
-              <View key={sectionIndex}>
-                {section.map((row, rowIndex) => {
-                  return (
-                    <View key={rowIndex}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          handlePress({ section: sectionIndex, row: rowIndex })
-                        }>
-                        <View
-                          style={{
-                            paddingLeft: 18,
-                            paddingRight: 16,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            minHeight: 40
-                          }}>
-                          <Text
-                            sx={{
-                              fontSize: 16,
-                              lineHeight: 40,
-                              fontFamily: 'Inter-Regular'
-                            }}>
-                            {row.toString()}
-                          </Text>
-                          {isSelected({
-                            section: sectionIndex,
-                            row: rowIndex
-                          }) && (
-                            <Icons.Navigation.Check
-                              color={theme.colors.$textPrimary}
-                            />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                      {rowIndex !== section.length - 1 &&
-                        Platform.OS === 'ios' && <Separator />}
-                    </View>
-                  )
-                })}
-                {sectionIndex !== sections.length - 1 && (
-                  <View
-                    sx={{
-                      height: groupSeparatorHeight,
-                      backgroundColor: theme.colors.$borderPrimary
-                    }}
-                  />
-                )}
-              </View>
-            )
-          })}
-        </DropdownBackground>
+        <DropdownBackground>{content}</DropdownBackground>
       </Popover>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  popoverStyle: {
+    borderRadius: backgroundBorderRadius,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 30,
+    shadowOpacity: 0.5,
+    backgroundColor: 'transparent',
+    elevation: 4
+  },
+  arrow: {
+    width: -10,
+    height: 0
+  },
+  section: {
+    paddingLeft: 18,
+    paddingRight: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 40
+  },
+  sectionText: {
+    fontSize: 16,
+    lineHeight: 40,
+    fontFamily: 'Inter-Regular'
+  }
+})
 
 export type IndexPath = {
   section: number

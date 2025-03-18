@@ -1,7 +1,6 @@
 import React, { forwardRef, PropsWithChildren, useMemo } from 'react'
 import {
   Insets,
-  Platform,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
@@ -123,7 +122,6 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
               <Text
                 numberOfLines={1}
                 variant={textVariant}
-                adjustsFontSizeToFit={Platform.OS === 'ios'}
                 style={{
                   color: tintColor,
                   flexShrink: 1

@@ -43,6 +43,7 @@ import IconSignature from '../../assets/icons/signature.svg'
 import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
+import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
 import IconSearchCustom from '../../assets/icons/search_custom.svg'
@@ -56,6 +57,8 @@ import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 import IconLayer from '../../assets/icons/layer.svg'
 import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
+import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
+import IconLink from '../../assets/icons/link.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -124,7 +127,7 @@ import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
 import ARS from '../../assets/currency-flagKit/currency-ars.svg'
 import AUD from '../../assets/currency-flagKit/currency-aud.svg'
-import bdt from '../../assets/currency-flagKit/currency-bdt.svg'
+import BDT from '../../assets/currency-flagKit/currency-bdt.svg'
 import BGN from '../../assets/currency-flagKit/currency-bgn.svg'
 import BRL from '../../assets/currency-flagKit/currency-brl.svg'
 import CAD from '../../assets/currency-flagKit/currency-cad.svg'
@@ -172,6 +175,7 @@ export const Icons = {
     Info: IconInfo,
     CheckCircleOutline: IconCheckCircleOutline,
     Clear: IconClear,
+    VisibilityOn: IconVisibilityOn,
     VisibilityOff: IconVisibilityOff
   },
   Alert: {
@@ -187,7 +191,8 @@ export const Icons = {
     ChevronRightV2: IconChevronRightV2,
     ChevronRight: IconChevronRight,
     Check: IconCheck,
-    ExpandMore: IconExpandMore
+    ExpandMore: IconExpandMore,
+    MoreHoriz: IconMoreHoriz
   },
   Notification: {
     Sync: IconSync
@@ -203,7 +208,8 @@ export const Icons = {
   Content: {
     Add: IconAdd,
     HideImage: IconHideImage,
-    Close: IconClose
+    Close: IconClose,
+    Link: IconLink
   },
   Toggle: {
     StarOutline: IconStarOutline,
@@ -314,7 +320,7 @@ export const Icons = {
     AED: AED,
     ARS: ARS,
     AUD: AUD,
-    BDT: bdt,
+    BDT: BDT,
     BGN: BGN,
     BRL: BRL,
     CAD: CAD,

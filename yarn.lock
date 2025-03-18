@@ -326,6 +326,7 @@ __metadata:
     expo-linking: 7.0.5
     expo-navigation-bar: 4.0.8
     expo-router: 4.0.18
+    expo-sms: 13.0.1
     expo-status-bar: 2.0.1
     expo-video: 2.0.5
     https-browserify: 1.0.0
@@ -392,6 +393,7 @@ __metadata:
     react-native-safe-area-context: 5.3.0
     react-native-screens: 4.9.2
     react-native-sensors: 7.3.6
+    react-native-share: 12.0.9
     react-native-sound: 0.11.2
     react-native-svg: 15.8.0
     react-native-svg-transformer: 1.5.0
@@ -18065,6 +18067,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-sms@npm:13.0.1":
+  version: 13.0.1
+  resolution: "expo-sms@npm:13.0.1"
+  peerDependencies:
+    expo: "*"
+  checksum: ac249e8f950dd23aa484f8bafd380b0ec1f1539a3331a54790e7ea2bbbdf449e02ef229974b763c41649928368149778b4e80b9b585c499b2d0d3bb3866de584
+  languageName: node
+  linkType: hard
+
 "expo-splash-screen@npm:0.29.18":
   version: 0.29.18
   resolution: "expo-splash-screen@npm:0.29.18"
@@ -26291,6 +26302,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-share@npm:12.0.9":
+  version: 12.0.9
+  resolution: "react-native-share@npm:12.0.9"
+  checksum: 837e7162d3e9b44bb225029d08abebc9b064c4dee54ebad5bbe017fba5c9f1be02451dd87d96f937d79bfe2b2e6424cb638ec469cdafb33b4a7d4ef069bfa60a
+  languageName: node
+  linkType: hard
+
 "react-native-sound@npm:0.11.2":
   version: 0.11.2
   resolution: "react-native-sound@npm:0.11.2"
@@ -29774,9 +29792,9 @@ react-native-webview@ava-labs/react-native-webview:
   linkType: hard
 
 "undici@npm:^6.18.2 || ^7.0.0":
-  version: 7.4.0
-  resolution: "undici@npm:7.4.0"
-  checksum: 9fae06ec911031eb4d12d1dd9ad97dd8a7acfc3b3e02439bd5309525fa2023c88db31e25ada1a991e51c3a323d9a2227e5ba6bc453ffb31a18838fb731f4fabc
+  version: 7.5.0
+  resolution: "undici@npm:7.5.0"
+  checksum: 796498f9d134a14a513282915109ebcb96605069e8a2b0d58271fe05cb42a5cf76f5dfa416c21e0ebfaf9df57a17a09d5a778906e7e25581df66b28f97437158
   languageName: node
   linkType: hard
 

@@ -29,8 +29,7 @@ export const ChartOverlay = ({
           paddingHorizontal: 60
         }}>
         <Text variant="body2" sx={{ textAlign: 'center' }}>
-          We are unable to retrieve chart data for this token. Please check back
-          later.
+          No chart data available for this token.{'\n'}Please check back later.
         </Text>
       </View>
     )

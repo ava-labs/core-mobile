@@ -173,12 +173,12 @@ export const CollectiblesScreen = ({
     onResetFilter
   ])
 
-  const renderHeader = useMemo((): JSX.Element => {
+  const renderHeader = useMemo((): JSX.Element | undefined => {
     if (
       filteredAndSorted.length === 0 &&
       (!isEnabled || noCollectiblesFound || !isLoading)
     )
-      return <></>
+      return
     return (
       <View
         style={[

@@ -1,8 +1,17 @@
 import React, { memo } from 'react'
 import { Text, View } from '../Primitives'
+import { MaskedText } from '../MaskedText/MaskedText'
 
 export const NavigationTitleHeader = memo(
-  ({ title, subtitle }: { title: string; subtitle?: string }): JSX.Element => {
+  ({
+    title,
+    subtitle,
+    shouldMaskSubtitle = false
+  }: {
+    title: string
+    subtitle?: string
+    shouldMaskSubtitle?: boolean
+  }): JSX.Element => {
     return (
       <View style={[{ alignItems: 'center' }]}>
         <Text
@@ -11,22 +20,24 @@ export const NavigationTitleHeader = memo(
             fontSize: 17,
             lineHeight: 20,
             fontFamily: 'Inter-SemiBold',
-            maxWidth: 150
+            maxWidth: 200
           }}>
           {title}
         </Text>
         {subtitle && (
-          <Text
+          <MaskedText
             numberOfLines={1}
             variant="caption"
-            sx={{ color: '$textSecondary' }}>
+            sx={{ color: '$textSecondary' }}
+            shouldMask={shouldMaskSubtitle}>
             {subtitle}
-          </Text>
+          </MaskedText>
         )}
       </View>
     )
   },
   (prevProps, nextProps) =>
     prevProps.title === nextProps.title &&
-    prevProps.subtitle === nextProps.subtitle
+    prevProps.subtitle === nextProps.subtitle &&
+    prevProps.shouldMaskSubtitle === nextProps.shouldMaskSubtitle
 )

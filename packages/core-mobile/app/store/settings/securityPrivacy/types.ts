@@ -1,9 +1,11 @@
 export const initialState: SecurityNPrivacyState = {
   coreAnalytics: undefined,
-  consentToTOUnPP: false
+  consentToTOUnPP: false,
+  privacyModeEnabled: false
 }
 
 export type SecurityNPrivacyState = {
   coreAnalytics: boolean | undefined
   consentToTOUnPP: boolean
+  privacyModeEnabled: boolean
 }
