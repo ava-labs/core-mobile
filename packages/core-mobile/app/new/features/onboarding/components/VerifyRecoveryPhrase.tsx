@@ -129,7 +129,7 @@ export const VerifyRecoveryPhrase = ({
           <Animated.View style={[{ gap: 36, marginTop: 66 }, animatedStyle]}>
             <WordSelection
               title={title1}
-              testID="check_mnemonic__first_word"
+              testID="firstWord"
               wordIndex={firstWordSelection.index}
               wordOptions={firstWordSelection.wordOptions}
               selectedWordIndex={selectedWord1Index}
@@ -137,7 +137,7 @@ export const VerifyRecoveryPhrase = ({
             />
             <WordSelection
               title={title2}
-              testID="check_mnemonic__second_word"
+              testID="secondWord"
               wordIndex={secondWordSelection.index}
               wordOptions={secondWordSelection.wordOptions}
               selectedWordIndex={selectedWord2Index}
@@ -145,7 +145,7 @@ export const VerifyRecoveryPhrase = ({
             />
             <WordSelection
               title={title3}
-              testID="check_menemonic__third_word"
+              testID="thirdWord"
               wordIndex={thirdWordSelection.index}
               wordOptions={thirdWordSelection.wordOptions}
               selectedWordIndex={selectedWord3Index}

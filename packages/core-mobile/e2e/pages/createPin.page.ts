@@ -14,10 +14,6 @@ class CreatePinPage {
     return by.text(createPinLoc.agreeAndContinueBtn)
   }
 
-  get nextBtn() {
-    return by.text(createPinLoc.nextBtn)
-  }
-
   get enterYourPinHeader() {
     return by.text(createPinLoc.enterYourPinHeader)
   }
@@ -52,10 +48,6 @@ class CreatePinPage {
 
   async tapNumpadOne() {
     await Action.tap(this.numpadOne)
-  }
-
-  async tapNextBtn() {
-    await Action.tap(this.nextBtn)
   }
 
   async tapSkipBtn() {

@@ -2,6 +2,7 @@ import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
 import loginRecoverWallet from '../helpers/loginRecoverWallet'
 import delay from '../helpers/waits'
+import commonElsLoc from '../locators/commonEls.loc'
 import advancedPage from './burgerMenu/advanced.page'
 import burgerMenuPage from './burgerMenu/burgerMenu.page'
 
@@ -72,6 +73,14 @@ class CommonElsPage {
 
   get okBtn() {
     return by.text(commonEls.okBtn)
+  }
+
+  get next() {
+    return by.text(commonElsLoc.next)
+  }
+
+  get dismiss() {
+    return by.text(commonElsLoc.dismiss)
   }
 
   async tapCarrotSVG(index = 0) {
@@ -184,6 +193,20 @@ class CommonElsPage {
 
   async tapReloadSVG(index = 0) {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
+  }
+  async exitMetro() {
+    try {
+      if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
+        await Actions.tap(by.text(/.*8081.*/i))
+      }
+      await Actions.tap(by.id(/.*x-icon.*/i))
+    } catch (e) {
+      console.log('Metro dev menu is not found...')
+    }
+  }
+
+  async tapNext() {
+    await Actions.tap(this.next)
   }
 }
 

@@ -1,19 +1,15 @@
 import { device } from 'detox'
-import { DeviceLaunchAppConfig, DevicePermissions } from 'detox/detox'
+import { DeviceLaunchAppConfig } from 'detox/detox'
 import CommonElsPage from '../pages/commonEls.page'
 import Assert from '../helpers/assertions'
+import commonElsPage from '../pages/commonEls.page'
 import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
-export const warmup = async (
-  newInstance = false,
-  isBalanceNotificationOn = false,
-  isCoreAnalyticsOn = false
-) => {
-  const permissions: DevicePermissions = { notifications: 'YES', camera: 'YES' }
+export const warmup = async (newInstance = false) => {
   const initialArgs: DeviceLaunchAppConfig = {
-    permissions: permissions,
+    permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
       detoxURLBlacklistRegex: [
         '.*cloudflare-ipfs.*',
@@ -28,21 +24,19 @@ export const warmup = async (
   }
   await device.launchApp(initialArgs)
 
-  // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
+  // Jailbreak Check
   if (await Action.isVisible(CommonElsPage.jailbrokenWarning, 0)) {
     console.log('Handling Jailbroken warning...')
     await Action.tapElementAtIndex(by.text('Ok'), 0)
     await Action.waitForElementNotVisible(CommonElsPage.jailbrokenWarning)
     console.log('Jailbroken warning handled!!!')
   }
-  try {
-    await loginRecoverWallet.recoverWalletLogin(
-      isBalanceNotificationOn,
-      isCoreAnalyticsOn
-    )
-  } catch (e) {
-    console.log('Skipped login process...')
-  }
+
+  // Metro Dev Menu Check
+  await commonElsPage.exitMetro()
+
+  // Login
+  await loginRecoverWallet.login()
 }
 
 export const handleJailbrokenWarning = async () => {
