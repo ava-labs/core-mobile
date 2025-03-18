@@ -34,6 +34,10 @@ const SelectAppearanceScreen = (): JSX.Element => {
         }}>
         <View sx={{ gap: 12 }}>
           <TouchableOpacity
+            sx={{
+              height: 194,
+              justifyContent: 'center'
+            }}
             onPress={() => {
               dispatch(setSelectedAppearance(Appearance.Light))
               canGoBack() && back()
@@ -48,6 +52,10 @@ const SelectAppearanceScreen = (): JSX.Element => {
         </View>
         <View sx={{ gap: 12 }}>
           <TouchableOpacity
+            sx={{
+              height: 194,
+              justifyContent: 'center'
+            }}
             onPress={() => {
               dispatch(setSelectedAppearance(Appearance.Dark))
               canGoBack() && back()
@@ -62,6 +70,10 @@ const SelectAppearanceScreen = (): JSX.Element => {
         </View>
         <View sx={{ gap: 12 }}>
           <TouchableOpacity
+            sx={{
+              height: 194,
+              justifyContent: 'center'
+            }}
             onPress={() => {
               dispatch(setSelectedAppearance(Appearance.System))
               canGoBack() && back()
