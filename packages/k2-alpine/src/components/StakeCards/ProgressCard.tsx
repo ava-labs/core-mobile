@@ -70,7 +70,7 @@ export const ProgressCard = ({
           accelerationIncludingGravity.y ** 2 +
           accelerationIncludingGravity.z ** 2
       )
-      if (accMagnitude > 10.5) {
+      if (accMagnitude > ACCELERATION_MAGNITUDE_THRESHOLD) {
         amplitude.value = withTiming(accMagnitude, { duration: 300 })
         lastUpdateTime.current = Date.now()
       }
@@ -162,3 +162,4 @@ export type ProgressCardProps = {
 const AnimatedPath = Animated.createAnimatedComponent(Path)
 
 const PHASE_MULTIPLIER = Platform.OS === 'ios' ? 1 : 1.1
+const ACCELERATION_MAGNITUDE_THRESHOLD = 10.5
