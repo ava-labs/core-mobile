@@ -1,28 +1,41 @@
 import { DeviceMotion, DeviceMotionMeasurement } from 'expo-sensors'
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { AppState } from 'react-native'
 import { useSharedValue, SharedValue } from 'react-native-reanimated'
 
-export const useMotion = ({
-  enabled
-}: {
-  enabled: boolean
-}): SharedValue<DeviceMotionMeasurement | undefined> => {
+export const useMotion = (): SharedValue<
+  DeviceMotionMeasurement | undefined
+> => {
+  const [appState, setAppState] = useState(AppState.currentState)
   const deviceMotionMeasurement = useSharedValue<
     DeviceMotionMeasurement | undefined
   >(undefined)
+
+  const shouldAnimate = useMemo(() => appState === 'active', [appState])
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      setAppState(nextAppState)
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [])
+
   // subscribe to device motion
   useEffect(() => {
     const subscription = DeviceMotion.addListener(motion => {
-      if (!enabled) {
+      if (shouldAnimate) {
+        deviceMotionMeasurement.value = motion
+      } else {
         deviceMotionMeasurement.value = undefined
       }
-
-      deviceMotionMeasurement.value = motion
     })
 
     return () => subscription && subscription.remove()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled])
+  }, [shouldAnimate])
 
   return deviceMotionMeasurement
 }
