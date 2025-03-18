@@ -5,6 +5,7 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import React from 'react'
+import { Appearance } from 'react-native'
 import { hideModal, showModal } from 'utils/modal'
 
 export const LogoModal = (): JSX.Element => {
@@ -26,8 +27,10 @@ export const LogoModal = (): JSX.Element => {
 }
 
 export const showLogoModal = (): void => {
+  const colorScheme = Appearance.getColorScheme()
+
   showModal(
-    <K2AlpineThemeProvider>
+    <K2AlpineThemeProvider colorScheme={colorScheme}>
       <LogoModal />
     </K2AlpineThemeProvider>
   )
