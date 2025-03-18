@@ -45,13 +45,14 @@ allprojects {
         maven {
             // All of Detox' artifacts are provided via the npm module
             url "$rootDir/../node_modules/detox/Detox-android"
-            url "$rootDir/../node_modules/expo-camera/android/maven"
         }
         mavenCentral()
+        maven { url "$rootDir/../node_modules/expo-camera/android/maven" }
     }
 }
 project.ext {
     excludeAppGlideModule = true
+    glideVersion = "4.9.0"
 }
 
 apply plugin: "com.facebook.react.rootproject"
