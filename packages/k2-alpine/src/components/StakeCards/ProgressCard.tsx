@@ -32,7 +32,7 @@ export const ProgressCard = ({
   const phase = useSharedValue(0)
   const phaseConstant = useMemo(() => Math.random() * 0.4 + 0.8, []) // randomize phase a bit, from 0.8 to 1.2
   const rotation = useDerivedValue(() => {
-    return withTiming(motion?.value?.rotation.gamma ?? 0, { duration: 300 })
+    return withTiming(motion?.value?.rotation.gamma ?? 0, { duration: 200 })
   })
   const rotationStyle = useAnimatedStyle(() => {
     return {
@@ -70,7 +70,7 @@ export const ProgressCard = ({
           accelerationIncludingGravity.y ** 2 +
           accelerationIncludingGravity.z ** 2
       )
-      if (accMagnitude > 10) {
+      if (accMagnitude > 10.5) {
         amplitude.value = withTiming(accMagnitude, { duration: 300 })
         lastUpdateTime.current = Date.now()
       }
