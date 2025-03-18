@@ -2,17 +2,18 @@
 /**
  * @jest-environment ./jestCustomEnv
  */
+import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
-import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
+import commonElsPage from '../../pages/commonEls.page'
 
-describe('Login with metamask wallet', () => {
+describe('Onboard MetaMask wallet', () => {
   beforeAll(async () => {
     await device.launchApp({ newInstance: true })
+    await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
 
   it('Should login with a metamask wallet', async () => {
-    const recoveryPhrase: string = process.env.E2E_METAMASK_MNEMONIC as string
-    await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
+    await loginRecoverWallet.login(process.env.E2E_METAMASK_MNEMONIC as string)
   })
 })

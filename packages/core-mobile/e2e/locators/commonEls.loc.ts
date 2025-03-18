@@ -15,5 +15,7 @@ export default {
   carrotSVG: 'carrot_svg',
   calendarSVG: 'calendarSVG',
   datePicker: 'dateTimePicker',
-  okBtn: 'OK'
+  okBtn: 'OK',
+  next: 'Next',
+  dismiss: 'Dismiss'
 }

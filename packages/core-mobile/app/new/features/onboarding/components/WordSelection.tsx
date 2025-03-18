@@ -14,6 +14,7 @@ export default function WordSelection({
   title,
   wordOptions,
   selectedWordIndex,
+  testID,
   setSelectedWordIndex
 }: Props): JSX.Element {
   const onSelection = (word: string, index: number): void => {
@@ -28,7 +29,7 @@ export default function WordSelection({
 
   return (
     <View sx={{ gap: 10 }}>
-      <Text variant="subtitle1" testID="word_selection__word_number">
+      <Text variant="subtitle1" testID={`${testID}_title`}>
         {title ?? ' '}
       </Text>
       <View
@@ -38,19 +39,19 @@ export default function WordSelection({
           gap: 8
         }}>
         <Word
-          testID="word_selection__word_one"
+          testID={`${testID}_${word0}`}
           selected={selectedWordIndex === 0}
           word={word0}
           onSelected={word => onSelection(word, 0)}
         />
         <Word
-          testID="word_selection__word_two"
+          testID={`${testID}_${word1}`}
           selected={selectedWordIndex === 1}
           word={word1}
           onSelected={word => onSelection(word, 1)}
         />
         <Word
-          testID="word_selection__word_three"
+          testID={`${testID}_${word2}`}
           selected={selectedWordIndex === 2}
           word={word2}
           onSelected={word => onSelection(word, 2)}
@@ -72,9 +73,9 @@ function Word({
   testID?: string
 }): JSX.Element {
   return (
-    <View testID={testID} style={{ flexGrow: 1 }}>
+    <View style={{ flexGrow: 1 }}>
       <Button
-        testID="word_selection__select_word_button"
+        testID={testID}
         type={selected ? 'primary' : 'secondary'}
         size="large"
         onPress={() => onSelected(word)}>

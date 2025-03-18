@@ -21,7 +21,7 @@ function MnemonicText(props: TextProps | Readonly<TextProps>): JSX.Element {
       <Text
         variant="body2"
         sx={{ color: theme.colors.$textPrimary }}
-        testID={`mnemonic_ava__word`}>
+        testID={`mnemonic__${orderNum}`}>
         {props.text}
       </Text>
     </View>

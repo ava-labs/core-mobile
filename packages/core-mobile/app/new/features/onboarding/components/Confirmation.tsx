@@ -40,6 +40,7 @@ export const Confirmation = ({
                   size: 380,
                   delay: 300
                 }}
+                testID="selected_avatar"
               />
             )}
           </View>
@@ -70,7 +71,11 @@ export const Confirmation = ({
             padding: 16,
             backgroundColor: '$surfacePrimary'
           }}>
-          <Button size="large" type="primary" onPress={onNext}>
+          <Button
+            testID="lets_go_btn"
+            size="large"
+            type="primary"
+            onPress={onNext}>
             Let’s go!
           </Button>
         </View>
