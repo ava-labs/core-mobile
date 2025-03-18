@@ -116,7 +116,7 @@ export const AnimatedPressable = memo(
       <AnimatedPress
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
-        onTouchEnd={onPressOut}
+        onPressOut={onPressOut}
         {...props}
         style={[props.style, animatedStyle]}>
         {children}
