@@ -24,28 +24,22 @@ export const ProgressCard = ({
   const {
     theme: { colors }
   } = useTheme()
-
-  const phaseConstant = useMemo(() => Math.random() * 0.4 + 0.8, []) // randomize phase a bit, from 0.8 to 1.2
-
-  const phase = useSharedValue(0)
   const height = getCardHeight(width)
-  const baseHeight = height * (1 - progress)
-
   const lastUpdateTime = useRef(Date.now())
-
   const waveWidth = useMemo(() => width * 2, [width])
-
-  const rotationZ = useDerivedValue(() => {
+  const baseHeight = height * (1 - progress)
+  const amplitude = useSharedValue(0)
+  const phase = useSharedValue(0)
+  const phaseConstant = useMemo(() => Math.random() * 0.4 + 0.8, []) // randomize phase a bit, from 0.8 to 1.2
+  const rotation = useDerivedValue(() => {
     return withTiming(motion?.value?.rotation.gamma ?? 0, { duration: 300 })
   })
-
   const rotationStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ rotateZ: `${-rotationZ.value * 0.5}rad` }]
+      transform: [{ rotateZ: `${-rotation.value * 0.5}rad` }]
     }
   })
-
-  const amplitude = useSharedValue(0)
+  const fillColor = colors.$borderPrimary
 
   // create path based on amplitude and phase
   const animatedProps = useAnimatedProps(() => {
@@ -64,8 +58,6 @@ export const ProgressCard = ({
 
     return { d }
   })
-
-  const fillColor = colors.$borderPrimary
 
   // update amplitude based on motion
   useDerivedValue(() => {
