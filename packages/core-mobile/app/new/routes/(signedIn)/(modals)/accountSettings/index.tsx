@@ -96,7 +96,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
-    navigate('./appAppearance')
+    navigate('./accountSettings/selectAppearance')
   }, [navigate])
 
   const goToAppIcon = useCallback(() => {

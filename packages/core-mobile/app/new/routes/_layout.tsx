@@ -10,7 +10,7 @@ import { selectIsReady, selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
 import { useBgDetect } from 'navigation/useBgDetect'
 import { useFocusEffect, useRootNavigationState, useRouter } from 'expo-router'
-import { Platform, StatusBar, useColorScheme } from 'react-native'
+import { Platform, StatusBar } from 'react-native'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -28,6 +28,7 @@ import {
 } from 'common/consts/screenOptions'
 import { OnboardingProvider } from 'features/onboarding/contexts/OnboardingProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
+import { useColorScheme } from 'common/hooks/useColorScheme'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -95,7 +96,7 @@ export default function RootLayout(): JSX.Element | null {
   }, [])
 
   return (
-    <K2AlpineThemeProvider>
+    <K2AlpineThemeProvider colorScheme={colorScheme}>
       <ApplicationContextProvider>
         <NavigationThemeProvider>
           <RecoveryMethodProvider>
