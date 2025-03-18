@@ -119,6 +119,7 @@ const TrackHomeScreen = (): JSX.Element => {
             animatedSearchbarStyle,
             {
               paddingHorizontal: 16,
+              paddingVertical: 16,
               backgroundColor: theme.colors.$surfacePrimary
             }
           ]}>

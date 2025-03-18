@@ -143,13 +143,12 @@ export const SearchBar: FC<Props> = ({
           width: isFocused && useCancel ? INPUT_SIZE_FOCUSED : INPUT_SIZE,
           backgroundColor: colors.$surfaceSecondary,
           flexDirection: 'row',
-          paddingHorizontal: 12,
-          marginVertical: 11
+          paddingHorizontal: 12
         }}>
         <View
           sx={{
             flexDirection: 'row',
-            gap: 11.5,
+            gap: 12,
             alignItems: 'center',
             flex: 1
           }}>
