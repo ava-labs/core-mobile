@@ -4,7 +4,7 @@ import { Appearance as RnAppearance } from 'react-native'
 import { setSelectedAppearance } from './slice'
 import { Appearance } from './types'
 
-const toggleAppearanceSideEffect = (action: AnyAction): void => {
+const handleAppearanceChange = (action: AnyAction): void => {
   RnAppearance.setColorScheme(
     action.payload === Appearance.Light
       ? 'light'
@@ -19,6 +19,6 @@ export const addAppearanceListeners = (
 ): void => {
   startListening({
     actionCreator: setSelectedAppearance,
-    effect: toggleAppearanceSideEffect
+    effect: handleAppearanceChange
   })
 }
