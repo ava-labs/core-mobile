@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import Svg, { Path } from 'react-native-svg'
 import { DeviceMotionMeasurement } from 'expo-sensors'
+import { Platform } from 'react-native'
 import { Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
@@ -35,7 +36,7 @@ export const ProgressCard = ({
   const waveWidth = useMemo(() => width * 2, [width])
 
   const rotationZ = useDerivedValue(() => {
-    return withTiming(motion?.value?.rotation.gamma ?? 0, { duration: 100 })
+    return withTiming(motion?.value?.rotation.gamma ?? 0, { duration: 300 })
   })
 
   const rotationStyle = useAnimatedStyle(() => {
@@ -46,6 +47,7 @@ export const ProgressCard = ({
 
   const amplitude = useSharedValue(0)
 
+  // create path based on amplitude and phase
   const animatedProps = useAnimatedProps(() => {
     const A = amplitude.value
     const φ = phase.value
@@ -65,6 +67,7 @@ export const ProgressCard = ({
 
   const fillColor = colors.$borderPrimary
 
+  // update amplitude based on motion
   useDerivedValue(() => {
     if (!motion?.value) return
 
@@ -75,7 +78,7 @@ export const ProgressCard = ({
           accelerationIncludingGravity.y ** 2 +
           accelerationIncludingGravity.z ** 2
       )
-      if (accMagnitude > 10.5) {
+      if (accMagnitude > 10) {
         amplitude.value = withTiming(accMagnitude, { duration: 300 })
         lastUpdateTime.current = Date.now()
       }
@@ -88,7 +91,7 @@ export const ProgressCard = ({
       const interval = setInterval(() => {
         const now = Date.now()
         if (now - lastUpdateTime.current > 1000) {
-          amplitude.value = withSpring(0, { duration: 10000 })
+          amplitude.value = withSpring(0, { duration: 15000 })
         }
       }, 1000)
       return () => clearInterval(interval)
@@ -96,12 +99,15 @@ export const ProgressCard = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [motion])
 
+  // update phase when motion is available
   useEffect(() => {
     let animationFrameId: number
 
     const updatePhase = (): void => {
       if (motion?.value) {
-        phase.value = (phase.value + 0.1 * phaseConstant) % (2 * Math.PI)
+        phase.value =
+          ((phase.value + 0.1 * phaseConstant) % (2 * Math.PI)) *
+          PHASE_MULTIPLIER
       }
       animationFrameId = requestAnimationFrame(updatePhase)
     }
@@ -162,3 +168,5 @@ export type ProgressCardProps = {
 }
 
 const AnimatedPath = Animated.createAnimatedComponent(Path)
+
+const PHASE_MULTIPLIER = Platform.OS === 'ios' ? 1 : 1.1
