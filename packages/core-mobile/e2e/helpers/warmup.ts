@@ -6,7 +6,6 @@ import commonElsPage from '../pages/commonEls.page'
 import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
-import delay from './waits'
 
 export const warmup = async (newInstance = false) => {
   const initialArgs: DeviceLaunchAppConfig = {
@@ -34,16 +33,10 @@ export const warmup = async (newInstance = false) => {
   }
 
   // Metro Dev Menu Check
-  try {
-    await commonElsPage.exitMetro()
-  } catch (e) {
-    console.log('Metro dev menu is not found...')
-  }
+  await commonElsPage.exitMetro()
 
-  // Switch to the new gen for 15 secs on your local machine.
-  // I'll remove delay(15000) once the new gen is set to default
-  await delay(15000)
-  await loginRecoverWallet.recoverWalletLogin()
+  // Login
+  await loginRecoverWallet.login()
 }
 
 export const handleJailbrokenWarning = async () => {

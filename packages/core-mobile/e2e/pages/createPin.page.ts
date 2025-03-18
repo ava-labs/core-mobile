@@ -14,10 +14,6 @@ class CreatePinPage {
     return by.text(createPinLoc.agreeAndContinueBtn)
   }
 
-  get nextBtn() {
-    return by.text(createPinLoc.nextBtn)
-  }
-
   get enterYourPinHeader() {
     return by.text(createPinLoc.enterYourPinHeader)
   }
@@ -38,18 +34,6 @@ class CreatePinPage {
     return by.text(createPinLoc.skipBtn)
   }
 
-  get letsgo() {
-    return by.text(createPinLoc.letsgo)
-  }
-
-  get pinInputField() {
-    return by.id(createPinLoc.pinInputField)
-  }
-
-  async tapLetsGo() {
-    await Action.tap(this.letsgo)
-  }
-
   async tapSignInWithRecoveryPhraseBtn() {
     await Action.tap(this.signInWithRecoveryPhraseBtn)
   }
@@ -58,20 +42,12 @@ class CreatePinPage {
     await Action.multiTap(this.numpadZero, 6, 0)
   }
 
-  async setPinNumber(pin = '000000') {
-    await Action.setInputText(this.pinInputField, pin)
-  }
-
   async tapNumpadZero5Times() {
     await element(this.numpadZero).multiTap(5)
   }
 
   async tapNumpadOne() {
     await Action.tap(this.numpadOne)
-  }
-
-  async tapNextBtn() {
-    await Action.tap(this.nextBtn)
   }
 
   async tapSkipBtn() {

@@ -37,7 +37,7 @@ export const TermsAndConditions = ({
           Terms and conditions
         </Text>
         <View sx={{ marginTop: 8, gap: 20 }}>
-          <Text variant="subtitle2">
+          <Text testID="terms_conditions_description" variant="subtitle2">
             These Terms of Use (these “Terms”) constitute a legally binding
             agreement made between you, whether personally or on behalf of an
             entity (“you”) and Ava Labs, Inc. (together with its subsidiaries

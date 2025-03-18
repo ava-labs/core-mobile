@@ -51,6 +51,7 @@ export const SelectAvatar = ({
               source={avatar.source}
               size={isScreenSmall ? 100 : 'large'}
               hasBlur={true}
+              testID="selected_avatar"
             />
           )}
         </View>
