@@ -6,7 +6,6 @@ import {
   Image,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Appearance,
@@ -18,11 +17,9 @@ import { ImageRequireSource } from 'react-native'
 const SelectAppearanceScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const selectedAppearance = useSelector(selectSelectedAppearance)
-  const { canGoBack, back } = useRouter()
 
   const handleSelectAppearance = (appearance: Appearance): void => {
     dispatch(setSelectedAppearance(appearance))
-    canGoBack() && back()
   }
 
   return (
