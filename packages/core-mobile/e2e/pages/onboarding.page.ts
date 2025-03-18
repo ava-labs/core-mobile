@@ -320,11 +320,11 @@ class OnboardingPage {
   }
 
   async selectWord(words: string[], questionId: string) {
-    const firstTitle = await Action.getElementText(by.id(`${questionId}_title`))
-    if (firstTitle) {
-      const target = firstTitle.match(/"(.*?)"/)
+    const title = await Action.getElementText(by.id(`${questionId}_title`))
+    if (title) {
+      const target = title.match(/"(.*?)"/)
       const targetIndex = target && target[1] ? words.indexOf(target[1]) : -1
-      const isBefore = firstTitle.indexOf('before') > -1
+      const isBefore = title.indexOf('before') > -1
       if (isBefore) {
         await Action.tap(by.id(`${questionId}_${words[targetIndex - 1]}`))
       } else {
