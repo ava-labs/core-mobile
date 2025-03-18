@@ -3,6 +3,7 @@ import { useTheme, Text, View, GroupList } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
+import { selectSelectedAppearance } from 'store/settings/appearance'
 
 export const AppAppearance = ({
   selectAppAppearance,
@@ -14,9 +15,10 @@ export const AppAppearance = ({
   selectAppIcon: () => void
 }): React.JSX.Element => {
   const {
-    theme: { colors, isDark }
+    theme: { colors }
   } = useTheme()
   const currency = useSelector(selectSelectedCurrency)
+  const appearance = useSelector(selectSelectedAppearance)
 
   const data = [
     {
@@ -49,7 +51,7 @@ export const AppAppearance = ({
     {
       title: 'Appearance',
       onPress: selectAppAppearance,
-      value: isDark ? 'Dark theme' : 'Light theme'
+      value: appearance
     },
     {
       title: 'App icon',

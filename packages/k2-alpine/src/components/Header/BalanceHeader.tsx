@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
@@ -29,56 +29,62 @@ export const BalanceHeader = ({
   isPrivacyModeEnabled?: boolean
 }): React.JSX.Element => {
   const { theme } = useTheme()
-  const renderBalance = (): React.JSX.Element => {
+  const renderPriceChangeIndicator = useCallback((): React.JSX.Element => {
+    if (isPrivacyModeEnabled) {
+      return (
+        <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
+          <Icons.Action.VisibilityOff
+            width={16}
+            height={16}
+            color={theme.colors.$textPrimary}
+          />
+          <Text
+            variant="buttonMedium"
+            sx={{
+              color: theme.colors.$textPrimary,
+              fontSize: 14,
+              lineHeight: 17
+            }}>
+            Privacy mode is on
+          </Text>
+        </View>
+      )
+    }
+    if (errorMessage) {
+      return (
+        <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
+          <Icons.Alert.Error
+            width={16}
+            height={16}
+            color={colors.$accentDanger}
+          />
+          <Text variant="buttonMedium" sx={{ color: colors.$accentDanger }}>
+            {errorMessage}
+          </Text>
+        </View>
+      )
+    }
+    return (
+      <PriceChangeIndicator
+        formattedPrice={priceChange?.formattedPrice}
+        status={priceChange.status}
+        formattedPercent={priceChange.formattedPercent}
+        textVariant="buttonMedium"
+        animated={true}
+      />
+    )
+  }, [
+    errorMessage,
+    isPrivacyModeEnabled,
+    priceChange,
+    theme.colors.$textPrimary
+  ])
+
+  const renderBalance = useCallback((): React.JSX.Element => {
     if (isLoading) {
       return <BalanceLoader />
     }
 
-    const renderPriceChangeIndicator = (): React.JSX.Element => {
-      if (isPrivacyModeEnabled) {
-        return (
-          <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
-            <Icons.Action.VisibilityOff
-              width={16}
-              height={16}
-              color={theme.colors.$textPrimary}
-            />
-            <Text
-              variant="buttonMedium"
-              sx={{
-                color: theme.colors.$textPrimary,
-                fontSize: 14,
-                lineHeight: 17
-              }}>
-              Privacy mode is on
-            </Text>
-          </View>
-        )
-      }
-      if (errorMessage) {
-        return (
-          <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
-            <Icons.Alert.Error
-              width={16}
-              height={16}
-              color={colors.$accentDanger}
-            />
-            <Text variant="buttonMedium" sx={{ color: colors.$accentDanger }}>
-              {errorMessage}
-            </Text>
-          </View>
-        )
-      }
-      return (
-        <PriceChangeIndicator
-          formattedPrice={priceChange?.formattedPrice}
-          status={priceChange.status}
-          formattedPercent={priceChange.formattedPercent}
-          textVariant="buttonMedium"
-          animated={true}
-        />
-      )
-    }
     return (
       <View
         style={{
@@ -106,7 +112,14 @@ export const BalanceHeader = ({
         </View>
       </View>
     )
-  }
+  }, [
+    currency,
+    formattedBalance,
+    isLoading,
+    isPrivacyModeEnabled,
+    renderPriceChangeIndicator
+  ])
+
   return (
     <View onLayout={onLayout}>
       <Text
