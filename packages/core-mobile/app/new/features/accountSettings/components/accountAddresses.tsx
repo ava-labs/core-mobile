@@ -1,5 +1,5 @@
 import React from 'react'
-import { GroupList, Button } from '@avalabs/k2-alpine'
+import { GroupList, useTheme, TouchableOpacity, Text } from '@avalabs/k2-alpine'
 import { Account } from 'store/account'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
@@ -83,9 +83,21 @@ const CopyButton = ({
 }: {
   onPress: () => void
 }): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   return (
-    <Button type="secondary" onPress={onPress} size="small">
-      Copy
-    </Button>
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        backgroundColor: colors.$borderPrimary,
+        paddingHorizontal: 17,
+        paddingVertical: 5,
+        borderRadius: 17
+      }}>
+      <Text variant="buttonMedium" sx={{ fontSize: 14 }}>
+        Copy
+      </Text>
+    </TouchableOpacity>
   )
 }
