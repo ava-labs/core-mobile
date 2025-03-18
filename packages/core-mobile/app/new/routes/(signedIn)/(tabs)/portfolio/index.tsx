@@ -140,9 +140,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
       <NavigationTitleHeader
         title={activeAccount?.name ?? ''}
         subtitle={formattedBalance}
+        shouldMaskSubtitle={isPrivacyModeEnabled}
       />
     ),
-    [activeAccount?.name, formattedBalance]
+    [activeAccount?.name, formattedBalance, isPrivacyModeEnabled]
   )
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
@@ -204,18 +205,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
       </View>
     )
   }, [
-    ACTION_BUTTONS,
-    animatedHeaderStyle,
-    formattedBalance,
-    isLoading,
-    activeAccount?.name,
-    selectedCurrency,
     theme.colors.$surfacePrimary,
+    handleBalanceHeaderLayout,
+    animatedHeaderStyle,
+    activeAccount?.name,
+    formattedBalance,
+    selectedCurrency,
     totalPriceChanged,
     indicatorStatus,
     formattedPercent,
     balanceAccurate,
-    handleBalanceHeaderLayout
+    isLoading,
+    isPrivacyModeEnabled,
+    ACTION_BUTTONS
   ])
 
   const handleSelectSegment = useCallback(
