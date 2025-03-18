@@ -4,7 +4,7 @@ import notificationsPage from '../../pages/burgerMenu/notifications.page'
 
 describe('Notification setting', () => {
   it('should turn ON all notifications by default', async () => {
-    await warmup(false, true)
+    await warmup()
     await burgerMenuPage.tapBurgerMenuButton()
     await burgerMenuPage.tapNotifications()
     await notificationsPage.verifyAllSwitches()

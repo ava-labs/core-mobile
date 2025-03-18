@@ -46,6 +46,7 @@ export const SimpleTextInput = ({
         onChangeText={onChangeText}
         placeholder={placeholder}
         maxLength={maxLength}
+        testID="text_input"
       />
       {value.length !== 0 && (
         <TouchableOpacity onPress={() => onChangeText('')}>

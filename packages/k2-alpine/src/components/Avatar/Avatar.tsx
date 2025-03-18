@@ -21,6 +21,7 @@ export const Avatar = ({
   style,
   backgroundColor,
   glowEffect,
+  testID,
   hasLoading = true
 }: {
   source: ImageSourcePropType
@@ -31,6 +32,7 @@ export const Avatar = ({
   hasBlur?: boolean
   style?: ViewStyle
   glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
+  testID?: string
   hasLoading?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
@@ -124,6 +126,7 @@ export const Avatar = ({
 
   return (
     <Animated.View
+      testID={testID}
       style={[
         { width: height, height: height, overflow: 'visible' },
         pressedAnimatedStyle,

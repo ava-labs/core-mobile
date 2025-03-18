@@ -1,39 +1,28 @@
 import CreatePinPage from '../pages/createPin.page'
-import AnalyticsConsentPage from '../pages/analyticsConsent.page'
-import PortfolioPage from '../pages/portfolio.page'
 import commonElsPage from '../pages/commonEls.page'
-import nameWalletPage from '../pages/nameWallet.page'
-import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
-import accountManagePage from '../pages/accountManage.page'
-import existingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import Actions from '../helpers/actions'
+import onboardingPage from '../pages/onboarding.page'
+import onboardingLoc from '../locators/onboarding.loc'
+import bottomTabsPage from '../pages/bottomTabs.page'
 
 class LoginRecoverWallet {
-  async recoverMnemonicWallet(
-    isBalanceNotificationOn = false,
-    isCoreAnalyticsOn = false
-  ) {
-    const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
-    await ExistingRecoveryPhrasePage.tapAccessExistingWallet()
-    await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
-    if (isCoreAnalyticsOn) {
-      await AnalyticsConsentPage.tapUnlockBtn()
-    } else {
-      await AnalyticsConsentPage.tapNoThanksBtn()
-    }
-    await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
-    await ExistingRecoveryPhrasePage.tapSignInBtn()
-    await nameWalletPage.enterWalletName('testWallet1\n')
-    await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapAgreeAndContinueBtn()
-    await commonElsPage.tapGetStartedButton()
-    if (isBalanceNotificationOn) {
-      await commonElsPage.tapTurnOnNotifications()
-    } else {
-      await commonElsPage.tapNotNow()
-    }
-    await PortfolioPage.verifyPorfolioScreen()
+  async recoverMnemonicWallet(recoveryPhrase: string) {
+    await onboardingPage.tapAccessExistingWallet()
+    await onboardingPage.tapTypeInRecoveryPhase()
+    await onboardingPage.tapAgreeAndContinue()
+    await onboardingPage.tapUnlockBtn()
+    await onboardingPage.enterRecoveryPhrase(recoveryPhrase)
+    await onboardingPage.tapImport()
+    await Actions.waitForElement(onboardingPage.enterPinFirstScreenTitle)
+    await onboardingPage.enterPin()
+    await Actions.waitForElement(onboardingPage.enterPinSecondScreenTitle)
+    await onboardingPage.enterPin()
+    await onboardingPage.enterWalletName(onboardingLoc.walletName)
+    await commonElsPage.tapNext()
+    await Actions.waitForElement(onboardingPage.selectAvatarTitle)
+    await commonElsPage.tapNext()
+    await onboardingPage.tapLetsGo()
+    await bottomTabsPage.verifyBottomTabs()
   }
 
   async enterPin() {
@@ -41,22 +30,13 @@ class LoginRecoverWallet {
     await commonElsPage.checkIfMainnet()
   }
 
-  async recoverWalletLogin(
-    isBalanceNotificationOn = false,
-    isCoreAnalyticsOn = false
-  ) {
-    const isVisibleNo = await Actions.expectToBeVisible(
-      existingRecoveryPhrasePage.forgotPinBtn
-    )
+  async login(recoverPhrase: string = process.env.E2E_MNEMONIC as string) {
+    const isLoggedIn = await Actions.expectToBeVisible(onboardingPage.forgotPin)
 
-    if (isVisibleNo) {
-      await this.enterPin()
-      await accountManagePage.switchToFirstAccount()
+    if (isLoggedIn) {
+      await onboardingPage.enterPin()
     } else {
-      await this.recoverMnemonicWallet(
-        isBalanceNotificationOn,
-        isCoreAnalyticsOn
-      )
+      await this.recoverMnemonicWallet(recoverPhrase)
     }
   }
 }
