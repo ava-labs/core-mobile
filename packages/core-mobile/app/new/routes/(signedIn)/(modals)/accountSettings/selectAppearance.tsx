@@ -13,11 +13,18 @@ import {
   selectSelectedAppearance,
   setSelectedAppearance
 } from 'store/settings/appearance'
+import { ImageRequireSource } from 'react-native'
 
 const SelectAppearanceScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const { canGoBack, back } = useRouter()
+
+  const handleSelectAppearance = (appearance: Appearance): void => {
+    dispatch(setSelectedAppearance(appearance))
+    canGoBack() && back()
+  }
+
   return (
     <View
       sx={{
@@ -32,61 +39,51 @@ const SelectAppearanceScreen = (): JSX.Element => {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-        <View sx={{ gap: 12 }}>
-          <TouchableOpacity
-            sx={{
-              height: 194,
-              justifyContent: 'center'
-            }}
-            onPress={() => {
-              dispatch(setSelectedAppearance(Appearance.Light))
-              canGoBack() && back()
-            }}>
-            <Image
-              source={require('../../../../assets/icons/light_appearance.png')}
-            />
-          </TouchableOpacity>
-          <TextLabel isSelected={selectedAppearance === Appearance.Light}>
-            Light
-          </TextLabel>
-        </View>
-        <View sx={{ gap: 12 }}>
-          <TouchableOpacity
-            sx={{
-              height: 194,
-              justifyContent: 'center'
-            }}
-            onPress={() => {
-              dispatch(setSelectedAppearance(Appearance.Dark))
-              canGoBack() && back()
-            }}>
-            <Image
-              source={require('../../../../assets/icons/dark_appearance.png')}
-            />
-          </TouchableOpacity>
-          <TextLabel isSelected={selectedAppearance === Appearance.Dark}>
-            Dark
-          </TextLabel>
-        </View>
-        <View sx={{ gap: 12 }}>
-          <TouchableOpacity
-            sx={{
-              height: 194,
-              justifyContent: 'center'
-            }}
-            onPress={() => {
-              dispatch(setSelectedAppearance(Appearance.System))
-              canGoBack() && back()
-            }}>
-            <Image
-              source={require('../../../../assets/icons/system_appearance.png')}
-            />
-          </TouchableOpacity>
-          <TextLabel isSelected={selectedAppearance === Appearance.System}>
-            System
-          </TextLabel>
-        </View>
+        <AppearanceComponent
+          isSelected={selectedAppearance === Appearance.Light}
+          appearance="Light"
+          onPress={() => handleSelectAppearance(Appearance.Light)}
+          source={require('../../../../assets/icons/light_appearance.png')}
+        />
+        <AppearanceComponent
+          isSelected={selectedAppearance === Appearance.Dark}
+          appearance="Dark"
+          onPress={() => handleSelectAppearance(Appearance.Dark)}
+          source={require('../../../../assets/icons/dark_appearance.png')}
+        />
+        <AppearanceComponent
+          isSelected={selectedAppearance === Appearance.System}
+          appearance="System"
+          onPress={() => handleSelectAppearance(Appearance.System)}
+          source={require('../../../../assets/icons/system_appearance.png')}
+        />
       </View>
+    </View>
+  )
+}
+
+const AppearanceComponent = ({
+  appearance,
+  isSelected,
+  onPress,
+  source
+}: {
+  appearance: string
+  isSelected: boolean
+  onPress: () => void
+  source: ImageRequireSource
+}): JSX.Element => {
+  return (
+    <View sx={{ gap: 12 }}>
+      <TouchableOpacity
+        sx={{
+          height: 194,
+          justifyContent: 'center'
+        }}
+        onPress={onPress}>
+        <Image source={source} />
+      </TouchableOpacity>
+      <TextLabel isSelected={isSelected}>{appearance}</TextLabel>
     </View>
   )
 }
