@@ -82,65 +82,59 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
         accessible={false}
         testID={testID}
         disabled={disabled}
-        style={style}
+        style={[
+          { borderRadius: 1000, overflow: 'hidden', alignItems: 'center' },
+          style
+        ]}
         {...rest}>
-        <View
-          style={[
-            {
-              borderRadius: 1000,
-              alignItems: 'center',
-              overflow: 'hidden'
-            }
-          ]}>
-          <WrapperComponent
+        <WrapperComponent
+          style={{
+            alignItems: 'center',
+            marginHorizontal: 8,
+            justifyContent: 'center',
+            width: '100%',
+            backgroundColor
+          }}
+          {...(shouldUseBlurWrapper && {
+            glassType: theme.isDark ? 'dark3' : 'light2'
+          })}>
+          <View
             style={{
+              flexDirection: 'row',
               alignItems: 'center',
-              marginHorizontal: 8,
-              justifyContent: 'center',
-              width: '100%',
-              backgroundColor
-            }}
-            {...(shouldUseBlurWrapper && {
-              glassType: theme.isDark ? 'dark3' : 'light2'
-            })}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                ...sizeStyles[size]
-              }}>
-              {React.isValidElement(leftIcon)
-                ? leftIcon
-                : isButtonIconType(leftIcon)
-                ? getIcon(leftIcon, {
-                    width: iconWidth,
-                    height: iconWidth,
-                    color: tintColor,
-                    style: { marginRight: 8 }
-                  })
-                : null}
-              <Text
-                numberOfLines={1}
-                variant={textVariant}
-                style={{
+              ...sizeStyles[size]
+            }}>
+            {React.isValidElement(leftIcon)
+              ? leftIcon
+              : isButtonIconType(leftIcon)
+              ? getIcon(leftIcon, {
+                  width: iconWidth,
+                  height: iconWidth,
                   color: tintColor,
-                  flexShrink: 1
-                }}>
-                {children}
-              </Text>
-              {React.isValidElement(rightIcon)
-                ? rightIcon
-                : isButtonIconType(rightIcon)
-                ? getIcon(rightIcon, {
-                    width: iconWidth,
-                    height: iconWidth,
-                    color: tintColor,
-                    style: { marginLeft: 8 }
-                  })
-                : null}
-            </View>
-          </WrapperComponent>
-        </View>
+                  style: { marginRight: 8 }
+                })
+              : null}
+            <Text
+              numberOfLines={1}
+              variant={textVariant}
+              style={{
+                color: tintColor,
+                flexShrink: 1
+              }}>
+              {children}
+            </Text>
+            {React.isValidElement(rightIcon)
+              ? rightIcon
+              : isButtonIconType(rightIcon)
+              ? getIcon(rightIcon, {
+                  width: iconWidth,
+                  height: iconWidth,
+                  color: tintColor,
+                  style: { marginLeft: 8 }
+                })
+              : null}
+          </View>
+        </WrapperComponent>
       </TouchableOpacity>
     )
   }

@@ -23,7 +23,7 @@ export const BalanceHeader = ({
   formattedBalance: string
   currency: string
   errorMessage?: string
-  priceChange: PriceChange
+  priceChange?: PriceChange
   onLayout?: (event: LayoutChangeEvent) => void
   isLoading?: boolean
   isPrivacyModeEnabled?: boolean
@@ -64,9 +64,13 @@ export const BalanceHeader = ({
         </View>
       )
     }
+
+    if (priceChange === undefined) {
+      return <></>
+    }
     return (
       <PriceChangeIndicator
-        formattedPrice={priceChange?.formattedPrice}
+        formattedPrice={priceChange.formattedPrice}
         status={priceChange.status}
         formattedPercent={priceChange.formattedPercent}
         textVariant="buttonMedium"
