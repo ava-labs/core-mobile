@@ -87,13 +87,13 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Show recovery phrase',
         onPress: () => {
-          navigate('./accountSettings/showRecoveryPhrase')
+          navigate('./showRecoveryPhrase')
         }
       },
       {
         title: 'Recovery methods',
         onPress: () => {
-          navigate('./accountSettings/recoveryMethods')
+          navigate('./recoveryMethods')
         }
       }
     ]
