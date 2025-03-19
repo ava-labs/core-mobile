@@ -1913,7 +1913,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-skia (1.10.1):
+  - react-native-skia (1.5.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3384,7 +3384,7 @@ SPEC CHECKSUMS:
   react-native-quick-crypto: b0ba954b5828644c9b3a648267baa2eb2552b6d8
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: 26a64672a8d76556e54682ab5aa0a6b6798d8a8e
-  react-native-skia: 31cf7e3a4eca74c9888e616121cccb8ab1d51a7d
+  react-native-skia: 425a5610939828363e0681b8b3e994dd4f18b711
   react-native-slider: 124ce99f9cd2d04c79f020da6dee9f8d38a6b8c7
   react-native-view-shot: a643bf261ce8907df3eddf7b66e408bee8ed46f6
   react-native-webview: 06f91954784dde28e1210f381c791f0c5f9bd9a2
