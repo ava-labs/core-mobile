@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Svg, { Circle } from 'react-native-svg'
 import Animated, {
@@ -36,24 +36,29 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
     }
   })
 
-  const backgroundColor = theme.isDark
-    ? alpha(colors.$neutralWhite, 0.2)
-    : alpha(colors.$neutral850, 0.2)
+  const backgroundColor = useMemo(
+    () =>
+      theme.isDark
+        ? alpha(colors.$neutralWhite, 0.2)
+        : alpha(colors.$neutral850, 0.2),
+    [theme.isDark]
+  )
   const progressColor = theme.colors.$textSuccess
+  const center = size / 2
 
   return (
     <Svg width={size} height={size} style={style}>
       <Circle
-        cx={size / 2}
-        cy={size / 2}
+        cx={center}
+        cy={center}
         r={radius}
         stroke={backgroundColor}
         strokeWidth={strokeWidth}
         fill="none"
       />
       <AnimatedCircle
-        cx={size / 2}
-        cy={size / 2}
+        cx={center}
+        cy={center}
         r={radius}
         stroke={progressColor}
         strokeWidth={strokeWidth}
@@ -62,8 +67,8 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
         animatedProps={animatedProps}
         strokeLinecap="round"
         rotation="-90"
-        originX={size / 2}
-        originY={size / 2}
+        originX={center}
+        originY={center}
       />
     </Svg>
   )
