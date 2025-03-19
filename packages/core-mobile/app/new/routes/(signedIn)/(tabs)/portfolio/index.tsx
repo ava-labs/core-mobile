@@ -172,7 +172,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
       <View
         style={{
           backgroundColor: theme.colors.$surfacePrimary,
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          paddingBottom: 16
         }}>
         <View onLayout={handleBalanceHeaderLayout}>
           <Animated.View

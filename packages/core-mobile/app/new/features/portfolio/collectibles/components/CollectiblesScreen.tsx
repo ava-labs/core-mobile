@@ -186,7 +186,7 @@ export const CollectiblesScreen = ({
             alignSelf: 'center',
             width: dimensions.width - HORIZONTAL_MARGIN * 2,
             zIndex: 10,
-            marginTop: 20,
+            marginTop: 4,
             marginBottom: CollectibleView.ListView === listType ? 8 : 16
           }
         ]}>
