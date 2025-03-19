@@ -4,7 +4,7 @@ export enum Appearance {
   System = 'System'
 }
 
-export const DEFAULT_APPEARANCE = Appearance.Light
+export const DEFAULT_APPEARANCE = Appearance.System
 
 export const initialState = {
   selected: DEFAULT_APPEARANCE
