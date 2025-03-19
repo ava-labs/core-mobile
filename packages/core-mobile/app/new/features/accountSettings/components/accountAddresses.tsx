@@ -3,7 +3,7 @@ import { GroupList, useTheme, TouchableOpacity, Text } from '@avalabs/k2-alpine'
 import { Account } from 'store/account'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 import { TokenSymbol } from 'store/network'
 import { XPChainLogo } from '../../../common/components/XPChainLogo'
 

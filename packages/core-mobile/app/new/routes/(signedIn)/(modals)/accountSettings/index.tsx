@@ -112,7 +112,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToSecurityPrivacy = useCallback(() => {
-    navigate('./securityPrivacy')
+    navigate('./accountSettings/securityAndPrivacy')
   }, [navigate])
 
   const goToHelpCenter = useCallback(() => {

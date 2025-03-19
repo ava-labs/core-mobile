@@ -12,6 +12,8 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="account" />
       <Stack.Screen name="selectCurrency" />
       <Stack.Screen name="selectAppearance" />
+      <Stack.Screen name="securityAndPrivacy" />
+      <Stack.Screen name="connectedSites" />
     </Stack>
   )
 }

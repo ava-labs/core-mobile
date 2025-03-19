@@ -14,6 +14,7 @@ import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import { useBiometricType } from 'features/accountSettings/hooks/useBiometricType'
 
 export const CreatePin = ({
   useBiometrics,
@@ -25,6 +26,7 @@ export const CreatePin = ({
   onEnteredValidPin: (validPin: string) => void
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
+  const bioType = useBiometricType()
 
   const {
     onEnterChosenPin,
@@ -106,7 +108,7 @@ export const CreatePin = ({
               <GroupList
                 data={[
                   {
-                    title: 'Unlock with Face ID',
+                    title: `Unlock with ${bioType}`,
                     accessory: (
                       <Toggle
                         onValueChange={setUseBiometrics}
