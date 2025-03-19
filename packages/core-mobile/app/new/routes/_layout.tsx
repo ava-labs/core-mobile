@@ -6,10 +6,15 @@ import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { Stack } from 'common/components/Stack'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { GlobalToast } from 'common/utils/toast'
-import { selectIsReady, selectWalletState, WalletState } from 'store/app'
+import { selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
 import { useBgDetect } from 'navigation/useBgDetect'
-import { useFocusEffect, useRootNavigationState, useRouter } from 'expo-router'
+import {
+  useFocusEffect,
+  useRootNavigationState,
+  useRouter,
+  usePathname
+} from 'expo-router'
 import { Platform, StatusBar } from 'react-native'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
@@ -33,17 +38,15 @@ import { useColorScheme } from 'common/hooks/useColorScheme'
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
   const navigation = useNavigation()
+  const pathName = usePathname()
   const { inBackground } = useBgDetect()
   const walletState = useSelector(selectWalletState)
-  const appIsReady = useSelector(selectIsReady)
-  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] = useState<
-    null | boolean
-  >(null)
+
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
   const navigationState = useRootNavigationState()
   const colorScheme = useColorScheme()
 
-  const canGoBackToWallet = navigationState?.routes.some(
+  const isSignedIn = navigationState?.routes.some(
     route => route.name === '(signedIn)'
   )
 
@@ -56,6 +59,10 @@ export default function RootLayout(): JSX.Element | null {
 
   useLoadFonts()
 
+  // please be careful with the dependencies here
+  // this effect is responsible for redirecting users
+  // to either the sign up flow or the login modal
+  // we don't want to include any other dependencies here
   useEffect(() => {
     if (walletState === WalletState.NONEXISTENT) {
       if (router.canGoBack()) {
@@ -63,25 +70,36 @@ export default function RootLayout(): JSX.Element | null {
       }
       router.replace('/signup')
     } else if (walletState === WalletState.INACTIVE) {
-      // Navigate to login modal when walletState is not active
+      // navigate to login modal when wallet is not active
       router.navigate('/loginWithPinOrBiometry')
-    } else if (walletState === WalletState.ACTIVE) {
-      if (canGoBackToWallet && router.canGoBack()) {
-        router.back()
-      } else {
+    }
+  }, [walletState, router, navigation])
+
+  useEffect(() => {
+    /**
+     * after the wallet is successfully unlocked
+     *
+     * - redirect to the portfolio if:
+     *   - the app was freshly opened
+     *   - the user just completed onboarding
+     * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
+     */
+    if (walletState === WalletState.ACTIVE) {
+      // when the login modal is the last route and on top of the (signedIn) stack
+      // it means the app just resumed from inactivity
+      const isReturningFromInactivity =
+        isSignedIn && pathName === '/loginWithPinOrBiometry'
+
+      if (isReturningFromInactivity) {
+        router.canGoBack() && router.back()
+      } else if (
+        pathName === '/onboarding/mnemonic/confirmation' || // onboarding completion
+        (pathName === '/loginWithPinOrBiometry' && !isSignedIn) // fresh app open
+      ) {
         router.replace('/portfolio')
       }
     }
-  }, [walletState, router, canGoBackToWallet, navigation])
-
-  useEffect(() => {
-    // set shouldRenderOnlyPinScreen to false once wallet is unlocked
-    // do nothing if app is not ready (as we need to sync wallet state after rehydration)
-    // or if we have already set shouldRenderOnlyPinScreen to false
-    if (!appIsReady || shouldRenderOnlyPinScreen === false) return
-
-    setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
-  }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
+  }, [walletState, router, isSignedIn, pathName])
 
   useFocusEffect(
     useCallback(() => {

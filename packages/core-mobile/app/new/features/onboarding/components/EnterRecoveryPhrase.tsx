@@ -78,7 +78,7 @@ export const EnterRecoveryPhrase = ({
               size="large"
               type="tertiary"
               onPress={handleEnterTestWallet}>
-              Enter test HD wallet
+              Enter Test Wallet
             </Button>
           )}
           <Button
