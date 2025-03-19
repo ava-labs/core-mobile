@@ -13,6 +13,7 @@ import {
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 
 export const CreatePin = ({
   useBiometrics,
@@ -60,63 +61,65 @@ export const CreatePin = ({
 
   return (
     <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView
-          sx={{ flex: 1 }}
-          contentContainerSx={{
-            padding: 16,
-            flex: 1
-          }}>
-          <ScreenHeader
-            title={
-              chosenPinEntered
-                ? 'Confirm your PIN code'
-                : 'Secure your wallet with a PIN'
-            }
-            description={
-              chosenPinEntered
-                ? undefined
-                : 'For extra security, avoid choosing a PIN that contains repeating digits in a sequential order'
-            }
-          />
-          <View
-            sx={{
-              flex: 1,
-              justifyContent: 'center'
+      <KeyboardAvoidingView>
+        <SafeAreaView sx={{ flex: 1 }}>
+          <ScrollView
+            sx={{ flex: 1 }}
+            contentContainerSx={{
+              padding: 16,
+              flex: 1
             }}>
-            <PinInput
-              ref={ref}
-              length={6}
-              value={chosenPinEntered ? confirmedPin : chosenPin}
-              onChangePin={
-                chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
+            <ScreenHeader
+              title={
+                chosenPinEntered
+                  ? 'Confirm your PIN code'
+                  : 'Secure your wallet with a PIN'
+              }
+              description={
+                chosenPinEntered
+                  ? undefined
+                  : 'For extra security, avoid choosing a PIN that contains repeating digits in a sequential order'
               }
             />
-          </View>
-        </ScrollView>
-        {!chosenPinEntered && (
-          <View
-            sx={{
-              paddingHorizontal: 16,
-              paddingBottom: 16,
-              backgroundColor: '$surfacePrimary'
-            }}>
-            <GroupList
-              data={[
-                {
-                  title: 'Unlock with Face ID',
-                  accessory: (
-                    <Toggle
-                      onValueChange={setUseBiometrics}
-                      value={useBiometrics}
-                    />
-                  )
+            <View
+              sx={{
+                flex: 1,
+                justifyContent: 'center'
+              }}>
+              <PinInput
+                ref={ref}
+                length={6}
+                value={chosenPinEntered ? confirmedPin : chosenPin}
+                onChangePin={
+                  chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
                 }
-              ]}
-            />
-          </View>
-        )}
-      </SafeAreaView>
+              />
+            </View>
+          </ScrollView>
+          {!chosenPinEntered && (
+            <View
+              sx={{
+                paddingHorizontal: 16,
+                paddingBottom: 16,
+                backgroundColor: '$surfacePrimary'
+              }}>
+              <GroupList
+                data={[
+                  {
+                    title: 'Unlock with Face ID',
+                    accessory: (
+                      <Toggle
+                        onValueChange={setUseBiometrics}
+                        value={useBiometrics}
+                      />
+                    )
+                  }
+                ]}
+              />
+            </View>
+          )}
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </BlurredBarsContentLayout>
   )
 }
