@@ -6,7 +6,8 @@ import {
   FlatList,
   SPRING_LINEAR_TRANSITION,
   useTheme,
-  TouchableOpacity
+  TouchableOpacity,
+  Button
 } from '@avalabs/k2-alpine'
 import React, { useCallback, useState, useMemo } from 'react'
 import Animated, {
@@ -19,13 +20,14 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
 import { Dapp } from 'screens/rpc/ConnectedDapps/types'
 import { Logo } from 'common/components/Logo'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { allApprovedDapps, killSession } = useConnectedDapps()
-
+  const bottomInset = useSafeAreaInsets().bottom
+  const { allApprovedDapps, killSession, killAllSessions } = useConnectedDapps()
   const [searchText, setSearchText] = useState('')
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<
@@ -55,6 +57,10 @@ const ConnectedSitesScreen = (): JSX.Element => {
     },
     [killSession]
   )
+
+  const disconnectAllDapps = useCallback(async (): Promise<void> => {
+    killAllSessions()
+  }, [killAllSessions])
 
   const searchResults = useMemo(() => {
     if (searchText === '') {
@@ -88,11 +94,19 @@ const ConnectedSitesScreen = (): JSX.Element => {
               borderRadius: 12,
               backgroundColor: colors.$surfaceSecondary
             }}>
-            <Logo
-              logoUri={icons[0]}
-              backgroundColor={colors.$borderPrimary}
-              borderColor={colors.$borderPrimary}
-            />
+            <View
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                overflow: 'hidden'
+              }}>
+              <Logo
+                logoUri={icons[0]}
+                backgroundColor={colors.$borderPrimary}
+                borderColor={colors.$borderPrimary}
+              />
+            </View>
             <View
               sx={{
                 flex: 1,
@@ -142,37 +156,46 @@ const ConnectedSitesScreen = (): JSX.Element => {
   const renderSeparator = (): JSX.Element => <View sx={{ height: 12 }} />
 
   return (
-    <FlatList
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      onScroll={onScroll}
-      data={searchResults}
-      contentContainerStyle={{
-        paddingBottom: 60,
-        flexGrow: 1,
-        paddingHorizontal: 16
-      }}
-      keyExtractor={(item): string => (item as Dapp).id}
-      ItemSeparatorComponent={renderSeparator}
-      ListHeaderComponent={
-        <View sx={{ gap: 16, marginBottom: 16 }}>
-          <Animated.View
-            style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
-            onLayout={handleHeaderLayout}>
-            <Text variant="heading2">
-              {allApprovedDapps.length} connected sites
-            </Text>
-          </Animated.View>
-          <SearchBar
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            placeholder="Search"
-            useDebounce={true}
-          />
-        </View>
-      }
-      renderItem={item => renderItem(item.item as Dapp, item.index)}
-    />
+    <View
+      sx={{ flex: 1, paddingHorizontal: 16, justifyContent: 'space-between' }}>
+      <FlatList
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={onScroll}
+        data={searchResults}
+        contentContainerStyle={{
+          paddingBottom: 60,
+          flexGrow: 1
+        }}
+        keyExtractor={(item): string => (item as Dapp).id}
+        ItemSeparatorComponent={renderSeparator}
+        ListHeaderComponent={
+          <View sx={{ gap: 16, marginBottom: 16 }}>
+            <Animated.View
+              style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
+              onLayout={handleHeaderLayout}>
+              <Text variant="heading2">
+                {allApprovedDapps.length} connected sites
+              </Text>
+            </Animated.View>
+            <SearchBar
+              onTextChanged={setSearchText}
+              searchText={searchText}
+              placeholder="Search"
+              useDebounce={true}
+            />
+          </View>
+        }
+        renderItem={item => renderItem(item.item as Dapp, item.index)}
+      />
+      <Button
+        type="primary"
+        size="large"
+        style={{ marginBottom: bottomInset + 16 }}
+        onPress={() => disconnectAllDapps()}>
+        Disconnect all
+      </Button>
+    </View>
   )
 }
 
