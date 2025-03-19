@@ -92,7 +92,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [renderHeaderRight, setOptions])
 
   const goToSelectAvatar = useCallback(() => {
-    navigate('./selectAvatar')
+    navigate('./accountSettings/selectAvatar')
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
@@ -100,7 +100,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToAppIcon = useCallback(() => {
-    navigate('./appIcon')
+    navigate('./accountSettings/appIcon')
   }, [navigate])
 
   const goToCurrency = useCallback(() => {
@@ -108,7 +108,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToNotificationPreferences = useCallback(() => {
-    navigate('./notificationPreferences')
+    navigate('./accountSettings/notificationPreferences')
   }, [navigate])
 
   const goToSecurityPrivacy = useCallback(() => {
@@ -120,11 +120,11 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToLegal = useCallback(() => {
-    navigate('./legal')
+    navigate('./accountSettings/legal')
   }, [navigate])
 
   const goToSendFeedback = useCallback(() => {
-    navigate('./sendFeedback')
+    navigate('./accountSettings/sendFeedback')
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
