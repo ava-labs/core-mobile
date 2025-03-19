@@ -27,6 +27,10 @@ export * from './SearchBar/SearchBar'
 export * from './Header/BalanceHeaderLoader'
 export * from './Chart/MiniChart'
 export * from './Chip/Chip'
+export * from './CircularProgress/CircularProgress'
+export * from './StakeCards/AddCard'
+export * from './StakeCards/ProgressCard'
+export * from './StakeCards/CompleteCard'
 
 export * from './PriceChangeIndicator/types'
 
