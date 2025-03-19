@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16
   },
   dropdown: {
-    marginTop: 20,
+    marginTop: 4,
     marginBottom: 16
   }
 })
