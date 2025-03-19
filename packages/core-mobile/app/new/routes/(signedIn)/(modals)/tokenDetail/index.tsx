@@ -147,7 +147,8 @@ const TokenDetailScreen = (): React.JSX.Element => {
       <View
         style={{
           backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          paddingBottom: 16
         }}>
         <View onLayout={handleHeaderLayout}>
           <Animated.View
@@ -184,34 +185,25 @@ const TokenDetailScreen = (): React.JSX.Element => {
   ])
 
   const tabs = useMemo(() => {
-    if (isXpToken) {
-      return [
-        {
-          tabName: TokenDetailTab.Tokens,
-          component: <TokenDetail token={token} />
-        },
-        {
-          tabName: TokenDetailTab.Activity,
-          component: (
-            <TransactionHistory
-              token={token}
-              handleExplorerLink={handleExplorerLink}
-            />
-          )
-        }
-      ]
+    const activityTab = {
+      tabName: TokenDetailTab.Activity,
+      component: (
+        <TransactionHistory
+          token={token}
+          handleExplorerLink={handleExplorerLink}
+        />
+      )
     }
-    return [
-      {
-        tabName: TokenDetailTab.Activity,
-        component: (
-          <TransactionHistory
-            token={token}
-            handleExplorerLink={handleExplorerLink}
-          />
-        )
-      }
-    ]
+
+    return isXpToken
+      ? [
+          {
+            tabName: TokenDetailTab.Tokens,
+            component: <TokenDetail token={token} />
+          },
+          activityTab
+        ]
+      : [activityTab]
   }, [handleExplorerLink, isXpToken, token])
 
   return (

@@ -132,7 +132,7 @@ const TransactionHistory: FC<Props> = ({
 }
 
 const styles = StyleSheet.create({
-  dropdown: { paddingHorizontal: 16, marginTop: 14, marginBottom: 16 }
+  dropdown: { paddingHorizontal: 16, marginTop: 4, marginBottom: 16 }
 })
 
 export default TransactionHistory

@@ -144,7 +144,7 @@ export const DeFiScreen = (): JSX.Element => {
           sort={sort}
           view={view}
           sx={{
-            marginTop: 20,
+            marginTop: 4,
             marginBottom: isGridView ? 16 : 8
           }}
         />
