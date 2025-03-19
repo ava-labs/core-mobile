@@ -10,12 +10,16 @@ export const GroupList = ({
   data,
   itemHeight,
   titleSx,
+  subtitleSx,
   valueSx,
+  textContainerSx,
   separatorMarginRight
 }: {
   data: GroupListItem[]
   itemHeight?: number
   titleSx?: SxProp
+  subtitleSx?: SxProp
+  textContainerSx?: SxProp
   valueSx?: SxProp
   separatorMarginRight?: number
 }): JSX.Element => {
@@ -40,6 +44,7 @@ export const GroupList = ({
             leftIcon,
             rightIcon,
             title,
+            subtitle,
             value,
             accessory,
             onPress,
@@ -67,15 +72,29 @@ export const GroupList = ({
                   onLayout={handleLayout}>
                   <View
                     sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text
-                      variant="buttonMedium"
-                      sx={{
-                        color: '$textPrimary',
-                        paddingVertical: 14,
-                        ...titleSx
-                      }}>
-                      {title}
-                    </Text>
+                    <View sx={{ paddingVertical: 14, ...textContainerSx }}>
+                      <Text
+                        variant="buttonMedium"
+                        sx={{
+                          color: '$textPrimary',
+                          ...titleSx
+                        }}>
+                        {title}
+                      </Text>
+                      {subtitle && (
+                        <Text
+                          variant="mono"
+                          sx={{
+                            color: '$textSecondary',
+                            fontSize: 13,
+                            lineHeight: 18,
+                            ...subtitleSx
+                          }}>
+                          {subtitle}
+                        </Text>
+                      )}
+                    </View>
+
                     {rightIcon !== undefined && rightIcon}
                   </View>
                   <View
@@ -124,6 +143,7 @@ export const GroupList = ({
 
 export type GroupListItem = {
   title: string
+  subtitle?: string
   value?: React.ReactNode
   onPress?: () => void
   onLongPress?: () => void

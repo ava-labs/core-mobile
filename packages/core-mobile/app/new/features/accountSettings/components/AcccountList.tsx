@@ -78,8 +78,8 @@ export const AccountList = (): React.JSX.Element => {
   const gotoAccountDetails = useCallback(
     (accountIndex: number): void => {
       navigate({
-        pathname: './accountDetails',
-        params: { accountIndex }
+        pathname: './accountSettings/account',
+        params: { accountIndex: accountIndex.toString() }
       })
     },
     [navigate]
