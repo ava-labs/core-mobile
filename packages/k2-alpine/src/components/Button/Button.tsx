@@ -14,7 +14,7 @@ import { TextVariant } from '../../theme/tokens/text'
 import { GlassView } from '../../components/GlassView/GlassView'
 import { alpha, overlayColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
-import { useTheme } from '../../hooks'
+import { useInversedTheme, useTheme } from '../../hooks'
 
 export type ButtonType = 'primary' | 'secondary' | 'tertiary'
 export type ButtonSize = 'small' | 'medium' | 'large'
@@ -37,6 +37,7 @@ interface ButtonProps {
   leftIcon?: ButtonIconType | JSX.Element
   rightIcon?: ButtonIconType | JSX.Element
   hitSlop?: number | Insets
+  shouldInverseTheme?: boolean
 }
 
 export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
@@ -50,20 +51,26 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
       style,
       children,
       testID,
+      shouldInverseTheme = false,
       ...rest
     },
     ref
   ) => {
     const { theme } = useTheme()
+    const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
+    const resultTheme = useMemo(
+      () => (shouldInverseTheme ? inversedTheme : theme),
+      [inversedTheme, shouldInverseTheme, theme]
+    )
 
     const tintColor = useMemo(
-      () => getTintColor(type, theme, disabled),
-      [disabled, type, theme]
+      () => getTintColor(type, resultTheme, disabled),
+      [disabled, type, resultTheme]
     )
 
     const backgroundColor = useMemo(
-      () => getBackgroundColor(type, theme, disabled),
-      [type, theme, disabled]
+      () => getBackgroundColor(type, resultTheme, disabled),
+      [type, resultTheme, disabled]
     )
 
     const iconWidth = { large: 20, medium: 16, small: 16 }[size]

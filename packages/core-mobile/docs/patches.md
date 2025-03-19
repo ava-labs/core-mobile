@@ -58,3 +58,8 @@ https://github.com/WalletConnect/walletconnect-utils/issues/171
 
 invalid call of hasAnimatedRef method will cause a crash. it is fixed but not released yet.
 https://github.com/software-mansion/react-native-reanimated/pull/7158
+
+### react-native-collapsible-tab-view+8.0.0.patch
+
+perf improvement
+https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461
