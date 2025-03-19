@@ -1,12 +1,153 @@
-import React from 'react'
-import { View, Text } from '@avalabs/k2-alpine'
+import {
+  BalanceHeader,
+  NavigationTitleHeader,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { Space } from 'components/Space'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
+import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
+import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
+import React, { useCallback, useMemo, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
+import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import { selectAccountByIndex } from 'store/account'
+import {
+  selectBalanceForAccountIsAccurate,
+  selectBalanceTotalInCurrencyForAccount,
+  selectIsLoadingBalances,
+  selectIsRefetchingBalances
+} from 'store/balance'
+import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const AccountScreen = (): JSX.Element => {
+  const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
+  const { navigate } = useRouter()
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const { theme } = useTheme()
+  const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
+  const context = useApplicationContext()
+  const accountIndexNumber = isNaN(Number(accountIndex))
+    ? 0
+    : Number(accountIndex)
+  const account = useSelector(selectAccountByIndex(accountIndexNumber))
+  const isBalanceLoading = useSelector(selectIsLoadingBalances)
+  const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+  const tokenVisibility = useSelector(selectTokenVisibility)
+  const balanceTotalInCurrency = useSelector(
+    selectBalanceTotalInCurrencyForAccount(account?.index ?? 0, tokenVisibility)
+  )
+  const isLoading = isBalanceLoading || isRefetchingBalance
+  const balanceAccurate = useSelector(
+    selectBalanceForAccountIsAccurate(account?.index ?? 0)
+  )
+  const { selectedCurrency, currencyFormatter } = context.appHook
+
+  const currencyBalance = useMemo(() => {
+    return !balanceAccurate && balanceTotalInCurrency === 0
+      ? '$' + UNKNOWN_AMOUNT
+      : currencyFormatter(balanceTotalInCurrency)
+  }, [balanceAccurate, balanceTotalInCurrency, currencyFormatter])
+
+  const formattedBalance = useMemo(
+    () => currencyBalance.replace(selectedCurrency, ''),
+    [currencyBalance, selectedCurrency]
+  )
+
+  const handleBalanceHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setBalanceHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
+  const handleShowPrivateKey = (): void => {
+    // TODO: CP-10070
+    navigate('./accountSettings/privateKey')
+  }
+
+  const header = useMemo(
+    () => <NavigationTitleHeader title={account?.name ?? ''} />,
+    [account?.name]
+  )
+
+  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
+    header,
+    targetLayout: balanceHeaderLayout
+  })
+
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: 1 - targetHiddenProgress.value
+  }))
+
+  const renderHeader = useCallback((): JSX.Element => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.$surfacePrimary
+        }}>
+        <View onLayout={handleBalanceHeaderLayout}>
+          <Animated.View
+            style={[
+              {
+                backgroundColor: theme.colors.$surfacePrimary,
+                marginTop: Platform.OS === 'ios' ? 24 : 8
+              },
+              animatedHeaderStyle
+            ]}>
+            <BalanceHeader
+              accountName={account?.name ?? ''}
+              formattedBalance={formattedBalance}
+              currency={selectedCurrency}
+              errorMessage={
+                balanceAccurate ? undefined : 'Unable to load all balances'
+              }
+              isLoading={isLoading}
+              isPrivacyModeEnabled={isPrivacyModeEnabled}
+            />
+          </Animated.View>
+        </View>
+      </View>
+    )
+  }, [
+    theme.colors.$surfacePrimary,
+    handleBalanceHeaderLayout,
+    animatedHeaderStyle,
+    account?.name,
+    formattedBalance,
+    selectedCurrency,
+    balanceAccurate,
+    isLoading,
+    isPrivacyModeEnabled
+  ])
+
+  if (account === undefined) {
+    return <></>
+  }
+
   return (
-    <View
-      sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-      <Text variant="heading3">Accounts</Text>
-    </View>
+    <ScrollView
+      onScroll={onScroll}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 60 }}>
+      {renderHeader()}
+      <Space y={32} />
+      <View sx={{ gap: 12 }}>
+        <AccountAddresses account={account} />
+        <WalletInfo showPrivateKey={handleShowPrivateKey} />
+      </View>
+      <Space y={32} />
+      <AccountButtons accountIndex={account.index} />
+    </ScrollView>
   )
 }
 
