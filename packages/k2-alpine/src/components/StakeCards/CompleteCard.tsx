@@ -3,8 +3,9 @@ import { ImageBackground } from 'expo-image'
 import { ImageSourcePropType } from 'react-native'
 import { useInversedTheme, useTheme } from '../../hooks'
 import { Button } from '../Button/Button'
-import { Text, View } from '../Primitives'
+import { View } from '../Primitives'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
+import { Label } from './Label'
 
 export const CompletedCard = ({
   title,
@@ -39,15 +40,12 @@ export const CompletedCard = ({
         />
       )}
       <View sx={{ gap: 11, alignItems: 'flex-start' }}>
-        <Text
+        <Label
           sx={{
-            fontFamily: 'Aeonik-Bold',
-            fontSize: 24,
-            lineHeight: 22,
             color: inversedTheme.colors.$textPrimary
           }}>
           {title}
-        </Text>
+        </Label>
         {action && (
           <View onTouchStart={e => e.stopPropagation()}>
             <Button

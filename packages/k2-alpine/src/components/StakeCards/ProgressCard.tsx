@@ -11,9 +11,10 @@ import Animated, {
 import Svg, { Path } from 'react-native-svg'
 import { DeviceMotionMeasurement } from 'expo-sensors'
 import { Platform } from 'react-native'
-import { Text, View } from '../Primitives'
+import { View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
+import { Label } from './Label'
 
 export const ProgressCard = ({
   progress,
@@ -145,9 +146,7 @@ export const ProgressCard = ({
           <View style={{ backgroundColor: fillColor, flex: 1 }} />
         </Animated.View>
       </View>
-      <Text sx={{ fontFamily: 'Aeonik-Bold', fontSize: 24, lineHeight: 22 }}>
-        {title}
-      </Text>
+      <Label>{title}</Label>
     </BaseCard>
   )
 }
