@@ -88,7 +88,7 @@ export const AccountList = (): React.JSX.Element => {
   const renderSeparator = useCallback(() => <View sx={{ width: 16 }} />, [])
 
   const contentContainerJustifyContent = useMemo(() => {
-    return accounts.length < 3 ? 'center' : undefined
+    return accounts.length < 2 ? 'center' : undefined
   }, [accounts.length])
 
   const renderItem = useCallback(
