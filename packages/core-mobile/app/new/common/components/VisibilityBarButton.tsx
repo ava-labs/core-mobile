@@ -11,7 +11,7 @@ export const VisibilityBarButton = ({
   const { theme } = useTheme()
 
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity onPress={onPress} hitSlop={16}>
       {isPrivacyModeEnabled ? (
         <Icons.Action.VisibilityOff
           color={theme.colors.$textPrimary}
