@@ -75,6 +75,7 @@ export default function RootLayout(): JSX.Element | null {
     }
   }, [walletState, router, navigation])
 
+  // TODO: refactor this effect so that we don't depend on navigation state
   useEffect(() => {
     /**
      * after the wallet is successfully unlocked
