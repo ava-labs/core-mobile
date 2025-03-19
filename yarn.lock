@@ -260,7 +260,7 @@ __metadata:
     "@sentry/react-native": 6.5.0
     "@shopify/flash-list": 1.7.3
     "@shopify/react-native-performance": 4.1.2
-    "@shopify/react-native-skia": 1.10.1
+    "@shopify/react-native-skia": 1.5.0
     "@spotlightjs/spotlight": 2.5.0
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
@@ -532,7 +532,7 @@ __metadata:
     "@react-native-community/slider": 4.5.5
     "@react-native-masked-view/masked-view": 0.3.2
     "@rushstack/eslint-patch": 1.5.1
-    "@shopify/react-native-skia": 1.10.1
+    "@shopify/react-native-skia": 1.5.0
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
@@ -552,6 +552,7 @@ __metadata:
     expo-font: 13.0.2
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
+    expo-sensors: 14.0.2
     expo-splash-screen: 0.29.18
     expo-status-bar: 2.0.1
     expo-video: 2.0.5
@@ -574,7 +575,7 @@ __metadata:
     typescript: 5.6.3
   peerDependencies:
     "@react-native-masked-view/masked-view": 0.3.0
-    "@shopify/react-native-skia": 1.10.1
+    "@shopify/react-native-skia": 1.5.0
     expo-blur: 14.0.3
     expo-image: 2.0.4
     expo-linear-gradient: 12.7.2
@@ -10017,9 +10018,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shopify/react-native-skia@npm:1.10.1":
-  version: 1.10.1
-  resolution: "@shopify/react-native-skia@npm:1.10.1"
+"@shopify/react-native-skia@npm:1.5.0":
+  version: 1.5.0
+  resolution: "@shopify/react-native-skia@npm:1.5.0"
   dependencies:
     canvaskit-wasm: 0.39.1
     react-reconciler: 0.27.0
@@ -10034,7 +10035,7 @@ __metadata:
       optional: true
   bin:
     setup-skia-web: ./scripts/setup-canvaskit.js
-  checksum: 8288f3e75fffb504d564e7830cabfbae0b8a8c1350b84e6baeca6ce44004b4f79efd3e0813340dfa3b7a37358066601d615b48362b541f3179a2115615d669bd
+  checksum: 44cf9edcf1f1062f7306eb990da8b8c9222b92275268fbaaf20e36baa21260b0498ac69131f4f6e871c9049a7cc36a5cc719d0b7a4f60723f6a7a60be3cc0bf5
   languageName: node
   linkType: hard
 
@@ -18064,6 +18065,18 @@ __metadata:
     react-native-reanimated:
       optional: true
   checksum: 7e0ac4592a074ee7be150638baeee007971fe782040e809ba68ee764073befe9a618dba532c9ff47a9b502d16e9fc3ffd859bb64b87cbf03d725a7a5903e19fe
+  languageName: node
+  linkType: hard
+
+"expo-sensors@npm:14.0.2":
+  version: 14.0.2
+  resolution: "expo-sensors@npm:14.0.2"
+  dependencies:
+    invariant: ^2.2.4
+  peerDependencies:
+    expo: "*"
+    react-native: "*"
+  checksum: 3cb51ae71b7f555a82fb100e2faad7f6175a746392f0a79c76c8713c6d95e67ac3c2b0c6bc1b5690935027301afcba018bb959d23126973f73a9da955afdd3c9
   languageName: node
   linkType: hard
 
