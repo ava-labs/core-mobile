@@ -324,6 +324,7 @@ __metadata:
     expo-image: 2.0.6
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
+    expo-local-authentication: 15.0.2
     expo-navigation-bar: 4.0.8
     expo-router: 4.0.18
     expo-sms: 13.0.1
@@ -17759,6 +17760,17 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 014418cf6a8eabb8e659590d36c1cccc3e4d28833298c7bde99350e63352f8fdc813d56abdc7c5cf6d447e18cb7f0a129e39e143a1cd59f11f63acbf3899e541
+  languageName: node
+  linkType: hard
+
+"expo-local-authentication@npm:15.0.2":
+  version: 15.0.2
+  resolution: "expo-local-authentication@npm:15.0.2"
+  dependencies:
+    invariant: ^2.2.4
+  peerDependencies:
+    expo: "*"
+  checksum: 447bf18fca429cd829439be1d7f33727cf86673c1f0bcc562a42219a2a05eec48eedf678ef5a5d022bfa14dd2df49d7d9742e8687f16c1e5aff8aa5488b5b233
   languageName: node
   linkType: hard
 
