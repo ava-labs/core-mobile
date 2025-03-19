@@ -5,6 +5,7 @@ export * from './theme/ThemeProvider'
 export { Icons } from './theme/tokens/Icons'
 export { Logos } from './theme/tokens/Logos'
 export * from './utils'
+export * from './const'
 
 import Constants from 'expo-constants'
 
