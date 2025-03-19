@@ -11,6 +11,7 @@ const GET_DAPPS_V2_INTERVAL = 5000 // 5s
 export const useConnectedDapps = (): {
   allApprovedDapps: Dapp[]
   killSession: (topic: string) => Promise<void>
+  killAllSessions: () => Promise<void>
 } => {
   const { killSessions } = useDappConnectionV2()
   const [approvedDappsV2, setApprovedDappsV2] = useState<Session[]>([])
@@ -52,8 +53,14 @@ export const useConnectedDapps = (): {
     )
   }
 
+  const killAllSessions = async (): Promise<void> => {
+    await killSessions(approvedDappsV2)
+    setApprovedDappsV2([])
+  }
+
   return {
     allApprovedDapps,
-    killSession
+    killSession,
+    killAllSessions
   }
 }
