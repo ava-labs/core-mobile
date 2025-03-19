@@ -10,7 +10,7 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { TokenLogo } from '../../../../common/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 
 interface Props {
   token: LocalTokenWithBalance

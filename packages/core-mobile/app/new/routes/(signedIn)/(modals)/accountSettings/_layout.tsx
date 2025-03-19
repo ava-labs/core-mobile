@@ -14,6 +14,8 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="selectAppearance" />
       <Stack.Screen name="securityAndPrivacy" />
       <Stack.Screen name="connectedSites" />
+      <Stack.Screen name="recoveryMethods" />
+      <Stack.Screen name="showRecoveryPhrase" />
     </Stack>
   )
 }
