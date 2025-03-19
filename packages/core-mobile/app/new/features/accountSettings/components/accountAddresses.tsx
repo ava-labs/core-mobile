@@ -54,6 +54,18 @@ export const AccountAddresses = ({
       )
     },
     {
+      subtitle: truncateAddress(account.addressC),
+      title: 'Ethereum',
+      leftIcon: <TokenLogo symbol={TokenSymbol.ETH} size={24} />,
+      value: (
+        <CopyButton
+          onPress={() =>
+            onCopyAddress(account.addressC, 'Ethereum address copied')
+          }
+        />
+      )
+    },
+    {
       subtitle: truncateAddress(account.addressBTC),
       title: 'Bitcoin',
       leftIcon: <TokenLogo symbol={TokenSymbol.BTC} size={24} />,
