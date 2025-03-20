@@ -23,3 +23,8 @@ export const ANIMATED = {
 }
 
 export const SPRING_LINEAR_TRANSITION = LinearTransition.springify()
+
+export const easeOutQuart = (t: number): number => {
+  'worklet'
+  return 1 - Math.pow(1 - t, 4)
+}
