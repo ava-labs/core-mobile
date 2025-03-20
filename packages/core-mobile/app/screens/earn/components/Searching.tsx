@@ -1,18 +1,18 @@
 import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Linking, StyleSheet, View } from 'react-native'
-import { DOCS_STAKING } from 'resources/Constants'
+import { DOCS_STAKING_URL } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import Spinner from 'components/animation/Spinner'
 
-export const Searching = () => {
+export const Searching = (): JSX.Element => {
   const { theme } = useApplicationContext()
 
-  const goToHowToDelegateDoc = () => {
-    Linking.openURL(DOCS_STAKING).catch(e => {
-      Logger.error(`failed to open ${DOCS_STAKING}`, e)
+  const goToHowToDelegateDoc = (): void => {
+    Linking.openURL(DOCS_STAKING_URL).catch(e => {
+      Logger.error(`failed to open ${DOCS_STAKING_URL}`, e)
     })
   }
 
