@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
-import { BIOMETRY_TYPE, UserCredentials } from 'react-native-keychain'
+import { UserCredentials } from 'react-native-keychain'
 import { asyncScheduler, Observable, of, timer } from 'rxjs'
 import { catchError, concatMap, map } from 'rxjs/operators'
 import { Alert } from 'react-native'
@@ -14,6 +14,10 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
+import {
+  BioType,
+  useDeviceInfoContext
+} from 'common/contexts/DeviceInfoProvider'
 
 export function usePinOrBiometryLogin({
   onStartLoading,
@@ -30,13 +34,14 @@ export function usePinOrBiometryLogin({
   promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>
   disableKeypad: boolean
   timeRemaining: string
-  bioType: 'Face' | 'Fingerprint' | undefined
+  bioType: BioType
 } {
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
   const { signOut } = useApplicationContext().appHook
   const [timeRemaining, setTimeRemaining] = useState('00:00')
+  const { bioType } = useDeviceInfoContext()
   const {
     increaseAttempt,
     attemptAllowed,
@@ -176,7 +181,14 @@ export function usePinOrBiometryLogin({
       )
     }, [resetRateLimiter])
 
-  const [bioType, setBioType] = useState<BioType>()
+  // useEffect(() => {
+  //   async function getBiometryType(): Promise<void> {
+  //     if (
+  //       !BiometricsSDK.canUseBiometry() ||
+  //       BiometricsSDK.getAccessType() !== 'BIO'
+  //     ) {
+  //       return
+  //     }
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {
@@ -186,17 +198,25 @@ export function usePinOrBiometryLogin({
         return
       }
 
-      const type = await BiometricsSDK.getBiometryType()
+  //     if (type === BIOMETRY_TYPE.FACE || type === BIOMETRY_TYPE.FACE_ID) {
+  //       setBioType('Face')
+  //     } else if (type === BIOMETRY_TYPE.FINGERPRINT) {
+  //       setBioType('Fingerprint')
+  //     }
+  //   }
 
-      if (type === BIOMETRY_TYPE.FACE || type === BIOMETRY_TYPE.FACE_ID) {
-        setBioType('Face')
-      } else if (type === BIOMETRY_TYPE.FINGERPRINT) {
-        setBioType('Fingerprint')
-      }
+  //   getBiometryType()
+  // }, [])
+
+  const enrolledBioType = useMemo(() => {
+    if (
+      !BiometricsSDK.canUseBiometry() ||
+      BiometricsSDK.getAccessType() !== 'BIO'
+    ) {
+      return BioType.NONE
     }
-
-    getBiometryType()
-  }, [])
+    return bioType
+  }, [bioType])
 
   return {
     enteredPin,
@@ -205,7 +225,7 @@ export function usePinOrBiometryLogin({
     promptForWalletLoadingIfExists,
     disableKeypad,
     timeRemaining,
-    bioType
+    bioType: enrolledBioType
   }
 }
 
@@ -221,5 +241,3 @@ class PrivateKeyLoaded implements WalletLoadingResults {
 }
 
 class NothingToLoad implements WalletLoadingResults {}
-
-type BioType = 'Face' | 'Fingerprint'

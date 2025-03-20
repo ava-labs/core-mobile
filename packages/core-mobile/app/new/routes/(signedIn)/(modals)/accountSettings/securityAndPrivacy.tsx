@@ -26,6 +26,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import DeviceInfoService, {
   BiometricType
 } from 'services/deviceInfo/DeviceInfoService'
+import { WalletType } from 'services/wallet/types'
+import { selectWalletType } from 'store/app'
 
 const TITLE = 'Security & privacy'
 
@@ -38,6 +40,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
+  const walletType = useSelector(selectWalletType)
   const [biometricType, setBiometricType] = useState<BiometricType>(
     BiometricType.NONE
   )
@@ -89,21 +92,25 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   }, [biometricType, navigate])
 
   const recoveryData = useMemo(() => {
-    return [
+    const data = [
       {
         title: 'Show recovery phrase',
         onPress: () => {
-          navigate('./showRecoveryPhrase')
-        }
-      },
-      {
-        title: 'Recovery methods',
-        onPress: () => {
-          navigate('./recoveryMethods')
+          navigate('./recoveryPhraseVerifyPin')
         }
       }
     ]
-  }, [navigate])
+
+    if (walletType === WalletType.SEEDLESS) {
+      data.push({
+        title: 'Recovery methods',
+        onPress: () => {
+          navigate('./recoveryMethodsVerifyPin')
+        }
+      })
+    }
+    return data
+  }, [navigate, walletType])
 
   const handleToggleCoreAnalyticsConsent = useCallback(
     (value: boolean): void => {
