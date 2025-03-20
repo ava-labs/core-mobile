@@ -96,6 +96,10 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Show recovery phrase',
         onPress: () => {
+          if (walletType === WalletType.SEEDLESS) {
+            navigate('./seedlessExportPhrase')
+            return
+          }
           navigate('./recoveryPhraseVerifyPin')
         }
       }
