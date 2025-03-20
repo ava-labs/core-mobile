@@ -76,7 +76,7 @@ class WalletService {
     transaction,
     accountIndex,
     network,
-    sentrySpanName
+    sentrySpanName = 'sign-transaction'
   }: {
     transaction: SignTransactionRequest
     accountIndex: number
