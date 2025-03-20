@@ -11,7 +11,8 @@ export const CompletedCard = ({
   title,
   action,
   width = DEFAULT_CARD_WIDTH,
-  backgroundImageSource
+  backgroundImageSource,
+  onPress
 }: CompletedCardProps): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
@@ -20,6 +21,7 @@ export const CompletedCard = ({
 
   return (
     <BaseCard
+      onPress={onPress}
       sx={{
         paddingVertical: 20,
         paddingHorizontal: 18,
@@ -71,4 +73,5 @@ export type CompletedCardProps = {
   }
   width?: number
   backgroundImageSource?: ImageSourcePropType
+  onPress: () => void
 }

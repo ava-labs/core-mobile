@@ -20,7 +20,8 @@ export const ProgressCard = ({
   progress,
   title,
   width = DEFAULT_CARD_WIDTH,
-  motion
+  motion,
+  onPress
 }: ProgressCardProps): JSX.Element => {
   const {
     theme: { colors }
@@ -115,6 +116,7 @@ export const ProgressCard = ({
 
   return (
     <BaseCard
+      onPress={onPress}
       sx={{
         paddingVertical: 20,
         paddingHorizontal: 18,
@@ -156,6 +158,7 @@ export type ProgressCardProps = {
   title: string
   width?: number
   motion?: SharedValue<DeviceMotionMeasurement | undefined>
+  onPress: () => void
 }
 
 const AnimatedPath = Animated.createAnimatedComponent(Path)
