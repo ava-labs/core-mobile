@@ -8,7 +8,7 @@ import Separator from 'components/Separator'
 import Calendar2SVG from 'components/svg/Calendar2SVG'
 import Globe2SVG from 'components/svg/Globe2SVG'
 import AvaButton from 'components/AvaButton'
-import { DOCS_STAKING } from 'resources/Constants'
+import { DOCS_STAKING_URL } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import CircularPlusSVG from 'components/svg/CircularPlusSVG'
 import { StakeSetupScreenProps } from 'navigation/types'
@@ -36,8 +36,8 @@ export default function GetStarted({
     AnalyticsService.capture('StakeOpenStakingDocs', {
       from: 'GetStartedScreen'
     })
-    Linking.openURL(DOCS_STAKING).catch(e => {
-      Logger.error(DOCS_STAKING, e)
+    Linking.openURL(DOCS_STAKING_URL).catch(e => {
+      Logger.error(DOCS_STAKING_URL, e)
     })
   }
 

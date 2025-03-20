@@ -2,8 +2,7 @@ import React from 'react'
 import AvaListItem from 'components/AvaListItem'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-
-const HELP_URL = 'https://support.avax.network/en/'
+import { HELP_URL } from 'resources/Constants'
 
 const HelpItem = (): JSX.Element => {
   const { openUrl } = useInAppBrowser()

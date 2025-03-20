@@ -4,7 +4,7 @@ import { Linking } from 'react-native'
 import CircleLogo from 'assets/icons/circle_logo.svg'
 import ICTTLogo from 'assets/icons/ictt_logo.svg'
 import { Tooltip } from 'components/Tooltip'
-import { DOCS_BRIDGE_FAQS } from 'resources/Constants'
+import { DOCS_BRIDGE_FAQS_URL } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { Text, useTheme, View } from '@avalabs/k2-mobile'
 
@@ -16,8 +16,8 @@ const BridgeTypeFootnote = ({
   const { theme } = useTheme()
 
   const handleBridgeFaqs = (): void => {
-    Linking.openURL(DOCS_BRIDGE_FAQS).catch(e => {
-      Logger.error(DOCS_BRIDGE_FAQS, e)
+    Linking.openURL(DOCS_BRIDGE_FAQS_URL).catch(e => {
+      Logger.error(DOCS_BRIDGE_FAQS_URL, e)
     })
   }
 

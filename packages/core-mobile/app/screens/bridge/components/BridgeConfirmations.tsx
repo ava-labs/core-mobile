@@ -11,7 +11,7 @@ import { useStopwatch } from 'react-timer-hook'
 import { Blockchain } from '@avalabs/core-bridge-sdk'
 import InfoSVG from 'components/svg/InfoSVG'
 import { Space } from 'components/Space'
-import { DOCS_BTC_TO_BTCB_FAQ } from 'resources/Constants'
+import { DOCS_BRIDGE_FAQS_URL } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { useSelector } from 'react-redux'
@@ -54,8 +54,8 @@ function ElapsedTimer({
   })
 
   const handleOpenFaq = (): void => {
-    Linking.openURL(DOCS_BTC_TO_BTCB_FAQ).catch(e => {
-      Logger.error(`failed to open ${DOCS_BTC_TO_BTCB_FAQ}`, e)
+    Linking.openURL(DOCS_BRIDGE_FAQS_URL).catch(e => {
+      Logger.error(`failed to open ${DOCS_BRIDGE_FAQS_URL}`, e)
     })
   }
 
