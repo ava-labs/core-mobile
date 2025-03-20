@@ -1,5 +1,4 @@
 import React from 'react'
-import { BlurBackground } from 'components/BlurBackground'
 import {
   ActivityIndicator,
   Button,
@@ -8,6 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { BlurBackground } from 'common/components/BlurBackground'
 import MnemonicAva from './MnemonicAva'
 
 export default function MnemonicPhrase({
@@ -15,7 +15,8 @@ export default function MnemonicPhrase({
   hideMnemonic = false,
   canToggleBlur = false,
   isLoading = false,
-  toggleRecoveryPhrase
+  toggleRecoveryPhrase,
+  onCopyPhrase
 }: {
   mnemonic?: string
   hideMnemonic?: boolean
@@ -23,6 +24,7 @@ export default function MnemonicPhrase({
   toggleRecoveryPhrase?: () => void
   canToggleBlur?: boolean
   isLoading?: boolean
+  onCopyPhrase?: (mnemonic?: string) => void
 }): JSX.Element {
   const {
     theme: { colors }
@@ -59,7 +61,7 @@ export default function MnemonicPhrase({
   }
 
   const handleCopyPhrase = (): void => {
-    copyToClipboard(mnemonic)
+    onCopyPhrase ? onCopyPhrase(mnemonic) : copyToClipboard(mnemonic)
   }
 
   return (
@@ -88,7 +90,7 @@ export default function MnemonicPhrase({
           {hideMnemonic && (
             <BlurBackground
               opacity={1}
-              iosBlurType="dark"
+              tint="dark"
               borderRadius={8}
               backgroundColor={BLUR_BACKGROUND_COLOR}
             />
@@ -110,6 +112,7 @@ export default function MnemonicPhrase({
         ) : (
           <Button
             size="medium"
+            style={{ width: 150 }}
             type="secondary"
             disabled={!mnemonic}
             onPress={handleCopyPhrase}
