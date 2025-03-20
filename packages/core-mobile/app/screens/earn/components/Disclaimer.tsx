@@ -5,14 +5,14 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { ScrollView } from 'react-native-gesture-handler'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
-import { DOCS_DELEGATING } from 'resources/Constants'
+import { DOCS_STAKING_URL } from 'resources/Constants'
 
-export const Disclaimer = () => {
+export const Disclaimer = (): JSX.Element => {
   const { theme } = useApplicationContext()
 
-  const goToDelegatingDocs = () => {
-    Linking.openURL(DOCS_DELEGATING).catch(e => {
-      Logger.error(DOCS_DELEGATING, e)
+  const goToDelegatingDocs = (): void => {
+    Linking.openURL(DOCS_STAKING_URL).catch(e => {
+      Logger.error(DOCS_STAKING_URL, e)
     })
   }
 
