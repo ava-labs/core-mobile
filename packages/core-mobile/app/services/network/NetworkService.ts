@@ -67,7 +67,7 @@ class NetworkService {
   async sendTransaction({
     signedTx,
     network,
-    sentrySpanName,
+    sentrySpanName = 'send-transaction',
     handleWaitToPost
   }: {
     signedTx: string | avaxSerial.SignedTx

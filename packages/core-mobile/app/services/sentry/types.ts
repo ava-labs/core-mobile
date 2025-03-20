@@ -8,6 +8,8 @@ export type SpanName =
   | 'send-token'
   | 'send-nft'
   | 'swap'
+  | 'sign-transaction'
+  | 'send-transaction'
 
 /**
  * Keeps track of all possible op names
