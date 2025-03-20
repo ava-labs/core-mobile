@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, createContext, useContext } from 'react'
 import * as LocalAuthentication from 'expo-local-authentication'
 import { Platform } from 'react-native'
 
@@ -8,7 +8,19 @@ export enum BioType {
   NONE = 'None'
 }
 
-export const useBiometricType = (): BioType => {
+export interface DeviceInfoContextState {
+  bioType: BioType
+}
+
+export const DeviceInfoContext = createContext<DeviceInfoContextState>(
+  {} as DeviceInfoContextState
+)
+
+export const DeviceInfoProvider = ({
+  children
+}: {
+  children: React.ReactNode
+}): JSX.Element => {
   const [bioType, setBioType] = useState<BioType>(BioType.NONE)
 
   useEffect(() => {
@@ -43,5 +55,13 @@ export const useBiometricType = (): BioType => {
     getBiometryType()
   }, [])
 
-  return bioType
+  return (
+    <DeviceInfoContext.Provider value={{ bioType }}>
+      {children}
+    </DeviceInfoContext.Provider>
+  )
+}
+
+export function useDeviceInfoContext(): DeviceInfoContextState {
+  return useContext(DeviceInfoContext)
 }
