@@ -14,7 +14,7 @@ import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { useBiometricType } from 'features/accountSettings/hooks/useBiometricType'
+import { useDeviceInfoContext } from 'common/contexts/DeviceInfoProvider'
 
 export const CreatePin = ({
   useBiometrics,
@@ -26,7 +26,7 @@ export const CreatePin = ({
   onEnteredValidPin: (validPin: string) => void
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
-  const bioType = useBiometricType()
+  const { bioType } = useDeviceInfoContext()
 
   const {
     onEnterChosenPin,

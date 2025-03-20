@@ -34,6 +34,7 @@ import {
 import { OnboardingProvider } from 'features/onboarding/contexts/OnboardingProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { useColorScheme } from 'common/hooks/useColorScheme'
+import { DeviceInfoProvider } from 'common/contexts/DeviceInfoProvider'
 
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
@@ -116,51 +117,53 @@ export default function RootLayout(): JSX.Element | null {
 
   return (
     <K2AlpineThemeProvider colorScheme={colorScheme}>
-      <ApplicationContextProvider>
-        <NavigationThemeProvider>
-          <RecoveryMethodProvider>
-            <OnboardingProvider>
-              <Stack
-                screenOptions={{
-                  ...stackNavigatorScreenOptions,
-                  headerShown: false
-                }}>
-                <Stack.Screen name="index" options={{ animation: 'none' }} />
-                <Stack.Screen name="signup" options={{ animation: 'none' }} />
-                <Stack.Screen
-                  name="accessWallet"
-                  options={{ headerShown: true }}
-                />
-                <Stack.Screen
-                  name="(signedIn)"
-                  options={{
-                    headerShown: false,
-                    animation: 'none',
-                    gestureEnabled: false
-                  }}
-                />
-                <Stack.Screen
-                  name="loginWithPinOrBiometry"
-                  options={{
-                    presentation: 'modal',
-                    headerShown: false,
-                    gestureEnabled: false,
-                    cardStyleInterpolator: forNoAnimation
-                  }}
-                />
-                <Stack.Screen
-                  name="forgotPin"
-                  options={{ headerShown: true }}
-                />
-                <Stack.Screen name="+not-found" />
-                <Stack.Screen name="onboarding" />
-              </Stack>
-              {enabledPrivacyScreen && <LogoModal />}
-            </OnboardingProvider>
-          </RecoveryMethodProvider>
-        </NavigationThemeProvider>
-      </ApplicationContextProvider>
-      <GlobalToast />
+      <DeviceInfoProvider>
+        <ApplicationContextProvider>
+          <NavigationThemeProvider>
+            <RecoveryMethodProvider>
+              <OnboardingProvider>
+                <Stack
+                  screenOptions={{
+                    ...stackNavigatorScreenOptions,
+                    headerShown: false
+                  }}>
+                  <Stack.Screen name="index" options={{ animation: 'none' }} />
+                  <Stack.Screen name="signup" options={{ animation: 'none' }} />
+                  <Stack.Screen
+                    name="accessWallet"
+                    options={{ headerShown: true }}
+                  />
+                  <Stack.Screen
+                    name="(signedIn)"
+                    options={{
+                      headerShown: false,
+                      animation: 'none',
+                      gestureEnabled: false
+                    }}
+                  />
+                  <Stack.Screen
+                    name="loginWithPinOrBiometry"
+                    options={{
+                      presentation: 'modal',
+                      headerShown: false,
+                      gestureEnabled: false,
+                      cardStyleInterpolator: forNoAnimation
+                    }}
+                  />
+                  <Stack.Screen
+                    name="forgotPin"
+                    options={{ headerShown: true }}
+                  />
+                  <Stack.Screen name="+not-found" />
+                  <Stack.Screen name="onboarding" />
+                </Stack>
+                {enabledPrivacyScreen && <LogoModal />}
+              </OnboardingProvider>
+            </RecoveryMethodProvider>
+          </NavigationThemeProvider>
+        </ApplicationContextProvider>
+        <GlobalToast />
+      </DeviceInfoProvider>
     </K2AlpineThemeProvider>
   )
 }

@@ -10,13 +10,17 @@ import { ScrollView } from 'react-native-gesture-handler'
 
 const TITLE = 'Show Recovery Phrase'
 
+const NavigationHeader = (): JSX.Element => (
+  <NavigationTitleHeader title={TITLE} />
+)
+
 const ShowRecoveryPhraseScreen = (): JSX.Element => {
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={TITLE} />,
+    header: <NavigationHeader />,
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
