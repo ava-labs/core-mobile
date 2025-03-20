@@ -16,7 +16,6 @@ import { useRouter } from 'expo-router'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
 import { Space } from 'components/Space'
-import { useBiometricType } from 'features/accountSettings/hooks/useBiometricType'
 import { noop } from '@avalabs/core-utils-sdk'
 import {
   selectCoreAnalyticsConsent,
@@ -24,8 +23,13 @@ import {
 } from 'store/settings/securityPrivacy'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useDeviceInfoContext } from 'common/contexts/DeviceInfoProvider'
 
 const TITLE = 'Security & privacy'
+
+const NavigationHeader = (): JSX.Element => (
+  <NavigationTitleHeader title={TITLE} />
+)
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -34,14 +38,14 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
-  const bioType = useBiometricType()
+  const { bioType } = useDeviceInfoContext()
   const { navigate } = useRouter()
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={TITLE} />,
+    header: <NavigationHeader />,
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
