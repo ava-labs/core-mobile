@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router'
 const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
   const { replace } = useRouter()
 
-  const handleLoginSuccess = (): void => {
-    replace('./showRecoveryPhrase')
+  const handleLoginSuccess = (mnemonic: string): void => {
+    replace({ pathname: './showRecoveryPhrase', params: { mnemonic } })
   }
 
   return <VerifyWithPinOrBiometry onLoginSuccess={handleLoginSuccess} />
