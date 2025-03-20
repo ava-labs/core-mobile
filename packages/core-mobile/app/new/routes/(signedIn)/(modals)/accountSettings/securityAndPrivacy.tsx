@@ -24,6 +24,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useDeviceInfoContext } from 'common/contexts/DeviceInfoProvider'
+import { selectWalletType } from 'store/app'
+import { WalletType } from 'services/wallet/types'
 
 const TITLE = 'Security & privacy'
 
@@ -38,6 +40,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
+  const walletType = useSelector(selectWalletType)
   const { bioType } = useDeviceInfoContext()
   const { navigate } = useRouter()
   const headerOpacity = useSharedValue(1)
@@ -87,21 +90,25 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   }, [bioType, navigate])
 
   const recoveryData = useMemo(() => {
-    return [
+    const data = [
       {
         title: 'Show recovery phrase',
         onPress: () => {
-          navigate('./showRecoveryPhrase')
-        }
-      },
-      {
-        title: 'Recovery methods',
-        onPress: () => {
-          navigate('./recoveryMethods')
+          navigate('./recoveryPhraseVerifyPin')
         }
       }
     ]
-  }, [navigate])
+
+    if (walletType === WalletType.SEEDLESS) {
+      data.push({
+        title: 'Recovery methods',
+        onPress: () => {
+          navigate('./recoveryMethodsVerifyPin')
+        }
+      })
+    }
+    return data
+  }, [navigate, walletType])
 
   const handleToggleCoreAnalyticsConsent = useCallback(
     (value: boolean): void => {
