@@ -22,6 +22,6 @@ export const AddCard = ({
 }
 
 export type AddCardProps = {
-  onPress: () => void
+  onPress?: () => void
   width?: number
 }

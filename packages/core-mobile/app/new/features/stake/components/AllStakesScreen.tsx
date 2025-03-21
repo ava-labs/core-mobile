@@ -1,17 +1,18 @@
 import React from 'react'
 import { useStakes } from 'hooks/earn/useStakes'
-import { SharedValue } from 'react-native-reanimated'
-import { DeviceMotionMeasurement } from 'expo-sensors'
+import { Motion } from '@avalabs/k2-alpine'
 import StakesScreen from './StakesScreen'
 
 export const AllStakesScreen = ({
   onPressStake,
   onAddStake,
+  onClaim,
   motion
 }: {
   onPressStake: () => void
   onAddStake: () => void
-  motion?: SharedValue<DeviceMotionMeasurement | undefined>
+  onClaim: () => void
+  motion?: Motion
 }): JSX.Element => {
   const { data } = useStakes()
 
@@ -20,6 +21,7 @@ export const AllStakesScreen = ({
       stakes={data ?? []}
       onPressStake={onPressStake}
       onAddStake={onAddStake}
+      onClaim={onClaim}
       motion={motion}
     />
   )

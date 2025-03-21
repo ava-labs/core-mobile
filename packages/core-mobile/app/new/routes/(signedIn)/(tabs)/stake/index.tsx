@@ -31,10 +31,11 @@ import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen
 import { CompletedStakesScreen } from 'features/stake/components/CompletedStakesScreen'
 import { useStakes } from 'hooks/earn/useStakes'
 import { Banner } from 'features/stake/components/Banner'
+import { LoadingState } from 'common/components/LoadingState'
 
 const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { data } = useStakes()
+  const { data, isLoading } = useStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -114,6 +115,10 @@ const StakeHomeScreen = (): JSX.Element => {
     navigate('/stake/add')
   }, [navigate])
 
+  const handleClaim = useCallback(() => {
+    navigate('/stake/claim')
+  }, [navigate])
+
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const tabs = useMemo(() => {
@@ -123,6 +128,7 @@ const StakeHomeScreen = (): JSX.Element => {
         <AllStakesScreen
           onPressStake={handlePressStake}
           onAddStake={handleAddStake}
+          onClaim={handleClaim}
           motion={motion}
         />
       )
@@ -140,6 +146,7 @@ const StakeHomeScreen = (): JSX.Element => {
           <ActiveStakesScreen
             onPressStake={handlePressStake}
             onAddStake={handleAddStake}
+            onClaim={handleClaim}
             motion={motion}
           />
         )
@@ -150,11 +157,16 @@ const StakeHomeScreen = (): JSX.Element => {
           <CompletedStakesScreen
             onPressStake={handlePressStake}
             onAddStake={handleAddStake}
+            onClaim={handleClaim}
           />
         )
       }
     ]
-  }, [isEmpty, motion, handlePressStake, handleAddStake])
+  }, [isEmpty, motion, handlePressStake, handleAddStake, handleClaim])
+
+  if (isLoading) {
+    return <LoadingState sx={{ flex: 1 }} />
+  }
 
   return (
     <BlurredBarsContentLayout>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import Animated, {
-  SharedValue,
   useAnimatedProps,
+  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -9,10 +9,9 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import Svg, { Path } from 'react-native-svg'
-import { DeviceMotionMeasurement } from 'expo-sensors'
 import { Platform } from 'react-native'
 import { View } from '../Primitives'
-import { useTheme } from '../../hooks'
+import { Motion, useTheme } from '../../hooks'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
 import { Label } from './Label'
 
@@ -33,9 +32,8 @@ export const ProgressCard = ({
   const amplitude = useSharedValue(0)
   const phase = useSharedValue(0)
   const phaseConstant = useMemo(() => Math.random() * 0.4 + 0.8, []) // randomize phase a bit, from 0.8 to 1.2
-  const rotation = useDerivedValue(() => {
-    return withTiming(motion?.value?.rotation.gamma ?? 0, { duration: 200 })
-  })
+  const rotation = useSharedValue(motion?.rotation.value.roll ?? 0)
+
   const rotationStyle = useAnimatedStyle(() => {
     return {
       transform: [{ rotateZ: `${-rotation.value * 0.5}rad` }]
@@ -61,21 +59,36 @@ export const ProgressCard = ({
     return { d }
   })
 
+  useAnimatedReaction(
+    () => motion?.rotation.value.roll ?? 0,
+    (currentRoll, previousRoll) => {
+      const currentRollWeight = 0.1
+      const result =
+        (currentRoll * currentRollWeight +
+          (previousRoll ?? 0) * (1 - currentRollWeight)) /
+        2
+
+      const diff = currentRoll - (previousRoll ?? 0)
+      if (
+        Math.abs(diff) < ROTATION_DIFF_THRESHOLD &&
+        Math.abs(result) < ROTATION_VALUE_THRESHOLD
+      ) {
+        rotation.value = result
+      }
+    }
+  )
+
   // update amplitude based on motion
   useDerivedValue(() => {
-    if (!motion?.value) return
+    if (!motion) return
 
-    const { accelerationIncludingGravity } = motion.value
-    if (accelerationIncludingGravity) {
-      const accMagnitude = Math.sqrt(
-        accelerationIncludingGravity.x ** 2 +
-          accelerationIncludingGravity.y ** 2 +
-          accelerationIncludingGravity.z ** 2
-      )
-      if (accMagnitude > ACCELERATION_MAGNITUDE_THRESHOLD) {
-        amplitude.value = withTiming(accMagnitude, { duration: 300 })
-        lastUpdateTime.current = Date.now()
-      }
+    const { x, y, z } = motion.accelerometer.value
+    const accMagnitude = Math.sqrt(x ** 2 + y ** 2 + z ** 2)
+    if (accMagnitude > ACCELERATION_MAGNITUDE_THRESHOLD) {
+      amplitude.value = withTiming(accMagnitude * AMPLITUDE_MULTIPLIER, {
+        duration: 300
+      })
+      lastUpdateTime.current = Date.now()
     }
   }, [motion])
 
@@ -98,7 +111,7 @@ export const ProgressCard = ({
     let animationFrameId: number
 
     const updatePhase = (): void => {
-      if (motion?.value) {
+      if (motion) {
         phase.value =
           ((phase.value + 0.1 * phaseConstant) % (2 * Math.PI)) *
           PHASE_MULTIPLIER
@@ -157,11 +170,14 @@ export type ProgressCardProps = {
   progress: number
   title: string
   width?: number
-  motion?: SharedValue<DeviceMotionMeasurement | undefined>
-  onPress: () => void
+  motion?: Motion
+  onPress?: () => void
 }
 
 const AnimatedPath = Animated.createAnimatedComponent(Path)
 
 const PHASE_MULTIPLIER = Platform.OS === 'ios' ? 1 : 1.1
-const ACCELERATION_MAGNITUDE_THRESHOLD = 10.5
+const ACCELERATION_MAGNITUDE_THRESHOLD = Platform.OS === 'ios' ? 10.5 : 2
+const AMPLITUDE_MULTIPLIER = Platform.OS === 'ios' ? 1 : 2
+const ROTATION_DIFF_THRESHOLD = 0.1
+const ROTATION_VALUE_THRESHOLD = 1

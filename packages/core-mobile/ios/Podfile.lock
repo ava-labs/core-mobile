@@ -325,8 +325,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - ExpoSensors (14.0.2):
-    - ExpoModulesCore
   - ExpoSMS (13.0.1):
     - ExpoModulesCore
   - ExpoVideo (2.0.5):
@@ -2838,7 +2836,6 @@ DEPENDENCIES:
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
-  - ExpoSensors (from `../node_modules/expo-sensors/ios`)
   - ExpoSMS (from `../node_modules/expo-sms/ios`)
   - ExpoVideo (from `../node_modules/expo-video/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
@@ -3050,8 +3047,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-linking/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
-  ExpoSensors:
-    :path: "../node_modules/expo-sensors/ios"
   ExpoSMS:
     :path: "../node_modules/expo-sms/ios"
   ExpoVideo:
@@ -3316,7 +3311,6 @@ SPEC CHECKSUMS:
   ExpoLinearGradient: ee9efc5acb988b911320e964fab9b4cbdeb198c4
   ExpoLinking: 0381341519ca7180a3a057d20edb1cf6a908aaf4
   ExpoModulesCore: 0bcea8c26791a8f0aed1d4a961f1165e1fc657d4
-  ExpoSensors: 55a2e86242c9b2560d0d25640f79e4b9f5321df6
   ExpoSMS: 2f90c7c780ef65c9f52b800183aab554360b34a2
   ExpoVideo: 6860956b8fc77af4e69165236af5fc037a060a02
   EXUpdatesInterface: 1dcebac98ac5dad4289e6ff2bd5616822e894397
