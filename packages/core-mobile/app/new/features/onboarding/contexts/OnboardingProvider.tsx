@@ -31,11 +31,11 @@ export const OnboardingProvider = ({
 
   useEffect(() => {
     const checkHasWalletName = async (): Promise<void> => {
-      if (
-        walletType === WalletType.SEEDLESS &&
-        (await SeedlessService.getAccountName()) !== undefined
-      ) {
-        setHasWalletName(true)
+      if (walletType === WalletType.SEEDLESS) {
+        const walletName = await SeedlessService.getAccountName()
+        setHasWalletName(walletName !== undefined ? true : false)
+      } else {
+        setHasWalletName(false)
       }
     }
     checkHasWalletName().catch(Logger.error)
