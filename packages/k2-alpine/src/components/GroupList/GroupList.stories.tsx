@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Switch } from 'react-native'
-import { ScrollView, View } from '../Primitives'
+import { ScrollView, Text, View } from '../Primitives'
 import { Icons, showAlert, useTheme } from '../..'
 import { GroupList } from './GroupList'
 
@@ -49,6 +49,19 @@ export const All = (): JSX.Element => {
               onPress: () => {
                 showAlert({ title: 'Pressed', buttons: [{ text: 'OK' }] })
               }
+            },
+            {
+              title: 'Title 5',
+              value: 'Accordion',
+              accordion: (
+                <View
+                  sx={{
+                    padding: 16,
+                    alignItems: 'center'
+                  }}>
+                  <Text>Peekaboo</Text>
+                </View>
+              )
             }
           ]}
         />
