@@ -14,7 +14,6 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
-import { ListRenderItemInfo } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
@@ -24,11 +23,14 @@ import { secondsToMilliseconds } from 'date-fns'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { ListRenderItemInfo } from '@shopify/flash-list'
 import {
   formattedEstimatedRewardInAvax,
   formattedRewardAmountInAvax,
   getActiveStakeProgress
 } from '../utils'
+import CompleteCardBackgroundImageDark from '../../../assets/icons/complete-card-bg-dark.png'
+import CompleteCardBackgroundImageLight from '../../../assets/icons/complete-card-bg-light.png'
 
 const StakesScreen = ({
   stakes,
@@ -49,8 +51,8 @@ const StakesScreen = ({
     NetworkService.getAvalancheNetworkP(isDevMode)
 
   const completeCardBackground = theme.isDark
-    ? require('../../../assets/icons/complete-card-bg-dark.png')
-    : require('../../../assets/icons/complete-card-bg-light.png')
+    ? CompleteCardBackgroundImageDark
+    : CompleteCardBackgroundImageLight
 
   const claimableInAvax = useGetClaimableBalance()
 
@@ -118,6 +120,11 @@ const StakesScreen = ({
       if (content) {
         return (
           <Animated.View
+            style={{
+              marginBottom: 14,
+              marginRight: index % 2 === 0 ? 6 : 0,
+              marginLeft: index % 2 !== 0 ? 6 : 0
+            }}
             entering={getListItemEnteringAnimation(index)}
             layout={SPRING_LINEAR_TRANSITION}>
             {content}
@@ -139,7 +146,7 @@ const StakesScreen = ({
   )
 
   return (
-    <CollapsibleTabs.FlatList
+    <CollapsibleTabs.FlashList
       contentContainerStyle={styles.container}
       data={data}
       numColumns={2}
@@ -147,13 +154,12 @@ const StakesScreen = ({
       showsVerticalScrollIndicator={false}
       keyExtractor={(_, index) => index.toString()}
       removeClippedSubviews={true}
-      columnWrapperStyle={{ gap: 14 }}
     />
   )
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 32, gap: 12 }
+  container: { padding: 16, paddingBottom: 32 }
 })
 
 enum StaticCard {

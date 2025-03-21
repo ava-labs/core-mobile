@@ -1,6 +1,15 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { SxProp } from 'dripsy'
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated'
 import { View, Text, TouchableOpacity } from '../Primitives'
 import { Separator } from '../Separator/Separator'
 import { Icons } from '../../theme/tokens/Icons'
@@ -25,35 +34,68 @@ export const GroupList = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const [textMarginLeft, setTextMarginLeft] = useState(0)
+  const [expandedStates, setExpandedStates] = useState<boolean[]>(
+    data.map(() => false)
+  )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setTextMarginLeft(event.nativeEvent.layout.x)
   }
 
+  const handlePress = (item: GroupListItem, index: number): void => {
+    if (item.accordion) {
+      setExpandedStates(prev =>
+        prev.map((value, i) => (i === index ? !value : value))
+      )
+    } else {
+      item.onPress?.()
+    }
+  }
+
+  const renderAccessory = (
+    item: GroupListItem,
+    index: number
+  ): JSX.Element | undefined => {
+    if (item.accessory) return item.accessory
+
+    if (item.accordion) {
+      return <AnimatedChevron expanded={expandedStates[index] ?? false} />
+    }
+
+    if (item.onPress) {
+      return (
+        <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
+      )
+    }
+  }
+
   return (
-    <View
-      sx={{
+    <Animated.View
+      layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
+      style={{
         width: '100%',
         borderRadius: 12,
         overflow: 'hidden',
-        backgroundColor: '$surfaceSecondary'
+        backgroundColor: theme.colors.$surfaceSecondary
       }}>
-      {data.map(
-        (
-          {
-            leftIcon,
-            rightIcon,
-            title,
-            subtitle,
-            value,
-            accessory,
-            onPress,
-            onLongPress
-          },
-          index
-        ) => (
+      {data.map((item, index) => {
+        const {
+          leftIcon,
+          rightIcon,
+          title,
+          subtitle,
+          value,
+          accordion,
+          onPress,
+          onLongPress
+        } = item
+
+        return (
           <View key={index}>
-            <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
+            <TouchableOpacity
+              onPress={() => handlePress(item, index)}
+              disabled={!onPress && !accordion}
+              onLongPress={onLongPress}>
               <View
                 sx={{
                   flexDirection: 'row',
@@ -116,16 +158,22 @@ export const GroupList = ({
                       ) : (
                         value
                       ))}
-                    {accessory !== undefined && accessory}
-                    {accessory === undefined && onPress !== undefined && (
-                      <Icons.Navigation.ChevronRight
-                        color={theme.colors.$textSecondary}
-                      />
-                    )}
+                    {renderAccessory(item, index)}
                   </View>
                 </View>
               </View>
             </TouchableOpacity>
+            {accordion !== undefined && expandedStates[index] && (
+              <Animated.View entering={FadeIn} exiting={FadeOut}>
+                <Separator
+                  sx={{
+                    marginLeft: textMarginLeft,
+                    marginRight: separatorMarginRight
+                  }}
+                />
+                {accordion}
+              </Animated.View>
+            )}
             {index < data.length - 1 && (
               <Separator
                 sx={{
@@ -136,8 +184,8 @@ export const GroupList = ({
             )}
           </View>
         )
-      )}
-    </View>
+      })}
+    </Animated.View>
   )
 }
 
@@ -150,4 +198,27 @@ export type GroupListItem = {
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   accessory?: JSX.Element
+  accordion?: JSX.Element
+}
+
+const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {
+  const { theme } = useTheme()
+  const rotation = useSharedValue(expanded ? 1 : 0)
+
+  useEffect(() => {
+    rotation.value = withTiming(expanded ? 1 : 0, { duration: 300 })
+  }, [expanded, rotation])
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const rotate = `${rotation.value * 180 + 90}deg`
+    return {
+      transform: [{ rotate }]
+    }
+  })
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
+    </Animated.View>
+  )
 }
