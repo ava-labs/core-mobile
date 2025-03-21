@@ -101,7 +101,9 @@ export const AccountItem = memo(
               sx={{ color: subtitleColor, lineHeight: 16, marginRight: 8 }}>
               {truncateAddress(account.addressC)}
             </Text>
-            <TouchableOpacity onPress={() => gotoAccountDetails(account.index)}>
+            <TouchableOpacity
+              onPress={() => gotoAccountDetails(account.index)}
+              hitSlop={16}>
               <Icons.Alert.AlertCircle color={iconColor} />
             </TouchableOpacity>
           </View>

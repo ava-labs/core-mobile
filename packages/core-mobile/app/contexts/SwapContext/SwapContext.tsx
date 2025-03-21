@@ -122,7 +122,7 @@ export const SwapContextProvider = ({
   )
 
   const getOptimalRate = useCallback(() => {
-    if (activeAccount && debouncedAmount) {
+    if (activeAccount && debouncedAmount && debouncedAmount.bn > 0n) {
       setIsFetchingOptimalRate(true)
       getOptimalRateForAmount(activeAccount, debouncedAmount)
         .then(({ optimalRate: opRate }) => {

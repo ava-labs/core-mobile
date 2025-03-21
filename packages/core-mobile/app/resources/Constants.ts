@@ -128,17 +128,10 @@ export const TERMS_OF_USE_URL = 'https://wallet.avax.network/legal?core'
 
 export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
 
-export const DOCS_STAKING =
-  'https://support.avax.network/en/articles/7950590-core-mobile-how-do-i-use-stake'
+export const HELP_URL = 'https://support.core.app/en/'
 
-export const DOCS_DELEGATING =
-  'https://docs.avax.network/nodes/validate/staking#delegators'
+export const DOCS_STAKING_URL =
+  'https://support.core.app/en/articles/7950590-core-mobile-how-do-i-use-stake'
 
-export const DOCS_HOW_TO_DELEGATE =
-  'https://support.avax.network/en/articles/7950590-core-mobile-how-do-i-delegate-with-earn'
-
-export const DOCS_BTC_TO_BTCB_FAQ =
-  'https://support.avax.network/en/articles/6325230-avalanche-bridge-faq-for-converting-btc-to-btc-b'
-
-export const DOCS_BRIDGE_FAQS =
+export const DOCS_BRIDGE_FAQS_URL =
   'https://support.avax.network/en/articles/6092559-avalanche-bridge-faq'

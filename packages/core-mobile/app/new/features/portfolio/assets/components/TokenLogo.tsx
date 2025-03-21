@@ -13,7 +13,7 @@ import { FallbackTokenLogo } from './FallbackTokenLogo'
 
 interface TokenAvatarProps {
   symbol: string
-  logoUri: string | undefined
+  logoUri?: string
   size?: number
   testID?: string
   backgroundColor?: string
