@@ -56,14 +56,13 @@ export const GroupList = ({
     item: GroupListItem,
     index: number
   ): JSX.Element | undefined => {
-    if (item.accessory) {
-      return item.accessory
+    if (item.accessory) return item.accessory
+
+    if (item.accordion) {
+      return <AnimatedChevron expanded={expandedStates[index] ?? false} />
     }
 
-    if (item.onPress || item.accordion) {
-      if (item.accordion) {
-        return <AnimatedChevron expanded={expandedStates[index] ?? false} />
-      }
+    if (item.onPress) {
       return (
         <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
       )
