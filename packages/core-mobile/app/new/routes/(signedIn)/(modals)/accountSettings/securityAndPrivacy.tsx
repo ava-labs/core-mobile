@@ -27,9 +27,7 @@ import { useDeviceInfoContext } from 'common/contexts/DeviceInfoProvider'
 
 const TITLE = 'Security & privacy'
 
-const NavigationHeader = (): JSX.Element => (
-  <NavigationTitleHeader title={TITLE} />
-)
+const navigationHeader = <NavigationTitleHeader title={TITLE} />
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -45,7 +43,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     LayoutRectangle | undefined
   >()
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationHeader />,
+    header: navigationHeader,
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })

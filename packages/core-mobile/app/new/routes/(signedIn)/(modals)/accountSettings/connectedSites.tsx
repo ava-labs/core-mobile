@@ -34,13 +34,17 @@ const ConnectedSitesScreen = (): JSX.Element => {
     LayoutRectangle | undefined
   >()
 
-  const title = useMemo(
-    () => `${allApprovedDapps.length} connected sites`,
+  const navigationHeader = useMemo(
+    () => (
+      <NavigationTitleHeader
+        title={`${allApprovedDapps.length} connected sites`}
+      />
+    ),
     [allApprovedDapps.length]
   )
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={title} />,
+    header: navigationHeader,
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
