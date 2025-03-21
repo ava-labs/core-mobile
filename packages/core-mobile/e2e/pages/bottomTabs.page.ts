@@ -72,7 +72,7 @@ class BottomsTabsPage {
   }
 
   async verifyBottomTabs() {
-    await Actions.waitForElement(this.portfolioTab, 5000)
+    await Actions.waitForElement(this.portfolioTab, 10000)
     await Assert.isVisible(this.trackTab)
     await Assert.isVisible(this.stakeTab)
     await Assert.isVisible(this.browserTab)

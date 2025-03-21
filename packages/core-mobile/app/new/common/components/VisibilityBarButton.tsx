@@ -14,6 +14,7 @@ export const VisibilityBarButton = ({
     <TouchableOpacity onPress={onPress} hitSlop={16}>
       {isPrivacyModeEnabled ? (
         <Icons.Action.VisibilityOff
+          testID="eye_icon"
           color={theme.colors.$textPrimary}
           width={22}
           height={22}

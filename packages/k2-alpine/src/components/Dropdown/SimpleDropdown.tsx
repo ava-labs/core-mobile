@@ -34,6 +34,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   isVisible?: boolean
   minWidth?: number
   displayArea?: Pick<Rect, 'height' | 'width' | 'x' | 'y'>
+  testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
   const popoverRef = useRef<Popover>()
@@ -80,7 +81,11 @@ export const SimpleDropdown = <T extends { toString(): string }>({
                     handlePress({ section: sectionIndex, row: rowIndex })
                   }>
                   <View style={styles.section}>
-                    <Text sx={styles.sectionText}>{row.toString()}</Text>
+                    <Text
+                      sx={styles.sectionText}
+                      testID={`dropdown_item__${row.toString()}`}>
+                      {row.toString()}
+                    </Text>
                     {isSelected({
                       section: sectionIndex,
                       row: rowIndex

@@ -35,6 +35,7 @@ class LoginRecoverWallet {
 
     if (isLoggedIn) {
       await onboardingPage.enterPin()
+      await bottomTabsPage.verifyBottomTabs()
     } else {
       await this.recoverMnemonicWallet(recoverPhrase)
     }

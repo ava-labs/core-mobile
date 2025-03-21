@@ -6,15 +6,17 @@ import { TextVariant } from '../../theme/tokens/text'
 
 export const MaskedView = ({
   variant,
-  sx
+  sx,
+  testID
 }: {
   variant?: TextVariant
   sx?: SxProp
+  testID?: string
 }): React.JSX.Element => {
   return (
     <AnimateFadeScale delay={200}>
       <View sx={{ ...sx, borderRadius: 12 }}>
-        <Text variant={variant} sx={{ color: 'transparent' }} />
+        <Text testID={testID} variant={variant} sx={{ color: 'transparent' }} />
       </View>
     </AnimateFadeScale>
   )
