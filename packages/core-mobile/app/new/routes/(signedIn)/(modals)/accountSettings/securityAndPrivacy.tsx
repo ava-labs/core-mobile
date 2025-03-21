@@ -5,7 +5,7 @@ import {
   GroupList,
   Toggle
 } from '@avalabs/k2-alpine'
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
@@ -23,7 +23,9 @@ import {
 } from 'store/settings/securityPrivacy'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useDeviceInfoContext } from 'common/contexts/DeviceInfoProvider'
+import DeviceInfoService, {
+  BiometricType
+} from 'services/deviceInfo/DeviceInfoService'
 
 const TITLE = 'Security & privacy'
 
@@ -36,7 +38,9 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
-  const { bioType } = useDeviceInfoContext()
+  const [biometricType, setBiometricType] = useState<BiometricType>(
+    BiometricType.NONE
+  )
   const { navigate } = useRouter()
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<
@@ -77,12 +81,12 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         }
       },
       {
-        title: `Use ${bioType}`,
+        title: `Use ${biometricType}`,
         // TODO: Implement biometric toggle
         value: <Toggle onValueChange={noop} value={true} />
       }
     ]
-  }, [bioType, navigate])
+  }, [biometricType, navigate])
 
   const recoveryData = useMemo(() => {
     return [
@@ -126,6 +130,14 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       }
     ]
   }, [coreAnalyticsConsent, handleToggleCoreAnalyticsConsent])
+
+  useEffect(() => {
+    const getBiometryType = async (): Promise<void> => {
+      const type = await DeviceInfoService.getBiometricType()
+      setBiometricType(type)
+    }
+    getBiometryType()
+  }, [])
 
   return (
     <ScrollView
