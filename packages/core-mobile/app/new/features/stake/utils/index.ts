@@ -18,7 +18,8 @@ export const getActiveStakeProgress = (
 
 export const formattedEstimatedRewardInAvax = (
   stake: PChainTransaction,
-  pChainNetworkToken: NetworkToken
+  pChainNetworkToken: NetworkToken,
+  fixedDp = 2
 ): string => {
   const estimatedRewardInAvax = stake.estimatedReward
     ? new TokenUnit(
@@ -27,11 +28,12 @@ export const formattedEstimatedRewardInAvax = (
         pChainNetworkToken.symbol
       )
     : undefined
-  return estimatedRewardInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+  return estimatedRewardInAvax?.toDisplay({ fixedDp }) ?? UNKNOWN_AMOUNT
 }
 
 export const formattedRewardAmountInAvax = (
-  stake: PChainTransaction
+  stake: PChainTransaction,
+  fixedDp = 2
 ): string => {
   const rewardUtxo = stake.emittedUtxos.find(
     utxo =>
@@ -43,5 +45,5 @@ export const formattedRewardAmountInAvax = (
     ? new TokenUnit(rewardAmount, xpChainToken.maxDecimals, xpChainToken.symbol)
     : undefined
 
-  return rewardAmountInAvax?.toDisplay() ?? UNKNOWN_AMOUNT
+  return rewardAmountInAvax?.toDisplay({ fixedDp }) ?? UNKNOWN_AMOUNT
 }

@@ -74,7 +74,9 @@ const StakesScreen = ({
         content = (
           <ClaimCard
             onPress={onClaim}
-            title={`${claimableInAvax} AVAX reward unlocked`}
+            title={`${claimableInAvax?.toDisplay({
+              fixedDp: 2
+            })} AVAX reward unlocked`}
             width={CARD_WIDTH}
             backgroundImageSource={completeCardBackground}
           />

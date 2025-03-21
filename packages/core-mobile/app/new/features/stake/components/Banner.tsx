@@ -82,10 +82,10 @@ export const Banner = (): JSX.Element | undefined => {
     return stakedInAvax.add(pendingStakedInAvax)
   }, [stakedInAvax, pendingStakedInAvax])
 
-  const totalStaked = totalStakedInAvax?.toDisplay({ asNumber: true })
-  const totalAvailable = totalStakedInAvax
+  const formattedTotalStaked = totalStakedInAvax?.toDisplay({ fixedDp: 2 })
+  const formattedTotalAvailable = totalStakedInAvax
     ?.add(availableInAvax ?? 0)
-    ?.toDisplay({ asNumber: true })
+    ?.toDisplay({ fixedDp: 2 })
 
   if (isEmpty) {
     return (
@@ -112,7 +112,7 @@ export const Banner = (): JSX.Element | undefined => {
     )
   }
 
-  if (!totalStaked || !totalAvailable) {
+  if (!formattedTotalStaked || !formattedTotalAvailable) {
     return undefined
   }
 
@@ -133,8 +133,8 @@ export const Banner = (): JSX.Element | undefined => {
         }}>
         <CircularProgress progress={0.5} />
         <Text variant="body2" sx={{ flexShrink: 1 }}>
-          {totalStaked} AVAX are currently staked out of {totalAvailable} AVAX
-          available
+          {formattedTotalStaked} AVAX are currently staked out of{' '}
+          {formattedTotalAvailable} AVAX available
         </Text>
       </Card>
     </View>
