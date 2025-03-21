@@ -194,13 +194,15 @@ const ConnectedSitesScreen = (): JSX.Element => {
         }
         renderItem={item => renderItem(item.item as Dapp, item.index)}
       />
-      <Button
-        type="primary"
-        size="large"
-        style={{ marginBottom: bottomInset + 16 }}
-        onPress={() => disconnectAllDapps()}>
-        Disconnect all
-      </Button>
+      {allApprovedDapps.length > 1 && (
+        <Button
+          type="primary"
+          size="large"
+          style={{ marginBottom: bottomInset + 16 }}
+          onPress={() => disconnectAllDapps()}>
+          Disconnect all
+        </Button>
+      )}
     </View>
   )
 }
