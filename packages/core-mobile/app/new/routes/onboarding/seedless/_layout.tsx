@@ -38,6 +38,10 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
       {SEEDLESS_ONBOARDING_SCREENS.map(screen => {
         return <Stack.Screen key={screen} name={screen} />
       })}
+      <Stack.Screen
+        name="verifyCodeModal"
+        options={{ headerTitle: () => null }}
+      />
     </Stack>
   )
 }
