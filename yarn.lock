@@ -552,7 +552,6 @@ __metadata:
     expo-font: 13.0.2
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
-    expo-sensors: 14.0.2
     expo-splash-screen: 0.29.18
     expo-status-bar: 2.0.1
     expo-video: 2.0.5
@@ -17879,18 +17878,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-sensors@npm:14.0.2":
-  version: 14.0.2
-  resolution: "expo-sensors@npm:14.0.2"
-  dependencies:
-    invariant: ^2.2.4
-  peerDependencies:
-    expo: "*"
-    react-native: "*"
-  checksum: 3cb51ae71b7f555a82fb100e2faad7f6175a746392f0a79c76c8713c6d95e67ac3c2b0c6bc1b5690935027301afcba018bb959d23126973f73a9da955afdd3c9
-  languageName: node
-  linkType: hard
-
 "expo-sms@npm:13.0.1":
   version: 13.0.1
   resolution: "expo-sms@npm:13.0.1"
@@ -26224,7 +26211,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 
