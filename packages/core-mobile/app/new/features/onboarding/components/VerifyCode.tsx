@@ -1,12 +1,18 @@
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useLayoutEffect,
+  useRef
+} from 'react'
 import {
   View,
   Text,
   useTheme,
   Card,
   TextInput,
-  Pressable,
   showAlert
 } from '@avalabs/k2-alpine'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -72,14 +78,6 @@ export const VerifyCode = ({
     [onVerifyCode, onVerifySuccess]
   )
 
-  const handleTextInputFocus = (): void => {
-    inputRef.current?.focus()
-  }
-
-  useEffect(() => {
-    handleTextInputFocus()
-  }, [])
-
   const handleRetry = useCallback((): void => {
     setShowError(false)
     handleVerifyCode(code).catch(Logger.error)
@@ -88,6 +86,22 @@ export const VerifyCode = ({
   const handleCancel = (): void => {
     setShowError(false)
   }
+
+  useLayoutEffect(() => {
+    const timeout = setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100) // Delay for navigation animations
+
+    return () => clearTimeout(timeout)
+  }, [])
+
+  // const handleTextInputFocus = (): void => {
+  //   inputRef.current?.focus()
+  // }
+
+  // useEffect(() => {
+  //   handleTextInputFocus()
+  // }, [])
 
   useEffect(() => {
     if (showError) {
@@ -129,36 +143,33 @@ export const VerifyCode = ({
               marginTop: 34,
               height: 150
             }}>
-            <Pressable
-              onPress={handleTextInputFocus}
-              sx={{
+            <TextInput
+              ref={inputRef}
+              containerSx={{
                 flex: 1,
-                width: '100%',
+                height: 44,
                 justifyContent: 'center',
                 alignItems: 'center'
-              }}>
-              <TextInput
-                ref={inputRef}
-                selectionColor={colors.$textPrimary}
-                sx={{
-                  flex: 1,
-                  fontFamily: 'Aeonik-Medium',
-                  height: 44,
-                  fontSize: 60,
-                  lineHeight: 60,
-                  color: colors.$textPrimary
-                }}
-                maxLength={7}
-                editable={!isVerifying}
-                value={formattedCode}
-                keyboardType="number-pad"
-                onChangeText={changedText => {
-                  handleVerifyCode(changedText).catch(error =>
-                    Logger.error('handleVerifyCode', error)
-                  )
-                }}
-              />
-            </Pressable>
+              }}
+              textInputSx={{
+                flex: 1,
+                fontFamily: 'Aeonik-Medium',
+                fontSize: 60,
+                lineHeight: 60,
+                color: colors.$textPrimary
+              }}
+              textAlign="center"
+              onBlur={() => inputRef.current?.focus()}
+              maxLength={7}
+              editable={!isVerifying}
+              value={formattedCode}
+              keyboardType="number-pad"
+              onChangeText={changedText => {
+                handleVerifyCode(changedText).catch(error =>
+                  Logger.error('handleVerifyCode', error)
+                )
+              }}
+            />
           </Card>
         </View>
       </View>

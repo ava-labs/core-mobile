@@ -16,12 +16,12 @@ const AddRecoveryMethods = (): JSX.Element => {
 
   const [selectedMethod, setSelectedMethod] = useState(
     availableRecoveryMethods.length > 0
-      ? availableRecoveryMethods[0]?.type
+      ? availableRecoveryMethods[0]
       : undefined
   )
 
   const handleOnNext = (): void => {
-    if (selectedMethod === RecoveryMethods.Passkey) {
+    if (selectedMethod?.type === RecoveryMethods.Passkey) {
       navigate({
         pathname: './fidoNameInput',
         params: {
@@ -33,7 +33,7 @@ const AddRecoveryMethods = (): JSX.Element => {
       })
       return
     }
-    if (selectedMethod === RecoveryMethods.Yubikey) {
+    if (selectedMethod?.type === RecoveryMethods.Yubikey) {
       navigate({
         pathname: './fidoNameInput',
         params: {
@@ -45,7 +45,7 @@ const AddRecoveryMethods = (): JSX.Element => {
       })
       return
     }
-    if (selectedMethod === RecoveryMethods.Authenticator) {
+    if (selectedMethod?.type === RecoveryMethods.Authenticator) {
       navigate('./authenticatorSetup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
