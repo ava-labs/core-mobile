@@ -10,6 +10,7 @@ import {
   Motion,
   ProgressCard,
   SCREEN_WIDTH,
+  SPRING_LINEAR_TRANSITION,
   useTheme
 } from '@avalabs/k2-alpine'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
@@ -21,6 +22,8 @@ import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { UTCDate } from '@date-fns/utc'
 import { secondsToMilliseconds } from 'date-fns'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
+import Animated from 'react-native-reanimated'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
 import {
   formattedEstimatedRewardInAvax,
   formattedRewardAmountInAvax,
@@ -60,13 +63,15 @@ const StakesScreen = ({
   }, [stakes, claimableInAvax])
 
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
+    ({
+      item,
+      index
+    }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
+      let content = null
       if (item === StaticCard.Add) {
-        return <AddCard width={CARD_WIDTH} onPress={onAddStake} />
-      }
-
-      if (item === StaticCard.Claim) {
-        return (
+        content = <AddCard width={CARD_WIDTH} onPress={onAddStake} />
+      } else if (item === StaticCard.Claim) {
+        content = (
           <ClaimCard
             onPress={onClaim}
             title={`${claimableInAvax} AVAX reward unlocked`}
@@ -74,39 +79,47 @@ const StakesScreen = ({
             backgroundImageSource={completeCardBackground}
           />
         )
+      } else {
+        const now = new Date()
+
+        if (isCompleted(item, now)) {
+          const rewardAmountInAvaxDisplay = formattedRewardAmountInAvax(item)
+
+          content = (
+            <CompletedCard
+              onPress={() => onPressStake(item.txHash)}
+              title={`${rewardAmountInAvaxDisplay} AVAX reward claimed`}
+              width={CARD_WIDTH}
+            />
+          )
+        } else if (isOnGoing(item, now)) {
+          const remainingTime = getReadableDateDuration(
+            new UTCDate(secondsToMilliseconds(item.endTimestamp || 0))
+          )
+          const estimatedRewardInAvaxDisplay = formattedEstimatedRewardInAvax(
+            item,
+            pChainNetworkToken
+          )
+
+          content = (
+            <ProgressCard
+              title={`${estimatedRewardInAvaxDisplay} AVAX reward unlocked in\n${remainingTime}`}
+              progress={getActiveStakeProgress(item, now)}
+              width={CARD_WIDTH}
+              motion={motion}
+              onPress={() => onPressStake(item.txHash)}
+            />
+          )
+        }
       }
 
-      const now = new Date()
-
-      if (isCompleted(item, now)) {
-        const rewardAmountInAvaxDisplay = formattedRewardAmountInAvax(item)
-
+      if (content) {
         return (
-          <CompletedCard
-            onPress={() => onPressStake(item.txHash)}
-            title={`${rewardAmountInAvaxDisplay} AVAX reward claimed`}
-            width={CARD_WIDTH}
-          />
-        )
-      }
-
-      if (isOnGoing(item, now)) {
-        const remainingTime = getReadableDateDuration(
-          new UTCDate(secondsToMilliseconds(item.endTimestamp || 0))
-        )
-        const estimatedRewardInAvaxDisplay = formattedEstimatedRewardInAvax(
-          item,
-          pChainNetworkToken
-        )
-
-        return (
-          <ProgressCard
-            title={`${estimatedRewardInAvaxDisplay} AVAX reward unlocked in\n${remainingTime}`}
-            progress={getActiveStakeProgress(item, now)}
-            width={CARD_WIDTH}
-            motion={motion}
-            onPress={() => onPressStake(item.txHash)}
-          />
+          <Animated.View
+            entering={getListItemEnteringAnimation(index)}
+            layout={SPRING_LINEAR_TRANSITION}>
+            {content}
+          </Animated.View>
         )
       }
 
