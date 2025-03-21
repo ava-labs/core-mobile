@@ -53,17 +53,15 @@ export const All = (): JSX.Element => {
             {
               title: 'Title 5',
               value: 'Accordion',
-              accordion: {
-                component: (
-                  <View
-                    sx={{
-                      padding: 16,
-                      alignItems: 'center'
-                    }}>
-                    <Text>Peekaboo</Text>
-                  </View>
-                )
-              }
+              accordion: (
+                <View
+                  sx={{
+                    padding: 16,
+                    alignItems: 'center'
+                  }}>
+                  <Text>Peekaboo</Text>
+                </View>
+              )
             }
           ]}
         />

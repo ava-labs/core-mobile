@@ -164,7 +164,7 @@ export const GroupList = ({
                 </View>
               </View>
             </TouchableOpacity>
-            {accordion && expandedStates[index] && (
+            {accordion !== undefined && expandedStates[index] && (
               <Animated.View entering={FadeIn} exiting={FadeOut}>
                 <Separator
                   sx={{
@@ -172,7 +172,7 @@ export const GroupList = ({
                     marginRight: separatorMarginRight
                   }}
                 />
-                {accordion.component}
+                {accordion}
               </Animated.View>
             )}
             {index < data.length - 1 && (
@@ -199,9 +199,7 @@ export type GroupListItem = {
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   accessory?: JSX.Element
-  accordion?: {
-    component: JSX.Element
-  }
+  accordion?: JSX.Element
 }
 
 const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {
