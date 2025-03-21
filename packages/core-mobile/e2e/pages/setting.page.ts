@@ -64,8 +64,6 @@ class Settings {
   }
 
   async goToConnectedSites() {
-    await burgerMenuPage.tapBurgerMenuButton()
-    await burgerMenuPage.tapSecurityAndPrivacy()
     await this.tapConnectedSites()
   }
 
