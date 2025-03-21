@@ -29,6 +29,7 @@ export * from './Chart/MiniChart'
 export * from './Chip/Chip'
 export * from './CircularProgress/CircularProgress'
 export * from './StakeCards/AddCard'
+export * from './StakeCards/ClaimCard'
 export * from './StakeCards/ProgressCard'
 export * from './StakeCards/CompleteCard'
 
