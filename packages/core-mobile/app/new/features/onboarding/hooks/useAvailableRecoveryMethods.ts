@@ -21,6 +21,7 @@ export type RecoveryMethod = {
   title: string
   description: string
   icon: FC<SvgProps>
+  mfa?: MFA
 }
 export const RECOVERY_METHODS: RecoveryMethod[] = [
   {

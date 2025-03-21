@@ -18,7 +18,7 @@ const AccessWalletScreen = (): JSX.Element => {
   const handleEnterRecoveryPhrase = (): void => {
     navigate({
       pathname: '/onboarding/mnemonic/',
-      params: { recovering: true }
+      params: { recovering: 'true' }
     })
   }
 
