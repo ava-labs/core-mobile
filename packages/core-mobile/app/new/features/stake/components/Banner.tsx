@@ -104,7 +104,7 @@ export const Banner = (): JSX.Element | undefined => {
           }}>
           <Icons.Action.Info color={theme.colors.$textPrimary} />
           <Text variant="body2" sx={{ flexShrink: 1 }}>
-            A minimum of 20 AVAX is required to be able to stake on the
+            A minimum of 25 AVAX is required to be able to stake on the
             Avalanche Network
           </Text>
         </Card>

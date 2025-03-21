@@ -26,16 +26,18 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useRouter } from 'expo-router'
-import { AllStakesScreen } from 'features/stake/components/AllStakesScreen'
-import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
-import { CompletedStakesScreen } from 'features/stake/components/CompletedStakesScreen'
 import { useStakes } from 'hooks/earn/useStakes'
 import { Banner } from 'features/stake/components/Banner'
 import { LoadingState } from 'common/components/LoadingState'
+import StakesScreen from 'features/stake/components/StakesScreen'
+import { useActiveStakes } from 'hooks/earn/useActiveStakes'
+import { usePastStakes } from 'hooks/earn/usePastStakes'
 
 const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { data, isLoading } = useStakes()
+  const { stakes: activeStakes } = useActiveStakes()
+  const { stakes: pastStakes } = usePastStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -52,7 +54,7 @@ const StakeHomeScreen = (): JSX.Element => {
     []
   )
 
-  const header = useMemo(() => <NavigationTitleHeader title={'Stake'} />, [])
+  const header = useMemo(() => <NavigationTitleHeader title={'Stakes'} />, [])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
@@ -125,7 +127,8 @@ const StakeHomeScreen = (): JSX.Element => {
     const allTab = {
       tabName: StakeHomeScreenTab.All,
       component: (
-        <AllStakesScreen
+        <StakesScreen
+          stakes={data ?? []}
           onPressStake={handlePressStake}
           onAddStake={handleAddStake}
           onClaim={handleClaim}
@@ -143,7 +146,8 @@ const StakeHomeScreen = (): JSX.Element => {
       {
         tabName: StakeHomeScreenTab.Active,
         component: (
-          <ActiveStakesScreen
+          <StakesScreen
+            stakes={activeStakes}
             onPressStake={handlePressStake}
             onAddStake={handleAddStake}
             onClaim={handleClaim}
@@ -154,7 +158,8 @@ const StakeHomeScreen = (): JSX.Element => {
       {
         tabName: StakeHomeScreenTab.Completed,
         component: (
-          <CompletedStakesScreen
+          <StakesScreen
+            stakes={pastStakes}
             onPressStake={handlePressStake}
             onAddStake={handleAddStake}
             onClaim={handleClaim}
@@ -162,7 +167,16 @@ const StakeHomeScreen = (): JSX.Element => {
         )
       }
     ]
-  }, [isEmpty, motion, handlePressStake, handleAddStake, handleClaim])
+  }, [
+    activeStakes,
+    data,
+    pastStakes,
+    isEmpty,
+    motion,
+    handlePressStake,
+    handleAddStake,
+    handleClaim
+  ])
 
   if (isLoading) {
     return <LoadingState sx={{ flex: 1 }} />
