@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Switch } from 'react-native'
-import { ScrollView, View } from '../Primitives'
+import { ScrollView, Text, View } from '../Primitives'
 import { Icons, showAlert, useTheme } from '../..'
 import { GroupList } from './GroupList'
 
@@ -11,6 +11,7 @@ export default {
 export const All = (): JSX.Element => {
   const { theme } = useTheme()
   const [booleanValue, setBooleanValue] = useState(true)
+  const [isAccordionExpanded, setIsAccordionExpanded] = useState(false)
 
   return (
     <ScrollView
@@ -48,6 +49,25 @@ export const All = (): JSX.Element => {
               value: 'Pressable',
               onPress: () => {
                 showAlert({ title: 'Pressed', buttons: [{ text: 'OK' }] })
+              }
+            },
+            {
+              title: 'Title 5',
+              value: isAccordionExpanded ? 'Expanded' : 'Collapsed',
+              onPress: () => {
+                setIsAccordionExpanded(!isAccordionExpanded)
+              },
+              accordion: {
+                expanded: isAccordionExpanded,
+                component: (
+                  <View
+                    sx={{
+                      padding: 16,
+                      alignItems: 'center'
+                    }}>
+                    <Text>Peekaboo</Text>
+                  </View>
+                )
               }
             }
           ]}
