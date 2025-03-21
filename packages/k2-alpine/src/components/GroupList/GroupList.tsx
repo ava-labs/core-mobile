@@ -34,24 +34,39 @@ export const GroupList = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const [textMarginLeft, setTextMarginLeft] = useState(0)
+  const [expandedStates, setExpandedStates] = useState<boolean[]>(
+    data.map(() => false)
+  )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setTextMarginLeft(event.nativeEvent.layout.x)
   }
 
-  const renderAccessory = (item: GroupListItem): JSX.Element | undefined => {
+  const handlePress = (item: GroupListItem, index: number): void => {
+    if (item.accordion) {
+      setExpandedStates(prev =>
+        prev.map((value, i) => (i === index ? !value : value))
+      )
+    } else {
+      item.onPress?.()
+    }
+  }
+
+  const renderAccessory = (
+    item: GroupListItem,
+    index: number
+  ): JSX.Element | undefined => {
     if (item.accessory) {
       return item.accessory
     }
 
-    if (item.onPress) {
+    if (item.onPress || item.accordion) {
       if (item.accordion) {
-        return <AnimatedChevron expanded={item.accordion.expanded} />
-      } else {
-        return (
-          <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
-        )
+        return <AnimatedChevron expanded={expandedStates[index] ?? false} />
       }
+      return (
+        <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
+      )
     }
   }
 
@@ -79,8 +94,8 @@ export const GroupList = ({
         return (
           <View key={index}>
             <TouchableOpacity
-              onPress={onPress}
-              disabled={onPress === undefined}
+              onPress={() => handlePress(item, index)}
+              disabled={!onPress && !accordion}
               onLongPress={onLongPress}>
               <View
                 sx={{
@@ -144,12 +159,12 @@ export const GroupList = ({
                       ) : (
                         value
                       ))}
-                    {renderAccessory(item)}
+                    {renderAccessory(item, index)}
                   </View>
                 </View>
               </View>
             </TouchableOpacity>
-            {accordion?.expanded === true && (
+            {accordion && expandedStates[index] && (
               <Animated.View entering={FadeIn} exiting={FadeOut}>
                 <Separator
                   sx={{
@@ -185,7 +200,6 @@ export type GroupListItem = {
   rightIcon?: JSX.Element
   accessory?: JSX.Element
   accordion?: {
-    expanded: boolean
     component: JSX.Element
   }
 }

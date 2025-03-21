@@ -11,7 +11,6 @@ export default {
 export const All = (): JSX.Element => {
   const { theme } = useTheme()
   const [booleanValue, setBooleanValue] = useState(true)
-  const [isAccordionExpanded, setIsAccordionExpanded] = useState(false)
 
   return (
     <ScrollView
@@ -53,12 +52,8 @@ export const All = (): JSX.Element => {
             },
             {
               title: 'Title 5',
-              value: isAccordionExpanded ? 'Expanded' : 'Collapsed',
-              onPress: () => {
-                setIsAccordionExpanded(!isAccordionExpanded)
-              },
+              value: 'Accordion',
               accordion: {
-                expanded: isAccordionExpanded,
                 component: (
                   <View
                     sx={{
