@@ -31,7 +31,8 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   size = DEFAULT_SIZE,
   backgroundColor,
   isMalicious,
-  isNetworkToken = false
+  isNetworkToken = false,
+  testID
 }) => {
   const useLocalNetworkTokenLogo =
     isNetworkToken && hasLocalNetworkTokenLogo(symbol)
@@ -74,6 +75,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
           borderWidth
         }}>
         <TokenIcon
+          testID={testID}
           size={size}
           symbol={symbol}
           isNetworkTokenSymbol={useLocalNetworkTokenLogo}

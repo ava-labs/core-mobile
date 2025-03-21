@@ -17,5 +17,17 @@ export default {
   datePicker: 'dateTimePicker',
   okBtn: 'OK',
   next: 'Next',
-  dismiss: 'Dismiss'
+  dismiss: 'Dismiss',
+  grabber: 'grabber',
+  viewDropdownBtn: 'view_dropdown_btn',
+  cChain: 'Avalanche C-Chain',
+  cChain_2: 'Avalanche (C-Chain)',
+  pChain: 'Avalanche P-Chain',
+  pChain_2: 'Avalanche (P-Chain)',
+  xChain: 'Avalanche X-Chain',
+  xChain_2: 'Avalanche (X-Chain)',
+  ethereum: 'Ethereum',
+  bitcoinNetwork: 'Bitcoin network',
+  bitcoin: 'Bitcoin',
+  allNetworks: 'All networks'
 }

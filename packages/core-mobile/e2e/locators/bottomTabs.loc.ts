@@ -5,6 +5,6 @@ export default {
   plusButton: 'add_svg',
   portfolioTab: 'portfolio_tab',
   trackTab: 'track_tab',
-  stakeTab: 'staking_tab',
+  stakeTab: 'stake_tab',
   browserTab: 'browser_tab'
 }
