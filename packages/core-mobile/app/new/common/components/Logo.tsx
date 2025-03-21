@@ -1,88 +1,30 @@
 import React from 'react'
-import { Icons, Image, View } from '@avalabs/k2-alpine'
+import { Image } from '@avalabs/k2-alpine'
 import { FC, useState } from 'react'
 import { isBase64Png } from 'screens/browser/utils'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import { SvgUri } from 'react-native-svg'
-import { TokenIcon } from 'common/components/TokenIcon'
-import {
-  hasLocalNetworkTokenLogo,
-  hasLocalTokenLogo
-} from 'common/utils/hasLocalTokenLogo'
-import { FallbackTokenLogo } from './FallbackTokenLogo'
+import { FallbackLogo } from './FallbackLogo'
 
-interface TokenAvatarProps {
-  symbol: string
+interface LogoProps {
   logoUri?: string
   size?: number
   testID?: string
   backgroundColor?: string
   borderColor?: string
-  isMalicious?: boolean
-  isNetworkToken?: boolean
 }
 
 const DEFAULT_SIZE = 32
 
-export const TokenLogo: FC<TokenAvatarProps> = ({
-  symbol,
+export const Logo: FC<LogoProps> = ({
   logoUri,
   borderColor,
   size = DEFAULT_SIZE,
-  backgroundColor,
-  isMalicious,
-  isNetworkToken = false,
-  testID
+  backgroundColor
 }) => {
-  const useLocalNetworkTokenLogo =
-    isNetworkToken && hasLocalNetworkTokenLogo(symbol)
-
   const [failedToLoad, setFailedToLoad] = useState(false)
 
   const borderWidth = borderColor ? 1 : 0
-
-  if (isMalicious) {
-    return (
-      <View
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size,
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          backgroundColor,
-          borderColor,
-          borderWidth
-        }}>
-        <Icons.Custom.RedExclamation width={14} height={14} />
-      </View>
-    )
-  }
-
-  if (hasLocalTokenLogo(symbol) || useLocalNetworkTokenLogo) {
-    return (
-      <View
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size,
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          backgroundColor,
-          borderColor,
-          borderWidth
-        }}>
-        <TokenIcon
-          testID={testID}
-          size={size}
-          symbol={symbol}
-          isNetworkTokenSymbol={useLocalNetworkTokenLogo}
-        />
-      </View>
-    )
-  }
 
   const hasValidLogoUri =
     !!logoUri &&
@@ -93,7 +35,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
 
   if (!hasValidLogoUri) {
     return (
-      <FallbackTokenLogo
+      <FallbackLogo
         size={size}
         borderColor={borderColor}
         backgroundColor={backgroundColor}
@@ -109,7 +51,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
       height={size}
       style={{
         borderRadius: size,
-        backgroundColor: backgroundColor,
+        backgroundColor,
         borderWidth,
         borderColor
       }}

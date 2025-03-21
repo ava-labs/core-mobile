@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useRef, useEffect, useState } from 'react'
 import { useFocusEffect } from 'expo-router'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
@@ -14,6 +14,9 @@ import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import DeviceInfoService, {
+  BiometricType
+} from 'services/deviceInfo/DeviceInfoService'
 
 export const CreatePin = ({
   useBiometrics,
@@ -25,7 +28,9 @@ export const CreatePin = ({
   onEnteredValidPin: (validPin: string) => void
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
-
+  const [biometricType, setBiometricType] = useState<BiometricType>(
+    BiometricType.NONE
+  )
   const {
     onEnterChosenPin,
     onEnterConfirmedPin,
@@ -43,6 +48,14 @@ export const CreatePin = ({
       })
     }
   })
+
+  useEffect(() => {
+    const getBiometryType = async (): Promise<void> => {
+      const type = await DeviceInfoService.getBiometricType()
+      setBiometricType(type)
+    }
+    getBiometryType()
+  }, [])
 
   useFocusEffect(
     useCallback(() => {
@@ -106,7 +119,7 @@ export const CreatePin = ({
               <GroupList
                 data={[
                   {
-                    title: 'Unlock with Face ID',
+                    title: `Unlock with ${biometricType}`,
                     accessory: (
                       <Toggle
                         onValueChange={setUseBiometrics}

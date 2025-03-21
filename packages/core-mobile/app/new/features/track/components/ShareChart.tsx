@@ -14,7 +14,7 @@ import React from 'react'
 import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
 import { formatLargeCurrency } from 'utils/Utils'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 

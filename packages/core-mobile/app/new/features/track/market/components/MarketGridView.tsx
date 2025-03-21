@@ -15,7 +15,7 @@ import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
-import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 import { ChartData } from 'services/token/types'
 import { GRID_GAP } from 'common/consts'
 
