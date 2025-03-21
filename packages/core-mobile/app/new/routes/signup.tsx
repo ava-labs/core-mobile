@@ -19,7 +19,7 @@ import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryM
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
-  const { setOidcAuth } = useRecoveryMethodContext()
+  const { setOidcAuth, setMfaMethods } = useRecoveryMethodContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -53,20 +53,18 @@ export default function Signup(): JSX.Element {
   }
 
   const handleVerifyMfaMethod = (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     oidcAuth: {
       oidcToken: string
       mfaId: string
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     mfaMethods: MFA[]
   ): void => {
-    // navigate(AppNavigation.Root.SelectRecoveryMethods, {
-    //   mfaMethods,
-    //   onMFASelected: mfa => {
-    //     verify(mfa, oidcAuth, handleAccountVerified)
-    //   }
-    // })
+    setOidcAuth(oidcAuth)
+    setMfaMethods(mfaMethods)
+    router.navigate({
+      pathname: '/onboarding/seedless/termsAndConditions',
+      params: { recovering: 'true' }
+    })
   }
 
   const renderMnemonicOnboarding = (): JSX.Element => {

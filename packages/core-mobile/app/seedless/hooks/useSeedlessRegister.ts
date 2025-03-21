@@ -1,4 +1,3 @@
-import { showSimpleToast } from 'components/Snackbar'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
@@ -17,7 +16,8 @@ import {
 import Logger from 'utils/Logger'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { hideLogo, showLogo } from 'components/GlobalLogoLoader'
-import useVerifyMFA from './useVerifyMFA'
+import { showSnackbar } from 'new/common/utils/toast'
+import { useRouter } from 'expo-router'
 
 type RegisterProps = {
   getOidcToken: () => Promise<OidcPayload>
@@ -47,12 +47,12 @@ type ReturnType = {
     oidcAuth: {
       oidcToken: string
       mfaId: string
-    },
-    onAccountVerified: () => void
+    }
   ) => Promise<void>
 }
 
 export const useSeedlessRegister = (): ReturnType => {
+  const { navigate } = useRouter()
   const [isRegistering, setIsRegistering] = useState(false)
 
   const isSeedlessMfaAuthenticatorBlocked = useSelector(
@@ -64,7 +64,6 @@ export const useSeedlessRegister = (): ReturnType => {
   const isSeedlessMfaYubikeyBlocked = useSelector(
     selectIsSeedlessMfaYubikeyBlocked
   )
-  const { verifyTotp } = useVerifyMFA(SeedlessService.session)
 
   const register = async ({
     getOidcToken,
@@ -145,36 +144,22 @@ export const useSeedlessRegister = (): ReturnType => {
     oidcAuth: {
       oidcToken: string
       mfaId: string
-    },
-    onAccountVerified: () => void
+    }
   ): Promise<void> => {
     if (mfa.type === 'totp') {
       if (isSeedlessMfaAuthenticatorBlocked) {
-        showSimpleToast('Authenticator is not available at the moment')
+        showSnackbar('Authenticator is not available at the moment')
       } else {
-        verifyTotp({
-          onVerifyCode: code =>
-            SeedlessService.session.verifyCode(
-              oidcAuth.oidcToken,
-              oidcAuth.mfaId,
-              code
-            ),
-          onVerifySuccess: () => {
-            onAccountVerified()
-            AnalyticsService.capture('SeedlessMfaVerified', {
-              type: 'Authenticator'
-            })
-          }
-        })
+        navigate('./verifyCodeModal')
       }
     } else if (mfa.type === 'fido') {
       if (PasskeyService.isSupported === false) {
-        showSimpleToast('Passkey/Yubikey is not supported on this device')
+        showSnackbar('Passkey/Yubikey is not supported on this device')
         return
       }
 
       if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
-        showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
+        showSnackbar('AuthenPasskey/Yubikey is not available at the moment')
       }
 
       showLogo()
@@ -188,11 +173,11 @@ export const useSeedlessRegister = (): ReturnType => {
 
         AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
         hideLogo()
-        onAccountVerified()
+        navigate('./analyticsConsent')
       } catch (e) {
         hideLogo()
         Logger.error('passkey authentication failed', e)
-        showSimpleToast('Unable to authenticate')
+        showSnackbar('Unable to authenticate')
       }
     }
   }
