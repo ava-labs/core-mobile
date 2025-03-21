@@ -39,6 +39,22 @@ export const GroupList = ({
     setTextMarginLeft(event.nativeEvent.layout.x)
   }
 
+  const renderAccessory = (item: GroupListItem): JSX.Element | undefined => {
+    if (item.accessory) {
+      return item.accessory
+    }
+
+    if (item.onPress) {
+      if (item.accordion) {
+        return <AnimatedChevron expanded={item.accordion.expanded} />
+      } else {
+        return (
+          <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
+        )
+      }
+    }
+  }
+
   return (
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
@@ -48,21 +64,19 @@ export const GroupList = ({
         overflow: 'hidden',
         backgroundColor: theme.colors.$surfaceSecondary
       }}>
-      {data.map(
-        (
-          {
-            leftIcon,
-            rightIcon,
-            title,
-            subtitle,
-            value,
-            accessory,
-            accordion,
-            onPress,
-            onLongPress
-          },
-          index
-        ) => (
+      {data.map((item, index) => {
+        const {
+          leftIcon,
+          rightIcon,
+          title,
+          subtitle,
+          value,
+          accordion,
+          onPress,
+          onLongPress
+        } = item
+
+        return (
           <View key={index}>
             <TouchableOpacity
               onPress={onPress}
@@ -130,16 +144,7 @@ export const GroupList = ({
                       ) : (
                         value
                       ))}
-                    {accessory !== undefined && accessory}
-                    {accessory === undefined &&
-                      onPress !== undefined &&
-                      (accordion === undefined ? (
-                        <Icons.Navigation.ChevronRight
-                          color={theme.colors.$textSecondary}
-                        />
-                      ) : (
-                        <AnimatedChevron expanded={accordion.expanded} />
-                      ))}
+                    {renderAccessory(item)}
                   </View>
                 </View>
               </View>
@@ -165,7 +170,7 @@ export const GroupList = ({
             )}
           </View>
         )
-      )}
+      })}
     </Animated.View>
   )
 }
