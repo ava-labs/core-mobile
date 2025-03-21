@@ -7,6 +7,7 @@ import { useMotion } from '../../hooks/useMotion'
 import { ProgressCard, ProgressCardProps } from '../StakeCards/ProgressCard'
 import { CompletedCard, CompletedCardProps } from '../StakeCards/CompleteCard'
 import { AddCard } from '../StakeCards/AddCard'
+import { ClaimCard } from './ClaimCard'
 
 export default {
   title: 'Stake Cards'
@@ -22,10 +23,23 @@ export const All = (): JSX.Element => {
     : require('../../assets/images/complete-card-bg-light.png')
 
   const renderItem: ListRenderItem<
-    ProgressCardProps | CompletedCardProps | 'Add'
+    ProgressCardProps | CompletedCardProps | 'Add' | 'Claim'
   > = ({ item }) => {
     if (item === 'Add') {
       return <AddCard width={CARD_WIDTH} />
+    }
+
+    if (item === 'Claim') {
+      return (
+        <ClaimCard
+          width={CARD_WIDTH}
+          title="2.40 AVAX reward unlocked!"
+          backgroundImageSource={completeCardBackground}
+          onPress={() =>
+            showAlert({ title: 'Claim', buttons: [{ text: 'OK' }] })
+          }
+        />
+      )
     }
 
     if ('progress' in item) {
@@ -39,27 +53,12 @@ export const All = (): JSX.Element => {
       )
     }
 
-    return (
-      <CompletedCard
-        title={item.title}
-        action={item.action}
-        width={CARD_WIDTH}
-        backgroundImageSource={completeCardBackground}
-      />
-    )
+    return <CompletedCard title={item.title} width={CARD_WIDTH} />
   }
 
-  const data: (ProgressCardProps | CompletedCardProps | 'Add')[] = [
+  const data: (ProgressCardProps | CompletedCardProps | 'Add' | 'Claim')[] = [
     'Add',
-    {
-      title: '2.40 AVAX reward unlocked!',
-      action: {
-        title: 'Claim',
-        onPress: () => {
-          showAlert({ title: 'Claim', buttons: [{ text: 'OK' }] })
-        }
-      }
-    },
+    'Claim',
     { title: '2.40 AVAX reward claimed' },
     { title: '0.50 AVAX reward unlocked in 17 days', progress: 0.01 },
     {

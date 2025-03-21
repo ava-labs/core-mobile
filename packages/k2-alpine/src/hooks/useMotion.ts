@@ -1,17 +1,18 @@
-import { DeviceMotion, DeviceMotionMeasurement } from 'expo-sensors'
 import { useEffect, useMemo, useState } from 'react'
 import { AppState } from 'react-native'
-import { useSharedValue, SharedValue } from 'react-native-reanimated'
+import {
+  SharedValue,
+  useAnimatedSensor,
+  SensorType,
+  ValueRotation,
+  Value3D
+} from 'react-native-reanimated'
 
-export const useMotion = (): SharedValue<
-  DeviceMotionMeasurement | undefined
-> => {
+export const useMotion = (): Motion | undefined => {
   const [appState, setAppState] = useState(AppState.currentState)
-  const deviceMotionMeasurement = useSharedValue<
-    DeviceMotionMeasurement | undefined
-  >(undefined)
-
   const shouldAnimate = useMemo(() => appState === 'active', [appState])
+  const rotation = useAnimatedSensor(SensorType.ROTATION)
+  const accelerometer = useAnimatedSensor(SensorType.ACCELEROMETER)
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -23,19 +24,15 @@ export const useMotion = (): SharedValue<
     }
   }, [])
 
-  // subscribe to device motion
-  useEffect(() => {
-    const subscription = DeviceMotion.addListener(motion => {
-      if (shouldAnimate) {
-        deviceMotionMeasurement.value = motion
-      } else {
-        deviceMotionMeasurement.value = undefined
+  return shouldAnimate
+    ? {
+        rotation: rotation.sensor,
+        accelerometer: accelerometer.sensor
       }
-    })
+    : undefined
+}
 
-    return () => subscription && subscription.remove()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldAnimate])
-
-  return deviceMotionMeasurement
+export type Motion = {
+  rotation: SharedValue<ValueRotation>
+  accelerometer: SharedValue<Value3D>
 }
