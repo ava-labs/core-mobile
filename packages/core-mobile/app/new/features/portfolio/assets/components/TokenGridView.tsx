@@ -50,6 +50,7 @@ export const TokenGridView = ({
           <LogoWithNetwork token={token} />
           <View>
             <Text
+              testID={`grid_token_name__${index}`}
               variant="buttonMedium"
               numberOfLines={1}
               sx={{ lineHeight: 16 }}>
@@ -57,6 +58,7 @@ export const TokenGridView = ({
             </Text>
             <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
               <MaskedText
+                testID={`grid_token_balance__${index}`}
                 shouldMask={isPrivacyModeEnabled}
                 maskWidth={65}
                 numberOfLines={1}
@@ -83,6 +85,7 @@ export const TokenGridView = ({
                   />
                 )}
                 <MaskedText
+                  testID={`grid_fiat_balance__${index}`}
                   variant="buttonLarge"
                   shouldMask={isPrivacyModeEnabled}
                   maskWidth={85}

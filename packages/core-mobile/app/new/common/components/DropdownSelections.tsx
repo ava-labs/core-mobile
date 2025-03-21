@@ -32,7 +32,7 @@ export const DropdownSelections = ({
     return (
       <SimpleDropdown
         from={
-          <Chip size="large" hitSlop={8}>
+          <Chip size="large" hitSlop={8} testID="View_dropdown_btn">
             {view.title}
           </Chip>
         }
@@ -96,7 +96,11 @@ const Filters = memo(
 
     const chip = useMemo(() => {
       return (
-        <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+        <Chip
+          size="large"
+          hitSlop={8}
+          rightIcon={'expandMore'}
+          testID="Filter_dropdown_btn">
           {title}
         </Chip>
       )
@@ -172,7 +176,8 @@ const Sorts = memo(
             size="large"
             hitSlop={8}
             rightIcon={'expandMore'}
-            onPress={onShowPopover}>
+            onPress={onShowPopover}
+            testID="Sort_dropdown_btn">
             {title}
           </Chip>
           <SimpleDropdown

@@ -28,27 +28,43 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
     token.type !== TokenType.NATIVE ||
     isTokenWithBalanceAVM(token) ||
     isTokenWithBalancePVM(token)
-
   const renderNetworkLogo = (
     t: LocalTokenWithBalance,
     n: Network
   ): React.JSX.Element | undefined => {
     if (isTokenWithBalancePVM(t)) {
       return isDark ? (
-        <Icons.TokenLogos.AVAX_P_DARK width={12} height={12} />
+        <Icons.TokenLogos.AVAX_P_DARK
+          testID="network_logo__p_chain"
+          width={12}
+          height={12}
+        />
       ) : (
-        <Icons.TokenLogos.AVAX_P_LIGHT width={12} height={12} />
+        <Icons.TokenLogos.AVAX_P_LIGHT
+          testID="network_logo__p_chain"
+          width={12}
+          height={12}
+        />
       )
     }
     if (isTokenWithBalanceAVM(t)) {
       return isDark ? (
-        <Icons.TokenLogos.AVAX_X_DARK width={12} height={12} />
+        <Icons.TokenLogos.AVAX_X_DARK
+          testID="network_logo__x_chain"
+          width={12}
+          height={12}
+        />
       ) : (
-        <Icons.TokenLogos.AVAX_X_LIGHT width={12} height={12} />
+        <Icons.TokenLogos.AVAX_X_LIGHT
+          testID="network_logo__x_chain"
+          width={12}
+          height={12}
+        />
       )
     }
     return (
       <TokenLogo
+        testID={`network_logo__${n.chainName}`}
         size={12}
         symbol={n.networkToken.symbol}
         logoUri={n.logoUri}

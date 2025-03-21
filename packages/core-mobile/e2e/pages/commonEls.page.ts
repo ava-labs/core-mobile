@@ -83,6 +83,34 @@ class CommonElsPage {
     return by.text(commonElsLoc.dismiss)
   }
 
+  get grabber() {
+    return by.id(commonElsLoc.grabber)
+  }
+
+  get viewDropdownBtn() {
+    return by.id(commonElsLoc.viewDropdownBtn)
+  }
+
+  get cChain() {
+    return by.text(commonElsLoc.cChain)
+  }
+
+  get pChain() {
+    return by.text(commonElsLoc.pChain)
+  }
+
+  get xChain() {
+    return by.text(commonElsLoc.xChain)
+  }
+
+  get ethereum() {
+    return by.text(commonElsLoc.ethereum)
+  }
+
+  get bitcoinNetwork() {
+    return by.text(commonElsLoc.bitcoinNetwork)
+  }
+
   async tapCarrotSVG(index = 0) {
     await Actions.tapElementAtIndex(this.carrotSVG, index)
   }
@@ -194,6 +222,9 @@ class CommonElsPage {
   async tapReloadSVG(index = 0) {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
   }
+
+  //// NEW GEN ////
+
   async exitMetro() {
     try {
       if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
@@ -207,6 +238,24 @@ class CommonElsPage {
 
   async tapNext() {
     await Actions.tap(this.next)
+  }
+
+  async dismissBottomSheet() {
+    await Actions.drag(this.grabber)
+  }
+
+  async selectDropdown(name: string, dropdownItem: string) {
+    await Actions.tap(by.id(`${name}_dropdown_btn`))
+    // await Actions.waitForElement(by.id(`dropdown_item__${dropdownItem}`))
+    await Actions.tap(by.id(`dropdown_item__${dropdownItem}`))
+  }
+
+  async visibleDropdown(name: string, isVisible = true) {
+    if (isVisible) {
+      await Actions.waitForElement(by.id(`${name}_dropdown_btn`))
+    } else {
+      await Actions.waitForElementNotVisible(by.id(`${name}_dropdown_btn`))
+    }
   }
 }
 

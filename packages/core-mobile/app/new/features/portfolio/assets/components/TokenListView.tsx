@@ -59,7 +59,11 @@ export const TokenListView = ({
                 justifyContent: 'space-between',
                 gap: 24
               }}>
-              <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                sx={{ flex: 1 }}
+                testID={`list_token_name__${index}`}>
                 {token.name}
               </Text>
               <View
@@ -81,7 +85,8 @@ export const TokenListView = ({
                   shouldMask={isPrivacyModeEnabled}
                   maskWidth={64}
                   numberOfLines={1}
-                  sx={{ lineHeight: 18 }}>
+                  sx={{ lineHeight: 18 }}
+                  testID={`list_fiat_balance__${index}`}>
                   {formattedBalance}
                 </MaskedText>
               </View>
@@ -99,7 +104,8 @@ export const TokenListView = ({
                 maskWidth={55}
                 sx={{ lineHeight: 16, flex: 1 }}
                 ellipsizeMode="tail"
-                numberOfLines={1}>
+                numberOfLines={1}
+                testID={`list_token_balance__${index}`}>
                 {token.balanceDisplayValue} {token.symbol}
               </MaskedText>
               <PriceChangeIndicator

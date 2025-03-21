@@ -9,17 +9,21 @@ export const TokenIcon = ({
   symbol,
   size = DEFAULT_SIZE,
   color,
-  isNetworkTokenSymbol = false
+  isNetworkTokenSymbol = false,
+  testID
 }: {
   symbol?: string
   size?: number
   color?: string
   isNetworkTokenSymbol?: boolean
+  testID?: string
 }): React.JSX.Element => {
   const Icon = isNetworkTokenSymbol
     ? NETWORK_TOKEN_SYMBOL_TO_ICON[symbol?.toUpperCase() as NetworkTokenSymbols]
     : TOKEN_SYMBOL_TO_ICON[symbol?.toUpperCase() as TokenSymbol]
-  return Icon && <Icon color={color} width={size} height={size} />
+  return (
+    Icon && <Icon testID={testID} color={color} width={size} height={size} />
+  )
 }
 
 const TOKEN_SYMBOL_TO_ICON: Record<TokenSymbol, React.FC<SvgProps>> = {

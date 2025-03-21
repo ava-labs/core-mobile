@@ -3,6 +3,7 @@ import { View } from 'react-native'
 
 const Grabber = (): JSX.Element => (
   <View
+    testID="grabber"
     style={{
       height: 5,
       width: 50,
