@@ -211,7 +211,7 @@ __metadata:
     "@babel/preset-env": 7.25.7
     "@babel/preset-typescript": 7.25.7
     "@babel/runtime": 7.25.7
-    "@blockaid/client": 0.27.4
+    "@blockaid/client": 0.43.0
     "@coinbase/cbpay-js": 2.2.1
     "@config-plugins/detox": 9.0.0
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
@@ -4035,21 +4035,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@blockaid/client@npm:0.27.4":
-  version: 0.27.4
-  resolution: "@blockaid/client@npm:0.27.4"
-  dependencies:
-    "@types/node": ^18.11.18
-    "@types/node-fetch": ^2.6.4
-    abort-controller: ^3.0.0
-    agentkeepalive: ^4.2.1
-    form-data-encoder: 1.7.2
-    formdata-node: ^4.3.2
-    node-fetch: ^2.6.7
-  checksum: c89fe4467fe77e9bcac401f7ddb30c646e86000d5e4913ba6e11560c349fde71ad200551c4ec277fd6e3aad0d9f11cf137194e9568472eb78a2c0617d6011136
-  languageName: node
-  linkType: hard
-
 "@blockaid/client@npm:0.36.0":
   version: 0.36.0
   resolution: "@blockaid/client@npm:0.36.0"
@@ -4062,6 +4047,21 @@ __metadata:
     formdata-node: ^4.3.2
     node-fetch: ^2.6.7
   checksum: 7d3468822bc7248fdddf1d98e1b30f478b031589896fd9dade0d4e00a54d664a5314c25355687d0cdbae47be01ec2746e55300f7b4db8fcbfc69cb04d2d424c3
+  languageName: node
+  linkType: hard
+
+"@blockaid/client@npm:0.43.0":
+  version: 0.43.0
+  resolution: "@blockaid/client@npm:0.43.0"
+  dependencies:
+    "@types/node": ^18.11.18
+    "@types/node-fetch": ^2.6.4
+    abort-controller: ^3.0.0
+    agentkeepalive: ^4.2.1
+    form-data-encoder: 1.7.2
+    formdata-node: ^4.3.2
+    node-fetch: ^2.6.7
+  checksum: 74a945261f354f75f96f5147aa84441d64e645602e90c64988cd499a848ce94af4832d263b5fb4162a2604422d197d96cb987985fc92ee9ea409fce175985110
   languageName: node
   linkType: hard
 
@@ -26211,7 +26211,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
+  checksum: 95675f9765e37fa5ec41a773ba04c7f90de83f5b69f677c3b58f5b84e5e507241d12f082ed8a9ff600ada3fd5a24c4ca09a735b60d23cb0fe2b0cef444e527bf
   languageName: node
   linkType: hard
 
