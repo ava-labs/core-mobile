@@ -1,6 +1,7 @@
 import {
   NetworkTokenWithBalance,
   TokenType,
+  TokenWithBalance,
   TokenWithBalanceERC20,
   TokenWithBalanceEVM
 } from '@avalabs/vm-module-types'
@@ -80,7 +81,9 @@ export const validateGasLimit = (gasLimit: bigint): void => {
   }
 }
 
-export const validateSupportedToken = (token: TokenWithBalanceEVM): void => {
+export function validateSupportedToken(
+  token: TokenWithBalance
+): asserts token is TokenWithBalanceEVM {
   if (
     token.type !== TokenType.ERC20 &&
     token.type !== TokenType.ERC721 &&

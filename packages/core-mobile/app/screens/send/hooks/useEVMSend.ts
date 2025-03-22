@@ -20,6 +20,7 @@ import {
   validateGasLimit,
   validateSupportedToken
 } from '../utils/evm/validate'
+import { isSupportedToken } from '../utils/evm/typeguard'
 
 const useEVMSend: SendAdapterEVM = ({
   chainId,
@@ -46,7 +47,7 @@ const useEVMSend: SendAdapterEVM = ({
       assertNotUndefined(token)
       assertNotUndefined(toAddress)
       assertNotUndefined(provider)
-
+      validateSupportedToken(token)
       setIsSending(true)
 
       return await sendEVM({
@@ -92,13 +93,11 @@ const useEVMSend: SendAdapterEVM = ({
 
   const validate = useCallback(async () => {
     try {
-      validateBasicInputs(token, toAddress, maxFee)
-
       assertNotUndefined(token)
+      validateSupportedToken(token)
+      validateBasicInputs(token, toAddress, maxFee)
       assertNotUndefined(toAddress)
       assertNotUndefined(provider)
-
-      validateSupportedToken(token)
 
       // For ERC-20 and native tokens, we want to know the max. transfer amount
       // even if the validation as a whole fails (e.g. user did not provide
@@ -151,7 +150,7 @@ const useEVMSend: SendAdapterEVM = ({
   ])
 
   const getMaxAmount = useCallback(async () => {
-    if (!provider || !toAddress || !token) {
+    if (!provider || !toAddress || !token || !isSupportedToken(token)) {
       return
     }
 

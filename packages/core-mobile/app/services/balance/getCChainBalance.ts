@@ -5,6 +5,8 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
 
+const invalidErrorMessage = 'Invalid C-Chain balance'
+
 export const getCChainBalance = async ({
   cChainNetwork,
   cAddress,
@@ -15,7 +17,7 @@ export const getCChainBalance = async ({
   currency: string
 }): Promise<TokenWithBalanceEVM | undefined> => {
   if (cChainNetwork === undefined) {
-    return Promise.reject('invalid C-Chain network')
+    return Promise.reject('Invalid C-Chain network')
   }
 
   const module = await ModuleManager.loadModuleByNetwork(cChainNetwork)
@@ -40,9 +42,19 @@ export const getCChainBalance = async ({
 
   const cChainBalance = cChainBalanceResponse[cChainNetwork.networkToken.symbol]
 
-  if (cChainBalance === undefined || 'error' in cChainBalance) {
-    Logger.error('Invalid C-Chain balance', cChainBalance?.error)
-    return Promise.reject('Invalid C-Chain balance')
+  if (cChainBalance === undefined) {
+    Logger.error('C-Chain balance is undefined')
+    return Promise.reject(invalidErrorMessage)
+  }
+
+  if ('error' in cChainBalance) {
+    Logger.error('C-Chain balance contains error', cChainBalance.error)
+    return Promise.reject(invalidErrorMessage)
+  }
+
+  if (cChainBalance.type === TokenType.SPL) {
+    Logger.error('C-Chain balance cannot be SPL type')
+    return Promise.reject(invalidErrorMessage)
   }
 
   return cChainBalance
