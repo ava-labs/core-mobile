@@ -21,10 +21,7 @@ export const useDefaultFeeState = (): UseQueryResult<
         isDeveloperMode
       )
 
-      if (provider.isEtnaEnabled()) {
-        return provider.getApiP().getFeeState()
-      }
-      return undefined
+      return provider.getApiP().getFeeState()
     }
   })
 }
