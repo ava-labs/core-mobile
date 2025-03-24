@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+import { useIsFocused } from '@react-navigation/native'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -16,10 +17,11 @@ export const useCChainBalance = (): UseQueryResult<
   const cAddress = useSelector(selectActiveAccount)?.addressC
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const isFocused = useIsFocused()
 
   return useQuery({
     refetchInterval: refetchIntervals.balance,
-    enabled: Boolean(cAddress),
+    enabled: isFocused && Boolean(cAddress),
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ['cChainBalance', isDeveloperMode, cAddress, selectedCurrency],
     queryFn: async () => {

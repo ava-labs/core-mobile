@@ -7,6 +7,7 @@ import NetworkService from 'services/network/NetworkService'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
+import { useIsFocused } from '@react-navigation/native'
 
 export const usePChainBalance = (): UseQueryResult<
   TokenWithBalancePVM | undefined,
@@ -16,10 +17,10 @@ export const usePChainBalance = (): UseQueryResult<
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-
+  const isFocused = useIsFocused()
   return useQuery({
     refetchInterval: refetchIntervals.balance,
-    enabled: !!addressPVM,
+    enabled: isFocused && !!addressPVM,
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ['pChainBalance', isDeveloperMode, addressPVM, selectedCurrency],
     queryFn: async () => {
