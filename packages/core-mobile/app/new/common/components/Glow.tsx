@@ -75,6 +75,9 @@ export const Glow = forwardRef<
 
   const startAnimation = useCallback(async (): Promise<void> => {
     'worklet'
+    if (animating.value) {
+      resetAnimation()
+    }
     animating.value = true
     opacity.value = withTiming(END_OPACITY, FADE_IN_CONFIG)
     rotation.value = withTiming(END_ROTATION, ANIMATION_CONFIG)

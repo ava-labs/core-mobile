@@ -1,11 +1,14 @@
-import { ANIMATED, IndexPath, View } from '@avalabs/k2-alpine'
+import { ANIMATED, IndexPath, Text, View } from '@avalabs/k2-alpine'
 import { ViewToken } from '@shopify/flash-list'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { Glow, GlowRef } from 'common/components/Glow'
 import { DropdownSelection } from 'common/types'
 import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
 import { CollectibleGridItem } from 'features/portfolio/collectibles/components/CollectibleItem'
-import { HORIZONTAL_MARGIN } from 'features/portfolio/collectibles/consts'
+import {
+  getCollectibleName,
+  HORIZONTAL_MARGIN
+} from 'features/portfolio/collectibles/consts'
 import React, {
   ReactNode,
   useCallback,
@@ -72,12 +75,14 @@ export const CollectibleScreen = ({
 
   // const { sendNftBlockediOS, sendNftBlockedAndroid } = usePosthogContext()
 
-  const currentIndex =
+  const flatListRef = useRef<Animated.FlatList<NftItem>>(null)
+  const glowRef = useRef<GlowRef>(null)
+
+  const [viewableIndex, setViewableIndex] = useState(
     filteredAndSorted?.findIndex(
       item => item.localId.toLowerCase() === localId?.toLowerCase()
     ) ?? 0
-  const flatListRef = useRef<Animated.FlatList<NftItem>>(null)
-  const [viewableIndex, setViewableIndex] = useState(currentIndex ?? 0)
+  )
   const isAnyCardExpanded = useSharedValue(false)
 
   const currentItem = useMemo(
@@ -121,18 +126,18 @@ export const CollectibleScreen = ({
   )
 
   const handleScrollToIndexFailed = useCallback(() => {
-    if (currentIndex !== null && flatListRef.current) {
+    if (viewableIndex !== null && flatListRef.current) {
       flatListRef.current.scrollToIndex({
-        index: currentIndex,
+        index: viewableIndex,
         animated: true
       })
     }
-  }, [currentIndex])
+  }, [viewableIndex])
 
   useEffect(() => {
-    if (currentIndex !== null && flatListRef.current) {
+    if (viewableIndex !== null && flatListRef.current) {
       flatListRef.current?.scrollToIndex({
-        index: currentIndex,
+        index: viewableIndex,
         animated: false,
         viewPosition: 0
       })
@@ -142,22 +147,11 @@ export const CollectibleScreen = ({
         animated: false
       })
     }
-  }, [currentIndex])
-
-  useEffect(() => {
-    if (currentIndex === null && isAnyCardExpanded.value) {
-      isAnyCardExpanded.value = false
-    }
-  }, [currentIndex, isAnyCardExpanded])
+  }, [viewableIndex])
 
   const scrollHandler = useAnimatedScrollHandler(event => {
     'worklet'
-    if (!isAnyCardExpanded.value) {
-      scrollX.value = event.contentOffset.x
-    } else {
-      scrollX.value = event.contentOffset.x
-      isAnyCardExpanded.value = false
-    }
+    scrollX.value = event.contentOffset.x
   })
 
   const scrollViewHandler = useAnimatedScrollHandler(event => {
@@ -180,8 +174,13 @@ export const CollectibleScreen = ({
       index={index}
       scrollX={scrollX}
       scrollY={scrollY}
+      onGestureEnd={onGestureEnd}
     />
   )
+
+  const onGestureEnd = (): void => {
+    glowRef.current?.startAnimation()
+  }
 
   const flatlistContainerStyle = useAnimatedStyle(() => {
     const scale = interpolate(
@@ -196,18 +195,18 @@ export const CollectibleScreen = ({
     }
   })
 
-  const flatListStyle = useAnimatedStyle(() => {
+  const topContentStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [1, 0.5],
+      [1, 0.4],
       Extrapolation.CLAMP
     )
 
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, (-CAROUSEL_HEIGHT - CARD_SIZE) / 2],
+      [0, (-CAROUSEL_HEIGHT - CARD_SIZE * 2) / 2],
       Extrapolation.CLAMP
     )
 
@@ -217,9 +216,11 @@ export const CollectibleScreen = ({
       [CAROUSEL_HEIGHT, CARD_MIN_HEIGHT],
       Extrapolation.CLAMP
     )
+
     return {
       //   height,
       height: CAROUSEL_HEIGHT,
+      paddingBottom: insets.bottom,
       transform: [
         { scale },
         {
@@ -229,8 +230,27 @@ export const CollectibleScreen = ({
     }
   })
 
+  const cardTitleStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, SNAP_DISTANCE],
+      [1, 0],
+      Extrapolation.CLAMP
+    )
+
+    return {
+      opacity
+    }
+  })
+
   const contentStyle = useAnimatedStyle(() => {
     const progress = (scrollX.value % CARD_SIZE) / CARD_SIZE
+    const translateY = interpolate(
+      scrollY.value,
+      [0, SNAP_DISTANCE],
+      [0, -(CAROUSEL_HEIGHT - CARD_SIZE) / 2],
+      Extrapolation.CLAMP
+    )
 
     const opacity = interpolate(
       progress,
@@ -240,13 +260,14 @@ export const CollectibleScreen = ({
     )
 
     return {
-      opacity
+      opacity,
+      transform: [
+        {
+          translateY
+        }
+      ]
     }
   })
-
-  const animatedProps = useAnimatedProps(() => ({
-    scrollEnabled: !isAnyCardExpanded.value
-  }))
 
   return (
     <BlurredBarsContentLayout>
@@ -256,7 +277,6 @@ export const CollectibleScreen = ({
         }}>
         <Animated.ScrollView
           onScroll={scrollViewHandler}
-          animatedProps={animatedProps}
           style={{
             flex: 1,
             position: 'relative',
@@ -274,13 +294,79 @@ export const CollectibleScreen = ({
             style={[
               {
                 flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
                 position: 'absolute',
                 zIndex: 100
               },
               flatlistContainerStyle
             ]}>
+            <Animated.View
+              style={[
+                topContentStyle,
+                cardTitleStyle,
+                {
+                  position: 'absolute',
+                  alignItems: 'center',
+                  top: 0,
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  zIndex: 0,
+                  pointerEvents: 'none'
+                }
+              ]}>
+              <View
+                style={{
+                  gap: 22,
+                  width: CARD_SIZE,
+                  paddingTop: (CAROUSEL_HEIGHT - CARD_SIZE) / 2
+                }}>
+                <View style={{ height: CARD_SIZE }} />
+                <View
+                  style={{
+                    zIndex: 1000,
+                    gap: HORIZONTAL_MARGIN
+                  }}>
+                  <Text
+                    variant="buttonMedium"
+                    style={{
+                      fontSize: 12
+                    }}>
+                    {`${
+                      currentItem ? getCollectibleName(currentItem) : 'Untitled'
+                    } #${currentItem?.tokenId} `}
+
+                    <Text
+                      sx={{
+                        fontSize: 12,
+                        color: '$textSecondary'
+                      }}>
+                      {currentItem?.description}
+                    </Text>
+                  </Text>
+                </View>
+              </View>
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                topContentStyle,
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }
+              ]}>
+              <Glow
+                ref={glowRef}
+                autoPlay
+                size={(SCREEN_WIDTH - HORIZONTAL_MARGIN * 4) * 1.8}
+              />
+            </Animated.View>
+
             <Animated.FlatList
               ref={flatListRef}
               data={filteredAndSorted}
@@ -290,7 +376,7 @@ export const CollectibleScreen = ({
               onScroll={scrollHandler}
               onViewableItemsChanged={handleViewableItemsChanged}
               viewabilityConfig={{
-                itemVisiblePercentThreshold: 50
+                itemVisiblePercentThreshold: 100
               }}
               onScrollToIndexFailed={handleScrollToIndexFailed}
               animatedProps={useAnimatedProps(() => ({
@@ -302,16 +388,12 @@ export const CollectibleScreen = ({
                 offset: CARD_SIZE * index,
                 index
               })}
-              style={[
-                {
-                  //   backgroundColor: 'red'
-                },
-                flatListStyle
-              ]}
+              style={[topContentStyle]}
               contentContainerStyle={{
                 paddingHorizontal:
                   (SCREEN_WIDTH - SCREEN_WIDTH * VISIBLE_ITEM_WIDTH) / 2,
-                gap: CAROUSEL_ITEM_GAP
+                gap: CAROUSEL_ITEM_GAP,
+                overflow: 'visible'
               }}
               disableIntervalMomentum={true}
               overScrollMode="never"
@@ -350,8 +432,8 @@ export const CollectibleDetailsCard = ({
   isVisible,
   index,
   scrollX,
-  scrollY,
-  itemWidth
+  itemWidth,
+  onGestureEnd
 }: {
   collectible: NftItem
   isVisible: boolean
@@ -359,6 +441,7 @@ export const CollectibleDetailsCard = ({
   scrollX: SharedValue<number>
   scrollY: SharedValue<number>
   itemWidth: number
+  onGestureEnd?: () => void
 }): ReactNode => {
   const insets = useSafeAreaInsets()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -422,12 +505,6 @@ export const CollectibleDetailsCard = ({
     }
   })
 
-  const glowRef = useRef<GlowRef>(null)
-
-  const onGestureEnd = (): void => {
-    glowRef.current?.startAnimation()
-  }
-
   return (
     <Animated.View
       style={[
@@ -450,22 +527,6 @@ export const CollectibleDetailsCard = ({
           }
         ]}>
         <Pinchable onGestureEnd={onGestureEnd}>
-          <Animated.View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-            <Glow
-              ref={glowRef}
-              autoPlay={isVisible}
-              size={(SCREEN_WIDTH - HORIZONTAL_MARGIN * 4) * 1.8}
-            />
-          </Animated.View>
           <Animated.View style={[cardStyle]}>
             <CollectibleGridItem
               collectible={collectible}
@@ -514,7 +575,7 @@ export const Pinchable = memo(
         runOnJS(onUpdate)()
       })
       .onEnd(() => {
-        scale.value = withTiming(1, ANIMATED.TIMING_CONFIG, () => {
+        scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
           runOnJS(onEnd)()
         })
       })
@@ -525,7 +586,7 @@ export const Pinchable = memo(
         runOnJS(onUpdate)()
       })
       .onEnd(() => {
-        rotation.value = withTiming(0, ANIMATED.TIMING_CONFIG, () => {
+        rotation.value = withSpring(0, ANIMATED.SPRING_CONFIG, () => {
           runOnJS(onEnd)()
         })
       })
@@ -538,8 +599,8 @@ export const Pinchable = memo(
         }
       })
       .onEnd(() => {
-        translateX.value = withTiming(0, ANIMATED.TIMING_CONFIG)
-        translateY.value = withTiming(0, ANIMATED.TIMING_CONFIG, () => {
+        translateX.value = withSpring(0, ANIMATED.SPRING_CONFIG)
+        translateY.value = withSpring(0, ANIMATED.SPRING_CONFIG, () => {
           runOnJS(onEnd)()
         })
       })

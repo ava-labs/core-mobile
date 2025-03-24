@@ -1,7 +1,11 @@
 import { Pressable } from 'dripsy'
 import { throttle } from 'lodash'
 import React, { memo, useCallback, useRef } from 'react'
-import { GestureResponderEvent, PressableProps } from 'react-native'
+import {
+  GestureResponderEvent,
+  InteractionManager,
+  PressableProps
+} from 'react-native'
 import Animated, {
   AnimatedProps,
   runOnJS,
@@ -43,7 +47,9 @@ export const AnimatedPressable = memo(
 
     const onPressThrottled = useCallback(
       (event: GestureResponderEvent): void => {
-        throttledOnPress(event)
+        InteractionManager.runAfterInteractions(() => {
+          throttledOnPress(event)
+        })
       },
       [throttledOnPress]
     )

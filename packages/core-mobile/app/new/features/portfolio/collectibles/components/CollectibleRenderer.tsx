@@ -9,7 +9,7 @@ import React, {
   useState
 } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
-import { ViewStyle, View } from 'react-native'
+import { ViewStyle, View, LayoutChangeEvent } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 
@@ -141,14 +141,9 @@ export const CollectibleRenderer = ({
     }
   }, [])
 
-  const onLayout = (): void => {
-    if (contentRef.current) {
-      contentRef.current.measure(
-        (x: number, y: number, width: number, height: number) => {
-          setLayout({ width, height })
-        }
-      )
-    }
+  const onLayout = (event: LayoutChangeEvent): void => {
+    const { width, height } = event.nativeEvent.layout
+    setLayout({ width, height })
   }
 
   return (
@@ -177,20 +172,20 @@ export const CollectibleRenderer = ({
         {renderEdgeCases}
       </View>
 
-      <Animated.View
-        style={[
-          contentStyle,
-          {
-            width: '100%',
-            height: '100%',
-            zIndex: 1
-          }
-        ]}>
-        {renderContent}
-        {collectible?.imageData?.image || collectible?.imageData?.video
-          ? children
-          : null}
-      </Animated.View>
+      {collectible?.imageData?.image || collectible?.imageData?.video ? (
+        <Animated.View
+          style={[
+            contentStyle,
+            {
+              width: '100%',
+              height: '100%',
+              zIndex: 1
+            }
+          ]}>
+          {renderContent}
+          {children}
+        </Animated.View>
+      ) : null}
     </View>
   )
 }

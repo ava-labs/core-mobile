@@ -19,6 +19,17 @@ const COMPACT_GRID_CARD_HEIGHT =
 const LARGE_GRID_CARD_HEIGHT =
   width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 2
 
+export const getCollectibleName = (collectible: NftItem): string => {
+  const fallback = collectible.name || collectible.processedMetadata?.name || ''
+  return fallback?.length > 0 ? fallback.trim() : 'Untitled'
+}
+
+export const getCollectibleDescription = (collectible: NftItem): string => {
+  const fallback =
+    collectible.description || collectible.processedMetadata?.description || ''
+  return fallback?.length > 0 ? fallback.trim() : 'No description'
+}
+
 export const getCompactGridCardHeight = (index: number): number => {
   if (index === 1 || (index % 5 === 0 && index > 0))
     return COMPACT_GRID_CARD_HEIGHT / 3

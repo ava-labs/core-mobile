@@ -4,7 +4,8 @@ export enum ActionButtonTitle {
   Buy = 'Buy',
   Stake = 'Stake',
   Bridge = 'Bridge',
-  Connect = 'Connect'
+  Connect = 'Connect',
+  Hide = 'Hide'
 }
 
 export const LIST_ITEM_HEIGHT = 60

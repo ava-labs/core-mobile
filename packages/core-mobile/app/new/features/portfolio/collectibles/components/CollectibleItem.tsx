@@ -13,6 +13,7 @@ import Animated, { LinearTransition } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import {
+  getCollectibleName,
   getGridCardHeight,
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
@@ -26,11 +27,13 @@ export const CollectibleItem = memo(
     collectible,
     type,
     index,
+    style,
     onPress
   }: {
     collectible: NftItem
     type: CollectibleView
     index: number
+    style: ViewStyle
     onPress?: () => void
   }): ReactNode => {
     if (type === CollectibleView.ListView)
@@ -50,7 +53,8 @@ export const CollectibleItem = memo(
         onPress={onPress}
         style={{
           marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
-          marginBottom: VERTICAL_ITEM_GAP
+          marginBottom: VERTICAL_ITEM_GAP,
+          ...style
         }}
       />
     )
@@ -72,8 +76,7 @@ export const CollectibleListItem = memo(
     } = useTheme()
     const height = getGridCardHeight(CollectibleView.ListView, index)
 
-    const collectibleName =
-      collectible.name.length > 0 ? collectible.name : 'Untitled'
+    const collectibleName = getCollectibleName(collectible)
 
     const collectionName =
       collectible.collectionName.length === 0 ||
