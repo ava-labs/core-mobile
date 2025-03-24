@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction as SentryTransaction } from '@sentry/types'
 import {
   constructFetchFetcher,
   constructGetSpender,
@@ -52,7 +51,6 @@ interface BuildTxParams {
   destDecimals?: number
   permit?: string
   deadline?: string
-  sentryTrx?: SentryTransaction
 }
 
 interface SwapRate {
@@ -64,7 +62,6 @@ interface SwapRate {
   swapSide: SwapSide
   network: Network
   account: Account
-  sentryTrx?: SentryTransaction
   abortSignal?: AbortSignal
 }
 
@@ -107,10 +104,9 @@ class SwapService {
     swapSide,
     network,
     account,
-    sentryTrx,
     abortSignal
   }: SwapRate): Promise<OptimalRate> {
-    return SentryWrapper.createSpanFor(sentryTrx)
+    return SentryWrapper.createSpanFor('swap')
       .setContext('svc.swap.get_rate')
       .executeAsync(async () => {
         if (network.isTestnet) {
@@ -143,11 +139,8 @@ class SwapService {
       })
   }
 
-  async getParaswapSpender(
-    network: Network,
-    sentryTrx?: SentryTransaction
-  ): Promise<Address> {
-    return SentryWrapper.createSpanFor(sentryTrx)
+  async getParaswapSpender(network: Network): Promise<Address> {
+    return SentryWrapper.createSpanFor('swap')
       .setContext('svc.swap.get_paraswap_spender')
       .executeAsync(async () => {
         if (network.isTestnet) {
@@ -182,10 +175,9 @@ class SwapService {
     srcDecimals,
     destDecimals,
     permit,
-    deadline,
-    sentryTrx
+    deadline
   }: BuildTxParams): Promise<TransactionParams> {
-    return SentryWrapper.createSpanFor(sentryTrx)
+    return SentryWrapper.createSpanFor('swap')
       .setContext('svc.swap.build_trx')
       .executeAsync(async () => {
         if (network.isTestnet) {
