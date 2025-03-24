@@ -324,6 +324,7 @@ __metadata:
     expo-image: 2.0.6
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
+    expo-local-authentication: 15.0.2
     expo-navigation-bar: 4.0.8
     expo-router: 4.0.18
     expo-sms: 13.0.1
@@ -17762,6 +17763,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-local-authentication@npm:15.0.2":
+  version: 15.0.2
+  resolution: "expo-local-authentication@npm:15.0.2"
+  dependencies:
+    invariant: ^2.2.4
+  peerDependencies:
+    expo: "*"
+  checksum: 447bf18fca429cd829439be1d7f33727cf86673c1f0bcc562a42219a2a05eec48eedf678ef5a5d022bfa14dd2df49d7d9742e8687f16c1e5aff8aa5488b5b233
+  languageName: node
+  linkType: hard
+
 "expo-manifests@npm:~0.15.7":
   version: 0.15.7
   resolution: "expo-manifests@npm:0.15.7"
@@ -26211,7 +26223,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
+  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
   languageName: node
   linkType: hard
 

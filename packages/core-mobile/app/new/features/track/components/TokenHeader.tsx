@@ -8,7 +8,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { formatLargeCurrency } from 'utils/Utils'

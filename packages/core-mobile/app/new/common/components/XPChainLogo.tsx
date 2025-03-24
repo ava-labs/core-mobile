@@ -1,5 +1,5 @@
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 import React, { useCallback } from 'react'
 import { TokenSymbol } from 'store/network'
 

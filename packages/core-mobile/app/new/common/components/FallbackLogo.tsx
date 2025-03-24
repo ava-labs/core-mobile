@@ -3,19 +3,19 @@ import { View } from '@avalabs/k2-alpine'
 
 const DEFAULT_SIZE = 32
 
-interface FallbackTokenLogoProps {
+interface FallbackLogoProps {
   size?: number
   testID?: string
   backgroundColor?: string
   borderColor?: string
 }
 
-export const FallbackTokenLogo = ({
+export const FallbackLogo = ({
   size = DEFAULT_SIZE,
   backgroundColor,
   borderColor,
   testID
-}: FallbackTokenLogoProps): JSX.Element => {
+}: FallbackLogoProps): JSX.Element => {
   return (
     <View
       testID={testID}
