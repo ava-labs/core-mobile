@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ScrollView, Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Slider } from './Slider'
@@ -11,7 +12,7 @@ export const All = (): JSX.Element => {
   const { theme } = useTheme()
 
   return (
-    <View
+    <GestureHandlerRootView
       style={{
         width: '100%',
         height: '100%',
@@ -21,7 +22,7 @@ export const All = (): JSX.Element => {
         style={{ width: '100%', backgroundColor: 'transparent' }}
         contentContainerStyle={{
           padding: 16,
-          gap: 16,
+          gap: 32,
           alignItems: 'center'
         }}>
         <SliderStory />
@@ -32,7 +33,7 @@ export const All = (): JSX.Element => {
           maximumValueLabel="99%"
         />
       </ScrollView>
-    </View>
+    </GestureHandlerRootView>
   )
 }
 
@@ -47,14 +48,16 @@ const SliderStory = ({
   minimumValueLabel?: string
   maximumValueLabel?: string
 }): JSX.Element => {
+  const { theme } = useTheme()
   const [value, setValue] = useState(0.5)
 
   return (
-    <View style={{ width: '100%' }}>
+    <View style={{ width: '100%', gap: 20 }}>
       <Text variant="heading6" sx={{ alignSelf: 'center' }}>
         Slide Value: {value.toFixed(2)}
       </Text>
       <Slider
+        thumbBorderColor={theme.colors.$surfacePrimary}
         value={value}
         onValueChange={newValue => setValue(newValue)}
         minimumValue={minimumValue}

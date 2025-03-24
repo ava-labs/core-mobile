@@ -1,7 +1,8 @@
 import React, { FC } from 'react'
 import { ViewStyle } from 'react-native'
-import { Slider as RNSlider } from '@miblanchard/react-native-slider'
+import { Slider as RNSlider } from 'react-native-awesome-slider'
 import Svg, { Circle } from 'react-native-svg'
+import { useSharedValue } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import { Text, View } from '../Primitives'
@@ -20,16 +21,23 @@ export const Slider: FC<SliderProps> = ({
     theme: { colors }
   } = useTheme()
 
+  const progress = useSharedValue(value)
+  const minValue = useSharedValue(minimumValue ?? 0)
+  const maxValue = useSharedValue(maximumValue ?? 1)
+
   return (
     <View style={style}>
       <RNSlider
-        value={value}
-        onValueChange={(values, index) =>
-          values[index] && onValueChange?.(values[index])
-        }
-        trackStyle={{ height: 4, borderRadius: 100 }}
-        thumbTouchSize={{ width: 48, height: 48 }}
-        renderThumbComponent={() => (
+        theme={{
+          minimumTrackTintColor: '#3AC489',
+          maximumTrackTintColor: alpha(colors.$textPrimary, 0.2)
+        }}
+        progress={progress}
+        onValueChange={newValue => onValueChange?.(newValue)}
+        containerStyle={{ height: 4, borderRadius: 100 }}
+        thumbTouchSize={48}
+        renderBubble={() => null}
+        renderThumb={() => (
           <Svg width={24} height={24}>
             <Circle
               cx={12}
@@ -40,17 +48,15 @@ export const Slider: FC<SliderProps> = ({
             <Circle cx={12} cy={12} r={8} fill={colors.$textPrimary} />
           </Svg>
         )}
-        minimumValue={minimumValue}
-        maximumValue={maximumValue}
-        minimumTrackTintColor="#3AC489"
-        maximumTrackTintColor={alpha(colors.$textPrimary, 0.2)}
+        minimumValue={minValue}
+        maximumValue={maxValue}
       />
       {(minimumValueLabel !== undefined || maximumValueLabel !== undefined) && (
         <View
           style={{
+            marginTop: 8,
             flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: -10
+            justifyContent: 'space-between'
           }}>
           <Text variant="caption" sx={{ color: '$textSecondary' }}>
             {minimumValueLabel}

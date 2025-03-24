@@ -533,7 +533,6 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
     "@lavamoat/allow-scripts": 3.2.1
-    "@miblanchard/react-native-slider": 2.6.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.5
@@ -569,6 +568,7 @@ __metadata:
     react-content-loader: 6.2.0
     react-dom: 18.3.1
     react-native: 0.76.6
+    react-native-awesome-slider: 2.9.0
     react-native-dialog: 9.3.0
     react-native-gesture-handler: 2.20.0
     react-native-popover-view: 6.1.0
@@ -7493,16 +7493,6 @@ __metadata:
     semver: ^7.5.4
     uuid: ^9.0.1
   checksum: 01f2c71a8f06158d5335bfe96bfd2f3aa39ec6b2323c5d0ff1d3136071a3e8ff7c1804d640ba1d4e07f96f3e68a95ff7729ddfcd34b373e5fefd86d6ef12d034
-  languageName: node
-  linkType: hard
-
-"@miblanchard/react-native-slider@npm:2.6.0":
-  version: 2.6.0
-  resolution: "@miblanchard/react-native-slider@npm:2.6.0"
-  peerDependencies:
-    react: ">=16.8"
-    react-native: ">=0.59"
-  checksum: cdaaca314e94133e87a623cfe59dac950aeb6ba09946fb89f03d4c2a0cd131db80b368c320c34e5c126a10041026a83e00df3182d2346857e7b51aed96632748
   languageName: node
   linkType: hard
 
@@ -26097,6 +26087,18 @@ __metadata:
   version: 2.0.1
   resolution: "react-native-argon2@npm:2.0.1"
   checksum: ce2d39e0925f2f614e1134a4197e5eba5d2e0eb87f4257d5ec8fc682cdb5bcad4ca62588d655726548fbabfc51e90924e55b4b10735d2534c14b99185bac1228
+  languageName: node
+  linkType: hard
+
+"react-native-awesome-slider@npm:2.9.0":
+  version: 2.9.0
+  resolution: "react-native-awesome-slider@npm:2.9.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-gesture-handler: ">=2.0.0"
+    react-native-reanimated: ">=3.0.0"
+  checksum: a1a6179311a7a26fc8612c95722fccfd83422785d11e4c452bcc2afab2fd05f4aa1c5b9bcd07efe31d397f04aaa337f60772db3a850793ce69065080442fb3c9
   languageName: node
   linkType: hard
 

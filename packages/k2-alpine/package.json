@@ -17,7 +17,6 @@
     "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
-    "@miblanchard/react-native-slider": "2.6.0",
     "@shopify/react-native-skia": "1.5.0",
     "d3": "7.9.0",
     "dripsy": "4.3.7",
@@ -33,6 +32,7 @@
     "react": "18.3.1",
     "react-content-loader": "6.2.0",
     "react-native": "0.76.6",
+    "react-native-awesome-slider": "2.9.0",
     "react-native-dialog": "9.3.0",
     "react-native-gesture-handler": "2.20.0",
     "react-native-popover-view": "6.1.0",
