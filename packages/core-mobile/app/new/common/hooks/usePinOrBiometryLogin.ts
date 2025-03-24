@@ -180,10 +180,9 @@ export function usePinOrBiometryLogin({
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {
-      if (
-        !BiometricsSDK.canUseBiometry() ||
-        BiometricsSDK.getAccessType() !== 'BIO'
-      ) {
+      const canUseBiometry = await BiometricsSDK.canUseBiometry()
+
+      if (!canUseBiometry || BiometricsSDK.getAccessType() !== 'BIO') {
         return
       }
 
