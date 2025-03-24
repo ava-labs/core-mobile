@@ -17,7 +17,7 @@
     "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
-    "@miblanchard/react-native-slider": "^2.6.0",
+    "@miblanchard/react-native-slider": "2.6.0",
     "@shopify/react-native-skia": "1.5.0",
     "d3": "7.9.0",
     "dripsy": "4.3.7",

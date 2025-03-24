@@ -533,7 +533,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
     "@lavamoat/allow-scripts": 3.2.1
-    "@miblanchard/react-native-slider": ^2.6.0
+    "@miblanchard/react-native-slider": 2.6.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.5
@@ -7496,7 +7496,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@miblanchard/react-native-slider@npm:^2.6.0":
+"@miblanchard/react-native-slider@npm:2.6.0":
   version: 2.6.0
   resolution: "@miblanchard/react-native-slider@npm:2.6.0"
   peerDependencies:
