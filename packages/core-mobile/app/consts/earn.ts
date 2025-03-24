@@ -60,6 +60,6 @@ export const estimatesTooltipText =
   'Estimates are provided for informational purposes only, without any representation, warranty or guarantee, and do not represent any assurance that you will achieve the same results.'
 
 export const refetchIntervals = {
-  balance: 10000, // 10 seconds
-  stakes: 60000 // 60 seconds
+  balance: __DEV__ ? 30000 : 10000, // 30 seconds in dev mode, 10 seconds in prod mode
+  stakes: __DEV__ ? 80000 : 60000 // 80 seconds in dev mode, 60 seconds in prod mode
 }

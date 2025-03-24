@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  calculateCChainFee,
-  calculatePChainFee
-} from 'services/earn/calculateCrossChainFees'
+import { calculateCChainFee } from 'services/earn/calculateCrossChainFees'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import {
@@ -184,89 +181,82 @@ const getExportPFee = async ({
     avaxXPNetwork.networkToken.symbol
   )
 
-  if (provider.isEtnaEnabled()) {
-    let unsignedTxP
+  let unsignedTxP
 
-    try {
-      unsignedTxP = await WalletService.createExportPTx({
-        amountInNAvax: amountInNAvax.toSubUnit(),
-        accountIndex: activeAccount.index,
-        avaxXPNetwork,
-        destinationAddress: activeAccount.addressPVM,
-        destinationChain: 'C',
-        feeState
-      })
-    } catch (error) {
-      Logger.warn('unable to create export p tx', error)
+  try {
+    unsignedTxP = await WalletService.createExportPTx({
+      amountInNAvax: amountInNAvax.toSubUnit(),
+      accountIndex: activeAccount.index,
+      avaxXPNetwork,
+      destinationAddress: activeAccount.addressPVM,
+      destinationChain: 'C',
+      feeState
+    })
+  } catch (error) {
+    Logger.warn('unable to create export p tx', error)
 
-      const missingAmount = extractNeededAmount(
-        (error as Error).message,
-        getAssetId(avaxXPNetwork)
-      )
-
-      if (!missingAmount) {
-        // rethrow error if it's not an insufficient funds error
-        throw error
-      }
-
-      const amountAvailable = amountInNAvax.toSubUnit()
-      const ratio = Number(missingAmount) / Number(amountAvailable)
-
-      if (ratio > pFeeAdjustmentThreshold) {
-        // rethrow insufficient funds error when missing fee is too much compared to total token amount
-        Logger.error('Failed to simulate export p due to excessive fees', {
-          missingAmount,
-          ratio
-        })
-        throw error
-      }
-
-      const amountAvailableToClaim = amountAvailable - missingAmount
-
-      if (amountAvailableToClaim <= 0) {
-        Logger.error('Failed to simulate export p due to excessive fees', {
-          missingAmount
-        })
-        // rethrow insufficient funds error when balance is not enough to cover fee
-        throw error
-      }
-
-      unsignedTxP = await WalletService.createExportPTx({
-        amountInNAvax: amountAvailableToClaim,
-        accountIndex: activeAccount.index,
-        avaxXPNetwork,
-        destinationAddress: activeAccount.addressPVM,
-        destinationChain: 'C',
-        feeState
-      })
-
-      txAmount = new TokenUnit(
-        amountAvailableToClaim,
-        avaxXPNetwork.networkToken.decimals,
-        avaxXPNetwork.networkToken.symbol
-      )
-    }
-
-    const tx = await Avalanche.parseAvalancheTx(
-      unsignedTxP,
-      provider,
-      activeAccount.addressPVM
+    const missingAmount = extractNeededAmount(
+      (error as Error).message,
+      getAssetId(avaxXPNetwork)
     )
 
-    const txFee = new TokenUnit(
-      tx.txFee,
+    if (!missingAmount) {
+      // rethrow error if it's not an insufficient funds error
+      throw error
+    }
+
+    const amountAvailable = amountInNAvax.toSubUnit()
+    const ratio = Number(missingAmount) / Number(amountAvailable)
+
+    if (ratio > pFeeAdjustmentThreshold) {
+      // rethrow insufficient funds error when missing fee is too much compared to total token amount
+      Logger.error('Failed to simulate export p due to excessive fees', {
+        missingAmount,
+        ratio
+      })
+      throw error
+    }
+
+    const amountAvailableToClaim = amountAvailable - missingAmount
+
+    if (amountAvailableToClaim <= 0) {
+      Logger.error('Failed to simulate export p due to excessive fees', {
+        missingAmount
+      })
+      // rethrow insufficient funds error when balance is not enough to cover fee
+      throw error
+    }
+
+    unsignedTxP = await WalletService.createExportPTx({
+      amountInNAvax: amountAvailableToClaim,
+      accountIndex: activeAccount.index,
+      avaxXPNetwork,
+      destinationAddress: activeAccount.addressPVM,
+      destinationChain: 'C',
+      feeState
+    })
+
+    txAmount = new TokenUnit(
+      amountAvailableToClaim,
       avaxXPNetwork.networkToken.decimals,
       avaxXPNetwork.networkToken.symbol
     )
-
-    return {
-      txFee,
-      txAmount
-    }
   }
 
+  const tx = await Avalanche.parseAvalancheTx(
+    unsignedTxP,
+    provider,
+    activeAccount.addressPVM
+  )
+
+  const txFee = new TokenUnit(
+    tx.txFee,
+    avaxXPNetwork.networkToken.decimals,
+    avaxXPNetwork.networkToken.symbol
+  )
+
   return {
-    txFee: await calculatePChainFee(avaxXPNetwork),
+    txFee,
     txAmount
   }
 }

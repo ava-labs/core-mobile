@@ -8,7 +8,7 @@ import ModuleManager from 'vmModule/ModuleManager'
  * @param baseFee
  * @param unsignedTx a dummy unsigned transaction object
  *
- * More details: https://docs.avax.network/quickstart/transaction-fees#atomic-transaction-fees
+ * More details: https://build.avax.network/docs/api-reference/guides/txn-fees#atomic-transaction-fees
  */
 export function calculateCChainFee(
   baseFee: TokenUnit,
