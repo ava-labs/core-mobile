@@ -3,7 +3,8 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
   moduleNameMapper: {
-    '^react-native$': '<rootDir>/node_modules/react-native'
+    '^react-native$': '<rootDir>/node_modules/react-native',
+    '^@solana/(.+)$': '<rootDir>/node_modules/@solana/$1/dist/index.node.cjs'
   },
   testPathIgnorePatterns: ['<rootDir>/e2e/tests/dapps/playwright/'],
   setupFilesAfterEnv: [

@@ -7,8 +7,6 @@ import { selectActiveAccount } from 'store/account'
 import { Contact, CorePrimaryAccount } from '@avalabs/types'
 import { getAddressXP } from 'store/utils/account&contactGetters'
 import { Eip1559Fees } from 'utils/Utils'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import usePVMSend from '../hooks/usePVMSend'
 import SendTokenForm from './SendTokenForm'
 
@@ -33,7 +31,6 @@ const SendPVM = ({
     useSendContext()
   const activeAccount = useSelector(selectActiveAccount)
   const fromAddress = activeAccount?.addressPVM ?? ''
-  const provider = useAvalancheXpProvider()
 
   const { send, estimatedFee, setGasPrice } = usePVMSend({
     network,
@@ -82,10 +79,7 @@ const SendPVM = ({
       onSend={handleSend}
       handleFeesChange={handleFeesChange}
       estimatedFee={estimatedFee}
-      supportsAvalancheDynamicFee={
-        provider instanceof Avalanche.JsonRpcProvider &&
-        provider.isEtnaEnabled()
-      }
+      supportsAvalancheDynamicFee={true}
     />
   )
 }

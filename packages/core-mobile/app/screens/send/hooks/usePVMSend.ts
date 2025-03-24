@@ -58,7 +58,7 @@ const usePVMSend: SendAdapterPVM = ({
       if (!toAddress || !token || !amount) {
         return Promise.reject('missing required fields')
       }
-      if (provider && provider.isEtnaEnabled()) {
+      if (provider) {
         const unsignedTx = await createSendPTx(amount.bn, maxFee)
         const tx = await Avalanche.parseAvalancheTx(
           unsignedTx,

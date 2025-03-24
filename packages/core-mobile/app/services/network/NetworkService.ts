@@ -21,6 +21,8 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { DebankNetwork } from 'services/network/types'
 import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
+import { Module } from '@avalabs/vm-module-types'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -53,11 +55,9 @@ class NetworkService {
 
   async getProviderForNetwork(
     network: Network
-  ): Promise<
-    JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  > {
+  ): ReturnType<Module['getProvider']> {
     const module = await ModuleManager.loadModuleByNetwork(network)
-    return module.getProvider(network)
+    return module.getProvider(mapToVmNetwork(network))
   }
 
   async sendTransaction({
@@ -126,7 +126,7 @@ class NetworkService {
     isDeveloperMode: boolean
   ): Promise<Avalanche.JsonRpcProvider> {
     const network = this.getAvalancheNetworkP(isDeveloperMode)
-    return ModuleManager.avalancheModule.getProvider(network)
+    return ModuleManager.avalancheModule.getProvider(mapToVmNetwork(network))
   }
 
   private async fetchERC20Networks(): Promise<Networks> {

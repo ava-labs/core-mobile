@@ -36,6 +36,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -370,7 +371,7 @@ export class MnemonicWallet implements Wallet {
       accountIndex,
       xpub: this.xpub,
       xpubXP: this.xpubXP,
-      network
+      network: mapToVmNetwork(network)
     })
 
     // C-avax... this address uses the same public key as EVM

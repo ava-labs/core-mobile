@@ -35,6 +35,7 @@ import {
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
@@ -311,7 +312,7 @@ export default class SeedlessWallet implements Wallet {
       accountIndex: 0,
       xpub: this.#addressPublicKey.evm,
       xpubXP: this.#addressPublicKey.xp,
-      network
+      network: mapToVmNetwork(network)
     })
     const pubKeyBufferC = this.getPubKeyBufferC()
     return {
