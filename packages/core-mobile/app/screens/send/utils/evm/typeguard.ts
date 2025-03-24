@@ -8,9 +8,9 @@ export const isSupportedToken = (
   token: TokenWithBalance
 ): token is TokenWithBalanceEVM => {
   return (
-    token.type !== TokenType.ERC20 &&
-    token.type !== TokenType.ERC721 &&
-    token.type !== TokenType.ERC1155 &&
-    token.type !== TokenType.NATIVE
+    token.type === TokenType.ERC20 ||
+    token.type === TokenType.ERC721 ||
+    token.type === TokenType.ERC1155 ||
+    token.type === TokenType.NATIVE
   )
 }
