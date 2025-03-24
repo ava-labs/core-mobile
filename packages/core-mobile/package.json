@@ -42,7 +42,7 @@
     "@cubist-labs/cubesigner-sdk": "0.4.117-0",
     "@cubist-labs/cubesigner-sdk-ethers-v6": "0.4.117-0",
     "@datadog/mobile-react-native": "2.4.3",
-    "@datadog/mobile-react-navigation": "2.4.3",
+    "@datadog/mobile-react-navigation": "2.6.4",
     "@date-fns/utc": "2.1.0",
     "@ethereumjs/common": "4.4.0",
     "@ethereumjs/tx": "5.4.0",
