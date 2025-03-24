@@ -13,7 +13,7 @@ import {
 import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
-import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 
 export const MarketListView = memo(
   ({
