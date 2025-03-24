@@ -15,10 +15,12 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import useStakingParams from 'hooks/earn/useStakingParams'
 
 export const Banner = (): JSX.Element | undefined => {
   const { theme } = useTheme()
   const { data } = useStakes()
+  const { minStakeAmount } = useStakingParams()
   const isEmpty = !data || data.length === 0
 
   const pChainBalance = usePChainBalance()
@@ -83,9 +85,11 @@ export const Banner = (): JSX.Element | undefined => {
   }, [stakedInAvax, pendingStakedInAvax])
 
   const formattedTotalStaked = totalStakedInAvax?.toDisplay({ fixedDp: 2 })
-  const formattedTotalAvailable = totalStakedInAvax
-    ?.add(availableInAvax ?? 0)
-    ?.toDisplay({ fixedDp: 2 })
+  const formattedTotalAvailable = useMemo(
+    () =>
+      totalStakedInAvax?.add(availableInAvax ?? 0)?.toDisplay({ fixedDp: 2 }),
+    [availableInAvax, totalStakedInAvax]
+  )
 
   if (isEmpty) {
     return (
@@ -104,8 +108,8 @@ export const Banner = (): JSX.Element | undefined => {
           }}>
           <Icons.Action.Info color={theme.colors.$textPrimary} />
           <Text variant="body2" sx={{ flexShrink: 1 }}>
-            A minimum of 25 AVAX is required to be able to stake on the
-            Avalanche Network
+            A minimum of {minStakeAmount.toDisplay()} AVAX is required to be
+            able to stake on the Avalanche Network
           </Text>
         </Card>
       </View>
