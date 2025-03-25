@@ -12,12 +12,17 @@ export const storeWalletWithPin = createAsyncThunk<
 >(
   `${reducerName}/storeWalletWithPin`,
   async (
-    { walletId, walletSecret, isResetting, type }: StoreWalletWithPinParams,
+    {
+      walletId,
+      encryptedWalletKey,
+      isResetting,
+      type
+    }: StoreWalletWithPinParams,
     thunkApi
   ) => {
     const result = await BiometricsSDK.storeWalletWithPin(
       walletId,
-      walletSecret,
+      encryptedWalletKey,
       isResetting
     )
 
@@ -31,6 +36,8 @@ export const storeWalletWithPin = createAsyncThunk<
     return {
       id: walletId,
       name: generateWalletName(type, walletCount + 1),
+      mnemonic: encryptedWalletKey,
+      isActive: true,
       type
     }
   }
