@@ -2,7 +2,7 @@ import { IndexPath } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { NftItem } from 'services/nft/types'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
 import {
   AssetNetworkFilter,
   COLLECTIBLE_FILTERS,
@@ -13,8 +13,15 @@ import {
   CollectibleTypeFilter
 } from 'store/balance'
 import { isCollectibleVisible } from 'store/nft/utils'
-import { selectCollectibleVisibility } from 'store/portfolio'
-import { getFilteredContentType, getFilteredNetworks } from '../consts'
+import {
+  selectCollectibleUnprocessableVisibility,
+  selectCollectibleVisibility
+} from 'store/portfolio'
+import {
+  getCollectibleName,
+  getFilteredContentType,
+  getFilteredNetworks
+} from '../consts'
 
 export const useCollectiblesFilterAndSort = (
   collectibles: NftItem[]
@@ -114,19 +121,28 @@ export const useCollectiblesFilterAndSort = (
     [selectedView]
   )
 
+  const isUnprocessableVisible = useSelector(
+    selectCollectibleUnprocessableVisibility
+  )
+
   const getFiltered = useCallback(
     (nfts: NftItem[]) => {
       if (nfts.length === 0) {
         return []
       }
       const filteredByHidden = nfts.filter((nft: NftItem) => {
-        if (filterOption[1] !== CollectibleStatus.Hidden) {
+        if (filterOption[1] !== CollectibleStatus.Hidden)
           return isCollectibleVisible(collectiblesVisibility, nft)
-        }
+
+        return true
+      })
+      const filterByUnprocessable = filteredByHidden.filter((nft: NftItem) => {
+        if (isUnprocessableVisible)
+          return nft.status !== NftLocalStatus.Unprocessable
         return true
       })
       const filteredNetworks = getFilteredNetworks(
-        filteredByHidden,
+        filterByUnprocessable,
         filterOption[0] as AssetNetworkFilter
       )
       return getFilteredContentType(
@@ -134,20 +150,20 @@ export const useCollectiblesFilterAndSort = (
         filterOption[1] as CollectibleTypeFilter
       )
     },
-    [filterOption, collectiblesVisibility]
+    [filterOption, isUnprocessableVisible, collectiblesVisibility]
   )
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
       if (sortOption === CollectibleSort.NameAToZ)
-        return filtered?.sort((a, b) => {
-          return (a?.name ?? '') < (b?.name ?? '') ? 1 : -1
-        })
+        return filtered?.sort((a, b) =>
+          getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
+        )
 
       if (sortOption === CollectibleSort.NameZToA)
-        return filtered?.sort((a, b) => {
-          return (a?.name ?? '') > (b?.name ?? '') ? 1 : -1
-        })
+        return filtered?.sort((a, b) =>
+          getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
+        )
 
       return filtered
     },

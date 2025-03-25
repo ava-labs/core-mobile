@@ -65,8 +65,8 @@ export const CollectiblesScreen = ({
     listType === CollectibleView.ListView
       ? LIST_ITEM_HEIGHT
       : listType === CollectibleView.CompactGrid
-      ? 120
-      : 190
+      ? 160
+      : 220
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {

@@ -20,8 +20,20 @@ const LARGE_GRID_CARD_HEIGHT =
   width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 2
 
 export const getCollectibleName = (collectible: NftItem): string => {
-  const fallback = collectible.name || collectible.processedMetadata?.name || ''
+  const fallback = collectible.name.length
+    ? collectible.name
+    : collectible.processedMetadata?.name.length
+    ? collectible.processedMetadata?.name
+    : ''
   return fallback?.length > 0 ? fallback.trim() : 'Untitled'
+}
+
+export const getCollectibleCollectionName = (collectible: NftItem): string => {
+  const fallback = collectible.collectionName || ''
+
+  return fallback.length === 0 || ['Unknown', 'Unkown'].includes(fallback)
+    ? 'Unknown collection'
+    : fallback.trim()
 }
 
 export const getCollectibleDescription = (collectible: NftItem): string => {

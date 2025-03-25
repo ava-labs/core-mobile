@@ -203,7 +203,7 @@ export const Icons = {
   Content: {
     Add: IconAdd,
     HideImage: IconHideImage,
-    Close: IconClose
+    Close: IconClose,
   },
   Toggle: {
     StarOutline: IconStarOutline,

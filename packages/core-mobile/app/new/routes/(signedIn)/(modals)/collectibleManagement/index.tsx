@@ -1,4 +1,4 @@
-import { SearchBar, Text, View } from '@avalabs/k2-alpine'
+import { SearchBar, Text, Toggle, View } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
 import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
@@ -10,7 +10,12 @@ import {
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useDispatch, useSelector } from 'react-redux'
 import { NftItem } from 'services/nft/types'
+import {
+  selectCollectibleUnprocessableVisibility,
+  toggleCollectibleUnprocessableVisibility
+} from 'store/portfolio'
 
 const CollectibleManagementScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -53,8 +58,7 @@ const CollectibleManagementScreen = (): JSX.Element => {
   return (
     <View
       sx={{
-        flex: 1,
-        gap: 16
+        flex: 1
       }}>
       <View
         sx={{
@@ -78,10 +82,46 @@ const CollectibleManagementScreen = (): JSX.Element => {
         refreshing={isRefetching}
         keyboardDismissMode="interactive"
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={<CollectibleManagementOptions />}
         contentContainerStyle={{
           paddingBottom: insets.bottom
         }}
       />
+    </View>
+  )
+}
+
+const CollectibleManagementOptions = () => {
+  const collectibleUnprocessableVisibility = useSelector(
+    selectCollectibleUnprocessableVisibility
+  )
+  const dispatch = useDispatch()
+
+  function handleChange(): void {
+    dispatch(toggleCollectibleUnprocessableVisibility())
+  }
+
+  return (
+    <View
+      style={{
+        paddingLeft: HORIZONTAL_MARGIN
+      }}>
+      <View
+        sx={{
+          borderBottomWidth: 1,
+          borderColor: '$borderPrimary',
+          height: 56,
+          paddingRight: HORIZONTAL_MARGIN,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexDirection: 'row'
+        }}>
+        <Text>Hide unreachable collectibles</Text>
+        <Toggle
+          value={collectibleUnprocessableVisibility}
+          onValueChange={handleChange}
+        />
+      </View>
     </View>
   )
 }

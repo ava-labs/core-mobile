@@ -14,6 +14,7 @@ import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import {
   getCollectibleName,
+  getCollectibleCollectionName,
   getGridCardHeight,
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
@@ -28,12 +29,14 @@ export const CollectibleItem = memo(
     type,
     index,
     style,
+    onLoaded,
     onPress
   }: {
     collectible: NftItem
     type: CollectibleView
     index: number
-    style: ViewStyle
+    style?: ViewStyle
+    onLoaded?: () => void
     onPress?: () => void
   }): ReactNode => {
     if (type === CollectibleView.ListView)
@@ -51,6 +54,7 @@ export const CollectibleItem = memo(
         collectible={collectible}
         index={index}
         onPress={onPress}
+        onLoaded={onLoaded}
         style={{
           marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
           marginBottom: VERTICAL_ITEM_GAP,
@@ -77,12 +81,7 @@ export const CollectibleListItem = memo(
     const height = getGridCardHeight(CollectibleView.ListView, index)
 
     const collectibleName = getCollectibleName(collectible)
-
-    const collectionName =
-      collectible.collectionName.length === 0 ||
-      ['Unknown', 'Unkown'].includes(collectible.collectionName)
-        ? 'Unknown collection'
-        : collectible.collectionName
+    const collectibleCollectionName = getCollectibleCollectionName(collectible)
 
     return (
       <Animated.View
@@ -136,7 +135,7 @@ export const CollectibleListItem = memo(
                   sx={{
                     color: '$textSecondary'
                   }}>
-                  {collectionName}
+                  {collectibleCollectionName}
                 </Text>
               </View>
 
@@ -160,12 +159,14 @@ export const CollectibleGridItem = memo(
     type,
     index,
     style,
+    onLoaded,
     onPress
   }: {
     collectible: NftItem
     type: CollectibleView
     index: number
     style?: ViewStyle
+    onLoaded?: () => void
     onPress?: () => void
   }): ReactNode => {
     const height = getGridCardHeight(type, index)
@@ -180,9 +181,9 @@ export const CollectibleGridItem = memo(
             {
               height
             },
-            style
+            { ...style }
           ]}>
-          <CollectibleRenderer collectible={collectible}>
+          <CollectibleRenderer onLoaded={onLoaded} collectible={collectible}>
             <View
               style={{
                 position: 'absolute',

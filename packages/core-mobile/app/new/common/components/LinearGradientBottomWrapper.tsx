@@ -30,6 +30,7 @@ export const LinearGradientBottomWrapper = ({
         }}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.5 }}
+        pointerEvents="none"
       />
       <BlurViewWithFallback>{children}</BlurViewWithFallback>
     </View>

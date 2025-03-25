@@ -6,49 +6,59 @@ import React, {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  useCallback,
+  useEffect
 } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { ViewStyle, View, LayoutChangeEvent } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { NftItem } from 'services/nft/types'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
 
 export const CollectibleRenderer = ({
   collectible,
   children,
+  onLoaded,
   style
 }: {
   collectible: NftItem
   children?: ReactNode
   style?: ViewStyle
+  onLoaded?: () => void
 }): ReactNode => {
   const {
     theme: { colors, isDark }
   } = useTheme()
 
-  const [isLoading, setIsLoading] = useState(
-    !collectible?.imageData?.image?.length ||
-      !collectible?.imageData?.video?.length
-  )
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [layout, setLayout] = useState({ width: 0, height: 0 })
 
-  const onLoadEnd = (): void => {
+  const contentRef = useRef<View>(null)
+
+  useEffect(() => {
+    if (collectible.status === NftLocalStatus.Unprocessable) {
+      setIsLoading(false)
+    }
+  }, [collectible.status])
+
+  const onLoadEnd = useCallback((): void => {
     setIsLoading(false)
-  }
+    onLoaded?.()
+  }, [onLoaded])
 
-  const onLoadStart = (): void => {
+  const onLoadStart = useCallback((): void => {
     setIsLoading(true)
-  }
+  }, [])
 
-  const onImageError = (err: ImageErrorEventData): void => {
+  const onImageError = useCallback((err: ImageErrorEventData): void => {
     setError(err.error)
     setIsLoading(false)
-  }
+  }, [])
 
-  const onVideoError = (): void => {
+  const onVideoError = useCallback((): void => {
     setIsLoading(false)
-  }
+  }, [])
 
   const contentStyle = useAnimatedStyle(() => {
     return {
@@ -90,46 +100,76 @@ export const CollectibleRenderer = ({
   const renderContent = useMemo(() => {
     if (collectible?.imageData?.video)
       return (
-        <Video
-          source={collectible?.imageData?.video}
-          thumbnail={collectible?.imageData?.image}
-          onLoadEnd={onLoadEnd}
-          onError={onVideoError}
-          autoPlay={false}
-          muted
-          hideControls
-        />
+        <Animated.View
+          style={[
+            contentStyle,
+            {
+              width: '100%',
+              height: '100%',
+              zIndex: 1
+            }
+          ]}>
+          <Video
+            source={collectible?.imageData?.video}
+            thumbnail={collectible?.imageData?.image}
+            onLoadEnd={onLoadEnd}
+            onError={onVideoError}
+            autoPlay={false}
+            muted
+            hideControls
+          />
+          {children}
+        </Animated.View>
       )
 
-    return (
-      <Image
-        key={`image-${collectible.localId}`}
-        // recyclingKey={`image-${collectible.localId}`}
-        source={collectible?.imageData?.image}
-        onLoadEnd={onLoadEnd}
-        onLoadStart={onLoadStart}
-        onError={onImageError}
-        cachePolicy="memory-disk"
-        contentFit="cover"
-        style={{
-          flex: 1,
-          width: '100%',
-          position: 'absolute',
-          zIndex: 1,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0
-        }}
-      />
-    )
+    if (collectible?.imageData?.image) {
+      return (
+        <Animated.View
+          style={[
+            contentStyle,
+            {
+              width: '100%',
+              height: '100%',
+              zIndex: 1
+            }
+          ]}>
+          <Image
+            key={collectible.localId}
+            recyclingKey={`image-${collectible.localId}`}
+            source={collectible?.imageData?.image}
+            onLoad={onLoadEnd}
+            onLoadStart={onLoadStart}
+            onError={onImageError}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            style={{
+              flex: 1,
+              width: '100%',
+              position: 'absolute',
+              zIndex: 1,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0
+            }}
+          />
+          {children}
+        </Animated.View>
+      )
+    }
+
+    return null
   }, [
+    children,
     collectible?.imageData?.image,
     collectible?.imageData?.video,
-    collectible.localId
+    collectible.localId,
+    contentStyle,
+    onImageError,
+    onLoadEnd,
+    onLoadStart,
+    onVideoError
   ])
-
-  const contentRef = useRef<View>(null)
 
   useLayoutEffect(() => {
     if (contentRef.current) {
@@ -172,20 +212,7 @@ export const CollectibleRenderer = ({
         {renderEdgeCases}
       </View>
 
-      {collectible?.imageData?.image || collectible?.imageData?.video ? (
-        <Animated.View
-          style={[
-            contentStyle,
-            {
-              width: '100%',
-              height: '100%',
-              zIndex: 1
-            }
-          ]}>
-          {renderContent}
-          {children}
-        </Animated.View>
-      ) : null}
+      {renderContent}
     </View>
   )
 }

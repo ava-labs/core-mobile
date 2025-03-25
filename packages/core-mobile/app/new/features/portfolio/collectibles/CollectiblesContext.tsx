@@ -14,6 +14,7 @@ import {
   NftItem,
   NftItemExternalData,
   NftLocalId,
+  NftLocalStatus,
   UnprocessedNftItem
 } from 'services/nft/types'
 import { getTokenUri } from 'services/nft/utils'
@@ -51,6 +52,9 @@ export const CollectiblesProvider = ({
   const [imageData, setImageData] = useState<Record<NftLocalId, NftImageData>>(
     {}
   )
+  const [statusData, setStatusData] = useState<
+    Record<NftLocalId, NftLocalStatus>
+  >({})
   const [isRefreshing, setIsRefreshing] = useState<Record<NftLocalId, boolean>>(
     {}
   )
@@ -70,11 +74,18 @@ export const CollectiblesProvider = ({
               lastUpdatedTimestamp[nft.localId]
           },
           imageData: imageData[nft.localId],
-          processedMetadata: processedMetadata[nft.localId]
+          processedMetadata: processedMetadata[nft.localId],
+          status: statusData[nft.localId] || NftLocalStatus.Unprocessed
         }
       }) ?? []
     )
-  }, [query.data, lastUpdatedTimestamp, imageData, processedMetadata])
+  }, [
+    query.data,
+    lastUpdatedTimestamp,
+    statusData,
+    imageData,
+    processedMetadata
+  ])
 
   const getCollectible = useCallback(
     (localId: NftLocalId): NftItem | undefined => {
@@ -92,8 +103,16 @@ export const CollectiblesProvider = ({
               ...prevData,
               [localId]: result
             }))
+            setStatusData(prevData => ({
+              ...prevData,
+              [localId]: NftLocalStatus.Processed
+            }))
           })
           .catch(e => {
+            setStatusData(prevData => ({
+              ...prevData,
+              [localId]: NftLocalStatus.Unprocessable
+            }))
             Logger.error(e)
           })
     },
@@ -114,13 +133,16 @@ export const CollectiblesProvider = ({
         NftProcessor.fetchMetadata(getTokenUri({ tokenId, tokenUri }))
           .then(result => {
             processImageData(localId, result.image)
-
             setProcessedMetadata(prevData => ({
               ...prevData,
               [localId]: result
             }))
           })
           .catch(e => {
+            setStatusData(prevData => ({
+              ...prevData,
+              [localId]: NftLocalStatus.Unprocessable
+            }))
             Logger.error(e)
           })
     },

@@ -1,25 +1,27 @@
-import { Text, View } from '@avalabs/k2-alpine'
+import { Button, ScrollView, View } from '@avalabs/k2-alpine'
 import React, { ReactNode, useMemo } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
 import { NftItem } from 'services/nft/types'
 
 import { noop } from '@avalabs/core-utils-sdk'
-import { Row } from 'components/Row'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import {
   ActionButton,
   ActionButtons
 } from 'features/portfolio/assets/components/ActionButtons'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
-import { DeFiRowItem } from 'features/portfolio/defi/components/DeFiRowItem'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { HORIZONTAL_MARGIN } from '../consts'
 import { Statistic, StatisticGroup } from './CollectibleStatistic'
 
 export const CollectibleDetailsContent = ({
-  collectible
+  collectible,
+  isExpanded
 }: {
   collectible: NftItem | undefined
+  isExpanded: boolean
 }): ReactNode => {
+  const insets = useSafeAreaInsets()
   const networks = useNetworks()
 
   const attributes = useMemo(
@@ -31,26 +33,6 @@ export const CollectibleDetailsContent = ({
     [collectible?.processedMetadata?.attributes]
   )
 
-  const renderStatistic: ListRenderItem<{
-    text: string
-    value: string
-  }> = ({ item }) => {
-    return (
-      <DeFiRowItem>
-        <Row style={{ flex: 1, alignItems: 'center', gap: 12 }}>
-          <Text
-            variant="body1"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            sx={{ color: '$textSecondary', flexShrink: 1 }}>
-            {item?.text}
-          </Text>
-        </Row>
-        <Text variant="body1">{item.value}</Text>
-      </DeFiRowItem>
-    )
-  }
-
   const ACTION_BUTTONS: ActionButton[] = [
     { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
     { title: ActionButtonTitle.Hide, icon: 'hide', onPress: noop }
@@ -58,18 +40,24 @@ export const CollectibleDetailsContent = ({
   return (
     <View
       style={{
-        gap: HORIZONTAL_MARGIN
+        gap: 20,
+        flex: 1,
+        overflow: 'hidden'
       }}>
       <View
-        style={{
-          alignItems: 'center'
+        sx={{
+          alignItems: 'center',
+          zIndex: 10
         }}>
         <ActionButtons buttons={ACTION_BUTTONS} />
       </View>
-      <View
-        style={{
+
+      <ScrollView
+        scrollEnabled={isExpanded}
+        contentContainerStyle={{
           paddingHorizontal: HORIZONTAL_MARGIN,
-          gap: 8
+          gap: 12,
+          paddingBottom: 150 + insets.bottom
         }}>
         <StatisticGroup>
           <Statistic
@@ -105,7 +93,7 @@ export const CollectibleDetailsContent = ({
           ))}
         </StatisticGroup>
 
-        {attributes.length ? (
+        {/* {attributes.length ? (
           <FlatList
             horizontal
             data={attributes}
@@ -117,7 +105,31 @@ export const CollectibleDetailsContent = ({
             }}
             renderItem={renderStatistic}
           />
-        ) : null}
+        ) : null} */}
+      </ScrollView>
+
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}>
+        <LinearGradientBottomWrapper>
+          <View
+            style={{
+              gap: 10,
+              padding: HORIZONTAL_MARGIN,
+              paddingBottom: insets.bottom + HORIZONTAL_MARGIN
+            }}>
+            <Button type="secondary" size="large">
+              Refresh
+            </Button>
+            <Button type="secondary" size="large">
+              Set as my avatar
+            </Button>
+          </View>
+        </LinearGradientBottomWrapper>
       </View>
     </View>
   )
