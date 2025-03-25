@@ -1,5 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import {
+  runOnJS,
+  useAnimatedReaction,
+  useSharedValue
+} from 'react-native-reanimated'
 import { ScrollView, Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Slider } from './Slider'
@@ -49,19 +54,30 @@ const SliderStory = ({
   maximumValueLabel?: string
 }): JSX.Element => {
   const { theme } = useTheme()
-  const [value, setValue] = useState(0.5)
+  const value = useSharedValue(0.5)
+  const minValue = useSharedValue(minimumValue ?? 0)
+  const maxValue = useSharedValue(maximumValue ?? 1)
+  const [text, setText] = React.useState(value.value.toFixed(2))
+
+  useAnimatedReaction(
+    () => value.value,
+    newValue => {
+      runOnJS(setText)(newValue.toFixed(2))
+    },
+    [value]
+  )
 
   return (
     <View style={{ width: '100%', gap: 20 }}>
       <Text variant="heading6" sx={{ alignSelf: 'center' }}>
-        Slide Value: {value.toFixed(2)}
+        Slide Value: {text}
       </Text>
       <Slider
         thumbBorderColor={theme.colors.$surfacePrimary}
         value={value}
-        onValueChange={newValue => setValue(newValue)}
-        minimumValue={minimumValue}
-        maximumValue={maximumValue}
+        onValueChange={newValue => (value.value = newValue)}
+        minimumValue={minValue}
+        maximumValue={maxValue}
         minimumValueLabel={minimumValueLabel}
         maximumValueLabel={maximumValueLabel}
       />

@@ -2,7 +2,7 @@ import React, { FC } from 'react'
 import { ViewStyle } from 'react-native'
 import { Slider as RNSlider } from 'react-native-awesome-slider'
 import Svg, { Circle } from 'react-native-svg'
-import { useSharedValue } from 'react-native-reanimated'
+import { SharedValue } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import { Text, View } from '../Primitives'
@@ -21,10 +21,6 @@ export const Slider: FC<SliderProps> = ({
     theme: { colors }
   } = useTheme()
 
-  const progress = useSharedValue(value)
-  const minValue = useSharedValue(minimumValue ?? 0)
-  const maxValue = useSharedValue(maximumValue ?? 1)
-
   return (
     <View style={style}>
       <RNSlider
@@ -32,7 +28,7 @@ export const Slider: FC<SliderProps> = ({
           minimumTrackTintColor: '#3AC489',
           maximumTrackTintColor: alpha(colors.$textPrimary, 0.2)
         }}
-        progress={progress}
+        progress={value}
         onValueChange={newValue => onValueChange?.(newValue)}
         containerStyle={{ height: 4, borderRadius: 100 }}
         thumbTouchSize={48}
@@ -48,13 +44,13 @@ export const Slider: FC<SliderProps> = ({
             <Circle cx={12} cy={12} r={8} fill={colors.$textPrimary} />
           </Svg>
         )}
-        minimumValue={minValue}
-        maximumValue={maxValue}
+        minimumValue={minimumValue}
+        maximumValue={maximumValue}
       />
       {(minimumValueLabel !== undefined || maximumValueLabel !== undefined) && (
         <View
           style={{
-            marginTop: 8,
+            marginTop: 6,
             flexDirection: 'row',
             justifyContent: 'space-between'
           }}>
@@ -71,12 +67,12 @@ export const Slider: FC<SliderProps> = ({
 }
 
 type SliderProps = {
-  value: number
+  value: SharedValue<number>
   onValueChange?: (value: number) => void
   thumbBorderColor?: string
   style?: ViewStyle
-  minimumValue?: number
-  maximumValue?: number
+  minimumValue: SharedValue<number>
+  maximumValue: SharedValue<number>
   minimumValueLabel?: string
   maximumValueLabel?: string
 }
