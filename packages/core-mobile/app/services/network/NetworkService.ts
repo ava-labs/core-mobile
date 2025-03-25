@@ -13,7 +13,6 @@ import {
 } from '@avalabs/core-chains-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
 import { ChainID, Networks } from 'store/network/types'
@@ -63,14 +62,14 @@ class NetworkService {
   async sendTransaction({
     signedTx,
     network,
-    sentryTrx = 'send-transaction',
     handleWaitToPost
   }: {
     signedTx: string | avaxSerial.SignedTx
     network: Network
-    sentryTrx?: Transaction
     handleWaitToPost?: (txResponse: TransactionResponse) => void
   }): Promise<string> {
+    const sentryTrx = SentryWrapper.startTransaction('send-transaction')
+
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.network.send_transaction')
       .executeAsync(async () => {

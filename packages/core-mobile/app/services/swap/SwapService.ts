@@ -106,7 +106,9 @@ class SwapService {
     account,
     abortSignal
   }: SwapRate): Promise<OptimalRate> {
-    return SentryWrapper.createSpanFor('swap')
+    const sentryTrx = SentryWrapper.startTransaction('swap')
+
+    return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_rate')
       .executeAsync(async () => {
         if (network.isTestnet) {
@@ -140,7 +142,9 @@ class SwapService {
   }
 
   async getParaswapSpender(network: Network): Promise<Address> {
-    return SentryWrapper.createSpanFor('swap')
+    const sentryTrx = SentryWrapper.startTransaction('swap')
+
+    return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_paraswap_spender')
       .executeAsync(async () => {
         if (network.isTestnet) {
@@ -177,7 +181,9 @@ class SwapService {
     permit,
     deadline
   }: BuildTxParams): Promise<TransactionParams> {
-    return SentryWrapper.createSpanFor('swap')
+    const sentryTrx = SentryWrapper.startTransaction('swap')
+
+    return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.build_trx')
       .executeAsync(async () => {
         if (network.isTestnet) {

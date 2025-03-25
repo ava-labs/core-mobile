@@ -17,7 +17,6 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
@@ -75,14 +74,14 @@ class WalletService {
   public async sign({
     transaction,
     accountIndex,
-    network,
-    sentryTrx = 'sign-transaction'
+    network
   }: {
     transaction: SignTransactionRequest
     accountIndex: number
     network: Network
-    sentryTrx?: SentryTransaction
   }): Promise<string> {
+    const sentryTrx = SentryWrapper.startTransaction('sign-transaction')
+
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.sign')
       .executeAsync(async () => {
