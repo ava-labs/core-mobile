@@ -32,6 +32,7 @@ export * from './StakeCards/AddCard'
 export * from './StakeCards/ClaimCard'
 export * from './StakeCards/ProgressCard'
 export * from './StakeCards/CompleteCard'
+export * from './Slider/Slider'
 
 export * from './PriceChangeIndicator/types'
 

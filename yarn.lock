@@ -568,6 +568,7 @@ __metadata:
     react-content-loader: 6.2.0
     react-dom: 18.3.1
     react-native: 0.76.6
+    react-native-awesome-slider: 2.9.0
     react-native-dialog: 9.3.0
     react-native-gesture-handler: 2.20.0
     react-native-popover-view: 6.1.0
@@ -26089,6 +26090,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-awesome-slider@npm:2.9.0":
+  version: 2.9.0
+  resolution: "react-native-awesome-slider@npm:2.9.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-gesture-handler: ">=2.0.0"
+    react-native-reanimated: ">=3.0.0"
+  checksum: a1a6179311a7a26fc8612c95722fccfd83422785d11e4c452bcc2afab2fd05f4aa1c5b9bcd07efe31d397f04aaa337f60772db3a850793ce69065080442fb3c9
+  languageName: node
+  linkType: hard
+
 "react-native-big-list@npm:1.6.1":
   version: 1.6.1
   resolution: "react-native-big-list@npm:1.6.1"
@@ -26814,7 +26827,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 
