@@ -29,6 +29,7 @@ import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
+import { walletsReducer as wallet } from './wallet/slice'
 
 const VERSION = 19
 
@@ -48,6 +49,7 @@ const combinedReducer = combineReducers({
   customToken,
   posthog,
   nft,
+  wallet,
   security,
   rpc,
   viewOnce,
