@@ -50,7 +50,7 @@ export const Slider: FC<SliderProps> = ({
       {(minimumValueLabel !== undefined || maximumValueLabel !== undefined) && (
         <View
           style={{
-            marginTop: 6,
+            marginTop: 8,
             flexDirection: 'row',
             justifyContent: 'space-between'
           }}>
