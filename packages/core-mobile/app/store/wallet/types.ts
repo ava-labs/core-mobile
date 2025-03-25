@@ -3,6 +3,8 @@ import { WalletType } from 'services/wallet/types'
 export interface Wallet {
   id: string
   name: string
+  mnemonic: string
+  isActive: boolean
   type: WalletType
 }
 
