@@ -13,7 +13,6 @@ export const Slider: FC<SliderProps> = ({
   maximumValue,
   minimumValueLabel,
   maximumValueLabel,
-  onValueChange,
   thumbBorderColor,
   style
 }) => {
@@ -29,7 +28,6 @@ export const Slider: FC<SliderProps> = ({
           maximumTrackTintColor: alpha(colors.$textPrimary, 0.2)
         }}
         progress={value}
-        onValueChange={newValue => onValueChange?.(newValue)}
         containerStyle={{ height: 4, borderRadius: 100 }}
         thumbTouchSize={48}
         renderBubble={() => null}
@@ -68,7 +66,6 @@ export const Slider: FC<SliderProps> = ({
 
 type SliderProps = {
   value: SharedValue<number>
-  onValueChange?: (value: number) => void
   thumbBorderColor?: string
   style?: ViewStyle
   minimumValue: SharedValue<number>

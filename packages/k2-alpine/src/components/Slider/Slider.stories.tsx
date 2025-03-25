@@ -75,7 +75,6 @@ const SliderStory = ({
       <Slider
         thumbBorderColor={theme.colors.$surfacePrimary}
         value={value}
-        onValueChange={newValue => (value.value = newValue)}
         minimumValue={minValue}
         maximumValue={maxValue}
         minimumValueLabel={minimumValueLabel}
