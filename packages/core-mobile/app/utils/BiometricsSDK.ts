@@ -8,8 +8,8 @@ import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
 import Logger from './Logger'
 
-const SERVICE_KEY = 'sec-storage-service'
-const SERVICE_KEY_BIO = 'sec-storage-service-bio'
+export const SERVICE_KEY = 'sec-storage-service'
+export const SERVICE_KEY_BIO = 'sec-storage-service-bio'
 const iOS = Platform.OS === 'ios'
 
 type KeystoreConfigType = {

@@ -1,5 +1,9 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
-import BiometricsSDK from 'utils/BiometricsSDK'
+import BiometricsSDK, {
+  KeystoreConfig,
+  SERVICE_KEY,
+  SERVICE_KEY_BIO
+} from 'utils/BiometricsSDK'
 import {
   Contact,
   CoreAccountType,
@@ -11,6 +15,7 @@ import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
+import Keychain from 'react-native-keychain'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -321,5 +326,73 @@ export const migrations = {
         }
       }
     }
+  },
+  20: async (state: any) => {
+    // Step 1: Migrate BiometricsSDK keychain service names
+    const oldServiceKey = SERVICE_KEY
+    const oldServiceKeyBio = SERVICE_KEY_BIO
+
+    // Get all services from keychain
+    const services = await Keychain.getAllGenericPasswordServices()
+
+    // Find old wallet entries
+    const oldWalletServices = services.filter(
+      service => service === oldServiceKey || service === oldServiceKeyBio
+    )
+
+    // Generate a new wallet ID
+    const walletId = uuid()
+
+    // For each old service, migrate the data
+    for (const oldService of oldWalletServices) {
+      const credentials = await Keychain.getGenericPassword({
+        service: oldService
+      })
+      if (credentials) {
+        // Determine if it's a biometric or PIN wallet
+        const isBiometric = oldService === oldServiceKeyBio
+
+        // Store with new service name
+        await Keychain.setGenericPassword(walletId, credentials.password, {
+          ...(isBiometric
+            ? KeystoreConfig.KEYSTORE_BIO_OPTIONS
+            : KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS),
+          service: `${isBiometric ? SERVICE_KEY_BIO : SERVICE_KEY}-${walletId}`
+        })
+
+        // Clean up old service
+        await Keychain.resetGenericPassword({ service: oldService })
+      }
+    }
+
+    // Step 2: Migrate stored wallet structure
+    const newState = { ...state }
+
+    // If there's an existing account state, migrate it to the new wallet structure
+    if (state.account && state.account.accounts) {
+      const accountState = newState.account as AccountsState
+      const walletType = state.app.walletType as WalletType
+
+      // Create a new wallet entry
+      const walletName =
+        accountState.walletName ||
+        `Wallet ${Object.keys(accountState.accounts).length + 1}`
+
+      // Add wallet to the wallets state
+      newState.wallet = {
+        wallets: {
+          [walletId]: {
+            id: walletId,
+            name: walletName,
+            mnemonic: '', // This will be populated from BiometricsSDK
+            isActive: true,
+            type: walletType
+          }
+        },
+        activeWalletId: walletId
+      }
+    }
+
+    return newState
   }
 }
