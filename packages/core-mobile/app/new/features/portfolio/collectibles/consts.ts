@@ -1,12 +1,13 @@
+import { Dimensions } from 'react-native'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { NftItem } from 'services/nft/types'
 import {
   AssetNetworkFilter,
   CollectibleTypeFilter,
   CollectibleView
 } from 'store/balance'
-import { Dimensions } from 'react-native'
 import { NftContentType } from 'store/nft'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { NftItem } from 'services/nft/types'
 
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
@@ -85,17 +86,12 @@ export function getFilteredNetworks(
     case AssetNetworkFilter.AvalancheCChain:
       return items.filter(
         collectible =>
-          'chainId' in collectible &&
-          (collectible.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-            collectible.chainId === ChainId.AVALANCHE_TESTNET_ID)
+          'chainId' in collectible && isAvalancheCChainId(collectible.chainId)
       )
     case AssetNetworkFilter.Ethereum:
       return items.filter(
         collectible =>
-          'chainId' in collectible &&
-          (collectible.chainId === ChainId.ETHEREUM_HOMESTEAD ||
-            collectible.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
-            collectible.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
+          'chainId' in collectible && isEthereumChainId(collectible.chainId)
       )
     default:
       return items
@@ -126,4 +122,17 @@ export function getFilteredContentType(
     default:
       return items
   }
+}
+
+export function camelCaseToTitle(text: string): string {
+  return text.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
+    return str.toUpperCase().trim()
+  })
+}
+
+export const formatAddress = (address?: string): string => {
+  if (!address) return ''
+  return `${address?.substring(0, 6)}...${address?.substring(
+    address?.length - 4
+  )}`
 }

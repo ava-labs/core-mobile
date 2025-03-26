@@ -28,5 +28,6 @@ export * from './Header/BalanceHeaderLoader'
 export * from './Chart/MiniChart'
 export * from './Chip/Chip'
 export * from './Pinchable/Pinchable'
+export * from './Tooltip/Tooltip'
 
 export * from './PriceChangeIndicator/types'

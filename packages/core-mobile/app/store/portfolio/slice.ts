@@ -23,7 +23,7 @@ export const portfolioSlice = createSlice({
       const { uid } = action.payload
 
       state.collectibleVisibility[uid.toLowerCase()] =
-        !state.collectibleVisibility?.[uid.toLowerCase()] || true
+        !state.collectibleVisibility?.[uid.toLowerCase()] || false
     },
     toggleCollectibleUnprocessableVisibility: state => {
       state.collectibleUnprocessableVisibility =

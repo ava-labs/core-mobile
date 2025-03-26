@@ -1,4 +1,4 @@
-import { useTheme, View } from '@avalabs/k2-alpine'
+import { useTheme } from '@avalabs/k2-alpine'
 import React, { ReactNode } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'

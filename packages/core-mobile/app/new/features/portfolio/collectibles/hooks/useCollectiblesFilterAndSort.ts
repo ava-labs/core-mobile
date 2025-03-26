@@ -23,33 +23,48 @@ import {
   getFilteredNetworks
 } from '../consts'
 
+export type CollectibleFilterAndSortInitialState = {
+  filters: {
+    network: IndexPath
+    contentType: IndexPath
+  }
+  sort: IndexPath
+}
+
 export const useCollectiblesFilterAndSort = (
-  collectibles: NftItem[]
+  collectibles: NftItem[],
+  initial?: CollectibleFilterAndSortInitialState
 ): {
   filteredAndSorted: NftItem[]
   filter: DropdownSelection & { selected: IndexPath[] }
   sort: DropdownSelection
   view: DropdownSelection
+  isEveryCollectibleHidden: boolean
   onResetFilter: () => void
+  onShowHidden: () => void
 } => {
   const collectiblesVisibility = useSelector(selectCollectibleVisibility)
   const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<IndexPath>(
-    {
+    initial?.filters?.network ?? {
       section: 0,
       row: 0
     }
   )
 
   const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
-    useState<IndexPath>({
-      section: 0,
-      row: 0
-    })
+    useState<IndexPath>(
+      initial?.filters?.contentType ?? {
+        section: 0,
+        row: 0
+      }
+    )
 
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 2
-  })
+  const [selectedSort, setSelectedSort] = useState<IndexPath>(
+    initial?.sort ?? {
+      section: 0,
+      row: 2
+    }
+  )
 
   const [selectedView, setSelectedView] = useState<IndexPath>({
     section: 0,
@@ -127,20 +142,20 @@ export const useCollectiblesFilterAndSort = (
 
   const getFiltered = useCallback(
     (nfts: NftItem[]) => {
-      if (nfts.length === 0) {
-        return []
-      }
+      if (nfts.length === 0) return []
+
       const filteredByHidden = nfts.filter((nft: NftItem) => {
         if (filterOption[1] !== CollectibleStatus.Hidden)
           return isCollectibleVisible(collectiblesVisibility, nft)
-
         return true
       })
+
       const filterByUnprocessable = filteredByHidden.filter((nft: NftItem) => {
         if (isUnprocessableVisible)
           return nft.status !== NftLocalStatus.Unprocessable
         return true
       })
+
       const filteredNetworks = getFilteredNetworks(
         filterByUnprocessable,
         filterOption[0] as AssetNetworkFilter
@@ -175,16 +190,33 @@ export const useCollectiblesFilterAndSort = (
     setSelectedContentTypeFilter({ section: 0, row: 0 })
   }
 
+  const onShowHidden = (): void => {
+    setSelectedContentTypeFilter({
+      section: 1,
+      row: 3
+    })
+  }
+
   const filteredAndSorted = useMemo(() => {
     const filtered = getFiltered(collectibles)
     return getSorted(filtered)
   }, [collectibles, getFiltered, getSorted])
+
+  const isEveryCollectibleHidden = useMemo(
+    () =>
+      filteredAndSorted.every(collectible =>
+        isCollectibleVisible(collectiblesVisibility, collectible)
+      ),
+    [collectiblesVisibility, filteredAndSorted]
+  )
 
   return {
     filteredAndSorted,
     filter: filter as DropdownSelection & { selected: IndexPath[] },
     sort,
     view,
-    onResetFilter
+    isEveryCollectibleHidden,
+    onResetFilter,
+    onShowHidden
   }
 }

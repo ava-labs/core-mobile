@@ -5,7 +5,8 @@ export enum ActionButtonTitle {
   Stake = 'Stake',
   Bridge = 'Bridge',
   Connect = 'Connect',
-  Hide = 'Hide'
+  Hide = 'Hide',
+  Unhide = 'Unhide'
 }
 
 export const LIST_ITEM_HEIGHT = 60

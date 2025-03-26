@@ -1,6 +1,6 @@
 import {
-  alpha,
   AnimatedPressable,
+  Chip,
   Icons,
   Text,
   useTheme,
@@ -13,8 +13,8 @@ import Animated, { LinearTransition } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import {
-  getCollectibleName,
   getCollectibleCollectionName,
+  getCollectibleName,
   getGridCardHeight,
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
@@ -138,11 +138,18 @@ export const CollectibleListItem = memo(
                   {collectibleCollectionName}
                 </Text>
               </View>
-
               {(collectible?.imageData?.image ||
                 collectible?.imageData?.video) &&
               collectible.balance ? (
-                <Pill text={collectible.balance.toString()} />
+                <Chip
+                  size="small"
+                  variant="dark"
+                  style={{
+                    maxWidth: 100,
+                    minWidth: 30
+                  }}>
+                  {collectible.balance.toString()}
+                </Chip>
               ) : null}
             </View>
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
@@ -174,7 +181,6 @@ export const CollectibleGridItem = memo(
     return (
       <AnimatedPressable
         entering={getListItemEnteringAnimation(index)}
-        layout={LinearTransition.springify()}
         onPress={onPress}>
         <CardContainer
           style={[
@@ -191,8 +197,18 @@ export const CollectibleGridItem = memo(
                 right: 10,
                 top: 10
               }}>
-              {collectible.balance ? (
-                <Pill text={collectible.balance.toString()} />
+              {(collectible?.imageData?.image ||
+                collectible?.imageData?.video) &&
+              collectible.balance ? (
+                <Chip
+                  size="small"
+                  variant="dark"
+                  style={{
+                    maxWidth: 100,
+                    minWidth: 30
+                  }}>
+                  {collectible.balance.toString()}
+                </Chip>
               ) : null}
             </View>
           </CollectibleRenderer>
@@ -201,33 +217,3 @@ export const CollectibleGridItem = memo(
     )
   }
 )
-
-const Pill = ({ text }: { text: string }): ReactNode => {
-  const {
-    theme: { isDark }
-  } = useTheme()
-  return (
-    <View
-      style={{
-        backgroundColor: alpha('#58585B', 0.8),
-        borderRadius: 100,
-        paddingLeft: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-        maxWidth: 100,
-        minWidth: 30,
-        justifyContent: 'center'
-      }}>
-      <Text
-        variant="buttonSmall"
-        sx={{
-          lineHeight: 20,
-          color: isDark ? '$textPrimary' : '$surfacePrimary',
-          paddingRight: 8
-        }}
-        numberOfLines={1}>
-        {text}
-      </Text>
-    </View>
-  )
-}
