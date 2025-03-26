@@ -240,7 +240,12 @@ const CreatePinScreen = memo(() => {
   return (
     <CreatePIN
       onPinSet={pin => {
-        onPinCreated(mnemonic, pin, true)
+        onPinCreated({
+          mnemonic,
+          pin,
+          isResetting: true,
+          walletType: WalletType.MNEMONIC
+        })
           .then(() => {
             AnalyticsService.capture('ChangePasswordSucceeded')
             nav.goBack()

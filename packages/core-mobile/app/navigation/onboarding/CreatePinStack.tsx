@@ -70,7 +70,12 @@ const CreatePinScreen = (): JSX.Element => {
      */
 
     // TODO: use a random string instead of a constant
-    onPinCreated(SEEDLESS_MNEMONIC_STUB, pin, false)
+    onPinCreated({
+      mnemonic: SEEDLESS_MNEMONIC_STUB,
+      pin,
+      isResetting: false,
+      walletType: WalletType.SEEDLESS
+    })
       .then(value => {
         switch (value) {
           case 'useBiometry':

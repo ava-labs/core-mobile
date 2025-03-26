@@ -162,7 +162,12 @@ const CreatePinScreen = (): JSX.Element => {
   const onPinSet = (pin: string): void => {
     AnalyticsService.capture('OnboardingPasswordSet')
     if (enterWithMnemonicContext.mnemonic) {
-      onPinCreated(enterWithMnemonicContext.mnemonic, pin, false)
+      onPinCreated({
+        mnemonic: enterWithMnemonicContext.mnemonic,
+        pin,
+        isResetting: false,
+        walletType: WalletType.MNEMONIC
+      })
         .then(value => {
           switch (value) {
             case 'useBiometry': {

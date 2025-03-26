@@ -14,6 +14,8 @@ import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useCallback } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import { storeWalletWithPin } from 'store/wallet/thunks'
 
 type InitWalletServiceAndUnlockProps = {
   mnemonic: string
@@ -22,11 +24,16 @@ type InitWalletServiceAndUnlockProps = {
   dispatch: Dispatch
 }
 
+interface OnPinCreatedParams {
+  mnemonic: string
+  pin: string
+  isResetting?: boolean
+  walletType?: WalletType
+}
+
 export interface UseWallet {
   onPinCreated: (
-    mnemonic: string,
-    pin: string,
-    isResetting: boolean
+    params: OnPinCreatedParams
   ) => Promise<'useBiometry' | 'enterWallet'>
   unlock: ({ mnemonic }: { mnemonic: string }) => Promise<void>
   login: (mnemonic: string, walletType: WalletType) => Promise<void>
@@ -104,35 +111,57 @@ export function useWallet(): UseWallet {
     await walletService.destroy()
   }
 
+  /**
+   * Creates a new wallet with the provided PIN and mnemonic.
+   * Encrypts the mnemonic with the PIN and stores it.
+   * If not resetting an existing wallet, checks if biometry can be used.
+   *
+   * @param mnemonic - The wallet's mnemonic phrase
+   * @param pin - The PIN to encrypt the mnemonic with
+   * @param isResetting - Whether this is resetting an existing wallet
+   * @param walletType - The type of wallet being created (defaults to MNEMONIC)
+   * @returns Promise resolving to 'useBiometry' if biometry available, 'enterWallet' otherwise
+   * @throws Error if storing the wallet fails
+   */
+  async function onPinCreated({
+    mnemonic,
+    pin,
+    isResetting = false,
+    walletType = WalletType.MNEMONIC
+  }: OnPinCreatedParams): Promise<'useBiometry' | 'enterWallet'> {
+    const walletId = uuidv4()
+    const encryptedWalletKey = await encrypt(mnemonic, pin)
+
+    try {
+      const dispatchStoreWalletWithPin = dispatch(
+        storeWalletWithPin({
+          walletId,
+          encryptedWalletKey,
+          isResetting,
+          type: walletType
+        })
+      )
+      // @ts-ignore
+      await dispatchStoreWalletWithPin.unwrap()
+
+      const canUseBiometry = isResetting
+        ? false
+        : await BiometricsSDK.canUseBiometry()
+
+      if (canUseBiometry) {
+        return Promise.resolve('useBiometry')
+      } else {
+        return Promise.resolve('enterWallet')
+      }
+    } catch (error) {
+      throw Error('Failed to store wallet with PIN')
+    }
+  }
+
   return {
     onPinCreated,
     unlock,
     login,
     destroyWallet
-  }
-}
-
-async function onPinCreated(
-  mnemonic: string,
-  pin: string,
-  isResetting = false
-): Promise<'useBiometry' | 'enterWallet'> {
-  const encryptedData = await encrypt(mnemonic, pin)
-  const pinSaved = await BiometricsSDK.storeWalletWithPin(
-    encryptedData,
-    isResetting
-  )
-  if (pinSaved === false) {
-    throw Error('Pin not saved')
-  }
-
-  const canUseBiometry = isResetting
-    ? false
-    : await BiometricsSDK.canUseBiometry()
-
-  if (canUseBiometry) {
-    return Promise.resolve('useBiometry')
-  } else {
-    return Promise.resolve('enterWallet')
   }
 }
