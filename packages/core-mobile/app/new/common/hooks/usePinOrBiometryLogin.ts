@@ -14,6 +14,8 @@ import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import { useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import { useDeleteWallet } from './useDeleteWallet'
 
 export function usePinOrBiometryLogin({
@@ -34,6 +36,7 @@ export function usePinOrBiometryLogin({
   bioType: BiometricType
 } {
   const [bioType, setBioType] = useState<BiometricType>(BiometricType.NONE)
+  const activeWalletId = useSelector(selectActiveWalletId)
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
@@ -77,10 +80,16 @@ export function usePinOrBiometryLogin({
 
   const checkPinEntered = useCallback(
     async (pin: string) => {
+      if (!activeWalletId) {
+        Logger.error('No active wallet ID found')
+        return
+      }
+
       try {
         onStartLoading()
-        const credentials =
-          (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
+        const credentials = (await BiometricsSDK.loadWalletWithPin(
+          activeWalletId
+        )) as UserCredentials
 
         const { data, version } = await decrypt(credentials.password, pin)
 
@@ -89,7 +98,11 @@ export function usePinOrBiometryLogin({
           // we need to re-encrypt it using version 2 config
           // and store it again
           const encryptedData = await encrypt(data, pin)
-          await BiometricsSDK.storeWalletWithPin(encryptedData, false)
+          await BiometricsSDK.storeWalletWithPin(
+            activeWalletId,
+            encryptedData,
+            false
+          )
         }
 
         setMnemonic(data)
@@ -123,7 +136,8 @@ export function usePinOrBiometryLogin({
       resetRateLimiter,
       onWrongPin,
       onStartLoading,
-      onStopLoading
+      onStopLoading,
+      activeWalletId
     ]
   )
 
@@ -140,12 +154,17 @@ export function usePinOrBiometryLogin({
 
   const promptForWalletLoadingIfExists =
     useCallback((): Observable<WalletLoadingResults> => {
+      if (!activeWalletId) {
+        Logger.error('No active wallet ID found')
+        return of(new NothingToLoad())
+      }
+
       return timer(0, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
         concatMap(() => of(BiometricsSDK.getAccessType())),
         concatMap((value: string | null) => {
           if (value && value === 'BIO') {
-            return BiometricsSDK.loadWalletKey({
+            return BiometricsSDK.loadWalletKey(activeWalletId, {
               ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
               authenticationPrompt: {
                 title: 'Access Wallet',
@@ -176,7 +195,7 @@ export function usePinOrBiometryLogin({
           throw err
         })
       )
-    }, [resetRateLimiter])
+    }, [resetRateLimiter, activeWalletId])
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {
