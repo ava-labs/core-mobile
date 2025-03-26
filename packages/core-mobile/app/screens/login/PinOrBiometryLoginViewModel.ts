@@ -18,6 +18,8 @@ import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
+import { storeWalletWithPin } from 'store/wallet/thunks'
+import { WalletType } from 'services/wallet/types'
 
 const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key1, '1'],
@@ -49,6 +51,7 @@ export function usePinOrBiometryLogin(): {
   const { signOut } = useApplicationContext().appHook
   const [timeRemaining, setTimeRemaining] = useState('00:00')
   const activeWalletId = useSelector(selectActiveWalletId) as string
+  const dispatch = useDispatch()
 
   const {
     increaseAttempt,
@@ -109,7 +112,16 @@ export function usePinOrBiometryLogin(): {
           // we need to re-encrypt it using version 2 config
           // and store it again
           const encryptedData = await encrypt(data, enteredPin)
-          await BiometricsSDK.storeWalletWithPin(encryptedData, false)
+          const dispatchStoreWalletWithPin = dispatch(
+            storeWalletWithPin({
+              walletId: activeWalletId,
+              encryptedWalletKey: encryptedData,
+              isResetting: false,
+              type: WalletType.MNEMONIC
+            })
+          )
+          // @ts-ignore
+          await dispatchStoreWalletWithPin.unwrap()
         }
 
         setMnemonic(data)
@@ -145,6 +157,7 @@ export function usePinOrBiometryLogin(): {
     resetConfirmPinProcess,
     resetRateLimiter,
     activeWalletId,
+    dispatch
   ])
 
   const onEnterPin = (pinKey: PinKeys): void => {

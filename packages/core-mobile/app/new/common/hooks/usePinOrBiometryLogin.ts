@@ -16,6 +16,8 @@ import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
+import { storeWalletWithPin } from 'store/wallet/thunks'
 
 export function usePinOrBiometryLogin({
   onStartLoading,
@@ -34,6 +36,7 @@ export function usePinOrBiometryLogin({
   timeRemaining: string
   bioType: 'Face' | 'Fingerprint' | undefined
 } {
+  const dispatch = useDispatch()
   const activeWalletId = useSelector(selectActiveWalletId)
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
@@ -96,7 +99,16 @@ export function usePinOrBiometryLogin({
           // we need to re-encrypt it using version 2 config
           // and store it again
           const encryptedData = await encrypt(data, pin)
-          await BiometricsSDK.storeWalletWithPin(encryptedData, false)
+          const dispatchStoreWalletWithPin = dispatch(
+            storeWalletWithPin({
+              walletId: activeWalletId,
+              encryptedWalletKey: encryptedData,
+              isResetting: false,
+              type: WalletType.MNEMONIC
+            })
+          )
+          // @ts-ignore
+          await dispatchStoreWalletWithPin.unwrap()
         }
 
         setMnemonic(data)
@@ -132,6 +144,7 @@ export function usePinOrBiometryLogin({
       onStartLoading,
       onStopLoading,
       activeWalletId,
+      dispatch
     ]
   )
 
