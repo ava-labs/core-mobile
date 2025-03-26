@@ -1,16 +1,37 @@
 export default {
   // NEW BELOW:
   eyeIcon: 'eye_icon',
-
+  settingsFooter: 'settings_footer',
+  settingsScrollView: 'settings_scroll_view',
+  iUnderstandBtn: 'I understand, continue',
+  analyticsOn: 'analytics_enabled',
+  analyticsOff: 'analytics_disabled',
+  deleteWalletBtn: 'Delete wallet',
+  securityAndPrivacy: 'Security & privacy',
+  appearance: 'Appearance',
+  appearanceTitle: 'Customize the app appearance',
+  system: 'System',
+  light: 'Light',
+  dark: 'Dark',
+  settingsBtn: 'account_setting_bar_btn',
+  unselectedAppearance: 'unselected_appearance',
+  selectCurrencyTitle: 'Select a currency',
+  addAccountBtn: 'add_account_btn',
   // OLD BELOLW:
   changePin: 'Change PIN',
   connectedSites: 'Connected Sites',
   showRecoveryPhrase: 'Show recovery phrase',
-  participateInCoreAnalytics: 'Participate in CoreAnalytics',
+  participateInCoreAnalytics: 'Participate in Core analytics',
   copyPhraseButton: 'Copy Phrase',
   firstMnemonicWord: 'rebel',
   lastMnemonicWord: 'embark',
   iWroteItDownButton: 'I wrote it down',
-  analyticsOn: 'analytics_enabled_switch',
-  analyticsOff: 'analytics_disabled_switch'
+  advanced: 'Advanced',
+  addressBook: 'Address Book',
+  AddAddressButton: 'Add Address',
+  burgerbutton: 'menu_svg',
+  currency: 'Currency',
+  recoveeryPhraseHeader: 'Recovery Phrase',
+  saveButton: 'Save',
+  notifications: 'Notifications'
 }
