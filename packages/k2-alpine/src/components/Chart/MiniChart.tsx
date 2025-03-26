@@ -14,9 +14,9 @@ import {
   vec
 } from '@shopify/react-native-skia'
 import { useMemo, useState } from 'react'
-import { curveNatural, line, scaleLinear } from 'd3'
 import { View } from '../Primitives'
 import { useTheme } from '../../hooks'
+import { DataPoint, makeCurve } from '../../utils/chart'
 
 export const MiniChart = ({
   style,
@@ -134,47 +134,20 @@ const makeLineGraph = ({
   xPadding?: number
   yPadding?: number
 }): {
-  min: { value: number; index: number }
-  max: { value: number; index: number }
   path: SkPath | null
   lastPoint: { x: number; y: number } | null
 } => {
-  const max = Math.max(...data.map(val => val.value))
-  const min = Math.min(...data.map(val => val.value))
-
-  const x = scaleLinear()
-    .domain([0, data.length - 1])
-    .range([xPadding, size.width - xPadding])
-
-  const y = scaleLinear()
-    .domain([min, max])
-    .range([size.height - yPadding, yPadding])
-
-  const curvedLine = line<DataPoint>()
-    .x(d => x(d.index))
-    .y(d => y(d.value))
-    .curve(curveNatural)(data)
-
-  const path = curvedLine ? Skia.Path.MakeFromSVGString(curvedLine) : null
-  const last = data[data.length - 1]
-  const lastPoint = last
-    ? {
-        x: x(last.index),
-        y: y(last.value)
-      }
-    : null
+  const { path, lastPoint } = makeCurve({
+    data,
+    size,
+    xPadding,
+    yPadding
+  })
 
   return {
-    min: { value: min, index: data.findIndex(val => val.value === min) },
-    max: { value: max, index: data.findIndex(val => val.value === max) },
-    path,
+    path: path ? Skia.Path.MakeFromSVGString(path) : null,
     lastPoint
   }
-}
-
-type DataPoint = {
-  index: number
-  value: number
 }
 
 const NEGATIVE_COLOR_LEFT = '#EA4542'
