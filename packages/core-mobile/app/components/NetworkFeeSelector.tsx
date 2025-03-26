@@ -193,13 +193,11 @@ const NetworkFeeSelector = ({
 
   return (
     <>
-      <Space y={4} />
       <View
         sx={{
           backgroundColor: isDark ? '$neutral900' : '$neutral800',
           padding: 16,
-          borderRadius: 8,
-          marginBottom: 16
+          borderRadius: 8
         }}>
         {!networkFee?.isFixedFee && (
           <>

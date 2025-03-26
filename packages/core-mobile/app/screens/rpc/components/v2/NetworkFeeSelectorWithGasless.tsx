@@ -39,7 +39,7 @@ const NetworkFeeSelectorWithGasless = ({
         style={{
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingTop: 8,
+          paddingTop: 24,
           marginBottom: 24
         }}>
         <Row style={{ alignItems: 'center' }}>
@@ -91,8 +91,7 @@ const NetworkFeeSelectorWithGasless = ({
       }}>
       <View
         style={{
-          paddingHorizontal: 16,
-          paddingTop: 16
+          paddingHorizontal: 16
         }}>
         {renderGaslessSwitch()}
         {renderSeparator()}
