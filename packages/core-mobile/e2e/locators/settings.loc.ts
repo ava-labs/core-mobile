@@ -17,6 +17,8 @@ export default {
   unselectedAppearance: 'unselected_appearance',
   selectCurrencyTitle: 'Select a currency',
   addAccountBtn: 'add_account_btn',
+  accountList: 'account_list',
+  accountNameIdPrefix: 'account_name__account #',
   // OLD BELOLW:
   changePin: 'Change PIN',
   connectedSites: 'Connected Sites',

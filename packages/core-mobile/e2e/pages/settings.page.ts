@@ -117,6 +117,10 @@ class Settings {
     return by.id(settings.addAccountBtn)
   }
 
+  get accountList() {
+    return by.id(settings.accountList)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
@@ -239,7 +243,7 @@ class Settings {
 
   async tapAddAccountBtn() {
     while (!(await Actions.isVisible(this.addAccountBtn, 0, 0))) {
-      await Actions.swipe(by.id('account_list'), 'left', 'fast', 0.5)
+      await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
     }
     await Actions.tap(this.addAccountBtn)
   }
@@ -256,16 +260,16 @@ class Settings {
     // scroll till the target account is visible
     while (
       !(await Actions.isVisible(
-        by.id(`account_name__account #${targetAccount}`),
+        by.id(`${settings.accountNameIdPrefix}${targetAccount}`),
         0,
         0
       ))
     ) {
-      await Actions.swipe(by.id('account_list'), direction, 'fast', 0.5)
+      await Actions.swipe(this.accountList, direction, 'fast', 0.5)
     }
 
     // tap the target account
-    await Actions.tap(by.id(`account_name__account #${targetAccount}`))
+    await Actions.tap(by.id(`${settings.accountNameIdPrefix}${targetAccount}`))
   }
 
   async verifyAccountBoxes(boxes = 0) {
@@ -276,21 +280,25 @@ class Settings {
 
       // verify the account box is visible
       if (
-        await Actions.isVisible(by.id(`account_name__account #${index}`), 0, 0)
+        await Actions.isVisible(
+          by.id(`${settings.accountNameIdPrefix}${index}`),
+          0,
+          0
+        )
       ) {
         index++
         continue
       }
 
       // Verify the account box is NOT visible when you hit the end of the list
-      if (await Actions.isVisible(by.id('account_add_btn'), 0, 0)) {
+      if (await Actions.isVisible(this.addAccountBtn, 0, 0)) {
         throw new Error(
-          `Reached end of list, but account_name__account #${index} not found`
+          `Reached end of list, but ${settings.accountNameIdPrefix}${index} not found`
         )
       }
 
       // Scroll to the next box
-      await Actions.swipe(by.id('account_list'), 'left', 'slow', 0.5)
+      await Actions.swipe(this.accountList, 'left', 'slow', 0.5)
     }
   }
 }
