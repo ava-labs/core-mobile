@@ -9,6 +9,7 @@ import { Account } from 'store/account/types'
 import { BtcTransactionRequest } from 'services/wallet/types'
 import { BitcoinInputUTXO, createTransferTx } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 export const btcSendTransaction = async ({
   transactionData,
@@ -30,7 +31,9 @@ export const btcSendTransaction = async ({
 
     // we need to re-create the transaction when fee rate has changed
     if (finalFeeRate !== 0 && finalFeeRate !== feeRate) {
-      const provider = await ModuleManager.bitcoinModule.getProvider(network)
+      const provider = await ModuleManager.bitcoinModule.getProvider(
+        mapToVmNetwork(network)
+      )
       const updatedTx = createTransferTx(
         to,
         account.addressBTC,

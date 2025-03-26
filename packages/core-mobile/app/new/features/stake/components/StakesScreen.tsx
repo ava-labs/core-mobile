@@ -154,6 +154,7 @@ const StakesScreen = ({
       showsVerticalScrollIndicator={false}
       keyExtractor={(_, index) => index.toString()}
       removeClippedSubviews={true}
+      extraData={theme.isDark} // force re-render when theme changes
     />
   )
 }

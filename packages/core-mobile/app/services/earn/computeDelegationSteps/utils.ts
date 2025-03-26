@@ -170,11 +170,6 @@ export const getDelegationFeePostCExportAndPImport = async ({
   } catch (error) {
     Logger.warn('unable to simulate add delegator tx', error)
 
-    if (!provider.isEtnaEnabled()) {
-      // rethrow error if the network is not Etna enabled
-      throw error
-    }
-
     const missingAmount = extractNeededAmount(
       (error as Error).message,
       getAssetId(avaxXPNetwork)
