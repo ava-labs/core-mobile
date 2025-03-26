@@ -14,6 +14,8 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 
 export function usePinOrBiometryLogin({
   onStartLoading,
@@ -32,6 +34,7 @@ export function usePinOrBiometryLogin({
   timeRemaining: string
   bioType: 'Face' | 'Fingerprint' | undefined
 } {
+  const activeWalletId = useSelector(selectActiveWalletId)
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
@@ -75,10 +78,16 @@ export function usePinOrBiometryLogin({
 
   const checkPinEntered = useCallback(
     async (pin: string) => {
+      if (!activeWalletId) {
+        Logger.error('No active wallet ID found')
+        return
+      }
+
       try {
         onStartLoading()
-        const credentials =
-          (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
+        const credentials = (await BiometricsSDK.loadWalletWithPin(
+          activeWalletId
+        )) as UserCredentials
 
         const { data, version } = await decrypt(credentials.password, pin)
 
@@ -121,7 +130,8 @@ export function usePinOrBiometryLogin({
       resetRateLimiter,
       onWrongPin,
       onStartLoading,
-      onStopLoading
+      onStopLoading,
+      activeWalletId,
     ]
   )
 
@@ -138,12 +148,17 @@ export function usePinOrBiometryLogin({
 
   const promptForWalletLoadingIfExists =
     useCallback((): Observable<WalletLoadingResults> => {
+      if (!activeWalletId) {
+        Logger.error('No active wallet ID found')
+        return of(new NothingToLoad())
+      }
+
       return timer(0, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
         concatMap(() => of(BiometricsSDK.getAccessType())),
         concatMap((value: string | null) => {
           if (value && value === 'BIO') {
-            return BiometricsSDK.loadWalletKey({
+            return BiometricsSDK.loadWalletKey(activeWalletId, {
               ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
               authenticationPrompt: {
                 title: 'Access Wallet',
@@ -174,7 +189,7 @@ export function usePinOrBiometryLogin({
           throw err
         })
       )
-    }, [resetRateLimiter])
+    }, [resetRateLimiter, activeWalletId])
 
   const [bioType, setBioType] = useState<BioType>()
 

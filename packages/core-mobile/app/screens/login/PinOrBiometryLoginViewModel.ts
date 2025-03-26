@@ -16,6 +16,8 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 
 const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key1, '1'],
@@ -46,6 +48,8 @@ export function usePinOrBiometryLogin(): {
   const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
   const { signOut } = useApplicationContext().appHook
   const [timeRemaining, setTimeRemaining] = useState('00:00')
+  const activeWalletId = useSelector(selectActiveWalletId) as string
+
   const {
     increaseAttempt,
     attemptAllowed,
@@ -91,8 +95,9 @@ export function usePinOrBiometryLogin(): {
       setPinEntered(false)
 
       try {
-        const credentials =
-          (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
+        const credentials = (await BiometricsSDK.loadWalletWithPin(
+          activeWalletId
+        )) as UserCredentials
 
         const { data, version } = await decrypt(
           credentials.password,
@@ -138,7 +143,8 @@ export function usePinOrBiometryLogin(): {
     increaseAttempt,
     pinEntered,
     resetConfirmPinProcess,
-    resetRateLimiter
+    resetRateLimiter,
+    activeWalletId,
   ])
 
   const onEnterPin = (pinKey: PinKeys): void => {
@@ -164,7 +170,7 @@ export function usePinOrBiometryLogin(): {
         concatMap(() => of(BiometricsSDK.getAccessType())),
         concatMap((value: string | null) => {
           if (value && value === 'BIO') {
-            return BiometricsSDK.loadWalletKey({
+            return BiometricsSDK.loadWalletKey(activeWalletId, {
               ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
               authenticationPrompt: {
                 title: 'Access Wallet',

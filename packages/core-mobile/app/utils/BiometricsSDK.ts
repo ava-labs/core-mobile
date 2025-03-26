@@ -59,6 +59,7 @@ class BiometricsSDK {
   }
 
   async storeWalletWithPin(
+    walletId: string,
     encryptedMnemonic: string,
     isResetting = false
   ): Promise<false | Keychain.Result> {
@@ -71,42 +72,46 @@ class BiometricsSDK {
     if (!isResetting) {
       commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
     }
-    return Keychain.setGenericPassword(
-      'wallet',
-      encryptedMnemonic,
-      KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
-    )
+    return Keychain.setGenericPassword(walletId, encryptedMnemonic, {
+      ...KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS,
+      service: `${SERVICE_KEY_BIO}-${walletId}`
+    })
   }
 
-  async loadWalletWithPin(): Promise<false | UserCredentials> {
-    return Keychain.getGenericPassword(KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS)
+  async loadWalletWithPin(walletId: string): Promise<false | UserCredentials> {
+    return Keychain.getGenericPassword({
+      ...KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS,
+      service: `${SERVICE_KEY_BIO}-${walletId}`
+    })
   }
 
   /**
    * Stores key under available biometry and prompts user for biometry to check if everything is ok.
    * Emits boolean true if everything ok, or throws Error if something went wrong.
+   * @param walletId - unique identifier for the wallet
    * @param key - mnemonic to store
    */
-  async storeWalletWithBiometry(key: string): Promise<boolean> {
+  async storeWalletWithBiometry(
+    walletId: string,
+    key: string
+  ): Promise<boolean> {
     commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'BIO')
     // try to store with biometry
     try {
-      await Keychain.setGenericPassword(
-        'wallet',
-        key,
-        KeystoreConfig.KEYSTORE_BIO_OPTIONS
-      )
+      await Keychain.setGenericPassword(walletId, key, {
+        ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
+        service: `${SERVICE_KEY}-${walletId}`
+      })
 
       return true
     } catch (e) {
       Logger.error('failed to store with biometry', e)
       // case something goes wrong with biometrics, use the fallback, which defaults to device code
       try {
-        await Keychain.setGenericPassword(
-          'wallet',
-          key,
-          KeystoreConfig.KEYCHAIN_FALLBACK_OPTIONS
-        )
+        await Keychain.setGenericPassword(walletId, key, {
+          ...KeystoreConfig.KEYCHAIN_FALLBACK_OPTIONS,
+          service: `${SERVICE_KEY}-${walletId}`
+        })
         return true
       } catch (ex) {
         Logger.error('failed to store with device code fallback', e)
@@ -115,19 +120,26 @@ class BiometricsSDK {
     }
   }
 
-  async loadWalletKey(options: Options): Promise<false | UserCredentials> {
-    return Keychain.getGenericPassword(options)
+  async loadWalletKey(
+    walletId: string,
+    options: Options
+  ): Promise<false | UserCredentials> {
+    return Keychain.getGenericPassword({
+      ...options,
+      service: `${SERVICE_KEY}-${walletId}`
+    })
   }
 
   async clearAllWalletKeys(): Promise<void> {
-    return Keychain.resetGenericPassword(
-      KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
-    )
-      .then(() =>
-        Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
+    try {
+      const services = await Keychain.getAllGenericPasswordServices()
+      await Promise.all(
+        services.map(service => Keychain.resetGenericPassword({ service }))
       )
-      .then(() => commonStorage.delete(StorageKey.SECURE_ACCESS_SET))
-      .catch(Logger.error)
+      commonStorage.delete(StorageKey.SECURE_ACCESS_SET)
+    } catch (error) {
+      Logger.error('Failed to clear wallet keys:', error)
+    }
   }
 
   async canUseBiometry(): Promise<boolean> {
