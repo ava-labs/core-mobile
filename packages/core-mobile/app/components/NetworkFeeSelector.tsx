@@ -242,7 +242,7 @@ const NetworkFeeSelector = ({
         <>
           <Row
             style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text variant="caption" sx={{ color: '$neutral400' }}>
+            <Text variant="caption" sx={{ color: '$neutral200' }}>
               Fee Amount
             </Text>
             <View sx={{ flexDirection: 'row' }}>

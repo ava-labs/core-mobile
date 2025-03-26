@@ -6,29 +6,35 @@ import { numberToSubscriptFormat } from 'utils/numberToSubscriptFormat/numberToS
 interface Props {
   number: number | undefined
   testID?: string
+  size?: 'big' | 'small'
 }
 
-export const SubTextNumber: React.FC<Props> = ({ number, testID }) => {
+export const SubTextNumber: React.FC<Props> = ({
+  number,
+  testID,
+  size = 'small'
+}) => {
   const { mainTextBefore, subText, mainTextAfter } = useMemo(
     () => numberToSubscriptFormat(number),
     [number]
   )
 
+  const textVariant = size === 'big' ? 'heading5' : 'subtitle2'
   return (
     <View style={styles.container} testID={testID}>
-      <Text variant="subtitle2" sx={{ color: '$neutral50' }}>
+      <Text variant={textVariant} sx={{ color: '$neutral50' }}>
         {mainTextBefore}
       </Text>
       {subText && (
         <Text
-          style={styles.subText}
-          variant="subtitle2"
+          style={size === 'big' ? styles.subTextBig : styles.subTextSmall}
+          variant={textVariant}
           sx={{ color: '$neutral50' }}>
           {subText}
         </Text>
       )}
       {mainTextAfter && (
-        <Text variant="subtitle2" sx={{ color: '$neutral50' }}>
+        <Text variant={textVariant} sx={{ color: '$neutral50' }}>
           {mainTextAfter}
         </Text>
       )}
@@ -41,8 +47,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center'
   },
-  subText: {
+  subTextSmall: {
     fontSize: 10,
+    fontWeight: 'bold',
+    position: 'relative',
+    top: 4
+  },
+  subTextBig: {
+    fontSize: 15,
     fontWeight: 'bold',
     position: 'relative',
     top: 4
