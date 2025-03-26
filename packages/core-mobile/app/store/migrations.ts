@@ -385,8 +385,10 @@ export const migrations = {
           [walletId]: {
             id: walletId,
             name: walletName,
+            mnemonic: '', // This will be populated from BiometricsSDK
+            isActive: true,
             type: walletType
-          } as Wallet
+          }
         },
         activeWalletId: walletId
       }
