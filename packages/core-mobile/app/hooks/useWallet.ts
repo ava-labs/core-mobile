@@ -14,8 +14,8 @@ import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useCallback } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 import { storeWalletWithPin } from 'store/wallet/thunks'
+import { uuid } from 'utils/uuid'
 
 type InitWalletServiceAndUnlockProps = {
   mnemonic: string
@@ -129,7 +129,7 @@ export function useWallet(): UseWallet {
     isResetting = false,
     walletType = WalletType.MNEMONIC
   }: OnPinCreatedParams): Promise<'useBiometry' | 'enterWallet'> {
-    const walletId = uuidv4()
+    const walletId = uuid()
     const encryptedWalletKey = await encrypt(mnemonic, pin)
 
     try {
