@@ -9,12 +9,11 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { useWallet } from 'hooks/useWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import LogoLoader from 'components/LogoLoader'
+import { v4 as uuidv4 } from 'uuid'
 import { CreateWalletScreenProps } from '../types'
-
 // This stack is for Seedless
 export type CreatePinStackParamList = {
   [AppNavigation.CreateWallet.CreatePin]: undefined
@@ -68,10 +67,8 @@ const CreatePinScreen = (): JSX.Element => {
      * even though we are creating a seedless wallet.
      * this allows our pin/biometric logic to work normally
      */
-
-    // TODO: use a random string instead of a constant
     onPinCreated({
-      mnemonic: SEEDLESS_MNEMONIC_STUB,
+      mnemonic: uuidv4(),
       pin,
       isResetting: false,
       walletType: WalletType.SEEDLESS
@@ -100,7 +97,7 @@ const BiometricLoginScreen = (): JSX.Element => {
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
   return (
     <BiometricLogin
-      mnemonic={SEEDLESS_MNEMONIC_STUB}
+      mnemonic={uuidv4()}
       onBiometrySet={() => {
         navigate(AppNavigation.CreateWallet.TermsNConditions)
       }}
@@ -120,7 +117,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
           // creating/recovering a seedless wallet
-          login(SEEDLESS_MNEMONIC_STUB, WalletType.SEEDLESS).catch(Logger.error)
+          login(uuidv4(), WalletType.SEEDLESS).catch(Logger.error)
         }, 300)
       }}
       onReject={() => signOut()}
