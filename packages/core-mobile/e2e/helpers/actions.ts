@@ -398,9 +398,8 @@ const dragTo = async (
 }
 
 const getAmount = (amount: string | undefined): number => {
-  if (amount) {
-    return parseFloat(amount.replace(/\$/g, '').replace(/,/g, ''))
-  } else return 0
+  if (!amount) return 0
+  return parseFloat(amount.replace(/[$,]/g, ''))
 }
 
 const isWithinTolerance = (

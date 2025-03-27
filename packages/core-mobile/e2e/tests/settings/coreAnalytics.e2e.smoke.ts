@@ -5,7 +5,7 @@ import commonElsPage from '../../pages/commonEls.page'
 
 describe('Settings Core Analytics', () => {
   it('should turn on Core Analytics when log in', async () => {
-    await warmup(false, false, true)
+    await warmup()
     await burgerMenuPage.tapBurgerMenuButton()
     await burgerMenuPage.tapSecurityAndPrivacy()
     await securityAndPrivacyPage.verifyAnalyticsSwitch(true)

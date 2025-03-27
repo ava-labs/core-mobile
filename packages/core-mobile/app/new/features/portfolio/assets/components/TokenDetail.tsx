@@ -1,6 +1,12 @@
-import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  Icons,
+  SPRING_LINEAR_TRANSITION,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import React, { FC, useCallback, useMemo } from 'react'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import {
@@ -93,7 +99,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
       return (
         <Animated.View
           entering={getListItemEnteringAnimation(index)}
-          layout={LinearTransition.springify()}>
+          layout={SPRING_LINEAR_TRANSITION}>
           <View>
             <View
               sx={{
@@ -180,8 +186,11 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
 
   return (
     <CollapsibleTabs.FlatList
-      style={{ paddingHorizontal: 16, marginTop: 23 }}
-      contentContainerStyle={{ paddingBottom: 16 }}
+      contentContainerStyle={{
+        paddingTop: 4,
+        paddingHorizontal: 16,
+        paddingBottom: 16
+      }}
       data={assetTypes}
       renderItem={item => renderItem(item.item, item.index)}
       ListHeaderComponent={renderHeader()}

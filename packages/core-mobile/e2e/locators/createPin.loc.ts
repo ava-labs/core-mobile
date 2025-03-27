@@ -2,7 +2,6 @@ export default {
   numPadZero: `0`,
   numpadOne: '1',
   agreeAndContinueBtn: `Agree and Continue`,
-  nextBtn: `Next`,
   enterYourPinHeader: 'Enter your pin',
   setNewPinHeader: 'Set new pin',
   firstMnemonicWord: 'rebel',

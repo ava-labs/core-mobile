@@ -5,15 +5,22 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent
+  NativeSyntheticEvent,
+  Platform
 } from 'react-native'
-import { useNavigation } from 'expo-router'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   SharedValue,
   clamp
 } from 'react-native-reanimated'
+/**
+ * Temporarily import "useNavigation" from @react-navigation/native.
+ * This is a workaround due to a render bug in the expo-router version.
+ * See: https://github.com/expo/expo/issues/35383
+ * TODO: Adjust import back to expo-router once the bug is resolved.
+ */
+import { useNavigation } from '@react-navigation/native'
 
 export const useFadingHeaderNavigation = ({
   header,
@@ -110,7 +117,12 @@ export const useFadingHeaderNavigation = ({
         />
       ),
       title: header && (
-        <View sx={{ paddingTop: shouldHeaderHaveGrabber ? 23 : 0 }}>
+        <View
+          sx={{
+            paddingTop: shouldHeaderHaveGrabber ? 23 : 0,
+            transform: [{ translateY: HEADER_BOTTOM_INSET }],
+            marginBottom: HEADER_BOTTOM_INSET
+          }}>
           <View
             sx={{
               overflow: 'hidden',
@@ -138,3 +150,5 @@ export const useFadingHeaderNavigation = ({
     targetHiddenProgress
   }
 }
+
+const HEADER_BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0

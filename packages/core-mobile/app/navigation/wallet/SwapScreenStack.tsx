@@ -43,7 +43,7 @@ function SwapScreenStack(): JSX.Element {
         screenOptions={{
           presentation: 'card',
           headerShown: true,
-          headerBackTitleVisible: false,
+          headerBackButtonDisplayMode: 'minimal',
           headerTitleAlign: 'center',
           headerTitle: HeaderTitle,
           headerBackTestID: 'header_back'

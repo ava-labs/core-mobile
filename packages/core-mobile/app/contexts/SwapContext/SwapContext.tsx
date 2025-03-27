@@ -30,6 +30,7 @@ import { RpcMethod, TokenWithBalance } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { useDebounce } from 'hooks/useDebounce'
 import { humanizeParaswapRateError } from 'errors/swapError'
+import { selectIsSwapFeesBlocked } from 'store/posthog'
 import { performSwap } from './performSwap/performSwap'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
@@ -89,6 +90,7 @@ export const SwapContextProvider = ({
   const [amount, setAmount] = useState<Amount | undefined>() //the amount that's gonna be passed to paraswap
   const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
   const debouncedAmount = useDebounce(amount, DEFAULT_DEBOUNCE_MILLISECONDS) // debounce since fetching rates via paraswaps can take awhile
+  const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
 
   const getOptimalRateForAmount = useCallback(
     (account: Account, amnt: Amount) => {
@@ -122,7 +124,7 @@ export const SwapContextProvider = ({
   )
 
   const getOptimalRate = useCallback(() => {
-    if (activeAccount && debouncedAmount) {
+    if (activeAccount && debouncedAmount && debouncedAmount.bn > 0n) {
       setIsFetchingOptimalRate(true)
       getOptimalRateForAmount(activeAccount, debouncedAmount)
         .then(({ optimalRate: opRate }) => {
@@ -213,7 +215,8 @@ export const SwapContextProvider = ({
                 params: txParams,
                 chainId: getEvmCaip2ChainId(activeNetwork.chainId)
               }),
-            userAddress: activeAccount.addressC
+            userAddress: activeAccount.addressC,
+            isSwapFeesEnabled: !isSwapFeesBlocked
           })
         )
           .then(([result, err]) => {

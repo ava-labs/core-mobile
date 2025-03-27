@@ -23,8 +23,9 @@ export const useAssetsFilterAndSort = (): {
   filter: DropdownSelection
   sort: DropdownSelection
   view: DropdownSelection
+  refetch: () => void
 } => {
-  const { filteredTokenList } = useSearchableTokenList({})
+  const { filteredTokenList, refetch } = useSearchableTokenList({})
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
@@ -105,26 +106,45 @@ export const useAssetsFilterAndSort = (): {
     return getSorted(filtered)
   }, [getFiltered, getSorted])
 
-  return {
-    filter: {
+  const filter = useMemo(
+    () => ({
       title: 'Filter',
       data: ASSET_NETWORK_FILTERS,
       selected: selectedFilter,
       onSelected: setSelectedFilter
-    },
-    sort: {
+    }),
+    [selectedFilter, setSelectedFilter]
+  )
+
+  const sort = useMemo(
+    () => ({
       title: 'Sort',
       data: ASSET_BALANCE_SORTS,
       selected: selectedSort,
       onSelected: setSelectedSort,
       useAnchorRect: true
-    },
-    view: {
+    }),
+    [selectedSort, setSelectedSort]
+  )
+
+  const view = useMemo(
+    () => ({
       title: 'View',
       data: ASSET_MANAGE_VIEWS,
       selected: selectedView,
       onSelected: setSelectedView
-    },
-    data: filteredAndSorted
-  }
+    }),
+    [selectedView, setSelectedView]
+  )
+
+  return useMemo(
+    () => ({
+      filter,
+      sort,
+      view,
+      data: filteredAndSorted,
+      refetch
+    }),
+    [filter, sort, view, filteredAndSorted, refetch]
+  )
 }

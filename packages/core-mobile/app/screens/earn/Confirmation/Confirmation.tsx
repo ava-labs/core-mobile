@@ -25,7 +25,7 @@ import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showTransactionErrorToast } from 'utils/toast'
 import Logger from 'utils/Logger'
-import { DOCS_STAKING } from 'resources/Constants'
+import { DOCS_STAKING_URL } from 'resources/Constants'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -178,8 +178,8 @@ export const Confirmation = (): JSX.Element | null => {
   }
 
   const handleReadMore = (): void => {
-    Linking.openURL(DOCS_STAKING).catch(e => {
-      Logger.error(DOCS_STAKING, e)
+    Linking.openURL(DOCS_STAKING_URL).catch(e => {
+      Logger.error(DOCS_STAKING_URL, e)
     })
   }
 

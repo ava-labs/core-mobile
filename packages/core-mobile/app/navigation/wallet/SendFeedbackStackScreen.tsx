@@ -10,11 +10,11 @@ export type SendFeedbackStackParamList = {
 
 const SendFeedbackStack = createStackNavigator<SendFeedbackStackParamList>()
 
-const SendFeedbackStackScreen = () => {
+const SendFeedbackStackScreen = (): JSX.Element => {
   return (
     <SendFeedbackStack.Navigator
       screenOptions={{
-        headerBackTitleVisible: false
+        headerBackButtonDisplayMode: 'minimal'
       }}>
       <SendFeedbackStack.Screen
         options={MainHeaderOptions({

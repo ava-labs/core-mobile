@@ -8,6 +8,7 @@ import {
   withSequence,
   withTiming
 } from 'react-native-reanimated'
+import { easeOutQuart } from '../../utils'
 
 export const useGlowAnimatedStyle = (
   delay: number
@@ -52,11 +53,6 @@ export const useGlowAnimatedStyle = (
     animatedStyle,
     isAnimating
   }
-}
-
-const easeOutQuart = (t: number): number => {
-  'worklet'
-  return 1 - Math.pow(1 - t, 4)
 }
 
 const FADE_IN_DURATION = 350

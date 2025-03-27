@@ -219,13 +219,13 @@ export const CollectiblesScreen = ({
     onShowHidden
   ])
 
-  const renderHeader = useMemo((): JSX.Element => {
+  const renderHeader = useMemo((): JSX.Element | undefined => {
     if (
       filteredAndSorted.length === 0 &&
       (!isEnabled || noCollectiblesFound || !isLoading) &&
       isEveryCollectibleHidden
     )
-      return <></>
+      return
     return (
       <View
         style={[
@@ -233,7 +233,7 @@ export const CollectiblesScreen = ({
             alignSelf: 'center',
             width: dimensions.width - HORIZONTAL_MARGIN * 2,
             zIndex: 10,
-            marginTop: 20,
+            marginTop: 4,
             marginBottom: CollectibleView.ListView === listType ? 8 : 16
           }
         ]}>

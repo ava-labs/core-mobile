@@ -1,4 +1,11 @@
-import { alpha, Pinchable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  ANIMATED,
+  Pinchable,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { Glow, GlowRef } from 'common/components/Glow'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useRef } from 'react'
@@ -132,7 +139,11 @@ export const CollectibleDetailsHeader = ({
             <CollectibleGridItem
               collectible={collectible}
               index={0}
-              onLoaded={animateGlow}
+              onLoaded={() => {
+                setTimeout(() => {
+                  animateGlow()
+                }, ANIMATED.DURATION)
+              }}
               type={CollectibleView.LargeGrid}
               style={{
                 width: '100%',

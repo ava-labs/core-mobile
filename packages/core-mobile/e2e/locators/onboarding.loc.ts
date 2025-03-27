@@ -3,5 +3,58 @@ export default {
   accessExistingWallet: 'accessExistingWallet',
   continueWithGoogle: 'continueWithGoogle',
   continueWithApple: 'continueWithApple',
-  accessExistingWalletBtn: 'Access Existing Wallet'
+  accessExistingWalletBtn: 'Access existing wallet',
+  enterPinFirstScreenTitle: 'Secure your wallet with a PIN',
+  enterPinFirstScreenDescription:
+    'For extra security, avoid choosing a PIN that contains repeating digits in a sequential order',
+  enterPinSecondScreenTitle: 'Confirm your PIN code',
+  walletName: 'testWallet1',
+  selectAvatarTitle: 'Select your\npersonal avatar',
+  selectAvatarDescription:
+    "Add a display avatar for your wallet. You can change it at any time in the app's settings",
+  selectedAvatar: 'selected_avatar',
+  chooseWalletTitle: 'How would you like to access your existing wallet?',
+  typeRecoverPhase: 'Type in a recovery phrase',
+  createNewWalletBtn: 'Create a new wallet',
+  noThanksBtn: 'No thanks',
+  unlockBtn: 'Unlock',
+  analysticsTitle: 'Unlock airdrops',
+  analysticsContentId: 'anlaysticsContent',
+  agreeAndContinue: 'Agree and continue',
+  termsAndConditions: 'Terms and conditions',
+  termsAndConditionsDescription: 'terms_conditions_description',
+  continueButton: 'Continue',
+  recoveryPhraseInput: `text_area__recovery_phrase`,
+  recoveryPhraseHeader: 'recovery_phrase__header',
+  cancelButton: 'Cancel',
+  testWalletLink: 'hd_wallet_login__test_wallet',
+  alreadyHaveAWalletBtn: 'Already Have a Wallet?',
+  signInWithRecoveryPhrase: 'Sign in with Recovery Phrase',
+  forgotPin: 'Forgot PIN?',
+  manuallyCreateNewWalletBtn: 'manually_create_new_wallet_button',
+  enterYourRecoveryPhraseTitle: 'Enter your recovery phrase',
+  enterYourRecoveryPhraseDescription:
+    'This phrase should contain 12, 18, or 24 words. Use a space between each word.',
+  import: `Import`,
+  pinInputField: 'pin_input',
+  nameWalletInput: 'text_input',
+  nameWalletTitle: 'How would you like to name your wallet?',
+  nameWalletContent:
+    'Add a display name for your wallet. You can change it at any time in the app’s settings',
+  letsgo: 'lets_go_btn',
+  confirmationTitle: 'That’s it!\n Enjoy your wallet',
+  confirmationDescription:
+    'You can now start buying, swapping, sending, receiving crypto and collectibles with no added fees',
+  newRecoveryPhraseTitle: "Here is your wallet's recovery phrase",
+  newRecoveryPhraseDescription:
+    'This phrase is your access key to your wallet. Carefully write it down and store it in a safe location',
+  newRecoveryPhraseWarning: 'Losing this phrase will result in lost funds',
+  copyPhrase: 'Copy phrase',
+  securityWarningTitle: 'Security warning',
+  securityWarningContent:
+    'For your security, you should not screenshot your recovery phrase. It is best to write it down and store it in a secure location.',
+  copied: 'Copied',
+  verifyYourRecoveryPhraseTitle: 'Verify your recovery phrase',
+  verifyYourRecoveryPhraseDescription:
+    'Select the words below to verify your recover phrase'
 }

@@ -1,11 +1,13 @@
 import {
   NetworkTokenWithBalance,
   TokenType,
+  TokenWithBalance,
   TokenWithBalanceERC20,
   TokenWithBalanceEVM
 } from '@avalabs/vm-module-types'
 import { isAddress } from 'ethers'
 import { SendErrorMessage } from '../types'
+import { isSupportedToken } from './typeguard'
 
 export const validateBasicInputs = (
   token: TokenWithBalanceEVM | undefined,
@@ -80,13 +82,10 @@ export const validateGasLimit = (gasLimit: bigint): void => {
   }
 }
 
-export const validateSupportedToken = (token: TokenWithBalanceEVM): void => {
-  if (
-    token.type !== TokenType.ERC20 &&
-    token.type !== TokenType.ERC721 &&
-    token.type !== TokenType.ERC1155 &&
-    token.type !== TokenType.NATIVE
-  ) {
+export function validateSupportedToken(
+  token: TokenWithBalance
+): asserts token is TokenWithBalanceEVM {
+  if (!isSupportedToken(token)) {
     throw new Error(SendErrorMessage.UNSUPPORTED_TOKEN)
   }
 }

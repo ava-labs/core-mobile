@@ -103,7 +103,7 @@ const lockApp = async (
   const isLocked = selectIsLocked(state)
 
   if (isLocked) {
-    //bail out if already locked
+    // bail out if already locked
     return
   }
 

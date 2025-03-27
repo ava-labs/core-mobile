@@ -18,14 +18,14 @@ import { ANIMATED } from '../../utils'
 
 const SCROLL_THRESHOLD = 2 // pixels
 
-interface AnimatedPressable extends AnimatedProps<PressableProps> {
+export interface AnimatedPressableProps extends AnimatedProps<PressableProps> {
   onPress?: (event: GestureResponderEvent) => void
 }
 
 const AnimatedPress = Animated.createAnimatedComponent(Pressable)
 
 export const AnimatedPressable = memo(
-  ({ children, onPress, ...props }: AnimatedPressable) => {
+  ({ children, onPress, ...props }: AnimatedPressableProps) => {
     const opacity = useSharedValue(1)
     const scale = useSharedValue(1)
     const isScrolling = useRef(false)

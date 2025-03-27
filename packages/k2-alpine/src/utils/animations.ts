@@ -1,4 +1,4 @@
-import { Easing } from 'react-native-reanimated'
+import { Easing, LinearTransition } from 'react-native-reanimated'
 
 export const SCALE = 0.96
 export const EASING = Easing.bezier(0.25, 1, 0.5, 1) // EaseOutQuart
@@ -20,4 +20,11 @@ export const ANIMATED = {
   SPRING_CONFIG,
   TIMING_CONFIG,
   SCALE
+}
+
+export const SPRING_LINEAR_TRANSITION = LinearTransition.springify()
+
+export const easeOutQuart = (t: number): number => {
+  'worklet'
+  return 1 - Math.pow(1 - t, 4)
 }

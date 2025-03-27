@@ -3,12 +3,16 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
+  MaskedText,
+  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useSelector } from 'react-redux'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -23,11 +27,12 @@ export const TokenListView = ({
   const {
     theme: { colors }
   } = useTheme()
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
+      layout={SPRING_LINEAR_TRANSITION}>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{
@@ -54,23 +59,36 @@ export const TokenListView = ({
                 justifyContent: 'space-between',
                 gap: 24
               }}>
-              <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                sx={{ flex: 1 }}
+                testID={`list_token_name__${index}`}>
                 {token.name}
               </Text>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                {!token.isDataAccurate && (
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  marginBottom: 1
+                }}>
+                {!token.isDataAccurate && !isPrivacyModeEnabled && (
                   <Icons.Alert.Error
                     width={16}
                     height={16}
                     color={colors.$textDanger}
                   />
                 )}
-                <Text
+                <MaskedText
                   variant="buttonMedium"
+                  shouldMask={isPrivacyModeEnabled}
+                  maskWidth={64}
                   numberOfLines={1}
-                  sx={{ lineHeight: 18, marginBottom: 1 }}>
+                  sx={{ lineHeight: 18 }}
+                  testID={`list_fiat_balance__${index}`}>
                   {formattedBalance}
-                </Text>
+                </MaskedText>
               </View>
             </View>
             <View
@@ -81,16 +99,20 @@ export const TokenListView = ({
                 alignItems: 'center',
                 gap: 24
               }}>
-              <Text
-                variant="body2"
+              <MaskedText
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={55}
                 sx={{ lineHeight: 16, flex: 1 }}
                 ellipsizeMode="tail"
-                numberOfLines={1}>
+                numberOfLines={1}
+                testID={`list_token_balance__${index}`}>
                 {token.balanceDisplayValue} {token.symbol}
-              </Text>
+              </MaskedText>
               <PriceChangeIndicator
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={40}
               />
             </View>
           </View>

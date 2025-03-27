@@ -1,5 +1,4 @@
 import { Row } from 'components/Row'
-import Settings from 'assets/icons/settings.svg'
 import { Space } from 'components/Space'
 import React, {
   FC,
@@ -26,16 +25,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-mobile'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFees } from '@avalabs/vm-module-types'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
-import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { bigIntToFeeDenomination } from 'utils/units/fees'
-import { Tooltip } from './Tooltip'
+import { formatCurrency } from 'utils/FormatCurrency'
+import { SubTextNumber } from './SubTextNumber'
 
 export enum FeePreset {
   SLOW = 'Slow',
@@ -52,22 +49,19 @@ const NetworkFeeSelector = ({
   chainId,
   gasLimit,
   onFeesChange,
+  isDark = false,
   isGasLimitEditable = true,
   noGasLimitError,
-  supportsAvalancheDynamicFee = false,
-  showOnlyFeeSelection = false
+  supportsAvalancheDynamicFee = false
 }: {
   chainId?: number
   gasLimit: number
   onFeesChange?(fees: Eip1559Fees, feePreset: FeePreset): void
+  isDark?: boolean
   isGasLimitEditable?: boolean
   noGasLimitError?: string
   supportsAvalancheDynamicFee?: boolean
-  showOnlyFeeSelection?: boolean
 }): JSX.Element => {
-  const {
-    appHook: { tokenInCurrencyFormatter }
-  } = useApplicationContext()
   const { activeNetwork, getNetwork } = useNetworks()
   const { networkToken } = activeNetwork
   const { navigate } = useNavigation<NavigationProp>()
@@ -80,19 +74,18 @@ const NetworkFeeSelector = ({
     network,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const isBtcNetwork = network ? isBitcoinNetwork(network) : false
   const isPVM = isPvmNetwork(network)
   const isAVM = isAvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.SLOW)
   const [calculatedFees, setCalculatedFees] = useState<GasAndFees>()
   const calculatedMaxTotalFeeDisplayed = useMemo(() => {
-    if (!calculatedFees?.maxTotalFee) return UNKNOWN_AMOUNT
+    if (!calculatedFees?.maxTotalFee) return
     const unit = new TokenUnit(
       calculatedFees.maxTotalFee,
       networkToken.decimals,
       networkToken.symbol
     )
-    return unit.toDisplay()
+    return unit.toDisplay({ asNumber: true })
   }, [calculatedFees, networkToken])
   const [customFees, setCustomFees] = useState<GasAndFees>()
 
@@ -180,32 +173,6 @@ const NetworkFeeSelector = ({
     onFeesChange?.(newFees, FeePreset.CUSTOM)
   }
 
-  const displayGasValues = useMemo(() => {
-    if (!networkFee) return undefined
-
-    const customFee = customFees?.maxFeePerGas ?? networkFee.medium.maxFeePerGas
-
-    return {
-      [FeePreset.SLOW]: bigIntToFeeDenomination(
-        networkFee.low.maxFeePerGas,
-        networkFee.displayDecimals
-      ),
-      [FeePreset.NORMAL]: bigIntToFeeDenomination(
-        networkFee.medium.maxFeePerGas,
-        networkFee.displayDecimals
-      ),
-
-      [FeePreset.FAST]: bigIntToFeeDenomination(
-        networkFee.high.maxFeePerGas,
-        networkFee.displayDecimals
-      ),
-      [FeePreset.CUSTOM]: bigIntToFeeDenomination(
-        customFee,
-        networkFee.displayDecimals
-      )
-    }
-  }, [customFees?.maxFeePerGas, networkFee])
-
   const goToEditGasLimit = (n?: Network): void => {
     if (networkFee === undefined || n === undefined) return
     navigate(AppNavigation.Modal.EditGasLimit, {
@@ -226,45 +193,11 @@ const NetworkFeeSelector = ({
 
   return (
     <>
-      {!showOnlyFeeSelection && (
-        <>
-          <Row
-            style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            {isBtcNetwork || isPVM || isAVM ? (
-              <View sx={{ paddingVertical: 12 }}>
-                <Text variant="body2" sx={{ color: '$neutral50' }}>
-                  Network Fee
-                </Text>
-              </View>
-            ) : (
-              <Tooltip
-                content={
-                  'Core estimates the maximum gas (maxFeePerGas) a transaction could consume based on network conditions. This transaction will likely consume less gas than estimated.'
-                }
-                position={'right'}
-                style={{ width: 200 }}>
-                <Text variant="buttonMedium">Maximum Network Fee</Text>
-              </Tooltip>
-            )}
-            {(!isPVM && supportsAvalancheDynamicFee) ||
-              (!isAVM && (
-                <TouchableOpacity
-                  sx={{ marginTop: 8 }}
-                  onPress={() => goToEditGasLimit(network)}>
-                  <Settings />
-                </TouchableOpacity>
-              ))}
-          </Row>
-        </>
-      )}
-      <Space y={4} />
-
       <View
         sx={{
-          backgroundColor: '$neutral900',
+          backgroundColor: isDark ? '$neutral900' : '$neutral800',
           padding: 16,
-          borderRadius: 8,
-          marginBottom: showOnlyFeeSelection ? 0 : 16
+          borderRadius: 8
         }}>
         {!networkFee?.isFixedFee && (
           <>
@@ -277,21 +210,18 @@ const NetworkFeeSelector = ({
                 label={FeePreset.SLOW}
                 selected={selectedPreset === FeePreset.SLOW}
                 onSelect={() => handleSelectedPreset(FeePreset.SLOW)}
-                value={displayGasValues?.[FeePreset.SLOW]}
                 testID="slow_base_fee"
               />
               <FeeSelector
                 label={FeePreset.NORMAL}
                 selected={selectedPreset === FeePreset.NORMAL}
                 onSelect={() => handleSelectedPreset(FeePreset.NORMAL)}
-                value={displayGasValues?.[FeePreset.NORMAL]}
                 testID="fast_base_fee"
               />
               <FeeSelector
                 label={FeePreset.FAST}
                 selected={selectedPreset === FeePreset.FAST}
                 onSelect={() => handleSelectedPreset(FeePreset.FAST)}
-                value={displayGasValues?.[FeePreset.FAST]}
                 testID="instant_base_fee"
               />
               <FeeSelector
@@ -301,46 +231,43 @@ const NetworkFeeSelector = ({
                   handleSelectedPreset(FeePreset.CUSTOM)
                   goToEditGasLimit(network)
                 }}
-                value={
-                  selectedPreset !== FeePreset.CUSTOM && !customFees
-                    ? displayGasValues?.[FeePreset.NORMAL]
-                    : displayGasValues?.[FeePreset.CUSTOM]
-                }
                 testID="custom_base_fee"
               />
             </Row>
-            {!showOnlyFeeSelection && <Space y={20} />}
+            <Space y={20} />
           </>
         )}
-        {!showOnlyFeeSelection && (
-          <>
-            <Row
-              style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text variant="body2" sx={{ color: '$neutral400' }}>
-                Fee Amount
+        <>
+          <Row
+            style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text variant="caption" sx={{ color: '$neutral200' }}>
+              Fee Amount
+            </Text>
+            <View sx={{ flexDirection: 'row' }}>
+              <SubTextNumber
+                number={calculatedMaxTotalFeeDisplayed}
+                testID="token_gas_fee"
+              />
+              <Text variant="subtitle2" sx={{ color: '$neutral50' }}>
+                {' ' + network?.networkToken?.symbol}
               </Text>
-              <View sx={{ flexDirection: 'row' }}>
-                <Text testID="token_gas_fee" sx={{ color: '$neutral50' }}>
-                  {`${calculatedMaxTotalFeeDisplayed} `}
-                </Text>
-                <Text variant="body1" sx={{ color: '$neutral400' }}>
-                  {network?.networkToken?.symbol}
-                </Text>
-              </View>
-            </Row>
-            <Row style={{ justifyContent: 'flex-end' }}>
-              <Text
-                variant="caption"
-                sx={{ color: '$neutral400', lineHeight: 15 }}>
-                {calculatedFees?.maxTotalFeeInCurrency
-                  ? tokenInCurrencyFormatter(
-                      calculatedFees.maxTotalFeeInCurrency
-                    )
-                  : UNKNOWN_AMOUNT + ' ' + selectedCurrency}
-              </Text>
-            </Row>
-          </>
-        )}
+            </View>
+          </Row>
+          <Row style={{ justifyContent: 'flex-end' }}>
+            <Text
+              variant="caption"
+              sx={{ color: '$neutral400', lineHeight: 15 }}>
+              {calculatedFees?.maxTotalFeeInCurrency
+                ? formatCurrency({
+                    amount: calculatedFees.maxTotalFeeInCurrency,
+                    currency: selectedCurrency,
+                    boostSmallNumberPrecision: false,
+                    showLessThanThreshold: true
+                  })
+                : UNKNOWN_AMOUNT + ' ' + selectedCurrency}
+            </Text>
+          </Row>
+        </>
       </View>
     </>
   )
@@ -348,11 +275,10 @@ const NetworkFeeSelector = ({
 
 export const FeeSelector: FC<{
   label: string
-  value?: string
   selected: boolean
   testID?: string
   onSelect: (value: string) => void
-}> = ({ label, selected, onSelect, value, testID }) => {
+}> = ({ label, selected, onSelect, testID }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -380,9 +306,8 @@ export const FeeSelector: FC<{
           flexDirection: 'column',
           alignItems: 'center'
         }}>
-        <ButtonText selected={selected}>{label}</ButtonText>
         <ButtonText selected={selected} testID={testID}>
-          {value}
+          {label}
         </ButtonText>
       </View>
     </TouchableOpacity>

@@ -4,7 +4,8 @@ import {
   Icons,
   Text,
   useTheme,
-  View
+  View,
+  AnimatedPressableProps
 } from '@avalabs/k2-alpine'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
@@ -58,6 +59,7 @@ export const CollectibleItem = memo(
         index={index}
         onPress={onPress}
         onLoaded={onLoaded}
+        entering={getListItemEnteringAnimation(index)}
         rendererProps={{
           videoProps: {
             muted: true,
@@ -174,6 +176,16 @@ export const CollectibleListItem = memo(
   }
 )
 
+interface CollectibleGridItemProps extends AnimatedPressableProps {
+  collectible: NftItem
+  type: CollectibleView
+  index: number
+  style?: ViewStyle
+  rendererProps?: Omit<CollectibleRendererProps, 'collectible'>
+  onLoaded?: () => void
+  onPress?: () => void
+}
+
 export const CollectibleGridItem = memo(
   ({
     collectible,
@@ -182,22 +194,13 @@ export const CollectibleGridItem = memo(
     style,
     rendererProps,
     onLoaded,
-    onPress
-  }: {
-    collectible: NftItem
-    type: CollectibleView
-    index: number
-    style?: ViewStyle
-    rendererProps?: Omit<CollectibleRendererProps, 'collectible'>
-    onLoaded?: () => void
-    onPress?: () => void
-  }): ReactNode => {
+    onPress,
+    ...props
+  }: CollectibleGridItemProps): ReactNode => {
     const height = getGridCardHeight(type, index)
 
     return (
-      <AnimatedPressable
-        entering={getListItemEnteringAnimation(index)}
-        onPress={onPress}>
+      <AnimatedPressable onPress={onPress} {...props}>
         <CardContainer
           style={[
             {

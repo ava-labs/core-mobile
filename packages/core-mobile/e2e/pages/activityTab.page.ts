@@ -156,7 +156,7 @@ class ActivityTabPage {
       await Assert.isVisible(by.text(transactionType))
     } else {
       await device.launchApp({ newInstance: true })
-      await loginRecoverWallet.recoverWalletLogin()
+      await loginRecoverWallet.login()
       await Assert.isVisible(PortfolioPage.colectiblesTab)
       await Assert.isVisible(PortfolioPage.assetsTab)
       await Assert.isVisible(PortfolioPage.defiTab)

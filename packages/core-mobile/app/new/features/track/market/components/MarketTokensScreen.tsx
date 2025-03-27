@@ -1,4 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
+import { StyleSheet } from 'react-native'
 import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { Charts, MarketToken } from 'store/watchlist'
@@ -24,18 +25,19 @@ const MarketTokensScreen = ({
   emptyComponent: React.JSX.Element
 }): JSX.Element => {
   const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
+  const numColumns = isGridView ? 2 : 1
+
+  const dataLength = data.length
 
   const dropdowns = useMemo(() => {
+    if (dataLength === 0) return
+
     return (
-      <View sx={{ paddingHorizontal: 16 }}>
-        <DropdownSelections
-          sort={sort}
-          view={view}
-          sx={{ marginTop: 14, marginBottom: 16 }}
-        />
+      <View sx={styles.dropdownContainer}>
+        <DropdownSelections sort={sort} view={view} sx={styles.dropdown} />
       </View>
     )
-  }, [sort, view])
+  }, [dataLength, sort, view])
 
   const renderItem = useCallback(
     ({
@@ -45,7 +47,9 @@ const MarketTokensScreen = ({
       item: MarketToken
       index: number
     }): React.JSX.Element => {
-      return (
+      const isLeftColumn = index % numColumns === 0
+
+      const content = (
         <MarketListItem
           token={item}
           charts={charts}
@@ -54,41 +58,53 @@ const MarketTokensScreen = ({
           onPress={() => goToMarketDetail(item.id)}
         />
       )
+
+      if (isGridView) {
+        return (
+          <View
+            sx={{
+              marginLeft: isLeftColumn ? 8 : 0,
+              marginRight: isLeftColumn ? 0 : 8,
+              justifyContent: 'center',
+              flex: 1,
+              alignItems: 'center'
+            }}>
+            {content}
+          </View>
+        )
+      }
+
+      return content
     },
-    [charts, goToMarketDetail, isGridView]
+    [charts, goToMarketDetail, isGridView, numColumns]
   )
 
-  const renderSeparator = (): JSX.Element => {
+  const renderSeparator = useCallback((): JSX.Element => {
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />
-  }
+  }, [isGridView])
 
   return (
-    <CollapsibleTabs.FlatList
-      contentContainerStyle={{ paddingBottom: 16 }}
+    <CollapsibleTabs.FlashList
+      contentContainerStyle={styles.container}
       data={data}
-      numColumns={isGridView ? 2 : 1}
+      numColumns={numColumns}
       renderItem={renderItem}
-      ListHeaderComponent={data.length > 0 ? dropdowns : undefined}
+      ListHeaderComponent={dropdowns}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}
       keyExtractor={item => item.id}
-      windowSize={5}
       removeClippedSubviews={true}
-      getItemLayout={(_, index) => ({
-        length: isGridView ? 200 : 120,
-        offset: (isGridView ? 200 : 120) * index,
-        index
-      })}
-      columnWrapperStyle={
-        isGridView && {
-          paddingHorizontal: 16,
-          justifyContent: 'space-between'
-        }
-      }
+      estimatedItemSize={isGridView ? 200 : 120}
     />
   )
 }
+
+const styles = StyleSheet.create({
+  container: { paddingBottom: 16 },
+  dropdownContainer: { paddingHorizontal: 16 },
+  dropdown: { marginTop: 14, marginBottom: 16 }
+})
 
 export default MarketTokensScreen

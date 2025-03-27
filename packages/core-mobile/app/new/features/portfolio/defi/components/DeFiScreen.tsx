@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useCallback } from 'react'
 import { View, Image, Separator } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { useRouter } from 'expo-router'
+import { StyleSheet } from 'react-native'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { openURL } from 'utils/openURL'
@@ -47,22 +48,28 @@ export const DeFiScreen = (): JSX.Element => {
     }
   }, [data, isSuccess])
 
-  const handlePressDeFiItem = (item: DeFiSimpleProtocol): void => {
-    navigate({
-      pathname: '/defiDetail',
-      params: { protocolId: item.id }
-    })
-    AnalyticsService.capture('DeFiCardClicked')
-  }
+  const handlePressDeFiItem = useCallback(
+    (item: DeFiSimpleProtocol): void => {
+      navigate({
+        pathname: '/defiDetail',
+        params: { protocolId: item.id }
+      })
+      AnalyticsService.capture('DeFiCardClicked')
+    },
+    [navigate]
+  )
 
-  const handlePressDeFiItemArrow = (item: DeFiSimpleProtocol): void => {
-    openURL(item.siteUrl)
-    AnalyticsService.capture('DeFiCardLaunchButtonlicked')
-  }
+  const handlePressDeFiItemArrow = useCallback(
+    (item: DeFiSimpleProtocol): void => {
+      openURL(item.siteUrl)
+      AnalyticsService.capture('DeFiCardLaunchButtonlicked')
+    },
+    []
+  )
 
-  const handleExplore = (): void => {
+  const handleExplore = useCallback((): void => {
     openURL('https://core.app/discover/').catch(Logger.error)
-  }
+  }, [])
 
   const emptyComponent = useMemo(() => {
     if (isLoading) {
@@ -99,55 +106,72 @@ export const DeFiScreen = (): JSX.Element => {
         sx={{ height: portfolioTabContentHeight }}
       />
     )
-  }, [isLoading, error, refetch, isPaused, isSuccess])
+  }, [isLoading, error, refetch, handleExplore, isPaused, isSuccess])
 
-  const renderItem = (
-    item: ListRenderItemInfo<DeFiSimpleProtocol>
-  ): JSX.Element => {
-    const netUsdValue = getAmount(item.item.netUsdValue, 'compact')
+  const renderItem = useCallback(
+    (item: ListRenderItemInfo<DeFiSimpleProtocol>): JSX.Element => {
+      const netUsdValue = getAmount(item.item.netUsdValue, 'compact')
 
-    return (
-      <DeFiListItem
-        item={item.item}
-        chain={chainList?.[item.item.chain]}
-        index={item.index}
-        onPress={() => handlePressDeFiItem(item.item)}
-        onPressArrow={() => handlePressDeFiItemArrow(item.item)}
-        formattedPrice={netUsdValue}
-        isGridView={isGridView}
-      />
-    )
-  }
+      return (
+        <DeFiListItem
+          item={item.item}
+          chain={chainList?.[item.item.chain]}
+          index={item.index}
+          onPress={() => handlePressDeFiItem(item.item)}
+          onPressArrow={() => handlePressDeFiItemArrow(item.item)}
+          formattedPrice={netUsdValue}
+          isGridView={isGridView}
+        />
+      )
+    },
+    [
+      getAmount,
+      handlePressDeFiItem,
+      handlePressDeFiItemArrow,
+      chainList,
+      isGridView
+    ]
+  )
+
+  const dataLength = data.length
 
   const header = useMemo(() => {
+    if (dataLength === 0) return
+
     return (
-      <View
-        sx={{
-          paddingHorizontal: 16
-        }}>
+      <View sx={styles.dropdownContainer}>
         <DropdownSelections
           sort={sort}
           view={view}
           sx={{
-            marginTop: 20,
+            marginTop: 4,
             marginBottom: isGridView ? 16 : 8
           }}
         />
       </View>
     )
-  }, [isGridView, sort, view])
+  }, [dataLength, isGridView, sort, view])
 
-  const renderSeparator = (): JSX.Element => {
+  const renderSeparator = useCallback((): JSX.Element => {
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />
-  }
+  }, [isGridView])
+
+  const columnWrapperStyle = useMemo(() => {
+    if (!isGridView) return
+
+    return {
+      paddingHorizontal: 16,
+      gap: 14
+    }
+  }, [isGridView])
 
   return (
     <CollapsibleTabs.FlatList
-      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
+      contentContainerStyle={styles.container}
       data={data}
       numColumns={isGridView ? 2 : 1}
       renderItem={renderItem}
-      ListHeaderComponent={data.length > 0 ? header : undefined}
+      ListHeaderComponent={header}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
@@ -155,12 +179,14 @@ export const DeFiScreen = (): JSX.Element => {
       onRefresh={pullToRefresh}
       key={isGridView ? 'grid' : 'list'}
       keyExtractor={item => item.id}
-      columnWrapperStyle={
-        isGridView && {
-          paddingHorizontal: 16,
-          gap: 14
-        }
-      }
+      columnWrapperStyle={columnWrapperStyle}
     />
   )
 }
+
+const styles = StyleSheet.create({
+  container: { overflow: 'visible', paddingBottom: 16 },
+  dropdownContainer: {
+    paddingHorizontal: 16
+  }
+})

@@ -3,10 +3,9 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { Space } from 'components/Space'
 import React, { FC, memo, useCallback, useMemo } from 'react'
-import { ListRenderItemInfo } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -30,9 +29,7 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement
 }): JSX.Element => {
-  const { data, filter, sort, view } = useAssetsFilterAndSort()
-
-  const { refetch } = useSearchableTokenList({})
+  const { data, filter, sort, view, refetch } = useAssetsFilterAndSort()
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
@@ -55,25 +52,43 @@ const AssetsScreen: FC<Props> = ({
   )
 
   const isGridView = view.data[0]?.[view.selected.row] === AssetManageView.Grid
+  const numColumns = isGridView ? 2 : 1
 
-  const renderItem = (
-    item: ListRenderItemInfo<LocalTokenWithBalance>
-  ): JSX.Element => {
-    return (
-      <View sx={{ paddingHorizontal: isGridView ? 0 : 16 }}>
-        <TokenListItem
-          token={item.item}
-          index={item.index}
-          onPress={() => goToTokenDetail(item.item.localId)}
-          isGridView={isGridView}
-        />
-      </View>
-    )
-  }
+  const renderItem = useCallback(
+    (item: LocalTokenWithBalance, index: number): JSX.Element => {
+      const isLeftColumn = index % numColumns === 0
 
-  const renderSeparator = (): JSX.Element => {
+      const style = isGridView
+        ? {
+            marginLeft: isLeftColumn ? 8 : 0,
+            marginRight: isLeftColumn ? 0 : 8,
+            justifyContent: 'center',
+            flex: 1,
+            alignItems: 'center'
+          }
+        : {
+            paddingHorizontal: 16,
+            justifyContent: 'center',
+            alignItems: 'stretch'
+          }
+
+      return (
+        <View sx={style}>
+          <TokenListItem
+            token={item}
+            index={index}
+            onPress={() => goToTokenDetail(item.localId)}
+            isGridView={isGridView}
+          />
+        </View>
+      )
+    },
+    [goToTokenDetail, numColumns, isGridView]
+  )
+
+  const renderSeparator = useCallback((): JSX.Element => {
     return <Space y={isGridView ? 12 : 10} />
-  }
+  }, [isGridView])
 
   const emptyComponent = useMemo(() => {
     if (isBalanceLoading || isRefetchingBalance) {
@@ -114,45 +129,48 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])
 
+  const dataLength = data.length
+
   const header = useMemo(() => {
+    if (dataLength === 0) return
+
     return (
-      <View
-        sx={{
-          paddingHorizontal: 16
-        }}>
+      <View sx={styles.dropdownContainer}>
         <DropdownSelections
-          sx={{ marginTop: 20, marginBottom: 16 }}
+          sx={styles.dropdown}
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
     )
-  }, [filter, sort, view, handleManageList])
+  }, [dataLength, filter, sort, view, handleManageList])
 
   return (
-    <CollapsibleTabs.FlatList
-      contentContainerStyle={{
-        overflow: 'visible',
-        paddingBottom: 16
-      }}
+    <CollapsibleTabs.FlashList
+      contentContainerStyle={{ paddingBottom: 16 }}
       data={data}
-      numColumns={isGridView ? 2 : 1}
-      renderItem={renderItem}
-      ListHeaderComponent={data.length > 0 ? header : undefined}
+      numColumns={numColumns}
+      estimatedItemSize={isGridView ? 183 : 73} // these numbers are suggested by FlashList at runtime
+      renderItem={item => renderItem(item.item, item.index)}
+      ListHeaderComponent={header}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}
-      keyExtractor={item => (item as LocalTokenWithBalance).localId}
-      columnWrapperStyle={
-        isGridView && {
-          paddingHorizontal: 16,
-          justifyContent: 'space-between'
-        }
-      }
+      keyExtractor={item => item.localId}
     />
   )
 }
+
+const styles = StyleSheet.create({
+  dropdownContainer: {
+    paddingHorizontal: 16
+  },
+  dropdown: {
+    marginTop: 4,
+    marginBottom: 16
+  }
+})
 
 export default memo(AssetsScreen)

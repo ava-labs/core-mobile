@@ -3,14 +3,18 @@ import {
   AnimatedPressable,
   Icons,
   PriceChangeIndicator,
+  MaskedText,
+  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { Dimensions } from 'react-native'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { GRID_GAP } from 'common/consts'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useSelector } from 'react-redux'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -24,6 +28,8 @@ export const TokenGridView = ({
   formattedBalance,
   formattedPrice
 }: TokenListViewProps): React.JSX.Element => {
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+
   const {
     theme: { colors }
   } = useTheme()
@@ -31,7 +37,7 @@ export const TokenGridView = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
-      layout={LinearTransition.springify()}>
+      layout={SPRING_LINEAR_TRANSITION}>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{
@@ -44,39 +50,53 @@ export const TokenGridView = ({
           <LogoWithNetwork token={token} />
           <View>
             <Text
+              testID={`grid_token_name__${index}`}
               variant="buttonMedium"
               numberOfLines={1}
               sx={{ lineHeight: 16 }}>
               {token.name}
             </Text>
             <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
-              <Text
-                variant="body2"
-                sx={{ lineHeight: 16 }}
+              <MaskedText
+                testID={`grid_token_balance__${index}`}
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={65}
+                numberOfLines={1}
                 ellipsizeMode="tail"
-                numberOfLines={1}>
+                sx={{ lineHeight: 16 }}>
                 {token.balanceDisplayValue} {token.symbol}
-              </Text>
+              </MaskedText>
             </View>
           </View>
           <View sx={{ marginTop: 19 }}>
             <View>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                {!token.isDataAccurate && (
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 3,
+                  marginBottom: 1
+                }}>
+                {!token.isDataAccurate && !isPrivacyModeEnabled && (
                   <Icons.Alert.Error
                     width={16}
                     height={16}
                     color={colors.$textDanger}
                   />
                 )}
-                <Text
+                <MaskedText
+                  testID={`grid_fiat_balance__${index}`}
                   variant="buttonLarge"
+                  shouldMask={isPrivacyModeEnabled}
+                  maskWidth={85}
                   numberOfLines={1}
-                  sx={{ lineHeight: 21, marginBottom: 1 }}>
+                  sx={{ lineHeight: 21 }}>
                   {formattedBalance}
-                </Text>
+                </MaskedText>
               </View>
               <PriceChangeIndicator
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={40}
                 formattedPrice={formattedPrice}
                 status={priceChangeStatus}
               />

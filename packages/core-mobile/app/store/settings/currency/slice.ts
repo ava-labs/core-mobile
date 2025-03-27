@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { currencies, DEFAULT_CURRENCY, initialState } from './types'
+import {
+  currencies,
+  CurrencySymbol,
+  DEFAULT_CURRENCY,
+  initialState
+} from './types'
 
 const reducerName = 'currency'
 
@@ -8,14 +13,14 @@ export const currencySlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    setSelectedCurrency: (state, action: PayloadAction<string>) => {
+    setSelectedCurrency: (state, action: PayloadAction<CurrencySymbol>) => {
       state.selected = action.payload
     }
   }
 })
 
 // selectors
-export const selectSelectedCurrency = (state: RootState): string => {
+export const selectSelectedCurrency = (state: RootState): CurrencySymbol => {
   const selectedCurrency = state.settings.currency.selected
 
   if (

@@ -18,10 +18,13 @@ import { formatCurrency } from 'utils/FormatCurrency'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  InteractionManager
+} from 'react-native'
 import Animated, {
   useAnimatedStyle,
-  SharedValue,
   useSharedValue
 } from 'react-native-reanimated'
 import useInAppBrowser from 'hooks/useInAppBrowser'
@@ -33,7 +36,8 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import {
   CollapsibleTabs,
-  CollapsibleTabsRef
+  CollapsibleTabsRef,
+  OnTabChange
 } from 'common/components/CollapsibleTabs'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { TokenHeader } from 'common/components/TokenHeader'
@@ -80,8 +84,15 @@ const TokenDetailScreen = (): React.JSX.Element => {
     setTokenHeaderLayout(event.nativeEvent.layout)
   }, [])
 
+  const tokenName = token?.name ?? ''
+
+  const header = useMemo(
+    () => <NavigationTitleHeader title={tokenName} />,
+    [tokenName]
+  )
+
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={token?.name ?? ''} />,
+    header: header,
     targetLayout: tokenHeaderLayout
   })
   const selectedSegmentIndex = useSharedValue(0)
@@ -107,28 +118,37 @@ const TokenDetailScreen = (): React.JSX.Element => {
     [openUrl]
   )
 
-  const handleSelectSegment = (index: number): void => {
-    if (tabViewRef.current?.getCurrentIndex() !== index) {
-      tabViewRef.current?.setIndex(index)
-    }
-  }
+  const handleSelectSegment = useCallback(
+    (index: number): void => {
+      selectedSegmentIndex.value = index
 
-  const handleChangeTab = (index: number): void => {
-    selectedSegmentIndex.value = index
-  }
+      InteractionManager.runAfterInteractions(() => {
+        if (tabViewRef.current?.getCurrentIndex() !== index) {
+          tabViewRef.current?.setIndex(index)
+        }
+      })
+    },
+    [selectedSegmentIndex]
+  )
 
-  const handleScrollTab = (tabIndex: SharedValue<number>): void => {
-    selectedSegmentIndex.value = tabIndex.value
-  }
+  const handleTabChange: OnTabChange = useCallback(
+    data => {
+      if (selectedSegmentIndex.value === data.prevIndex) {
+        selectedSegmentIndex.value = data.index
+      }
+    },
+    [selectedSegmentIndex]
+  )
 
-  const renderEmptyTabBar = (): JSX.Element => <></>
+  const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
         style={{
           backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          paddingBottom: 16
         }}>
         <View onLayout={handleHeaderLayout}>
           <Animated.View
@@ -164,35 +184,26 @@ const TokenDetailScreen = (): React.JSX.Element => {
     token
   ])
 
-  const renderTabs = useCallback(() => {
-    if (isXpToken) {
-      return [
-        {
-          tabName: TokenDetailTab.Tokens,
-          component: <TokenDetail token={token} />
-        },
-        {
-          tabName: TokenDetailTab.Activity,
-          component: (
-            <TransactionHistory
-              token={token}
-              handleExplorerLink={handleExplorerLink}
-            />
-          )
-        }
-      ]
+  const tabs = useMemo(() => {
+    const activityTab = {
+      tabName: TokenDetailTab.Activity,
+      component: (
+        <TransactionHistory
+          token={token}
+          handleExplorerLink={handleExplorerLink}
+        />
+      )
     }
-    return [
-      {
-        tabName: TokenDetailTab.Activity,
-        component: (
-          <TransactionHistory
-            token={token}
-            handleExplorerLink={handleExplorerLink}
-          />
-        )
-      }
-    ]
+
+    return isXpToken
+      ? [
+          {
+            tabName: TokenDetailTab.Tokens,
+            component: <TokenDetail token={token} />
+          },
+          activityTab
+        ]
+      : [activityTab]
   }, [handleExplorerLink, isXpToken, token])
 
   return (
@@ -201,16 +212,15 @@ const TokenDetailScreen = (): React.JSX.Element => {
         ref={tabViewRef}
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
-        onIndexChange={handleChangeTab}
+        onTabChange={handleTabChange}
         onScrollY={onScroll}
-        onScrollTab={handleScrollTab}
-        tabs={renderTabs()}
+        tabs={tabs}
       />
       {isXpToken && (
         <LinearGradientBottomWrapper>
           <SegmentedControl
-            dynamicItemWidth={true}
-            items={[TokenDetailTab.Tokens, TokenDetailTab.Activity]}
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
             selectedSegmentIndex={selectedSegmentIndex}
             onSelectSegment={handleSelectSegment}
             style={{ marginHorizontal: 16, marginBottom: botomInset }}
@@ -225,6 +235,8 @@ export enum TokenDetailTab {
   Tokens = 'Tokens',
   Activity = 'Activity'
 }
+
+const SEGMENT_ITEMS = [TokenDetailTab.Tokens, TokenDetailTab.Activity]
 
 const ACTION_BUTTONS: ActionButton[] = [
   { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },

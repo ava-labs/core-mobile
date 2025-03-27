@@ -53,3 +53,13 @@ to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 
 logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
 https://github.com/WalletConnect/walletconnect-utils/issues/171
+
+### react-native-reanimated+3.17.1.patch
+
+invalid call of hasAnimatedRef method will cause a crash. it is fixed but not released yet.
+https://github.com/software-mansion/react-native-reanimated/pull/7158
+
+### react-native-collapsible-tab-view+8.0.0.patch
+
+perf improvement
+https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461

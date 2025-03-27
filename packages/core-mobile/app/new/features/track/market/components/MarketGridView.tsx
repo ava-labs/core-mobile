@@ -6,15 +6,16 @@ import {
   MiniChart,
   PriceChangeIndicator,
   PriceChangeStatus,
+  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { Dimensions } from 'react-native'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
-import { TokenLogo } from 'features/portfolio/assets/components/TokenLogo'
+import { TokenLogo } from 'common/components/TokenLogo'
 import { ChartData } from 'services/token/types'
 import { GRID_GAP } from 'common/consts'
 
@@ -53,7 +54,7 @@ export const MarketGridView = memo(
     return (
       <Animated.View
         entering={getListItemEnteringAnimation(index)}
-        layout={LinearTransition.springify()}>
+        layout={SPRING_LINEAR_TRANSITION}>
         <AnimatedPressable onPress={onPress}>
           <View
             sx={{
@@ -114,10 +115,11 @@ export const MarketGridView = memo(
   },
   (prevProps, nextProps) => {
     return (
-      prevProps.formattedPrice === nextProps.formattedPrice ||
-      prevProps.formattedPriceChange === nextProps.formattedPriceChange ||
-      prevProps.formattedPercentChange === nextProps.formattedPercentChange ||
-      prevProps.status === nextProps.status
+      prevProps.token.id === nextProps.token.id &&
+      (prevProps.formattedPrice === nextProps.formattedPrice ||
+        prevProps.formattedPriceChange === nextProps.formattedPriceChange ||
+        prevProps.formattedPercentChange === nextProps.formattedPercentChange ||
+        prevProps.status === nextProps.status)
     )
   }
 )

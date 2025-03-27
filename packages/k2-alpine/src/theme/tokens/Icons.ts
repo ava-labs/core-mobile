@@ -44,7 +44,7 @@ import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
-import IconVisibilityOn from '../../assets/icons/visibility.svg'
+import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
 import IconVolumeOff from '../../assets/icons/volume_off.svg'
 import IconVolumeOn from '../../assets/icons/volume_on.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
@@ -59,6 +59,8 @@ import IconCameraFrame from '../../assets/icons/camera_frame.svg'
 import IconLayer from '../../assets/icons/layer.svg'
 import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
+import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
+import IconLink from '../../assets/icons/link.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -81,7 +83,6 @@ import ADA from '../../assets/tokenLogos/ADA.svg'
 import APT from '../../assets/tokenLogos/APT.svg'
 import ARB from '../../assets/tokenLogos/ARB.svg'
 import ATOM from '../../assets/tokenLogos/ATOM.svg'
-import AVAX1 from '../../assets/tokenLogos/AVAX-1.svg'
 import AVAX from '../../assets/tokenLogos/AVAX.svg'
 import BCH from '../../assets/tokenLogos/BCH.svg'
 import BNB from '../../assets/tokenLogos/BNB.svg'
@@ -105,7 +106,8 @@ import NEAR from '../../assets/tokenLogos/NEAR.svg'
 import OKB from '../../assets/tokenLogos/OKB.svg'
 import ONDO from '../../assets/tokenLogos/ONDO.svg'
 import QNT from '../../assets/tokenLogos/QNT.svg'
-import sAVAX from '../../assets/tokenLogos/sAVAX.svg'
+import SAVAX from '../../assets/tokenLogos/SAVAX.svg'
+import WAVAX from '../../assets/tokenLogos/WAVAX.svg'
 import SHIB from '../../assets/tokenLogos/SHIB.svg'
 import SOL from '../../assets/tokenLogos/SOL.svg'
 import STX from '../../assets/tokenLogos/STX.svg'
@@ -127,7 +129,7 @@ import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
 import ARS from '../../assets/currency-flagKit/currency-ars.svg'
 import AUD from '../../assets/currency-flagKit/currency-aud.svg'
-import bdt from '../../assets/currency-flagKit/currency-bdt.svg'
+import BDT from '../../assets/currency-flagKit/currency-bdt.svg'
 import BGN from '../../assets/currency-flagKit/currency-bgn.svg'
 import BRL from '../../assets/currency-flagKit/currency-brl.svg'
 import CAD from '../../assets/currency-flagKit/currency-cad.svg'
@@ -193,7 +195,8 @@ export const Icons = {
     ChevronRightV2: IconChevronRightV2,
     ChevronRight: IconChevronRight,
     Check: IconCheck,
-    ExpandMore: IconExpandMore
+    ExpandMore: IconExpandMore,
+    MoreHoriz: IconMoreHoriz
   },
   Notification: {
     Sync: IconSync
@@ -209,7 +212,8 @@ export const Icons = {
   Content: {
     Add: IconAdd,
     HideImage: IconHideImage,
-    Close: IconClose
+    Close: IconClose,
+    Link: IconLink
   },
   Toggle: {
     StarOutline: IconStarOutline,
@@ -274,7 +278,6 @@ export const Icons = {
     APT: APT,
     ARB: ARB,
     ATOM: ATOM,
-    AVAX1: AVAX1,
     AVAX: AVAX,
     BCH: BCH,
     BNB: BNB,
@@ -298,7 +301,8 @@ export const Icons = {
     OKB: OKB,
     ONDO: ONDO,
     QNT: QNT,
-    sAVAX: sAVAX,
+    SAVAX: SAVAX,
+    WAVAX: WAVAX,
     SHIB: SHIB,
     SOL: SOL,
     STX: STX,
@@ -320,7 +324,7 @@ export const Icons = {
     AED: AED,
     ARS: ARS,
     AUD: AUD,
-    BDT: bdt,
+    BDT: BDT,
     BGN: BGN,
     BRL: BRL,
     CAD: CAD,

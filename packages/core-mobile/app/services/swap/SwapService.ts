@@ -15,9 +15,7 @@ import {
 } from '@paraswap/sdk'
 import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
-import { SpanName } from 'services/sentry/types'
-
-export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+import { EVM_NATIVE_TOKEN_ADDRESS } from 'contexts/SwapContext/consts'
 
 const txResponseSchema = z
   .object({
@@ -35,7 +33,7 @@ const TESTNET_NETWORK_UNSUPPORTED_ERROR = new Error(
   'Testnet network is not supported by Paraswap'
 )
 
-interface BuildTxParams {
+export interface BuildTxParams {
   network: Network
   srcToken: Address
   destToken: Address
@@ -46,13 +44,13 @@ interface BuildTxParams {
   partner?: string
   partnerAddress?: string
   partnerFeeBps?: number
+  isDirectFeeTransfer?: boolean
   receiver?: Address
   options?: BuildOptions
   srcDecimals?: number
   destDecimals?: number
   permit?: string
   deadline?: string
-  sentrySpanName?: SpanName
 }
 
 interface SwapRate {
@@ -64,7 +62,6 @@ interface SwapRate {
   swapSide: SwapSide
   network: Network
   account: Account
-  sentrySpanName?: SpanName
   abortSignal?: AbortSignal
 }
 
@@ -107,12 +104,11 @@ class SwapService {
     swapSide,
     network,
     account,
-    sentrySpanName,
     abortSignal
   }: SwapRate): Promise<OptimalRate> {
     return SentryWrapper.startSpan(
       {
-        name: sentrySpanName,
+        name: 'swap',
         contextName: 'svc.swap.get_rate'
       },
       async () => {
@@ -133,8 +129,8 @@ class SwapService {
 
         return await this.getParaSwapSDK(network.chainId).swap.getRate(
           {
-            srcToken: isFromTokenNative ? ETHER_ADDRESS : srcToken,
-            destToken: isDestTokenNative ? ETHER_ADDRESS : destToken,
+            srcToken: isFromTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : srcToken,
+            destToken: isDestTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : destToken,
             amount: srcAmount,
             userAddress: account.addressC,
             side: swapSide,
@@ -147,12 +143,9 @@ class SwapService {
     )
   }
 
-  async getParaswapSpender(
-    network: Network,
-    sentrySpanName?: SpanName
-  ): Promise<Address> {
+  async getParaswapSpender(network: Network): Promise<Address> {
     return SentryWrapper.startSpan(
-      { name: sentrySpanName, contextName: 'svc.swap.get_paraswap_spender' },
+      { name: 'swap', contextName: 'svc.swap.get_paraswap_spender' },
       async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
@@ -183,15 +176,15 @@ class SwapService {
     partner,
     partnerAddress,
     partnerFeeBps,
+    isDirectFeeTransfer,
     receiver,
     srcDecimals,
     destDecimals,
     permit,
-    deadline,
-    sentrySpanName
+    deadline
   }: BuildTxParams): Promise<TransactionParams> {
     return SentryWrapper.startSpan(
-      { name: sentrySpanName, contextName: 'svc.swap.build_trx' },
+      { name: 'swap', contextName: 'svc.swap.build_trx' },
       async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
@@ -212,6 +205,7 @@ class SwapService {
           partner,
           partnerAddress,
           partnerFeeBps,
+          isDirectFeeTransfer,
           receiver,
           srcDecimals,
           destDecimals,
