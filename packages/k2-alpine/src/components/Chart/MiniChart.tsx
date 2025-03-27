@@ -8,15 +8,14 @@ import {
   PaintStyle,
   Path,
   Skia,
-  SkPath,
   StrokeCap,
   TileMode,
   vec
 } from '@shopify/react-native-skia'
 import { useMemo, useState } from 'react'
-import { curveNatural, line, scaleLinear } from 'd3'
 import { View } from '../Primitives'
 import { useTheme } from '../../hooks'
+import { makeCurve } from '../../utils/chart'
 
 export const MiniChart = ({
   style,
@@ -45,19 +44,22 @@ export const MiniChart = ({
     return data.filter((_, index) => index % step === 0)
   }, [data, downsampleTo])
 
-  const { path, lastPoint } = useMemo(
-    () =>
-      makeLineGraph({
-        data: downsampledData.map((item, index) => ({
-          index,
-          value: item.value
-        })),
-        size: graphSize,
-        xPadding: CIRCLE_RADIUS,
-        yPadding: CIRCLE_RADIUS
-      }),
-    [graphSize, downsampledData]
-  )
+  const { path, lastPoint } = useMemo(() => {
+    const curve = makeCurve({
+      data: downsampledData.map((item, index) => ({
+        index,
+        value: item.value
+      })),
+      size: graphSize,
+      xPadding: CIRCLE_RADIUS,
+      yPadding: CIRCLE_RADIUS
+    })
+
+    return {
+      path: curve.path ? Skia.Path.MakeFromSVGString(curve.path) : null,
+      lastPoint: curve.lastPoint
+    }
+  }, [graphSize, downsampledData])
 
   const circleColor = negative ? NEGATIVE_COLOR_RIGHT : POSITIVE_COLOR_RIGHT
 
@@ -122,60 +124,6 @@ export const MiniChart = ({
 }
 
 const CIRCLE_RADIUS = 4
-
-const makeLineGraph = ({
-  data,
-  size,
-  xPadding = 0,
-  yPadding = 0
-}: {
-  data: DataPoint[]
-  size: { width: number; height: number }
-  xPadding?: number
-  yPadding?: number
-}): {
-  min: { value: number; index: number }
-  max: { value: number; index: number }
-  path: SkPath | null
-  lastPoint: { x: number; y: number } | null
-} => {
-  const max = Math.max(...data.map(val => val.value))
-  const min = Math.min(...data.map(val => val.value))
-
-  const x = scaleLinear()
-    .domain([0, data.length - 1])
-    .range([xPadding, size.width - xPadding])
-
-  const y = scaleLinear()
-    .domain([min, max])
-    .range([size.height - yPadding, yPadding])
-
-  const curvedLine = line<DataPoint>()
-    .x(d => x(d.index))
-    .y(d => y(d.value))
-    .curve(curveNatural)(data)
-
-  const path = curvedLine ? Skia.Path.MakeFromSVGString(curvedLine) : null
-  const last = data[data.length - 1]
-  const lastPoint = last
-    ? {
-        x: x(last.index),
-        y: y(last.value)
-      }
-    : null
-
-  return {
-    min: { value: min, index: data.findIndex(val => val.value === min) },
-    max: { value: max, index: data.findIndex(val => val.value === max) },
-    path,
-    lastPoint
-  }
-}
-
-type DataPoint = {
-  index: number
-  value: number
-}
 
 const NEGATIVE_COLOR_LEFT = '#EA4542'
 const NEGATIVE_COLOR_RIGHT = '#F5643B'
