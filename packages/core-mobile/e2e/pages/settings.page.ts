@@ -201,11 +201,11 @@ class Settings {
   }
 
   async verifySelectedAppearance(selectedAppearance: string) {
-    await Actions.waitForElement(by.id(`${selectedAppearance}_selected`))
+    await assertions.isVisible(by.id(`${selectedAppearance}_selected`))
   }
 
   async verifyUnselectedAppearance(unselectedAppearance: string) {
-    await Actions.waitForElement(by.id(`${unselectedAppearance}_unselected`))
+    await assertions.isVisible(by.id(`${unselectedAppearance}_unselected`))
   }
 
   async selectAppearance(appearance: string) {
@@ -216,13 +216,13 @@ class Settings {
     selectedAppearance: string,
     [...unselectedAppearances]: string[]
   ) {
-    await this.verifySelectedAppearance(selectedAppearance)
-    await this.verifyUnselectedAppearance(unselectedAppearances[0] ?? '')
-    await this.verifyUnselectedAppearance(unselectedAppearances[1] ?? '')
-    await assertions.isVisible(this.appearanceTitle)
+    await Actions.waitForElement(this.appearanceTitle)
     await assertions.isVisible(this.system)
     await assertions.isVisible(this.light)
     await assertions.isVisible(this.dark)
+    await this.verifySelectedAppearance(selectedAppearance)
+    await this.verifyUnselectedAppearance(unselectedAppearances[0] ?? '')
+    await this.verifyUnselectedAppearance(unselectedAppearances[1] ?? '')
   }
 
   async goSettings() {
