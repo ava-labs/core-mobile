@@ -12,8 +12,7 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
   const {
     seedlessExportService,
     userExportInitResponse,
-    onVerifyExportInitSuccess,
-    setPendingRequest
+    onVerifyExportInitSuccess
   } = useSeedlessMnemonicExportContext()
   const { verifyFido } = useVerifyMFA(seedlessExportService.session)
   const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
@@ -43,19 +42,12 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
           mfaId,
           response: userExportInitResponse,
           onVerifySuccess: verifiedResponse => {
-            setPendingRequest(verifiedResponse)
-            onVerifyExportInitSuccess()
+            onVerifyExportInitSuccess(verifiedResponse)
           }
         })
       }
     },
-    [
-      navigate,
-      onVerifyExportInitSuccess,
-      setPendingRequest,
-      userExportInitResponse,
-      verifyFido
-    ]
+    [navigate, onVerifyExportInitSuccess, userExportInitResponse, verifyFido]
   )
 
   return (

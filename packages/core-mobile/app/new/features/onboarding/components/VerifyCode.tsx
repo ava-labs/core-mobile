@@ -21,13 +21,13 @@ import { TextInput as RNTextInput } from 'react-native'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
 
-export const VerifyCode = ({
+export const VerifyCode = <T,>({
   onVerifyCode,
   onVerifySuccess,
   sx
 }: {
-  onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
-  onVerifySuccess: () => void
+  onVerifyCode: (code: string) => Promise<Result<T | undefined, TotpErrors>>
+  onVerifySuccess: (response: T | undefined) => void
   sx?: SxProp
 }): React.JSX.Element => {
   const [isVerifying, setIsVerifying] = useState(false)
@@ -67,7 +67,7 @@ export const VerifyCode = ({
           throw new Error(result.error.message)
         }
         setIsVerifying(false)
-        onVerifySuccess()
+        onVerifySuccess(result.value)
         AnalyticsService.capture('TotpValidationSuccess')
       } catch (error) {
         setShowError(true)
