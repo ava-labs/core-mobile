@@ -34,6 +34,8 @@ import {
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { useColorScheme } from 'common/hooks/useColorScheme'
 
+const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
+
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
   const navigation = useNavigation()

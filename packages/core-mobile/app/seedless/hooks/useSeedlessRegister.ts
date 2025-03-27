@@ -16,7 +16,6 @@ import {
 import Logger from 'utils/Logger'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { hideLogo, showLogo } from 'components/GlobalLogoLoader'
-import { useRouter } from 'expo-router'
 import { showSimpleToast } from 'components/Snackbar'
 
 type RegisterProps = {
@@ -47,12 +46,12 @@ type ReturnType = {
     oidcAuth: {
       oidcToken: string
       mfaId: string
-    }
+    },
+    onVerified: (mfaType: 'totp' | 'fido') => void
   ) => Promise<void>
 }
 
 export const useSeedlessRegister = (): ReturnType => {
-  const { navigate } = useRouter()
   const [isRegistering, setIsRegistering] = useState(false)
 
   const isSeedlessMfaAuthenticatorBlocked = useSelector(
@@ -144,13 +143,14 @@ export const useSeedlessRegister = (): ReturnType => {
     oidcAuth: {
       oidcToken: string
       mfaId: string
-    }
+    },
+    onVerified: (mfaType: 'totp' | 'fido') => void
   ): Promise<void> => {
     if (mfa.type === 'totp') {
       if (isSeedlessMfaAuthenticatorBlocked) {
         showSimpleToast('Authenticator is not available at the moment')
       } else {
-        navigate('./verifyCodeModal')
+        onVerified(mfa.type)
       }
     } else if (mfa.type === 'fido') {
       if (PasskeyService.isSupported === false) {
@@ -173,7 +173,7 @@ export const useSeedlessRegister = (): ReturnType => {
 
         AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
         hideLogo()
-        navigate('./analyticsConsent')
+        onVerified(mfa.type)
       } catch (e) {
         hideLogo()
         Logger.error('passkey authentication failed', e)

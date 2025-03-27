@@ -3,6 +3,7 @@ import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryM
 import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { VerifyCode as VerifyCodeComponent } from 'features/onboarding/components/VerifyCode'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export default function VerifyCode(): JSX.Element {
   const { onVerifyCode } = useRecoveryMethodContext()
@@ -18,9 +19,12 @@ export default function VerifyCode(): JSX.Element {
   }, [router])
 
   return (
-    <VerifyCodeComponent
-      onVerifyCode={onVerifyCode}
-      onVerifySuccess={onVerifySuccess}
-    />
+    <BlurredBarsContentLayout>
+      <VerifyCodeComponent
+        onVerifyCode={onVerifyCode}
+        onVerifySuccess={onVerifySuccess}
+        sx={{ marginTop: 25 }}
+      />
+    </BlurredBarsContentLayout>
   )
 }
