@@ -1,9 +1,11 @@
 import React, { useCallback } from 'react'
-import { getWaitingPeriodDescription } from 'seedless/hooks/useSeedlessMnemonicExport'
 import { showAlert } from '@avalabs/k2-alpine'
 import { SeedlessExportInstructions } from 'features/accountSettings/components/SeedlessExportInstructions'
 import Logger from 'utils/Logger'
-import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
+import {
+  getWaitingPeriodDescription,
+  useSeedlessMnemonicExportContext
+} from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 
 const SeedlessExportNotInitiatedScreen = (): JSX.Element => {
   const { initExport } = useSeedlessMnemonicExportContext()
