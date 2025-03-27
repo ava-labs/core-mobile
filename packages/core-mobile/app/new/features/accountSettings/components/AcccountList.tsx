@@ -99,6 +99,7 @@ export const AccountList = (): React.JSX.Element => {
         account={item as Account}
         onSelectAccount={onSelectAccount}
         gotoAccountDetails={gotoAccountDetails}
+        testID={`account #${index + 1}`}
       />
     ),
     [activeAccount?.index, gotoAccountDetails, onSelectAccount]
@@ -114,6 +115,7 @@ export const AccountList = (): React.JSX.Element => {
   return (
     <View sx={{ flexDirection: 'row', height: ACCOUNT_CARD_SIZE }}>
       <AnimatedFlatList
+        testID="account_list"
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         updateCellsBatchingPeriod={100}
@@ -158,6 +160,7 @@ export const AccountList = (): React.JSX.Element => {
                 borderRadius: 18
               }}>
               <Icons.Content.Add
+                testID="add_account_btn"
                 width={25}
                 height={25}
                 color={colors.$textPrimary}
