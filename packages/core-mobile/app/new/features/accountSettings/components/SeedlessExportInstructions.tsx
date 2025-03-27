@@ -1,13 +1,11 @@
-import { Button, Text, View } from '@avalabs/k2-alpine'
+import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import React from 'react'
 import { Space } from 'components/Space'
 import {
-  getDelayInstruction
-  // getDelayWarningDescription,
-  // getDelayWarningTitle
-} from 'seedless/hooks/useSeedlessMnemonicExport'
-// import AlertBanner from 'screens/rpc/components/v2/AlertBanner'
-// import { AlertType } from '@avalabs/vm-module-types'
+  getDelayInstruction,
+  getDelayWarningDescription,
+  getDelayWarningTitle
+} from '../context/SeedlessMnemonicExportProvider'
 
 interface Props {
   onNext: () => void
@@ -20,11 +18,15 @@ const STEPS = [
 ]
 
 export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
   return (
     <View
       sx={{ marginHorizontal: 16, flex: 1, justifyContent: 'space-between' }}>
       <View>
-        <Text variant="heading3">Recovery Phrase</Text>
+        <Text variant="heading2">Show recovery phrase</Text>
         {STEPS.map((step, index) => {
           return (
             <View key={index}>
@@ -32,19 +34,19 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
               <View sx={{ flexDirection: 'row' }}>
                 <View
                   sx={{
-                    backgroundColor: '$neutral800',
+                    backgroundColor: '$surfacePrimary',
                     width: 24,
                     height: 24,
                     borderRadius: 12,
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>
-                  <Text variant="heading6" sx={{ color: '$neutral50' }}>
+                  <Text variant="heading6" sx={{ color: '$textPrimary' }}>
                     {index + 1}.
                   </Text>
                 </View>
                 <Space x={12} />
-                <Text variant="body1" sx={{ color: '$neutral50' }}>
+                <Text variant="body1" sx={{ color: '$textPrimary' }}>
                   {step}
                 </Text>
               </View>
@@ -52,22 +54,47 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
           )
         })}
         <View
-          sx={{ marginVertical: 32, height: 1, backgroundColor: '$neutral800' }}
-        />
-        {/* <AlertBanner
-          alert={{
-            type: AlertType.WARNING,
-            details: {
-              title: getDelayWarningTitle(),
-              description: getDelayWarningDescription()
-            }
+          sx={{
+            marginVertical: 32,
+            height: 1,
+            backgroundColor: '$borderPrimary'
           }}
-        /> */}
+        />
+        <View
+          sx={{
+            borderRadius: 8,
+            backgroundColor: '$surfacePrimary',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12
+          }}>
+          <Icons.Action.Info color={colors.$textPrimary} />
+          <View>
+            <Text
+              sx={{
+                color: colors.$textPrimary,
+                fontSize: 13,
+                lineHeight: 16,
+                fontWeight: '600'
+              }}>
+              {getDelayWarningTitle()}
+            </Text>
+            <Text
+              sx={{
+                color: colors.$textPrimary,
+                fontSize: 13,
+                lineHeight: 16,
+                marginRight: 16
+              }}>
+              {getDelayWarningDescription()}
+            </Text>
+          </View>
+        </View>
       </View>
       <Button
         type="primary"
         size="large"
-        style={{ marginVertical: 16 }}
+        style={{ marginBottom: 60 }}
         onPress={onNext}>
         Next
       </Button>

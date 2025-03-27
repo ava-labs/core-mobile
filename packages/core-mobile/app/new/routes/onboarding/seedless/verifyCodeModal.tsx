@@ -3,23 +3,26 @@ import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryM
 import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { VerifyCode as VerifyCodeComponent } from 'features/onboarding/components/VerifyCode'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export default function VerifyCodeModal(): JSX.Element {
   const { onVerifyCode } = useRecoveryMethodContext()
   const router = useRouter()
 
   const onVerifySuccess = useCallback((): void => {
-    router.back()
-    router.navigate('./analyticsConsent')
+    router.replace('./analyticsConsent')
     AnalyticsService.capture('SeedlessMfaVerified', {
       type: 'Authenticator'
     })
   }, [router])
 
   return (
-    <VerifyCodeComponent
-      onVerifyCode={onVerifyCode}
-      onVerifySuccess={onVerifySuccess}
-    />
+    <BlurredBarsContentLayout>
+      <VerifyCodeComponent
+        onVerifyCode={onVerifyCode}
+        onVerifySuccess={onVerifySuccess}
+        sx={{ marginTop: 25 }}
+      />
+    </BlurredBarsContentLayout>
   )
 }

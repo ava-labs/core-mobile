@@ -93,7 +93,7 @@ const SignupScreen: FC = () => {
     navigate(AppNavigation.Root.SelectRecoveryMethods, {
       mfaMethods,
       onMFASelected: mfa => {
-        verify(mfa, oidcAuth)
+        verify(mfa, oidcAuth, handleAccountVerified)
       }
     })
   }

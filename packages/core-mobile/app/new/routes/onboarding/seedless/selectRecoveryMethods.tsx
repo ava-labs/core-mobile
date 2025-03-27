@@ -13,12 +13,25 @@ const SelectRecoveryMethodsScreen = (): JSX.Element => {
   const { mfaMethods, oidcAuth } = useRecoveryMethodContext()
   const { verify } = useSeedlessRegister()
   const { setOptions } = useNavigation()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back, navigate } = useRouter()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
 
-  const handleSelectMFA = (recoveryMethod: RecoveryMethod): void => {
-    recoveryMethod.mfa && oidcAuth && verify(recoveryMethod.mfa, oidcAuth)
-  }
+  const handleSelectMFA = useCallback(
+    (recoveryMethod: RecoveryMethod): void => {
+      if (!recoveryMethod.mfa || !oidcAuth) return
+
+      verify(recoveryMethod.mfa, oidcAuth, mfaType => {
+        if (mfaType === 'totp') {
+          navigate('./verifyCodeModal')
+          return
+        }
+        if (mfaType === 'fido') {
+          navigate('./analyticsConsent')
+        }
+      })
+    },
+    [navigate, oidcAuth, verify]
+  )
 
   const handlePressBack = useCallback((): void => {
     canGoBack() && back()

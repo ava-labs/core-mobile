@@ -16,13 +16,10 @@ import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
-import { WalletType } from 'services/wallet/types'
-import { useOnboardingContext } from 'features/onboarding/contexts/OnboardingProvider'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
   const { setOidcAuth, setMfaMethods } = useRecoveryMethodContext()
-  const { setWalletType } = useOnboardingContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -34,13 +31,11 @@ export default function Signup(): JSX.Element {
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
-    setWalletType(WalletType.MNEMONIC)
     router.navigate('/onboarding/mnemonic/termsAndConditions')
     AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
   const handleAccessExistingWallet = (): void => {
-    setWalletType(WalletType.MNEMONIC)
     router.navigate('/accessWallet')
     AnalyticsService.capture('AccessExistingWalletClicked')
   }
@@ -49,13 +44,11 @@ export default function Signup(): JSX.Element {
     oidcToken: string
     mfaId: string
   }): void => {
-    setWalletType(WalletType.SEEDLESS)
     setOidcAuth(oidcAuth)
     router.navigate('/onboarding/seedless/termsAndConditions')
   }
 
   const handleAccountVerified = (): void => {
-    setWalletType(WalletType.SEEDLESS)
     router.navigate('/onboarding/seedless/termsAndConditions')
   }
 
@@ -66,7 +59,6 @@ export default function Signup(): JSX.Element {
     },
     mfaMethods: MFA[]
   ): void => {
-    setWalletType(WalletType.SEEDLESS)
     setOidcAuth(oidcAuth)
     setMfaMethods(mfaMethods)
     router.navigate({
