@@ -20,8 +20,8 @@ const isInternalBuild =
 const APP_SWITCH_NUMBER_OF_TOUCHES = 2
 
 export const AppSwitcher = (): React.JSX.Element => {
-  const [isNewApp, setIsNewApp] = useState(
-    commonStorage.getBoolean(StorageKey.K2_ALPINE)
+  const [isNewApp, setIsNewApp] = useState<boolean>(
+    commonStorage.getBoolean(StorageKey.K2_ALPINE) || true
   )
 
   const switchApp = useCallback(() => {

@@ -1,3 +1,4 @@
+import assert from 'assert'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
@@ -444,6 +445,14 @@ class PortfolioPage {
   async displayAssetsByAllNetwork() {
     await Action.waitForElement(by.id(`network_logo__${cm.cChain_2}`))
     await Action.waitForElement(by.id(`network_logo__${cm.ethereum}`))
+  }
+
+  async verifyFiatCurrency(currency = '$') {
+    await Action.waitForElement(by.id('list_fiat_balance__0'))
+    const fiatBal =
+      (await Action.getElementText(by.id('list_fiat_balance__0'))) ?? ''
+    console.log(`${fiatBal}`)
+    assert(fiatBal.includes(currency), 'Fiat currency not found')
   }
 }
 

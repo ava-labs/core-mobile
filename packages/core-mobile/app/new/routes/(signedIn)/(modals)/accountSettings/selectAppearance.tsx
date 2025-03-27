@@ -70,6 +70,9 @@ const AppearanceComponent = ({
   return (
     <View sx={{ gap: 12 }}>
       <TouchableOpacity
+        testID={
+          isSelected ? `${appearance}_selected` : `${appearance}_unselected`
+        }
         sx={{
           height: 194,
           justifyContent: 'center'

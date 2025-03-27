@@ -136,6 +136,7 @@ const AccountSettingsScreen = (): JSX.Element => {
 
   return (
     <ScrollView
+      testID="settings_scroll_view"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 60 }}
       {...scrollViewProps}>
@@ -257,13 +258,13 @@ const AccountSettingsScreen = (): JSX.Element => {
             <Text
               variant="body1"
               sx={{ color: colors.$textDanger, lineHeight: 20 }}>
-              Delete Wallet
+              Delete wallet
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Footer */}
-        <View sx={{ gap: 8, alignItems: 'center' }}>
+        <View testID="settings_footer" sx={{ gap: 8, alignItems: 'center' }}>
           <Logos.AppIcons.Core
             color={colors.$textSecondary}
             width={79}
