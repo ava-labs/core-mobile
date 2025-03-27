@@ -7,7 +7,6 @@ import {
   GestureDetector,
   GestureHandlerRootView
 } from 'react-native-gesture-handler'
-import { runOnJS } from 'react-native-reanimated'
 import { StorageKey } from 'resources/Constants'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
