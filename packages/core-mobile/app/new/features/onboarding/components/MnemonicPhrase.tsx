@@ -29,7 +29,7 @@ export default function MnemonicPhrase({
   const {
     theme: { colors }
   } = useTheme()
-  const BLUR_BACKGROUND_COLOR = colors.$surfaceSecondary
+  const BLUR_BACKGROUND_COLOR = colors.$borderPrimary
 
   const mnemonics = (): JSX.Element => {
     const mnemonicRows = []
@@ -105,7 +105,7 @@ export default function MnemonicPhrase({
         {canToggleBlur ? (
           <Text
             variant="buttonMedium"
-            sx={{ color: '$blueMain' }}
+            sx={{ color: '$textPrimary' }}
             onPress={toggleRecoveryPhrase}>
             {`${hideMnemonic ? 'Show' : 'Hide'} Recovery Phrase`}
           </Text>
