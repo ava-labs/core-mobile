@@ -10,11 +10,13 @@ const BalanceChangeComponent = ({
 }): JSX.Element | null => {
   return (
     <>
-      <Text variant="body2">Balance Change</Text>
+      <Text variant="buttonMedium" style={{ marginTop: 6 }}>
+        Balance Change
+      </Text>
       <View
         sx={{
           justifyContent: 'space-between',
-          marginTop: 8,
+          marginTop: 10,
           borderRadius: 8,
           padding: 16,
           marginBottom: 16,
