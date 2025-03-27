@@ -4,24 +4,29 @@ import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 import { useRouter } from 'expo-router'
+import { UserExportInitResponse } from '@cubist-labs/cubesigner-sdk'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const {
     seedlessExportService,
     userExportInitResponse,
-    onVerifyExportInitSuccess,
-    setPendingRequest
+    onVerifyExportInitSuccess
   } = useSeedlessMnemonicExportContext()
   const { dismissAll, canGoBack, back } = useRouter()
 
-  const handleVerifySuccess = useCallback((): void => {
-    dismissAll()
-    canGoBack() && back()
-    onVerifyExportInitSuccess()
-  }, [back, canGoBack, dismissAll, onVerifyExportInitSuccess])
+  const handleVerifySuccess = useCallback(
+    (response: UserExportInitResponse): void => {
+      dismissAll()
+      canGoBack() && back()
+      onVerifyExportInitSuccess(response)
+    },
+    [back, canGoBack, dismissAll, onVerifyExportInitSuccess]
+  )
 
   const handleVerifyCode = useCallback(
-    async (code: string): Promise<Result<undefined, TotpErrors>> => {
+    async (
+      code: string
+    ): Promise<Result<UserExportInitResponse, TotpErrors>> => {
       if (!userExportInitResponse)
         return {
           success: false,
@@ -35,10 +40,9 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
         code
       )
       if (result.success) {
-        setPendingRequest(result.value.data())
         return {
           success: result.success,
-          value: undefined
+          value: result.value.data()
         }
       }
       return {
@@ -46,13 +50,15 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
         error: result.error
       }
     },
-    [seedlessExportService.session, setPendingRequest, userExportInitResponse]
+    [seedlessExportService.session, userExportInitResponse]
   )
 
   return (
     <VerifyCode
       onVerifyCode={handleVerifyCode}
-      onVerifySuccess={handleVerifySuccess}
+      onVerifySuccess={response =>
+        handleVerifySuccess(response as UserExportInitResponse)
+      }
     />
   )
 }

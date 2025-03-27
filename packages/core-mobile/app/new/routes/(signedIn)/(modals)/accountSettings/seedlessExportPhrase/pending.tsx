@@ -6,7 +6,7 @@ import {
   EXPORT_DELAY,
   useSeedlessMnemonicExportContext
 } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
-import { formatDistanceToNow } from 'date-fns'
+import { formatExportPhraseDuration } from 'features/accountSettings/utils/formatExportPhraseDuration'
 
 const SeedlessExportPendingScreen = (): JSX.Element => {
   const [progress, setProgress] = useState(0)
@@ -53,7 +53,7 @@ const SeedlessExportPendingScreen = (): JSX.Element => {
     const secondsPassed = EXPORT_DELAY - (availableAt - Date.now() / 1000)
 
     if (isInProgress) {
-      setTimeLeft(formatDistanceToNow(new Date(availableAt * 1000)))
+      setTimeLeft(formatExportPhraseDuration(new Date(availableAt * 1000)))
       setProgress(
         Math.min(Math.max(0, (secondsPassed / EXPORT_DELAY) * 100), 100)
       )
@@ -81,7 +81,7 @@ const SeedlessExportPendingScreen = (): JSX.Element => {
         onCancelExportRequest({
           title: 'Confirm Cancel?',
           description:
-            'Canceling will require you to restart the 2 day waiting period.'
+            'Canceling will require you to restart the 2 days waiting period.'
         })
       }
       progress={progress}
