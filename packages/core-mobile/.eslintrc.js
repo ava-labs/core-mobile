@@ -5,6 +5,8 @@ require('@rushstack/eslint-patch/modern-module-resolution')
 module.exports = {
   root: true,
   parserOptions: {
+    ecmaVersion: 2022,
+    sourceType: 'module',
     project: './tsconfig.json',
     tsconfigRootDir: __dirname
   },
