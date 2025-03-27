@@ -29,5 +29,6 @@ export * from './Chart/MiniChart'
 export * from './Chip/Chip'
 export * from './Pinchable/Pinchable'
 export * from './Tooltip/Tooltip'
+export * from './Video/Video'
 
 export * from './PriceChangeIndicator/types'

@@ -1,4 +1,4 @@
-import { Button, ScrollView, View } from '@avalabs/k2-alpine'
+import { alpha, Button, ScrollView, useTheme, View } from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { NftItem } from 'services/nft/types'
 
@@ -6,6 +6,7 @@ import { noop } from '@avalabs/core-utils-sdk'
 import { useNavigation } from '@react-navigation/native'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { showSnackbar } from 'common/utils/toast'
+import { LinearGradient } from 'expo-linear-gradient'
 import {
   ActionButton,
   ActionButtons
@@ -20,25 +21,49 @@ import {
   selectCollectibleVisibility,
   toggleCollectibleVisibility
 } from 'store/portfolio'
+import { truncateAddress } from 'utils/Utils'
+import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
-import { camelCaseToTitle, formatAddress, HORIZONTAL_MARGIN } from '../consts'
+import { camelCaseToTitle, HORIZONTAL_MARGIN } from '../consts'
 import { Statistic, StatisticGroup } from './CollectibleStatistic'
 
 export const CollectibleDetailsContent = ({
   collectible,
-  collectibles,
-  isExpanded
+  collectibles
 }: {
   collectible: NftItem | undefined
   collectibles: NftItem[]
-  isExpanded: boolean
 }): ReactNode => {
   const dispatch = useDispatch()
+  const {
+    theme: { colors }
+  } = useTheme()
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
   const { goBack } = useNavigation()
-
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
+
+  const collectibleVisibility = useSelector(selectCollectibleVisibility)
+  const isVisible = collectible
+    ? isCollectibleVisible(collectibleVisibility, collectible)
+    : false
+
+  const attributes = useMemo(
+    () =>
+      collectible?.processedMetadata?.attributes?.map(item => ({
+        text: camelCaseToTitle(item.trait_type),
+        value: item.value
+      })) || [],
+    [collectible?.processedMetadata?.attributes]
+  )
+
+  const createdBy = useMemo(() => {
+    return collectible?.address
+      ? isAddress(collectible?.address)
+        ? truncateAddress(collectible?.address)
+        : collectible?.address
+      : 'Unknown'
+  }, [collectible?.address])
 
   const canRefreshMetadata = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
@@ -64,20 +89,6 @@ export const CollectibleDetailsContent = ({
 
     await refreshMetadata(collectible, collectible.chainId)
   }, [canRefreshMetadata, collectible, refreshMetadata])
-
-  const attributes = useMemo(
-    () =>
-      collectible?.processedMetadata?.attributes?.map(item => ({
-        text: camelCaseToTitle(item.trait_type),
-        value: item.value
-      })) || [],
-    [collectible?.processedMetadata?.attributes]
-  )
-
-  const collectibleVisibility = useSelector(selectCollectibleVisibility)
-  const isVisible = collectible
-    ? isCollectibleVisible(collectibleVisibility, collectible)
-    : false
 
   const toggleHidden = useCallback((): void => {
     if (collectible?.localId) {
@@ -110,57 +121,75 @@ export const CollectibleDetailsContent = ({
   return (
     <View
       style={{
-        gap: 20,
         flex: 1,
         overflow: 'hidden'
       }}>
       <View
         sx={{
           alignItems: 'center',
-          zIndex: 10
+          zIndex: 10,
+          backgroundColor: '$surfacePrimary'
         }}>
         <ActionButtons buttons={ACTION_BUTTONS} />
       </View>
 
-      <ScrollView
-        scrollEnabled={isExpanded}
-        contentContainerStyle={{
-          paddingHorizontal: HORIZONTAL_MARGIN,
-          gap: 12,
-          paddingBottom: 150 + insets.bottom
+      <View
+        style={{
+          position: 'relative',
+          height: '100%'
         }}>
-        <StatisticGroup>
-          <Statistic
-            inline
-            text={'Created by'}
-            value={
-              collectible?.address ? formatAddress(collectible.address) : ''
-            }
-          />
-        </StatisticGroup>
-        <StatisticGroup>
-          <Statistic inline text={'Standard'} value={collectible?.type} />
-          <Statistic
-            inline
-            text={'Chain'}
-            value={
-              networks.getNetwork(collectible?.chainId)?.chainName ||
-              'Unknown network'
-            }
-          />
-        </StatisticGroup>
-        {/* TODO: Decide if we do it horizontally or vertically, ask design */}
-        <StatisticGroup>
-          {attributes.map((attribute, index) => (
+        <LinearGradient
+          colors={[
+            alpha(colors.$surfacePrimary, 1),
+            alpha(colors.$surfacePrimary, 0)
+          ]}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 30,
+            zIndex: 10
+          }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          pointerEvents="none"
+        />
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: HORIZONTAL_MARGIN,
+            gap: 12,
+            paddingBottom: 200 + insets.bottom,
+            paddingTop: 20
+          }}>
+          <StatisticGroup>
+            <Statistic inline text={'Created by'} value={createdBy} />
+          </StatisticGroup>
+          <StatisticGroup>
+            <Statistic inline text={'Standard'} value={collectible?.type} />
             <Statistic
-              key={index}
               inline
-              text={attribute.text}
-              value={attribute.value}
+              text={'Chain'}
+              value={
+                networks.getNetwork(collectible?.chainId)?.chainName ||
+                'Unknown network'
+              }
             />
-          ))}
-        </StatisticGroup>
-      </ScrollView>
+          </StatisticGroup>
+          <StatisticGroup>
+            {attributes.map((attribute, index) => (
+              <Statistic
+                key={index}
+                inline
+                text={attribute.text}
+                value={attribute.value}
+              />
+            ))}
+          </StatisticGroup>
+        </ScrollView>
+      </View>
 
       <View
         style={{

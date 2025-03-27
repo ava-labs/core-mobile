@@ -144,26 +144,22 @@ export const useCollectiblesFilterAndSort = (
     (nfts: NftItem[]) => {
       if (nfts.length === 0) return []
 
-      const filteredByHidden = nfts.filter((nft: NftItem) => {
-        if (filterOption[1] !== CollectibleStatus.Hidden)
+      if (filterOption[1] !== CollectibleStatus.Hidden)
+        nfts = nfts.filter((nft: NftItem) => {
           return isCollectibleVisible(collectiblesVisibility, nft)
-        return true
-      })
+        })
 
-      const filterByUnprocessable = filteredByHidden.filter((nft: NftItem) => {
-        if (isUnprocessableVisible)
+      if (isUnprocessableVisible)
+        nfts = nfts.filter((nft: NftItem) => {
           return nft.status !== NftLocalStatus.Unprocessable
-        return true
-      })
+        })
 
-      const filteredNetworks = getFilteredNetworks(
-        filterByUnprocessable,
-        filterOption[0] as AssetNetworkFilter
-      )
-      return getFilteredContentType(
-        filteredNetworks,
+      nfts = getFilteredNetworks(nfts, filterOption[0] as AssetNetworkFilter)
+      nfts = getFilteredContentType(
+        nfts,
         filterOption[1] as CollectibleTypeFilter
       )
+      return nfts
     },
     [filterOption, isUnprocessableVisible, collectiblesVisibility]
   )

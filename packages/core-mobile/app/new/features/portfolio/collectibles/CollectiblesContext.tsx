@@ -96,7 +96,7 @@ export const CollectiblesProvider = ({
 
   const processImageData = useCallback(
     (localId: NftLocalId, logoUri: string): void => {
-      logoUri &&
+      if (logoUri)
         NftProcessor.fetchImageAndAspect(logoUri)
           .then(result => {
             setImageData(prevData => ({
@@ -115,6 +115,11 @@ export const CollectiblesProvider = ({
             }))
             Logger.error(e)
           })
+      else
+        setStatusData(prevData => ({
+          ...prevData,
+          [localId]: NftLocalStatus.Unprocessable
+        }))
     },
     []
   )
@@ -129,7 +134,7 @@ export const CollectiblesProvider = ({
       tokenId: string
       tokenUri: string
     }): void => {
-      tokenUri &&
+      if (tokenUri)
         NftProcessor.fetchMetadata(getTokenUri({ tokenId, tokenUri }))
           .then(result => {
             processImageData(localId, result.image)
@@ -145,6 +150,11 @@ export const CollectiblesProvider = ({
             }))
             Logger.error(e)
           })
+      else
+        setStatusData(prevData => ({
+          ...prevData,
+          [localId]: NftLocalStatus.Unprocessable
+        }))
     },
     [processImageData]
   )

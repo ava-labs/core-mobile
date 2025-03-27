@@ -9,6 +9,8 @@ import {
 } from 'store/balance'
 import { NftContentType } from 'store/nft'
 
+export const SCREEN_WIDTH = Dimensions.get('window').width
+export const SCREEN_HEIGHT = Dimensions.get('window').height
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
 export const VERTICAL_ITEM_GAP = 12
@@ -26,15 +28,21 @@ export const getCollectibleName = (collectible: NftItem): string => {
     : collectible.processedMetadata?.name.length
     ? collectible.processedMetadata?.name
     : ''
-  return fallback?.length > 0 ? fallback.trim() : 'Untitled'
+  const fallbackWithoutTokenId = fallback.replace(/#\d+/g, '')
+
+  return fallbackWithoutTokenId?.length > 0
+    ? fallbackWithoutTokenId.trim()
+    : 'Untitled'
 }
 
 export const getCollectibleCollectionName = (collectible: NftItem): string => {
   const fallback = collectible.collectionName || ''
 
-  return fallback.length === 0 || ['Unknown', 'Unkown'].includes(fallback)
-    ? 'Unknown collection'
-    : fallback.trim()
+  return `#${collectible.tokenId} ${
+    fallback.length === 0 || ['Unknown', 'Unkown'].includes(fallback)
+      ? 'Unknown collection'
+      : fallback.trim()
+  }`
 }
 
 export const getCollectibleDescription = (collectible: NftItem): string => {

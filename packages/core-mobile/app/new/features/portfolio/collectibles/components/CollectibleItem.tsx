@@ -21,7 +21,10 @@ import {
   VERTICAL_ITEM_GAP
 } from '../consts'
 import { CardContainer } from './CardContainer'
-import { CollectibleRenderer } from './CollectibleRenderer'
+import {
+  CollectibleRenderer,
+  CollectibleRendererProps
+} from './CollectibleRenderer'
 
 export const CollectibleItem = memo(
   ({
@@ -55,6 +58,16 @@ export const CollectibleItem = memo(
         index={index}
         onPress={onPress}
         onLoaded={onLoaded}
+        rendererProps={{
+          videoProps: {
+            muted: true,
+            autoPlay: false,
+            hideControls: true
+          },
+          style: {
+            borderRadius: 18
+          }
+        }}
         style={{
           marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
           marginBottom: VERTICAL_ITEM_GAP,
@@ -120,7 +133,8 @@ export const CollectibleListItem = memo(
                 flex: 1,
                 justifyContent: 'space-between',
                 flexDirection: 'row',
-                alignItems: 'center'
+                alignItems: 'center',
+                gap: 10
               }}>
               <View
                 style={{
@@ -138,19 +152,19 @@ export const CollectibleListItem = memo(
                   {collectibleCollectionName}
                 </Text>
               </View>
-              {(collectible?.imageData?.image ||
-                collectible?.imageData?.video) &&
-              collectible.balance ? (
-                <Chip
-                  size="small"
-                  variant="dark"
-                  style={{
-                    maxWidth: 100,
-                    minWidth: 30
-                  }}>
-                  {collectible.balance.toString()}
-                </Chip>
-              ) : null}
+              <View>
+                {collectible.balance ? (
+                  <Chip
+                    size="small"
+                    variant="dark"
+                    style={{
+                      maxWidth: 100,
+                      minWidth: 30
+                    }}>
+                    {collectible.balance.toString()}
+                  </Chip>
+                ) : null}
+              </View>
             </View>
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
           </View>
@@ -166,6 +180,7 @@ export const CollectibleGridItem = memo(
     type,
     index,
     style,
+    rendererProps,
     onLoaded,
     onPress
   }: {
@@ -173,6 +188,7 @@ export const CollectibleGridItem = memo(
     type: CollectibleView
     index: number
     style?: ViewStyle
+    rendererProps?: Omit<CollectibleRendererProps, 'collectible'>
     onLoaded?: () => void
     onPress?: () => void
   }): ReactNode => {
@@ -189,7 +205,10 @@ export const CollectibleGridItem = memo(
             },
             { ...style }
           ]}>
-          <CollectibleRenderer onLoaded={onLoaded} collectible={collectible}>
+          <CollectibleRenderer
+            collectible={collectible}
+            onLoaded={onLoaded}
+            {...rendererProps}>
             <View
               style={{
                 position: 'absolute',
@@ -197,9 +216,7 @@ export const CollectibleGridItem = memo(
                 right: 10,
                 top: 10
               }}>
-              {(collectible?.imageData?.image ||
-                collectible?.imageData?.video) &&
-              collectible.balance ? (
+              {collectible.balance ? (
                 <Chip
                   size="small"
                   variant="dark"

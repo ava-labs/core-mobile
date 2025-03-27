@@ -1,33 +1,44 @@
-import { ANIMATED, Icons, Text, useTheme } from '@avalabs/k2-alpine'
-import { Video } from '@avalabs/k2-alpine/src/components/Video/Video'
+import {
+  ANIMATED,
+  Icons,
+  Text,
+  useTheme,
+  Video,
+  VideoProps
+} from '@avalabs/k2-alpine'
 import { Image, ImageErrorEventData } from 'expo-image'
 import React, {
+  memo,
   ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
-  memo
+  useState
 } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
 
+export interface CollectibleRendererProps {
+  collectible: NftItem
+  children?: ReactNode
+  style?: ViewStyle
+  videoProps?: VideoProps
+  onLoaded?: () => void
+}
+
 export const CollectibleRenderer = memo(
   ({
     collectible,
     children,
     onLoaded,
+    videoProps,
     style
-  }: {
-    collectible: NftItem
-    children?: ReactNode
-    style?: ViewStyle
-    onLoaded?: () => void
-  }): ReactNode => {
+  }: // eslint-disable-next-line sonarjs/cognitive-complexity
+  CollectibleRendererProps): ReactNode => {
     const {
       theme: { colors }
     } = useTheme()
@@ -96,11 +107,8 @@ export const CollectibleRenderer = memo(
               thumbnail={collectible?.imageData?.image}
               onLoadEnd={onLoadEnd}
               onError={onVideoError}
-              autoPlay={false}
-              muted
-              hideControls
+              {...videoProps}
             />
-            {children}
           </Animated.View>
         )
 
@@ -135,14 +143,12 @@ export const CollectibleRenderer = memo(
                 bottom: 0
               }}
             />
-            {children}
           </Animated.View>
         )
       }
 
       return null
     }, [
-      children,
       collectible?.imageData?.image,
       collectible?.imageData?.video,
       collectible.localId,
@@ -150,7 +156,8 @@ export const CollectibleRenderer = memo(
       onImageError,
       onLoadEnd,
       onLoadStart,
-      onVideoError
+      onVideoError,
+      videoProps
     ])
 
     return (
@@ -159,7 +166,8 @@ export const CollectibleRenderer = memo(
           {
             flex: 1,
             width: '100%',
-            height: '100%'
+            height: '100%',
+            overflow: 'hidden'
           },
           style
         ]}>
@@ -178,6 +186,7 @@ export const CollectibleRenderer = memo(
         </View>
 
         {renderContent}
+        {isLoading ? null : children}
       </View>
     )
   }
@@ -211,7 +220,8 @@ const CollectibleSkeleton = (): ReactNode => {
       ref={contentRef}
       onLayout={onLayout}
       style={{
-        flex: 1
+        width: '100%',
+        height: '100%'
       }}>
       <ContentLoader
         speed={1}

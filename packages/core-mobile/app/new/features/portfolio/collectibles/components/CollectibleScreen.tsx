@@ -1,23 +1,9 @@
-import {
-  alpha,
-  Icons,
-  Pinchable,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { ErrorState } from 'common/components/ErrorState'
-import { Glow, GlowRef } from 'common/components/Glow'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
-import { CollectibleGridItem } from 'features/portfolio/collectibles/components/CollectibleItem'
-import {
-  getCollectibleDescription,
-  getCollectibleName,
-  HORIZONTAL_MARGIN
-} from 'features/portfolio/collectibles/consts'
+import { HORIZONTAL_MARGIN } from 'features/portfolio/collectibles/consts'
 import React, {
   ReactNode,
   useCallback,
@@ -26,31 +12,28 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Dimensions } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import Animated, {
   Extrapolation,
   interpolate,
-  SharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
-  runOnJS
+  withSequence,
+  withTiming
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NftItem } from 'services/nft/types'
-import { CollectibleView } from 'store/balance'
+import { SCREEN_HEIGHT } from '../consts'
 import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
 } from '../hooks/useCollectiblesFilterAndSort'
 import { CollectibleDetailsContent } from './CollectibleDetailsContent'
-
-const SCREEN_WIDTH = Dimensions.get('window').width
-const SCREEN_HEIGHT = Dimensions.get('window').height
-const CARD_SIZE = SCREEN_WIDTH - HORIZONTAL_MARGIN * 4
-const SNAP_DISTANCE = CARD_SIZE
-const CARD_SIZE_SMALL = 120
+import {
+  CARD_SIZE_SMALL,
+  CollectibleDetailsHeader,
+  SNAP_DISTANCE
+} from './CollectibleDetailsHeader'
 
 type CollectibleScreenRouteParams = {
   localId?: string
@@ -66,6 +49,7 @@ export const CollectibleScreen = ({
   } = useTheme()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
 
   const { collectibles } = useCollectiblesContext()
   const { filteredAndSorted } = useCollectiblesFilterAndSort(
@@ -73,16 +57,11 @@ export const CollectibleScreen = ({
     initial
   )
 
-  const [isExpanded, setIsExpanded] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(
     filteredAndSorted?.findIndex(
       item => item.localId.toLowerCase() === localId?.toLowerCase()
     ) ?? -1
   )
-
-  const scrollY = useSharedValue(0)
-  const CONTENT_HEIGHT = SCREEN_HEIGHT - insets.top - insets.bottom
-  const scrollViewRef = useRef<Animated.ScrollView>(null)
 
   const collectible = useMemo(
     () => filteredAndSorted[currentIndex],
@@ -92,16 +71,21 @@ export const CollectibleScreen = ({
   const isFirst = currentIndex === 0
   const isLast = currentIndex === filteredAndSorted.length - 1
 
+  const scrollY = useSharedValue(0)
+  const bounceValue = useSharedValue(0)
+  const scrollViewRef = useRef<Animated.ScrollView>(null)
+
   const scrollViewHandler = useAnimatedScrollHandler(event => {
     'worklet'
     scrollY.value = event.contentOffset.y
-    runOnJS(setIsExpanded)(scrollY.value > SNAP_DISTANCE)
   })
 
-  const onExpand = (): void => {
-    scrollViewRef.current?.scrollToEnd({
-      animated: true
-    })
+  const onSeeMore = (): void => {
+    'worklet'
+    bounceValue.value = withSequence(
+      withTiming(-40, ANIMATED.TIMING_CONFIG),
+      withTiming(0, ANIMATED.TIMING_CONFIG)
+    )
   }
 
   const onPrevious = useCallback((): void => {
@@ -174,21 +158,50 @@ export const CollectibleScreen = ({
 
   useEffect(() => {
     navigation.setOptions({
-      headerRight
+      headerRight,
+      headerTransparent: true,
+      headerStyle: {
+        elevation: 0,
+        shadowOpacity: 0
+      }
     })
   }, [navigation, currentIndex, filteredAndSorted, headerRight])
 
-  const topContentStyle = useAnimatedStyle(() => {
+  const onBack = useCallback((): void => {
+    navigation.goBack()
+  }, [navigation])
+
+  const renderEmpty = useMemo((): ReactNode => {
+    return (
+      <ErrorState
+        sx={{ height: SCREEN_HEIGHT - headerHeight, paddingTop: headerHeight }}
+        title={`Oops\nThis collectible could not be loaded`}
+        description="Please hit refresh or try again later"
+        button={{
+          title: 'Go back',
+          onPress: onBack
+        }}
+      />
+    )
+  }, [headerHeight, onBack])
+
+  const headerStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, CARD_SIZE_SMALL + 48],
+      [0, headerHeight + 70],
+      Extrapolation.CLAMP
+    )
+
+    const height = interpolate(
+      scrollY.value,
+      [0, SNAP_DISTANCE],
+      [SCREEN_HEIGHT, CARD_SIZE_SMALL],
       Extrapolation.CLAMP
     )
 
     return {
-      height: CONTENT_HEIGHT,
-      paddingBottom: insets.bottom,
+      height,
       transform: [
         {
           translateY
@@ -201,15 +214,15 @@ export const CollectibleScreen = ({
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, -(CONTENT_HEIGHT - CARD_SIZE) / 2],
+      [0, -SCREEN_HEIGHT + headerHeight + SNAP_DISTANCE * 2],
       Extrapolation.CLAMP
     )
 
     return {
-      top: CONTENT_HEIGHT,
+      top: SCREEN_HEIGHT,
       left: 0,
       right: 0,
-      height: CONTENT_HEIGHT - CARD_SIZE_SMALL - 70,
+      height: SCREEN_HEIGHT - headerHeight - SNAP_DISTANCE,
       transform: [
         {
           translateY
@@ -230,224 +243,56 @@ export const CollectibleScreen = ({
     }
   })
 
-  const onBack = useCallback((): void => {
-    navigation.goBack()
-  }, [navigation])
-
-  const renderEmpty = useMemo((): ReactNode => {
-    return (
-      <ErrorState
-        sx={{ height: CONTENT_HEIGHT }}
-        title={`Oops\nThis collectible could not be loaded`}
-        description="Please hit refresh or try again later"
-        button={{
-          title: 'Go back',
-          onPress: onBack
-        }}
-      />
-    )
-  }, [CONTENT_HEIGHT, onBack])
-
-  return (
-    <BlurredBarsContentLayout>
-      <View
-        style={{
-          flex: 1
-        }}>
-        {collectible ? (
-          <Animated.ScrollView
-            ref={scrollViewRef}
-            onScroll={scrollViewHandler}
-            style={{
-              flex: 1,
-              position: 'relative',
-              zIndex: 100
-            }}
-            contentContainerStyle={{
-              paddingBottom: insets.bottom
-            }}
-            bounces={false}
-            showsVerticalScrollIndicator={false}
-            scrollEventThrottle={16}
-            overScrollMode="never"
-            stickyHeaderIndices={[0]}
-            nestedScrollEnabled>
-            <View
-              style={[
-                {
-                  flex: 1,
-                  zIndex: 100,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0
-                }
-              ]}>
-              <Animated.View
-                style={[
-                  topContentStyle,
-                  {
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }
-                ]}>
-                <CollectibleDetailsCard
-                  collectible={collectible}
-                  scrollY={scrollY}
-                />
-                <Animated.View
-                  style={[
-                    expandStyle,
-                    {
-                      position: 'absolute',
-                      left: 0,
-                      right: 0,
-                      zIndex: 100,
-                      bottom: insets.bottom + 20,
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }
-                  ]}>
-                  <Pressable
-                    onPress={onExpand}
-                    hitSlop={{
-                      top: 34,
-                      bottom: 34,
-                      left: 4,
-                      right: 4
-                    }}>
-                    <Icons.Custom.ArrowDownHandleBar
-                      color={alpha(colors.$textPrimary, 0.6)}
-                      width={40}
-                      height={10}
-                    />
-                  </Pressable>
-                </Animated.View>
-              </Animated.View>
-            </View>
-
-            <Animated.View
-              style={[
-                {
-                  position: 'absolute',
-                  zIndex: 1000
-                },
-                contentStyle
-              ]}>
-              <CollectibleDetailsContent
-                collectibles={filteredAndSorted}
-                isExpanded={isExpanded}
-                collectible={collectible}
-              />
-            </Animated.View>
-
-            <View style={{ height: CARD_SIZE + CONTENT_HEIGHT + 20 }} />
-          </Animated.ScrollView>
-        ) : (
-          renderEmpty
-        )}
-      </View>
-    </BlurredBarsContentLayout>
-  )
-}
-
-export const CollectibleDetailsCard = ({
-  collectible,
-  scrollY
-}: {
-  collectible: NftItem
-  scrollY: SharedValue<number>
-}): ReactNode => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  const glowRef = useRef<GlowRef>(null)
-
-  const animateGlow = (): void => {
-    glowRef.current?.startAnimation()
-  }
-
-  const opacityStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [0, SNAP_DISTANCE / 5],
-      [1, 0],
-      Extrapolation.CLAMP
-    )
-
+  const bounceStyle = useAnimatedStyle(() => {
     return {
-      opacity
-    }
-  })
-
-  const cardStyle = useAnimatedStyle(() => {
-    const size = interpolate(
-      scrollY.value,
-      [0, SNAP_DISTANCE],
-      [CARD_SIZE, CARD_SIZE_SMALL],
-      Extrapolation.CLAMP
-    )
-
-    return {
-      height: size,
-      width: size
-    }
-  })
-
-  const glowStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      scrollY.value,
-      [0, SNAP_DISTANCE],
-      [1, 0.365],
-      Extrapolation.CLAMP
-    )
-
-    return {
-      transform: [{ scale }]
+      transform: [
+        {
+          translateY: bounceValue.value
+        }
+      ]
     }
   })
 
   return (
     <View
       style={{
-        position: 'relative',
-        zIndex: 1,
-        width: '100%',
-        height: '100%',
-        justifyContent: 'center',
-        alignItems: 'center'
+        flex: 1
       }}>
-      <View
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          width: '100%',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <Animated.View
-          style={[
-            cardStyle,
-            {
-              zIndex: 1000,
-              position: 'relative'
-            }
-          ]}>
-          <Pinchable
-            onGestureEnd={animateGlow}
-            style={{
-              height: '100%',
-              width: '100%'
-            }}>
+      {collectible ? (
+        <Animated.ScrollView
+          ref={scrollViewRef}
+          onScroll={scrollViewHandler}
+          style={{
+            flex: 1,
+            position: 'relative',
+            zIndex: 100
+          }}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom,
+            minHeight: SCREEN_HEIGHT + SNAP_DISTANCE
+          }}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          overScrollMode="never"
+          stickyHeaderIndices={[0]}
+          nestedScrollEnabled>
+          <Animated.View
+            style={[
+              {
+                flex: 1,
+                zIndex: 100,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }
+            ]}>
             <Animated.View
               style={[
-                glowStyle,
+                headerStyle,
+                bounceStyle,
                 {
                   position: 'absolute',
                   top: 0,
@@ -455,102 +300,64 @@ export const CollectibleDetailsCard = ({
                   right: 0,
                   bottom: 0,
                   justifyContent: 'center',
-                  alignItems: 'center',
-                  zIndex: -1
+                  alignItems: 'center'
                 }
               ]}>
-              <Glow ref={glowRef} size={CARD_SIZE * 1.8} />
-            </Animated.View>
-
-            <CollectibleGridItem
-              collectible={collectible}
-              index={0}
-              onLoaded={animateGlow}
-              type={CollectibleView.LargeGrid}
-              style={{
-                width: '100%',
-                height: '100%'
-              }}
-            />
-          </Pinchable>
-        </Animated.View>
-
-        <View
-          style={{
-            position: 'relative',
-            width: '100%',
-            zIndex: 1
-          }}>
-          <Animated.ScrollView
-            style={[
-              opacityStyle,
-              {
-                height: 170,
-                width: '100%'
-              }
-            ]}
-            contentContainerStyle={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingBottom: 50,
-              paddingTop: 20
-            }}
-            showsVerticalScrollIndicator={false}>
-            <View
-              style={{
-                width: CARD_SIZE
-              }}>
-              <Text
-                variant="buttonMedium"
-                style={{
-                  fontSize: 12
-                }}>
-                {`${getCollectibleName(collectible)} #${collectible?.tokenId} `}
-
-                <Text
-                  sx={{
-                    fontSize: 12,
-                    color: '$textSecondary'
+              <CollectibleDetailsHeader
+                collectible={collectible}
+                scrollY={scrollY}
+              />
+              <Animated.View
+                style={[
+                  expandStyle,
+                  {
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    zIndex: 100,
+                    bottom: insets.bottom + 20,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }
+                ]}>
+                <Pressable
+                  onPress={onSeeMore}
+                  hitSlop={{
+                    top: 34,
+                    bottom: 34,
+                    left: 4,
+                    right: 4
+                  }}
+                  style={{
+                    opacity: 0.3
                   }}>
-                  {getCollectibleDescription(collectible)}
-                </Text>
-              </Text>
-            </View>
-          </Animated.ScrollView>
-          <LinearGradient
-            colors={[
-              alpha(colors.$surfacePrimary, 1),
-              alpha(colors.$surfacePrimary, 0)
-            ]}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 40
-            }}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.5 }}
-            pointerEvents="none"
-          />
-          <LinearGradient
-            colors={[
-              alpha(colors.$surfacePrimary, 0),
-              alpha(colors.$surfacePrimary, 1)
-            ]}
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 60
-            }}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.5 }}
-            pointerEvents="none"
-          />
-        </View>
-      </View>
+                  <Icons.Custom.ArrowDownHandleBar
+                    color={colors.$textSecondary}
+                    width={40}
+                    height={10}
+                  />
+                </Pressable>
+              </Animated.View>
+            </Animated.View>
+          </Animated.View>
+
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                zIndex: 1000
+              },
+              contentStyle
+            ]}>
+            <CollectibleDetailsContent
+              collectibles={filteredAndSorted}
+              collectible={collectible}
+            />
+          </Animated.View>
+        </Animated.ScrollView>
+      ) : (
+        renderEmpty
+      )}
     </View>
   )
 }

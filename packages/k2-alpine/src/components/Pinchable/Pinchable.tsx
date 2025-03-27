@@ -5,17 +5,19 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSpring
+  withTiming
 } from 'react-native-reanimated'
 import { ANIMATED } from '../../utils'
 
 export const Pinchable = ({
   children,
   style,
-  onGestureEnd
+  onGestureEnd,
+  disabled
 }: {
   children: ReactNode
   style?: ViewStyle
+  disabled?: boolean
   onGestureEnd?: () => void
 }): ReactNode => {
   const scale = useSharedValue(1)
@@ -36,24 +38,26 @@ export const Pinchable = ({
   }
 
   const pinchGesture = Gesture.Pinch()
+    .enabled(!disabled)
     .onUpdate(event => {
-      scale.value = event.scale > 3 ? 3 : event.scale < 0.8 ? 0.8 : event.scale
+      scale.value = event.scale > 4 ? 4 : event.scale < 0.8 ? 0.8 : event.scale
       runOnJS(onUpdate)()
     })
     .onEnd(() => {
-      scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
+      scale.value = withTiming(1, ANIMATED.TIMING_CONFIG, () => {
         runOnJS(onEnd)()
       })
     })
 
   const rotationGesture = Gesture.Rotation()
+    .enabled(!disabled)
     .onUpdate(event => {
       const degrees = (event.rotation * 180) / Math.PI
       rotation.value = degrees >= 360 ? 360 : degrees <= -360 ? -360 : degrees
       runOnJS(onUpdate)()
     })
     .onEnd(() => {
-      rotation.value = withSpring(0, ANIMATED.SPRING_CONFIG, () => {
+      rotation.value = withTiming(0, ANIMATED.TIMING_CONFIG, () => {
         runOnJS(onEnd)()
       })
     })

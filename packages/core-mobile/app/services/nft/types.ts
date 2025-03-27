@@ -18,11 +18,11 @@ export enum NftLocalStatus {
 }
 
 export type UnprocessedNftItem = NftTokenWithBalance & {
+  chainId: number
   localId: string // address + tokenId
 }
 
 export type NftItem = UnprocessedNftItem & {
-  chainId: number
   imageData?: NftImageData
   processedMetadata?: NftItemExternalData
   status?: NftLocalStatus
