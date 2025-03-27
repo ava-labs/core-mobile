@@ -4,8 +4,8 @@ import React, { useMemo } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 
-const start = { x: 0, y: 0 }
-const end = { x: 0, y: 1 }
+const start = { x: 0.5, y: 0 }
+const end = { x: 0.5, y: 0.5 }
 export const LinearGradientBottomWrapper = ({
   children
 }: {
