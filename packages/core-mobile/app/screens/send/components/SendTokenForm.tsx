@@ -200,12 +200,12 @@ const SendTokenForm = ({
             hideErrorMessage
             error={isAllFieldsTouched && error ? error : undefined}
           />
-
           {supportsAvalancheDynamicFee && estimatedFee !== undefined && (
             <>
               <Space y={20} />
               <View sx={{ marginHorizontal: 16 }}>
                 <NetworkFeeSelector
+                  isDark
                   chainId={network.chainId}
                   gasLimit={Number(estimatedFee)}
                   onFeesChange={handleFeesChange}
