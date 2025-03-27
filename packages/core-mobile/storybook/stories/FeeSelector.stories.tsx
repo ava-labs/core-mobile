@@ -13,18 +13,10 @@ export default {
 export const Basic = ({
   label,
   selected,
-  onSelect,
-  value
+  onSelect
 }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 any): React.JSX.Element => {
-  return (
-    <FeeSelector
-      label={label}
-      selected={selected}
-      value={value}
-      onSelect={onSelect}
-    />
-  )
+  return <FeeSelector label={label} selected={selected} onSelect={onSelect} />
 }
 
 Basic.args = {
