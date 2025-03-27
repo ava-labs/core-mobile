@@ -6,11 +6,8 @@ import { useSeedlessMnemonicExportContext } from 'features/accountSettings/conte
 import { useRouter } from 'expo-router'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
-  const {
-    seedlessMnemonicExportData,
-    seedlessExportService,
-    checkPendingExports
-  } = useSeedlessMnemonicExportContext()
+  const { sessionData, seedlessExportService, checkPendingExports } =
+    useSeedlessMnemonicExportContext()
   const { canGoBack, back, dismissAll } = useRouter()
 
   const handleVerifySuccess = async (): Promise<void> => {
@@ -21,13 +18,10 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
 
   const handleVerifyCode = useCallback(
     async (code: string): Promise<Result<undefined, TotpErrors>> => {
-      if (
-        seedlessMnemonicExportData?.oidcToken &&
-        seedlessMnemonicExportData.mfaId
-      ) {
+      if (sessionData?.oidcToken && sessionData.mfaId) {
         return seedlessExportService.session.verifyCode(
-          seedlessMnemonicExportData.oidcToken,
-          seedlessMnemonicExportData.mfaId,
+          sessionData.oidcToken,
+          sessionData.mfaId,
           code
         )
       }
@@ -39,11 +33,7 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
         })
       }
     },
-    [
-      seedlessExportService.session,
-      seedlessMnemonicExportData?.mfaId,
-      seedlessMnemonicExportData?.oidcToken
-    ]
+    [seedlessExportService.session, sessionData?.mfaId, sessionData?.oidcToken]
   )
 
   return (
