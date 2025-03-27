@@ -232,7 +232,7 @@ __metadata:
     "@noble/secp256k1": 2.1.0
     "@notifee/react-native": 9.1.1
     "@openzeppelin/contracts": 5.0.2
-    "@paraswap/sdk": 7.2.1
+    "@paraswap/sdk": 7.2.3
     "@playwright/test": 1.48.0
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.15.0
@@ -7814,9 +7814,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@paraswap/sdk@npm:7.2.1":
-  version: 7.2.1
-  resolution: "@paraswap/sdk@npm:7.2.1"
+"@paraswap/sdk@npm:7.2.3":
+  version: 7.2.3
+  resolution: "@paraswap/sdk@npm:7.2.3"
   dependencies:
     "@paraswap/core": 2.4.0
     ts-essentials: ^10.0.3
@@ -7834,7 +7834,7 @@ __metadata:
       optional: true
     web3:
       optional: true
-  checksum: bd29510537964f871c75c67d44112cc51efac8c2194538546288873f09ae53d01ad5376a80d420f13ec6bb2b02e61d8401b087100b8ab8c4067477c8edea768c
+  checksum: d949675fffd583b463abd7a7a1a03525532f90968fea5121eb0d245960f9003be6db49e232d68a544cb1fec98c8c7012c1badde33aa971115b95e622a771c292
   languageName: node
   linkType: hard
 
