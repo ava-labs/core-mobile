@@ -14,13 +14,15 @@ interface FormatCurrencyProps {
   currency: string
   boostSmallNumberPrecision: boolean
   notation?: NotationTypes
+  showLessThanThreshold?: boolean
 }
 
 export function formatCurrency({
   amount,
   currency,
   boostSmallNumberPrecision,
-  notation
+  notation,
+  showLessThanThreshold = false
 }: FormatCurrencyProps): string {
   const formatter = selectCurrencyFormat({
     amount,
@@ -28,7 +30,12 @@ export function formatCurrency({
     boostSmallNumberPrecision,
     notation
   })
-  const formatted = formatter.format(amount)
+
+  const absAmount = Math.abs(amount)
+  const formatted =
+    showLessThanThreshold && absAmount < 0.001
+      ? `<${formatter.format(0.001)}`
+      : formatter.format(amount)
 
   // Check if the currency appears at the beginning
   if (formatted.startsWith(currency)) {
@@ -48,7 +55,32 @@ export function formatCurrency({
   return formatted
 }
 
-const getCurrencyNumberFormat = memoize(
+const selectCurrencyFormat = ({
+  amount,
+  currency,
+  boostSmallNumberPrecision,
+  notation
+}: FormatCurrencyProps): Intl.NumberFormat => {
+  if (notation === 'compact') {
+    return getCompactFormat(currency)
+  }
+
+  const absAmount = Math.abs(amount)
+
+  if (boostSmallNumberPrecision && absAmount < 1) {
+    return getHighPrecisionFormat(currency)
+  }
+
+  if (absAmount < 0.01) {
+    return getTenthsOfCentsFormat(currency)
+  }
+
+  return getStandardFormat(currency)
+}
+
+// Purpose: The default formatter for amounts ≥ 1, using 2 decimal places (e.g., "$5.68").
+// Acts as the "standard" currency formatter.
+const getStandardFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
       ...commonNumberFormat(currency),
@@ -56,7 +88,19 @@ const getCurrencyNumberFormat = memoize(
     })
 )
 
-const getSmallNumberCurrencyNumberFormat = memoize(
+// Purpose: Formats amounts < 0.01 with 3 decimal places.
+// For example "$0.005"
+const getTenthsOfCentsFormat = memoize(
+  (currency: string) =>
+    new Intl.NumberFormat('en-US', {
+      ...commonNumberFormat(currency),
+      maximumFractionDigits: 3
+    })
+)
+
+// Purpose: Formats small numbers (< 1) with high precision (up to 8 decimal places) when boostSmallNumberPrecision is true.
+// Used for cases needing extra precision beyond the standard formatting.
+const getHighPrecisionFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
       ...commonNumberFormat(currency),
@@ -64,7 +108,9 @@ const getSmallNumberCurrencyNumberFormat = memoize(
     })
 )
 
-const getCompactCurrencyNumberFormat = memoize(
+// Purpose: Formats numbers in compact notation (e.g., "$1.2K" instead of "$1200").
+// Uses 2 decimal places, designed for large numbers in a shorthand format
+const getCompactFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
       ...commonNumberFormat(currency),
@@ -82,18 +128,4 @@ const commonNumberFormat = (
     currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
     minimumFractionDigits: 2
   }
-}
-
-const selectCurrencyFormat = ({
-  amount,
-  currency,
-  boostSmallNumberPrecision,
-  notation
-}: FormatCurrencyProps): Intl.NumberFormat => {
-  if (notation === 'compact') {
-    return getCompactCurrencyNumberFormat(currency)
-  }
-  return boostSmallNumberPrecision && amount < 1
-    ? getSmallNumberCurrencyNumberFormat(currency)
-    : getCurrencyNumberFormat(currency)
 }
