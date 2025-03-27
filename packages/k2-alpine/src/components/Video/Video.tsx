@@ -6,6 +6,7 @@ import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
 import { View } from '../Primitives'
+import { colors } from '../../theme/tokens/colors'
 
 export interface VideoProps extends Omit<VideoViewProps, 'player'> {
   source?: string
@@ -27,9 +28,7 @@ export const Video = ({
   onError,
   ...props
 }: VideoProps): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const { theme } = useTheme()
   const player = useVideoPlayer(source || '', videoPlayer => {
     videoPlayer.loop = true
     videoPlayer.muted = muted ?? false
@@ -111,7 +110,7 @@ export const Video = ({
             position: 'absolute',
             right: 10,
             bottom: 10,
-            backgroundColor: alpha('#28282E', 0.8),
+            backgroundColor: alpha(colors.$neutral850, 0.8),
             borderRadius: 100,
             justifyContent: 'center',
             alignItems: 'center',
@@ -121,13 +120,13 @@ export const Video = ({
           }}>
           {player.muted ? (
             <Icons.Action.VolumeOff
-              color={colors?.$surfacePrimary}
+              color={theme.colors?.$surfacePrimary}
               width={16}
               height={16}
             />
           ) : (
             <Icons.Action.VolumeOn
-              color={colors?.$surfacePrimary}
+              color={theme.colors?.$surfacePrimary}
               width={16}
               height={16}
             />

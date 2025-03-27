@@ -9,8 +9,6 @@ import {
 } from 'store/balance'
 import { NftContentType } from 'store/nft'
 
-export const SCREEN_WIDTH = Dimensions.get('window').width
-export const SCREEN_HEIGHT = Dimensions.get('window').height
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
 export const VERTICAL_ITEM_GAP = 12

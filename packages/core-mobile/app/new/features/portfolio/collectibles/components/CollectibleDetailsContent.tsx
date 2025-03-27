@@ -1,4 +1,12 @@
-import { alpha, Button, ScrollView, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  Button,
+  GroupList,
+  GroupListItem,
+  ScrollView,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { NftItem } from 'services/nft/types'
 
@@ -25,7 +33,6 @@ import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { camelCaseToTitle, HORIZONTAL_MARGIN } from '../consts'
-import { Statistic, StatisticGroup } from './CollectibleStatistic'
 
 export const CollectibleDetailsContent = ({
   collectible,
@@ -48,10 +55,10 @@ export const CollectibleDetailsContent = ({
     ? isCollectibleVisible(collectibleVisibility, collectible)
     : false
 
-  const attributes = useMemo(
+  const attributes: GroupListItem[] = useMemo(
     () =>
       collectible?.processedMetadata?.attributes?.map(item => ({
-        text: camelCaseToTitle(item.trait_type),
+        title: camelCaseToTitle(item.trait_type),
         value: item.value
       })) || [],
     [collectible?.processedMetadata?.attributes]
@@ -164,30 +171,31 @@ export const CollectibleDetailsContent = ({
             paddingBottom: 200 + insets.bottom,
             paddingTop: 20
           }}>
-          <StatisticGroup>
-            <Statistic inline text={'Created by'} value={createdBy} />
-          </StatisticGroup>
-          <StatisticGroup>
-            <Statistic inline text={'Standard'} value={collectible?.type} />
-            <Statistic
-              inline
-              text={'Chain'}
-              value={
-                networks.getNetwork(collectible?.chainId)?.chainName ||
-                'Unknown network'
+          <GroupList
+            data={[
+              {
+                title: `Created by`,
+                value: createdBy
               }
-            />
-          </StatisticGroup>
-          <StatisticGroup>
-            {attributes.map((attribute, index) => (
-              <Statistic
-                key={index}
-                inline
-                text={attribute.text}
-                value={attribute.value}
-              />
-            ))}
-          </StatisticGroup>
+            ]}
+          />
+
+          <GroupList
+            data={[
+              {
+                title: `Standard`,
+                value: collectible?.type
+              },
+              {
+                title: `Chain`,
+                value:
+                  networks.getNetwork(collectible?.chainId)?.chainName ||
+                  'Unknown network'
+              }
+            ]}
+          />
+
+          <GroupList data={attributes} />
         </ScrollView>
       </View>
 

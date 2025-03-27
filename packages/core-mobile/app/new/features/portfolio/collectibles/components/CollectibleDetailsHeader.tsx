@@ -2,6 +2,7 @@ import {
   alpha,
   ANIMATED,
   Pinchable,
+  SCREEN_WIDTH,
   Text,
   useTheme,
   View
@@ -20,8 +21,7 @@ import { CollectibleView } from 'store/balance'
 import {
   getCollectibleDescription,
   getCollectibleName,
-  HORIZONTAL_MARGIN,
-  SCREEN_WIDTH
+  HORIZONTAL_MARGIN
 } from '../consts'
 import { CollectibleGridItem } from './CollectibleItem'
 

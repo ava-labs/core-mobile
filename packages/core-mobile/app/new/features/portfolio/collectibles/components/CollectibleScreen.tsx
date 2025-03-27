@@ -1,4 +1,10 @@
-import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  ANIMATED,
+  Icons,
+  SCREEN_HEIGHT,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
@@ -23,7 +29,6 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { SCREEN_HEIGHT } from '../consts'
 import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
