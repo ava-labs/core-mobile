@@ -8,11 +8,8 @@ import { useSeedlessMnemonicExportContext } from 'features/accountSettings/conte
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
-  const {
-    seedlessExportService,
-    seedlessMnemonicExportData,
-    checkPendingExports
-  } = useSeedlessMnemonicExportContext()
+  const { seedlessExportService, sessionData, checkPendingExports } =
+    useSeedlessMnemonicExportContext()
   const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
 
   useEffect(() => {
@@ -30,21 +27,16 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
         return
       }
 
-      if (recoveryMethod.mfa?.type === 'fido' && seedlessMnemonicExportData) {
+      if (recoveryMethod.mfa?.type === 'fido' && sessionData) {
         await seedlessExportService.session.approveFido(
-          seedlessMnemonicExportData.oidcToken,
-          seedlessMnemonicExportData.mfaId,
+          sessionData.oidcToken,
+          sessionData.mfaId,
           true
         )
         checkPendingExports()
       }
     },
-    [
-      checkPendingExports,
-      navigate,
-      seedlessMnemonicExportData,
-      seedlessExportService.session
-    ]
+    [checkPendingExports, navigate, sessionData, seedlessExportService.session]
   )
 
   return (

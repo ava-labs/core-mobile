@@ -7,6 +7,7 @@ import {
   useSeedlessMnemonicExportContext
 } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 import { formatExportPhraseDuration } from 'features/accountSettings/utils/formatExportPhraseDuration'
+import { getExportInitProgress } from 'features/accountSettings/utils/getExportInitProgress'
 
 const SeedlessExportPendingScreen = (): JSX.Element => {
   const [progress, setProgress] = useState(0)
@@ -46,14 +47,14 @@ const SeedlessExportPendingScreen = (): JSX.Element => {
     const { valid_epoch: availableAt, exp_epoch: availableUntil } =
       pendingRequest
 
-    const isInProgress = Date.now() / 1000 < availableAt
-
-    const isReadyToDecrypt =
-      Date.now() / 1000 >= availableAt && Date.now() / 1000 <= availableUntil
+    const { isInProgress, isReadyToDecrypt } = getExportInitProgress(
+      availableAt,
+      availableUntil
+    )
     const secondsPassed = EXPORT_DELAY - (availableAt - Date.now() / 1000)
 
     if (isInProgress) {
-      setTimeLeft(formatExportPhraseDuration(new Date(availableAt * 1000)))
+      setTimeLeft(formatExportPhraseDuration(availableAt * 1000))
       setProgress(
         Math.min(Math.max(0, (secondsPassed / EXPORT_DELAY) * 100), 100)
       )

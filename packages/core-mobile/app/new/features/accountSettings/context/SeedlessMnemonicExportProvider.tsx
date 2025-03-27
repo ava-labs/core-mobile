@@ -21,6 +21,7 @@ import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { getExportInitProgress } from '../utils/getExportInitProgress'
 
 const HOURS_48 = 60 * 60 * 48
 const ONE_MINUTE = 60
@@ -30,15 +31,14 @@ export const EXPORT_DELAY =
 
 type OnVerifyMfaSuccess<T> = (response: T) => void
 
-type SeedlessMnemonicExportData = {
+type SeedlessExportSessionData = {
   isMfaRequired: boolean
   oidcToken: string
   mfaId: string
 }
 
 export interface SeedlessMnemonicExportState {
-  seedlessMnemonicExportData?: SeedlessMnemonicExportData
-  setSeedlessMnemonicExportData: (data: SeedlessMnemonicExportData) => void
+  sessionData?: SeedlessExportSessionData
   seedlessExportService: SeedlessExportService
   startRefreshSeedlessToken: () => Promise<void>
   mnemonic?: string
@@ -76,22 +76,7 @@ export const SeedlessMnemonicExportProvider = ({
     CubeSignerResponse<UserExportCompleteResponse> | undefined
   >()
 
-  const [seedlessMnemonicExportData, setSeedlessMnemonicExportData] =
-    useState<SeedlessMnemonicExportData>()
-
-  const requestProgress = (
-    request: UserExportInitResponse
-  ): {
-    isInProgress: boolean
-    isReadyToDecrypt: boolean
-  } => {
-    const { valid_epoch: availableAt, exp_epoch: availableUntil } = request
-
-    const isInProgress = Date.now() / 1000 < availableAt
-    const isReadyToDecrypt =
-      Date.now() / 1000 >= availableAt && Date.now() / 1000 <= availableUntil
-    return { isInProgress, isReadyToDecrypt }
-  }
+  const [sessionData, setSessionData] = useState<SeedlessExportSessionData>()
 
   const onVerifyExportInitSuccess: OnVerifyMfaSuccess<UserExportInitResponse> =
     useCallback(
@@ -129,7 +114,6 @@ export const SeedlessMnemonicExportProvider = ({
       await seedlessExportService.userExportDelete(keyId)
       setPendingRequest(undefined)
       setMnemonic(undefined)
-      setKeyId('')
       setKeyPair(undefined)
       AnalyticsService.capture('SeedlessExportCancelled')
     } catch (e) {
@@ -142,7 +126,10 @@ export const SeedlessMnemonicExportProvider = ({
   const checkPendingExports = useCallback(async (): Promise<void> => {
     const pendingExport = await seedlessExportService.userExportList()
     if (pendingExport) {
-      const progress = requestProgress(pendingExport)
+      const progress = getExportInitProgress(
+        pendingExport.valid_epoch,
+        pendingExport.exp_epoch
+      )
       if (progress.isInProgress) {
         replace('./seedlessExportPhrase/pending')
         return
@@ -175,7 +162,7 @@ export const SeedlessMnemonicExportProvider = ({
       seedlessExportService.session
     )
     if (result.success) {
-      setSeedlessMnemonicExportData(result.value)
+      setSessionData(result.value)
       const mfaMethods = await seedlessExportService.session.userMfa()
       if (mfaMethods.length === 0) {
         handleNoMfaMethods()
@@ -273,8 +260,7 @@ export const SeedlessMnemonicExportProvider = ({
   return (
     <SeedlessMnemonicExportContext.Provider
       value={{
-        seedlessMnemonicExportData,
-        setSeedlessMnemonicExportData,
+        sessionData,
         seedlessExportService,
         startRefreshSeedlessToken,
         mnemonic,

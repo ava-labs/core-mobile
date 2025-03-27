@@ -1,12 +1,14 @@
 import React, { useState, useCallback, useEffect, useLayoutEffect } from 'react'
-import { getConfirmCloseDelayText } from 'seedless/hooks/useSeedlessMnemonicExport'
 import { useNavigation, useRouter } from 'expo-router'
 import { showAlert } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import BackBarButton from 'common/components/BackBarButton'
 import { copyToClipboard } from 'common/utils/clipboard'
-import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
+import {
+  getConfirmCloseDelayText,
+  useSeedlessMnemonicExportContext
+} from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 import { SeedlessExportMnemonicPhrase } from 'features/accountSettings/components/SeedlessExportMnemonicPhrase'
 
 const SeedlessExportReadyScreen = (): JSX.Element => {
