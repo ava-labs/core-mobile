@@ -77,7 +77,7 @@ const ApprovalPopup = (): JSX.Element => {
   const {
     gaslessEnabled,
     setGaslessEnabled,
-    showGaslessSwitch,
+    shouldShowGaslessSwitch,
     gaslessError,
     handleGaslessTx
   } = useGasless({
@@ -193,7 +193,7 @@ const ApprovalPopup = (): JSX.Element => {
     if (approveDisabled) return
     setSubmitting(true)
 
-    if (showGaslessSwitch && gaslessEnabled) {
+    if (shouldShowGaslessSwitch && gaslessEnabled) {
       const txHash = await handleGaslessTx(account.addressC)
       if (!txHash) {
         setSubmitting(false)
@@ -462,7 +462,7 @@ const ApprovalPopup = (): JSX.Element => {
         gasLimit={gasLimit}
         caip2ChainId={caip2ChainId}
         handleFeesChange={handleFeesChange}
-        showGaslessSwitch={showGaslessSwitch}
+        shouldShowGaslessSwitch={shouldShowGaslessSwitch}
       />
     )
   }

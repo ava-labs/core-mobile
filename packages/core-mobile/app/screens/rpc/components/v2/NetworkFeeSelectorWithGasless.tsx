@@ -13,7 +13,7 @@ import Separator from 'components/Separator'
 type Props = {
   gaslessEnabled: boolean
   setGaslessEnabled: React.Dispatch<React.SetStateAction<boolean>>
-  showGaslessSwitch: boolean
+  shouldShowGaslessSwitch: boolean
   gasLimit: number | undefined
   handleFeesChange: (fees: Eip1559Fees) => void
   caip2ChainId: string
@@ -22,7 +22,7 @@ type Props = {
 const NetworkFeeSelectorWithGasless = ({
   gaslessEnabled,
   setGaslessEnabled,
-  showGaslessSwitch,
+  shouldShowGaslessSwitch,
   gasLimit,
   caip2ChainId,
   handleFeesChange
@@ -31,7 +31,7 @@ const NetworkFeeSelectorWithGasless = ({
   const chainId = getChainIdFromCaip2(caip2ChainId)
 
   const renderGaslessSwitch = (): JSX.Element | null => {
-    if (!showGaslessSwitch) {
+    if (!shouldShowGaslessSwitch) {
       return null
     }
     return (
@@ -61,7 +61,7 @@ const NetworkFeeSelectorWithGasless = ({
   }
 
   const renderSeparator = (): JSX.Element | null => {
-    if (!showGaslessSwitch || gaslessEnabled) return null
+    if (!shouldShowGaslessSwitch || gaslessEnabled) return null
 
     return (
       <Separator
@@ -71,7 +71,7 @@ const NetworkFeeSelectorWithGasless = ({
     )
   }
   const renderNetworkFeeSelector = (): JSX.Element | null => {
-    if (gaslessEnabled && showGaslessSwitch) return null
+    if (gaslessEnabled && shouldShowGaslessSwitch) return null
     if (!chainId || !gasLimit) return null
 
     return (

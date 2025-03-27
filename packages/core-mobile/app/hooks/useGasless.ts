@@ -20,7 +20,7 @@ type Params = {
 type Return = {
   gaslessEnabled: boolean
   setGaslessEnabled: React.Dispatch<React.SetStateAction<boolean>>
-  showGaslessSwitch: boolean
+  shouldShowGaslessSwitch: boolean
   gaslessError: Alert | null
   handleGaslessTx: (addressFrom: string) => Promise<string | undefined>
 }
@@ -38,7 +38,7 @@ export const useGasless = ({
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
   const [gaslessError, setGaslessError] = useState<Alert | null>(null)
 
-  const showGaslessSwitch = useMemo(() => {
+  const shouldShowGaslessSwitch = useMemo(() => {
     return !isGaslessBlocked && !gaslessError && isGaslessEligible
   }, [gaslessError, isGaslessBlocked, isGaslessEligible])
 
@@ -130,7 +130,7 @@ export const useGasless = ({
   return {
     gaslessEnabled,
     setGaslessEnabled,
-    showGaslessSwitch,
+    shouldShowGaslessSwitch,
     gaslessError,
     handleGaslessTx
   }
