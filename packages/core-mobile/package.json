@@ -226,6 +226,7 @@
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
+    "@testing-library/react-hooks": "8.0.1",
     "@typechain/ethers-v6": "0.5.1",
     "@types/big.js": "6.2.2",
     "@types/bn.js": "5.1.6",
