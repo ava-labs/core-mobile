@@ -127,6 +127,7 @@ export const BalanceHeader = ({
   return (
     <View onLayout={onLayout}>
       <Text
+        testID="balance_header_account_name"
         variant="heading2"
         sx={{ color: '$textSecondary', lineHeight: 38 }}
         numberOfLines={1}>
