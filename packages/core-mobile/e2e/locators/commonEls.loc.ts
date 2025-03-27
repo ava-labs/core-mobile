@@ -29,5 +29,6 @@ export default {
   ethereum: 'Ethereum',
   bitcoinNetwork: 'Bitcoin network',
   bitcoin: 'Bitcoin',
-  allNetworks: 'All networks'
+  allNetworks: 'All networks',
+  balanceHeaderAccountName: 'balance_header_account_name'
 }

@@ -5,7 +5,10 @@ import { View as RNView } from 'react-native'
 export const AccountSettingBarButton = forwardRef<RNView>(
   ({ onPress }: { onPress?: () => void }, ref): JSX.Element => {
     return (
-      <TouchableOpacity ref={ref} onPress={onPress}>
+      <TouchableOpacity
+        testID="account_setting_bar_btn"
+        ref={ref}
+        onPress={onPress}>
         <Avatar
           backgroundColor="transparent"
           size={32}

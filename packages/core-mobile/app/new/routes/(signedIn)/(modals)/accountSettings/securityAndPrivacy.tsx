@@ -118,11 +118,14 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsData = useMemo(() => {
     return [
       {
-        title: 'Participate in Core Analytics',
+        title: 'Participate in Core analytics',
         value: (
           <Toggle
             onValueChange={() =>
               handleToggleCoreAnalyticsConsent(!coreAnalyticsConsent)
+            }
+            testID={
+              coreAnalyticsConsent ? 'analytics_enabled' : 'analytics_disabled'
             }
             value={coreAnalyticsConsent}
           />

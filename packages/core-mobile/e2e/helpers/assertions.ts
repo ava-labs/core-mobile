@@ -8,6 +8,7 @@ import Actions from './actions'
 
 const isVisible = async (item: Detox.NativeMatcher, num = 0) => {
   await expect(element(item).atIndex(num)).toBeVisible()
+  return true
 }
 
 // isVisibleNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
