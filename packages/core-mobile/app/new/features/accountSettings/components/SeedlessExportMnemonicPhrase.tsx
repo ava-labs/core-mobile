@@ -1,8 +1,14 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
-import { Button, Text, alpha, showAlert, useTheme } from '@avalabs/k2-alpine'
-import { BlurBackground } from 'common/components/BlurBackground'
+import {
+  Button,
+  Text,
+  showAlert,
+  useTheme,
+  View,
+  Icons
+} from '@avalabs/k2-alpine'
 import { MnemonicText } from 'common/components/MnemonicText'
 
 const EMPTY_MNEMONIC = [...Array(24).values()] as string[]
@@ -24,8 +30,6 @@ export const SeedlessExportMnemonicPhrase = ({
   const {
     theme: { colors }
   } = useTheme()
-  const BLUR_BACKGROUND_COLOR = alpha(colors.$surfaceSecondary, 0.1)
-
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: JSX.Element[][] = [[], [], []]
 
@@ -70,72 +74,89 @@ export const SeedlessExportMnemonicPhrase = ({
     <View
       style={{
         flex: 1,
-        justifyContent: 'space-between',
         marginHorizontal: 16
       }}>
-      <View>
-        <Text variant="heading2">Show recovery phrase</Text>
+      <Text variant="heading2">Show recovery phrase</Text>
+      <Text
+        variant="body1"
+        sx={{ marginTop: 24, marginRight: 64 }}
+        testID="menemonic_screen__new_recovery_phrase_instructions">
+        This phrase is your access key to your wallet. Carefully write it down
+        and store it in a safe location
+      </Text>
+      <Space y={21} />
+      <View
+        sx={{
+          borderRadius: 8,
+          backgroundColor: '$surfacePrimary',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12
+        }}>
+        <Icons.Action.Info color={colors.$textDanger} />
         <Text
-          variant="body1"
-          sx={{ marginTop: 24 }}
-          testID="menemonic_screen__new_recovery_phrase_instructions">
-          Write down the recovery phrase and store it in a secure location.
-        </Text>
-        <Space y={24} />
-        <ScrollView
-          style={{
-            flexGrow: 0
-          }}
-          contentContainerStyle={{ minWidth: '100%' }}
-          horizontal>
-          <View
-            style={[
-              styles.mnemonics,
-              {
-                backgroundColor: colors.$surfaceSecondary
-              }
-            ]}>
-            {mnemonics()}
-            {hideMnemonic && (
-              <BlurBackground
-                opacity={1}
-                tint="dark"
-                borderRadius={8}
-                backgroundColor={BLUR_BACKGROUND_COLOR}
-              />
-            )}
-          </View>
-        </ScrollView>
-        <View
-          style={{
-            justifyContent: 'space-between',
-            marginTop: 16,
-            flexDirection: 'row',
-            alignItems: 'center'
+          sx={{
+            color: colors.$textDanger,
+            fontSize: 13,
+            lineHeight: 16,
+            marginRight: 16
           }}>
-          <Text
-            variant="buttonMedium"
-            sx={{ color: '$textPrimary' }}
-            onPress={toggleRecoveryPhrase}>
-            {`${hideMnemonic ? 'Show' : 'Hide'} Recovery Phrase`}
-          </Text>
+          {'Losing this phrase will result in lost funds'}
+        </Text>
+      </View>
+      <Space y={17} />
+      <View
+        sx={{
+          height: 336,
+          width: '100%',
+          backgroundColor: colors.$surfaceSecondary,
+          borderRadius: 8
+        }}>
+        <View
+          style={[
+            styles.mnemonics,
+            {
+              opacity: hideMnemonic ? 0 : 1
+            }
+          ]}>
+          {mnemonics()}
         </View>
       </View>
-      <Button
-        size="large"
-        style={{ marginBottom: 60 }}
-        type="primary"
-        disabled={!mnemonic}
-        onPress={handleCopyPhrase}
-        testID="mnemonic_screen__copy_phrase_button">
-        Copy phrase
-      </Button>
+      <View
+        sx={{
+          marginTop: 16,
+          marginBottom: 60,
+          gap: 16,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <Button
+          size="medium"
+          type="secondary"
+          disabled={!mnemonic}
+          style={{ width: 120 }}
+          onPress={toggleRecoveryPhrase}
+          testID="mnemonic_screen__copy_phrase_button">
+          {`${hideMnemonic ? 'Show' : 'Hide'} phrase`}
+        </Button>
+        <Button
+          size="medium"
+          type="secondary"
+          disabled={!mnemonic}
+          onPress={handleCopyPhrase}
+          style={{ width: 120 }}
+          testID="mnemonic_screen__copy_phrase_button">
+          Copy phrase
+        </Button>
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   mnemonics: {
+    borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 20,
     flexDirection: 'row',

@@ -28,7 +28,7 @@ const ONE_MINUTE = 60
 export const EXPORT_DELAY =
   SeedlessSession.environment === 'prod' ? HOURS_48 : ONE_MINUTE
 
-type OnVerifyMfaSuccess = () => void
+type OnVerifyMfaSuccess<T> = (response: T) => void
 
 type SeedlessMnemonicExportData = {
   isMfaRequired: boolean
@@ -46,20 +46,11 @@ export interface SeedlessMnemonicExportState {
   completeExport: () => Promise<void>
   deleteExport: () => Promise<void>
   checkPendingExports: () => Promise<void>
-  setUserExportInitResponse: (
-    response: CubeSignerResponse<UserExportInitResponse>
-  ) => void
   userExportInitResponse?: CubeSignerResponse<UserExportInitResponse>
-  setUserExportCompleteResponse: (
-    response: CubeSignerResponse<UserExportCompleteResponse>
-  ) => void
   userExportCompleteResponse?: CubeSignerResponse<UserExportCompleteResponse>
-  onVerifyExportInitSuccess: OnVerifyMfaSuccess
-  onVerifyExportCompleteSuccess: OnVerifyMfaSuccess
+  onVerifyExportInitSuccess: OnVerifyMfaSuccess<UserExportInitResponse>
+  onVerifyExportCompleteSuccess: OnVerifyMfaSuccess<UserExportCompleteResponse>
   pendingRequest?: UserExportInitResponse
-  setPendingRequest: (request: UserExportInitResponse) => void
-  exportCompleteRequest?: UserExportCompleteResponse
-  setExportCompleteRequest: (request: UserExportCompleteResponse) => void
 }
 
 export const SeedlessMnemonicExportContext =
@@ -72,13 +63,11 @@ export const SeedlessMnemonicExportProvider = ({
 }): JSX.Element => {
   const seedlessExportService = useMemo(() => new SeedlessExportService(), [])
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
-  const [exportCompleteRequest, setExportCompleteRequest] =
-    useState<UserExportCompleteResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
   const { verifyMFA } = useVerifyMFA(seedlessExportService.session)
   const { canGoBack, back, navigate, replace } = useRouter()
   const [keyId, setKeyId] = useState<string>('')
-  const [keyPair, _] = useState<CryptoKeyPair>()
+  const [keyPair, setKeyPair] = useState<CryptoKeyPair>()
 
   const [userExportInitResponse, setUserExportInitResponse] = useState<
     CubeSignerResponse<UserExportInitResponse> | undefined
@@ -104,31 +93,31 @@ export const SeedlessMnemonicExportProvider = ({
     return { isInProgress, isReadyToDecrypt }
   }
 
-  const onVerifyExportInitSuccess: OnVerifyMfaSuccess = useCallback(() => {
-    setTimeout(() => {
-      replace('./pending')
-    }, 100)
-  }, [replace])
+  const onVerifyExportInitSuccess: OnVerifyMfaSuccess<UserExportInitResponse> =
+    useCallback(
+      response => {
+        setPendingRequest(response)
+        setTimeout(() => {
+          replace('./pending')
+        }, 100)
+      },
+      [replace]
+    )
 
-  const onVerifyExportCompleteSuccess: OnVerifyMfaSuccess =
-    useCallback(async () => {
-      if (
-        exportCompleteRequest === undefined ||
-        keyPair?.privateKey === undefined
-      )
-        return
-      const decryptedMnemonic = await seedlessExportService.userExportDecrypt(
-        keyPair.privateKey,
-        exportCompleteRequest
-      )
-      setMnemonic(decryptedMnemonic)
-      replace('./seedlessExportPhrase/readyToExport')
-    }, [
-      exportCompleteRequest,
-      keyPair?.privateKey,
-      replace,
-      seedlessExportService
-    ])
+  const onVerifyExportCompleteSuccess: OnVerifyMfaSuccess<UserExportCompleteResponse> =
+    useCallback(
+      async response => {
+        if (keyPair?.privateKey === undefined) {
+          return
+        }
+        const decryptedMnemonic = await seedlessExportService.userExportDecrypt(
+          keyPair.privateKey,
+          response
+        )
+        setMnemonic(decryptedMnemonic)
+      },
+      [keyPair, seedlessExportService]
+    )
 
   const deleteExport = useCallback(async (): Promise<void> => {
     try {
@@ -139,8 +128,9 @@ export const SeedlessMnemonicExportProvider = ({
       }
       await seedlessExportService.userExportDelete(keyId)
       setPendingRequest(undefined)
-      setExportCompleteRequest(undefined)
       setMnemonic(undefined)
+      setKeyId('')
+      setKeyPair(undefined)
       AnalyticsService.capture('SeedlessExportCancelled')
     } catch (e) {
       Logger.error('failed to delete export request error: ', e)
@@ -225,16 +215,6 @@ export const SeedlessMnemonicExportProvider = ({
       key?.key_id && setKeyId(key.key_id)
     }
     getKeyId()
-    // const getKeyPair = async (): Promise<void> => {
-    //   try {
-    //     const kp = await seedlessExportService.userExportGenerateKeyPair()
-    //     console.log('getKeyPair:kp: ', kp)
-    //     setKeyPair(kp)
-    //   } catch (e) {
-    //     console.log('getKeyPair:error:', e)
-    //   }
-    // }
-    // getKeyPair()
   }, [seedlessExportService, setKeyId])
 
   const initExport = useCallback(async (): Promise<void> => {
@@ -268,10 +248,11 @@ export const SeedlessMnemonicExportProvider = ({
   const completeExport = useCallback(async (): Promise<void> => {
     setMnemonic(undefined)
     try {
-      if (keyPair?.publicKey === undefined) return
+      const kp = await seedlessExportService.userExportGenerateKeyPair()
+      setKeyPair(kp)
       const exportReponse = await seedlessExportService.userExportComplete(
         keyId,
-        keyPair.publicKey
+        kp.publicKey
       )
 
       if (!exportReponse.requiresMfa()) {
@@ -287,13 +268,7 @@ export const SeedlessMnemonicExportProvider = ({
       Logger.error('failed to complete export request error: ', e)
       showSnackbar('Unable to complete export request')
     }
-  }, [
-    keyPair?.publicKey,
-    seedlessExportService,
-    keyId,
-    verifyMFA,
-    onVerifyExportCompleteSuccess
-  ])
+  }, [seedlessExportService, keyId, verifyMFA, onVerifyExportCompleteSuccess])
 
   return (
     <SeedlessMnemonicExportContext.Provider
@@ -307,16 +282,11 @@ export const SeedlessMnemonicExportProvider = ({
         completeExport,
         deleteExport,
         checkPendingExports,
-        setUserExportInitResponse,
         userExportInitResponse,
-        setUserExportCompleteResponse,
         userExportCompleteResponse,
         onVerifyExportInitSuccess,
         onVerifyExportCompleteSuccess,
-        pendingRequest,
-        setPendingRequest,
-        exportCompleteRequest,
-        setExportCompleteRequest
+        pendingRequest
       }}>
       {children}
     </SeedlessMnemonicExportContext.Provider>
@@ -333,14 +303,10 @@ export const getDelayInstruction = (): string => {
   } to retrieve phrase`
 }
 
-export const getDelayWarningTitle = (): string => {
-  return `${EXPORT_DELAY === HOURS_48 ? '2 Day' : '1 Minute'} Waiting Period`
-}
-
 export const getDelayWarningDescription = (): string => {
-  return `For your safety there is a ${
-    EXPORT_DELAY === HOURS_48 ? '2 day' : '1 minute'
-  } waiting period to retrieve a phrase`
+  return `For your safety, there is a ${
+    EXPORT_DELAY === HOURS_48 ? '2 days' : '1 minute'
+  } waiting period to retrieve a recovery phrase`
 }
 
 export const getWaitingPeriodDescription = (): string => {
@@ -350,18 +316,18 @@ export const getWaitingPeriodDescription = (): string => {
   } to retrieve your recovery phrase. You will only have ${
     is2Days ? '48 hours' : '1 minute'
   } to copy your recovery phrase once the ${
-    is2Days ? '2 day' : '1 minute'
+    is2Days ? '2 days' : '1 minute'
   } waiting period is over.`
 }
 
 export const getConfirmCancelDelayText = (): string => {
   return `Canceling will require you to restart the ${
-    EXPORT_DELAY === HOURS_48 ? '2 day' : '1 minute'
+    EXPORT_DELAY === HOURS_48 ? '2 days' : '1 minute'
   } waiting period.`
 }
 
 export const getConfirmCloseDelayText = (): string => {
   return `Closing the settings menu will require you to restart the ${
-    EXPORT_DELAY === HOURS_48 ? '2 day' : '1 minute'
+    EXPORT_DELAY === HOURS_48 ? '2 days' : '1 minute'
   } waiting period.`
 }

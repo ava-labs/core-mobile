@@ -3,7 +3,7 @@ import React from 'react'
 import { Space } from 'components/Space'
 import { AnimatedCircularProgress } from 'react-native-circular-progress'
 
-const CIRCULAR_PROGRESS_SIZE = 153
+const CIRCULAR_PROGRESS_SIZE = 280
 interface Props {
   timeLeft: string
   progress: number
@@ -36,16 +36,27 @@ export const SeedlessExportPending = ({
             lineCap="round"
             style={{ height: CIRCULAR_PROGRESS_SIZE / 2, marginBottom: 32 }}
           />
-          <Text variant="heading5" sx={{ color: colors.$textPrimary }}>
-            {`${timeLeft} Remaining`}
-          </Text>
-          <Space y={8} />
-          <Text
-            variant="body2"
-            sx={{ color: colors.$textSecondary, textAlign: 'center' }}>
-            Your recovery phrase is loading. Please check back in a little
-            while.
-          </Text>
+          <View
+            sx={{
+              top: -105,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <Text
+              variant="body2"
+              sx={{
+                marginHorizontal: 80,
+                color: colors.$textPrimary,
+                textAlign: 'center',
+                lineHeight: 18
+              }}>
+              Your wallet’s recovery phrase will be visible in
+            </Text>
+            <Space y={11} />
+            <Text variant="heading2" sx={{ color: colors.$textPrimary }}>
+              {timeLeft}
+            </Text>
+          </View>
         </View>
       </View>
       <Button
