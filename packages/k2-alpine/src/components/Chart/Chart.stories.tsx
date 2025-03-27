@@ -7,10 +7,10 @@ import {
 } from 'react-native-reanimated'
 import { ScrollView, Text, View } from '../Primitives'
 import { Button, useTheme } from '../..'
+import { minichart_data1, minichart_data2 } from '../../fixtures/minichart'
+import { stakeRewardsData } from '../../fixtures/stakeRewards'
 import { MiniChart } from './MiniChart'
-import { minichart_data1, minichart_data2 } from './data/minichart'
 import { StakeRewardChart, StakeRewardChartHandle } from './StakeRewardChart'
-import { stakeRewardsData } from './data/stakeRewards'
 
 export default {
   title: 'Chart'
