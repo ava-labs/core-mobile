@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react-hooks'
 import { useWallet } from 'hooks/useWallet'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { WalletType } from 'services/wallet/types'
+import { v4 as uuidv4 } from 'uuid'
 import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import { appReducer, WalletState } from 'store/app'
@@ -53,6 +54,10 @@ const createTestStore = () => {
   })
 }
 
+jest.mock('uuid', () => ({
+  v4: jest.fn()
+}))
+
 // Mock keychain result
 const keychainResult = {
   service: 'test-service',
@@ -79,6 +84,7 @@ describe('useWallet', () => {
       jest
         .spyOn(BiometricsSDK, 'storeWalletWithPin')
         .mockResolvedValue(keychainResult)
+      jest.spyOn(BiometricsSDK, 'canUseBiometry').mockResolvedValue(true)
 
       const { result } = renderHook(() => useWallet(), { wrapper })
 
