@@ -37,7 +37,6 @@ export const storeWalletWithPin = createAsyncThunk<
       id: walletId,
       name: generateWalletName(type, walletCount + 1),
       mnemonic: encryptedWalletKey,
-      isActive: true,
       type
     }
   }
