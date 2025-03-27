@@ -165,7 +165,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                   uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
                 }}
                 hasBlur={false}
-                hasLoading={false}
+                hasLoading={true}
               />
             </TouchableOpacity>
           </Animated.View>
