@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   runOnJS,
@@ -9,7 +9,7 @@ import { ScrollView, Text, View } from '../Primitives'
 import { Button, useTheme } from '../..'
 import { MiniChart } from './MiniChart'
 import { minichart_data1, minichart_data2 } from './data/minichart'
-import { StakeRewardChart } from './StakeRewardChart'
+import { StakeRewardChart, StakeRewardChartHandle } from './StakeRewardChart'
 import { stakeRewardsData } from './data/stakeRewards'
 
 export default {
@@ -74,6 +74,8 @@ const StakeRewardChartStory = (): JSX.Element => {
   const initialIndex = 1
   const selectedIndex = useSharedValue<number | undefined>(initialIndex)
 
+  const ref = useRef<StakeRewardChartHandle>(null)
+
   // Mirror the shared value to a state variable so that React re-renders when it changes.
   const [selectedIndexState, setSelectedIndexState] = useState<
     number | undefined
@@ -111,6 +113,7 @@ const StakeRewardChartStory = (): JSX.Element => {
         Stake Reward Chart
       </Text>
       <StakeRewardChart
+        ref={ref}
         data={data}
         style={{
           height: 270
@@ -126,7 +129,7 @@ const StakeRewardChartStory = (): JSX.Element => {
           size="medium"
           type="primary"
           onPress={() => {
-            selectedIndex.value = undefined
+            ref.current?.selectIndex(undefined)
           }}>
           reset
         </Button>
