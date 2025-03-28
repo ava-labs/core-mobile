@@ -27,8 +27,7 @@ export const useColorScheme = (): ColorSchemeName => {
         break
       case Appearance.System:
       default:
-        // default to system appearance
-        RnAppearance.setColorScheme(null)
+      // default to system appearance
     }
   }, [isDeveloperModeEnabled, selectedAppearance])
 
