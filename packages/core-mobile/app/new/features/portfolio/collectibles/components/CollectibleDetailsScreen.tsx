@@ -8,7 +8,6 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
-import { useCollectiblesContext } from 'features/portfolio/collectibles/CollectiblesContext'
 import { HORIZONTAL_MARGIN } from 'features/portfolio/collectibles/consts'
 import React, {
   ReactNode,
@@ -40,15 +39,15 @@ import {
   SNAP_DISTANCE
 } from './CollectibleDetailsHeader'
 
-type CollectibleScreenRouteParams = {
+type CollectibleDetailsScreenRouteParams = {
   localId?: string
   initial?: CollectibleFilterAndSortInitialState
 }
 
-export const CollectibleScreen = ({
+export const CollectibleDetailsScreen = ({
   localId,
   initial
-}: CollectibleScreenRouteParams): ReactNode => {
+}: CollectibleDetailsScreenRouteParams): ReactNode => {
   const {
     theme: { colors }
   } = useTheme()
@@ -56,11 +55,7 @@ export const CollectibleScreen = ({
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
 
-  const { collectibles } = useCollectiblesContext()
-  const { filteredAndSorted } = useCollectiblesFilterAndSort(
-    collectibles,
-    initial
-  )
+  const { filteredAndSorted } = useCollectiblesFilterAndSort(initial)
 
   const [currentIndex, setCurrentIndex] = useState(
     filteredAndSorted?.findIndex(
@@ -269,8 +264,7 @@ export const CollectibleScreen = ({
           onScroll={scrollViewHandler}
           style={{
             flex: 1,
-            position: 'relative',
-            zIndex: 100
+            position: 'relative'
           }}
           contentContainerStyle={{
             paddingBottom: insets.bottom,

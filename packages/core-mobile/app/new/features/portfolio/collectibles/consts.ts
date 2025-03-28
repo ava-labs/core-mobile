@@ -84,52 +84,6 @@ export const getGridCardHeight = (
   }
 }
 
-export function getFilteredNetworks(
-  items: NftItem[],
-  network: AssetNetworkFilter
-): NftItem[] {
-  switch (network) {
-    case AssetNetworkFilter.AvalancheCChain:
-      return items.filter(
-        collectible =>
-          'chainId' in collectible && isAvalancheCChainId(collectible.chainId)
-      )
-    case AssetNetworkFilter.Ethereum:
-      return items.filter(
-        collectible =>
-          'chainId' in collectible && isEthereumChainId(collectible.chainId)
-      )
-    default:
-      return items
-  }
-}
-
-export function getFilteredContentType(
-  items: NftItem[],
-  contentType: CollectibleTypeFilter
-): NftItem[] {
-  switch (contentType) {
-    case CollectibleTypeFilter.Videos:
-      return items.filter(
-        collectible => collectible.imageData?.type === NftContentType.MP4
-      )
-    case CollectibleTypeFilter.Pictures:
-      return items.filter(
-        collectible =>
-          collectible.imageData?.type === NftContentType.JPG ||
-          collectible.imageData?.type === NftContentType.PNG ||
-          // try to display as picture if the type is unknown
-          collectible.imageData?.type === NftContentType.Unknown
-      )
-    case CollectibleTypeFilter.GIFs:
-      return items.filter(
-        collectible => collectible.imageData?.type === NftContentType.GIF
-      )
-    default:
-      return items
-  }
-}
-
 export function camelCaseToTitle(text: string): string {
   return text.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
     return str.toUpperCase().trim()
