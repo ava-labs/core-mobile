@@ -38,6 +38,8 @@ import {
 } from 'store/settings/advanced'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
+import { selectContacts } from 'store/addressBook'
+import { Space } from 'components/Space'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -53,6 +55,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
   const { setOptions } = useNavigation()
   const headerOpacity = useSharedValue(1)
@@ -236,6 +239,37 @@ const AccountSettingsScreen = (): JSX.Element => {
               valueSx={{ fontSize: 16, lineHeight: 22 }}
               separatorMarginRight={16}
             />
+            {/* Address book */}
+            <View>
+              <Space y={12} />
+              <GroupList
+                data={[
+                  {
+                    title: 'Address book',
+                    onPress: () => navigate('./accountSettings/addressBook'),
+                    value: (
+                      <Text
+                        variant="body2"
+                        sx={{
+                          color: colors.$textSecondary,
+                          fontSize: 16,
+                          lineHeight: 22,
+                          marginLeft: 9
+                        }}>
+                        {Object.keys(contacts).length}
+                      </Text>
+                    )
+                  }
+                ]}
+                titleSx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  fontFamily: 'Inter-Regular'
+                }}
+                valueSx={{ fontSize: 16, lineHeight: 22 }}
+                separatorMarginRight={16}
+              />
+            </View>
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectAppIcon={goToAppIcon}
