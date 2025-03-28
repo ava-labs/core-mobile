@@ -99,9 +99,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bridge-unified@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@avalabs/bridge-unified@npm:4.0.1"
+"@avalabs/bridge-unified@npm:4.0.2":
+  version: 4.0.2
+  resolution: "@avalabs/bridge-unified@npm:4.0.2"
   dependencies:
     "@noble/hashes": 1.5.0
     "@scure/base": 1.1.9
@@ -111,7 +111,7 @@ __metadata:
     lodash: 4.17.21
     viem: 2.11.1
     zod: 3.23.8
-  checksum: ef6f683b1fe18d664ae9996ffa79c69a8abd2ed9a1dbc9fcd928498071885ba3ef94c9cfe70715552a03a898ceb5278469ccdbc7b1099700db820c3208353b52
+  checksum: 7f45270bc0d5adac218b3f29856f0b731062744abcd579d8bb2d34a531c2709cbc8e79d5d82b314d569a99f49b6b1ea34f797b7bf7226be8e8533477839ecd4c
   languageName: node
   linkType: hard
 
@@ -176,7 +176,7 @@ __metadata:
     "@avalabs/avalanche-module": 1.5.0
     "@avalabs/avalanchejs": 4.2.0-alpha.1
     "@avalabs/bitcoin-module": 1.5.0
-    "@avalabs/bridge-unified": 4.0.1
+    "@avalabs/bridge-unified": 4.0.2
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.44
     "@avalabs/core-chains-sdk": 3.1.0-alpha.44
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.44

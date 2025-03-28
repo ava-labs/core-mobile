@@ -23,7 +23,7 @@
     "@avalabs/avalanche-module": "1.5.0",
     "@avalabs/avalanchejs": "4.2.0-alpha.1",
     "@avalabs/bitcoin-module": "1.5.0",
-    "@avalabs/bridge-unified": "4.0.1",
+    "@avalabs/bridge-unified": "4.0.2",
     "@avalabs/core-bridge-sdk": "3.1.0-alpha.44",
     "@avalabs/core-chains-sdk": "3.1.0-alpha.44",
     "@avalabs/core-coingecko-sdk": "3.1.0-alpha.44",
