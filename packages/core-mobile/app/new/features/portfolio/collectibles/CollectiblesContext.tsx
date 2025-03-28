@@ -27,6 +27,11 @@ type CollectiblesContextState = {
   isLoading: boolean
   isEnabled: boolean
   isRefetching: boolean
+  isPaused: boolean
+  isSuccess: boolean
+  isRefreshing: boolean
+  error?: Error
+  pullToRefresh: () => void
   getCollectible: (localId: NftLocalId) => NftItem | undefined
   refreshMetadata: (nftData: NftItem, chainId: number) => Promise<void>
   isCollectibleRefreshing: (uid: string) => boolean
@@ -172,7 +177,7 @@ export const CollectiblesProvider = ({
         processImageData(item.localId, item.logoUri)
       }
     },
-    [processMetadata, processImageData]
+    [processImageData, processMetadata]
   )
 
   const refreshMetadata = async (
@@ -258,14 +263,19 @@ export const CollectiblesProvider = ({
     <CollectiblesContext.Provider
       value={{
         collectibles,
+        isEnabled,
         getCollectible,
         refreshMetadata,
         isCollectibleRefreshing,
+        setIsEnabled,
         refetch: query.refetch,
         isRefetching: query.isRefetching,
+        isRefreshing: query.isRefreshing,
         isLoading: query.isLoading,
-        setIsEnabled,
-        isEnabled
+        error: query?.error instanceof Error ? query.error : undefined,
+        pullToRefresh: query.pullToRefresh,
+        isPaused: query.isPaused,
+        isSuccess: query.isSuccess
       }}>
       {children}
     </CollectiblesContext.Provider>

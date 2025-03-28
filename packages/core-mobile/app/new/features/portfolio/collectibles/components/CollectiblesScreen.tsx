@@ -49,8 +49,18 @@ export const CollectiblesScreen = ({
     theme: { colors }
   } = useTheme()
   const dimensions = useWindowDimensions()
-  const { collectibles, isLoading, isEnabled, setIsEnabled } =
-    useCollectiblesContext()
+  const {
+    isLoading,
+    isEnabled,
+    setIsEnabled,
+    refetch,
+    error,
+    isPaused,
+    isSuccess,
+    isRefreshing,
+    pullToRefresh,
+    collectibles
+  } = useCollectiblesContext()
 
   const {
     filter,
@@ -60,7 +70,7 @@ export const CollectiblesScreen = ({
     filteredAndSorted,
     onResetFilter,
     onShowHidden
-  } = useCollectiblesFilterAndSort(collectibles)
+  } = useCollectiblesFilterAndSort()
 
   useEffect(() => {
     setIsEnabled(true)
@@ -73,12 +83,6 @@ export const CollectiblesScreen = ({
       : listType === CollectibleView.LargeGrid
       ? 2
       : 1
-  const estimatedItemSize = 200
-  // listType === CollectibleView.ListView
-  //   ? LIST_ITEM_HEIGHT
-  //   : listType === CollectibleView.CompactGrid
-  //   ? 160
-  //   : 220
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {
@@ -93,26 +97,29 @@ export const CollectiblesScreen = ({
     [goToCollectibleManagement, view]
   )
 
-  const renderItem: ListRenderItem<NftItem> = ({ item, index }) => {
-    return (
-      <CollectibleItem
-        onPress={() => {
-          goToCollectibleDetail(item.localId, {
-            filters: {
-              network: filter?.selected[0] as IndexPath,
-              contentType: filter?.selected[1] as IndexPath
-            },
-            sort: sort.selected
-          })
-        }}
-        collectible={item}
-        index={index}
-        type={listType}
-      />
-    )
-  }
+  const renderItem: ListRenderItem<NftItem> = useCallback(
+    ({ item, index }) => {
+      return (
+        <CollectibleItem
+          onPress={() => {
+            goToCollectibleDetail(item.localId, {
+              filters: {
+                network: filter?.selected[0] as IndexPath,
+                contentType: filter?.selected[1] as IndexPath
+              },
+              sort: sort.selected
+            })
+          }}
+          collectible={item}
+          index={index}
+          type={listType}
+        />
+      )
+    },
+    [filter, goToCollectibleDetail, listType, sort]
+  )
 
-  const noCollectiblesFound =
+  const hasFilters =
     Array.isArray(filter.selected) &&
     (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
 
@@ -120,11 +127,24 @@ export const CollectiblesScreen = ({
     if (isLoading || !isEnabled)
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
 
-    if (noCollectiblesFound)
+    if (error || (isPaused && !isSuccess)) {
+      return (
+        <ErrorState
+          sx={{ height: portfolioTabContentHeight }}
+          description="Please hit refresh or try again later"
+          button={{
+            title: 'Refresh',
+            onPress: refetch
+          }}
+        />
+      )
+    }
+
+    if (hasFilters && filteredAndSorted.length === 0) {
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight
+            height: portfolioTabContentHeight - 100
           }}
           title="No Collectibles found"
           description="
@@ -135,12 +155,13 @@ export const CollectiblesScreen = ({
           }}
         />
       )
+    }
 
-    if (isEveryCollectibleHidden) {
+    if (isEveryCollectibleHidden && filteredAndSorted.length === 0) {
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight
+            height: portfolioTabContentHeight - 100
           }}
           title="All collectibles hidden"
           description="You have hidden all your collectibles"
@@ -210,22 +231,23 @@ export const CollectiblesScreen = ({
       </View>
     )
   }, [
-    colors.$textPrimary,
-    isEnabled,
-    isEveryCollectibleHidden,
     isLoading,
-    noCollectiblesFound,
+    isEnabled,
+    error,
+    isPaused,
+    isSuccess,
+    hasFilters,
+    filteredAndSorted.length,
+    isEveryCollectibleHidden,
+    colors.$textPrimary,
+    refetch,
     onResetFilter,
     onShowHidden
   ])
 
   const renderHeader = useMemo((): JSX.Element | undefined => {
-    if (
-      filteredAndSorted.length === 0 &&
-      (!isEnabled || noCollectiblesFound || !isLoading) &&
-      isEveryCollectibleHidden
-    )
-      return
+    if (collectibles.length === 0 && (!isEnabled || isLoading)) return
+
     return (
       <View
         style={[
@@ -245,17 +267,15 @@ export const CollectiblesScreen = ({
       </View>
     )
   }, [
-    dimensions.width,
-    filter,
-    isEveryCollectibleHidden,
-    filteredAndSorted.length,
-    handleManageList,
+    collectibles.length,
     isEnabled,
     isLoading,
+    dimensions.width,
     listType,
-    noCollectiblesFound,
+    filter,
     sort,
-    view
+    view,
+    handleManageList
   ])
 
   // Fix for making the list scrollable if there are just a few collectibles
@@ -280,21 +300,24 @@ export const CollectiblesScreen = ({
         filter
       }}
       key={`collectibles-list-${listType}`}
-      keyExtractor={(item: NftItem) => `collectibles-list-${item.localId}`}
+      keyExtractor={(item: NftItem) =>
+        `collectibles-list-${item.localId}-${item.address}`
+      }
       renderItem={renderItem}
       ListEmptyComponent={renderEmpty}
       ListHeaderComponent={renderHeader}
       numColumns={columns}
       style={{
-        overflow: 'visible',
-        backgroundColor: 'blue'
+        overflow: 'visible'
       }}
       overrideProps={{
         contentContainerStyle
       }}
+      onRefresh={pullToRefresh}
+      refreshing={isRefreshing}
       contentContainerStyle={contentContainerStyle}
       scrollEnabled={filteredAndSorted?.length > 0}
-      estimatedItemSize={estimatedItemSize}
+      estimatedItemSize={220}
       removeClippedSubviews={Platform.OS === 'android'}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled

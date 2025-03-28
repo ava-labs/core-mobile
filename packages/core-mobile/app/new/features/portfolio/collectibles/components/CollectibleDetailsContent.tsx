@@ -165,6 +165,7 @@ export const CollectibleDetailsContent = ({
 
         <ScrollView
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
           contentContainerStyle={{
             paddingHorizontal: HORIZONTAL_MARGIN,
             gap: 12,

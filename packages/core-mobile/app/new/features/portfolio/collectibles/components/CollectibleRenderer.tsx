@@ -1,11 +1,4 @@
-import {
-  ANIMATED,
-  Icons,
-  Text,
-  useTheme,
-  Video,
-  VideoProps
-} from '@avalabs/k2-alpine'
+import { Icons, Text, useTheme, Video, VideoProps } from '@avalabs/k2-alpine'
 import { Image, ImageErrorEventData } from 'expo-image'
 import React, {
   memo,
@@ -19,7 +12,7 @@ import React, {
 } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
 
 export interface CollectibleRendererProps {
@@ -53,28 +46,18 @@ export const CollectibleRenderer = memo(
     }, [collectible.status])
 
     const onLoadEnd = useCallback((): void => {
-      if (isLoading) onLoaded?.()
       setIsLoading(false)
+      if (isLoading) onLoaded?.()
     }, [isLoading, onLoaded])
 
-    const onLoadStart = useCallback((): void => {
-      setIsLoading(true)
-    }, [])
-
-    const onImageError = useCallback((err: ImageErrorEventData): void => {
-      setError(err.error)
+    const onImageError = useCallback((event: ImageErrorEventData): void => {
+      setError(event.error)
       setIsLoading(false)
     }, [])
 
     const onVideoError = useCallback((): void => {
       setIsLoading(false)
     }, [])
-
-    const contentStyle = useAnimatedStyle(() => {
-      return {
-        opacity: withTiming(isLoading ? 0 : 1, ANIMATED.TIMING_CONFIG)
-      }
-    })
 
     const renderEdgeCases = useMemo((): ReactNode => {
       if (error) return <Text variant="body2">{error}</Text>
@@ -95,7 +78,6 @@ export const CollectibleRenderer = memo(
         return (
           <Animated.View
             style={[
-              contentStyle,
               {
                 width: '100%',
                 height: '100%',
@@ -116,7 +98,6 @@ export const CollectibleRenderer = memo(
         return (
           <Animated.View
             style={[
-              contentStyle,
               {
                 width: '100%',
                 height: '100%',
@@ -124,23 +105,14 @@ export const CollectibleRenderer = memo(
               }
             ]}>
             <Image
-              key={collectible.localId}
-              recyclingKey={collectible.localId}
-              source={collectible?.imageData?.image}
-              onDisplay={onLoadEnd}
-              onLoadStart={onLoadStart}
+              source={{
+                uri: collectible?.imageData?.image
+              }}
+              onLoad={onLoadEnd}
               onError={onImageError}
-              cachePolicy="memory-disk"
-              contentFit="cover"
               style={{
-                flex: 1,
                 width: '100%',
-                position: 'absolute',
-                zIndex: 1,
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0
+                flex: 1
               }}
             />
           </Animated.View>
@@ -151,11 +123,8 @@ export const CollectibleRenderer = memo(
     }, [
       collectible?.imageData?.image,
       collectible?.imageData?.video,
-      collectible.localId,
-      contentStyle,
       onImageError,
       onLoadEnd,
-      onLoadStart,
       onVideoError,
       videoProps
     ])

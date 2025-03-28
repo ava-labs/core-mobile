@@ -62,27 +62,7 @@ export const Pinchable = ({
       })
     })
 
-  // const panGesture = Gesture.Pan()
-  //   .onUpdate(event => {
-  //     if (event.numberOfPointers > 1) {
-  //       translateX.value = event.translationX
-  //       translateY.value = event.translationY
-  //     }
-  //   })
-  //   .onEnd(event => {
-  //     if (event.numberOfPointers > 1) {
-  //       translateX.value = withSpring(0, ANIMATED.SPRING_CONFIG)
-  //       translateY.value = withSpring(0, ANIMATED.SPRING_CONFIG, () => {
-  //         runOnJS(onEnd)()
-  //       })
-  //     }
-  //   })
-
-  const composedGesture = Gesture.Simultaneous(
-    pinchGesture,
-    rotationGesture
-    // panGesture
-  )
+  const composedGesture = Gesture.Simultaneous(pinchGesture, rotationGesture)
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

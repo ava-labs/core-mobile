@@ -1,19 +1,17 @@
 import { useLocalSearchParams } from 'expo-router'
-import { CollectibleScreen } from 'features/portfolio/collectibles/components/CollectibleScreen'
+import { CollectibleDetailsScreen } from 'features/portfolio/collectibles/components/CollectibleDetailsScreen'
 import React from 'react'
 
-const CollectibleDetailScreen = (): React.JSX.Element => {
+export default (): React.ReactNode => {
   const { localId, initial } = useLocalSearchParams<{
     localId: string
     initial: string
   }>()
 
   return (
-    <CollectibleScreen
+    <CollectibleDetailsScreen
       localId={localId}
       initial={initial ? JSON.parse(initial) : null}
     />
   )
 }
-
-export default CollectibleDetailScreen

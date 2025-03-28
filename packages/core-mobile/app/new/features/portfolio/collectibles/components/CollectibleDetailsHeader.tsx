@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { Glow, GlowRef } from 'common/components/Glow'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useRef } from 'react'
@@ -16,6 +17,7 @@ import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import {
@@ -39,6 +41,8 @@ export const CollectibleDetailsHeader = ({
   const {
     theme: { colors }
   } = useTheme()
+  const headerHeight = useHeaderHeight()
+  const insets = useSafeAreaInsets()
   const glowRef = useRef<GlowRef>(null)
 
   const animateGlow = (): void => {
@@ -94,7 +98,7 @@ export const CollectibleDetailsHeader = ({
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: 40
+        paddingTop: headerHeight - insets.top
       }}>
       <View
         style={{
@@ -114,11 +118,7 @@ export const CollectibleDetailsHeader = ({
           ]}>
           <Pinchable
             onGestureEnd={animateGlow}
-            disabled={collectible.status !== NftLocalStatus.Processed}
-            style={{
-              height: '100%',
-              width: '100%'
-            }}>
+            disabled={collectible.status !== NftLocalStatus.Processed}>
             <Animated.View
               style={[
                 glowStyle,
