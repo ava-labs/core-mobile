@@ -3,18 +3,19 @@ import { VerifyCode } from 'features/onboarding/components/VerifyCode'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
-import { useRouter } from 'expo-router'
+import { useNavigation, useRouter } from 'expo-router'
+import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const { sessionData, seedlessExportService, checkPendingExports } =
     useSeedlessMnemonicExportContext()
-  const { canGoBack, back, dismissAll } = useRouter()
+  const router = useRouter()
+  const { getState } = useNavigation()
 
-  const handleVerifySuccess = async (): Promise<void> => {
-    dismissAll()
-    canGoBack() && back()
+  const handleVerifySuccess = useCallback(async (): Promise<void> => {
+    dismissTotpStack(router, getState())
     checkPendingExports()
-  }
+  }, [getState, checkPendingExports, router])
 
   const handleVerifyCode = useCallback(
     async (code: string): Promise<Result<undefined, TotpErrors>> => {

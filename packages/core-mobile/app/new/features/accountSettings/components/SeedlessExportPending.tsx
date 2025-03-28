@@ -27,10 +27,10 @@ export const SeedlessExportPending = ({
         <View sx={{ alignItems: 'center', marginHorizontal: 16 }}>
           <AnimatedCircularProgress
             size={CIRCULAR_PROGRESS_SIZE}
-            width={10}
+            width={6}
             fill={progress}
             tintColor={'#1CC51D'}
-            backgroundColor={colors.$surfacePrimary}
+            backgroundColor={colors.$surfaceSecondary}
             arcSweepAngle={180}
             rotation={270}
             lineCap="round"
