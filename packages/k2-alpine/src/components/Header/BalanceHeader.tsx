@@ -7,6 +7,7 @@ import { Text, View } from '../Primitives'
 import { PriceChange } from '../PriceChangeIndicator/types'
 import { AnimatedBalance } from '../AnimatedBalance/AnimatedBalance'
 import { useTheme } from '../../hooks'
+import { alpha } from '../../utils'
 import { BalanceLoader } from './BalanceHeaderLoader'
 
 export const BalanceHeader = ({
@@ -54,7 +55,7 @@ export const BalanceHeader = ({
           <Icons.Action.VisibilityOff
             width={16}
             height={16}
-            color={theme.colors.$textPrimary}
+            color={alpha(theme.colors.$textPrimary, 0.6)}
           />
           <Text
             variant="buttonMedium"

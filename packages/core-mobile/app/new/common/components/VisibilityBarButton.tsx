@@ -1,4 +1,4 @@
-import { Icons, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
+import { alpha, Icons, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
 
 export const VisibilityBarButton = ({
@@ -15,7 +15,7 @@ export const VisibilityBarButton = ({
       {isPrivacyModeEnabled ? (
         <Icons.Action.VisibilityOff
           testID="eye_icon"
-          color={theme.colors.$textPrimary}
+          color={alpha(theme.colors.$textPrimary, 0.6)}
           width={22}
           height={22}
         />
