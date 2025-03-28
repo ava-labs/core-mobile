@@ -127,7 +127,7 @@ export const CollectiblesScreen = ({
     if (isLoading || !isEnabled)
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
 
-    if (error || (isPaused && !isSuccess)) {
+    if (error || !isSuccess) {
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
@@ -234,7 +234,6 @@ export const CollectiblesScreen = ({
     isLoading,
     isEnabled,
     error,
-    isPaused,
     isSuccess,
     hasFilters,
     filteredAndSorted.length,
