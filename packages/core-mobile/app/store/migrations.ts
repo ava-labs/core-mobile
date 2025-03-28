@@ -18,6 +18,7 @@ import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
 import Keychain from 'react-native-keychain'
 import Logger from 'utils/Logger'
+import { Wallet } from 'store/wallet/types'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -385,9 +386,7 @@ export const migrations = {
       Logger.info(`Migrating wallet type: ${walletType}`)
 
       // Create a new wallet entry
-      const walletName =
-        accountState.walletName ||
-        `Wallet ${Object.keys(accountState.accounts).length + 1}`
+      const walletName = accountState.walletName || `Wallet 1`
       Logger.info(`Creating new wallet with name: ${walletName}`)
 
       // Add wallet to the wallets state
@@ -396,10 +395,8 @@ export const migrations = {
           [walletId]: {
             id: walletId,
             name: walletName,
-            mnemonic: '', // This will be populated from BiometricsSDK
-            isActive: true,
             type: walletType
-          }
+          } as Wallet
         },
         activeWalletId: walletId
       }
