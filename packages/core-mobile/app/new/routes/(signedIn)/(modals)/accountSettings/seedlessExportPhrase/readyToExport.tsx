@@ -15,7 +15,7 @@ const SeedlessExportReadyScreen = (): JSX.Element => {
   const { back, canGoBack } = useRouter()
   const { deleteExport, completeExport, mnemonic } =
     useSeedlessMnemonicExportContext()
-  const { setOptions } = useNavigation()
+  const { setOptions, getParent } = useNavigation()
   const [hideMnemonic, setHideMnemonic] = useState(true)
 
   const onCancelExportRequest = useCallback(
@@ -76,10 +76,10 @@ const SeedlessExportReadyScreen = (): JSX.Element => {
   )
 
   useLayoutEffect(() => {
-    setOptions({
+    getParent()?.setOptions({
       headerLeft: renderCustomBackButton
     })
-  }, [customGoBack, renderCustomBackButton, setOptions])
+  }, [customGoBack, getParent, renderCustomBackButton, setOptions])
 
   return (
     <SeedlessExportMnemonicPhrase

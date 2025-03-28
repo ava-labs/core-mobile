@@ -52,12 +52,12 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
             backgroundColor: '$surfaceSecondary',
             paddingVertical: 19,
             paddingHorizontal: 14,
-            borderRadius: 12
+            borderRadius: 12,
+            gap: 16
           }}>
           {STEPS.map((step, index) => {
             return (
               <View key={index}>
-                <Space y={16} />
                 <View sx={{ flexDirection: 'row' }}>
                   <View
                     sx={{
