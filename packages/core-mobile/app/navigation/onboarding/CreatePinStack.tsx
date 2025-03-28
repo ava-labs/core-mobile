@@ -12,7 +12,7 @@ import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import LogoLoader from 'components/LogoLoader'
-import { v4 as uuidv4 } from 'uuid'
+import { uuid } from 'utils/uuid'
 import { CreateWalletScreenProps } from '../types'
 // This stack is for Seedless
 export type CreatePinStackParamList = {
@@ -68,7 +68,7 @@ const CreatePinScreen = (): JSX.Element => {
      * this allows our pin/biometric logic to work normally
      */
     onPinCreated({
-      mnemonic: uuidv4(),
+      mnemonic: uuid(),
       pin,
       isResetting: false,
       walletType: WalletType.SEEDLESS
@@ -97,7 +97,7 @@ const BiometricLoginScreen = (): JSX.Element => {
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
   return (
     <BiometricLogin
-      mnemonic={uuidv4()}
+      mnemonic={uuid()}
       onBiometrySet={() => {
         navigate(AppNavigation.CreateWallet.TermsNConditions)
       }}
@@ -117,7 +117,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
           // creating/recovering a seedless wallet
-          login(uuidv4(), WalletType.SEEDLESS).catch(Logger.error)
+          login(uuid(), WalletType.SEEDLESS).catch(Logger.error)
         }, 300)
       }}
       onReject={() => signOut()}

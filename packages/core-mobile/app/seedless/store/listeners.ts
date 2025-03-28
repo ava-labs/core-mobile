@@ -22,7 +22,7 @@ import { onTokenExpired } from 'seedless/store/slice'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
 import { setAccountTitle } from 'store/account/slice'
-import { v4 as uuidv4 } from 'uuid'
+import { uuid } from 'utils/uuid'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
@@ -106,7 +106,7 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
         if (selectWalletState(state) === WalletState.INACTIVE) {
           initWalletServiceAndUnlock({
             dispatch,
-            mnemonic: uuidv4(),
+            mnemonic: uuid(),
             walletType: WalletType.SEEDLESS,
             isLoggingIn: true
           }).catch(Logger.error)
