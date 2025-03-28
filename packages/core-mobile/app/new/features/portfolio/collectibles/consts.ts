@@ -1,13 +1,6 @@
 import { Dimensions } from 'react-native'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { NftItem } from 'services/nft/types'
-import {
-  AssetNetworkFilter,
-  CollectibleTypeFilter,
-  CollectibleView
-} from 'store/balance'
-import { NftContentType } from 'store/nft'
+import { CollectibleView } from 'store/balance'
 
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
