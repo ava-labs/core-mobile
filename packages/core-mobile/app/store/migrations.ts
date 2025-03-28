@@ -17,6 +17,7 @@ import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
 import Keychain from 'react-native-keychain'
+import Logger from 'utils/Logger'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -315,55 +316,79 @@ export const migrations = {
     return newState
   },
   18: async (state: any) => {
+    Logger.info(
+      'Starting migration 18: BiometricsSDK keychain service migration'
+    )
+
     // Step 1: Migrate BiometricsSDK keychain service names
     const oldServiceKey = SERVICE_KEY
     const oldServiceKeyBio = SERVICE_KEY_BIO
 
     // Get all services from keychain
     const services = await Keychain.getAllGenericPasswordServices()
+    Logger.info(`Found ${services.length} total keychain services`)
 
     // Find old wallet entries
     const oldWalletServices = services.filter(
       service => service === oldServiceKey || service === oldServiceKeyBio
     )
+    Logger.info(
+      `Found ${oldWalletServices.length} old wallet services to migrate`
+    )
 
     // Generate a new wallet ID
     const walletId = uuid()
+    Logger.info(`Generated new wallet ID: ${walletId}`)
 
     // For each old service, migrate the data
     for (const oldService of oldWalletServices) {
+      Logger.info(`Migrating service: ${oldService}`)
       const credentials = await Keychain.getGenericPassword({
         service: oldService
       })
       if (credentials) {
         // Determine if it's a biometric or PIN wallet
         const isBiometric = oldService === oldServiceKeyBio
+        Logger.info(
+          `Found ${isBiometric ? 'biometric' : 'PIN'} wallet to migrate`
+        )
 
         // Store with new service name
+        const newServiceName = `${
+          isBiometric ? SERVICE_KEY_BIO : SERVICE_KEY
+        }-${walletId}`
+        Logger.info(`Storing with new service name: ${newServiceName}`)
+
         await Keychain.setGenericPassword(walletId, credentials.password, {
           ...(isBiometric
             ? KeystoreConfig.KEYSTORE_BIO_OPTIONS
             : KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS),
-          service: `${isBiometric ? SERVICE_KEY_BIO : SERVICE_KEY}-${walletId}`
+          service: newServiceName
         })
 
         // Clean up old service
+        Logger.info(`Cleaning up old service: ${oldService}`)
         await Keychain.resetGenericPassword({ service: oldService })
+      } else {
+        Logger.warn(`No credentials found for service: ${oldService}`)
       }
     }
 
     // Step 2: Migrate stored wallet structure
+    Logger.info('Starting wallet structure migration')
     const newState = { ...state }
 
     // If there's an existing account state, migrate it to the new wallet structure
     if (state.account && state.account.accounts) {
       const accountState = newState.account as AccountsState
       const walletType = state.app.walletType as WalletType
+      Logger.info(`Migrating wallet type: ${walletType}`)
 
       // Create a new wallet entry
       const walletName =
         accountState.walletName ||
         `Wallet ${Object.keys(accountState.accounts).length + 1}`
+      Logger.info(`Creating new wallet with name: ${walletName}`)
 
       // Add wallet to the wallets state
       newState.wallet = {
@@ -378,8 +403,12 @@ export const migrations = {
         },
         activeWalletId: walletId
       }
+      Logger.info('Successfully migrated wallet structure')
+    } else {
+      Logger.info('No existing account state found to migrate')
     }
 
+    Logger.info('Migration 18 completed successfully')
     return newState
   }
 }
