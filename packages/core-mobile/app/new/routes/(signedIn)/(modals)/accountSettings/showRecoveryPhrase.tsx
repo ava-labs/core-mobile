@@ -17,7 +17,7 @@ import ScreenHeader from 'common/components/ScreenHeader'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import { useLocalSearchParams } from 'expo-router'
 
-const TITLE = 'Show Recovery Phrase'
+const TITLE = 'Show recovery phrase'
 
 const navigationHeader = <NavigationTitleHeader title={TITLE} />
 
