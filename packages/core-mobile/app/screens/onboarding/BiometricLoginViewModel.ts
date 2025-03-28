@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { UserCredentials } from 'react-native-keychain'
 import Logger from 'utils/Logger'
+import { useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 
 interface BiometricLoginTypes {
   biometryType: string
@@ -11,6 +13,7 @@ interface BiometricLoginTypes {
 export function useBiometricLogin(m: string): BiometricLoginTypes {
   const [mnemonic] = useState(m)
   const [biometryType, setBiometryType] = useState<string>('')
+  const activeWalletId = useSelector(selectActiveWalletId)
 
   useEffect(() => {
     BiometricsSDK.getBiometryType()
@@ -20,9 +23,13 @@ export function useBiometricLogin(m: string): BiometricLoginTypes {
       .catch(Logger.error)
   }, [])
 
-  const storeMnemonicWithBiometric = () => {
-    return BiometricsSDK.storeWalletWithBiometry(mnemonic)
-  }
+  const storeMnemonicWithBiometric = useCallback((): Promise<boolean> => {
+    if (!activeWalletId) {
+      Logger.error('No active wallet ID found')
+      return Promise.reject(new Error('No active wallet ID found'))
+    }
+    return BiometricsSDK.storeWalletWithBiometry(activeWalletId, mnemonic)
+  }, [activeWalletId, mnemonic])
 
   return { biometryType, storeMnemonicWithBiometric }
 }

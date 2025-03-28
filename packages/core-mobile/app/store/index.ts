@@ -29,8 +29,9 @@ import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
+import { walletsReducer as wallet } from './wallet/slice'
 
-const VERSION = 17
+const VERSION = 18
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -48,6 +49,7 @@ const combinedReducer = combineReducers({
   customToken,
   posthog,
   nft,
+  wallet,
   security,
   rpc,
   viewOnce,
