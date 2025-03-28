@@ -1,7 +1,9 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { AnyAction } from '@reduxjs/toolkit'
 import { Appearance as RnAppearance } from 'react-native'
-import { setSelectedAppearance } from './slice'
+import { AppListenerEffectAPI } from 'store'
+import { selectIsDeveloperMode, toggleDeveloperMode } from '../advanced'
+import { selectSelectedAppearance, setSelectedAppearance } from './slice'
 import { Appearance } from './types'
 
 const handleAppearanceChange = (action: AnyAction): void => {
@@ -14,11 +16,34 @@ const handleAppearanceChange = (action: AnyAction): void => {
   )
 }
 
+const handleTestnetModeAppearanceChange = (
+  _: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): void => {
+  const { getState } = listenerApi
+  const state = getState()
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const appearance = selectSelectedAppearance(state)
+
+  RnAppearance.setColorScheme(
+    isDeveloperMode || appearance === Appearance.Dark
+      ? 'dark'
+      : appearance === Appearance.Light
+      ? 'light'
+      : null
+  )
+}
+
 export const addAppearanceListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
     actionCreator: setSelectedAppearance,
     effect: handleAppearanceChange
+  })
+
+  startListening({
+    actionCreator: toggleDeveloperMode,
+    effect: handleTestnetModeAppearanceChange
   })
 }
