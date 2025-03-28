@@ -57,7 +57,7 @@ export const CollectibleRenderer = memo(
       setIsLoading(false)
     }, [])
 
-    function renderEdgeCases(): ReactNode {
+    const renderEdgeCases = useCallback(() => {
       if (error) return <Text variant="body2">{error}</Text>
       if (isLoading) return <CollectibleSkeleton />
       if (collectible?.status === NftLocalStatus.Processed) return null
@@ -69,9 +69,9 @@ export const CollectibleRenderer = memo(
           height={24}
         />
       )
-    }
+    }, [collectible?.status, colors.$textPrimary, error, isLoading])
 
-    function renderContent(): ReactNode {
+    const renderContent = useCallback(() => {
       if (collectible?.imageData?.video)
         return (
           <Animated.View
@@ -118,7 +118,14 @@ export const CollectibleRenderer = memo(
       }
 
       return null
-    }
+    }, [
+      collectible?.imageData?.image,
+      collectible?.imageData?.video,
+      onImageError,
+      onLoadEnd,
+      onVideoError,
+      videoProps
+    ])
 
     return (
       <View

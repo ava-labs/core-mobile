@@ -35,9 +35,9 @@ import {
 import { CollectibleDetailsContent } from './CollectibleDetailsContent'
 import {
   CARD_SIZE_SMALL,
-  CollectibleDetailsHeader,
+  CollectibleDetailsHero,
   SNAP_DISTANCE
-} from './CollectibleDetailsHeader'
+} from './CollectibleDetailsHero'
 
 type CollectibleDetailsScreenRouteParams = {
   localId?: string
@@ -185,7 +185,7 @@ export const CollectibleDetailsScreen = ({
     )
   }, [headerHeight, onBack])
 
-  const headerStyle = useAnimatedStyle(() => {
+  const heroStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
@@ -290,7 +290,7 @@ export const CollectibleDetailsScreen = ({
             ]}>
             <Animated.View
               style={[
-                headerStyle,
+                heroStyle,
                 bounceStyle,
                 {
                   position: 'absolute',
@@ -302,7 +302,7 @@ export const CollectibleDetailsScreen = ({
                   alignItems: 'center'
                 }
               ]}>
-              <CollectibleDetailsHeader
+              <CollectibleDetailsHero
                 collectible={collectible}
                 scrollY={scrollY}
               />
