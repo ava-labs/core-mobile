@@ -34,7 +34,6 @@ import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { LoadingState } from 'common/components/LoadingState'
 
 export const CollectibleDetailsContent = ({
   collectible,
