@@ -6,7 +6,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { Glow, GlowRef } from 'common/components/Glow'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useRef } from 'react'
@@ -16,7 +15,6 @@ import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import { NftContentType } from 'store/nft'
@@ -31,7 +29,7 @@ export const CARD_SIZE = SCREEN_WIDTH - HORIZONTAL_MARGIN * 4
 export const CARD_SIZE_SMALL = 120
 export const SNAP_DISTANCE = 160
 
-export const CollectibleDetailsHeader = ({
+export const CollectibleDetailsHero = ({
   collectible,
   scrollY
 }: {
@@ -41,8 +39,6 @@ export const CollectibleDetailsHeader = ({
   const {
     theme: { colors }
   } = useTheme()
-  const headerHeight = useHeaderHeight()
-  const insets = useSafeAreaInsets()
   const glowRef = useRef<GlowRef>(null)
 
   const animateGlow = (): void => {
@@ -98,7 +94,7 @@ export const CollectibleDetailsHeader = ({
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: headerHeight - insets.top
+        paddingTop: 32
       }}>
       <View
         style={{

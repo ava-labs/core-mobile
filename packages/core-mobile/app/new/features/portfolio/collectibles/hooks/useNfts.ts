@@ -12,8 +12,6 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 
-const REFETCH_INTERVAL = 30000 // 30 seconds
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNfts = (enabled: boolean) => {
   const { allNetworks } = useNetworks()
@@ -66,7 +64,8 @@ export const useNfts = (enabled: boolean) => {
   return useRefreshableQuery({
     queryKey: [ReactQueryKeys.NFTS, activeAccount?.addressC || '', currency],
     enabled,
-    queryFn: fetchNfts,
-    refetchInterval: REFETCH_INTERVAL
+    queryFn: fetchNfts
+    // Disabled until we have a better way to handle this
+    // refetchInterval: 30000
   })
 }
