@@ -16,6 +16,7 @@ import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
 import Keychain from 'react-native-keychain'
+import { Wallet } from 'store/wallet/types'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -384,10 +385,8 @@ export const migrations = {
           [walletId]: {
             id: walletId,
             name: walletName,
-            mnemonic: '', // This will be populated from BiometricsSDK
-            isActive: true,
             type: walletType
-          }
+          } as Wallet
         },
         activeWalletId: walletId
       }
