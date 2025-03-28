@@ -134,7 +134,6 @@ export const SeedlessExportMnemonicPhrase = ({
         <Button
           size="medium"
           type="secondary"
-          disabled={!mnemonic}
           style={{ width: 120 }}
           onPress={toggleRecoveryPhrase}
           testID="mnemonic_screen__copy_phrase_button">
