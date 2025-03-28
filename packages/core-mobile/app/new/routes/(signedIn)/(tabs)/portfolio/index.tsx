@@ -50,6 +50,7 @@ import {
   selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
@@ -67,6 +68,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(
@@ -199,6 +201,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               }
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
+              isDeveloperModeEnabled={isDeveloperModeEnabled}
             />
           </Animated.View>
         </View>
@@ -218,6 +221,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     balanceAccurate,
     isLoading,
     isPrivacyModeEnabled,
+    isDeveloperModeEnabled,
     ACTION_BUTTONS
   ])
 

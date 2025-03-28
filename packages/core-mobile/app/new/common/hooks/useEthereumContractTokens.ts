@@ -19,7 +19,7 @@ export const useEthereumContractTokens = (): NetworkContractToken[] => {
   }, [allNetworks])
 
   const allCustomTokens = useSelector(selectAllCustomTokens)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
 
   const { data } = useQuery({
     enabled: ethereumNetwork !== undefined,
@@ -33,12 +33,15 @@ export const useEthereumContractTokens = (): NetworkContractToken[] => {
     const t = data ?? []
 
     // if network is testnet, merge with custom tokens if exists
-    if (ethereumNetwork && ethereumNetwork.isTestnet === isDeveloperMode) {
+    if (
+      ethereumNetwork &&
+      ethereumNetwork.isTestnet === isDeveloperModeEnabled
+    ) {
       const customTokens = allCustomTokens[ethereumNetwork.chainId]
       if (customTokens && customTokens.length > 0) {
         return [...t, ...customTokens]
       }
     }
     return t
-  }, [allCustomTokens, data, isDeveloperMode, ethereumNetwork])
+  }, [allCustomTokens, data, isDeveloperModeEnabled, ethereumNetwork])
 }

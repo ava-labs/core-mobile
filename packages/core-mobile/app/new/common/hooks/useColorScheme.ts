@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { Appearance, selectSelectedAppearance } from 'store/settings/appearance'
 import {
@@ -6,12 +6,18 @@ import {
   useColorScheme as useRnColorScheme,
   ColorSchemeName
 } from 'react-native'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useColorScheme = (): ColorSchemeName => {
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const colorScheme = useRnColorScheme()
 
   useEffect(() => {
+    if (isDeveloperModeEnabled) {
+      RnAppearance.setColorScheme('dark')
+      return
+    }
     switch (selectedAppearance) {
       case Appearance.Light:
         RnAppearance.setColorScheme('light')
@@ -21,9 +27,13 @@ export const useColorScheme = (): ColorSchemeName => {
         break
       case Appearance.System:
       default:
-      // default to system appearance
+        // default to system appearance
+        RnAppearance.setColorScheme(null)
     }
-  }, [selectedAppearance])
+  }, [isDeveloperModeEnabled, selectedAppearance])
 
-  return colorScheme
+  return useMemo(() => {
+    if (isDeveloperModeEnabled) return 'dark'
+    return colorScheme
+  }, [colorScheme, isDeveloperModeEnabled])
 }

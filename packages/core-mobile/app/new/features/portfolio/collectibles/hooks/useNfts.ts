@@ -20,7 +20,7 @@ export const useNfts = (enabled: boolean) => {
 
   const currency = useSelector(selectSelectedCurrency).toLowerCase()
   const account = useSelector(selectActiveAccount)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
 
   const fetchNfts = useCallback(async () => {
     if (!account?.addressC) {
@@ -29,7 +29,7 @@ export const useNfts = (enabled: boolean) => {
 
     return SentryWrapper.startSpan({ name: 'get-nfts' }, async () => {
       try {
-        const networks = isDeveloperMode
+        const networks = isDeveloperModeEnabled
           ? [
               allNetworks[ChainId.AVALANCHE_TESTNET_ID],
               allNetworks[ChainId.ETHEREUM_TEST_GOERLY]
@@ -61,7 +61,7 @@ export const useNfts = (enabled: boolean) => {
         return []
       }
     })
-  }, [account?.addressC, allNetworks, currency, isDeveloperMode])
+  }, [account?.addressC, allNetworks, currency, isDeveloperModeEnabled])
 
   return useQuery({
     queryKey: [ReactQueryKeys.NFTS, account?.addressC, currency],

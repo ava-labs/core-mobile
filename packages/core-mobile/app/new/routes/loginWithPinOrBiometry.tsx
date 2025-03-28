@@ -30,6 +30,8 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { BioType } from '../common/contexts/DeviceInfoProvider'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
@@ -43,6 +45,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     },
     [unlock]
   )
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const [hasNoRecentInput, setHasNoRecentInput] = useState(false)
   const [hasWrongPinEntered, setHasWrongPinEntered] = useState(false)
 
@@ -249,6 +252,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   }}
                   hasBlur={Platform.OS !== 'android'}
                   backgroundColor={theme.colors.$surfacePrimary}
+                  isDeveloperModeEnabled={isDeveloperModeEnabled}
                 />
               </Reanimated.View>
               <Reanimated.View style={[pinInputOpacityStyle]}>
