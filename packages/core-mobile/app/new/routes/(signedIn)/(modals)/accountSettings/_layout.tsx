@@ -28,6 +28,7 @@ export default function AccountSettingsLayout(): JSX.Element {
         <Stack.Screen name="seedlessExportPhrase" />
         <Stack.Screen name="manageAccounts" />
         <Stack.Screen name="biometricVerifyPin" />
+        <Stack.Screen name="addressBook" />
       </Stack>
     </SeedlessMnemonicExportProvider>
   )
