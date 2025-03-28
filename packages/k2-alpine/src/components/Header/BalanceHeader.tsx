@@ -60,7 +60,7 @@ export const BalanceHeader = ({
           <Text
             variant="buttonMedium"
             sx={{
-              color: theme.colors.$textPrimary,
+              color: theme.colors.$textSecondary,
               fontSize: 14,
               lineHeight: 17
             }}>
