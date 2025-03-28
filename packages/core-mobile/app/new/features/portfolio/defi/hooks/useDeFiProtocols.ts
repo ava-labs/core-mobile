@@ -33,7 +33,7 @@ export const useDeFiProtocols = (): {
     isPaused,
     isSuccess
   } = useDeFiProtocolList()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const { networks } = useNetworks()
 
   const [selectedSort, setSelectedSort] = useState<IndexPath>({
@@ -66,7 +66,7 @@ export const useDeFiProtocols = (): {
       const chainId = chainList?.[protocol.chain]?.communityId
 
       if (chainId) {
-        return isDeveloperMode === networks[chainId]?.isTestnet
+        return isDeveloperModeEnabled === networks[chainId]?.isTestnet
       }
       return false
     })
@@ -82,7 +82,7 @@ export const useDeFiProtocols = (): {
       }
       return 0
     })
-  }, [data, chainList, networks, isDeveloperMode, sortOption])
+  }, [data, chainList, networks, isDeveloperModeEnabled, sortOption])
 
   return {
     sort: {

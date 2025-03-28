@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { Appearance, selectSelectedAppearance } from 'store/settings/appearance'
 import {
@@ -27,9 +27,13 @@ export const useColorScheme = (): ColorSchemeName => {
         break
       case Appearance.System:
       default:
-      // default to system appearance
+        // default to system appearance
+        RnAppearance.setColorScheme(null)
     }
   }, [isDeveloperMode, selectedAppearance])
 
-  return colorScheme
+  return useMemo(() => {
+    if (isDeveloperMode) return 'dark'
+    return colorScheme
+  }, [colorScheme, isDeveloperMode])
 }

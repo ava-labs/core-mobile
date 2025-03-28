@@ -1,11 +1,14 @@
 import React from 'react'
-import { Separator, View } from '@avalabs/k2-alpine'
+import { Separator, useTheme, View } from '@avalabs/k2-alpine'
 import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import Grabber from './Grabber'
+import { TestnetBanner } from './TestnetBanner'
 
 const BlurredBackgroundView = ({
   hasGrabber = false,
@@ -19,23 +22,36 @@ const BlurredBackgroundView = ({
   }
   backgroundColor?: string
 }): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
   }))
 
   return (
-    <View style={{ flex: 1, backgroundColor }}>
+    <View
+      style={{
+        flex: 1,
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        backgroundColor: backgroundColor ?? colors.$surfacePrimary
+      }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />
         </Animated.View>
       )}
-      <BlurViewWithFallback
-        style={{
-          flex: 1
-        }}
-      />
-      {hasGrabber === true && <Grabber />}
+      {hasGrabber === false && (
+        <BlurViewWithFallback
+          style={{
+            flex: 1
+          }}
+        />
+      )}
+      {hasGrabber === true && isDeveloperModeEnabled === false && <Grabber />}
+      {hasGrabber === true && isDeveloperModeEnabled && <TestnetBanner />}
       {separator?.position === 'bottom' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />

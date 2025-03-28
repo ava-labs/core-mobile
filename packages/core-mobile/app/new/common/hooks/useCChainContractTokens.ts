@@ -19,7 +19,7 @@ export const useCChainContractTokens = (): NetworkContractToken[] => {
   }, [allNetworks])
 
   const allCustomTokens = useSelector(selectAllCustomTokens)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
 
   const { data } = useQuery({
     enabled: cChainNetwork !== undefined,
@@ -33,12 +33,12 @@ export const useCChainContractTokens = (): NetworkContractToken[] => {
     const t = data ?? []
 
     // if network is testnet, merge with custom tokens if exists
-    if (cChainNetwork && cChainNetwork.isTestnet === isDeveloperMode) {
+    if (cChainNetwork && cChainNetwork.isTestnet === isDeveloperModeEnabled) {
       const customTokens = allCustomTokens[cChainNetwork.chainId]
       if (customTokens && customTokens.length > 0) {
         return [...t, ...customTokens]
       }
     }
     return t
-  }, [data, cChainNetwork, isDeveloperMode, allCustomTokens])
+  }, [data, cChainNetwork, isDeveloperModeEnabled, allCustomTokens])
 }
