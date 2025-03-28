@@ -148,7 +148,7 @@ export const CollectibleDetailsContent = ({
       <View
         style={{
           position: 'relative',
-          height: '100%'
+          flex: 1
         }}>
         <LinearGradient
           colors={[
@@ -174,7 +174,7 @@ export const CollectibleDetailsContent = ({
           contentContainerStyle={{
             paddingHorizontal: HORIZONTAL_MARGIN,
             gap: 12,
-            paddingBottom: 200 + insets.bottom,
+            paddingBottom: 150 + insets.bottom,
             paddingTop: 20
           }}>
           <GroupList

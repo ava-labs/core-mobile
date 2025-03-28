@@ -1,6 +1,5 @@
 import {
   alpha,
-  ANIMATED,
   Pinchable,
   SCREEN_WIDTH,
   Text,
@@ -143,11 +142,7 @@ export const CollectibleDetailsHeader = ({
             <CollectibleGridItem
               collectible={collectible}
               index={0}
-              onLoaded={() => {
-                setTimeout(() => {
-                  animateGlow()
-                }, ANIMATED.DURATION)
-              }}
+              onLoaded={animateGlow}
               type={CollectibleView.LargeGrid}
               style={{
                 width: '100%',
