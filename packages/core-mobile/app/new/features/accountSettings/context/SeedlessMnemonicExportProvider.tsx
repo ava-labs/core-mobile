@@ -123,25 +123,31 @@ export const SeedlessMnemonicExportProvider = ({
     }
   }, [keyId, seedlessExportService])
 
-  const checkPendingExports = useCallback(async (): Promise<void> => {
-    const pendingExport = await seedlessExportService.userExportList()
-    if (pendingExport) {
-      const progress = getExportInitProgress(
-        pendingExport.valid_epoch,
-        pendingExport.exp_epoch
-      )
-      if (progress.isInProgress) {
-        replace('./seedlessExportPhrase/pending')
-        return
+  const checkPendingExports = useCallback(
+    async (isFido = false): Promise<void> => {
+      const pendingExport = await seedlessExportService.userExportList()
+      if (pendingExport) {
+        const progress = getExportInitProgress(
+          pendingExport.valid_epoch,
+          pendingExport.exp_epoch
+        )
+        if (progress.isInProgress) {
+          replace('./seedlessExportPhrase/pending')
+          return
+        }
+        if (progress.isReadyToDecrypt) {
+          replace('./seedlessExportPhrase/readyToExport')
+          return
+        }
+        await deleteExport()
       }
-      if (progress.isReadyToDecrypt) {
-        replace('./seedlessExportPhrase/readyToExport')
-        return
+      if (isFido) {
+        replace('./notInitiated')
       }
-      await deleteExport()
-    }
-    replace('./seedlessExportPhrase/notInitiated')
-  }, [deleteExport, replace, seedlessExportService])
+      replace('./seedlessExportPhrase/notInitiated')
+    },
+    [deleteExport, replace, seedlessExportService]
+  )
 
   const handleNoMfaMethods = useCallback((): void => {
     showAlert({
@@ -179,7 +185,7 @@ export const SeedlessMnemonicExportProvider = ({
             result.value.mfaId,
             true
           )
-          checkPendingExports()
+          checkPendingExports(true)
           return
         }
       }
