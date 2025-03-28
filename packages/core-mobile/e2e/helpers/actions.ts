@@ -285,6 +285,17 @@ const swipeDown = async (
     .swipe('down', speed, normalizedOffset)
 }
 
+const swipe = async (
+  item: Detox.NativeMatcher,
+  direction: Detox.Direction,
+  speed: Detox.Speed = 'slow',
+  offset = 0.25,
+  index = 0
+  // eslint-disable-next-line max-params
+) => {
+  await element(item).atIndex(index).swipe(direction, speed, offset)
+}
+
 const swipeLeft = async (
   item: Detox.NativeMatcher,
   speed: Detox.Speed,
@@ -398,8 +409,9 @@ const dragTo = async (
 }
 
 const getAmount = (amount: string | undefined): number => {
-  if (!amount) return 0
-  return parseFloat(amount.replace(/[$,]/g, ''))
+  if (amount) {
+    return parseFloat(amount.replace(/\$/g, '').replace(/,/g, ''))
+  } else return 0
 }
 
 const isWithinTolerance = (
@@ -434,6 +446,7 @@ export default {
   swipeUp,
   swipeDown,
   swipeLeft,
+  swipe,
   setColumnToValue,
   setInputText,
   getAndroidAttributesArray,

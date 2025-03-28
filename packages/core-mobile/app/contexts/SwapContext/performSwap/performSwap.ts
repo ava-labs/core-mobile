@@ -5,9 +5,10 @@ import Big from 'big.js'
 import { OptimalRate, TransactionParams as Transaction } from '@paraswap/sdk'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
-import SwapService, { ETHER_ADDRESS } from 'services/swap/SwapService'
+import SwapService from 'services/swap/SwapService'
 import { swapError } from 'errors/swapError'
 import { ERC20__factory } from 'contracts/openzeppelin'
+import { EVM_NATIVE_TOKEN_ADDRESS, PARTNER_FEE_PARAMS } from '../consts'
 
 export type PerformSwapParams = {
   srcTokenAddress: string | undefined
@@ -20,6 +21,7 @@ export type PerformSwapParams = {
   provider: JsonRpcBatchInternal
   userAddress: string | undefined
   signAndSend: (txParams: [TransactionParams]) => Promise<string>
+  isSwapFeesEnabled: boolean
 }
 
 // copied from https://github.com/ava-labs/avalanche-sdks/tree/alpha-release/packages/paraswap-sdk
@@ -37,7 +39,8 @@ export async function performSwap({
   activeNetwork,
   provider,
   userAddress,
-  signAndSend
+  signAndSend,
+  isSwapFeesEnabled
 }: PerformSwapParams): Promise<{
   swapTxHash: string
   approveTxHash: string | undefined
@@ -55,9 +58,11 @@ export async function performSwap({
   if (activeNetwork.isTestnet)
     throw swapError.networkNotSupported(activeNetwork.chainName)
 
-  const sourceTokenAddress = isSrcTokenNative ? ETHER_ADDRESS : srcTokenAddress
+  const sourceTokenAddress = isSrcTokenNative
+    ? EVM_NATIVE_TOKEN_ADDRESS
+    : srcTokenAddress
   const destinationTokenAddress = isDestTokenNative
-    ? ETHER_ADDRESS
+    ? EVM_NATIVE_TOKEN_ADDRESS
     : destTokenAddress
 
   const partner = 'Avalanche'
@@ -147,7 +152,8 @@ export async function performSwap({
       // paraswap returns responses like this: {error: 'Not enough 0x4f60a160d8c2dddaafe16fcc57566db84d674…}
       // when they are too slow to detect the approval
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (result as any).error
+      (result as any).error ||
+      result instanceof Error
     )
   }
 
@@ -164,7 +170,8 @@ export async function performSwap({
           userAddress,
           partner,
           srcDecimals: priceRoute.srcDecimals,
-          destDecimals: priceRoute.destDecimals
+          destDecimals: priceRoute.destDecimals,
+          ...(isSwapFeesEnabled && PARTNER_FEE_PARAMS)
         }),
       checkForErrorsInResult,
       0,

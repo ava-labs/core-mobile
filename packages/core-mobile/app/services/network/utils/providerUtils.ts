@@ -12,12 +12,15 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { Networks } from 'store/network/types'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import NetworkService from '../NetworkService'
 
 export function getBitcoinProvider(
   isTest: boolean | undefined
 ): Promise<BitcoinProvider> {
-  return ModuleManager.bitcoinModule.getProvider(getBitcoinNetwork(isTest))
+  return ModuleManager.bitcoinModule.getProvider(
+    mapToVmNetwork(getBitcoinNetwork(isTest))
+  )
 }
 
 export async function getEvmProvider(
@@ -28,7 +31,7 @@ export async function getEvmProvider(
       `Cannot get evm provider for network type: ${network.vmName}`
     )
 
-  return ModuleManager.evmModule.getProvider(network)
+  return ModuleManager.evmModule.getProvider(mapToVmNetwork(network))
 }
 
 export function getAvalancheEvmProvider(

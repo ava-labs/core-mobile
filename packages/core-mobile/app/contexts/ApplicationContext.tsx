@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react'
 import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
-import type { Theme } from '@react-navigation/native'
+import { DefaultTheme, type Theme } from '@react-navigation/native'
 import { AppHook, useApp } from 'AppHook'
 
 export type AppTheme = typeof COLORS_DAY | typeof COLORS_NIGHT
@@ -74,7 +74,8 @@ export const ApplicationContextProvider = ({
       card: theme.background,
       border: theme.background,
       notification: theme.colorPrimary1
-    }
+    },
+    fonts: DefaultTheme.fonts
   } as Theme)
 
   const [shadow] = useState({

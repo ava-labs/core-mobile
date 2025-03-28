@@ -15,8 +15,7 @@ import {
 } from '@paraswap/sdk'
 import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
-
-export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+import { EVM_NATIVE_TOKEN_ADDRESS } from 'contexts/SwapContext/consts'
 
 const txResponseSchema = z
   .object({
@@ -34,7 +33,7 @@ const TESTNET_NETWORK_UNSUPPORTED_ERROR = new Error(
   'Testnet network is not supported by Paraswap'
 )
 
-interface BuildTxParams {
+export interface BuildTxParams {
   network: Network
   srcToken: Address
   destToken: Address
@@ -45,6 +44,7 @@ interface BuildTxParams {
   partner?: string
   partnerAddress?: string
   partnerFeeBps?: number
+  isDirectFeeTransfer?: boolean
   receiver?: Address
   options?: BuildOptions
   srcDecimals?: number
@@ -129,8 +129,8 @@ class SwapService {
 
         return await this.getParaSwapSDK(network.chainId).swap.getRate(
           {
-            srcToken: isFromTokenNative ? ETHER_ADDRESS : srcToken,
-            destToken: isDestTokenNative ? ETHER_ADDRESS : destToken,
+            srcToken: isFromTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : srcToken,
+            destToken: isDestTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : destToken,
             amount: srcAmount,
             userAddress: account.addressC,
             side: swapSide,
@@ -176,6 +176,7 @@ class SwapService {
     partner,
     partnerAddress,
     partnerFeeBps,
+    isDirectFeeTransfer,
     receiver,
     srcDecimals,
     destDecimals,
@@ -204,6 +205,7 @@ class SwapService {
           partner,
           partnerAddress,
           partnerFeeBps,
+          isDirectFeeTransfer,
           receiver,
           srcDecimals,
           destDecimals,

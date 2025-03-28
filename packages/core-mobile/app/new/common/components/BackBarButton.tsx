@@ -14,7 +14,10 @@ const BackBarButton = (): JSX.Element => {
         paddingRight: 16,
         paddingVertical: 16
       }}>
-      <Icons.Custom.BackArrowCustom color={theme.colors.$textPrimary} />
+      <Icons.Custom.BackArrowCustom
+        testID="header_back"
+        color={theme.colors.$textPrimary}
+      />
     </Pressable>
   )
 }

@@ -124,7 +124,7 @@ export enum StorageKey {
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
 
-export const TERMS_OF_USE_URL = 'https://wallet.avax.network/legal?core'
+export const TERMS_OF_USE_URL = 'https://core.app/terms/core'
 
 export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
 

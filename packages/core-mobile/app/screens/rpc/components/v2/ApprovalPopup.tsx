@@ -1,19 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { Alert, AlertType, TokenType } from '@avalabs/vm-module-types'
+import { TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
-import {
-  selectIsGaslessBlocked,
-  selectIsSeedlessSigningBlocked
-} from 'store/posthog'
+import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { Eip1559Fees } from 'utils/Utils'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
@@ -32,23 +28,18 @@ import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import Switch from 'components/Switch'
-import GaslessService from 'services/gasless/GaslessService'
 import Logger from 'utils/Logger'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
-import { Tooltip } from 'components/Tooltip'
-import InfoSVG from 'components/svg/InfoSVG'
 import { validateFee } from 'screens/send/utils/evm/validate'
-import NetworkService from 'services/network/NetworkService'
-import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
-import { resolve } from '@avalabs/core-utils-sdk'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useGasless } from 'hooks/useGasless'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
 import AlertBanner from './AlertBanner'
+import NetworkFeeSelectorWithGasless from './NetworkFeeSelectorWithGasless'
+
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
 >
@@ -63,36 +54,8 @@ const ApprovalPopup = (): JSX.Element => {
   const caip2ChainId = request.chainId
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
-  const [isGaslessEligible, setIsGaslessEligible] = useState(false)
-  const [gaslessEnabled, setGaslessEnabled] = useState(false)
-  const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalance()
-  const [gaslessError, setGaslessError] = useState<Alert | null>(null)
-  const showGaslessSwitch = useMemo(() => {
-    return !isGaslessBlocked && !gaslessError && isGaslessEligible
-  }, [gaslessError, isGaslessBlocked, isGaslessEligible])
-
-  useEffect(() => {
-    const checkGaslessEligibility = async (): Promise<void> => {
-      if (!chainId) {
-        setIsGaslessEligible(false)
-        return
-      }
-      const isEligibleForChain = await GaslessService.isEligibleForChain(
-        chainId.toString()
-      ).catch(err => {
-        Logger.error('Error checking gasless eligibility', err)
-        return false
-      })
-      const isEligibleForTxType =
-        GaslessService.isEligibleForTxType(signingData)
-      const isEligible = isEligibleForTxType && isEligibleForChain
-      Logger.info('ApprovalPopup: Gasless eligibility', isEligible)
-      setIsGaslessEligible(isEligible)
-    }
-    checkGaslessEligibility()
-  }, [chainId, request.chainId, signingData])
 
   const accountSelector =
     'account' in signingData
@@ -111,7 +74,17 @@ const ApprovalPopup = (): JSX.Element => {
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
     bigint | undefined
   >()
-
+  const {
+    gaslessEnabled,
+    setGaslessEnabled,
+    shouldShowGaslessSwitch,
+    gaslessError,
+    handleGaslessTx
+  } = useGasless({
+    signingData,
+    maxFeePerGas,
+    caip2ChainId
+  })
   const approveDisabled =
     !network ||
     !account ||
@@ -171,81 +144,56 @@ const ApprovalPopup = (): JSX.Element => {
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
     useSpendLimits(displayData.tokenApprovals)
 
+  const validateEthSendTransaction = useCallback(() => {
+    if (
+      !signingData ||
+      !network?.networkToken ||
+      !nativeToken ||
+      signingData.type !== 'eth_sendTransaction'
+    )
+      return
+    const ethSendTx = signingData.data
+
+    try {
+      const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n
+      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
+
+      validateFee({
+        gasLimit,
+        maxFee: maxFeePerGas || 0n,
+        amount,
+        nativeToken,
+        token: nativeToken
+      })
+
+      setAmountError(undefined)
+    } catch (err) {
+      if (err instanceof Error) {
+        setAmountError(err.message)
+      } else {
+        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
+      }
+    }
+  }, [signingData, network, maxFeePerGas, nativeToken])
+
+  useEffect(() => {
+    if (gaslessEnabled) {
+      setAmountError(undefined)
+      return
+    }
+    validateEthSendTransaction()
+  }, [validateEthSendTransaction, gaslessEnabled])
+
   const handleFeesChange = useCallback((fees: Eip1559Fees) => {
     setMaxFeePerGas(fees.maxFeePerGas)
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
 
-  function showGaslessError(): void {
-    setGaslessError({
-      type: AlertType.INFO,
-      details: {
-        title: 'Free Gas Error',
-        description:
-          'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
-      }
-    })
-  }
-
-  const handleGaslessTx = async (
-    addressFrom: string
-  ): Promise<string | undefined> => {
-    let attempts = 0
-    const MAX_ATTEMPTS = 1
-
-    if (!network) {
-      showGaslessError()
-      return undefined
-    }
-    const provider = await NetworkService.getProviderForNetwork(network)
-    if (!(provider instanceof JsonRpcBatchInternal)) {
-      showGaslessError()
-      return undefined
-    }
-
-    while (attempts <= MAX_ATTEMPTS) {
-      const [result, error] = await resolve(
-        GaslessService.fundTx({
-          signingData,
-          addressFrom,
-          maxFeePerGas,
-          provider
-        })
-      )
-
-      if (result?.txHash) {
-        AnalyticsService.capture('GaslessFundSuccessful', {
-          fundTxHash: result?.txHash
-        })
-        setGaslessError(null)
-        return result.txHash
-      }
-
-      // Show error and stop if we get a DO_NOT_RETRY error or
-      // if we've hit max attempts with a RETRY_WITH_NEW_CHALLENGE error
-      if (
-        error ||
-        result?.error?.category === 'DO_NOT_RETRY' ||
-        (result?.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
-          attempts === MAX_ATTEMPTS)
-      ) {
-        AnalyticsService.capture('GaslessFundFailed')
-        Logger.error(`[ApprovalPopup.tsx][handleGaslessTx]${error}`)
-        showGaslessError()
-        setSubmitting(false)
-        return undefined
-      }
-
-      attempts++
-    }
-    return undefined
-  }
-
   const onHandleApprove = async (): Promise<void> => {
     if (approveDisabled) return
     setSubmitting(true)
 
-    if (showGaslessSwitch && gaslessEnabled) {
+    if (shouldShowGaslessSwitch && gaslessEnabled) {
       const txHash = await handleGaslessTx(account.addressC)
       if (!txHash) {
         setSubmitting(false)
@@ -465,59 +413,6 @@ const ApprovalPopup = (): JSX.Element => {
     return <BalanceChange balanceChange={balanceChange} />
   }
 
-  const renderGasless = (): JSX.Element | null => {
-    if (!showGaslessSwitch) {
-      return null
-    }
-    return (
-      <Row
-        style={{
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingVertical: 8
-        }}>
-        <Row style={{ alignItems: 'center' }}>
-          <Text variant="body2">Get Free Gas</Text>
-          <Space x={4} />
-          <Tooltip
-            content="When toggled Core will pay the network fee for this transaction."
-            position="right"
-            style={{ width: 200 }}
-            icon={<InfoSVG size={14} />}
-          />
-        </Row>
-        <Switch
-          value={gaslessEnabled}
-          onValueChange={() => setGaslessEnabled(prevState => !prevState)}
-        />
-      </Row>
-    )
-  }
-
-  const renderNetworkFeeSelector = (): JSX.Element | null => {
-    if (gaslessEnabled && showGaslessSwitch) return null
-    if (!showNetworkFeeSelector || !chainId) return null
-
-    let gasLimit: number | undefined
-
-    if (
-      typeof signingData.data === 'object' &&
-      'gasLimit' in signingData.data
-    ) {
-      gasLimit = Number(signingData.data.gasLimit || 0)
-    }
-
-    if (!gasLimit) return null
-
-    return (
-      <NetworkFeeSelector
-        chainId={chainId}
-        gasLimit={gasLimit}
-        onFeesChange={handleFeesChange}
-      />
-    )
-  }
-
   const renderDetails = (): JSX.Element => {
     return (
       <>
@@ -532,45 +427,49 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
-  const validateEthSendTransaction = useCallback(() => {
-    if (
-      !signingData ||
-      !network?.networkToken ||
-      !nativeToken ||
-      signingData.type !== 'eth_sendTransaction'
+  const renderAmountError = (): JSX.Element | null => {
+    if (!amountError) return null
+
+    return (
+      <Text
+        variant="body2"
+        sx={{
+          color: '$dangerMain',
+          maxWidth: '55%',
+          marginVertical: 8
+        }}>
+        {amountError}
+      </Text>
     )
-      return
-    const ethSendTx = signingData.data
+  }
 
-    try {
-      const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n
-      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
+  const renderNetworkFeeSelectorWithGasless = (): JSX.Element | null => {
+    if (!showNetworkFeeSelector) return null
 
-      validateFee({
-        gasLimit,
-        maxFee: maxFeePerGas || 0n,
-        amount,
-        nativeToken,
-        token: nativeToken
-      })
+    let gasLimit: number | undefined
 
-      setAmountError(undefined)
-    } catch (err) {
-      if (err instanceof Error) {
-        setAmountError(err.message)
-      } else {
-        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
-      }
+    if (
+      typeof signingData.data === 'object' &&
+      'gasLimit' in signingData.data
+    ) {
+      gasLimit = Number(signingData.data.gasLimit || 0)
     }
-  }, [signingData, network, maxFeePerGas, nativeToken])
 
-  useEffect(() => {
-    if (gaslessEnabled) {
-      setAmountError(undefined)
-      return
-    }
-    validateEthSendTransaction()
-  }, [validateEthSendTransaction, gaslessEnabled])
+    return (
+      <View sx={{ marginTop: 8 }}>
+        <Text variant="buttonMedium">Network Fee</Text>
+        <Space y={12} />
+        <NetworkFeeSelectorWithGasless
+          gaslessEnabled={gaslessEnabled}
+          setGaslessEnabled={setGaslessEnabled}
+          gasLimit={gasLimit}
+          caip2ChainId={caip2ChainId}
+          handleFeesChange={handleFeesChange}
+          shouldShowGaslessSwitch={shouldShowGaslessSwitch}
+        />
+      </View>
+    )
+  }
 
   return (
     <>
@@ -592,19 +491,8 @@ const ApprovalPopup = (): JSX.Element => {
           {renderDetails()}
           {renderSpendLimits()}
           {renderBalanceChange()}
-          {renderGasless()}
-          {amountError && (
-            <Text
-              variant="body2"
-              sx={{
-                color: '$dangerMain',
-                maxWidth: '55%',
-                marginVertical: 8
-              }}>
-              {amountError}
-            </Text>
-          )}
-          {renderNetworkFeeSelector()}
+          {renderAmountError()}
+          {renderNetworkFeeSelectorWithGasless()}
           {renderDisclaimer()}
         </ScrollView>
         {renderApproveRejectButtons()}

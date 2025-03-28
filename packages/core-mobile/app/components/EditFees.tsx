@@ -6,7 +6,6 @@ import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/core-chains-sdk'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import {
   Button,
@@ -24,6 +23,8 @@ import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { sanitizeDecimalInput } from 'utils/units/sanitize'
+import { formatCurrency } from 'utils/FormatCurrency'
+import { SubTextNumber } from './SubTextNumber'
 
 type EditFeesProps = {
   network: Network
@@ -42,16 +43,6 @@ const maxPriorityFeeInfoMessage =
 const gasLimitInfoMessage =
   'Total units of gas needed to complete the transaction. Do not edit unless necessary.'
 
-function CurrencyHelperText({ text }: { text: string }): JSX.Element {
-  return (
-    <Row style={{ justifyContent: 'flex-end', paddingHorizontal: 16 }}>
-      <Text variant="caption" sx={{ color: '$neutral300' }}>
-        {text}
-      </Text>
-    </Row>
-  )
-}
-
 const EditFees = ({
   lowMaxFeePerGas,
   maxFeePerGas: initMaxFeePerGas,
@@ -65,10 +56,6 @@ const EditFees = ({
   noGasLimitError
 }: EditFeesProps): JSX.Element => {
   const isBaseUnitRate = feeDecimals === undefined
-
-  const {
-    appHook: { tokenInCurrencyFormatter }
-  } = useApplicationContext()
   const _gasLimitError = noGasLimitError ?? 'Please enter a valid gas limit'
   const {
     theme: { colors }
@@ -122,7 +109,7 @@ const EditFees = ({
         newFees.maxTotalFee,
         network.networkToken.decimals,
         network.networkToken.symbol
-      ).toDisplay(),
+      ).toDisplay({ asNumber: true }),
     [
       network.networkToken.decimals,
       network.networkToken.symbol,
@@ -271,20 +258,29 @@ const EditFees = ({
             </Tooltip>
           )}
           <FlexSpacer />
-          <Text variant="heading5" sx={{ color: '$neutral50' }}>
-            {maxTotalFee}
-          </Text>
+          <SubTextNumber number={maxTotalFee} size="big" />
+
           <Space x={4} />
           <Text variant="heading6" sx={{ color: '$neutral400' }}>
             {network?.networkToken?.symbol?.toUpperCase()}
           </Text>
         </Row>
-
-        <CurrencyHelperText
-          text={`${tokenInCurrencyFormatter(
-            newFees.maxTotalFeeInCurrency
-          )} ${selectedCurrency.toUpperCase()}`}
-        />
+        <Text
+          variant="body2"
+          sx={{
+            color: '$neutral300',
+            lineHeight: 15,
+            alignSelf: 'flex-end',
+            marginTop: 2,
+            marginRight: 14
+          }}>
+          {formatCurrency({
+            amount: newFees.maxTotalFeeInCurrency,
+            currency: selectedCurrency,
+            boostSmallNumberPrecision: false,
+            showLessThanThreshold: true
+          })}
+        </Text>
       </ScrollView>
       <Button
         testID="custom_network_fee_save_btn"

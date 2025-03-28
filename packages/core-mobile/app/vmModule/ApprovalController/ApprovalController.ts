@@ -23,6 +23,10 @@ import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
+  requestPublicKey(): Promise<Hex> {
+    return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
+  }
+
   onTransactionConfirmed(txHash: Hex): void {
     showTransactionSuccessToast({
       message: 'Transaction Successful',
@@ -110,7 +114,7 @@ class ApprovalController implements VmModuleApprovalController {
               externalIndices: signingData.externalIndices ?? [],
               internalIndices: signingData.internalIndices ?? [],
               account,
-              network,
+              isTestnet: network.isTestnet,
               resolve
             })
             break

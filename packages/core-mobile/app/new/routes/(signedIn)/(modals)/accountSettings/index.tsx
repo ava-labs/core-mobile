@@ -92,7 +92,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [renderHeaderRight, setOptions])
 
   const goToSelectAvatar = useCallback(() => {
-    navigate('./selectAvatar')
+    navigate('./accountSettings/selectAvatar')
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
@@ -100,7 +100,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToAppIcon = useCallback(() => {
-    navigate('./appIcon')
+    navigate('./accountSettings/appIcon')
   }, [navigate])
 
   const goToCurrency = useCallback(() => {
@@ -108,11 +108,11 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToNotificationPreferences = useCallback(() => {
-    navigate('./notificationPreferences')
+    navigate('./accountSettings/notificationPreferences')
   }, [navigate])
 
   const goToSecurityPrivacy = useCallback(() => {
-    navigate('./securityPrivacy')
+    navigate('./accountSettings/securityAndPrivacy')
   }, [navigate])
 
   const goToHelpCenter = useCallback(() => {
@@ -120,11 +120,11 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToLegal = useCallback(() => {
-    navigate('./legal')
+    navigate('./accountSettings/legal')
   }, [navigate])
 
   const goToSendFeedback = useCallback(() => {
-    navigate('./sendFeedback')
+    navigate('./accountSettings/sendFeedback')
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
@@ -136,6 +136,7 @@ const AccountSettingsScreen = (): JSX.Element => {
 
   return (
     <ScrollView
+      testID="settings_scroll_view"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 60 }}
       {...scrollViewProps}>
@@ -257,13 +258,13 @@ const AccountSettingsScreen = (): JSX.Element => {
             <Text
               variant="body1"
               sx={{ color: colors.$textDanger, lineHeight: 20 }}>
-              Delete Wallet
+              Delete wallet
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Footer */}
-        <View sx={{ gap: 8, alignItems: 'center' }}>
+        <View testID="settings_footer" sx={{ gap: 8, alignItems: 'center' }}>
           <Logos.AppIcons.Core
             color={colors.$textSecondary}
             width={79}

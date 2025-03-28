@@ -118,6 +118,7 @@ const SelectCurrencyScreen = (): JSX.Element => {
                     {name}
                   </Text>
                   <Text
+                    testID={`currency__${symbol}`}
                     variant="body2"
                     sx={{ lineHeight: 16, flex: 1 }}
                     ellipsizeMode="tail"
@@ -126,7 +127,10 @@ const SelectCurrencyScreen = (): JSX.Element => {
                   </Text>
                 </View>
                 {isSelected && (
-                  <Icons.Navigation.Check color={colors.$textPrimary} />
+                  <Icons.Navigation.Check
+                    testID={`selected_currency__${symbol}`}
+                    color={colors.$textPrimary}
+                  />
                 )}
               </View>
             </View>

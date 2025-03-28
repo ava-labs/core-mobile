@@ -48,6 +48,8 @@ const mockModule: Module = {
   getNetworkFee: jest.fn(),
   getAddress: jest.fn(),
   getTokens: jest.fn(),
+  deriveAddress: jest.fn(),
+  buildDerivationPath: jest.fn(),
   onRpcRequest: mockOnRpcRequest
 }
 
@@ -561,6 +563,7 @@ describe('rpc - listeners', () => {
         })
       })
 
+      // eslint-disable-next-line jest/no-disabled-tests
       describe.skip('handle request with vm modules', () => {
         beforeEach(() => {
           mockHandlerMapGet.mockImplementationOnce(() => undefined)
