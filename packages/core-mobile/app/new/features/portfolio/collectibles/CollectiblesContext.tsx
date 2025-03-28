@@ -27,7 +27,6 @@ type CollectiblesContextState = {
   isLoading: boolean
   isEnabled: boolean
   isRefetching: boolean
-  isPaused: boolean
   isSuccess: boolean
   isRefreshing: boolean
   error?: Error
@@ -271,11 +270,10 @@ export const CollectiblesProvider = ({
         refetch: query.refetch,
         isRefetching: query.isRefetching,
         isRefreshing: query.isRefreshing,
+        isSuccess: query.isSuccess,
         isLoading: query.isLoading,
         error: query?.error instanceof Error ? query.error : undefined,
-        pullToRefresh: query.pullToRefresh,
-        isPaused: query.isPaused,
-        isSuccess: query.isSuccess
+        pullToRefresh: query.pullToRefresh
       }}>
       {children}
     </CollectiblesContext.Provider>

@@ -55,7 +55,6 @@ export const CollectiblesScreen = ({
     setIsEnabled,
     refetch,
     error,
-    isPaused,
     isSuccess,
     isRefreshing,
     pullToRefresh,
