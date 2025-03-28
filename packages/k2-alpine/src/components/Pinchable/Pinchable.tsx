@@ -22,8 +22,6 @@ export const Pinchable = ({
 }): ReactNode => {
   const scale = useSharedValue(1)
   const rotation = useSharedValue(0)
-  const translateX = useSharedValue(0)
-  const translateY = useSharedValue(0)
   const isPinching = useRef(false)
 
   const onUpdate = (): void => {
@@ -65,12 +63,7 @@ export const Pinchable = ({
   const composedGesture = Gesture.Simultaneous(pinchGesture, rotationGesture)
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-      { rotate: `${rotation.value}deg` }
-    ]
+    transform: [{ scale: scale.value }, { rotate: `${rotation.value}deg` }]
   }))
 
   return (
