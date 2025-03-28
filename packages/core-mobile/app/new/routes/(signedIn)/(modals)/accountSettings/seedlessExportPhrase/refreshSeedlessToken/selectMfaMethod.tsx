@@ -11,6 +11,7 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { seedlessExportService, sessionData, checkPendingExports } =
     useSeedlessMnemonicExportContext()
   const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
+  const { canGoBack, back } = useRouter()
 
   useEffect(() => {
     const getMfaMethods = async (): Promise<void> => {
@@ -33,10 +34,18 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
           sessionData.mfaId,
           true
         )
+        canGoBack() && back()
         checkPendingExports()
       }
     },
-    [checkPendingExports, navigate, sessionData, seedlessExportService.session]
+    [
+      sessionData,
+      navigate,
+      seedlessExportService.session,
+      canGoBack,
+      back,
+      checkPendingExports
+    ]
   )
 
   return (
