@@ -1,7 +1,7 @@
 import { SxProp } from 'dripsy'
 import React from 'react'
 import { Platform } from 'react-native'
-import { Text } from '../Primitives'
+import { Text } from '../../Primitives'
 
 export const Label = ({
   sx,

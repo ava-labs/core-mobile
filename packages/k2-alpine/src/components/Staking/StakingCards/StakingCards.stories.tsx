@@ -1,16 +1,17 @@
 import React from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
-import { View } from '../Primitives'
-import { showAlert, useTheme } from '../..'
-import { GRID_GAP, SCREEN_WIDTH } from '../../const'
-import { useMotion } from '../../hooks/useMotion'
-import { ProgressCard, ProgressCardProps } from '../StakeCards/ProgressCard'
-import { CompletedCard, CompletedCardProps } from '../StakeCards/CompleteCard'
-import { AddCard } from '../StakeCards/AddCard'
+import { View } from '../../Primitives'
+import { showAlert } from '../..'
+import { GRID_GAP, SCREEN_WIDTH } from '../../../const'
+import { useMotion } from '../../../hooks/useMotion'
+import { useTheme } from '../../../hooks'
+import { ProgressCard, ProgressCardProps } from './ProgressCard'
+import { CompletedCard, CompletedCardProps } from './CompleteCard'
+import { AddCard } from './AddCard'
 import { ClaimCard } from './ClaimCard'
 
 export default {
-  title: 'Stake Cards'
+  title: 'Staking Cards'
 }
 
 export const All = (): JSX.Element => {
@@ -19,8 +20,8 @@ export const All = (): JSX.Element => {
   const motion = useMotion()
 
   const completeCardBackground = theme.isDark
-    ? require('../../assets/images/complete-card-bg-dark.png')
-    : require('../../assets/images/complete-card-bg-light.png')
+    ? require('../../../assets/images/complete-card-bg-dark.png')
+    : require('../../../assets/images/complete-card-bg-light.png')
 
   const renderItem: ListRenderItem<
     ProgressCardProps | CompletedCardProps | 'Add' | 'Claim'

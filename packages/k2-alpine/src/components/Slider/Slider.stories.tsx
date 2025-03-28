@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   runOnJS,
@@ -57,7 +57,7 @@ const SliderStory = ({
   const value = useSharedValue(0.5)
   const minValue = useSharedValue(minimumValue ?? 0)
   const maxValue = useSharedValue(maximumValue ?? 1)
-  const [text, setText] = React.useState(value.value.toFixed(2))
+  const [text, setText] = useState(value.value.toFixed(2))
 
   useAnimatedReaction(
     () => value.value,

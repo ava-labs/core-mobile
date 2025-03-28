@@ -1,9 +1,9 @@
 import React from 'react'
 import { ImageBackground } from 'expo-image'
 import { ImageSourcePropType } from 'react-native'
-import { useInversedTheme, useTheme } from '../../hooks'
-import { Button } from '../Button/Button'
-import { View } from '../Primitives'
+import { useInversedTheme, useTheme } from '../../../hooks'
+import { Button } from '../../Button/Button'
+import { View } from '../../Primitives'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
 import { Label } from './Label'
 
