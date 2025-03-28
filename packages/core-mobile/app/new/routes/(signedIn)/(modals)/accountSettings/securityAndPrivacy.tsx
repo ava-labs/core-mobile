@@ -3,7 +3,8 @@ import {
   Text,
   useTheme,
   GroupList,
-  Toggle
+  Toggle,
+  GroupListItem
 } from '@avalabs/k2-alpine'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import Animated, {
@@ -16,7 +17,6 @@ import { useRouter } from 'expo-router'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
 import { Space } from 'components/Space'
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   selectCoreAnalyticsConsent,
   setCoreAnalytics
@@ -28,6 +28,10 @@ import DeviceInfoService, {
 } from 'services/deviceInfo/DeviceInfoService'
 import { WalletType } from 'services/wallet/types'
 import { selectWalletType } from 'store/app'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import Logger from 'utils/Logger'
+import { commonStorage } from 'utils/mmkv'
+import { StorageKey } from 'resources/Constants'
 
 const TITLE = 'Security & privacy'
 
@@ -63,6 +67,37 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     setHeaderLayout(event.nativeEvent.layout)
   }
 
+  const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
+    useState(false)
+  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
+
+  useEffect(() => {
+    BiometricsSDK.canUseBiometry()
+      .then((biometricAvailable: boolean) => {
+        setIsBiometricAvailable(biometricAvailable)
+      })
+      .catch(Logger.error)
+
+    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
+    if (type) {
+      setIsBiometricSwitchEnabled(type === 'BIO')
+    } else {
+      Logger.error('Secure access type not found')
+    }
+  }, [])
+
+  const handleSwitchBiometric = useCallback(
+    (value: boolean): void => {
+      setIsBiometricSwitchEnabled(value)
+      if (value) {
+        navigate('./biometricVerifyPin')
+      } else {
+        commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+      }
+    },
+    [navigate]
+  )
+
   const connectedSitesData = useMemo(() => {
     return [
       {
@@ -76,20 +111,34 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   }, [allApprovedDapps.length, navigate])
 
   const pinAndBiometricData = useMemo(() => {
-    return [
+    const data: GroupListItem[] = [
       {
         title: 'Change PIN',
         onPress: () => {
           navigate('./verifyChangePin')
         }
-      },
-      {
-        title: `Use ${biometricType}`,
-        // TODO: Implement biometric toggle
-        value: <Toggle onValueChange={noop} value={true} />
       }
     ]
-  }, [biometricType, navigate])
+
+    if (isBiometricAvailable) {
+      data.push({
+        title: `Use ${biometricType}`,
+        value: (
+          <Toggle
+            onValueChange={handleSwitchBiometric}
+            value={isBiometricSwitchEnabled}
+          />
+        )
+      })
+    }
+    return data
+  }, [
+    biometricType,
+    handleSwitchBiometric,
+    isBiometricAvailable,
+    isBiometricSwitchEnabled,
+    navigate
+  ])
 
   const recoveryData = useMemo(() => {
     const data = [
