@@ -25,6 +25,7 @@ import {
 import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
+import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -254,9 +255,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/tokenManagement')
   }, [navigate])
 
-  const handleGoToCollectibleDetail = useCallback((): void => {
-    // navigate to token detail
-  }, [])
+  const handleGoToCollectibleDetail = useCallback(
+    (localId: string, initial: CollectibleFilterAndSortInitialState): void => {
+      navigate({
+        pathname: '/collectibleDetail',
+        params: { localId, initial: JSON.stringify(initial) }
+      })
+    },
+    [navigate]
+  )
 
   const handleGoToCollectibleManagement = useCallback((): void => {
     navigate('/collectibleManagement')

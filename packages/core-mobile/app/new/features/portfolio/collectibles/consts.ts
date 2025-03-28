@@ -1,5 +1,6 @@
-import { CollectibleView } from 'store/balance'
 import { Dimensions } from 'react-native'
+import { NftItem } from 'services/nft/types'
+import { CollectibleView } from 'store/balance'
 
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
@@ -11,6 +12,35 @@ const COMPACT_GRID_CARD_HEIGHT =
   width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 3
 const LARGE_GRID_CARD_HEIGHT =
   width - HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP * 2
+
+export const getCollectibleName = (collectible: NftItem): string => {
+  const fallback = collectible.name.length
+    ? collectible.name
+    : collectible.processedMetadata?.name.length
+    ? collectible.processedMetadata?.name
+    : ''
+  const fallbackWithoutTokenId = fallback.replace(/#\d+/g, '')
+
+  return fallbackWithoutTokenId?.length > 0
+    ? fallbackWithoutTokenId.trim()
+    : 'Untitled'
+}
+
+export const getCollectibleCollectionName = (collectible: NftItem): string => {
+  const fallback = collectible.collectionName || ''
+
+  return `#${collectible.tokenId} ${
+    fallback.length === 0 || ['Unknown', 'Unkown'].includes(fallback)
+      ? 'Unknown collection'
+      : fallback.trim()
+  }`
+}
+
+export const getCollectibleDescription = (collectible: NftItem): string => {
+  const fallback =
+    collectible.description || collectible.processedMetadata?.description || ''
+  return fallback?.length > 0 ? fallback.trim() : 'No description'
+}
 
 export const getCompactGridCardHeight = (index: number): number => {
   if (index === 1 || (index % 5 === 0 && index > 0))
