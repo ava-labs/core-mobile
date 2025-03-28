@@ -13,7 +13,7 @@ import { AccountAddresses } from 'features/accountSettings/components/accountAdd
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
 import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import React, { useCallback, useMemo, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -73,7 +73,7 @@ const AccountScreen = (): JSX.Element => {
 
   const handleShowPrivateKey = (): void => {
     // TODO: CP-10070
-    navigate('./accountSettings/privateKey')
+    navigate('/accountSettings/privateKey')
   }
 
   const header = useMemo(
@@ -83,7 +83,8 @@ const AccountScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    targetLayout: balanceHeaderLayout
+    targetLayout: balanceHeaderLayout,
+    shouldHeaderHaveGrabber: true
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
@@ -100,8 +101,7 @@ const AccountScreen = (): JSX.Element => {
           <Animated.View
             style={[
               {
-                backgroundColor: theme.colors.$surfacePrimary,
-                marginTop: Platform.OS === 'ios' ? 24 : 8
+                backgroundColor: theme.colors.$surfacePrimary
               },
               animatedHeaderStyle
             ]}>
