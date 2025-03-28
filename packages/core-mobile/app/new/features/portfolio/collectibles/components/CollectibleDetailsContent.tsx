@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   alpha,
   Button,
   GroupList,
@@ -32,7 +33,8 @@ import {
 import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
-import { camelCaseToTitle, HORIZONTAL_MARGIN } from '../consts'
+import { HORIZONTAL_MARGIN } from '../consts'
+import { LoadingState } from 'common/components/LoadingState'
 
 export const CollectibleDetailsContent = ({
   collectible,
@@ -58,7 +60,11 @@ export const CollectibleDetailsContent = ({
   const attributes: GroupListItem[] = useMemo(
     () =>
       collectible?.processedMetadata?.attributes?.map(item => ({
-        title: camelCaseToTitle(item.trait_type),
+        title: item.trait_type
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, function (str) {
+            return str.toUpperCase().trim()
+          }),
         value: item.value
       })) || [],
     [collectible?.processedMetadata?.attributes]
@@ -221,7 +227,11 @@ export const CollectibleDetailsContent = ({
                 type="secondary"
                 size="large"
                 onPress={handleRefresh}>
-                Refresh
+                {isRefreshing ? (
+                  <ActivityIndicator size="small" color={colors.$textPrimary} />
+                ) : (
+                  'Refresh'
+                )}
               </Button>
             ) : null}
             <Button type="secondary" size="large">

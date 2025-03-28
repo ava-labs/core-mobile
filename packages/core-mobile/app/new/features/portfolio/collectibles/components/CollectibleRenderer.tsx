@@ -6,7 +6,6 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState
 } from 'react'
@@ -30,8 +29,7 @@ export const CollectibleRenderer = memo(
     onLoaded,
     videoProps,
     style
-  }: // eslint-disable-next-line sonarjs/cognitive-complexity
-  CollectibleRendererProps): ReactNode => {
+  }: CollectibleRendererProps): ReactNode => {
     const {
       theme: { colors }
     } = useTheme()
@@ -59,7 +57,7 @@ export const CollectibleRenderer = memo(
       setIsLoading(false)
     }, [])
 
-    const renderEdgeCases = useMemo((): ReactNode => {
+    function renderEdgeCases(): ReactNode {
       if (error) return <Text variant="body2">{error}</Text>
       if (isLoading) return <CollectibleSkeleton />
       if (collectible?.status === NftLocalStatus.Processed) return null
@@ -71,9 +69,9 @@ export const CollectibleRenderer = memo(
           height={24}
         />
       )
-    }, [collectible?.status, colors.$textPrimary, error, isLoading])
+    }
 
-    const renderContent = useMemo(() => {
+    function renderContent(): ReactNode {
       if (collectible?.imageData?.video)
         return (
           <Animated.View
@@ -120,14 +118,7 @@ export const CollectibleRenderer = memo(
       }
 
       return null
-    }, [
-      collectible?.imageData?.image,
-      collectible?.imageData?.video,
-      onImageError,
-      onLoadEnd,
-      onVideoError,
-      videoProps
-    ])
+    }
 
     return (
       <View
@@ -151,10 +142,10 @@ export const CollectibleRenderer = memo(
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          {renderEdgeCases}
+          {renderEdgeCases()}
         </View>
 
-        {renderContent}
+        {renderContent()}
         {isLoading ? null : children}
       </View>
     )

@@ -76,16 +76,3 @@ export const getGridCardHeight = (
     }
   }
 }
-
-export function camelCaseToTitle(text: string): string {
-  return text.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
-    return str.toUpperCase().trim()
-  })
-}
-
-export const formatAddress = (address?: string): string => {
-  if (!address) return ''
-  return `${address?.substring(0, 6)}...${address?.substring(
-    address?.length - 4
-  )}`
-}

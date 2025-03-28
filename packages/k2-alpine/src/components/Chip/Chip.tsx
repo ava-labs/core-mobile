@@ -10,6 +10,7 @@ import { Text } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
+import { colors } from '../../theme/tokens/colors'
 
 type ChipSize = 'small' | 'large'
 type ChipVariant = 'light' | 'dark'
@@ -43,7 +44,7 @@ export const Chip = forwardRef<
     }[variant]
     const backgroundColor = {
       light: theme.colors.$surfaceSecondary,
-      dark: alpha('#58585B', 0.8)
+      dark: alpha(colors.$neutral700, 0.8)
     }[variant]
     const iconWidth = { large: 20, small: 16 }[size]
 
