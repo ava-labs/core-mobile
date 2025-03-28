@@ -96,7 +96,7 @@ export const Banner = (): JSX.Element | undefined => {
       <View
         sx={{
           paddingHorizontal: 16,
-          paddingBottom: 20
+          paddingBottom: 4
         }}>
         <Card
           sx={{
@@ -124,7 +124,7 @@ export const Banner = (): JSX.Element | undefined => {
     <View
       sx={{
         paddingHorizontal: 16,
-        paddingBottom: 20
+        paddingBottom: 4
       }}>
       <Card
         sx={{

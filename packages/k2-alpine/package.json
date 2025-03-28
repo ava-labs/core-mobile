@@ -17,7 +17,10 @@
     "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
+    "@avalabs/core-utils-sdk": "3.1.0-alpha.44",
     "@shopify/react-native-skia": "1.5.0",
+    "big.js": "6.2.2",
+    "bn.js": "5.2.1",
     "d3": "7.9.0",
     "dripsy": "4.3.7",
     "expo": "52.0.9",

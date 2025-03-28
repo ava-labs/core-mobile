@@ -530,6 +530,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/k2-alpine@workspace:packages/k2-alpine"
   dependencies:
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.44
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
     "@lavamoat/allow-scripts": 3.2.1
@@ -548,6 +549,8 @@ __metadata:
     "@types/react": 18.3.12
     "@types/tinycolor2": 1.4.5
     babel-loader: 9.2.1
+    big.js: 6.2.2
+    bn.js: 5.2.1
     d3: 7.9.0
     dripsy: 4.3.7
     eslint: 9.9.1
@@ -26827,7 +26830,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 

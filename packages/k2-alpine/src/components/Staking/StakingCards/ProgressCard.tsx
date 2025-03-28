@@ -10,8 +10,8 @@ import Animated, {
 } from 'react-native-reanimated'
 import Svg, { Path } from 'react-native-svg'
 import { Platform } from 'react-native'
-import { View } from '../Primitives'
-import { Motion, useTheme } from '../../hooks'
+import { View } from '../../Primitives'
+import { Motion, useTheme } from '../../../hooks'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
 import { Label } from './Label'
 

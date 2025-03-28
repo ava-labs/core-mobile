@@ -75,7 +75,7 @@ const StakeHomeScreen = (): JSX.Element => {
             {
               paddingHorizontal: 16,
               marginTop: 24,
-              marginBottom: 26,
+              marginBottom: 16,
               backgroundColor: theme.colors.$surfacePrimary
             },
             animatedHeaderStyle

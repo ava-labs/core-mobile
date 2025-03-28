@@ -44,6 +44,9 @@ export const Slider: FC<SliderProps> = ({
         )}
         minimumValue={minimumValue}
         maximumValue={maximumValue}
+        onValueChange={newValue => {
+          value.value = newValue
+        }}
       />
       {(minimumValueLabel !== undefined || maximumValueLabel !== undefined) && (
         <View
