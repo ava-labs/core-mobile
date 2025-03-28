@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import { useFocusEffect } from 'expo-router'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   GroupList,
   PinInput,
@@ -79,58 +78,56 @@ export const CreatePin = ({
   )
 
   return (
-    <BlurredBarsContentLayout>
-      <KeyboardAvoidingView>
-        <SafeAreaView sx={{ flex: 1 }}>
-          <ScrollView
-            sx={{ flex: 1 }}
-            contentContainerSx={{
-              padding: 16,
-              flex: 1
+    <KeyboardAvoidingView>
+      <SafeAreaView sx={{ flex: 1 }}>
+        <ScrollView
+          sx={{ flex: 1 }}
+          contentContainerSx={{
+            paddingHorizontal: 16,
+            flex: 1
+          }}>
+          <ScreenHeader
+            title={chosenPinEntered ? confirmPinTitle : newPinTitle}
+            description={chosenPinEntered ? undefined : newPinDescription}
+          />
+          <View
+            sx={{
+              flex: 1,
+              justifyContent: 'center'
             }}>
-            <ScreenHeader
-              title={chosenPinEntered ? confirmPinTitle : newPinTitle}
-              description={chosenPinEntered ? undefined : newPinDescription}
+            <PinInput
+              ref={ref}
+              length={6}
+              value={chosenPinEntered ? confirmedPin : chosenPin}
+              onChangePin={
+                chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
+              }
             />
-            <View
-              sx={{
-                flex: 1,
-                justifyContent: 'center'
-              }}>
-              <PinInput
-                ref={ref}
-                length={6}
-                value={chosenPinEntered ? confirmedPin : chosenPin}
-                onChangePin={
-                  chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
+          </View>
+        </ScrollView>
+        {!chosenPinEntered && (
+          <View
+            sx={{
+              paddingHorizontal: 16,
+              paddingBottom: 16,
+              backgroundColor: '$surfacePrimary'
+            }}>
+            <GroupList
+              data={[
+                {
+                  title: `Unlock with ${biometricType}`,
+                  accessory: (
+                    <Toggle
+                      onValueChange={setUseBiometrics}
+                      value={useBiometrics}
+                    />
+                  )
                 }
-              />
-            </View>
-          </ScrollView>
-          {!chosenPinEntered && (
-            <View
-              sx={{
-                paddingHorizontal: 16,
-                paddingBottom: 16,
-                backgroundColor: '$surfacePrimary'
-              }}>
-              <GroupList
-                data={[
-                  {
-                    title: `Unlock with ${biometricType}`,
-                    accessory: (
-                      <Toggle
-                        onValueChange={setUseBiometrics}
-                        value={useBiometrics}
-                      />
-                    )
-                  }
-                ]}
-              />
-            </View>
-          )}
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </BlurredBarsContentLayout>
+              ]}
+            />
+          </View>
+        )}
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
