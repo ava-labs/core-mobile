@@ -58,6 +58,9 @@ export default function CreatePin(): JSX.Element {
       onEnteredValidPin={handleEnteredValidPin}
       useBiometrics={useBiometrics}
       setUseBiometrics={setUseBiometrics}
+      newPinTitle="Secure your wallet with a PIN"
+      newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+      confirmPinTitle="Confirm your PIN code"
     />
   )
 }

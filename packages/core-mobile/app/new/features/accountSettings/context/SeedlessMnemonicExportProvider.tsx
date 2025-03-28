@@ -223,7 +223,7 @@ export const SeedlessMnemonicExportProvider = ({
       verifyMFA({
         response: exportInitResponse,
         verifyMfaPath: 'verifyExportInitMfa',
-        destination: '../pending',
+        destination: './pending',
         onVerifySuccess: onVerifyExportInitSuccess
       })
     } catch (e) {
