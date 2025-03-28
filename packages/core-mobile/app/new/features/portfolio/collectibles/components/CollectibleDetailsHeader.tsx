@@ -20,6 +20,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
+import { NftContentType } from 'store/nft'
 import {
   getCollectibleDescription,
   getCollectibleName,
@@ -118,7 +119,10 @@ export const CollectibleDetailsHeader = ({
           ]}>
           <Pinchable
             onGestureEnd={animateGlow}
-            disabled={collectible.status !== NftLocalStatus.Processed}>
+            disabled={
+              collectible.status !== NftLocalStatus.Processed ||
+              collectible.imageData?.type === NftContentType.MP4
+            }>
             <Animated.View
               style={[
                 glowStyle,

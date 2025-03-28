@@ -1,7 +1,7 @@
 import { Pressable } from 'dripsy'
 import { useEvent } from 'expo'
 import { VideoView, VideoViewProps, useVideoPlayer } from 'expo-video'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
@@ -29,6 +29,9 @@ export const Video = ({
   ...props
 }: VideoProps): JSX.Element => {
   const { theme } = useTheme()
+
+  const [isMuted, setIsMuted] = useState(muted ?? false)
+
   const player = useVideoPlayer(source || '', videoPlayer => {
     videoPlayer.loop = true
     videoPlayer.muted = muted ?? false
@@ -49,6 +52,7 @@ export const Video = ({
 
   const toggleMute = (): void => {
     player.muted = !player.muted
+    setIsMuted(prev => !prev)
   }
 
   useEffect(() => {
@@ -118,7 +122,7 @@ export const Video = ({
             height: 24,
             zIndex: 10
           }}>
-          {player.muted ? (
+          {isMuted ? (
             <Icons.Action.VolumeOff
               color={theme.colors?.$surfacePrimary}
               width={16}
