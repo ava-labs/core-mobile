@@ -26,6 +26,7 @@ export default function AccountSettingsLayout(): JSX.Element {
         <Stack.Screen name="recoveryPhraseVerifyPin" />
         <Stack.Screen name="recoveryMethodsVerifyPin" />
         <Stack.Screen name="seedlessExportPhrase" />
+        <Stack.Screen name="manageAccounts" />
       </Stack>
     </SeedlessMnemonicExportProvider>
   )
