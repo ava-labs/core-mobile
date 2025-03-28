@@ -21,11 +21,17 @@ import DeviceInfoService, {
 export const CreatePin = ({
   useBiometrics,
   setUseBiometrics,
-  onEnteredValidPin
+  onEnteredValidPin,
+  newPinTitle,
+  newPinDescription,
+  confirmPinTitle
 }: {
   useBiometrics: boolean
   setUseBiometrics: (value: boolean) => void
   onEnteredValidPin: (validPin: string) => void
+  newPinTitle: string
+  newPinDescription?: string
+  confirmPinTitle: string
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
   const [biometricType, setBiometricType] = useState<BiometricType>(
@@ -83,16 +89,8 @@ export const CreatePin = ({
               flex: 1
             }}>
             <ScreenHeader
-              title={
-                chosenPinEntered
-                  ? 'Confirm your PIN code'
-                  : 'Secure your wallet with a PIN'
-              }
-              description={
-                chosenPinEntered
-                  ? undefined
-                  : 'For extra security, avoid choosing a PIN that contains repeating digits in a sequential order'
-              }
+              title={chosenPinEntered ? confirmPinTitle : newPinTitle}
+              description={chosenPinEntered ? undefined : newPinDescription}
             />
             <View
               sx={{
