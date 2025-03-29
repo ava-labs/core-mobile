@@ -19,7 +19,7 @@ export const SelectRecoveryMethods = ({
   return (
     <View sx={sx}>
       <View sx={{ marginBottom: 24 }}>
-        <Text variant="heading3">Verify Recovery Methods</Text>
+        <Text variant="heading3">Verify recovery methods</Text>
         <Text variant="body1" sx={{ color: '$textPrimary', marginVertical: 8 }}>
           Verify your recovery method(s) to continue.
         </Text>
