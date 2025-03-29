@@ -15,7 +15,7 @@ import {
 import { useNavigation, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
-import { LayoutRectangle } from 'react-native'
+import { LayoutRectangle, Platform } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent } from 'react-native'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
