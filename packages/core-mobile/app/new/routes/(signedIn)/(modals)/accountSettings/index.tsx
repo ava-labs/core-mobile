@@ -15,7 +15,7 @@ import {
 import { useNavigation, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
-import { LayoutRectangle } from 'react-native'
+import { LayoutRectangle, Platform } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent } from 'react-native'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
@@ -40,6 +40,14 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
 import { selectContacts } from 'store/addressBook'
 import { Space } from 'components/Space'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import DeviceInfo from 'react-native-device-info'
+import {
+  HELP_URL,
+  PRIVACY_POLICY_URL,
+  TERMS_OF_USE_URL
+} from 'resources/Constants'
+import Logger from 'utils/Logger'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -55,6 +63,10 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { openUrl } = useInAppBrowser()
+  const preselectPlatform =
+    Platform.OS === 'ios' ? 'Core+mobile+(iOS)' : 'Core+mobile+(Android)'
+
   const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
   const { setOptions } = useNavigation()
@@ -131,17 +143,30 @@ const AccountSettingsScreen = (): JSX.Element => {
     navigate('./accountSettings/securityAndPrivacy')
   }, [navigate])
 
-  const goToHelpCenter = useCallback(() => {
-    navigate('./helpCenter')
-  }, [navigate])
+  const openHelpCenter = useCallback(() => {
+    openUrl(HELP_URL).catch(Logger.error)
+  }, [openUrl])
 
-  const goToLegal = useCallback(() => {
-    navigate('./accountSettings/legal')
-  }, [navigate])
+  const openBugReport = (): void => {
+    const version = DeviceInfo.getReadableVersion()
+    openUrl(
+      `https://docs.google.com/forms/d/e/1FAIpQLSdUQiVnJoqQ1g_6XTREpkSB5vxKKK8ba5DRjhzQf1XVeET8Rw/viewform?usp=pp_url&entry.2070152111=${preselectPlatform}&entry.903657115=${version}`
+    ).catch(Logger.error)
+  }
 
-  const goToSendFeedback = useCallback(() => {
-    navigate('./accountSettings/sendFeedback')
-  }, [navigate])
+  const openFeatureRequest = (): void => {
+    openUrl(
+      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform?entry.2070152111=${preselectPlatform}`
+    ).catch(Logger.error)
+  }
+
+  const openTermsOfUse = (): void => {
+    openUrl(TERMS_OF_USE_URL).catch(Logger.error)
+  }
+
+  const openPrivacyPolicy = (): void => {
+    openUrl(PRIVACY_POLICY_URL).catch(Logger.error)
+  }
 
   const onTestnetChange = (value: boolean): void => {
     AnalyticsService.capture(
@@ -280,9 +305,11 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectSecurityPrivacy={goToSecurityPrivacy}
             />
             <About
-              selectHelpCenter={goToHelpCenter}
-              selectLegal={goToLegal}
-              selectSendFeedback={goToSendFeedback}
+              selectHelpCenter={openHelpCenter}
+              selectTermsOfUse={openTermsOfUse}
+              selectReportBug={openBugReport}
+              selectSendFeedback={openFeatureRequest}
+              selectPrivacyPolicy={openPrivacyPolicy}
             />
           </View>
           <TouchableOpacity

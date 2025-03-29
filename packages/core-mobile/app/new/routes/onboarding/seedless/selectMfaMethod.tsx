@@ -1,19 +1,17 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { SafeAreaView, Text, View } from '@avalabs/k2-alpine'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
-import { useNavigation, useRouter } from 'expo-router'
-import BackBarButton from 'common/components/BackBarButton'
+import { useRouter } from 'expo-router'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 
-const SelectRecoveryMethodsScreen = (): JSX.Element => {
+const SelectMfaMethodScreen = (): JSX.Element => {
   const { mfaMethods, oidcAuth } = useRecoveryMethodContext()
   const { verify } = useSeedlessRegister()
-  const { setOptions } = useNavigation()
-  const { canGoBack, back, navigate } = useRouter()
+  const { navigate } = useRouter()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
 
   const handleSelectMFA = useCallback(
@@ -33,18 +31,6 @@ const SelectRecoveryMethodsScreen = (): JSX.Element => {
     [navigate, oidcAuth, verify]
   )
 
-  const handlePressBack = useCallback((): void => {
-    canGoBack() && back()
-  }, [back, canGoBack])
-
-  const renderCustomBackButton = useCallback(() => {
-    return <BackBarButton onBack={handlePressBack} />
-  }, [handlePressBack])
-
-  useEffect(() => {
-    setOptions({ headerLeft: renderCustomBackButton })
-  }, [setOptions, handlePressBack, renderCustomBackButton])
-
   return (
     <BlurredBarsContentLayout>
       <SafeAreaView sx={{ margin: 16 }}>
@@ -63,4 +49,4 @@ const SelectRecoveryMethodsScreen = (): JSX.Element => {
   )
 }
 
-export default SelectRecoveryMethodsScreen
+export default SelectMfaMethodScreen
