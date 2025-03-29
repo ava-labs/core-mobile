@@ -10,7 +10,8 @@ export default function VerifyCodeModal(): JSX.Element {
   const router = useRouter()
 
   const onVerifySuccess = useCallback((): void => {
-    router.replace('./analyticsConsent')
+    router.canGoBack() && router.back()
+    router.navigate('./analyticsConsent')
     AnalyticsService.capture('SeedlessMfaVerified', {
       type: 'Authenticator'
     })

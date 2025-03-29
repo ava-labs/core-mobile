@@ -43,7 +43,7 @@ export const AddRecoveryMethods = ({
           onPress={setSelectedMethod}
         />
       </ScrollView>
-      <View sx={{ padding: 16, gap: 16 }}>
+      <View sx={{ paddingHorizontal: 16, gap: 16, paddingBottom: 60 }}>
         <Button
           type="primary"
           size="large"

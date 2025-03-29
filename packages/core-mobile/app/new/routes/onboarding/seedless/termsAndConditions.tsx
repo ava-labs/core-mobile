@@ -9,7 +9,7 @@ export default function TermsAndConditions(): JSX.Element {
   const handleAgreeAndContinue = (): void => {
     const isRecovering = recovering === 'true'
     if (isRecovering) {
-      navigate('./selectRecoveryMethods')
+      navigate('./selectMfaMethod')
       return
     }
     navigate('./addRecoveryMethods')
