@@ -1,6 +1,6 @@
 import React from 'react'
-import { useTheme } from '../../hooks'
-import { Icons } from '../../theme/tokens/Icons'
+import { useTheme } from '../../../hooks'
+import { Icons } from '../../../theme/tokens/Icons'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
 
 export const AddCard = ({

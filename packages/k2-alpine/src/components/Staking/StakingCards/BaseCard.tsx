@@ -1,8 +1,8 @@
 import React from 'react'
 import { SxProp } from 'dripsy'
-import { useTheme } from '../../hooks'
-import { AnimatedPressable } from '../Animated/AnimatedPressable'
-import { View } from '../Primitives'
+import { useTheme } from '../../../hooks'
+import { AnimatedPressable } from '../../Animated/AnimatedPressable'
+import { View } from '../../Primitives'
 
 export const BaseCard = ({
   onPress,
