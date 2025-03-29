@@ -35,8 +35,10 @@ const SelectMfaMethodScreen = (): JSX.Element => {
     <BlurredBarsContentLayout>
       <SafeAreaView sx={{ margin: 16 }}>
         <View sx={{ marginBottom: 24 }}>
-          <Text variant="heading3">Verify Recovery Methods</Text>
-          <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
+          <Text variant="heading3">Verify recovery methods</Text>
+          <Text
+            variant="body1"
+            sx={{ color: '$textPrimary', marginVertical: 8 }}>
             Verify your recovery method(s) to continue.
           </Text>
         </View>
