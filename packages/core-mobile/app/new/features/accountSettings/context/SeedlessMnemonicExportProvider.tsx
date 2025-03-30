@@ -78,31 +78,29 @@ export const SeedlessMnemonicExportProvider = ({
 
   const [sessionData, setSessionData] = useState<SeedlessExportSessionData>()
 
-  const onVerifyExportInitSuccess: OnVerifyMfaSuccess<UserExportInitResponse> =
-    useCallback(
-      response => {
-        setPendingRequest(response)
-        setTimeout(() => {
-          replace('./pending')
-        }, 100)
-      },
-      [replace]
-    )
+  const onVerifyExportInitSuccess = useCallback(
+    (response: UserExportInitResponse) => {
+      setPendingRequest(response)
+      setTimeout(() => {
+        replace('./pending')
+      }, 100)
+    },
+    [replace]
+  )
 
-  const onVerifyExportCompleteSuccess: OnVerifyMfaSuccess<UserExportCompleteResponse> =
-    useCallback(
-      async response => {
-        if (keyPair?.privateKey === undefined) {
-          return
-        }
-        const decryptedMnemonic = await seedlessExportService.userExportDecrypt(
-          keyPair.privateKey,
-          response
-        )
-        setMnemonic(decryptedMnemonic)
-      },
-      [keyPair, seedlessExportService]
-    )
+  const onVerifyExportCompleteSuccess = useCallback(
+    async (response: UserExportCompleteResponse) => {
+      if (keyPair?.privateKey === undefined) {
+        return
+      }
+      const decryptedMnemonic = await seedlessExportService.userExportDecrypt(
+        keyPair.privateKey,
+        response
+      )
+      setMnemonic(decryptedMnemonic)
+    },
+    [keyPair?.privateKey, seedlessExportService]
+  )
 
   const deleteExport = useCallback(async (): Promise<void> => {
     try {
@@ -131,23 +129,17 @@ export const SeedlessMnemonicExportProvider = ({
         pendingExport.exp_epoch
       )
       if (progress.isInProgress) {
-        setTimeout(() => {
-          replace('./seedlessExportPhrase/pending')
-        }, 100)
+        replace('./seedlessExportPhrase/pending')
         return
       }
       if (progress.isReadyToDecrypt) {
-        setTimeout(() => {
-          replace('./seedlessExportPhrase/readyToExport')
-        }, 100)
+        replace('./seedlessExportPhrase/readyToExport')
         return
       }
-      await deleteExport()
-    }
-    setTimeout(() => {
+    } else {
       replace('./seedlessExportPhrase/notInitiated')
-    }, 100)
-  }, [deleteExport, replace, seedlessExportService])
+    }
+  }, [replace, seedlessExportService])
 
   const handleNoMfaMethods = useCallback((): void => {
     showAlert({
@@ -180,7 +172,7 @@ export const SeedlessMnemonicExportProvider = ({
           navigate('./seedlessExportPhrase/refreshSeedlessToken/verifyTotpCode')
           return
         } else {
-          seedlessExportService.session.approveFido(
+          await seedlessExportService.session.approveFido(
             result.value.oidcToken,
             result.value.mfaId,
             true
@@ -229,7 +221,6 @@ export const SeedlessMnemonicExportProvider = ({
       verifyMFA({
         response: exportInitResponse,
         verifyMfaPath: 'verifyExportInitMfa',
-        destination: './pending',
         onVerifySuccess: onVerifyExportInitSuccess
       })
     } catch (e) {
