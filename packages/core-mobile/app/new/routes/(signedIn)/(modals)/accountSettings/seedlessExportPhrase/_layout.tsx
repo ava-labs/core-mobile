@@ -1,5 +1,6 @@
 import React from 'react'
 import { Stack } from 'common/components/Stack'
+import 'react-native-webview-crypto'
 
 export default function SeedlessExportPhraseLayout(): JSX.Element {
   return (
