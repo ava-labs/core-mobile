@@ -118,6 +118,8 @@ export const GroupList = ({
                       <Text
                         variant="buttonMedium"
                         sx={{
+                          fontFamily: 'Inter-Medium',
+                          fontSize: 16,
                           color: '$textPrimary',
                           ...titleSx
                         }}>

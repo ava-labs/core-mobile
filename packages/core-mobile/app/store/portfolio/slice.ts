@@ -24,6 +24,10 @@ export const portfolioSlice = createSlice({
 
       state.collectibleVisibility[uid.toLowerCase()] =
         !state.collectibleVisibility?.[uid.toLowerCase()] || false
+    },
+    toggleCollectibleUnprocessableVisibility: state => {
+      state.collectibleUnprocessableVisibility =
+        !state.collectibleUnprocessableVisibility || false
     }
   }
 })
@@ -36,8 +40,15 @@ export const selectCollectibleVisibility = (
   state: RootState
 ): CollectibleVisibility => state.portfolio.collectibleVisibility
 
+export const selectCollectibleUnprocessableVisibility = (
+  state: RootState
+): boolean => state.portfolio.collectibleUnprocessableVisibility
+
 // actions
-export const { toggleTokenVisibility, toggleCollectibleVisibility } =
-  portfolioSlice.actions
+export const {
+  toggleTokenVisibility,
+  toggleCollectibleVisibility,
+  toggleCollectibleUnprocessableVisibility
+} = portfolioSlice.actions
 
 export const portfolioReducer = portfolioSlice.reducer

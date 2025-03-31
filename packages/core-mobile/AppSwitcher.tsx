@@ -1,11 +1,16 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { Alert, View, PanResponder } from 'react-native'
 import OldApp from 'ContextApp'
 import NewApp from 'new/ContextApp'
-import { commonStorage } from 'utils/mmkv'
+import React, { useCallback, useState } from 'react'
+import { Alert, View } from 'react-native'
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView
+} from 'react-native-gesture-handler'
 import { StorageKey } from 'resources/Constants'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import { commonStorage } from 'utils/mmkv'
 
 const bundleId = DeviceInfoService.getBundleId()
 const isInternalBuild =
@@ -25,41 +30,37 @@ export const AppSwitcher = (): React.JSX.Element => {
     setIsNewApp(newValue)
   }, [isNewApp, setIsNewApp])
 
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: (evt, gestureState) => {
-          return (
-            gestureState.numberActiveTouches === APP_SWITCH_NUMBER_OF_TOUCHES
-          )
-        },
-        onPanResponderGrant: (evt, gestureState) => {
-          if (
-            gestureState.numberActiveTouches === APP_SWITCH_NUMBER_OF_TOUCHES
-          ) {
-            Alert.alert('Switch App Experience?', '', [
-              {
-                text: 'Cancel',
-                style: 'cancel'
-              },
-              { text: 'OK', onPress: switchApp }
-            ])
-          }
+  const pinchGesture = Gesture.Pinch()
+    .runOnJS(true)
+    .onStart(event => {
+      if (event.numberOfPointers === APP_SWITCH_NUMBER_OF_TOUCHES) {
+        Alert.alert('Switch App Experience?', '', [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          { text: 'OK', onPress: switchApp }
+        ])
+      }
+    })
 
-          return true
-        }
-      }),
-    [switchApp]
-  )
+  const composedGestures = Gesture.Simultaneous(pinchGesture)
 
   // only allow switching to new app on internal builds
-  if (!isInternalBuild && !__DEV__) return <OldApp />
+  if (!isInternalBuild && !__DEV__)
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <OldApp />
+      </GestureHandlerRootView>
+    )
 
   return (
-    <View
-      style={{ flex: 1, backgroundColor: '#000000' }}
-      {...panResponder.panHandlers}>
-      {DevDebuggingConfig.K2_ALPINE || isNewApp ? <NewApp /> : <OldApp />}
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureDetector gesture={composedGestures}>
+        <View style={{ flex: 1, backgroundColor: '#000000' }}>
+          {DevDebuggingConfig.K2_ALPINE || isNewApp ? <NewApp /> : <OldApp />}
+        </View>
+      </GestureDetector>
+    </GestureHandlerRootView>
   )
 }

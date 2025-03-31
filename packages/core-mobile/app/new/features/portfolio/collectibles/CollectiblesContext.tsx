@@ -14,6 +14,7 @@ import {
   NftItem,
   NftItemExternalData,
   NftLocalId,
+  NftLocalStatus,
   UnprocessedNftItem
 } from 'services/nft/types'
 import { getTokenUri } from 'services/nft/utils'
@@ -26,6 +27,10 @@ type CollectiblesContextState = {
   isLoading: boolean
   isEnabled: boolean
   isRefetching: boolean
+  isSuccess: boolean
+  isRefreshing: boolean
+  error?: Error
+  pullToRefresh: () => void
   getCollectible: (localId: NftLocalId) => NftItem | undefined
   refreshMetadata: (nftData: NftItem, chainId: number) => Promise<void>
   isCollectibleRefreshing: (uid: string) => boolean
@@ -51,6 +56,9 @@ export const CollectiblesProvider = ({
   const [imageData, setImageData] = useState<Record<NftLocalId, NftImageData>>(
     {}
   )
+  const [statusData, setStatusData] = useState<
+    Record<NftLocalId, NftLocalStatus>
+  >({})
   const [isRefreshing, setIsRefreshing] = useState<Record<NftLocalId, boolean>>(
     {}
   )
@@ -70,11 +78,18 @@ export const CollectiblesProvider = ({
               lastUpdatedTimestamp[nft.localId]
           },
           imageData: imageData[nft.localId],
-          processedMetadata: processedMetadata[nft.localId]
+          processedMetadata: processedMetadata[nft.localId],
+          status: statusData[nft.localId] || NftLocalStatus.Unprocessed
         }
       }) ?? []
     )
-  }, [query.data, lastUpdatedTimestamp, imageData, processedMetadata])
+  }, [
+    query.data,
+    lastUpdatedTimestamp,
+    statusData,
+    imageData,
+    processedMetadata
+  ])
 
   const getCollectible = useCallback(
     (localId: NftLocalId): NftItem | undefined => {
@@ -85,17 +100,30 @@ export const CollectiblesProvider = ({
 
   const processImageData = useCallback(
     (localId: NftLocalId, logoUri: string): void => {
-      logoUri &&
+      if (logoUri)
         NftProcessor.fetchImageAndAspect(logoUri)
           .then(result => {
             setImageData(prevData => ({
               ...prevData,
               [localId]: result
             }))
+            setStatusData(prevData => ({
+              ...prevData,
+              [localId]: NftLocalStatus.Processed
+            }))
           })
           .catch(e => {
+            setStatusData(prevData => ({
+              ...prevData,
+              [localId]: NftLocalStatus.Unprocessable
+            }))
             Logger.error(e)
           })
+      else
+        setStatusData(prevData => ({
+          ...prevData,
+          [localId]: NftLocalStatus.Unprocessable
+        }))
     },
     []
   )
@@ -110,19 +138,27 @@ export const CollectiblesProvider = ({
       tokenId: string
       tokenUri: string
     }): void => {
-      tokenUri &&
+      if (tokenUri)
         NftProcessor.fetchMetadata(getTokenUri({ tokenId, tokenUri }))
           .then(result => {
             processImageData(localId, result.image)
-
             setProcessedMetadata(prevData => ({
               ...prevData,
               [localId]: result
             }))
           })
           .catch(e => {
+            setStatusData(prevData => ({
+              ...prevData,
+              [localId]: NftLocalStatus.Unprocessable
+            }))
             Logger.error(e)
           })
+      else
+        setStatusData(prevData => ({
+          ...prevData,
+          [localId]: NftLocalStatus.Unprocessable
+        }))
     },
     [processImageData]
   )
@@ -140,7 +176,7 @@ export const CollectiblesProvider = ({
         processImageData(item.localId, item.logoUri)
       }
     },
-    [processMetadata, processImageData]
+    [processImageData, processMetadata]
   )
 
   const refreshMetadata = async (
@@ -226,14 +262,18 @@ export const CollectiblesProvider = ({
     <CollectiblesContext.Provider
       value={{
         collectibles,
+        isEnabled,
         getCollectible,
         refreshMetadata,
         isCollectibleRefreshing,
+        setIsEnabled,
         refetch: query.refetch,
         isRefetching: query.isRefetching,
+        isRefreshing: query.isRefreshing,
+        isSuccess: query.isSuccess,
         isLoading: query.isLoading,
-        setIsEnabled,
-        isEnabled
+        error: query?.error instanceof Error ? query.error : undefined,
+        pullToRefresh: query.pullToRefresh
       }}>
       {children}
     </CollectiblesContext.Provider>

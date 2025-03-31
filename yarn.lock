@@ -26861,7 +26861,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 856a172d7a0046e6d93bf3900031f7743e67103ad7de882acf86db5a90c595a70cb05df54c44ae532a8b3c6e20f3d744771335803b84930e6110d75e323f974b
+  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
   languageName: node
   linkType: hard
 
