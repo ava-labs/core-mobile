@@ -1,6 +1,6 @@
 import React from 'react'
-import { useInversedTheme, useTheme } from '../../hooks'
-import { View } from '../Primitives'
+import { useInversedTheme, useTheme } from '../../../hooks'
+import { View } from '../../Primitives'
 import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
 import { Label } from './Label'
 
