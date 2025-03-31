@@ -136,10 +136,15 @@ export const SeedlessMnemonicExportProvider = ({
         replace('./seedlessExportPhrase/readyToExport')
         return
       }
+      if (progress.isExpired) {
+        deleteExport()
+        setPendingRequest(undefined)
+        replace('./seedlessExportPhrase/notInitiated')
+      }
     } else {
       replace('./seedlessExportPhrase/notInitiated')
     }
-  }, [replace, seedlessExportService])
+  }, [deleteExport, replace, seedlessExportService])
 
   const handleNoMfaMethods = useCallback((): void => {
     showAlert({

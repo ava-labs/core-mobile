@@ -50,7 +50,7 @@ export const useRegisterAndAuthenticateFido = (): {
         AnalyticsService.capture('SeedlessMfaAdded')
 
         if (oidcAuth) {
-          await SeedlessService.sessionManager.approveFido(
+          await SeedlessService.session.approveFido(
             oidcAuth.oidcToken,
             oidcAuth.mfaId,
             withSecurityKey
