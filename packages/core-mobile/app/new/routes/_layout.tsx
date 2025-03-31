@@ -35,8 +35,6 @@ import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { useColorScheme } from 'common/hooks/useColorScheme'
 import { DeviceInfoProvider } from 'common/contexts/DeviceInfoProvider'
 
-const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
-
 export default function RootLayout(): JSX.Element | null {
   const router = useRouter()
   const navigation = useNavigation()
@@ -163,7 +161,6 @@ export default function RootLayout(): JSX.Element | null {
           </NavigationThemeProvider>
         </ApplicationContextProvider>
         <GlobalToast />
-        <PolyfillCrypto />
       </DeviceInfoProvider>
     </K2AlpineThemeProvider>
   )
