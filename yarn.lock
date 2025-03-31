@@ -545,9 +545,11 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@types/d3": 7.4.3
+    "@types/jest": 29.5.13
     "@types/lodash.debounce": 4.0.9
     "@types/react": 18.3.12
     "@types/tinycolor2": 1.4.5
+    babel-jest: 29.7.0
     babel-loader: 9.2.1
     big.js: 6.2.2
     bn.js: 5.2.1
@@ -564,6 +566,7 @@ __metadata:
     expo-splash-screen: 0.29.18
     expo-status-bar: 2.0.1
     expo-video: 2.0.5
+    jest: 29.7.0
     json-stringify-pretty-compact: 4.0.0
     lodash.debounce: 4.0.8
     patch-package: 8.0.0
@@ -581,6 +584,7 @@ __metadata:
     react-native-svg: 15.8.0
     react-native-svg-transformer: 1.5.0
     tinycolor2: 1.6.0
+    ts-jest: 29.2.5
     typescript: 5.6.3
   peerDependencies:
     "@react-native-masked-view/masked-view": 0.3.0
