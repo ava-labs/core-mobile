@@ -22,6 +22,7 @@ const AddRecoveryMethods = (): JSX.Element => {
 
   const handleOnNext = (): void => {
     if (selectedMethod?.type === RecoveryMethods.Passkey) {
+      AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
       navigate({
         pathname: './fidoNameInput',
         params: {
@@ -34,6 +35,7 @@ const AddRecoveryMethods = (): JSX.Element => {
       return
     }
     if (selectedMethod?.type === RecoveryMethods.Yubikey) {
+      AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
       navigate({
         pathname: './fidoNameInput',
         params: {
