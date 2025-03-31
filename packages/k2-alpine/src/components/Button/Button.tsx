@@ -9,9 +9,12 @@ import {
 } from 'react-native'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
+import {
+  colors,
+  darkModeColors,
+  lightModeColors
+} from '../../theme/tokens/colors'
 import { TextVariant } from '../../theme/tokens/text'
-import { GlassView } from '../../components/GlassView/GlassView'
 import { alpha, overlayColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
 import { useInversedTheme, useTheme } from '../../hooks'
@@ -80,9 +83,6 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
       small: 'buttonSmall'
     }[size] as TextVariant
 
-    const shouldUseBlurWrapper = type === 'secondary' && !disabled
-    const WrapperComponent = shouldUseBlurWrapper ? GlassView : View
-
     return (
       <TouchableOpacity
         ref={ref}
@@ -94,17 +94,14 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
           style
         ]}
         {...rest}>
-        <WrapperComponent
+        <View
           style={{
             alignItems: 'center',
             marginHorizontal: 8,
             justifyContent: 'center',
             width: '100%',
             backgroundColor
-          }}
-          {...(shouldUseBlurWrapper && {
-            glassType: theme.isDark ? 'dark3' : 'light2'
-          })}>
+          }}>
           <View
             style={{
               flexDirection: 'row',
@@ -141,7 +138,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
                 })
               : null}
           </View>
-        </WrapperComponent>
+        </View>
       </TouchableOpacity>
     )
   }
@@ -205,9 +202,11 @@ const getBackgroundColor = (
         ? lightModeColors.$surfacePrimary
         : darkModeColors.$surfacePrimary
     case 'secondary':
-      return undefined
+      return theme.isDark
+        ? alpha('#ffffff', 0.1)
+        : alpha(colors.$neutral850, 0.1)
     case 'tertiary':
-      return theme.colors.$surfacePrimary
+      return 'transparent'
   }
 }
 

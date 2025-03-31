@@ -61,6 +61,7 @@ import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
 import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
 import IconLink from '../../assets/icons/link.svg'
+import IconSwitch from '../../assets/icons/switch.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -256,7 +257,8 @@ export const Icons = {
     Bridge: IconTxTypeBridge,
     Subnet: IconTxTypeSubnet,
     Unwrap: IconTxTypeUnwrap,
-    Unknown: IconTxTypeUnknown
+    Unknown: IconTxTypeUnknown,
+    Switch: IconSwitch
   },
   RecoveryMethod: {
     Passkey: IconPasskey,
