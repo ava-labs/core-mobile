@@ -1,44 +1,80 @@
 import {
-  alpha,
   AnimatedPressable,
+  Chip,
   Icons,
   Text,
   useTheme,
-  View
+  View,
+  AnimatedPressableProps
 } from '@avalabs/k2-alpine'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
-import { Pressable } from 'react-native'
+import { Pressable, ViewStyle } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import {
+  getCollectibleCollectionName,
+  getCollectibleName,
   getGridCardHeight,
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
   VERTICAL_ITEM_GAP
 } from '../consts'
 import { CardContainer } from './CardContainer'
-import { CollectibleRenderer } from './CollectibleRenderer'
+import {
+  CollectibleRenderer,
+  CollectibleRendererProps
+} from './CollectibleRenderer'
 
 export const CollectibleItem = memo(
   ({
     collectible,
     type,
-    index
+    index,
+    style,
+    onLoaded,
+    onPress
   }: {
     collectible: NftItem
     type: CollectibleView
     index: number
+    style?: ViewStyle
+    onLoaded?: () => void
+    onPress?: () => void
   }): ReactNode => {
     if (type === CollectibleView.ListView)
-      return <CollectibleListItem collectible={collectible} index={index} />
+      return (
+        <CollectibleListItem
+          onPress={onPress}
+          collectible={collectible}
+          index={index}
+        />
+      )
 
     return (
       <CollectibleGridItem
         type={type}
         collectible={collectible}
         index={index}
+        onPress={onPress}
+        onLoaded={onLoaded}
+        entering={getListItemEnteringAnimation(index)}
+        rendererProps={{
+          videoProps: {
+            muted: true,
+            autoPlay: false,
+            hideControls: true
+          },
+          style: {
+            borderRadius: 18
+          }
+        }}
+        style={{
+          marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
+          marginBottom: VERTICAL_ITEM_GAP,
+          ...style
+        }}
       />
     )
   }
@@ -47,30 +83,27 @@ export const CollectibleItem = memo(
 export const CollectibleListItem = memo(
   ({
     collectible,
-    index
+    index,
+    onPress
   }: {
     collectible: NftItem
     index: number
+    onPress?: () => void
   }): ReactNode => {
     const {
       theme: { colors }
     } = useTheme()
     const height = getGridCardHeight(CollectibleView.ListView, index)
 
-    const collectibleName =
-      collectible.name.length > 0 ? collectible.name : 'Untitled'
-
-    const collectionName =
-      collectible.collectionName.length === 0 ||
-      ['Unknown', 'Unkown'].includes(collectible.collectionName)
-        ? 'Unknown collection'
-        : collectible.collectionName
+    const collectibleName = getCollectibleName(collectible)
+    const collectibleCollectionName = getCollectibleCollectionName(collectible)
 
     return (
       <Animated.View
         entering={getListItemEnteringAnimation(0)}
         layout={LinearTransition.springify()}>
         <Pressable
+          onPress={onPress}
           style={{
             height,
             flexDirection: 'row',
@@ -102,7 +135,8 @@ export const CollectibleListItem = memo(
                 flex: 1,
                 justifyContent: 'space-between',
                 flexDirection: 'row',
-                alignItems: 'center'
+                alignItems: 'center',
+                gap: 10
               }}>
               <View
                 style={{
@@ -117,15 +151,22 @@ export const CollectibleListItem = memo(
                   sx={{
                     color: '$textSecondary'
                   }}>
-                  {collectionName}
+                  {collectibleCollectionName}
                 </Text>
               </View>
-
-              {(collectible?.imageData?.image ||
-                collectible?.imageData?.video) &&
-              collectible.balance ? (
-                <Pill text={collectible.balance.toString()} />
-              ) : null}
+              <View>
+                {collectible.balance ? (
+                  <Chip
+                    size="small"
+                    variant="dark"
+                    style={{
+                      maxWidth: 100,
+                      minWidth: 30
+                    }}>
+                    {collectible.balance.toString()}
+                  </Chip>
+                ) : null}
+              </View>
             </View>
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
           </View>
@@ -135,29 +176,42 @@ export const CollectibleListItem = memo(
   }
 )
 
+interface CollectibleGridItemProps extends AnimatedPressableProps {
+  collectible: NftItem
+  type: CollectibleView
+  index: number
+  style?: ViewStyle
+  rendererProps?: Omit<CollectibleRendererProps, 'collectible'>
+  onLoaded?: () => void
+  onPress?: () => void
+}
+
 export const CollectibleGridItem = memo(
   ({
     collectible,
     type,
-    index
-  }: {
-    collectible: NftItem
-    type: CollectibleView
-    index: number
-  }): ReactNode => {
+    index,
+    style,
+    rendererProps,
+    onLoaded,
+    onPress,
+    ...props
+  }: CollectibleGridItemProps): ReactNode => {
     const height = getGridCardHeight(type, index)
 
     return (
-      <AnimatedPressable
-        entering={getListItemEnteringAnimation(index)}
-        layout={LinearTransition.springify()}>
+      <AnimatedPressable onPress={onPress} {...props}>
         <CardContainer
-          style={{
-            height,
-            marginHorizontal: HORIZONTAL_ITEM_GAP / 2,
-            marginBottom: VERTICAL_ITEM_GAP
-          }}>
-          <CollectibleRenderer collectible={collectible}>
+          style={[
+            {
+              height
+            },
+            { ...style }
+          ]}>
+          <CollectibleRenderer
+            collectible={collectible}
+            onLoaded={onLoaded}
+            {...rendererProps}>
             <View
               style={{
                 position: 'absolute',
@@ -166,7 +220,15 @@ export const CollectibleGridItem = memo(
                 top: 10
               }}>
               {collectible.balance ? (
-                <Pill text={collectible.balance.toString()} />
+                <Chip
+                  size="small"
+                  variant="dark"
+                  style={{
+                    maxWidth: 100,
+                    minWidth: 30
+                  }}>
+                  {collectible.balance.toString()}
+                </Chip>
               ) : null}
             </View>
           </CollectibleRenderer>
@@ -175,33 +237,3 @@ export const CollectibleGridItem = memo(
     )
   }
 )
-
-const Pill = ({ text }: { text: string }): ReactNode => {
-  const {
-    theme: { isDark }
-  } = useTheme()
-  return (
-    <View
-      style={{
-        backgroundColor: alpha('#58585B', 0.8),
-        borderRadius: 100,
-        paddingLeft: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-        maxWidth: 100,
-        minWidth: 30,
-        justifyContent: 'center'
-      }}>
-      <Text
-        variant="buttonSmall"
-        sx={{
-          lineHeight: 20,
-          color: isDark ? '$textPrimary' : '$surfacePrimary',
-          paddingRight: 8
-        }}
-        numberOfLines={1}>
-        {text}
-      </Text>
-    </View>
-  )
-}
