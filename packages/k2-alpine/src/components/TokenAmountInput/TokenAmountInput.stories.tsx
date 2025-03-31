@@ -66,7 +66,7 @@ const StakingTokenAmountInputWidgetStory = (): JSX.Element => {
     setStakeAmount(amount)
   }
 
-  const validateStakingAmount = useCallback((amount: TokenUnit): void => {
+  const validateStakingAmount = useCallback(async (amount: TokenUnit) => {
     if (!amount.isZero() && amount.lt(minStakeAmount)) {
       throw new Error(
         `Minimum amount to stake is ${minStakeAmount.toString()} AVAX`
@@ -110,7 +110,7 @@ const SwapTokenAmountInputWidgetStory = (): JSX.Element => {
     setSwapAmount(amount)
   }
 
-  const validateSwapAmount = useCallback((amount: TokenUnit): void => {
+  const validateSwapAmount = useCallback(async (amount: TokenUnit) => {
     if (amount.gt(balanceInAvax)) {
       throw new Error('The specified swap amount exceeds the available balance')
     }

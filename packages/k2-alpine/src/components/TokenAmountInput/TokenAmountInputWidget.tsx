@@ -27,7 +27,7 @@ export const TokenAmountInputWidget = ({
   }
   onChange?(amount: TokenUnit): void
   formatInCurrency(amount: TokenUnit): string
-  validateAmount?(amount: TokenUnit): void
+  validateAmount?(amount: TokenUnit): Promise<void>
   accessory?: JSX.Element
   sx?: SxProp
 }): JSX.Element => {
@@ -71,7 +71,7 @@ export const TokenAmountInputWidget = ({
   }
 
   const handleChange = useCallback(
-    (value: TokenUnit): void => {
+    async (value: TokenUnit): Promise<void> => {
       setPercentageButtons(prevButtons =>
         prevButtons.map(b => ({ ...b, isSelected: false }))
       )
@@ -80,7 +80,7 @@ export const TokenAmountInputWidget = ({
 
       if (validateAmount) {
         try {
-          validateAmount(value)
+          await validateAmount(value)
 
           setErrorMessage(undefined)
         } catch (e) {
