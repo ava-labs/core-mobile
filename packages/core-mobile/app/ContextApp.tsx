@@ -16,7 +16,6 @@ import { StatusBar, View } from 'react-native'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
@@ -52,11 +51,9 @@ const ContextApp = (): JSX.Element => {
       {hasMigrated ? (
         <ContextProviders>
           <JailBrokenCheck>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <RootSiblingParent>
-                <App />
-              </RootSiblingParent>
-            </GestureHandlerRootView>
+            <RootSiblingParent>
+              <App />
+            </RootSiblingParent>
           </JailBrokenCheck>
           <Toast
             ref={ref => {

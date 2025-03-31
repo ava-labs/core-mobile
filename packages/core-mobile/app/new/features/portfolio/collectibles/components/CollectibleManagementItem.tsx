@@ -11,6 +11,8 @@ import {
   toggleCollectibleVisibility
 } from 'store/portfolio'
 import {
+  getCollectibleCollectionName,
+  getCollectibleName,
   getGridCardHeight,
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN
@@ -38,14 +40,8 @@ export const CollectibleManagementItem = ({
     dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
   }
 
-  const collectibleName =
-    collectible.name.length > 0 ? collectible.name : 'Untitled'
-
-  const collectionName =
-    collectible.collectionName.length === 0 ||
-    ['Unknown', 'Unkown'].includes(collectible.collectionName)
-      ? 'Unknown collection'
-      : collectible.collectionName
+  const collectibleName = getCollectibleName(collectible)
+  const collectionName = getCollectibleCollectionName(collectible)
 
   return (
     <Pressable
