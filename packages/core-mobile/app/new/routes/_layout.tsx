@@ -93,7 +93,8 @@ export default function RootLayout(): JSX.Element | null {
       if (isReturningFromInactivity) {
         router.canGoBack() && router.back()
       } else if (
-        pathName === '/onboarding/mnemonic/confirmation' || // onboarding completion
+        pathName === '/onboarding/mnemonic/confirmation' || // mnemonic onboarding completion
+        pathName === '/onboarding/seedless/confirmation' || // seedless onboarding completion
         (pathName === '/loginWithPinOrBiometry' && !isSignedIn) // fresh app open
       ) {
         router.replace('/portfolio')

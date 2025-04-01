@@ -41,7 +41,7 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
 
 const SEEDLESS_ONBOARDING_SCREENS = [
   'termsAndConditions',
-  'addRecoveryMethods',
+  'addRecoveryMethods', // or selectMfaMethod
   'analyticsConsent',
   'createPin',
   'setWalletName',
