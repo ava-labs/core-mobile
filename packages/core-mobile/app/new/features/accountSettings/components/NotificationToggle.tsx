@@ -1,4 +1,4 @@
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, useState } from 'react'
 import { useTheme, View, Text, Toggle } from '@avalabs/k2-alpine'
 import { useDispatch, useSelector } from 'react-redux'
 import { AvaxAndroidChannel } from 'services/notifications/channels'
@@ -21,13 +21,17 @@ const NotificationToggle = ({
     theme: { colors }
   } = useTheme()
   const inAppEnabled = useSelector(selectNotificationSubscription(channel.id))
+  const [isEnabled, setIsEnabled] = useState(inAppEnabled && !isSystemDisabled)
   const dispatch = useDispatch()
 
   const onValueChange = useCallback(
     async (isChecked: boolean): Promise<void> => {
+      setIsEnabled(isChecked)
+
       // before we change the state, we need to check if the system settings allow us to do so
       const { permission } = await NotificationsService.getAllPermissions(false)
       if (permission !== 'authorized') {
+        setIsEnabled(false)
         Logger.error('Notifications permission not granted')
         return
       }
@@ -75,12 +79,12 @@ const NotificationToggle = ({
       </View>
       <Toggle
         testID={
-          inAppEnabled
+          isEnabled
             ? `${channel.title}_enabled_switch`
             : `${channel.title}_disabled_switch`
         }
         onValueChange={onValueChange}
-        value={inAppEnabled && !isSystemDisabled}
+        value={isEnabled}
         disabled={isSystemDisabled}
       />
     </View>
