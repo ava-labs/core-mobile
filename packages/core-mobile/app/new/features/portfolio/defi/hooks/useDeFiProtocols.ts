@@ -6,19 +6,13 @@ import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { DropdownSelection } from 'common/types'
 import { DEFI_SORT_OPTIONS, DEFI_VIEW_OPTIONS, DeFiSortOption } from '../types'
-
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
 
 export const useDeFiProtocols = (): {
   data: DeFiSimpleProtocol[]
-  sort: Selection
-  view: Selection
+  sort: DropdownSelection
+  view: DropdownSelection
   isLoading: boolean
   isRefreshing: boolean
   isSuccess: boolean
@@ -95,6 +89,7 @@ export const useDeFiProtocols = (): {
       title: 'Sort',
       data: DEFI_SORT_OPTIONS,
       selected: selectedSort,
+      useAnchorRect: true,
       onSelected: setSelectedSort
     },
     view: {

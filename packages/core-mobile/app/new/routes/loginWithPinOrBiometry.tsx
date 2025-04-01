@@ -281,9 +281,9 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                 },
                 buttonContainerStyle
               ]}>
-              {bioType !== BioType.NONE && (
+              {bioType !== BiometricType.NONE && (
                 <CircularButton onPress={handlePromptBioLogin}>
-                  {bioType === BioType.FACE_ID ? (
+                  {bioType === BiometricType.FACE_ID ? (
                     <Icons.Custom.FaceID width={26} height={26} />
                   ) : (
                     <Icons.Custom.TouchID width={26} height={26} />
