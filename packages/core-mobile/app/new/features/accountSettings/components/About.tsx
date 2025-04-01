@@ -4,12 +4,16 @@ import DeviceInfo from 'react-native-device-info'
 
 export const About = ({
   selectSendFeedback,
-  selectLegal,
-  selectHelpCenter
+  selectTermsOfUse,
+  selectHelpCenter,
+  selectReportBug,
+  selectPrivacyPolicy
 }: {
   selectSendFeedback: () => void
-  selectLegal: () => void
+  selectTermsOfUse: () => void
   selectHelpCenter: () => void
+  selectReportBug: () => void
+  selectPrivacyPolicy: () => void
 }): React.JSX.Element => {
   const version = DeviceInfo.getReadableVersion()
 
@@ -19,8 +23,16 @@ export const About = ({
       onPress: selectSendFeedback
     },
     {
-      title: 'Legal',
-      onPress: selectLegal
+      title: 'Report a bug',
+      onPress: selectReportBug
+    },
+    {
+      title: 'Terms of use',
+      onPress: selectTermsOfUse
+    },
+    {
+      title: 'Privacy policy',
+      onPress: selectPrivacyPolicy
     },
     {
       title: 'Help center',

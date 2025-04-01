@@ -18,6 +18,7 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="showRecoveryPhrase" />
       <Stack.Screen name="changePin" />
       <Stack.Screen name="verifyChangePin" />
+      <Stack.Screen name="notificationPreferences" />
     </Stack>
   )
 }

@@ -38,11 +38,25 @@ import {
 } from 'store/settings/advanced'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
+import { Platform } from 'react-native'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import { selectContacts } from 'store/addressBook'
+import Logger from 'utils/Logger'
+import {
+  HELP_URL,
+  PRIVACY_POLICY_URL,
+  TERMS_OF_USE_URL
+} from 'resources/Constants'
+import DeviceInfo from 'react-native-device-info'
+import { Space } from 'components/Space'
+
+const PRESELECTED_PLATFORM =
+  Platform.OS === 'ios' ? 'Core+mobile+(iOS)' : 'Core+mobile+(Android)'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const togglePrivacy = useSelector(togglePrivacyMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const activeAccount = useSelector(selectActiveAccount)
@@ -53,6 +67,8 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { openUrl } = useInAppBrowser()
+  const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
   const { setOptions } = useNavigation()
   const headerOpacity = useSharedValue(1)
@@ -96,8 +112,22 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
+    if (isDeveloperModeEnabled) {
+      showAlert({
+        title: 'Testnet mode is on',
+        description:
+          'Change appearance is not available in testnet mode. Please turn off testnet mode to change appearance.',
+        buttons: [
+          {
+            text: 'OK',
+            style: 'cancel'
+          }
+        ]
+      })
+      return
+    }
     navigate('./accountSettings/selectAppearance')
-  }, [navigate])
+  }, [isDeveloperModeEnabled, navigate])
 
   const goToAppIcon = useCallback(() => {
     navigate('./accountSettings/appIcon')
@@ -115,17 +145,30 @@ const AccountSettingsScreen = (): JSX.Element => {
     navigate('./accountSettings/securityAndPrivacy')
   }, [navigate])
 
-  const goToHelpCenter = useCallback(() => {
-    navigate('./helpCenter')
-  }, [navigate])
+  const openHelpCenter = useCallback(() => {
+    openUrl(HELP_URL).catch(Logger.error)
+  }, [openUrl])
 
-  const goToLegal = useCallback(() => {
-    navigate('./accountSettings/legal')
-  }, [navigate])
+  const openBugReport = (): void => {
+    const version = DeviceInfo.getReadableVersion()
+    openUrl(
+      `https://docs.google.com/forms/d/e/1FAIpQLSdUQiVnJoqQ1g_6XTREpkSB5vxKKK8ba5DRjhzQf1XVeET8Rw/viewform?usp=pp_url&entry.2070152111=${PRESELECTED_PLATFORM}&entry.903657115=${version}`
+    ).catch(Logger.error)
+  }
 
-  const goToSendFeedback = useCallback(() => {
-    navigate('./accountSettings/sendFeedback')
-  }, [navigate])
+  const openFeatureRequest = (): void => {
+    openUrl(
+      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform?entry.2070152111=${PRESELECTED_PLATFORM}`
+    ).catch(Logger.error)
+  }
+
+  const openTermsOfUse = (): void => {
+    openUrl(TERMS_OF_USE_URL).catch(Logger.error)
+  }
+
+  const openPrivacyPolicy = (): void => {
+    openUrl(PRIVACY_POLICY_URL).catch(Logger.error)
+  }
 
   const onTestnetChange = (value: boolean): void => {
     AnalyticsService.capture(
@@ -203,7 +246,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                   value: (
                     <Toggle
                       onValueChange={onTestnetChange}
-                      value={isDeveloperMode}
+                      value={isDeveloperModeEnabled}
                     />
                   )
                 }
@@ -216,6 +259,37 @@ const AccountSettingsScreen = (): JSX.Element => {
               valueSx={{ fontSize: 16, lineHeight: 22 }}
               separatorMarginRight={16}
             />
+            {/* Address book */}
+            <View>
+              <Space y={12} />
+              <GroupList
+                data={[
+                  {
+                    title: 'Address book',
+                    onPress: () => navigate('./accountSettings/addressBook'),
+                    value: (
+                      <Text
+                        variant="body2"
+                        sx={{
+                          color: colors.$textSecondary,
+                          fontSize: 16,
+                          lineHeight: 22,
+                          marginLeft: 9
+                        }}>
+                        {Object.keys(contacts).length}
+                      </Text>
+                    )
+                  }
+                ]}
+                titleSx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  fontFamily: 'Inter-Regular'
+                }}
+                valueSx={{ fontSize: 16, lineHeight: 22 }}
+                separatorMarginRight={16}
+              />
+            </View>
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectAppIcon={goToAppIcon}
@@ -226,9 +300,11 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectSecurityPrivacy={goToSecurityPrivacy}
             />
             <About
-              selectHelpCenter={goToHelpCenter}
-              selectLegal={goToLegal}
-              selectSendFeedback={goToSendFeedback}
+              selectHelpCenter={openHelpCenter}
+              selectTermsOfUse={openTermsOfUse}
+              selectReportBug={openBugReport}
+              selectSendFeedback={openFeatureRequest}
+              selectPrivacyPolicy={openPrivacyPolicy}
             />
           </View>
           <TouchableOpacity
