@@ -33,6 +33,10 @@ export default function WalletLayout(): JSX.Element {
           options={modalScreensOptions}
         />
         <Stack.Screen
+          name="(modals)/startStake"
+          options={modalScreensOptions}
+        />
+        <Stack.Screen
           name="(modals)/stakeDetail"
           options={stackNavigatorScreenOptions}
         />
