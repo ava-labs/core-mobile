@@ -33,14 +33,16 @@ export const SimpleTextInput = ({
         height: 44
       }}>
       <TextInput
-        sx={{
+        containerSx={{
           flex: 1,
+          backgroundColor: 'transparent',
+          marginRight: 13
+        }}
+        textInputSx={{
           fontFamily: 'Inter-Regular',
-          marginRight: 13,
           height: 44,
           fontSize: 16,
-          color: colors.$textPrimary,
-          backgroundColor: 'transparent'
+          color: colors.$textPrimary
         }}
         value={value}
         onChangeText={onChangeText}

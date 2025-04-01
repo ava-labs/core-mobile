@@ -4,7 +4,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'common/utils/toast'
-import { showLogoModal, hideLogoModal } from 'common/components/LogoModal'
+import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useRecoveryMethodContext } from '../contexts/RecoveryMethodProvider'
 import useSeedlessManageMFA from './useSeedlessManageMFA'
 
@@ -19,6 +19,7 @@ export const useRegisterAndAuthenticateFido = (): {
     onAccountVerified: () => void
   }) => Promise<void>
 } => {
+  const { showLogoModal, hideLogoModal } = useLogoModal()
   const { oidcAuth } = useRecoveryMethodContext()
   const { fidoRegisterInit } = useSeedlessManageMFA()
 
@@ -49,7 +50,7 @@ export const useRegisterAndAuthenticateFido = (): {
         AnalyticsService.capture('SeedlessMfaAdded')
 
         if (oidcAuth) {
-          await SeedlessService.sessionManager.approveFido(
+          await SeedlessService.session.approveFido(
             oidcAuth.oidcToken,
             oidcAuth.mfaId,
             withSecurityKey
