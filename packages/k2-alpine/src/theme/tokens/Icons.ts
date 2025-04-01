@@ -58,6 +58,7 @@ import IconLayer from '../../assets/icons/layer.svg'
 import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
 import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
+import IconTabs from '../../assets/icons/tabs.svg'
 import IconLink from '../../assets/icons/link.svg'
 
 // Transaction types
@@ -192,7 +193,8 @@ export const Icons = {
     ChevronRight: IconChevronRight,
     Check: IconCheck,
     ExpandMore: IconExpandMore,
-    MoreHoriz: IconMoreHoriz
+    MoreHoriz: IconMoreHoriz,
+    Tabs: IconTabs
   },
   Notification: {
     Sync: IconSync

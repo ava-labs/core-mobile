@@ -12,6 +12,7 @@ export const colors = {
   $neutral850: '#28282E',
   $neutral900: '#1B1B1D',
   $neutral950: '#121213',
+  $neutralBlack: '#000000',
 
   // accent
   $accentSuccessL: '#1FA95E',
@@ -22,6 +23,9 @@ export const colors = {
 }
 
 export const lightModeColors = {
+  $white: colors.$neutralWhite,
+  $black: colors.$neutralBlack,
+
   // text
   $textPrimary: colors.$neutral850,
   $textSecondary: alpha(colors.$neutral850, 0.6),
@@ -38,6 +42,9 @@ export const lightModeColors = {
 }
 
 export const darkModeColors = {
+  $white: colors.$neutralWhite,
+  $black: colors.$neutralBlack,
+
   // text
   $textPrimary: colors.$neutralWhite,
   $textSecondary: alpha(colors.$neutralWhite, 0.6),

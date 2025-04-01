@@ -4,11 +4,52 @@ import {
   homeScreenOptions,
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
+import { BrowserProvider } from 'features/browser/BrowserContext'
 
 export default function BrowserLayout(): JSX.Element {
   return (
-    <Stack screenOptions={stackNavigatorScreenOptions}>
-      <Stack.Screen name="index" options={homeScreenOptions} />
-    </Stack>
+    <BrowserProvider>
+      <Stack screenOptions={stackNavigatorScreenOptions}>
+        <Stack.Screen
+          name="index"
+          options={{
+            ...homeScreenOptions,
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
+          name="browserTabs"
+          options={{
+            presentation: 'modal',
+            headerTransparent: true,
+            cardStyleInterpolator: ({ current: { progress } }) => {
+              return {
+                cardStyle: {
+                  opacity: progress
+                }
+              }
+            }
+          }}
+        />
+        <Stack.Screen name="browserHistory" />
+
+        {/* 
+          <Stack.Screen
+          name={AppNavigation.Modal.BrowserTabCloseAll}
+          options={{
+            presentation: 'transparentModal'
+          }}
+          component={AreYouSureModal}
+          />
+          <Stack.Screen
+          name={AppNavigation.Modal.UseWalletConnect}
+          options={{
+            presentation: 'transparentModal'
+          }}
+          component={UseWalletConnectModal}
+          /> 
+          */}
+      </Stack>
+    </BrowserProvider>
   )
 }
