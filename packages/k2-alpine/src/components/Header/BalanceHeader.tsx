@@ -17,7 +17,8 @@ export const BalanceHeader = ({
   priceChange,
   onLayout,
   isLoading,
-  isPrivacyModeEnabled = false
+  isPrivacyModeEnabled = false,
+  isDeveloperModeEnabled = false
 }: {
   accountName: string
   formattedBalance: string
@@ -27,21 +28,38 @@ export const BalanceHeader = ({
   onLayout?: (event: LayoutChangeEvent) => void
   isLoading?: boolean
   isPrivacyModeEnabled?: boolean
+  isDeveloperModeEnabled?: boolean
 }): React.JSX.Element => {
   const { theme } = useTheme()
   const renderPriceChangeIndicator = useCallback((): React.JSX.Element => {
+    if (isDeveloperModeEnabled) {
+      return (
+        <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
+          <Icons.Custom.WaterDropFilled width={16} height={16} />
+          <Text
+            variant="buttonMedium"
+            sx={{
+              color: '#27DAA6',
+              fontSize: 14,
+              lineHeight: 17
+            }}>
+            Testnet mode is on
+          </Text>
+        </View>
+      )
+    }
     if (isPrivacyModeEnabled) {
       return (
         <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
           <Icons.Action.VisibilityOff
             width={16}
             height={16}
-            color={theme.colors.$textPrimary}
+            color={theme.colors.$textSecondary}
           />
           <Text
             variant="buttonMedium"
             sx={{
-              color: theme.colors.$textPrimary,
+              color: theme.colors.$textSecondary,
               fontSize: 14,
               lineHeight: 17
             }}>
@@ -79,6 +97,7 @@ export const BalanceHeader = ({
     )
   }, [
     errorMessage,
+    isDeveloperModeEnabled,
     isPrivacyModeEnabled,
     priceChange,
     theme.colors.$textPrimary

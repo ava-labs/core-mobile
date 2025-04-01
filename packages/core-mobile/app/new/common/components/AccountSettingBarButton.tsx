@@ -1,9 +1,13 @@
 import { Avatar, TouchableOpacity } from '@avalabs/k2-alpine'
 import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const AccountSettingBarButton = forwardRef<RNView>(
   ({ onPress }: { onPress?: () => void }, ref): JSX.Element => {
+    const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+
     return (
       <TouchableOpacity
         testID="account_setting_bar_btn"
@@ -18,6 +22,7 @@ export const AccountSettingBarButton = forwardRef<RNView>(
           }}
           hasBlur={false}
           hasLoading={false}
+          isDeveloperModeEnabled={isDeveloperModeEnabled}
         />
       </TouchableOpacity>
     )

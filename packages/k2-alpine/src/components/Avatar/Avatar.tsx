@@ -22,7 +22,9 @@ export const Avatar = ({
   backgroundColor,
   glowEffect,
   testID,
-  hasLoading = true
+  hasLoading = true,
+  isDeveloperModeEnabled = false,
+  testnetIconSize
 }: {
   source: ImageSourcePropType
   size: number | 'small' | 'large'
@@ -34,6 +36,8 @@ export const Avatar = ({
   glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
   testID?: string
   hasLoading?: boolean
+  isDeveloperModeEnabled?: boolean
+  testnetIconSize?: 'small' | 'large'
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -139,6 +143,8 @@ export const Avatar = ({
         backgroundColor={'white'}
         isSelected={isSelected}
         hasLoading={hasLoading}
+        isDeveloperModeEnabled={isDeveloperModeEnabled}
+        testnetIconSize={testnetIconSize}
       />
       <HexagonBorder height={height} />
     </Animated.View>

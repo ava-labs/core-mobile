@@ -11,15 +11,17 @@ import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { OidcProviders } from 'seedless/consts'
-import { hideLogoModal, showLogoModal } from 'common/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import { useLogoModal } from 'common/hooks/useLogoModal'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
+  const { showLogoModal, hideLogoModal } = useLogoModal()
   const { setOidcAuth } = useRecoveryMethodContext()
+
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -28,7 +30,7 @@ export default function Signup(): JSX.Element {
 
   useEffect(() => {
     isRegistering ? showLogoModal() : hideLogoModal()
-  }, [isRegistering])
+  }, [hideLogoModal, isRegistering, showLogoModal])
 
   const handleSignupWithMnemonic = (): void => {
     router.navigate('/onboarding/mnemonic/termsAndConditions')

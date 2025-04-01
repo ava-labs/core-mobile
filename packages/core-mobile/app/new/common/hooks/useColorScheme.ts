@@ -6,12 +6,18 @@ import {
   useColorScheme as useRnColorScheme,
   ColorSchemeName
 } from 'react-native'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useColorScheme = (): ColorSchemeName => {
+  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const colorScheme = useRnColorScheme()
 
   useEffect(() => {
+    if (isDeveloperModeEnabled) {
+      RnAppearance.setColorScheme('dark')
+      return
+    }
     switch (selectedAppearance) {
       case Appearance.Light:
         RnAppearance.setColorScheme('light')
@@ -23,7 +29,7 @@ export const useColorScheme = (): ColorSchemeName => {
       default:
       // default to system appearance
     }
-  }, [selectedAppearance])
+  }, [isDeveloperModeEnabled, selectedAppearance])
 
   return colorScheme
 }
