@@ -6,7 +6,6 @@ import {
   selectIsSeedlessOnboardingBlocked,
   selectIsSeedlessOnboardingGoogleBlocked
 } from 'store/posthog'
-import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
@@ -16,11 +15,12 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { useLogoModal } from 'common/hooks/useLogoModal'
+import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
   const { showLogoModal, hideLogoModal } = useLogoModal()
-  const { setOidcAuth } = useRecoveryMethodContext()
+  const { setOidcAuth, setMfaMethods } = useRecoveryMethodContext()
 
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
@@ -55,20 +55,18 @@ export default function Signup(): JSX.Element {
   }
 
   const handleVerifyMfaMethod = (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     oidcAuth: {
       oidcToken: string
       mfaId: string
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     mfaMethods: MFA[]
   ): void => {
-    // navigate(AppNavigation.Root.SelectRecoveryMethods, {
-    //   mfaMethods,
-    //   onMFASelected: mfa => {
-    //     verify(mfa, oidcAuth, handleAccountVerified)
-    //   }
-    // })
+    setOidcAuth(oidcAuth)
+    setMfaMethods(mfaMethods)
+    router.navigate({
+      pathname: '/onboarding/seedless/termsAndConditions',
+      params: { recovering: 'true' }
+    })
   }
 
   const renderMnemonicOnboarding = (): JSX.Element => {
