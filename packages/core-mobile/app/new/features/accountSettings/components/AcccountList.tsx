@@ -1,9 +1,8 @@
-import { AnimatedPressable, Icons, useTheme, View } from '@avalabs/k2-alpine'
+import { AnimatedPressable, useTheme, View, Text } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  addAccount,
   Account,
   selectAccounts,
   selectActiveAccount,
@@ -12,9 +11,6 @@ import {
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import WalletService from 'services/wallet/WalletService'
-import Logger from 'utils/Logger'
-import { showSnackbar } from 'common/utils/toast'
 import { FlatList } from 'react-native-gesture-handler'
 import { AccountItem } from './AccountItem'
 
@@ -30,13 +26,16 @@ export const AccountList = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const accountCollection = useSelector(selectAccounts)
-  const [isAddingAccount, setIsAddingAccount] = useState(false)
   const flatListRef = useRef<FlatList>(null)
 
   const accounts = useMemo(
     () => Object.values(accountCollection),
     [accountCollection]
   )
+
+  const accountsToDisplay = useMemo(() => {
+    return accounts.slice(0, 5)
+  }, [accounts])
 
   const onSelectAccount = useCallback(
     (accountIndex: number): void => {
@@ -48,33 +47,6 @@ export const AccountList = (): React.JSX.Element => {
     [dispatch]
   )
 
-  const addAccountAndSetActive = useCallback(async (): Promise<void> => {
-    if (isAddingAccount) return
-
-    try {
-      AnalyticsService.capture('AccountSelectorAddAccount', {
-        accountNumber: Object.keys(accounts).length + 1
-      })
-
-      setIsAddingAccount(true)
-      // @ts-expect-error
-      // dispatch here is not typed correctly
-      await dispatch(addAccount()).unwrap()
-
-      AnalyticsService.capture('CreatedANewAccountSuccessfully', {
-        walletType: WalletService.walletType
-      })
-      flatListRef.current?.scrollToOffset({
-        offset: (ACCOUNT_CARD_SIZE + 16) * accounts.length
-      })
-    } catch (error) {
-      Logger.error('Unable to add account', error)
-      showSnackbar('Unable to add account')
-    } finally {
-      setIsAddingAccount(false)
-    }
-  }, [accounts, dispatch, isAddingAccount])
-
   const gotoAccountDetails = useCallback(
     (accountIndex: number): void => {
       navigate({
@@ -85,11 +57,15 @@ export const AccountList = (): React.JSX.Element => {
     [navigate]
   )
 
+  const goToManageAccounts = useCallback(() => {
+    navigate('./accountSettings/manageAccounts')
+  }, [navigate])
+
   const renderSeparator = useCallback(() => <View sx={{ width: 16 }} />, [])
 
   const contentContainerJustifyContent = useMemo(() => {
-    return accounts.length < 2 ? 'center' : undefined
-  }, [accounts.length])
+    return accountsToDisplay.length < 2 ? 'center' : undefined
+  }, [accountsToDisplay.length])
 
   const renderItem = useCallback(
     ({ item, index }: { item: Account; index: number }) => (
@@ -108,17 +84,15 @@ export const AccountList = (): React.JSX.Element => {
   const onContentSizeChange = useCallback(() => {
     flatListRef.current?.scrollToOffset({
       offset:
-        (ACCOUNT_CARD_SIZE + 16) * (activeAccount?.index ?? accounts.length)
+        (ACCOUNT_CARD_SIZE + 16) *
+        (activeAccount?.index ?? accountsToDisplay.length)
     })
-  }, [activeAccount?.index, accounts.length])
+  }, [activeAccount?.index, accountsToDisplay.length])
 
   return (
     <View sx={{ flexDirection: 'row', height: ACCOUNT_CARD_SIZE }}>
       <AnimatedFlatList
         testID="account_list"
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        updateCellsBatchingPeriod={100}
         removeClippedSubviews={true}
         onContentSizeChange={onContentSizeChange}
         contentContainerStyle={{
@@ -130,7 +104,7 @@ export const AccountList = (): React.JSX.Element => {
         showsHorizontalScrollIndicator={false}
         style={{ overflow: 'visible', flexGrow: 1 }}
         horizontal
-        data={accounts}
+        data={accountsToDisplay}
         renderItem={item =>
           renderItem({
             item: item.item as Account,
@@ -148,8 +122,7 @@ export const AccountList = (): React.JSX.Element => {
             entering={getItemEnteringAnimation(accounts.length)}
             layout={LinearTransition.springify()}>
             <AnimatedPressable
-              onPress={addAccountAndSetActive}
-              hitSlop={16}
+              onPress={goToManageAccounts}
               style={{
                 marginLeft: 16,
                 backgroundColor: colors.$surfaceSecondary,
@@ -159,12 +132,15 @@ export const AccountList = (): React.JSX.Element => {
                 alignItems: 'center',
                 borderRadius: 18
               }}>
-              <Icons.Content.Add
-                testID="add_account_btn"
-                width={25}
-                height={25}
-                color={colors.$textPrimary}
-              />
+              <Text
+                variant="body2"
+                sx={{
+                  paddingHorizontal: 30
+                }}>
+                {accounts.length > 1
+                  ? `Manage all ${accounts.length} accounts`
+                  : 'Manage account'}
+              </Text>
             </AnimatedPressable>
           </Animated.View>
         }

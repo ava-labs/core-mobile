@@ -38,6 +38,8 @@ import {
 } from 'store/settings/advanced'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
+import { selectContacts } from 'store/addressBook'
+import { Space } from 'components/Space'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -53,6 +55,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
   const { setOptions } = useNavigation()
   const headerOpacity = useSharedValue(1)
@@ -96,8 +99,22 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
+    if (isDeveloperMode) {
+      showAlert({
+        title: 'Testnet mode is on',
+        description:
+          'Change appearance is not available in testnet mode. Please turn off testnet mode to change appearance.',
+        buttons: [
+          {
+            text: 'OK',
+            style: 'cancel'
+          }
+        ]
+      })
+      return
+    }
     navigate('./accountSettings/selectAppearance')
-  }, [navigate])
+  }, [isDeveloperMode, navigate])
 
   const goToAppIcon = useCallback(() => {
     navigate('./accountSettings/appIcon')
@@ -113,18 +130,6 @@ const AccountSettingsScreen = (): JSX.Element => {
 
   const goToSecurityPrivacy = useCallback(() => {
     navigate('./accountSettings/securityAndPrivacy')
-  }, [navigate])
-
-  const goToHelpCenter = useCallback(() => {
-    navigate('./helpCenter')
-  }, [navigate])
-
-  const goToLegal = useCallback(() => {
-    navigate('./accountSettings/legal')
-  }, [navigate])
-
-  const goToSendFeedback = useCallback(() => {
-    navigate('./accountSettings/sendFeedback')
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
@@ -167,6 +172,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                 }}
                 hasBlur={false}
                 hasLoading={false}
+                isDeveloperMode={isDeveloperMode}
               />
             </TouchableOpacity>
           </Animated.View>
@@ -216,6 +222,37 @@ const AccountSettingsScreen = (): JSX.Element => {
               valueSx={{ fontSize: 16, lineHeight: 22 }}
               separatorMarginRight={16}
             />
+            {/* Address book */}
+            <View>
+              <Space y={12} />
+              <GroupList
+                data={[
+                  {
+                    title: 'Address book',
+                    onPress: () => navigate('./accountSettings/addressBook'),
+                    value: (
+                      <Text
+                        variant="body2"
+                        sx={{
+                          color: colors.$textSecondary,
+                          fontSize: 16,
+                          lineHeight: 22,
+                          marginLeft: 9
+                        }}>
+                        {Object.keys(contacts).length}
+                      </Text>
+                    )
+                  }
+                ]}
+                titleSx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  fontFamily: 'Inter-Regular'
+                }}
+                valueSx={{ fontSize: 16, lineHeight: 22 }}
+                separatorMarginRight={16}
+              />
+            </View>
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectAppIcon={goToAppIcon}
@@ -225,11 +262,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}
             />
-            <About
-              selectHelpCenter={goToHelpCenter}
-              selectLegal={goToLegal}
-              selectSendFeedback={goToSendFeedback}
-            />
+            <About />
           </View>
           <TouchableOpacity
             sx={{

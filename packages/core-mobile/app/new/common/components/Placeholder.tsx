@@ -46,13 +46,15 @@ export const Placeholder = ({
           </Text>
         )}
         {button && (
-          <Button
-            size="medium"
-            type="secondary"
-            style={{ marginTop: 16 }}
-            onPress={button.onPress}>
-            {button.title}
-          </Button>
+          <View>
+            <Button
+              size="medium"
+              type="secondary"
+              style={{ marginTop: 16 }}
+              onPress={button.onPress}>
+              {button.title}
+            </Button>
+          </View>
         )}
       </View>
     </View>
