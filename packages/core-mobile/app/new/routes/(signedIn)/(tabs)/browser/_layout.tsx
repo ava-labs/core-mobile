@@ -18,7 +18,7 @@ export default function BrowserLayout(): JSX.Element {
           }}
         />
         <Stack.Screen
-          name="browserTabs"
+          name="tabs"
           options={{
             presentation: 'modal',
             headerTransparent: true,
@@ -31,7 +31,7 @@ export default function BrowserLayout(): JSX.Element {
             }
           }}
         />
-        <Stack.Screen name="browserHistory" />
+        <Stack.Screen name="history" />
 
         {/* 
           <Stack.Screen

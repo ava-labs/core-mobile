@@ -3,6 +3,7 @@ import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import {
   GetDescriptionAndFavicon,
+  GetPageStyles,
   InjectedJsMessageWrapper,
   useInjectedJavascript
 } from 'hooks/browser/useInjectedJavascript'
@@ -31,7 +32,7 @@ import {
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
-import { isSugguestedSiteName } from '../consts'
+import { BROWSER_CONTROLS_HEIGHT, isSugguestedSiteName } from '../consts'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {
@@ -54,7 +55,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       injectGetDescriptionAndFavicon,
       coreConnectInterceptor,
       injectCustomWindowOpen,
-      injectCustomPrompt
+      injectCustomPrompt,
+      injectGetPageStyles
     } = useInjectedJavascript()
     const activeTab = useSelector(selectTab(tabId))
     const activeHistory = activeTab?.activeHistory
@@ -63,6 +65,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const [urlToLoad, setUrlToLoad] = useState(activeHistoryUrl)
     const [favicon, setFavicon] = useState<string | undefined>(undefined)
     const [description, setDescription] = useState('')
+    const [pageStyles, setPageStyles] = useState<GetPageStyles | undefined>(
+      undefined
+    )
 
     const webViewRef = useRef<RNWebView>(null)
 
@@ -158,6 +163,16 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       [dispatch, activeTab, activeHistory]
     )
 
+    const parsePageStyles = useCallback(
+      (wrapper: InjectedJsMessageWrapper, _: WebViewMessageEvent) => {
+        const styles = JSON.parse(wrapper.payload) as GetPageStyles
+        if (styles) {
+          setPageStyles(styles)
+        }
+      },
+      []
+    )
+
     const showWalletConnectDialog = useCallback(() => {
       // TODO: Not sure if we want this?
       // navigate(AppNavigation.Modal.UseWalletConnect, {
@@ -173,6 +188,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           event.nativeEvent.data
         ) as InjectedJsMessageWrapper
         switch (wrapper.method) {
+          case 'page_styles':
+            parsePageStyles(wrapper, event)
+            break
           case 'desc_and_favicon':
             parseDescriptionAndFavicon(wrapper, event)
             break
@@ -203,7 +221,12 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript
         Logger.trace('WebView onMessage')
       },
-      [parseDescriptionAndFavicon, showWalletConnectDialog, urlToLoad]
+      [
+        parseDescriptionAndFavicon,
+        parsePageStyles,
+        showWalletConnectDialog,
+        urlToLoad
+      ]
     )
 
     const onLoad = (event: WebViewNavigationEvent): void => {
@@ -240,12 +263,20 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     })
 
     return (
-      <Animated.View style={[wrapperStyle, { flex: 1 }]}>
+      <Animated.View
+        style={[
+          wrapperStyle,
+          {
+            flex: 1,
+            backgroundColor: pageStyles?.backgroundColor || 'undefined'
+          }
+        ]}>
         <WebView
           testID="myWebview"
           webViewRef={webViewRef}
           injectedJavaScript={
             injectGetDescriptionAndFavicon +
+            injectGetPageStyles +
             injectCoreAsRecent +
             coreConnectInterceptor +
             injectCustomWindowOpen +
@@ -256,7 +287,11 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           onMessage={onMessageHandler}
           style={{
             paddingTop: insets.top,
-            backgroundColor: theme.colors.$surfacePrimary
+            backgroundColor:
+              pageStyles?.backgroundColor || theme.colors.$surfacePrimary
+          }}
+          contentInset={{
+            bottom: BROWSER_CONTROLS_HEIGHT
           }}
           onLoadProgress={onProgress}
           onError={onError}

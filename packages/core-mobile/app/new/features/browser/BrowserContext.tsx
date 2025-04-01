@@ -38,8 +38,6 @@ function useBrowserContextValue(): BrowserContextType {
   function handleUrlSubmit(url?: string): void {
     if (!url) return
 
-    AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
-
     const normalized = normalizeUrlWithHttps(url || urlEntry)
 
     if (activeTab?.id) {
