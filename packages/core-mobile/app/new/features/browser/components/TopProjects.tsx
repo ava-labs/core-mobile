@@ -21,6 +21,7 @@ export const TopProjects = (): JSX.Element | null => {
 
     dispatch(
       addHistoryForActiveTab({
+        title: suggested.name ?? '',
         url: suggested.siteUrl ?? '',
         favicon: suggested.name
       })
