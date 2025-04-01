@@ -20,27 +20,19 @@ import {
   lightModeColors
 } from '../../theme/tokens/colors'
 import { useTheme } from '../../hooks'
-import { Icons } from '../../theme/tokens/Icons'
-import { View } from '../Primitives'
-
-type TestnetIconSize = 'small' | 'large'
 
 export const HexagonImageView = ({
   source,
   height,
   backgroundColor,
   isSelected,
-  hasLoading = false,
-  isDeveloperModeEnabled = false,
-  testnetIconSize = 'small'
+  hasLoading = false
 }: {
   source: ImageSourcePropType
   height: number
   backgroundColor: string
   isSelected?: boolean
   hasLoading?: boolean
-  isDeveloperModeEnabled?: boolean
-  testnetIconSize?: TestnetIconSize
 }): JSX.Element => {
   const { theme } = useTheme()
   const selectedAnimation = useSharedValue(0)
@@ -48,7 +40,6 @@ export const HexagonImageView = ({
     opacity: selectedAnimation.value
   }))
   const [isLoading, setIsLoading] = useState(false)
-  const testnetIconHeight = height / (testnetIconSize === 'small' ? 2 : 3)
 
   const handleLoadStart = (): void => {
     setIsLoading(true)
@@ -72,31 +63,14 @@ export const HexagonImageView = ({
           <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
         </Svg>
       }>
-      {isDeveloperModeEnabled ? (
-        <View
-          sx={{
-            width: height,
-            height: height,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '$borderPrimary'
-          }}>
-          <Icons.Custom.WaterDrop
-            width={testnetIconHeight}
-            height={testnetIconHeight}
-            color={theme.colors.$textPrimary}
-          />
-        </View>
-      ) : (
-        <Image
-          key={`image-${source}`}
-          contentFit="cover"
-          source={source}
-          style={{ width: height, height: height, backgroundColor }}
-          onLoadStart={hasLoading ? handleLoadStart : undefined}
-          onLoadEnd={hasLoading ? handleLoadEnd : undefined}
-        />
-      )}
+      <Image
+        key={`image-${source}`}
+        contentFit="cover"
+        source={source}
+        style={{ width: height, height: height, backgroundColor }}
+        onLoadStart={hasLoading ? handleLoadStart : undefined}
+        onLoadEnd={hasLoading ? handleLoadEnd : undefined}
+      />
       {isLoading && (
         <LoadingView
           style={{
