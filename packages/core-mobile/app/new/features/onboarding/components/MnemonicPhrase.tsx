@@ -109,15 +109,16 @@ export default function MnemonicPhrase({
             {`${hideMnemonic ? 'Show' : 'Hide'} Recovery Phrase`}
           </Text>
         ) : (
-          <Button
-            size="medium"
-            style={{ width: 150 }}
-            type="secondary"
-            disabled={!mnemonic}
-            onPress={handleCopyPhrase}
-            testID="mnemonic_screen__copy_phrase_button">
-            Copy phrase
-          </Button>
+          <View>
+            <Button
+              size="medium"
+              type="secondary"
+              disabled={!mnemonic}
+              onPress={handleCopyPhrase}
+              testID="mnemonic_screen__copy_phrase_button">
+              Copy phrase
+            </Button>
+          </View>
         )}
       </View>
     </View>

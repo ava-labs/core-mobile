@@ -17,6 +17,7 @@ import Logger from 'utils/Logger'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useLogoModal } from 'common/hooks/useLogoModal'
+import { MfaType } from '../types/types'
 
 type RegisterProps = {
   getOidcToken: () => Promise<OidcPayload>
@@ -38,7 +39,7 @@ type VerifyProps = {
     oidcToken: string
     mfaId: string
   }
-  onAccountVerified: (mfaType: 'totp' | 'fido') => void
+  onAccountVerified: (mfaType: MfaType) => void
 }
 
 type ReturnType = {

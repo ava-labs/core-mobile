@@ -23,7 +23,7 @@ const SelectMfaMethodScreen = (): JSX.Element => {
         oidcAuth,
         onAccountVerified: mfaType => {
           if (mfaType === 'totp') {
-            navigate('./verifyCodeModal')
+            navigate('./verifyCode')
             return
           }
           if (mfaType === 'fido') {

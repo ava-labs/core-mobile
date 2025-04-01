@@ -5,12 +5,11 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { VerifyCode as VerifyCodeComponent } from 'features/onboarding/components/VerifyCode'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
-export default function VerifyCodeModal(): JSX.Element {
+export default function VerifyCode(): JSX.Element {
   const { onVerifyCode } = useRecoveryMethodContext()
   const router = useRouter()
 
   const onVerifySuccess = useCallback((): void => {
-    router.canGoBack() && router.back()
     router.navigate('./analyticsConsent')
     AnalyticsService.capture('SeedlessMfaVerified', {
       type: 'Authenticator'
