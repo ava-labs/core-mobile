@@ -30,7 +30,7 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { BioType } from 'common/contexts/DeviceInfoProvider'
+import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const { theme } = useTheme()
@@ -166,7 +166,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     useCallback(() => {
       let sub: Subscription
       InteractionManager.runAfterInteractions(() => {
-        if (bioType !== BioType.NONE) {
+        if (bioType !== BiometricType.NONE) {
           sub = handlePromptBioLogin()
         } else {
           focusPinInput()

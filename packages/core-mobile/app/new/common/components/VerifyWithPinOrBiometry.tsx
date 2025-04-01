@@ -6,7 +6,7 @@ import { Text, View, PinInput, PinInputActions } from '@avalabs/k2-alpine'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useFocusEffect } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { BioType } from 'common/contexts/DeviceInfoProvider'
+import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 
 export const VerifyWithPinOrBiometry = ({
   onLoginSuccess
@@ -82,7 +82,7 @@ export const VerifyWithPinOrBiometry = ({
     useCallback(() => {
       let sub: Subscription
       InteractionManager.runAfterInteractions(() => {
-        if (bioType !== BioType.NONE) {
+        if (bioType !== BiometricType.NONE) {
           sub = handlePromptBioLogin()
         } else {
           focusPinInput()

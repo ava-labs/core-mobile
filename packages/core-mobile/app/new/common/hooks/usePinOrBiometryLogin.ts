@@ -14,7 +14,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
-import { BioType } from 'common/contexts/DeviceInfoProvider'
+import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 
 export function usePinOrBiometryLogin({
   onStartLoading,
@@ -31,9 +31,9 @@ export function usePinOrBiometryLogin({
   promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>
   disableKeypad: boolean
   timeRemaining: string
-  bioType: BioType
+  bioType: BiometricType
 } {
-  const [bioType, setBioType] = useState<BioType>(BioType.NONE)
+  const [bioType, setBioType] = useState<BiometricType>(BiometricType.NONE)
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
@@ -189,9 +189,9 @@ export function usePinOrBiometryLogin({
       const type = await BiometricsSDK.getBiometryType()
 
       if (type === BIOMETRY_TYPE.FACE || type === BIOMETRY_TYPE.FACE_ID) {
-        setBioType(BioType.FACE_ID)
+        setBioType(BiometricType.FACE_ID)
       } else if (type === BIOMETRY_TYPE.FINGERPRINT) {
-        setBioType(BioType.TOUCH_ID)
+        setBioType(BiometricType.TOUCH_ID)
       }
     }
 
