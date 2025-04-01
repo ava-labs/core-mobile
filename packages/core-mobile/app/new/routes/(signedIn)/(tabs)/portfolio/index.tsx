@@ -138,6 +138,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     []
   )
 
+  const handleStake = useCallback((): void => {
+    navigate({ pathname: '/startStake' })
+  }, [navigate])
+
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -163,11 +167,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
       { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
       { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
       { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: handleStake },
       { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
       { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
     ],
-    []
+    [handleStake]
   )
 
   const renderHeader = useCallback((): JSX.Element => {
