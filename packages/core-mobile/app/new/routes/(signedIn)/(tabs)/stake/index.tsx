@@ -109,9 +109,12 @@ const StakeHomeScreen = (): JSX.Element => {
     [selectedSegmentIndex]
   )
 
-  const handlePressStake = useCallback(() => {
-    navigate('/stake/details')
-  }, [navigate])
+  const handlePressStake = useCallback(
+    (txHash: string) => {
+      navigate({ pathname: '/stakeDetail', params: { txHash } })
+    },
+    [navigate]
+  )
 
   const handleAddStake = useCallback(() => {
     navigate('/stake/add')
