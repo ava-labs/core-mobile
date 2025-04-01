@@ -77,7 +77,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Change PIN',
         onPress: () => {
-          navigate('/changePin')
+          navigate('./verifyChangePin')
         }
       },
       {
