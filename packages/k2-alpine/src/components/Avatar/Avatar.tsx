@@ -11,6 +11,7 @@ import { View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { HexagonImageView, HexagonBorder } from './HexagonImageView'
 import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
+import { TestnetHexagonImageView } from './TestnetHexagonImageView'
 
 export const Avatar = ({
   source,
@@ -22,7 +23,8 @@ export const Avatar = ({
   backgroundColor,
   glowEffect,
   testID,
-  hasLoading = true
+  hasLoading = true,
+  isDeveloperMode = false
 }: {
   source: ImageSourcePropType
   size: number | 'small' | 'large'
@@ -34,6 +36,7 @@ export const Avatar = ({
   glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
   testID?: string
   hasLoading?: boolean
+  isDeveloperMode?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -133,13 +136,17 @@ export const Avatar = ({
         style
       ]}>
       {hasBlur === true && renderBlur()}
-      <HexagonImageView
-        source={source}
-        height={height}
-        backgroundColor={'white'}
-        isSelected={isSelected}
-        hasLoading={hasLoading}
-      />
+      {isDeveloperMode ? (
+        <TestnetHexagonImageView height={height} size={size} />
+      ) : (
+        <HexagonImageView
+          source={source}
+          height={height}
+          backgroundColor={'white'}
+          isSelected={isSelected}
+          hasLoading={hasLoading}
+        />
+      )}
       <HexagonBorder height={height} />
     </Animated.View>
   )

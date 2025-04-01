@@ -1,27 +1,34 @@
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import Config from 'react-native-config'
-import { showSimpleToast } from 'components/Snackbar'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
 import Logger from 'utils/Logger'
 import { openInAppBrowser } from 'utils/openInAppBrowser'
 import { InAppBrowserOptions } from 'react-native-inappbrowser-reborn'
-import { moonpayURL } from 'new/common/consts/urls'
+import { useTheme } from '@avalabs/k2-alpine'
+import { showSnackbar } from 'common/utils/toast'
+
+const moonpayURL = async (address: string): Promise<{ url: string }> => {
+  return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
+    response.json()
+  )
+}
 
 const useInAppBrowser = (): {
   openUrl: (url: string) => Promise<void>
   openCoinBasePay: (address: string) => Promise<void>
   openMoonPay: () => Promise<void>
 } => {
-  const { theme } = useApplicationContext()
+  const {
+    theme: { colors }
+  } = useTheme()
   const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
 
   async function openMoonPay(): Promise<void> {
     const [result, error] = await resolve(moonpayURL(addressC))
     if (error) {
-      return showSimpleToast(
+      return showSnackbar(
         'We cannot send your to our partner, MoonPay, at this time. Please try again soon'
       )
     } else {
@@ -33,7 +40,7 @@ const useInAppBrowser = (): {
   const openCoinBasePay = async (address: string): Promise<void> => {
     const appId = Config.COINBASE_APP_ID
     if (!appId) {
-      return showSimpleToast(
+      return showSnackbar(
         'We cannot send your to our partner, Coinbase, at this time. Please try again soon'
       )
     }
@@ -50,8 +57,8 @@ const useInAppBrowser = (): {
     const options: InAppBrowserOptions = {
       // iOS Properties
       dismissButtonStyle: 'close',
-      preferredBarTintColor: theme.background,
-      preferredControlTintColor: theme.colorText1,
+      preferredBarTintColor: colors.$surfacePrimary,
+      preferredControlTintColor: colors.$textPrimary,
       readerMode: false,
       animated: true,
       modalPresentationStyle: 'fullScreen',
@@ -60,10 +67,10 @@ const useInAppBrowser = (): {
       enableBarCollapsing: false,
       // Android Properties
       showTitle: true,
-      toolbarColor: theme.background,
-      secondaryToolbarColor: 'black',
-      navigationBarColor: 'black',
-      navigationBarDividerColor: 'white',
+      toolbarColor: colors.$surfacePrimary,
+      secondaryToolbarColor: colors.$textPrimary,
+      navigationBarColor: colors.$textPrimary,
+      navigationBarDividerColor: colors.$surfaceSecondary,
       enableUrlBarHiding: false,
       enableDefaultShare: true,
       forceCloseOnRedirection: false,

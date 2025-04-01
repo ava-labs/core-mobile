@@ -31,8 +31,11 @@ import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
@@ -249,6 +252,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   }}
                   hasBlur={Platform.OS !== 'android'}
                   backgroundColor={theme.colors.$surfacePrimary}
+                  isDeveloperMode={isDeveloperMode}
                 />
               </Reanimated.View>
               <Reanimated.View style={[pinInputOpacityStyle]}>
