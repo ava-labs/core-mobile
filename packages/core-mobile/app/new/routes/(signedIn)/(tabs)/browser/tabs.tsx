@@ -10,6 +10,7 @@ import {
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
+import { useBrowserContext } from 'features/browser/BrowserContext'
 import { TabItem } from 'features/browser/components/TabItem'
 import { TabsToolbarMenu } from 'features/browser/components/TabsToolbarMenu'
 import { HORIZONTAL_MARGIN } from 'features/browser/consts'
@@ -37,6 +38,7 @@ const NUMBER_OF_COLUMNS = 2
 
 const TabsScreen = (): JSX.Element => {
   const { goBack, setOptions, navigate } = useNavigation()
+  const { setUrlEntry } = useBrowserContext()
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
@@ -70,6 +72,7 @@ const TabsScreen = (): JSX.Element => {
     if (tab.activeHistory) {
       dispatch(addHistoryForActiveTab(tab.activeHistory))
     }
+    setUrlEntry(tab.activeHistory?.url ?? '')
     goBack()
   }
 

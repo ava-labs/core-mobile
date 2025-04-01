@@ -1,6 +1,7 @@
 import {
   alpha,
   Icons,
+  MaskedProgressBar,
   Pressable,
   ProgressBar,
   Text,
@@ -98,7 +99,7 @@ export const BrowserInput = ({
             ]
           : undefined
       }}>
-      <BlurView
+      <View
         style={{
           height: 40,
           borderRadius: 100,
@@ -106,6 +107,7 @@ export const BrowserInput = ({
         }}>
         <TextInput
           ref={inputRef}
+          value={urlEntry}
           placeholder="Search or type URL"
           onChangeText={onChangeText}
           onFocus={() => setIsFocused(true)}
@@ -153,14 +155,14 @@ export const BrowserInput = ({
             left: 0,
             right: 0,
             bottom: 0,
+            zIndex: 10,
             opacity: isFocused ? 0 : 1,
             borderRadius: 100
           }}>
-          {/* <MaskedProgressBar progress={progress}> */}
-          <ProgressBar progress={progress}>
+          <MaskedProgressBar progress={progress}>
             <View
               style={{
-                flex: 1,
+                height: '100%',
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -263,10 +265,10 @@ export const BrowserInput = ({
                 </Pressable>
               </BrowserInputMenu>
             </View>
-          </ProgressBar>
-          {/* </MaskedProgressBar> */}
+            {/* </ProgressBar> */}
+          </MaskedProgressBar>
         </View>
-      </BlurView>
+      </View>
     </View>
   )
 }

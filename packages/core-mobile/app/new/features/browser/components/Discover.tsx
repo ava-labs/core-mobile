@@ -14,7 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, AddHistoryPayload } from 'store/browser'
-import { HORIZONTAL_MARGIN, prepareFaviconToLoad } from '../consts'
+import {
+  BROWSER_CONTROLS_HEIGHT,
+  HORIZONTAL_MARGIN,
+  prepareFaviconToLoad
+} from '../consts'
 import { useBrowserContext } from '../BrowserContext'
 
 export const Discover = (): JSX.Element => {
@@ -26,7 +30,7 @@ export const Discover = (): JSX.Element => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: insets.top + 26,
-          paddingBottom: 72
+          paddingBottom: BROWSER_CONTROLS_HEIGHT
         }}>
         <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
           <Text variant="heading2">Discover</Text>

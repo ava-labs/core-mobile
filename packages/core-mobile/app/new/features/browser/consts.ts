@@ -4,6 +4,7 @@ import { FavoriteId } from 'store/browser'
 import { SuggestedSiteName } from 'store/browser/const'
 
 export const HORIZONTAL_MARGIN = 16
+export const BROWSER_CONTROLS_HEIGHT = 72
 
 export const sortDeFiProtocolInformationListByTvl = (
   protocolInformationList: DeFiProtocolInformation[]
