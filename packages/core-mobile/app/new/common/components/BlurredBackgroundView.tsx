@@ -4,11 +4,8 @@ import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import Grabber from './Grabber'
-import { TestnetBanner } from './TestnetBanner'
 
 const BlurredBackgroundView = ({
   hasGrabber = false,
@@ -25,7 +22,6 @@ const BlurredBackgroundView = ({
   const {
     theme: { colors }
   } = useTheme()
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
   }))
@@ -34,8 +30,6 @@ const BlurredBackgroundView = ({
     <View
       style={{
         flex: 1,
-        borderTopLeftRadius: 40,
-        borderTopRightRadius: 40,
         backgroundColor: backgroundColor ?? colors.$surfacePrimary
       }}>
       {separator?.position === 'top' && (
@@ -50,8 +44,7 @@ const BlurredBackgroundView = ({
           }}
         />
       )}
-      {hasGrabber === true && isDeveloperModeEnabled === false && <Grabber />}
-      {hasGrabber === true && isDeveloperModeEnabled && <TestnetBanner />}
+      {hasGrabber === true && <Grabber />}
       {separator?.position === 'bottom' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />
