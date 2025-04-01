@@ -13,6 +13,7 @@ import { Link } from 'expo-router'
 import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
 import { NotificationBarButton } from 'common/components/NotificationBarButton'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
+import { TestnetBanner } from 'common/components/TestnetBanner'
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -40,10 +41,12 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
 export const modalScreensOptions: StackNavigationOptions = {
   presentation: 'modal',
   cardStyle: {
-    marginTop: 70,
-    paddingTop: 35,
-    backgroundColor: 'transparent'
+    marginTop: 85,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40
   },
+  cardOverlay: overlay => <TestnetBanner overlayStyle={overlay.style} />,
+  cardShadowEnabled: true,
   gestureEnabled: true,
   gestureDirection: 'vertical',
   cardStyleInterpolator: forModalPresentationIOS
@@ -96,7 +99,7 @@ function forModalPresentationIOS({
       overflow: 'hidden',
       transform: [{ translateY }]
     },
-    overlayStyle: { opacity: overlayOpacity }
+    overlayStyle: { opacity: overlayOpacity, transform: [{ translateY }] }
   }
 }
 
