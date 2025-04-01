@@ -9,12 +9,12 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useColorScheme = (): ColorSchemeName => {
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const colorScheme = useRnColorScheme()
 
   useEffect(() => {
-    if (isDeveloperModeEnabled) {
+    if (isDeveloperMode) {
       RnAppearance.setColorScheme('dark')
       return
     }
@@ -29,7 +29,7 @@ export const useColorScheme = (): ColorSchemeName => {
       default:
       // default to system appearance
     }
-  }, [isDeveloperModeEnabled, selectedAppearance])
+  }, [isDeveloperMode, selectedAppearance])
 
   return colorScheme
 }

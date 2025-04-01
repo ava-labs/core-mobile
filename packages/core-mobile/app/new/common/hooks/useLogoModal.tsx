@@ -10,13 +10,13 @@ export const useLogoModal = (): {
   showLogoModal: () => void
   hideLogoModal: () => void
 } => {
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const colorScheme = useColorScheme()
 
   const showLogoModal = (): void => {
     showModal(
       <K2AlpineThemeProvider
-        colorScheme={isDeveloperModeEnabled ? 'dark' : colorScheme}>
+        colorScheme={isDeveloperMode ? 'dark' : colorScheme}>
         <LogoModal />
       </K2AlpineThemeProvider>
     )

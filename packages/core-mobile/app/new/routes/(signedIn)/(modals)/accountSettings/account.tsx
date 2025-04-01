@@ -41,7 +41,7 @@ const AccountScreen = (): JSX.Element => {
   const accountIndexNumber = isNaN(Number(accountIndex))
     ? 0
     : Number(accountIndex)
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountByIndex(accountIndexNumber))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
@@ -117,7 +117,7 @@ const AccountScreen = (): JSX.Element => {
               }
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
-              isDeveloperModeEnabled={isDeveloperModeEnabled}
+              isDeveloperModeEnabled={isDeveloperMode}
             />
           </Animated.View>
         </View>
@@ -133,7 +133,7 @@ const AccountScreen = (): JSX.Element => {
     balanceAccurate,
     isLoading,
     isPrivacyModeEnabled,
-    isDeveloperModeEnabled
+    isDeveloperMode
   ])
 
   if (account === undefined) {

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import {
   ActivityIndicator,
   Button,
@@ -30,7 +30,7 @@ export default function MnemonicPhrase({
     theme: { colors }
   } = useTheme()
 
-  const mnemonics = (): JSX.Element => {
+  const renderMnemonics = useCallback((): JSX.Element => {
     const mnemonicColumns: JSX.Element[][] = [[], [], []]
 
     const menomicArray = mnemonic ? mnemonic.split(' ') : EMPTY_MNEMONIC
@@ -54,7 +54,7 @@ export default function MnemonicPhrase({
         <View>{mnemonicColumns[2]}</View>
       </View>
     )
-  }
+  }, [mnemonic])
 
   const handleCopyPhrase = (): void => {
     onCopyPhrase ? onCopyPhrase(mnemonic) : copyToClipboard(mnemonic)
@@ -90,7 +90,7 @@ export default function MnemonicPhrase({
                     opacity: hideMnemonic ? 0 : 1
                   }
                 ]}>
-                {mnemonics()}
+                {renderMnemonics()}
               </View>
             </View>
           )}

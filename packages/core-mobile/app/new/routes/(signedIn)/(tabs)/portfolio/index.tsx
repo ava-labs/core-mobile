@@ -69,7 +69,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(
@@ -202,7 +202,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               }
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
-              isDeveloperModeEnabled={isDeveloperModeEnabled}
+              isDeveloperModeEnabled={isDeveloperMode}
             />
           </Animated.View>
         </View>
@@ -222,7 +222,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     balanceAccurate,
     isLoading,
     isPrivacyModeEnabled,
-    isDeveloperModeEnabled,
+    isDeveloperMode,
     ACTION_BUTTONS
   ])
 

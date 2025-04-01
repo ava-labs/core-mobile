@@ -38,25 +38,13 @@ import {
 } from 'store/settings/advanced'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
-import { Platform } from 'react-native'
-import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { selectContacts } from 'store/addressBook'
-import Logger from 'utils/Logger'
-import {
-  HELP_URL,
-  PRIVACY_POLICY_URL,
-  TERMS_OF_USE_URL
-} from 'resources/Constants'
-import DeviceInfo from 'react-native-device-info'
 import { Space } from 'components/Space'
-
-const PRESELECTED_PLATFORM =
-  Platform.OS === 'ios' ? 'Core+mobile+(iOS)' : 'Core+mobile+(Android)'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const togglePrivacy = useSelector(togglePrivacyMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const activeAccount = useSelector(selectActiveAccount)
@@ -67,7 +55,6 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { openUrl } = useInAppBrowser()
   const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
   const { setOptions } = useNavigation()
@@ -112,7 +99,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
-    if (isDeveloperModeEnabled) {
+    if (isDeveloperMode) {
       showAlert({
         title: 'Testnet mode is on',
         description:
@@ -127,7 +114,7 @@ const AccountSettingsScreen = (): JSX.Element => {
       return
     }
     navigate('./accountSettings/selectAppearance')
-  }, [isDeveloperModeEnabled, navigate])
+  }, [isDeveloperMode, navigate])
 
   const goToAppIcon = useCallback(() => {
     navigate('./accountSettings/appIcon')
@@ -144,31 +131,6 @@ const AccountSettingsScreen = (): JSX.Element => {
   const goToSecurityPrivacy = useCallback(() => {
     navigate('./accountSettings/securityAndPrivacy')
   }, [navigate])
-
-  const openHelpCenter = useCallback(() => {
-    openUrl(HELP_URL).catch(Logger.error)
-  }, [openUrl])
-
-  const openBugReport = (): void => {
-    const version = DeviceInfo.getReadableVersion()
-    openUrl(
-      `https://docs.google.com/forms/d/e/1FAIpQLSdUQiVnJoqQ1g_6XTREpkSB5vxKKK8ba5DRjhzQf1XVeET8Rw/viewform?usp=pp_url&entry.2070152111=${PRESELECTED_PLATFORM}&entry.903657115=${version}`
-    ).catch(Logger.error)
-  }
-
-  const openFeatureRequest = (): void => {
-    openUrl(
-      `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform?entry.2070152111=${PRESELECTED_PLATFORM}`
-    ).catch(Logger.error)
-  }
-
-  const openTermsOfUse = (): void => {
-    openUrl(TERMS_OF_USE_URL).catch(Logger.error)
-  }
-
-  const openPrivacyPolicy = (): void => {
-    openUrl(PRIVACY_POLICY_URL).catch(Logger.error)
-  }
 
   const onTestnetChange = (value: boolean): void => {
     AnalyticsService.capture(
@@ -210,6 +172,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                 }}
                 hasBlur={false}
                 hasLoading={false}
+                isDeveloperMode={isDeveloperMode}
               />
             </TouchableOpacity>
           </Animated.View>
@@ -246,7 +209,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                   value: (
                     <Toggle
                       onValueChange={onTestnetChange}
-                      value={isDeveloperModeEnabled}
+                      value={isDeveloperMode}
                     />
                   )
                 }
@@ -299,13 +262,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}
             />
-            <About
-              selectHelpCenter={openHelpCenter}
-              selectTermsOfUse={openTermsOfUse}
-              selectReportBug={openBugReport}
-              selectSendFeedback={openFeatureRequest}
-              selectPrivacyPolicy={openPrivacyPolicy}
-            />
+            <About />
           </View>
           <TouchableOpacity
             sx={{

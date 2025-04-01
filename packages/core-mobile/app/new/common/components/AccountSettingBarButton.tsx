@@ -6,7 +6,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const AccountSettingBarButton = forwardRef<RNView>(
   ({ onPress }: { onPress?: () => void }, ref): JSX.Element => {
-    const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+    const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
     return (
       <TouchableOpacity
@@ -22,7 +22,7 @@ export const AccountSettingBarButton = forwardRef<RNView>(
           }}
           hasBlur={false}
           hasLoading={false}
-          isDeveloperModeEnabled={isDeveloperModeEnabled}
+          isDeveloperMode={isDeveloperMode}
         />
       </TouchableOpacity>
     )

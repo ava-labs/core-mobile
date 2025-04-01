@@ -11,7 +11,7 @@ export const TestnetBanner = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme(theme)
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   return (
     <View
@@ -36,7 +36,7 @@ export const TestnetBanner = ({
           overflow: 'hidden'
         }}
       />
-      {isDeveloperModeEnabled && (
+      {isDeveloperMode && (
         <Animated.View
           style={[
             {

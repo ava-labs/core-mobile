@@ -123,7 +123,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       ) : (
         <View sx={{ width: 24 }} />
       ),
-      value: <AccontBalance accountIndex={account.index} />,
+      value: <AccountBalance accountIndex={account.index} />,
       onPress: () => dispatch(setActiveAccountIndex(account.index)),
       accessory: (
         <TouchableOpacity
@@ -173,7 +173,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
 export default ManageAccountsScreen
 
-const AccontBalance = ({
+const AccountBalance = ({
   accountIndex
 }: {
   accountIndex: number
