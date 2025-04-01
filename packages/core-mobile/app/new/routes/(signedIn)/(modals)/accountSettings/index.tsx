@@ -211,7 +211,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                   value: (
                     <Toggle
                       onValueChange={onTestnetChange}
-                      value={isDeveloperMode}
+                      value={isDeveloperModeEnabled}
                     />
                   )
                 }
