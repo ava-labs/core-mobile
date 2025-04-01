@@ -1,0 +1,267 @@
+import { ANIMATED, useTheme } from '@avalabs/k2-alpine'
+import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import {
+  GetDescriptionAndFavicon,
+  InjectedJsMessageWrapper,
+  useInjectedJavascript
+} from 'hooks/browser/useInjectedJavascript'
+import useClipboardWatcher from 'hooks/useClipboardWatcher'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState
+} from 'react'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import RNWebView, {
+  WebViewMessageEvent,
+  WebViewNavigationEvent
+} from 'react-native-webview'
+import { useDispatch, useSelector } from 'react-redux'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { AddHistoryPayload } from 'store/browser'
+import {
+  addHistoryForActiveTab,
+  selectTab,
+  updateActiveHistoryForTab
+} from 'store/browser/slices/tabs'
+import Logger from 'utils/Logger'
+import { useBrowserContext } from '../BrowserContext'
+import { isSugguestedSiteName } from '../consts'
+import { WebView } from './Webview'
+
+export interface BrowserTabRef {
+  loadUrl: (url: string) => void
+  reload: () => void
+  goBack: () => void
+  goForward: () => void
+}
+
+export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
+  ({ tabId }, ref): JSX.Element => {
+    const dispatch = useDispatch()
+    const { theme } = useTheme()
+    const { onProgress, progress, setUrlEntry } = useBrowserContext()
+    const insets = useSafeAreaInsets()
+    const { setPendingDeepLink } = useDeeplink()
+    const clipboard = useClipboardWatcher()
+    const {
+      injectCoreAsRecent,
+      injectGetDescriptionAndFavicon,
+      coreConnectInterceptor,
+      injectCustomWindowOpen,
+      injectCustomPrompt
+    } = useInjectedJavascript()
+    const activeTab = useSelector(selectTab(tabId))
+    const activeHistory = activeTab?.activeHistory
+    const activeHistoryUrl = activeHistory?.url ?? ''
+
+    const [urlToLoad, setUrlToLoad] = useState(activeHistoryUrl)
+    const [favicon, setFavicon] = useState<string | undefined>(undefined)
+    const [description, setDescription] = useState('')
+
+    const webViewRef = useRef<RNWebView>(null)
+
+    useImperativeHandle(ref, () => ({
+      loadUrl: (url: string) => {
+        setUrlToLoad(url)
+      },
+      reload: () => {
+        webViewRef.current?.reload()
+      },
+      goBack: () => {
+        webViewRef.current?.goBack()
+      },
+      goForward: () => {
+        webViewRef.current?.goForward()
+      }
+    }))
+
+    // const canGoBack = useSelector(selectCanGoBack)
+    // const canGoForward = useSelector(selectCanGoForward)
+
+    // const goBack = (): void => {
+    //   if (!canGoBack) return
+    //   AnalyticsService.capture('BrowserBackTapped')
+    //   dispatch(goBackward())
+    // }
+    // const goForward = (): void => {
+    //   if (!canGoForward) return
+    //   AnalyticsService.capture('BrowserForwardTapped')
+    //   dispatch(goForwardInPage())
+    // }
+
+    // function handleRefresh(): void {
+    //   webViewRef.current?.reload()
+    // }
+
+    // function handleUrlSubmit(): void {
+    //   AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
+    //   const normalized = normalizeUrlWithHttps(urlEntry)
+    //   if (isValidHttpUrl(normalized)) {
+    //     // setUrlToLoad(normalized)
+    //   } else {
+    //     navigateToGoogleSearchResult(normalized)
+    //   }
+    // }
+
+    // useEffect(() => {
+    //   if (
+    //     activeHistory?.url &&
+    //     removeTrailingSlash(urlEntry) !== removeTrailingSlash(activeHistory.url)
+    //   ) {
+    //     // setUrlToLoad(activeHistory.url)
+    //   }
+    // }, [activeHistory?.url, urlEntry])
+
+    useEffect(() => {
+      //initiate deep link if user copies WC link to clipboard
+      if (clipboard.startsWith('wc:')) {
+        setPendingDeepLink({
+          url: clipboard,
+          origin: DeepLinkOrigin.ORIGIN_QR_CODE
+        } as DeepLink)
+      }
+    }, [clipboard, setPendingDeepLink])
+
+    const parseDescriptionAndFavicon = useCallback(
+      (wrapper: InjectedJsMessageWrapper, _: WebViewMessageEvent) => {
+        const { favicon: favi, description: desc } = JSON.parse(
+          wrapper.payload
+        ) as GetDescriptionAndFavicon
+        if (favi || desc) {
+          // if the favicon is already set to static favicon from suggested list, don't update it
+          const icon = isSugguestedSiteName(activeHistory?.favicon)
+            ? activeHistory?.favicon
+            : favi
+          setFavicon(icon)
+          setDescription(desc)
+          activeTab &&
+            activeTab.activeHistory &&
+            dispatch(
+              updateActiveHistoryForTab({
+                id: activeTab.id,
+                activeHistoryIndex: activeTab.activeHistoryIndex,
+                activeHistory: {
+                  ...activeTab.activeHistory,
+                  favicon: icon,
+                  description: desc
+                }
+              })
+            )
+        }
+      },
+      [dispatch, activeTab, activeHistory]
+    )
+
+    const showWalletConnectDialog = useCallback(() => {
+      // TODO: Not sure if we want this?
+      // navigate(AppNavigation.Modal.UseWalletConnect, {
+      //   onContinue: () => {
+      //     //noop, for now
+      //   }
+      // })
+    }, [])
+
+    const onMessageHandler = useCallback(
+      (event: WebViewMessageEvent) => {
+        const wrapper = JSON.parse(
+          event.nativeEvent.data
+        ) as InjectedJsMessageWrapper
+        switch (wrapper.method) {
+          case 'desc_and_favicon':
+            parseDescriptionAndFavicon(wrapper, event)
+            break
+          case 'window_ethereum_used': {
+            const sessions = WalletConnectService.getSessions()
+            if (
+              sessions.find(session =>
+                urlToLoad.startsWith(session.peer.metadata.url)
+              ) === undefined
+            ) {
+              showWalletConnectDialog()
+            }
+            break
+          }
+          case 'log':
+            Logger.trace('------> wrapper.payload', wrapper.payload)
+            break
+          case 'walletConnect_deeplink_blocked':
+            Logger.info(
+              'walletConnect_deeplink_blocked, url: ',
+              wrapper.payload
+            )
+            break
+          default:
+            break
+        }
+
+        //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript
+        Logger.trace('WebView onMessage')
+      },
+      [parseDescriptionAndFavicon, showWalletConnectDialog, urlToLoad]
+    )
+
+    const onLoad = (event: WebViewNavigationEvent): void => {
+      if (
+        event.nativeEvent.url.startsWith('about:blank') ||
+        event.nativeEvent.loading
+      )
+        return
+      const includeDescriptionAndFavicon =
+        description !== '' && favicon !== undefined
+      const history: AddHistoryPayload = includeDescriptionAndFavicon
+        ? {
+            title: event.nativeEvent.title,
+            url: event.nativeEvent.url,
+            description,
+            favicon
+          }
+        : { title: event.nativeEvent.title, url: event.nativeEvent.url }
+      dispatch(addHistoryForActiveTab(history))
+      setUrlEntry(event.nativeEvent.url)
+    }
+
+    const onError = (): void => {
+      progress.value = 0
+    }
+
+    const wrapperStyle = useAnimatedStyle(() => {
+      return {
+        opacity: withTiming(
+          activeTab?.id === tabId ? 1 : 0,
+          ANIMATED.TIMING_CONFIG
+        )
+      }
+    })
+
+    return (
+      <Animated.View style={[wrapperStyle, { flex: 1 }]}>
+        <WebView
+          testID="myWebview"
+          webViewRef={webViewRef}
+          injectedJavaScript={
+            injectGetDescriptionAndFavicon +
+            injectCoreAsRecent +
+            coreConnectInterceptor +
+            injectCustomWindowOpen +
+            injectCustomPrompt
+          }
+          url={urlToLoad}
+          onLoad={onLoad}
+          onMessage={onMessageHandler}
+          style={{
+            paddingTop: insets.top,
+            backgroundColor: theme.colors.$surfacePrimary
+          }}
+          onLoadProgress={onProgress}
+          onError={onError}
+        />
+      </Animated.View>
+    )
+  }
+)
