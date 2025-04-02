@@ -40,6 +40,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
 import { selectContacts } from 'store/addressBook'
 import { Space } from 'components/Space'
+import { showSnackbar } from 'common/utils/toast'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -137,6 +138,7 @@ const AccountSettingsScreen = (): JSX.Element => {
       value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled'
     )
     dispatch(toggleDeveloperMode())
+    showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
   }
 
   return (
