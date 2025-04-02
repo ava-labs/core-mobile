@@ -43,6 +43,7 @@ export type AnalyticsEvents = {
   ChangePasswordClicked: undefined
   ChangePasswordSucceeded: undefined
   ChangePasswordFailed: undefined
+  HallidayBuyClicked: undefined
   CoinbasePayBuyClicked: undefined
   CollectibleItemClicked: { chainId: string }
   CollectibleSendClicked: { chainId: string }
@@ -208,4 +209,8 @@ export type AnalyticsEvents = {
     fromAddress?: string
     toAddress?: string
   }
+
+  //Gasless
+  GaslessFundSuccessful: { fundTxHash: string }
+  GaslessFundFailed: undefined
 }

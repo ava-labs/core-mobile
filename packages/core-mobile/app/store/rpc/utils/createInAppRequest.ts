@@ -1,5 +1,6 @@
 import { Dispatch, isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
+import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
 import {
   onInAppRequestFailed,
   onInAppRequestSucceeded,
@@ -18,7 +19,7 @@ export type Request = ({
   params,
   chainId
 }: {
-  method: RpcMethod
+  method: VmModuleRpcMethod
   params: unknown
   chainId?: string
 }) => Promise<string>
@@ -50,7 +51,7 @@ export const createInAppRequest = (dispatch: Dispatch): Request => {
     return new Promise((resolve, reject) => {
       // create and dispatch the request
       const inAppRequest = generateInAppRequestPayload({
-        method,
+        method: method as unknown as RpcMethod,
         params,
         chainId
       })

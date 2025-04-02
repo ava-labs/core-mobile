@@ -1,24 +1,34 @@
 import React, { forwardRef, PropsWithChildren, useMemo } from 'react'
 import {
-  Platform,
+  Insets,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
-  ViewStyle
+  ViewStyle,
+  View as RNView
 } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
+import {
+  colors,
+  darkModeColors,
+  lightModeColors
+} from '../../theme/tokens/colors'
 import { TextVariant } from '../../theme/tokens/text'
-import { GlassView } from '../../components/GlassView/GlassView'
 import { alpha, overlayColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
+import { useInversedTheme, useTheme } from '../../hooks'
 
 export type ButtonType = 'primary' | 'secondary' | 'tertiary'
 export type ButtonSize = 'small' | 'medium' | 'large'
 
 type ButtonIconType = 'check' | 'expandMore' | 'google' | 'apple'
+
+const BUTTON_ICON_TYPES = ['check', 'expandMore', 'google', 'apple'] as const
+
+const isButtonIconType = (value: unknown): value is ButtonIconType => {
+  return (BUTTON_ICON_TYPES as readonly string[]).includes(value as string)
+}
 
 interface ButtonProps {
   onPress?: () => void
@@ -27,14 +37,13 @@ interface ButtonProps {
   testID?: string
   type: ButtonType
   size: ButtonSize
-  leftIcon?: ButtonIconType
-  rightIcon?: ButtonIconType
+  leftIcon?: ButtonIconType | JSX.Element
+  rightIcon?: ButtonIconType | JSX.Element
+  hitSlop?: number | Insets
+  shouldInverseTheme?: boolean
 }
 
-export const Button = forwardRef<
-  TouchableOpacity,
-  ButtonProps & PropsWithChildren
->(
+export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
   (
     {
       type,
@@ -45,20 +54,26 @@ export const Button = forwardRef<
       style,
       children,
       testID,
+      shouldInverseTheme = false,
       ...rest
     },
     ref
   ) => {
     const { theme } = useTheme()
+    const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
+    const resultTheme = useMemo(
+      () => (shouldInverseTheme ? inversedTheme : theme),
+      [inversedTheme, shouldInverseTheme, theme]
+    )
 
     const tintColor = useMemo(
-      () => getTintColor(type, theme, disabled),
-      [disabled, type, theme]
+      () => getTintColor(type, resultTheme, disabled),
+      [disabled, type, resultTheme]
     )
 
     const backgroundColor = useMemo(
-      () => getBackgroundColor(type, theme, disabled),
-      [type, theme, disabled]
+      () => getBackgroundColor(type, resultTheme, disabled),
+      [type, resultTheme, disabled]
     )
 
     const iconWidth = { large: 20, medium: 16, small: 16 }[size]
@@ -68,74 +83,61 @@ export const Button = forwardRef<
       small: 'buttonSmall'
     }[size] as TextVariant
 
-    const shouldUseBlurWrapper = type === 'secondary' && !disabled
-    const WrapperComponent = shouldUseBlurWrapper ? GlassView : View
-
     return (
       <TouchableOpacity
         ref={ref}
         accessible={false}
         testID={testID}
         disabled={disabled}
+        style={[
+          { borderRadius: 1000, overflow: 'hidden', alignItems: 'center' },
+          style
+        ]}
         {...rest}>
         <View
-          style={[
-            {
-              borderRadius: 1000,
-              alignItems: 'center',
-              overflow: 'hidden'
-            },
-            style
-          ]}>
-          <WrapperComponent
+          style={{
+            alignItems: 'center',
+            marginHorizontal: 8,
+            justifyContent: 'center',
+            width: '100%',
+            backgroundColor
+          }}>
+          <View
             style={{
+              flexDirection: 'row',
               alignItems: 'center',
-              marginHorizontal: 8,
-              justifyContent: 'center',
-              width: '100%',
-              backgroundColor
-            }}
-            {...(shouldUseBlurWrapper && {
-              glassType: theme.isDark ? 'dark3' : 'light2'
-            })}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                ...sizeStyles[size]
-              }}>
-              {leftIcon ? (
-                getIcon(leftIcon, {
+              ...sizeStyles[size]
+            }}>
+            {React.isValidElement(leftIcon)
+              ? leftIcon
+              : isButtonIconType(leftIcon)
+              ? getIcon(leftIcon, {
                   width: iconWidth,
                   height: iconWidth,
                   color: tintColor,
                   style: { marginRight: 8 }
                 })
-              ) : rightIcon ? (
-                <View style={{ width: iconWidth, marginRight: 8 }} />
-              ) : null}
-              <Text
-                numberOfLines={1}
-                variant={textVariant}
-                adjustsFontSizeToFit={Platform.OS === 'ios'}
-                style={{
-                  color: tintColor,
-                  flexShrink: 1
-                }}>
-                {children}
-              </Text>
-              {rightIcon ? (
-                getIcon(rightIcon, {
+              : null}
+            <Text
+              numberOfLines={1}
+              variant={textVariant}
+              style={{
+                color: tintColor,
+                flexShrink: 1
+              }}>
+              {children}
+            </Text>
+            {React.isValidElement(rightIcon)
+              ? rightIcon
+              : isButtonIconType(rightIcon)
+              ? getIcon(rightIcon, {
                   width: iconWidth,
                   height: iconWidth,
                   color: tintColor,
                   style: { marginLeft: 8 }
                 })
-              ) : leftIcon ? (
-                <View style={{ width: iconWidth, marginLeft: 8 }} />
-              ) : null}
-            </View>
-          </WrapperComponent>
+              : null}
+          </View>
         </View>
       </TouchableOpacity>
     )
@@ -189,7 +191,7 @@ const getBackgroundColor = (
           darkModeColors.$surfacePrimary
         )
       : overlayColor(
-          alpha(darkModeColors.$surfaceSecondary, 0.3),
+          alpha(darkModeColors.$surfacePrimary, 0.3),
           lightModeColors.$surfacePrimary
         )
   }
@@ -200,13 +202,15 @@ const getBackgroundColor = (
         ? lightModeColors.$surfacePrimary
         : darkModeColors.$surfacePrimary
     case 'secondary':
-      return undefined
+      return theme.isDark
+        ? alpha('#ffffff', 0.1)
+        : alpha(colors.$neutral850, 0.1)
     case 'tertiary':
-      return theme.colors.$surfacePrimary
+      return 'transparent'
   }
 }
 
-const getTintColor = (
+export const getTintColor = (
   type: ButtonType,
   theme: K2AlpineTheme,
   disabled: boolean | undefined

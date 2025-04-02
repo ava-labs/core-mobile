@@ -22,7 +22,7 @@ enum OnboardScreens {
 }
 
 enum RefreshTokenScreens {
-  OwlLoader = 'RefreshTokenScreens.OwlLoader',
+  LogoLoader = 'RefreshTokenScreens.LogoLoader',
   SessionTimeout = 'RefreshTokenScreens.SessionTimeout',
   WrongSocialAccount = 'RefreshTokenScreens.WrongSocialAccount'
 }
@@ -73,7 +73,8 @@ enum WalletScreens {
   Earn = 'WalletScreens.Earn',
   Notifications = 'WalletScreens.Notifications',
   DeFiProtocolDetails = 'WalletScreens.DeFiProtocolDetails',
-  SendFeedback = 'WalletScreens.SendFeedback'
+  SendFeedback = 'WalletScreens.SendFeedback',
+  Halliday = 'WalletScreens.Halliday'
 }
 
 enum ReceiveTokensScreens {
@@ -90,7 +91,7 @@ enum EarnScreens {
   StakeSetup = 'EarnScreens.StakeSetup',
   ClaimRewards = 'EarnScreens.ClaimRewards',
   FeeUnavailable = 'EarnScreens.FeeUnavailable',
-  FundsStuck = 'EarnScreens.FundsStuck'
+  ClaimFundsStuck = 'EarnScreens.ClaimFundsStuck'
 }
 
 enum BrowserScreens {
@@ -219,7 +220,8 @@ enum AddressBookScreens {
 enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
-  HideWarning = 'BridgeScreens.HideWarning'
+  HideWarning = 'BridgeScreens.HideWarning',
+  Halliday = 'BridgeScreens.Halliday'
 }
 
 enum PortfolioScreens {
@@ -254,7 +256,7 @@ enum SeedlessExportScreens {
   RecoveryPhrase = 'SeedlessExportScreens.RecoveryPhrase',
   ConfirmCancelModal = 'SeedlessExportScreens.ConfirmCancelModal',
   ConfirmCloseModal = 'SeedlessExportScreens.ConfirmCloseModal',
-  OwlLoader = 'SeedlessExportScreens.OwlLoader'
+  LogoLoader = 'SeedlessExportScreens.LogoLoader'
 }
 
 enum SettingRecoveryMethodsScreens {
@@ -265,6 +267,12 @@ enum SettingRecoveryMethodsScreens {
   SettingLearnMore = 'SettingRecoveryMethodsScreens.SettingLearnMore',
   ChangeTotpConfirmation = 'SettingRecoveryMethodsScreens.ChangeTotpConfirmation',
   RemovePasskeyConfirmation = 'SettingRecoveryMethodsScreens.RemovePasskeyConfirmation'
+}
+
+enum DebugScreens {
+  Menu = 'DebugScreens.Menu',
+  DeviceInfo = 'DebugScreens.DeviceInfo',
+  PowBenchmark = 'DebugScreens.PowBenchmark'
 }
 
 const AppNavigation = {
@@ -296,7 +304,8 @@ const AppNavigation = {
   RecoveryMethods: RecoveryMethodsScreens,
   RecoveryKeystoneScreens: RecoveryKeystoneScreens,
   SeedlessExport: SeedlessExportScreens,
-  SettingRecoveryMethods: SettingRecoveryMethodsScreens
+  SettingRecoveryMethods: SettingRecoveryMethodsScreens,
+  Debug: DebugScreens
 }
 
 export default AppNavigation

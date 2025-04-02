@@ -4,7 +4,7 @@ export default {
     'By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.',
   avaLogo: 'ava_logo',
   networkFeeItem: 'network_fee',
-  networkFeeText: 'Network Fee',
+  networkFeeText: 'Estimated Network Fee',
   stakingFeeItem: 'staking_fee',
   stakingFeeText: 'Staking Fee',
   timeToUnlockText: 'Time to Unlock',

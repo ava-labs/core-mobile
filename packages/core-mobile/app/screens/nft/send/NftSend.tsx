@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
+import { Image } from 'expo-image'
 import { Text, Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
@@ -13,7 +14,6 @@ import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { Account, selectActiveAccount } from 'store/account'
-import { NFTItem } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -28,10 +28,12 @@ import { useSelector } from 'react-redux'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showTransactionErrorToast } from 'utils/toast'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { useSendContext } from 'contexts/SendContext'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
+import { getNftTitle } from 'services/nft/utils'
+import { NftItem } from 'services/nft/types'
 
 type NftSendScreenProps = {
   onOpenAddressBook: () => void
@@ -208,7 +210,7 @@ export default function NftSend({
         </>
       )}
       <Button
-        testID="next_btn"
+        testID={canSubmit ? 'next_btn' : 'next_btn_disabled'}
         type="primary"
         size="xlarge"
         onPress={onNextPress}
@@ -220,9 +222,10 @@ export default function NftSend({
   )
 }
 
-const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
+const CollectibleItem = ({ nft }: { nft: NftItem }): JSX.Element => {
   const { theme } = useApplicationContext()
-
+  const width = 80
+  const height = 80 * (nft.imageData?.aspect ?? 1)
   return (
     <View
       style={[
@@ -232,24 +235,20 @@ const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
         }
       ]}>
       <Row>
-        <View style={{ borderRadius: 8 }}>
-          {nft.imageData?.isSvg ? (
-            <View style={{ alignItems: 'center' }}>
-              <SvgXml
-                xml={nft.imageData?.image ?? null}
-                width={80}
-                height={80 * (nft.imageData?.aspect ?? 1)}
-              />
-            </View>
-          ) : (
-            <Image
-              style={styles.nftImage}
-              source={{ uri: nft.imageData?.image }}
-              width={80}
-              height={80}
+        {nft.imageData?.isSvg ? (
+          <View style={{ borderRadius: 8, alignItems: 'center' }}>
+            <SvgXml
+              xml={nft.imageData?.image ?? null}
+              width={width}
+              height={height}
             />
-          )}
-        </View>
+          </View>
+        ) : (
+          <Image
+            style={[styles.nftImage, { width, height: height }]}
+            source={{ uri: nft.imageData?.image }}
+          />
+        )}
         <Space x={16} />
         <View style={{ flex: 1 }}>
           <Text
@@ -264,7 +263,7 @@ const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
             testID="NftTokenName"
             numberOfLines={1}
             ellipsizeMode="tail">
-            {nft.processedMetadata.name}
+            {getNftTitle(nft)}
           </Text>
         </View>
       </Row>
@@ -283,6 +282,7 @@ const styles = StyleSheet.create({
     padding: 16
   },
   nftImage: {
-    borderRadius: 8
+    borderRadius: 8,
+    resizeMode: 'contain'
   }
 })

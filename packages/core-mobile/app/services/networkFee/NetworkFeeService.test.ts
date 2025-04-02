@@ -1,7 +1,6 @@
 import ModuleManager from 'vmModule/ModuleManager'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { NetworkFee } from 'services/networkFee/types'
-import { Module } from '@avalabs/vm-module-types'
+import { Module, NetworkFees } from '@avalabs/vm-module-types'
 import NetworkFeeService from './NetworkFeeService'
 
 const loadModuleSpy = jest.spyOn(ModuleManager, 'loadModuleByNetwork')
@@ -40,7 +39,7 @@ describe('NetworkFeeService', () => {
 
     const result = await NetworkFeeService.getNetworkFee(mockNetwork)
 
-    const expected: NetworkFee = {
+    const expected: NetworkFees = {
       baseFee: 100n,
       low: {
         maxFeePerGas: 10n,

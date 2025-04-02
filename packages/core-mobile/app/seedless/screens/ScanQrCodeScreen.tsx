@@ -16,7 +16,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
     useRoute<ScanQrCodeScreenProps['route']>().params
   const { getParent, goBack } =
     useNavigation<ScanQrCodeScreenProps['navigation']>()
-  const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyTotp } = useVerifyMFA(SeedlessService.session)
 
   const handleVerifyCode = (): void => {
     verifyTotp({
@@ -24,7 +24,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
         await totpChallenge.answer(code)
 
         if (oidcAuth) {
-          return SeedlessService.sessionManager.verifyCode(
+          return SeedlessService.session.verifyCode(
             oidcAuth.oidcToken,
             oidcAuth.mfaId,
             code
@@ -49,7 +49,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
 
   return (
     <ScanQrCode
-      totpUrl={totpChallenge.totpUrl}
+      totpUrl={totpChallenge.url}
       onPressEnterManually={handlePressEnterManually}
       onVeryfiCode={handleVerifyCode}
     />

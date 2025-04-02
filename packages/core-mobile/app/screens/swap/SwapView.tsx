@@ -21,6 +21,7 @@ import { useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import { selectActiveAccount } from 'store/account'
 
 type NavigationProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
 
@@ -28,8 +29,9 @@ export default function SwapView(): JSX.Element {
   const navigation = useNavigation<NavigationProps['navigation']>()
   const { theme } = useTheme()
   const { params } = useRoute<NavigationProps['route']>()
-  const { filteredTokenList } = useSearchableTokenList()
+  const { filteredTokenList } = useSearchableTokenList(false)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
+  const activeAccount = useSelector(selectActiveAccount)
   const {
     swap,
     fromToken,
@@ -49,7 +51,6 @@ export default function SwapView(): JSX.Element {
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<Amount>()
   const [toTokenValue, setToTokenValue] = useState<Amount>()
-
   const [localError, setLocalError] = useState<string>('')
 
   const canSwap: boolean =
@@ -65,25 +66,22 @@ export default function SwapView(): JSX.Element {
 
   useEffect(validateInputsFx, [fromTokenValue, maxFromValue])
   useEffect(applyOptimalRateFx, [optimalRate])
-  useEffect(calculateMaxFx, [fromToken])
-  useEffect(() => {
-    if (!fromToken && params?.initialTokenIdFrom) {
-      const token = filteredTokenList.find(
-        tk => tk.localId === params.initialTokenIdFrom
-      )
-      if (token) {
-        setFromToken(token)
-      }
-    }
-    if (!toToken && params?.initialTokenIdTo) {
-      const token = filteredTokenList.find(
-        tk => tk.localId === params.initialTokenIdTo
-      )
-      if (token) {
-        setToToken(token)
-      }
-    }
-  }, [params, filteredTokenList, setFromToken, setToToken, fromToken, toToken])
+  useEffect(calculateMaxFx, [fromToken, activeAccount])
+  useEffect(setInitialTokensFx, [
+    params,
+    filteredTokenList,
+    setFromToken,
+    setToToken,
+    fromToken,
+    toToken
+  ])
+  useEffect(updateTokensOnTokenListChangeFx, [
+    filteredTokenList,
+    fromToken,
+    setFromToken,
+    setToToken,
+    toToken
+  ])
 
   function validateInputsFx(): void {
     if (fromTokenValue && fromTokenValue.bn === 0n) {
@@ -93,7 +91,7 @@ export default function SwapView(): JSX.Element {
       fromTokenValue &&
       fromTokenValue.bn > maxFromValue
     ) {
-      setLocalError('Insufficient balance.')
+      setLocalError('Amount exceeds available balance')
     } else {
       setLocalError('')
     }
@@ -111,6 +109,59 @@ export default function SwapView(): JSX.Element {
           bn: BigInt(optimalRate.srcAmount),
           amount: optimalRate.srcAmount
         })
+      }
+    }
+  }
+
+  function setInitialTokensFx(): void {
+    if (!fromToken && params?.initialTokenIdFrom) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
+      )
+      if (token) {
+        setFromToken(token)
+      }
+    }
+    if (!toToken && params?.initialTokenIdTo) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
+      )
+      if (token) {
+        setToToken(token)
+      }
+    }
+  }
+
+  function updateTokensOnTokenListChangeFx(): void {
+    if (
+      fromToken &&
+      'localId' in fromToken &&
+      !!fromToken.localId &&
+      typeof fromToken.localId === 'string'
+    ) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() ===
+          (fromToken.localId as string).toLowerCase()
+      )
+      if (token) {
+        setFromToken(token)
+      }
+    }
+    if (
+      toToken &&
+      'localId' in toToken &&
+      !!toToken.localId &&
+      typeof toToken.localId === 'string'
+    ) {
+      const token = filteredTokenList.find(
+        tk =>
+          tk.localId.toLowerCase() === (toToken.localId as string).toLowerCase()
+      )
+      if (token) {
+        setToToken(token)
       }
     }
   }
@@ -178,6 +229,24 @@ export default function SwapView(): JSX.Element {
     setAmount(totalBalance)
   }, [fromToken, setAmount, setDestination])
 
+  const onFromAmountChange = useCallback(
+    (value: Amount): void => {
+      setFromTokenValue(value)
+      setDestination(SwapSide.SELL)
+      setAmount(value)
+    },
+    [setDestination, setAmount]
+  )
+
+  const onToAmountChange = useCallback(
+    (value: Amount): void => {
+      setToTokenValue(value)
+      setDestination(SwapSide.BUY)
+      setAmount(value)
+    },
+    [setDestination, setAmount]
+  )
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
@@ -197,11 +266,7 @@ export default function SwapView(): JSX.Element {
               AnalyticsService.capture('Swap_TokenSelected')
             }}
             onMax={handleOnMax}
-            onAmountChange={value => {
-              setFromTokenValue(value)
-              setDestination(SwapSide.SELL)
-              setAmount(value)
-            }}
+            onAmountChange={onFromAmountChange}
             selectedToken={fromToken}
             inputAmount={fromTokenValue?.bn}
             hideErrorMessage
@@ -234,11 +299,7 @@ export default function SwapView(): JSX.Element {
               setToToken(tkWithBalance)
               AnalyticsService.capture('Swap_TokenSelected')
             }}
-            onAmountChange={value => {
-              setToTokenValue(value)
-              setDestination(SwapSide.BUY)
-              setAmount(value)
-            }}
+            onAmountChange={onToAmountChange}
             selectedToken={toToken}
             inputAmount={toTokenValue?.bn}
             hideErrorMessage

@@ -6,7 +6,8 @@ import { WalletState } from 'store/app'
 import {
   initUnifiedBridgeService,
   checkTransferStatus,
-  shouldReinitializeBridge
+  shouldReinitializeBridge,
+  createEvmSigner
 } from './listeners'
 
 const mockShowTransactionSuccessToast = jest.fn()
@@ -223,6 +224,93 @@ describe('Unified Bridge Listeners', () => {
         currState as any
       )
       expect(result).toBe(true)
+    })
+  })
+
+  describe('createEvmSigner', () => {
+    it('should pass correct txParams, chainId, and method to request function', async () => {
+      const mockRequest = jest.fn()
+      const evmSigner = createEvmSigner(mockRequest)
+
+      const txData = {
+        from: '0x123' as `0x${string}`,
+        to: '0x456' as `0x${string}`,
+        value: 1000n,
+        data: '0xabcdef' as `0x${string}`,
+        chainId: '1'
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await evmSigner.sign(txData, jest.fn(), {} as any)
+
+      // Define the expected txParams and call parameters
+      const expectedTxParams = [
+        {
+          from: '0x123',
+          to: '0x456',
+          data: '0xabcdef',
+          value: '0x3e8' // 1000 in hex
+        }
+      ]
+
+      expect(mockRequest).toHaveBeenCalledWith({
+        method: 'eth_sendTransaction',
+        params: expectedTxParams,
+        chainId: 'eip155:1'
+      })
+    })
+
+    it('should throw error if "to" field is invalid', async () => {
+      const mockRequest = jest.fn()
+      const evmSigner = createEvmSigner(mockRequest)
+
+      // Invalid "to" field
+      const txData = {
+        from: '0x123' as `0x${string}`,
+        to: 123 as unknown as `0x${string}`,
+        value: 1000n,
+        data: '0xabcdef' as `0x${string}`,
+        chainId: '1'
+      }
+
+      await expect(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        evmSigner.sign(txData, jest.fn(), {} as any)
+      ).rejects.toThrow('invalid to field')
+
+      // Ensure the mock request was not called
+      expect(mockRequest).not.toHaveBeenCalled()
+    })
+
+    it('should pass undefined value if value is not provided', async () => {
+      const mockRequest = jest.fn()
+      const evmSigner = createEvmSigner(mockRequest)
+
+      const txData = {
+        from: '0x123' as `0x${string}`,
+        to: '0x456' as `0x${string}`,
+        data: '0xabcdef' as `0x${string}`,
+        chainId: '1'
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await evmSigner.sign(txData, jest.fn(), {} as any)
+
+      // Define the expected txParams and call parameters
+      const expectedTxParams = [
+        {
+          from: '0x123',
+          to: '0x456',
+          data: '0xabcdef',
+          value: undefined
+        }
+      ]
+
+      expect(mockRequest).toHaveBeenCalledWith({
+        method: 'eth_sendTransaction',
+        params: expectedTxParams,
+        chainId: 'eip155:1'
+      })
     })
   })
 })

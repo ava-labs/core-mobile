@@ -3,18 +3,25 @@ import { Icons, Pressable, useTheme } from '@avalabs/k2-alpine'
 import { Platform } from 'react-native'
 import { router } from 'expo-router'
 
-const BackBarButton = (): JSX.Element => {
+const BackBarButton = ({ onBack }: { onBack?: () => void }): JSX.Element => {
   const { theme } = useTheme()
+
+  const handleBack = (): void => {
+    onBack ? onBack() : router.back()
+  }
 
   return (
     <Pressable
-      onPress={() => router.back()}
+      onPress={handleBack}
       sx={{
         paddingLeft: Platform.OS === 'ios' ? 16 : 6,
         paddingRight: 16,
         paddingVertical: 16
       }}>
-      <Icons.Custom.BackArrowCustom color={theme.colors.$textPrimary} />
+      <Icons.Custom.BackArrowCustom
+        testID="header_back"
+        color={theme.colors.$textPrimary}
+      />
     </Pressable>
   )
 }

@@ -8,9 +8,10 @@ import Animated, {
 } from 'react-native-reanimated'
 import { BlurView } from 'expo-blur'
 import { View } from '../Primitives'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 import { HexagonImageView, HexagonBorder } from './HexagonImageView'
 import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
+import { TestnetHexagonImageView } from './TestnetHexagonImageView'
 
 export const Avatar = ({
   source,
@@ -20,7 +21,10 @@ export const Avatar = ({
   hasBlur,
   style,
   backgroundColor,
-  glowEffect
+  glowEffect,
+  testID,
+  hasLoading = true,
+  isDeveloperMode = false
 }: {
   source: ImageSourcePropType
   size: number | 'small' | 'large'
@@ -30,6 +34,9 @@ export const Avatar = ({
   hasBlur?: boolean
   style?: ViewStyle
   glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
+  testID?: string
+  hasLoading?: boolean
+  isDeveloperMode?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -43,7 +50,7 @@ export const Avatar = ({
   const surfacePrimaryBlurBgMap = theme.isDark
     ? {
         [theme.colors.$surfacePrimary]:
-          Platform.OS === 'ios' ? '#050506' : '#0a0a0b',
+          Platform.OS === 'ios' ? '#37373f' : '#373743',
         [theme.colors.$surfaceSecondary]:
           Platform.OS === 'ios' ? '#37373f' : '#373743',
         [theme.colors.$surfaceTertiary]:
@@ -122,19 +129,24 @@ export const Avatar = ({
 
   return (
     <Animated.View
+      testID={testID}
       style={[
         { width: height, height: height, overflow: 'visible' },
         pressedAnimatedStyle,
         style
       ]}>
       {hasBlur === true && renderBlur()}
-      <HexagonImageView
-        source={source}
-        height={height}
-        backgroundColor={'white'}
-        isSelected={isSelected}
-        hasLoading={true}
-      />
+      {isDeveloperMode ? (
+        <TestnetHexagonImageView height={height} size={size} />
+      ) : (
+        <HexagonImageView
+          source={source}
+          height={height}
+          backgroundColor={'white'}
+          isSelected={isSelected}
+          hasLoading={hasLoading}
+        />
+      )}
       <HexagonBorder height={height} />
     </Animated.View>
   )

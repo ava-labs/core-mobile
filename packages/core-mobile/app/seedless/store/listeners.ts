@@ -20,60 +20,42 @@ import { WalletType } from 'services/wallet/types'
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import { onTokenExpired } from 'seedless/store/slice'
-import { ErrResponse, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
-import { setAccountTitle } from 'store/account'
+import { setAccountTitle } from 'store/account/slice'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
     return
   }
-  //refreshToken will trigger onSessionExpired if fails for that reason
-  const refreshTokenResult = await SeedlessService.sessionManager.refreshToken()
+
+  const refreshTokenResult = await SeedlessService.session.refreshToken()
+
   if (refreshTokenResult.success) {
     Logger.trace('Refresh token success')
     return
   }
+
   Logger.error('refresh failed', refreshTokenResult.error)
 }
 
 const invalidateSeedlessToken = async (): Promise<void> => {
-  SeedlessService.sessionManager.setIsTokenValid(false)
+  SeedlessService.session.setIsTokenValid(false)
 }
 
-const registerSeedlessErrorHandler = async (
+const initSeedless = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch, getState } = listenerApi
 
-  const onErrorHandler = async (e: ErrResponse): Promise<void> => {
-    // log error
-    // note:
-    // we are removing the url to avoid leaking user's address
-    // an example url https://prod.signer.cubist.dev/v1/org/Org%23db7f2cac-7bd0-4e5f-b7c2-b5881a4bb4e7/eth1/sign/0xD0E99cEa490Cdb54ba555922bf325952F0DE38bd
-    Logger.error('seedless error', JSON.stringify({ ...e, url: '' }))
+  const walletType = selectWalletType(getState())
 
-    const walletType = selectWalletType(getState())
+  if (walletType === WalletType.MNEMONIC) return
 
-    // the following check is what cubist does internally for GlobalEvents.onSessionExpired
-    //
-    // if status is 403 and error matches one of the "invalid session" error codes
-    // or when "signerSessionRefresh" fails (errors returned by the authorizer lambda are not forwarded to the client)
-    // or when e.errorCode is undefined, it means that the error came from the authorizer, which is currently the only place cubist cannot set errorCode
-    // we will prompt user to re-authenticate
-    if (
-      walletType === WalletType.SEEDLESS &&
-      e.status === 403 &&
-      (e.isSessionExpiredError() ||
-        e.operation === 'signerSessionRefresh' ||
-        e.errorCode === undefined)
-    ) {
-      dispatch(onTokenExpired)
-    }
-  }
-  GlobalEvents.onError(onErrorHandler)
+  SeedlessService.init({
+    onSessionExpired: () => dispatch(onTokenExpired)
+  })
 }
 
 const handleTokenExpired = async (
@@ -111,10 +93,10 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
   Navigation.navigate({
     name: AppNavigation.Root.RefreshToken,
     params: {
-      screen: AppNavigation.RefreshToken.OwlLoader
+      screen: AppNavigation.RefreshToken.LogoLoader
     }
   })
-  startRefreshSeedlessTokenFlow(SeedlessService.sessionManager)
+  startRefreshSeedlessTokenFlow(SeedlessService.session)
     .then(result => {
       if (result.success) {
         //dismiss Loader screen
@@ -179,7 +161,7 @@ export const addSeedlessListeners = (
   })
   startListening({
     actionCreator: onRehydrationComplete,
-    effect: registerSeedlessErrorHandler
+    effect: initSeedless
   })
   startListening({
     actionCreator: onLogOut,

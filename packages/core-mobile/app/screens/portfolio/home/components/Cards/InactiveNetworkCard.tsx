@@ -16,7 +16,7 @@ import TopRightBadge from 'components/TopRightBadge'
 import { Text } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
-import { selectTokenBlacklist } from 'store/portfolio/slice'
+import { selectTokenVisibility } from 'store/portfolio/slice'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -38,12 +38,12 @@ const InactiveNetworkCard: FC<Props> = ({
   } = useApplicationContext()
   const { theme } = useTheme()
   const account = useSelector(selectActiveAccount)
-  const tokenBlacklist = useSelector(selectTokenBlacklist)
+  const tokenVisibility = useSelector(selectTokenVisibility)
   const totalBalance = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
       network.chainId,
       account?.index,
-      tokenBlacklist
+      tokenVisibility
     )
   )
 

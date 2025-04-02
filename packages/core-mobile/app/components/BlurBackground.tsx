@@ -1,13 +1,13 @@
 import { View } from '@avalabs/k2-mobile'
 import { Platform, StyleSheet } from 'react-native'
 import React, { FC } from 'react'
-import { BlurView, BlurViewProperties } from '@react-native-community/blur'
+import { BlurView, BlurTint } from 'expo-blur'
 
 interface Props {
   opacity: number
   backgroundColor: string
   borderRadius: number
-  iosBlurType?: BlurViewProperties['blurType']
+  tint?: BlurTint
   reducedTransparencyFallbackColor?: string
 }
 
@@ -15,8 +15,7 @@ export const BlurBackground: FC<Props> = ({
   opacity,
   backgroundColor,
   borderRadius,
-  iosBlurType = 'dark',
-  reducedTransparencyFallbackColor = 'black'
+  tint = 'dark'
 }): JSX.Element => {
   const iosOpacity = 1 - opacity
 
@@ -30,13 +29,13 @@ export const BlurBackground: FC<Props> = ({
       />
     )
   }
+
   return (
     <>
       <BlurView
         style={[StyleSheet.absoluteFill, { borderRadius }]}
-        blurType={iosBlurType}
-        blurAmount={10}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        tint={tint}
+        intensity={75}
       />
       <View
         style={[

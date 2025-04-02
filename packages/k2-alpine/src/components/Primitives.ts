@@ -45,4 +45,10 @@ export const SafeAreaView = styled(
   backgroundColor: '$surfacePrimary'
 })
 
-export { View, TextInput, Image, Pressable, ActivityIndicator } from 'dripsy'
+export {
+  View,
+  TextInput as RNTextInput,
+  Image,
+  Pressable,
+  ActivityIndicator
+} from 'dripsy'

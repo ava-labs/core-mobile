@@ -12,7 +12,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { TouchableOpacity } from '../Primitives'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   ({ value, onChangePin, length = 6, disabled, style }, ref) => {
@@ -43,7 +43,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         )
 
         return Promise.all(animationPromises).then(() => {
-          if (isLoading.value) {
+          if (isLoading.get()) {
             runOnJS(triggerAnimations)()
           }
         })
@@ -159,6 +159,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         activeOpacity={1}>
         {/* Hidden TextInput for capturing input */}
         <TextInput
+          testID="pin_input"
           ref={textInputRef}
           style={{ position: 'absolute', opacity: 0 }}
           value={value}

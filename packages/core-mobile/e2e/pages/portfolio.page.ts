@@ -1,11 +1,14 @@
+import assert from 'assert'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
+import cm from '../locators/commonEls.loc'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
 import accountManagePage from './accountManage.page'
+import bottomTabsPage from './bottomTabs.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
@@ -395,6 +398,61 @@ class PortfolioPage {
       by.id(`portfolio_list_item__${token}_balance`)
     )
     return Action.getAmount(bal)
+  }
+
+  //////// NEW GEN ////////
+  async goToAssets() {
+    await bottomTabsPage.tapPortfolioTab()
+    await this.tapAssetsTab()
+  }
+
+  async verifyAssetRow(index: number, isListView = true) {
+    const prefix = isListView ? 'list' : 'grid'
+    await Action.waitForElement(by.id(`${prefix}_fiat_balance__${index}`))
+    await Action.waitForElement(by.id(`${prefix}_token_balance__${index}`))
+    await Action.waitForElement(by.id(`${prefix}_token_name__${index}`))
+  }
+
+  async displayAssetsByNetwork(network: string) {
+    if (network !== cm.bitcoinNetwork) {
+      if (network === cm.pChain_2 || network === cm.xChain_2) {
+        try {
+          await Action.waitForElement(by.text('No assets yet'))
+          return
+        } catch (e) {
+          console.log('No assets yet message not found')
+        }
+      }
+      await Action.waitForElement(by.id(`network_logo__${network}`))
+    }
+
+    const networksToHide = {
+      [cm.cChain_2]: [cm.pChain_2, cm.xChain_2, cm.ethereum],
+      [cm.pChain_2]: [cm.cChain_2, cm.xChain_2, cm.ethereum],
+      [cm.xChain_2]: [cm.pChain_2, cm.cChain_2, cm.ethereum],
+      [cm.ethereum]: [cm.pChain_2, cm.xChain_2, cm.cChain_2],
+      default: [cm.pChain_2, cm.xChain_2, cm.ethereum, cm.cChain_2]
+    }
+
+    for (const hiddenNetwork of networksToHide[network] ||
+      networksToHide.default) {
+      await Action.waitForElementNotVisible(
+        by.id(`network_logo__${hiddenNetwork}`)
+      )
+    }
+  }
+
+  async displayAssetsByAllNetwork() {
+    await Action.waitForElement(by.id(`network_logo__${cm.cChain_2}`))
+    await Action.waitForElement(by.id(`network_logo__${cm.ethereum}`))
+  }
+
+  async verifyFiatCurrency(currency = '$') {
+    await Action.waitForElement(by.id('list_fiat_balance__0'))
+    const fiatBal =
+      (await Action.getElementText(by.id('list_fiat_balance__0'))) ?? ''
+    console.log(`${fiatBal}`)
+    assert(fiatBal.includes(currency), 'Fiat currency not found')
   }
 }
 

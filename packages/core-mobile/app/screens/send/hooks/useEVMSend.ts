@@ -6,6 +6,8 @@ import { assertNotUndefined } from 'utils/assertions'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
 import { bigIntToString } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
+import { selectIsGaslessBlocked } from 'store/posthog'
+import { useSelector } from 'react-redux'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -14,9 +16,11 @@ import {
   validateERC1155,
   validateERC721,
   validateAmount,
+  validateFee,
   validateGasLimit,
   validateSupportedToken
 } from '../utils/evm/validate'
+import { isSupportedToken } from '../utils/evm/typeguard'
 
 const useEVMSend: SendAdapterEVM = ({
   chainId,
@@ -36,13 +40,14 @@ const useEVMSend: SendAdapterEVM = ({
     canValidate
   } = useSendContext()
   const provider = useEVMProvider(network)
+  const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
 
   const send = useCallback(async () => {
     try {
       assertNotUndefined(token)
       assertNotUndefined(toAddress)
       assertNotUndefined(provider)
-
+      validateSupportedToken(token)
       setIsSending(true)
 
       return await sendEVM({
@@ -71,23 +76,28 @@ const useEVMSend: SendAdapterEVM = ({
   const handleError = useCallback(
     (err: unknown) => {
       if (err instanceof Error) {
+        if (
+          !isGaslessBlocked &&
+          err.message === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+        ) {
+          setError(undefined)
+          return
+        }
         setError(err.message)
       } else {
         setError(SendErrorMessage.UNKNOWN_ERROR)
       }
     },
-    [setError]
+    [setError, isGaslessBlocked]
   )
 
   const validate = useCallback(async () => {
     try {
-      validateBasicInputs(token, toAddress, maxFee)
-
       assertNotUndefined(token)
+      validateSupportedToken(token)
+      validateBasicInputs(token, toAddress, maxFee)
       assertNotUndefined(toAddress)
       assertNotUndefined(provider)
-
-      validateSupportedToken(token)
 
       // For ERC-20 and native tokens, we want to know the max. transfer amount
       // even if the validation as a whole fails (e.g. user did not provide
@@ -109,11 +119,15 @@ const useEVMSend: SendAdapterEVM = ({
         token.type === TokenType.ERC20
       ) {
         validateAmount({
-          gasLimit,
           amount: amount?.bn,
-          token,
+          token
+        })
+        validateFee({
+          gasLimit,
           maxFee,
-          nativeToken
+          amount: amount?.bn,
+          nativeToken,
+          token
         })
       }
 
@@ -136,7 +150,7 @@ const useEVMSend: SendAdapterEVM = ({
   ])
 
   const getMaxAmount = useCallback(async () => {
-    if (!provider || !toAddress || !token) {
+    if (!provider || !toAddress || !token || !isSupportedToken(token)) {
       return
     }
 

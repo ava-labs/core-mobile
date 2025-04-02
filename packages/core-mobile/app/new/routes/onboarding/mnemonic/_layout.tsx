@@ -1,12 +1,21 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Stack } from 'common/components/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useNavigationContainerRef } from 'expo-router'
+import { useGlobalSearchParams, useNavigationContainerRef } from 'expo-router'
 
 export default function MnemonicOnboardingLayout(): JSX.Element {
+  const { recovering } = useGlobalSearchParams<{ recovering: string }>()
   const [currentPage, setCurrentPage] = useState(0)
   const rootState = useNavigationContainerRef().getRootState()
+
+  const screens = useMemo(
+    () =>
+      recovering === 'true'
+        ? MNEMONIC_RECOVERING_SCREENS
+        : MNEMONIC_ONBOARDING_SCREENS,
+    [recovering]
+  )
 
   useEffect(() => {
     const mnemonicOnboardingRoute = rootState.routes
@@ -18,10 +27,7 @@ export default function MnemonicOnboardingLayout(): JSX.Element {
   }, [rootState])
 
   const renderPageControl = (): React.ReactNode => (
-    <PageControl
-      numberOfPage={MNEMONIC_ONBOARDING_SCREENS.length}
-      currentPage={currentPage}
-    />
+    <PageControl numberOfPage={screens.length} currentPage={currentPage} />
   )
 
   return (
@@ -30,7 +36,7 @@ export default function MnemonicOnboardingLayout(): JSX.Element {
         ...stackNavigatorScreenOptions,
         headerTitle: renderPageControl
       }}>
-      {MNEMONIC_ONBOARDING_SCREENS.map(screen => {
+      {screens.map(screen => {
         return <Stack.Screen key={screen} name={screen} />
       })}
     </Stack>
@@ -42,6 +48,16 @@ const MNEMONIC_ONBOARDING_SCREENS = [
   'analyticsConsent',
   'recoveryPhrase',
   'verifyRecoveryPhrase',
+  'createPin',
+  'setWalletName',
+  'selectAvatar',
+  'confirmation'
+]
+
+const MNEMONIC_RECOVERING_SCREENS = [
+  'termsAndConditions',
+  'analyticsConsent',
+  'enterRecoveryPhrase',
   'createPin',
   'setWalletName',
   'selectAvatar',

@@ -5,23 +5,26 @@ import AvaText from 'components/AvaText'
 import Switch from 'components/Switch'
 import Avatar from 'components/Avatar'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsTokenBlacklisted, toggleBlacklist } from 'store/portfolio'
+import { selectTokenVisibility, toggleTokenVisibility } from 'store/portfolio'
+import { MaliciousTokenIconWithWarning } from 'components/MaliciousTokenIconWithWarning'
+import { isTokenVisible } from 'store/balance/utils'
+import { LocalTokenWithBalance } from 'store/balance'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 type Props = {
-  id: string
-  name: string
-  image?: string
-  symbol?: string
-  onPress?: () => void
+  token: LocalTokenWithBalance
 }
 
-const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
+const TokenManagementItem: FC<Props> = ({ token }) => {
   const dispatch = useDispatch()
 
-  const isBlacklisted = useSelector(selectIsTokenBlacklisted(id))
+  const tokenVisibility = useSelector(selectTokenVisibility)
+
+  const isSwitchOn = isTokenVisible(tokenVisibility, token)
+  const isMalicious = isTokenMalicious(token)
 
   function handleChange(): void {
-    dispatch(toggleBlacklist(id))
+    dispatch(toggleTokenVisibility({ tokenId: token.localId }))
   }
 
   const tokenLogo = (
@@ -31,7 +34,12 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Avatar.Custom name={name} symbol={symbol} logoUri={image} showBorder />
+      <Avatar.Custom
+        name={token.name}
+        symbol={token.symbol}
+        logoUri={token.logoUri}
+        showBorder
+      />
     </View>
   )
 
@@ -39,11 +47,18 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
     <View
       style={{
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: 8
       }}>
+      {isMalicious && (
+        <MaliciousTokenIconWithWarning contentWidth={200} position="left" />
+      )}
       <Switch
-        testID={isBlacklisted ? `${name}_blocked` : `${name}_displayed`}
-        value={!isBlacklisted}
+        testID={
+          isSwitchOn ? `${token.name}_displayed` : `${token.name}_blocked`
+        }
+        value={isSwitchOn}
         onValueChange={handleChange}
       />
     </View>
@@ -55,9 +70,9 @@ const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
         flexGrow: 1,
         marginRight: 15
       }}>
-      <AvaText.Heading3 ellipsizeMode="tail">{name}</AvaText.Heading3>
+      <AvaText.Heading3 ellipsizeMode="tail">{token.name}</AvaText.Heading3>
       <AvaText.Body2 numberOfLines={1} ellipsizeMode="tail">
-        {symbol}
+        {token.symbol}
       </AvaText.Body2>
     </View>
   )

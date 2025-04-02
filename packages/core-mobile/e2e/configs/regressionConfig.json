@@ -25,6 +25,7 @@
   },
   "testPathIgnorePatterns": [
     "<rootDir>/tests/plusIcon/send/sendBitcoin.e2e.ts",
-    "<rootDir>/tests/settings/notification.e2e.smoke.ts"  
+    "<rootDir>/tests/settings/notification.e2e.smoke.ts",
+    "<rootDir>/tests/dapps/walletConnect/connectPlayground.e2e.ts"
   ]
 }

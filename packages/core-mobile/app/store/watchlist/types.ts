@@ -23,8 +23,14 @@ export const initialState: WatchListFavoriteState = {
   favorites: []
 }
 
+export enum MarketType {
+  TOP = 'TOP', // these are the top tokens in the market (our backend fetches them from Coingecko)
+  TRENDING = 'TRENDING' // these are the trending avalanche tokens in the market (our backend fetches them from birdeye)
+}
+
 export type MarketToken = {
-  id: string // coingeckoId
+  id: string // coingeckoId or address when coingeckoId is not available
+  marketType: MarketType
   symbol: string
   name: string
   logoUri?: string

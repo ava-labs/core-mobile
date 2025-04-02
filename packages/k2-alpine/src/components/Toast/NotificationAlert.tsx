@@ -1,9 +1,9 @@
 import React from 'react'
 import { Dimensions, Pressable, ViewStyle } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
+import { useTheme } from '../../hooks'
 
 export const NotificationAlert = ({
   type,
@@ -23,7 +23,7 @@ export const NotificationAlert = ({
   const { theme } = useTheme()
   const backgroundColor = theme.isDark
     ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfaceSecondary
+    : darkModeColors.$surfacePrimary
   const titleColor = theme.isDark
     ? lightModeColors.$textPrimary
     : darkModeColors.$textPrimary
@@ -44,11 +44,11 @@ export const NotificationAlert = ({
       case 'success':
         return <Icons.Action.CheckCircleOutline color={successColor} />
       case 'criticalError':
-        return <Icons.Alert.IconErrorOutline color={errorColor} />
+        return <Icons.Alert.ErrorOutline color={errorColor} />
       case 'error':
         return <Icons.Custom.Error color={titleColor} />
       case 'suspicious':
-        return <Icons.Device.IconGPPMaybe color={errorColor} />
+        return <Icons.Device.GPPMaybe color={errorColor} />
       case 'scam':
         return <Icons.Social.RemoveModerator color={errorColor} />
     }

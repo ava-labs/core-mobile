@@ -1,10 +1,11 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { isDevnet } from 'utils/isDevnet'
 import { Network } from '@avalabs/core-chains-sdk'
 import { makeBigIntLike } from 'utils/makeBigIntLike'
 import { BytesLike, AddressLike } from '@ethereumjs/util'
 import { LegacyTxData } from '@ethereumjs/tx'
 import { TransactionRequest } from 'ethers'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { cChainToken } from 'utils/units/knownTokens'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
@@ -13,7 +14,8 @@ import {
 
 export const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
 export const TESTNET_AVAX_ASSET_ID = Avalanche.FujiContext.avaxAssetID
-export const DEVNET_AVAX_ASSET_ID = Avalanche.DevnetContext.avaxAssetID
+
+const ONE_NANO_AVAX_IN_WEI = 1_000_000_000n // 1 nAvax
 
 export const isBtcTransactionRequest = (
   request: SignTransactionRequest
@@ -28,11 +30,28 @@ export const isAvalancheTransactionRequest = (
 }
 
 export const getAssetId = (avaxXPNetwork: Network): string => {
-  return isDevnet(avaxXPNetwork)
-    ? DEVNET_AVAX_ASSET_ID
-    : avaxXPNetwork.isTestnet
-    ? TESTNET_AVAX_ASSET_ID
-    : MAINNET_AVAX_ASSET_ID
+  return avaxXPNetwork.isTestnet ? TESTNET_AVAX_ASSET_ID : MAINNET_AVAX_ASSET_ID
+}
+
+// we add some buffer to C chain base fee to gain better speed
+export const addBufferToCChainBaseFee = (
+  baseFee: TokenUnit, // in wei
+  multiplier: number
+): TokenUnit => {
+  const adjustedBaseFee = baseFee.add(baseFee.mul(multiplier))
+
+  const minAvax = new TokenUnit(
+    ONE_NANO_AVAX_IN_WEI,
+    cChainToken.maxDecimals,
+    cChainToken.symbol
+  )
+
+  // after the Fortuna upgrade, the c-chain base fee can drop as low as 1 wei AVAX.
+  // here, we enforce a minimum base fee of 1 nano AVAX;
+  // otherwise, it rounds to 0 when converted back to nano AVAX
+  return adjustedBaseFee.toSubUnit() >= minAvax.toSubUnit()
+    ? adjustedBaseFee
+    : minAvax
 }
 
 /**

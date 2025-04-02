@@ -2,10 +2,9 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import walletService from 'services/wallet/WalletService'
 import networkService from 'services/network/NetworkService'
-import { ApprovalResponse, Hex, Network } from '@avalabs/vm-module-types'
+import { ApprovalResponse, Hex } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { isDevnet } from 'utils/isDevnet'
 
 export const avalancheSendTransaction = async ({
   unsignedTxJson,
@@ -13,7 +12,7 @@ export const avalancheSendTransaction = async ({
   externalIndices,
   internalIndices,
   account,
-  network,
+  isTestnet,
   resolve
 }: {
   unsignedTxJson: string
@@ -21,7 +20,7 @@ export const avalancheSendTransaction = async ({
   externalIndices: number[]
   internalIndices: number[]
   account: Account
-  network: Network
+  isTestnet: boolean | undefined
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
   try {
@@ -49,10 +48,7 @@ export const avalancheSendTransaction = async ({
       // in the sign function of wallets, network is only used to get the provider
       // so we can pass p network to get the provider, no matter what the network is
       // we might need to change this in the future
-      network: networkService.getAvalancheNetworkP(
-        network.isTestnet ?? false,
-        isDevnet(network)
-      ),
+      network: networkService.getAvalancheNetworkP(isTestnet ?? false),
       transaction: {
         tx: unsignedTx,
         externalIndices,

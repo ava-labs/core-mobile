@@ -26,7 +26,7 @@ export const RecoveryPhrase = ({
 
   function handleNext(): void {
     showAlert({
-      title: 'Security Warning',
+      title: 'Security warning',
       description:
         'For your security, you should not screenshot your recovery phrase. It is best to write it down and store it in a secure location.',
       buttons: [
@@ -50,7 +50,7 @@ export const RecoveryPhrase = ({
           />
           <View sx={{ marginTop: 16, gap: 16 }}>
             <View sx={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-              <Icons.Alert.IconErrorOutline color={theme.colors.$textDanger} />
+              <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
               <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
                 Losing this phrase will result in lost funds
               </Text>

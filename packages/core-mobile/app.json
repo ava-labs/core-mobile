@@ -1,16 +1,49 @@
 {
-  "name": "AvaxWallet",
-  "displayName": "Core Mobile",
-  "slug": "core-wallet",
-  "orientation": "portrait",
-  "userInterfaceStyle": "automatic",
-  "plugins": [
-    "expo-router"
-  ],
   "expo": {
-    "scheme": "core"
-  },
-  "experiments": {
-    "typedRoutes": true
+    "scheme": "core",
+    "name": "AvaxWallet",
+    "displayName": "Core Mobile",
+    "slug": "core-wallet",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-asset",
+        {
+          "assets": [
+            "./app/assets", "./app/new/assets"
+          ]
+        }
+      ],
+      "@config-plugins/detox",
+      [
+        "react-native-share",
+        {
+          "ios": [
+            "twitter"
+          ],
+          "android": [
+            "com.twitter.android"
+          ],
+          "enableBase64ShareAndroid": true
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

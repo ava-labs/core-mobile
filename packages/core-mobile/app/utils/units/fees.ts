@@ -1,15 +1,26 @@
-import { nanoToWei, weiToNano } from './converter'
-
-export function feeDenominationToBigint(
-  fee: string,
-  isBaseUnitRate: boolean
-): bigint {
-  return isBaseUnitRate ? BigInt(fee) : nanoToWei(BigInt(fee))
-}
+import { formatUnits } from 'ethers'
 
 export function bigIntToFeeDenomination(
   fee: bigint,
-  isBaseUnitRate: boolean
+  decimals?: number
 ): string {
-  return isBaseUnitRate ? fee.toString() : weiToNano(fee).toString()
+  if (decimals === undefined) return fee.toString()
+  return formatGasPrice(fee, decimals)
+}
+
+const formatGasPrice = (value: bigint, decimals: number): string => {
+  const formatted = formatUnits(value, decimals)
+  const [wholes, fraction] = formatted.split('.')
+
+  // Return the formatted string if there's no fraction part
+  if (!wholes || !fraction) {
+    return formatted
+  }
+
+  // Remove unnecessary trailing ".0", otherwise round to 2 decimal places if needed
+  return fraction === '0'
+    ? wholes
+    : fraction.length > 2
+    ? Number(formatted).toFixed(2)
+    : formatted
 }

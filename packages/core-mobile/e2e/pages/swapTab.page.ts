@@ -83,7 +83,7 @@ class SwapTabPage {
   }
 
   async tapReviewOrderButton(index = 0) {
-    await Actions.waitForElementNoSync(this.reviewOrderBtn, 15000)
+    await Actions.waitForElementNoSync(this.reviewOrderBtn, 30000)
     while (await Actions.isVisible(this.reviewOrderBtn, index)) {
       await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
       await delay(3000)

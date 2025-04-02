@@ -1,0 +1,17 @@
+diff --git a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
+index f5da0cf..b66de56 100644
+--- a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
++++ b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
+@@ -319,7 +319,11 @@ - (void)drawRect:(CGRect)rect
+   _boundingBox = rect;
+   CGContextRef context = UIGraphicsGetCurrentContext();
+ 
+-  [self drawToContext:context withRect:[self bounds]];
++  @try {
++    [self drawToContext:context withRect:[self bounds]];
++  } @catch (NSException *exception) {
++    RCTLogWarn(@"[RNSVGSvgView drawRect] %@", exception.reason);
++  }
+ }
+ 
+ - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event

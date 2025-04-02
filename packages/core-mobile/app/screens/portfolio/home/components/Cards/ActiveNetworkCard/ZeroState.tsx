@@ -8,19 +8,21 @@ import AvaButton from 'components/AvaButton'
 import TagSVG from 'components/svg/TagSVG'
 import QRSVG from 'components/svg/QRSVG'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 
 type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
 >['navigation']
 
-const ZeroState = () => {
+const ZeroState = (): JSX.Element => {
   const buyDisabled = useIsUIDisabled(UI.Buy)
-  const { openMoonPay } = useInAppBrowser()
   const { navigate } = useNavigation<NavigationProp>()
 
-  const navigateToReceiveTokens = () => {
+  const navigateToReceiveTokens = (): void => {
     navigate(AppNavigation.Wallet.ReceiveTokens)
+  }
+
+  const navigateToBuy = (): void => {
+    navigate(AppNavigation.Wallet.Buy)
   }
 
   let buttons
@@ -30,7 +32,7 @@ const ZeroState = () => {
       <>
         <AvaButton.SecondaryMedium
           icon={<TagSVG />}
-          onPress={openMoonPay}
+          onPress={navigateToBuy}
           style={{
             flex: 0.5
           }}>

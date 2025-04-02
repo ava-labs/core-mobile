@@ -12,6 +12,8 @@ import Avatar from 'components/Avatar'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { ShowSnackBar } from 'components/Snackbar'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { MaliciousTokenWarningCard } from 'components/MaliciousTokenWarningCard'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 const AddCustomToken: FC = () => {
   const theme = useApplicationContext().theme
@@ -31,6 +33,8 @@ const AddCustomToken: FC = () => {
     addCustomToken,
     isLoading
   } = useAddCustomToken(showSuccess)
+
+  const isMalicious = token && isTokenMalicious(token)
 
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token || isLoading)
@@ -70,6 +74,12 @@ const AddCustomToken: FC = () => {
                 <QRCode />
               </AvaButton.Icon>
             </View>
+          )}
+          {isMalicious && (
+            <>
+              <Space y={16} />
+              <MaliciousTokenWarningCard />
+            </>
           )}
         </View>
       </View>

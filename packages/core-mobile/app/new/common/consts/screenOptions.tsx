@@ -5,16 +5,19 @@ import {
   StackNavigationOptions,
   TransitionPresets
 } from '@react-navigation/stack'
-import { Animated } from 'react-native'
-import Grabber from 'common/components/Grabber'
+import { Animated, Platform } from 'react-native'
 import BackBarButton from 'common/components/BackBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { Text, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
+import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
+import { NotificationBarButton } from 'common/components/NotificationBarButton'
+import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
+import { TestnetBanner } from 'common/components/TestnetBanner'
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
-  headerBackTitleVisible: false,
+  headerBackButtonDisplayMode: 'minimal',
   headerShadowVisible: false,
   headerTitleAlign: 'center',
   headerBackImage: () => <BackBarButton />,
@@ -29,16 +32,21 @@ export const stackNavigatorScreenOptions: StackNavigationOptions = {
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  headerTitle: () => <Grabber />
+  headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
+  headerStyle: {
+    height: 72
+  }
 }
 
 export const modalScreensOptions: StackNavigationOptions = {
   presentation: 'modal',
   cardStyle: {
+    marginTop: 85,
     borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    marginTop: 75
+    borderTopRightRadius: 40
   },
+  cardOverlay: overlay => <TestnetBanner overlayStyle={overlay.style} />,
+  cardShadowEnabled: true,
   gestureEnabled: true,
   gestureDirection: 'vertical',
   cardStyleInterpolator: forModalPresentationIOS
@@ -83,7 +91,7 @@ function forModalPresentationIOS({
 
   const overlayOpacity = progress.interpolate({
     inputRange: [0, 1, 1.0001, 2],
-    outputRange: [0, 0.5, 1, 1]
+    outputRange: [0, 0.5, 0.5, 0.5]
   })
 
   return {
@@ -91,7 +99,7 @@ function forModalPresentationIOS({
       overflow: 'hidden',
       transform: [{ translateY }]
     },
-    overlayStyle: { opacity: overlayOpacity }
+    overlayStyle: { opacity: overlayOpacity, transform: [{ translateY }] }
   }
 }
 
@@ -101,29 +109,53 @@ export const modalFirstScreenOptions: StackNavigationOptions = {
   headerBackImage: () => null
 }
 
+const HeaderBack = (): JSX.Element => (
+  <View sx={{ marginTop: 39 }}>
+    <BackBarButton />
+  </View>
+)
+
+export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
+  headerBackImage: HeaderBack
+}
+
 export const homeScreenOptions: StackNavigationOptions = {
   headerLeft: () => (
-    <View sx={{ marginLeft: 12, backgroundColor: 'transparent' }}>
-      <Link href="/settings/">
-        <Text>Account</Text>
-      </Link>
-    </View>
-  ),
-  headerRight: () => (
     <View
       sx={{
-        flexDirection: 'row',
-        gap: 12,
-        marginRight: 12,
-        backgroundColor: 'transparent'
+        marginLeft: 14,
+        marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
+        alignItems: 'center'
       }}>
-      <Link href="/receive/">
-        <Text>Receive</Text>
-      </Link>
-      <Link href="/notifications/">
-        <Text>Notifications</Text>
+      <Link href="/accountSettings/" asChild>
+        <AccountSettingBarButton />
       </Link>
     </View>
   ),
-  animationEnabled: false
+  headerRight: () => {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: 12,
+          marginRight: 14,
+          marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
+          alignItems: 'center'
+        }}>
+        <Link href="/receive/" asChild>
+          <ReceiveBarButton />
+        </Link>
+        <Link href="/notifications/" asChild>
+          <NotificationBarButton />
+        </Link>
+      </View>
+    )
+  },
+  animation: 'none'
 }
+
+export function forNoAnimation(): StackCardInterpolatedStyle {
+  return {}
+}
+
+const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0

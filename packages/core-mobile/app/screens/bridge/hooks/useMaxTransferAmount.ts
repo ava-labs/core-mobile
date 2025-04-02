@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NetworkFee } from 'services/networkFee/types'
+import { NetworkFees } from '@avalabs/vm-module-types'
 import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
@@ -16,7 +16,7 @@ const useMaxTransferAmount = ({
 }: {
   assetsWithBalances: AssetBalance[]
   selectedBridgeAsset: BridgeAsset | undefined
-  networkFeeRate: NetworkFee | undefined
+  networkFeeRate: NetworkFees | undefined
   sourceNetwork: Network | undefined
   targetNetwork: Network | undefined
 }): bigint | undefined => {

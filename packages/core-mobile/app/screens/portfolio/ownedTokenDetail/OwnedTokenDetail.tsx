@@ -27,6 +27,8 @@ import useBridge from 'screens/bridge/hooks/useBridge'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { toNumber } from 'utils/string/toNumber'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { MaliciousTokenWarningCard } from 'components/MaliciousTokenWarningCard'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 import OwnedTokenActionButtons from './components/OwnedTokenActionButtons'
 
 type ScreenProps = WalletScreenProps<
@@ -51,6 +53,8 @@ const OwnedTokenDetail: FC = () => {
         asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
       )
   )
+
+  const isMalicious = token && isTokenMalicious(token)
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])
 
@@ -85,10 +89,10 @@ const OwnedTokenDetail: FC = () => {
     </Row>
   )
 
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
 
   const renderMarketTrend = (balance: number, symbol: string): JSX.Element => {
-    const marketToken = getMarketToken(symbol)
+    const marketToken = getMarketTokenBySymbol(symbol)
     const percentChange = marketToken?.priceChangePercentage24h ?? 0
     const priceChange = (balance * percentChange) / 100
 
@@ -144,7 +148,11 @@ const OwnedTokenDetail: FC = () => {
       <Space y={8} />
       <View sx={{ marginHorizontal: -16 }}>
         <AvaListItem.Base
-          title={<Text variant="heading5">{token?.name}</Text>}
+          title={
+            <Text numberOfLines={1} variant="heading5" sx={{ marginRight: 18 }}>
+              {token?.name}
+            </Text>
+          }
           titleAlignment={'flex-start'}
           subtitle={subtitle}
           leftComponent={
@@ -173,6 +181,12 @@ const OwnedTokenDetail: FC = () => {
           }
         />
       </View>
+      {isMalicious && (
+        <>
+          <Space y={16} />
+          <MaliciousTokenWarningCard />
+        </>
+      )}
       <Space y={16} />
       <OwnedTokenActionButtons
         showSwap={!isSwapDisabled}

@@ -23,6 +23,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { View } from '@avalabs/k2-mobile'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 import { XChainAssetList } from '../home/components/Cards/ActiveNetworkCard/XChainAssetList'
 import { PChainAssetList } from '../home/components/Cards/ActiveNetworkCard/PChainAssetList'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
@@ -129,6 +130,7 @@ const NetworkTokens = (): JSX.Element => {
         image={token?.logoUri}
         symbol={token.symbol}
         onPress={() => selectToken(token)}
+        isMalicious={isTokenMalicious(token)}
       />
     )
   }
@@ -229,7 +231,7 @@ const NetworkTokens = (): JSX.Element => {
     <View style={{ flex: 1 }}>
       <NetworkTokensHeader />
       <TabViewAva
-        renderCustomLabel={renderTabViewLabel}
+        renderLabel={renderTabViewLabel}
         currentTabIndex={params?.tabIndex}
         onTabIndexChange={capturePosthogEvents}>
         <TabViewAva.Item title={TabLabel.Tokens}>

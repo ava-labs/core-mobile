@@ -11,12 +11,12 @@ import { Networks, NetworkState } from 'store/network'
 import { AccountsState } from 'store/account'
 import { NotificationsState } from 'store/notifications'
 import { PosthogState } from 'store/posthog'
-import { NFTItemData, NftState } from 'store/nft'
-import { PortfolioState } from 'store/portfolio'
+import { NftState } from 'store/nft'
 import { RawRootState, RootState } from 'store/index'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { Network } from '@avalabs/core-chains-sdk'
 import { CoreAccountType, WalletType } from '@avalabs/types'
+import { PortfolioState } from 'store/portfolio'
 
 const secretKey =
   '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328efa'
@@ -157,21 +157,7 @@ const initialState = {
     userID: '845c3f7f-d81f-4501-9143-7ef9f689cbf6'
   } as PosthogState,
   nft: {
-    hiddenNfts: {},
-    nfts: {
-      '0x48bcac480f22A2Dfe42026DdE212585e917b7142195': {
-        address: '0x48bcac480f22A2Dfe42026DdE212585e917b7142',
-        chainId: '43114',
-        ercType: 'ERC-721',
-        name: 'Aggregate Humanity',
-        owner: '0x341b0073b66bfc19FCB54308861f604F5Eb8f51b',
-        symbol: 'Ah',
-        tokenId: '195',
-        tokenUri:
-          'https://firebasestorage.googleapis.com/v0/b/wilson-mango.appspot.com/o/generated_195.json?alt=media',
-        uid: '0x48bcac480f22A2Dfe42026DdE212585e917b7142195'
-      } as NFTItemData
-    }
+    hiddenNfts: {}
   } as NftState,
   settings: {
     currency: currencyState,
@@ -179,6 +165,7 @@ const initialState = {
     advanced: advancedState
   },
   portfolio: {
-    tokenBlacklist: []
+    tokenVisibility: {},
+    collectibleVisibility: {}
   } as PortfolioState
 } as RootState

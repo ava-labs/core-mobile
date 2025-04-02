@@ -34,6 +34,7 @@ import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
 import { ProposalTypes } from '@walletconnect/types'
 import { UR } from '@ngraveio/bc-ur'
+import { DebugStackParamList } from 'debug/navigation/DebugStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -56,6 +57,7 @@ import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScr
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
 import { SettingRecoveryMethodsStackParamList } from './wallet/SettingRecoveryMethodsStack'
+import { BuyStackParamList } from './wallet/BuyScreenStack'
 
 export type { RootScreenStackParamList }
 
@@ -73,7 +75,7 @@ export type EditGasLimitParams = {
   onSave: (customFees: Eip1559Fees) => void
   lowMaxFeePerGas: bigint
   isGasLimitEditable?: boolean
-  isBaseUnitRate: boolean
+  feeDecimals?: number
   noGasLimitError?: string
 } & Eip1559Fees
 
@@ -111,7 +113,7 @@ export type UpdateContactV2Params = {
 }
 
 export type BuyCarefullyParams = {
-  tokenType: string
+  provider: string
 }
 
 export type ApprovalPopupParams = {
@@ -244,6 +246,13 @@ export type WalletScreenProps<T extends keyof WalletScreenStackParams> =
     RootStackScreenProps<keyof RootScreenStackParamList>
   >
 
+/** ROOT -> WALLET -> BUY **/
+export type BuyScreenProps<T extends keyof BuyStackParamList> =
+  CompositeScreenProps<
+    StackScreenProps<BuyStackParamList, T>,
+    WalletScreenProps<keyof WalletScreenStackParams>
+  >
+
 /** ROOT -> WALLET -> DRAWER **/
 export type DrawerScreenProps<T extends keyof DrawerParamList> =
   CompositeScreenProps<
@@ -364,3 +373,7 @@ export type SettingRecoveryMethodsScreenProps<
   StackScreenProps<SettingRecoveryMethodsStackParamList, T>,
   SecurityPrivacyScreenProps<keyof SecurityStackParamList>
 >
+
+/** ROOT -> DEBUG **/
+export type DebugScreenProps<T extends keyof DebugStackParamList> =
+  StackScreenProps<DebugStackParamList, T>

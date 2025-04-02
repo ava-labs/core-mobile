@@ -10,11 +10,11 @@ export type NotificationsStackParamList = {
 
 const NotificationsStack = createStackNavigator<NotificationsStackParamList>()
 
-const NotificationsStackScreen = () => {
+const NotificationsStackScreen = (): JSX.Element => {
   return (
     <NotificationsStack.Navigator
       screenOptions={{
-        headerBackTitleVisible: false
+        headerBackButtonDisplayMode: 'minimal'
       }}>
       <NotificationsStack.Screen
         options={MainHeaderOptions({

@@ -21,6 +21,7 @@ export default {
   stakedAvaxText: 'Staked',
   confirmationTitle: 'Confirm Staking',
   claimableAvaxText: 'Claimable',
+  claimableBalance: 'claimable_balance',
   stakeTitle: 'Stake',
   notEnoughAvaxTitle: '25 AVAX required',
   notEnoughAvaxDescription: 'You need at least 25 AVAX to stake.',
@@ -69,5 +70,6 @@ export default {
   customBaseFee: 'custom_base_fee',
   slowBaseFee: 'slow_base_fee',
   fastBaseFee: 'fast_base_fee',
-  instantBaseFee: 'instant_base_fee'
+  instantBaseFee: 'instant_base_fee',
+  durationScreenTitle: 'Duration'
 }

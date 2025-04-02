@@ -8,6 +8,8 @@ export const colors = {
   // neutral
   $neutralWhite: '#FFFFFF',
   $neutral50: '#F5F5F6',
+  $neutral700: '#58585B',
+  $neutral800: '#3E3E43',
   $neutral850: '#28282E',
   $neutral900: '#1B1B1D',
   $neutral950: '#121213',
@@ -44,8 +46,8 @@ export const darkModeColors = {
   $textSuccess: colors.$accentSuccessD,
 
   // surface
-  $surfacePrimary: colors.$neutral950,
-  $surfaceSecondary: colors.$neutral850,
+  $surfacePrimary: colors.$neutral850,
+  $surfaceSecondary: colors.$neutral800,
   $surfaceTertiary: colors.$neutral900,
 
   // border

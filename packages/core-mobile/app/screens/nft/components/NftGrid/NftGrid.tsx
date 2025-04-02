@@ -1,34 +1,20 @@
 import React from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
-import { NFTItem } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useNftItemsContext } from 'contexts/NFTItemsContext'
-import { FetchingNextIndicator } from '../FetchingNextIndicator'
+import { useNftItemsContext } from 'contexts/NftItemsContext'
+import { NftItem } from 'services/nft/types'
 import { GridItem } from './GridItem'
 import { NftGridLoader } from './NftGridLoader'
 
 type Props = {
-  onItemSelected: (item: NFTItem) => void
+  onItemSelected: (item: NftItem) => void
 }
 
 export const NftGrid = ({ onItemSelected }: Props): JSX.Element => {
-  const {
-    filteredNftItems,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isNftsLoading,
-    isNftsRefetching,
-    refetchNfts
-  } = useNftItemsContext()
-
-  const onEndReached = (): void => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
-    }
-  }
+  const { filteredNftItems, isNftsLoading, isNftsRefetching, refetchNfts } =
+    useNftItemsContext()
 
   if (isNftsLoading)
     return (
@@ -42,18 +28,13 @@ export const NftGrid = ({ onItemSelected }: Props): JSX.Element => {
       testID="nft_grid_view"
       data={filteredNftItems}
       contentContainerStyle={styles.contentContainer}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.4}
-      keyExtractor={item => item.uid}
+      keyExtractor={item => item.tokenId}
       ListEmptyComponent={<ZeroState.Collectibles />}
-      ListFooterComponent={
-        <FetchingNextIndicator isVisible={isFetchingNextPage} />
-      }
       numColumns={2}
       showsVerticalScrollIndicator={true}
-      renderItem={info =>
+      renderItem={({ item }) =>
         renderItem({
-          item: info.item,
+          item,
           onItemSelected
         })
       }
@@ -71,8 +52,8 @@ const renderItem = ({
   item,
   onItemSelected
 }: {
-  item: NFTItem
-  onItemSelected: (item: NFTItem) => void
+  item: NftItem
+  onItemSelected: (item: NftItem) => void
 }): JSX.Element => {
   return (
     <GridItem

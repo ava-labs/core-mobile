@@ -16,6 +16,9 @@ export enum NewsChannelId {
   PRICE_ALERTS = 'priceAlerts'
 }
 
+//This is system default channel, we don't need to create it, just use it's id
+export const DEFAULT_ANDROID_CHANNEL = 'miscellaneous'
+
 export interface AvaxAndroidChannel extends AndroidChannel {
   id: ChannelId
   title: string
@@ -53,7 +56,8 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Product Announcements',
-    subtitle: 'Learn about new features and changes'
+    subtitle: 'Learn about new features and changes',
+    sound: 'default'
   } as AvaxAndroidChannel,
   {
     id: ChannelId.OFFERS_AND_PROMOTIONS,
@@ -62,7 +66,8 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Special Offers and Promotions',
-    subtitle: 'Airdrops and promotional offers'
+    subtitle: 'Airdrops and promotional offers',
+    sound: 'default'
   } as AvaxAndroidChannel,
   {
     id: ChannelId.MARKET_NEWS,
@@ -71,7 +76,8 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Market News',
-    subtitle: 'News and market information alerts'
+    subtitle: 'News and market information alerts',
+    sound: 'default'
   } as AvaxAndroidChannel,
   {
     id: ChannelId.PRICE_ALERTS,
@@ -80,6 +86,7 @@ export const notificationChannels = [
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Price Alerts',
-    subtitle: 'Token price movement alerts'
+    subtitle: 'Token price movement alerts',
+    sound: 'default'
   } as AvaxAndroidChannel
 ]

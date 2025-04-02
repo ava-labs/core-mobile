@@ -1,9 +1,9 @@
 import React from 'react'
 import {
+  GroupList,
   Icons,
   ScrollView,
   Text,
-  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -16,16 +16,16 @@ const AccessWalletScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handleEnterRecoveryPhrase = (): void => {
-    // navigate(AppNavigation.Onboard.Welcome, {
-    //   screen: AppNavigation.Onboard.AnalyticsConsent,
-    //   params: {
-    //     nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
-    //   }
-    // })
+    navigate({
+      pathname: '/onboarding/mnemonic/',
+      params: { recovering: 'true' }
+    })
   }
 
   const handleCreateMnemonicWallet = (): void => {
-    navigate('/onboarding/mnemonic/termsAndConditions')
+    navigate({
+      pathname: '/onboarding/mnemonic/'
+    })
   }
 
   return (
@@ -37,51 +37,26 @@ const AccessWalletScreen = (): JSX.Element => {
           How would you like to access your existing wallet?
         </Text>
         <View sx={{ gap: 16, flexDirection: 'row' }}>
-          <ActionButton
-            text="Type in a recovery phrase"
-            icon={<Encrypted color={theme.colors.$textPrimary} />}
-            onPress={handleEnterRecoveryPhrase}
-          />
-          <ActionButton
-            text="Create a new wallet"
-            icon={
-              <Icons.Content.Add
-                color={theme.colors.$textPrimary}
-                style={{ marginLeft: -2 }}
-              />
-            }
-            onPress={handleCreateMnemonicWallet}
+          <GroupList
+            data={[
+              {
+                title: 'Type in a recovery phrase',
+                leftIcon: <Encrypted color={theme.colors.$textPrimary} />,
+                onPress: handleEnterRecoveryPhrase
+              },
+              {
+                title: 'Create a new wallet',
+                leftIcon: (
+                  <Icons.Content.Add color={theme.colors.$textPrimary} />
+                ),
+                onPress: handleCreateMnemonicWallet
+              }
+            ]}
+            itemHeight={60}
           />
         </View>
       </ScrollView>
     </BlurredBarsContentLayout>
-  )
-}
-
-const ActionButton = ({
-  text,
-  icon,
-  onPress
-}: {
-  text: string
-  icon: JSX.Element
-  onPress: () => void
-}): JSX.Element => {
-  return (
-    <TouchableOpacity sx={{ flex: 1 }} onPress={onPress}>
-      <View
-        sx={{
-          backgroundColor: '$surfaceSecondary',
-          gap: 8,
-          paddingHorizontal: 22,
-          paddingVertical: 20,
-          borderRadius: 18,
-          aspectRatio: 1
-        }}>
-        {icon}
-        <Text variant="buttonLarge">{text}</Text>
-      </View>
-    </TouchableOpacity>
   )
 }
 

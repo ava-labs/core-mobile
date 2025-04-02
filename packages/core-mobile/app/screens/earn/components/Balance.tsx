@@ -20,8 +20,6 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -33,15 +31,11 @@ export const Balance = (): JSX.Element | null => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
   const cChainBalance = useCChainBalance()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const cChainNetwork = useCChainNetwork()
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(
-      isDeveloperMode,
-      isDevnet(activeNetwork)
-    )
+    NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
   const isFocused = useIsFocused()
@@ -222,6 +216,7 @@ export const Balance = (): JSX.Element | null => {
               }
             />
             <BalanceItem
+              testID="claimable_balance"
               balanceType={StakeTypeEnum.Claimable}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Claimable, theme)}
               balance={

@@ -98,7 +98,7 @@ export default function MnemonicScreen({
           {hideMnemonic && (
             <BlurBackground
               opacity={1}
-              iosBlurType="dark"
+              tint="dark"
               borderRadius={8}
               backgroundColor={BLUR_BACKGROUND_COLOR}
             />

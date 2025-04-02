@@ -21,7 +21,6 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
-import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
@@ -29,6 +28,7 @@ import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setWalletName } from 'store/account'
+import LogoLoader from 'components/LogoLoader'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -92,7 +92,7 @@ const CreateWalletStack: () => JSX.Element = () => {
         />
         <CreateWalletS.Screen
           name={AppNavigation.CreateWallet.Loader}
-          component={OwlLoader}
+          component={LogoLoader}
         />
       </CreateWalletS.Navigator>
     </CreateWalletContext.Provider>

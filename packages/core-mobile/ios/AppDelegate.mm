@@ -34,14 +34,13 @@
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
-  return [self getBundleURL];
+  return [self bundleURL];
 }
 
-- (NSURL *)getBundleURL
+- (NSURL *)bundleURL
 {
 #if DEBUG
-  // in order for sourcemap to work with Safari debugging, we replace [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"]; with the statement below
-  return [NSURL URLWithString:[[[[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"] absoluteString] stringByAppendingString:@"&inlineSourceMap=true" ]];
+  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@".expo/.virtual-metro-entry"];
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
@@ -78,10 +77,10 @@
 #endif
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application {
+- (void)applicationDidBecomeActive:(UIApplication *)application {
   // this only reset the badgeCount in app group userDefaults,
   // the actual badge count is reset in handleNotificationCleanup
   // inside react native project
-    [[[NSUserDefaults alloc] initWithSuiteName:@"group.org.avalabs.corewallet"] setInteger:0 forKey:@"badgeCount"];
+  [[[NSUserDefaults alloc] initWithSuiteName:@"group.org.avalabs.corewallet"] setInteger:0 forKey:@"badgeCount"];
 }
 @end

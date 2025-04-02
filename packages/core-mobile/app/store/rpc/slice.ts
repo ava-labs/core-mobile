@@ -56,7 +56,7 @@ export const onInAppRequestSucceeded = createAction<{
 
 export const onInAppRequestFailed = createAction<{
   requestId: number
-  error: Error
+  error: RpcError
 }>(`${reducerName}/onInAppRequestFailed`)
 
 export const { updateRequestStatus } = rpcSlice.actions

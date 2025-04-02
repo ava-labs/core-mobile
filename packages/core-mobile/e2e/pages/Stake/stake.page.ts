@@ -293,6 +293,14 @@ class StakePage {
     return by.id(stakeScreenLoc.customBaseFee)
   }
 
+  get durationScreenTitle() {
+    return by.text(stakeScreenLoc.durationScreenTitle)
+  }
+
+  get claimableBalance() {
+    return by.id(stakeScreenLoc.claimableBalance)
+  }
+
   async tapActiveTab() {
     await Actions.tap(this.activeTab)
   }
@@ -513,6 +521,7 @@ class StakePage {
     await this.tapNextButton()
     await this.inputStakingAmount(amount)
     await this.tapNextButton()
+    await Actions.waitForElement(this.durationScreenTitle, 30000)
     if (custom) {
       await Actions.tap(this.customRadio)
       await Actions.tap(commonElsPage.calendarSVG)
@@ -535,40 +544,11 @@ class StakePage {
     }
     await this.tapNextButton()
     await Actions.waitForElementNoSync(this.stakeNow, 30000)
-    await this.selectRandomDynamicFee()
     await this.tapStakeNow()
-  }
-
-  async selectRandomDynamicFee() {
-    const feeOptions = [
-      this.slowBaseFee,
-      this.fastBaseFee,
-      this.instantBaseFee,
-      this.customBaseFee
-    ]
-    const randomIndex = Actions.getRandomIndex(feeOptions.length)
-    const selectedFeeOption = feeOptions[randomIndex] as Detox.NativeMatcher
-
-    await Actions.tap(selectedFeeOption)
-
-    // If the selected fee option is custom, set the fee to the instant fee
-    if (randomIndex === 3) {
-      const instantFeeText = (await Actions.getElementText(
-        this.instantBaseFee
-      )) as string
-      await Actions.waitForElementNoSync(this.instantBaseFee)
-      await Actions.setInputText(this.customFeeInput, instantFeeText)
-      await Actions.tap(this.customSaveBtn)
-    }
   }
 
   async verifyStakeSuccessToast() {
     await Actions.waitForElement(this.stakingSuccessful, 60000, 0)
-    try {
-      await this.tapNotNowButton()
-    } catch (e) {
-      console.log('No stake notification prompt is displayed')
-    }
     await delay(5000)
   }
 }

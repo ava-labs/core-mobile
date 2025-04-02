@@ -10,6 +10,7 @@ import { computeDelegationSteps } from './computeDelegationSteps'
 jest.mock('services/balance/getPChainBalance')
 jest.mock('services/balance/getCChainBalance')
 jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
   getPChainAtomicBalance: jest.fn(),
   getDelegationFee: jest.fn(),
   getImportPFee: jest.fn(),
@@ -36,7 +37,8 @@ describe('computeDelegationSteps', () => {
     cChainBaseFee: {} as TokenUnit,
     provider: {} as Avalanche.JsonRpcProvider,
     pFeeAdjustmentThreshold: 5,
-    pFeeMultiplier: 0.2
+    crossChainFeesMultiplier: 4,
+    cBaseFeeMultiplier: 1
   }
 
   it('should throw an error when there is insufficient balance', async () => {
@@ -112,7 +114,7 @@ describe('computeDelegationSteps', () => {
     expect(steps).toEqual([
       {
         operation: 'exportC',
-        amount: 43n,
+        amount: 120n,
         fee: 5n
       },
       { operation: 'importP', fee: 5n },

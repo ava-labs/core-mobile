@@ -8,8 +8,12 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { RpcMethod } from 'store/rpc/types'
-import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
+import {
+  MessageTypes,
+  RpcMethod,
+  TypedData,
+  TypedDataV1
+} from '@avalabs/vm-module-types'
 
 export type SignTransactionRequest =
   | TransactionRequest

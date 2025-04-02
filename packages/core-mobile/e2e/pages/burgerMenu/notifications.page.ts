@@ -1,66 +1,54 @@
 import actions from '../../helpers/actions'
-import commonElsPage from '../commonEls.page'
-import burgerMenuPage from './burgerMenu.page'
+import delay from '../../helpers/waits'
 
 class Notifications {
-  get stakeEnabledSwitch() {
-    return by.id('Stake_enabled_switch')
+  get systemDisabledCardTitle() {
+    return by.text('Allow Push Notifications')
   }
 
-  get stakeDisabledSwitch() {
-    return by.id('Stake_disabled_switch')
+  get systemDisabledCardContent() {
+    return by.text(
+      'To start receiving notifications from Core, please turn on “Allow Notifications” in your device settings.'
+    )
   }
 
-  get balanceEnabledSwitch() {
-    return by.id('Balance_enabled_switch')
+  get systemDisabledCardButton() {
+    return by.text('Open Device Settings')
   }
 
-  get balanceDisabledSwitch() {
-    return by.id('Balance_disabled_switch')
+  async tapSystemDisabledCardButton() {
+    await actions.tap(this.systemDisabledCardButton)
   }
 
-  async tapStakeSwitch(on = true) {
-    if (on) {
-      await actions.tap(this.stakeDisabledSwitch)
-    } else {
-      await actions.tap(this.stakeEnabledSwitch)
-    }
+  async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
+    const switchTestID = `${notiType}_${isSwitchOn}_switch`
+    await actions.tap(by.id(switchTestID))
+    await delay(300)
   }
 
-  async tapBalanceSwitch(on = true) {
-    if (on) {
-      await actions.tap(this.balanceDisabledSwitch)
-    } else {
-      await actions.tap(this.balanceEnabledSwitch)
-    }
+  async toggleAndVerify(isSwitchOn = 'enabled', notiType: string) {
+    const toggled = isSwitchOn === 'enabled' ? 'disabled' : 'enabled'
+    await this.tapNotificationSwitch(isSwitchOn, notiType)
+    await actions.waitForElement(by.id(`${notiType}_${toggled}_switch`))
   }
 
-  async switchBalanceNotification(on = true) {
-    await burgerMenuPage.tapBurgerMenuButton()
-    await burgerMenuPage.tapNotifications()
-    await this.tapBalanceSwitch(on)
-    await commonElsPage.tapBackButton()
-    await burgerMenuPage.dismissBurgerMenu()
+  async verifySystemDisabledCard() {
+    await actions.waitForElement(this.systemDisabledCardTitle)
+    await actions.waitForElement(this.systemDisabledCardContent)
+    await actions.waitForElement(this.systemDisabledCardButton)
   }
 
-  async verifyNotificationsSwitches(stake: boolean, balance: boolean) {
-    if (stake && balance) {
-      // both switches are ON
-      await actions.waitForElement(this.stakeEnabledSwitch)
-      await actions.waitForElement(this.balanceEnabledSwitch)
-    } else if (stake && !balance) {
-      // only stake switch is ON
-      await actions.waitForElement(this.stakeEnabledSwitch)
-      await actions.waitForElement(this.balanceDisabledSwitch)
-    } else if (!stake && balance) {
-      // only balance switch is ON
-      await actions.waitForElement(this.stakeDisabledSwitch)
-      await actions.waitForElement(this.balanceEnabledSwitch)
-    } else if (!stake && !balance) {
-      // both switches are OFF
-      await actions.waitForElement(this.stakeDisabledSwitch)
-      await actions.waitForElement(this.balanceDisabledSwitch)
-    }
+  async verifyAllSwitches(isSwitchOn = 'enabled') {
+    await actions.waitForElement(by.id(`Stake_${isSwitchOn}_switch`))
+    await actions.waitForElement(by.id(`Balance_${isSwitchOn}_switch`))
+    await actions.waitForElement(by.id(`Market News_${isSwitchOn}_switch`))
+    await actions.waitForElement(by.id(`Price Alerts_${isSwitchOn}_switch`))
+    await actions.waitForElement(
+      by.id(`Product Announcements_${isSwitchOn}_switch`)
+    )
+    await actions.waitForElement(
+      by.id(`Special Offers and Promotions_${isSwitchOn}_switch`)
+    )
   }
 }
 

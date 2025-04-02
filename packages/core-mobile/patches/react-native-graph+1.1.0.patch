@@ -39,28 +39,6 @@ index bee225a..0391347 100644
              pathRange.x
            )) *
            (pointsInRange.length - 1)
-@@ -369,19 +372,13 @@ export function AnimatedLineGraph({
-   const setFingerX = useCallback(
-     (fingerX: number) => {
-       'worklet'
--
--      const y = getYForX(commands.value, fingerX)
--
--      if (y != null) {
--        circleX.value = fingerX
--        circleY.value = y
--      }
-+      circleX.value = fingerX
- 
-       if (isActive.value) pathEnd.value = fingerX / width
-     },
-     // pathRange.x must be extra included in deps otherwise onPointSelected doesn't work, IDK why
-     // eslint-disable-next-line react-hooks/exhaustive-deps
--    [circleX, circleY, isActive, pathEnd, pathRange.x, width, commands]
-+    [circleX, isActive, pathEnd, pathRange.x, width]
-   )
- 
-   const setIsActive = useCallback(
 @@ -481,6 +478,7 @@ export function AnimatedLineGraph({
                      colors={gradientColors}
                      positions={positions}

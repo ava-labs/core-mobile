@@ -4,11 +4,11 @@ import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
 import {
   ChartData,
-  ContractMarketChartResponse,
   Error,
   SimplePriceResponse,
   RawSimplePriceResponse,
-  SparklineData
+  SparklineData,
+  TrendingToken
 } from './types'
 
 // data is of 7 days
@@ -45,11 +45,11 @@ export const transformSparklineData = (data: SparklineData | []): ChartData => {
   }
 }
 
-export const transformContractMarketChartResponse = (
-  rawData: ContractMarketChartResponse
+export const transformMartketChartRawPrices = (
+  pricesRaw: [number, number][]
 ): ChartData => {
-  const dates = rawData.prices.map(value => value[0])
-  const prices = rawData.prices.map(value => value[1])
+  const dates = pricesRaw.map(value => value[0])
+  const prices = pricesRaw.map(value => value[1])
 
   const minDate = Math.min(...dates)
   const maxDate = Math.max(...dates)
@@ -70,7 +70,7 @@ export const transformContractMarketChartResponse = (
       diffValue,
       percentChange
     },
-    dataPoints: rawData.prices.map(tu => {
+    dataPoints: pricesRaw.map(tu => {
       return { date: new Date(tu[0]), value: tu[1] }
     })
   }
@@ -113,4 +113,33 @@ export const transformSimplePriceResponse = (
     })
   })
   return formattedData
+}
+
+export const applyExchangeRateToTrendingTokens = (
+  trendingTokens: TrendingToken[],
+  exchangeRate: number
+): TrendingToken[] => {
+  return trendingTokens.map(item => ({
+    ...item,
+    price: item.price * exchangeRate,
+    marketcap:
+      typeof item.marketcap === 'number'
+        ? item.marketcap * exchangeRate
+        : item.marketcap,
+    fdv: typeof item.fdv === 'number' ? item.fdv * exchangeRate : item.fdv,
+    volume24hUSD:
+      typeof item.volume24hUSD === 'number'
+        ? item.volume24hUSD * exchangeRate
+        : item.volume24hUSD,
+    liquidity:
+      typeof item.liquidity === 'number'
+        ? item.liquidity * exchangeRate
+        : item.liquidity,
+    sparkline: item.sparkline
+      ? item.sparkline.map(point => ({
+          ...point,
+          value: point.value * exchangeRate
+        }))
+      : item.sparkline
+  }))
 }

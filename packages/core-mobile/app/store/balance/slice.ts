@@ -14,14 +14,15 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
+import { TokenVisibility } from 'store/portfolio'
 import {
   Balance,
   Balances,
   BalanceState,
-  LocalTokenId,
   LocalTokenWithBalance,
   QueryStatus
 } from './types'
+import { isTokenVisible } from './utils'
 
 const reducerName = 'balance'
 
@@ -96,8 +97,9 @@ export const selectIsLoadingBalances = (state: RootState): boolean =>
 export const selectIsRefetchingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.REFETCHING
 
-const _selectAllBalances = (state: RootState): Balances =>
-  state.balance.balances
+const _selectAllBalances = (state: RootState): Balances => {
+  return state.balance.balances
+}
 
 // get the list of tokens for the active network
 // each token will have info such as: balance, price, market cap,...
@@ -195,16 +197,18 @@ export const selectTokensWithBalanceForAccount = createSelector(
 )
 
 export const selectBalanceTotalInCurrencyForAccount =
-  (accountIndex: number, blacklist: LocalTokenId[]) => (state: RootState) => {
+  (accountIndex: number, tokenVisibility: TokenVisibility) =>
+  (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
 
     return tokens
-      .filter(token => !blacklist.includes(token.localId))
+      .filter(token => isTokenVisible(tokenVisibility, token))
       .reduce((total, token) => {
         total += token.balanceInCurrency ?? 0
         return total
       }, 0)
   }
+
 export const selectBalanceForAccountIsAccurate =
   (accountIndex: number) => (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
@@ -218,7 +222,7 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
   (
     chainId: number,
     accountIndex: number | undefined,
-    blacklist: LocalTokenId[]
+    tokenVisibility: TokenVisibility
   ) =>
   (state: RootState) => {
     if (accountIndex === undefined) return 0
@@ -232,7 +236,7 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
     for (const balance of balances) {
       for (const token of balance.tokens) {
-        if (blacklist.includes(token.localId)) continue
+        if (!isTokenVisible(tokenVisibility, token)) continue
         totalInCurrency += token.balanceInCurrency ?? 0
       }
     }
@@ -274,6 +278,30 @@ export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
       return nativeToken?.balance ?? 0n
     }
   )
+
+// use in k2-alpine
+export const selectIsAllBalancesInaccurate =
+  (accountIndex: number) => (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    return (
+      tokens.length === 0 &&
+      Object.values(state.balance.balances).every(
+        balance => balance.dataAccurate === false
+      )
+    )
+  }
+
+export const selectIsBalancesAccurateByNetwork =
+  (chainId?: number) =>
+  (state: RootState): boolean => {
+    const activeAccount = selectActiveAccount(state)
+
+    if (!chainId) return false
+    if (!activeAccount) return false
+
+    const key = getKey(chainId, activeAccount.index)
+    return state.balance.balances[key]?.dataAccurate ?? false
+  }
 
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions

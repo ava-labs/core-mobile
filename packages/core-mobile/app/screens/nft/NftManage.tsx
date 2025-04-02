@@ -6,25 +6,19 @@ import ZeroState from 'components/ZeroState'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import Switch from 'components/Switch'
-import { selectHiddenNftUIDs, setHidden, NFTItem } from 'store/nft'
+import { selectHiddenNftLocalIds, setHidden } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useNftItemsContext } from 'contexts/NFTItemsContext'
-import { FetchingNextIndicator } from './components/FetchingNextIndicator'
+import { useNftItemsContext } from 'contexts/NftItemsContext'
+import { getNftImage, getNftTitle } from 'services/nft/utils'
+import { NftItem } from 'services/nft/types'
 
 const NftManage = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const dispatch = useDispatch()
-  const hiddenNftUIDs = useSelector(selectHiddenNftUIDs)
-  const {
-    nftItems: nfts,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetchNfts,
-    isNftsRefetching
-  } = useNftItemsContext()
+  const hiddenNftUIDs = useSelector(selectHiddenNftLocalIds)
+  const { nftItems: nfts, refetchNfts, isNftsRefetching } = useNftItemsContext()
   const filteredData = useMemo(() => {
     const keyword = searchText.toLowerCase()
 
@@ -32,8 +26,8 @@ const NftManage = (): JSX.Element => {
       return (
         searchText.length === 0 ||
         nft.tokenId.toLowerCase().includes(keyword) ||
-        nft.metadata.name?.toLowerCase().includes(keyword) ||
-        nft.processedMetadata.name?.toLowerCase().includes(keyword)
+        nft.name.toLowerCase().includes(keyword) ||
+        nft.processedMetadata?.name?.toLowerCase().includes(keyword)
       )
     })
   }, [nfts, searchText])
@@ -42,16 +36,8 @@ const NftManage = (): JSX.Element => {
     setSearchText(searchVal)
   }
 
-  const handleItemHidden = (item: NFTItem): void => {
-    dispatch(setHidden({ tokenUid: item.uid }))
-  }
-
-  const onEndReached = ({
-    distanceFromEnd
-  }: {
-    distanceFromEnd: number
-  }): void => {
-    if (distanceFromEnd > 0 && hasNextPage) fetchNextPage()
+  const handleItemHidden = (item: NftItem): void => {
+    dispatch(setHidden({ localId: item.localId }))
   }
 
   return (
@@ -61,14 +47,13 @@ const NftManage = (): JSX.Element => {
       <FlatList
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
-        onEndReached={onEndReached}
         onEndReachedThreshold={0.8}
-        keyExtractor={item => item.uid}
+        keyExtractor={item => item.localId}
         ItemSeparatorComponent={Separator}
         renderItem={info =>
           renderItemList({
             item: info.item,
-            isHidden: hiddenNftUIDs[info.item.uid] ?? false,
+            isHidden: hiddenNftUIDs[info.item.localId] ?? false,
             onHiddenToggle: handleItemHidden
           })
         }
@@ -78,9 +63,6 @@ const NftManage = (): JSX.Element => {
             onRefresh={refetchNfts}
             refreshing={isNftsRefetching}
           />
-        }
-        ListFooterComponent={
-          <FetchingNextIndicator isVisible={isFetchingNextPage} />
         }
       />
     </View>
@@ -94,10 +76,13 @@ const renderItemList = ({
   isHidden,
   onHiddenToggle
 }: {
-  item: NFTItem
+  item: NftItem
   isHidden: boolean
-  onHiddenToggle: (item: NFTItem) => void
+  onHiddenToggle: (item: NftItem) => void
 }): JSX.Element => {
+  const name = getNftTitle(item)
+  const imageUrl = getNftImage(item)
+
   return (
     <View
       sx={{
@@ -106,14 +91,9 @@ const renderItemList = ({
         backgroundColor: '$neutral900'
       }}>
       <AvaListItem.Base
-        title={item.tokenId}
-        subtitle={item.processedMetadata.name}
-        leftComponent={
-          <Avatar.Custom
-            name={item.processedMetadata.name ?? ''}
-            logoUri={item.imageData?.image}
-          />
-        }
+        title={`#${item.tokenId}`}
+        subtitle={name}
+        leftComponent={<Avatar.Custom name={name} logoUri={imageUrl} />}
         rightComponent={
           <Switch
             testID={

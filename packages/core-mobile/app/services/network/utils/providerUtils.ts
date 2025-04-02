@@ -12,12 +12,15 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { Networks } from 'store/network/types'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import NetworkService from '../NetworkService'
 
 export function getBitcoinProvider(
   isTest: boolean | undefined
 ): Promise<BitcoinProvider> {
-  return ModuleManager.bitcoinModule.getProvider(getBitcoinNetwork(isTest))
+  return ModuleManager.bitcoinModule.getProvider(
+    mapToVmNetwork(getBitcoinNetwork(isTest))
+  )
 }
 
 export async function getEvmProvider(
@@ -28,16 +31,14 @@ export async function getEvmProvider(
       `Cannot get evm provider for network type: ${network.vmName}`
     )
 
-  return ModuleManager.evmModule.getProvider(network)
+  return ModuleManager.evmModule.getProvider(mapToVmNetwork(network))
 }
 
 export function getAvalancheEvmProvider(
   networks: Networks,
-  isTest: boolean | undefined,
-  devnet: boolean
+  isTest: boolean | undefined
 ): Promise<JsonRpcBatchInternal | undefined> {
-  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
-  const network = getAvalancheNetwork(networks, isTest, devnet)
+  const network = getAvalancheNetwork(networks, isTest)
   if (!network) return Promise.resolve(undefined)
   return getEvmProvider(network)
 }
@@ -53,13 +54,9 @@ export function getEthereumProvider(
 
 export function getAvalancheNetwork(
   networks: Networks,
-  isTest: boolean | undefined,
-  devnet: boolean
+  isTest: boolean | undefined
 ): Network | undefined {
-  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
-  return devnet
-    ? networks[ChainId.AVALANCHE_DEVNET_ID]
-    : isTest
+  return isTest
     ? networks[ChainId.AVALANCHE_TESTNET_ID]
     : networks[ChainId.AVALANCHE_MAINNET_ID]
 }
@@ -78,8 +75,7 @@ export function getEthereumNetwork(
 }
 
 export function getAvalancheXpProvider(
-  isTestnet: boolean,
-  devnet: boolean
+  isTestnet: boolean
 ): Promise<Avalanche.JsonRpcProvider | undefined> {
-  return NetworkService.getAvalancheProviderXP(isTestnet, devnet)
+  return NetworkService.getAvalancheProviderXP(isTestnet)
 }

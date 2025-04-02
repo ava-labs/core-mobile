@@ -21,7 +21,7 @@
 - Transaction Validation + Simulation (Blockaid)
   - PROXY_URL
 - In app browser (Token purchase, Suggested dApp list)
-  - PROXY_URL 
+  - PROXY_URL
   - COINBASE_APP_ID
 - DeFi Asset Balances
   - PROXY_URL
@@ -43,4 +43,5 @@
 - C-Chain Balance notifications
   - APPCHECK_DEBUG_TOKEN
   - NOTIFICATION_SENDER_API_URL
-
+- Gasless
+  - GAS_STATION_URL

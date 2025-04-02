@@ -18,7 +18,7 @@ function LegalStackScreen(): JSX.Element {
   return (
     <LegalStack.Navigator
       screenOptions={{
-        headerBackTitleVisible: false
+        headerBackButtonDisplayMode: 'minimal'
       }}>
       <LegalStack.Screen
         options={MainHeaderOptions({ title: 'Legal' })}

@@ -33,15 +33,11 @@ Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only
 
 ### @walletconnect+react-native-compat+2.11.0.patch
 
-commenting out "react-native-get-random-values" as we already use getRandomValues from "react-native-quick-crypto"
-
 commenting out import "react-native-url-polyfill/auto" as we already import it ourselves
 
-### @react-native+0.73.6.patch
+### @react-native+0.76.2.patch
 
 commenting out assertions in JSCRuntime.cpp that checked if API object and API string counters are zero in debug to avoid crash in fast refresh
-
-changed the warning message about ViewPropTypes being removed from React Native, to import ViewPropTypes from deprecated-react-native-prop-types
 
 HMRClient.js: adjust stringify logic of object to make logs in Terminal more readable
 
@@ -49,6 +45,27 @@ HMRClient.js: adjust stringify logic of object to make logs in Terminal more rea
 
 for some reason, metro can only consume esm folder so we had to adjust the package.json to only expose esm folder
 
-### react-native-svg+15.6.0.patch
+### react-native-svg+15.8.0.patch
 
 to prevent a crash on iOS when react-native-svg is unable to render certain svgs
+
+### @walletconnect+logger+2.1.2.patch
+
+logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
+https://github.com/WalletConnect/walletconnect-utils/issues/171
+
+### react-native-reanimated+3.17.1.patch
+
+invalid call of hasAnimatedRef method will cause a crash. it is fixed but not released yet.
+https://github.com/software-mansion/react-native-reanimated/pull/7158
+
+### react-native-collapsible-tab-view+8.0.0.patch
+
+perf improvement
+https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461
+
+### react-native-webview-crypto+0.0.26.patch
+
+with the latest react native, if the webview is not rendered using `display: none`, nothing will work: all the javascript injection, message relaying,...
+
+to fix it, we patched the lib so that the webview is still rendered but won't be visible.

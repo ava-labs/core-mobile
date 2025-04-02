@@ -11,7 +11,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Space } from 'components/Space'
 import { RefreshControl } from 'components/RefreshControl'
-import { NFTItem } from 'store/nft'
 import { PortfolioScreenProps } from 'navigation/types'
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
 import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
@@ -22,8 +21,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { fetchWatchlist } from 'store/watchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectIsBalanceLoadedForNetworks } from 'store/balance/slice'
-import { setActive } from 'store/network'
+import { selectActiveChainId, setActive } from 'store/network'
 import { promptEnableNotifications } from 'store/notifications'
+import { NftItem } from 'services/nft/types'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import PortfolioHeader from './components/PortfolioHeader'
 import { PortfolioInactiveNetworksLoader } from './components/Loaders/PortfolioInactiveNetworksLoader'
@@ -62,7 +62,7 @@ const Portfolio = (): JSX.Element => {
         currentTabIndex={params?.tabIndex}
         onTabIndexChange={captureAnalyticsEvents}
         hideSingleTab={false}
-        renderCustomLabel={renderCustomLabel}>
+        renderLabel={renderLabel}>
         <TabViewAva.Item title={'Assets'}>
           <TokensTab />
         </TabViewAva.Item>
@@ -206,15 +206,16 @@ const TokensTab = (): JSX.Element => {
 }
 
 const NftTab = (): JSX.Element => {
+  const chainId = useSelector(selectActiveChainId)
   const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
 
-  const openNftDetails = (item: NFTItem): void => {
+  const openNftDetails = (item: NftItem): void => {
     AnalyticsService.capture('CollectibleItemClicked', {
-      chainId: item.chainId
+      chainId: chainId.toString()
     })
     navigate(AppNavigation.Wallet.NFTDetails, {
       screen: AppNavigation.Nft.Details,
-      params: { nftItem: item }
+      params: { localId: item.localId }
     })
   }
   const openNftManage = (): void => {
@@ -232,7 +233,7 @@ const DeFiTab = (): JSX.Element => {
   return <DeFiProtocolList />
 }
 
-const renderCustomLabel = (
+const renderLabel = (
   title: string,
   selected: boolean,
   color: string

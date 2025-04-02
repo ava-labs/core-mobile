@@ -7,18 +7,18 @@ import {
 } from 'store/balance/slice'
 import { LocalTokenId, LocalTokenWithBalance } from 'store/balance/types'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectTokenBlacklist } from 'store/portfolio'
+import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { getLocalTokenId } from 'store/balance/utils'
+import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
 import { TokenType } from '@avalabs/vm-module-types'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
 
 const isNotBlacklisted =
-  (tokenBlacklist: string[]) => (token: LocalTokenWithBalance) =>
-    !tokenBlacklist.includes(token.localId)
+  (tokenVisibility: TokenVisibility) => (token: LocalTokenWithBalance) =>
+    isTokenVisible(tokenVisibility, token)
 
 const isNotNFT = (token: LocalTokenWithBalance): boolean =>
   token.type !== TokenType.ERC1155 && token.type !== TokenType.ERC721
@@ -66,7 +66,7 @@ export function useSearchableTokenList(
   }, [activeNetworkContractTokens])
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
-  const tokenBlacklist = useSelector(selectTokenBlacklist)
+  const tokenVisibility = useSelector(selectTokenVisibility)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const tokensWithBalance = useSelector(selectTokensWithBalance)
@@ -93,7 +93,7 @@ export function useSearchableTokenList(
     }
 
     if (hideBlacklist) {
-      filters.push(isNotBlacklisted(tokenBlacklist))
+      filters.push(isNotBlacklisted(tokenVisibility))
     }
 
     if (hideNft) {
@@ -114,7 +114,7 @@ export function useSearchableTokenList(
     hideNft,
     searchText,
     mergedTokens,
-    tokenBlacklist
+    tokenVisibility
   ])
 
   // 3. sort tokens by amount

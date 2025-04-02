@@ -8,7 +8,7 @@ export const ProtocolLogo = ({
   uri?: string
   size?: number
   testID?: string
-}) => {
+}): React.JSX.Element | null => {
   if (!uri) return null
   return (
     <Image

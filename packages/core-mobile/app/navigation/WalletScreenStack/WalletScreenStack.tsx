@@ -38,7 +38,7 @@ import SwapScreenStack, {
 import AddressBookStack, {
   AddressBookStackParamList
 } from 'navigation/wallet/AddressBookStack'
-import TokenDetail from 'screens/watchlist/TokenDetails/TokenDetail'
+import TokenDetails from 'screens/watchlist/TokenDetails/TokenDetails'
 import OwnedTokenDetail from 'screens/portfolio/ownedTokenDetail/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'
 import NFTScreenStack, {
@@ -74,8 +74,9 @@ import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { useSelector } from 'react-redux'
 import TestnetBanner from 'components/TestnetBanner'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { NFTMetadataProvider } from 'contexts/NFTItemsContext'
+import { NftMetadataProvider } from 'contexts/NftItemsContext'
 import { BridgeProvider } from 'contexts/BridgeContext'
+import { HallidayWebView } from 'screens/bridge/components/HallidayWebView'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
@@ -120,6 +121,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Buy]:
     | NavigatorScreenParams<BuyStackParamList>
     | undefined
+  [AppNavigation.Wallet.Halliday]: undefined
   [AppNavigation.Wallet.Bridge]:
     | NavigatorScreenParams<BridgeStackParamList>
     | undefined
@@ -244,7 +246,7 @@ function WalletScreenStack(props: Props): JSX.Element {
 
   return (
     <BridgeProvider>
-      <NFTMetadataProvider>
+      <NftMetadataProvider>
         {isTestnet && <TestnetBanner />}
         <WalletScreenS.Navigator
           screenOptions={{
@@ -291,7 +293,7 @@ function WalletScreenStack(props: Props): JSX.Element {
               ...MainHeaderOptions()
             }}
             name={AppNavigation.Wallet.TokenDetail}
-            component={TokenDetail}
+            component={TokenDetails}
           />
           <WalletScreenS.Screen
             options={{
@@ -306,6 +308,13 @@ function WalletScreenStack(props: Props): JSX.Element {
             }}
             name={AppNavigation.Wallet.Swap}
             component={SwapScreenStack}
+          />
+          <WalletScreenS.Screen
+            options={{
+              ...MainHeaderOptions({ title: 'Halliday' })
+            }}
+            name={AppNavigation.Wallet.Halliday}
+            component={HallidayWebView}
           />
           <WalletScreenS.Screen
             options={{
@@ -421,7 +430,7 @@ function WalletScreenStack(props: Props): JSX.Element {
           {createModals(WalletScreenS)}
         </WalletScreenS.Navigator>
         <PolyfillCrypto />
-      </NFTMetadataProvider>
+      </NftMetadataProvider>
     </BridgeProvider>
   )
 }

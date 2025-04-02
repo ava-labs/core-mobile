@@ -14,6 +14,7 @@ import SearchBar from 'components/SearchBar'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { isTokenMalicious } from 'utils/isTokenMalicious'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -30,7 +31,7 @@ function TokenSelector({
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
 }: TokenSelectorProps): React.JSX.Element {
   const { filteredTokenList, searchText, setSearchText } =
-    useSearchableTokenList(hideZeroBalance, false)
+    useSearchableTokenList(hideZeroBalance, true)
   const textInputRef = useRef() as RefObject<TextInput>
 
   useEffect(() => {
@@ -47,6 +48,7 @@ function TokenSelector({
     const token = item.item
     return (
       <PortfolioListItem
+        isMalicious={isTokenMalicious(token)}
         testID={`token_selector__${token.symbol}`}
         tokenName={token.name}
         tokenPrice={token.balanceDisplayValue ?? '0'}

@@ -2,9 +2,9 @@ import {
   AppRegistry,
   Text,
   TextInput,
+  LogBox,
   Platform,
-  UIManager,
-  LogBox
+  UIManager
 } from 'react-native'
 import './polyfills'
 import Big from 'big.js'
@@ -15,18 +15,11 @@ import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import { AppSwitcher } from './AppSwitcher'
-import { name as appName } from './app.json'
+import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
 
 if (__DEV__) {
   require('./ReactotronConfig')
-
-  LogBox.ignoreLogs([
-    'Require cycle:',
-    "Can't perform",
-    'new',
-    'Non-serializable'
-  ])
 
   DevDebuggingConfig.LOGBOX_DISABLED && LogBox.ignoreAllLogs(true)
 
@@ -38,7 +31,7 @@ SentryService.init()
 
 Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
-  UIManager.setLayoutAnimationEnabledExperimental(false)
+  UIManager.setLayoutAnimationEnabledExperimental(true)
 
 Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
@@ -70,7 +63,7 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 AppCheckService.init()
 FCMService.listenForMessagesBackground()
 
-AppRegistry.registerComponent(appName, () => AppEntryPoint)
+AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen({

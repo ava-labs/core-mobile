@@ -1,9 +1,9 @@
-import OwlSVG from 'components/svg/OwlSVG'
+import CoreLogo from 'assets/icons/core.svg'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import { View } from 'react-native'
 
-export function PrivacyScreen() {
+export function PrivacyScreen(): React.JSX.Element {
   const { theme } = useApplicationContext()
   return (
     <View
@@ -15,7 +15,7 @@ export function PrivacyScreen() {
         justifyContent: 'center',
         position: 'absolute'
       }}>
-      <OwlSVG />
+      <CoreLogo />
     </View>
   )
 }

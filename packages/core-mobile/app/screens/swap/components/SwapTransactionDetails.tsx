@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -6,6 +6,10 @@ import InputText from 'components/InputText'
 import { Row } from 'components/Row'
 import { Tooltip } from 'components/Tooltip'
 import { useTheme } from '@avalabs/k2-mobile'
+import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
+import { useSelector } from 'react-redux'
+import { selectIsSwapFeesBlocked } from 'store/posthog'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -35,6 +39,45 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   setSlippage
 }): JSX.Element => {
   const { theme } = useTheme()
+  const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
+
+  const tooltipCoreFeeMessageContent = useMemo(
+    () =>
+      `Core always finds the best price from the top liquidity providers. A fee of ${basisPointsToPercentage(
+        PARASWAP_PARTNER_FEE_BPS
+      )} is automatically factored into the quote.`,
+    []
+  )
+
+  const tooltipCoreFeeMessage = useMemo(
+    () =>
+      `Quote includes a ${basisPointsToPercentage(
+        PARASWAP_PARTNER_FEE_BPS
+      )} Core fee`,
+    []
+  )
+
+  const renderSwapFeesDisclaimer = useCallback(() => {
+    if (isSwapFeesBlocked) return null
+
+    return (
+      <>
+        <Space y={8} />
+        <Tooltip
+          content={tooltipCoreFeeMessageContent}
+          style={{ width: 200 }}
+          position="top"
+          textStyle={{ color: theme.colors.$neutral400 }}>
+          {tooltipCoreFeeMessage}
+        </Tooltip>
+      </>
+    )
+  }, [
+    isSwapFeesBlocked,
+    theme.colors.$neutral400,
+    tooltipCoreFeeMessageContent,
+    tooltipCoreFeeMessage
+  ])
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -77,6 +120,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           }}
         />
       </Row>
+      {renderSwapFeesDisclaimer()}
     </View>
   )
 }

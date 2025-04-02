@@ -12,7 +12,7 @@ import { HistoryScreen } from 'screens/browser/HistoryScreen'
 import { SubHeaderOptions } from 'navigation/NavUtils'
 import IntroModal from 'screens/onboarding/IntroModal'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
-import CoreOwl from 'assets/icons/core_owl.svg'
+import CoreLogo from 'assets/icons/core.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
 import { useTheme } from '@avalabs/k2-mobile'
@@ -92,7 +92,7 @@ const BrowserIntroModal = (): JSX.Element => {
       text: 'On the website find “Connect” then tap Wallet Connect'
     },
     {
-      icon: <CoreOwl width={24} height={24} />,
+      icon: <CoreLogo width={24} height={24} />,
       text: 'Find Core and tap “Connect”'
     },
     {

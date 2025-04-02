@@ -13,7 +13,18 @@
       "android"
     ],
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": false
+        }
+      ]
+    ],
+    "android": {
+      "permissions": ["android.permission.DETECT_SCREEN_CAPTURE"]
+    },
+    "newArchEnabled": true
   }
 }

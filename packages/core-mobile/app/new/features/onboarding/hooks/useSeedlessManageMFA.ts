@@ -1,4 +1,4 @@
-import { TotpChallenge } from '@cubist-labs/cubesigner-sdk'
+import { AddFidoChallenge, TotpChallenge } from '@cubist-labs/cubesigner-sdk'
 import { showSnackbar } from 'common/utils/toast'
 import useVerifyMFA from 'seedless/hooks/useVerifyMFA'
 import SeedlessService from 'seedless/services/SeedlessService'
@@ -6,23 +6,27 @@ import Logger from 'utils/Logger'
 
 function useSeedlessManageMFA(): {
   totpResetInit: (
-    onInitialzied: (challenge: TotpChallenge) => void
+    onInitialized: (challenge: TotpChallenge) => void
+  ) => Promise<void>
+  fidoRegisterInit: (
+    name: string,
+    onInitialized: (challenge: AddFidoChallenge) => Promise<void>
   ) => Promise<void>
 } {
-  const { verifyMFA } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyMFA } = useVerifyMFA(SeedlessService.session)
 
   async function totpResetInit(
-    onInitialzied: (challenge: TotpChallenge) => void
+    onInitialized: (challenge: TotpChallenge) => void
   ): Promise<void> {
     try {
       const totpResetInitResponse =
-        await SeedlessService.sessionManager.totpResetInit()
+        await SeedlessService.session.totpResetInit()
 
       if (totpResetInitResponse.requiresMfa()) {
         const handleVerifySuccess: HandleVerifyMfaSuccess<
           TotpChallenge
         > = async totpChallenge => {
-          onInitialzied(totpChallenge)
+          onInitialized(totpChallenge)
         }
 
         verifyMFA({
@@ -32,7 +36,7 @@ function useSeedlessManageMFA(): {
       } else {
         const totpChallenge = totpResetInitResponse.data()
 
-        onInitialzied(totpChallenge)
+        onInitialized(totpChallenge)
       }
     } catch (e) {
       Logger.error('totpResetInit error', e)
@@ -40,8 +44,39 @@ function useSeedlessManageMFA(): {
     }
   }
 
+  async function fidoRegisterInit(
+    name: string,
+    onInitialized: (challenge: AddFidoChallenge) => Promise<void>
+  ): Promise<void> {
+    try {
+      const fidoRegisterInitResponse =
+        await SeedlessService.session.fidoRegisterInit(name)
+
+      if (fidoRegisterInitResponse.requiresMfa()) {
+        const handleVerifySuccess: HandleVerifyMfaSuccess<
+          AddFidoChallenge
+        > = async addFidoChallenge => {
+          onInitialized(addFidoChallenge)
+        }
+
+        verifyMFA({
+          response: fidoRegisterInitResponse,
+          onVerifySuccess: handleVerifySuccess
+        })
+      } else {
+        const addFidoChallenge = fidoRegisterInitResponse.data()
+
+        onInitialized(addFidoChallenge)
+      }
+    } catch (e) {
+      Logger.error('fidoRegisterInit error', e)
+      showSnackbar('Unable to reset totp. Please try again.')
+    }
+  }
+
   return {
-    totpResetInit
+    totpResetInit,
+    fidoRegisterInit
   }
 }
 

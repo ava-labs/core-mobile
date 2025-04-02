@@ -48,7 +48,8 @@ const CORE_EXT_HOSTNAMES = [
 ]
 
 const CORE_WEB_URLS_REGEX = [
-  'https://[a-zA-Z0-9-]+\\.core-web\\.pages\\.dev' // for all https://*.core-web.pages.dev urls
+  'https://[a-zA-Z0-9-]+\\.core-web\\.pages\\.dev', // for all https://*.core-web.pages.dev urls
+  'https://[a-zA-Z0-9-]+\\.redesign-aa3\\.pages\\.dev' // for all https://*.redesign-aa3.pages.dev urls
 ]
 
 export const isCoreMethod = (method: string): boolean =>

@@ -7,6 +7,8 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
 
+const testCBaseFeeMultiplier = 1
+
 describe('earn/exportC', () => {
   describe('exportC', () => {
     const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(0.003 * 1e9))
@@ -64,7 +66,7 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(10e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          isDevnet: false
+          cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
       }).rejects.toThrow('Not enough balance on C chain')
     })
@@ -75,7 +77,7 @@ describe('earn/exportC', () => {
         requiredAmountWei: BigInt(1e18),
         isDevMode: false,
         activeAccount: {} as Account,
-        isDevnet: false
+        cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(baseFeeMockFn).toHaveBeenCalled()
     })
@@ -87,13 +89,13 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          isDevnet: false
+          cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
         expect(WalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1000000000n,
-          baseFeeInNAvax: 0n,
+          baseFeeInNAvax: 1n,
           accountIndex: undefined,
-          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false, false),
+          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'P',
           destinationAddress: undefined
         })
@@ -107,7 +109,7 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          isDevnet: false
+          cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -120,7 +122,7 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          isDevnet: false
+          cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

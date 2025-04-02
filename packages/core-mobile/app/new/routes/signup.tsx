@@ -6,20 +6,22 @@ import {
   selectIsSeedlessOnboardingBlocked,
   selectIsSeedlessOnboardingGoogleBlocked
 } from 'store/posthog'
-import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { OidcProviders } from 'seedless/consts'
-import { hideLogoModal, showLogoModal } from 'common/components/LogoModal'
 import { router } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import { useLogoModal } from 'common/hooks/useLogoModal'
+import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
-  const { setOidcAuth } = useRecoveryMethodContext()
+  const { showLogoModal, hideLogoModal } = useLogoModal()
+  const { setOidcAuth, setMfaMethods } = useRecoveryMethodContext()
+
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -28,7 +30,7 @@ export default function Signup(): JSX.Element {
 
   useEffect(() => {
     isRegistering ? showLogoModal() : hideLogoModal()
-  }, [isRegistering])
+  }, [hideLogoModal, isRegistering, showLogoModal])
 
   const handleSignupWithMnemonic = (): void => {
     router.navigate('/onboarding/mnemonic/termsAndConditions')
@@ -53,20 +55,18 @@ export default function Signup(): JSX.Element {
   }
 
   const handleVerifyMfaMethod = (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     oidcAuth: {
       oidcToken: string
       mfaId: string
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     mfaMethods: MFA[]
   ): void => {
-    // navigate(AppNavigation.Root.SelectRecoveryMethods, {
-    //   mfaMethods,
-    //   onMFASelected: mfa => {
-    //     verify(mfa, oidcAuth, handleAccountVerified)
-    //   }
-    // })
+    setOidcAuth(oidcAuth)
+    setMfaMethods(mfaMethods)
+    router.navigate({
+      pathname: '/onboarding/seedless/termsAndConditions',
+      params: { recovering: 'true' }
+    })
   }
 
   const renderMnemonicOnboarding = (): JSX.Element => {
@@ -84,7 +84,7 @@ export default function Signup(): JSX.Element {
           type="tertiary"
           size="large"
           onPress={handleAccessExistingWallet}>
-          Access existing Wallet
+          Access existing wallet
         </Button>
       </View>
     )
@@ -136,7 +136,7 @@ export default function Signup(): JSX.Element {
             disabled={isRegistering}
             leftIcon="google"
             onPress={handleGoogleSignin}>
-            Sign in with Google
+            Continue with Google
           </Button>
         )}
         {shouldShowApple && (
@@ -147,7 +147,7 @@ export default function Signup(): JSX.Element {
             disabled={isRegistering}
             leftIcon="apple"
             onPress={handleAppleSignin}>
-            Sign in with Apple
+            Continue with Apple
           </Button>
         )}
       </View>
@@ -160,7 +160,7 @@ export default function Signup(): JSX.Element {
         flex: 1
       }}>
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Logos.Core color={theme.colors.$textPrimary} />
+        <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
       </View>
       <View sx={{ padding: 16, gap: 88 }}>
         {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}

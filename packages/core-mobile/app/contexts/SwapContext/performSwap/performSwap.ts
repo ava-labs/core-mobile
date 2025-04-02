@@ -1,15 +1,14 @@
-import assert from 'assert'
-import { Contract } from 'ethers'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
-import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Big from 'big.js'
 import { OptimalRate, TransactionParams as Transaction } from '@paraswap/sdk'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
-import { rpcErrors } from '@metamask/rpc-errors'
-import SwapService, { ETHER_ADDRESS } from 'services/swap/SwapService'
+import SwapService from 'services/swap/SwapService'
+import { swapError } from 'errors/swapError'
+import { ERC20__factory } from 'contracts/openzeppelin'
+import { EVM_NATIVE_TOKEN_ADDRESS, PARTNER_FEE_PARAMS } from '../consts'
 
 export type PerformSwapParams = {
   srcTokenAddress: string | undefined
@@ -22,6 +21,7 @@ export type PerformSwapParams = {
   provider: JsonRpcBatchInternal
   userAddress: string | undefined
   signAndSend: (txParams: [TransactionParams]) => Promise<string>
+  isSwapFeesEnabled: boolean
 }
 
 // copied from https://github.com/ava-labs/avalanche-sdks/tree/alpha-release/packages/paraswap-sdk
@@ -39,21 +39,30 @@ export async function performSwap({
   activeNetwork,
   provider,
   userAddress,
-  signAndSend
+  signAndSend,
+  isSwapFeesEnabled
 }: PerformSwapParams): Promise<{
   swapTxHash: string
   approveTxHash: string | undefined
 }> {
-  assert(srcTokenAddress, 'no source token on request')
-  assert(destTokenAddress, 'no destination token on request')
-  assert(priceRoute, 'request requires the paraswap priceRoute')
-  assert(userAddress, 'Wallet Error: address not defined')
-  assert(activeNetwork, 'Network Init Error: Wrong network')
-  assert(!activeNetwork.isTestnet, 'Network Init Error: Wrong network')
+  if (!srcTokenAddress) throw swapError.missingParam('srcTokenAddress')
 
-  const sourceTokenAddress = isSrcTokenNative ? ETHER_ADDRESS : srcTokenAddress
+  if (!destTokenAddress) throw swapError.missingParam('destTokenAddress')
+
+  if (!priceRoute) throw swapError.missingParam('priceRoute')
+
+  if (!userAddress) throw swapError.missingParam('userAddress')
+
+  if (!activeNetwork) throw swapError.missingParam('activeNetwork')
+
+  if (activeNetwork.isTestnet)
+    throw swapError.networkNotSupported(activeNetwork.chainName)
+
+  const sourceTokenAddress = isSrcTokenNative
+    ? EVM_NATIVE_TOKEN_ADDRESS
+    : srcTokenAddress
   const destinationTokenAddress = isDestTokenNative
-    ? ETHER_ADDRESS
+    ? EVM_NATIVE_TOKEN_ADDRESS
     : destTokenAddress
 
   const partner = 'Avalanche'
@@ -81,64 +90,57 @@ export async function performSwap({
     try {
       spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
     } catch (error) {
-      throw new Error(`Spender Address Error: ${error}`)
+      throw swapError.cannotFetchSpender(error)
     }
 
-    const contract = new Contract(sourceTokenAddress, ERC20.abi, provider)
+    const contract = ERC20__factory.connect(sourceTokenAddress, provider)
 
     const [allowance, allowanceError] = await resolve<bigint>(
-      contract.allowance?.(userAddress, spenderAddress) ?? Promise.resolve(null)
+      contract.allowance(userAddress, spenderAddress)
     )
 
-    if (allowanceError || allowance === null) {
-      throw rpcErrors.internal({
-        message: 'Allowance Error',
-        data: { cause: allowanceError }
-      })
+    if (allowance === null || allowanceError) {
+      throw swapError.cannotFetchAllowance(allowanceError)
     }
 
     if (allowance < BigInt(sourceAmount)) {
-      const [approveGasLimit] = await resolve(
-        contract.approve?.estimateGas(spenderAddress, sourceAmount) ??
-          Promise.resolve(null)
-      )
-
       const { data } =
         (await contract.approve?.populateTransaction(
           spenderAddress,
           sourceAmount
         )) ?? {}
 
-      const gas = bigIntToHex(
-        approveGasLimit
-          ? approveGasLimit
-          : BigInt(Number(priceRoute.gasCost ?? 0))
+      const tx = {
+        from: userAddress,
+        to: sourceTokenAddress,
+        data
+      }
+
+      const [approveGasLimit, approveGasLimitError] = await resolve(
+        provider.estimateGas(tx)
       )
-      const txParams: [TransactionParams] = [
-        {
-          from: userAddress,
-          to: sourceTokenAddress,
-          gas,
-          data
-        }
-      ]
 
-      const [hash, approveError] = await resolve(signAndSend(txParams))
-
-      if (approveError) {
-        throw approveError
+      if (approveGasLimitError || !approveGasLimit) {
+        throw swapError.approvalTxFailed(approveGasLimitError)
       }
 
-      if (!hash) {
-        throw rpcErrors.internal('Invalid transaction hash')
+      const gas = bigIntToHex(approveGasLimit)
+
+      const [approvalTxHash, approvalTxError] = await resolve(
+        signAndSend([{ ...tx, gas }])
+      )
+
+      if (!approvalTxHash || approvalTxError) {
+        throw swapError.approvalTxFailed(approvalTxError)
       }
 
-      const receipt = hash && (await provider.waitForTransaction(hash))
+      const receipt = await provider.waitForTransaction(approvalTxHash)
+
       if (!receipt || (receipt && receipt.status !== 1)) {
-        throw new Error('Swap token approval failed')
+        throw swapError.approvalTxFailed(new Error('Transaction Reverted'))
       }
 
-      approveTxHash = hash
+      approveTxHash = approvalTxHash
     } else {
       approveTxHash = undefined
     }
@@ -150,7 +152,8 @@ export async function performSwap({
       // paraswap returns responses like this: {error: 'Not enough 0x4f60a160d8c2dddaafe16fcc57566db84d674…}
       // when they are too slow to detect the approval
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (result as any).error
+      (result as any).error ||
+      result instanceof Error
     )
   }
 
@@ -167,7 +170,8 @@ export async function performSwap({
           userAddress,
           partner,
           srcDecimals: priceRoute.srcDecimals,
-          destDecimals: priceRoute.destDecimals
+          destDecimals: priceRoute.destDecimals,
+          ...(isSwapFeesEnabled && PARTNER_FEE_PARAMS)
         }),
       checkForErrorsInResult,
       0,
@@ -175,11 +179,8 @@ export async function performSwap({
     )
   )
 
-  if (!txBuildData || txBuildDataError || 'message' in txBuildData) {
-    throw rpcErrors.internal({
-      message: 'Data Error',
-      data: { cause: txBuildDataError }
-    })
+  if (!txBuildData || txBuildDataError) {
+    throw swapError.cannotBuildTx(txBuildDataError)
   }
 
   const txParams: [TransactionParams] = [
@@ -195,14 +196,10 @@ export async function performSwap({
     }
   ]
 
-  const [swapTxHash, txError] = await resolve(signAndSend(txParams))
+  const [swapTxHash, swapTxError] = await resolve(signAndSend(txParams))
 
-  if (txError) {
-    throw txError
-  }
-
-  if (!swapTxHash) {
-    throw rpcErrors.internal('Invalid transaction hash')
+  if (!swapTxHash || swapTxError) {
+    throw swapError.swapTxFailed(swapTxError)
   }
 
   return {

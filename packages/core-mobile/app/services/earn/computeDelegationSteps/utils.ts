@@ -18,6 +18,7 @@ import { getAssetId } from 'services/wallet/utils'
 import { weiToNano } from 'utils/units/converter'
 import { calculateCChainFee } from 'services/earn/calculateCrossChainFees'
 import { extractNeededAmount } from 'hooks/earn/utils/extractNeededAmount'
+import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import Logger from 'utils/Logger'
 
 const DUMMY_AMOUNT = 1000000n
@@ -145,7 +146,8 @@ export const getDelegationFeePostCExportAndPImport = async ({
   // we are trying to find the delegation fee itself here
   const simulatedUTXOs = [
     getTransferOutputUtxos({
-      amt: stakeAmount - pChainBalance,
+      // we need to get the absolute value of the difference since either the balance or the stake amount can be greater
+      amt: bigIntDiff(stakeAmount, pChainBalance),
       assetId,
       address: pAddress
     }),
@@ -167,11 +169,6 @@ export const getDelegationFeePostCExportAndPImport = async ({
     })
   } catch (error) {
     Logger.warn('unable to simulate add delegator tx', error)
-
-    if (!provider.isEtnaEnabled()) {
-      // rethrow error if the network is not Etna enabled
-      throw error
-    }
 
     const missingAmount = extractNeededAmount(
       (error as Error).message,
@@ -198,7 +195,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
     }
 
     simulatedUTXOs[0] = getTransferOutputUtxos({
-      amt: stakeAmount - pChainBalance + missingAmount,
+      amt: bigIntDiff(stakeAmount, pChainBalance) + missingAmount,
       assetId,
       address: pAddress
     })
@@ -297,14 +294,19 @@ export const getExportCFee = async ({
   cChainBaseFee,
   accountIndex,
   avaxXPNetwork,
-  pAddress
+  pAddress,
+  cBaseFeeMultiplier
 }: {
   cChainBaseFee: TokenUnit
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
+  cBaseFeeMultiplier: number
 }): Promise<bigint> => {
-  const paddedCChainBaseFee = WalletService.getInstantBaseFee(cChainBaseFee)
+  const paddedCChainBaseFee = addBufferToCChainBaseFee(
+    cChainBaseFee,
+    cBaseFeeMultiplier
+  )
 
   // using a dummy amount as the amount doesn't affect fee
   const unsignedTx = await WalletService.createExportCTx({
@@ -361,3 +363,7 @@ const getTransferOutputUtxos = ({
       OutputOwners.fromNative([Address.fromString(address).toBytes()])
     )
   )
+
+export const bigIntDiff = (a: bigint, b: bigint): bigint => {
+  return a > b ? a - b : b - a
+}

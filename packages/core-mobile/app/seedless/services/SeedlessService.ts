@@ -1,10 +1,9 @@
-import { KeyInfoApi, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
+import { KeyInfo, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import Logger from 'utils/Logger'
 import { ACCOUNT_NAME } from '../consts'
-import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
-import SeedlessSessionManager from './SeedlessSessionManager'
+import { SeedlessSessionManager } from './storage/SeedlessSessionManager'
+import SeedlessSession from './SeedlessSession'
 
-// AVAX_ACCOUNT_EXT_PUB_KEY_DERIV_PATH
 /**
  * Service for cubesigner-sdk
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
@@ -13,22 +12,26 @@ class SeedlessService {
   // According to Cubist, CubeSigner creates a temporary session with the scopes manage:mfa:vote:fido and manage:mfa:vote:totp,
   // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
   // to proceed with signing up or signing in through MFA verification.
-  sessionManager = new SeedlessSessionManager({
+  session = new SeedlessSession({
     scopes: [
       'sign:*',
       'manage:mfa',
       'manage:key:update:metadata',
       'manage:key:get'
     ],
-    sessionStorage: new SeedlessSessionStorage()
+    sessionManager: new SeedlessSessionManager()
   })
+
+  init({ onSessionExpired }: { onSessionExpired: () => void }): void {
+    this.session.setOnSessionExpired(onSessionExpired)
+  }
 
   /**
    * Returns the list of keys that this session has access to.
    */
-  async getSessionKeysList(type?: KeyType): Promise<KeyInfoApi[]> {
-    const signerSession = await this.sessionManager.getSignerSession()
-    const keysList = await signerSession.sessionKeysList()
+  async getSessionKeysList(type?: KeyType): Promise<KeyInfo[]> {
+    const signerSession = await this.session.getSignerClient()
+    const keysList = await signerSession.apiClient.sessionKeysList()
     return type !== undefined
       ? keysList.filter(k => k.key_type === type)
       : keysList
@@ -37,7 +40,7 @@ class SeedlessService {
   /**
    * Returns Mnemonic keys that this session has access to.
    */
-  async getMnemonicKeysList(): Promise<KeyInfoApi | undefined> {
+  async getMnemonicKeysList(): Promise<KeyInfo | undefined> {
     const keysList = await this.getSessionKeysList('Mnemonic')
     return keysList.find(k => k.key_type === 'Mnemonic')
   }
@@ -69,7 +72,7 @@ class SeedlessService {
       if (keyInfo === undefined) {
         throw Error()
       }
-      const key = await this.sessionManager.getKey(keyInfo)
+      const key = await this.session.getKey(keyInfo)
       // we don't await this because we don't want to block the user from using the app,
       // this request can take a bit of time
       // and in the case of metadata is updated concurrently in extension,
@@ -82,9 +85,9 @@ class SeedlessService {
   }
 
   private getKeyInfo = (
-    keys: KeyInfoApi[],
+    keys: KeyInfo[],
     accountIndex: number
-  ): KeyInfoApi | undefined => {
+  ): KeyInfo | undefined => {
     return keys.find(
       k =>
         Number(k.derivation_info?.derivation_path.split('/').pop()) ===

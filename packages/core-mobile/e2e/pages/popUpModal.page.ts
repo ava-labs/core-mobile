@@ -30,6 +30,18 @@ class PopUpModalPage {
     return by.text(popUpModalLoc.approveTransactionTitle)
   }
 
+  get approveExport() {
+    return by.text(popUpModalLoc.approveExportTitle)
+  }
+
+  get approveImport() {
+    return by.text(popUpModalLoc.approveImportTitle)
+  }
+
+  get addDelegator() {
+    return by.text(popUpModalLoc.addDelegator)
+  }
+
   get maximumNetworkFeeText() {
     return by.text(popUpModalLoc.maximumNetworkFee)
   }
@@ -111,7 +123,7 @@ class PopUpModalPage {
   }
 
   async tapApproveBtn() {
-    await actions.waitForElement(this.popUpModalScrollView, 20000)
+    await actions.waitForElement(this.popUpModalScrollView, 40000)
     await actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
@@ -125,8 +137,30 @@ class PopUpModalPage {
     }
   }
 
+  async verifyExportDetail(from: string, to: string) {
+    await actions.waitForElementNoSync(this.approveExport, 30000)
+    await actions.waitForElement(by.id('Transaction Type_Export'))
+    await actions.waitForElement(by.id(`Source Chain_Avalanche ${from}-Chain`))
+    await actions.waitForElement(by.id(`Target Chain_Avalanche ${to}-Chain`))
+  }
+
+  async verifyImportDetail(from: string, to: string) {
+    await actions.waitForElementNoSync(this.approveImport, 30000)
+    await actions.waitForElement(by.id('Transaction Type_Import'))
+    await actions.waitForElement(by.id(`Source Chain_Avalanche ${from}-Chain`))
+    await actions.waitForElement(
+      by.id(`Destination Chain_Avalanche ${to}-Chain`)
+    )
+  }
+
+  async verifyDelegatorDetail() {
+    await actions.waitForElementNoSync(this.addDelegator, 50000)
+    await actions.waitForElement(by.text('Stake Amount'))
+    await actions.waitForElement(by.text('Staking Details'))
+  }
+
   async verifySignMessageModal() {
-    await actions.waitForElement(this.signMessage, 8000)
+    await actions.waitForElement(this.signMessage, 50000)
     await asserts.isVisible(this.network)
     await asserts.isVisible(this.approveBtn)
     await asserts.isVisible(this.rejectBtn)
@@ -139,19 +173,19 @@ class PopUpModalPage {
   }
 
   async switchToSepoliaNetwork() {
-    await actions.waitForElementNoSync(this.switchToSepoliaNetworkTitle, 20000)
+    await actions.waitForElementNoSync(this.switchToSepoliaNetworkTitle, 50000)
     await asserts.isVisible(this.rejectBtn)
     await actions.tap(this.approveBtn)
   }
 
   async switchToFujiNetwork() {
-    await actions.waitForElementNoSync(this.switchToFujiNetworkTitle, 20000)
+    await actions.waitForElementNoSync(this.switchToFujiNetworkTitle, 50000)
     await asserts.isVisible(this.rejectBtn)
     await actions.tap(this.approveBtn)
   }
 
   async verifyScamTransactionModal() {
-    await actions.waitForElementNoSync(this.scamTransaction, 20000)
+    await actions.waitForElementNoSync(this.scamTransaction, 50000)
     await asserts.isVisible(this.scamTransactionContent)
     await asserts.isVisible(this.rejectTransaction)
     await asserts.isVisible(this.proceedAnyway)

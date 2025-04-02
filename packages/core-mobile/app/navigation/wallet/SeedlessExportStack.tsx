@@ -4,7 +4,6 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { SeedlessExportScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import OwlLoader from 'components/OwlLoader'
 import { SeedlessExportInitial } from 'seedless/screens/SeedlessExportInitial'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import {
@@ -12,13 +11,14 @@ import {
   getWaitingPeriodDescription
 } from 'seedless/hooks/useSeedlessMnemonicExport'
 import { goBack } from 'utils/Navigation'
+import LogoLoader from 'components/LogoLoader'
 
 export type SeedlessExportStackParamList = {
   [AppNavigation.SeedlessExport.InitialScreen]: undefined
   [AppNavigation.SeedlessExport.WaitingPeriodModal]: { onNext: () => void }
   [AppNavigation.SeedlessExport.ConfirmCloseModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.ConfirmCancelModal]: { onCancel: () => void }
-  [AppNavigation.SeedlessExport.OwlLoader]: undefined
+  [AppNavigation.SeedlessExport.LogoLoader]: undefined
 }
 
 const SeedlessExportS = createStackNavigator<SeedlessExportStackParamList>()
@@ -32,8 +32,8 @@ const SeedlessExportStack: FC = () => {
           component={SeedlessExportInitial}
         />
         <SeedlessExportS.Screen
-          name={AppNavigation.SeedlessExport.OwlLoader}
-          component={OwlLoader}
+          name={AppNavigation.SeedlessExport.LogoLoader}
+          component={LogoLoader}
         />
         <SeedlessExportS.Group
           screenOptions={{

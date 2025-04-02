@@ -13,15 +13,19 @@ import {
 
 export type SparklineData = number[]
 
+const RangesSchema = object({
+  minDate: number(),
+  maxDate: number(),
+  minPrice: number(),
+  maxPrice: number(),
+  diffValue: number(),
+  percentChange: number()
+})
+
+export type Ranges = z.infer<typeof RangesSchema>
+
 export const ChartDataSchema = object({
-  ranges: object({
-    minDate: number(),
-    maxDate: number(),
-    minPrice: number(),
-    maxPrice: number(),
-    diffValue: number(),
-    percentChange: number()
-  }),
+  ranges: RangesSchema,
   dataPoints: object({
     date: string()
       .or(date())
@@ -89,6 +93,38 @@ export const CoinMarketSchema = object({
 })
 
 export type CoinMarket = z.infer<typeof CoinMarketSchema>
+
+export const TrendingTokenSchema = z.object({
+  address: z.string(),
+  decimals: z.number(),
+  liquidity: z.number().optional().nullable(),
+  logoURI: z.string().optional().nullable(),
+  name: z.string(),
+  symbol: z.string(),
+  volume24hUSD: z.number().optional().nullable(),
+  volume24hChangePercent: z.number().optional().nullable(),
+  fdv: z.number().optional().nullable(),
+  marketcap: z.number().optional().nullable(),
+  rank: z.number(),
+  price: z.number(),
+  price24hChangePercent: z.number().optional().nullable(),
+  coingecko_id: z.string().optional().nullable(),
+  website: z.string().optional().nullable(),
+  twitter: z.string().optional().nullable(),
+  discord: z.string().optional().nullable(),
+  medium: z.string().optional().nullable(),
+  verified: z.boolean().optional().nullable(),
+  sparkline: z
+    .array(
+      z.object({
+        unixTime: z.number(),
+        value: z.number()
+      })
+    )
+    .optional()
+})
+
+export type TrendingToken = z.infer<typeof TrendingTokenSchema>
 
 export type Error = {
   status: {

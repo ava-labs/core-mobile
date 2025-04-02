@@ -40,14 +40,21 @@ import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account/slice'
 import { Audios, audioFeedback } from 'utils/AudioFeedback'
 import { showTransactionErrorToast } from 'utils/toast'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
+import {
+  selectIsHallidayBridgeBannerBlocked,
+  selectIsGaslessBlocked
+} from 'store/posthog'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import GaslessService from 'services/gasless/GaslessService'
 import { AssetBalance } from './utils/types'
 import BridgeTypeFootnote from './components/BridgeTypeFootnote'
+import { HallidayBanner } from './components/HallidayBanner'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWidth = Dimensions.get('window').width * 0.6
@@ -66,7 +73,14 @@ const Bridge: FC = () => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const { activeNetwork } = useNetworks()
-
+  const hasBeenViewedHallidayBanner = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.HALLIDAY_BANNER)
+  )
+  const isHallidayBannerBlocked = useSelector(
+    selectIsHallidayBridgeBannerBlocked
+  )
+  const shouldShowHallidayBanner =
+    !hasBeenViewedHallidayBanner && !isHallidayBannerBlocked
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
     assetBalance,
@@ -109,13 +123,8 @@ const Bridge: FC = () => {
   const { currencyFormatter } = useApplicationContext().appHook
   const isAmountTooLow = amount !== 0n && minimum && amount < minimum
   const isAmountTooLarge = amount !== 0n && maximum && amount > maximum
-  const isNativeBalanceNotEnoughForNetworkFee = Boolean(
-    amount !== 0n &&
-      networkFee &&
-      nativeTokenBalance <
-        networkFee +
-          (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
-  )
+  const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
+  const [isGaslessEligible, setIsGaslessEligible] = useState(false)
 
   const hasValidAmount = !isAmountTooLow && amount > 0n
 
@@ -149,6 +158,17 @@ const Bridge: FC = () => {
             .toNumber()
         )
       : UNKNOWN_AMOUNT
+
+  const shouldCheckNativeBalance = isGaslessBlocked || !isGaslessEligible
+
+  const isNativeBalanceNotEnoughForNetworkFee = Boolean(
+    shouldCheckNativeBalance &&
+      amount !== 0n &&
+      networkFee &&
+      nativeTokenBalance <
+        networkFee +
+          (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
+  )
 
   const transferDisabled =
     isPending ||
@@ -193,6 +213,27 @@ const Bridge: FC = () => {
       setBridgeError(error.message)
     }
   }, [error])
+
+  useEffect(() => {
+    const checkGaslessEligibility = async (): Promise<void> => {
+      if (!sourceNetwork?.chainId || !selectedBridgeAsset) {
+        setIsGaslessEligible(false)
+        return
+      }
+
+      try {
+        const isEligible = await GaslessService.isEligibleForChain(
+          sourceNetwork.chainId.toString()
+        )
+        setIsGaslessEligible(isEligible)
+      } catch (err) {
+        Logger.error(`[Bridge.tsx][checkGaslessEligibility]${err}`)
+        setIsGaslessEligible(false)
+      }
+    }
+
+    checkGaslessEligibility()
+  }, [sourceNetwork?.chainId, selectedBridgeAsset])
 
   const bridgeTokenList = useMemo(
     () =>
@@ -328,7 +369,7 @@ const Bridge: FC = () => {
           })
           return
         }
-        setBridgeError(TRANSFER_ERROR)
+        transferError instanceof Error && setBridgeError(transferError.message)
         showTransactionErrorToast({
           message: getJsonRpcErrorMessage(transferError)
         })
@@ -636,7 +677,7 @@ const Bridge: FC = () => {
         </Text>
       )
 
-    if (isNativeBalanceNotEnoughForNetworkFee)
+    if (isNativeBalanceNotEnoughForNetworkFee) {
       return (
         <Text
           testID="bridge_error"
@@ -645,6 +686,7 @@ const Bridge: FC = () => {
             color: '$dangerDark'
           }}>{`Insufficient balance to cover gas costs.\nPlease add ${sourceNetwork?.networkToken.symbol}.`}</Text>
       )
+    }
 
     return null
   }
@@ -857,6 +899,12 @@ const Bridge: FC = () => {
           Bridge
         </Text>
         <Space y={40} />
+        {shouldShowHallidayBanner && (
+          <>
+            <HallidayBanner />
+            <Space y={40} />
+          </>
+        )}
         <View
           sx={{
             backgroundColor: '$neutral850',

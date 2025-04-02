@@ -1,7 +1,14 @@
 export const initialState: PortfolioState = {
-  tokenBlacklist: []
+  tokenVisibility: {},
+  collectibleVisibility: {},
+  collectibleUnprocessableVisibility: true
 }
 
+export type TokenVisibility = Record<string, boolean>
+export type CollectibleVisibility = Record<string, boolean>
+
 export type PortfolioState = {
-  tokenBlacklist: string[]
+  tokenVisibility: TokenVisibility
+  collectibleVisibility: CollectibleVisibility
+  collectibleUnprocessableVisibility: boolean
 }

@@ -1,19 +1,21 @@
 import {
   CubeSignerResponse,
-  MemorySessionStorage,
+  MemorySessionManager,
   MfaReceipt,
-  SignerSessionData,
+  SessionData,
   UserExportCompleteResponse,
   UserExportInitResponse,
   userExportDecrypt,
   userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
-import SeedlessSessionManager from './SeedlessSessionManager'
+import SeedlessSession from './SeedlessSession'
 
 class SeedlessExportService {
-  sessionManager = new SeedlessSessionManager({
+  session = new SeedlessSession({
     scopes: ['export:user', 'manage:export:user', 'manage:mfa:vote'],
-    sessionStorage: new MemorySessionStorage<SignerSessionData>()
+    // passing null as session data initially
+    // user will perform OIDC auth when the export flow starts
+    sessionManager: new MemorySessionManager(null as unknown as SessionData)
   })
 
   /**
@@ -23,24 +25,24 @@ class SeedlessExportService {
     keyId: string,
     mfaReceipt?: MfaReceipt
   ): Promise<CubeSignerResponse<UserExportInitResponse>> {
-    const signerSession = await this.sessionManager.getSignerSession()
-    return signerSession.userExportInit(keyId, mfaReceipt)
+    const signerSession = await this.session.getSignerClient()
+    return signerSession.apiClient.userExportInit(keyId, mfaReceipt)
   }
 
   /**
    * Detele user export
    */
   async userExportDelete(keyId: string, userId?: string): Promise<void> {
-    const signerSession = await this.sessionManager.getSignerSession()
-    return signerSession.userExportDelete(keyId, userId)
+    const signerSession = await this.session.getSignerClient()
+    return signerSession.apiClient.userExportDelete(keyId, userId)
   }
 
   /**
    * List user export
    */
   async userExportList(): Promise<UserExportInitResponse | undefined> {
-    const signerSession = await this.sessionManager.getSignerSession()
-    const paginator = signerSession.userExportList()
+    const signerSession = await this.session.getSignerClient()
+    const paginator = signerSession.apiClient.userExportList()
     const [userExport] = await paginator.fetchAll()
     return userExport
   }
@@ -50,17 +52,17 @@ class SeedlessExportService {
    */
   async userExportComplete(
     keyId: string,
-    pubKey: string
+    pubKey: CryptoKey
   ): Promise<CubeSignerResponse<UserExportCompleteResponse>> {
-    const signerSession = await this.sessionManager.getSignerSession()
-    return signerSession.userExportComplete(keyId, pubKey)
+    const signerSession = await this.session.getSignerClient()
+    return signerSession.apiClient.userExportComplete(keyId, pubKey)
   }
 
   /**
    * Decrypt user export's mnemonic
    */
   async userExportDecrypt(
-    privateKey: Parameters<typeof userExportDecrypt>[0]['privateKey'],
+    privateKey: CryptoKey,
     response: UserExportCompleteResponse
   ): Promise<string> {
     const exportDecrypted = await userExportDecrypt(privateKey, response)

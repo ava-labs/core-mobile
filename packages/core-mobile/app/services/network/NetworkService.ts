@@ -4,7 +4,6 @@ import {
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
-  AVALANCHE_P_DEV_NETWORK,
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
   ChainId,
@@ -14,7 +13,6 @@ import {
 } from '@avalabs/core-chains-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
 import { ChainID, Networks } from 'store/network/types'
@@ -22,6 +20,9 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { DebankNetwork } from 'services/network/types'
 import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
+import { Module } from '@avalabs/vm-module-types'
+import { SpanName } from 'services/sentry/types'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -48,34 +49,31 @@ class NetworkService {
       [ChainId.AVALANCHE_P]: NETWORK_P,
       [ChainId.AVALANCHE_TEST_P]: NETWORK_P_TEST,
       [ChainId.AVALANCHE_X]: NETWORK_X,
-      [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST,
-      [ChainId.AVALANCHE_DEVNET_P]: AVALANCHE_P_DEV_NETWORK
+      [ChainId.AVALANCHE_TEST_X]: NETWORK_X_TEST
     }
   }
 
   async getProviderForNetwork(
     network: Network
-  ): Promise<
-    JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  > {
+  ): ReturnType<Module['getProvider']> {
     const module = await ModuleManager.loadModuleByNetwork(network)
-    return module.getProvider(network)
+    return module.getProvider(mapToVmNetwork(network))
   }
 
   async sendTransaction({
     signedTx,
     network,
-    sentryTrx,
+    sentrySpanName = 'send-transaction',
     handleWaitToPost
   }: {
     signedTx: string | avaxSerial.SignedTx
     network: Network
-    sentryTrx?: Transaction
+    sentrySpanName?: SpanName
     handleWaitToPost?: (txResponse: TransactionResponse) => void
   }): Promise<string> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.network.send_transaction')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      { name: sentrySpanName, contextName: 'svc.network.send_transaction' },
+      async () => {
         if (!network) {
           throw new Error('No active network')
         }
@@ -103,18 +101,15 @@ class NetworkService {
         }
 
         return txID
-      })
+      }
+    )
   }
 
   /**
    * Returns the network object for Avalanche P Chain
    */
-  getAvalancheNetworkP(isDeveloperMode: boolean, isDevnet: boolean): Network {
-    return isDevnet
-      ? AVALANCHE_P_DEV_NETWORK
-      : isDeveloperMode
-      ? NETWORK_P_TEST
-      : NETWORK_P
+  getAvalancheNetworkP(isDeveloperMode: boolean): Network {
+    return isDeveloperMode ? NETWORK_P_TEST : NETWORK_P
   }
 
   /**
@@ -124,20 +119,15 @@ class NetworkService {
     return isDeveloperMode ? NETWORK_X_TEST : NETWORK_X
   }
 
-  getAvalancheNetworkPDevnet(): Network {
-    return AVALANCHE_P_DEV_NETWORK
-  }
-
   /**
    * Returns the provider used by Avalanche X/P/CoreEth chains.
    * Using either X or P Network will result in same provider.
    */
   async getAvalancheProviderXP(
-    isDeveloperMode: boolean,
-    isDevnet: boolean
+    isDeveloperMode: boolean
   ): Promise<Avalanche.JsonRpcProvider> {
-    const network = this.getAvalancheNetworkP(isDeveloperMode, isDevnet)
-    return ModuleManager.avalancheModule.getProvider(network)
+    const network = this.getAvalancheNetworkP(isDeveloperMode)
+    return ModuleManager.avalancheModule.getProvider(mapToVmNetwork(network))
   }
 
   private async fetchERC20Networks(): Promise<Networks> {

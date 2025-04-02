@@ -6,13 +6,12 @@ import {
 } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
-import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveAccount } from 'store/account/slice'
+import { selectCBaseFeeMultiplier } from 'store/posthog/slice'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useClaimFees } from './useClaimFees'
@@ -31,21 +30,19 @@ export const useClaimRewards = (
   onFundsStuck: (error: Error) => void
 ): {
   mutation: UseMutationResult<void, Error, void, unknown>
-  defaultTxFee?: TokenUnit
   totalFees?: TokenUnit
   feeCalculationError?: SendErrorMessage
 } => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { defaultFeeState } = useGetFeeState()
+  const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const {
     totalFees,
-    exportPFee,
-    totalClaimable,
-    defaultTxFee,
+    pClaimableBalance,
+    amountToTransfer,
     feeCalculationError
   } = useClaimFees()
 
@@ -55,30 +52,27 @@ export const useClaimRewards = (
   const mutation = useMutation({
     mutationFn: () => {
       if (!activeAccount) {
-        throw Error('no active account')
+        throw Error('No active account')
       }
 
-      if (!totalFees || !exportPFee || !totalClaimable) {
-        throw Error('unable to calculate fees')
+      if (!pClaimableBalance) {
+        throw Error('No claimable balance')
       }
 
-      if (totalFees.gt(totalClaimable)) {
-        throw Error('not enough balance to cover fee')
+      if (!totalFees || !amountToTransfer) {
+        throw Error('Unable to calculate fees')
       }
-
-      // maximum amount that we can transfer = max claimable amount - total fee (exportP + importC)
-      const amountToTransfer = totalClaimable.sub(totalFees)
 
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
-      return EarnService.claimRewards(
-        totalClaimable,
-        amountToTransfer,
+      return EarnService.claimRewards({
+        pChainBalance: pClaimableBalance,
+        requiredAmount: amountToTransfer,
         activeAccount,
-        isDeveloperMode,
-        isDevnet(activeNetwork),
-        defaultFeeState
-      )
+        isDevMode: isDeveloperMode,
+        feeState: defaultFeeState,
+        cBaseFeeMultiplier
+      })
     },
     onSuccess: () => {
       refetchQueries({
@@ -100,7 +94,11 @@ export const useClaimRewards = (
       }
     }
   })
-  return { mutation, defaultTxFee, totalFees, feeCalculationError }
+  return {
+    mutation,
+    totalFees,
+    feeCalculationError
+  }
 }
 
 /**

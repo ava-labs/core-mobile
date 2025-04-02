@@ -11,7 +11,6 @@ import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { StatusBar } from 'react-native'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 import { App } from './App'
@@ -39,11 +38,9 @@ const ContextApp = (): JSX.Element => {
       <StatusBar barStyle={'light-content'} backgroundColor="black" />
       <ContextProviders>
         <JailBrokenCheck>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <RootSiblingParent>
-              <App />
-            </RootSiblingParent>
-          </GestureHandlerRootView>
+          <RootSiblingParent>
+            <App />
+          </RootSiblingParent>
         </JailBrokenCheck>
         <Toast
           ref={ref => {

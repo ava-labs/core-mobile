@@ -7,10 +7,6 @@ class BottomsTabsPage {
     return by.id(bottomTabsLoc.watchlistIcon)
   }
 
-  get portfolioTab() {
-    return by.id(bottomTabsLoc.portfolioTab)
-  }
-
   get activityTab() {
     return by.id(bottomTabsLoc.activityTab)
   }
@@ -21,6 +17,14 @@ class BottomsTabsPage {
 
   get plusIcon() {
     return by.id(bottomTabsLoc.plusButton)
+  }
+
+  get portfolioTab() {
+    return by.id(bottomTabsLoc.portfolioTab)
+  }
+
+  get trackTab() {
+    return by.id(bottomTabsLoc.trackTab)
   }
 
   get stakeTab() {
@@ -68,11 +72,10 @@ class BottomsTabsPage {
   }
 
   async verifyBottomTabs() {
-    await Assert.isVisible(this.portfolioTab)
-    await Assert.isVisible(this.plusIcon)
-    // await Assert.isVisible(this.earnTab) Should be activated once Earn feature is developed and no longer on feature flag.
-    await Assert.isVisible(this.watchlistTtab)
-    await Assert.isVisible(this.watchlistIcon)
+    await Actions.waitForElement(this.portfolioTab, 10000)
+    await Assert.isVisible(this.trackTab)
+    await Assert.isVisible(this.stakeTab)
+    await Assert.isVisible(this.browserTab)
   }
 }
 

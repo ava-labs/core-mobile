@@ -20,7 +20,6 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
-import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
@@ -28,6 +27,7 @@ import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setWalletName } from 'store/account'
+import LogoLoader from 'components/LogoLoader'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -84,7 +84,7 @@ const EnterWithMnemonicStack = (): JSX.Element => {
         />
         <EnterWithMnemonicS.Screen
           name={AppNavigation.LoginWithMnemonic.Loader}
-          component={OwlLoader}
+          component={LogoLoader}
         />
       </EnterWithMnemonicS.Navigator>
     </EnterWithMnemonicContext.Provider>

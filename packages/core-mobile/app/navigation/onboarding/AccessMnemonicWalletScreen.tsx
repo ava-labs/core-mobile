@@ -26,7 +26,7 @@ const AccessMnemonicWalletScreen = (): JSX.Element => {
     setOptions({
       headerShown: true,
       title: '',
-      headerBackTitleVisible: false
+      headerBackButtonDisplayMode: 'minimal'
     })
   }, [setOptions])
 

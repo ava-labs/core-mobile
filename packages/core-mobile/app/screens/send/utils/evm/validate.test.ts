@@ -14,7 +14,8 @@ import {
   validateBasicInputs,
   validateERC1155,
   validateERC721,
-  validateSupportedToken
+  validateSupportedToken,
+  validateFee
 } from './validate'
 
 const tokenWithBalance: NativeTokenBalance = {
@@ -38,7 +39,8 @@ const mockERC20TokenWithBalance: TokenWithBalanceERC20 = {
   type: TokenType.ERC20,
   address: mockActiveAccount.addressC,
   logoUri: 'logoUri',
-  balance: 1000n
+  balance: 1000n,
+  reputation: null
 }
 
 describe('validate evm send', () => {
@@ -135,6 +137,7 @@ describe('validate evm send', () => {
   describe('validate ERC1155 send', () => {
     const mockERC1155TokenWithBalance: NftTokenWithBalance = {
       ...convertNativeToTokenWithBalance(tokenWithBalance),
+      balance: 10n,
       type: TokenType.ERC1155,
       address: mockActiveAccount.addressC,
       tokenId: '1',
@@ -155,6 +158,17 @@ describe('validate evm send', () => {
     })
     it('should succeed when all requirements met', async () => {
       validateERC1155(mockERC1155TokenWithBalance, mockNativeTokenWithBalance)
+    })
+
+    it('should fail for insufficient balance', async () => {
+      expect(() =>
+        validateERC1155(
+          { ...mockERC1155TokenWithBalance, balance: 0n },
+          {
+            ...mockNativeTokenWithBalance
+          }
+        )
+      ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
     })
 
     it('should fail for insufficient balance for network fee', async () => {
@@ -179,34 +193,35 @@ describe('validate evm send', () => {
 
     it('should succeed when all requirements met', async () => {
       validateAmount({
-        gasLimit: 1n,
         amount: 10n,
-        token: mockNativeTokenWithBalance,
+        token: mockNativeTokenWithBalance
+      })
+      validateFee({
+        gasLimit: 1n,
         maxFee: 1n,
-        nativeToken: mockNativeTokenWithBalance
+        amount: 10n,
+        nativeToken: mockNativeTokenWithBalance,
+        token: mockNativeTokenWithBalance
       })
     })
 
     it('should fail when amount is greater than token balance', async () => {
       expect(() =>
         validateAmount({
-          gasLimit: 1n,
           amount: 10000n,
-          token: mockNativeTokenWithBalance,
-          maxFee: 1n,
-          nativeToken: mockNativeTokenWithBalance
+          token: mockNativeTokenWithBalance
         })
       ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
     })
 
     it('should fail when totalFee is greater than remaining balance', async () => {
       expect(() =>
-        validateAmount({
+        validateFee({
           gasLimit: 10n,
-          amount: 1000n,
-          token: mockNativeTokenWithBalance,
           maxFee: 10n,
-          nativeToken: mockNativeTokenWithBalance
+          amount: 1000n,
+          nativeToken: mockNativeTokenWithBalance,
+          token: mockNativeTokenWithBalance
         })
       ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
     })
@@ -214,11 +229,8 @@ describe('validate evm send', () => {
     it('should fail when amount is 0', async () => {
       expect(() =>
         validateAmount({
-          gasLimit: 1n,
           amount: 0n,
-          token: mockNativeTokenWithBalance,
-          maxFee: 1n,
-          nativeToken: mockNativeTokenWithBalance
+          token: mockNativeTokenWithBalance
         })
       ).toThrow(SendErrorMessage.AMOUNT_REQUIRED)
     })
@@ -236,22 +248,23 @@ describe('validate evm send', () => {
 
     it('should succeed when all requirements met', async () => {
       validateAmount({
-        gasLimit: 1n,
         amount: 10n,
-        token: mockERC20TokenWithBalance,
+        token: mockERC20TokenWithBalance
+      })
+      validateFee({
+        gasLimit: 1n,
         maxFee: 1n,
-        nativeToken: mockNativeTokenWithBalance
+        amount: 10n,
+        nativeToken: mockNativeTokenWithBalance,
+        token: mockERC20TokenWithBalance
       })
     })
 
     it('should fail when amount is greater than token balance', async () => {
       expect(() =>
         validateAmount({
-          gasLimit: 1n,
           amount: 10000n,
-          token: mockERC20TokenWithBalance,
-          maxFee: 1n,
-          nativeToken: mockNativeTokenWithBalance
+          token: mockERC20TokenWithBalance
         })
       ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
     })
@@ -259,11 +272,8 @@ describe('validate evm send', () => {
     it('should fail when amount is 0', async () => {
       expect(() =>
         validateAmount({
-          gasLimit: 1n,
           amount: 0n,
-          token: mockERC20TokenWithBalance,
-          maxFee: 1n,
-          nativeToken: mockNativeTokenWithBalance
+          token: mockERC20TokenWithBalance
         })
       ).toThrow(SendErrorMessage.AMOUNT_REQUIRED)
     })

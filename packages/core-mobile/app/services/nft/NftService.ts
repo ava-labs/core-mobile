@@ -1,89 +1,58 @@
-import glacierNftProvider from 'services/nft/GlacierNftProvider'
-import { NftProvider } from 'services/nft/types'
-import { findAsyncSequential } from 'utils/Utils'
-import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
-import { NFTItemData, NftResponse } from 'store/nft'
+import { Network } from '@avalabs/core-chains-sdk'
+import ModuleManager from 'vmModule/ModuleManager'
+import { TokenType } from '@avalabs/vm-module-types'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import Logger from 'utils/Logger'
+import { getNftLocalId, isNft } from './utils'
+import { UnprocessedNftItem } from './types'
 
 export class NftService {
-  providers: NftProvider[] = [glacierNftProvider]
-
-  private async getProvider(
-    chainId: number,
-    sentryTrx?: Transaction
-  ): Promise<NftProvider | undefined> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.nft.get_provider')
-      .executeAsync(async () => {
-        return findAsyncSequential(this.providers, value =>
-          value.isProviderFor(chainId)
-        )
-      })
-  }
-
-  /**
-   * @throws {@link Error}
-   */
   async fetchNfts({
-    chainId,
+    network,
     address,
-    pageToken,
-    sentryTrx
+    currency
   }: {
-    chainId: number
+    network: Network
     address: string
-    pageToken?:
-      | {
-          erc1155?: string
-          erc721?: string
-        }
-      | string
-    sentryTrx?: Transaction
-  }): Promise<NftResponse> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.nft.fetchNfts')
-      .executeAsync(async () => {
-        //TODO: providers cant mix, so if suddenly one becomes unavailable we need to reset pageToken to undefined
-        const provider = await this.getProvider(chainId)
+    currency: string
+  }): Promise<UnprocessedNftItem[]> {
+    const module = await ModuleManager.loadModuleByNetwork(network)
 
-        if (!provider) throw Error('no available providers')
+    const balancesResponse = await module.getBalances({
+      addresses: [address],
+      currency,
+      network: mapToVmNetwork(network),
+      storage: coingeckoInMemoryCache,
+      tokenTypes: [TokenType.ERC721, TokenType.ERC1155]
+    })
 
-        return await provider.fetchNfts(chainId, address, pageToken)
-      })
-  }
+    const balances = balancesResponse[address]
 
-  async fetchNft({
-    chainId,
-    address,
-    tokenId,
-    sentryTrx
-  }: {
-    chainId: number
-    address: string
-    tokenId: string
-    sentryTrx?: Transaction
-  }): Promise<NFTItemData> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.nft.fetchNft')
-      .executeAsync(async () => {
-        const provider = await this.getProvider(chainId)
+    if (!balances || 'error' in balances) {
+      Logger.error('Failed to fetch NFTs', balances?.error)
 
-        if (!provider) throw Error('no available providers')
+      return Promise.reject(`Failed to fetch NFTs`)
+    }
 
-        return await provider.fetchNft(chainId, address, tokenId)
-      })
-  }
+    const nfts = []
+    for (const tokenId in balances) {
+      const token = balances[tokenId]
 
-  async reindexNft(
-    address: string,
-    chainId: number,
-    tokenId: string
-  ): Promise<void> {
-    const provider = await this.getProvider(chainId)
+      if (!token || 'error' in token) {
+        continue
+      }
 
-    if (!provider) throw Error('no available providers')
+      if (isNft(token)) {
+        nfts.push({
+          ...token,
+          localId: getNftLocalId(token),
+          chainId: network.chainId
+        })
+      }
+    }
 
-    await provider.reindexNft(address, chainId, tokenId)
+    return nfts
   }
 }
 

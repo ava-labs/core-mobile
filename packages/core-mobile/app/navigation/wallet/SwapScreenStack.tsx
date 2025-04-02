@@ -9,6 +9,7 @@ import { SwapContextProvider } from 'contexts/SwapContext/SwapContext'
 import { useNavigation } from '@react-navigation/native'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import * as Navigation from 'utils/Navigation'
+import { AVAX_TOKEN_ID, USDC_TOKEN_ID } from 'consts/swap'
 
 export type SwapStackParamList = {
   [AppNavigation.Swap.Swap]:
@@ -42,7 +43,7 @@ function SwapScreenStack(): JSX.Element {
         screenOptions={{
           presentation: 'card',
           headerShown: true,
-          headerBackTitleVisible: false,
+          headerBackButtonDisplayMode: 'minimal',
           headerTitleAlign: 'center',
           headerTitle: HeaderTitle,
           headerBackTestID: 'header_back'
@@ -51,8 +52,8 @@ function SwapScreenStack(): JSX.Element {
           name={AppNavigation.Swap.Swap}
           component={SwapView}
           initialParams={{
-            initialTokenIdFrom: 'AvalancheAVAX', //AVAX
-            initialTokenIdTo: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E' //USDC
+            initialTokenIdFrom: AVAX_TOKEN_ID,
+            initialTokenIdTo: USDC_TOKEN_ID
           }}
         />
       </SwapStack.Navigator>

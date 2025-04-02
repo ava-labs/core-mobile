@@ -3,7 +3,6 @@ import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
 import { TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -20,7 +19,6 @@ import {
   selectAccountByIndex,
   selectActiveAccount
 } from 'store/account/slice'
-import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { isAccountApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
@@ -30,11 +28,17 @@ import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { isHex } from 'viem'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import Logger from 'utils/Logger'
+import { SendErrorMessage } from 'screens/send/utils/types'
+import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
+import { validateFee } from 'screens/send/utils/evm/validate'
+import { useGasless } from 'hooks/useGasless'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import { DetailSectionView } from '../shared/DetailSectionView'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
 import AlertBanner from './AlertBanner'
+import NetworkFeeSelectorWithGasless from './NetworkFeeSelectorWithGasless'
 
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
@@ -50,6 +54,8 @@ const ApprovalPopup = (): JSX.Element => {
   const caip2ChainId = request.chainId
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
+  const [amountError, setAmountError] = useState<string | undefined>()
+  const nativeToken = useNativeTokenWithBalance()
 
   const accountSelector =
     'account' in signingData
@@ -68,13 +74,24 @@ const ApprovalPopup = (): JSX.Element => {
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
     bigint | undefined
   >()
-
+  const {
+    gaslessEnabled,
+    setGaslessEnabled,
+    shouldShowGaslessSwitch,
+    gaslessError,
+    handleGaslessTx
+  } = useGasless({
+    signingData,
+    maxFeePerGas,
+    caip2ChainId
+  })
   const approveDisabled =
     !network ||
     !account ||
     (displayData.networkFeeSelector && maxFeePerGas === undefined) ||
     (displayData.networkFeeSelector && maxPriorityFeePerGas === undefined) ||
-    submitting
+    submitting ||
+    amountError !== undefined
 
   const showNetworkFeeSelector = displayData.networkFeeSelector
 
@@ -127,6 +144,46 @@ const ApprovalPopup = (): JSX.Element => {
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
     useSpendLimits(displayData.tokenApprovals)
 
+  const validateEthSendTransaction = useCallback(() => {
+    if (
+      !signingData ||
+      !network?.networkToken ||
+      !nativeToken ||
+      signingData.type !== 'eth_sendTransaction'
+    )
+      return
+    const ethSendTx = signingData.data
+
+    try {
+      const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n
+      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
+
+      validateFee({
+        gasLimit,
+        maxFee: maxFeePerGas || 0n,
+        amount,
+        nativeToken,
+        token: nativeToken
+      })
+
+      setAmountError(undefined)
+    } catch (err) {
+      if (err instanceof Error) {
+        setAmountError(err.message)
+      } else {
+        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
+      }
+    }
+  }, [signingData, network, maxFeePerGas, nativeToken])
+
+  useEffect(() => {
+    if (gaslessEnabled) {
+      setAmountError(undefined)
+      return
+    }
+    validateEthSendTransaction()
+  }, [validateEthSendTransaction, gaslessEnabled])
+
   const handleFeesChange = useCallback((fees: Eip1559Fees) => {
     setMaxFeePerGas(fees.maxFeePerGas)
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
@@ -134,21 +191,30 @@ const ApprovalPopup = (): JSX.Element => {
 
   const onHandleApprove = async (): Promise<void> => {
     if (approveDisabled) return
-
     setSubmitting(true)
 
-    onApprove({
-      network,
-      account,
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      overrideData: hashedCustomSpend
-    })
-      .catch(Logger.error)
-      .finally(() => {
+    if (shouldShowGaslessSwitch && gaslessEnabled) {
+      const txHash = await handleGaslessTx(account.addressC)
+      if (!txHash) {
         setSubmitting(false)
-        goBack()
+        return
+      }
+    }
+
+    try {
+      await onApprove({
+        network,
+        account,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        overrideData: hashedCustomSpend
       })
+      goBack()
+    } catch (error: unknown) {
+      Logger.error('Error approving transaction', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const renderAlert = (): JSX.Element | null => {
@@ -157,6 +223,22 @@ const ApprovalPopup = (): JSX.Element => {
     return (
       <View sx={{ marginVertical: 12 }}>
         <AlertBanner alert={displayData.alert} />
+      </View>
+    )
+  }
+
+  const renderGaslessAlert = (): JSX.Element | null => {
+    if (!gaslessError) return null
+    return (
+      <View sx={{ marginVertical: 12 }}>
+        <AlertBanner
+          alert={gaslessError}
+          customStyle={{
+            borderColor: '$dangerLight',
+            backgroundColor: '$transparent',
+            iconColor: colors.$white
+          }}
+        />
       </View>
     )
   }
@@ -331,29 +413,6 @@ const ApprovalPopup = (): JSX.Element => {
     return <BalanceChange balanceChange={balanceChange} />
   }
 
-  const renderNetworkFeeSelector = (): JSX.Element | null => {
-    if (!showNetworkFeeSelector || !chainId) return null
-
-    let gasLimit: number | undefined
-
-    if (
-      typeof signingData.data === 'object' &&
-      'gasLimit' in signingData.data
-    ) {
-      gasLimit = Number(signingData.data.gasLimit || 0)
-    }
-
-    if (!gasLimit) return null
-
-    return (
-      <NetworkFeeSelector
-        chainId={chainId}
-        gasLimit={gasLimit}
-        onFeesChange={handleFeesChange}
-      />
-    )
-  }
-
   const renderDetails = (): JSX.Element => {
     return (
       <>
@@ -365,6 +424,50 @@ const ApprovalPopup = (): JSX.Element => {
           />
         ))}
       </>
+    )
+  }
+
+  const renderAmountError = (): JSX.Element | null => {
+    if (!amountError) return null
+
+    return (
+      <Text
+        variant="body2"
+        sx={{
+          color: '$dangerMain',
+          maxWidth: '55%',
+          marginVertical: 8
+        }}>
+        {amountError}
+      </Text>
+    )
+  }
+
+  const renderNetworkFeeSelectorWithGasless = (): JSX.Element | null => {
+    if (!showNetworkFeeSelector) return null
+
+    let gasLimit: number | undefined
+
+    if (
+      typeof signingData.data === 'object' &&
+      'gasLimit' in signingData.data
+    ) {
+      gasLimit = Number(signingData.data.gasLimit || 0)
+    }
+
+    return (
+      <View sx={{ marginTop: 8 }}>
+        <Text variant="buttonMedium">Network Fee</Text>
+        <Space y={12} />
+        <NetworkFeeSelectorWithGasless
+          gaslessEnabled={gaslessEnabled}
+          setGaslessEnabled={setGaslessEnabled}
+          gasLimit={gasLimit}
+          caip2ChainId={caip2ChainId}
+          handleFeesChange={handleFeesChange}
+          shouldShowGaslessSwitch={shouldShowGaslessSwitch}
+        />
+      </View>
     )
   }
 
@@ -380,6 +483,7 @@ const ApprovalPopup = (): JSX.Element => {
           <Text variant="heading4">{displayData.title}</Text>
           <Space y={12} />
           {renderAlert()}
+          {renderGaslessAlert()}
           <Space y={12} />
           {renderDappInfo()}
           {renderNetwork()}
@@ -387,7 +491,8 @@ const ApprovalPopup = (): JSX.Element => {
           {renderDetails()}
           {renderSpendLimits()}
           {renderBalanceChange()}
-          {renderNetworkFeeSelector()}
+          {renderAmountError()}
+          {renderNetworkFeeSelectorWithGasless()}
           {renderDisclaimer()}
         </ScrollView>
         {renderApproveRejectButtons()}

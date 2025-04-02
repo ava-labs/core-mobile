@@ -21,6 +21,7 @@ import Logger from 'utils/Logger'
 import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { DisplayNotificationParams } from 'services/notifications/types'
 import { audioFiles } from 'utils/AudioFeedback'
+import messaging from '@react-native-firebase/messaging'
 import {
   LAUNCH_ACTIVITY,
   PressActionId,
@@ -290,10 +291,11 @@ class NotificationsService {
   getInitialNotification = async (
     callback: HandleNotificationCallback
   ): Promise<void> => {
-    const event = await notifee.getInitialNotification()
-    if (event) {
-      callback(event.notification.data)
-    }
+    return messaging()
+      .getInitialNotification()
+      .then(notification => {
+        callback(notification?.data)
+      })
   }
 
   cancelAllNotifications = async (): Promise<void> => {

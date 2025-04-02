@@ -18,6 +18,7 @@ import { Button, Text } from '@avalabs/k2-mobile'
 import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AlertType } from '@avalabs/vm-module-types'
 import { CorePrimaryAccount } from '@avalabs/types'
+import { getLogoIconUrl } from 'utils/getLogoIconUrl'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
 import AlertBanner from '../AlertBanner'
 import SelectAccounts from './SelectAccounts'
@@ -78,6 +79,12 @@ const SessionProposal = (): JSX.Element => {
       )
   }
 
+  const renderNetworks = (): React.JSX.Element => {
+    const hasMore = chainIds.length > 6
+    const chainIdsToDisplay = hasMore ? chainIds.slice(0, 6) : chainIds
+    return <Networks chainIds={chainIdsToDisplay} hasMore={hasMore} />
+  }
+
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
       <NativeViewGestureHandler>
@@ -108,9 +115,9 @@ const SessionProposal = (): JSX.Element => {
                 backgroundColor: theme.colorBg3
               }}>
               <Avatar.Custom
-                name={'dapp'}
-                logoUri={peerMeta?.icons[0]}
-                size={48}
+                name={peerMeta.name}
+                logoUri={getLogoIconUrl(peerMeta.icons)}
+                size={80}
               />
             </OvalTagBg>
             <View style={styles.domainUrlContainer}>
@@ -125,7 +132,7 @@ const SessionProposal = (): JSX.Element => {
             <Space y={16} />
           </View>
           <Space y={16} />
-          <Networks chainIds={chainIds} />
+          {renderNetworks()}
           <Space y={16} />
           <SelectAccounts
             onSelect={onSelect}

@@ -9,7 +9,11 @@ interface Prop {
   testID?: string
 }
 
-export default function DotSVG({ borderColor, fillColor, size }: Prop) {
+export default function DotSVG({
+  borderColor,
+  fillColor,
+  size
+}: Prop): JSX.Element {
   const context = useApplicationContext()
 
   const stroke = fillColor ?? borderColor ?? context.theme.colorStroke
@@ -20,7 +24,7 @@ export default function DotSVG({ borderColor, fillColor, size }: Prop) {
       width={computedSize}
       height={computedSize}
       viewBox="0 0 20 20"
-      fill={fillColor ?? 'none'}>
+      fill={fillColor}>
       <Circle cx="10" cy="10" r="9.5" stroke={stroke} />
     </Svg>
   )

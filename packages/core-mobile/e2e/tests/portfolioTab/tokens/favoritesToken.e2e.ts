@@ -32,7 +32,7 @@ describe('Favorites Token', () => {
     // Add token to favorite list
     favorites.push(newToken)
     await BottomTabsPage.tapWatchlistTab()
-    await WatchListPage.setWatchListToken(newToken)
+    await WatchListPage.searchToken(newToken)
     if (Actions.platform() === 'ios') {
       await Actions.dismissKeyboard()
     }

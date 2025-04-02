@@ -6,7 +6,7 @@ import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import { Image } from 'expo-image'
-import { Text, useTheme, View } from '@avalabs/k2-mobile'
+import { Text, useTheme, View, alpha } from '@avalabs/k2-mobile'
 import { useGetInitials } from 'hooks/useGetInitials'
 import { SuggestedSiteName } from 'store/browser/const'
 import { isBase64Png, isSugguestedSiteName } from 'screens/browser/utils'
@@ -86,6 +86,7 @@ const AvatarBase: FC<AvatarBaseProps> = ({
         size={size}
         showBorder={showBorder}
         fallbackBackgroundColor={fallbackBackgroundColor ?? backgroundColor}
+        testID="fallback_logo"
       />
     )
   }
@@ -142,6 +143,7 @@ interface TokenAvatarProps {
 }
 
 const TokenAvatar: FC<TokenAvatarProps> = props => {
+  const { theme } = useTheme()
   return (
     <AvatarBase
       {...props}
@@ -150,6 +152,7 @@ const TokenAvatar: FC<TokenAvatarProps> = props => {
       testID={props.symbol}
       backgroundColor={props.backgroundColor}
       showBorder={props.showBorder}
+      fallbackBackgroundColor={alpha(theme.colors.$neutral700, 0.5)}
     />
   )
 }
@@ -185,7 +188,8 @@ function FallbackAvatar({
   title,
   size = DEFAULT_SIZE,
   fallbackBackgroundColor,
-  showBorder
+  showBorder,
+  testID
 }: AvatarBaseProps): JSX.Element {
   const initials = useGetInitials(title)
 
@@ -202,11 +206,12 @@ function FallbackAvatar({
         borderColor: showBorder ? '$neutral800' : 'unset'
       }}>
       <Text
+        testID={testID}
         variant="body1"
         sx={{
           color: '$neutral50',
-          fontSize: size * 0.5,
-          lineHeight: size * 0.75
+          fontSize: size * 0.4,
+          lineHeight: size * 0.65
         }}>
         {initials}
       </Text>

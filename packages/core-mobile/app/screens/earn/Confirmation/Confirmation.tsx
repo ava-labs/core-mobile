@@ -25,7 +25,7 @@ import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showTransactionErrorToast } from 'utils/toast'
 import Logger from 'utils/Logger'
-import { DOCS_STAKING } from 'resources/Constants'
+import { DOCS_STAKING_URL } from 'resources/Constants'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -36,8 +36,6 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { View } from '@avalabs/k2-mobile'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
 import NetworkService from 'services/network/NetworkService'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { ConfirmScreen } from '../components/ConfirmScreen'
@@ -65,11 +63,7 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const pNetwork = NetworkService.getAvalancheNetworkP(
-    isDeveloperMode,
-    isDevnet(activeNetwork)
-  )
+  const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
   const cChainNetwork = useCChainNetwork()
   const avaxSymbol = cChainNetwork?.networkToken?.symbol
@@ -140,7 +134,7 @@ export const Confirmation = (): JSX.Element | null => {
         networkFees,
         pNetwork.networkToken.decimals,
         pNetwork.networkToken.symbol
-      ).toDisplay(),
+      ).toDisplay({ fixedDp: 6 }),
     [networkFees, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol]
   )
 
@@ -184,8 +178,8 @@ export const Confirmation = (): JSX.Element | null => {
   }
 
   const handleReadMore = (): void => {
-    Linking.openURL(DOCS_STAKING).catch(e => {
-      Logger.error(DOCS_STAKING, e)
+    Linking.openURL(DOCS_STAKING_URL).catch(e => {
+      Logger.error(DOCS_STAKING_URL, e)
     })
   }
 
@@ -404,11 +398,11 @@ export const Confirmation = (): JSX.Element | null => {
           }}>
           <Tooltip
             content={renderPopoverInfoText(
-              'Fee paid to the network to execute the transaction'
+              'Estimated fee paid to the network to execute the transaction'
             )}
             position="right"
             style={{ width: 200 }}>
-            Network Fee
+            Estimated Network Fee
           </Tooltip>
           {renderNetworkFee()}
         </Row>

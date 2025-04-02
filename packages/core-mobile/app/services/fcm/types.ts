@@ -16,6 +16,7 @@ export enum NewsEvents {
 export enum BalanceChangeEvents {
   BALANCES_SPENT = 'BALANCES_SPENT',
   BALANCES_RECEIVED = 'BALANCES_RECEIVED',
+  BALANCES_TRANSFERRED = 'BALANCES_TRANSFERRED',
   ALLOWANCE_APPROVED = 'ALLOWANCE_APPROVED'
 }
 
@@ -26,7 +27,8 @@ export const BalanceChangeDataSchema = object({
   body: string(),
   accountAddress: string().startsWith('0x'),
   chainId: string(),
-  transactionHash: string().startsWith('0x')
+  transactionHash: string().startsWith('0x'),
+  url: string() // we need this url to deeplink to in-app browser or screens.
 })
 
 export const NewsDataSchema = object({

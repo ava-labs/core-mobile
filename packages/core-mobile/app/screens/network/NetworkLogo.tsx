@@ -1,6 +1,6 @@
 import React from 'react'
 import GlobeSVG from 'components/svg/GlobeSVG'
-import { Image, ImageStyle, StyleProp, View } from 'react-native'
+import { Image, ImageStyle, StyleProp, View, ViewStyle } from 'react-native'
 import { formatUriImageToPng } from 'utils/Contentful'
 
 /**
@@ -17,22 +17,20 @@ export function NetworkLogo({
   style?: StyleProp<ImageStyle>
   testID?: string
 }): JSX.Element {
-  style = [
-    {
-      width: size,
-      height: size
-    },
-    style
-  ]
+  const baseStyle = {
+    width: size,
+    height: size
+  }
+
   return logoUri ? (
     <Image
       source={{
         uri: formatUriImageToPng(logoUri, size)
       }}
-      style={style}
+      style={[baseStyle, style]}
     />
   ) : (
-    <View style={style}>
+    <View style={[baseStyle, style as ViewStyle]}>
       <GlobeSVG height={'100%'} testID="network_logo__globe_svg" />
     </View>
   )

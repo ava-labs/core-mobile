@@ -4,7 +4,6 @@ import { add, getUnixTime, sub } from 'date-fns'
 import { Utxo } from '@avalabs/avalanchejs'
 import { PChainId } from '@avalabs/glacier-sdk'
 import NetworkService from 'services/network/NetworkService'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
   ...jest.requireActual('@avalabs/core-wallets-sdk'),
@@ -20,16 +19,8 @@ jest.mock('@avalabs/core-wallets-sdk', () => ({
 }))
 
 describe('WalletService', () => {
-  describe('getInstantBaseFee', () => {
-    it('should increase base fee by 20%', async () => {
-      const baseFee = new TokenUnit(1_000_000_000, 9, 'AVAX')
-      const instantFee = WalletService.getInstantBaseFee(baseFee)
-      expect(instantFee.eq(new TokenUnit(1_200_000_000, 9, 'AVAX'))).toBe(true)
-    })
-  })
-
   describe('createAddDelegatorTx', () => {
-    const network = NetworkService.getAvalancheNetworkP(false, false)
+    const network = NetworkService.getAvalancheNetworkP(false)
     const validNodeId = 'NodeID-23420390293d9j09v'
     const invalidNodeId = 'InvalidNodeID-23420390293d9j09v'
     const fujiValidStakeAmount = BigInt(2e9)

@@ -1,15 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  alpha,
-  Button,
-  ScrollView,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Button, ScrollView, Text, View } from '@avalabs/k2-alpine'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradient } from 'expo-linear-gradient'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 
 export const TermsAndConditions = ({
   onAgreeAndContinue
@@ -17,18 +12,32 @@ export const TermsAndConditions = ({
   onAgreeAndContinue: () => void
 }): JSX.Element => {
   const { bottom } = useSafeAreaInsets()
-  const { theme } = useTheme()
+  const [headerLayout, setHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
+  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
+    setHeaderLayout(event.nativeEvent.layout)
+  }
+
+  const scrollViewProps = useFadingHeaderNavigation({
+    targetLayout: headerLayout
+  })
 
   return (
     <BlurredBarsContentLayout>
-      <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
+      <ScrollView
+        sx={{ flex: 1 }}
+        contentContainerSx={{ padding: 16 }}
+        {...scrollViewProps}>
         <Text
+          onLayout={handleHeaderLayout}
           sx={{ marginRight: 10, marginTop: 8, marginBottom: 10 }}
           variant="heading3">
           Terms and conditions
         </Text>
         <View sx={{ marginTop: 8, gap: 20 }}>
-          <Text variant="subtitle2">
+          <Text testID="terms_conditions_description" variant="subtitle2">
             These Terms of Use (these “Terms”) constitute a legally binding
             agreement made between you, whether personally or on behalf of an
             entity (“you”) and Ava Labs, Inc. (together with its subsidiaries
@@ -91,25 +100,18 @@ export const TermsAndConditions = ({
         </View>
       </ScrollView>
       <View>
-        <LinearGradient
-          colors={[
-            alpha(theme.colors.$surfacePrimary, 0),
-            theme.colors.$surfacePrimary
-          ]}
-          style={{ height: 40 }}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
-        />
-        <View
-          sx={{
-            paddingHorizontal: 16,
-            paddingBottom: 16 + bottom,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button size="large" type="primary" onPress={onAgreeAndContinue}>
-            Agree and continue
-          </Button>
-        </View>
+        <LinearGradientBottomWrapper>
+          <View
+            sx={{
+              paddingHorizontal: 16,
+              paddingBottom: 16 + bottom,
+              backgroundColor: '$surfacePrimary'
+            }}>
+            <Button size="large" type="primary" onPress={onAgreeAndContinue}>
+              Agree and continue
+            </Button>
+          </View>
+        </LinearGradientBottomWrapper>
       </View>
     </BlurredBarsContentLayout>
   )

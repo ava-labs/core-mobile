@@ -28,8 +28,6 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { selectActiveNetwork } from 'store/network/slice'
-import { isDevnet } from 'utils/isDevnet'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
 
@@ -46,7 +44,6 @@ export default function StakingAmount(): JSX.Element {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const cChainBalanceAvax = useMemo(
     () =>
       cChainBalance?.data?.balance
@@ -62,9 +59,7 @@ export default function StakingAmount(): JSX.Element {
   const claimableBalance = useGetClaimableBalance()
   const stuckBalance = useGetStuckBalance()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const chainId = isDevnet(activeNetwork)
-    ? ChainId.AVALANCHE_DEVNET_ID
-    : isDeveloperMode
+  const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
   const avaxNetwork = getNetwork(chainId)

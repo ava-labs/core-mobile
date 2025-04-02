@@ -3,14 +3,15 @@ import { CorePrimaryAccount } from '@avalabs/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
 import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
-import { Transaction } from '@sentry/react'
-import { isDevnet } from 'utils/isDevnet'
+import { SpanName } from 'services/sentry/types'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { SPAN_STATUS_ERROR } from '@sentry/core'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -28,41 +29,48 @@ export const send = async ({
   toAddress: string
   amount: bigint
 }): Promise<string> => {
-  const sentryTrx = SentryWrapper.startTransaction('send-token')
-
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.send')
-    .executeAsync(async () => {
-      const txRequest = await getTransactionRequest({
-        toAddress,
-        amount,
-        network,
-        fromAddress,
-        sentryTrx,
-        accountIndex: account.index
-      })
-
-      const [txHash, txError] = await resolve(
-        request({
-          method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-          params: txRequest as AvalancheSendTransactionParams,
-          chainId: getAvalancheCaip2ChainId(network.chainId)
+  const sentrySpanName = 'send-token'
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.send' },
+    async span => {
+      try {
+        const txRequest = await getTransactionRequest({
+          toAddress,
+          amount,
+          network,
+          fromAddress,
+          sentrySpanName,
+          accountIndex: account.index
         })
-      )
 
-      if (txError) {
-        throw txError
+        const [txHash, txError] = await resolve(
+          request({
+            method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+            params: txRequest as AvalancheSendTransactionParams,
+            chainId: getAvalancheCaip2ChainId(network.chainId)
+          })
+        )
+
+        if (txError) {
+          throw txError
+        }
+
+        if (!txHash || typeof txHash !== 'string') {
+          throw new Error('invalid transaction hash')
+        }
+
+        return txHash
+      } catch (error) {
+        span?.setStatus({
+          code: SPAN_STATUS_ERROR,
+          message: error instanceof Error ? error.message : 'unknown error'
+        })
+        throw error
+      } finally {
+        span?.end()
       }
-
-      if (!txHash || typeof txHash !== 'string') {
-        throw new Error('invalid transaction hash')
-      }
-
-      return txHash
-    })
-    .finally(() => {
-      SentryWrapper.finish(sentryTrx)
-    })
+    }
+  )
 }
 
 const getTransactionRequest = ({
@@ -71,18 +79,18 @@ const getTransactionRequest = ({
   fromAddress,
   amount,
   network,
-  sentryTrx
+  sentrySpanName
 }: {
   accountIndex: number
   amount: bigint
   toAddress: string
   fromAddress: string
   network: Network
-  sentryTrx: Transaction
+  sentrySpanName?: SpanName
 }): Promise<AvalancheSendTransactionParams> => {
-  return SentryWrapper.createSpanFor(sentryTrx)
-    .setContext('svc.send.avm.get_trx_request')
-    .executeAsync(async () => {
+  return SentryWrapper.startSpan(
+    { name: sentrySpanName, contextName: 'svc.send.avm.get_trx_request' },
+    async () => {
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendXTx({
         accountIndex,
@@ -98,16 +106,16 @@ const getTransactionRequest = ({
 
       return {
         transactionHex: utils.bufferToHex(unsignedTxBytes),
-        chainAlias: 'X',
+        chainAlias: 'X' as Avalanche.ChainIDAlias,
         utxos: unsignedTx.utxos.map(utxo =>
           utils.bufferToHex(utxo.toBytes(codec))
         ),
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
           xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
-          isTestnet: network.isTestnet === true,
-          isDevnet: isDevnet(network)
+          isTestnet: network.isTestnet === true
         })
       }
-    })
+    }
+  )
 }

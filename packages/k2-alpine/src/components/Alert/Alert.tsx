@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { KeyboardTypeOptions } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { AlertOptions, KeyboardTypeOptions } from 'react-native'
 import Dialog from 'react-native-dialog'
 import { Alert as NativeAlert } from 'react-native'
 
@@ -13,8 +13,20 @@ export const AlertWithTextInputs = ({
 }: AlertWithTextInputsProps): JSX.Element => {
   const [values, setValues] = useState<Record<string, string>>({})
 
+  useEffect(() => {
+    setValues(
+      inputs.reduce((acc, input) => {
+        acc[input.key] = input.defaultValue ?? ''
+        return acc
+      }, {} as Record<string, string>)
+    )
+  }, [inputs])
+
   return (
-    <Dialog.Container visible={visible} verticalButtons={verticalButtons}>
+    <Dialog.Container
+      visible={visible}
+      verticalButtons={verticalButtons}
+      useNativeDriver>
       {title && title.length > 0 && <Dialog.Title>{title}</Dialog.Title>}
       {description && description.length > 0 && (
         <Dialog.Description>{description}</Dialog.Description>
@@ -22,7 +34,10 @@ export const AlertWithTextInputs = ({
       {inputs &&
         inputs.map(input => (
           <Dialog.Input
+            value={values[input.key]}
             key={input.key}
+            autoCorrect={false}
+            autoFocus
             keyboardType={input.keyboardType}
             secureTextEntry={input.secureTextEntry ?? false}
             blurOnSubmit
@@ -65,6 +80,7 @@ type AlertWithTextInputsProps = {
   verticalButtons?: boolean
   inputs: {
     key: string
+    defaultValue?: string
     keyboardType?: KeyboardTypeOptions
     secureTextEntry?: boolean
   }[]
@@ -81,12 +97,14 @@ type AlertButton<T> = {
 export function showAlert({
   title,
   description,
-  buttons
+  buttons,
+  options
 }: {
   title: string
   description?: string
   buttons: AlertButton<string | undefined>[]
+  options?: AlertOptions
 }): void {
   // use react-native's Alert for now
-  NativeAlert.alert(title, description, buttons)
+  NativeAlert.alert(title, description, buttons, options)
 }

@@ -12,7 +12,7 @@ import connectToSitePage from '../../../pages/connectToSite.page'
 import plusMenuPage from '../../../pages/plusMenu.page'
 import portfolioPage from '../../../pages/portfolio.page'
 import sendPage from '../../../pages/send.page'
-import assertions from '../../../helpers/assertions'
+import actions from '../../../helpers/actions'
 
 describe('Dapp - Core Playground', () => {
   it('should connect playground', async () => {
@@ -77,7 +77,7 @@ describe('Dapp - Core Playground', () => {
   it('should handle wallet_addEthereumChain', async () => {
     await browserPage.sendRpcCall('wallet_addEthereumChain')
     await popUpModalPage.switchToSepoliaNetwork()
-    await assertions.isVisible(commonElsPage.testnetBanner)
+    await actions.waitForElement(commonElsPage.testnetBanner, 10000)
     await bottomTabsPage.tapPortfolioTab()
     await advancedPage.switchToMainnet()
   })
@@ -86,7 +86,7 @@ describe('Dapp - Core Playground', () => {
     await bottomTabsPage.tapBrowserTab()
     await browserPage.sendRpcCall('wallet_switchEthereumChain')
     await popUpModalPage.switchToFujiNetwork()
-    await assertions.isVisible(commonElsPage.testnetBanner)
+    await actions.waitForElement(commonElsPage.testnetBanner, 10000)
     await bottomTabsPage.tapPortfolioTab()
     await portfolioPage.verifyActiveNetwork('Avalanche (C-Chain)')
     await advancedPage.switchToMainnet()

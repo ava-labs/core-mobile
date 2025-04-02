@@ -6,28 +6,26 @@ import AvaButton from 'components/AvaButton'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
+export enum OverlayType {
+  INSTRUCTION = 'INSTRUCTION',
+  LOADING = 'LOADING',
+  NO_DATA = 'NO_DATA'
+}
+
 type Props = {
-  chartData:
-    | {
-        date: Date
-        value: number
-      }[]
-    | undefined
-  shouldShowInstruction: boolean
+  type: OverlayType | undefined
   onInstructionRead: () => void
 }
 
 export const Overlay = ({
-  chartData,
-  shouldShowInstruction,
+  type,
   onInstructionRead
-}: Props) => {
+}: Props): React.JSX.Element | null => {
   let content
-
-  if (!chartData) {
+  if (type === OverlayType.LOADING) {
     // chart data is loading
     content = <ActivityIndicator />
-  } else if (chartData.length === 0) {
+  } else if (type === OverlayType.NO_DATA) {
     // chart data is empty, could not be retrieved
     content = (
       <>
@@ -38,7 +36,7 @@ export const Overlay = ({
         </AvaText.Body2>
       </>
     )
-  } else if (shouldShowInstruction) {
+  } else if (type === OverlayType.INSTRUCTION) {
     // if we have data, and it's 1st time user seeing it, show instruction
     content = (
       <>

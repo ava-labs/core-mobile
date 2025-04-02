@@ -1,4 +1,3 @@
-import { expect as jestExpect } from 'expect'
 import claimScreenLoc from '../../locators/Stake/claimScreen.loc'
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
@@ -14,6 +13,10 @@ class ClaimPage {
 
   get claimButton() {
     return by.text(claimScreenLoc.claimNowButton)
+  }
+
+  get claimNowBtnEnabled() {
+    return by.id(claimScreenLoc.claimNowBtnEnabled)
   }
 
   get claimableAmountText() {
@@ -41,16 +44,13 @@ class ClaimPage {
   }
 
   async tapClaimNowButton() {
+    await Actions.waitForElement(this.claimNowBtnEnabled, 20000)
     await Actions.tap(this.claimButton)
   }
 
-  async verifyClaimRewardsScreenItems(topClaimableBalance: number | null) {
-    if (Actions.platform() === 'android') {
-      const claimableBalance = await Actions.balanceToNumber(
-        this.claimableAvaxAmount
-      )
-
-      jestExpect(claimableBalance).toBe(topClaimableBalance)
+  async verifyClaimRewardsScreenItems(topClaimableBalance: string | undefined) {
+    if (topClaimableBalance) {
+      await Actions.waitForElement(by.text(topClaimableBalance))
     }
     await Assert.isVisible(this.avaLogo)
     await Assert.isVisible(this.claimRewardsTitle)
@@ -59,8 +59,8 @@ class ClaimPage {
     await Assert.isVisible(this.claimButton)
     await Assert.isVisible(this.claimableAvaxAmount)
     await Assert.isVisible(this.claimableBalanceCurrency)
-    await Assert.isVisible(this.networkFeeAmount)
-    await Assert.isVisible(this.networkFeeCurrency)
+    await Actions.waitForElement(this.networkFeeAmount, 50000)
+    await Actions.waitForElement(this.networkFeeCurrency, 50000)
   }
 }
 

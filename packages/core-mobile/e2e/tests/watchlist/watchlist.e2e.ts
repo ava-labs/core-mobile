@@ -26,6 +26,7 @@ describe('Watchlist', () => {
     // Favorite tab > Verify the default favorites
     await BottomTabsPage.tapWatchlistTab()
     await actions.waitForElementNoSync(watchlistPage.favoritesTab, 20000)
+    await actions.tap(watchlistPage.favoritesTab)
     await watchlistPage.verifyFavorites(['AVAX', 'BTC', 'ETH'])
   })
 

@@ -2,6 +2,7 @@ import { Dimensions, ImageSourcePropType } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import Carousel from 'react-native-reanimated-carousel'
 import { Pressable } from '../Primitives'
+import { isScreenSmall } from '../../utils'
 import { Avatar } from './Avatar'
 
 export const AvatarSelector = ({
@@ -22,6 +23,9 @@ export const AvatarSelector = ({
     }
   }, [avatars])
   const [pressedIndex, setPressedIndex] = useState<number>()
+  const avatarWidth = isScreenSmall
+    ? configuration.avatarWidth.small
+    : configuration.avatarWidth.large
 
   const handlePressIn = (index: number): void => {
     setPressedIndex(index)
@@ -51,13 +55,13 @@ export const AvatarSelector = ({
     return (
       <Pressable
         key={index}
-        style={{ marginTop: index % 2 === 0 ? configuration.avatarWidth : 0 }}
+        style={{ marginTop: index % 2 === 0 ? avatarWidth : 0 }}
         onPressIn={() => handlePressIn(index)}
         onPressOut={() => handlePressOut(index)}
         onPress={() => handleSelect(index)}>
         <Avatar
           source={item.source}
-          size={configuration.avatarWidth}
+          size={avatarWidth}
           isSelected={data[index]?.id === selectedId}
           isPressed={pressedIndex === index}
           backgroundColor={'white'}
@@ -68,8 +72,8 @@ export const AvatarSelector = ({
 
   return (
     <Carousel
-      width={configuration.avatarWidth / 2 + configuration.spacing}
-      height={configuration.avatarWidth * 2}
+      width={avatarWidth / 2 + configuration.spacing}
+      height={avatarWidth * 2}
       data={data}
       renderItem={renderItem}
       pagingEnabled={false}
@@ -78,14 +82,17 @@ export const AvatarSelector = ({
         width: '100%',
         overflow: 'visible',
         paddingVertical: configuration.spacing * 2,
-        marginLeft: SCREEN_WIDTH / 2 - configuration.avatarWidth / 2
+        marginLeft: SCREEN_WIDTH / 2 - avatarWidth / 2
       }}
     />
   )
 }
 
 const configuration = {
-  avatarWidth: 90,
+  avatarWidth: {
+    large: 90,
+    small: 60
+  },
   spacing: 6
 }
 

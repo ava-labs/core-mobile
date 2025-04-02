@@ -19,9 +19,8 @@ import { UTCDate } from '@date-fns/utc'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
-// 7 means ~ 2 minutes
-export const maxTransactionStatusCheckRetries = 7
-export const maxTransactionCreationRetries = 5
+export const maxTransactionStatusCheckRetries = 8 // ~ 4 minutes
+export const maxTransactionCreationRetries = 7 // ~ 2 minute
 export const maxBalanceCheckRetries = 10
 export const maxGetAtomicUTXOsRetries = 10
 
@@ -115,12 +114,10 @@ const hasMinimumStakingTime = (
  */
 export const getAvailableDelegationWeight = ({
   isDeveloperMode,
-  isDevnet,
   validatorWeight,
   delegatorWeight
 }: {
   isDeveloperMode: boolean
-  isDevnet: boolean
   validatorWeight: TokenUnit
   delegatorWeight: TokenUnit
 }): TokenUnit => {
@@ -128,11 +125,6 @@ export const getAvailableDelegationWeight = ({
   const maxValidatorStake = new TokenUnit(nAvax, 9, 'AVAX')
   const maxWeight = calculateMaxWeight(maxValidatorStake, validatorWeight)
 
-  // TODO: https://ava-labs.atlassian.net/browse/CP-9539
-  // this is needed for devent to work
-  if (maxWeight.lt(validatorWeight) && isDevnet) {
-    return maxWeight.sub(delegatorWeight)
-  }
   return maxWeight.sub(validatorWeight).sub(delegatorWeight)
 }
 
@@ -145,7 +137,6 @@ type getFilteredValidatorsProps = {
   maxFee?: number
   searchText?: string
   isEndTimeOverOneYear?: boolean
-  isDevnet: boolean
 }
 /**
  *
@@ -171,8 +162,7 @@ export const getFilteredValidators = ({
   minUpTime = 0,
   maxFee,
   searchText,
-  isEndTimeOverOneYear = false,
-  isDevnet = false
+  isEndTimeOverOneYear = false
 }: getFilteredValidatorsProps): NodeValidators => {
   const lowerCasedSearchText = searchText?.toLocaleLowerCase()
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
@@ -189,7 +179,6 @@ export const getFilteredValidators = ({
       startTime
     }) => {
       const availableDelegationWeight = getAvailableDelegationWeight({
-        isDevnet,
         isDeveloperMode,
         validatorWeight: new TokenUnit(weight, 9, 'AVAX'),
         delegatorWeight: new TokenUnit(delegatorWeight, 9, 'AVAX')

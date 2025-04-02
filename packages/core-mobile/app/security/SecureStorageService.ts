@@ -1,6 +1,6 @@
 import assert from 'assert'
 import Keychain from 'react-native-keychain'
-import { NativeModules } from 'react-native'
+import Aes from 'react-native-aes-crypto'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import { serializeJson } from 'utils/serialization/serialize'
 import { deserializeJson } from 'utils/serialization/deserialize'
@@ -86,7 +86,7 @@ class SecureStorageService {
     if (existingCredentials) {
       return existingCredentials.password
     }
-    const key: string = await NativeModules.Aes.randomKey(32)
+    const key: string = await Aes.randomKey(32)
     const result = await Keychain.setGenericPassword(serviceForKeys, key, {
       service: serviceForKeys
     })

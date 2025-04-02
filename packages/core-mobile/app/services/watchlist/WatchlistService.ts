@@ -3,10 +3,17 @@ import TokenService from 'services/token/TokenService'
 import {
   SimplePriceResponse,
   CoinMarket,
-  SimplePriceInCurrencyResponse
+  SimplePriceInCurrencyResponse,
+  TrendingToken
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
-import { Charts, MarketToken, PriceData, Prices } from 'store/watchlist'
+import {
+  Charts,
+  MarketToken,
+  MarketType,
+  PriceData,
+  Prices
+} from 'store/watchlist/types'
 import Logger from 'utils/Logger'
 
 /*
@@ -56,6 +63,7 @@ class WatchlistService {
     // get tokens and chart from cached and fetched tokens
     cachedTokens.concat(otherTokens).forEach(token => {
       const tokenToAdd = {
+        marketType: MarketType.TOP,
         id: token.id,
         symbol: token.symbol,
         name: token.name,
@@ -111,6 +119,7 @@ class WatchlistService {
     return prices
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async tokenSearch(
     query: string,
     currency: string
@@ -118,6 +127,7 @@ class WatchlistService {
     { tokens: MarketToken[]; charts: Charts; prices: Prices } | undefined
   > {
     const coins = await TokenService.getTokenSearch(query)
+
     const coinIds = coins?.map(tk => tk.id)
 
     if (coinIds && coinIds.length > 0) {
@@ -139,10 +149,21 @@ class WatchlistService {
 
       marketsRaw.forEach(market => {
         tokens.push({
+          marketType: MarketType.TOP,
           id: market.id,
           symbol: market.symbol,
           name: market.name,
-          logoUri: market.image
+          logoUri: market.image,
+          // also adding the price change 24h and price change percentage 24h
+          // since we don't always able to get those info when fetching prices (when doing a simple price request)
+          priceChange24h:
+            typeof market.price_change_24h === 'number'
+              ? market.price_change_24h
+              : undefined,
+          priceChangePercentage24h:
+            typeof market.price_change_percentage_24h === 'number'
+              ? market.price_change_percentage_24h
+              : undefined
         })
 
         if (market.sparkline_in_7d?.price) {
@@ -170,6 +191,12 @@ class WatchlistService {
     return undefined
   }
 
+  async getTrendingTokens(
+    exchangeRate: number | undefined
+  ): Promise<TrendingToken[]> {
+    return TokenService.getTrendingTokens(exchangeRate)
+  }
+
   private getPriceInCurrency(
     priceData: SimplePriceInCurrencyResponse,
     currency: string
@@ -190,6 +217,7 @@ class WatchlistService {
     const cachedPriceData = await TokenService.getPriceWithMarketDataByCoinIds(
       coinIds
     )
+
     if (
       cachedPriceData === undefined ||
       Object.keys(cachedPriceData).length !== coinIds.length

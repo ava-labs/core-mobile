@@ -21,6 +21,7 @@ import { initialState as browserFavoritesInitialState } from './browser/slices/f
 import { getInitialState as browserTabsGetInitialState } from './browser/slices/tabs'
 import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
 import { ViewOnceKey } from './viewOnce'
+import { TokenVisibility } from './portfolio'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -289,6 +290,24 @@ export const migrations = {
     }
     delete newState.notifications.hasPromptedAfterFirstDelegation
     delete newState.notifications.hasPromptedForBalanceChange
+    return newState
+  },
+  17: (state: any) => {
+    const tokenVisibility = state.portfolio.tokenBlacklist.reduce(
+      (acc: TokenVisibility, tokenId: string) => {
+        acc[tokenId.toLowerCase()] = false
+        return acc
+      },
+      {}
+    ) as TokenVisibility
+    const newState = {
+      ...state,
+      portfolio: {
+        ...state.portfolio,
+        tokenVisibility
+      }
+    }
+    delete newState.portfolio.tokenBlacklist
     return newState
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react'
-import { Platform, StyleSheet, View } from 'react-native'
+import { Platform, StyleSheet, View, StyleProp, ViewStyle } from 'react-native'
+import { ContentStyle } from '@shopify/flash-list'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -22,12 +23,16 @@ import { DragEndParams } from 'components/draggableList/types'
 import DraggableList from 'components/draggableList/DraggableList'
 import BigList from 'components/BigList'
 import FlashList from 'components/FlashList'
-import { WatchlistFilter } from '../types'
+import { AppHook } from 'AppHook'
+import { WatchListType } from '../types'
 
-const getDisplayValue = (
-  price: PriceData,
-  currencyFormatter: (num: number) => string
-): string => {
+const getDisplayValue = ({
+  price,
+  currencyFormatter
+}: {
+  price: PriceData
+  currencyFormatter: AppHook['tokenInCurrencyFormatter']
+}): string => {
   const priceInCurrency = price.priceInCurrency
   return currencyFormatter(priceInCurrency)
 }
@@ -36,11 +41,11 @@ interface Props {
   tokens: MarketToken[]
   prices: Prices
   charts: Charts
-  filterBy: WatchlistFilter
-  isShowingFavorites?: boolean
+  type: WatchListType
   isSearching?: boolean
   onExploreAllTokens?: () => void
   testID?: string
+  contentContainerStyle?: StyleProp<ViewStyle>
 }
 
 type NavigationProp = TabsScreenProps<
@@ -51,10 +56,9 @@ const WatchList: React.FC<Props> = ({
   tokens,
   prices,
   charts,
-  filterBy,
-  isShowingFavorites,
-  isSearching,
-  onExploreAllTokens
+  type,
+  onExploreAllTokens,
+  contentContainerStyle
 }) => {
   const navigation = useNavigation<NavigationProp>()
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
@@ -65,7 +69,11 @@ const WatchList: React.FC<Props> = ({
   function renderItem(token: MarketToken, index: number): React.JSX.Element {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
-    const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
+
+    const displayValue = getDisplayValue({
+      price,
+      currencyFormatter: tokenInCurrencyFormatter
+    })
 
     const isFirstItem = index === 0
 
@@ -73,10 +81,11 @@ const WatchList: React.FC<Props> = ({
       <View style={styles.item} key={token.id}>
         {!isFirstItem && <SeparatorComponent />}
         <WatchListItem
+          index={index}
           token={token}
+          type={type}
           chartData={chartData}
           value={displayValue}
-          filterBy={filterBy}
           testID={`watchlist_item__${token.symbol}`}
           onPress={() => {
             navigation.navigate(AppNavigation.Wallet.TokenDetail, {
@@ -89,17 +98,21 @@ const WatchList: React.FC<Props> = ({
   }
 
   const EmptyComponent =
-    isShowingFavorites && !isSearching ? (
+    type === WatchListType.FAVORITES ? (
       <ZeroState.NoWatchlistFavorites exploreAllTokens={onExploreAllTokens} />
-    ) : (
+    ) : type === WatchListType.SEARCH ? (
       <ZeroState.NoResultsTextual
         message={
           'There are no tokens that match your search. Please try again.'
         }
       />
+    ) : (
+      <View style={{ marginTop: '15%' }}>
+        <ZeroState.SomethingWentWrong />
+      </View>
     )
 
-  if (isShowingFavorites) {
+  if (type === WatchListType.FAVORITES) {
     return (
       <DraggableList
         data={tokens || []}
@@ -124,6 +137,7 @@ const WatchList: React.FC<Props> = ({
         onRefresh={() => dispatch(fetchWatchlist)}
         keyExtractor={keyExtractor}
         estimatedItemSize={64}
+        contentContainerStyle={contentContainerStyle as ContentStyle}
       />
     )
   }
@@ -137,6 +151,7 @@ const WatchList: React.FC<Props> = ({
       onRefresh={() => dispatch(fetchWatchlist)}
       keyExtractor={keyExtractor}
       estimatedItemSize={64}
+      contentContainerStyle={contentContainerStyle}
     />
   )
 }

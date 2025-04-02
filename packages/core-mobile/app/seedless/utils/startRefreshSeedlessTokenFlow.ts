@@ -11,10 +11,10 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { OidcProviders } from '../consts'
-import SeedlessSessionManager from '../services/SeedlessSessionManager'
+import SeedlessSession from '../services/SeedlessSession'
 
 export async function startRefreshSeedlessTokenFlow(
-  sessionManager: SeedlessSessionManager
+  session: SeedlessSession
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   const oidcProvider = await SecureStorageService.load(
     KeySlot.OidcProvider
@@ -41,9 +41,7 @@ export async function startRefreshSeedlessTokenFlow(
       }
   }
 
-  const identity = await sessionManager.oidcProveIdentity(
-    oidcTokenResult.oidcToken
-  )
+  const identity = await session.oidcProveIdentity(oidcTokenResult.oidcToken)
 
   if (oidcUserId && oidcUserId !== identity.email) {
     return {
@@ -58,16 +56,11 @@ export async function startRefreshSeedlessTokenFlow(
   const result = await CoreSeedlessAPIService.register(identity)
 
   if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-    const loginResult = await sessionManager.requestOidcAuth(
-      oidcTokenResult.oidcToken
-    )
+    const loginResult = await session.requestOidcAuth(oidcTokenResult.oidcToken)
+    const mfaId = loginResult.mfaId()
 
-    if (loginResult.requiresMfa()) {
-      return await verifyUserWithMFA(
-        oidcTokenResult.oidcToken,
-        loginResult.mfaId(),
-        sessionManager
-      )
+    if (loginResult.requiresMfa() && mfaId) {
+      return await verifyUserWithMFA(oidcTokenResult.oidcToken, mfaId, session)
     } else {
       return {
         success: true,
@@ -88,9 +81,9 @@ export async function startRefreshSeedlessTokenFlow(
 const verifyUserWithMFA = async (
   oidcToken: string,
   mfaId: string,
-  sessionManager: SeedlessSessionManager
+  session: SeedlessSession
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> => {
-  const mfaMethods = await sessionManager.userMfa()
+  const mfaMethods = await session.userMfa()
 
   if (mfaMethods.length === 0) {
     return {
@@ -103,7 +96,7 @@ const verifyUserWithMFA = async (
         mfa: mfaMethods[0],
         oidcToken,
         mfaId,
-        sessionManager
+        session
       })
     } else {
       throw new Error('No MFA methods available')
@@ -126,7 +119,7 @@ const verifyUserWithMFA = async (
     try {
       const mfa = await onSelectMFAPromise()
 
-      return await handleMfa({ mfa, oidcToken, mfaId, sessionManager })
+      return await handleMfa({ mfa, oidcToken, mfaId, session })
     } catch (e) {
       return {
         success: false,
@@ -142,14 +135,10 @@ const verifyUserWithMFA = async (
 async function fidoRefreshFlow(
   oidcToken: string,
   mfaId: string,
-  sessionManager: SeedlessSessionManager
+  session: SeedlessSession
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   try {
-    await sessionManager.approveFido(
-      oidcToken,
-      mfaId,
-      false //FIXME: this parameter is not needed, should refactor approveFido to remove it,
-    )
+    await session.approveFido(oidcToken, mfaId, true)
     return {
       success: true,
       value: undefined
@@ -167,14 +156,14 @@ async function fidoRefreshFlow(
 async function totpRefreshFlow(
   oidcToken: string,
   mfaId: string,
-  sessionManager: SeedlessSessionManager
+  session: SeedlessSession
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   const onVerifySuccessPromise = (): Promise<void> =>
     new Promise((resolve, reject) => {
       const onVerifyCode = (
         code: string
       ): Promise<Result<undefined, TotpErrors>> => {
-        return sessionManager.verifyCode(oidcToken, mfaId, code)
+        return session.verifyCode(oidcToken, mfaId, code)
       }
       Navigation.navigate({
         name: AppNavigation.Root.VerifyTotpCode,
@@ -209,17 +198,17 @@ const handleMfa = async ({
   mfa,
   oidcToken,
   mfaId,
-  sessionManager
+  session
 }: {
   mfa: MFA
   oidcToken: string
   mfaId: string
-  sessionManager: SeedlessSessionManager
+  session: SeedlessSession
 }): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> => {
   if (mfa.type === 'totp') {
-    return await totpRefreshFlow(oidcToken, mfaId, sessionManager)
+    return await totpRefreshFlow(oidcToken, mfaId, session)
   } else if (mfa.type === 'fido') {
-    return await fidoRefreshFlow(oidcToken, mfaId, sessionManager)
+    return await fidoRefreshFlow(oidcToken, mfaId, session)
   }
 
   throw new Error('Unsupported MFA type')

@@ -40,10 +40,16 @@ export const Confirmation = ({
                   size: 380,
                   delay: 300
                 }}
+                testID="selected_avatar"
               />
             )}
           </View>
-          <View sx={{ paddingHorizontal: 48 }}>
+          <View
+            sx={{
+              paddingHorizontal: 12,
+              maxWidth: 320,
+              alignSelf: 'center'
+            }}>
             <Text
               sx={{ marginTop: 96, textAlign: 'center' }}
               variant="heading3">
@@ -51,7 +57,10 @@ export const Confirmation = ({
             </Text>
             <Text
               variant="subtitle1"
-              sx={{ textAlign: 'center', marginTop: 20 }}>
+              sx={{
+                textAlign: 'center',
+                marginTop: 20
+              }}>
               You can now start buying, swapping, sending, receiving crypto and
               collectibles with no added fees
             </Text>
@@ -62,7 +71,11 @@ export const Confirmation = ({
             padding: 16,
             backgroundColor: '$surfacePrimary'
           }}>
-          <Button size="large" type="primary" onPress={onNext}>
+          <Button
+            testID="lets_go_btn"
+            size="large"
+            type="primary"
+            onPress={onNext}>
             Let’s go!
           </Button>
         </View>

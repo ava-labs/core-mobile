@@ -1,13 +1,15 @@
 /**
  * Keeps track of all possible transaction names
  */
-export type TransactionName =
+export type SpanName =
   | 'get-balances'
   | 'get-nft'
   | 'get-nfts'
   | 'send-token'
   | 'send-nft'
   | 'swap'
+  | 'sign-transaction'
+  | 'send-transaction'
 
 /**
  * Keeps track of all possible op names

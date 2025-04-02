@@ -6,6 +6,8 @@ import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
 import connectToSitePage from './connectToSite.page'
 import plusMenuPage from './plusMenu.page'
+import popUpModalPage from './popUpModal.page'
+import stakePage from './Stake/stake.page'
 
 class BrowserPage {
   get searchBar() {
@@ -61,8 +63,8 @@ class BrowserPage {
       case 'https://lfj.gg/avalanche': // TraderJoe
         xpath = '//button[@aria-label="connect-wallet"]'
         break
-      case 'https://opensea.io/': // OpenSea
-        xpath = '//button[@data-id="UnstyledButton"]//div[text()="Login"]'
+      case 'https://app.benqi.fi/markets': // Benqi
+        xpath = '//button[text()="Connect Wallet"]'
         break
       case 'https://ava-labs.github.io/extension-avalanche-playground/': // Core Playground
         xpath =
@@ -77,6 +79,7 @@ class BrowserPage {
       default: // core app
         xpath = '//*[text()="WalletConnect"]'
     }
+    await delay(2000)
     await Wbs.waitForEleByXpathToBeVisible(xpath, 10000)
     await Wbs.tapByXpath(xpath)
   }
@@ -135,6 +138,16 @@ class BrowserPage {
     await Actions.waitForElementNotVisible(this.continueBtn, 5000)
   }
 
+  async connectLFJ() {
+    await this.connectTo('https://lfj.gg/avalanche', false, false)
+    await Wbs.tapByText('I read and accept')
+    await Wbs.tapByXpath('//button[@data-cy="connector-walletConnect"]')
+    const qrUri = await this.getQrUri()
+    await plusMenuPage.connectWallet(qrUri)
+    await connectToSitePage.selectAccountAndconnect()
+    await popUpModalPage.verifySuccessToast()
+  }
+
   async connectTo(
     dapp: string,
     showModal = false,
@@ -179,6 +192,18 @@ class BrowserPage {
     await Wbs.scrollToXpath(dropdownOption)
     await Wbs.tapByXpath(dropdownOption)
     await this.dismissiOSKeyboard()
+  }
+
+  async enterAvalancheTransactions(call: string) {
+    await Wbs.waitForEleByXpathToBeVisible(
+      '//input[@placeholder="Select a transaction..."]'
+    )
+    await Wbs.tapByXpath('//input[@placeholder="Select a transaction..."]')
+    const dropdownOption = `//li/span[contains(., "${call}")]`
+    await Wbs.scrollToXpath(dropdownOption)
+    await Wbs.tapByXpath(dropdownOption)
+    await this.dismissiOSKeyboard()
+    await Wbs.tapByText('Execute transaction(s)')
   }
 
   async dismissiOSKeyboard() {
@@ -265,9 +290,7 @@ class BrowserPage {
     await delay(1000)
     await Wbs.tapByXpath('//div[@data-testid="token-option-43114-USDt"]')
     await this.setDappSwapAmount('[data-testid="amount-input-in"]')
-    await Wbs.tapByXpath(
-      '//div[not(@aria-disabled="true")]/span[text()="Review"]'
-    )
+    await Wbs.tapByXpath('//span[text()="Review"]')
     while (
       await Wbs.isVisibleByXpath(
         '//div[contains(@class, "is_Sheet")]//span[text()="Swap"]'
@@ -280,8 +303,7 @@ class BrowserPage {
   }
 
   async swapLFJ() {
-    await bottomTabsPage.tapBrowserTab()
-    await Wbs.tapByXpath("//a[@href='/avalanche/trade']")
+    await Wbs.tapByXpath("//a[@href='/trade']")
     await Wbs.tapByXpath("//button[contains(text(), 'Select token')]")
     await Wbs.setInputText(
       "//input[@data-cy='currency-picker-search-bar']",
@@ -302,6 +324,34 @@ class BrowserPage {
       'input',
       '(ele) => ele.getAttribute("value")'
     )
+  }
+
+  async fundPChain() {
+    await bottomTabsPage.tapStakeTab()
+    const pChainBalanceText =
+      (await Actions.getElementText(stakePage.claimableBalance)) || '0 AVAX'
+    const pChainBalance: number = parseFloat(
+      pChainBalanceText.replace(' AVAX', '')
+    )
+    console.log(`${pChainBalance} AVAX in P-Chain...`)
+    if (pChainBalance < 0.1) {
+      await this.connectTo(
+        'https://ava-labs.github.io/extension-avalanche-playground/',
+        false,
+        false
+      )
+      const qrUri = await this.getPlaygroundUri()
+      console.log(qrUri)
+      await plusMenuPage.connectWallet(qrUri)
+      await connectToSitePage.selectAccountAndconnect()
+      await bottomTabsPage.tapBrowserTab()
+      await Wbs.tapByText('Avalanche Transactions')
+      await this.enterAvalancheTransactions('Export from C to P')
+      await Actions.waitForElement(by.text('Approve Export'), 40000)
+      await popUpModalPage.tapApproveBtn()
+      await Actions.waitForElement(by.text('Approve Import'), 40000)
+      await popUpModalPage.tapApproveBtn()
+    }
   }
 }
 

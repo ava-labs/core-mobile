@@ -22,7 +22,7 @@ export const AuthenticatorSetupScreen = (): JSX.Element => {
 
   const { navigate, goBack } =
     useNavigation<AuthenticatorSetupScreenProps['navigation']>()
-  const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyTotp } = useVerifyMFA(SeedlessService.session)
   const { totpResetInit } = useSeedlessManageMFA()
 
   const handleLearnMore = (totpKey: string): void => {
@@ -43,7 +43,7 @@ export const AuthenticatorSetupScreen = (): JSX.Element => {
         await challenge.answer(code)
 
         if (oidcAuth) {
-          return SeedlessService.sessionManager.verifyCode(
+          return SeedlessService.session.verifyCode(
             oidcAuth.oidcToken,
             oidcAuth.mfaId,
             code
@@ -80,10 +80,8 @@ export const AuthenticatorSetupScreen = (): JSX.Element => {
   }, [totpResetInit, totpChallenge])
 
   const totpKey = useMemo(() => {
-    if (totpChallenge?.totpUrl) {
-      return (
-        new URL(totpChallenge.totpUrl).searchParams.get('secret') ?? undefined
-      )
+    if (totpChallenge?.url) {
+      return new URL(totpChallenge.url).searchParams.get('secret') ?? undefined
     }
   }, [totpChallenge])
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -24,8 +24,6 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { isDevnet } from 'utils/isDevnet'
-import { selectActiveNetwork } from 'store/network'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { Text } from '@avalabs/k2-mobile'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
@@ -38,12 +36,14 @@ const ClaimRewards = (): JSX.Element | null => {
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
+  const [claimableAmountInAvax, setClaimableAmountInAvax] =
+    useState<string>(UNKNOWN_AMOUNT)
+  const [
+    formattedClaimableAmountInCurrency,
+    setFormattedClaimableAmountInCurrency
+  ] = useState<string>(UNKNOWN_AMOUNT)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const pNetwork = NetworkService.getAvalancheNetworkP(
-    isDeveloperMode,
-    isDevnet(activeNetwork)
-  )
+  const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const { getNetwork } = useNetworks()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const avaxNetwork = getNetwork(ChainId.AVALANCHE_MAINNET_ID)
@@ -51,7 +51,6 @@ const ClaimRewards = (): JSX.Element | null => {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-
   const {
     mutation: claimRewardsMutation,
     totalFees,
@@ -65,29 +64,35 @@ const ClaimRewards = (): JSX.Element | null => {
 
   const shouldDisableClaimButton = unableToGetFees || insufficientBalanceForFee
 
-  const [claimableAmountInAvax, formattedClaimableAmountInCurrency] =
-    useMemo(() => {
-      if (data?.balancePerType.unlockedUnstaked) {
-        const unlockedInUnit = new TokenUnit(
-          data.balancePerType.unlockedUnstaked,
-          pNetwork.networkToken.decimals,
-          pNetwork.networkToken.symbol
+  useEffect(() => {
+    if (claimRewardsMutation.isPending) return
+
+    // the balance is usually updated faster than the tx "committed" event
+    // and we don't want to show the updated balance while the tx is still pending (spinner is being displayed)
+    // as that might confuse the user
+    // thus, we only update the balance if the tx is not pending
+    if (data?.balancePerType.unlockedUnstaked) {
+      const unlockedInUnit = new TokenUnit(
+        data.balancePerType.unlockedUnstaked,
+        pNetwork.networkToken.decimals,
+        pNetwork.networkToken.symbol
+      )
+
+      setClaimableAmountInAvax(unlockedInUnit.toDisplay())
+      setFormattedClaimableAmountInCurrency(
+        appHook.tokenInCurrencyFormatter(
+          unlockedInUnit.mul(avaxPrice).toDisplay({ asNumber: true })
         )
-        return [
-          unlockedInUnit.toDisplay(),
-          appHook.tokenInCurrencyFormatter(
-            unlockedInUnit.mul(avaxPrice).toDisplay({ asNumber: true })
-          )
-        ]
-      }
-      return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
-    }, [
-      avaxPrice,
-      data?.balancePerType.unlockedUnstaked,
-      pNetwork.networkToken.decimals,
-      pNetwork.networkToken.symbol,
-      appHook
-    ])
+      )
+    }
+  }, [
+    data?.balancePerType.unlockedUnstaked,
+    avaxPrice,
+    pNetwork.networkToken.decimals,
+    pNetwork.networkToken.symbol,
+    appHook,
+    claimRewardsMutation.isPending
+  ])
 
   const [feesInAvax, formattedFeesInCurrency] = useMemo(() => {
     if (totalFees === undefined) {
@@ -95,7 +100,7 @@ const ClaimRewards = (): JSX.Element | null => {
     }
 
     return [
-      totalFees.toDisplay(),
+      totalFees.toDisplay({ fixedDp: 10 }),
       appHook.tokenInCurrencyFormatter(
         totalFees.mul(avaxPrice).toDisplay({ asNumber: true })
       )
@@ -134,7 +139,7 @@ const ClaimRewards = (): JSX.Element | null => {
   }
 
   function onFundsStuck(): void {
-    navigate(AppNavigation.Earn.FundsStuck, {
+    navigate(AppNavigation.Earn.ClaimFundsStuck, {
       onTryAgain: () => issueClaimRewards()
     })
   }
@@ -203,7 +208,7 @@ const ClaimRewards = (): JSX.Element | null => {
         </Tooltip>
         {renderFees()}
       </Row>
-      {insufficientBalanceForFee && (
+      {!claimRewardsMutation.isPending && insufficientBalanceForFee && (
         <Text
           testID="insufficent_balance_error_msg"
           variant="body2"

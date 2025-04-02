@@ -7,6 +7,7 @@ import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { Space } from './Space'
+import { MaliciousTokenIconWithWarning } from './MaliciousTokenIconWithWarning'
 
 interface Props {
   tokenName: string
@@ -17,6 +18,7 @@ interface Props {
   onPress?: () => void
   showLoading?: boolean
   testID?: string
+  isMalicious: boolean
 }
 
 const PortfolioListItem: FC<Props> = ({
@@ -27,7 +29,8 @@ const PortfolioListItem: FC<Props> = ({
   symbol,
   onPress,
   showLoading,
-  testID
+  testID,
+  isMalicious
 }) => {
   const {
     appHook: { currencyFormatter }
@@ -55,8 +58,8 @@ const PortfolioListItem: FC<Props> = ({
     />
   )
 
-  const { getMarketToken } = useWatchlist()
-  const marketToken = getMarketToken(symbol)
+  const { getMarketTokenBySymbol } = useWatchlist()
+  const marketToken = getMarketTokenBySymbol(symbol)
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined
   const priceChange = percentChange
     ? (tokenPriceInCurrency * percentChange) / 100
@@ -72,9 +75,17 @@ const PortfolioListItem: FC<Props> = ({
       }}>
       <AvaListItem.Base
         title={
-          <Text numberOfLines={1} variant="heading6">
-            {title}
-          </Text>
+          <View sx={{ flexDirection: 'row', gap: 8 }}>
+            {isMalicious && (
+              <MaliciousTokenIconWithWarning
+                contentWidth={200}
+                position="right"
+              />
+            )}
+            <Text sx={{ flex: 1 }} numberOfLines={1} variant="heading6">
+              {title}
+            </Text>
+          </View>
         }
         titleAlignment={'flex-start'}
         subtitle={subTitle}

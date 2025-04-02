@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction as SentryTransaction } from '@sentry/types'
 import {
   constructFetchFetcher,
   constructGetSpender,
@@ -16,8 +15,7 @@ import {
 } from '@paraswap/sdk'
 import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
-
-export const ETHER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+import { EVM_NATIVE_TOKEN_ADDRESS } from 'contexts/SwapContext/consts'
 
 const txResponseSchema = z
   .object({
@@ -35,7 +33,7 @@ const TESTNET_NETWORK_UNSUPPORTED_ERROR = new Error(
   'Testnet network is not supported by Paraswap'
 )
 
-interface BuildTxParams {
+export interface BuildTxParams {
   network: Network
   srcToken: Address
   destToken: Address
@@ -46,13 +44,13 @@ interface BuildTxParams {
   partner?: string
   partnerAddress?: string
   partnerFeeBps?: number
+  isDirectFeeTransfer?: boolean
   receiver?: Address
   options?: BuildOptions
   srcDecimals?: number
   destDecimals?: number
   permit?: string
   deadline?: string
-  sentryTrx?: SentryTransaction
 }
 
 interface SwapRate {
@@ -64,7 +62,7 @@ interface SwapRate {
   swapSide: SwapSide
   network: Network
   account: Account
-  sentryTrx?: SentryTransaction
+  abortSignal?: AbortSignal
 }
 
 const SUPPORTED_SWAP_NETWORKS = [
@@ -106,39 +104,49 @@ class SwapService {
     swapSide,
     network,
     account,
-    sentryTrx
+    abortSignal
   }: SwapRate): Promise<OptimalRate> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.swap.get_rate')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      {
+        name: 'swap',
+        contextName: 'svc.swap.get_rate'
+      },
+      async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
         }
+
         if (!SUPPORTED_SWAP_NETWORKS.includes(network.chainId)) {
           throw new Error(`${network.chainName} is not supported by Paraswap`)
         }
+
         if (!account) {
           throw new Error('Account address missing')
         }
-        return await this.getParaSwapSDK(network.chainId).swap.getRate({
-          srcToken,
-          destToken,
-          amount: srcAmount,
-          userAddress: account.addressC,
-          side: swapSide,
-          srcDecimals,
-          destDecimals
-        })
-      })
+
+        const isFromTokenNative = network.networkToken.symbol === srcToken
+        const isDestTokenNative = network.networkToken.symbol === destToken
+
+        return await this.getParaSwapSDK(network.chainId).swap.getRate(
+          {
+            srcToken: isFromTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : srcToken,
+            destToken: isDestTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : destToken,
+            amount: srcAmount,
+            userAddress: account.addressC,
+            side: swapSide,
+            srcDecimals,
+            destDecimals
+          },
+          abortSignal
+        )
+      }
+    )
   }
 
-  async getParaswapSpender(
-    network: Network,
-    sentryTrx?: SentryTransaction
-  ): Promise<Address> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.swap.get_paraswap_spender')
-      .executeAsync(async () => {
+  async getParaswapSpender(network: Network): Promise<Address> {
+    return SentryWrapper.startSpan(
+      { name: 'swap', contextName: 'svc.swap.get_paraswap_spender' },
+      async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
         }
@@ -153,7 +161,8 @@ class SwapService {
           fetcher
         })
         return getSpender()
-      })
+      }
+    )
   }
 
   async buildTx({
@@ -167,16 +176,16 @@ class SwapService {
     partner,
     partnerAddress,
     partnerFeeBps,
+    isDirectFeeTransfer,
     receiver,
     srcDecimals,
     destDecimals,
     permit,
-    deadline,
-    sentryTrx
-  }: BuildTxParams): Promise<Error | TransactionParams> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.swap.build_trx')
-      .executeAsync(async () => {
+    deadline
+  }: BuildTxParams): Promise<TransactionParams> {
+    return SentryWrapper.startSpan(
+      { name: 'swap', contextName: 'svc.swap.build_trx' },
+      async () => {
         if (network.isTestnet) {
           throw TESTNET_NETWORK_UNSUPPORTED_ERROR
         }
@@ -196,6 +205,7 @@ class SwapService {
           partner,
           partnerAddress,
           partnerFeeBps,
+          isDirectFeeTransfer,
           receiver,
           srcDecimals,
           destDecimals,
@@ -206,11 +216,12 @@ class SwapService {
         const result = txResponseSchema.safeParse(response)
 
         if (!result.success) {
-          throw new Error('Invalid transaction params')
+          throw new Error('Unexpected response from our pricing provider')
         }
 
         return result.data
-      })
+      }
+    )
   }
 }
 

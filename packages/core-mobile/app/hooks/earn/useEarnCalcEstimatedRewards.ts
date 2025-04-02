@@ -7,8 +7,6 @@ import { pvm } from '@avalabs/avalanchejs'
 import { Seconds } from 'types/siUnits'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
-import { selectActiveNetwork } from 'store/network'
-import { isDevnet } from 'utils/isDevnet'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 
 export type useEarnCalcEstimatedRewardsProps = {
@@ -37,12 +35,8 @@ export const useEarnCalcEstimatedRewards = ({
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useSelector(selectAvaxPrice)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const provider = useAvalancheXpProvider(isDeveloperMode)
-  const { networkToken } = NetworkService.getAvalancheNetworkP(
-    isDeveloperMode,
-    isDevnet(activeNetwork)
-  )
+  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useQuery({
     queryKey: ['currentSupply', provider],
@@ -62,8 +56,7 @@ export const useEarnCalcEstimatedRewards = ({
           networkToken.symbol
         ),
         delegationFee,
-        isDeveloperMode,
-        isDevnet(activeNetwork)
+        isDeveloperMode
       )
       return {
         estimatedTokenReward: reward,

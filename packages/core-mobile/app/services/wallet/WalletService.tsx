@@ -17,21 +17,23 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account/types'
-import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
-import { info, UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
+import { UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
-import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
+import {
+  MessageTypes,
+  RpcMethod,
+  TypedData,
+  TypedDataV1
+} from '@avalabs/vm-module-types'
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
-import { isDevnet } from 'utils/isDevnet'
+import { SpanName } from 'services/sentry/types'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -53,9 +55,6 @@ type InitProps = {
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
-
-// We increase C chain base fee by 20% for instant speed
-const C_CHAIN_BASE_FEE_MULTIPLIER = 0.2
 
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
@@ -86,16 +85,16 @@ class WalletService {
     transaction,
     accountIndex,
     network,
-    sentryTrx
+    sentrySpanName = 'sign-transaction'
   }: {
     transaction: SignTransactionRequest
     accountIndex: number
     network: Network
-    sentryTrx?: SentryTransaction
+    sentrySpanName?: SpanName
   }): Promise<string> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.wallet.sign')
-      .executeAsync(async () => {
+    return SentryWrapper.startSpan(
+      { name: sentrySpanName, contextName: 'svc.wallet.sign' },
+      async () => {
         const provider = await NetworkService.getProviderForNetwork(network)
         const wallet = await WalletFactory.createWallet(
           accountIndex,
@@ -141,7 +140,8 @@ class WalletService {
           network,
           provider
         })
-      })
+      }
+    )
   }
 
   public async signMessage({
@@ -229,8 +229,7 @@ class WalletService {
     })
 
     const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet),
-      isDevnet(network)
+      Boolean(network.isTestnet)
     )
 
     return wallet.getAddresses({
@@ -257,14 +256,12 @@ class WalletService {
     indices,
     chainAlias,
     isChange,
-    isTestnet,
-    isDevnet: devnet
+    isTestnet
   }: {
     indices: number[]
     chainAlias: 'X' | 'P'
     isChange: boolean
     isTestnet: boolean
-    isDevnet: boolean
   }): Promise<string[]> {
     if (
       this.walletType === WalletType.SEEDLESS ||
@@ -274,10 +271,7 @@ class WalletService {
     }
 
     if (this.walletType === WalletType.MNEMONIC) {
-      const provXP = await NetworkService.getAvalancheProviderXP(
-        isTestnet,
-        devnet
-      )
+      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
       return indices.map(index =>
         Avalanche.getAddressFromXpub(
@@ -356,10 +350,6 @@ class WalletService {
     )
 
     return readOnlySigner.getUTXOs('P')
-  }
-
-  public getInstantBaseFee<T extends TokenUnit>(baseFee: T): TokenUnit {
-    return baseFee.add(baseFee.mul(C_CHAIN_BASE_FEE_MULTIPLIER))
   }
 
   public async createExportCTx({
@@ -734,8 +724,7 @@ class WalletService {
       this.walletType
     )
     const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet),
-      isDevnet(network)
+      Boolean(network.isTestnet)
     )
     return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
   }
@@ -763,22 +752,14 @@ class WalletService {
     Logger.info('validating burned amount')
 
     const avalancheProvider = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet),
-      isDevnet(network)
+      Boolean(network.isTestnet)
     )
-
-    const upgradesInfo = isDevnet(network)
-      ? await new info.InfoApi(network.rpcUrl)
-          .getUpgradesInfo()
-          .catch(() => undefined)
-      : undefined
 
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
       baseFee: evmBaseFeeInNAvax,
-      feeTolerance: EVM_FEE_TOLERANCE,
-      upgradesInfo
+      feeTolerance: EVM_FEE_TOLERANCE
     })
 
     if (!isValid) {

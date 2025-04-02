@@ -14,40 +14,73 @@ interface FormatCurrencyProps {
   currency: string
   boostSmallNumberPrecision: boolean
   notation?: NotationTypes
+  showLessThanThreshold?: boolean
 }
 
 export function formatCurrency({
   amount,
   currency,
   boostSmallNumberPrecision,
-  notation
-}: FormatCurrencyProps) {
+  notation,
+  showLessThanThreshold = false
+}: FormatCurrencyProps): string {
   const formatter = selectCurrencyFormat({
     amount,
     currency,
     boostSmallNumberPrecision,
     notation
   })
-  const parts = formatter.formatToParts(amount)
-  // match "CHF 10"
-  if (parts[0]?.value === currency) {
-    const flatArray = parts.map(x => x.value)
-    flatArray.push(` ${flatArray.shift() || ''}`)
-    return flatArray.join('').trim()
-  }
-  // match "-CHF 10"
-  if (parts[1]?.value === currency) {
-    const flatArray = parts.map(x => x.value)
-    // remove the currency code after the sign
-    flatArray.splice(1, 1)
-    flatArray.push(` ${currency}`)
-    return flatArray.join('').trim()
+
+  const absAmount = Math.abs(amount)
+  const formatted =
+    showLessThanThreshold && absAmount < 0.001
+      ? `<${formatter.format(0.001)}`
+      : formatter.format(amount)
+
+  // Check if the currency appears at the beginning
+  if (formatted.startsWith(currency)) {
+    // Move the currency to the end
+    return `${formatted.slice(currency.length).trim()} ${currency}`
   }
 
-  return formatter.format(amount)
+  // Check if the currency appears after a sign (e.g., "-CHF 10")
+  const signMatch = formatted.match(/^([-+])\s*([A-Z]{3})\s*(.*)/)
+  if (signMatch && signMatch[2] === currency) {
+    const sign = signMatch[1]
+    const number = signMatch[3] ?? ''
+    return `${sign}${number.trim()} ${currency}`
+  }
+
+  // Default case: return the formatted string as is
+  return formatted
 }
 
-const getCurrencyNumberFormat = memoize(
+const selectCurrencyFormat = ({
+  amount,
+  currency,
+  boostSmallNumberPrecision,
+  notation
+}: FormatCurrencyProps): Intl.NumberFormat => {
+  if (notation === 'compact') {
+    return getCompactFormat(currency)
+  }
+
+  const absAmount = Math.abs(amount)
+
+  if (boostSmallNumberPrecision && absAmount < 1) {
+    return getHighPrecisionFormat(currency)
+  }
+
+  if (absAmount < 0.01) {
+    return getTenthsOfCentsFormat(currency)
+  }
+
+  return getStandardFormat(currency)
+}
+
+// Purpose: The default formatter for amounts ≥ 1, using 2 decimal places (e.g., "$5.68").
+// Acts as the "standard" currency formatter.
+const getStandardFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
       ...commonNumberFormat(currency),
@@ -55,7 +88,19 @@ const getCurrencyNumberFormat = memoize(
     })
 )
 
-const getSmallNumberCurrencyNumberFormat = memoize(
+// Purpose: Formats amounts < 0.01 with 3 decimal places.
+// For example "$0.005"
+const getTenthsOfCentsFormat = memoize(
+  (currency: string) =>
+    new Intl.NumberFormat('en-US', {
+      ...commonNumberFormat(currency),
+      maximumFractionDigits: 3
+    })
+)
+
+// Purpose: Formats small numbers (< 1) with high precision (up to 8 decimal places) when boostSmallNumberPrecision is true.
+// Used for cases needing extra precision beyond the standard formatting.
+const getHighPrecisionFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
       ...commonNumberFormat(currency),
@@ -63,7 +108,9 @@ const getSmallNumberCurrencyNumberFormat = memoize(
     })
 )
 
-const getCompactCurrencyNumberFormat = memoize(
+// Purpose: Formats numbers in compact notation (e.g., "$1.2K" instead of "$1200").
+// Uses 2 decimal places, designed for large numbers in a shorthand format
+const getCompactFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
       ...commonNumberFormat(currency),
@@ -81,18 +128,4 @@ const commonNumberFormat = (
     currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
     minimumFractionDigits: 2
   }
-}
-
-const selectCurrencyFormat = ({
-  amount,
-  currency,
-  boostSmallNumberPrecision,
-  notation
-}: FormatCurrencyProps) => {
-  if (notation === 'compact') {
-    return getCompactCurrencyNumberFormat(currency)
-  }
-  return boostSmallNumberPrecision && amount < 1
-    ? getSmallNumberCurrencyNumberFormat(currency)
-    : getCurrencyNumberFormat(currency)
 }

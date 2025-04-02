@@ -60,7 +60,6 @@ export const networkToBlockchain = (
     case ChainId.AVALANCHE_MAINNET_ID:
     case ChainId.AVALANCHE_LOCAL_ID:
     case ChainId.AVALANCHE_TESTNET_ID:
-    case ChainId.AVALANCHE_DEVNET_ID:
       return Blockchain.AVALANCHE
     case ChainId.ETHEREUM_HOMESTEAD:
     case ChainId.ETHEREUM_TEST_GOERLY:

@@ -23,7 +23,7 @@ export type EarnStackParamList = {
     stakeTitle: string
   }
   [AppNavigation.Earn.ClaimRewards]?: { onBack?: () => void }
-  [AppNavigation.Earn.FundsStuck]: {
+  [AppNavigation.Earn.ClaimFundsStuck]: {
     onTryAgain: () => void
   }
 }
@@ -36,7 +36,7 @@ function EarnScreenStack(): JSX.Element {
       screenOptions={{
         headerShown: true,
         title: '',
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTitleAlign: 'center',
         headerLeftContainerStyle: {
           paddingLeft: 8
@@ -77,12 +77,20 @@ function EarnScreenStack(): JSX.Element {
       />
       <EarnStack.Screen
         options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.Earn.FundsStuck}
-        component={FundsStuckModal}
+        name={AppNavigation.Earn.ClaimFundsStuck}
+        component={ClaimFundsStuckModal}
       />
     </EarnStack.Navigator>
   )
 }
+
+const ClaimFundsStuckModal = (): JSX.Element => (
+  <FundsStuckModal
+    title="Claim Failed"
+    message="Your transaction failed due to network issues. Would you like to try again?"
+    dismissText="Cancel"
+  />
+)
 
 const renderNavigationHeader = ({
   showBackButton = false,

@@ -1,11 +1,13 @@
 import {
   NetworkTokenWithBalance,
   TokenType,
+  TokenWithBalance,
   TokenWithBalanceERC20,
   TokenWithBalanceEVM
 } from '@avalabs/vm-module-types'
 import { isAddress } from 'ethers'
 import { SendErrorMessage } from '../types'
+import { isSupportedToken } from './typeguard'
 
 export const validateBasicInputs = (
   token: TokenWithBalanceEVM | undefined,
@@ -28,11 +30,9 @@ export const validateERC1155 = (
   token: TokenWithBalanceEVM,
   nativeToken: NetworkTokenWithBalance
 ): void => {
-  // TODO: uncomment this after migrating vm-module's nft balance fetching
-  // https://ava-labs.atlassian.net/browse/CP-9276
-  // if (token.balance === 0n) {
-  //   throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
-  // }
+  if (token.balance === 0n) {
+    throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
+  }
 
   if (nativeToken.balance === 0n) {
     throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
@@ -40,31 +40,39 @@ export const validateERC1155 = (
 }
 
 export const validateAmount = ({
-  gasLimit,
   amount,
-  token,
-  maxFee,
-  nativeToken
+  token
 }: {
-  gasLimit: bigint
   amount: bigint | undefined
   token: TokenWithBalanceERC20 | NetworkTokenWithBalance
-  maxFee: bigint
-  nativeToken: NetworkTokenWithBalance
 }): void => {
   if (amount && token.balance < amount) {
     throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
   }
 
+  if (!amount || (amount && amount <= 0n)) {
+    throw new Error(SendErrorMessage.AMOUNT_REQUIRED)
+  }
+}
+
+export const validateFee = ({
+  gasLimit,
+  maxFee,
+  amount,
+  nativeToken,
+  token
+}: {
+  gasLimit: bigint
+  maxFee: bigint
+  amount: bigint | undefined
+  nativeToken: NetworkTokenWithBalance
+  token: TokenWithBalanceEVM
+}): void => {
   const totalFee = gasLimit * maxFee
   const remainingBalance = nativeToken.balance - (amount ?? 0n)
 
   if (token.type === TokenType.NATIVE && remainingBalance < totalFee) {
     throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE)
-  }
-
-  if (!amount || (amount && amount <= 0n)) {
-    throw new Error(SendErrorMessage.AMOUNT_REQUIRED)
   }
 }
 
@@ -74,13 +82,10 @@ export const validateGasLimit = (gasLimit: bigint): void => {
   }
 }
 
-export const validateSupportedToken = (token: TokenWithBalanceEVM): void => {
-  if (
-    token.type !== TokenType.ERC20 &&
-    token.type !== TokenType.ERC721 &&
-    token.type !== TokenType.ERC1155 &&
-    token.type !== TokenType.NATIVE
-  ) {
+export function validateSupportedToken(
+  token: TokenWithBalance
+): asserts token is TokenWithBalanceEVM {
+  if (!isSupportedToken(token)) {
     throw new Error(SendErrorMessage.UNSUPPORTED_TOKEN)
   }
 }

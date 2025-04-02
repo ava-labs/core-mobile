@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { initialState } from './types'
+import { CollectibleVisibility, initialState, TokenVisibility } from './types'
 
 const reducerName = 'portfolio'
 
@@ -8,30 +8,47 @@ export const portfolioSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    toggleBlacklist: (state, action: PayloadAction<string>) => {
-      const tokenId = action.payload
+    toggleTokenVisibility: (
+      state,
+      action: PayloadAction<{ tokenId: string }>
+    ) => {
+      const { tokenId } = action.payload
+      state.tokenVisibility[tokenId.toLowerCase()] =
+        !state.tokenVisibility[tokenId.toLowerCase()]
+    },
+    toggleCollectibleVisibility: (
+      state,
+      action: PayloadAction<{ uid: string }>
+    ) => {
+      const { uid } = action.payload
 
-      if (!state.tokenBlacklist.includes(tokenId)) {
-        // add to list
-        state.tokenBlacklist.push(tokenId)
-      } else {
-        // remove from list
-        const newList = state.tokenBlacklist.filter(id => id !== tokenId)
-        state.tokenBlacklist = newList
-      }
+      state.collectibleVisibility[uid.toLowerCase()] =
+        !state.collectibleVisibility?.[uid.toLowerCase()] || false
+    },
+    toggleCollectibleUnprocessableVisibility: state => {
+      state.collectibleUnprocessableVisibility =
+        !state.collectibleUnprocessableVisibility || false
     }
   }
 })
 
 // selectors
-export const selectTokenBlacklist = (state: RootState) =>
-  state.portfolio.tokenBlacklist
+export const selectTokenVisibility = (state: RootState): TokenVisibility =>
+  state.portfolio.tokenVisibility
 
-export const selectIsTokenBlacklisted =
-  (tokenId: string) => (state: RootState) =>
-    state.portfolio.tokenBlacklist.includes(tokenId)
+export const selectCollectibleVisibility = (
+  state: RootState
+): CollectibleVisibility => state.portfolio.collectibleVisibility
+
+export const selectCollectibleUnprocessableVisibility = (
+  state: RootState
+): boolean => state.portfolio.collectibleUnprocessableVisibility
 
 // actions
-export const { toggleBlacklist } = portfolioSlice.actions
+export const {
+  toggleTokenVisibility,
+  toggleCollectibleVisibility,
+  toggleCollectibleUnprocessableVisibility
+} = portfolioSlice.actions
 
 export const portfolioReducer = portfolioSlice.reducer

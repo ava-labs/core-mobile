@@ -11,7 +11,7 @@ describe('getSelectedToken function', () => {
   })
 
   it('Should return token symbol if it is not type of ERC20', () => {
-    const token = mockTokenWithBalance[1] as LocalTokenWithBalance
+    const token = mockTokenWithBalance[2] as LocalTokenWithBalance
     const result = getSelectedToken(token)
     expect(result).toBe(token.symbol)
   })

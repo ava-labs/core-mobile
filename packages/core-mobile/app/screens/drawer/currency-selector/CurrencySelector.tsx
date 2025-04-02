@@ -10,6 +10,7 @@ import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   currencies,
+  CurrencySymbol,
   selectSelectedCurrency,
   setSelectedCurrency
 } from 'store/settings/currency'
@@ -22,7 +23,7 @@ const CurrencySelector = (): JSX.Element => {
   const dispatch = useDispatch()
 
   const renderItem = (
-    item: ListRenderItemInfo<{ name: string; symbol: string }>
+    item: ListRenderItemInfo<{ name: string; symbol: CurrencySymbol }>
   ): JSX.Element => {
     const currency = item.item
 

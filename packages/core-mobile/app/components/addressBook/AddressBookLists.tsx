@@ -93,7 +93,7 @@ export default function AddressBookLists({
     [recentContacts, accounts, contacts, onlyBtc]
   )
 
-  const renderCustomLabel = (
+  const renderLabel = (
     title: string,
     selected: boolean,
     color: string
@@ -114,7 +114,7 @@ export default function AddressBookLists({
   }
 
   return (
-    <TabViewAva renderCustomLabel={renderCustomLabel}>
+    <TabViewAva renderLabel={renderLabel}>
       <TabViewAva.Item title={'Recents'}>
         <FlatList
           data={recentAddresses}

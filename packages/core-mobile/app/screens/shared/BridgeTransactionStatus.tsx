@@ -30,7 +30,6 @@ import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPric
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSimplePrice } from 'hooks/useSimplePrice'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { isDevnet } from 'utils/isDevnet'
 
 type Props = {
   txHash: string
@@ -44,8 +43,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const { activeNetwork } = useNetworks()
   const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
-    activeNetwork.isTestnet === true,
-    isDevnet(activeNetwork)
+    activeNetwork.isTestnet === true
   )
 
   const bridgeTransactions = usePendingBridgeTransactions(activeNetwork)

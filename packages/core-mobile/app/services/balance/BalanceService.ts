@@ -1,12 +1,11 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
-import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
-import type {
-  NetworkContractToken,
-  TokenWithBalance,
-  Error
+import {
+  type NetworkContractToken,
+  type TokenWithBalance,
+  type Error,
+  TokenType
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -24,45 +23,41 @@ export class BalanceService {
     network,
     account,
     currency,
-    sentryTrx,
     customTokens
   }: {
     network: Network
     account: Account
     currency: string
     customTokens?: NetworkContractToken[]
-    sentryTrx?: Transaction
   }): Promise<BalancesForAccount> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.balance.get_for_account')
-      .executeAsync(async () => {
-        const accountAddress = getAddressByNetwork(account, network)
+    const accountAddress = getAddressByNetwork(account, network)
 
-        const module = await ModuleManager.loadModuleByNetwork(network)
-        const balancesResponse = await module.getBalances({
-          customTokens,
-          addresses: [accountAddress],
-          currency,
-          network: mapToVmNetwork(network),
-          storage: coingeckoInMemoryCache
-        })
-        const balances = balancesResponse[accountAddress] ?? {}
-        if ('error' in balances) {
-          return {
-            accountIndex: account.index,
-            chainId: network.chainId,
-            tokens: [],
-            accountAddress
-          }
-        }
+    const module = await ModuleManager.loadModuleByNetwork(network)
+    const balancesResponse = await module.getBalances({
+      customTokens,
+      addresses: [accountAddress],
+      currency,
+      network: mapToVmNetwork(network),
+      storage: coingeckoInMemoryCache,
+      tokenTypes: [TokenType.NATIVE, TokenType.ERC20]
+    })
 
-        return {
-          accountIndex: account.index,
-          chainId: network.chainId,
-          tokens: Object.values(balances),
-          accountAddress
-        }
-      })
+    const balances = balancesResponse[accountAddress] ?? {}
+    if ('error' in balances) {
+      return {
+        accountIndex: account.index,
+        chainId: network.chainId,
+        tokens: [],
+        accountAddress
+      }
+    }
+
+    return {
+      accountIndex: account.index,
+      chainId: network.chainId,
+      tokens: Object.values(balances),
+      accountAddress
+    }
   }
 }
 

@@ -14,7 +14,7 @@ export const transactionApi = createApi({
   endpoints: builder => ({
     getTransactions: builder.query<ActivityResponse, GetTransactionsArgs>({
       queryFn: async ({ network, account, nextPageToken }) => {
-        if (!account) return { error: 'unable to get transactions' }
+        if (!account || !network) return { error: 'unable to get transactions' }
 
         try {
           const transactions = await ActivityService.getActivities({
@@ -39,6 +39,7 @@ export const transactionApi = createApi({
     >({
       queryFn: async ({ network, account }) => {
         if (!account) return { error: 'unable to get transactions' }
+        if (!network) return { error: 'unable to get network' }
 
         try {
           const data = await ActivityService.getActivities({

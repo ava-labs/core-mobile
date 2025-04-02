@@ -1,79 +1,54 @@
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { NftPageParam } from 'store/nft'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
-// a hook to get NFTs with pagination support for the current active network & account
+const REFETCH_INTERVAL = 30000 // 30 seconds
+
+// a hook to get NFTs for the current active network & account
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNfts = (enabled: boolean) => {
   const { activeNetwork } = useNetworks()
+  const currency = useSelector(selectSelectedCurrency).toLowerCase()
   const account = useSelector(selectActiveAccount)
 
-  const fetchNfts = useCallback(
-    async ({ pageParam }: { pageParam: NftPageParam }) => {
-      if (!account?.addressC) {
-        throw new Error('unable to get NFTs')
-      }
+  const fetchNfts = useCallback(async () => {
+    if (!account?.addressC) {
+      throw new Error('unable to get NFTs')
+    }
 
-      const t = SentryWrapper.startTransaction('get-nfts')
+    return SentryWrapper.startSpan({ name: 'get-nfts' }, async () => {
       try {
-        const nftPagedData = await NftService.fetchNfts({
-          chainId: activeNetwork.chainId,
+        return await NftService.fetchNfts({
+          network: activeNetwork,
           address: account.addressC,
-          pageToken: pageParam
+          currency
         })
-
-        return {
-          nfts: nftPagedData.nfts,
-          nextPageToken: nftPagedData.nextPageToken
-        }
       } catch (err) {
         Logger.error(
-          `failed to get nfts for chain ${activeNetwork.chainId}`,
+          `Failed to get NFTs for chain ${activeNetwork.chainId}`,
           err
         )
-        return { nfts: [], nextPageToken: undefined }
-      } finally {
-        SentryWrapper.finish(t)
+        return []
       }
-    },
-    [account, activeNetwork]
-  )
+    })
+  }, [account, activeNetwork, currency])
 
-  const query = useInfiniteQuery({
+  return useQuery({
     queryKey: [
       ReactQueryKeys.NFTS,
-      {
-        chainId: activeNetwork.chainId,
-        accountAddress: account?.addressC
-      }
+      activeNetwork.chainId,
+      account?.addressC,
+      currency
     ],
     enabled,
-    retry: false,
     queryFn: fetchNfts,
-    initialPageParam: {},
-    getNextPageParam: (lastPage, _) => {
-      // glacier api is returning nextPageToken as empty string when there is no more data
-      // so when nextPageToken is falsy, we should return undefined
-      return lastPage.nextPageToken ? lastPage.nextPageToken : undefined
-    }
+    refetchInterval: REFETCH_INTERVAL
   })
-
-  const nfts = useMemo(() => {
-    const flattenedNfts = query.data?.pages.flatMap(page => page.nfts) ?? []
-    return Array.from(
-      new Map(flattenedNfts.map(nft => [nft.uid, nft])).values()
-    )
-  }, [query.data?.pages])
-
-  return {
-    ...query,
-    nfts
-  }
 }

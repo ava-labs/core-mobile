@@ -11,6 +11,9 @@ import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { isBech32Address } from '@avalabs/core-bridge-sdk'
 import { isAddress } from 'ethers'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
+import { isBtcAddress as isValidBtcAddress } from 'utils/isBtcAddress'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 type TextType = 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body1' | 'Body2'
 
@@ -37,7 +40,7 @@ const TokenAddress: FC<Props> = ({
   copyIconEnd
 }): JSX.Element => {
   const theme = useContext(ApplicationContext).theme
-
+  const activeNetwork = useSelector(selectActiveNetwork)
   const tokenAddress = showFullAddress ? address : truncateAddress(address)
   const txtColor = textColor ? textColor : theme.colorText1
 
@@ -48,6 +51,9 @@ const TokenAddress: FC<Props> = ({
     onCopyAddress?.(address)
   }
 
+  const isBtcAddress = (): boolean =>
+    isValidBtcAddress(address, !activeNetwork.isTestnet)
+
   return (
     <AvaButton.Base
       onPress={() => (hideCopy ? noop : copyAddressToClipboard())}
@@ -57,13 +63,13 @@ const TokenAddress: FC<Props> = ({
         marginRight: 0
       }}
       testID="receive_token_address">
-      {showIcon && isBech32Address(address) && (
+      {showIcon && isBtcAddress() && (
         <>
           <BitcoinSVG size={16} />
           <Space x={8} />
         </>
       )}
-      {showIcon && isAddress(address) && (
+      {showIcon && (isBech32Address(address) || isAddress(address)) && (
         <>
           <AvaLogoSVG
             size={16}

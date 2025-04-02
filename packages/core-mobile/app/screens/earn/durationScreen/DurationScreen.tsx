@@ -20,7 +20,7 @@ import {
   TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
 import Logger from 'utils/Logger'
-import { DOCS_STAKING } from 'resources/Constants'
+import { DOCS_STAKING_URL } from 'resources/Constants'
 import { useNow } from 'hooks/time/useNow'
 import { BackButton } from 'components/BackButton'
 import { Tooltip } from 'components/Tooltip'
@@ -136,8 +136,8 @@ export const StakingDuration = (): JSX.Element => {
 
   const handleReadMore = (): void => {
     AnalyticsService.capture('StakeOpenStakingDocs', { from: 'DurationScreen' })
-    Linking.openURL(DOCS_STAKING).catch(e => {
-      Logger.error(DOCS_STAKING, e)
+    Linking.openURL(DOCS_STAKING_URL).catch(e => {
+      Logger.error(DOCS_STAKING_URL, e)
     })
   }
 

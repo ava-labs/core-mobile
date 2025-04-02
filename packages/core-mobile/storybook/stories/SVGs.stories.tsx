@@ -28,9 +28,6 @@ import CircularText from 'components/svg/CircularText'
 import ClearInputSVG from 'components/svg/ClearInputSVG'
 import ClearSVG from 'components/svg/ClearSVG'
 import CopySVG from 'components/svg/CopySVG'
-import CoreOwlSVG from 'components/svg/CoreOwlSVG'
-import CoreSVG from 'components/svg/CoreSVG'
-import CoreTextSVG from 'components/svg/CoreTextSVG'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
 import DarkModeSVG from 'components/svg/DarkModeSVG'
 import DeleteSVG from 'components/svg/DeleteSVG'
@@ -53,7 +50,6 @@ import LineChartSVG from 'components/svg/LineChartSVG'
 import LinkSVG from 'components/svg/LinkSVG'
 import ListSVG from 'components/svg/ListSVG'
 import MenuSVG from 'components/svg/MenuSVG'
-import OwlSVG from 'components/svg/OwlSVG'
 import PersonSVG from 'components/svg/PersonSVG'
 import QRCodeSVG from 'components/svg/QRCodeSVG'
 import QRScanSVG from 'components/svg/QRScanSVG'
@@ -157,9 +153,6 @@ export const SVGList = (): JSX.Element => {
       />
       <IconContainer children={<ClockSVG />} name="Clock" />
       <IconContainer children={<CopySVG />} name="Copy" />
-      <IconContainer children={<CoreOwlSVG />} name="Core Owl" />
-      <IconContainer children={<CoreSVG />} name="Core" />
-      <IconContainer children={<CoreTextSVG />} name="Core Text" />
       <IconContainer
         children={<CreateNewWalletPlusSVG />}
         name="Create New Wallet Plus"
@@ -196,7 +189,6 @@ export const SVGList = (): JSX.Element => {
       <IconContainer children={<LinkSVG />} name="Link" />
       <IconContainer children={<ListSVG />} name="List" />
       <IconContainer children={<MenuSVG />} name="Menu" />
-      <IconContainer children={<OwlSVG />} name="Owl" />
       <IconContainer children={<PersonSVG />} name="Person" />
       <IconContainer children={<QRCodeSVG />} name="QR Code" />
       <IconContainer children={<QRScanSVG />} name="QR Scan" />

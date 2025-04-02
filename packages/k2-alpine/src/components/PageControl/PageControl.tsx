@@ -7,7 +7,7 @@ import Animated, {
   withDelay,
   withTiming
 } from 'react-native-reanimated'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 
 export const PageControl = ({
   numberOfPage,

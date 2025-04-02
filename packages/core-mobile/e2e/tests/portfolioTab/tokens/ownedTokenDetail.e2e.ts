@@ -42,7 +42,7 @@ describe('Owned Token Detail', () => {
   it('should verify owned token detail on Ethereum network', async () => {
     await networksManagePage.switchNetwork('Ethereum')
     await PortfolioPage.tapActiveNetwork('Ethereum')
-    await PortfolioPage.tapToken('Ether')
+    await PortfolioPage.tapToken('ETH')
     await tokenDetailPage.verifyOwnedTokenActionButtons(true, false)
     await tokenDetailPage.verifyNavigateToSend()
     await tokenDetailPage.verifyNavigateToReceive()

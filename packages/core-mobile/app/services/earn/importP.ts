@@ -19,19 +19,17 @@ export type ImportPParams = {
   activeAccount: Account
   isDevMode: boolean
   selectedCurrency: string
-  isDevnet: boolean
   feeState?: pvm.FeeState
 }
 
 export async function importP({
   activeAccount,
   isDevMode,
-  isDevnet,
   feeState
 }: ImportPParams): Promise<void> {
   Logger.info('importing P started')
 
-  const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
+  const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const unsignedTx = await WalletService.createImportPTx({
     accountIndex: activeAccount.index,
     avaxXPNetwork: avaxPNetwork,
@@ -67,10 +65,7 @@ export async function importP({
 
   Logger.trace('txID', txID)
 
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(
-    isDevMode,
-    isDevnet
-  )
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
   try {
     await retry({
@@ -119,13 +114,12 @@ export async function importPWithBalanceCheck({
   activeAccount,
   isDevMode,
   selectedCurrency,
-  isDevnet,
   feeState
 }: ImportPParams): Promise<void> {
   //get P balance now then compare it later to check if balance changed after import
   const addressPVM = activeAccount.addressPVM
   assertNotUndefined(addressPVM)
-  const network = NetworkService.getAvalancheNetworkP(isDevMode, isDevnet)
+  const network = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const unlockedUnstakedBeforeImport = await getUnlockedUnstakedAmount({
     network,
@@ -139,7 +133,6 @@ export async function importPWithBalanceCheck({
     activeAccount,
     isDevMode,
     selectedCurrency,
-    isDevnet,
     feeState
   })
 

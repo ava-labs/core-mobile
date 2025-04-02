@@ -2,7 +2,7 @@ import assert from 'assert'
 import tokenDetail from '../locators/tokenDetail.loc'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
-import { TokenDetailToken, TokenPriceResponse } from '../helpers/tokens'
+import { Coin, TokenDetailToken, TokenPriceResponse } from '../helpers/tokens'
 import delay from '../helpers/waits'
 import sendPage from './send.page'
 import commonElsPage from './commonEls.page'
@@ -101,6 +101,18 @@ class TokenDetailsPage {
 
   get lineGraph() {
     return by.id(tokenDetail.lineGraph)
+  }
+
+  get footerBuyBtn() {
+    return by.id(tokenDetail.footerBuyBtn)
+  }
+
+  get footerSwapBtn() {
+    return by.id(tokenDetail.footerSwapBtn)
+  }
+
+  get footerStakeBtn() {
+    return by.id(tokenDetail.footerStakeBtn)
   }
 
   async verifyTokenDetailScreen() {
@@ -203,11 +215,19 @@ class TokenDetailsPage {
     symbol: string,
     expectedPrice: number | undefined
   ) {
-    // Token Detail Header testing - Title, Symbol, Price
-    const titledName = name.replace(/^\w/, char => char.toUpperCase())
+    // test Symbol
+    await Action.waitForElementNoSync(by.text(symbol), 20000)
+
+    // test name
+    try {
+      const titledName = name.replace(/^\w/, char => char.toUpperCase())
+      await Action.waitForElementNoSync(by.text(titledName))
+    } catch (e) {
+      await Action.waitForElementNoSync(by.text(name))
+    }
+
+    // testprice
     const displayedPrice = await Action.getElementTextNoSync(this.price)
-    await Action.waitForElementNoSync(by.text(titledName))
-    await Action.waitForElementNoSync(by.text(symbol))
     if (expectedPrice && displayedPrice) {
       const isValid = await this.isPriceValid(expectedPrice, displayedPrice)
       assert(
@@ -230,6 +250,31 @@ class TokenDetailsPage {
         console.error(`Error fetching price for ${token.id}:`, error)
       }
     }
+  }
+
+  async getGainers(): Promise<Coin[]> {
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=avalanche-ecosystem&price_change_percentage=24h&per_page=100&page=1`
+    )
+    const data: Coin[] = (await response.json()) as Coin[]
+    data.sort(
+      (
+        a: { price_change_percentage_24h: number },
+        b: { price_change_percentage_24h: number }
+      ) => b.price_change_percentage_24h - a.price_change_percentage_24h
+    )
+
+    return data.slice(0, 20).map((coin, i) => {
+      process.env[`coin_${i}`] = coin.name // coin_0, coin_1, ... 와 같이 저장
+      return {
+        id: coin.id,
+        symbol: coin.symbol,
+        name: coin.name,
+        current_price: coin.current_price,
+        image: coin.image,
+        price_change_percentage_24h: coin.price_change_percentage_24h
+      }
+    })
   }
 
   async isPriceValid(expectedPrice: number, currentPrice: string) {

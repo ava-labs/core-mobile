@@ -7,6 +7,7 @@ import DropDown, { OptionsItemInfo } from 'components/Dropdown'
 import { Space } from 'components/Space'
 import { useGetRecentTransactions } from 'store/transaction/hooks'
 import { TransactionType } from '@avalabs/vm-module-types'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { ActivityLoader } from './ActivityLoader'
 import Transactions from './Transactions'
 
@@ -35,8 +36,9 @@ const ActivityList = ({
   tokenSymbolFilter,
   openTransactionStatus
 }: Props): React.JSX.Element => {
+  const { activeNetwork } = useNetworks()
   const { transactions, refresh, isLoading, isRefreshing } =
-    useGetRecentTransactions()
+    useGetRecentTransactions(activeNetwork)
   const [filter, setFilter] = useState(ActivityFilter.All)
 
   const filteredTransactions = useMemo(

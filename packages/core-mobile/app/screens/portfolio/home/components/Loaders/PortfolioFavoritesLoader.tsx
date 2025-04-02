@@ -16,6 +16,7 @@ export const PortfolioFavoritesLoader = (): JSX.Element => {
   return (
     <View
       style={{
+        marginTop: 16,
         alignItems: 'center',
         width: deviceWidth - 16,
         aspectRatio: aspectRatio,

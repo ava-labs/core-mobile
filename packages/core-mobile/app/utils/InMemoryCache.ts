@@ -1,15 +1,19 @@
-import NodeCache from 'node-cache'
+import { LRUCache } from 'lru-cache'
 
-const ONE_MINUTE = 60
-const cache = new NodeCache({ stdTTL: ONE_MINUTE })
+const ONE_MINUTE = 60 * 1000
+const cache = new LRUCache<string, object>({
+  ttl: ONE_MINUTE,
+  ttlAutopurge: true
+})
 
 export const getCache = <T>(cacheId: string): T | undefined => {
   if (cache.has(cacheId)) {
-    return cache.get<T>(cacheId)
+    return cache.get(cacheId) as T
   }
 
   return undefined
 }
 
-export const setCache = <T>(cacheId: string, data: T): boolean =>
-  cache.set<T>(cacheId, data)
+export const setCache = <T>(cacheId: string, data: T): void => {
+  cache.set(cacheId, data as object)
+}

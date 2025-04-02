@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 export type UseCreatePinProps = {
   onEnterChosenPin: (pinKey: string) => void
   onEnterConfirmedPin: (pinKey: string) => void
+  resetPin: () => void
   chosenPinEntered: boolean
   chosenPin: string
   confirmedPin: string
@@ -42,26 +43,33 @@ export function useCreatePin({
     validatePin()
   }, [validatePin])
 
+  useEffect(() => {
+    setChosenPinEntered(chosenPin.length === 6)
+  }, [chosenPin])
+
+  useEffect(() => {
+    setConfirmedPinEntered(confirmedPin.length === 6)
+  }, [confirmedPin])
+
   const onEnterChosenPin = (pinValue: string): void => {
-    if (chosenPin.length === 6) {
+    if (chosenPinEntered) {
       return
     }
 
     setChosenPin(pinValue)
-    if (pinValue.length === 6) {
-      setChosenPinEntered(true)
-    }
   }
 
   const onEnterConfirmedPin = (pinValue: string): void => {
-    if (confirmedPin.length === 6) {
+    if (confirmedPinEntered) {
       return
     }
     setConfirmedPin(pinValue)
-    if (pinValue.length === 6) {
-      setConfirmedPinEntered(true)
-    }
   }
+
+  const resetPin = useCallback(() => {
+    setChosenPin('')
+    setConfirmedPin('')
+  }, [])
 
   return {
     onEnterChosenPin,
@@ -69,6 +77,7 @@ export function useCreatePin({
     chosenPinEntered,
     chosenPin,
     confirmedPin,
-    validPin
+    validPin,
+    resetPin
   }
 }

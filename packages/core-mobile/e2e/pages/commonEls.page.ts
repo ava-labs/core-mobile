@@ -2,6 +2,7 @@ import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
 import loginRecoverWallet from '../helpers/loginRecoverWallet'
 import delay from '../helpers/waits'
+import commonElsLoc from '../locators/commonEls.loc'
 import advancedPage from './burgerMenu/advanced.page'
 import burgerMenuPage from './burgerMenu/burgerMenu.page'
 
@@ -72,6 +73,50 @@ class CommonElsPage {
 
   get okBtn() {
     return by.text(commonEls.okBtn)
+  }
+
+  get next() {
+    return by.text(commonElsLoc.next)
+  }
+
+  get dismiss() {
+    return by.text(commonElsLoc.dismiss)
+  }
+
+  get grabber() {
+    return by.id(commonElsLoc.grabber)
+  }
+
+  get viewDropdownBtn() {
+    return by.id(commonElsLoc.viewDropdownBtn)
+  }
+
+  get cChain() {
+    return by.text(commonElsLoc.cChain)
+  }
+
+  get pChain() {
+    return by.text(commonElsLoc.pChain)
+  }
+
+  get xChain() {
+    return by.text(commonElsLoc.xChain)
+  }
+
+  get ethereum() {
+    return by.text(commonElsLoc.ethereum)
+  }
+
+  get bitcoinNetwork() {
+    return by.text(commonElsLoc.bitcoinNetwork)
+  }
+
+  get balanceHeaderAccountName() {
+    return by.id(commonElsLoc.balanceHeaderAccountName)
+  }
+
+  async getBalanceHeaderAccountName() {
+    return await Actions.getElementText(this.balanceHeaderAccountName)
   }
 
   async tapCarrotSVG(index = 0) {
@@ -154,6 +199,7 @@ class CommonElsPage {
     } catch (e) {
       await Actions.tapElementAtIndex(this.backButton, 1)
     }
+    await delay(1500)
   }
 
   async tapDropdownItem(item: string, index = 0) {
@@ -183,6 +229,41 @@ class CommonElsPage {
 
   async tapReloadSVG(index = 0) {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
+  }
+
+  //// NEW GEN ////
+
+  async exitMetro() {
+    try {
+      if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
+        await Actions.tap(by.text(/.*8081.*/i))
+      }
+      await Actions.tap(by.id(/.*x-icon.*/i))
+    } catch (e) {
+      console.log('Metro dev menu is not found...')
+    }
+  }
+
+  async tapNext() {
+    await Actions.tap(this.next)
+  }
+
+  async dismissBottomSheet() {
+    await Actions.drag(this.grabber, 'down', 0.5)
+  }
+
+  async selectDropdown(name: string, dropdownItem: string) {
+    await Actions.tap(by.id(`${name}_dropdown_btn`))
+    // await Actions.waitForElement(by.id(`dropdown_item__${dropdownItem}`))
+    await Actions.tap(by.id(`dropdown_item__${dropdownItem}`))
+  }
+
+  async visibleDropdown(name: string, isVisible = true) {
+    if (isVisible) {
+      await Actions.waitForElement(by.id(`${name}_dropdown_btn`))
+    } else {
+      await Actions.waitForElementNotVisible(by.id(`${name}_dropdown_btn`))
+    }
   }
 }
 

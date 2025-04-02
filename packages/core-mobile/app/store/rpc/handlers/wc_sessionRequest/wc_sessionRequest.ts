@@ -15,6 +15,7 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
+import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -129,7 +130,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       const chainId = chainIdtoSwitch.toString()
       const request = createInAppRequest(listenerApi.dispatch)
       await request({
-        method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
+        method:
+          RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN as unknown as VmModuleRpcMethod,
         params: [
           {
             chainId

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   Keyboard,
@@ -30,8 +30,14 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { theme } = useTheme()
+  const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
   const router = useRouter()
   const handleLoginSuccess = useCallback(
@@ -40,10 +46,11 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     },
     [unlock]
   )
+  const [hasNoRecentInput, setHasNoRecentInput] = useState(false)
+  const [hasWrongPinEntered, setHasWrongPinEntered] = useState(false)
 
-  const { theme } = useTheme()
-  const pinInputRef = useRef<PinInputActions>(null)
   const handleWrongPin = (): void => {
+    setHasWrongPinEntered(true)
     pinInputRef.current?.fireWrongPinAnimation(() => {
       onEnterPin('')
 
@@ -70,20 +77,24 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     onStopLoading: handleStopLoading
   })
   const [isEnteringPin, setIsEnteringPin] = useState(false)
+  const shouldShowForgotPin = useMemo(() => {
+    return (
+      disableKeypad === false &&
+      isEnteringPin &&
+      (hasNoRecentInput || hasWrongPinEntered)
+    )
+  }, [disableKeypad, hasNoRecentInput, isEnteringPin, hasWrongPinEntered])
+
+  const forgotPinButtonOpacityStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(shouldShowForgotPin ? 1 : 0, { duration: 300 })
+    }
+  })
 
   const pinInputOpacity = useSharedValue(0)
   const pinInputOpacityStyle = useAnimatedStyle(() => {
     return {
       opacity: pinInputOpacity.value
-    }
-  })
-
-  const avatarContainerMarginTop = useSharedValue(
-    configuration.avatarContainerMarginTop.from
-  )
-  const avatarContainerStyle = useAnimatedStyle(() => {
-    return {
-      marginTop: avatarContainerMarginTop.value
     }
   })
 
@@ -157,13 +168,13 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       let sub: Subscription
-      if (bioType) {
-        InteractionManager.runAfterInteractions(() => {
+      InteractionManager.runAfterInteractions(() => {
+        if (bioType !== BiometricType.NONE) {
           sub = handlePromptBioLogin()
-        })
-      } else {
-        focusPinInput()
-      }
+        } else {
+          focusPinInput()
+        }
+      })
 
       return () => {
         blurPinInput()
@@ -171,6 +182,14 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
       }
     }, [bioType, handlePromptBioLogin, focusPinInput])
   )
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (!enteredPin && isEnteringPin) {
+        setHasNoRecentInput(true)
+      }
+    }, configuration.noInputTimeout)
+  }, [enteredPin, isEnteringPin])
 
   useEffect(() => {
     if (mnemonic) {
@@ -183,9 +202,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     const buttonContainerPaddingBottomValue = isEnteringPin
       ? configuration.buttonContainerPaddingBottom.to
       : configuration.buttonContainerPaddingBottom.from
-    const avatarContainerMarginTopValue = isEnteringPin
-      ? configuration.avatarContainerMarginTop.to
-      : configuration.avatarContainerMarginTop.from
 
     pinInputOpacity.value = withTiming(pinInputOpacityValue, {
       duration: configuration.animationDuration
@@ -196,15 +212,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         duration: configuration.animationDuration
       }
     )
-    avatarContainerMarginTop.value = withTiming(avatarContainerMarginTopValue, {
-      duration: configuration.animationDuration
-    })
-  }, [
-    isEnteringPin,
-    pinInputOpacity,
-    buttonContainerPaddingBottom,
-    avatarContainerMarginTop
-  ])
+  }, [isEnteringPin, pinInputOpacity, buttonContainerPaddingBottom])
 
   return (
     <SafeAreaView sx={{ flex: 1 }}>
@@ -221,7 +229,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                <Logos.Core color={theme.colors.$textPrimary} />
+                <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
                 {disableKeypad && (
                   <View
                     style={{
@@ -235,44 +243,38 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   </View>
                 )}
               </View>
-              <Reanimated.View style={[{ zIndex: -100 }, avatarContainerStyle]}>
+              <Reanimated.View style={[{ zIndex: -100, marginTop: 10 }]}>
                 <Avatar
                   size="small"
                   // todo: replace with actual avatar
                   source={{
                     uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
                   }}
-                  hasBlur={!(Platform.OS === 'android' && isEnteringPin)}
+                  hasBlur={Platform.OS !== 'android'}
                   backgroundColor={theme.colors.$surfacePrimary}
+                  isDeveloperMode={isDeveloperMode}
                 />
               </Reanimated.View>
-              <View
-                pointerEvents={
-                  isEnteringPin || disableKeypad ? 'auto' : 'none'
-                }>
-                <Reanimated.View style={[pinInputOpacityStyle]}>
-                  {disableKeypad === false && (
-                    <PinInput
-                      ref={pinInputRef}
-                      style={{ paddingTop: 40, paddingBottom: 20 }}
-                      length={6}
-                      onChangePin={onEnterPin}
-                      value={enteredPin}
-                    />
-                  )}
-                </Reanimated.View>
-                <Reanimated.View
-                  style={
-                    disableKeypad ? { marginTop: 60 } : pinInputOpacityStyle
-                  }>
-                  <Button
-                    size="medium"
-                    type="tertiary"
-                    onPress={handleForgotPin}>
-                    Forgot PIN?
-                  </Button>
-                </Reanimated.View>
-              </View>
+              <Reanimated.View style={[pinInputOpacityStyle]}>
+                {disableKeypad === false && (
+                  <PinInput
+                    ref={pinInputRef}
+                    style={{ paddingTop: 40, paddingBottom: 20 }}
+                    length={6}
+                    onChangePin={onEnterPin}
+                    value={enteredPin}
+                  />
+                )}
+              </Reanimated.View>
+              <Reanimated.View
+                style={[
+                  disableKeypad ? { marginTop: 60 } : {},
+                  forgotPinButtonOpacityStyle
+                ]}>
+                <Button size="medium" type="tertiary" onPress={handleForgotPin}>
+                  Forgot PIN?
+                </Button>
+              </Reanimated.View>
             </View>
             <Reanimated.View
               style={[
@@ -283,9 +285,9 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                 },
                 buttonContainerStyle
               ]}>
-              {bioType && (
+              {bioType !== BiometricType.NONE && (
                 <CircularButton onPress={handlePromptBioLogin}>
-                  {bioType === 'Face' ? (
+                  {bioType === BiometricType.FACE_ID ? (
                     <Icons.Custom.FaceID width={26} height={26} />
                   ) : (
                     <Icons.Custom.TouchID width={26} height={26} />
@@ -313,10 +315,7 @@ const configuration = {
     from: 40,
     to: 20
   },
-  avatarContainerMarginTop: {
-    from: 40,
-    to: 10
-  }
+  noInputTimeout: 3000
 }
 
 export default LoginWithPinOrBiometry

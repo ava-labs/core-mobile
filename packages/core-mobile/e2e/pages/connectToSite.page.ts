@@ -36,6 +36,10 @@ class ConnectToSite {
     return by.id(connectToSiteLoc.selectAccountsId)
   }
 
+  get connectWalletTitle() {
+    return by.text(connectToSiteLoc.connectWalletTitle)
+  }
+
   async tapPlusIcon() {
     if (Action.platform() === 'ios') {
       await Action.tapElementAtIndex(this.plusIcon, 1)
@@ -69,7 +73,8 @@ class ConnectToSite {
   }
 
   async selectAccountAndconnect() {
-    await Action.waitForElement(this.selectAccountsId, 25000)
+    await Action.waitForElement(this.selectAccountsId, 30000)
+    await Action.waitForElement(this.connectWalletTitle, 30000)
     await this.tapSelectAccounts()
     await this.tapAccountCheckBox()
     await this.tapApproveBtn()

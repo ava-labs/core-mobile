@@ -15,6 +15,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.modules.network.OkHttpClientProvider
+import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import java.lang.reflect.Field
 
@@ -22,10 +23,12 @@ class MainApplication : Application(), ReactApplication {
 
     override val reactNativeHost: ReactNativeHost =
         ReactNativeHostWrapper(this, object : DefaultReactNativeHost(this) {
-            override fun getPackages(): ArrayList<ReactPackage>? =
-                PackageList(this).packages.apply {
-                    add(MainPackage())
-                }
+            override fun getPackages(): List<ReactPackage> {
+                val packages = PackageList(this).packages
+                // Packages that cannot be autolinked yet can be added manually here, for example:
+                packages.add(MainPackage());
+                return packages
+            }
 
             override fun getJSMainModuleName(): String = "index"
 
@@ -36,7 +39,7 @@ class MainApplication : Application(), ReactApplication {
         })
 
     override val reactHost: ReactHost
-        get() = getDefaultReactHost(applicationContext, reactNativeHost)
+        get() = ReactNativeHostWrapper.createReactHost(applicationContext, reactNativeHost)
 
     override fun onCreate() {
         super.onCreate()
@@ -49,7 +52,7 @@ class MainApplication : Application(), ReactApplication {
         // avaxwallet/0.14.15.1532 Mozilla/5.0 (Linux; Android 13; Pixel 7 Build/TQ1A.221205.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/128.0.6613.127 Mobile Safari/537.36
         OkHttpClientProvider.setOkHttpClientFactory(CoreOkHttpClientFactory(getUserAgent()))
 
-        SoLoader.init(this, false)
+        SoLoader.init(this, OpenSourceMergedSoMapping)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             // If you opted-in for the New Architecture, we load the native entry point for this app.
             load()

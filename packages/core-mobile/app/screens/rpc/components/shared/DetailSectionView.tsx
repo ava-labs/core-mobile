@@ -29,7 +29,7 @@ export const DetailSectionView = ({
   detailSection: DetailSection
   onPressDataItem: (data: string) => void
 }): JSX.Element => {
-  const { getMarketToken } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
 
@@ -53,7 +53,9 @@ export const DetailSectionView = ({
       }
       key={key}>
       <Text variant="caption">{item.label}</Text>
-      <Text variant="buttonSmall">{item.value}</Text>
+      <Text variant="buttonSmall" testID={`${item.label}_${item.value}`}>
+        {item.value}
+      </Text>
     </Row>
   )
 
@@ -82,7 +84,7 @@ export const DetailSectionView = ({
     decimals: number,
     symbol: string
   ): JSX.Element => {
-    const marketToken = getMarketToken(symbol)
+    const marketToken = getMarketTokenBySymbol(symbol)
 
     return (
       <View sx={{ alignItems: 'flex-end' }}>

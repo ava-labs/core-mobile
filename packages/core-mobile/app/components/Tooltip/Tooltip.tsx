@@ -10,7 +10,6 @@ import {
   ViewStyle
 } from 'react-native'
 import InfoSVG from 'components/svg/InfoSVG'
-import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import { Popable, usePopable, PopableProps } from 'react-native-popable'
 import { Row } from 'components/Row'
@@ -113,11 +112,10 @@ export const Tooltip = ({
       return renderPopable(renderLabel())
     }
     return (
-      <>
+      <Row style={{ gap: 4, alignItems: 'center' }}>
         {renderLabel()}
-        <Space x={4} />
         {renderPopable(icon ?? <InfoSVG color={iconColor} />)}
-      </>
+      </Row>
     )
   }
 

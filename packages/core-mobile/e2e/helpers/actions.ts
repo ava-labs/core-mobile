@@ -285,6 +285,17 @@ const swipeDown = async (
     .swipe('down', speed, normalizedOffset)
 }
 
+const swipe = async (
+  item: Detox.NativeMatcher,
+  direction: Detox.Direction,
+  speed: Detox.Speed = 'slow',
+  offset = 0.25,
+  index = 0
+  // eslint-disable-next-line max-params
+) => {
+  await element(item).atIndex(index).swipe(direction, speed, offset)
+}
+
 const swipeLeft = async (
   item: Detox.NativeMatcher,
   speed: Detox.Speed,
@@ -403,6 +414,19 @@ const getAmount = (amount: string | undefined): number => {
   } else return 0
 }
 
+const isWithinTolerance = (
+  baseValue: number,
+  targetValue: number,
+  tolerance: number
+) => {
+  const result =
+    Math.abs(baseValue - Math.abs(targetValue)) <= baseValue * (tolerance / 100)
+  console.log(
+    `baseValue: ${baseValue}, targetValue: ${targetValue}, result: ${result}`
+  )
+  return result
+}
+
 const shuffleArray = <T>(array: T[]): T[] =>
   array.sort(() => Math.random() - 0.5)
 
@@ -422,6 +446,7 @@ export default {
   swipeUp,
   swipeDown,
   swipeLeft,
+  swipe,
   setColumnToValue,
   setInputText,
   getAndroidAttributesArray,
@@ -446,5 +471,6 @@ export default {
   hasText,
   getAmount,
   getRandomEle,
-  getRandomIndex
+  getRandomIndex,
+  isWithinTolerance
 }

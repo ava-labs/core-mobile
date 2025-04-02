@@ -174,9 +174,16 @@ export const selectPFeeAdjustmentThreshold = (state: RootState): number => {
   )
 }
 
-export const selectPFeeMultiplier = (state: RootState): number => {
+export const selectCrossChainFeesMultiplier = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseFloat(featureFlags[FeatureVars.P_FEE_MULTIPLIER] as string)
+  return parseFloat(
+    featureFlags[FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER] as string
+  )
+}
+
+export const selectCBaseFeeMultiplier = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseFloat(featureFlags[FeatureVars.C_BASE_FEE_MULTIPLIER] as string)
 }
 
 export const selectUseLeftFab = (state: RootState): boolean => {
@@ -297,6 +304,42 @@ export const selectIsAllNotificationsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.ALL_NOTIFICATIONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsEnableNotificationPromptBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ENABLE_NOTIFICATION_PROMPT] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsHallidayBridgeBannerBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.HALLIDAY_BRIDGE_BANNER] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsGaslessBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.GASLESS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSwapFeesBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SWAP_FEES] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }

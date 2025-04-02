@@ -14,6 +14,7 @@ import { copyToClipboard } from 'common/utils/clipboard'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { OidcAuth } from 'features/onboarding/types/types'
+import { MFA } from 'seedless/types'
 
 export interface RecoveryMethodContextState {
   handleCopyCode: () => void
@@ -23,6 +24,8 @@ export interface RecoveryMethodContextState {
   setTotpChallenge: Dispatch<SetStateAction<TotpChallenge | undefined>>
   oidcAuth?: OidcAuth
   setOidcAuth: Dispatch<SetStateAction<OidcAuth | undefined>>
+  mfaMethods?: MFA[]
+  setMfaMethods: Dispatch<SetStateAction<MFA[] | undefined>>
 }
 
 export const RecoveryMethodContext = createContext<RecoveryMethodContextState>(
@@ -35,13 +38,12 @@ export const RecoveryMethodProvider = ({
   children: ReactNode
 }): React.JSX.Element => {
   const [oidcAuth, setOidcAuth] = useState<OidcAuth>()
+  const [mfaMethods, setMfaMethods] = useState<MFA[]>()
   const [totpChallenge, setTotpChallenge] = useState<TotpChallenge>()
 
   const totpKey = useMemo(() => {
-    if (totpChallenge?.totpUrl) {
-      return (
-        new URL(totpChallenge.totpUrl).searchParams.get('secret') ?? undefined
-      )
+    if (totpChallenge?.url) {
+      return new URL(totpChallenge.url).searchParams.get('secret') ?? undefined
     }
   }, [totpChallenge])
 
@@ -54,7 +56,7 @@ export const RecoveryMethodProvider = ({
       await totpChallenge?.answer(code)
 
       if (oidcAuth) {
-        return SeedlessService.sessionManager.verifyCode(
+        return SeedlessService.session.verifyCode(
           oidcAuth.oidcToken,
           oidcAuth.mfaId,
           code
@@ -73,7 +75,9 @@ export const RecoveryMethodProvider = ({
     totpChallenge,
     setTotpChallenge,
     oidcAuth,
-    setOidcAuth
+    setOidcAuth,
+    mfaMethods,
+    setMfaMethods
   }
 
   return (

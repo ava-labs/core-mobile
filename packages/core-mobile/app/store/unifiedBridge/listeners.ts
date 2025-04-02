@@ -1,3 +1,4 @@
+import { bigIntToHex } from '@ethereumjs/util'
 import { AppListenerEffectAPI, RootState } from 'store'
 import { WalletState, onAppUnlocked, selectWalletState } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
@@ -18,12 +19,12 @@ import {
 import { selectIsFeatureBlocked, setFeatureFlags } from 'store/posthog'
 import { showTransactionSuccessToast } from 'utils/toast'
 import Logger from 'utils/Logger'
-import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
+import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
 import { FeatureGates } from 'services/posthog/types'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { TransactionParams } from '@avalabs/evm-module'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import {
   removePendingTransfer,
   selectPendingTransfers,
@@ -68,6 +69,28 @@ const trackPendingTransfers = (listenerApi: AppListenerEffectAPI): void => {
   })
 }
 
+export const createEvmSigner = (request: Request): EvmSigner => {
+  return {
+    sign: async ({ data, from, to, value, chainId }) => {
+      if (typeof to !== 'string') throw new Error('invalid to field')
+      const txParams: [TransactionParams] = [
+        {
+          from,
+          to,
+          data: data ?? undefined,
+          value: typeof value === 'bigint' ? bigIntToHex(value) : undefined
+        }
+      ]
+
+      return request({
+        method: RpcMethod.ETH_SEND_TRANSACTION,
+        params: txParams,
+        chainId: getEvmCaip2ChainId(Number(chainId))
+      }) as Promise<Hex>
+    }
+  }
+}
+
 export const initUnifiedBridgeService = async (
   action: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   listenerApi: AppListenerEffectAPI
@@ -92,24 +115,7 @@ export const initUnifiedBridgeService = async (
 
   const bitcoinProvider = await getBitcoinProvider(isTest)
 
-  const evmSigner: EvmSigner = {
-    sign: async ({ data, from, to, chainId }) => {
-      if (typeof to !== 'string') throw new Error('invalid to field')
-      const txParams: [TransactionParams] = [
-        {
-          from,
-          to,
-          data: data ?? undefined
-        }
-      ]
-
-      return request({
-        method: RpcMethod.ETH_SEND_TRANSACTION,
-        params: txParams,
-        chainId: getEvmCaip2ChainId(Number(chainId))
-      }) as Promise<Hex>
-    }
-  }
+  const evmSigner = createEvmSigner(request)
 
   const btcSigner: BtcSigner = {
     sign: async txData => {

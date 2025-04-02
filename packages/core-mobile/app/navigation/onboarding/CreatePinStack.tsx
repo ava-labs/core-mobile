@@ -7,12 +7,12 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { MainHeaderOptions, getModalOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import OwlLoader from 'components/OwlLoader'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { useWallet } from 'hooks/useWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import LogoLoader from 'components/LogoLoader'
 import { CreateWalletScreenProps } from '../types'
 
 // This stack is for Seedless
@@ -46,7 +46,7 @@ const CreatePinStack: () => JSX.Element = () => {
       />
       <CreatePinS.Screen
         name={AppNavigation.CreateWallet.Loader}
-        component={OwlLoader}
+        component={LogoLoader}
       />
     </CreatePinS.Navigator>
   )

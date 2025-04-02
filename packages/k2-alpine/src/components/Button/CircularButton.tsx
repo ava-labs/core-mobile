@@ -1,12 +1,18 @@
 import React, { forwardRef, PropsWithChildren } from 'react'
-import { StyleProp, TouchableOpacity, ViewStyle } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
-import { View } from '../Primitives'
+import {
+  StyleProp,
+  TouchableOpacity,
+  ViewStyle,
+  View as RNView
+} from 'react-native'
+import { View, Text } from '../Primitives'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { alpha, overlayColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
+import { useTheme } from '../../hooks'
 
 interface CircularButtonProps {
+  title?: string
   onPress?: () => void
   disabled?: boolean
   style?: StyleProp<ViewStyle>
@@ -14,9 +20,9 @@ interface CircularButtonProps {
 }
 
 export const CircularButton = forwardRef<
-  TouchableOpacity,
+  RNView,
   CircularButtonProps & PropsWithChildren
->(({ disabled, style, children, testID, ...rest }, ref) => {
+>(({ title, disabled, style, children, testID, ...rest }, ref) => {
   const { theme } = useTheme()
 
   const tintColor = getTintColor(theme, disabled)
@@ -37,20 +43,23 @@ export const CircularButton = forwardRef<
       testID={testID}
       disabled={disabled}
       {...rest}>
-      <View
-        style={[
-          {
-            borderRadius: 1000,
-            alignItems: 'center',
-            width: CIRCULAR_BUTTON_WIDTH,
-            height: CIRCULAR_BUTTON_WIDTH,
-            backgroundColor,
-            justifyContent: 'center',
-            overflow: 'hidden'
-          },
-          style
-        ]}>
-        {coloredChildren}
+      <View sx={{ gap: 8, alignItems: 'center' }}>
+        <View
+          style={[
+            {
+              borderRadius: 1000,
+              alignItems: 'center',
+              width: CIRCULAR_BUTTON_WIDTH,
+              height: CIRCULAR_BUTTON_WIDTH,
+              backgroundColor,
+              justifyContent: 'center',
+              overflow: 'hidden'
+            },
+            style
+          ]}>
+          {coloredChildren}
+        </View>
+        {title && <Text variant="subtitle2">{title}</Text>}
       </View>
     </TouchableOpacity>
   )

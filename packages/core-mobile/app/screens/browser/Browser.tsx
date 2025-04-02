@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Icons, View } from '@avalabs/k2-mobile'
-import WebView, { WebViewMessageEvent } from 'react-native-webview'
+import RNWebView, { WebViewMessageEvent } from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -31,6 +31,7 @@ import { selectIsFavorited } from 'store/browser/slices/favorites'
 import { LayoutAnimation, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { WebView } from 'components/WebView'
 import {
   isSugguestedSiteName,
   isValidHttpUrl,
@@ -48,8 +49,11 @@ type TabViewNavigationProp = BrowserScreenProps<
 export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const dispatch = useDispatch()
   const { setPendingDeepLink } = useDeeplink()
-  const [urlEntry, setUrlEntry] = useState('')
-  const [urlToLoad, setUrlToLoad] = useState('')
+  const activeTab = useSelector(selectTab(tabId))
+  const activeHistory = activeTab?.activeHistory
+  const activeHistoryUrl = activeHistory?.url ?? ''
+  const [urlEntry, setUrlEntry] = useState(activeHistoryUrl)
+  const [urlToLoad, setUrlToLoad] = useState(activeHistoryUrl)
   const clipboard = useClipboardWatcher()
   const {
     injectCoreAsRecent,
@@ -58,9 +62,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     injectCustomWindowOpen,
     injectCustomPrompt
   } = useInjectedJavascript()
-  const activeTab = useSelector(selectTab(tabId))
-  const activeHistory = activeTab?.activeHistory
-  const webViewRef = useRef<WebView>(null)
+  const webViewRef = useRef<RNWebView>(null)
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const [description, setDescription] = useState('')
   const { navigateToGoogleSearchResult } = useGoogleSearch()
@@ -253,12 +255,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         </View>
       </View>
       <WebView
-        allowsInlineMediaPlayback={true}
-        javaScriptEnabled={true}
         testID="myWebview"
-        ref={webViewRef}
-        pullToRefreshEnabled={true}
-        injectedJavaScriptForMainFrameOnly={false}
+        webViewRef={webViewRef}
         injectedJavaScript={
           injectGetDescriptionAndFavicon +
           injectCoreAsRecent +
@@ -266,16 +264,13 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
           injectCustomWindowOpen +
           injectCustomPrompt
         }
-        source={{ uri: urlToLoad }}
-        setSupportMultipleWindows={false}
-        onError={event => {
-          Logger.error('WebView onError', event.nativeEvent.description)
-        }}
-        onLoadEnd={() => {
-          Logger.trace('------> onLoadEnd')
-        }}
+        url={urlToLoad}
         onLoad={event => {
-          if (event.nativeEvent.url.startsWith('about:blank')) return
+          if (
+            event.nativeEvent.url.startsWith('about:blank') ||
+            event.nativeEvent.loading
+          )
+            return
           const includeDescriptionAndFavicon =
             description !== '' && favicon !== undefined
           const history: AddHistoryPayload = includeDescriptionAndFavicon

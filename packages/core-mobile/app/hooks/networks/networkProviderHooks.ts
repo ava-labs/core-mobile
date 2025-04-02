@@ -13,7 +13,6 @@ import {
   getEvmProvider
 } from 'services/network/utils/providerUtils'
 import Logger from 'utils/Logger'
-import { isDevnet } from 'utils/isDevnet'
 import { useNetworks } from './useNetworks'
 
 // this will return an EVM provider (that uses the network.rpcUrl)
@@ -67,7 +66,7 @@ export function useAvalancheProvider(
   const [avalancheProvider, setAvalancheProvider] =
     useState<JsonRpcBatchInternal>()
   useEffect(() => {
-    getAvalancheEvmProvider(networks, _isTestnet, isDevnet(activeNetwork))
+    getAvalancheEvmProvider(networks, _isTestnet)
       .then(setAvalancheProvider)
       .catch(Logger.error)
   }, [networks, activeNetwork, _isTestnet])
@@ -82,7 +81,7 @@ export function useAvalancheXpProvider(
   const [avalancheXpProvider, setAvalancheXpProvider] =
     useState<Avalanche.JsonRpcProvider>()
   useEffect(() => {
-    getAvalancheXpProvider(!!_isTestnet, isDevnet(activeNetwork))
+    getAvalancheXpProvider(!!_isTestnet)
       .then(setAvalancheXpProvider)
       .catch(Logger.error)
   }, [activeNetwork, _isTestnet])

@@ -36,16 +36,7 @@ function TokenManagement(): JSX.Element {
     item: ListRenderItemInfo<LocalTokenWithBalance>
   ): JSX.Element => {
     const token = item.item
-    const logoUri = token.logoUri
-
-    return (
-      <TokenManagementItem
-        id={token.localId}
-        name={token.name}
-        symbol={token.symbol}
-        image={logoUri}
-      />
-    )
+    return <TokenManagementItem token={token} />
   }
 
   const emptyView = <ZeroState.Basic title="No results found" />

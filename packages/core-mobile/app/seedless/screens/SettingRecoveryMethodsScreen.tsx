@@ -46,7 +46,7 @@ export const SettingRecoveryMethodsScreen = (): JSX.Element => {
   }
 
   useFocusEffect(() => {
-    SeedlessService.sessionManager
+    SeedlessService.session
       .userMfa()
       .then(mfa => {
         setRecoveryMethods(mfa)

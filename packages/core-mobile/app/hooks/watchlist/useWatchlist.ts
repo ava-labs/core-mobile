@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import {
   Charts,
   MarketToken,
+  MarketType,
   PriceData,
   Prices,
   defaultChartData,
@@ -9,70 +10,141 @@ import {
 } from 'store/watchlist'
 import { useSelector } from 'react-redux'
 import { ChartData } from 'services/token/types'
+import { transformTrendingTokens } from 'services/watchlist/utils/transform'
 import { useGetPrices } from './useGetPrices'
 import { useGetTokensAndCharts } from './useGetTokensAndCharts'
+import { useGetTrendingTokens } from './useGetTrendingTokens'
 
 type UseWatchListReturnType = {
   favorites: MarketToken[]
-  tokens: MarketToken[]
+  allTokens: MarketToken[]
+  topTokens: MarketToken[]
+  trendingTokens: MarketToken[]
   prices: Prices
   charts: Charts
-  getWatchlistPrice: (coingeckoId: string) => PriceData | undefined
-  getWatchlistChart: (coingeckoId: string) => ChartData
-  getMarketToken: (symbol: string) => MarketToken | undefined
+  getWatchlistPrice: (id: string) => PriceData | undefined
+  getWatchlistChart: (id: string) => ChartData
+  getMarketTokenBySymbol: (symbol: string) => MarketToken | undefined
+  getMarketTokenById: (id: string) => MarketToken | undefined
   isLoadingFavorites: boolean
+  isLoadingTrendingTokens: boolean
+  isLoadingTopTokens: boolean
+  refetchTopTokens: () => void
+  isRefetchingTopTokens: boolean
 }
 
 export const useWatchlist = (): UseWatchListReturnType => {
   const favoriteIds = useSelector(selectWatchlistFavoriteIds)
-  const { data, isLoading } = useGetTokensAndCharts()
-  const tokenIds = Object.values(data?.tokens ?? {}).map(token => token.id)
-  const { data: prices } = useGetPrices(tokenIds)
+  const {
+    data: topTokensResponse,
+    isLoading: isLoadingTopTokens,
+    refetch: refetchTopTokens,
+    isRefetching: isRefetchingTopTokens
+  } = useGetTokensAndCharts()
+  const { data: trendingTokensResponse, isLoading: isLoadingTrendingTokens } =
+    useGetTrendingTokens()
+  const isLoading = isLoadingTopTokens || isLoadingTrendingTokens
+
+  const transformedTrendingTokens = useMemo(
+    () => transformTrendingTokens(trendingTokensResponse ?? []),
+    [trendingTokensResponse]
+  )
+
+  const tokenIds = Object.values(topTokensResponse?.tokens ?? {}).map(
+    token => token.id
+  )
+  const { data: topTokenPrices } = useGetPrices(tokenIds)
 
   const isLoadingFavorites = favoriteIds.length > 0 && isLoading
 
   const favorites = useMemo(() => {
     return favoriteIds.reduce((acc, id) => {
-      const token = data?.tokens[id]
+      const token =
+        topTokensResponse?.tokens[id] ?? transformedTrendingTokens?.tokens[id]
+
       if (token) {
         acc.push(token)
       }
       return acc
     }, [] as MarketToken[])
-  }, [data?.tokens, favoriteIds])
+  }, [
+    topTokensResponse?.tokens,
+    transformedTrendingTokens?.tokens,
+    favoriteIds
+  ])
 
-  const tokens = useMemo(() => {
-    return Object.values(data?.tokens ?? {})
-  }, [data?.tokens])
+  const allTokens = useMemo(() => {
+    return [
+      ...Object.values(transformedTrendingTokens?.tokens ?? {}),
+      ...Object.values(topTokensResponse?.tokens ?? {})
+    ]
+  }, [topTokensResponse?.tokens, transformedTrendingTokens?.tokens])
+
+  const topTokens = useMemo(() => {
+    return allTokens.filter(token => token.marketType === MarketType.TOP)
+  }, [allTokens])
+
+  const trendingTokens = useMemo(() => {
+    return allTokens.filter(token => token.marketType === MarketType.TRENDING)
+  }, [allTokens])
+
+  const charts = useMemo(() => {
+    return {
+      ...topTokensResponse?.charts,
+      ...transformedTrendingTokens?.charts
+    }
+  }, [topTokensResponse?.charts, transformedTrendingTokens?.charts])
+
+  const prices = useMemo(() => {
+    return {
+      ...transformedTrendingTokens?.prices,
+      ...topTokenPrices
+    }
+  }, [topTokenPrices, transformedTrendingTokens?.prices])
 
   const getWatchlistPrice = useCallback(
-    (coingeckoId: string): PriceData | undefined => {
-      return prices?.[coingeckoId]
+    (id: string): PriceData | undefined => {
+      return prices?.[id]
     },
     [prices]
   )
 
   const getWatchlistChart = useCallback(
-    (coingeckoId: string): ChartData => {
-      return data?.charts[coingeckoId] ?? defaultChartData
+    (id: string): ChartData => {
+      return charts[id] ?? defaultChartData
     },
-    [data?.charts]
+    [charts]
   )
 
-  const getMarketToken = useCallback(
+  const getMarketTokenBySymbol = useCallback(
     (symbol: string): MarketToken | undefined =>
-      tokens.find(token => token.symbol.toLowerCase() === symbol.toLowerCase()),
-    [tokens]
+      allTokens.find(
+        token => token.symbol.toLowerCase() === symbol.toLowerCase()
+      ),
+    [allTokens]
+  )
+
+  const getMarketTokenById = useCallback(
+    (id: string): MarketToken | undefined =>
+      allTokens.find(token => token.id === id),
+    [allTokens]
   )
 
   return {
     favorites,
-    tokens,
-    prices: prices ?? {},
-    charts: data?.charts ?? {},
+    allTokens,
+    topTokens,
+    trendingTokens,
+    prices,
+    charts,
     getWatchlistPrice,
     getWatchlistChart,
-    getMarketToken,
-    isLoadingFavorites
+    getMarketTokenBySymbol,
+    getMarketTokenById,
+    isLoadingFavorites,
+    isLoadingTrendingTokens,
+    isLoadingTopTokens,
+    refetchTopTokens,
+    isRefetchingTopTokens
   }
 }

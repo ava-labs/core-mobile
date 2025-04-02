@@ -1,6 +1,5 @@
 import { Button, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useEffect } from 'react'
@@ -16,9 +15,10 @@ import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { showSimpleToast } from 'components/Snackbar'
-import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { hideLogo, showLogo } from 'components/GlobalLogoLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import CoreLogo from '../../assets/icons/core.svg'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -32,7 +32,7 @@ const SignupScreen: FC = () => {
   const { register, isRegistering, verify } = useSeedlessRegister()
 
   useEffect(() => {
-    isRegistering ? showOwl() : hideOwl()
+    isRegistering ? showLogo() : hideLogo()
   }, [isRegistering])
 
   const handleSignupWithMnemonic = (): void => {
@@ -51,9 +51,9 @@ const SignupScreen: FC = () => {
   }
 
   const handleAccountVerified = async (): Promise<void> => {
-    showOwl()
+    showLogo()
     const walletName = await SeedlessService.getAccountName()
-    hideOwl()
+    hideLogo()
     if (walletName) {
       navigate(AppNavigation.Root.Onboard, {
         screen: AppNavigation.Onboard.Welcome,
@@ -195,7 +195,7 @@ const SignupScreen: FC = () => {
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-        <CoreXLogoAnimated size={180} />
+        <CoreLogo width={180} />
       </View>
       <View sx={{ padding: 16, marginBottom: 46, gap: 35 }}>
         {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}

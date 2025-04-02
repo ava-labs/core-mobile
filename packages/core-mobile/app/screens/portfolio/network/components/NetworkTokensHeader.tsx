@@ -15,7 +15,7 @@ import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndica
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { selectTokenBlacklist } from 'store/portfolio/slice'
+import { selectTokenVisibility } from 'store/portfolio/slice'
 
 const NetworkTokensHeader = (): JSX.Element => {
   const {
@@ -27,12 +27,12 @@ const NetworkTokensHeader = (): JSX.Element => {
   const isLoadingBalance = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const account = useSelector(selectActiveAccount)
-  const tokenBlacklist = useSelector(selectTokenBlacklist)
+  const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotal = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
       chainId,
       account?.index,
-      tokenBlacklist
+      tokenVisibility
     )
   )
   const formattedTotalBalance = currencyFormatter(balanceTotal)

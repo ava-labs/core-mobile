@@ -22,7 +22,6 @@ import {
   signTypedData,
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
-import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
@@ -32,10 +31,12 @@ import {
   TypedDataV1,
   TypedData,
   MessageTypes,
-  WalletType
+  WalletType,
+  RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -370,7 +371,7 @@ export class MnemonicWallet implements Wallet {
       accountIndex,
       xpub: this.xpub,
       xpubXP: this.xpubXP,
-      network
+      network: mapToVmNetwork(network)
     })
 
     // C-avax... this address uses the same public key as EVM
@@ -410,7 +411,7 @@ export class MnemonicWallet implements Wallet {
       message,
       chain: chainAlias
     })
-    return utils.base58check.encode(buffer)
+    return utils.base58check.encode(new Uint8Array(buffer))
   }
 }
 

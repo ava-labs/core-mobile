@@ -1,10 +1,9 @@
-const { getDefaultConfig } = require('expo/metro-config')
 const { mergeConfig } = require('@react-native/metro-config')
-const { createSentryMetroSerializer } = require('@sentry/react-native/metro')
+const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 const merge = require('lodash.merge')
 
 const monorepoConfig = require('./metro.monorepo.config')
-const defaultConfig = getDefaultConfig(__dirname)
+const defaultConfig = getSentryExpoConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
 
 /**
@@ -15,25 +14,25 @@ const { assetExts, sourceExts } = defaultConfig.resolver
  */
 const baseConfig = {
   resetCache: false,
-  serializer: {
-    customSerializer: createSentryMetroSerializer()
-  },
   transformer: {
     ...defaultConfig.transformer,
     unstable_allowRequireContext: true,
     babelTransformerPath: require.resolve('react-native-svg-transformer')
   },
   resolver: {
+    // mute warnings about circular dependencies
+    requireCycleIgnorePatterns: [
+      /^app\/.*/,
+      /k2-mobile\/.*/,
+      /^node_modules\/.*/
+    ],
     extraNodeModules: {
-      // react-native-quick-crypto integration
-      crypto: require.resolve('react-native-quick-crypto'),
-      stream: require.resolve('./node_modules/stream-browserify'),
-      buffer: require.resolve('./node_modules/@craftzdog/react-native-buffer')
+      stream: require.resolve('./node_modules/stream-browserify')
     },
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
-    sourceExts: [...sourceExts, 'svg'],
+    sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
     resolveRequest: (context, moduleName, platform) => {
       if (moduleName.startsWith('@ledgerhq/cryptoassets')) {
         return context.resolveRequest(
@@ -72,6 +71,22 @@ const baseConfig = {
             '@ledgerhq/live-network',
             '@ledgerhq/live-network/lib-es'
           ),
+          platform
+        )
+      }
+      if (moduleName === 'crypto') {
+        // when importing crypto, resolve to react-native-quick-crypto
+        return context.resolveRequest(
+          context,
+          'react-native-quick-crypto',
+          platform
+        )
+      }
+      if (moduleName === 'buffer') {
+        // when importing buffer, resolve to @craftzdog/react-native-buffer
+        return context.resolveRequest(
+          context,
+          '@craftzdog/react-native-buffer',
           platform
         )
       }

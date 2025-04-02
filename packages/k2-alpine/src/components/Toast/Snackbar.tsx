@@ -1,8 +1,8 @@
 import React from 'react'
 import { TouchableWithoutFeedback, ViewStyle } from 'react-native'
-import { useDripsyTheme as useTheme } from 'dripsy'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
+import { useTheme } from '../../hooks'
 
 export const Snackbar = ({
   message,
@@ -18,7 +18,7 @@ export const Snackbar = ({
   const { theme } = useTheme()
   const backgroundColor = theme.isDark
     ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfaceSecondary
+    : darkModeColors.$surfacePrimary
   const textColor = theme.isDark
     ? lightModeColors.$textPrimary
     : darkModeColors.$textPrimary

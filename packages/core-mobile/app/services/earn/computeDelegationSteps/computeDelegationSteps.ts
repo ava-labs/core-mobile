@@ -14,7 +14,8 @@ import {
   getImportPFeePostCExport,
   getDelegationFee,
   getDelegationFeePostPImport,
-  getDelegationFeePostCExportAndPImport
+  getDelegationFeePostCExportAndPImport,
+  bigIntDiff
 } from './utils'
 
 const INSUFFICIENT_BALANCE_ERROR = new Error(
@@ -33,7 +34,8 @@ export const computeDelegationSteps = async ({
   cChainBaseFee,
   provider,
   pFeeAdjustmentThreshold,
-  pFeeMultiplier
+  cBaseFeeMultiplier,
+  crossChainFeesMultiplier
 }: {
   pAddress: string
   stakeAmount: bigint
@@ -46,7 +48,8 @@ export const computeDelegationSteps = async ({
   cChainBaseFee: TokenUnit | undefined
   provider: Avalanche.JsonRpcProvider
   pFeeAdjustmentThreshold: number
-  pFeeMultiplier: number
+  cBaseFeeMultiplier: number
+  crossChainFeesMultiplier: number
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
   let pChainBalance: bigint | undefined
@@ -155,7 +158,8 @@ export const computeDelegationSteps = async ({
           cChainBaseFee,
           accountIndex,
           avaxXPNetwork,
-          pAddress
+          pAddress,
+          cBaseFeeMultiplier
         })
 
         const importPFee = await getImportPFeePostCExport({
@@ -178,39 +182,28 @@ export const computeDelegationSteps = async ({
           pFeeAdjustmentThreshold
         })
 
+        Logger.info(
+          `applying ${crossChainFeesMultiplier} multiplier to all fees`
+        )
+
+        // add some padding to the fees before calculating the amount to transfer
+        const adjustedAllFees = BigInt(
+          Math.ceil(
+            Number(exportCFee + importPFee + delegationFee) *
+              (1 + crossChainFeesMultiplier)
+          )
+        )
+
+        const amountToTransfer =
+          bigIntDiff(stakeAmount, pChainBalance) -
+          pChainAtomicBalance +
+          adjustedAllFees
+
         // we need to check if we have enough balance on C-Chain to transfer
-        if (
-          weiToNano(cChainBalance.balance) +
-            pChainAtomicBalance +
-            pChainBalance -
-            exportCFee -
-            importPFee -
-            delegationFee <
-          stakeAmount
-        ) {
+        if (amountToTransfer >= weiToNano(cChainBalance.balance)) {
           Logger.error('Case 2.1, 2.2, 3.1, 3.2 failed: insufficient balance')
           throw INSUFFICIENT_BALANCE_ERROR
         }
-
-        Logger.info(
-          `applying ${pFeeMultiplier} multiplier to importPFee and delegationFee`
-        )
-
-        const adjustedImportPFee = BigInt(
-          Math.ceil(Number(importPFee) * (1 + pFeeMultiplier))
-        )
-        const adjustedDelegationFee = BigInt(
-          Math.ceil(Number(delegationFee) * (1 + pFeeMultiplier))
-        )
-
-        // add some padding to the amount to transfer to account for the fees (import and delegation fees)
-        const amountToTransfer =
-          stakeAmount -
-          pChainAtomicBalance -
-          pChainBalance +
-          exportCFee +
-          adjustedImportPFee +
-          adjustedDelegationFee
 
         return [
           {

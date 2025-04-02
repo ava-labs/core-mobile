@@ -19,7 +19,7 @@ import {
   darkModeColors,
   lightModeColors
 } from '../../theme/tokens/colors'
-import { useTheme } from '../..'
+import { useTheme } from '../../hooks'
 
 export const HexagonImageView = ({
   source,
@@ -108,18 +108,20 @@ export const HexagonImageView = ({
 export const HexagonBorder = ({ height }: { height: number }): JSX.Element => {
   const { theme } = useTheme()
 
+  const strokeWidth = Math.floor(150 / height)
+
   return (
     <Svg
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
       width={height}
       height={height}
-      viewBox={hexagonPath.viewBox}>
+      viewBox={hexagonBorderPath.viewBox}>
       <Path
-        d={hexagonPath.path}
+        d={hexagonBorderPath.path}
         fill="none"
         stroke={theme.isDark ? colors.$neutralWhite : 'black'}
         strokeOpacity={0.1}
-        strokeWidth="1"
+        strokeWidth={strokeWidth}
       />
     </Svg>
   )
@@ -182,6 +184,13 @@ const arrowPath = {
 const hexagonPath = {
   path: `
   M53 3.9282C60.4256 -0.358983 69.5744 -0.358984 77 3.9282L117.952 27.5718C125.378 31.859 129.952 39.782 129.952 48.3564V95.6436C129.952 104.218 125.378 112.141 117.952 116.428L77 140.072C69.5744 144.359 60.4256 144.359 53 140.072L12.0481 116.428C4.62247 112.141 0.0480957 104.218 0.0480957 95.6436V48.3564C0.0480957 39.782 4.62247 31.859 12.0481 27.5718L53 3.9282Z
+`,
+  viewBox: '0 0 130 144'
+}
+
+const hexagonBorderPath = {
+  path: `
+  M76.75 4.36122L117.702 28.0048C124.973 32.2027 129.452 39.9607 129.452 48.3564V95.6436C129.452 104.039 124.973 111.797 117.702 115.995L76.75 139.639C69.4791 143.837 60.5209 143.837 53.25 139.639L12.2981 115.995C5.02717 111.797 0.548096 104.039 0.548096 95.6436V48.3564C0.548096 39.9607 5.02717 32.2027 12.2981 28.0048L53.25 4.36122C60.5209 0.163346 69.4791 0.163345 76.75 4.36122Z
 `,
   viewBox: '0 0 130 144'
 }
