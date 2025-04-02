@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { Appearance, selectSelectedAppearance } from 'store/settings/appearance'
 import {
@@ -31,5 +31,8 @@ export const useColorScheme = (): ColorSchemeName => {
     }
   }, [isDeveloperMode, selectedAppearance])
 
-  return colorScheme
+  return useMemo(() => {
+    if (isDeveloperMode) return 'dark'
+    return colorScheme
+  }, [colorScheme, isDeveloperMode])
 }

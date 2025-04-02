@@ -1,10 +1,7 @@
 import React from 'react'
 import { View, Button, ScrollView } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  RecoveryMethod,
-  RecoveryMethods
-} from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { OidcAuth } from 'features/onboarding/types/types'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import ScreenHeader from 'common/components/ScreenHeader'
@@ -18,8 +15,8 @@ export const AddRecoveryMethods = ({
   onNext,
   onSkip
 }: {
-  selectedMethod?: RecoveryMethods
-  setSelectedMethod: (method: RecoveryMethods) => void
+  selectedMethod?: RecoveryMethod
+  setSelectedMethod: (method: RecoveryMethod) => void
   oidcAuth?: OidcAuth
   availableRecoveryMethods: RecoveryMethod[]
   allowsUserToAddLater: boolean
@@ -46,7 +43,7 @@ export const AddRecoveryMethods = ({
           onPress={setSelectedMethod}
         />
       </ScrollView>
-      <View sx={{ padding: 16, gap: 16 }}>
+      <View sx={{ paddingHorizontal: 16, gap: 16, paddingBottom: 60 }}>
         <Button
           type="primary"
           size="large"

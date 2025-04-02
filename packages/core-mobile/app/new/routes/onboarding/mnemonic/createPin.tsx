@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
@@ -6,6 +6,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import BiometricsSDK from 'utils/BiometricsSDK'
 
 export default function CreatePin(): JSX.Element {
   const [useBiometrics, setUseBiometrics] = useState(true)
@@ -13,18 +14,25 @@ export default function CreatePin(): JSX.Element {
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const { onPinCreated } = useWallet()
 
-  const handleEnteredValidPin = (pin: string): void => {
-    if (!mnemonic) {
-      return
-    }
+  const handleEnteredValidPin = useCallback(
+    (pin: string): void => {
+      if (!mnemonic) {
+        return
+      }
 
-    AnalyticsService.capture('OnboardingPasswordSet')
-    onPinCreated(mnemonic, pin, false)
-      .then(() => {
-        navigate({ pathname: './setWalletName', params: { mnemonic } })
-      })
-      .catch(Logger.error)
-  }
+      AnalyticsService.capture('OnboardingPasswordSet')
+      onPinCreated(mnemonic, pin, false)
+        .then(() => {
+          if (useBiometrics) {
+            BiometricsSDK.storeWalletWithBiometry(mnemonic)
+          }
+          navigate({ pathname: './setWalletName', params: { mnemonic } })
+        })
+        .catch(Logger.error)
+    },
+    [mnemonic, navigate, onPinCreated, useBiometrics]
+  )
+
   return (
     <BlurredBarsContentLayout sx={{ marginTop: 16 }}>
       <KeyboardAvoidingView>

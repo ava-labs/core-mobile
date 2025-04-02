@@ -100,7 +100,7 @@ export const BalanceHeader = ({
     isDeveloperModeEnabled,
     isPrivacyModeEnabled,
     priceChange,
-    theme.colors.$textPrimary
+    theme.colors.$textSecondary
   ])
 
   const renderBalance = useCallback((): React.JSX.Element => {
