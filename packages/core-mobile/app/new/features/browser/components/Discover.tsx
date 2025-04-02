@@ -1,4 +1,5 @@
 import {
+  alpha,
   AnimatedPressable,
   Button,
   ScrollView,
@@ -8,8 +9,10 @@ import {
 } from '@avalabs/k2-alpine'
 import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -23,35 +26,37 @@ import {
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
+  const { theme } = useTheme()
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingTop: insets.top + 26,
-        paddingBottom: BROWSER_CONTROLS_HEIGHT
-      }}>
-      <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
-        <Text variant="heading2">Discover</Text>
-        <Text variant="body1">
-          Discover a wide variety of apps built on the Avalanche ecosystem
-        </Text>
-      </View>
-
-      <DApps />
-
-      <View
-        style={{
-          gap: 12
+    <View style={{ height: '100%' }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingTop: insets.top + 26,
+          paddingBottom: BROWSER_CONTROLS_HEIGHT
         }}>
-        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-          <Text variant="heading3">Learn</Text>
+        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
+          <Text variant="heading2">Discover</Text>
+          <Text variant="body1">
+            Discover a wide variety of apps built on the Avalanche ecosystem
+          </Text>
         </View>
-        <Learn />
-      </View>
 
-      {/* TODO: will be added in the future */}
-      {/* <View>
+        <DApps />
+
+        <View
+          style={{
+            gap: 12
+          }}>
+          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+            <Text variant="heading3">Learn</Text>
+          </View>
+          <Learn />
+        </View>
+
+        {/* TODO: will be added in the future */}
+        {/* <View>
           <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
             <Text variant="heading3">Top projects</Text>
             <Text
@@ -64,7 +69,38 @@ export const Discover = (): JSX.Element => {
           </View>
           <TopProjects />
         </View> */}
-    </ScrollView>
+      </ScrollView>
+
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1
+          }
+        ]}>
+        <LinearGradient
+          style={{
+            height: insets.top ? insets.top + 80 : 80
+          }}
+          colors={[
+            theme.colors.$surfacePrimary,
+            alpha(theme.colors.$surfacePrimary, 0)
+          ]}
+          start={{
+            x: 0,
+            y: 0
+          }}
+          end={{
+            x: 0,
+            y: 1
+          }}
+        />
+      </Animated.View>
+    </View>
   )
 }
 
