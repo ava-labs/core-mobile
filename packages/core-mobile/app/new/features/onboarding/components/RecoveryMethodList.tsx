@@ -12,12 +12,10 @@ import {
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 
 export const RecoveryMethodList = ({
-  selectedMethod,
   data,
   sx,
   onPress
 }: {
-  selectedMethod?: RecoveryMethod
   data: RecoveryMethod[]
   sx?: SxProp
   onPress: (type: RecoveryMethod) => void
@@ -81,18 +79,10 @@ export const RecoveryMethodList = ({
                     {item.description}
                   </Text>
                 </View>
-                {selectedMethod?.type === item.type ? (
-                  <Icons.Navigation.Check
-                    width={22}
-                    color={colors.$textPrimary}
-                  />
-                ) : (
-                  <View
-                    sx={{
-                      width: 22
-                    }}
-                  />
-                )}
+                <Icons.Navigation.ChevronRightV2
+                  width={22}
+                  color={colors.$textPrimary}
+                />
               </View>
             </View>
             {index !== data.length - 1 && (
