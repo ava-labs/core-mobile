@@ -10,6 +10,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { useSelector } from 'react-redux'
 import { selectWalletType } from 'store/app'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 
 export default function CreatePin(): JSX.Element {
   const [useBiometrics, setUseBiometrics] = useState(true)
@@ -56,14 +57,16 @@ export default function CreatePin(): JSX.Element {
 
   return (
     <BlurredBarsContentLayout sx={{ marginTop: 16 }}>
-      <Component
-        onEnteredValidPin={handleEnteredValidPin}
-        useBiometrics={useBiometrics}
-        setUseBiometrics={setUseBiometrics}
-        newPinTitle="Secure your wallet with a PIN"
-        newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
-        confirmPinTitle="Confirm your PIN code"
-      />
+      <KeyboardAvoidingView>
+        <Component
+          onEnteredValidPin={handleEnteredValidPin}
+          useBiometrics={useBiometrics}
+          setUseBiometrics={setUseBiometrics}
+          newPinTitle={`Secure your wallet\nwith a PIN`}
+          newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+          confirmPinTitle={`Confirm your\nPIN code`}
+        />
+      </KeyboardAvoidingView>
     </BlurredBarsContentLayout>
   )
 }

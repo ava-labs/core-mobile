@@ -129,25 +129,25 @@ const NotificationPreferencesScreen = (): JSX.Element => {
         onLayout={handleHeaderLayout}>
         <ScreenHeader title={TITLE} />
       </Animated.View>
-      <View sx={{ marginTop: 16, gap: 12 }}>
-        <View
-          sx={{
-            flexDirection: 'row',
-            gap: 10,
-            alignItems: 'center',
-            marginRight: 64
-          }}>
-          <Icons.Alert.ErrorOutline
-            color={colors.$textDanger}
-            width={20}
-            height={20}
-          />
-          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
-            To receive push notifications from Core, your first need to allow
-            notifications in your device settings
-          </Text>
-        </View>
-        {showAllowPushNotificationsCard && (
+      {showAllowPushNotificationsCard && (
+        <View sx={{ gap: 12, marginBottom: 8 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              gap: 10,
+              alignItems: 'center',
+              marginRight: 64
+            }}>
+            <Icons.Alert.ErrorOutline
+              color={colors.$textDanger}
+              width={20}
+              height={20}
+            />
+            <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
+              To receive push notifications from Core, your first need to allow
+              notifications in your device settings
+            </Text>
+          </View>
           <Button
             size="small"
             type="secondary"
@@ -155,9 +155,9 @@ const NotificationPreferencesScreen = (): JSX.Element => {
             style={{ width: 165, marginLeft: 30 }}>
             Open device settings
           </Button>
-        )}
-      </View>
-      <Space y={30} />
+        </View>
+      )}
+      <Space y={16} />
       <View sx={{ gap: 12 }}>{renderNotificationToggles()}</View>
     </ScrollView>
   )
