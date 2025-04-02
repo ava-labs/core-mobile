@@ -97,7 +97,6 @@ const TabsScreen = (): JSX.Element => {
         },
         {
           text: 'Yes',
-          style: 'destructive',
           onPress: handleConfirmCloseAll
         }
       ]
