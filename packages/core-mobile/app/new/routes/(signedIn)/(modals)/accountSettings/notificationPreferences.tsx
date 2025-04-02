@@ -31,9 +31,9 @@ import Logger from 'utils/Logger'
 import NotificationToggle from 'features/accountSettings/components/NotificationToggle'
 import { Space } from 'components/Space'
 
-const TITLE = 'Notification preferences'
-
-const navigationHeader = <NavigationTitleHeader title={TITLE} />
+const navigationHeader = (
+  <NavigationTitleHeader title={'Notification preferences'} />
+)
 
 const NotificationPreferencesScreen = (): JSX.Element => {
   const {
@@ -127,7 +127,7 @@ const NotificationPreferencesScreen = (): JSX.Element => {
       <Animated.View
         style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
         onLayout={handleHeaderLayout}>
-        <ScreenHeader title={TITLE} />
+        <ScreenHeader title={`Notification\npreferences`} />
       </Animated.View>
       {showAllowPushNotificationsCard && (
         <View sx={{ gap: 12, marginBottom: 8 }}>

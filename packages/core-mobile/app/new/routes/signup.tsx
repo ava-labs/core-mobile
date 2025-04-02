@@ -21,7 +21,6 @@ export default function Signup(): JSX.Element {
   const { theme } = useTheme()
   const { showLogoModal, hideLogoModal } = useLogoModal()
   const { setOidcAuth, setMfaMethods } = useRecoveryMethodContext()
-
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
