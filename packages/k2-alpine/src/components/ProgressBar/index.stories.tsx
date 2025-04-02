@@ -38,9 +38,7 @@ export const All = (): JSX.Element => {
         <View>
           <Text variant="heading6">Toggle Off Disabled</Text>
           <View style={{ height: 40 }}>
-            <ProgressBar progress={progress}>
-              <Text>asd</Text>
-            </ProgressBar>
+            <ProgressBar progress={progress} />
           </View>
         </View>
 
