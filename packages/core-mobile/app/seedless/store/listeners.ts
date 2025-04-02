@@ -12,7 +12,6 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { SessionTimeoutParams } from 'seedless/screens/SessionTimeout'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import SeedlessService from 'seedless/services/SeedlessService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import WalletService from 'services/wallet/WalletService'
@@ -23,6 +22,7 @@ import { onTokenExpired } from 'seedless/store/slice'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
 import { setAccountTitle } from 'store/account/slice'
+import { uuid } from 'utils/uuid'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
@@ -106,7 +106,7 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
         if (selectWalletState(state) === WalletState.INACTIVE) {
           initWalletServiceAndUnlock({
             dispatch,
-            mnemonic: SEEDLESS_MNEMONIC_STUB,
+            mnemonic: uuid(),
             walletType: WalletType.SEEDLESS,
             isLoggingIn: true
           }).catch(Logger.error)
