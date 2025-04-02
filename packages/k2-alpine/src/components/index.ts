@@ -34,6 +34,7 @@ export * from './StakeCards/ProgressCard'
 export * from './StakeCards/CompleteCard'
 export * from './Slider/Slider'
 export * from './ProgressBar/ProgressBar'
+export * from './ProgressBar/MaskedProgressBar'
 
 export * from './PriceChangeIndicator/types'
 

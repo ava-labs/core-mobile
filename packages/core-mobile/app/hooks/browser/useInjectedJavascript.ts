@@ -31,7 +31,12 @@ export type GetDescriptionAndFavicon = {
   description: string
 }
 
-export type GetPageStyles = ViewStyle | TextStyle | ImageStyle
+export type GetPageStyles = {
+  backgroundColor: string
+  color: string
+  fontSize: string
+  fontFamily: string
+}
 
 /**
  * This hook offers js scripts to be injected into WebView so that WalletConnect modal window shows our

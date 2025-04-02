@@ -54,7 +54,6 @@ const HistoryScreen = (): JSX.Element => {
         },
         {
           text: 'Yes',
-          style: 'destructive',
           onPress: handleConfirmClearAll
         }
       ]

@@ -14,45 +14,44 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, AddHistoryPayload } from 'store/browser'
+import { useBrowserContext } from '../BrowserContext'
 import {
   BROWSER_CONTROLS_HEIGHT,
   HORIZONTAL_MARGIN,
   prepareFaviconToLoad
 } from '../consts'
-import { useBrowserContext } from '../BrowserContext'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingTop: insets.top + 26,
-          paddingBottom: BROWSER_CONTROLS_HEIGHT
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingTop: insets.top + 26,
+        paddingBottom: BROWSER_CONTROLS_HEIGHT
+      }}>
+      <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
+        <Text variant="heading2">Discover</Text>
+        <Text variant="body1">
+          Discover a wide variety of apps built on the Avalanche ecosystem
+        </Text>
+      </View>
+
+      <DApps />
+
+      <View
+        style={{
+          gap: 12
         }}>
-        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
-          <Text variant="heading2">Discover</Text>
-          <Text variant="body1">
-            Discover a wide variety of apps built on the Avalanche ecosystem
-          </Text>
+        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+          <Text variant="heading3">Learn</Text>
         </View>
+        <Learn />
+      </View>
 
-        <DApps />
-
-        <View
-          style={{
-            gap: 12
-          }}>
-          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-            <Text variant="heading3">Learn</Text>
-          </View>
-          <Learn />
-        </View>
-
-        {/* TODO: will be added in the future */}
-        {/* <View>
+      {/* TODO: will be added in the future */}
+      {/* <View>
           <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
             <Text variant="heading3">Top projects</Text>
             <Text
@@ -65,8 +64,7 @@ export const Discover = (): JSX.Element => {
           </View>
           <TopProjects />
         </View> */}
-      </ScrollView>
-    </View>
+    </ScrollView>
   )
 }
 

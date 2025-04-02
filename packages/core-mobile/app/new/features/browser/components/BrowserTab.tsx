@@ -1,4 +1,5 @@
 import { ANIMATED, useTheme } from '@avalabs/k2-alpine'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import {
@@ -23,10 +24,15 @@ import RNWebView, {
   WebViewNavigationEvent
 } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AddHistoryPayload } from 'store/browser'
 import {
   addHistoryForActiveTab,
+  goBackward,
+  goForward as goForwardInPage,
+  selectCanGoBack,
+  selectCanGoForward,
   selectTab,
   updateActiveHistoryForTab
 } from 'store/browser/slices/tabs'
@@ -46,8 +52,10 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
   ({ tabId }, ref): JSX.Element => {
     const dispatch = useDispatch()
     const { theme } = useTheme()
-    const { onProgress, progress, setUrlEntry } = useBrowserContext()
     const insets = useSafeAreaInsets()
+    const tabBarHeight = useBottomTabBarHeight()
+
+    const { onProgress, progress, setUrlEntry } = useBrowserContext()
     const { setPendingDeepLink } = useDeeplink()
     const clipboard = useClipboardWatcher()
     const {
@@ -58,6 +66,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       injectCustomPrompt,
       injectGetPageStyles
     } = useInjectedJavascript()
+
     const activeTab = useSelector(selectTab(tabId))
     const activeHistory = activeTab?.activeHistory
     const activeHistoryUrl = activeHistory?.url ?? ''
@@ -70,56 +79,43 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     )
 
     const webViewRef = useRef<RNWebView>(null)
+    const backgroundColor =
+      pageStyles?.backgroundColor || theme.colors.$surfacePrimary
+
+    const canGoBack = useSelector(selectCanGoBack)
+    const canGoForward = useSelector(selectCanGoForward)
+
+    const reload = (): void => {
+      webViewRef.current?.reload()
+    }
+
+    const goBack = (): void => {
+      if (!canGoBack) return
+      AnalyticsService.capture('BrowserBackTapped').catch(Logger.error)
+      dispatch(goBackward())
+    }
+
+    const goForward = (): void => {
+      if (!canGoForward) return
+      AnalyticsService.capture('BrowserForwardTapped').catch(Logger.error)
+      dispatch(goForwardInPage())
+    }
 
     useImperativeHandle(ref, () => ({
       loadUrl: (url: string) => {
         setUrlToLoad(url)
       },
-      reload: () => {
-        webViewRef.current?.reload()
-      },
-      goBack: () => {
-        webViewRef.current?.goBack()
-      },
-      goForward: () => {
-        webViewRef.current?.goForward()
-      }
+      reload,
+      goBack,
+      goForward
     }))
-
-    // const canGoBack = useSelector(selectCanGoBack)
-    // const canGoForward = useSelector(selectCanGoForward)
-
-    // const goBack = (): void => {
-    //   if (!canGoBack) return
-    //   AnalyticsService.capture('BrowserBackTapped')
-    //   dispatch(goBackward())
-    // }
-    // const goForward = (): void => {
-    //   if (!canGoForward) return
-    //   AnalyticsService.capture('BrowserForwardTapped')
-    //   dispatch(goForwardInPage())
-    // }
-
-    // function handleRefresh(): void {
-    //   webViewRef.current?.reload()
-    // }
-
-    // function handleUrlSubmit(): void {
-    //   AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
-    //   const normalized = normalizeUrlWithHttps(urlEntry)
-    //   if (isValidHttpUrl(normalized)) {
-    //     // setUrlToLoad(normalized)
-    //   } else {
-    //     navigateToGoogleSearchResult(normalized)
-    //   }
-    // }
 
     // useEffect(() => {
     //   if (
     //     activeHistory?.url &&
     //     removeTrailingSlash(urlEntry) !== removeTrailingSlash(activeHistory.url)
     //   ) {
-    //     // setUrlToLoad(activeHistory.url)
+    //     setUrlToLoad(activeHistory.url)
     //   }
     // }, [activeHistory?.url, urlEntry])
 
@@ -268,7 +264,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           wrapperStyle,
           {
             flex: 1,
-            backgroundColor: pageStyles?.backgroundColor || 'undefined'
+            backgroundColor
           }
         ]}>
         <WebView
@@ -287,11 +283,10 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           onMessage={onMessageHandler}
           style={{
             paddingTop: insets.top,
-            backgroundColor:
-              pageStyles?.backgroundColor || theme.colors.$surfacePrimary
+            backgroundColor
           }}
           contentInset={{
-            bottom: BROWSER_CONTROLS_HEIGHT
+            bottom: BROWSER_CONTROLS_HEIGHT + tabBarHeight
           }}
           onLoadProgress={onProgress}
           onError={onError}

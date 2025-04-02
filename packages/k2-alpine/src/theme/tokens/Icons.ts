@@ -60,6 +60,7 @@ import IconClose from '../../assets/icons/close.svg'
 import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
 import IconTabs from '../../assets/icons/tabs.svg'
 import IconLink from '../../assets/icons/link.svg'
+import IconHistory from '../../assets/icons/history.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -194,7 +195,8 @@ export const Icons = {
     Check: IconCheck,
     ExpandMore: IconExpandMore,
     MoreHoriz: IconMoreHoriz,
-    Tabs: IconTabs
+    Tabs: IconTabs,
+    History: IconHistory
   },
   Notification: {
     Sync: IconSync

@@ -11,7 +11,7 @@ import {
 import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
 import { useFocusEffect } from 'expo-router'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -19,6 +19,8 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
+
+const ROTATION = 2
 
 export const TabItem = ({
   title,
@@ -54,12 +56,31 @@ export const TabItem = ({
 
   const rotation = useSharedValue(0)
 
+  const rotationValue = useMemo(() => {
+    const rowIndex = Math.floor(index / 2)
+    const isEvenRow = rowIndex % 2 === 0
+    const baseRotation = isEvenRow
+      ? index % 2 === 0
+        ? -ROTATION
+        : ROTATION
+      : index % 2 === 0
+      ? ROTATION
+      : -ROTATION
+
+    // Add +1 / -1 variation to the first item of odd rows and apply inverted to even rows
+    if (!isEvenRow && index % 2 === 0) {
+      return baseRotation + (rowIndex % 2 === 0 ? 1 : -1)
+    }
+    if (isEvenRow && index % 2 !== 0) {
+      return baseRotation - (rowIndex % 2 === 0 ? 1 : -1)
+    }
+
+    return baseRotation
+  }, [index])
+
   useFocusEffect(() => {
     setTimeout(() => {
-      rotation.value = withSpring(
-        1 * (index % 2 ? 2 : -2),
-        ANIMATED.SPRING_CONFIG
-      )
+      rotation.value = withSpring(rotationValue, ANIMATED.SPRING_CONFIG)
     }, index * 70)
 
     return () => {

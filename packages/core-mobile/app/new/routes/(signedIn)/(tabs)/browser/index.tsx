@@ -1,5 +1,5 @@
 import { View } from '@avalabs/k2-alpine'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { useNavigation } from '@react-navigation/native'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
@@ -8,7 +8,7 @@ import {
   BrowserTabRef
 } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { KeyboardAvoidingView, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import {
@@ -23,6 +23,7 @@ const Browser = (): React.ReactNode => {
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
+  const navigation = useNavigation()
 
   const [tabs, setTabs] = useState<Tab[]>([])
 
@@ -64,67 +65,69 @@ const Browser = (): React.ReactNode => {
   }, [activeTab])
 
   useEffect(() => {
-    allTabs.forEach(tab => {
+    filteredTabs.forEach(tab => {
       if (browserRefs?.current && !browserRefs.current[tab.id]?.current) {
         browserRefs.current[tab.id] = React.createRef<BrowserTabRef>()
       }
     })
+  }, [filteredTabs, browserRefs])
+
+  useEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: { height: 800 }
+    })
+  }, [navigation])
+
+  // Ensure tabs are updated
+  useEffect(() => {
+    setTabs(prev =>
+      prev.map(item => ({
+        ...item,
+        ...(allTabs.find(tab => tab.id === item.id) || item)
+      }))
+    )
   }, [allTabs, browserRefs])
 
-  // TODO: Not sure if this is still needed
-  // useEffect(() => {
-  // Ensure tabs are updated
-  // setTabs(prev =>
-  //   prev.map(item => ({
-  //     ...item,
-  //     ...(allTabs.find(tab => tab.id === item.id) || item)
-  //   }))
-  // )
-  // }, [allTabs, browserRefs])
-
-  // TODO: Not sure if this is still needed
-  // useEffect(() => {
-  //   setTabs(prev =>
-  //     prev.filter(prevTab => allTabs.some(tab => tab.id === prevTab.id))
-  //   )
-  // }, [allTabs])
+  useEffect(() => {
+    setTabs(prev =>
+      prev.filter(prevTab => allTabs.some(tab => tab.id === prevTab.id))
+    )
+  }, [allTabs])
 
   return (
-    <BlurredBarsContentLayout>
-      <BrowserSnapshot>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}>
-          <View sx={{ flex: 1 }}>
-            {showEmptyTab && <Discover />}
+    <BrowserSnapshot>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}>
+        <View sx={{ flex: 1 }}>
+          {showEmptyTab && <Discover />}
 
-            {filteredTabs.map(tab => {
-              return (
-                <View
-                  key={tab.id}
-                  sx={{
-                    flex: 1,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: tab.id === activeTab?.id ? 0 : -1,
-                    pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none'
-                  }}>
-                  <BrowserTab
-                    ref={browserRefs.current?.[tab.id]} // Ensure the ref is passed here
-                    tabId={tab.id}
-                  />
-                </View>
-              )
-            })}
+          {filteredTabs.map(tab => {
+            return (
+              <View
+                key={tab.id}
+                sx={{
+                  flex: 1,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: tab.id === activeTab?.id ? 0 : -1,
+                  pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none'
+                }}>
+                <BrowserTab
+                  ref={browserRefs.current?.[tab.id]} // Ensure the ref is passed here
+                  tabId={tab.id}
+                />
+              </View>
+            )
+          })}
 
-            <BrowserControls />
-          </View>
-        </KeyboardAvoidingView>
-      </BrowserSnapshot>
-    </BlurredBarsContentLayout>
+          <BrowserControls />
+        </View>
+      </KeyboardAvoidingView>
+    </BrowserSnapshot>
   )
 }
 

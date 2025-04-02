@@ -10,6 +10,7 @@ import { addFavorite, removeFavorite } from 'store/browser/slices/favorites'
 import { addTab, selectActiveHistory } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { isValidUrl } from '../consts'
+import { useBrowserContext } from '../BrowserContext'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -28,6 +29,7 @@ export const BrowserInputMenu = ({
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useNavigation()
+  const { handleClearAndFocus } = useBrowserContext()
   const activeHistory = useSelector(selectActiveHistory)
 
   const onShare = async (): Promise<void> => {
@@ -55,7 +57,7 @@ export const BrowserInputMenu = ({
 
     const historyAction = {
       id: MenuId.History,
-      title: 'View History',
+      title: 'Browsing history',
       image: Platform.select({
         ios: 'clock.arrow.circlepath',
         android: 'history_24px'
@@ -66,7 +68,7 @@ export const BrowserInputMenu = ({
 
     const favoriteAction = {
       id: MenuId.Favorite,
-      title: isFavorited ? 'Remove from Favorites' : 'Mark as Favorite',
+      title: isFavorited ? 'Remove from favorites' : 'Mark as favorite',
       image: Platform.select({
         ios: favoriteIcon.ios,
         android: favoriteIcon.android
@@ -88,7 +90,7 @@ export const BrowserInputMenu = ({
 
     const newTabAction = {
       id: MenuId.NewTab,
-      title: 'New Tab',
+      title: 'Open new tab',
       image: Platform.select({
         ios: 'plus',
         android: 'plus_24px'
@@ -109,6 +111,7 @@ export const BrowserInputMenu = ({
     // initiated tab data
     AnalyticsService.capture('BrowserNewTabTapped')
     dispatch(addTab())
+    handleClearAndFocus()
   }
 
   function handleShare(): void {
