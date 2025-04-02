@@ -12,7 +12,7 @@ export default function TermsAndConditions(): JSX.Element {
     if (isRecovering) {
       const mfas = await SeedlessService.session.userMfa()
       if (mfas.length === 0) {
-        navigate('./analyticsConsent')
+        navigate('./addRecoveryMethods')
         return
       }
       navigate('./selectMfaMethod')

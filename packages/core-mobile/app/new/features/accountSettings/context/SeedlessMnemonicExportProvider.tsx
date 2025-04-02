@@ -90,16 +90,14 @@ export const SeedlessMnemonicExportProvider = ({
 
   const onVerifyExportCompleteSuccess = useCallback(
     async (response: UserExportCompleteResponse) => {
-      if (keyPair?.privateKey === undefined) {
-        return
-      }
+      if (keyPair?.privateKey === undefined) return
       const decryptedMnemonic = await seedlessExportService.userExportDecrypt(
         keyPair.privateKey,
         response
       )
       setMnemonic(decryptedMnemonic)
     },
-    [keyPair?.privateKey, seedlessExportService]
+    [keyPair, seedlessExportService]
   )
 
   const deleteExport = useCallback(async (): Promise<void> => {
@@ -207,6 +205,14 @@ export const SeedlessMnemonicExportProvider = ({
     getKeyId()
   }, [seedlessExportService, setKeyId])
 
+  useEffect(() => {
+    const getKeyPair = async (): Promise<void> => {
+      const kp = await seedlessExportService.userExportGenerateKeyPair()
+      setKeyPair(kp)
+    }
+    getKeyPair()
+  }, [seedlessExportService, setKeyPair])
+
   const initExport = useCallback(async (): Promise<void> => {
     try {
       const pending = await seedlessExportService.userExportList()
@@ -237,11 +243,10 @@ export const SeedlessMnemonicExportProvider = ({
   const completeExport = useCallback(async (): Promise<void> => {
     setMnemonic(undefined)
     try {
-      const kp = await seedlessExportService.userExportGenerateKeyPair()
-      setKeyPair(kp)
+      if (keyPair === undefined) return
       const exportReponse = await seedlessExportService.userExportComplete(
         keyId,
-        kp.publicKey
+        keyPair.publicKey
       )
 
       if (!exportReponse.requiresMfa()) {
@@ -257,7 +262,13 @@ export const SeedlessMnemonicExportProvider = ({
       Logger.error('failed to complete export request error: ', e)
       showSnackbar('Unable to complete export request')
     }
-  }, [seedlessExportService, keyId, verifyMFA, onVerifyExportCompleteSuccess])
+  }, [
+    keyPair,
+    seedlessExportService,
+    keyId,
+    verifyMFA,
+    onVerifyExportCompleteSuccess
+  ])
 
   return (
     <SeedlessMnemonicExportContext.Provider

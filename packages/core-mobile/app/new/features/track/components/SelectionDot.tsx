@@ -8,7 +8,7 @@ import {
 } from 'react-native-reanimated'
 import { Line, vec, Circle } from '@shopify/react-native-skia'
 import type { SelectionDotProps } from 'react-native-graph'
-import { useColorScheme } from 'common/hooks/useColorScheme'
+import { useColorScheme } from 'react-native'
 
 export function SelectionDot({
   isActive,
