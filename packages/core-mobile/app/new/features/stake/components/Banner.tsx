@@ -25,10 +25,10 @@ export const Banner = (): JSX.Element | undefined => {
 
   const pChainBalance = usePChainBalance()
   const cChainBalance = useCChainBalance()
-  const isDeveloperModeEnabled = useSelector(selectIsDeveloperMode)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const cChainNetwork = useCChainNetwork()
   const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDeveloperModeEnabled)
+    NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   const availableInAvax = useMemo(() => {
     return cChainBalance.data?.balance !== undefined && cChainNetwork

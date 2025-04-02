@@ -33,9 +33,7 @@ import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 
-const TITLE = 'Security & privacy'
-
-const navigationHeader = <NavigationTitleHeader title={TITLE} />
+const navigationHeader = <NavigationTitleHeader title={'Security & privacy'} />
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -158,7 +156,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: 'Recovery methods',
         onPress: () => {
-          navigate('./recoveryMethodsVerifyPin')
+          navigate('./showRecoveryMethods')
         }
       })
     }
@@ -211,7 +209,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       <Animated.View
         style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
         onLayout={handleHeaderLayout}>
-        <Text variant="heading2">{TITLE}</Text>
+        <Text variant="heading2">{`Security\n& privacy`}</Text>
       </Animated.View>
       <Space y={36} />
 

@@ -5,6 +5,7 @@ import {
   getDelayInstruction,
   getDelayWarningDescription
 } from '../context/SeedlessMnemonicExportProvider'
+import { SHOW_RECOVERY_PHRASE } from '../consts'
 
 interface Props {
   onNext: () => void
@@ -25,7 +26,7 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
     <View
       sx={{ marginHorizontal: 16, flex: 1, justifyContent: 'space-between' }}>
       <View>
-        <Text variant="heading2">Show recovery phrase</Text>
+        <Text variant="heading2">{SHOW_RECOVERY_PHRASE}</Text>
         <View
           sx={{
             marginTop: 27,

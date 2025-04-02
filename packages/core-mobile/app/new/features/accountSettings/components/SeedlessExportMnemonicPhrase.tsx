@@ -10,6 +10,7 @@ import {
   Icons
 } from '@avalabs/k2-alpine'
 import { MnemonicText } from 'common/components/MnemonicText'
+import { SHOW_RECOVERY_PHRASE } from '../consts'
 
 const EMPTY_MNEMONIC = [...Array(24).values()] as string[]
 
@@ -76,7 +77,7 @@ export const SeedlessExportMnemonicPhrase = ({
         flex: 1,
         marginHorizontal: 16
       }}>
-      <Text variant="heading2">Show recovery phrase</Text>
+      <Text variant="heading2">{SHOW_RECOVERY_PHRASE}</Text>
       <Text
         variant="body1"
         sx={{ marginTop: 24, marginRight: 64 }}

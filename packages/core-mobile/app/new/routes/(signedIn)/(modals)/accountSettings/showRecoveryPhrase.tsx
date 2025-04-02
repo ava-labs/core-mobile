@@ -16,10 +16,11 @@ import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import { useLocalSearchParams } from 'expo-router'
+import { SHOW_RECOVERY_PHRASE } from 'features/accountSettings/consts'
 
-const TITLE = 'Show recovery phrase'
-
-const navigationHeader = <NavigationTitleHeader title={TITLE} />
+const navigationHeader = (
+  <NavigationTitleHeader title={'Show recovery phrase'} />
+)
 
 const ShowRecoveryPhraseScreen = (): JSX.Element => {
   const {
@@ -56,7 +57,7 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
         style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
         onLayout={handleHeaderLayout}>
         <ScreenHeader
-          title={TITLE}
+          title={SHOW_RECOVERY_PHRASE}
           description="This phrase is your access key to your wallet. Carefully write it
         down and store it in a safe This phrase is your access key to your wallet. Carefully write it down and store it in a safe location"
         />
