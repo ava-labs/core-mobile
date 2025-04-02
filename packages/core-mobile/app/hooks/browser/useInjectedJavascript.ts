@@ -1,5 +1,4 @@
 import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
-import { ImageStyle, TextStyle, ViewStyle } from 'react-native'
 
 export type InjectedJavascripts = {
   injectCoreAsRecent: string
