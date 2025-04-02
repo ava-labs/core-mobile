@@ -50,7 +50,7 @@ export function usePinOrBiometryLogin(): {
   const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
   const { signOut } = useApplicationContext().appHook
   const [timeRemaining, setTimeRemaining] = useState('00:00')
-  const activeWalletId = useSelector(selectActiveWalletId) as string
+  const activeWalletId = useSelector(selectActiveWalletId)
   const dispatch = useDispatch()
 
   const {
@@ -98,6 +98,9 @@ export function usePinOrBiometryLogin(): {
       setPinEntered(false)
 
       try {
+        if (!activeWalletId) {
+          throw new Error('Active wallet ID not found')
+        }
         const credentials = (await BiometricsSDK.loadWalletWithPin(
           activeWalletId
         )) as UserCredentials
@@ -182,7 +185,7 @@ export function usePinOrBiometryLogin(): {
         //timer is here to give UI opportunity to draw everything
         concatMap(() => of(BiometricsSDK.getAccessType())),
         concatMap((value: string | null) => {
-          if (value && value === 'BIO') {
+          if (value === 'BIO' && activeWalletId) {
             return BiometricsSDK.loadWalletKey(activeWalletId, {
               ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
               authenticationPrompt: {
