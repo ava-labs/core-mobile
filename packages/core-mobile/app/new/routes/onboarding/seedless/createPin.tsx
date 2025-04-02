@@ -12,6 +12,8 @@ import { selectWalletType } from 'store/app'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import { StorageKey } from 'resources/Constants'
+import { commonStorage } from 'utils/mmkv'
 
 export default function CreatePin(): JSX.Element {
   const [useBiometrics, setUseBiometrics] = useState(true)
@@ -19,6 +21,8 @@ export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
   const { onPinCreated } = useWallet()
   const [hasWalletName, setHasWalletName] = useState(false)
+  const [isBiometricAvailable, setIsBiometricAvailable] =
+    useState<boolean>(false)
 
   useEffect(() => {
     const checkHasWalletName = async (): Promise<void> => {
@@ -31,6 +35,21 @@ export default function CreatePin(): JSX.Element {
     }
     checkHasWalletName().catch(Logger.error)
   }, [walletType])
+
+  useEffect(() => {
+    BiometricsSDK.canUseBiometry()
+      .then((biometricAvailable: boolean) => {
+        setIsBiometricAvailable(biometricAvailable)
+      })
+      .catch(Logger.error)
+
+    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
+    if (type) {
+      setUseBiometrics(type === 'BIO')
+    } else {
+      Logger.error('Secure access type not found')
+    }
+  }, [])
 
   const handleEnteredValidPin = useCallback(
     (pin: string) => {
@@ -69,6 +88,7 @@ export default function CreatePin(): JSX.Element {
           newPinTitle={`Secure your wallet\nwith a PIN`}
           newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
           confirmPinTitle={`Confirm your\nPIN code`}
+          isBiometricAvailable={isBiometricAvailable}
         />
       </KeyboardAvoidingView>
     </BlurredBarsContentLayout>

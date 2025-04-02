@@ -153,7 +153,7 @@ export const SeedlessMnemonicExportProvider = ({
         'Please set up at least one in Settings > Security & privacy > Recovery methods.',
       buttons: [
         {
-          text: 'Ok',
+          text: 'OK',
           onPress: () => canGoBack() && back()
         }
       ]
