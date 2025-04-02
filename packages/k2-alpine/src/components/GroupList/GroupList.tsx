@@ -118,6 +118,8 @@ export const GroupList = ({
                       <Text
                         variant="buttonMedium"
                         sx={{
+                          fontFamily: 'Inter-Medium',
+                          fontSize: 16,
                           color: '$textPrimary',
                           ...titleSx
                         }}>
@@ -150,6 +152,7 @@ export const GroupList = ({
                     {value !== undefined &&
                       (typeof value === 'string' ? (
                         <Text
+                          testID={`right_value__${title}`}
                           variant="body1"
                           numberOfLines={1}
                           sx={{ color: '$textSecondary', ...valueSx }}>

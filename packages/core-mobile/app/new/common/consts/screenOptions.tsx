@@ -40,9 +40,9 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
 export const modalScreensOptions: StackNavigationOptions = {
   presentation: 'modal',
   cardStyle: {
+    marginTop: 75,
     borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    marginTop: 75
+    borderTopRightRadius: 40
   },
   gestureEnabled: true,
   gestureDirection: 'vertical',

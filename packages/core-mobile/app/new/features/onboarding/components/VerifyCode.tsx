@@ -1,13 +1,19 @@
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useLayoutEffect,
+  useRef
+} from 'react'
 import {
   View,
   Text,
   useTheme,
   Card,
   TextInput,
-  Pressable,
-  showAlert
+  showAlert,
+  SxProp
 } from '@avalabs/k2-alpine'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
@@ -15,12 +21,14 @@ import { TextInput as RNTextInput } from 'react-native'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
 
-export const VerifyCode = ({
+export const VerifyCode = <T,>({
   onVerifyCode,
-  onVerifySuccess
+  onVerifySuccess,
+  sx
 }: {
-  onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
-  onVerifySuccess: () => void
+  onVerifyCode: (code: string) => Promise<Result<T | undefined, TotpErrors>>
+  onVerifySuccess: (response: T | undefined) => void
+  sx?: SxProp
 }): React.JSX.Element => {
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState('')
@@ -59,7 +67,7 @@ export const VerifyCode = ({
           throw new Error(result.error.message)
         }
         setIsVerifying(false)
-        onVerifySuccess()
+        onVerifySuccess(result.value)
         AnalyticsService.capture('TotpValidationSuccess')
       } catch (error) {
         setShowError(true)
@@ -72,14 +80,6 @@ export const VerifyCode = ({
     [onVerifyCode, onVerifySuccess]
   )
 
-  const handleTextInputFocus = (): void => {
-    inputRef.current?.focus()
-  }
-
-  useEffect(() => {
-    handleTextInputFocus()
-  }, [])
-
   const handleRetry = useCallback((): void => {
     setShowError(false)
     handleVerifyCode(code).catch(Logger.error)
@@ -88,6 +88,14 @@ export const VerifyCode = ({
   const handleCancel = (): void => {
     setShowError(false)
   }
+
+  useLayoutEffect(() => {
+    const timeout = setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100) // Delay for navigation animations
+
+    return () => clearTimeout(timeout)
+  }, [])
 
   useEffect(() => {
     if (showError) {
@@ -111,57 +119,52 @@ export const VerifyCode = ({
   }, [handleRetry, showError])
 
   return (
-    <BlurredBarsContentLayout>
-      <View
-        sx={{
-          flex: 1,
-          paddingTop: 25,
-          paddingHorizontal: 16,
-          justifyContent: 'space-between'
-        }}>
-        <View>
-          <Text variant="heading2">Verify code</Text>
-          <Text variant="body1" sx={{ marginTop: 8 }}>
-            Enter the code generated from your authenticator app
-          </Text>
-          <Card
-            sx={{
-              marginTop: 34,
-              height: 150
-            }}>
-            <Pressable
-              onPress={handleTextInputFocus}
-              sx={{
-                flex: 1,
-                width: '100%',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-              <TextInput
-                ref={inputRef}
-                selectionColor={colors.$textPrimary}
-                sx={{
-                  flex: 1,
-                  fontFamily: 'Aeonik-Medium',
-                  height: 44,
-                  fontSize: 60,
-                  lineHeight: 60,
-                  color: colors.$textPrimary
-                }}
-                maxLength={7}
-                editable={!isVerifying}
-                value={formattedCode}
-                keyboardType="number-pad"
-                onChangeText={changedText => {
-                  handleVerifyCode(changedText).catch(error =>
-                    Logger.error('handleVerifyCode', error)
-                  )
-                }}
-              />
-            </Pressable>
-          </Card>
-        </View>
+    <View
+      sx={{
+        flex: 1,
+        paddingHorizontal: 16,
+        justifyContent: 'space-between',
+        ...sx
+      }}>
+      <View>
+        <Text variant="heading2">Verify code</Text>
+        <Text variant="body1" sx={{ marginTop: 8 }}>
+          Enter the code generated from your authenticator app
+        </Text>
+        <Card
+          sx={{
+            marginTop: 34,
+            height: 150
+          }}>
+          <TextInput
+            ref={inputRef}
+            containerSx={{
+              flex: 1,
+              height: 44,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+            textInputSx={{
+              flex: 1,
+              fontFamily: 'Aeonik-Medium',
+              fontSize: 60,
+              lineHeight: 60,
+              color: colors.$textPrimary
+            }}
+            textAlign="center"
+            onBlur={() => inputRef.current?.focus()}
+            maxLength={7}
+            editable={!isVerifying}
+            value={formattedCode}
+            keyboardType="number-pad"
+            onChangeText={changedText => {
+              handleVerifyCode(changedText).catch(error =>
+                Logger.error('handleVerifyCode', error)
+              )
+            }}
+          />
+        </Card>
       </View>
-    </BlurredBarsContentLayout>
+    </View>
   )
 }

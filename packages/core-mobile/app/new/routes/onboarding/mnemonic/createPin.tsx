@@ -4,6 +4,8 @@ import { CreatePin as Component } from 'features/onboarding/components/CreatePin
 import { useWallet } from 'hooks/useWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 
 export default function CreatePin(): JSX.Element {
   const [useBiometrics, setUseBiometrics] = useState(true)
@@ -24,10 +26,17 @@ export default function CreatePin(): JSX.Element {
       .catch(Logger.error)
   }
   return (
-    <Component
-      onEnteredValidPin={handleEnteredValidPin}
-      useBiometrics={useBiometrics}
-      setUseBiometrics={setUseBiometrics}
-    />
+    <BlurredBarsContentLayout sx={{ marginTop: 16 }}>
+      <KeyboardAvoidingView>
+        <Component
+          onEnteredValidPin={handleEnteredValidPin}
+          useBiometrics={useBiometrics}
+          setUseBiometrics={setUseBiometrics}
+          newPinTitle={`Secure your wallet\nwith a PIN`}
+          newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+          confirmPinTitle={`Confirm your\nPIN code`}
+        />
+      </KeyboardAvoidingView>
+    </BlurredBarsContentLayout>
   )
 }

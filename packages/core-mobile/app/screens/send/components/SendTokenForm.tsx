@@ -203,6 +203,11 @@ const SendTokenForm = ({
           {supportsAvalancheDynamicFee && estimatedFee !== undefined && (
             <>
               <Space y={20} />
+              <Text
+                variant="subtitle1"
+                sx={{ marginHorizontal: 16, marginBottom: 6 }}>
+                Network Fee
+              </Text>
               <View sx={{ marginHorizontal: 16 }}>
                 <NetworkFeeSelector
                   isDark

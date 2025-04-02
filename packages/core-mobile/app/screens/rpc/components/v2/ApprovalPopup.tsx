@@ -456,14 +456,18 @@ const ApprovalPopup = (): JSX.Element => {
     }
 
     return (
-      <NetworkFeeSelectorWithGasless
-        gaslessEnabled={gaslessEnabled}
-        setGaslessEnabled={setGaslessEnabled}
-        gasLimit={gasLimit}
-        caip2ChainId={caip2ChainId}
-        handleFeesChange={handleFeesChange}
-        shouldShowGaslessSwitch={shouldShowGaslessSwitch}
-      />
+      <View sx={{ marginTop: 8 }}>
+        <Text variant="buttonMedium">Network Fee</Text>
+        <Space y={12} />
+        <NetworkFeeSelectorWithGasless
+          gaslessEnabled={gaslessEnabled}
+          setGaslessEnabled={setGaslessEnabled}
+          gasLimit={gasLimit}
+          caip2ChainId={caip2ChainId}
+          handleFeesChange={handleFeesChange}
+          shouldShowGaslessSwitch={shouldShowGaslessSwitch}
+        />
+      </View>
     )
   }
 

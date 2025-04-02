@@ -27,10 +27,7 @@ const baseConfig = {
       /^node_modules\/.*/
     ],
     extraNodeModules: {
-      // react-native-quick-crypto integration
-      crypto: require.resolve('react-native-quick-crypto'),
-      stream: require.resolve('./node_modules/stream-browserify'),
-      buffer: require.resolve('./node_modules/@craftzdog/react-native-buffer')
+      stream: require.resolve('./node_modules/stream-browserify')
     },
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
@@ -74,6 +71,22 @@ const baseConfig = {
             '@ledgerhq/live-network',
             '@ledgerhq/live-network/lib-es'
           ),
+          platform
+        )
+      }
+      if (moduleName === 'crypto') {
+        // when importing crypto, resolve to react-native-quick-crypto
+        return context.resolveRequest(
+          context,
+          'react-native-quick-crypto',
+          platform
+        )
+      }
+      if (moduleName === 'buffer') {
+        // when importing buffer, resolve to @craftzdog/react-native-buffer
+        return context.resolveRequest(
+          context,
+          '@craftzdog/react-native-buffer',
           platform
         )
       }

@@ -174,7 +174,7 @@ export const useSeedlessRegister = (): ReturnType => {
       }
 
       if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
-        showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
+        showSimpleToast('Passkey/Yubikey is not available at the moment')
       }
 
       showLogo()

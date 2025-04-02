@@ -17,18 +17,11 @@ import { isCompleted, isOnGoing } from 'utils/earn/status'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
-import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
-import { UTCDate } from '@date-fns/utc'
-import { secondsToMilliseconds } from 'date-fns'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { ListRenderItemInfo } from '@shopify/flash-list'
-import {
-  formattedEstimatedRewardInAvax,
-  formattedRewardAmountInAvax,
-  getActiveStakeProgress
-} from '../utils'
+import { getActiveStakeProgress, getStakeTitle } from '../utils'
 import CompleteCardBackgroundImageDark from '../../../assets/icons/complete-card-bg-dark.png'
 import CompleteCardBackgroundImageLight from '../../../assets/icons/complete-card-bg-light.png'
 
@@ -42,7 +35,7 @@ const StakesScreen = ({
   stakes: PChainTransaction[]
   onAddStake: () => void
   onClaim: () => void
-  onPressStake: (tokenId: string) => void
+  onPressStake: (txHash: string) => void
   motion?: Motion
 }): JSX.Element => {
   const { theme } = useTheme()
@@ -87,27 +80,29 @@ const StakesScreen = ({
         const now = new Date()
 
         if (isCompleted(item, now)) {
-          const rewardAmountInAvaxDisplay = formattedRewardAmountInAvax(item)
+          const title = getStakeTitle({
+            stake: item,
+            pChainNetworkToken,
+            isActive: false
+          })
 
           content = (
             <CompletedCard
               onPress={() => onPressStake(item.txHash)}
-              title={`${rewardAmountInAvaxDisplay} AVAX reward claimed`}
+              title={title}
               width={CARD_WIDTH}
             />
           )
         } else if (isOnGoing(item, now)) {
-          const remainingTime = getReadableDateDuration(
-            new UTCDate(secondsToMilliseconds(item.endTimestamp || 0))
-          )
-          const estimatedRewardInAvaxDisplay = formattedEstimatedRewardInAvax(
-            item,
-            pChainNetworkToken
-          )
+          const title = getStakeTitle({
+            stake: item,
+            pChainNetworkToken,
+            isActive: true
+          })
 
           content = (
             <ProgressCard
-              title={`${estimatedRewardInAvaxDisplay} AVAX reward unlocked in\n${remainingTime}`}
+              title={title}
               progress={getActiveStakeProgress(item, now)}
               width={CARD_WIDTH}
               motion={motion}

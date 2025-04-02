@@ -16,6 +16,11 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="connectedSites" />
       <Stack.Screen name="recoveryMethods" />
       <Stack.Screen name="showRecoveryPhrase" />
+      <Stack.Screen name="changePin" />
+      <Stack.Screen name="verifyChangePin" />
+      <Stack.Screen name="notificationPreferences" />
+      <Stack.Screen name="manageAccounts" />
+      <Stack.Screen name="addressBook" />
     </Stack>
   )
 }

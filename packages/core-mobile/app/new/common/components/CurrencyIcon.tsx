@@ -13,7 +13,7 @@ export const CurrencyIcon = ({
   size?: number
 }): React.JSX.Element => {
   const Icon = CURRENCY_SYMBOL_TO_ICON[symbol]
-  return Icon && <Icon width={size} height={size} />
+  return Icon && <Icon testID={`icon__${symbol}`} width={size} height={size} />
 }
 
 const CURRENCY_SYMBOL_TO_ICON: Record<CurrencySymbol, React.FC<SvgProps>> = {

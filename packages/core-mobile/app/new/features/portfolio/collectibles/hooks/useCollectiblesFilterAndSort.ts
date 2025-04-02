@@ -1,9 +1,10 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { IndexPath } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { NftItem } from 'services/nft/types'
+import { useDispatch, useSelector } from 'react-redux'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
 import {
   AssetNetworkFilter,
   COLLECTIBLE_FILTERS,
@@ -15,35 +16,56 @@ import {
 } from 'store/balance'
 import { NftContentType } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
-import { selectCollectibleVisibility } from 'store/portfolio'
+import {
+  selectCollectibleUnprocessableVisibility,
+  selectCollectibleVisibility,
+  toggleCollectibleUnprocessableVisibility
+} from 'store/portfolio'
+import { useCollectiblesContext } from '../CollectiblesContext'
+import { getCollectibleName } from '../consts'
+
+export type CollectibleFilterAndSortInitialState = {
+  filters: {
+    network: IndexPath
+    contentType: IndexPath
+  }
+  sort: IndexPath
+}
 
 export const useCollectiblesFilterAndSort = (
-  collectibles: NftItem[]
+  initial?: CollectibleFilterAndSortInitialState
 ): {
   filteredAndSorted: NftItem[]
   filter: DropdownSelection & { selected: IndexPath[] }
   sort: DropdownSelection
   view: DropdownSelection
+  isEveryCollectibleHidden: boolean
   onResetFilter: () => void
+  onShowHidden: () => void
 } => {
+  const { collectibles } = useCollectiblesContext()
   const collectiblesVisibility = useSelector(selectCollectibleVisibility)
   const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<IndexPath>(
-    {
+    initial?.filters?.network ?? {
       section: 0,
       row: 0
     }
   )
 
   const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
-    useState<IndexPath>({
-      section: 0,
-      row: 0
-    })
+    useState<IndexPath>(
+      initial?.filters?.contentType ?? {
+        section: 0,
+        row: 0
+      }
+    )
 
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 2
-  })
+  const [selectedSort, setSelectedSort] = useState<IndexPath>(
+    initial?.sort ?? {
+      section: 0,
+      row: 2
+    }
+  )
 
   const [selectedView, setSelectedView] = useState<IndexPath>({
     section: 0,
@@ -115,105 +137,103 @@ export const useCollectiblesFilterAndSort = (
     [selectedView]
   )
 
-  const getFilteredNetworks = useCallback(
-    (items: NftItem[]) => {
-      switch (filterOption[0]) {
-        case AssetNetworkFilter.AvalancheCChain:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              (collectible.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-                collectible.chainId === ChainId.AVALANCHE_TESTNET_ID)
-          )
-        case AssetNetworkFilter.Ethereum:
-          return items.filter(
-            collectible =>
-              'chainId' in collectible &&
-              (collectible.chainId === ChainId.ETHEREUM_HOMESTEAD ||
-                collectible.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
-                collectible.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
-          )
-        default:
-          return items
-      }
-    },
-    [filterOption]
-  )
-
-  const getFilteredContentType = useCallback(
-    (items: NftItem[]) => {
-      switch (filterOption[1]) {
-        case CollectibleTypeFilter.Videos:
-          return items.filter(
-            collectible => collectible.imageData?.type === NftContentType.MP4
-          )
-        case CollectibleTypeFilter.Pictures:
-          return items.filter(
-            collectible =>
-              collectible.imageData?.type === NftContentType.JPG ||
-              collectible.imageData?.type === NftContentType.PNG ||
-              // try to display as picture if the type is unknown
-              collectible.imageData?.type === NftContentType.Unknown
-          )
-        case CollectibleTypeFilter.GIFs:
-          return items.filter(
-            collectible => collectible.imageData?.type === NftContentType.GIF
-          )
-        default:
-          return items
-      }
-    },
-    [filterOption]
+  const isUnprocessableHidden = useSelector(
+    selectCollectibleUnprocessableVisibility
   )
 
   const getFiltered = useCallback(
     (nfts: NftItem[]) => {
-      if (nfts.length === 0) {
-        return []
-      }
-      const filteredByHidden = nfts.filter((nft: NftItem) => {
-        if (filterOption[1] !== CollectibleStatus.Hidden) {
+      if (nfts.length === 0) return []
+
+      const [network, contentType] = filterOption
+
+      const availableNetworks = [
+        AssetNetworkFilter.AvalancheCChain,
+        AssetNetworkFilter.Ethereum
+      ]
+      const availableContentTypes = [
+        CollectibleTypeFilter.Pictures,
+        CollectibleTypeFilter.GIFs,
+        CollectibleTypeFilter.Videos
+      ]
+
+      if (isUnprocessableHidden)
+        nfts = nfts.filter((nft: NftItem) => {
+          return nft.status !== NftLocalStatus.Unprocessable
+        })
+
+      if (contentType !== CollectibleStatus.Hidden)
+        nfts = nfts.filter((nft: NftItem) => {
           return isCollectibleVisible(collectiblesVisibility, nft)
-        }
-        return true
-      })
-      const filteredNetworks = getFilteredNetworks(filteredByHidden)
-      return getFilteredContentType(filteredNetworks)
+        })
+
+      if (availableNetworks.includes(network as AssetNetworkFilter))
+        nfts = nfts.filter((nft: NftItem) => {
+          switch (network) {
+            case AssetNetworkFilter.AvalancheCChain:
+              return isAvalancheChainId(nft.chainId)
+            case AssetNetworkFilter.Ethereum:
+              return isEthereumChainId(nft.chainId)
+            default:
+              return true
+          }
+        })
+
+      if (availableContentTypes.includes(contentType as CollectibleTypeFilter))
+        nfts = nfts.filter((nft: NftItem) => {
+          switch (contentType) {
+            case CollectibleTypeFilter.Pictures:
+              return (
+                nft.imageData?.type === NftContentType.JPG ||
+                nft.imageData?.type === NftContentType.PNG ||
+                nft.imageData?.type === NftContentType.Unknown
+              )
+            case CollectibleTypeFilter.GIFs:
+              return nft.imageData?.type === NftContentType.GIF
+            case CollectibleTypeFilter.Videos:
+              return nft.imageData?.type === NftContentType.MP4
+            default:
+              return true
+          }
+        })
+
+      return nfts
     },
-    [
-      getFilteredNetworks,
-      getFilteredContentType,
-      filterOption,
-      collectiblesVisibility
-    ]
+    [filterOption, isUnprocessableHidden, collectiblesVisibility]
   )
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
       if (sortOption === CollectibleSort.NameAToZ)
-        return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') <
-            (b.processedMetadata?.name ?? '')
-            ? 1
-            : -1
-        })
+        return filtered?.sort((a, b) =>
+          getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
+        )
 
       if (sortOption === CollectibleSort.NameZToA)
-        return filtered?.sort((a, b) => {
-          return (a.processedMetadata?.name ?? '') >
-            (b.processedMetadata?.name ?? '')
-            ? 1
-            : -1
-        })
+        return filtered?.sort((a, b) =>
+          getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
+        )
 
       return filtered
     },
     [sortOption]
   )
 
+  const dispatch = useDispatch()
+
   const onResetFilter = (): void => {
     setSelectedNetworkFilter({ section: 0, row: 0 })
     setSelectedContentTypeFilter({ section: 0, row: 0 })
+  }
+
+  const onShowHidden = (): void => {
+    setSelectedContentTypeFilter({
+      section: 1,
+      row: 3
+    })
+    if (isUnprocessableHidden && isEveryCollectibleHidden) {
+      dispatch(toggleCollectibleUnprocessableVisibility())
+    }
   }
 
   const filteredAndSorted = useMemo(() => {
@@ -221,11 +241,21 @@ export const useCollectiblesFilterAndSort = (
     return getSorted(filtered)
   }, [collectibles, getFiltered, getSorted])
 
+  const isEveryCollectibleHidden = useMemo(
+    () =>
+      filteredAndSorted.every(collectible =>
+        isCollectibleVisible(collectiblesVisibility, collectible)
+      ) && collectibles?.length > 0,
+    [collectibles?.length, collectiblesVisibility, filteredAndSorted]
+  )
+
   return {
     filteredAndSorted,
     filter: filter as DropdownSelection & { selected: IndexPath[] },
     sort,
     view,
-    onResetFilter
+    isEveryCollectibleHidden,
+    onResetFilter,
+    onShowHidden
   }
 }

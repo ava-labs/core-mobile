@@ -76,6 +76,7 @@ export const AnimatedBalance = ({
 
   return (
     <Animated.View
+      testID="animated_balance"
       layout={SPRING_LINEAR_TRANSITION}
       style={{
         flexDirection: 'row',

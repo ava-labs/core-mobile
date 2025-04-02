@@ -25,6 +25,7 @@ import {
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const AccountScreen = (): JSX.Element => {
@@ -40,6 +41,7 @@ const AccountScreen = (): JSX.Element => {
   const accountIndexNumber = isNaN(Number(accountIndex))
     ? 0
     : Number(accountIndex)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountByIndex(accountIndexNumber))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
@@ -83,7 +85,8 @@ const AccountScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    targetLayout: balanceHeaderLayout
+    targetLayout: balanceHeaderLayout,
+    shouldHeaderHaveGrabber: true
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
@@ -114,6 +117,7 @@ const AccountScreen = (): JSX.Element => {
               }
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
+              isDeveloperModeEnabled={isDeveloperMode}
             />
           </Animated.View>
         </View>
@@ -128,7 +132,8 @@ const AccountScreen = (): JSX.Element => {
     selectedCurrency,
     balanceAccurate,
     isLoading,
-    isPrivacyModeEnabled
+    isPrivacyModeEnabled,
+    isDeveloperMode
   ])
 
   if (account === undefined) {

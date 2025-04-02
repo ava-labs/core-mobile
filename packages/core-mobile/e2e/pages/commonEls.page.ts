@@ -111,6 +111,14 @@ class CommonElsPage {
     return by.text(commonElsLoc.bitcoinNetwork)
   }
 
+  get balanceHeaderAccountName() {
+    return by.id(commonElsLoc.balanceHeaderAccountName)
+  }
+
+  async getBalanceHeaderAccountName() {
+    return await Actions.getElementText(this.balanceHeaderAccountName)
+  }
+
   async tapCarrotSVG(index = 0) {
     await Actions.tapElementAtIndex(this.carrotSVG, index)
   }
@@ -241,7 +249,7 @@ class CommonElsPage {
   }
 
   async dismissBottomSheet() {
-    await Actions.drag(this.grabber)
+    await Actions.drag(this.grabber, 'down', 0.5)
   }
 
   async selectDropdown(name: string, dropdownItem: string) {

@@ -25,6 +25,7 @@ import {
 import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
+import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -50,6 +51,7 @@ import {
   selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
@@ -67,6 +69,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(
@@ -135,6 +138,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     []
   )
 
+  const handleStake = useCallback((): void => {
+    navigate({ pathname: '/startStake' })
+  }, [navigate])
+
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -160,11 +167,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
       { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
       { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
       { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: handleStake },
       { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
       { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
     ],
-    []
+    [handleStake]
   )
 
   const renderHeader = useCallback((): JSX.Element => {
@@ -199,6 +206,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               }
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
+              isDeveloperModeEnabled={isDeveloperMode}
             />
           </Animated.View>
         </View>
@@ -218,6 +226,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     balanceAccurate,
     isLoading,
     isPrivacyModeEnabled,
+    isDeveloperMode,
     ACTION_BUTTONS
   ])
 
@@ -254,9 +263,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/tokenManagement')
   }, [navigate])
 
-  const handleGoToCollectibleDetail = useCallback((): void => {
-    // navigate to token detail
-  }, [])
+  const handleGoToCollectibleDetail = useCallback(
+    (localId: string, initial: CollectibleFilterAndSortInitialState): void => {
+      navigate({
+        pathname: '/collectibleDetail',
+        params: { localId, initial: JSON.stringify(initial) }
+      })
+    },
+    [navigate]
+  )
 
   const handleGoToCollectibleManagement = useCallback((): void => {
     navigate('/collectibleManagement')

@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import { useFocusEffect } from 'expo-router'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   GroupList,
   PinInput,
@@ -13,7 +12,6 @@ import {
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import DeviceInfoService, {
   BiometricType
 } from 'services/deviceInfo/DeviceInfoService'
@@ -21,11 +19,19 @@ import DeviceInfoService, {
 export const CreatePin = ({
   useBiometrics,
   setUseBiometrics,
-  onEnteredValidPin
+  onEnteredValidPin,
+  newPinTitle,
+  newPinDescription,
+  confirmPinTitle,
+  keyboardHeight
 }: {
   useBiometrics: boolean
   setUseBiometrics: (value: boolean) => void
   onEnteredValidPin: (validPin: string) => void
+  newPinTitle: string
+  newPinDescription?: string
+  confirmPinTitle: string
+  keyboardHeight?: number
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
   const [biometricType, setBiometricType] = useState<BiometricType>(
@@ -72,67 +78,59 @@ export const CreatePin = ({
     }, [onEnteredValidPin, validPin])
   )
 
+  const renderBiometricToggle = useCallback((): React.JSX.Element => {
+    return (
+      <View
+        sx={{
+          paddingHorizontal: 16,
+          paddingBottom: 16,
+          marginBottom: keyboardHeight,
+          backgroundColor: '$surfacePrimary'
+        }}>
+        <GroupList
+          data={[
+            {
+              title: `Unlock with ${biometricType}`,
+              accessory: (
+                <Toggle
+                  onValueChange={setUseBiometrics}
+                  value={useBiometrics}
+                />
+              )
+            }
+          ]}
+        />
+      </View>
+    )
+  }, [useBiometrics, setUseBiometrics, biometricType, keyboardHeight])
+
   return (
-    <BlurredBarsContentLayout>
-      <KeyboardAvoidingView>
-        <SafeAreaView sx={{ flex: 1 }}>
-          <ScrollView
-            sx={{ flex: 1 }}
-            contentContainerSx={{
-              padding: 16,
-              flex: 1
-            }}>
-            <ScreenHeader
-              title={
-                chosenPinEntered
-                  ? 'Confirm your PIN code'
-                  : 'Secure your wallet with a PIN'
-              }
-              description={
-                chosenPinEntered
-                  ? undefined
-                  : 'For extra security, avoid choosing a PIN that contains repeating digits in a sequential order'
-              }
-            />
-            <View
-              sx={{
-                flex: 1,
-                justifyContent: 'center'
-              }}>
-              <PinInput
-                ref={ref}
-                length={6}
-                value={chosenPinEntered ? confirmedPin : chosenPin}
-                onChangePin={
-                  chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
-                }
-              />
-            </View>
-          </ScrollView>
-          {!chosenPinEntered && (
-            <View
-              sx={{
-                paddingHorizontal: 16,
-                paddingBottom: 16,
-                backgroundColor: '$surfacePrimary'
-              }}>
-              <GroupList
-                data={[
-                  {
-                    title: `Unlock with ${biometricType}`,
-                    accessory: (
-                      <Toggle
-                        onValueChange={setUseBiometrics}
-                        value={useBiometrics}
-                      />
-                    )
-                  }
-                ]}
-              />
-            </View>
-          )}
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </BlurredBarsContentLayout>
+    <SafeAreaView sx={{ flex: 1 }}>
+      <ScrollView
+        contentContainerSx={{
+          paddingHorizontal: 16,
+          flex: 1
+        }}>
+        <ScreenHeader
+          title={chosenPinEntered ? confirmPinTitle : newPinTitle}
+          description={chosenPinEntered ? undefined : newPinDescription}
+        />
+        <View
+          sx={{
+            flex: 1,
+            justifyContent: 'center'
+          }}>
+          <PinInput
+            ref={ref}
+            length={6}
+            value={chosenPinEntered ? confirmedPin : chosenPin}
+            onChangePin={
+              chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
+            }
+          />
+        </View>
+      </ScrollView>
+      {!chosenPinEntered && renderBiometricToggle()}
+    </SafeAreaView>
   )
 }

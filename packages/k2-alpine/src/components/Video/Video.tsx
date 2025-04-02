@@ -1,11 +1,22 @@
-import React from 'react'
 import { Pressable } from 'dripsy'
-import { Image } from 'expo-image'
+import { useEvent } from 'expo'
 import { VideoView, VideoViewProps, useVideoPlayer } from 'expo-video'
-import { useEffect, useState } from 'react'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { TIMING_CONFIG } from '../../utils'
+import React, { useEffect, useState } from 'react'
+import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
+import { alpha } from '../../utils'
 import { View } from '../Primitives'
+import { colors } from '../../theme/tokens/colors'
+
+export interface VideoProps extends Omit<VideoViewProps, 'player'> {
+  source?: string
+  thumbnail?: string
+  hideControls?: boolean
+  muted?: boolean
+  autoPlay?: boolean
+  onLoadEnd?: () => void
+  onError?: () => void
+}
 
 export const Video = ({
   source,
@@ -16,52 +27,42 @@ export const Video = ({
   muted,
   onError,
   ...props
-}: {
-  source: string
-  thumbnail?: string
-  hideControls?: boolean
-  muted?: boolean
-  autoPlay?: boolean
-  onLoadEnd: () => void
-  onError: () => void
-} & Omit<VideoViewProps, 'player'>): JSX.Element => {
-  const [isPlaying, setIsPlaying] = useState(false)
+}: VideoProps): JSX.Element => {
+  const { theme } = useTheme()
 
-  const player = useVideoPlayer(source, videoPlayer => {
+  const [isMuted, setIsMuted] = useState(muted ?? false)
+
+  const player = useVideoPlayer(source || '', videoPlayer => {
     videoPlayer.loop = true
     videoPlayer.muted = muted ?? false
     if (autoPlay) videoPlayer.play()
   })
 
-  const thumbnailStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(isPlaying ? 0 : 1, TIMING_CONFIG),
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0
-    }
+  const { isPlaying } = useEvent(player, 'playingChange', {
+    isPlaying: player.playing
   })
 
   const togglePlay = (): void => {
-    if (hideControls) return
     if (isPlaying) {
       player.pause()
     } else {
       player.play()
     }
-    setIsPlaying(!isPlaying)
+  }
+
+  const toggleMute = (): void => {
+    player.muted = !player.muted
+    setIsMuted(prev => !prev)
   }
 
   useEffect(() => {
     switch (player.status) {
       case 'readyToPlay':
-        onLoadEnd()
+        onLoadEnd?.()
         break
 
       case 'error':
-        onError()
+        onError?.()
         break
     }
   }, [onError, onLoadEnd, player.status])
@@ -71,33 +72,24 @@ export const Video = ({
       style={{
         position: 'relative',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        width: '100%',
+        height: '100%'
       }}>
       <VideoView
         style={{
           width: '100%',
-          height: '100%',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0
+          height: '100%'
         }}
         contentFit="cover"
         nativeControls={false}
         player={player}
+        allowsFullscreen={false}
+        allowsPictureInPicture={false}
+        allowsVideoFrameAnalysis={false}
         {...props}
       />
-      {thumbnail && (
-        <Animated.View style={thumbnailStyle}>
-          <Image
-            source={{ uri: thumbnail }}
-            style={{ width: '100%', height: '100%' }}
-            contentFit="contain"
-            cachePolicy="memory-disk"
-          />
-        </Animated.View>
-      )}
+
       <Pressable
         onPress={togglePlay}
         style={{
@@ -107,7 +99,44 @@ export const Video = ({
           right: 0,
           bottom: 0
         }}
+        disabled={hideControls}
       />
+      {hideControls ? null : (
+        <Pressable
+          onPress={toggleMute}
+          hitSlop={{
+            top: 10,
+            bottom: 10,
+            left: 10,
+            right: 10
+          }}
+          style={{
+            position: 'absolute',
+            right: 10,
+            bottom: 10,
+            backgroundColor: alpha(colors.$neutral850, 0.8),
+            borderRadius: 100,
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: 24,
+            height: 24,
+            zIndex: 10
+          }}>
+          {isMuted ? (
+            <Icons.Action.VolumeOff
+              color={theme.colors?.$surfacePrimary}
+              width={16}
+              height={16}
+            />
+          ) : (
+            <Icons.Action.VolumeOn
+              color={theme.colors?.$surfacePrimary}
+              width={16}
+              height={16}
+            />
+          )}
+        </Pressable>
+      )}
     </View>
   )
 }

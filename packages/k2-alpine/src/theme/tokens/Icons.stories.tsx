@@ -131,6 +131,8 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.TxTypeAdd,
       Icons.Custom.AdvanceTime,
       Icons.Custom.Airdrop,
+      Icons.Custom.WaterDrop,
+      Icons.Custom.WaterDropFilled,
       Icons.Custom.CheckSmall,
       Icons.Custom.Bridge,
       Icons.Custom.ContractCall,

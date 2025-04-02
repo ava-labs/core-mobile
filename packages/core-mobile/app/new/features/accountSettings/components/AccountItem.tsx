@@ -26,13 +26,15 @@ export const AccountItem = memo(
     isActive,
     account,
     onSelectAccount,
-    gotoAccountDetails
+    gotoAccountDetails,
+    testID
   }: {
     index: number
     isActive: boolean
     account: Account
     onSelectAccount: (accountIndex: number) => void
     gotoAccountDetails: (accountIndex: number) => void
+    testID?: string
   }): React.JSX.Element => {
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
     const {
@@ -86,7 +88,11 @@ export const AccountItem = memo(
             justifyContent: 'space-between'
           }}>
           <View>
-            <Text sx={{ color: accountNameColor }}>{account.name}</Text>
+            <Text
+              testID={`account_name__${testID}`}
+              sx={{ color: accountNameColor }}>
+              {account.name}
+            </Text>
             <AnimatedBalance
               variant="body1"
               balance={formatCurrency(accountBalance)}

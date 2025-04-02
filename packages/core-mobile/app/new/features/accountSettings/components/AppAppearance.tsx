@@ -36,6 +36,7 @@ export const AppAppearance = ({
             <CurrencyIcon symbol={currency} size={21} />
           </View>
           <Text
+            testID="right_value__Currency"
             variant="body2"
             sx={{
               color: colors.$textSecondary,

@@ -43,8 +43,10 @@ import IconSignature from '../../assets/icons/signature.svg'
 import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
-import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
+import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
+import IconVolumeOff from '../../assets/icons/volume_off.svg'
+import IconVolumeOn from '../../assets/icons/volume_on.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
 import IconSearchCustom from '../../assets/icons/search_custom.svg'
 import IconAlertCircle from '../../assets/icons/alert_circle.svg'
@@ -61,6 +63,9 @@ import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
 import IconTabs from '../../assets/icons/tabs.svg'
 import IconLink from '../../assets/icons/link.svg'
 import IconHistory from '../../assets/icons/history.svg'
+import IconSwitch from '../../assets/icons/switch.svg'
+import IconWaterDrop from '../../assets/icons/water_drop.svg'
+import IconWaterDropFilled from '../../assets/icons/water_drop_filled.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -177,8 +182,10 @@ export const Icons = {
     Info: IconInfo,
     CheckCircleOutline: IconCheckCircleOutline,
     Clear: IconClear,
+    VisibilityOff: IconVisibilityOff,
     VisibilityOn: IconVisibilityOn,
-    VisibilityOff: IconVisibilityOff
+    VolumeOn: IconVolumeOn,
+    VolumeOff: IconVolumeOff
   },
   Alert: {
     ErrorOutline: IconErrorOutline,
@@ -256,7 +263,10 @@ export const Icons = {
     Bridge: IconTxTypeBridge,
     Subnet: IconTxTypeSubnet,
     Unwrap: IconTxTypeUnwrap,
-    Unknown: IconTxTypeUnknown
+    Unknown: IconTxTypeUnknown,
+    Switch: IconSwitch,
+    WaterDrop: IconWaterDrop,
+    WaterDropFilled: IconWaterDropFilled
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

@@ -1,7 +1,11 @@
 import { Pressable } from 'dripsy'
 import { throttle } from 'lodash'
 import React, { memo, useCallback, useRef } from 'react'
-import { GestureResponderEvent, PressableProps } from 'react-native'
+import {
+  GestureResponderEvent,
+  InteractionManager,
+  PressableProps
+} from 'react-native'
 import Animated, {
   AnimatedProps,
   runOnJS,
@@ -14,14 +18,14 @@ import { ANIMATED } from '../../utils'
 
 const SCROLL_THRESHOLD = 2 // pixels
 
-interface AnimatedPressable extends AnimatedProps<PressableProps> {
+export interface AnimatedPressableProps extends AnimatedProps<PressableProps> {
   onPress?: (event: GestureResponderEvent) => void
 }
 
 const AnimatedPress = Animated.createAnimatedComponent(Pressable)
 
 export const AnimatedPressable = memo(
-  ({ children, onPress, ...props }: AnimatedPressable) => {
+  ({ children, onPress, ...props }: AnimatedPressableProps) => {
     const opacity = useSharedValue(1)
     const scale = useSharedValue(1)
     const isScrolling = useRef(false)
@@ -43,7 +47,9 @@ export const AnimatedPressable = memo(
 
     const onPressThrottled = useCallback(
       (event: GestureResponderEvent): void => {
-        throttledOnPress(event)
+        InteractionManager.runAfterInteractions(() => {
+          throttledOnPress(event)
+        })
       },
       [throttledOnPress]
     )
@@ -67,7 +73,7 @@ export const AnimatedPressable = memo(
       if (isScrolling.current) {
         return
       }
-      startAnimation()
+      if (onPress) startAnimation()
     }
 
     const onTouchMove = (event: GestureResponderEvent): void => {
