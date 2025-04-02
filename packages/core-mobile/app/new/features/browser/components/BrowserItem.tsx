@@ -1,4 +1,11 @@
-import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  Icons,
+  Pressable,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { Image } from 'expo-image'
 import React, { ReactNode } from 'react'
 import { ViewStyle } from 'react-native'
@@ -142,7 +149,14 @@ const Avatar = ({
           width: size,
           height: size,
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+          borderRadius: 100,
+          borderWidth: 1,
+          borderColor: theme.colors.$borderPrimary,
+          backgroundColor: alpha(
+            theme.isDark ? theme.colors.$white : theme.colors.$textPrimary,
+            0.1
+          )
         }}
       />
     )
@@ -156,10 +170,13 @@ const Avatar = ({
         alignItems: 'center',
         borderWidth: 1,
         borderColor: theme.colors.$borderPrimary,
-        backgroundColor: theme.colors.$surfaceSecondary,
+        backgroundColor: alpha(
+          theme.isDark ? theme.colors.$white : theme.colors.$textPrimary,
+          0.1
+        ),
         borderRadius: 100
       }}>
-      <Icons.Custom.AdvanceTime color={theme.colors.$textSecondary} />
+      <Icons.Navigation.History color={theme.colors.$textPrimary} />
     </View>
   )
 }

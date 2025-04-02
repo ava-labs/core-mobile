@@ -1,23 +1,23 @@
-import React, { useMemo } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import React, { ReactNode, useMemo } from 'react'
+import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
 import { SUGGESTED_ITEMS, SuggestedSiteName } from 'store/browser/const'
 import { selectAllFavorites } from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
-import { HORIZONTAL_MARGIN, prepareFaviconToLoad } from '../consts'
+import { prepareFaviconToLoad } from '../consts'
 import { BrowserItem } from './BrowserItem'
 
 interface FavoriteOrSuggested extends Favorite {
   isSuggested?: boolean
 }
 
-export const FavoritesList = (): JSX.Element | null => {
+export const FavoritesList = (
+  props: Partial<FlatListProps<FavoriteOrSuggested>>
+): ReactNode => {
   const dispatch = useDispatch()
   const favorites = useSelector(selectAllFavorites)
-  const insets = useSafeAreaInsets()
   const { handleUrlSubmit } = useBrowserContext()
 
   const onPress = (item: Favorite): void => {
@@ -60,14 +60,11 @@ export const FavoritesList = (): JSX.Element | null => {
 
   return (
     <FlatList
-      showsVerticalScrollIndicator={false}
+      {...props}
       data={data}
+      showsVerticalScrollIndicator={false}
       renderItem={renderItem}
       numColumns={4}
-      contentContainerStyle={{
-        paddingBottom: HORIZONTAL_MARGIN,
-        paddingTop: insets.top
-      }}
     />
   )
 }

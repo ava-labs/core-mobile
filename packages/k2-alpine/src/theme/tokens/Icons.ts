@@ -65,6 +65,7 @@ import IconLink from '../../assets/icons/link.svg'
 import IconSwitch from '../../assets/icons/switch.svg'
 import IconWaterDrop from '../../assets/icons/water_drop.svg'
 import IconWaterDropFilled from '../../assets/icons/water_drop_filled.svg'
+import IconHistory from '../../assets/icons/history.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -201,7 +202,8 @@ export const Icons = {
     Check: IconCheck,
     ExpandMore: IconExpandMore,
     MoreHoriz: IconMoreHoriz,
-    Tabs: IconTabs
+    Tabs: IconTabs,
+    History: IconHistory
   },
   Notification: {
     Sync: IconSync

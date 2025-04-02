@@ -35,7 +35,7 @@ export const TabsToolbarMenu: FC<Props & PropsWithChildren> = ({
     },
     {
       id: MenuId.ViewHistory,
-      title: 'View History',
+      title: 'Browsing history',
       image: Platform.select({
         ios: 'clock.arrow.circlepath',
         android: 'history_24px'

@@ -37,6 +37,7 @@ export * from './Staking/StakingCards/ProgressCard'
 export * from './Staking/StakingCards/CompleteCard'
 export * from './Slider/Slider'
 export * from './ProgressBar/ProgressBar'
+export * from './ProgressBar/MaskedProgressBar'
 
 export * from './PriceChangeIndicator/types'
 

@@ -39,7 +39,7 @@ export const lightModeColors = {
   $surfaceTertiary: alpha(colors.$neutralWhite, 0.6),
 
   // border
-  $borderPrimary: alpha(colors.$neutral850, 0.1)
+  $borderPrimary: alpha(colors.$neutralBlack, 0.1)
 }
 
 export const darkModeColors = {

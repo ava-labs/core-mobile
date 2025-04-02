@@ -1,22 +1,22 @@
 import {
   alpha,
+  ANIMATED,
   Icons,
   MaskedProgressBar,
   Pressable,
-  ProgressBar,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
-import { BlurView } from 'expo-blur'
 import React, { ReactNode, useMemo } from 'react'
 import {
+  NativeSyntheticEvent,
   Platform,
   TextInput,
-  NativeSyntheticEvent,
   TextInputSubmitEditingEventData
 } from 'react-native'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveTab } from 'store/browser'
@@ -51,11 +51,6 @@ export const BrowserInput = ({
     setUrlEntry(text)
   }
 
-  const onClearInput = (): void => {
-    inputRef?.current?.clear()
-    setUrlEntry('')
-  }
-
   const navigateToTabList = (): void => {
     AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
     navigate('tabs')
@@ -79,8 +74,25 @@ export const BrowserInput = ({
   const onSubmit = (
     event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
   ): void => {
+    AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
     handleUrlSubmit?.(event.nativeEvent.text)
   }
+
+  const onClear = (): void => {
+    setUrlEntry('')
+  }
+
+  const contentStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isFocused ? 0 : 1, ANIMATED.TIMING_CONFIG)
+    }
+  })
+
+  const inputStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isFocused ? 1 : 0, ANIMATED.TIMING_CONFIG)
+    }
+  })
 
   return (
     <View
@@ -93,7 +105,7 @@ export const BrowserInput = ({
                 offsetY: 5,
                 blurRadius: 15,
                 spreadDistance: 0,
-                color: alpha(theme.colors.$black, 0.15),
+                color: alpha(theme.colors.$black, 0.25),
                 inset: false
               }
             ]
@@ -105,60 +117,66 @@ export const BrowserInput = ({
           borderRadius: 100,
           overflow: 'hidden'
         }}>
-        <TextInput
-          ref={inputRef}
-          value={urlEntry}
-          placeholder="Search or type URL"
-          onChangeText={onChangeText}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          onSubmitEditing={onSubmit}
-          placeholderTextColor={alpha(theme.colors.$textPrimary, 0.5)}
-          keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
-          autoCorrect={false}
-          autoCapitalize="none"
-          style={{
-            flex: 1,
-            color: isFocused ? theme.colors.$textPrimary : 'transparent',
-            paddingHorizontal: HORIZONTAL_MARGIN,
-            fontSize: 16,
-            fontFamily: 'Inter-Regular',
-            paddingRight: 24 + HORIZONTAL_MARGIN,
-            opacity: isFocused ? 1 : 0,
-            backgroundColor: isFocused
-              ? theme.colors.$surfacePrimary
-              : 'transparent'
-          }}
-        />
+        <Animated.View
+          style={[
+            inputStyle,
+            {
+              flex: 1
+            }
+          ]}>
+          <TextInput
+            ref={inputRef}
+            value={urlEntry}
+            placeholder="Search or type URL"
+            onChangeText={onChangeText}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onSubmitEditing={onSubmit}
+            placeholderTextColor={alpha(theme.colors.$textPrimary, 0.5)}
+            keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
+            autoCorrect={false}
+            autoCapitalize="none"
+            style={{
+              flex: 1,
+              color: isFocused ? theme.colors.$textPrimary : 'transparent',
+              paddingHorizontal: HORIZONTAL_MARGIN,
+              fontSize: 16,
+              fontFamily: 'Inter-Regular',
+              paddingRight: 24 + HORIZONTAL_MARGIN,
+              backgroundColor: theme.isDark ? '#555557' : theme.colors.$white
+            }}
+          />
+          <Pressable
+            pointerEvents={isFocused ? 'auto' : 'none'}
+            onPress={onClear}
+            style={{
+              position: 'absolute',
+              right: 0,
+              bottom: 0,
+              top: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              opacity: urlEntry?.length ? 1 : 0,
+              paddingRight: 12,
+              zIndex: 10
+            }}>
+            <Icons.Action.Clear color={theme.colors.$textSecondary} />
+          </Pressable>
+        </Animated.View>
 
-        <Pressable
-          pointerEvents={isFocused ? 'auto' : 'none'}
-          onPress={onClearInput}
-          style={{
-            position: 'absolute',
-            right: 0,
-            bottom: 0,
-            top: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-            opacity: isFocused && urlEntry?.length ? 1 : 0,
-            paddingRight: 12,
-            zIndex: 10
-          }}>
-          <Icons.Action.Clear color={theme.colors.$textSecondary} />
-        </Pressable>
-
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 10,
-            opacity: isFocused ? 0 : 1,
-            borderRadius: 100
-          }}>
+        <Animated.View
+          style={[
+            contentStyle,
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 10,
+              borderRadius: 100
+            }
+          ]}>
           <MaskedProgressBar progress={progress}>
             <View
               style={{
@@ -168,7 +186,7 @@ export const BrowserInput = ({
                 justifyContent: 'space-between',
                 backgroundColor: theme.isDark
                   ? alpha(theme.colors.$white, 0.1)
-                  : alpha(theme.colors.$black, 0.2),
+                  : alpha(theme.colors.$black, 0.15),
                 borderRadius: 100
               }}>
               <Pressable
@@ -187,8 +205,7 @@ export const BrowserInput = ({
                   flex: 1,
                   height: '100%',
                   justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 12
+                  alignItems: 'center'
                 }}
                 onPress={() => {
                   inputRef?.current?.focus()
@@ -237,7 +254,6 @@ export const BrowserInput = ({
                   </Text>
                 ) : (
                   <Text
-                    numberOfLines={1}
                     style={{
                       fontFamily: 'Inter-Medium',
                       fontSize: 14,
@@ -267,7 +283,7 @@ export const BrowserInput = ({
             </View>
             {/* </ProgressBar> */}
           </MaskedProgressBar>
-        </View>
+        </Animated.View>
       </View>
     </View>
   )

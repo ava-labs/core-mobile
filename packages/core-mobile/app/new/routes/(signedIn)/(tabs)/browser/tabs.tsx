@@ -38,7 +38,7 @@ const NUMBER_OF_COLUMNS = 2
 
 const TabsScreen = (): JSX.Element => {
   const { goBack, setOptions, navigate } = useNavigation()
-  const { setUrlEntry } = useBrowserContext()
+  const { setUrlEntry, handleClearAndFocus } = useBrowserContext()
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
@@ -53,7 +53,8 @@ const TabsScreen = (): JSX.Element => {
   const handleAddTab = useCallback(() => {
     dispatch(addTab())
     goBack()
-  }, [dispatch, goBack])
+    handleClearAndFocus()
+  }, [dispatch, goBack, handleClearAndFocus])
 
   async function handleCloseTab(tab: Tab): Promise<void> {
     const isDeletingLastTab = tabs.length === 1
@@ -147,10 +148,7 @@ const TabsScreen = (): JSX.Element => {
   useEffect(() => {
     setOptions({
       headerRight,
-      headerLeft: null,
-      headerStyle: {
-        zIndex: 10
-      }
+      headerLeft: null
     })
   }, [headerRight, setOptions])
 

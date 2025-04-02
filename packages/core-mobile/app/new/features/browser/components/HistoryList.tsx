@@ -1,7 +1,7 @@
 import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import React, { ReactNode, useEffect } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
+import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   addHistoryForActiveTab,
@@ -13,9 +13,11 @@ import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN, prepareFaviconToLoad } from '../consts'
 import { BrowserItem } from './BrowserItem'
 
-export const HistoryList = (): ReactNode => {
-  const { theme } = useTheme()
+export const HistoryList = (
+  props: Partial<FlatListProps<History>>
+): ReactNode => {
   const dispatch = useDispatch()
+  const { theme } = useTheme()
   const { trimmedSearchText, setSearchText, filterHistories } =
     useSearchHistory()
   const { urlEntry, handleUrlSubmit } = useBrowserContext()
@@ -49,7 +51,14 @@ export const HistoryList = (): ReactNode => {
               borderRadius: 100,
               backgroundColor: '$backgroundSecondary'
             }}>
-            <Icons.Custom.AdvanceTime color={theme.colors.$textSecondary} />
+            {/* TODO: format today/yesterday/last week/short date */}
+            <Text
+              variant="body2"
+              style={{
+                color: theme.colors.$textSecondary
+              }}>
+              Today
+            </Text>
           </View>
         }
       />
@@ -103,11 +112,12 @@ export const HistoryList = (): ReactNode => {
   return (
     <FlatList
       keyExtractor={item => item.id}
+      {...props}
+      inverted
+      ListHeaderComponent={renderSearchEngine}
       data={filterHistories}
       renderItem={renderItem}
-      inverted
-      contentContainerStyle={{ paddingBottom: HORIZONTAL_MARGIN }}
-      ListHeaderComponent={renderSearchEngine}
+      showsVerticalScrollIndicator={false}
     />
   )
 }
