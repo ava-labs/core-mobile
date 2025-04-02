@@ -90,7 +90,11 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
         testID={testID}
         disabled={disabled}
         style={[
-          { borderRadius: 1000, overflow: 'hidden', alignItems: 'center' },
+          {
+            borderRadius: 1000,
+            overflow: 'hidden',
+            alignItems: 'center'
+          },
           style
         ]}
         {...rest}>

@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux'
 import { selectWalletType } from 'store/app'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import BiometricsSDK from 'utils/BiometricsSDK'
 
 export default function CreatePin(): JSX.Element {
   const [useBiometrics, setUseBiometrics] = useState(true)
@@ -44,6 +45,9 @@ export default function CreatePin(): JSX.Element {
       // TODO: use a random string instead of a constant
       onPinCreated(SEEDLESS_MNEMONIC_STUB, pin, false)
         .then(() => {
+          if (useBiometrics) {
+            BiometricsSDK.storeWalletWithBiometry(SEEDLESS_MNEMONIC_STUB)
+          }
           if (hasWalletName) {
             navigate('./selectAvatar')
           } else {
@@ -52,7 +56,7 @@ export default function CreatePin(): JSX.Element {
         })
         .catch(Logger.error)
     },
-    [hasWalletName, navigate, onPinCreated]
+    [hasWalletName, navigate, onPinCreated, useBiometrics]
   )
 
   return (

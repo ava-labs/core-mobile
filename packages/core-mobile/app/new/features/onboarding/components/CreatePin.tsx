@@ -23,7 +23,8 @@ export const CreatePin = ({
   newPinTitle,
   newPinDescription,
   confirmPinTitle,
-  keyboardHeight
+  keyboardHeight,
+  isBiometricAvailable = false
 }: {
   useBiometrics: boolean
   setUseBiometrics: (value: boolean) => void
@@ -32,6 +33,7 @@ export const CreatePin = ({
   newPinDescription?: string
   confirmPinTitle: string
   keyboardHeight?: number
+  isBiometricAvailable?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
   const [biometricType, setBiometricType] = useState<BiometricType>(
@@ -130,7 +132,7 @@ export const CreatePin = ({
           />
         </View>
       </ScrollView>
-      {!chosenPinEntered && renderBiometricToggle()}
+      {!chosenPinEntered && isBiometricAvailable && renderBiometricToggle()}
     </SafeAreaView>
   )
 }

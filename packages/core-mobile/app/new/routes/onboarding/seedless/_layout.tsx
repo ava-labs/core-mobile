@@ -13,6 +13,7 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
     const seedlessOnboardingRoute = rootState.routes
       .find(r => r.name === 'onboarding')
       ?.state?.routes.find(r => r.name === 'seedless')
+
     if (seedlessOnboardingRoute?.state?.index !== undefined) {
       setCurrentPage(seedlessOnboardingRoute.state.index)
     }

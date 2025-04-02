@@ -1,4 +1,11 @@
-import { NavigationTitleHeader, Text } from '@avalabs/k2-alpine'
+import {
+  Icons,
+  NavigationTitleHeader,
+  Text,
+  ScrollView,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import React, { useState } from 'react'
 import Animated, {
   useAnimatedStyle,
@@ -6,14 +13,21 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import ScreenHeader from 'common/components/ScreenHeader'
+import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
+import { useLocalSearchParams } from 'expo-router'
+import { SHOW_RECOVERY_PHRASE } from 'features/accountSettings/consts'
 
-const TITLE = 'Show Recovery Phrase'
-
-const navigationHeader = <NavigationTitleHeader title={TITLE} />
+const navigationHeader = (
+  <NavigationTitleHeader title={'Show recovery phrase'} />
+)
 
 const ShowRecoveryPhraseScreen = (): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const headerOpacity = useSharedValue(1)
+  const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -33,15 +47,29 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
 
   return (
     <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}
-      onScroll={onScroll}>
-      {/* Header */}
+      onScroll={onScroll}
+      contentContainerSx={{
+        paddingBottom: 60,
+        paddingHorizontal: 16
+      }}
+      showsVerticalScrollIndicator={false}>
       <Animated.View
         style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
         onLayout={handleHeaderLayout}>
-        <Text variant="heading2">{TITLE}</Text>
+        <ScreenHeader
+          title={SHOW_RECOVERY_PHRASE}
+          description="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location."
+        />
       </Animated.View>
+      <View sx={{ marginTop: 16, gap: 16 }}>
+        <View sx={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+          <Icons.Alert.ErrorOutline color={colors.$textDanger} />
+          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
+            Losing this phrase will result in lost funds
+          </Text>
+        </View>
+        <MnemonicScreen mnemonic={mnemonic} />
+      </View>
     </ScrollView>
   )
 }

@@ -12,7 +12,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation, useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
 import { LayoutRectangle } from 'react-native'
@@ -63,7 +64,6 @@ const AccountSettingsScreen = (): JSX.Element => {
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-
   const scrollViewProps = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={'Settings and accounts'} />,
     targetLayout: headerLayout,
@@ -192,8 +192,13 @@ const AccountSettingsScreen = (): JSX.Element => {
               }}
             />
           </View>
-          <Text variant="body1" sx={{ marginTop: 2 }}>
-            Total net worth
+          <Text
+            variant="body1"
+            sx={{
+              marginTop: 2,
+              color: isDeveloperMode ? '#27DAA6' : '$textSecondary'
+            }}>
+            {isDeveloperMode ? 'Fuji funds' : 'Total net worth'}
           </Text>
         </View>
 

@@ -1,4 +1,5 @@
-import { useNavigation, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
 import React, { useLayoutEffect, useCallback, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
