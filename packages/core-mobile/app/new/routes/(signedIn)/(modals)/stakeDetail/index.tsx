@@ -64,7 +64,10 @@ const StakeDetailScreen = (): React.JSX.Element => {
           title: 'NodeID',
           subtitle: truncateNodeId(stake.nodeId, HASH_LENGTH),
           accessory: (
-            <Button size="small" type="secondary">
+            <Button
+              size="small"
+              type="secondary"
+              onPress={() => copyToClipboard(stake.nodeId)}>
               Copy
             </Button>
           ),
@@ -115,7 +118,12 @@ const StakeDetailScreen = (): React.JSX.Element => {
           title: 'Transaction ID',
           subtitle: truncateAddress(stake.txHash, HASH_LENGTH),
           accessory: (
-            <Button size="small" type="secondary">
+            <Button
+              size="small"
+              type="secondary"
+              onPress={() => {
+                copyToClipboard(stake.txHash)
+              }}>
               Copy
             </Button>
           ),
