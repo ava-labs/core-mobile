@@ -12,7 +12,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation, useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
 import { LayoutRectangle } from 'react-native'

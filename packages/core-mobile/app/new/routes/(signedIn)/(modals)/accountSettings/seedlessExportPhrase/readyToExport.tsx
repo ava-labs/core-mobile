@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useLayoutEffect } from 'react'
-import { useNavigation, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
 import { showAlert } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
