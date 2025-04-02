@@ -26,7 +26,7 @@ export function useBiometricLogin(m: string): BiometricLoginTypes {
   const storeMnemonicWithBiometric = useCallback((): Promise<boolean> => {
     if (!activeWalletId) {
       Logger.error('No active wallet ID found')
-      return Promise.reject(new Error('No active wallet ID found'))
+      return Promise.resolve(false)
     }
     return BiometricsSDK.storeWalletWithBiometry(activeWalletId, mnemonic)
   }, [activeWalletId, mnemonic])
