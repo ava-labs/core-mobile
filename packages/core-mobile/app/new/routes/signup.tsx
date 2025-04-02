@@ -50,7 +50,10 @@ export default function Signup(): JSX.Element {
   }
 
   const handleAccountVerified = (): void => {
-    router.navigate('/onboarding/seedless/termsAndConditions')
+    router.navigate({
+      pathname: '/onboarding/seedless/termsAndConditions',
+      params: { recovering: 'true' }
+    })
   }
 
   const handleVerifyMfaMethod = (
