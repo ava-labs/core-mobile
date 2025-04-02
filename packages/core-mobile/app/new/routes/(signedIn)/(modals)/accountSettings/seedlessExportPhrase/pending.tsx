@@ -4,6 +4,7 @@ import { showAlert } from '@avalabs/k2-alpine'
 import { SeedlessExportPending } from 'features/accountSettings/components/SeedlessExportPending'
 import {
   EXPORT_DELAY,
+  getConfirmCancelDelayText,
   useSeedlessMnemonicExportContext
 } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 import { formatExportPhraseDuration } from 'features/accountSettings/utils/formatExportPhraseDuration'
@@ -81,8 +82,7 @@ const SeedlessExportPendingScreen = (): JSX.Element => {
       onCancel={() =>
         onCancelExportRequest({
           title: 'Confirm Cancel?',
-          description:
-            'Canceling will require you to restart the 2 days waiting period.'
+          description: getConfirmCancelDelayText()
         })
       }
       progress={progress}

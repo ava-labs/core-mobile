@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { useRouter } from 'expo-router'
 import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
-import useVerifyMFA from 'common/hooks/useVerifyMFA'
+import { useVerifyRecoveryMethods } from 'common/hooks/useVerifyRecoveryMethods'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
@@ -14,7 +14,7 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     userExportInitResponse,
     onVerifyExportInitSuccess
   } = useSeedlessMnemonicExportContext()
-  const { verifyFido } = useVerifyMFA(seedlessExportService.session)
+  const { verifyFido } = useVerifyRecoveryMethods(seedlessExportService.session)
   const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
   const { canGoBack, back } = useRouter()
 

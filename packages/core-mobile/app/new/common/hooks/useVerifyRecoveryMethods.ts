@@ -6,10 +6,14 @@ import PasskeyService from 'services/passkey/PasskeyService'
 import Logger from 'utils/Logger'
 import { useCallback } from 'react'
 
-function useVerifyMFA(session: SeedlessSession): {
+type VerifyMfaPath = 'verifyExportInitMfa' | 'verifyExportCompleteMfa'
+
+export const useVerifyRecoveryMethods = (
+  session: SeedlessSession
+): {
   verifyMFA: VerifyMFAFunction
   verifyFido: VerifyFidoFunction
-} {
+} => {
   const { navigate } = useRouter()
 
   const verifyFido: VerifyFidoFunction = useCallback(
@@ -51,7 +55,7 @@ function useVerifyMFA(session: SeedlessSession): {
       excludeFidoMfaId
     }: {
       response: CubeSignerResponse<T>
-      verifyMfaPath: string
+      verifyMfaPath: VerifyMfaPath
       onVerifySuccess: (response: T) => void
       excludeFidoMfaId?: string
       // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -107,7 +111,7 @@ type VerifyMFAFunction = <T>({
   excludeFidoMfaId
 }: {
   response: CubeSignerResponse<T>
-  verifyMfaPath: string
+  verifyMfaPath: VerifyMfaPath
   onVerifySuccess: (response: T) => void
   excludeFidoMfaId?: string
 }) => Promise<void>
@@ -121,5 +125,3 @@ type VerifyFidoFunction = <T>({
   response: CubeSignerResponse<T>
   onVerifySuccess: (response: T) => void
 }) => Promise<void>
-
-export default useVerifyMFA

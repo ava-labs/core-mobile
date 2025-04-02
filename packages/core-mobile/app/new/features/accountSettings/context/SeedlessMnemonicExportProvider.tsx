@@ -13,7 +13,7 @@ import {
   UserExportCompleteResponse,
   UserExportInitResponse
 } from '@cubist-labs/cubesigner-sdk'
-import useVerifyMFA from 'common/hooks/useVerifyMFA'
+import { useVerifyRecoveryMethods } from 'common/hooks/useVerifyRecoveryMethods'
 import { startRefreshSeedlessTokenFlow } from 'common/utils/startRefreshSeedlessTokenFlow'
 import { useRouter } from 'expo-router'
 import { showAlert } from '@avalabs/k2-alpine'
@@ -40,7 +40,7 @@ type SeedlessExportSessionData = {
 export interface SeedlessMnemonicExportState {
   sessionData?: SeedlessExportSessionData
   seedlessExportService: SeedlessExportService
-  startRefreshSeedlessToken: () => Promise<void>
+  authenticate: () => Promise<void>
   mnemonic?: string
   initExport: () => Promise<void>
   completeExport: () => Promise<void>
@@ -64,7 +64,7 @@ export const SeedlessMnemonicExportProvider = ({
   const seedlessExportService = useMemo(() => new SeedlessExportService(), [])
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
-  const { verifyMFA } = useVerifyMFA(seedlessExportService.session)
+  const { verifyMFA } = useVerifyRecoveryMethods(seedlessExportService.session)
   const { canGoBack, back, navigate, replace } = useRouter()
   const [keyId, setKeyId] = useState<string>('')
   const [keyPair, setKeyPair] = useState<CryptoKeyPair>()
@@ -150,7 +150,7 @@ export const SeedlessMnemonicExportProvider = ({
     showAlert({
       title: 'Multi-factor authentication required',
       description:
-        'Please set up at least one in Settings > Security & Privacy > Recovery Methods.',
+        'Please set up at least one in Settings > Security & privacy > Recovery methods.',
       buttons: [
         {
           text: 'Ok',
@@ -160,7 +160,7 @@ export const SeedlessMnemonicExportProvider = ({
     })
   }, [back, canGoBack])
 
-  const startRefreshSeedlessToken = useCallback(async (): Promise<void> => {
+  const authenticate = useCallback(async (): Promise<void> => {
     const result = await startRefreshSeedlessTokenFlow(
       seedlessExportService.session
     )
@@ -264,7 +264,7 @@ export const SeedlessMnemonicExportProvider = ({
       value={{
         sessionData,
         seedlessExportService,
-        startRefreshSeedlessToken,
+        authenticate,
         mnemonic,
         initExport,
         completeExport,

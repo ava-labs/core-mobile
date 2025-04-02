@@ -3,11 +3,11 @@ import { LoadingState } from 'common/components/LoadingState'
 import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 
 const SeedlessExportPhraseScreen = (): JSX.Element => {
-  const { startRefreshSeedlessToken } = useSeedlessMnemonicExportContext()
+  const { authenticate } = useSeedlessMnemonicExportContext()
 
   useEffect(() => {
-    startRefreshSeedlessToken()
-  }, [startRefreshSeedlessToken])
+    authenticate()
+  }, [authenticate])
 
   return <LoadingState sx={{ flex: 1 }} />
 }
