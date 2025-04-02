@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
 import { Space } from 'components/Space'
@@ -69,20 +69,22 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     useState(false)
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
 
-  useEffect(() => {
-    BiometricsSDK.canUseBiometry()
-      .then((biometricAvailable: boolean) => {
-        setIsBiometricAvailable(biometricAvailable)
-      })
-      .catch(Logger.error)
+  useFocusEffect(
+    useCallback(() => {
+      BiometricsSDK.canUseBiometry()
+        .then((biometricAvailable: boolean) => {
+          setIsBiometricAvailable(biometricAvailable)
+        })
+        .catch(Logger.error)
 
-    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-    if (type) {
-      setIsBiometricSwitchEnabled(type === 'BIO')
-    } else {
-      Logger.error('Secure access type not found')
-    }
-  }, [])
+      const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
+      if (type) {
+        setIsBiometricSwitchEnabled(type === 'BIO')
+      } else {
+        Logger.error('Secure access type not found')
+      }
+    }, [])
+  )
 
   const handleSwitchBiometric = useCallback(
     (value: boolean): void => {
