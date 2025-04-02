@@ -58,7 +58,7 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
         onLayout={handleHeaderLayout}>
         <ScreenHeader
           title={SHOW_RECOVERY_PHRASE}
-          description="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location"
+          description="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location."
         />
       </Animated.View>
       <View sx={{ marginTop: 16, gap: 16 }}>
