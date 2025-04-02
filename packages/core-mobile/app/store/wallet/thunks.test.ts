@@ -52,7 +52,6 @@ describe('wallet thunks', () => {
       expect(result.payload).toEqual({
         id: mockParams.walletId,
         name: 'MNEMONIC Wallet 1',
-        mnemonic: mockParams.encryptedWalletKey,
         type: mockParams.type
       })
     })
