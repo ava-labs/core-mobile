@@ -51,6 +51,7 @@ import {
   selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
@@ -68,6 +69,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(
@@ -136,6 +138,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     []
   )
 
+  const handleStake = useCallback((): void => {
+    navigate({ pathname: '/startStake' })
+  }, [navigate])
+
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -161,11 +167,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
       { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
       { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
       { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: handleStake },
       { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
       { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
     ],
-    []
+    [handleStake]
   )
 
   const renderHeader = useCallback((): JSX.Element => {
@@ -200,6 +206,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               }
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
+              isDeveloperModeEnabled={isDeveloperMode}
             />
           </Animated.View>
         </View>
@@ -219,6 +226,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     balanceAccurate,
     isLoading,
     isPrivacyModeEnabled,
+    isDeveloperMode,
     ACTION_BUTTONS
   ])
 

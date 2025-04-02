@@ -91,12 +91,23 @@ export const Banner = (): JSX.Element | undefined => {
     [availableInAvax, totalStakedInAvax]
   )
 
+  const percentage = useMemo(() => {
+    if (totalStakedInAvax === undefined || availableInAvax === undefined) {
+      return 0
+    }
+
+    const totalAvailable = totalStakedInAvax.add(availableInAvax)
+    return totalStakedInAvax
+      .div(totalAvailable)
+      .toDisplay({ fixedDp: 2, asNumber: true })
+  }, [totalStakedInAvax, availableInAvax])
+
   if (isEmpty) {
     return (
       <View
         sx={{
           paddingHorizontal: 16,
-          paddingBottom: 20
+          paddingBottom: 4
         }}>
         <Card
           sx={{
@@ -124,7 +135,7 @@ export const Banner = (): JSX.Element | undefined => {
     <View
       sx={{
         paddingHorizontal: 16,
-        paddingBottom: 20
+        paddingBottom: 4
       }}>
       <Card
         sx={{
@@ -135,7 +146,7 @@ export const Banner = (): JSX.Element | undefined => {
           gap: 15,
           alignItems: 'center'
         }}>
-        <CircularProgress progress={0.5} />
+        <CircularProgress progress={percentage} />
         <Text variant="body2" sx={{ flexShrink: 1 }}>
           {formattedTotalStaked} AVAX are currently staked out of{' '}
           {formattedTotalAvailable} AVAX available

@@ -6,9 +6,10 @@ import { AnalyticsConsent as Component } from 'features/onboarding/components/An
 export default function AnalyticsConsent(): JSX.Element {
   const { navigate } = useRouter()
   const { accept, reject } = useAnalyticsConsent()
-  const { recovering } = useGlobalSearchParams()
+  const { recovering } = useGlobalSearchParams<{ recovering: string }>()
 
-  const nextPathname = recovering ? './enterRecoveryPhrase' : './recoveryPhrase'
+  const nextPathname =
+    recovering === 'true' ? './enterRecoveryPhrase' : './recoveryPhrase'
 
   function handleAcceptAnalytics(): void {
     accept()

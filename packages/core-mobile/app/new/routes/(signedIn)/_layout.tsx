@@ -1,5 +1,8 @@
 import { Stack } from 'common/components/Stack'
-import { modalScreensOptions } from 'common/consts/screenOptions'
+import {
+  modalScreensOptions,
+  stackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import React from 'react'
 
@@ -28,6 +31,14 @@ export default function WalletLayout(): JSX.Element {
         <Stack.Screen
           name="(modals)/collectibleManagement"
           options={modalScreensOptions}
+        />
+        <Stack.Screen
+          name="(modals)/startStake"
+          options={modalScreensOptions}
+        />
+        <Stack.Screen
+          name="(modals)/stakeDetail"
+          options={stackNavigatorScreenOptions}
         />
       </Stack>
     </CollectiblesProvider>

@@ -531,6 +531,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/k2-alpine@workspace:packages/k2-alpine"
   dependencies:
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.44
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
     "@lavamoat/allow-scripts": 3.2.1
@@ -545,10 +546,14 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@types/d3": 7.4.3
+    "@types/jest": 29.5.13
     "@types/lodash.debounce": 4.0.9
     "@types/react": 18.3.12
     "@types/tinycolor2": 1.4.5
+    babel-jest: 29.7.0
     babel-loader: 9.2.1
+    big.js: 6.2.2
+    bn.js: 5.2.1
     d3: 7.9.0
     dripsy: 4.3.7
     eslint: 9.9.1
@@ -562,6 +567,7 @@ __metadata:
     expo-splash-screen: 0.29.18
     expo-status-bar: 2.0.1
     expo-video: 2.0.5
+    jest: 29.7.0
     json-stringify-pretty-compact: 4.0.0
     lodash.debounce: 4.0.8
     patch-package: 8.0.0
@@ -579,6 +585,7 @@ __metadata:
     react-native-svg: 15.8.0
     react-native-svg-transformer: 1.5.0
     tinycolor2: 1.6.0
+    ts-jest: 29.2.5
     typescript: 5.6.3
   peerDependencies:
     "@react-native-masked-view/masked-view": 0.3.0
@@ -26861,7 +26868,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
+  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
   languageName: node
   linkType: hard
 

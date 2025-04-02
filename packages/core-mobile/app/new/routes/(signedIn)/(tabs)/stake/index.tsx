@@ -75,7 +75,7 @@ const StakeHomeScreen = (): JSX.Element => {
             {
               paddingHorizontal: 16,
               marginTop: 24,
-              marginBottom: 26,
+              marginBottom: 16,
               backgroundColor: theme.colors.$surfacePrimary
             },
             animatedHeaderStyle
@@ -109,9 +109,12 @@ const StakeHomeScreen = (): JSX.Element => {
     [selectedSegmentIndex]
   )
 
-  const handlePressStake = useCallback(() => {
-    navigate('/stake/details')
-  }, [navigate])
+  const handlePressStake = useCallback(
+    (txHash: string) => {
+      navigate({ pathname: '/stakeDetail', params: { txHash } })
+    },
+    [navigate]
+  )
 
   const handleAddStake = useCallback(() => {
     navigate('/stake/add')

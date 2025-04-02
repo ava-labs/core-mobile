@@ -30,8 +30,12 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
@@ -165,7 +169,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     useCallback(() => {
       let sub: Subscription
       InteractionManager.runAfterInteractions(() => {
-        if (bioType) {
+        if (bioType !== BiometricType.NONE) {
           sub = handlePromptBioLogin()
         } else {
           focusPinInput()
@@ -248,6 +252,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                   }}
                   hasBlur={Platform.OS !== 'android'}
                   backgroundColor={theme.colors.$surfacePrimary}
+                  isDeveloperMode={isDeveloperMode}
                 />
               </Reanimated.View>
               <Reanimated.View style={[pinInputOpacityStyle]}>
@@ -280,9 +285,9 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                 },
                 buttonContainerStyle
               ]}>
-              {bioType && (
+              {bioType !== BiometricType.NONE && (
                 <CircularButton onPress={handlePromptBioLogin}>
-                  {bioType === 'Face' ? (
+                  {bioType === BiometricType.FACE_ID ? (
                     <Icons.Custom.FaceID width={26} height={26} />
                   ) : (
                     <Icons.Custom.TouchID width={26} height={26} />

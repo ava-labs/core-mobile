@@ -13,14 +13,14 @@ function useSeedlessManageMFA(): {
     onInitialized: (challenge: AddFidoChallenge) => Promise<void>
   ) => Promise<void>
 } {
-  const { verifyMFA } = useVerifyMFA(SeedlessService.sessionManager)
+  const { verifyMFA } = useVerifyMFA(SeedlessService.session)
 
   async function totpResetInit(
     onInitialized: (challenge: TotpChallenge) => void
   ): Promise<void> {
     try {
       const totpResetInitResponse =
-        await SeedlessService.sessionManager.totpResetInit()
+        await SeedlessService.session.totpResetInit()
 
       if (totpResetInitResponse.requiresMfa()) {
         const handleVerifySuccess: HandleVerifyMfaSuccess<
@@ -50,7 +50,7 @@ function useSeedlessManageMFA(): {
   ): Promise<void> {
     try {
       const fidoRegisterInitResponse =
-        await SeedlessService.sessionManager.fidoRegisterInit(name)
+        await SeedlessService.session.fidoRegisterInit(name)
 
       if (fidoRegisterInitResponse.requiresMfa()) {
         const handleVerifySuccess: HandleVerifyMfaSuccess<

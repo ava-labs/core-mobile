@@ -2,12 +2,11 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Stack } from 'common/components/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useOnboardingContext } from 'features/onboarding/contexts/OnboardingProvider'
-import { useNavigationContainerRef } from 'expo-router'
+import { useGlobalSearchParams, useNavigationContainerRef } from 'expo-router'
 
 export default function SeedlessOnboardingLayout(): JSX.Element {
+  const { recovering } = useGlobalSearchParams<{ recovering: string }>()
   const [currentPage, setCurrentPage] = useState(0)
-  const { hasWalletName } = useOnboardingContext()
   const rootState = useNavigationContainerRef().getRootState()
 
   useEffect(() => {
@@ -19,14 +18,15 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
     }
   }, [rootState])
 
-  // if hasWalletName is true, we skip setWalletName screen
-  const numberOfPage = useMemo(
-    () => SEEDLESS_ONBOARDING_SCREENS.length - (hasWalletName ? 1 : 0),
-    [hasWalletName]
+  const numberOfPages = useMemo(
+    () => SEEDLESS_ONBOARDING_SCREENS.length + (recovering === 'true' ? 1 : 0),
+    [recovering]
   )
 
   const renderPageControl = (): React.ReactNode => {
-    return <PageControl numberOfPage={numberOfPage} currentPage={currentPage} />
+    return (
+      <PageControl numberOfPage={numberOfPages} currentPage={currentPage} />
+    )
   }
 
   return (
@@ -44,7 +44,7 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
 
 const SEEDLESS_ONBOARDING_SCREENS = [
   'termsAndConditions',
-  'addRecoveryMethods',
+  'addRecoveryMethods', // or selectMfaMethod
   'analyticsConsent',
   'createPin',
   'setWalletName',

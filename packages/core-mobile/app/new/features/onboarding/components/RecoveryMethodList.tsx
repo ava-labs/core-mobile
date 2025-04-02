@@ -9,10 +9,7 @@ import {
   Separator,
   TouchableOpacity
 } from '@avalabs/k2-alpine'
-import {
-  RecoveryMethod,
-  RecoveryMethods
-} from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 
 export const RecoveryMethodList = ({
   selectedMethod,
@@ -20,10 +17,10 @@ export const RecoveryMethodList = ({
   sx,
   onPress
 }: {
-  selectedMethod?: RecoveryMethods
+  selectedMethod?: RecoveryMethod
   data: RecoveryMethod[]
   sx?: SxProp
-  onPress: (type: RecoveryMethods) => void
+  onPress: (type: RecoveryMethod) => void
 }): React.JSX.Element | undefined => {
   const {
     theme: { colors }
@@ -45,7 +42,7 @@ export const RecoveryMethodList = ({
         <TouchableOpacity
           key={index}
           sx={{ width: '100%' }}
-          onPress={() => onPress(item.type)}>
+          onPress={() => onPress(item)}>
           <>
             <View
               sx={{
@@ -84,7 +81,7 @@ export const RecoveryMethodList = ({
                     {item.description}
                   </Text>
                 </View>
-                {selectedMethod === item.type ? (
+                {selectedMethod?.type === item.type ? (
                   <Icons.Navigation.Check
                     width={22}
                     color={colors.$textPrimary}

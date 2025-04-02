@@ -61,6 +61,9 @@ import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
 import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
 import IconLink from '../../assets/icons/link.svg'
+import IconSwitch from '../../assets/icons/switch.svg'
+import IconWaterDrop from '../../assets/icons/water_drop.svg'
+import IconWaterDropFilled from '../../assets/icons/water_drop_filled.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -256,7 +259,10 @@ export const Icons = {
     Bridge: IconTxTypeBridge,
     Subnet: IconTxTypeSubnet,
     Unwrap: IconTxTypeUnwrap,
-    Unknown: IconTxTypeUnknown
+    Unknown: IconTxTypeUnknown,
+    Switch: IconSwitch,
+    WaterDrop: IconWaterDrop,
+    WaterDropFilled: IconWaterDropFilled
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

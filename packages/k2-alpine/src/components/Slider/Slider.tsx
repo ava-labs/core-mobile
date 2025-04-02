@@ -44,6 +44,11 @@ export const Slider: FC<SliderProps> = ({
         )}
         minimumValue={minimumValue}
         maximumValue={maximumValue}
+        // Note: The package only clamps the value during onValueChange.
+        // If onValueChange isn't triggered, the raw value may go below 0 or above the max.
+        onValueChange={newValue => {
+          value.value = newValue
+        }}
       />
       {(minimumValueLabel !== undefined || maximumValueLabel !== undefined) && (
         <View
