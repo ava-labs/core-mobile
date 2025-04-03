@@ -154,7 +154,7 @@ export const BrowserControls = (): ReactNode => {
             focusStyle,
             {
               position: 'absolute',
-              backgroundColor: alpha(theme.colors.$surfacePrimary, 0.8),
+              backgroundColor: alpha(theme.colors.$surfacePrimary, 0.6),
               top: 0,
               left: 0,
               right: 0,

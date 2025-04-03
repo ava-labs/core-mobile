@@ -9,7 +9,6 @@ import {
 } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
 import React, { useEffect, useMemo, useState } from 'react'
-import { KeyboardAvoidingView, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import {
   selectActiveTab,
@@ -94,35 +93,36 @@ const Browser = (): React.ReactNode => {
     )
   }, [allTabs])
 
+  const renderTabs = useMemo(() => {
+    return filteredTabs.map(tab => {
+      return (
+        <View
+          key={tab.id}
+          sx={{
+            flex: 1,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: tab.id === activeTab?.id ? 0 : -1,
+            pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none',
+            opacity: tab.id === activeTab?.id ? 1 : 0
+          }}>
+          <BrowserTab
+            ref={browserRefs.current?.[tab.id]} // Ensure the ref is passed here
+            tabId={tab.id}
+          />
+        </View>
+      )
+    })
+  }, [activeTab?.id, browserRefs, filteredTabs])
+
   return (
     <BrowserSnapshot>
-      <View sx={{ flex: 1 }}>
-        {showEmptyTab && <Discover />}
-
-        {filteredTabs.map(tab => {
-          return (
-            <View
-              key={tab.id}
-              sx={{
-                flex: 1,
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: tab.id === activeTab?.id ? 0 : -1,
-                pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none'
-              }}>
-              <BrowserTab
-                ref={browserRefs.current?.[tab.id]} // Ensure the ref is passed here
-                tabId={tab.id}
-              />
-            </View>
-          )
-        })}
-
-        <BrowserControls />
-      </View>
+      {showEmptyTab && <Discover />}
+      {renderTabs}
+      <BrowserControls />
     </BrowserSnapshot>
   )
 }
