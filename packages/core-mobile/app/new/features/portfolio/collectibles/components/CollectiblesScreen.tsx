@@ -10,7 +10,7 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
-import { Platform, useWindowDimensions } from 'react-native'
+import { Platform } from 'react-native'
 
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
@@ -48,7 +48,6 @@ export const CollectiblesScreen = ({
   const {
     theme: { colors }
   } = useTheme()
-  const dimensions = useWindowDimensions()
   const {
     isLoading,
     isEnabled,
@@ -251,7 +250,8 @@ export const CollectiblesScreen = ({
         style={[
           {
             alignSelf: 'center',
-            width: dimensions.width - HORIZONTAL_MARGIN * 2,
+            width: '100%',
+            paddingHorizontal: HORIZONTAL_MARGIN,
             zIndex: 10,
             marginTop: 4,
             marginBottom: CollectibleView.ListView === listType ? 8 : 16
@@ -268,7 +268,6 @@ export const CollectiblesScreen = ({
     collectibles.length,
     isEnabled,
     isLoading,
-    dimensions.width,
     listType,
     filter,
     sort,

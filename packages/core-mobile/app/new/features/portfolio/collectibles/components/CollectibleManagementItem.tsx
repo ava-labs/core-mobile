@@ -3,10 +3,11 @@ import { alpha } from '@avalabs/k2-mobile'
 import React, { ReactNode } from 'react'
 import { Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { NftItem } from 'services/nft/types'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import { isCollectibleVisible } from 'store/nft/utils'
 import {
+  selectCollectibleUnprocessableVisibility,
   selectCollectibleVisibility,
   toggleCollectibleVisibility
 } from 'store/portfolio'
@@ -35,6 +36,12 @@ export const CollectibleManagementItem = ({
 
   const collectibleVisibility = useSelector(selectCollectibleVisibility)
   const isToggledOn = isCollectibleVisible(collectibleVisibility, collectible)
+  const collectibleUnprocessableVisibility = useSelector(
+    selectCollectibleUnprocessableVisibility
+  )
+  const isDisabled =
+    collectibleUnprocessableVisibility &&
+    collectible.status === NftLocalStatus.Unprocessable
 
   function handleChange(): void {
     dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
@@ -109,6 +116,7 @@ export const CollectibleManagementItem = ({
             }
             value={isToggledOn}
             onValueChange={handleChange}
+            disabled={isDisabled}
           />
         </View>
       </View>

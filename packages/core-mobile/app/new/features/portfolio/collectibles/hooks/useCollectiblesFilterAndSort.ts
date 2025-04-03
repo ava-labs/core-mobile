@@ -123,10 +123,12 @@ export const useCollectiblesFilterAndSort = (
       title: 'Sort',
       data: COLLECTIBLE_SORTS,
       selected: selectedSort,
-      onSelected: setSelectedSort
+      onSelected: setSelectedSort,
+      useAnchorRect: true
     }),
     [selectedSort]
   )
+
   const view = useMemo(
     () => ({
       title: 'View',

@@ -333,7 +333,6 @@ export const CollectibleDetailsScreen = ({
                   <Icons.Custom.ArrowDownHandleBar
                     color={colors.$textSecondary}
                     width={40}
-                    height={10}
                   />
                 </Pressable>
               </Animated.View>

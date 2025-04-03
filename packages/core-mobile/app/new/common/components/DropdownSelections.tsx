@@ -3,6 +3,7 @@ import {
   IndexPath,
   SimpleDropdown,
   SxProp,
+  Text,
   usePopoverAnchor,
   View
 } from '@avalabs/k2-alpine'
@@ -60,6 +61,7 @@ export const DropdownSelections = ({
             onDeselect={filter.onDeselect}
           />
         )}
+
         {sort && (
           <Sorts
             useAnchorRect={sort.useAnchorRect}
