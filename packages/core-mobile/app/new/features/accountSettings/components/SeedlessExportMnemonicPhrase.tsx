@@ -7,7 +7,8 @@ import {
   showAlert,
   useTheme,
   View,
-  Icons
+  Icons,
+  ScrollView
 } from '@avalabs/k2-alpine'
 import { MnemonicText } from 'common/components/MnemonicText'
 import { SHOW_RECOVERY_PHRASE } from '../consts'
@@ -72,7 +73,8 @@ export const SeedlessExportMnemonicPhrase = ({
   }
 
   return (
-    <View
+    <ScrollView
+      showsVerticalScrollIndicator={false}
       style={{
         flex: 1,
         marginHorizontal: 16
@@ -150,7 +152,7 @@ export const SeedlessExportMnemonicPhrase = ({
           Copy phrase
         </Button>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
