@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { ColorSchemeName } from 'react-native'
-import { Appearance, initialState } from './types'
+import { Appearance, ColorSchemeName, initialState } from './types'
 
 const reducerName = 'appearance'
 

@@ -34,10 +34,7 @@ export const BlurViewWithFallback = ({
   )
 
   return Platform.OS === 'ios' ? (
-    <BlurView
-      style={iosContainerStyle}
-      intensity={75}
-      tint={colorScheme === 'dark' ? 'dark' : 'light'}>
+    <BlurView style={iosContainerStyle} intensity={75} tint={colorScheme}>
       {children}
     </BlurView>
   ) : (

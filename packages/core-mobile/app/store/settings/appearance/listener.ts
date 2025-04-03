@@ -8,7 +8,7 @@ import {
   setSelectedAppearance,
   setSelectedColorScheme
 } from './slice'
-import { Appearance } from './types'
+import { Appearance, ColorSchemeName } from './types'
 
 const handleAppearanceChange = (
   _: AnyAction,
@@ -23,7 +23,7 @@ const handleAppearanceChange = (
       ? 'dark'
       : appearance === Appearance.Light
       ? 'light'
-      : RnAppearance.getColorScheme()
+      : (RnAppearance.getColorScheme() as ColorSchemeName)
 
   dispatch(setSelectedColorScheme(colorScheme))
 }
