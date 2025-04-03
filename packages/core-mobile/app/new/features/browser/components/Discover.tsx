@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -26,6 +27,7 @@ import {
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
+  const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
 
   return (
@@ -37,7 +39,7 @@ export const Discover = (): JSX.Element => {
       stickyHeaderIndices={[0]}
       contentContainerStyle={{
         paddingTop: insets.top + 26,
-        paddingBottom: BROWSER_CONTROLS_HEIGHT
+        paddingBottom: BROWSER_CONTROLS_HEIGHT + tabBarHeight
       }}>
       <Animated.View
         pointerEvents="none"
