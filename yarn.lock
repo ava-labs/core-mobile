@@ -217,7 +217,7 @@ __metadata:
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.4.117-0
     "@datadog/mobile-react-native": 2.4.3
-    "@datadog/mobile-react-navigation": 2.4.3
+    "@datadog/mobile-react-navigation": 2.6.4
     "@date-fns/utc": 2.1.0
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 4.4.0
@@ -4155,14 +4155,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/mobile-react-navigation@npm:2.4.3":
-  version: 2.4.3
-  resolution: "@datadog/mobile-react-navigation@npm:2.4.3"
+"@datadog/mobile-react-navigation@npm:2.6.4":
+  version: 2.6.4
+  resolution: "@datadog/mobile-react-navigation@npm:2.6.4"
   peerDependencies:
     "@datadog/mobile-react-native": ^2.0.1
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
-  checksum: 90d7efd11664d23118521277980784da2c0a30f805df0c11fc3cda077f8347379af5862d5211b098ea21a2136f642b09e6e4546b2254e8aba27c62551becde08
+  checksum: 9c012917ce7a163243d24b081fb39ecdc7666f84cd5276285c32cb101a11755102713e0ea90606873e6cb3590baeb8f8b00917cf0ccc3ccd392e1f87428c479f
   languageName: node
   linkType: hard
 
@@ -26835,7 +26835,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
+  checksum: c90d534b4f3063cc9bcc890b432d4047879531fac4b3bc9d6bb9fe126717605751d2b17f935abfcd48a9a5a10ee8cb8090f5bf6671f3a6e0527d8c92c7275682
   languageName: node
   linkType: hard
 
