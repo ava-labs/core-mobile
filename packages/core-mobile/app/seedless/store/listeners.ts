@@ -15,6 +15,7 @@ import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import { onTokenExpired } from 'seedless/store/slice'
 import { setAccountTitle } from 'store/account/slice'
+import { router } from 'expo-router'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
