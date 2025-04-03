@@ -2,7 +2,7 @@ import { BlurView } from 'expo-blur'
 import React, { useMemo } from 'react'
 import { ViewStyle, Platform } from 'react-native'
 import { alpha, useTheme, View } from '@avalabs/k2-alpine'
-import { useColorScheme } from 'common/hooks/useColorScheme'
+import { useColorScheme } from 'common/contexts/ColorSchemeProvider'
 
 export const BlurViewWithFallback = ({
   children,
@@ -12,7 +12,7 @@ export const BlurViewWithFallback = ({
   style?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
-  const colorScheme = useColorScheme()
+  const { colorScheme } = useColorScheme()
 
   const iosContainerStyle = useMemo(
     () => [
@@ -33,7 +33,10 @@ export const BlurViewWithFallback = ({
   )
 
   return Platform.OS === 'ios' ? (
-    <BlurView style={iosContainerStyle} intensity={75}>
+    <BlurView
+      style={iosContainerStyle}
+      intensity={75}
+      tint={colorScheme === 'dark' ? 'dark' : 'light'}>
       {children}
     </BlurView>
   ) : (

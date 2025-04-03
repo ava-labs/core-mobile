@@ -8,7 +8,7 @@ import {
 } from 'react-native-reanimated'
 import { Line, vec, Circle } from '@shopify/react-native-skia'
 import type { SelectionDotProps } from 'react-native-graph'
-import { useColorScheme } from 'react-native'
+import { useColorScheme } from 'common/contexts/ColorSchemeProvider'
 
 export function SelectionDot({
   isActive,
@@ -16,7 +16,7 @@ export function SelectionDot({
   circleY
 }: SelectionDotProps): React.ReactElement {
   const lineOpacity = useSharedValue(0)
-  const colorScheme = useColorScheme()
+  const { colorScheme } = useColorScheme()
 
   const color = colorScheme === 'dark' ? '#ffffff' : '#28282E'
 
