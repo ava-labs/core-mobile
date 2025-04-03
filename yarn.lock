@@ -216,7 +216,7 @@ __metadata:
     "@config-plugins/detox": 9.0.0
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.4.117-0
-    "@datadog/mobile-react-native": 2.4.3
+    "@datadog/mobile-react-native": 2.6.4
     "@datadog/mobile-react-navigation": 2.4.3
     "@date-fns/utc": 2.1.0
     "@dlenroc/testrail": 1.9.1
@@ -4145,13 +4145,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/mobile-react-native@npm:2.4.3":
-  version: 2.4.3
-  resolution: "@datadog/mobile-react-native@npm:2.4.3"
+"@datadog/mobile-react-native@npm:2.6.4":
+  version: 2.6.4
+  resolution: "@datadog/mobile-react-native@npm:2.6.4"
+  dependencies:
+    big-integer: ^1.6.52
   peerDependencies:
     react: ">=16.13.1"
     react-native: ">=0.63.4 <1.0"
-  checksum: c1baa070ce4ebc88c6e0e5237704a7cf16df343cf735cbe04494b32b9de9bdacdb93d0c218cad8bc074f29709d54a356b5bdd09573c9343c242f7093698bd100
+  checksum: 89e3f1b6192f60927cb3c3c7daeabb0ceaf6cc8e03b7603e3fd3fbc533ce6b22e744913772537f7642bb99354feb61a6e07cafc14ac118e05770e70bc99f86c7
   languageName: node
   linkType: hard
 
@@ -14069,7 +14071,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"big-integer@npm:1.6.x":
+"big-integer@npm:1.6.x, big-integer@npm:^1.6.52":
   version: 1.6.52
   resolution: "big-integer@npm:1.6.52"
   checksum: 6e86885787a20fed96521958ae9086960e4e4b5e74d04f3ef7513d4d0ad631a9f3bde2730fc8aaa4b00419fc865f6ec573e5320234531ef37505da7da192c40b
@@ -26835,7 +26837,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
+  checksum: 23d98fedde0b9af4cf8ceaf61c06878a1b2e72c9669e24d87deaf7ee0e8b6a3aa36154ddb903f237a794c4118dd223c9884b9bd76737196188c881cbf85b766a
   languageName: node
   linkType: hard
 
