@@ -29,54 +29,22 @@ export const Discover = (): JSX.Element => {
   const { theme } = useTheme()
 
   return (
-    <View style={{ height: '100%' }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingTop: insets.top + 26,
-          paddingBottom: BROWSER_CONTROLS_HEIGHT
-        }}>
-        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
-          <Text variant="heading2">Discover</Text>
-          <Text variant="body1">
-            Discover a wide variety of apps built on the Avalanche ecosystem
-          </Text>
-        </View>
-
-        <DApps />
-
-        <View
-          style={{
-            gap: 12
-          }}>
-          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-            <Text variant="heading3">Learn</Text>
-          </View>
-          <Learn />
-        </View>
-
-        {/* TODO: will be added in the future */}
-        {/* <View>
-          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-            <Text variant="heading3">Top projects</Text>
-            <Text
-              variant="heading3"
-              sx={{
-                color: '$textSecondary'
-              }}>
-              over the last 7 days
-            </Text>
-          </View>
-          <TopProjects />
-        </View> */}
-      </ScrollView>
-
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      style={{
+        height: '100%'
+      }}
+      stickyHeaderIndices={[0]}
+      contentContainerStyle={{
+        paddingTop: insets.top + 26,
+        paddingBottom: BROWSER_CONTROLS_HEIGHT
+      }}>
       <Animated.View
         pointerEvents="none"
         style={[
           {
             position: 'absolute',
-            top: 0,
+            top: -insets.top,
             left: 0,
             right: 0,
             zIndex: 1
@@ -100,7 +68,40 @@ export const Discover = (): JSX.Element => {
           }}
         />
       </Animated.View>
-    </View>
+      <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
+        <Text variant="heading2">Discover</Text>
+        <Text variant="body1">
+          Discover a wide variety of apps built on the Avalanche ecosystem
+        </Text>
+      </View>
+
+      <DApps />
+
+      <View
+        style={{
+          gap: 12
+        }}>
+        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+          <Text variant="heading3">Learn</Text>
+        </View>
+        <Learn />
+      </View>
+
+      {/* TODO: will be added in the future */}
+      {/* <View>
+          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+            <Text variant="heading3">Top projects</Text>
+            <Text
+              variant="heading3"
+              sx={{
+                color: '$textSecondary'
+              }}>
+              over the last 7 days
+            </Text>
+          </View>
+          <TopProjects />
+        </View> */}
+    </ScrollView>
   )
 }
 
