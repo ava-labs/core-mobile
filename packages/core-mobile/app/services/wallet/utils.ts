@@ -1,5 +1,9 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
+import { makeBigIntLike } from 'utils/makeBigIntLike'
+import { BytesLike, AddressLike } from '@ethereumjs/util'
+import { LegacyTxData } from '@ethereumjs/tx'
+import { TransactionRequest } from 'ethers'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
 import {
@@ -48,4 +52,19 @@ export const addBufferToCChainBaseFee = (
   return adjustedBaseFee.toSubUnit() >= minAvax.toSubUnit()
     ? adjustedBaseFee
     : minAvax
+}
+
+/**
+ * Convert tx data from `TransactionRequest` (ethers) to `TxData` (@ethereumjs)
+ */
+export function convertTxData(txData: TransactionRequest): LegacyTxData {
+  return {
+    to: txData.to?.toString() as AddressLike,
+    nonce: makeBigIntLike(txData.nonce),
+    gasPrice: makeBigIntLike(txData.gasPrice),
+    gasLimit: makeBigIntLike(txData.gasLimit),
+    value: makeBigIntLike(txData.value),
+    data: txData.data as BytesLike,
+    type: makeBigIntLike(txData.type)
+  }
 }

@@ -20,6 +20,9 @@ type InitWalletServiceAndUnlockProps = {
   isLoggingIn: boolean
   walletType: WalletType
   dispatch: Dispatch
+  xpub?: string
+  xpubXP?: string
+  masterfingerprint?: string
 }
 
 export interface UseWallet {
@@ -29,7 +32,13 @@ export interface UseWallet {
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
   unlock: ({ mnemonic }: { mnemonic: string }) => Promise<void>
-  login: (mnemonic: string, walletType: WalletType) => Promise<void>
+  login: (
+    mnemonic: string,
+    walletType: WalletType,
+    xpub?: string,
+    xpubXP?: string,
+    masterfingerprint?: string
+  ) => Promise<void>
   destroyWallet: () => void
 }
 
@@ -37,9 +46,19 @@ export async function initWalletServiceAndUnlock({
   dispatch,
   mnemonic,
   walletType,
-  isLoggingIn
+  isLoggingIn,
+  xpub,
+  xpubXP,
+  masterfingerprint
 }: InitWalletServiceAndUnlockProps): Promise<void> {
-  await WalletService.init({ mnemonic, walletType, isLoggingIn })
+  await WalletService.init({
+    mnemonic,
+    xpub,
+    xpubXP,
+    walletType,
+    isLoggingIn,
+    masterfingerprint
+  })
   dispatch(onAppUnlocked())
 }
 
@@ -72,7 +91,10 @@ export function useWallet(): UseWallet {
 
   const login = async (
     mnemonic: string,
-    walletType: WalletType
+    walletType: WalletType,
+    xpub?: string,
+    xpubXP?: string,
+    masterfingerprint?: string
   ): Promise<void> => {
     try {
       dispatch(setWalletType(walletType))
@@ -80,7 +102,10 @@ export function useWallet(): UseWallet {
         dispatch,
         mnemonic,
         walletType,
-        isLoggingIn: true
+        isLoggingIn: true,
+        xpub,
+        xpubXP,
+        masterfingerprint
       })
 
       dispatch(onLogIn())
