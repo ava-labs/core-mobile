@@ -29,6 +29,7 @@ import { LogoModal } from 'common/components/LogoModal'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import {
   forNoAnimation,
+  modalScreensOptions,
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
@@ -152,7 +153,10 @@ export default function RootLayout(): JSX.Element | null {
               <Stack.Screen name="onboarding" />
               <Stack.Screen
                 name="sessionExpired"
-                options={{ gestureEnabled: false }}
+                options={{
+                  ...modalScreensOptions,
+                  gestureEnabled: false
+                }}
               />
             </Stack>
             {enabledPrivacyScreen && <LogoModal />}
