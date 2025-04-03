@@ -39,6 +39,7 @@
     "react-native-awesome-slider": "2.9.0",
     "react-native-dialog": "9.3.0",
     "react-native-gesture-handler": "2.20.0",
+    "react-native-modal-datetime-picker": "18.0.0",
     "react-native-popover-view": "6.1.0",
     "react-native-reanimated": "3.16.7",
     "react-native-reanimated-carousel": "v4.0.2",
