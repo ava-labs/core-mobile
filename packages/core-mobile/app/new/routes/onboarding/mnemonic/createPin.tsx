@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
@@ -7,16 +7,14 @@ import Logger from 'utils/Logger'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 
 export default function CreatePin(): JSX.Element {
-  const [useBiometrics, setUseBiometrics] = useState(true)
   const { navigate } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const { onPinCreated } = useWallet()
-  const [isBiometricAvailable, setIsBiometricAvailable] =
-    useState<boolean>(false)
+  const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
+    useStoredBiometrics()
 
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
@@ -35,21 +33,6 @@ export default function CreatePin(): JSX.Element {
     },
     [mnemonic, navigate, onPinCreated, useBiometrics]
   )
-
-  useEffect(() => {
-    BiometricsSDK.canUseBiometry()
-      .then((biometricAvailable: boolean) => {
-        setIsBiometricAvailable(biometricAvailable)
-      })
-      .catch(Logger.error)
-
-    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-    if (type) {
-      setUseBiometrics(type === 'BIO')
-    } else {
-      Logger.error('Secure access type not found')
-    }
-  }, [])
 
   return (
     <BlurredBarsContentLayout sx={{ marginTop: 16 }}>

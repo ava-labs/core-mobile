@@ -12,17 +12,15 @@ import { selectWalletType } from 'store/app'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { StorageKey } from 'resources/Constants'
-import { commonStorage } from 'utils/mmkv'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 
 export default function CreatePin(): JSX.Element {
-  const [useBiometrics, setUseBiometrics] = useState(true)
   const walletType = useSelector(selectWalletType)
   const { navigate } = useRouter()
   const { onPinCreated } = useWallet()
   const [hasWalletName, setHasWalletName] = useState(false)
-  const [isBiometricAvailable, setIsBiometricAvailable] =
-    useState<boolean>(false)
+  const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
+    useStoredBiometrics()
 
   useEffect(() => {
     const checkHasWalletName = async (): Promise<void> => {
@@ -35,21 +33,6 @@ export default function CreatePin(): JSX.Element {
     }
     checkHasWalletName().catch(Logger.error)
   }, [walletType])
-
-  useEffect(() => {
-    BiometricsSDK.canUseBiometry()
-      .then((biometricAvailable: boolean) => {
-        setIsBiometricAvailable(biometricAvailable)
-      })
-      .catch(Logger.error)
-
-    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-    if (type) {
-      setUseBiometrics(type === 'BIO')
-    } else {
-      Logger.error('Secure access type not found')
-    }
-  }, [])
 
   const handleEnteredValidPin = useCallback(
     (pin: string) => {
