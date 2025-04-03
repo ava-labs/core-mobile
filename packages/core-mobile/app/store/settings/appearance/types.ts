@@ -1,3 +1,5 @@
+import { ColorSchemeName } from 'react-native'
+
 export enum Appearance {
   Dark = 'Dark theme',
   Light = 'Light theme',
@@ -6,10 +8,12 @@ export enum Appearance {
 
 export const DEFAULT_APPEARANCE = Appearance.System
 
-export const initialState = {
-  selected: DEFAULT_APPEARANCE
+export const initialState: AppearanceState = {
+  selected: DEFAULT_APPEARANCE,
+  colorScheme: null
 }
 
 export type AppearanceState = {
-  selected: string
+  selected: Appearance
+  colorScheme: ColorSchemeName
 }

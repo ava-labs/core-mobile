@@ -1,16 +1,19 @@
 import React, { FC } from 'react'
 import { View, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
-import { Appearance, selectSelectedAppearance } from 'store/settings/appearance'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  Appearance,
+  selectSelectedAppearance,
+  setSelectedAppearance
+} from 'store/settings/appearance'
 import { SvgProps } from 'react-native-svg'
-import { useColorScheme } from 'common/contexts/ColorSchemeProvider'
 import SystemAppearanceIcon from '../../../../assets/icons/system_appearance.svg'
 import LightAppearanceIcon from '../../../../assets/icons/light_appearance.svg'
 import DarkAppearanceIcon from '../../../../assets/icons/dark_appearance.svg'
 
 const SelectAppearanceScreen = (): JSX.Element => {
   const selectedAppearance = useSelector(selectSelectedAppearance)
-  const { toggleColorScheme } = useColorScheme()
+  const dispatch = useDispatch()
 
   return (
     <View
@@ -29,19 +32,19 @@ const SelectAppearanceScreen = (): JSX.Element => {
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.System}
           appearance="System"
-          onPress={() => toggleColorScheme(Appearance.System)}
+          onPress={() => dispatch(setSelectedAppearance(Appearance.System))}
           Icon={SystemAppearanceIcon}
         />
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.Light}
           appearance="Light"
-          onPress={() => toggleColorScheme(Appearance.Light)}
+          onPress={() => dispatch(setSelectedAppearance(Appearance.Light))}
           Icon={LightAppearanceIcon}
         />
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.Dark}
           appearance="Dark"
-          onPress={() => toggleColorScheme(Appearance.Dark)}
+          onPress={() => dispatch(setSelectedAppearance(Appearance.Dark))}
           Icon={DarkAppearanceIcon}
         />
       </View>

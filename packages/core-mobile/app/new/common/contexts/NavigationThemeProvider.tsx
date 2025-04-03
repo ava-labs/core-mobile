@@ -3,14 +3,15 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native'
 import React, { useEffect, useMemo } from 'react'
 import { Platform } from 'react-native'
 import { setBackgroundColorAsync } from 'expo-navigation-bar'
-import { useColorScheme } from './ColorSchemeProvider'
+import { useSelector } from 'react-redux'
+import { selectSelectedColorScheme } from 'store/settings/appearance'
 
 const NavigationThemeProvider = ({
   children
 }: {
   children: React.ReactNode
 }): JSX.Element => {
-  const { colorScheme } = useColorScheme()
+  const colorScheme = useSelector(selectSelectedColorScheme)
   const {
     theme: { colors }
   } = useTheme()

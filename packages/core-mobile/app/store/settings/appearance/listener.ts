@@ -1,0 +1,38 @@
+import { AppStartListening } from 'store/middleware/listener'
+import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
+import { Appearance as RnAppearance } from 'react-native'
+import { AppListenerEffectAPI } from 'store'
+import { selectIsDeveloperMode, toggleDeveloperMode } from '../advanced'
+import {
+  selectSelectedAppearance,
+  setSelectedAppearance,
+  setSelectedColorScheme
+} from './slice'
+import { Appearance } from './types'
+
+const handleAppearanceChange = (
+  _: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): void => {
+  const { getState, dispatch } = listenerApi
+  const state = getState()
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const appearance = selectSelectedAppearance(state)
+  const colorScheme =
+    isDeveloperMode || appearance === Appearance.Dark
+      ? 'dark'
+      : appearance === Appearance.Light
+      ? 'light'
+      : RnAppearance.getColorScheme()
+
+  dispatch(setSelectedColorScheme(colorScheme))
+}
+
+export const addAppearanceListeners = (
+  startListening: AppStartListening
+): void => {
+  startListening({
+    matcher: isAnyOf(setSelectedAppearance, toggleDeveloperMode),
+    effect: handleAppearanceChange
+  })
+}
