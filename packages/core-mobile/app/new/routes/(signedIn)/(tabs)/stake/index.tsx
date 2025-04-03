@@ -32,6 +32,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import StakesScreen from 'features/stake/components/StakesScreen'
 import { useActiveStakes } from 'hooks/earn/useActiveStakes'
 import { usePastStakes } from 'hooks/earn/usePastStakes'
+import { useAddStake } from 'common/hooks/useAddStake'
 
 const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -46,6 +47,7 @@ const StakeHomeScreen = (): JSX.Element => {
   const selectedSegmentIndex = useSharedValue(0)
   const motion = useMotion()
   const isEmpty = !data || data.length === 0
+  const { addStake, canAddStake } = useAddStake()
 
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
@@ -116,10 +118,6 @@ const StakeHomeScreen = (): JSX.Element => {
     [navigate]
   )
 
-  const handleAddStake = useCallback(() => {
-    navigate('/stake/add')
-  }, [navigate])
-
   const handleClaim = useCallback(() => {
     navigate('/stake/claim')
   }, [navigate])
@@ -133,9 +131,10 @@ const StakeHomeScreen = (): JSX.Element => {
         <StakesScreen
           stakes={data ?? []}
           onPressStake={handlePressStake}
-          onAddStake={handleAddStake}
+          onAddStake={addStake}
           onClaim={handleClaim}
           motion={motion}
+          canAddStake={canAddStake}
         />
       )
     }
@@ -152,9 +151,10 @@ const StakeHomeScreen = (): JSX.Element => {
           <StakesScreen
             stakes={activeStakes}
             onPressStake={handlePressStake}
-            onAddStake={handleAddStake}
+            onAddStake={addStake}
             onClaim={handleClaim}
             motion={motion}
+            canAddStake={canAddStake}
           />
         )
       },
@@ -164,8 +164,9 @@ const StakeHomeScreen = (): JSX.Element => {
           <StakesScreen
             stakes={pastStakes}
             onPressStake={handlePressStake}
-            onAddStake={handleAddStake}
+            onAddStake={addStake}
             onClaim={handleClaim}
+            canAddStake={canAddStake}
           />
         )
       }
@@ -177,7 +178,8 @@ const StakeHomeScreen = (): JSX.Element => {
     isEmpty,
     motion,
     handlePressStake,
-    handleAddStake,
+    addStake,
+    canAddStake,
     handleClaim
   ])
 

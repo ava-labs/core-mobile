@@ -15,6 +15,7 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useAddStake } from 'common/hooks/useAddStake'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import {
@@ -62,6 +63,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const { navigate } = useRouter()
+  const { addStake, canAddStake } = useAddStake()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -139,10 +141,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
     []
   )
 
-  const handleStake = useCallback((): void => {
-    navigate({ pathname: '/startStake' })
-  }, [navigate])
-
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -168,11 +166,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
       { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
       { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
       { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: handleStake },
+      {
+        title: ActionButtonTitle.Stake,
+        icon: 'stake',
+        onPress: addStake,
+        disabled: !canAddStake
+      },
       { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
       { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
     ],
-    [handleStake]
+    [addStake, canAddStake]
   )
 
   const renderHeader = useCallback((): JSX.Element => {

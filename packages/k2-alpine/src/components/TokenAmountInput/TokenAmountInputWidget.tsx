@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { normalizeErrorMessage } from '../../utils/tokenUnitInput'
 import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
@@ -16,7 +17,8 @@ export const TokenAmountInputWidget = ({
   formatInCurrency,
   validateAmount,
   accessory,
-  sx
+  sx,
+  disabled
 }: {
   amount?: TokenUnit
   maxPercentage?: number
@@ -30,6 +32,7 @@ export const TokenAmountInputWidget = ({
   validateAmount?(amount: TokenUnit): Promise<void>
   accessory?: JSX.Element
   sx?: SxProp
+  disabled?: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -105,6 +108,7 @@ export const TokenAmountInputWidget = ({
           paddingBottom: 22
         }}>
         <TokenAmountInput
+          editable={!disabled}
           ref={textInputRef}
           token={token}
           amount={amount}
@@ -120,6 +124,7 @@ export const TokenAmountInputWidget = ({
               style={{
                 minWidth: 72
               }}
+              disabled={disabled}
               onPress={() => {
                 handlePressPercentageButton(button.percent, index)
               }}>
@@ -141,13 +146,15 @@ export const TokenAmountInputWidget = ({
       <Text
         variant="caption"
         sx={{
+          paddingHorizontal: 36,
           color: errorMessage
             ? '$textDanger'
             : alpha(colors.$textPrimary, 0.85),
-          alignSelf: 'center'
+          alignSelf: 'center',
+          textAlign: 'center'
         }}>
         {errorMessage
-          ? errorMessage
+          ? normalizeErrorMessage(errorMessage)
           : `Balance: ${balance.toDisplay()} ${token.symbol}`}
       </Text>
     </View>

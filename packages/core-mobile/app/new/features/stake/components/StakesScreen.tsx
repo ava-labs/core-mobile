@@ -30,13 +30,15 @@ const StakesScreen = ({
   onAddStake,
   onClaim,
   onPressStake,
-  motion
+  motion,
+  canAddStake
 }: {
   stakes: PChainTransaction[]
   onAddStake: () => void
   onClaim: () => void
   onPressStake: (txHash: string) => void
   motion?: Motion
+  canAddStake: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const isDevMode = useSelector(selectIsDeveloperMode)
@@ -64,7 +66,13 @@ const StakesScreen = ({
     }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
       let content = null
       if (item === StaticCard.Add) {
-        content = <AddCard width={CARD_WIDTH} onPress={onAddStake} />
+        content = (
+          <AddCard
+            width={CARD_WIDTH}
+            onPress={onAddStake}
+            disabled={!canAddStake}
+          />
+        )
       } else if (item === StaticCard.Claim) {
         content = (
           <ClaimCard
@@ -133,6 +141,7 @@ const StakesScreen = ({
       claimableInAvax,
       completeCardBackground,
       motion,
+      canAddStake,
       onAddStake,
       onClaim,
       onPressStake,

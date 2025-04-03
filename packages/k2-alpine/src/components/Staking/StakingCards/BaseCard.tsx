@@ -7,17 +7,22 @@ import { View } from '../../Primitives'
 export const BaseCard = ({
   onPress,
   sx,
-  children
+  children,
+  disabled
 }: {
   onPress?: () => void
   sx?: SxProp
   children: React.ReactNode
+  disabled?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const borderColor = theme.isDark ? '#FFFFFF1A' : '#0000001A'
 
   return (
-    <AnimatedPressable style={{ flex: 1 }} onPress={onPress}>
+    <AnimatedPressable
+      style={{ flex: 1 }}
+      onPress={onPress}
+      disabled={disabled}>
       <View
         sx={{
           borderRadius: 18,
