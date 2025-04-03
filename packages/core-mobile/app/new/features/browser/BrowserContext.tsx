@@ -41,13 +41,13 @@ function useBrowserContextValue(): BrowserContextType {
     const browserRef = browserRefs.current?.[activeTab.id]?.current
     const normalized = normalizeUrlWithHttps(url || urlEntry)
 
+    if (inputRef?.current?.isFocused()) {
+      inputRef?.current?.blur()
+    }
+
     if (isValidHttpUrl(normalized)) {
       browserRef?.loadUrl(normalized)
       setUrlEntry(normalized)
-
-      if (inputRef?.current?.isFocused()) {
-        inputRef?.current?.blur()
-      }
     } else {
       openGoogleSearch(normalized)
     }
