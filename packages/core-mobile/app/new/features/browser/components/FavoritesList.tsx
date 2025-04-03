@@ -64,6 +64,7 @@ export const FavoritesList = (
       data={data}
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
+      keyboardShouldPersistTaps="handled"
       numColumns={4}
     />
   )

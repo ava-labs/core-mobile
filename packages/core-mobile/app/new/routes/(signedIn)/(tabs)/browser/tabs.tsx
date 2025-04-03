@@ -46,18 +46,18 @@ const TabsScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const snapshotTimestamps = useSelector(selectAllSnapshotTimestamps)
 
-  const itemWidth = Math.floor(
-    (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
-  )
+  const sortedTabs = tabs.sort((a, b) => (a.createdAt - b?.createdAt ? -1 : 1))
+
+  const itemWidth = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
 
   const handleAddTab = useCallback(() => {
+    handleClearAndFocus()
     dispatch(addTab())
     goBack()
-    handleClearAndFocus()
   }, [dispatch, goBack, handleClearAndFocus])
 
   async function handleCloseTab(tab: Tab): Promise<void> {
-    const isDeletingLastTab = tabs.length === 1
+    const isDeletingLastTab = sortedTabs.length === 1
 
     dispatch(removeTab({ id: tab.id }))
     dispatch(deleteSnapshotTimestamp({ id: tab.id }))
@@ -104,9 +104,8 @@ const TabsScreen = (): JSX.Element => {
   }, [handleConfirmCloseAll])
 
   const handleViewHistory = useCallback((): void => {
-    goBack()
     navigate('history')
-  }, [goBack, navigate])
+  }, [navigate])
 
   const headerRight = useCallback((): JSX.Element => {
     return (
@@ -147,7 +146,8 @@ const TabsScreen = (): JSX.Element => {
   useEffect(() => {
     setOptions({
       headerRight,
-      headerLeft: null
+      headerLeft: null,
+      headerTransparent: true
     })
   }, [headerRight, setOptions])
 
@@ -180,36 +180,29 @@ const TabsScreen = (): JSX.Element => {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        paddingBottom: tabBarHeight,
-        zIndex: 0
-      }}>
-      <FlatList
-        data={tabs}
-        contentContainerStyle={{
-          gap: GRID_GAP,
-          paddingHorizontal: HORIZONTAL_MARGIN / 2,
-          paddingBottom: 26,
-          paddingTop: headerHeight + 26
-        }}
-        showsVerticalScrollIndicator={false}
-        renderItem={renderItem}
-        ListHeaderComponent={
-          <View
-            style={{
-              paddingHorizontal: HORIZONTAL_MARGIN / 2
-            }}>
-            <Text variant="heading2">
-              {tabs.length} {tabs.length === 1 ? 'tab' : 'tabs'}
-            </Text>
-          </View>
-        }
-        numColumns={NUMBER_OF_COLUMNS}
-        keyExtractor={item => item.id}
-      />
-    </View>
+    <FlatList
+      data={sortedTabs}
+      contentContainerStyle={{
+        gap: GRID_GAP,
+        paddingBottom: tabBarHeight + 26,
+        paddingTop: headerHeight + 26,
+        paddingHorizontal: HORIZONTAL_MARGIN / 2
+      }}
+      showsVerticalScrollIndicator={false}
+      renderItem={renderItem}
+      ListHeaderComponent={
+        <View
+          style={{
+            paddingHorizontal: HORIZONTAL_MARGIN / 2
+          }}>
+          <Text variant="heading2">
+            {sortedTabs.length} {sortedTabs.length === 1 ? 'tab' : 'tabs'}
+          </Text>
+        </View>
+      }
+      numColumns={NUMBER_OF_COLUMNS}
+      keyExtractor={item => item.id}
+    />
   )
 }
 

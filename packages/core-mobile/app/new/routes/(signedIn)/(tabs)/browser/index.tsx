@@ -96,37 +96,33 @@ const Browser = (): React.ReactNode => {
 
   return (
     <BrowserSnapshot>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}>
-        <View sx={{ flex: 1 }}>
-          {showEmptyTab && <Discover />}
+      <View sx={{ flex: 1 }}>
+        {showEmptyTab && <Discover />}
 
-          {filteredTabs.map(tab => {
-            return (
-              <View
-                key={tab.id}
-                sx={{
-                  flex: 1,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: tab.id === activeTab?.id ? 0 : -1,
-                  pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none'
-                }}>
-                <BrowserTab
-                  ref={browserRefs.current?.[tab.id]} // Ensure the ref is passed here
-                  tabId={tab.id}
-                />
-              </View>
-            )
-          })}
+        {filteredTabs.map(tab => {
+          return (
+            <View
+              key={tab.id}
+              sx={{
+                flex: 1,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: tab.id === activeTab?.id ? 0 : -1,
+                pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none'
+              }}>
+              <BrowserTab
+                ref={browserRefs.current?.[tab.id]} // Ensure the ref is passed here
+                tabId={tab.id}
+              />
+            </View>
+          )
+        })}
 
-          <BrowserControls />
-        </View>
-      </KeyboardAvoidingView>
+        <BrowserControls />
+      </View>
     </BrowserSnapshot>
   )
 }

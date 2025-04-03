@@ -110,8 +110,8 @@ export const BrowserInputMenu = ({
     // browser will listen to this and reset the screen with
     // initiated tab data
     AnalyticsService.capture('BrowserNewTabTapped')
-    dispatch(addTab())
     handleClearAndFocus()
+    dispatch(addTab())
   }
 
   function handleShare(): void {

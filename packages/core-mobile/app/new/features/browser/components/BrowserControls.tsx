@@ -10,6 +10,7 @@ import {
 import React, { ReactNode, useState } from 'react'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 
+import { KeyboardAvoidingView, Platform } from 'react-native'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -71,51 +72,69 @@ export const BrowserControls = (): ReactNode => {
     }
   })
 
+  const inputKeyboardPositioning = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(
+            keyboardHeight > 0 ? 0 : -BROWSER_CONTROLS_HEIGHT - 10,
+            { ...ANIMATED.TIMING_CONFIG, duration: 10 }
+          )
+        }
+      ]
+    }
+  })
+
   return (
     <>
-      {/* Pushes the input at the bottom for keyboard open positioning */}
-      <View style={{ flex: 1 }} pointerEvents="none" />
-      <Animated.View
-        style={[
-          {
-            zIndex: 10,
-            height: BROWSER_CONTROLS_HEIGHT,
-            transform: [
-              {
-                translateY:
-                  keyboardHeight > 0 ? 0 : -BROWSER_CONTROLS_HEIGHT - 10
-              }
-            ],
-            backgroundColor: isFocused
-              ? 'transparent'
-              : alpha(theme.colors.$surfacePrimary, 0.6)
-          }
-        ]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 11
+        }}>
         <Animated.View
           style={[
-            inputContentStyle,
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0
-            }
+            inputKeyboardPositioning,
+            [
+              {
+                zIndex: 11,
+                height: BROWSER_CONTROLS_HEIGHT,
+                backgroundColor: isFocused
+                  ? 'transparent'
+                  : alpha(theme.colors.$surfacePrimary, 0.6)
+              }
+            ]
           ]}>
-          <BlurViewWithFallback
-            style={{
-              flex: 1
-            }}
-          />
-        </Animated.View>
+          <Animated.View
+            style={[
+              inputContentStyle,
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }
+            ]}>
+            <BlurViewWithFallback
+              style={{
+                flex: 1
+              }}
+            />
+          </Animated.View>
 
-        <View
-          style={{
-            padding: HORIZONTAL_MARGIN
-          }}>
-          <BrowserInput isFocused={isFocused} setIsFocused={setIsFocused} />
-        </View>
-      </Animated.View>
+          <View
+            style={{
+              padding: HORIZONTAL_MARGIN
+            }}>
+            <BrowserInput isFocused={isFocused} setIsFocused={setIsFocused} />
+          </View>
+        </Animated.View>
+      </KeyboardAvoidingView>
 
       <View
         pointerEvents={isFocused ? 'auto' : 'none'}
@@ -126,7 +145,8 @@ export const BrowserControls = (): ReactNode => {
             top: 0,
             left: 0,
             right: 0,
-            bottom: 0
+            bottom: 0,
+            zIndex: 1
           }
         ]}>
         <Animated.View
@@ -148,51 +168,57 @@ export const BrowserControls = (): ReactNode => {
           />
         </Animated.View>
 
-        <View
-          style={{
-            flex: 1,
-            marginBottom: 30
-          }}>
-          {urlEntry.length ? (
-            <Animated.View
-              pointerEvents={urlEntry.length ? 'auto' : 'none'}
-              style={[
-                historyStyle,
-                scaleStyle,
-                {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0
-                }
-              ]}>
-              <HistoryList
-                contentContainerStyle={{
-                  paddingTop: 30,
-                  paddingBottom: BROWSER_CONTROLS_HEIGHT
-                }}
-              />
-            </Animated.View>
-          ) : (
-            <Animated.View
-              pointerEvents={urlEntry.length ? 'none' : 'auto'}
-              style={[
-                favoritesStyle,
-                scaleStyle,
-                {
-                  flex: 1
-                }
-              ]}>
-              <FavoritesList
-                contentContainerStyle={{
-                  paddingTop: BROWSER_CONTROLS_HEIGHT + 44,
-                  paddingBottom: insets.top
-                }}
-              />
-            </Animated.View>
-          )}
-        </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}>
+          <Animated.View
+            style={[
+              {
+                flex: 1,
+                marginBottom: 30
+              }
+            ]}>
+            {urlEntry.length ? (
+              <Animated.View
+                pointerEvents={urlEntry.length ? 'auto' : 'none'}
+                style={[
+                  historyStyle,
+                  scaleStyle,
+                  {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0
+                  }
+                ]}>
+                <HistoryList
+                  contentContainerStyle={{
+                    paddingTop: 30,
+                    paddingBottom: BROWSER_CONTROLS_HEIGHT
+                  }}
+                />
+              </Animated.View>
+            ) : (
+              <Animated.View
+                pointerEvents={urlEntry.length ? 'none' : 'auto'}
+                style={[
+                  favoritesStyle,
+                  scaleStyle,
+                  {
+                    flex: 1
+                  }
+                ]}>
+                <FavoritesList
+                  contentContainerStyle={{
+                    paddingTop: insets.top + 50,
+                    paddingBottom: insets.top
+                  }}
+                />
+              </Animated.View>
+            )}
+          </Animated.View>
+        </KeyboardAvoidingView>
 
         <Animated.View
           pointerEvents="none"

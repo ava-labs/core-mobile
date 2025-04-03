@@ -52,7 +52,7 @@ export const Discover = (): JSX.Element => {
         ]}>
         <LinearGradient
           style={{
-            height: insets.top ? insets.top + 80 : 80
+            height: insets.top + 26
           }}
           colors={[
             theme.colors.$surfacePrimary,

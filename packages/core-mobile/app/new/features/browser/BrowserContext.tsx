@@ -44,6 +44,10 @@ function useBrowserContextValue(): BrowserContextType {
     if (isValidHttpUrl(normalized)) {
       browserRef?.loadUrl(normalized)
       setUrlEntry(normalized)
+
+      if (inputRef?.current?.isFocused()) {
+        inputRef?.current?.blur()
+      }
     } else {
       openGoogleSearch(normalized)
     }
