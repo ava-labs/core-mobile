@@ -82,6 +82,14 @@ export const BrowserInput = ({
     setUrlEntry('')
   }
 
+  const onFocus = (): void => {
+    setIsFocused(true)
+  }
+
+  const onBlur = (): void => {
+    setIsFocused(false)
+  }
+
   const contentStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(isFocused ? 0 : 1, ANIMATED.TIMING_CONFIG)
@@ -129,8 +137,8 @@ export const BrowserInput = ({
             value={urlEntry}
             placeholder="Search or type URL"
             onChangeText={onChangeText}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={onFocus}
+            onBlur={onBlur}
             onSubmitEditing={onSubmit}
             placeholderTextColor={alpha(theme.colors.$textPrimary, 0.5)}
             keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}

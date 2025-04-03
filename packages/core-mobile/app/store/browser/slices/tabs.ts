@@ -42,7 +42,8 @@ export const getInitialState = (): TabState => {
           id: tabId,
           historyIds: [],
           activeHistoryIndex: -1,
-          lastVisited: getUnixTime(new Date())
+          lastVisited: getUnixTime(new Date()),
+          createdAt: getUnixTime(new Date())
         }
       }
     } as EntityState<Tab>),
@@ -59,7 +60,8 @@ const tabSlice = createSlice({
       tabAdapter.addOne(state, {
         id: tabId,
         historyIds: [],
-        activeHistoryIndex: -1
+        activeHistoryIndex: -1,
+        createdAt: getUnixTime(new Date())
       })
       state.activeTabId = tabId
       // limit max tabs
@@ -134,7 +136,9 @@ const tabSlice = createSlice({
     },
     updateActiveHistoryForTab: (
       state: TabState,
-      action: PayloadAction<Omit<Tab, 'historyIds' | 'lastVisited'>>
+      action: PayloadAction<
+        Omit<Tab, 'historyIds' | 'lastVisited' | 'createdAt'>
+      >
     ) => {
       const { id, activeHistoryIndex, activeHistory } = action.payload
       tabAdapter.updateOne(state, {

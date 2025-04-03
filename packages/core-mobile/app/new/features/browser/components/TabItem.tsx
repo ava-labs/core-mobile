@@ -81,7 +81,7 @@ export const TabItem = ({
   useFocusEffect(() => {
     setTimeout(() => {
       rotation.value = withSpring(rotationValue, ANIMATED.SPRING_CONFIG)
-    }, index * 70)
+    }, index * 50)
 
     return () => {
       rotation.value = withTiming(0, ANIMATED.TIMING_CONFIG)

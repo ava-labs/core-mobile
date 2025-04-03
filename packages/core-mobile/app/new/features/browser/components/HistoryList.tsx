@@ -2,13 +2,8 @@ import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import React, { ReactNode, useEffect } from 'react'
 import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  addHistoryForActiveTab,
-  addTab,
-  History,
-  selectActiveTab
-} from 'store/browser'
+import { useDispatch } from 'react-redux'
+import { addHistoryForActiveTab, addTab, History } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN, prepareFaviconToLoad } from '../consts'
 import { BrowserItem } from './BrowserItem'
@@ -22,18 +17,14 @@ export const HistoryList = (
     useSearchHistory()
   const { urlEntry, handleUrlSubmit } = useBrowserContext()
 
-  const activeTab = useSelector(selectActiveTab)
-
   useEffect(() => {
     setSearchText(urlEntry)
   }, [setSearchText, urlEntry])
 
   const handlePress = (item: History): void => {
     dispatch(addTab())
-    if (activeTab) {
-      dispatch(addHistoryForActiveTab(item))
-      handleUrlSubmit(item.url)
-    }
+    dispatch(addHistoryForActiveTab(item))
+    handleUrlSubmit(item.url)
   }
 
   const renderItem: ListRenderItem<History> = ({ item }) => {
@@ -118,6 +109,7 @@ export const HistoryList = (
       data={filterHistories}
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     />
   )
 }
