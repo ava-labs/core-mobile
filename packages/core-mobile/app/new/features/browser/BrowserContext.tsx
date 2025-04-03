@@ -43,6 +43,7 @@ function useBrowserContextValue(): BrowserContextType {
 
     if (isValidHttpUrl(normalized)) {
       browserRef?.loadUrl(normalized)
+      setUrlEntry(normalized)
     } else {
       openGoogleSearch(normalized)
     }
@@ -68,6 +69,7 @@ function useBrowserContextValue(): BrowserContextType {
       })
     )
 
+    setUrlEntry(googleUrl)
     browserRefs.current?.[activeTab.id]?.current?.loadUrl(googleUrl)
   }
 
