@@ -12,12 +12,8 @@ import LightAppearanceIcon from '../../../../assets/icons/light_appearance.svg'
 import DarkAppearanceIcon from '../../../../assets/icons/dark_appearance.svg'
 
 const SelectAppearanceScreen = (): JSX.Element => {
-  const dispatch = useDispatch()
   const selectedAppearance = useSelector(selectSelectedAppearance)
-
-  const handleSelectAppearance = (appearance: Appearance): void => {
-    dispatch(setSelectedAppearance(appearance))
-  }
+  const dispatch = useDispatch()
 
   return (
     <View
@@ -36,19 +32,19 @@ const SelectAppearanceScreen = (): JSX.Element => {
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.System}
           appearance="System"
-          onPress={() => handleSelectAppearance(Appearance.System)}
+          onPress={() => dispatch(setSelectedAppearance(Appearance.System))}
           Icon={SystemAppearanceIcon}
         />
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.Light}
           appearance="Light"
-          onPress={() => handleSelectAppearance(Appearance.Light)}
+          onPress={() => dispatch(setSelectedAppearance(Appearance.Light))}
           Icon={LightAppearanceIcon}
         />
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.Dark}
           appearance="Dark"
-          onPress={() => handleSelectAppearance(Appearance.Dark)}
+          onPress={() => dispatch(setSelectedAppearance(Appearance.Dark))}
           Icon={DarkAppearanceIcon}
         />
       </View>

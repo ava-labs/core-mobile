@@ -7,7 +7,7 @@ import { Stack } from 'common/components/Stack'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { GlobalToast } from 'common/utils/toast'
 import { selectWalletState, WalletState } from 'store/app'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useBgDetect } from 'navigation/useBgDetect'
 import {
   useFocusEffect,
@@ -15,7 +15,7 @@ import {
   useRouter,
   usePathname
 } from 'expo-router'
-import { Platform, StatusBar } from 'react-native'
+import { Platform, StatusBar, Appearance as RnAppearance } from 'react-native'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -33,10 +33,17 @@ import {
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
-import { useColorScheme } from 'common/hooks/useColorScheme'
+import {
+  Appearance,
+  selectSelectedAppearance,
+  selectSelectedColorScheme,
+  setSelectedColorScheme
+} from 'store/settings/appearance'
 
-export default function RootLayout(): JSX.Element | null {
+export default function Root(): JSX.Element | null {
   const router = useRouter()
+  const dispatch = useDispatch()
+  const selectedAppearance = useSelector(selectSelectedAppearance)
   const navigation = useNavigation()
   const pathName = usePathname()
   const { inBackground } = useBgDetect()
@@ -44,11 +51,22 @@ export default function RootLayout(): JSX.Element | null {
 
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
   const navigationState = useRootNavigationState()
-  const colorScheme = useColorScheme()
+  const colorScheme = useSelector(selectSelectedColorScheme)
 
   const isSignedIn = navigationState?.routes.some(
     route => route.name === '(signedIn)'
   )
+
+  useEffect(() => {
+    const subscription = RnAppearance.addChangeListener(
+      ({ colorScheme: updatedColorSchemes }) => {
+        if (selectedAppearance === Appearance.System) {
+          dispatch(setSelectedColorScheme(updatedColorSchemes))
+        }
+      }
+    )
+    return () => subscription.remove()
+  }, [dispatch, selectedAppearance])
 
   useEffect(() => {
     StatusBar.setBarStyle(

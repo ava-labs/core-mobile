@@ -7,7 +7,6 @@ import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMetho
 import ScreenHeader from 'common/components/ScreenHeader'
 
 export const AddRecoveryMethods = ({
-  selectedMethod,
   setSelectedMethod,
   oidcAuth,
   availableRecoveryMethods,
@@ -15,7 +14,6 @@ export const AddRecoveryMethods = ({
   onNext,
   onSkip
 }: {
-  selectedMethod?: RecoveryMethod
   setSelectedMethod: (method: RecoveryMethod) => void
   oidcAuth?: OidcAuth
   availableRecoveryMethods: RecoveryMethod[]
@@ -38,7 +36,6 @@ export const AddRecoveryMethods = ({
             your credentials."
         />
         <RecoveryMethodList
-          selectedMethod={selectedMethod}
           data={availableRecoveryMethods}
           onPress={setSelectedMethod}
         />
