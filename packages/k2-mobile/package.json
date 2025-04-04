@@ -22,7 +22,7 @@
     "dripsy": "4.3.7",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-native": "0.76.6",
+    "react-native": "0.76.9",
     "react-native-mmkv": "2.12.2",
     "react-native-safe-area-context": "4.11.0",
     "react-native-svg": "15.8.0"
@@ -32,8 +32,8 @@
     "@babel/core": "7.25.7",
     "@babel/runtime": "7.25.7",
     "@lavamoat/allow-scripts": "3.2.1",
-    "@react-native/babel-preset": "0.76.6",
-    "@react-native/metro-config": "0.76.6",
+    "@react-native/babel-preset": "0.76.9",
+    "@react-native/metro-config": "0.76.9",
     "@rushstack/eslint-patch": "1.10.4",
     "@storybook/addon-ondevice-actions": "7.6.20",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
@@ -58,7 +58,7 @@
   },
   "peerDependencies": {
     "react": "18.2.0",
-    "react-native": "0.76.6",
+    "react-native": "0.76.9",
     "react-native-svg": "15.8.0"
   },
   "lavamoat": {
