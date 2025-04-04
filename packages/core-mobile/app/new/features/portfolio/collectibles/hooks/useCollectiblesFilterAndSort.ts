@@ -40,6 +40,7 @@ export const useCollectiblesFilterAndSort = (
   sort: DropdownSelection
   view: DropdownSelection
   isEveryCollectibleHidden: boolean
+  isUnprocessableHidden: boolean
   onResetFilter: () => void
   onShowHidden: () => void
 } => {
@@ -161,7 +162,7 @@ export const useCollectiblesFilterAndSort = (
 
       if (isUnprocessableHidden)
         nfts = nfts.filter((nft: NftItem) => {
-          return nft.status !== NftLocalStatus.Unprocessable
+          return nft.status === NftLocalStatus.Processed
         })
 
       if (contentType !== CollectibleStatus.Hidden)
@@ -257,6 +258,7 @@ export const useCollectiblesFilterAndSort = (
     sort,
     view,
     isEveryCollectibleHidden,
+    isUnprocessableHidden,
     onResetFilter,
     onShowHidden
   }

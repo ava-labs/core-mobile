@@ -139,15 +139,15 @@ export const CollectiblesScreen = ({
       )
     }
 
-    if (hasFilters && filteredAndSorted.length === 0) {
+    if (filteredAndSorted.length === 0 && hasFilters) {
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight - 100
+            height: portfolioTabContentHeight
           }}
           title="No Collectibles found"
           description="
-            Try changing the filter settings or reset the filter to see all assets."
+              Try changing the filter settings or reset the filter to see all assets."
           button={{
             title: 'Reset filter',
             onPress: onResetFilter
@@ -156,11 +156,11 @@ export const CollectiblesScreen = ({
       )
     }
 
-    if (isEveryCollectibleHidden && filteredAndSorted.length === 0) {
+    if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight - 100
+            height: portfolioTabContentHeight
           }}
           title="All collectibles hidden"
           description="You have hidden all your collectibles"
@@ -234,8 +234,8 @@ export const CollectiblesScreen = ({
     isEnabled,
     error,
     isSuccess,
-    hasFilters,
     filteredAndSorted.length,
+    hasFilters,
     isEveryCollectibleHidden,
     colors.$textPrimary,
     refetch,

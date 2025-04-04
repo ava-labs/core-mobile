@@ -1,4 +1,5 @@
 import { SearchBar, Text, Toggle, View } from '@avalabs/k2-alpine'
+import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useMemo, useState } from 'react'
@@ -27,9 +28,6 @@ export const CollectibleManagementScreen = (): ReactNode => {
       return collectibles?.filter(
         collectible =>
           collectible?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          collectible?.description
-            ?.toLowerCase()
-            .includes(searchText.toLowerCase()) ||
           collectible?.collectionName
             ?.toLowerCase()
             .includes(searchText.toLowerCase())
@@ -50,7 +48,13 @@ export const CollectibleManagementScreen = (): ReactNode => {
 
   const renderEmpty = useMemo(() => {
     if (isLoading || isRefetching) return <LoadingState />
-    return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+    return (
+      <ErrorState
+        title="No collectibles found"
+        description="Try searching for a different collectible"
+        sx={{ height: portfolioTabContentHeight }}
+      />
+    )
   }, [isLoading, isRefetching])
 
   return (
