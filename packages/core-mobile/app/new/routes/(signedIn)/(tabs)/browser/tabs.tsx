@@ -10,12 +10,12 @@ import {
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
+import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { TabItem } from 'features/browser/components/TabItem'
 import { TabsToolbarMenu } from 'features/browser/components/TabsToolbarMenu'
 import { HORIZONTAL_MARGIN } from 'features/browser/consts'
-import React, { useCallback, useEffect } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import SnapshotService from 'services/snapshot/SnapshotService'
 import {
@@ -32,23 +32,23 @@ import {
   deleteSnapshotTimestamp,
   selectAllSnapshotTimestamps
 } from 'store/snapshots/slice'
+import Logger from 'utils/Logger'
 
-const GRID_GAP = 20
 const NUMBER_OF_COLUMNS = 2
+const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
 
 const TabsScreen = (): JSX.Element => {
   const { goBack, setOptions, navigate } = useNavigation()
-  const { setUrlEntry, handleClearAndFocus } = useBrowserContext()
+  const dispatch = useDispatch()
+  const { theme } = useTheme()
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
-  const { theme } = useTheme()
+  const { setUrlEntry, handleClearAndFocus } = useBrowserContext()
+
   const tabs = useSelector(selectAllTabs)
-  const dispatch = useDispatch()
   const snapshotTimestamps = useSelector(selectAllSnapshotTimestamps)
 
-  const sortedTabs = tabs.sort((a, b) => (a.createdAt - b?.createdAt ? -1 : 1))
-
-  const itemWidth = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
+  const sortedTabs = useMemo(() => [...tabs].reverse(), [tabs])
 
   const handleAddTab = useCallback(() => {
     handleClearAndFocus()
@@ -80,11 +80,13 @@ const TabsScreen = (): JSX.Element => {
   const handleConfirmCloseAll = useCallback(async (): Promise<void> => {
     dispatch(removeAllTabs())
     dispatch(deleteAllSnapshotTimestamps())
-
-    await Promise.all(tabs.map(tab => SnapshotService.delete(tab.id)))
-
+    setUrlEntry('')
     goBack()
-  }, [dispatch, goBack, tabs])
+
+    Promise.all(tabs.map(tab => SnapshotService.delete(tab.id))).catch(
+      Logger.error
+    )
+  }, [dispatch, goBack, setUrlEntry, tabs])
 
   const handleCloseAll = useCallback((): void => {
     showAlert({
@@ -146,10 +148,23 @@ const TabsScreen = (): JSX.Element => {
   useEffect(() => {
     setOptions({
       headerRight,
-      headerLeft: null,
-      headerTransparent: true
+      headerLeft: null
     })
   }, [headerRight, setOptions])
+
+  const renderHeader = useCallback((): JSX.Element => {
+    return (
+      <View
+        style={{
+          paddingHorizontal: HORIZONTAL_MARGIN / 2,
+          marginBottom: HORIZONTAL_MARGIN * 2
+        }}>
+        <Text variant="heading2">
+          {sortedTabs.length} {sortedTabs.length === 1 ? 'tab' : 'tabs'}
+        </Text>
+      </View>
+    )
+  }, [sortedTabs.length])
 
   const renderItem: ListRenderItem<Tab> = ({
     item,
@@ -165,41 +180,39 @@ const TabsScreen = (): JSX.Element => {
     return (
       <TabItem
         index={index}
-        title={activeHistory?.title ?? 'Main page'}
+        title={
+          item.activeHistoryIndex > -1
+            ? activeHistory?.title.length
+              ? activeHistory?.title
+              : activeHistory?.url
+            : 'Main page'
+        }
         imagePath={imagePath}
         onVerifyImagePath={SnapshotService.exists}
         onPress={() => handlePressTab(item)}
         onClose={() => handleCloseTab(item)}
         style={{
-          width: itemWidth,
-          height: itemWidth * 1.2,
-          paddingHorizontal: HORIZONTAL_MARGIN / 2
+          width: TAB_WIDTH,
+          height: TAB_WIDTH * 1.2,
+          paddingHorizontal: HORIZONTAL_MARGIN / 2,
+          marginBottom: 20
         }}
       />
     )
   }
 
   return (
-    <FlatList
+    <FlashList
       data={sortedTabs}
       contentContainerStyle={{
-        gap: GRID_GAP,
         paddingBottom: tabBarHeight + 26,
         paddingTop: headerHeight + 26,
         paddingHorizontal: HORIZONTAL_MARGIN / 2
       }}
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
-      ListHeaderComponent={
-        <View
-          style={{
-            paddingHorizontal: HORIZONTAL_MARGIN / 2
-          }}>
-          <Text variant="heading2">
-            {sortedTabs.length} {sortedTabs.length === 1 ? 'tab' : 'tabs'}
-          </Text>
-        </View>
-      }
+      ListHeaderComponent={renderHeader}
+      estimatedItemSize={TAB_WIDTH * 1.2}
       numColumns={NUMBER_OF_COLUMNS}
       keyExtractor={item => item.id}
     />

@@ -16,7 +16,7 @@ export const MaskedProgressBar = ({
   children
 }: {
   progress: SharedValue<number>
-  children: ReactNode
+  children: JSX.Element
 }): ReactNode => {
   const { theme } = useTheme()
   const opacity = useSharedValue(1)
@@ -77,7 +77,7 @@ export const MaskedProgressBar = ({
               position: 'absolute'
             }
           ]}
-          maskElement={<>{children}</>}>
+          maskElement={children}>
           <View
             style={[
               StyleSheet.absoluteFill,

@@ -4,7 +4,12 @@ import { Button, SearchBar, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useSearchHistory } from 'hooks/browser/useSearchHistory'
+import { BrowserItem } from 'features/browser/components/BrowserItem'
+import {
+  HORIZONTAL_MARGIN,
+  prepareFaviconToLoad
+} from 'features/browser/consts'
+import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
 import React from 'react'
 import { FlatList, ListRenderItem, Platform } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
@@ -19,11 +24,6 @@ import {
   removeAllHistories,
   removeHistory
 } from 'store/browser/slices/globalHistory'
-import { BrowserItem } from 'features/browser/components/BrowserItem'
-import {
-  HORIZONTAL_MARGIN,
-  prepareFaviconToLoad
-} from 'features/browser/consts'
 
 const HistoryScreen = (): JSX.Element => {
   const { navigate } = useNavigation()

@@ -42,8 +42,7 @@ export const getInitialState = (): TabState => {
           id: tabId,
           historyIds: [],
           activeHistoryIndex: -1,
-          lastVisited: getUnixTime(new Date()),
-          createdAt: getUnixTime(new Date())
+          lastVisited: getUnixTime(new Date())
         }
       }
     } as EntityState<Tab>),
@@ -60,8 +59,7 @@ const tabSlice = createSlice({
       tabAdapter.addOne(state, {
         id: tabId,
         historyIds: [],
-        activeHistoryIndex: -1,
-        createdAt: getUnixTime(new Date())
+        activeHistoryIndex: -1
       })
       state.activeTabId = tabId
       // limit max tabs
