@@ -5,7 +5,7 @@ import { WebViewProgressEvent } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
 import { addHistoryForActiveTab, selectActiveTab } from 'store/browser'
 import { BrowserTabRef } from './components/BrowserTab'
-import { isValidHttpUrl, normalizeUrlWithHttps } from './consts'
+import { isValidHttpUrl } from './consts'
 
 export type BrowserContextType = {
   urlEntry: string
@@ -39,17 +39,16 @@ function useBrowserContextValue(): BrowserContextType {
     if (!activeTab?.id) return
 
     const browserRef = browserRefs.current?.[activeTab.id]?.current
-    const normalized = normalizeUrlWithHttps(url || urlEntry)
 
     if (inputRef?.current?.isFocused()) {
       inputRef?.current?.blur()
     }
 
-    if (isValidHttpUrl(normalized)) {
-      browserRef?.loadUrl(normalized)
-      setUrlEntry(normalized)
+    if (isValidHttpUrl(url)) {
+      setUrlEntry(url)
+      browserRef?.loadUrl(url)
     } else {
-      openGoogleSearch(normalized)
+      openGoogleSearch(url)
     }
   }
 

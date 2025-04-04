@@ -97,7 +97,7 @@ export const TabItem = ({
   })
 
   return (
-    <AnimatedPressable onPress={onPress} style={[style]}>
+    <AnimatedPressable onPress={onPress} style={style}>
       <Animated.View
         style={[
           cardStyle,

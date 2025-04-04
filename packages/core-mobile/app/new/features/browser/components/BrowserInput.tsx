@@ -9,7 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
-import React, { ReactNode, useMemo } from 'react'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 import {
   NativeSyntheticEvent,
   Platform,
@@ -47,19 +47,15 @@ export const BrowserInput = ({
     selectIsFavorited(activeTab?.activeHistory?.id)
   )
 
-  const onChangeText = (text: string): void => {
-    setUrlEntry(text)
-  }
-
-  const navigateToTabList = (): void => {
-    AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
-    navigate('tabs')
-  }
-
   const parsedUrl = useMemo(() => {
     try {
-      if (urlEntry.length && isValidHttpUrl(urlEntry)) {
-        const urlObj = new URL(normalizeUrlWithHttps(urlEntry))
+      if (
+        activeTab?.activeHistory?.url.length &&
+        isValidHttpUrl(activeTab?.activeHistory?.url)
+      ) {
+        const urlObj = new URL(
+          normalizeUrlWithHttps(activeTab?.activeHistory?.url)
+        )
         return {
           protocol: urlObj.protocol.replace(':', ''),
           domain: urlObj.hostname,
@@ -69,7 +65,11 @@ export const BrowserInput = ({
     } catch (error) {
       return null
     }
-  }, [urlEntry])
+  }, [activeTab?.activeHistory?.url])
+
+  const onChangeText = (text: string): void => {
+    setUrlEntry(text)
+  }
 
   const onSubmit = (
     event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
@@ -90,6 +90,11 @@ export const BrowserInput = ({
     setIsFocused(false)
   }
 
+  const navigateToTabs = useCallback((): void => {
+    AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
+    navigate('tabs')
+  }, [navigate])
+
   const contentStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(isFocused ? 0 : 1, ANIMATED.TIMING_CONFIG)
@@ -101,6 +106,115 @@ export const BrowserInput = ({
       opacity: withTiming(isFocused ? 1 : 0, ANIMATED.TIMING_CONFIG)
     }
   })
+
+  const renderPlaceholder = useMemo((): ReactNode => {
+    return (
+      <Pressable
+        style={{
+          flex: 1,
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+        onPress={() => {
+          inputRef?.current?.focus()
+        }}>
+        {activeTab?.activeHistory?.url.length &&
+        isValidHttpUrl(activeTab?.activeHistory?.url) ? (
+          <Text
+            numberOfLines={1}
+            style={{
+              fontFamily: 'Inter-Medium',
+              fontSize: 14
+            }}>
+            <Text
+              style={{
+                fontFamily: 'Inter-Medium',
+                fontSize: 14,
+                opacity: 0.6
+              }}>
+              {parsedUrl?.protocol?.length ? `${parsedUrl.protocol}://` : ''}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Inter-Medium',
+                fontSize: 14
+              }}>
+              {parsedUrl?.domain}
+            </Text>
+            <Text
+              style={{
+                opacity: 0.6,
+                fontFamily: 'Inter-Medium',
+                fontSize: 14
+              }}>
+              {parsedUrl?.path}
+            </Text>
+          </Text>
+        ) : urlEntry?.length ? (
+          <Text
+            numberOfLines={1}
+            style={{
+              fontFamily: 'Inter-Medium',
+              fontSize: 14
+            }}>
+            {urlEntry}
+          </Text>
+        ) : (
+          <Text
+            style={{
+              fontFamily: 'Inter-Medium',
+              fontSize: 14,
+              color: theme.colors.$textSecondary
+            }}>
+            Search or type URL
+          </Text>
+        )}
+      </Pressable>
+    )
+  }, [
+    activeTab?.activeHistory?.url,
+    inputRef,
+    parsedUrl?.domain,
+    parsedUrl?.path,
+    parsedUrl?.protocol,
+    theme.colors.$textSecondary,
+    urlEntry
+  ])
+
+  const renderTabListButton = useMemo((): ReactNode => {
+    return (
+      <Pressable
+        onPress={navigateToTabs}
+        style={{
+          height: '100%',
+          paddingHorizontal: 12,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <Icons.Navigation.Tabs color={theme.colors.$textPrimary} />
+      </Pressable>
+    )
+  }, [navigateToTabs, theme.colors.$textPrimary])
+
+  const renderMenuButton = useMemo((): ReactNode => {
+    return (
+      <BrowserInputMenu isFavorited={isFavorited}>
+        <Pressable
+          style={{
+            height: '100%',
+            paddingHorizontal: 12,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          onPress={() =>
+            AnalyticsService.capture('BrowserContextualMenuOpened')
+          }>
+          <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
+        </Pressable>
+      </BrowserInputMenu>
+    )
+  }, [isFavorited, theme.colors.$textPrimary])
 
   return (
     <View
@@ -197,99 +311,10 @@ export const BrowserInput = ({
                   : alpha(theme.colors.$black, 0.15),
                 borderRadius: 100
               }}>
-              <Pressable
-                onPress={navigateToTabList}
-                style={{
-                  height: '100%',
-                  paddingHorizontal: 12,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <Icons.Navigation.Tabs color={theme.colors.$textPrimary} />
-              </Pressable>
-
-              <Pressable
-                style={{
-                  flex: 1,
-                  height: '100%',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-                onPress={() => {
-                  inputRef?.current?.focus()
-                }}>
-                {urlEntry?.length && isValidHttpUrl(urlEntry) ? (
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      fontFamily: 'Inter-Medium',
-                      fontSize: 14
-                    }}>
-                    <Text
-                      style={{
-                        fontFamily: 'Inter-Medium',
-                        fontSize: 14,
-                        opacity: 0.6
-                      }}>
-                      {parsedUrl?.protocol?.length
-                        ? `${parsedUrl.protocol}://`
-                        : ''}
-                    </Text>
-                    <Text
-                      style={{
-                        fontFamily: 'Inter-Medium',
-                        fontSize: 14
-                      }}>
-                      {parsedUrl?.domain}
-                    </Text>
-                    <Text
-                      style={{
-                        opacity: 0.6,
-                        fontFamily: 'Inter-Medium',
-                        fontSize: 14
-                      }}>
-                      {parsedUrl?.path}
-                    </Text>
-                  </Text>
-                ) : urlEntry?.length ? (
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      fontFamily: 'Inter-Medium',
-                      fontSize: 14
-                    }}>
-                    {urlEntry}
-                  </Text>
-                ) : (
-                  <Text
-                    style={{
-                      fontFamily: 'Inter-Medium',
-                      fontSize: 14,
-                      color: theme.colors.$textSecondary
-                    }}>
-                    Search or type URL
-                  </Text>
-                )}
-              </Pressable>
-
-              <BrowserInputMenu isFavorited={isFavorited}>
-                <Pressable
-                  style={{
-                    height: '100%',
-                    paddingHorizontal: 12,
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }}
-                  onPress={() =>
-                    AnalyticsService.capture('BrowserContextualMenuOpened')
-                  }>
-                  <Icons.Navigation.MoreHoriz
-                    color={theme.colors.$textPrimary}
-                  />
-                </Pressable>
-              </BrowserInputMenu>
+              {renderTabListButton}
+              {renderPlaceholder}
+              {renderMenuButton}
             </View>
-            {/* </ProgressBar> */}
           </MaskedProgressBar>
         </Animated.View>
       </View>
