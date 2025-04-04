@@ -129,7 +129,7 @@ export const CollectiblesScreen = ({
     if (error || !isSuccess) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
+          sx={{ height: portfolioTabContentHeight - 100 }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -143,7 +143,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight
+            height: portfolioTabContentHeight - 100
           }}
           title="No Collectibles found"
           description="
@@ -160,7 +160,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight
+            height: portfolioTabContentHeight - 100
           }}
           title="All collectibles hidden"
           description="You have hidden all your collectibles"

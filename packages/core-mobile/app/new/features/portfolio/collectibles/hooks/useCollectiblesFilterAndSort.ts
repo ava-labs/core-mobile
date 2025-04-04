@@ -41,6 +41,7 @@ export const useCollectiblesFilterAndSort = (
   view: DropdownSelection
   isEveryCollectibleHidden: boolean
   isUnprocessableHidden: boolean
+  isHiddenVisible: boolean
   onResetFilter: () => void
   onShowHidden: () => void
 } => {
@@ -72,6 +73,7 @@ export const useCollectiblesFilterAndSort = (
     section: 0,
     row: 0
   })
+
 
   const filterOption = useMemo(() => {
     return [
@@ -252,11 +254,14 @@ export const useCollectiblesFilterAndSort = (
     [collectibles?.length, collectiblesVisibility, filteredAndSorted]
   )
 
+  const isHiddenVisible = filter.selected[1]?.row !== 3
+
   return {
     filteredAndSorted,
     filter: filter as DropdownSelection & { selected: IndexPath[] },
     sort,
     view,
+    isHiddenVisible,
     isEveryCollectibleHidden,
     isUnprocessableHidden,
     onResetFilter,

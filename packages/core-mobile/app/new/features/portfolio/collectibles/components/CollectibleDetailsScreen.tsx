@@ -61,7 +61,8 @@ export const CollectibleDetailsScreen = ({
   const headerHeight = useHeaderHeight()
   const frame = useSafeAreaFrame()
 
-  const { filteredAndSorted } = useCollectiblesFilterAndSort(initial)
+  const { filteredAndSorted, isHiddenVisible } =
+    useCollectiblesFilterAndSort(initial)
 
   const [currentIndex, setCurrentIndex] = useState(
     filteredAndSorted?.findIndex(
@@ -113,7 +114,7 @@ export const CollectibleDetailsScreen = ({
     if (collectible?.localId) {
       dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
 
-      if (isVisible) {
+      if (isVisible && !isHiddenVisible) {
         if (currentIndex > 0) {
           setCurrentIndex(currentIndex - 1)
         }
@@ -132,6 +133,7 @@ export const CollectibleDetailsScreen = ({
     currentIndex,
     dispatch,
     filteredAndSorted.length,
+    isHiddenVisible,
     isVisible,
     navigation
   ])
