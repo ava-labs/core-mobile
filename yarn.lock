@@ -360,7 +360,7 @@ __metadata:
     react-native-aes-crypto: 3.1.0
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
-    react-native-bootsplash: 6.1.4
+    react-native-bootsplash: 6.3.4
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -4885,26 +4885,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/config-plugins@npm:^8.0.4":
-  version: 8.0.8
-  resolution: "@expo/config-plugins@npm:8.0.8"
+"@expo/config-plugins@npm:^8.0.0 || ^9.0.0, @expo/config-plugins@npm:~9.0.17":
+  version: 9.0.17
+  resolution: "@expo/config-plugins@npm:9.0.17"
   dependencies:
-    "@expo/config-types": ^51.0.0-unreleased
-    "@expo/json-file": ~8.3.0
-    "@expo/plist": ^0.1.0
+    "@expo/config-types": ^52.0.5
+    "@expo/json-file": ~9.0.2
+    "@expo/plist": ^0.2.2
     "@expo/sdk-runtime-versions": ^1.0.0
     chalk: ^4.1.2
-    debug: ^4.3.1
-    find-up: ~5.0.0
+    debug: ^4.3.5
     getenv: ^1.0.0
-    glob: 7.1.6
+    glob: ^10.4.2
     resolve-from: ^5.0.0
     semver: ^7.5.4
     slash: ^3.0.0
     slugify: ^1.6.6
     xcode: ^3.0.1
     xml2js: 0.6.0
-  checksum: 2b46a636b7aee46825f17b5208de735c98dca70938a5821e00172e5cebaa347f4a4537b2d94fefef7c8d2f5a979e4f8d4b4d0775a559c7d7dec09c78e2d93bae
+  checksum: 5f415a3f4b399024d904d5c6e7b807d52f0efb6eddd217e458fa7d26d04b882f45462aa525ee8e49d404aecfc508e2a829ebd168f9a3b949a215a33699b0b92f
   languageName: node
   linkType: hard
 
@@ -4949,35 +4948,6 @@ __metadata:
     xcode: ^3.0.1
     xml2js: 0.6.0
   checksum: d411b2a8ab1602318e02c9ef8c1710b63373d4eedbcba07c29843140c454ee83343fbc82c38a54e0e2ccfc5a6c20234b749fbb62f02178bf0275a037adc23b3b
-  languageName: node
-  linkType: hard
-
-"@expo/config-plugins@npm:~9.0.17":
-  version: 9.0.17
-  resolution: "@expo/config-plugins@npm:9.0.17"
-  dependencies:
-    "@expo/config-types": ^52.0.5
-    "@expo/json-file": ~9.0.2
-    "@expo/plist": ^0.2.2
-    "@expo/sdk-runtime-versions": ^1.0.0
-    chalk: ^4.1.2
-    debug: ^4.3.5
-    getenv: ^1.0.0
-    glob: ^10.4.2
-    resolve-from: ^5.0.0
-    semver: ^7.5.4
-    slash: ^3.0.0
-    slugify: ^1.6.6
-    xcode: ^3.0.1
-    xml2js: 0.6.0
-  checksum: 5f415a3f4b399024d904d5c6e7b807d52f0efb6eddd217e458fa7d26d04b882f45462aa525ee8e49d404aecfc508e2a829ebd168f9a3b949a215a33699b0b92f
-  languageName: node
-  linkType: hard
-
-"@expo/config-types@npm:^51.0.0-unreleased":
-  version: 51.0.2
-  resolution: "@expo/config-types@npm:51.0.2"
-  checksum: 33b4397df1c85c784f5251a3ea4e1d960c44470aef13925502f8f527680d5ec2b341ecffbaf5c7f5ab3a1a89cdb68d496f54323a73910dfe0a37cb86ae6dc717
   languageName: node
   linkType: hard
 
@@ -5227,17 +5197,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/json-file@npm:~8.3.0":
-  version: 8.3.1
-  resolution: "@expo/json-file@npm:8.3.1"
-  dependencies:
-    "@babel/code-frame": ~7.10.4
-    json5: ^2.2.2
-    write-file-atomic: ^2.3.0
-  checksum: 531b796c81b0cb03a8f372e7f24c76c635b1e8c9400ef02be3f0c988ede044794165b95e216f2decff57036b1a5dd742835f40c2339315a5362f8613475b09a0
-  languageName: node
-  linkType: hard
-
 "@expo/metro-config@npm:0.19.12, @expo/metro-config@npm:~0.19.0, @expo/metro-config@npm:~0.19.12":
   version: 0.19.12
   resolution: "@expo/metro-config@npm:0.19.12"
@@ -5326,17 +5285,6 @@ __metadata:
     split: ^1.0.1
     sudo-prompt: 9.1.1
   checksum: cbf95b5ea1bc4dfde02631d945b36f46540066acb44f6205873c559e0ebd8d5b6bf21e3fc46f5cbd5f06ea65d29708bf8bdb53d2e820a6e6134fcb535447f6d7
-  languageName: node
-  linkType: hard
-
-"@expo/plist@npm:^0.1.0":
-  version: 0.1.1
-  resolution: "@expo/plist@npm:0.1.1"
-  dependencies:
-    "@xmldom/xmldom": ~0.7.7
-    base64-js: ^1.2.3
-    xmlbuilder: ^14.0.0
-  checksum: 9120b1e8c9a5b0b968b0ab5906d000e9e5d5336bf0d61bd15af542c46b45f1009b79a80fabba790df1c577eb18c4cd173d494ce590bfcf64a914bc5d6e54cb54
   languageName: node
   linkType: hard
 
@@ -8715,7 +8663,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/cli-config-android@npm:15.1.3":
+"@react-native-community/cli-config-android@npm:15.1.3, @react-native-community/cli-config-android@npm:^15.0.0":
   version: 15.1.3
   resolution: "@react-native-community/cli-config-android@npm:15.1.3"
   dependencies:
@@ -8727,7 +8675,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/cli-config-apple@npm:15.1.3":
+"@react-native-community/cli-config-apple@npm:15.1.3, @react-native-community/cli-config-apple@npm:^15.0.0":
   version: 15.1.3
   resolution: "@react-native-community/cli-config-apple@npm:15.1.3"
   dependencies:
@@ -8838,7 +8786,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/cli-tools@npm:15.1.3":
+"@react-native-community/cli-tools@npm:15.1.3, @react-native-community/cli-tools@npm:^15.0.0":
   version: 15.1.3
   resolution: "@react-native-community/cli-tools@npm:15.1.3"
   dependencies:
@@ -15354,7 +15302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^12.0.0, commander@npm:~12.1.0":
+"commander@npm:^12.0.0, commander@npm:^12.1.0, commander@npm:~12.1.0":
   version: 12.1.0
   resolution: "commander@npm:12.1.0"
   checksum: 68e9818b00fc1ed9cdab9eb16905551c2b768a317ae69a5e3c43924c2b20ac9bb65b27e1cab36aeda7b6496376d4da908996ba2c0b5d79463e0fb1e77935d514
@@ -18992,7 +18940,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-up@npm:^5.0.0, find-up@npm:~5.0.0":
+"find-up@npm:^5.0.0":
   version: 5.0.0
   resolution: "find-up@npm:5.0.0"
   dependencies:
@@ -19624,20 +19572,6 @@ __metadata:
   dependencies:
     is-glob: ^4.0.3
   checksum: c13ee97978bef4f55106b71e66428eb1512e71a7466ba49025fc2aec59a5bfb0954d5abd58fc5ee6c9b076eef4e1f6d3375c2e964b88466ca390da4419a786a8
-  languageName: node
-  linkType: hard
-
-"glob@npm:7.1.6":
-  version: 7.1.6
-  resolution: "glob@npm:7.1.6"
-  dependencies:
-    fs.realpath: ^1.0.0
-    inflight: ^1.0.4
-    inherits: 2
-    minimatch: ^3.0.4
-    once: ^1.3.0
-    path-is-absolute: ^1.0.0
-  checksum: 351d549dd90553b87c2d3f90ce11aed9e1093c74130440e7ae0592e11bbcd2ce7f0ebb8ba6bfe63aaf9b62166a7f4c80cb84490ae5d78408bb2572bf7d4ee0a6
   languageName: node
   linkType: hard
 
@@ -22047,7 +21981,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json5@npm:^2.2.2, json5@npm:^2.2.3":
+"json5@npm:^2.2.3":
   version: 2.2.3
   resolution: "json5@npm:2.2.3"
   bin:
@@ -25125,10 +25059,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picocolors@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "picocolors@npm:1.1.0"
-  checksum: a64d653d3a188119ff45781dfcdaeedd7625583f45280aea33fcb032c7a0d3959f2368f9b192ad5e8aade75b74dbd954ffe3106c158509a45e4c18ab379a2acd
+"picocolors@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "picocolors@npm:1.1.1"
+  checksum: e1cf46bf84886c79055fdfa9dcb3e4711ad259949e3565154b004b260cd356c5d54b31a1437ce9782624bf766272fe6b0154f5f0c744fb7af5d454d2b60db045
   languageName: node
   linkType: hard
 
@@ -26127,23 +26061,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-bootsplash@npm:6.1.4":
-  version: 6.1.4
-  resolution: "react-native-bootsplash@npm:6.1.4"
+"react-native-bootsplash@npm:6.3.4":
+  version: 6.3.4
+  resolution: "react-native-bootsplash@npm:6.3.4"
   dependencies:
-    "@expo/config-plugins": ^8.0.4
+    "@expo/config-plugins": ^8.0.0 || ^9.0.0
+    "@react-native-community/cli-config-android": ^15.0.0
+    "@react-native-community/cli-config-apple": ^15.0.0
+    "@react-native-community/cli-tools": ^15.0.0
+    commander: ^12.1.0
     detect-indent: ^6.1.0
     fs-extra: ^11.2.0
     node-html-parser: ^6.1.13
-    picocolors: ^1.1.0
+    picocolors: ^1.1.1
     prettier: ^3.3.3
+    react-native-is-edge-to-edge: ^1.1.6
     sharp: ^0.32.6
     ts-dedent: ^2.2.0
     xml-formatter: ^3.6.3
   peerDependencies:
     react: ">=18.1.0"
     react-native: ">=0.70.0"
-  checksum: af1e3c206e411fa2013351cae0576fa543c5498407cb324a3275b6c43d652ecfabb1a8b6268609598698cb465d861e4813f14426ba00d03b4e949e5d7456976f
+  bin:
+    react-native-bootsplash: cli.js
+  checksum: 2636cad64e462409edf324eef6188bc0884f9516843c83bd181301f6195f1e86fa23a57f6e0155fa877b3b763af8ddee6eddc6362b563016534ec1f4574e9ef6
   languageName: node
   linkType: hard
 
@@ -26838,7 +26779,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: fee3b85b2432069d975fae830446e69b9e2933f08d809f890ffbbfe529baf42698a6cf38d033532bbea3b53c5bfa89d2757e3f621fa28844196862e835e8c9bb
   languageName: node
   linkType: hard
 
