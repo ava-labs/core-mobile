@@ -6,7 +6,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Glow, GlowRef } from 'common/components/Glow'
+import { GlowRef } from 'common/components/Glow'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useRef } from 'react'
 import Animated, {
@@ -39,10 +39,11 @@ export const CollectibleDetailsHero = ({
   const {
     theme: { colors }
   } = useTheme()
-  const glowRef = useRef<GlowRef>(null)
+  // TODO: add lottie animation instead of custom glow
+  // const glowRef = useRef<GlowRef>(null)
 
   const animateGlow = (): void => {
-    glowRef.current?.startAnimation()
+    // glowRef.current?.startAnimation()
   }
 
   const opacityStyle = useAnimatedStyle(() => {
@@ -72,18 +73,18 @@ export const CollectibleDetailsHero = ({
     }
   })
 
-  const glowStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      scrollY.value,
-      [0, SNAP_DISTANCE],
-      [1, 0.365],
-      Extrapolation.CLAMP
-    )
+  // const glowStyle = useAnimatedStyle(() => {
+  //   const scale = interpolate(
+  //     scrollY.value,
+  //     [0, SNAP_DISTANCE],
+  //     [1, 0.365],
+  //     Extrapolation.CLAMP
+  //   )
 
-    return {
-      transform: [{ scale }]
-    }
-  })
+  //   return {
+  //     transform: [{ scale }]
+  //   }
+  // })
 
   return (
     <View
@@ -118,7 +119,8 @@ export const CollectibleDetailsHero = ({
               collectible.status !== NftLocalStatus.Processed ||
               collectible.imageData?.type === NftContentType.MP4
             }>
-            <Animated.View
+            {/* TODO: add lottie instead of custom glow animation */}
+            {/* <Animated.View
               style={[
                 glowStyle,
                 {
@@ -132,8 +134,8 @@ export const CollectibleDetailsHero = ({
                   zIndex: -1
                 }
               ]}>
-              <Glow ref={glowRef} size={CARD_SIZE * 1.7} />
-            </Animated.View>
+              <Glow ref={glowRef} size={CARD_SIZE * 1.6} />
+            </Animated.View> */}
 
             <CollectibleGridItem
               collectible={collectible}

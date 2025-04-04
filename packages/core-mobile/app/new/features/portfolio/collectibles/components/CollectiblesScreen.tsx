@@ -2,6 +2,7 @@ import {
   AnimatedPressable,
   Icons,
   IndexPath,
+  SCREEN_WIDTH,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -178,7 +179,7 @@ export const CollectiblesScreen = ({
           flexDirection: 'row',
           gap: HORIZONTAL_MARGIN,
           marginHorizontal: HORIZONTAL_MARGIN,
-          paddingTop: HORIZONTAL_MARGIN + 10
+          paddingTop: HORIZONTAL_MARGIN / 2
         }}>
         <View
           style={{
@@ -242,19 +243,19 @@ export const CollectiblesScreen = ({
     onShowHidden
   ])
 
-  const renderHeader = useMemo((): JSX.Element | undefined => {
-    if (collectibles.length === 0 && (!isEnabled || isLoading)) return
+  const renderHeader = useMemo((): JSX.Element | null => {
+    if (collectibles.length === 0 && (!isEnabled || isLoading)) return null
+    if (collectibles.length === 0) return null
 
     return (
       <View
         style={[
           {
             alignSelf: 'center',
-            width: '100%',
-            paddingHorizontal: HORIZONTAL_MARGIN,
+            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
             zIndex: 10,
             marginTop: 4,
-            marginBottom: CollectibleView.ListView === listType ? 8 : 16
+            marginBottom: CollectibleView.ListView === listType ? 8 : 10
           }
         ]}>
         <DropdownSelections
