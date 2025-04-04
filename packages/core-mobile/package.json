@@ -36,7 +36,7 @@
     "@avalabs/k2-mobile": "workspace:*",
     "@avalabs/types": "3.1.0-alpha.44",
     "@avalabs/vm-module-types": "1.5.0",
-    "@blockaid/client": "0.27.4",
+    "@blockaid/client": "0.49.0",
     "@coinbase/cbpay-js": "2.2.1",
     "@config-plugins/detox": "9.0.0",
     "@cubist-labs/cubesigner-sdk": "0.4.117-0",
