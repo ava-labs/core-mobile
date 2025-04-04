@@ -65,7 +65,12 @@ export const CollectibleManagementItem = ({
           width: 48,
           borderRadius: 12
         }}>
-        <CollectibleRenderer collectible={collectible} />
+        <CollectibleRenderer
+          collectible={collectible}
+          videoProps={{
+            hideControls: true
+          }}
+        />
       </CardContainer>
       <View
         sx={{

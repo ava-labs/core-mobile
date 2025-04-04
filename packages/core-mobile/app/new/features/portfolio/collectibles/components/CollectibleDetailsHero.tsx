@@ -6,9 +6,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { GlowRef } from 'common/components/Glow'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode } from 'react'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -176,6 +175,7 @@ export const CollectibleDetailsHero = ({
               paddingBottom: 50,
               paddingTop: 20
             }}
+            nestedScrollEnabled
             showsVerticalScrollIndicator={false}>
             <View
               style={{

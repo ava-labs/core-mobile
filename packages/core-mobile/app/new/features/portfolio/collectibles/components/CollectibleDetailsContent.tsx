@@ -48,7 +48,6 @@ export const CollectibleDetailsContent = ({
   } = useTheme()
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
-  const { theme } = useTheme()
   const { goBack } = useNavigation()
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
 

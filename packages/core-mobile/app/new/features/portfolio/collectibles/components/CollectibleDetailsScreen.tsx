@@ -1,10 +1,4 @@
-import {
-  ANIMATED,
-  Icons,
-  SCREEN_HEIGHT,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
@@ -27,7 +21,10 @@ import Animated, {
   withSequence,
   withTiming
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
@@ -54,6 +51,7 @@ export const CollectibleDetailsScreen = ({
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
+  const frame = useSafeAreaFrame()
 
   const { filteredAndSorted } = useCollectiblesFilterAndSort(initial)
 
@@ -174,7 +172,7 @@ export const CollectibleDetailsScreen = ({
   const renderEmpty = useMemo((): ReactNode => {
     return (
       <ErrorState
-        sx={{ height: SCREEN_HEIGHT - headerHeight, paddingTop: headerHeight }}
+        sx={{ height: frame.height - headerHeight, paddingTop: headerHeight }}
         title={`Oops\nThis collectible could not be loaded`}
         description="Please hit refresh or try again later"
         button={{
@@ -183,7 +181,7 @@ export const CollectibleDetailsScreen = ({
         }}
       />
     )
-  }, [headerHeight, onBack])
+  }, [frame.height, headerHeight, onBack])
 
   const heroStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
@@ -196,7 +194,7 @@ export const CollectibleDetailsScreen = ({
     const height = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [SCREEN_HEIGHT, CARD_SIZE_SMALL],
+      [frame.height, CARD_SIZE_SMALL],
       Extrapolation.CLAMP
     )
 
@@ -214,15 +212,15 @@ export const CollectibleDetailsScreen = ({
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, -SCREEN_HEIGHT + headerHeight + SNAP_DISTANCE * 2],
+      [0, -frame.height + headerHeight + SNAP_DISTANCE * 2],
       Extrapolation.CLAMP
     )
 
     return {
-      top: SCREEN_HEIGHT,
+      top: frame.height,
       left: 0,
       right: 0,
-      height: SCREEN_HEIGHT - headerHeight - SNAP_DISTANCE,
+      height: frame.height - headerHeight - SNAP_DISTANCE,
       transform: [
         {
           translateY
@@ -268,7 +266,7 @@ export const CollectibleDetailsScreen = ({
           }}
           contentContainerStyle={{
             paddingBottom: insets.bottom,
-            minHeight: SCREEN_HEIGHT + SNAP_DISTANCE
+            minHeight: frame.height + SNAP_DISTANCE
           }}
           bounces={false}
           showsVerticalScrollIndicator={false}

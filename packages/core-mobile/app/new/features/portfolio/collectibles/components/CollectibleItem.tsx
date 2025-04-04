@@ -116,7 +116,12 @@ export const CollectibleListItem = memo(
               width: 48,
               borderRadius: 12
             }}>
-            <CollectibleRenderer collectible={collectible} />
+            <CollectibleRenderer
+              videoProps={{
+                hideControls: true
+              }}
+              collectible={collectible}
+            />
           </CardContainer>
           <View
             sx={{
