@@ -216,7 +216,7 @@
     "@babel/preset-typescript": "7.25.7",
     "@babel/runtime": "7.25.7",
     "@dlenroc/testrail": "1.9.1",
-    "@lavamoat/allow-scripts": "3.2.1",
+    "@lavamoat/allow-scripts": "3.3.2",
     "@playwright/test": "1.48.0",
     "@react-native-community/cli": "15.1.3",
     "@react-native/babel-preset": "0.76.9",
