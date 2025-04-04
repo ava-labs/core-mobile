@@ -1,6 +1,7 @@
-import React, { useMemo, useCallback, useState, useRef } from 'react'
+import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react'
 import {
   Button,
+  DateTimePicker,
   GroupList,
   GroupListItem,
   SafeAreaView,
@@ -27,7 +28,11 @@ import {
   DURATION_OPTIONS_MAINNET,
   DURATION_OPTIONS_WITH_DAYS_FUJI,
   DURATION_OPTIONS_WITH_DAYS_MAINNET,
-  DurationOptionWithDays
+  DurationOptionWithDays,
+  getStakeEndDate,
+  ONE_DAY,
+  THREE_MONTHS,
+  TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
 import {
   runOnJS,
@@ -35,8 +40,16 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
-import { DurationOptions } from 'features/stake/components/DurationOptionsAccordion'
+import { DurationOptions } from 'features/stake/components/DurationOptions'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { UnixTime } from 'services/earn/types'
+import { useNow } from 'hooks/time/useNow'
+import { millisecondsToSeconds } from 'date-fns'
+import { UTCDate } from '@date-fns/utc'
+import {
+  getMaximumStakeEndDate,
+  getMinimumStakeEndTime
+} from 'services/earn/utils'
 
 const StakeDurationScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -53,7 +66,7 @@ const StakeDurationScreen = (): JSX.Element => {
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
   const { formatCurrency } = useFormatCurrency()
-  const durations: DurationOptionWithDays[] = useMemo(() => {
+  const durationsWithDays: DurationOptionWithDays[] = useMemo(() => {
     return isDeveloperMode
       ? DURATION_OPTIONS_WITH_DAYS_FUJI
       : DURATION_OPTIONS_WITH_DAYS_MAINNET
@@ -62,7 +75,7 @@ const StakeDurationScreen = (): JSX.Element => {
   const { data: estimatedRewards } = useStakeEstimatedRewards({
     amount: stakeAmount,
     delegationFee: DELEGATION_FEE_FOR_ESTIMATION,
-    durations
+    durations: durationsWithDays
   })
 
   const estimatedRewardsChartData = useMemo(() => {
@@ -92,13 +105,54 @@ const StakeDurationScreen = (): JSX.Element => {
     }
   )
 
+  const estimatedReward = useMemo(() => {
+    if (selectedChartIndexState === undefined) {
+      return undefined
+    }
+    return estimatedRewards?.[selectedChartIndexState]?.estimatedTokenReward
+  }, [estimatedRewards, selectedChartIndexState])
+
+  const currentUnix = useNow()
+
+  const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
+  const defaultDelegationTime = durationsWithDays[initialIndex] ?? THREE_MONTHS
+  const [_, setStakeEndTime] = useState<UnixTime>(
+    getStakeEndDate({
+      startDateUnix: millisecondsToSeconds(currentUnix),
+      stakeDurationFormat: defaultDelegationTime.stakeDurationFormat,
+      stakeDurationValue: defaultDelegationTime.stakeDurationValue,
+      isDeveloperMode: isDeveloperMode
+    })
+  )
+  const [customEndDate, setCustomEndDate] = useState<Date>()
+
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
+
   const handleSelectDuration = useCallback(
     (selectedIndex: number): void => {
-      rewardChartRef.current?.selectIndex(
-        durations[selectedIndex] === undefined ? undefined : selectedIndex
-      )
+      if (durationsWithDays[selectedIndex] === undefined) {
+        rewardChartRef.current?.selectIndex(undefined)
+        setIsDatePickerVisible(true)
+        if (customEndDate === undefined) {
+          const calculatedStakeEndTime = getStakeEndDate({
+            startDateUnix: millisecondsToSeconds(currentUnix),
+            stakeDurationFormat: minDelegationTime.stakeDurationFormat,
+            stakeDurationValue: minDelegationTime.stakeDurationValue,
+            isDeveloperMode: isDeveloperMode
+          })
+          setStakeEndTime(calculatedStakeEndTime)
+        }
+      } else {
+        rewardChartRef.current?.selectIndex(selectedIndex)
+      }
     },
-    [durations]
+    [
+      durationsWithDays,
+      customEndDate,
+      currentUnix,
+      isDeveloperMode,
+      minDelegationTime
+    ]
   )
 
   const inputSection: GroupListItem[] = useMemo(() => {
@@ -136,19 +190,15 @@ const StakeDurationScreen = (): JSX.Element => {
     return [
       {
         title: 'Estimated rewards',
-        value:
-          selectedChartIndexState !== undefined ? (
-            <StakeTokenUnitValue
-              value={
-                estimatedRewards?.[selectedChartIndexState]
-                  ?.estimatedTokenReward
-              }
-              textSx={{ fontWeight: 600 }}
-            />
-          ) : undefined
+        value: (
+          <StakeTokenUnitValue
+            value={estimatedReward}
+            textSx={{ fontWeight: 600 }}
+          />
+        )
       }
     ]
-  }, [estimatedRewards, selectedChartIndexState])
+  }, [estimatedReward])
 
   const handlePressNext = useCallback(async () => {
     navigate('/addStake/review')
@@ -186,6 +236,28 @@ const StakeDurationScreen = (): JSX.Element => {
     formatCurrency
   ])
 
+  const minimumStakeEndDate = useMemo(
+    () => getMinimumStakeEndTime(isDeveloperMode, new UTCDate(currentUnix)),
+    [isDeveloperMode, currentUnix]
+  )
+  const maximumStakeEndDate = useMemo(() => getMaximumStakeEndDate(), [])
+
+  useEffect(() => {
+    if (
+      selectedChartIndexState !== undefined &&
+      durationsWithDays[selectedChartIndexState]
+    ) {
+      const selectedDuration = durationsWithDays[selectedChartIndexState]
+      const calculatedStakeEndTime = getStakeEndDate({
+        startDateUnix: millisecondsToSeconds(currentUnix),
+        stakeDurationFormat: selectedDuration.stakeDurationFormat,
+        stakeDurationValue: selectedDuration.stakeDurationValue,
+        isDeveloperMode: isDeveloperMode
+      })
+      setStakeEndTime(calculatedStakeEndTime)
+    }
+  }, [selectedChartIndexState, currentUnix, durationsWithDays, isDeveloperMode])
+
   return (
     <KeyboardAvoidingView>
       <SafeAreaView sx={{ flex: 1 }}>
@@ -220,12 +292,24 @@ const StakeDurationScreen = (): JSX.Element => {
         </ScrollView>
         <View
           sx={{
-            padding: 16
+            padding: 16,
+            gap: 16
           }}>
           <Button type="primary" size="large" onPress={handlePressNext}>
             Next
           </Button>
+          <Button type="tertiary" size="large" onPress={handlePressNext}>
+            Advanced setup
+          </Button>
         </View>
+        <DateTimePicker
+          date={customEndDate}
+          isVisible={isDatePickerVisible}
+          setIsVisible={setIsDatePickerVisible}
+          onDateSelected={setCustomEndDate}
+          minimumDate={minimumStakeEndDate}
+          maximumDate={maximumStakeEndDate}
+        />
       </SafeAreaView>
     </KeyboardAvoidingView>
   )

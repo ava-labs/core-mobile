@@ -40,6 +40,7 @@ export * from './Slider/Slider'
 export * from './ProgressBar/ProgressBar'
 export * from './ProgressBar/MaskedProgressBar'
 export * from './TokenAmountInput/TokenAmountInputWidget'
+export * from './DateTimePicker/DateTimePicker'
 
 export * from './PriceChangeIndicator/types'
 
