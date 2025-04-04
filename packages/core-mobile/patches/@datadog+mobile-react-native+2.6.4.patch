@@ -1,0 +1,17 @@
+diff --git a/node_modules/@datadog/mobile-react-native/android/src/newarch/kotlin/com/datadog/reactnative/DdSdk.kt b/node_modules/@datadog/mobile-react-native/android/src/newarch/kotlin/com/datadog/reactnative/DdSdk.kt
+index 3680fea..8418420 100644
+--- a/node_modules/@datadog/mobile-react-native/android/src/newarch/kotlin/com/datadog/reactnative/DdSdk.kt
++++ b/node_modules/@datadog/mobile-react-native/android/src/newarch/kotlin/com/datadog/reactnative/DdSdk.kt
+@@ -115,4 +115,12 @@ class DdSdk(
+     override fun clearAllData(promise: Promise) {
+         implementation.clearAllData(promise)
+     }
++
++    override fun addListener(eventType: String?) {
++        // No-op
++    }
++
++    override fun removeListeners(count: Double) {
++        // No-op
++    }
+ }
