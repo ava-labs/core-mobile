@@ -12,7 +12,6 @@ import React, { ReactNode, useCallback, useMemo } from 'react'
 import { NftItem } from 'services/nft/types'
 
 import { noop } from '@avalabs/core-utils-sdk'
-import { useNavigation } from '@react-navigation/native'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { showSnackbar } from 'common/utils/toast'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -23,13 +22,7 @@ import {
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useDispatch, useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { isCollectibleVisible } from 'store/nft/utils'
-import {
-  selectCollectibleVisibility,
-  toggleCollectibleVisibility
-} from 'store/portfolio'
 import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
@@ -37,24 +30,19 @@ import { HORIZONTAL_MARGIN } from '../consts'
 
 export const CollectibleDetailsContent = ({
   collectible,
-  collectibles
+  isVisible,
+  onHide
 }: {
   collectible: NftItem | undefined
-  collectibles: NftItem[]
+  isVisible: boolean
+  onHide: () => void
 }): ReactNode => {
-  const dispatch = useDispatch()
   const {
     theme: { colors }
   } = useTheme()
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
-  const { goBack } = useNavigation()
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
-
-  const collectibleVisibility = useSelector(selectCollectibleVisibility)
-  const isVisible = collectible
-    ? isCollectibleVisible(collectibleVisibility, collectible)
-    : false
 
   const attributes: GroupListItem[] = useMemo(
     () =>
@@ -102,33 +90,18 @@ export const CollectibleDetailsContent = ({
     await refreshMetadata(collectible, collectible.chainId)
   }, [canRefreshMetadata, collectible, refreshMetadata])
 
-  const toggleHidden = useCallback((): void => {
-    if (collectible?.localId) {
-      dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
-
-      if (isVisible) {
-        if (collectibles.length === 1) {
-          goBack()
-        }
-        showSnackbar('Collectible hidden')
-      } else {
-        showSnackbar('Collectible unhidden')
-      }
-    }
-  }, [collectible?.localId, collectibles.length, dispatch, isVisible, goBack])
-
   const ACTION_BUTTONS: ActionButton[] = useMemo(() => {
     const visibilityAction: ActionButton = {
       title: isVisible ? ActionButtonTitle.Hide : ActionButtonTitle.Unhide,
       icon: isVisible ? 'hide' : 'show',
-      onPress: toggleHidden
+      onPress: onHide
     }
 
     return [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
       visibilityAction
     ]
-  }, [isVisible, toggleHidden])
+  }, [isVisible, onHide])
 
   return (
     <View

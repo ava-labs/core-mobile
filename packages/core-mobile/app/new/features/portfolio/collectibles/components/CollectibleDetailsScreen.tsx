@@ -2,6 +2,7 @@ import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
+import { showSnackbar } from 'common/utils/toast'
 import { HORIZONTAL_MARGIN } from 'features/portfolio/collectibles/consts'
 import React, {
   ReactNode,
@@ -25,6 +26,12 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
+import { useDispatch, useSelector } from 'react-redux'
+import { isCollectibleVisible } from 'store/nft/utils'
+import {
+  selectCollectibleVisibility,
+  toggleCollectibleVisibility
+} from 'store/portfolio'
 import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
@@ -48,6 +55,7 @@ export const CollectibleDetailsScreen = ({
   const {
     theme: { colors }
   } = useTheme()
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
@@ -65,6 +73,11 @@ export const CollectibleDetailsScreen = ({
     () => filteredAndSorted[currentIndex],
     [currentIndex, filteredAndSorted]
   )
+
+  const collectibleVisibility = useSelector(selectCollectibleVisibility)
+  const isVisible = collectible
+    ? isCollectibleVisible(collectibleVisibility, collectible)
+    : false
 
   const isFirst = currentIndex === 0
   const isLast = currentIndex === filteredAndSorted.length - 1
@@ -95,6 +108,33 @@ export const CollectibleDetailsScreen = ({
     if (isLast) return
     setCurrentIndex(currentIndex + 1)
   }, [currentIndex, isLast])
+
+  const onHide = useCallback((): void => {
+    if (collectible?.localId) {
+      dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
+
+      if (isVisible) {
+        if (currentIndex > 0) {
+          setCurrentIndex(currentIndex - 1)
+        }
+
+        if (filteredAndSorted.length === 1) {
+          navigation.goBack()
+        }
+
+        showSnackbar('Collectible hidden')
+      } else {
+        showSnackbar('Collectible unhidden')
+      }
+    }
+  }, [
+    collectible?.localId,
+    currentIndex,
+    dispatch,
+    filteredAndSorted.length,
+    isVisible,
+    navigation
+  ])
 
   const headerRight = useCallback((): ReactNode => {
     if (!collectible) return null
@@ -346,8 +386,9 @@ export const CollectibleDetailsScreen = ({
               contentStyle
             ]}>
             <CollectibleDetailsContent
-              collectibles={filteredAndSorted}
+              isVisible={isVisible}
               collectible={collectible}
+              onHide={onHide}
             />
           </Animated.View>
         </Animated.ScrollView>
