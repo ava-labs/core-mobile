@@ -1,49 +1,38 @@
 import { AppStartListening } from 'store/middleware/listener'
-import { AnyAction } from '@reduxjs/toolkit'
+import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { Appearance as RnAppearance } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
 import { selectIsDeveloperMode, toggleDeveloperMode } from '../advanced'
-import { selectSelectedAppearance, setSelectedAppearance } from './slice'
-import { Appearance } from './types'
+import {
+  selectSelectedAppearance,
+  setSelectedAppearance,
+  setSelectedColorScheme
+} from './slice'
+import { Appearance, ColorSchemeName } from './types'
 
-const handleAppearanceChange = (action: AnyAction): void => {
-  RnAppearance.setColorScheme(
-    action.payload === Appearance.Light
-      ? 'light'
-      : action.payload === Appearance.Dark
-      ? 'dark'
-      : null
-  )
-}
-
-const handleTestnetModeAppearanceChange = (
+const handleAppearanceChange = (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): void => {
-  const { getState } = listenerApi
+  const { getState, dispatch } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const appearance = selectSelectedAppearance(state)
-
-  RnAppearance.setColorScheme(
+  const colorScheme =
     isDeveloperMode || appearance === Appearance.Dark
       ? 'dark'
       : appearance === Appearance.Light
       ? 'light'
-      : null
-  )
+      : (RnAppearance.getColorScheme() as ColorSchemeName)
+
+  dispatch(setSelectedColorScheme(colorScheme))
 }
 
 export const addAppearanceListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    actionCreator: setSelectedAppearance,
+    matcher: isAnyOf(setSelectedAppearance, toggleDeveloperMode),
     effect: handleAppearanceChange
-  })
-
-  startListening({
-    actionCreator: toggleDeveloperMode,
-    effect: handleTestnetModeAppearanceChange
   })
 }
