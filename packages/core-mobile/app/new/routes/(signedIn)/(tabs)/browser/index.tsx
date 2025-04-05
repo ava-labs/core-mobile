@@ -31,6 +31,7 @@ const Browser = (): React.ReactNode => {
         browserRefs.current[tab.id] = React.createRef<BrowserTabRef>()
       }
     })
+    console.warn(browserRefs.current)
   }, [tabs, browserRefs])
 
   // Add or update tab item for the active tab

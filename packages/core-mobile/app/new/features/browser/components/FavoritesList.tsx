@@ -56,8 +56,6 @@ export const FavoritesList = (
     ] as FavoriteOrSuggested[]
   }, [favorites])
 
-  if (!favorites.length) return null
-
   return (
     <FlatList
       {...props}
