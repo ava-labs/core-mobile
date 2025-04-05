@@ -134,9 +134,7 @@ const tabSlice = createSlice({
     },
     updateActiveHistoryForTab: (
       state: TabState,
-      action: PayloadAction<
-        Omit<Tab, 'historyIds' | 'lastVisited'>
-      >
+      action: PayloadAction<Omit<Tab, 'historyIds' | 'lastVisited'>>
     ) => {
       const { id, activeHistoryIndex, activeHistory } = action.payload
       tabAdapter.updateOne(state, {
