@@ -9,11 +9,12 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFocusEffect } from 'expo-router'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { InteractionManager } from 'react-native'
 import DeviceInfoService, {
   BiometricType
 } from 'services/deviceInfo/DeviceInfoService'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 
 export const CreatePin = ({
   useBiometrics,
@@ -35,9 +36,7 @@ export const CreatePin = ({
   isModal?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
-  const [biometricType, setBiometricType] = useState<BiometricType>(
-    BiometricType.NONE
-  )
+  const { biometricType } = useStoredBiometrics()
   const {
     onEnterChosenPin,
     onEnterConfirmedPin,
@@ -55,14 +54,6 @@ export const CreatePin = ({
       })
     }
   })
-
-  useEffect(() => {
-    const getBiometryType = async (): Promise<void> => {
-      const type = await DeviceInfoService.getBiometricType()
-      setBiometricType(type)
-    }
-    getBiometryType()
-  }, [])
 
   useFocusEffect(
     useCallback(() => {

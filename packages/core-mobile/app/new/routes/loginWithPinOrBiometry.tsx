@@ -30,12 +30,12 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { selectWalletState, WalletState } from 'store/app'
+import { BiometricType } from 'utils/BiometricsSDK'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const walletState = useSelector(selectWalletState)

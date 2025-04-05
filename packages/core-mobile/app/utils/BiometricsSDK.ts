@@ -120,6 +120,25 @@ class BiometricsSDK {
     }
   }
 
+  /**
+   * Disables biometric authentication by removing biometric credentials and resetting to PIN-only access.
+   * @param walletId - unique identifier for the wallet
+   */
+  async disableBiometry(walletId: string): Promise<void> {
+    try {
+      // Remove biometric credentials
+      await Keychain.resetGenericPassword({
+        service: `${SERVICE_KEY_BIO}-${walletId}`
+      })
+
+      // Reset storage to indicate PIN-only access
+      commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+    } catch (error) {
+      Logger.error('Failed to disable biometry:', error)
+      throw error
+    }
+  }
+
   async loadWalletKey(
     walletId: string,
     options: Options
@@ -148,9 +167,27 @@ class BiometricsSDK {
     })
   }
 
-  async getBiometryType(): Promise<Keychain.BIOMETRY_TYPE | null> {
-    return getSupportedBiometryType()
+  async getBiometryType(): Promise<BiometricType> {
+    const bioType = await getSupportedBiometryType()
+    if (!bioType) return BiometricType.NONE
+    switch (bioType) {
+      case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+      case Keychain.BIOMETRY_TYPE.TOUCH_ID:
+        return BiometricType.TOUCH_ID
+      case Keychain.BIOMETRY_TYPE.FACE_ID:
+      case Keychain.BIOMETRY_TYPE.FACE:
+        return BiometricType.FACE_ID
+      case Keychain.BIOMETRY_TYPE.IRIS:
+        return BiometricType.IRIS
+    }
   }
 }
 
 export default new BiometricsSDK()
+
+export enum BiometricType {
+  FACE_ID = 'Face ID',
+  TOUCH_ID = 'Touch ID',
+  IRIS = 'Iris',
+  NONE = 'None'
+}
