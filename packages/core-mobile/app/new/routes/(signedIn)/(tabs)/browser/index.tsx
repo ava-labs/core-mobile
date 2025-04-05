@@ -27,11 +27,10 @@ const Browser = (): React.ReactNode => {
 
   useEffect(() => {
     tabs.forEach(tab => {
-      if (browserRefs?.current && !browserRefs.current[tab.id]?.current) {
-        browserRefs.current[tab.id] = React.createRef<BrowserTabRef>()
+      if (!browserRefs?.current?.get(tab.id)?.current) {
+        browserRefs?.current?.set(tab.id, React.createRef<BrowserTabRef>())
       }
     })
-    console.warn(browserRefs.current)
   }, [tabs, browserRefs])
 
   // Add or update tab item for the active tab
@@ -83,7 +82,7 @@ const Browser = (): React.ReactNode => {
             opacity: tab.id === activeTab?.id ? 1 : 0
           }}>
           <BrowserTab
-            ref={browserRefs.current?.[tab.id]} // Ensure the ref is passed here
+            ref={browserRefs.current?.get(tab.id)}
             tabId={tab.id}
             disabled={tab.id !== activeTab?.id}
           />

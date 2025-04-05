@@ -11,7 +11,7 @@ export type BrowserContextType = {
   urlEntry: string
   progress: SharedValue<number>
   inputRef?: React.RefObject<TextInput>
-  browserRefs: React.RefObject<Record<string, React.RefObject<BrowserTabRef>>>
+  browserRefs: React.RefObject<Map<string, React.RefObject<BrowserTabRef>>>
   handleClearAndFocus: () => void
   handleUrlSubmit: (url?: string) => void
   onProgress: (event: WebViewProgressEvent) => void
@@ -26,9 +26,9 @@ function useBrowserContextValue(): BrowserContextType {
   const dispatch = useDispatch()
 
   const inputRef = useRef<TextInput>(null)
-  const browserRefs = React.useRef<
-    Record<string, React.RefObject<BrowserTabRef>>
-  >({})
+  const browserRefs = React.useRef<Map<string, React.RefObject<BrowserTabRef>>>(
+    new Map()
+  )
 
   const [urlEntry, setUrlEntry] = React.useState<string>(
     activeTab?.activeHistory?.url ?? ''
@@ -38,7 +38,7 @@ function useBrowserContextValue(): BrowserContextType {
     if (!url) return
     if (!activeTab?.id) return
 
-    const browserRef = browserRefs.current?.[activeTab.id]?.current
+    const browserRef = browserRefs.current.get(activeTab.id)?.current
 
     if (inputRef?.current?.isFocused()) {
       inputRef?.current?.blur()
@@ -73,7 +73,7 @@ function useBrowserContextValue(): BrowserContextType {
     )
 
     setUrlEntry(googleUrl)
-    browserRefs.current?.[activeTab.id]?.current?.loadUrl(googleUrl)
+    browserRefs.current.get(activeTab.id)?.current?.loadUrl(googleUrl)
   }
 
   const onProgress = (event: WebViewProgressEvent): void => {

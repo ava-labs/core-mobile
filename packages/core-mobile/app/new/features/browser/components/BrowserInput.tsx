@@ -107,7 +107,7 @@ export const BrowserInput = ({
     }
   })
 
-  const renderPlaceholder = useMemo((): ReactNode => {
+  const renderPlaceholder = useCallback((): ReactNode => {
     return (
       <Pressable
         style={{
@@ -182,7 +182,7 @@ export const BrowserInput = ({
     urlEntry
   ])
 
-  const renderTabListButton = useMemo((): ReactNode => {
+  const renderTabListButton = useCallback((): ReactNode => {
     return (
       <Pressable
         onPress={navigateToTabs}
@@ -197,12 +197,12 @@ export const BrowserInput = ({
     )
   }, [navigateToTabs, theme.colors.$textPrimary])
 
-  const renderMenuButton = useMemo((): ReactNode => {
+  const renderMenuButton = useCallback((): ReactNode => {
     return (
       <BrowserInputMenu isFavorited={isFavorited}>
         <Pressable
           style={{
-            height: '100%',
+            flex: 1,
             paddingHorizontal: 12,
             justifyContent: 'center',
             alignItems: 'center'
@@ -243,7 +243,9 @@ export const BrowserInput = ({
           style={[
             inputStyle,
             {
-              flex: 1
+              flex: 1,
+              flexDirection: 'row',
+              backgroundColor: theme.isDark ? '#555557' : theme.colors.$white
             }
           ]}>
           <TextInput
@@ -264,26 +266,25 @@ export const BrowserInput = ({
               paddingHorizontal: HORIZONTAL_MARGIN,
               fontSize: 16,
               fontFamily: 'Inter-Regular',
-              paddingRight: 24 + HORIZONTAL_MARGIN,
-              backgroundColor: theme.isDark ? '#555557' : theme.colors.$white
+              paddingRight: HORIZONTAL_MARGIN / 2
             }}
           />
-          <Pressable
-            pointerEvents={isFocused ? 'auto' : 'none'}
-            onPress={onClear}
-            style={{
-              position: 'absolute',
-              right: 0,
-              bottom: 0,
-              top: 0,
-              justifyContent: 'center',
-              alignItems: 'center',
-              opacity: urlEntry?.length ? 1 : 0,
-              paddingRight: 12,
-              zIndex: 10
-            }}>
-            <Icons.Action.Clear color={theme.colors.$textSecondary} />
-          </Pressable>
+
+          {urlEntry?.length > 0 && (
+            <Pressable
+              pointerEvents={isFocused ? 'auto' : 'none'}
+              onPress={onClear}
+              style={{
+                height: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                opacity: urlEntry?.length ? 1 : 0,
+                paddingHorizontal: 12,
+                zIndex: 10
+              }}>
+              <Icons.Action.Clear color={theme.colors.$textSecondary} />
+            </Pressable>
+          )}
         </Animated.View>
 
         <Animated.View
@@ -311,9 +312,9 @@ export const BrowserInput = ({
                   : alpha(theme.colors.$black, 0.15),
                 borderRadius: 100
               }}>
-              {renderTabListButton}
-              {renderPlaceholder}
-              {renderMenuButton}
+              {renderTabListButton()}
+              {renderPlaceholder()}
+              {renderMenuButton()}
             </View>
           </MaskedProgressBar>
         </Animated.View>
