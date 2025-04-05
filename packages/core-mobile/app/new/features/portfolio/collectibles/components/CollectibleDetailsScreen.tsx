@@ -114,7 +114,13 @@ export const CollectibleDetailsScreen = ({
     if (collectible?.localId) {
       dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
 
-      if (isVisible && !isHiddenVisible) {
+      if (isVisible) {
+        showSnackbar('Collectible hidden')
+      } else {
+        showSnackbar('Collectible unhidden')
+      }
+
+      if (isHiddenVisible) {
         if (currentIndex > 0) {
           setCurrentIndex(currentIndex - 1)
         }
@@ -122,10 +128,6 @@ export const CollectibleDetailsScreen = ({
         if (filteredAndSorted.length === 1) {
           navigation.goBack()
         }
-
-        showSnackbar('Collectible hidden')
-      } else {
-        showSnackbar('Collectible unhidden')
       }
     }
   }, [
