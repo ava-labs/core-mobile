@@ -7,12 +7,18 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { ReactNode, useState } from 'react'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-
-import { KeyboardAvoidingView, Platform } from 'react-native'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradient } from 'expo-linear-gradient'
+import React, { ReactNode, useState } from 'react'
+import { KeyboardAvoidingView, Platform } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useBrowserContext } from '../BrowserContext'
 import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
@@ -25,17 +31,42 @@ export const BrowserControls = (): ReactNode => {
   const { urlEntry, inputRef } = useBrowserContext()
   const insets = useSafeAreaInsets()
   const keyboardHeight = useKeyboardHeight()
+  const tabBarHeight = useBottomTabBarHeight()
 
   const [isFocused, setIsFocused] = useState(false)
+  const gestureProgress = useSharedValue(0)
 
   const onCollapse = (): void => {
     inputRef?.current?.blur()
   }
 
+  const onResetGestureProgress = (): void => {
+    setTimeout(() => {
+      gestureProgress.value = withTiming(0, ANIMATED.TIMING_CONFIG)
+    }, 200)
+  }
+
+  const panGesture = Gesture.Pan()
+    .onUpdate(event => {
+      if (event.translationY > 0) {
+        gestureProgress.value = Math.min(event.translationY / 100, 1)
+      }
+    })
+    .onEnd(() => {
+      if (gestureProgress.value > 0.3) {
+        runOnJS(onCollapse)()
+        gestureProgress.value = withTiming(1, ANIMATED.TIMING_CONFIG, () => {
+          runOnJS(onResetGestureProgress)()
+        })
+      } else {
+        gestureProgress.value = withTiming(0, ANIMATED.TIMING_CONFIG)
+      }
+    })
+
   const historyStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        urlEntry?.length && isFocused ? 1 : 0,
+        urlEntry?.length && isFocused ? 1 - gestureProgress.value : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -44,7 +75,7 @@ export const BrowserControls = (): ReactNode => {
   const favoritesStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        !urlEntry?.length && isFocused ? 1 : 0,
+        !urlEntry?.length && isFocused ? 1 - gestureProgress.value : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -54,7 +85,10 @@ export const BrowserControls = (): ReactNode => {
     return {
       transform: [
         {
-          scale: withTiming(isFocused ? 1 : 0.9, ANIMATED.TIMING_CONFIG)
+          scale: withTiming(
+            isFocused ? 1 - gestureProgress.value * 0.1 : 0.9,
+            ANIMATED.TIMING_CONFIG
+          )
         }
       ]
     }
@@ -62,7 +96,10 @@ export const BrowserControls = (): ReactNode => {
 
   const focusStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(isFocused ? 1 : 0, ANIMATED.TIMING_CONFIG)
+      opacity: withTiming(
+        isFocused ? 1 - gestureProgress.value : 0,
+        ANIMATED.TIMING_CONFIG
+      )
     }
   })
 
@@ -76,9 +113,22 @@ export const BrowserControls = (): ReactNode => {
     return {
       transform: [
         {
+          translateY: withTiming(keyboardHeight > 0 ? 0 : -tabBarHeight + 1, {
+            ...ANIMATED.TIMING_CONFIG,
+            duration: 10
+          })
+        }
+      ]
+    }
+  })
+
+  const gestureControlStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
           translateY: withTiming(
-            keyboardHeight > 0 ? 0 : -BROWSER_CONTROLS_HEIGHT - 10,
-            { ...ANIMATED.TIMING_CONFIG, duration: 10 }
+            gestureProgress.value * 100,
+            ANIMATED.TIMING_CONFIG
           )
         }
       ]
@@ -173,6 +223,7 @@ export const BrowserControls = (): ReactNode => {
           style={{ flex: 1 }}>
           <Animated.View
             style={[
+              gestureControlStyle,
               {
                 flex: 1,
                 marginBottom: 30
@@ -255,6 +306,7 @@ export const BrowserControls = (): ReactNode => {
           pointerEvents={'box-none'}
           style={[
             focusStyle,
+            gestureControlStyle,
             {
               position: 'absolute',
               top: insets.top,
@@ -264,19 +316,21 @@ export const BrowserControls = (): ReactNode => {
               alignItems: 'center'
             }
           ]}>
-          <Pressable
-            onPress={onCollapse}
-            style={{
-              width: 44,
-              height: 44,
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <Icons.Custom.ArrowDownHandleBar
-              color={theme.colors.$textSecondary}
-              width={40}
-            />
-          </Pressable>
+          <GestureDetector gesture={panGesture}>
+            <Pressable
+              onPress={onCollapse}
+              style={{
+                width: 44,
+                height: 44,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+              <Icons.Custom.ArrowDownHandleBar
+                color={theme.colors.$textSecondary}
+                width={40}
+              />
+            </Pressable>
+          </GestureDetector>
         </Animated.View>
       </View>
     </>
