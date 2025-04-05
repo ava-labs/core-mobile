@@ -26,6 +26,7 @@ export interface RecoveryMethodContextState {
   setOidcAuth: Dispatch<SetStateAction<OidcAuth | undefined>>
   mfaMethods?: MFA[]
   setMfaMethods: Dispatch<SetStateAction<MFA[] | undefined>>
+  resetSeedlessAuth: () => void
 }
 
 export const RecoveryMethodContext = createContext<RecoveryMethodContextState>(
@@ -68,6 +69,12 @@ export const RecoveryMethodProvider = ({
     [oidcAuth, totpChallenge]
   )
 
+  const resetSeedlessAuth = (): void => {
+    setTotpChallenge(undefined)
+    setOidcAuth(undefined)
+    setMfaMethods(undefined)
+  }
+
   const state: RecoveryMethodContextState = {
     handleCopyCode,
     onVerifyCode,
@@ -77,7 +84,8 @@ export const RecoveryMethodProvider = ({
     oidcAuth,
     setOidcAuth,
     mfaMethods,
-    setMfaMethods
+    setMfaMethods,
+    resetSeedlessAuth
   }
 
   return (

@@ -6,8 +6,8 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
-import DataDogService from 'services/datadog/DataDogService'
-import Logger from 'utils/Logger'
+// TODO: renable DataDogService after datadog 2.6.5 is released
+// import DataDogService from 'services/datadog/DataDogService'
 
 const BROWSER_TAB_ROUTE_NAME = 'BrowserScreens.TabView'
 
@@ -31,7 +31,7 @@ function App(): JSX.Element {
     SentryService.navigationIntegration.registerNavigationContainer(
       navigationRef
     )
-    DataDogService.init(navigationRef).catch(Logger.error)
+    // DataDogService.init(navigationRef).catch(Logger.error)
   }, [])
 
   // only enable the keyboard avoiding view when we are not in the browser tab

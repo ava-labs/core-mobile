@@ -69,3 +69,7 @@ https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461
 with the latest react native, if the webview is not rendered using `display: none`, nothing will work: all the javascript injection, message relaying,...
 
 to fix it, we patched the lib so that the webview is still rendered but won't be visible.
+
+### @datadog+mobile-react-native+2.6.4.patch
+
+we can't build Android with this version of datadog. they have fixed this in 2.6.5 but haven't released yet.

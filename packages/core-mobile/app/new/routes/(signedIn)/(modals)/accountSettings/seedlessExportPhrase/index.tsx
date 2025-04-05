@@ -7,7 +7,8 @@ const SeedlessExportPhraseScreen = (): JSX.Element => {
 
   useEffect(() => {
     authenticate()
-  }, [authenticate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return <LoadingState sx={{ flex: 1 }} />
 }

@@ -49,6 +49,14 @@ allprojects {
         mavenCentral()
         maven { url "$rootDir/../node_modules/expo-camera/android/maven" }
     }
+    
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.jetbrains.kotlin') {
+                details.useVersion "1.9.24"
+            }
+        }
+    }
 }
 project.ext {
     excludeAppGlideModule = true

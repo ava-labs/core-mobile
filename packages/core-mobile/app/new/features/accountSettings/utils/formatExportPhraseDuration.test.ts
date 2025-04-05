@@ -1,6 +1,12 @@
 import { formatExportPhraseDuration } from './formatExportPhraseDuration'
 
 describe('formatExportPhraseDuration', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    const now = Date.now() // fixed reference point
+    jest.spyOn(Date, 'now').mockReturnValue(now)
+  })
+
   it('should format duration correctly for days and hours', () => {
     const availableAt =
       Date.now() + 2 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000 // 2 days and 3 hours

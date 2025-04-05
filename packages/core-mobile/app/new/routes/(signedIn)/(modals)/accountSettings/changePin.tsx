@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { StorageKey } from 'resources/Constants'
 import { commonStorage } from 'utils/mmkv'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 
 const ChangePinScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
@@ -15,9 +16,8 @@ const ChangePinScreen = (): React.JSX.Element => {
   const { onPinCreated } = useWallet()
   const { bottom } = useSafeAreaInsets()
   const [keyboardHeight, setKeyboardHeight] = useState(0)
-  const [isBiometricAvailable, setIsBiometricAvailable] =
-    useState<boolean>(false)
-  const [useBiometrics, setUseBiometrics] = useState(false)
+  const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
+    useStoredBiometrics()
 
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
@@ -36,21 +36,6 @@ const ChangePinScreen = (): React.JSX.Element => {
     },
     [mnemonic, onPinCreated, back, canGoBack, useBiometrics]
   )
-
-  useEffect(() => {
-    BiometricsSDK.canUseBiometry()
-      .then((biometricAvailable: boolean) => {
-        setIsBiometricAvailable(biometricAvailable)
-      })
-      .catch(Logger.error)
-
-    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-    if (type) {
-      setUseBiometrics(type === 'BIO')
-    } else {
-      Logger.error('Secure access type not found')
-    }
-  }, [])
 
   // Configure keyboard listeners
   useEffect(() => {
