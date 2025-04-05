@@ -43,7 +43,7 @@ const TabsScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
-  const { setUrlEntry, handleClearAndFocus } = useBrowserContext()
+  const { setUrlEntry, handleClearAndFocus, browserRefs } = useBrowserContext()
 
   const tabs = useSelector(selectAllTabs)
   const snapshotTimestamps = useSelector(selectAllSnapshotTimestamps)
@@ -60,8 +60,10 @@ const TabsScreen = (): JSX.Element => {
     const isDeletingLastTab = sortedTabs.length === 1
 
     dispatch(removeTab({ id: tab.id }))
+    browserRefs?.current?.delete(tab.id)
+
     dispatch(deleteSnapshotTimestamp({ id: tab.id }))
-    await SnapshotService.delete(tab.id)
+    SnapshotService.delete(tab.id)
 
     if (isDeletingLastTab) {
       goBack()
@@ -83,10 +85,13 @@ const TabsScreen = (): JSX.Element => {
     setUrlEntry('')
     goBack()
 
-    Promise.all(tabs.map(tab => SnapshotService.delete(tab.id))).catch(
-      Logger.error
-    )
-  }, [dispatch, goBack, setUrlEntry, tabs])
+    Promise.all(
+      tabs.map(tab => {
+        SnapshotService.delete(tab.id)
+        browserRefs?.current?.delete(tab.id)
+      })
+    ).catch(Logger.error)
+  }, [dispatch, goBack, setUrlEntry, tabs, browserRefs])
 
   const handleCloseAll = useCallback((): void => {
     showAlert({

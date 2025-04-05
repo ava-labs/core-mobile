@@ -2,12 +2,9 @@ import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
-import {
-  BrowserTab,
-  BrowserTabRef
-} from 'features/browser/components/BrowserTab'
+import { BrowserTab } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import {
@@ -24,14 +21,6 @@ const Browser = (): React.ReactNode => {
   const showEmptyTab = useSelector(selectIsTabEmpty)
 
   const [tabs, setTabs] = useState<Tab[]>([])
-
-  useEffect(() => {
-    tabs.forEach(tab => {
-      if (!browserRefs?.current?.get(tab.id)?.current) {
-        browserRefs?.current?.set(tab.id, React.createRef<BrowserTabRef>())
-      }
-    })
-  }, [tabs, browserRefs])
 
   // Add or update tab item for the active tab
   useEffect(() => {
@@ -65,7 +54,7 @@ const Browser = (): React.ReactNode => {
     )
   }, [allTabs])
 
-  const renderTabs = useMemo(() => {
+  const renderTabs = useCallback(() => {
     return tabs.map(tab => {
       return (
         <View
@@ -132,7 +121,7 @@ const Browser = (): React.ReactNode => {
             pointerEvents: showEmptyTab ? 'none' : 'auto'
           }
         ]}>
-        {renderTabs}
+        {renderTabs()}
       </Animated.View>
 
       <BrowserControls />
