@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
-import { BIOMETRY_TYPE, UserCredentials } from 'react-native-keychain'
+import BiometricsSDK, {
+  BiometricType,
+  KeystoreConfig
+} from 'utils/BiometricsSDK'
+import { UserCredentials } from 'react-native-keychain'
 import { asyncScheduler, Observable, of, timer } from 'rxjs'
 import { catchError, concatMap, map } from 'rxjs/operators'
 import { Alert } from 'react-native'
@@ -14,7 +17,6 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
@@ -215,12 +217,7 @@ export function usePinOrBiometryLogin({
       }
 
       const type = await BiometricsSDK.getBiometryType()
-
-      if (type === BIOMETRY_TYPE.FACE || type === BIOMETRY_TYPE.FACE_ID) {
-        setBioType(BiometricType.FACE_ID)
-      } else if (type === BIOMETRY_TYPE.FINGERPRINT) {
-        setBioType(BiometricType.TOUCH_ID)
-      }
+      setBioType(type)
     }
 
     getBiometryType()

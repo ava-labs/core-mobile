@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { StorageKey } from 'resources/Constants'
 import Switch from 'components/Switch'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -13,7 +12,8 @@ import {
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
-import { commonStorage } from 'utils/mmkv'
+import { useStoredBiometrics } from 'new/common/hooks/useStoredBiometrics'
+import { selectActiveWalletId } from 'store/wallet/slice'
 
 function SecurityPrivacy({
   onChangePin,
@@ -31,31 +31,18 @@ function SecurityPrivacy({
   const theme = useApplicationContext().theme
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
-  const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
-    useState(false)
-  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false)
-
-  useEffect(() => {
-    BiometricsSDK.canUseBiometry()
-      .then((biometryAvailable: boolean) => {
-        setIsBiometricEnabled(biometryAvailable)
-      })
-      .catch(Logger.error)
-
-    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-    if (type) {
-      setIsBiometricSwitchEnabled(type === 'BIO')
-    } else {
-      Logger.error('Secure access type not found')
-    }
-  }, [])
+  const activeWalletId = useSelector(selectActiveWalletId)
+  const { isBiometricAvailable, setUseBiometrics, useBiometrics } =
+    useStoredBiometrics()
 
   const handleSwitchChange = (value: boolean): void => {
-    setIsBiometricSwitchEnabled(value)
+    setUseBiometrics(value)
     if (value) {
       onTurnOnBiometrics()
     } else {
-      commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+      if (activeWalletId) {
+        BiometricsSDK.disableBiometry(activeWalletId).catch(Logger.error)
+      }
     }
   }
 
@@ -92,15 +79,12 @@ function SecurityPrivacy({
           onPress={onRecoveryMethods}
         />
       )}
-      {isBiometricEnabled && (
+      {isBiometricAvailable && (
         <AvaListItem.Base
           title={'Sign in with Biometrics'}
           background={theme.background}
           rightComponent={
-            <Switch
-              value={isBiometricSwitchEnabled}
-              onValueChange={handleSwitchChange}
-            />
+            <Switch value={useBiometrics} onValueChange={handleSwitchChange} />
           }
         />
       )}
