@@ -74,14 +74,14 @@ class BiometricsSDK {
     }
     return Keychain.setGenericPassword(walletId, encryptedMnemonic, {
       ...KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS,
-      service: `${SERVICE_KEY_BIO}-${walletId}`
+      service: `${SERVICE_KEY}-${walletId}`
     })
   }
 
   async loadWalletWithPin(walletId: string): Promise<false | UserCredentials> {
     return Keychain.getGenericPassword({
       ...KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS,
-      service: `${SERVICE_KEY_BIO}-${walletId}`
+      service: `${SERVICE_KEY}-${walletId}`
     })
   }
 
@@ -100,7 +100,7 @@ class BiometricsSDK {
     try {
       await Keychain.setGenericPassword(walletId, key, {
         ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
-        service: `${SERVICE_KEY}-${walletId}`
+        service: `${SERVICE_KEY_BIO}-${walletId}`
       })
 
       return true
