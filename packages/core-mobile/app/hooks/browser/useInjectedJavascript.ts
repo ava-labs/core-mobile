@@ -6,11 +6,12 @@ export type InjectedJavascripts = {
    * Use injectLogRecentWallet if you need to find out what is stored in localStorage under WCM_RECENT_WALLET_DATA key.
    * To use it put this string into WebView.injectedJavaScript, and watch for messages in WebView.onMessage
    */
-  injectLogRecentWallet: string
-  injectGetDescriptionAndFavicon: string
   coreConnectInterceptor: string
+  injectLogRecentWallet: string
   injectCustomWindowOpen: string
   injectCustomPrompt: string
+  injectGetDescriptionAndFavicon: string
+  injectGetPageStyles: string
 }
 
 export type InjectedJsMessageWrapper = {
@@ -18,6 +19,7 @@ export type InjectedJsMessageWrapper = {
     | 'window_ethereum_used'
     | 'recent_wallet'
     | 'desc_and_favicon'
+    | 'page_styles'
     | 'log'
     | 'walletConnect_deeplink_blocked'
   payload: string
@@ -26,6 +28,13 @@ export type InjectedJsMessageWrapper = {
 export type GetDescriptionAndFavicon = {
   favicon: string
   description: string
+}
+
+export type GetPageStyles = {
+  backgroundColor: string
+  color: string
+  fontSize: string
+  fontFamily: string
 }
 
 /**
@@ -121,12 +130,31 @@ export function useInjectedJavascript(): InjectedJavascripts {
         favicon = nodeList[i].getAttribute("href");
       }
     }
+
     const message = {
         method: 'desc_and_favicon',
         payload: JSON.stringify({favicon, description})
       }
     window.ReactNativeWebView.postMessage(JSON.stringify(message));
   })();`
+
+  const injectGetPageStyles = `(async function(){ 
+    setTimeout(() => {
+      const styles = getComputedStyle(document.body)
+      
+      const message = {
+        method: 'page_styles',
+        payload: JSON.stringify({
+          backgroundColor: styles?.backgroundColor, 
+          color: styles?.color, 
+          fontSize: styles?.fontSize, 
+          fontFamily: styles?.fontFamily,
+        })
+      }
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+    }, 100);
+  })();
+  `
 
   const coreConnectInterceptor = `(async function(){     
     setTimeout(() => {
@@ -233,6 +261,7 @@ export function useInjectedJavascript(): InjectedJavascripts {
     injectGetDescriptionAndFavicon,
     coreConnectInterceptor,
     injectCustomWindowOpen,
-    injectCustomPrompt
+    injectCustomPrompt,
+    injectGetPageStyles
   }
 }
