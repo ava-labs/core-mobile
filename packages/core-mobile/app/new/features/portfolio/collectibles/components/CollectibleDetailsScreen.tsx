@@ -1,13 +1,8 @@
-import {
-  ANIMATED,
-  Icons,
-  SCREEN_HEIGHT,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
+import { showSnackbar } from 'common/utils/toast'
 import { HORIZONTAL_MARGIN } from 'features/portfolio/collectibles/consts'
 import React, {
   ReactNode,
@@ -27,7 +22,16 @@ import Animated, {
   withSequence,
   withTiming
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
+import { useDispatch, useSelector } from 'react-redux'
+import { isCollectibleVisible } from 'store/nft/utils'
+import {
+  selectCollectibleVisibility,
+  toggleCollectibleVisibility
+} from 'store/portfolio'
 import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
@@ -51,11 +55,14 @@ export const CollectibleDetailsScreen = ({
   const {
     theme: { colors }
   } = useTheme()
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
+  const frame = useSafeAreaFrame()
 
-  const { filteredAndSorted } = useCollectiblesFilterAndSort(initial)
+  const { filteredAndSorted, isHiddenVisible } =
+    useCollectiblesFilterAndSort(initial)
 
   const [currentIndex, setCurrentIndex] = useState(
     filteredAndSorted?.findIndex(
@@ -67,6 +74,11 @@ export const CollectibleDetailsScreen = ({
     () => filteredAndSorted[currentIndex],
     [currentIndex, filteredAndSorted]
   )
+
+  const collectibleVisibility = useSelector(selectCollectibleVisibility)
+  const isVisible = collectible
+    ? isCollectibleVisible(collectibleVisibility, collectible)
+    : false
 
   const isFirst = currentIndex === 0
   const isLast = currentIndex === filteredAndSorted.length - 1
@@ -97,6 +109,36 @@ export const CollectibleDetailsScreen = ({
     if (isLast) return
     setCurrentIndex(currentIndex + 1)
   }, [currentIndex, isLast])
+
+  const onHide = useCallback((): void => {
+    if (collectible?.localId) {
+      dispatch(toggleCollectibleVisibility({ uid: collectible.localId }))
+
+      if (isVisible) {
+        showSnackbar('Collectible hidden')
+      } else {
+        showSnackbar('Collectible unhidden')
+      }
+
+      if (isHiddenVisible) {
+        if (currentIndex > 0) {
+          setCurrentIndex(currentIndex - 1)
+        }
+
+        if (filteredAndSorted.length === 1) {
+          navigation.goBack()
+        }
+      }
+    }
+  }, [
+    collectible?.localId,
+    currentIndex,
+    dispatch,
+    filteredAndSorted.length,
+    isHiddenVisible,
+    isVisible,
+    navigation
+  ])
 
   const headerRight = useCallback((): ReactNode => {
     if (!collectible) return null
@@ -174,7 +216,7 @@ export const CollectibleDetailsScreen = ({
   const renderEmpty = useMemo((): ReactNode => {
     return (
       <ErrorState
-        sx={{ height: SCREEN_HEIGHT - headerHeight, paddingTop: headerHeight }}
+        sx={{ height: frame.height - headerHeight, paddingTop: headerHeight }}
         title={`Oops\nThis collectible could not be loaded`}
         description="Please hit refresh or try again later"
         button={{
@@ -183,7 +225,7 @@ export const CollectibleDetailsScreen = ({
         }}
       />
     )
-  }, [headerHeight, onBack])
+  }, [frame.height, headerHeight, onBack])
 
   const heroStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
@@ -196,7 +238,7 @@ export const CollectibleDetailsScreen = ({
     const height = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [SCREEN_HEIGHT, CARD_SIZE_SMALL],
+      [frame.height, CARD_SIZE_SMALL],
       Extrapolation.CLAMP
     )
 
@@ -214,15 +256,15 @@ export const CollectibleDetailsScreen = ({
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, -SCREEN_HEIGHT + headerHeight + SNAP_DISTANCE * 2],
+      [0, -frame.height + headerHeight + SNAP_DISTANCE * 2],
       Extrapolation.CLAMP
     )
 
     return {
-      top: SCREEN_HEIGHT,
+      top: frame.height,
       left: 0,
       right: 0,
-      height: SCREEN_HEIGHT - headerHeight - SNAP_DISTANCE,
+      height: frame.height - headerHeight - SNAP_DISTANCE,
       transform: [
         {
           translateY
@@ -268,7 +310,7 @@ export const CollectibleDetailsScreen = ({
           }}
           contentContainerStyle={{
             paddingBottom: insets.bottom,
-            minHeight: SCREEN_HEIGHT + SNAP_DISTANCE
+            minHeight: frame.height + SNAP_DISTANCE
           }}
           bounces={false}
           showsVerticalScrollIndicator={false}
@@ -333,7 +375,6 @@ export const CollectibleDetailsScreen = ({
                   <Icons.Custom.ArrowDownHandleBar
                     color={colors.$textSecondary}
                     width={40}
-                    height={10}
                   />
                 </Pressable>
               </Animated.View>
@@ -349,8 +390,9 @@ export const CollectibleDetailsScreen = ({
               contentStyle
             ]}>
             <CollectibleDetailsContent
-              collectibles={filteredAndSorted}
+              isVisible={isVisible}
               collectible={collectible}
+              onHide={onHide}
             />
           </Animated.View>
         </Animated.ScrollView>

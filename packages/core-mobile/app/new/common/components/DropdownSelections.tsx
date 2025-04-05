@@ -7,7 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
-import React, { useRef, useMemo, memo } from 'react'
+import React, { memo, useMemo, useRef } from 'react'
 
 const SEPARATOR_HEIGHT = 1
 const POPOVER_HEIGHT = 40
@@ -60,6 +60,7 @@ export const DropdownSelections = ({
             onDeselect={filter.onDeselect}
           />
         )}
+
         {sort && (
           <Sorts
             useAnchorRect={sort.useAnchorRect}

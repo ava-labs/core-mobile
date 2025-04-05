@@ -11,5 +11,5 @@ export function isCollectibleVisible(
 ): boolean {
   const collectibleVisible =
     collectibleVisibility?.[collectible?.localId?.toLowerCase()]
-  return collectibleVisible !== undefined ? collectibleVisible : true
+  return collectibleVisible != null ? collectibleVisible : true
 }

@@ -13,8 +13,13 @@ export const portfolioSlice = createSlice({
       action: PayloadAction<{ tokenId: string }>
     ) => {
       const { tokenId } = action.payload
-      state.tokenVisibility[tokenId.toLowerCase()] =
-        !state.tokenVisibility[tokenId.toLowerCase()]
+
+      if (state.tokenVisibility?.[tokenId.toLowerCase()] != null) {
+        state.tokenVisibility[tokenId.toLowerCase()] =
+          !state.tokenVisibility[tokenId.toLowerCase()]
+      } else {
+        state.tokenVisibility[tokenId.toLowerCase()] = false
+      }
     },
     toggleCollectibleVisibility: (
       state,
@@ -22,8 +27,12 @@ export const portfolioSlice = createSlice({
     ) => {
       const { uid } = action.payload
 
-      state.collectibleVisibility[uid.toLowerCase()] =
-        !state.collectibleVisibility?.[uid.toLowerCase()] || false
+      if (state.collectibleVisibility?.[uid.toLowerCase()] != null) {
+        state.collectibleVisibility[uid.toLowerCase()] =
+          !state.collectibleVisibility?.[uid.toLowerCase()]
+      } else {
+        state.collectibleVisibility[uid.toLowerCase()] = false
+      }
     },
     toggleCollectibleUnprocessableVisibility: state => {
       state.collectibleUnprocessableVisibility =
