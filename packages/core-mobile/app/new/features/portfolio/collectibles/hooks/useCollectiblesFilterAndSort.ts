@@ -74,7 +74,6 @@ export const useCollectiblesFilterAndSort = (
     row: 0
   })
 
-
   const filterOption = useMemo(() => {
     return [
       COLLECTIBLE_FILTERS?.[selectedNetworkFilter.section]?.[
