@@ -1,13 +1,5 @@
 import DeviceInfo from 'react-native-device-info'
 import { getLocales, getTimeZone } from 'react-native-localize'
-import * as LocalAuthentication from 'expo-local-authentication'
-import { Platform } from 'react-native'
-
-export enum BiometricType {
-  FACE_ID = 'Face ID',
-  TOUCH_ID = 'Touch ID',
-  NONE = 'None'
-}
 
 class DeviceInfoService {
   private appBuild?: string
@@ -24,12 +16,6 @@ class DeviceInfoService {
   private operatingSystemVersion?: string
   private timezone?: string
   private bundleId?: string
-  private biometricType?: BiometricType
-
-  getBiometricType = (): Promise<BiometricType> => {
-    if (this.biometricType) return Promise.resolve(this.biometricType)
-    return this.getHardwareBiometricType()
-  }
 
   getAppBuild = (): string => {
     if (this.appBuild) return this.appBuild
@@ -142,35 +128,6 @@ class DeviceInfoService {
     this.bundleId = id
 
     return id
-  }
-
-  private getHardwareBiometricType = async (): Promise<BiometricType> => {
-    const hasBiometrics = await LocalAuthentication.hasHardwareAsync()
-    if (hasBiometrics === undefined) {
-      return BiometricType.NONE
-    }
-    const authenticationTypes =
-      await LocalAuthentication.supportedAuthenticationTypesAsync()
-
-    if (
-      authenticationTypes.includes(
-        LocalAuthentication.AuthenticationType.FINGERPRINT
-      )
-    ) {
-      return BiometricType.TOUCH_ID
-    }
-
-    const hasIosFaceId =
-      authenticationTypes.includes(
-        LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
-      ) && Platform.OS === 'ios'
-    const hasAndroidFaceId =
-      authenticationTypes.length > 0 && Platform.OS === 'android'
-
-    if (hasIosFaceId || hasAndroidFaceId) {
-      return BiometricType.FACE_ID
-    }
-    return BiometricType.NONE
   }
 }
 
