@@ -6,14 +6,14 @@ import {
   Toggle,
   GroupListItem
 } from '@avalabs/k2-alpine'
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
 import { Space } from 'components/Space'
@@ -23,15 +23,12 @@ import {
 } from 'store/settings/securityPrivacy'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import DeviceInfoService, {
-  BiometricType
-} from 'services/deviceInfo/DeviceInfoService'
 import { WalletType } from 'services/wallet/types'
 import { selectWalletType } from 'store/app'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import Logger from 'utils/Logger'
-import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
 
 const navigationHeader = <NavigationTitleHeader title={'Security & privacy'} />
 
@@ -43,9 +40,13 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
   const walletType = useSelector(selectWalletType)
-  const [biometricType, setBiometricType] = useState<BiometricType>(
-    BiometricType.NONE
-  )
+  const activeWalletId = useSelector(selectActiveWalletId)
+  const {
+    biometricType,
+    isBiometricAvailable,
+    useBiometrics,
+    setUseBiometrics
+  } = useStoredBiometrics()
   const { navigate } = useRouter()
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<
@@ -65,37 +66,18 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     setHeaderLayout(event.nativeEvent.layout)
   }
 
-  const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
-    useState(false)
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
-
-  useFocusEffect(
-    useCallback(() => {
-      BiometricsSDK.canUseBiometry()
-        .then((biometricAvailable: boolean) => {
-          setIsBiometricAvailable(biometricAvailable)
-        })
-        .catch(Logger.error)
-
-      const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-      if (type) {
-        setIsBiometricSwitchEnabled(type === 'BIO')
-      } else {
-        Logger.error('Secure access type not found')
-      }
-    }, [])
-  )
-
   const handleSwitchBiometric = useCallback(
     (value: boolean): void => {
-      setIsBiometricSwitchEnabled(value)
+      setUseBiometrics(value)
       if (value) {
         navigate('./biometricVerifyPin')
       } else {
-        commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+        if (activeWalletId) {
+          BiometricsSDK.disableBiometry(activeWalletId).catch(Logger.error)
+        }
       }
     },
-    [navigate]
+    [activeWalletId, navigate, setUseBiometrics]
   )
 
   const connectedSitesData = useMemo(() => {
@@ -124,10 +106,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: `Use ${biometricType}`,
         value: (
-          <Toggle
-            onValueChange={handleSwitchBiometric}
-            value={isBiometricSwitchEnabled}
-          />
+          <Toggle onValueChange={handleSwitchBiometric} value={useBiometrics} />
         )
       })
     }
@@ -136,7 +115,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     biometricType,
     handleSwitchBiometric,
     isBiometricAvailable,
-    isBiometricSwitchEnabled,
+    useBiometrics,
     navigate
   ])
 
@@ -193,14 +172,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       }
     ]
   }, [coreAnalyticsConsent, handleToggleCoreAnalyticsConsent])
-
-  useEffect(() => {
-    const getBiometryType = async (): Promise<void> => {
-      const type = await DeviceInfoService.getBiometricType()
-      setBiometricType(type)
-    }
-    getBiometryType()
-  }, [])
 
   return (
     <ScrollView

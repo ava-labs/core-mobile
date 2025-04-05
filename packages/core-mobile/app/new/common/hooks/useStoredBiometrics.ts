@@ -1,23 +1,33 @@
 import { useEffect, useState } from 'react'
 import { StorageKey } from 'resources/Constants'
-import DeviceInfoService, {
-  BiometricType
-} from 'services/deviceInfo/DeviceInfoService'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
+import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 
 export const useStoredBiometrics = (): {
   useBiometrics: boolean
   setUseBiometrics: React.Dispatch<React.SetStateAction<boolean>>
   isBiometricAvailable: boolean
+  biometricType: BiometricType
 } => {
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
   const [useBiometrics, setUseBiometrics] = useState(true)
+  const [biometricType, setBiometricType] = useState<BiometricType>(
+    BiometricType.NONE
+  )
 
   useEffect(() => {
-    DeviceInfoService.getBiometricType()
-      .then((bioType: BiometricType) => {
-        setIsBiometricAvailable(bioType !== BiometricType.NONE)
+    const getBiometryType = async (): Promise<void> => {
+      const type = await BiometricsSDK.getBiometryType()
+      setBiometricType(type)
+    }
+    getBiometryType().catch(Logger.error)
+  }, [])
+
+  useEffect(() => {
+    BiometricsSDK.canUseBiometry()
+      .then((canUseBiometry: boolean) => {
+        setIsBiometricAvailable(canUseBiometry)
       })
       .catch(Logger.error)
 
@@ -29,5 +39,10 @@ export const useStoredBiometrics = (): {
     }
   }, [])
 
-  return { useBiometrics, setUseBiometrics, isBiometricAvailable }
+  return {
+    useBiometrics,
+    setUseBiometrics,
+    isBiometricAvailable,
+    biometricType
+  }
 }

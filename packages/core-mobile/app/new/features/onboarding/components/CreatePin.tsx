@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useFocusEffect } from 'expo-router'
 import {
   GroupList,
@@ -12,9 +12,7 @@ import {
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
-import DeviceInfoService, {
-  BiometricType
-} from 'services/deviceInfo/DeviceInfoService'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 
 export const CreatePin = ({
   useBiometrics,
@@ -36,9 +34,7 @@ export const CreatePin = ({
   isBiometricAvailable?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
-  const [biometricType, setBiometricType] = useState<BiometricType>(
-    BiometricType.NONE
-  )
+  const { biometricType } = useStoredBiometrics()
   const {
     onEnterChosenPin,
     onEnterConfirmedPin,
@@ -56,14 +52,6 @@ export const CreatePin = ({
       })
     }
   })
-
-  useEffect(() => {
-    const getBiometryType = async (): Promise<void> => {
-      const type = await DeviceInfoService.getBiometricType()
-      setBiometricType(type)
-    }
-    getBiometryType()
-  }, [])
 
   useFocusEffect(
     useCallback(() => {
