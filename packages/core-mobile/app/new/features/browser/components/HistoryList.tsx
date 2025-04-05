@@ -5,7 +5,8 @@ import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { addHistoryForActiveTab, addTab, History } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
-import { HORIZONTAL_MARGIN, prepareFaviconToLoad } from '../consts'
+import { HORIZONTAL_MARGIN } from '../consts'
+import { prepareFaviconToLoad } from '../utils'
 import { BrowserItem } from './BrowserItem'
 
 export const HistoryList = (

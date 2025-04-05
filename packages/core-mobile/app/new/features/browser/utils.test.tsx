@@ -1,15 +1,16 @@
 import { DeFiProtocolInformation } from 'services/browser/types'
 import MOCK_PROTOCOL_INFORMATION_DATA from '../../../../tests/fixtures/browser/protocolInformationListData.json'
 import {
-  getNextFavColor,
   getTopDefiProtocolInformationList,
+  sortDeFiProtocolInformationListByTvl,
+  getNextFavColor,
   isValidHttpUrl,
   isValidUrl,
   normalizeUrlWithHttps,
   removeProtocol,
   removeTrailingSlash,
-  sortDeFiProtocolInformationListByTvl
-} from './consts'
+  prepareFaviconToLoad
+} from './utils'
 
 describe('sortDeFiProtocolInformationListByTvl', () => {
   it('should have returned item with highest tvl value', () => {
@@ -139,5 +140,27 @@ describe('removeTrailingSlash', () => {
     const url = 'https://core.app'
     const result = removeTrailingSlash(url)
     expect(result).toStrictEqual('https://core.app')
+  })
+})
+
+describe('prepareFaviconToLoad', () => {
+  it('should return favicon if it is a valid url', () => {
+    const url = 'https://core.app'
+    const result = prepareFaviconToLoad(url)
+    expect(result).toStrictEqual('https://core.app/favicon.ico')
+  })
+
+  it('should return favicon if it has a favicon url', () => {
+    const url = 'https://core.app'
+    const favicon = 'https://core.app/favicon.ico'
+    const result = prepareFaviconToLoad(url, favicon)
+    expect(result).toStrictEqual('https://core.app/favicon.ico')
+  })
+
+  it('should return favicon if it favicon is a relative path', () => {
+    const url = 'https://core.app'
+    const favicon = '/favicon.ico'
+    const result = prepareFaviconToLoad(url, favicon)
+    expect(result).toStrictEqual('https://core.app/favicon.ico')
   })
 })

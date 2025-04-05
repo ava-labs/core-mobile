@@ -43,7 +43,8 @@ const TabsScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
-  const { setUrlEntry, handleClearAndFocus, browserRefs } = useBrowserContext()
+  const { setUrlEntry, handleClearAndFocus, browserRefs, handleUrlSubmit } =
+    useBrowserContext()
 
   const tabs = useSelector(selectAllTabs)
   const snapshotTimestamps = useSelector(selectAllSnapshotTimestamps)
@@ -75,7 +76,7 @@ const TabsScreen = (): JSX.Element => {
     if (tab.activeHistory) {
       dispatch(addHistoryForActiveTab(tab.activeHistory))
     }
-    setUrlEntry(tab.activeHistory?.url ?? '')
+    handleUrlSubmit(tab.activeHistory?.url ?? '')
     goBack()
   }
 

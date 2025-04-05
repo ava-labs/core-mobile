@@ -5,10 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { BrowserItem } from 'features/browser/components/BrowserItem'
-import {
-  HORIZONTAL_MARGIN,
-  prepareFaviconToLoad
-} from 'features/browser/consts'
+import { HORIZONTAL_MARGIN } from 'features/browser/consts'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
 import React from 'react'
 import { FlatList, ListRenderItem, Platform } from 'react-native'
@@ -24,6 +21,7 @@ import {
   removeAllHistories,
   removeHistory
 } from 'store/browser/slices/globalHistory'
+import { prepareFaviconToLoad } from 'features/browser/utils'
 
 const HistoryScreen = (): JSX.Element => {
   const { navigate } = useNavigation()

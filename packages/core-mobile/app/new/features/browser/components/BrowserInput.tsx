@@ -17,17 +17,14 @@ import {
   TextInputSubmitEditingEventData
 } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectActiveTab } from 'store/browser'
+import { addHistoryForActiveTab, selectActiveTab } from 'store/browser'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
-import {
-  HORIZONTAL_MARGIN,
-  isValidHttpUrl,
-  normalizeUrlWithHttps
-} from '../consts'
+import { HORIZONTAL_MARGIN } from '../consts'
+import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { BrowserInputMenu } from './BrowserInputMenu'
 
 export const BrowserInput = ({
@@ -75,6 +72,7 @@ export const BrowserInput = ({
     event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
   ): void => {
     AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
+
     handleUrlSubmit?.(event.nativeEvent.text)
   }
 

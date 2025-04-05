@@ -6,7 +6,7 @@ import { addHistoryForActiveTab, Favorite } from 'store/browser'
 import { SUGGESTED_ITEMS, SuggestedSiteName } from 'store/browser/const'
 import { selectAllFavorites } from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
-import { prepareFaviconToLoad } from '../consts'
+import { prepareFaviconToLoad } from '../utils'
 import { BrowserItem } from './BrowserItem'
 
 interface FavoriteOrSuggested extends Favorite {

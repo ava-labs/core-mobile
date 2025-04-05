@@ -38,7 +38,8 @@ import {
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
-import { BROWSER_CONTROLS_HEIGHT, isSugguestedSiteName } from '../consts'
+import { BROWSER_CONTROLS_HEIGHT } from '../consts'
+import { isSugguestedSiteName } from '../utils'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {
@@ -57,7 +58,7 @@ export const BrowserTab = forwardRef<
   const insets = useSafeAreaInsets()
   const tabBarHeight = useBottomTabBarHeight()
 
-  const { onProgress, progress, setUrlEntry } = useBrowserContext()
+  const { onProgress, progress, setUrlEntry, urlEntry } = useBrowserContext()
   const { setPendingDeepLink } = useDeeplink()
   const clipboard = useClipboardWatcher()
   const {
@@ -112,14 +113,11 @@ export const BrowserTab = forwardRef<
     goForward
   }))
 
-  // useEffect(() => {
-  //   if (
-  //     activeHistory?.url &&
-  //     removeTrailingSlash(urlEntry) !== removeTrailingSlash(activeHistory.url)
-  //   ) {
-  //     setUrlToLoad(activeHistory.url)
-  //   }
-  // }, [activeHistory?.url, urlEntry])
+  useEffect(() => {
+    if (activeHistory?.url && activeHistory.url !== urlToLoad) {
+      setUrlToLoad(activeHistory.url)
+    }
+  }, [activeHistory?.url, urlToLoad])
 
   useEffect(() => {
     //initiate deep link if user copies WC link to clipboard
@@ -267,6 +265,7 @@ export const BrowserTab = forwardRef<
         }
       ]}>
       <WebView
+        key={tabId}
         testID="myWebview"
         webViewRef={webViewRef}
         injectedJavaScript={

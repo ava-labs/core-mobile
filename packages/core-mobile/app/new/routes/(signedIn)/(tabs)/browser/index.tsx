@@ -4,15 +4,10 @@ import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
 import { BrowserTab } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import {
-  selectActiveTab,
-  selectAllTabs,
-  selectIsTabEmpty,
-  Tab
-} from 'store/browser'
+import { selectActiveTab, selectAllTabs, selectIsTabEmpty } from 'store/browser'
 
 const Browser = (): React.ReactNode => {
   const { browserRefs } = useBrowserContext()
@@ -20,39 +15,11 @@ const Browser = (): React.ReactNode => {
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
 
-  const [tabs, setTabs] = useState<Tab[]>([])
-
-  // Add or update tab item for the active tab
-  useEffect(() => {
-    if (!activeTab || !activeTab.activeHistory) return
-
-    setTabs(prev => {
-      const newTabs = [...prev]
-
-      let item = newTabs.find(tab => tab.id === activeTab.id)
-
-      if (item) {
-        // Update existing pool item
-        item = activeTab
-      } else {
-        if (newTabs.length >= 5) {
-          // Remove least recently visited pool item
-          newTabs.splice(0, 1)
-        }
-
-        // Add new pool item
-        newTabs.push(activeTab)
-      }
-
-      return newTabs
-    })
-  }, [activeTab])
-
-  useEffect(() => {
-    setTabs(prev =>
-      prev.filter(prevTab => allTabs.some(tab => tab.id === prevTab.id))
-    )
-  }, [allTabs])
+  const tabs = useMemo(() => {
+    if (!activeTab) return allTabs.slice(0, 5)
+    const others = allTabs.filter(tab => tab.id !== activeTab.id).slice(0, 4)
+    return [activeTab, ...others]
+  }, [allTabs, activeTab])
 
   const renderTabs = useCallback(() => {
     return tabs.map(tab => {

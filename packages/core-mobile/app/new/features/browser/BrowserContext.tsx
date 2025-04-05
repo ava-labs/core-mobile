@@ -5,7 +5,7 @@ import { WebViewProgressEvent } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
 import { addHistoryForActiveTab, selectActiveTab } from 'store/browser'
 import { BrowserTabRef } from './components/BrowserTab'
-import { isValidHttpUrl } from './consts'
+import { isValidHttpUrl } from './utils'
 
 export type BrowserContextType = {
   urlEntry: string

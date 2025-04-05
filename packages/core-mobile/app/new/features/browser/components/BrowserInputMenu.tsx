@@ -9,8 +9,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addFavorite, removeFavorite } from 'store/browser/slices/favorites'
 import { addTab, selectActiveHistory } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
-import { isValidUrl } from '../consts'
 import { useBrowserContext } from '../BrowserContext'
+import { isValidUrl } from '../utils'
 
 enum MenuId {
   Favorite = 'favorite',

@@ -19,12 +19,8 @@ import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, AddHistoryPayload } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
-import {
-  BROWSER_CONTROLS_HEIGHT,
-  HORIZONTAL_MARGIN,
-  prepareFaviconToLoad
-} from '../consts'
-
+import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
+import { prepareFaviconToLoad } from '../utils'
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
   const tabBarHeight = useBottomTabBarHeight()
