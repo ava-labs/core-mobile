@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useMemo, useState } from 'react'
 import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
 import { DefaultTheme, type Theme } from '@react-navigation/native'
 import { AppHook, useApp } from 'AppHook'
@@ -89,17 +89,29 @@ export const ApplicationContextProvider = ({
   const [keyboardAvoidingViewEnabled, setKeyboardAvoidingViewEnabled] =
     useState(true)
 
-  const appContextState: ApplicationContextState = {
-    theme,
-    isDarkMode,
-    backgroundStyle,
+  const appContextState: ApplicationContextState = useMemo(() => {
+    return {
+      theme,
+      isDarkMode,
+      backgroundStyle,
+      appBackgroundStyle,
+      navContainerTheme,
+      shadow,
+      keyboardAvoidingViewEnabled,
+      setKeyboardAvoidingViewEnabled,
+      appHook
+    }
+  }, [
+    appHook,
     appBackgroundStyle,
+    backgroundStyle,
+    isDarkMode,
+    keyboardAvoidingViewEnabled,
     navContainerTheme,
     shadow,
-    keyboardAvoidingViewEnabled,
-    setKeyboardAvoidingViewEnabled,
-    appHook
-  }
+    theme
+  ])
+
   return (
     <ApplicationContext.Provider value={appContextState}>
       {children}
