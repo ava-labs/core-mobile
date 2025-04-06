@@ -40,22 +40,75 @@ import {
   setSelectedColorScheme
 } from 'store/settings/appearance'
 
-export default function Root(): JSX.Element | null {
+const NavigationHandler = (): null => {
   const router = useRouter()
-  const dispatch = useDispatch()
-  const selectedAppearance = useSelector(selectSelectedAppearance)
   const navigation = useNavigation()
   const pathName = usePathname()
-  const { inBackground } = useBgDetect()
   const walletState = useSelector(selectWalletState)
-
-  const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
   const navigationState = useRootNavigationState()
-  const colorScheme = useSelector(selectSelectedColorScheme)
 
   const isSignedIn = navigationState?.routes.some(
-    route => route.name === '(signedIn)'
+    (route: { name: string }) => route.name === '(signedIn)'
   )
+
+  const isNavigationReady = Boolean(navigationState?.key)
+
+  // please be careful with the dependencies here
+  // this effect is responsible for redirecting users
+  // to either the sign up flow or the login modal
+  // we don't want to include any other dependencies here
+  useEffect(() => {
+    if (!isNavigationReady) return
+
+    if (walletState === WalletState.NONEXISTENT) {
+      if (router.canGoBack()) {
+        navigation.dispatch(StackActions.popToTop())
+      }
+      router.replace('/signup')
+    } else if (walletState === WalletState.INACTIVE) {
+      router.navigate('/loginWithPinOrBiometry')
+    }
+  }, [walletState, router, navigation, isNavigationReady])
+
+  // TODO: refactor this effect so that we don't depend on navigation state
+  useEffect(() => {
+    if (!isNavigationReady) return
+
+    /**
+     * after the wallet is successfully unlocked
+     *
+     * - redirect to the portfolio if:
+     *   - the app was freshly opened
+     *   - the user just completed onboarding (either mnemonic or seedless)
+     * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
+     */
+    if (walletState === WalletState.ACTIVE) {
+      // when the login modal is the last route and on top of the (signedIn) stack
+      // it means the app just resumed from inactivity
+      const isReturningFromInactivity =
+        isSignedIn && pathName === '/loginWithPinOrBiometry'
+
+      if (isReturningFromInactivity) {
+        router.canGoBack() && router.back()
+      } else if (
+        pathName === '/onboarding/mnemonic/confirmation' ||
+        pathName === '/onboarding/seedless/confirmation' ||
+        (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
+      ) {
+        router.replace('/portfolio')
+      }
+    }
+  }, [walletState, router, isSignedIn, pathName, isNavigationReady])
+
+  return null
+}
+
+export default function Root(): JSX.Element | null {
+  const dispatch = useDispatch()
+  const selectedAppearance = useSelector(selectSelectedAppearance)
+  const { inBackground } = useBgDetect()
+  const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
+  const colorScheme = useSelector(selectSelectedColorScheme)
 
   useEffect(() => {
     const subscription = RnAppearance.addChangeListener(
@@ -77,50 +130,6 @@ export default function Root(): JSX.Element | null {
 
   useLoadFonts()
 
-  // please be careful with the dependencies here
-  // this effect is responsible for redirecting users
-  // to either the sign up flow or the login modal
-  // we don't want to include any other dependencies here
-  useEffect(() => {
-    if (walletState === WalletState.NONEXISTENT) {
-      if (router.canGoBack()) {
-        navigation.dispatch(StackActions.popToTop())
-      }
-      router.replace('/signup')
-    } else if (walletState === WalletState.INACTIVE) {
-      // navigate to login modal when wallet is not active
-      router.navigate('/loginWithPinOrBiometry')
-    }
-  }, [walletState, router, navigation])
-
-  // TODO: refactor this effect so that we don't depend on navigation state
-  useEffect(() => {
-    /**
-     * after the wallet is successfully unlocked
-     *
-     * - redirect to the portfolio if:
-     *   - the app was freshly opened
-     *   - the user just completed onboarding
-     * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
-     */
-    if (walletState === WalletState.ACTIVE) {
-      // when the login modal is the last route and on top of the (signedIn) stack
-      // it means the app just resumed from inactivity
-      const isReturningFromInactivity =
-        isSignedIn && pathName === '/loginWithPinOrBiometry'
-
-      if (isReturningFromInactivity) {
-        router.canGoBack() && router.back()
-      } else if (
-        pathName === '/onboarding/mnemonic/confirmation' || // mnemonic onboarding completion
-        pathName === '/onboarding/seedless/confirmation' || // seedless onboarding completion
-        (pathName === '/loginWithPinOrBiometry' && !isSignedIn) // fresh app open
-      ) {
-        router.replace('/portfolio')
-      }
-    }
-  }, [walletState, router, isSignedIn, pathName])
-
   useFocusEffect(
     useCallback(() => {
       setTimeout(() => {
@@ -138,6 +147,7 @@ export default function Root(): JSX.Element | null {
       <ApplicationContextProvider>
         <NavigationThemeProvider>
           <RecoveryMethodProvider>
+            <NavigationHandler />
             <Stack
               screenOptions={{
                 ...stackNavigatorScreenOptions,
