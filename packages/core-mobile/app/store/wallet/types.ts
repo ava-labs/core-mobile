@@ -13,7 +13,7 @@ export interface WalletsState {
 
 export interface StoreWalletWithPinParams {
   walletId: string
-  encryptedWalletKey: string
+  walletSecret: string
   isResetting?: boolean
   type: WalletType
 }
