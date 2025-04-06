@@ -47,7 +47,6 @@ const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const togglePrivacy = useSelector(togglePrivacyMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const activeAccount = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useTotalBalanceInCurrencyForAccount(
@@ -83,11 +82,11 @@ const AccountSettingsScreen = (): JSX.Element => {
         }}>
         <VisibilityBarButton
           isPrivacyModeEnabled={isPrivacyModeEnabled}
-          onPress={() => dispatch(togglePrivacy)}
+          onPress={() => dispatch(togglePrivacyMode())}
         />
       </View>
     )
-  }, [dispatch, isPrivacyModeEnabled, togglePrivacy])
+  }, [dispatch, isPrivacyModeEnabled])
 
   useEffect(() => {
     setOptions({
