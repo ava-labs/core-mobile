@@ -130,13 +130,13 @@ export function useWallet(): UseWallet {
     walletType = WalletType.MNEMONIC
   }: OnPinCreatedParams): Promise<'useBiometry' | 'enterWallet'> {
     const walletId = uuid()
-    const encryptedWalletKey = await encrypt(mnemonic, pin)
+    const walletSecret = await encrypt(mnemonic, pin)
 
     try {
       const dispatchStoreWalletWithPin = dispatch(
         storeWalletWithPin({
           walletId,
-          encryptedWalletKey,
+          walletSecret,
           isResetting,
           type: walletType
         })
