@@ -1,14 +1,12 @@
-import React, { useCallback, memo, useState } from 'react'
+import React, { useCallback, memo, useMemo } from 'react'
 import { useTheme, View, Text, Toggle } from '@avalabs/k2-alpine'
 import { useDispatch, useSelector } from 'react-redux'
 import { AvaxAndroidChannel } from 'services/notifications/channels'
-import NotificationsService from 'services/notifications/NotificationsService'
 import {
   selectNotificationSubscription,
   turnOffNotificationsFor,
   turnOnNotificationsFor
 } from 'store/notifications'
-import Logger from 'utils/Logger'
 
 const NotificationToggle = ({
   channel,
@@ -21,21 +19,14 @@ const NotificationToggle = ({
     theme: { colors }
   } = useTheme()
   const inAppEnabled = useSelector(selectNotificationSubscription(channel.id))
-  const [isEnabled, setIsEnabled] = useState(inAppEnabled && !isSystemDisabled)
+  const isEnabled = useMemo(
+    () => inAppEnabled && !isSystemDisabled,
+    [inAppEnabled, isSystemDisabled]
+  )
   const dispatch = useDispatch()
 
   const onValueChange = useCallback(
     async (isChecked: boolean): Promise<void> => {
-      setIsEnabled(isChecked)
-
-      // before we change the state, we need to check if the system settings allow us to do so
-      const { permission } = await NotificationsService.getAllPermissions(false)
-      if (permission !== 'authorized') {
-        setIsEnabled(false)
-        Logger.error('Notifications permission not granted')
-        return
-      }
-
       if (isChecked) {
         dispatch(
           turnOnNotificationsFor({

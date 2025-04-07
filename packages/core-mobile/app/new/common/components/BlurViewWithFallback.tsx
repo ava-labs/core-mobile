@@ -2,6 +2,8 @@ import { BlurView } from 'expo-blur'
 import React, { useMemo } from 'react'
 import { ViewStyle, Platform } from 'react-native'
 import { alpha, useTheme, View } from '@avalabs/k2-alpine'
+import { useSelector } from 'react-redux'
+import { selectSelectedColorScheme } from 'store/settings/appearance'
 
 export const BlurViewWithFallback = ({
   children,
@@ -11,17 +13,19 @@ export const BlurViewWithFallback = ({
   style?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
+  const colorScheme = useSelector(selectSelectedColorScheme)
 
   const iosContainerStyle = useMemo(
     () => [
       {
         // alpha('#afafd0', 0.1) is a color value found through experimentation
         // to make the blur effect appear the same as $surfacePrimary(neutral-850) in dark mode.
-        backgroundColor: theme.isDark ? alpha('#afafd0', 0.1) : undefined
+        backgroundColor:
+          colorScheme === 'dark' ? alpha('#afafd0', 0.1) : undefined
       },
       style
     ],
-    [theme.isDark, style]
+    [colorScheme, style]
   )
 
   const androidContainerStyle = useMemo(
@@ -30,7 +34,7 @@ export const BlurViewWithFallback = ({
   )
 
   return Platform.OS === 'ios' ? (
-    <BlurView style={iosContainerStyle} intensity={75}>
+    <BlurView style={iosContainerStyle} intensity={75} tint={colorScheme}>
       {children}
     </BlurView>
   ) : (

@@ -11,13 +11,16 @@ import { useSelector } from 'react-redux'
 import { selectWalletType } from 'store/app'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 
 export default function CreatePin(): JSX.Element {
-  const [useBiometrics, setUseBiometrics] = useState(true)
   const walletType = useSelector(selectWalletType)
   const { navigate } = useRouter()
   const { onPinCreated } = useWallet()
   const [hasWalletName, setHasWalletName] = useState(false)
+  const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
+    useStoredBiometrics()
 
   useEffect(() => {
     const checkHasWalletName = async (): Promise<void> => {
@@ -44,6 +47,9 @@ export default function CreatePin(): JSX.Element {
       // TODO: use a random string instead of a constant
       onPinCreated(SEEDLESS_MNEMONIC_STUB, pin, false)
         .then(() => {
+          if (useBiometrics) {
+            BiometricsSDK.storeWalletWithBiometry(SEEDLESS_MNEMONIC_STUB)
+          }
           if (hasWalletName) {
             navigate('./selectAvatar')
           } else {
@@ -52,7 +58,7 @@ export default function CreatePin(): JSX.Element {
         })
         .catch(Logger.error)
     },
-    [hasWalletName, navigate, onPinCreated]
+    [hasWalletName, navigate, onPinCreated, useBiometrics]
   )
 
   return (
@@ -65,6 +71,7 @@ export default function CreatePin(): JSX.Element {
           newPinTitle={`Secure your wallet\nwith a PIN`}
           newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
           confirmPinTitle={`Confirm your\nPIN code`}
+          isBiometricAvailable={isBiometricAvailable}
         />
       </KeyboardAvoidingView>
     </BlurredBarsContentLayout>

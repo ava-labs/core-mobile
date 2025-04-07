@@ -12,7 +12,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation, useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
 import { LayoutRectangle } from 'react-native'
@@ -40,12 +41,12 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
 import { selectContacts } from 'store/addressBook'
 import { Space } from 'components/Space'
+import { showSnackbar } from 'common/utils/toast'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const togglePrivacy = useSelector(togglePrivacyMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const activeAccount = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useTotalBalanceInCurrencyForAccount(
@@ -62,7 +63,6 @@ const AccountSettingsScreen = (): JSX.Element => {
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-
   const scrollViewProps = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={'Settings and accounts'} />,
     targetLayout: headerLayout,
@@ -82,11 +82,11 @@ const AccountSettingsScreen = (): JSX.Element => {
         }}>
         <VisibilityBarButton
           isPrivacyModeEnabled={isPrivacyModeEnabled}
-          onPress={() => dispatch(togglePrivacy)}
+          onPress={() => dispatch(togglePrivacyMode())}
         />
       </View>
     )
-  }, [dispatch, isPrivacyModeEnabled, togglePrivacy])
+  }, [dispatch, isPrivacyModeEnabled])
 
   useEffect(() => {
     setOptions({
@@ -137,6 +137,7 @@ const AccountSettingsScreen = (): JSX.Element => {
       value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled'
     )
     dispatch(toggleDeveloperMode())
+    showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
   }
 
   return (
@@ -190,8 +191,13 @@ const AccountSettingsScreen = (): JSX.Element => {
               }}
             />
           </View>
-          <Text variant="body1" sx={{ marginTop: 2 }}>
-            Total net worth
+          <Text
+            variant="body1"
+            sx={{
+              marginTop: 2,
+              color: isDeveloperMode ? '#27DAA6' : '$textSecondary'
+            }}>
+            {isDeveloperMode ? 'Fuji funds' : 'Total net worth'}
           </Text>
         </View>
 

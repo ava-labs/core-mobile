@@ -20,8 +20,8 @@ import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegist
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
   const { showLogoModal, hideLogoModal } = useLogoModal()
-  const { setOidcAuth, setMfaMethods } = useRecoveryMethodContext()
-
+  const { setOidcAuth, setMfaMethods, resetSeedlessAuth } =
+    useRecoveryMethodContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
@@ -51,7 +51,10 @@ export default function Signup(): JSX.Element {
   }
 
   const handleAccountVerified = (): void => {
-    router.navigate('/onboarding/seedless/termsAndConditions')
+    router.navigate({
+      pathname: '/onboarding/seedless/termsAndConditions',
+      params: { recovering: 'true' }
+    })
   }
 
   const handleVerifyMfaMethod = (
@@ -102,6 +105,7 @@ export default function Signup(): JSX.Element {
     !isSeedlessOnboardingAppleBlocked && AppleSignInService.isSupported()
 
   const handleGoogleSignin = (): void => {
+    resetSeedlessAuth()
     register({
       getOidcToken: GoogleSigninService.signin,
       oidcProvider: OidcProviders.GOOGLE,
@@ -114,6 +118,7 @@ export default function Signup(): JSX.Element {
   }
 
   const handleAppleSignin = (): void => {
+    resetSeedlessAuth()
     register({
       getOidcToken: AppleSignInService.signIn,
       oidcProvider: OidcProviders.APPLE,
