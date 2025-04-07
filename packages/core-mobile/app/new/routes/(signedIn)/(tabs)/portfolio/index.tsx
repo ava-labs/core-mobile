@@ -40,7 +40,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -53,11 +52,12 @@ import {
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const { navigate } = useRouter()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -66,19 +66,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const selectedSegmentIndex = useSharedValue(0)
   const context = useApplicationContext()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isBalanceLoading = useSelector(selectIsLoadingBalances)
-  const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const balanceTotalInCurrency = useSelector(
+  const activeAccount = useFocusedSelector(selectActiveAccount)
+  const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
+  const isRefetchingBalance = useFocusedSelector(selectIsRefetchingBalances)
+  const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)
+  const tokenVisibility = useFocusedSelector(selectTokenVisibility)
+  const balanceTotalInCurrency = useFocusedSelector(
     selectBalanceTotalInCurrencyForAccount(
       activeAccount?.index ?? 0,
       tokenVisibility
     )
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
-  const balanceAccurate = useSelector(
+  const balanceAccurate = useFocusedSelector(
     selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
@@ -95,7 +95,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const { getMarketTokenBySymbol } = useWatchlist()
-  const tokens = useSelector((state: RootState) =>
+  const tokens = useFocusedSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
   )
 
