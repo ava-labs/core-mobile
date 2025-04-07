@@ -1,5 +1,5 @@
 import React from 'react'
-import { alpha, Separator, useTheme, View } from '@avalabs/k2-alpine'
+import { Separator, useTheme, View } from '@avalabs/k2-alpine'
 import Animated, {
   SharedValue,
   useAnimatedStyle
@@ -30,7 +30,7 @@ const BlurredBackgroundView = ({
     <View
       style={{
         flex: 1,
-        backgroundColor: backgroundColor ?? alpha(colors.$surfacePrimary, 0.6)
+        backgroundColor: backgroundColor ?? colors.$surfacePrimary
       }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>
