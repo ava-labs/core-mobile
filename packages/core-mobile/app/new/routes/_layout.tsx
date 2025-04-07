@@ -10,7 +10,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useBgDetect } from 'navigation/useBgDetect'
 import { useFocusEffect } from 'expo-router'
 import { Platform, StatusBar, Appearance as RnAppearance } from 'react-native'
-import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import { LogoModal } from 'common/components/LogoModal'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import {
@@ -68,53 +67,48 @@ export default function Root(): JSX.Element | null {
 
   return (
     <K2AlpineThemeProvider colorScheme={colorScheme}>
-      <ApplicationContextProvider>
-        <NavigationThemeProvider>
-          <RecoveryMethodProvider>
-            <NavigationRedirect />
-            <Stack
-              screenOptions={{
-                ...stackNavigatorScreenOptions,
-                headerShown: false
-              }}>
-              <Stack.Screen name="index" options={{ animation: 'none' }} />
-              <Stack.Screen name="signup" options={{ animation: 'none' }} />
-              <Stack.Screen
-                name="accessWallet"
-                options={{ headerShown: true }}
-              />
-              <Stack.Screen
-                name="(signedIn)"
-                options={{
-                  headerShown: false,
-                  animation: 'none',
-                  gestureEnabled: false
-                }}
-              />
-              <Stack.Screen
-                name="loginWithPinOrBiometry"
-                options={{
-                  presentation: 'modal',
-                  headerShown: false,
-                  gestureEnabled: false,
-                  cardStyleInterpolator: forNoAnimation
-                }}
-              />
-              <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-              <Stack.Screen name="+not-found" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen
-                name="sessionExpired"
-                options={{
-                  ...modalScreensOptions,
-                  gestureEnabled: false
-                }}
-              />
-            </Stack>
-            {enabledPrivacyScreen && <LogoModal />}
-          </RecoveryMethodProvider>
-        </NavigationThemeProvider>
-      </ApplicationContextProvider>
+      <NavigationThemeProvider>
+        <RecoveryMethodProvider>
+          <NavigationRedirect />
+          <Stack
+            screenOptions={{
+              ...stackNavigatorScreenOptions,
+              headerShown: false
+            }}>
+            <Stack.Screen name="index" options={{ animation: 'none' }} />
+            <Stack.Screen name="signup" options={{ animation: 'none' }} />
+            <Stack.Screen name="accessWallet" options={{ headerShown: true }} />
+            <Stack.Screen
+              name="(signedIn)"
+              options={{
+                headerShown: false,
+                animation: 'none',
+                gestureEnabled: false
+              }}
+            />
+            <Stack.Screen
+              name="loginWithPinOrBiometry"
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+                gestureEnabled: false,
+                cardStyleInterpolator: forNoAnimation
+              }}
+            />
+            <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
+            <Stack.Screen name="+not-found" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen
+              name="sessionExpired"
+              options={{
+                ...modalScreensOptions,
+                gestureEnabled: false
+              }}
+            />
+          </Stack>
+          {enabledPrivacyScreen && <LogoModal />}
+        </RecoveryMethodProvider>
+      </NavigationThemeProvider>
       <GlobalToast />
     </K2AlpineThemeProvider>
   )
