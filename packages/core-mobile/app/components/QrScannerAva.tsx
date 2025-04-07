@@ -16,12 +16,14 @@ type Props = {
   onSuccess: (data: string) => void
   onCancel?: () => void
   vibrate?: boolean
+  reactivate?: boolean
 }
 
 export default function QrScannerAva({
   onSuccess,
   onCancel,
-  vibrate = false
+  vibrate = false,
+  reactivate = false
 }: Props): JSX.Element {
   const { theme, backgroundStyle } = useApplicationContext()
   const [permission, requestPermission] = useCameraPermissions()

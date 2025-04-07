@@ -206,6 +206,7 @@ export const migrations = {
     const walletTypeMapping = {
       [WalletType.MNEMONIC]: CoreWalletType.Mnemonic,
       [WalletType.SEEDLESS]: CoreWalletType.Seedless,
+      [WalletType.KEYSTONE]: CoreWalletType.Keystone,
       [WalletType.UNSET]: undefined
     }
     const walletType = state.app.walletType as WalletType

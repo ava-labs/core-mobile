@@ -48,6 +48,9 @@ type InitProps = {
   mnemonic: string
   walletType: WalletType
   isLoggingIn: boolean
+  xpub?: string
+  xpubXP?: string
+  masterfingerprint?: string
 }
 
 // Tolerate 50% buffer for burn amount for EVM transactions
@@ -59,14 +62,20 @@ class WalletService {
   public async init({
     mnemonic,
     isLoggingIn,
-    walletType
+    walletType,
+    xpub,
+    xpubXP,
+    masterfingerprint
   }: InitProps): Promise<void> {
     Logger.info(`initializing wallet with type ${walletType}`)
 
     await WalletInitializer.initialize({
       mnemonic,
       walletType,
-      isLoggingIn
+      isLoggingIn,
+      xpub,
+      xpubXP,
+      masterfingerprint
     })
 
     this.walletType = walletType

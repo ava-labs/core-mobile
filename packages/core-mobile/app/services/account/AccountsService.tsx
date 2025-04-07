@@ -57,6 +57,12 @@ class AccountsService {
 
     const addresses = await WalletService.addAddress(index, network)
 
+    const coreWalletTypeMapping = {
+      [WalletType.MNEMONIC]: CoreWalletType.Mnemonic,
+      [WalletType.SEEDLESS]: CoreWalletType.Seedless,
+      [WalletType.KEYSTONE]: CoreWalletType.Keystone
+    }
+
     return {
       index,
       id: uuid(),
@@ -64,10 +70,7 @@ class AccountsService {
       name: `Account ${index + 1}`,
       type: CoreAccountType.PRIMARY,
       active: index === activeAccountIndex,
-      walletType:
-        walletType === WalletType.MNEMONIC
-          ? CoreWalletType.Mnemonic
-          : CoreWalletType.Seedless,
+      walletType: coreWalletTypeMapping[walletType],
       addressBTC: addresses[NetworkVMType.BITCOIN],
       addressC: addresses[NetworkVMType.EVM],
       addressAVM: addresses[NetworkVMType.AVM],

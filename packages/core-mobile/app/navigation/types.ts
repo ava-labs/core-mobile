@@ -33,12 +33,14 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
 import { ProposalTypes } from '@walletconnect/types'
+import { UR } from '@ngraveio/bc-ur'
 import { DebugStackParamList } from 'debug/navigation/DebugStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { CreateWalletStackParamList } from './onboarding/CreateWalletStack'
 import { EnterWithMnemonicStackParamList } from './onboarding/EnterWithMnemonicStack'
+import { RecoverWithKeystoneParamList } from './onboarding/RecoverWithKeystone'
 import { WalletScreenStackParams } from './WalletScreenStack/WalletScreenStack'
 import { DrawerParamList } from './wallet/DrawerScreenStack'
 import { TabNavigatorParamList } from './wallet/TabNavigator'
@@ -134,6 +136,13 @@ export type ApprovalPopupParams = {
   onReject: (message?: string) => void
 }
 
+export type KeystoneSignerParams = {
+  requesrUR: UR
+  responseURTypes: string[]
+  onApprove: (cbor: Buffer) => Promise<void>
+  onReject: (message?: string) => void
+}
+
 export type AvalancheSetDeveloperModeParams = {
   request: AvalancheSetDeveloperModeRpcRequest
   data: AvalancheSetDeveloperModeApproveData
@@ -211,6 +220,14 @@ export type EnterWithMnemonicScreenProps<
   T extends keyof EnterWithMnemonicStackParamList
 > = CompositeScreenProps<
   StackScreenProps<EnterWithMnemonicStackParamList, T>,
+  WelcomeScreenProps<keyof WelcomeScreenStackParamList>
+>
+
+/** ROOT -> ONBOARD -> WELCOME -> CONNECT WITH KEYSTONE **/
+export type RecoverWithKeystoneScreenProps<
+  T extends keyof RecoverWithKeystoneParamList
+> = CompositeScreenProps<
+  StackScreenProps<RecoverWithKeystoneParamList, T>,
   WelcomeScreenProps<keyof WelcomeScreenStackParamList>
 >
 

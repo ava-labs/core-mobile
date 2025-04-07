@@ -13,6 +13,7 @@ import BridgeAssetV2 from 'screens/rpc/components/v2/BridgeAsset'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
 import ApprovalPopup from 'screens/rpc/components/v2/ApprovalPopup'
+import { KeystoneSignerScreen } from 'screens/rpc/components/v2/KeystoneSignerScreen'
 import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
 import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomSheet'
 import IntroModal from 'screens/onboarding/IntroModal'
@@ -33,7 +34,7 @@ import EditSpendLimit from 'components/EditSpendLimit'
 import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScreen'
 import EnableNotificationsModal from 'screens/notifications/EnableNotificationsModal'
 import QRScannerScreen from 'screens/shared/QRScannerScreen'
-import { MainHeaderOptions } from 'navigation/NavUtils'
+import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -68,6 +69,11 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.ApprovalPopup}
         component={ApprovalPopup}
+      />
+      <WalletScreenS.Screen
+        options={SubHeaderOptions('', false, 'header_back')}
+        name={AppNavigation.Modal.KeystoneSigner}
+        component={KeystoneSignerScreen}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.EditSpendLimit}
