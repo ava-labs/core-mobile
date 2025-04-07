@@ -9,7 +9,8 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import com.zoontek.rnbootsplash.RNBootSplash;
+import com.zoontek.rnbootsplash.RNBootSplash
+import androidx.appcompat.app.AppCompatDelegate
 
 class MainActivity : ReactActivity() {
 
@@ -32,6 +33,7 @@ class MainActivity : ReactActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         RNBootSplash.init(this, R.style.BootTheme)
         super.onCreate(null)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         privacyView = View.inflate(this, R.layout.privacy_layout, null)
     }
 
