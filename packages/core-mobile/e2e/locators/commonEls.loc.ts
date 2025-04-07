@@ -30,5 +30,8 @@ export default {
   bitcoinNetwork: 'Bitcoin network',
   bitcoin: 'Bitcoin',
   allNetworks: 'All networks',
-  balanceHeaderAccountName: 'balance_header_account_name'
+  balanceHeaderAccountName: 'balance_header_account_name',
+  pinInputField: 'pin_input',
+  copyPhrase: 'Copy phrase',
+  copied: 'Copied'
 }

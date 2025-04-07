@@ -8,6 +8,7 @@ export default {
   analyticsOff: 'analytics_disabled',
   deleteWalletBtn: 'Delete wallet',
   securityAndPrivacy: 'Security & privacy',
+  securityAndPrivacyTitle: 'Security\n& privacy',
   appearance: 'Appearance',
   appearanceTitle: 'Customize the app appearance',
   system: 'System',
@@ -19,12 +20,22 @@ export default {
   addAccountBtn: 'add_account_btn',
   accountList: 'account_list',
   accountNameIdPrefix: 'account_name__account #',
-  // OLD BELOLW:
   changePin: 'Change PIN',
-  connectedSites: 'Connected Sites',
+  enterYourCurrentPinTitle: 'Enter your current PIN',
+  enterYourNewPinTitle: 'Enter your\nnew PIN',
+  confirmYourNewPinTitle: 'Confirm your\nnew PIN',
+  toggleBiometricsOn: 'toggle_biometrics_on',
+  toggleBiometricsOff: 'toggle_biometrics_off',
+  unlockWithFaceId: 'Unlock with Face ID',
   showRecoveryPhrase: 'Show recovery phrase',
+  showRecoveryPhraseTitle: 'Show recovery\nphrase',
+  showRecoveryPhraseDescription:
+    'This phrase is your access key to your wallet. Carefully write it down and store it in a safe location.',
+  showRecoveryPhraseWarning: 'Losing this phrase will result in lost funds',
+  notificationsPreferences: 'Notification preferences',
+  // OLD BELOLW:
+  connectedSites: 'Connected Sites',
   participateInCoreAnalytics: 'Participate in Core analytics',
-  copyPhraseButton: 'Copy Phrase',
   firstMnemonicWord: 'rebel',
   lastMnemonicWord: 'embark',
   iWroteItDownButton: 'I wrote it down',
@@ -33,7 +44,5 @@ export default {
   AddAddressButton: 'Add Address',
   burgerbutton: 'menu_svg',
   currency: 'Currency',
-  recoveeryPhraseHeader: 'Recovery Phrase',
-  saveButton: 'Save',
-  notifications: 'Notifications'
+  saveButton: 'Save'
 }

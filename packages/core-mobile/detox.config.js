@@ -17,8 +17,8 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 15 Pro',
-        os: 'iOS 17.5'
+        type: 'iPhone 16 Pro',
+        os: 'iOS 18.3'
       }
     },
     emulator_ci: {

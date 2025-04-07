@@ -115,6 +115,23 @@ class CommonElsPage {
     return by.id(commonElsLoc.balanceHeaderAccountName)
   }
 
+  get pinInputField() {
+    return by.id(commonElsLoc.pinInputField)
+  }
+
+  get copied() {
+    return by.text(commonElsLoc.copied)
+  }
+
+  get copyPhrase() {
+    return by.text(commonElsLoc.copyPhrase)
+  }
+
+  async enterPin(pin = '000000') {
+    await Actions.waitForElement(this.pinInputField)
+    await Actions.setInputText(this.pinInputField, pin)
+  }
+
   async getBalanceHeaderAccountName() {
     return await Actions.getElementText(this.balanceHeaderAccountName)
   }
@@ -264,6 +281,10 @@ class CommonElsPage {
     } else {
       await Actions.waitForElementNotVisible(by.id(`${name}_dropdown_btn`))
     }
+  }
+
+  async tapCopyPhrase() {
+    await Actions.tap(this.copyPhrase)
   }
 }
 

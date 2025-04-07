@@ -25,10 +25,6 @@ class Settings {
     return by.text(settings.participateInCoreAnalytics)
   }
 
-  get copyPhraseButton() {
-    return by.text(settings.copyPhraseButton)
-  }
-
   get firstMnemonicWord() {
     return by.text(settings.firstMnemonicWord)
   }
@@ -73,8 +69,12 @@ class Settings {
     return by.text(settings.securityAndPrivacy)
   }
 
-  get notifications() {
-    return by.text(settings.notifications)
+  get securityAndPrivacyTitle() {
+    return by.text(settings.securityAndPrivacyTitle)
+  }
+
+  get notificationsPreferences() {
+    return by.text(settings.notificationsPreferences)
   }
 
   get deleteWalletBtn() {
@@ -121,6 +121,42 @@ class Settings {
     return by.id(settings.accountList)
   }
 
+  get enterYourCurrentPinTitle() {
+    return by.text(settings.enterYourCurrentPinTitle)
+  }
+
+  get enterYourNewPinTitle() {
+    return by.text(settings.enterYourNewPinTitle)
+  }
+
+  get unlockWithFaceId() {
+    return by.text(settings.unlockWithFaceId)
+  }
+
+  get toggleBiometricsOn() {
+    return by.id(settings.toggleBiometricsOn)
+  }
+
+  get toggleBiometricsOff() {
+    return by.id(settings.toggleBiometricsOff)
+  }
+
+  get confirmYourNewPinTitle() {
+    return by.text(settings.confirmYourNewPinTitle)
+  }
+
+  get showRecoveryPhraseTitle() {
+    return by.text(settings.showRecoveryPhraseTitle)
+  }
+
+  get showRecoveryPhraseDescription() {
+    return by.text(settings.showRecoveryPhraseDescription)
+  }
+
+  get showRecoveryPhraseWarning() {
+    return by.text(settings.showRecoveryPhraseWarning)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
@@ -130,13 +166,22 @@ class Settings {
   }
 
   async tapNotifications() {
-    await Actions.tapElementAtIndex(this.notifications, 0)
+    await this.scrollToSettingsFooter()
+    await Actions.tapElementAtIndex(this.notificationsPreferences, 0)
   }
   async tapCurrencyRow() {
     await Actions.tapElementAtIndex(this.currency, 0)
   }
 
+  async scrollToSettingsFooter() {
+    const isVisible = await Actions.expectToBeVisible(this.securityAndPrivacy)
+    if (!isVisible) {
+      await Actions.scrollToBottom(this.settingsScrollView)
+    }
+  }
+
   async tapSecurityAndPrivacy() {
+    await this.scrollToSettingsFooter()
     await Actions.tapElementAtIndex(this.securityAndPrivacy, 0)
   }
 
@@ -225,6 +270,13 @@ class Settings {
     await this.verifyUnselectedAppearance(unselectedAppearances[1] ?? '')
   }
 
+  async verifyShowRecoveryPhraseScreen() {
+    await Actions.waitForElement(this.showRecoveryPhraseTitle, 5000)
+    await assertions.isVisible(this.showRecoveryPhraseDescription)
+    await assertions.isVisible(this.showRecoveryPhraseWarning)
+    await assertions.isVisible(commonElsPage.copyPhrase)
+  }
+
   async goSettings() {
     await Actions.tap(this.settingsBtn)
   }
@@ -300,6 +352,30 @@ class Settings {
       // Scroll to the next box
       await Actions.swipe(this.accountList, 'left', 'slow', 0.5)
     }
+  }
+
+  async tapBiometrics(on = true) {
+    await Actions.tap(on ? this.toggleBiometricsOn : this.toggleBiometricsOff)
+  }
+
+  async verifyNotificationsScreen(data: Record<string, string>) {
+    await Actions.waitForElement(this.notificationsPreferences, 5000)
+    for (const [title, subtitle] of Object.entries(data)) {
+      await assertions.isVisible(by.id(`${title}_enabled_switch`))
+      await assertions.isVisible(by.text(title))
+      await assertions.isVisible(by.text(subtitle))
+    }
+  }
+
+  async toggleAndVerify(isSwitchOn = 'enabled', notiType: string) {
+    const toggled = isSwitchOn === 'enabled' ? 'disabled' : 'enabled'
+    await this.tapNotificationSwitch(isSwitchOn, notiType)
+    await Actions.waitForElement(by.id(`${notiType}_${toggled}_switch`))
+  }
+
+  async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
+    const switchTestID = `${notiType}_${isSwitchOn}_switch`
+    await Actions.tap(by.id(switchTestID))
   }
 }
 
