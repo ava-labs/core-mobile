@@ -5,52 +5,31 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useMemo, useState, useCallback, useEffect } from 'react'
-import { DurationOption } from 'services/earn/getStakeEndDate'
-import debounce from 'lodash.debounce'
+import React, { useMemo } from 'react'
+import {
+  DurationOption,
+  StakeDurationFormat
+} from 'services/earn/getStakeEndDate'
+import { getDateDurationInDays } from 'utils/date/getReadableDateDuration'
 
 export const DurationOptions = ({
   durations,
   selectedIndex,
-  onSelectDuration
+  onSelectDuration,
+  customEndDate
 }: {
   durations: DurationOption[]
   selectedIndex?: number
   onSelectDuration: (selectedIndex: number) => void
+  customEndDate?: Date
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-
-  // Mirror selectedIndex to a debounced state variable.
-  const [debouncedSelectedIndex, setDebouncedSelectedIndex] = useState<
-    number | undefined
-  >(selectedIndex)
-
-  // Create a stable debounced function using lodash
-  const debouncedUpdate = useMemo(
-    () =>
-      debounce((newValue: number | undefined) => {
-        setDebouncedSelectedIndex(newValue)
-      }, 300),
-    []
-  )
-
-  const handleSelectDuration = useCallback(
-    (index: number): void => {
-      onSelectDuration(index)
-      setDebouncedSelectedIndex(index)
-    },
-    [onSelectDuration]
-  )
-
-  // Update the debounced state whenever selectedIndex changes.
-  useEffect(() => {
-    if (selectedIndex === undefined) {
-      setDebouncedSelectedIndex(5)
-    } else {
-      debouncedUpdate(selectedIndex)
-    }
-  }, [selectedIndex, debouncedUpdate])
+  const today = useMemo(() => {
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    return now
+  }, [])
 
   const rows = useMemo(() => {
     const chunks = []
@@ -73,14 +52,17 @@ export const DurationOptions = ({
           {row.map((item, index) => {
             // Calculate the global index.
             const globalIndex = rowIndex * 3 + index
-            const isSelected = globalIndex === debouncedSelectedIndex
+            const isSelected = globalIndex === selectedIndex
             const selectedTheme = isSelected ? inversedTheme : theme
+            const customDurationInDays = customEndDate
+              ? getDateDurationInDays(customEndDate, today)
+              : undefined
 
             return (
               <TouchableOpacity
                 key={item.title}
                 style={{ flex: 1 }}
-                onPress={() => handleSelectDuration(globalIndex)}>
+                onPress={() => onSelectDuration(globalIndex)}>
                 <View
                   sx={{
                     backgroundColor: selectedTheme.colors.$surfacePrimary,
@@ -101,6 +83,9 @@ export const DurationOptions = ({
                     }}>
                     {'numberOfDays' in item
                       ? `${item.numberOfDays} days`
+                      : item.stakeDurationFormat ===
+                          StakeDurationFormat.Custom && customDurationInDays
+                      ? `${customDurationInDays} days`
                       : 'Set'}
                   </Text>
                 </View>

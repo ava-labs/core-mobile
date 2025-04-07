@@ -12,7 +12,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useRouter } from 'expo-router'
 import { useSelector } from 'react-redux'
@@ -44,12 +43,20 @@ import { DurationOptions } from 'features/stake/components/DurationOptions'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UnixTime } from 'services/earn/types'
 import { useNow } from 'hooks/time/useNow'
-import { millisecondsToSeconds } from 'date-fns'
+import {
+  differenceInMilliseconds,
+  getUnixTime,
+  millisecondsToSeconds
+} from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
 import {
   getMaximumStakeEndDate,
   getMinimumStakeEndTime
 } from 'services/earn/utils'
+import debounce from 'lodash.debounce'
+import { getDateDurationInDays } from 'utils/date/getReadableDateDuration'
+import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
+import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 
 const StakeDurationScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -105,18 +112,11 @@ const StakeDurationScreen = (): JSX.Element => {
     }
   )
 
-  const estimatedReward = useMemo(() => {
-    if (selectedChartIndexState === undefined) {
-      return undefined
-    }
-    return estimatedRewards?.[selectedChartIndexState]?.estimatedTokenReward
-  }, [estimatedRewards, selectedChartIndexState])
-
   const currentUnix = useNow()
 
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
   const defaultDelegationTime = durationsWithDays[initialIndex] ?? THREE_MONTHS
-  const [_, setStakeEndTime] = useState<UnixTime>(
+  const [stakeEndTime, setStakeEndTime] = useState<UnixTime>(
     getStakeEndDate({
       startDateUnix: millisecondsToSeconds(currentUnix),
       stakeDurationFormat: defaultDelegationTime.stakeDurationFormat,
@@ -124,9 +124,28 @@ const StakeDurationScreen = (): JSX.Element => {
       isDeveloperMode: isDeveloperMode
     })
   )
-  const [customEndDate, setCustomEndDate] = useState<Date>()
+  const [customEndDate, setCustomEndDate] = useState<UTCDate>()
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
+
+  const durationInSeconds = useMemo(() => {
+    if (customEndDate === undefined) {
+      return undefined
+    }
+
+    const stakeDurationMs = differenceInMilliseconds(
+      customEndDate,
+      new UTCDate()
+    )
+
+    return convertToSeconds(BigInt(stakeDurationMs) as MilliSeconds)
+  }, [customEndDate])
+
+  const estimatedCustomReward = useStakeEstimatedReward({
+    amount: stakeAmount,
+    duration: durationInSeconds,
+    delegationFee: DELEGATION_FEE_FOR_ESTIMATION
+  })
 
   const handleSelectDuration = useCallback(
     (selectedIndex: number): void => {
@@ -141,10 +160,14 @@ const StakeDurationScreen = (): JSX.Element => {
             isDeveloperMode: isDeveloperMode
           })
           setStakeEndTime(calculatedStakeEndTime)
+        } else {
+          setStakeEndTime(getUnixTime(customEndDate))
         }
       } else {
         rewardChartRef.current?.selectIndex(selectedIndex)
       }
+
+      setDebouncedSelectedIndex(selectedIndex)
     },
     [
       durationsWithDays,
@@ -155,6 +178,60 @@ const StakeDurationScreen = (): JSX.Element => {
     ]
   )
 
+  // Mirror selectedIndex to a debounced state variable.
+  const [debouncedSelectedIndex, setDebouncedSelectedIndex] = useState<
+    number | undefined
+  >(initialIndex)
+
+  // Create a stable debounced function using lodash
+  const debouncedUpdate = useMemo(
+    () =>
+      debounce((newValue: number | undefined) => {
+        setDebouncedSelectedIndex(newValue)
+      }, 300),
+    []
+  )
+
+  const estimatedReward = useMemo(() => {
+    if (debouncedSelectedIndex === undefined) {
+      return
+    }
+
+    if (debouncedSelectedIndex === 5) {
+      return estimatedCustomReward?.estimatedTokenReward
+    }
+
+    return estimatedRewards?.[debouncedSelectedIndex]?.estimatedTokenReward
+  }, [estimatedRewards, debouncedSelectedIndex, estimatedCustomReward])
+
+  // Update the debounced state whenever selectedIndex changes.
+  useEffect(() => {
+    if (selectedChartIndexState === undefined) {
+      setDebouncedSelectedIndex(5)
+    } else {
+      debouncedUpdate(selectedChartIndexState)
+    }
+  }, [selectedChartIndexState, debouncedUpdate])
+
+  const selectedDurationInDays = useMemo(() => {
+    const selectedIndex = debouncedSelectedIndex ?? initialIndex
+    if (durationsWithDays[selectedIndex] !== undefined) {
+      return estimatedRewards?.[selectedIndex]?.duration.numberOfDays
+    }
+
+    if (customEndDate) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return getDateDurationInDays(customEndDate, today)
+    }
+  }, [
+    durationsWithDays,
+    debouncedSelectedIndex,
+    estimatedRewards,
+    initialIndex,
+    customEndDate
+  ])
+
   const inputSection: GroupListItem[] = useMemo(() => {
     return [
       {
@@ -164,26 +241,28 @@ const StakeDurationScreen = (): JSX.Element => {
       {
         title: 'Duration',
         value:
-          selectedChartIndexState !== undefined
-            ? `${estimatedRewards?.[selectedChartIndexState]?.duration.numberOfDays} days`
+          selectedDurationInDays !== undefined
+            ? `${selectedDurationInDays} days`
             : '',
         accordion: (
           <DurationOptions
-            selectedIndex={selectedChartIndexState}
+            selectedIndex={debouncedSelectedIndex}
             durations={
               isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET
             }
             onSelectDuration={handleSelectDuration}
+            customEndDate={customEndDate}
           />
         )
       }
     ]
   }, [
     stakeAmount,
-    selectedChartIndexState,
-    estimatedRewards,
+    debouncedSelectedIndex,
     isDeveloperMode,
-    handleSelectDuration
+    handleSelectDuration,
+    customEndDate,
+    selectedDurationInDays
   ])
 
   const rewardSection: GroupListItem[] = useMemo(() => {
@@ -201,25 +280,36 @@ const StakeDurationScreen = (): JSX.Element => {
   }, [estimatedReward])
 
   const handlePressNext = useCallback(async () => {
-    navigate('/addStake/review')
-  }, [navigate])
+    if (stakeEndTime) {
+      navigate({
+        pathname: '/addStake/confirm',
+        params: {
+          stakeEndTime
+        }
+      })
+    }
+  }, [navigate, stakeEndTime])
+
+  const handleDateSelected = (date: Date): void => {
+    setCustomEndDate(new UTCDate(date.getTime()))
+  }
 
   const renderSelectionTitle = useCallback(() => {
     const text =
-      selectedChartIndexState !== undefined
+      debouncedSelectedIndex !== undefined
         ? `${
-            estimatedRewardsChartData[selectedChartIndexState]?.value ?? 0
+            estimatedRewardsChartData[debouncedSelectedIndex]?.value ?? 0
           } AVAX`
         : ''
     return <Text variant="heading6">{text}</Text>
-  }, [selectedChartIndexState, estimatedRewardsChartData])
+  }, [debouncedSelectedIndex, estimatedRewardsChartData])
 
   const renderSelectionSubtitle = useCallback(() => {
     const text =
-      selectedChartIndexState !== undefined
+      debouncedSelectedIndex !== undefined
         ? formatCurrency({
             amount:
-              (estimatedRewardsChartData[selectedChartIndexState]?.value ?? 0) *
+              (estimatedRewardsChartData[debouncedSelectedIndex]?.value ?? 0) *
               nativeTokenPrice
           })
         : ''
@@ -230,7 +320,7 @@ const StakeDurationScreen = (): JSX.Element => {
       </Text>
     )
   }, [
-    selectedChartIndexState,
+    debouncedSelectedIndex,
     estimatedRewardsChartData,
     nativeTokenPrice,
     formatCurrency
@@ -259,59 +349,57 @@ const StakeDurationScreen = (): JSX.Element => {
   }, [selectedChartIndexState, currentUnix, durationsWithDays, isDeveloperMode])
 
   return (
-    <KeyboardAvoidingView>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerSx={{ padding: 16, paddingTop: 0 }}>
-          <ScreenHeader title="For how long would you like to stake?" />
-          <View sx={{ gap: 12 }}>
-            <StakeRewardChart
-              ref={rewardChartRef}
-              initialIndex={initialIndex}
-              style={{
-                marginTop: 16,
-                height: 270
-              }}
-              data={estimatedRewardsChartData}
-              selectedIndex={selectedChartIndex}
-              renderSelectionTitle={renderSelectionTitle}
-              renderSelectionSubtitle={renderSelectionSubtitle}
-            />
-            <GroupList data={inputSection} />
-            <GroupList
-              data={rewardSection}
-              textContainerSx={{
-                marginTop: 0
-              }}
-              titleSx={{
-                fontWeight: 600
-              }}
-            />
-          </View>
-        </ScrollView>
-        <View
-          sx={{
-            padding: 16,
-            gap: 16
-          }}>
-          <Button type="primary" size="large" onPress={handlePressNext}>
-            Next
-          </Button>
-          <Button type="tertiary" size="large" onPress={handlePressNext}>
-            Advanced setup
-          </Button>
+    <SafeAreaView sx={{ flex: 1 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerSx={{ padding: 16, paddingTop: 0 }}>
+        <ScreenHeader title="For how long would you like to stake?" />
+        <View sx={{ gap: 12, marginTop: 16 }}>
+          <StakeRewardChart
+            ref={rewardChartRef}
+            initialIndex={initialIndex}
+            style={{
+              height: 270
+            }}
+            data={estimatedRewardsChartData}
+            selectedIndex={selectedChartIndex}
+            renderSelectionTitle={renderSelectionTitle}
+            renderSelectionSubtitle={renderSelectionSubtitle}
+          />
+          <GroupList data={inputSection} />
+          <GroupList
+            data={rewardSection}
+            textContainerSx={{
+              marginTop: 0
+            }}
+            titleSx={{
+              fontWeight: 600
+            }}
+          />
         </View>
-        <DateTimePicker
-          date={customEndDate}
-          isVisible={isDatePickerVisible}
-          setIsVisible={setIsDatePickerVisible}
-          onDateSelected={setCustomEndDate}
-          minimumDate={minimumStakeEndDate}
-          maximumDate={maximumStakeEndDate}
-        />
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </ScrollView>
+      <View
+        sx={{
+          padding: 16,
+          gap: 16,
+          backgroundColor: '$surfacePrimary'
+        }}>
+        <Button type="primary" size="large" onPress={handlePressNext}>
+          Next
+        </Button>
+        <Button type="tertiary" size="large" onPress={handlePressNext}>
+          Advanced setup
+        </Button>
+      </View>
+      <DateTimePicker
+        date={customEndDate ?? minimumStakeEndDate}
+        isVisible={isDatePickerVisible}
+        setIsVisible={setIsDatePickerVisible}
+        onDateSelected={handleDateSelected}
+        minimumDate={minimumStakeEndDate}
+        maximumDate={maximumStakeEndDate}
+      />
+    </SafeAreaView>
   )
 }
 

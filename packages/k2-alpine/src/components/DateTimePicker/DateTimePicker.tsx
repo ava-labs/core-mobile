@@ -33,6 +33,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
       isVisible={isVisible}
       mode={mode ?? 'date'}
       onConfirm={handleConfirm}
+      onChange={handleConfirm}
       onCancel={handleCancel}
       minimumDate={minimumDate}
       maximumDate={maximumDate}

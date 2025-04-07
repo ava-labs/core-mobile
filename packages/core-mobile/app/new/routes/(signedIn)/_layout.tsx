@@ -32,10 +32,7 @@ export default function WalletLayout(): JSX.Element {
           name="(modals)/collectibleManagement"
           options={modalScreensOptions}
         />
-        <Stack.Screen
-          name="(modals)/addStake"
-          options={stackNavigatorScreenOptions}
-        />
+        <Stack.Screen name="(modals)/addStake" options={modalScreensOptions} />
         <Stack.Screen
           name="(modals)/stakeDetail"
           options={stackNavigatorScreenOptions}
