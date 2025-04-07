@@ -17,9 +17,9 @@ import {
   TextInputSubmitEditingEventData
 } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { addHistoryForActiveTab, selectActiveTab } from 'store/browser'
+import { selectActiveTab } from 'store/browser'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
