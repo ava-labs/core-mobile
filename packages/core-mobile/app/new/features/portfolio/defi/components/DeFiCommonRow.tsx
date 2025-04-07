@@ -1,9 +1,9 @@
 import { Row } from 'components/Row'
 import { StackedImages } from 'components/StackedImages'
-import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import React from 'react'
 import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { DeFiToken } from 'services/defi/types'
+import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 
 export const DeFiCommonRow = ({
   header,

@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { DeFiInsuranceBuyerItem } from 'services/defi/types'
 import React from 'react'
-import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import { Card, Separator, Text, View } from '@avalabs/k2-alpine'
 import { DeFiRowItem } from './DeFiRowItem'
