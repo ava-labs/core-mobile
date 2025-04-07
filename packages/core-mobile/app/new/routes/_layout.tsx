@@ -37,7 +37,7 @@ export default function Root(): JSX.Element | null {
     const subscription = RnAppearance.addChangeListener(
       ({ colorScheme: updatedColorSchemes }) => {
         if (selectedAppearance === Appearance.System) {
-          dispatch(setSelectedColorScheme(updatedColorSchemes))
+          dispatch(setSelectedColorScheme(updatedColorSchemes ?? 'light'))
         }
       }
     )

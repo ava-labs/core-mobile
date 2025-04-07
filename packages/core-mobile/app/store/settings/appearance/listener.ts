@@ -2,6 +2,7 @@ import { AppStartListening } from 'store/middleware/listener'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { Appearance as RnAppearance } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
+import { setIsReady } from 'store/app'
 import { selectIsDeveloperMode, toggleDeveloperMode } from '../advanced'
 import {
   selectSelectedAppearance,
@@ -32,7 +33,7 @@ export const addAppearanceListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    matcher: isAnyOf(setSelectedAppearance, toggleDeveloperMode),
+    matcher: isAnyOf(setSelectedAppearance, toggleDeveloperMode, setIsReady),
     effect: handleAppearanceChange
   })
 }
