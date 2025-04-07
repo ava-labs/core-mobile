@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
 import {
@@ -11,6 +11,7 @@ import {
   ScrollView
 } from '@avalabs/k2-alpine'
 import { MnemonicText } from 'common/components/MnemonicText'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { SHOW_RECOVERY_PHRASE } from '../consts'
 
 const EMPTY_MNEMONIC = [...Array(24).values()] as string[]
@@ -32,6 +33,7 @@ export const SeedlessExportMnemonicPhrase = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { getParent } = useNavigation()
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: JSX.Element[][] = [[], [], []]
 
@@ -71,6 +73,48 @@ export const SeedlessExportMnemonicPhrase = ({
       ]
     })
   }
+
+  const renderHeaderRight = useCallback(() => {
+    return (
+      <View
+        sx={{
+          marginTop: 14,
+          marginRight: 18
+        }}>
+        {hideMnemonic ? (
+          <Icons.Action.VisibilityOff
+            color={colors.$textSecondary}
+            onPress={toggleRecoveryPhrase}
+            hitSlop={16}
+          />
+        ) : (
+          <Icons.Action.VisibilityOn
+            color={colors.$textPrimary}
+            onPress={toggleRecoveryPhrase}
+            hitSlop={16}
+          />
+        )}
+      </View>
+    )
+  }, [
+    colors.$textPrimary,
+    colors.$textSecondary,
+    hideMnemonic,
+    toggleRecoveryPhrase
+  ])
+
+  useFocusEffect(
+    useCallback(() => {
+      getParent()?.setOptions({
+        headerRight: renderHeaderRight
+      })
+      return () => {
+        getParent()?.setOptions({
+          headerRight: undefined
+        })
+      }
+    }, [renderHeaderRight, getParent])
+  )
 
   return (
     <ScrollView
@@ -134,14 +178,6 @@ export const SeedlessExportMnemonicPhrase = ({
           justifyContent: 'center',
           alignItems: 'center'
         }}>
-        <Button
-          size="medium"
-          type="secondary"
-          style={{ width: 120 }}
-          onPress={toggleRecoveryPhrase}
-          testID="mnemonic_screen__copy_phrase_button">
-          {`${hideMnemonic ? 'Show' : 'Hide'} phrase`}
-        </Button>
         <Button
           size="medium"
           type="secondary"
