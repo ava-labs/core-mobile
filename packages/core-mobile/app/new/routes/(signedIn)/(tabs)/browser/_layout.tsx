@@ -20,8 +20,8 @@ export default function BrowserLayout(): JSX.Element {
         <Stack.Screen
           name="tabs"
           options={{
+            ...stackNavigatorScreenOptions,
             presentation: 'modal',
-            headerTransparent: true,
             cardStyleInterpolator: ({ current: { progress } }) => {
               return {
                 cardStyle: {

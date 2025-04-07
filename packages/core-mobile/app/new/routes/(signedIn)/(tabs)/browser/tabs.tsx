@@ -38,13 +38,12 @@ const NUMBER_OF_COLUMNS = 2
 const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
 
 const TabsScreen = (): JSX.Element => {
-  const { goBack, setOptions, navigate } = useNavigation()
+  const navigation = useNavigation()
   const dispatch = useDispatch()
   const { theme } = useTheme()
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
-  const { setUrlEntry, handleClearAndFocus, browserRefs, handleUrlSubmit } =
-    useBrowserContext()
+  const { setUrlEntry, handleClearAndFocus, browserRefs } = useBrowserContext()
 
   const tabs = useSelector(selectAllTabs)
   const snapshotTimestamps = useSelector(selectAllSnapshotTimestamps)
@@ -54,20 +53,22 @@ const TabsScreen = (): JSX.Element => {
   const handleAddTab = useCallback(() => {
     handleClearAndFocus()
     dispatch(addTab())
-    goBack()
-  }, [dispatch, goBack, handleClearAndFocus])
+    navigation.goBack()
+  }, [dispatch, handleClearAndFocus, navigation])
 
-  async function handleCloseTab(tab: Tab): Promise<void> {
+  function handleCloseTab(tab: Tab): void {
     const isDeletingLastTab = sortedTabs.length === 1
 
     dispatch(removeTab({ id: tab.id }))
-    browserRefs?.current?.delete(tab.id)
+    if (browserRefs.current[tab.id]) {
+      delete browserRefs.current[tab.id]
+    }
 
     dispatch(deleteSnapshotTimestamp({ id: tab.id }))
     SnapshotService.delete(tab.id)
 
     if (isDeletingLastTab) {
-      goBack()
+      navigation.goBack()
     }
   }
 
@@ -76,23 +77,25 @@ const TabsScreen = (): JSX.Element => {
     if (tab.activeHistory) {
       dispatch(addHistoryForActiveTab(tab.activeHistory))
     }
-    handleUrlSubmit(tab.activeHistory?.url ?? '')
-    goBack()
+    setUrlEntry(tab.activeHistory?.url ?? '')
+    navigation.goBack()
   }
 
   const handleConfirmCloseAll = useCallback(async (): Promise<void> => {
     dispatch(removeAllTabs())
     dispatch(deleteAllSnapshotTimestamps())
     setUrlEntry('')
-    goBack()
+    navigation.goBack()
 
     Promise.all(
       tabs.map(tab => {
         SnapshotService.delete(tab.id)
-        browserRefs?.current?.delete(tab.id)
+        if (browserRefs.current[tab.id]) {
+          delete browserRefs.current[tab.id]
+        }
       })
     ).catch(Logger.error)
-  }, [dispatch, goBack, setUrlEntry, tabs, browserRefs])
+  }, [dispatch, navigation, setUrlEntry, tabs, browserRefs])
 
   const handleCloseAll = useCallback((): void => {
     showAlert({
@@ -112,8 +115,8 @@ const TabsScreen = (): JSX.Element => {
   }, [handleConfirmCloseAll])
 
   const handleViewHistory = useCallback((): void => {
-    navigate('history')
-  }, [navigate])
+    navigation.navigate('history')
+  }, [navigation])
 
   const headerRight = useCallback((): JSX.Element => {
     return (
@@ -152,11 +155,12 @@ const TabsScreen = (): JSX.Element => {
   ])
 
   useEffect(() => {
-    setOptions({
+    navigation.setOptions({
       headerRight,
+      headerTransparent: true,
       headerLeft: null
     })
-  }, [headerRight, setOptions])
+  }, [headerRight, navigation])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (

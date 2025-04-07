@@ -2,9 +2,12 @@ import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
-import { BrowserTab } from 'features/browser/components/BrowserTab'
+import {
+  BrowserTab,
+  BrowserTabRef
+} from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveTab, selectAllTabs, selectIsTabEmpty } from 'store/browser'
@@ -20,6 +23,14 @@ const Browser = (): React.ReactNode => {
     const others = allTabs.filter(tab => tab.id !== activeTab.id).slice(0, 4)
     return [activeTab, ...others]
   }, [allTabs, activeTab])
+
+  useEffect(() => {
+    tabs.forEach(tab => {
+      if (!browserRefs.current[tab.id]) {
+        browserRefs.current[tab.id] = React.createRef<BrowserTabRef>()
+      }
+    })
+  }, [browserRefs, tabs])
 
   const renderTabs = useCallback(() => {
     return tabs.map(tab => {
@@ -37,11 +48,7 @@ const Browser = (): React.ReactNode => {
             pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none',
             opacity: tab.id === activeTab?.id ? 1 : 0
           }}>
-          <BrowserTab
-            ref={browserRefs.current?.get(tab.id)}
-            tabId={tab.id}
-            disabled={tab.id !== activeTab?.id}
-          />
+          <BrowserTab ref={browserRefs.current[tab.id]} tabId={tab.id} />
         </View>
       )
     })
