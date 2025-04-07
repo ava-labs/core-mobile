@@ -1,7 +1,7 @@
 import React from 'react'
 import { DeFiRewardItem } from 'services/defi/types'
 import { Row } from 'components/Row'
-import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { StackedImages } from 'components/StackedImages'
 import { Card, Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { IMAGE_SIZE, MAX_TOKEN_COUNT } from '../consts'

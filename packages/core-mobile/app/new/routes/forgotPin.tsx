@@ -11,16 +11,16 @@ import {
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useRouter } from 'expo-router'
 import SlideToConfirm from 'common/components/SlideToConfirm'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { selectWalletType } from 'store/app'
 import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import { setPinRecovery } from 'utils/Navigation'
+import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
 
 const ForgotPin = (): JSX.Element => {
   const router = useRouter()
   const { theme } = useTheme()
-  const { signOut } = useApplicationContext().appHook
+  const { deleteWallet } = useDeleteWallet()
   const walletType = useSelector(selectWalletType)
 
   const handleCancel = (): void => {
@@ -29,10 +29,10 @@ const ForgotPin = (): JSX.Element => {
 
   const handleConfirm = (): void => {
     if (walletType === WalletType.MNEMONIC) {
-      signOut()
+      deleteWallet()
     } else if (walletType === WalletType.SEEDLESS) {
       setPinRecovery(true)
-      signOut()
+      deleteWallet()
     }
   }
 

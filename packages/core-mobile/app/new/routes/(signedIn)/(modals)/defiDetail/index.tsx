@@ -10,8 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useDeFiProtocol } from 'hooks/defi/useDeFiProtocol'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { openURL } from 'utils/openURL'
@@ -21,14 +20,13 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LogoWithNetwork } from 'features/portfolio/defi/components/LogoWithNetwork'
 import { DeFiPortfolioItemGroup } from 'features/portfolio/defi/components/DeFiPortfolioItemGroup'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 
 const DeFiDetailScreen = (): JSX.Element => {
   const { back } = useRouter()
   const { protocolId } = useLocalSearchParams<{ protocolId: string }>()
 
-  const {
-    appHook: { currencyFormatter }
-  } = useApplicationContext()
+  const { formatCurrency } = useFormatCurrency()
   const { theme } = useTheme()
   const getAmount = useExchangedAmount()
 
@@ -47,13 +45,13 @@ const DeFiDetailScreen = (): JSX.Element => {
   }, [data?.siteUrl])
 
   const calculatedTotalValueOfProtocolItems = useMemo(() => {
-    if (!data?.portfolioItemList) return currencyFormatter(0)
+    if (!data?.portfolioItemList) return formatCurrency(0)
     const totalValue = data?.portfolioItemList.reduce(
       (total, { stats }) => total + stats.netUsdValue,
       0
     )
     return getAmount(totalValue, 'compact')
-  }, [currencyFormatter, data?.portfolioItemList, getAmount])
+  }, [formatCurrency, data?.portfolioItemList, getAmount])
 
   const portfolioItemList = useMemo(() => {
     if (!data?.portfolioItemList) return []
