@@ -60,10 +60,12 @@ import IconLayer from '../../assets/icons/layer.svg'
 import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
 import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
+import IconTabs from '../../assets/icons/tabs.svg'
 import IconLink from '../../assets/icons/link.svg'
 import IconSwitch from '../../assets/icons/switch.svg'
 import IconWaterDrop from '../../assets/icons/water_drop.svg'
 import IconWaterDropFilled from '../../assets/icons/water_drop_filled.svg'
+import IconHistory from '../../assets/icons/history.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -199,7 +201,9 @@ export const Icons = {
     ChevronRight: IconChevronRight,
     Check: IconCheck,
     ExpandMore: IconExpandMore,
-    MoreHoriz: IconMoreHoriz
+    MoreHoriz: IconMoreHoriz,
+    Tabs: IconTabs,
+    History: IconHistory
   },
   Notification: {
     Sync: IconSync
