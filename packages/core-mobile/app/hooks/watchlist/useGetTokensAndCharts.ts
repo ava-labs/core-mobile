@@ -1,3 +1,4 @@
+import { useIsFocused } from '@react-navigation/native'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'
@@ -12,8 +13,10 @@ export const useGetTokensAndCharts = (): UseQueryResult<
   const currency = useSelector(selectSelectedCurrency)
   const cachedFavoriteTokenIds = useSelector(selectWatchlistFavoriteIds)
   const sortedCachedFavoriteTokenIds = Array.from(cachedFavoriteTokenIds).sort()
+  const isFocused = useIsFocused()
 
   return useQuery({
+    enabled: isFocused,
     queryKey: [
       ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS,
       currency,

@@ -1,3 +1,4 @@
+import { useIsFocused } from '@react-navigation/native'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useExchangeRates } from 'hooks/defi/useExchangeRates'
@@ -10,10 +11,12 @@ export const useGetTrendingTokens = <TData = TrendingToken[]>(
   select?: (data: TrendingToken[]) => TData
 ): UseQueryResult<TData, Error> => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const isFocused = useIsFocused()
   const { data } = useExchangeRates()
   const exchangeRate = data?.usd?.[selectedCurrency.toLowerCase()]
 
   return useQuery({
+    enabled: isFocused,
     queryKey: [
       ReactQueryKeys.WATCHLIST_TRENDING_TOKENS_AND_CHARTS,
       exchangeRate
