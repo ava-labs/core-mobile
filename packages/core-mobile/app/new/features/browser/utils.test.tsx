@@ -144,10 +144,10 @@ describe('removeTrailingSlash', () => {
 })
 
 describe('prepareFaviconToLoad', () => {
-  it('should return favicon if it is a valid url', () => {
-    const url = 'https://core.app'
+  it('should return empty string if it is not a valid url', () => {
+    const url = 'core.app'
     const result = prepareFaviconToLoad(url)
-    expect(result).toStrictEqual('https://core.app/favicon.ico')
+    expect(result).toStrictEqual('')
   })
 
   it('should return favicon if it has a favicon url', () => {
