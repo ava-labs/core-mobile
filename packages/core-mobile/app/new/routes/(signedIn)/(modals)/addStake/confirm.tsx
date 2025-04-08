@@ -20,11 +20,15 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNodes } from 'hooks/earn/useNodes'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { UTCDate } from '@date-fns/utc'
-import { format, getUnixTime, secondsToMilliseconds } from 'date-fns'
+import {
+  differenceInDays,
+  format,
+  getUnixTime,
+  secondsToMilliseconds
+} from 'date-fns'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useValidateStakingEndTime } from 'screens/earn/Confirmation/useValidateStakingEndTime'
-import { getDateDurationInDays } from 'utils/date/getReadableDateDuration'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -119,7 +123,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     return [
       {
         title: 'Time to unlock',
-        value: `${getDateDurationInDays(validatedStakingEndTime)} days`
+        value: `${differenceInDays(validatedStakingEndTime, new Date())} days`
       },
       {
         title: 'Locked until',

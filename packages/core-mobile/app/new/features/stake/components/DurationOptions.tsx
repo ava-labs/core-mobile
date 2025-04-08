@@ -5,12 +5,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { differenceInDays } from 'date-fns'
 import React, { useMemo } from 'react'
 import {
   DurationOption,
   StakeDurationFormat
 } from 'services/earn/getStakeEndDate'
-import { getDateDurationInDays } from 'utils/date/getReadableDateDuration'
 
 export const DurationOptions = ({
   durations,
@@ -55,7 +55,7 @@ export const DurationOptions = ({
             const isSelected = globalIndex === selectedIndex
             const selectedTheme = isSelected ? inversedTheme : theme
             const customDurationInDays = customEndDate
-              ? getDateDurationInDays(customEndDate, today)
+              ? differenceInDays(customEndDate, today)
               : undefined
 
             return (

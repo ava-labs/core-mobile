@@ -44,6 +44,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UnixTime } from 'services/earn/types'
 import { useNow } from 'hooks/time/useNow'
 import {
+  differenceInDays,
   differenceInMilliseconds,
   getUnixTime,
   millisecondsToSeconds
@@ -54,7 +55,6 @@ import {
   getMinimumStakeEndTime
 } from 'services/earn/utils'
 import debounce from 'lodash.debounce'
-import { getDateDurationInDays } from 'utils/date/getReadableDateDuration'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 
@@ -222,7 +222,7 @@ const StakeDurationScreen = (): JSX.Element => {
     if (customEndDate) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      return getDateDurationInDays(customEndDate, today)
+      return differenceInDays(customEndDate, today)
     }
   }, [
     durationsWithDays,

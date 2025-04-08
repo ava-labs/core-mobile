@@ -3,8 +3,7 @@ import {
   differenceInYears,
   DurationUnit,
   formatDuration,
-  intervalToDuration,
-  differenceInDays
+  intervalToDuration
 } from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
 
@@ -29,9 +28,4 @@ export const getReadableDateDuration = (date: UTCDate): string => {
     format = ['hours', 'minutes']
   }
   return formatDuration(duration, { format })
-}
-
-export const getDateDurationInDays = (date: Date, now?: Date): number => {
-  const currentDate = now ?? new Date()
-  return differenceInDays(date, currentDate)
 }
