@@ -88,39 +88,34 @@ export const ContactForm = ({
         title: AddressType.CChain,
         placeholder: 'Type in or paste in C-Chain address',
         emptyText: 'Add Avalanche C-Chain address',
-        address: contact?.addressC,
-        onUpdateAddress: handleUpdateAddress
+        address: contact?.addressC
       },
       {
         title: AddressType.PVM,
         placeholder: 'Type in or paste in P-Chain address',
         emptyText: 'Add Avalanche P-Chain address',
-        address: contact?.addressPVM,
-        onUpdateAddress: handleUpdateAddress
+        address: contact?.addressPVM
       },
       {
         title: AddressType.AVM,
         placeholder: 'Type in or paste in X-Chain address',
         emptyText: 'Add Avalanche X-Chain address',
-        address: contact?.addressAVM,
-        onUpdateAddress: handleUpdateAddress
+        address: contact?.addressAVM
       },
       {
         title: AddressType.EVM,
         placeholder: 'Type in or paste in Ethereum address',
         emptyText: 'Add Ethereum address',
-        address: contact?.addressEVM,
-        onUpdateAddress: handleUpdateAddress
+        address: contact?.addressEVM
       },
       {
         title: AddressType.BTC,
         placeholder: 'Type in or paste in Bitcoin address',
         emptyText: 'Add Bitcoin address',
-        address: contact?.addressBTC,
-        onUpdateAddress: handleUpdateAddress
+        address: contact?.addressBTC
       }
     ],
-    [contact, handleUpdateAddress]
+    [contact]
   )
 
   const renderName = useCallback(() => {
@@ -185,7 +180,7 @@ export const ContactForm = ({
               placeholder={item.placeholder}
               emptyText={item.emptyText}
               address={item.address}
-              onUpdateAddress={item.onUpdateAddress}
+              onUpdateAddress={handleUpdateAddress}
             />
             {index !== adressData.length - 1 && (
               <View
