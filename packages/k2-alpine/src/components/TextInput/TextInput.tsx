@@ -30,6 +30,9 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
       textAlign,
       onChangeText,
       onBlur,
+      onSubmitEditing,
+      submitBehavior,
+      autoCorrect,
       editable,
       rightIcon,
       leftIcon,
@@ -78,6 +81,9 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
               onBlur={onBlur}
               keyboardType={keyboardType}
               autoFocus={autoFocus}
+              onSubmitEditing={onSubmitEditing}
+              submitBehavior={submitBehavior}
+              autoCorrect={autoCorrect}
               testID={testID}
               sx={{
                 fontFamily: 'Inter-Regular',

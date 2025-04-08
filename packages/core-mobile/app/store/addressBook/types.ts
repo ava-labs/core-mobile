@@ -1,4 +1,14 @@
-import { Contact } from '@avalabs/types'
+export type Contact = {
+  id: string
+  name?: string
+  addressC?: string
+  addressAVM?: string
+  addressPVM?: string
+  isKnown?: boolean
+  addressBTC?: string
+  addressEVM?: string
+  avatar?: string
+}
 
 export type ContactCollection = { [uid: UID]: Contact }
 
