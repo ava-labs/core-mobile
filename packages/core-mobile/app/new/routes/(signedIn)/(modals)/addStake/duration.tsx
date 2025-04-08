@@ -201,18 +201,18 @@ const StakeDurationScreen = (): JSX.Element => {
 
   const renderSelectionTitle = useCallback(() => {
     const text =
-      selectedDurationIndex !== undefined
-        ? `${estimatedRewardsChartData[selectedDurationIndex]?.value ?? 0} AVAX`
+      selectedChartIndex !== undefined
+        ? `${estimatedRewardsChartData[selectedChartIndex]?.value ?? 0} AVAX`
         : ''
     return <Text variant="heading6">{text}</Text>
-  }, [selectedDurationIndex, estimatedRewardsChartData])
+  }, [selectedChartIndex, estimatedRewardsChartData])
 
   const renderSelectionSubtitle = useCallback(() => {
     const text =
-      selectedDurationIndex !== undefined
+      selectedChartIndex !== undefined
         ? formatCurrency({
             amount:
-              (estimatedRewardsChartData[selectedDurationIndex]?.value ?? 0) *
+              (estimatedRewardsChartData[selectedChartIndex]?.value ?? 0) *
               avaxPrice
           })
         : ''
@@ -222,12 +222,7 @@ const StakeDurationScreen = (): JSX.Element => {
         {text}
       </Text>
     )
-  }, [
-    selectedDurationIndex,
-    estimatedRewardsChartData,
-    avaxPrice,
-    formatCurrency
-  ])
+  }, [selectedChartIndex, estimatedRewardsChartData, avaxPrice, formatCurrency])
 
   const inputSection: GroupListItem[] = useMemo(() => {
     const selectedDurationInDays = getDurationInDays()
