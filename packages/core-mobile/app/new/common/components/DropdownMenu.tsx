@@ -1,6 +1,6 @@
 import { Icons, Text, useTheme } from '@avalabs/k2-alpine'
 import React, { CSSProperties, useCallback } from 'react'
-import { Platform, Pressable } from 'react-native'
+import { Pressable } from 'react-native'
 import {
   CheckboxItem,
   Content,
@@ -22,6 +22,7 @@ export interface DropdownItem {
     ios: string
     android: string
   }
+  disabled?: boolean
   destructive?: boolean
 }
 
@@ -72,34 +73,33 @@ export function DropdownMenu({
                 name: icon?.ios as any,
                 paletteColors: [
                   {
-                    dark: theme.colors?.$textPrimary,
-                    light: theme.colors?.$textPrimary
+                    dark: rest.destructive
+                      ? theme.colors?.$textDanger
+                      : theme.colors?.$textPrimary,
+                    light: rest.destructive
+                      ? theme.colors?.$textDanger
+                      : theme.colors?.$textPrimary
                   }
                 ]
-              }}>
-              <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
-            </DropdownMenuItemIcon>
+              }}
+            />
           )}
-          <DropdownMenuItemTitle>{title}</DropdownMenuItemTitle>
+          <DropdownMenuItemTitle
+            color={
+              rest.destructive
+                ? theme.colors?.$textDanger
+                : theme.colors?.$textPrimary
+            }>
+            {title}
+          </DropdownMenuItemTitle>
         </DropdownMenuItem>
       )
     },
-    [onPressAction, theme.colors.$textPrimary]
+    [onPressAction, theme.colors?.$textDanger, theme.colors.$textPrimary]
   )
 
   const renderContent = useCallback(() => {
-    const newGroups = [...groups]
-    const sections = Platform.select({
-      android: newGroups,
-      // iOS menu reverses the array and it's items
-      // keep this here for consistency between platforms
-      ios: [...newGroups.reverse()].map(group => ({
-        ...group,
-        items: [...group.items].reverse()
-      }))
-    })
-
-    return sections?.map(group => (
+    return groups?.map(group => (
       <DropdownMenuGroup {...group} key={group.id}>
         {group.items.map(renderItem)}
       </DropdownMenuGroup>

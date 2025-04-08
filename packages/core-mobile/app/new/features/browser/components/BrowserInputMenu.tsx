@@ -1,4 +1,4 @@
-import { Button, Icons, useTheme } from '@avalabs/k2-alpine'
+import { Icons, useTheme } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import { showSnackbar } from 'common/utils/toast'
@@ -252,6 +252,34 @@ export const BrowserInputMenu = ({
     }
   }, [])
 
+  const sections = useMemo(() => {
+    if (Platform.OS === 'ios') {
+      return [
+        {
+          key: 'menu-actions',
+          items: menuActions.reverse()
+        },
+        {
+          key: 'navigation-actions',
+          items: navigationsActions,
+          horizontal: true
+        }
+      ]
+    }
+
+    return [
+      {
+        key: 'navigation-actions',
+        items: navigationsActions,
+        horizontal: true
+      },
+      {
+        key: 'menu-actions',
+        items: menuActions
+      }
+    ]
+  }, [menuActions, navigationsActions])
+
   return (
     <DropdownMenu
       onOpenChange={onOpenChange}
@@ -263,17 +291,7 @@ export const BrowserInputMenu = ({
         alignItems: 'center',
         height: '100%'
       }}
-      groups={[
-        {
-          key: 'navigation-actions',
-          items: navigationsActions,
-          horizontal: true
-        },
-        {
-          key: 'menu-actions',
-          items: menuActions
-        }
-      ]}>
+      groups={sections}>
       <View>
         <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
       </View>

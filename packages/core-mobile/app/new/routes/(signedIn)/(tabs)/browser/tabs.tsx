@@ -52,7 +52,7 @@ const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
 const MENU_ACTIONS: DropdownItem[] = [
   {
     id: MenuId.CloseAll,
-    title: 'Close all Tabs',
+    title: 'Close all tabs',
     icon: {
       ios: 'xmark',
       android: 'xmark_24px'
@@ -200,14 +200,6 @@ const TabsScreen = (): JSX.Element => {
       </View>
     )
   }, [handleAddTab, onPressAction, theme.colors.$textPrimary])
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-      headerTransparent: true,
-      headerLeft: null
-    })
-  }, [headerRight, navigation])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
