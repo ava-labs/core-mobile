@@ -90,10 +90,10 @@ const SessionTimeoutScreen = (): React.JSX.Element => {
       <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
         <Icons.Action.Info color={colors.$textPrimary} width={36} height={36} />
         <Space y={24} />
-        <Text variant={'heading5'}>Your Session has Timed Out</Text>
+        <Text variant={'heading5'}>Your session has timed out</Text>
         <Space y={8} />
         <Text variant={'body2'} style={{ textAlign: 'center' }}>
-          The session has expired, press Retry to continue.
+          Tap Retry to continue
         </Text>
       </View>
       <Button
