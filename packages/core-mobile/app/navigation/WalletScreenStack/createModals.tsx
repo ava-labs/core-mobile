@@ -7,7 +7,6 @@ import AccountDropdown from 'screens/portfolio/account/AccountDropdown'
 import SessionProposalV2 from 'screens/rpc/components/v2/SessionProposal/SessionProposal'
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
-import CreateRemoveContactV2 from 'screens/rpc/components/v2/CreateRemoveContact'
 import UpdateContactV2 from 'screens/rpc/components/v2/UpdateContact/UpdateContact'
 import BridgeAssetV2 from 'screens/rpc/components/v2/BridgeAsset'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
@@ -44,10 +43,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SessionProposalV2}
         component={SessionProposalV2}
-      />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.CreateRemoveContactV2}
-        component={CreateRemoveContactV2}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.UpdateContactV2}
