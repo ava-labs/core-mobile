@@ -136,7 +136,7 @@ export const SIX_MONTHS = {
 
 export const ONE_YEAR = {
   title: StakeDurationTitle.ONE_YEAR,
-  numberOfDays: 360,
+  numberOfDays: 365,
   stakeDurationFormat: StakeDurationFormat.Year,
   stakeDurationValue: 1
 } as const
