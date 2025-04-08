@@ -11,6 +11,12 @@ import {
 import { Contact } from 'store/addressBook'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Space } from 'components/Space'
+import { isBech32Address } from '@avalabs/core-bridge-sdk'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isBtcAddress } from 'utils/isBtcAddress'
+import { isAddress } from 'ethers'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { ContactAddressForm } from './ContactAddressForm'
 
 export enum AddressType {
@@ -28,6 +34,7 @@ export const ContactForm = ({
   contact: Contact
   onUpdate: (contact: Contact) => void
 }): React.JSX.Element => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [alertWithTextInputVisible, setAlertWithTextInputVisible] =
     useState(false)
   const handleShowAlertWithTextInput = useCallback((): void => {
@@ -60,11 +67,27 @@ export const ContactForm = ({
             }
           ]
         })
-      } else {
-        onUpdate(updatedContact)
+        return
       }
+
+      if (!isValidAddress(addressType, value, isDeveloperMode)) {
+        showAlert({
+          title: 'Invalid address',
+          description:
+            'The address your entered is not valid for the selected chain',
+          buttons: [
+            {
+              text: 'dismiss',
+              style: 'default'
+            }
+          ]
+        })
+        return
+      }
+
+      onUpdate(updatedContact)
     },
-    [contact, onUpdate]
+    [contact, onUpdate, isDeveloperMode]
   )
 
   const adressData = useMemo(
@@ -231,5 +254,22 @@ const constructContactByAddressType = (
       return { ...contact, addressEVM: address }
     case AddressType.BTC:
       return { ...contact, addressBTC: address }
+  }
+}
+
+const isValidAddress = (
+  addressType: AddressType,
+  address: string,
+  isDeveloperMode = false
+): boolean => {
+  switch (addressType) {
+    case AddressType.CChain:
+    case AddressType.EVM:
+      return isAddress(address) || isBech32Address(address)
+    case AddressType.PVM:
+    case AddressType.AVM:
+      return Avalanche.isBech32Address(address, true)
+    case AddressType.BTC:
+      return isBtcAddress(address, !isDeveloperMode)
   }
 }
