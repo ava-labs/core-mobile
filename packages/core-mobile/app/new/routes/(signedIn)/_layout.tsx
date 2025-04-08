@@ -6,6 +6,8 @@ import {
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import React from 'react'
 
+const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
+
 export default function WalletLayout(): JSX.Element {
   return (
     <CollectiblesProvider>
@@ -38,6 +40,7 @@ export default function WalletLayout(): JSX.Element {
           options={stackNavigatorScreenOptions}
         />
       </Stack>
+      <PolyfillCrypto />
     </CollectiblesProvider>
   )
 }
