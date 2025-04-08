@@ -18,6 +18,7 @@ import { useTokenDetailFilterAndSort } from '../hooks/useTokenDetailFilterAndSor
 import { XpActivityListItem } from './XpActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
 
+const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 interface Props {
   token?: LocalTokenWithBalance
   handleExplorerLink: (explorerLink: string) => void
@@ -70,12 +71,7 @@ const TransactionHistory: FC<Props> = ({
     return (
       <ErrorState
         sx={{ height: portfolioTabContentHeight }}
-        icon={
-          <Image
-            source={require('../../../../assets/icons/unamused_emoji.png')}
-            sx={{ width: 42, height: 42 }}
-          />
-        }
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No recent transactions"
         description="Interact with this token onchain and see your activity here"
       />

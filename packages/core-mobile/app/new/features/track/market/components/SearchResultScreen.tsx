@@ -9,6 +9,9 @@ import { SEGMENT_CONTROL_HEIGHT } from 'features/portfolio/assets/consts'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
+const magnifyingGlassIcon = require('../../../../assets/icons/magnifying_glass.png')
+const cactusIcon = require('../../../../assets/icons/cactus.png')
+
 const SearchResultScreen = ({
   searchText,
   goToMarketDetail,
@@ -61,11 +64,7 @@ const SearchResultScreen = ({
         sx={{ height: contentHeight }}
         icon={
           <Image
-            source={
-              isFocused
-                ? require('../../../../assets/icons/magnifying_glass.png')
-                : require('../../../../assets/icons/cactus.png')
-            }
+            source={isFocused ? magnifyingGlassIcon : cactusIcon}
             sx={{
               width: 42,
               height: 42
