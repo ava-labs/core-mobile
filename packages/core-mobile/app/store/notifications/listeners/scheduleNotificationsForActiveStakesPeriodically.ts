@@ -9,6 +9,7 @@ import { WalletState, selectWalletState } from 'store/app'
 import { ChannelId } from 'services/notifications/channels'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveNetwork } from 'store/network'
+import { getUnixTime } from 'date-fns'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -80,10 +81,20 @@ const scheduleNotificationsForActiveStakes = async (
     const activeNetwork = selectActiveNetwork(state)
 
     Logger.info('fetching stakes for all accounts')
+
+    // We fetch all stakes here so we can send a notification when active stakes are completed.
+    // Since the maximum staking period is one year, any stake created over a year ago can’t be active.
+    // So, to reduce overhead, we only fetch transactions with a startTimestamp within the last year.
+    const now = new Date()
+    const oneYearAgo = new Date(now)
+    oneYearAgo.setFullYear(now.getFullYear() - 1)
+    const startTimestamp = getUnixTime(oneYearAgo.getTime())
+
     const transformedTransactions =
       await EarnService.getTransformedStakesForAllAccounts({
         accounts,
-        network: activeNetwork
+        network: activeNetwork,
+        startTimestamp
       })
 
     const onGoingTransactions =
