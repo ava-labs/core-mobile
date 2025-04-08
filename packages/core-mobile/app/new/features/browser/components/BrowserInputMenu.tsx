@@ -1,13 +1,17 @@
-import { useTheme } from '@avalabs/k2-alpine'
-import { MenuView } from '@react-native-menu/menu'
+import { Button, Icons, useTheme } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
+import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import { showSnackbar } from 'common/utils/toast'
-import React, { ReactNode, useMemo } from 'react'
-import { Platform, Share as ShareApi } from 'react-native'
+import React, { useCallback, useMemo } from 'react'
+import { Platform, Share as ShareApi, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addFavorite, removeFavorite } from 'store/browser/slices/favorites'
-import { addTab, selectActiveHistory } from 'store/browser/slices/tabs'
+import {
+  addTab,
+  selectActiveHistory,
+  selectActiveTab
+} from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
 import { isValidUrl } from '../utils'
@@ -19,20 +23,106 @@ enum MenuId {
   NewTab = 'newTab'
 }
 
+enum NavigationId {
+  Refresh = 'refresh',
+  Back = 'back',
+  Forward = 'forward'
+}
+
 export const BrowserInputMenu = ({
-  children,
   isFavorited = false
 }: {
   isFavorited?: boolean
-  children: ReactNode
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useNavigation()
-  const { handleClearAndFocus } = useBrowserContext()
+  const { handleClearAndFocus, browserRefs } = useBrowserContext()
   const activeHistory = useSelector(selectActiveHistory)
+  const activeTab = useSelector(selectActiveTab)
 
-  const onShare = async (): Promise<void> => {
+  const navigationsActions: DropdownItem[] = useMemo(() => {
+    return [
+      {
+        id: NavigationId.Back,
+        title: 'Back',
+        icon: {
+          ios: 'arrow.left',
+          android: 'arrow_back_ios_24px'
+        },
+        disabled: activeTab?.activeHistoryIndex === -1
+      },
+      {
+        id: NavigationId.Forward,
+        title: 'Forward',
+        icon: {
+          ios: 'arrow.right',
+          android: 'arrow_forward_ios_24px'
+        },
+        disabled:
+          activeTab?.activeHistoryIndex ===
+          (activeTab?.historyIds?.length ?? 0) - 1
+      },
+      {
+        id: NavigationId.Refresh,
+        title: 'Refresh',
+        icon: {
+          ios: 'arrow.clockwise',
+          android: 'refresh_24px'
+        }
+      }
+    ]
+  }, [activeTab?.activeHistoryIndex, activeTab?.historyIds?.length])
+
+  const menuActions: DropdownItem[] = useMemo(() => {
+    const favoriteIcon = isFavorited
+      ? { ios: 'star.fill', android: 'star_fill_24px' }
+      : { ios: 'star', android: 'star_24px' }
+
+    const historyAction = {
+      id: MenuId.History,
+      title: 'Browsing history',
+      icon: {
+        ios: 'clock.arrow.circlepath',
+        android: 'history_24px'
+      }
+    }
+
+    const favoriteAction = {
+      id: MenuId.Favorite,
+      title: isFavorited ? 'Remove from favorites' : 'Mark as favorite',
+      icon: {
+        ios: favoriteIcon.ios,
+        android: favoriteIcon.android
+      }
+    }
+
+    const shareAction = {
+      id: MenuId.Share,
+      title: 'Share',
+      icon: {
+        ios: 'square.and.arrow.up',
+        android: 'share_24px'
+      }
+    }
+
+    const newTabAction = {
+      id: MenuId.NewTab,
+      title: 'Open new tab',
+      icon: {
+        ios: 'plus',
+        android: 'plus_24px'
+      }
+    }
+
+    if (activeHistory) {
+      return [newTabAction, favoriteAction, historyAction, shareAction]
+    } else {
+      return [newTabAction, historyAction]
+    }
+  }, [activeHistory, isFavorited])
+
+  const onShare = useCallback(async (): Promise<void> => {
     const linkToShare = activeHistory?.url
     if (linkToShare) {
       const content =
@@ -46,85 +136,25 @@ export const BrowserInputMenu = ({
 
       await ShareApi.share(content)
     }
-  }
+  }, [activeHistory])
 
-  const menuActions = useMemo(() => {
-    const favoriteIcon = isFavorited
-      ? { ios: 'star.fill', android: 'star_fill_24px' }
-      : { ios: 'star', android: 'star_24px' }
-
-    const menuActionColor = theme.colors.$textPrimary
-
-    const historyAction = {
-      id: MenuId.History,
-      title: 'Browsing history',
-      image: Platform.select({
-        ios: 'clock.arrow.circlepath',
-        android: 'history_24px'
-      }),
-      titleColor: menuActionColor,
-      imageColor: menuActionColor
-    }
-
-    const favoriteAction = {
-      id: MenuId.Favorite,
-      title: isFavorited ? 'Remove from favorites' : 'Mark as favorite',
-      image: Platform.select({
-        ios: favoriteIcon.ios,
-        android: favoriteIcon.android
-      }),
-      titleColor: menuActionColor,
-      imageColor: menuActionColor
-    }
-
-    const shareAction = {
-      id: MenuId.Share,
-      title: 'Share',
-      image: Platform.select({
-        ios: 'square.and.arrow.up',
-        android: 'share_24px'
-      }),
-      titleColor: menuActionColor,
-      imageColor: menuActionColor
-    }
-
-    const newTabAction = {
-      id: MenuId.NewTab,
-      title: 'Open new tab',
-      image: Platform.select({
-        ios: 'plus',
-        android: 'plus_24px'
-      }),
-      titleColor: menuActionColor,
-      imageColor: menuActionColor
-    }
-
-    if (activeHistory) {
-      return [newTabAction, favoriteAction, historyAction, shareAction]
-    } else {
-      return [newTabAction, historyAction]
-    }
-  }, [activeHistory, isFavorited, theme.colors.$textPrimary])
-
-  function handleNewTab(): void {
-    // browser will listen to this and reset the screen with
-    // initiated tab data
+  const handleNewTab = useCallback((): void => {
     AnalyticsService.capture('BrowserNewTabTapped')
     handleClearAndFocus()
     dispatch(addTab())
-  }
+  }, [dispatch, handleClearAndFocus])
 
-  function handleShare(): void {
+  const handleShare = useCallback((): void => {
     AnalyticsService.capture('BrowserShareTapped')
     onShare()
-  }
+  }, [onShare])
 
-  function handleHistory(): void {
+  const handleHistory = useCallback((): void => {
     AnalyticsService.capture('BrowserViewHistoryTapped')
     navigate('history')
-  }
+  }, [navigate])
 
-  function handleFavorite(): void {
+  const handleFavorite = useCallback((): void => {
     if (!activeHistory) {
       return
     }
@@ -150,33 +180,103 @@ export const BrowserInputMenu = ({
       )
       showSnackbar('Added to Favorites')
     }
-  }
+  }, [activeHistory, dispatch, isFavorited])
+
+  const handleBack = useCallback((): void => {
+    AnalyticsService.capture('BrowserBackTapped')
+    if (activeTab?.id) {
+      browserRefs.current[activeTab?.id]?.current?.goBack()
+    }
+  }, [activeTab?.id, browserRefs])
+
+  const handleForward = useCallback((): void => {
+    AnalyticsService.capture('BrowserForwardTapped')
+    if (activeTab?.id) {
+      browserRefs.current[activeTab?.id]?.current?.goForward()
+    }
+  }, [activeTab?.id, browserRefs])
+
+  const handleRefresh = useCallback((): void => {
+    AnalyticsService.capture('BrowserRefreshTapped')
+    if (activeTab?.id) {
+      browserRefs.current[activeTab?.id]?.current?.reload()
+    }
+  }, [activeTab?.id, browserRefs])
+
+  const onPressAction = useCallback(
+    ({ nativeEvent }: { nativeEvent: { event: string } }) => {
+      switch (nativeEvent.event) {
+        case MenuId.Share:
+          handleShare()
+          break
+        case MenuId.History: {
+          handleHistory()
+          break
+        }
+        case MenuId.Favorite: {
+          handleFavorite()
+          break
+        }
+        case MenuId.NewTab: {
+          handleNewTab()
+          break
+        }
+        case NavigationId.Back: {
+          handleBack()
+          break
+        }
+        case NavigationId.Forward: {
+          handleForward()
+          break
+        }
+        case NavigationId.Refresh: {
+          handleRefresh()
+          break
+        }
+      }
+    },
+    [
+      handleBack,
+      handleFavorite,
+      handleForward,
+      handleHistory,
+      handleNewTab,
+      handleRefresh,
+      handleShare
+    ]
+  )
+
+  const onOpenChange = useCallback((open: boolean) => {
+    if (open) {
+      AnalyticsService.capture('BrowserContextualMenuOpened')
+    }
+  }, [])
 
   return (
-    <MenuView
-      onPressAction={({ nativeEvent }) => {
-        switch (nativeEvent.event) {
-          case MenuId.Share:
-            handleShare()
-            break
-          case MenuId.History: {
-            handleHistory()
-            break
-          }
-          case MenuId.Favorite: {
-            handleFavorite()
-            break
-          }
-          case MenuId.NewTab: {
-            handleNewTab()
-            break
-          }
-        }
+    <DropdownMenu
+      onOpenChange={onOpenChange}
+      onPressAction={onPressAction}
+      style={{
+        paddingLeft: 12,
+        paddingRight: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%'
       }}
-      themeVariant={theme.isDark ? 'dark' : 'light'}
-      actions={menuActions}
-      shouldOpenOnLongPress={false}>
-      {children}
-    </MenuView>
+      groups={[
+        {
+          key: 'navigation-actions',
+          items: navigationsActions,
+          horizontal: true
+        },
+        {
+          key: 'menu-actions',
+          items: menuActions
+        }
+      ]}>
+      <View>
+        <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
+      </View>
+    </DropdownMenu>
   )
 }

@@ -27,6 +27,8 @@ import { HORIZONTAL_MARGIN } from '../consts'
 import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { BrowserInputMenu } from './BrowserInputMenu'
 
+const INPUT_HEIGHT = 40
+
 export const BrowserInput = ({
   isFocused,
   setIsFocused
@@ -92,18 +94,6 @@ export const BrowserInput = ({
     AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
     navigate('tabs')
   }, [navigate])
-
-  const contentStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(isFocused ? 0 : 1, ANIMATED.TIMING_CONFIG)
-    }
-  })
-
-  const inputStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(isFocused ? 1 : 0, ANIMATED.TIMING_CONFIG)
-    }
-  })
 
   const renderPlaceholder = useCallback((): ReactNode => {
     return (
@@ -180,39 +170,17 @@ export const BrowserInput = ({
     urlEntry
   ])
 
-  const renderTabListButton = useCallback((): ReactNode => {
-    return (
-      <Pressable
-        onPress={navigateToTabs}
-        style={{
-          height: '100%',
-          paddingHorizontal: 12,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <Icons.Navigation.Tabs color={theme.colors.$textPrimary} />
-      </Pressable>
-    )
-  }, [navigateToTabs, theme.colors.$textPrimary])
+  const contentStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isFocused ? 0 : 1, ANIMATED.TIMING_CONFIG)
+    }
+  })
 
-  const renderMenuButton = useCallback((): ReactNode => {
-    return (
-      <BrowserInputMenu isFavorited={isFavorited}>
-        <Pressable
-          style={{
-            flex: 1,
-            paddingHorizontal: 12,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-          onPress={() =>
-            AnalyticsService.capture('BrowserContextualMenuOpened')
-          }>
-          <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
-        </Pressable>
-      </BrowserInputMenu>
-    )
-  }, [isFavorited, theme.colors.$textPrimary])
+  const inputStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isFocused ? 1 : 0, ANIMATED.TIMING_CONFIG)
+    }
+  })
 
   return (
     <View
@@ -233,16 +201,18 @@ export const BrowserInput = ({
       }}>
       <View
         style={{
-          height: 40,
+          height: INPUT_HEIGHT,
           borderRadius: 100,
           overflow: 'hidden'
         }}>
         <Animated.View
+          pointerEvents={isFocused ? 'auto' : 'none'}
           style={[
             inputStyle,
             {
               flex: 1,
               flexDirection: 'row',
+              zIndex: isFocused ? 10 : 0,
               backgroundColor: theme.isDark ? '#555557' : theme.colors.$white
             }
           ]}>
@@ -267,18 +237,15 @@ export const BrowserInput = ({
               paddingRight: HORIZONTAL_MARGIN / 2
             }}
           />
-
           {urlEntry?.length > 0 && (
             <Pressable
-              pointerEvents={isFocused ? 'auto' : 'none'}
               onPress={onClear}
               style={{
                 height: '100%',
                 justifyContent: 'center',
                 alignItems: 'center',
-                opacity: urlEntry?.length ? 1 : 0,
-                paddingHorizontal: 12,
-                zIndex: 10
+                opacity: 1,
+                paddingHorizontal: 12
               }}>
               <Icons.Action.Clear color={theme.colors.$textSecondary} />
             </Pressable>
@@ -286,6 +253,7 @@ export const BrowserInput = ({
         </Animated.View>
 
         <Animated.View
+          pointerEvents={isFocused ? 'none' : 'auto'}
           style={[
             contentStyle,
             {
@@ -294,7 +262,7 @@ export const BrowserInput = ({
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 10,
+              zIndex: isFocused ? 0 : 10,
               borderRadius: 100
             }
           ]}>
@@ -303,16 +271,25 @@ export const BrowserInput = ({
               style={{
                 height: '100%',
                 flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
                 backgroundColor: theme.isDark
                   ? alpha(theme.colors.$white, 0.1)
                   : alpha(theme.colors.$black, 0.15),
                 borderRadius: 100
               }}>
-              {renderTabListButton()}
+              <Pressable
+                onPress={navigateToTabs}
+                style={{
+                  height: '100%',
+                  paddingHorizontal: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                <Icons.Navigation.Tabs color={theme.colors.$textPrimary} />
+              </Pressable>
+
               {renderPlaceholder()}
-              {renderMenuButton()}
+
+              <BrowserInputMenu isFavorited={isFavorited} />
             </View>
           </MaskedProgressBar>
         </Animated.View>

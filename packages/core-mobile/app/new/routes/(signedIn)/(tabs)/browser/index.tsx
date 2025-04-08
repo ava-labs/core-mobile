@@ -91,7 +91,7 @@ const Browser = (): React.ReactNode => {
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: showEmptyTab ? -1 : 0,
+            zIndex: showEmptyTab ? -1 : 1,
             pointerEvents: showEmptyTab ? 'none' : 'auto'
           }
         ]}>

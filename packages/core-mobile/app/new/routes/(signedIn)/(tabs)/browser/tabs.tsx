@@ -1,21 +1,24 @@
 import {
-  AnimatedPressable,
   Icons,
+  Pressable,
   SCREEN_WIDTH,
   Text,
   View,
+  alpha,
   showAlert,
   useTheme
 } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
+import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { TabItem } from 'features/browser/components/TabItem'
-import { TabsToolbarMenu } from 'features/browser/components/TabsToolbarMenu'
 import { HORIZONTAL_MARGIN } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
+import { Platform } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import SnapshotService from 'services/snapshot/SnapshotService'
 import {
@@ -34,14 +37,43 @@ import {
 } from 'store/snapshots/slice'
 import Logger from 'utils/Logger'
 
+enum MenuId {
+  CloseAll = 'Close All',
+  ViewHistory = 'View History'
+}
+
+const DEFAULT_HEADER_HEIGHT = Platform.select({
+  ios: 44,
+  android: 56,
+  default: 56
+})
 const NUMBER_OF_COLUMNS = 2
 const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
+const MENU_ACTIONS: DropdownItem[] = [
+  {
+    id: MenuId.CloseAll,
+    title: 'Close all Tabs',
+    icon: {
+      ios: 'xmark',
+      android: 'xmark_24px'
+    },
+    destructive: true
+  },
+  {
+    id: MenuId.ViewHistory,
+    title: 'Browsing history',
+    icon: {
+      ios: 'clock.arrow.circlepath',
+      android: 'history_24px'
+    }
+  }
+]
 
 const TabsScreen = (): JSX.Element => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
+  const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-  const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
   const { setUrlEntry, handleClearAndFocus, browserRefs } = useBrowserContext()
 
@@ -118,45 +150,60 @@ const TabsScreen = (): JSX.Element => {
     navigation.navigate('history')
   }, [navigation])
 
+  const onPressAction = useCallback(
+    ({ nativeEvent }: { nativeEvent: { event: string } }) => {
+      switch (nativeEvent.event) {
+        case MenuId.CloseAll:
+          handleCloseAll()
+          break
+        case MenuId.ViewHistory: {
+          handleViewHistory()
+          break
+        }
+      }
+    },
+    [handleCloseAll, handleViewHistory]
+  )
+
   const headerRight = useCallback((): JSX.Element => {
     return (
       <View
         sx={{
           flexDirection: 'row',
-          gap: 12
+          height: '100%'
         }}>
-        <AnimatedPressable
+        <Pressable
           onPress={handleAddTab}
-          hitSlop={{
-            top: 10,
-            bottom: 10,
-            left: 10,
-            right: 10
+          style={{
+            height: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 6
           }}>
           <Icons.Content.Add color={theme.colors.$textPrimary} />
-        </AnimatedPressable>
-        <TabsToolbarMenu
-          onCloseAll={handleCloseAll}
-          onViewHistory={handleViewHistory}>
-          <AnimatedPressable
-            style={{
-              paddingRight: HORIZONTAL_MARGIN
-            }}>
+        </Pressable>
+
+        <DropdownMenu
+          style={{
+            height: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingLeft: 6,
+            paddingRight: 21
+          }}
+          onPressAction={onPressAction}
+          groups={[{ id: 'menu-actions', items: MENU_ACTIONS }]}>
+          <View>
             <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
-          </AnimatedPressable>
-        </TabsToolbarMenu>
+          </View>
+        </DropdownMenu>
       </View>
     )
-  }, [
-    handleAddTab,
-    handleCloseAll,
-    handleViewHistory,
-    theme.colors.$textPrimary
-  ])
+  }, [handleAddTab, onPressAction, theme.colors.$textPrimary])
 
   useEffect(() => {
     navigation.setOptions({
-      headerRight,
+      headerShown: false,
       headerTransparent: true,
       headerLeft: null
     })
@@ -167,7 +214,7 @@ const TabsScreen = (): JSX.Element => {
       <View
         style={{
           paddingHorizontal: HORIZONTAL_MARGIN / 2,
-          marginBottom: HORIZONTAL_MARGIN * 2
+          marginBottom: 26
         }}>
         <Text variant="heading2">
           {sortedTabs.length} {sortedTabs.length === 1 ? 'tab' : 'tabs'}
@@ -212,20 +259,48 @@ const TabsScreen = (): JSX.Element => {
   }
 
   return (
-    <FlashList
-      data={sortedTabs}
-      contentContainerStyle={{
-        paddingBottom: tabBarHeight + 26,
-        paddingTop: headerHeight + 26,
-        paddingHorizontal: HORIZONTAL_MARGIN / 2
-      }}
-      showsVerticalScrollIndicator={false}
-      renderItem={renderItem}
-      ListHeaderComponent={renderHeader}
-      estimatedItemSize={TAB_WIDTH * 1.2}
-      numColumns={NUMBER_OF_COLUMNS}
-      keyExtractor={item => item.id}
-    />
+    <View style={{ flex: 1 }}>
+      <FlashList
+        data={sortedTabs}
+        contentContainerStyle={{
+          paddingTop: insets.top + DEFAULT_HEADER_HEIGHT,
+          paddingBottom: tabBarHeight + DEFAULT_HEADER_HEIGHT,
+          paddingHorizontal: HORIZONTAL_MARGIN / 2
+        }}
+        showsVerticalScrollIndicator={false}
+        renderItem={renderItem}
+        ListHeaderComponent={renderHeader}
+        estimatedItemSize={TAB_WIDTH * 1.2}
+        numColumns={NUMBER_OF_COLUMNS}
+        keyExtractor={item => item.id}
+      />
+
+      <View
+        style={{
+          position: 'absolute',
+          height: insets.top + DEFAULT_HEADER_HEIGHT,
+          paddingTop: insets.top,
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          alignItems: 'flex-end'
+        }}>
+        <View style={{ zIndex: 1 }}>{headerRight()}</View>
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}>
+          <BlurredBackgroundView
+            backgroundColor={alpha(theme.colors.$surfacePrimary, 0.6)}
+          />
+        </View>
+      </View>
+    </View>
   )
 }
 
