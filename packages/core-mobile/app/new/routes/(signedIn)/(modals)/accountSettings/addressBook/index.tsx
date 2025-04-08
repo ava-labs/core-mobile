@@ -68,11 +68,9 @@ const AddressBookScreen = (): JSX.Element => {
     return contacts.filter(
       contact =>
         contact.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressC?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressAVM?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressPVM?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressEVM?.toLowerCase().includes(searchText.toLowerCase())
+        contact.address?.toLowerCase().includes(searchText.toLowerCase()) ||
+        contact.addressXP?.toLowerCase().includes(searchText.toLowerCase()) ||
+        contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase())
     )
   }, [contacts, searchText])
 

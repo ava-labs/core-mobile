@@ -11,10 +11,8 @@ export const isValidAddress = (
 ): boolean => {
   switch (addressType) {
     case AddressType.CChain:
-    case AddressType.EVM:
       return isAddress(address) || isBech32Address(address)
-    case AddressType.PVM:
-    case AddressType.AVM:
+    case AddressType.XP:
       return (
         Avalanche.isBech32Address(address, false) &&
         ((isDeveloperMode && address.includes('fuji')) ||

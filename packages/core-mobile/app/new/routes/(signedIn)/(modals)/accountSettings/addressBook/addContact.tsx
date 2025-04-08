@@ -23,11 +23,9 @@ const AddContactScreen = (): React.JSX.Element => {
   }
 
   const isSaveDisabled =
-    contact.addressC === undefined &&
-    contact.addressAVM === undefined &&
-    contact.addressPVM === undefined &&
-    contact.addressBTC === undefined &&
-    contact.addressEVM === undefined
+    contact.address === undefined &&
+    contact.addressXP === undefined &&
+    contact.addressBTC === undefined
 
   const handleSave = useCallback(() => {
     dispatch(addContact({ ...contact, id: contactId }))

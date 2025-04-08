@@ -1,12 +1,8 @@
-export type Contact = {
-  id: string
+import { Contact as _Contact } from '@avalabs/types'
+
+export type Contact = Omit<_Contact, 'address' | 'name' | 'addressSVM'> & {
+  address?: string
   name?: string
-  addressC?: string
-  addressAVM?: string
-  addressPVM?: string
-  isKnown?: boolean
-  addressBTC?: string
-  addressEVM?: string
   avatar?: string
 }
 

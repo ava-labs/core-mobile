@@ -18,44 +18,21 @@ describe('isValidAddress', () => {
     )
   })
 
-  it('should return true for valid EVM address', () => {
-    expect(isValidAddress(AddressType.EVM, C_ADDRESS)).toBe(true)
+  it('should return true for valid X/P address in developer mode', () => {
+    expect(isValidAddress(AddressType.XP, XP_ADDRESS_TESTNET, true)).toBe(true)
+  })
+  it('should return false for invalid X/P address in developer mode', () => {
+    expect(isValidAddress(AddressType.XP, 'invalidXPAddress', true)).toBe(false)
   })
 
-  it('should return false for invalid EVM address', () => {
-    expect(isValidAddress(AddressType.EVM, 'invalidEVMAddress')).toBe(false)
+  it('should return true for valid X/P address in production mode', () => {
+    expect(isValidAddress(AddressType.XP, XP_ADDRESS, false)).toBe(true)
   })
-
-  it('should return true for valid PVM address in developer mode', () => {
-    expect(isValidAddress(AddressType.PVM, XP_ADDRESS_TESTNET, true)).toBe(true)
-  })
-  it('should return false for invalid PVM address in developer mode', () => {
-    expect(isValidAddress(AddressType.PVM, 'invalidPVMAddress', true)).toBe(
+  it('should return false for invalid X/P address in production mode', () => {
+    expect(isValidAddress(AddressType.XP, 'invalidXPVMAddress', false)).toBe(
       false
     )
   })
-  it('should return true for valid PVM address in production mode', () => {
-    expect(isValidAddress(AddressType.PVM, XP_ADDRESS)).toBe(true)
-  })
-  it('should return false for invalid PVM address in production mode', () => {
-    expect(isValidAddress(AddressType.PVM, 'invalidPVMAddress')).toBe(false)
-  })
-
-  it('should return true for valid AVM address in developer mode', () => {
-    expect(isValidAddress(AddressType.AVM, XP_ADDRESS_TESTNET, true)).toBe(true)
-  })
-  it('should return false for invalid AVM address in developer mode', () => {
-    expect(isValidAddress(AddressType.AVM, 'invalidPVMAddress', true)).toBe(
-      false
-    )
-  })
-  it('should return true for valid AVM address in production mode', () => {
-    expect(isValidAddress(AddressType.AVM, XP_ADDRESS)).toBe(true)
-  })
-  it('should return false for invalid AVM address in production mode', () => {
-    expect(isValidAddress(AddressType.AVM, 'invalidPVMAddress')).toBe(false)
-  })
-
   it('should return true for valid BTC address in developer mode', () => {
     expect(isValidAddress(AddressType.BTC, BTC_ADDRESS_TESTNET, true)).toBe(
       true

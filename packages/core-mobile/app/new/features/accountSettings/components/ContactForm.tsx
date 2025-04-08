@@ -86,27 +86,15 @@ export const ContactForm = ({
     () => [
       {
         title: AddressType.CChain,
-        placeholder: 'Type in or paste in C-Chain address',
-        emptyText: 'Add Avalanche C-Chain address',
-        address: contact?.addressC
+        placeholder: 'Type in or paste in C-Chain/Ethereum address',
+        emptyText: 'Add Avalanche C-Chain/Ethereum address',
+        address: contact?.address
       },
       {
-        title: AddressType.EVM,
-        placeholder: 'Type in or paste in Ethereum address',
-        emptyText: 'Add Ethereum address',
-        address: contact?.addressEVM
-      },
-      {
-        title: AddressType.PVM,
-        placeholder: 'Type in or paste in P-Chain address',
-        emptyText: 'Add Avalanche P-Chain address',
-        address: contact?.addressPVM
-      },
-      {
-        title: AddressType.AVM,
-        placeholder: 'Type in or paste in X-Chain address',
-        emptyText: 'Add Avalanche X-Chain address',
-        address: contact?.addressAVM
+        title: AddressType.XP,
+        placeholder: 'Type in or paste in X/P-Chain address',
+        emptyText: 'Add Avalanche X/P-Chain address',
+        address: contact?.addressXP
       },
       {
         title: AddressType.BTC,
