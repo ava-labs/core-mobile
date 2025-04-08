@@ -30,7 +30,9 @@ type UseWatchListReturnType = {
   isLoadingTrendingTokens: boolean
   isLoadingTopTokens: boolean
   refetchTopTokens: () => void
+  refetchTrendingTokens: () => void
   isRefetchingTopTokens: boolean
+  isRefetchingTrendingTokens: boolean
 }
 
 export const useWatchlist = (): UseWatchListReturnType => {
@@ -41,8 +43,12 @@ export const useWatchlist = (): UseWatchListReturnType => {
     refetch: refetchTopTokens,
     isRefetching: isRefetchingTopTokens
   } = useGetTokensAndCharts()
-  const { data: trendingTokensResponse, isLoading: isLoadingTrendingTokens } =
-    useGetTrendingTokens()
+  const {
+    data: trendingTokensResponse,
+    isLoading: isLoadingTrendingTokens,
+    refetch: refetchTrendingTokens,
+    isRefetching: isRefetchingTrendingTokens
+  } = useGetTrendingTokens()
   const isLoading = isLoadingTopTokens || isLoadingTrendingTokens
 
   const transformedTrendingTokens = useMemo(
@@ -145,6 +151,8 @@ export const useWatchlist = (): UseWatchListReturnType => {
     isLoadingTrendingTokens,
     isLoadingTopTokens,
     refetchTopTokens,
-    isRefetchingTopTokens
+    refetchTrendingTokens,
+    isRefetchingTopTokens,
+    isRefetchingTrendingTokens
   }
 }
