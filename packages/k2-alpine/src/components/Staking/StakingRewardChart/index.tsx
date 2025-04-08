@@ -41,7 +41,7 @@ export const StakeRewardChart = forwardRef<
     data: { value: number; duration: string; index: number }[]
     renderSelectionTitle?: () => JSX.Element | undefined
     renderSelectionSubtitle?: () => JSX.Element | undefined
-    selectedIndex: SharedValue<number | undefined>
+    animatedSelectedIndex: SharedValue<number | undefined>
     initialIndex?: number
   }
 >(
@@ -51,7 +51,7 @@ export const StakeRewardChart = forwardRef<
       data,
       renderSelectionTitle,
       renderSelectionSubtitle,
-      selectedIndex,
+      animatedSelectedIndex,
       initialIndex
     },
     ref
@@ -110,7 +110,7 @@ export const StakeRewardChart = forwardRef<
       x => {
         if (gridWidth === 0) return
 
-        selectedIndex.value =
+        animatedSelectedIndex.value =
           x === undefined ? undefined : Math.round(x / gridWidth)
       }
     )

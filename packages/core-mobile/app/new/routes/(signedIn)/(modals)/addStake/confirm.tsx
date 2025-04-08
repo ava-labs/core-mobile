@@ -37,6 +37,7 @@ import { showSnackbar } from 'common/utils/toast'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectActiveAccount } from 'store/account'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useNow } from 'hooks/time/useNow'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -48,6 +49,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     () => new UTCDate(secondsToMilliseconds(Number(stakeEndTime))),
     [stakeEndTime]
   )
+  const now = useNow()
   const { isFetching: isFetchingNodes, error, data } = useNodes()
   const { validator, error: searchNodeError } = useSearchNode({
     stakingAmount: stakeAmount,
@@ -123,7 +125,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     return [
       {
         title: 'Time to unlock',
-        value: `${differenceInDays(validatedStakingEndTime, new Date())} days`
+        value: `${differenceInDays(validatedStakingEndTime, now)} days`
       },
       {
         title: 'Locked until',
@@ -142,7 +144,8 @@ const StakeConfirmScreen = (): JSX.Element => {
     validatedStakingEndTime,
     localValidatedStakingEndTime,
     delegationFee,
-    networkFeesInAvax
+    networkFeesInAvax,
+    now
   ])
 
   const handleStartOver = useCallback((): void => {

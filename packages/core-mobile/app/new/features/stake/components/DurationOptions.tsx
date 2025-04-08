@@ -7,24 +7,31 @@ import {
 } from '@avalabs/k2-alpine'
 import { differenceInDays } from 'date-fns'
 import React, { useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import {
-  DurationOption,
-  StakeDurationFormat
+  DURATION_OPTIONS_FUJI,
+  DURATION_OPTIONS_MAINNET,
+  StakeDurationFormat,
+  StakeDurationTitle
 } from 'services/earn/getStakeEndDate'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const DurationOptions = ({
-  durations,
   selectedIndex,
   onSelectDuration,
   customEndDate
 }: {
-  durations: DurationOption[]
   selectedIndex?: number
   onSelectDuration: (selectedIndex: number) => void
   customEndDate?: Date
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const durations = useMemo(
+    () => (isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET),
+    [isDeveloperMode]
+  )
   const today = useMemo(() => {
     const now = new Date()
     now.setHours(0, 0, 0, 0)
@@ -95,5 +102,27 @@ export const DurationOptions = ({
         </View>
       ))}
     </View>
+  )
+}
+
+export const getCustomDurationIndex = (isDeveloperMode: boolean): number => {
+  const durations = isDeveloperMode
+    ? DURATION_OPTIONS_FUJI
+    : DURATION_OPTIONS_MAINNET
+  return durations.findIndex(
+    duration => duration.title === StakeDurationTitle.CUSTOM
+  )
+}
+
+export const getDefaultDurationIndex = (isDeveloperMode: boolean): number => {
+  const durations = isDeveloperMode
+    ? DURATION_OPTIONS_FUJI
+    : DURATION_OPTIONS_MAINNET
+  return durations.findIndex(
+    duration =>
+      duration.title ===
+      (isDeveloperMode
+        ? StakeDurationTitle.ONE_DAY
+        : StakeDurationTitle.THREE_MONTHS)
   )
 }

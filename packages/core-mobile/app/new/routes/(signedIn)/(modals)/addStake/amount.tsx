@@ -17,14 +17,8 @@ import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useRouter } from 'expo-router'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 
 const StakeAmountScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -32,7 +26,6 @@ const StakeAmountScreen = (): JSX.Element => {
   const [computeError, setComputeError] = useState<Error | null>(null)
   const { compute, setStakeAmount, stakeAmount } = useDelegationContext()
   const { minStakeAmount } = useStakingParams()
-  const { getNetwork } = useNetworks()
   const cChainBalance = useCChainBalance()
   const cChainBalanceAvax = useMemo(
     () =>
@@ -57,16 +50,7 @@ const StakeAmountScreen = (): JSX.Element => {
   const notEnoughBalance = cumulativeBalance?.lt(stakeAmount) ?? true
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !stakeAmount.isZero()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const chainId = isDeveloperMode
-    ? ChainId.AVALANCHE_TESTNET_ID
-    : ChainId.AVALANCHE_MAINNET_ID
-  const avaxNetwork = getNetwork(chainId)
-  const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
-    avaxNetwork,
-    selectedCurrency.toLowerCase() as VsCurrencyType
-  )
+  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
   const { formatCurrency } = useFormatCurrency()
 
   const validateInputAmount = useCallback(async (): Promise<void> => {
@@ -116,11 +100,11 @@ const StakeAmountScreen = (): JSX.Element => {
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
       return formatCurrency({
-        amount: amount.mul(nativeTokenPrice).toDisplay({ asNumber: true }),
+        amount: amount.mul(avaxPrice).toDisplay({ asNumber: true }),
         withCurrencySuffix: true
       })
     },
-    [nativeTokenPrice, formatCurrency]
+    [avaxPrice, formatCurrency]
   )
 
   if (fetchingBalance || cumulativeBalance === undefined) {

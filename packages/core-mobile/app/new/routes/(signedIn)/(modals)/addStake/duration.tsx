@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react'
 import {
   Button,
-  DateTimePicker,
   GroupList,
   GroupListItem,
   SafeAreaView,
@@ -15,23 +14,14 @@ import ScreenHeader from 'common/components/ScreenHeader'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useRouter } from 'expo-router'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
 import {
-  DURATION_OPTIONS_FUJI,
-  DURATION_OPTIONS_MAINNET,
   DURATION_OPTIONS_WITH_DAYS_FUJI,
   DURATION_OPTIONS_WITH_DAYS_MAINNET,
   DurationOptionWithDays,
   getStakeEndDate,
-  ONE_DAY,
-  THREE_MONTHS,
-  TWO_WEEKS
+  THREE_MONTHS
 } from 'services/earn/getStakeEndDate'
 import {
   runOnJS,
@@ -39,52 +29,87 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
-import { DurationOptions } from 'features/stake/components/DurationOptions'
+import {
+  DurationOptions,
+  getCustomDurationIndex,
+  getDefaultDurationIndex
+} from 'features/stake/components/DurationOptions'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UnixTime } from 'services/earn/types'
 import { useNow } from 'hooks/time/useNow'
-import {
-  differenceInDays,
-  differenceInMilliseconds,
-  getUnixTime,
-  millisecondsToSeconds
-} from 'date-fns'
+import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
-import {
-  getMaximumStakeEndDate,
-  getMinimumStakeEndTime
-} from 'services/earn/utils'
-import debounce from 'lodash.debounce'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
-import { convertToSeconds, MilliSeconds } from 'types/siUnits'
+import { useDebounce } from 'hooks/useDebounce'
+import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomEndDatePicker'
+import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
+import { convertToDurationInSeconds } from 'features/stake/utils'
 
 const StakeDurationScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { stakeAmount } = useDelegationContext()
-  const { getNetwork } = useNetworks()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const chainId = isDeveloperMode
-    ? ChainId.AVALANCHE_TESTNET_ID
-    : ChainId.AVALANCHE_MAINNET_ID
-  const avaxNetwork = getNetwork(chainId)
-  const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
-    avaxNetwork,
-    selectedCurrency.toLowerCase() as VsCurrencyType
-  )
+  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
   const { formatCurrency } = useFormatCurrency()
-  const durationsWithDays: DurationOptionWithDays[] = useMemo(() => {
-    return isDeveloperMode
-      ? DURATION_OPTIONS_WITH_DAYS_FUJI
-      : DURATION_OPTIONS_WITH_DAYS_MAINNET
-  }, [isDeveloperMode])
+  const now = useNow()
+  const rewardChartRef = useRef<StakeRewardChartHandle>(null)
+  const durationsWithDays: DurationOptionWithDays[] = useMemo(
+    () =>
+      isDeveloperMode
+        ? DURATION_OPTIONS_WITH_DAYS_FUJI
+        : DURATION_OPTIONS_WITH_DAYS_MAINNET,
+    [isDeveloperMode]
+  )
+  const defaultDurationIndex = useMemo(
+    () => getDefaultDurationIndex(isDeveloperMode),
+    [isDeveloperMode]
+  )
+  const customDurationIndex = useMemo(
+    () => getCustomDurationIndex(isDeveloperMode),
+    [isDeveloperMode]
+  )
+  const animatedChartIndex = useSharedValue<number | undefined>(
+    defaultDurationIndex
+  )
+  // Mirror the shared value to a state variable so that React re-renders when it changes.
+  const [selectedChartIndex, setSelectedChartIndex] = useState<
+    number | undefined
+  >(defaultDurationIndex)
+  useAnimatedReaction(
+    () => animatedChartIndex.value,
+    (current, previous) => {
+      if (current !== previous) {
+        runOnJS(setSelectedChartIndex)(current)
+      }
+    }
+  )
+  // Mirror selectedChartIndex to a debounced state variable, to avoid unnecessary animation in duration options component.
+  const {
+    debounced: selectedDurationIndex,
+    setValueImmediately: setSelectedDurationIndex
+  } = useDebounce(
+    selectedChartIndex === undefined ? customDurationIndex : selectedChartIndex,
+    300
+  )
+  const [stakeEndTime, setStakeEndTime] = useState<UnixTime>(() => {
+    const defaultDelegationTime =
+      durationsWithDays[defaultDurationIndex] ?? THREE_MONTHS
+    return getStakeEndDate({
+      startDateUnix: millisecondsToSeconds(now),
+      stakeDurationFormat: defaultDelegationTime.stakeDurationFormat,
+      stakeDurationValue: defaultDelegationTime.stakeDurationValue,
+      isDeveloperMode: isDeveloperMode
+    })
+  })
+  const [customEndDate, setCustomEndDate] = useState<UTCDate>()
+  const [isCustomEndDatePickerVisible, setIsCustomEndDatePickerVisible] =
+    useState(false)
 
   const { data: estimatedRewards } = useStakeEstimatedRewards({
     amount: stakeAmount,
     delegationFee: DELEGATION_FEE_FOR_ESTIMATION,
     durations: durationsWithDays
   })
-
   const estimatedRewardsChartData = useMemo(() => {
     return (estimatedRewards ?? []).map((item, index) => {
       return {
@@ -94,127 +119,33 @@ const StakeDurationScreen = (): JSX.Element => {
       }
     })
   }, [estimatedRewards])
-
-  const rewardChartRef = useRef<StakeRewardChartHandle>(null)
-
-  const initialIndex = isDeveloperMode ? 0 : 2
-  const selectedChartIndex = useSharedValue<number | undefined>(initialIndex)
-  // Mirror the shared value to a state variable so that React re-renders when it changes.
-  const [selectedChartIndexState, setSelectedChartIndexState] = useState<
-    number | undefined
-  >(initialIndex)
-  useAnimatedReaction(
-    () => selectedChartIndex.value,
-    (current, previous) => {
-      if (current !== previous) {
-        runOnJS(setSelectedChartIndexState)(current)
-      }
-    }
-  )
-
-  const currentUnix = useNow()
-
-  const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
-  const defaultDelegationTime = durationsWithDays[initialIndex] ?? THREE_MONTHS
-  const [stakeEndTime, setStakeEndTime] = useState<UnixTime>(
-    getStakeEndDate({
-      startDateUnix: millisecondsToSeconds(currentUnix),
-      stakeDurationFormat: defaultDelegationTime.stakeDurationFormat,
-      stakeDurationValue: defaultDelegationTime.stakeDurationValue,
-      isDeveloperMode: isDeveloperMode
-    })
-  )
-  const [customEndDate, setCustomEndDate] = useState<UTCDate>()
-
-  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
-
-  const durationInSeconds = useMemo(() => {
-    if (customEndDate === undefined) {
-      return undefined
-    }
-
-    const stakeDurationMs = differenceInMilliseconds(
-      customEndDate,
-      new UTCDate()
-    )
-
-    return convertToSeconds(BigInt(stakeDurationMs) as MilliSeconds)
-  }, [customEndDate])
-
   const estimatedCustomReward = useStakeEstimatedReward({
     amount: stakeAmount,
-    duration: durationInSeconds,
+    duration:
+      customEndDate === undefined
+        ? undefined
+        : convertToDurationInSeconds(customEndDate),
     delegationFee: DELEGATION_FEE_FOR_ESTIMATION
   })
-
-  const handleSelectDuration = useCallback(
-    (selectedIndex: number): void => {
-      if (durationsWithDays[selectedIndex] === undefined) {
-        rewardChartRef.current?.selectIndex(undefined)
-        setIsDatePickerVisible(true)
-        if (customEndDate === undefined) {
-          const calculatedStakeEndTime = getStakeEndDate({
-            startDateUnix: millisecondsToSeconds(currentUnix),
-            stakeDurationFormat: minDelegationTime.stakeDurationFormat,
-            stakeDurationValue: minDelegationTime.stakeDurationValue,
-            isDeveloperMode: isDeveloperMode
-          })
-          setStakeEndTime(calculatedStakeEndTime)
-        } else {
-          setStakeEndTime(getUnixTime(customEndDate))
-        }
-      } else {
-        rewardChartRef.current?.selectIndex(selectedIndex)
-      }
-
-      setDebouncedSelectedIndex(selectedIndex)
-    },
-    [
-      durationsWithDays,
-      customEndDate,
-      currentUnix,
-      isDeveloperMode,
-      minDelegationTime
-    ]
-  )
-
-  // Mirror selectedIndex to a debounced state variable.
-  const [debouncedSelectedIndex, setDebouncedSelectedIndex] = useState<
-    number | undefined
-  >(initialIndex)
-
-  // Create a stable debounced function using lodash
-  const debouncedUpdate = useMemo(
-    () =>
-      debounce((newValue: number | undefined) => {
-        setDebouncedSelectedIndex(newValue)
-      }, 300),
-    []
-  )
-
   const estimatedReward = useMemo(() => {
-    if (debouncedSelectedIndex === undefined) {
+    if (selectedDurationIndex === undefined) {
       return
     }
 
-    if (debouncedSelectedIndex === 5) {
+    if (selectedDurationIndex === customDurationIndex) {
       return estimatedCustomReward?.estimatedTokenReward
     }
 
-    return estimatedRewards?.[debouncedSelectedIndex]?.estimatedTokenReward
-  }, [estimatedRewards, debouncedSelectedIndex, estimatedCustomReward])
+    return estimatedRewards?.[selectedDurationIndex]?.estimatedTokenReward
+  }, [
+    estimatedRewards,
+    selectedDurationIndex,
+    estimatedCustomReward,
+    customDurationIndex
+  ])
 
-  // Update the debounced state whenever selectedIndex changes.
-  useEffect(() => {
-    if (selectedChartIndexState === undefined) {
-      setDebouncedSelectedIndex(5)
-    } else {
-      debouncedUpdate(selectedChartIndexState)
-    }
-  }, [selectedChartIndexState, debouncedUpdate])
-
-  const selectedDurationInDays = useMemo(() => {
-    const selectedIndex = debouncedSelectedIndex ?? initialIndex
+  const getDurationInDays = useCallback(() => {
+    const selectedIndex = selectedDurationIndex ?? defaultDurationIndex
     if (durationsWithDays[selectedIndex] !== undefined) {
       return estimatedRewards?.[selectedIndex]?.duration.numberOfDays
     }
@@ -226,58 +157,11 @@ const StakeDurationScreen = (): JSX.Element => {
     }
   }, [
     durationsWithDays,
-    debouncedSelectedIndex,
+    selectedDurationIndex,
     estimatedRewards,
-    initialIndex,
+    defaultDurationIndex,
     customEndDate
   ])
-
-  const inputSection: GroupListItem[] = useMemo(() => {
-    return [
-      {
-        title: 'Stake amount',
-        value: `${stakeAmount.toDisplay()} AVAX`
-      },
-      {
-        title: 'Duration',
-        value:
-          selectedDurationInDays !== undefined
-            ? `${selectedDurationInDays} days`
-            : '',
-        accordion: (
-          <DurationOptions
-            selectedIndex={debouncedSelectedIndex}
-            durations={
-              isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET
-            }
-            onSelectDuration={handleSelectDuration}
-            customEndDate={customEndDate}
-          />
-        )
-      }
-    ]
-  }, [
-    stakeAmount,
-    debouncedSelectedIndex,
-    isDeveloperMode,
-    handleSelectDuration,
-    customEndDate,
-    selectedDurationInDays
-  ])
-
-  const rewardSection: GroupListItem[] = useMemo(() => {
-    return [
-      {
-        title: 'Estimated rewards',
-        value: (
-          <StakeTokenUnitValue
-            value={estimatedReward}
-            textSx={{ fontWeight: 600 }}
-          />
-        )
-      }
-    ]
-  }, [estimatedReward])
 
   const handlePressNext = useCallback(async () => {
     if (stakeEndTime) {
@@ -294,23 +178,42 @@ const StakeDurationScreen = (): JSX.Element => {
     setCustomEndDate(new UTCDate(date.getTime()))
   }
 
+  const handleCancelSelectingCustomEndDate = (): void => {
+    setCustomEndDate(undefined)
+
+    rewardChartRef.current?.selectIndex(defaultDurationIndex)
+    setSelectedDurationIndex(defaultDurationIndex)
+  }
+
+  const handleSelectDuration = useCallback(
+    (selectedIndex: number): void => {
+      if (durationsWithDays[selectedIndex] === undefined) {
+        rewardChartRef.current?.selectIndex(undefined)
+        setIsCustomEndDatePickerVisible(true)
+      } else {
+        rewardChartRef.current?.selectIndex(selectedIndex)
+      }
+
+      setSelectedDurationIndex(selectedIndex)
+    },
+    [durationsWithDays, setSelectedDurationIndex]
+  )
+
   const renderSelectionTitle = useCallback(() => {
     const text =
-      debouncedSelectedIndex !== undefined
-        ? `${
-            estimatedRewardsChartData[debouncedSelectedIndex]?.value ?? 0
-          } AVAX`
+      selectedDurationIndex !== undefined
+        ? `${estimatedRewardsChartData[selectedDurationIndex]?.value ?? 0} AVAX`
         : ''
     return <Text variant="heading6">{text}</Text>
-  }, [debouncedSelectedIndex, estimatedRewardsChartData])
+  }, [selectedDurationIndex, estimatedRewardsChartData])
 
   const renderSelectionSubtitle = useCallback(() => {
     const text =
-      debouncedSelectedIndex !== undefined
+      selectedDurationIndex !== undefined
         ? formatCurrency({
             amount:
-              (estimatedRewardsChartData[debouncedSelectedIndex]?.value ?? 0) *
-              nativeTokenPrice
+              (estimatedRewardsChartData[selectedDurationIndex]?.value ?? 0) *
+              avaxPrice
           })
         : ''
 
@@ -320,33 +223,79 @@ const StakeDurationScreen = (): JSX.Element => {
       </Text>
     )
   }, [
-    debouncedSelectedIndex,
+    selectedDurationIndex,
     estimatedRewardsChartData,
-    nativeTokenPrice,
+    avaxPrice,
     formatCurrency
   ])
 
-  const minimumStakeEndDate = useMemo(
-    () => getMinimumStakeEndTime(isDeveloperMode, new UTCDate(currentUnix)),
-    [isDeveloperMode, currentUnix]
-  )
-  const maximumStakeEndDate = useMemo(() => getMaximumStakeEndDate(), [])
+  const inputSection: GroupListItem[] = useMemo(() => {
+    const selectedDurationInDays = getDurationInDays()
+
+    return [
+      {
+        title: 'Stake amount',
+        value: `${stakeAmount.toDisplay()} AVAX`
+      },
+      {
+        title: 'Duration',
+        value:
+          selectedDurationInDays !== undefined
+            ? `${selectedDurationInDays} days`
+            : '',
+        accordion: (
+          <DurationOptions
+            selectedIndex={selectedDurationIndex}
+            onSelectDuration={handleSelectDuration}
+            customEndDate={customEndDate}
+          />
+        )
+      }
+    ]
+  }, [
+    stakeAmount,
+    selectedDurationIndex,
+    handleSelectDuration,
+    customEndDate,
+    getDurationInDays
+  ])
+
+  const rewardSection: GroupListItem[] = useMemo(() => {
+    return [
+      {
+        title: 'Estimated rewards',
+        value: (
+          <StakeTokenUnitValue
+            value={estimatedReward}
+            textSx={{ fontWeight: 600 }}
+          />
+        )
+      }
+    ]
+  }, [estimatedReward])
 
   useEffect(() => {
-    if (
-      selectedChartIndexState !== undefined &&
-      durationsWithDays[selectedChartIndexState]
-    ) {
-      const selectedDuration = durationsWithDays[selectedChartIndexState]
-      const calculatedStakeEndTime = getStakeEndDate({
-        startDateUnix: millisecondsToSeconds(currentUnix),
-        stakeDurationFormat: selectedDuration.stakeDurationFormat,
-        stakeDurationValue: selectedDuration.stakeDurationValue,
-        isDeveloperMode: isDeveloperMode
-      })
-      setStakeEndTime(calculatedStakeEndTime)
+    if (selectedChartIndex !== undefined) {
+      if (durationsWithDays[selectedChartIndex]) {
+        const selectedDuration = durationsWithDays[selectedChartIndex]
+        const calculatedStakeEndTime = getStakeEndDate({
+          startDateUnix: millisecondsToSeconds(now),
+          stakeDurationFormat: selectedDuration.stakeDurationFormat,
+          stakeDurationValue: selectedDuration.stakeDurationValue,
+          isDeveloperMode: isDeveloperMode
+        })
+        setStakeEndTime(calculatedStakeEndTime)
+      }
+    } else if (customEndDate) {
+      setStakeEndTime(getUnixTime(customEndDate))
     }
-  }, [selectedChartIndexState, currentUnix, durationsWithDays, isDeveloperMode])
+  }, [
+    selectedChartIndex,
+    now,
+    durationsWithDays,
+    isDeveloperMode,
+    customEndDate
+  ])
 
   return (
     <SafeAreaView sx={{ flex: 1 }}>
@@ -357,12 +306,12 @@ const StakeDurationScreen = (): JSX.Element => {
         <View sx={{ gap: 12, marginTop: 16 }}>
           <StakeRewardChart
             ref={rewardChartRef}
-            initialIndex={initialIndex}
+            initialIndex={defaultDurationIndex}
             style={{
               height: 270
             }}
             data={estimatedRewardsChartData}
-            selectedIndex={selectedChartIndex}
+            animatedSelectedIndex={animatedChartIndex}
             renderSelectionTitle={renderSelectionTitle}
             renderSelectionSubtitle={renderSelectionSubtitle}
           />
@@ -391,13 +340,12 @@ const StakeDurationScreen = (): JSX.Element => {
           Advanced setup
         </Button>
       </View>
-      <DateTimePicker
-        date={customEndDate ?? minimumStakeEndDate}
-        isVisible={isDatePickerVisible}
-        setIsVisible={setIsDatePickerVisible}
+      <StakeCustomEndDatePicker
+        customEndDate={customEndDate}
+        isVisible={isCustomEndDatePickerVisible}
+        setIsVisible={setIsCustomEndDatePickerVisible}
         onDateSelected={handleDateSelected}
-        minimumDate={minimumStakeEndDate}
-        maximumDate={maximumStakeEndDate}
+        onCancel={handleCancelSelectingCustomEndDate}
       />
     </SafeAreaView>
   )
