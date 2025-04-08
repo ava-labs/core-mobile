@@ -5,11 +5,15 @@ import {
   View,
   Text,
   Icons,
-  TextInput
+  TextInput,
+  Button
 } from '@avalabs/k2-alpine'
 import { Keyboard } from 'react-native'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { copyToClipboard } from 'common/utils/clipboard'
 import { AddressType } from './ContactForm'
+import { ContactAddressMenu } from './ContactAddressMenu'
 
 interface ContactAddressFormProps {
   title: AddressType
@@ -26,11 +30,31 @@ export const ContactAddressForm = ({
   placeholder,
   onUpdateAddress
 }: ContactAddressFormProps): React.JSX.Element => {
+  const params = useLocalSearchParams<{ address: string }>()
+  const { navigate } = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [value, setValue] = useState('')
   const {
     theme: { colors }
   } = useTheme()
+
+  useFocusEffect(
+    useCallback(() => {
+      if (params.address) {
+        onUpdateAddress(title, params.address)
+      }
+    }, [onUpdateAddress, title, params.address])
+  )
+
+  const handleScanQrCode = useCallback(() => {
+    navigate('./scanQrCode')
+  }, [navigate])
+
+  const handleCopyAddress = useCallback(() => {
+    if (address) {
+      copyToClipboard(address, `${title} address copied!`)
+    }
+  }, [address, title])
 
   const renderAddress = useCallback(() => {
     if (isEditing) {
@@ -62,54 +86,65 @@ export const ContactAddressForm = ({
 
     if (address === undefined) {
       return (
-        <TouchableOpacity
-          sx={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}
-          onPress={() => {
-            setIsEditing(true)
-          }}>
-          <Icons.Custom.AddCircle width={20} height={20} />
-          <Text variant="body1">{emptyText}</Text>
-        </TouchableOpacity>
+        <ContactAddressMenu
+          onTypeOrPaste={() => setIsEditing(true)}
+          onScanQrCode={handleScanQrCode}>
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <Icons.Custom.AddCircle width={20} height={20} />
+            <Text variant="body1">{emptyText}</Text>
+          </View>
+        </ContactAddressMenu>
       )
     }
 
     return (
-      <TouchableOpacity
-        onPress={() => onUpdateAddress(title, undefined)}
-        style={{
-          width: '100%',
-          backgroundColor: colors.$surfaceSecondary,
-          gap: 14,
+      <View
+        sx={{
           flexDirection: 'row',
+          justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-        <Icons.Custom.DoNotDisturbOn width={20} height={20} />
-        <View>
-          <Text
-            variant="buttonMedium"
-            sx={{
-              fontFamily: 'Inter-Medium',
-              fontSize: 16,
-              color: '$textPrimary'
-            }}>
-            {title}
-          </Text>
-          <Text
-            variant="mono"
-            sx={{
-              color: '$textSecondary',
-              fontSize: 13,
-              lineHeight: 18
-            }}>
-            {truncateAddress(address)}
-          </Text>
-        </View>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => onUpdateAddress(title, undefined)}
+          style={{
+            backgroundColor: colors.$surfaceSecondary,
+            gap: 14,
+            flexDirection: 'row',
+            alignItems: 'center'
+          }}>
+          <Icons.Custom.DoNotDisturbOn width={20} height={20} />
+          <View>
+            <Text
+              variant="buttonMedium"
+              sx={{
+                fontFamily: 'Inter-Medium',
+                fontSize: 16,
+                color: '$textPrimary'
+              }}>
+              {title}
+            </Text>
+            <Text
+              variant="mono"
+              sx={{
+                color: '$textSecondary',
+                fontSize: 13,
+                lineHeight: 18
+              }}>
+              {truncateAddress(address)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <Button size="small" type="secondary" onPress={handleCopyAddress}>
+          Copy
+        </Button>
+      </View>
     )
   }, [
     address,
     colors.$surfaceSecondary,
     emptyText,
+    handleCopyAddress,
+    handleScanQrCode,
     isEditing,
     onUpdateAddress,
     placeholder,

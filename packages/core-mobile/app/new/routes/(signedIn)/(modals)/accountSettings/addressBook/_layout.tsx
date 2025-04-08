@@ -7,6 +7,7 @@ export default function AddressBookLayout(): JSX.Element {
       <Stack.Screen name="index" />
       <Stack.Screen name="addContact" />
       <Stack.Screen name="contactDetail" />
+      <Stack.Screen name="scanQrCode" />
     </Stack>
   )
 }

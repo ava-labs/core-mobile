@@ -1,14 +1,14 @@
-import { Text, View } from '@avalabs/k2-alpine'
-import React from 'react'
 import { useRouter } from 'expo-router'
+import React from 'react'
+import { View, Text } from '@avalabs/k2-alpine'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 
-const ScanQrCodeScreen = (): JSX.Element => {
+const ScanQrCodeScreen = (): React.JSX.Element => {
   const { dismiss, setParams } = useRouter()
 
-  const handleOnSuccess = (tokenAddress: string): void => {
+  const handleOnSuccess = (address: string): void => {
     dismiss()
-    setParams({ tokenAddress })
+    setParams({ address })
   }
 
   return (

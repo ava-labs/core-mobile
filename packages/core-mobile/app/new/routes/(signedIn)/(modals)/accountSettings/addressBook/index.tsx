@@ -95,10 +95,6 @@ const AddressBookScreen = (): JSX.Element => {
     [navigate]
   )
 
-  const goToScanQrCode = useCallback((): void => {
-    navigate('./addressBook/scanQrCode')
-  }, [navigate])
-
   const renderHeaderRight = useCallback(() => {
     return (
       <TouchableOpacity
@@ -263,22 +259,6 @@ const AddressBookScreen = (): JSX.Element => {
             searchText={searchText}
             placeholder="Search addresses"
             useDebounce={true}
-            rightComponent={
-              <TouchableOpacity
-                onPress={goToScanQrCode}
-                hitSlop={16}
-                sx={{
-                  marginRight: 9,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <Icons.Custom.QRCodeScanner
-                  color={colors.$textSecondary}
-                  width={20}
-                  height={20}
-                />
-              </TouchableOpacity>
-            }
           />
         </View>
       }

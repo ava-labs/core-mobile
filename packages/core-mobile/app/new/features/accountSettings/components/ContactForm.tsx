@@ -52,6 +52,7 @@ export const ContactForm = ({
         addressType,
         value
       )
+
       if (value === undefined) {
         showAlert({
           title: 'Do you want to delete this address?',
