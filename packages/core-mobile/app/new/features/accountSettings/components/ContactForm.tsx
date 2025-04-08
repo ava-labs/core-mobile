@@ -91,6 +91,12 @@ export const ContactForm = ({
         address: contact?.addressC
       },
       {
+        title: AddressType.EVM,
+        placeholder: 'Type in or paste in Ethereum address',
+        emptyText: 'Add Ethereum address',
+        address: contact?.addressEVM
+      },
+      {
         title: AddressType.PVM,
         placeholder: 'Type in or paste in P-Chain address',
         emptyText: 'Add Avalanche P-Chain address',
@@ -101,12 +107,6 @@ export const ContactForm = ({
         placeholder: 'Type in or paste in X-Chain address',
         emptyText: 'Add Avalanche X-Chain address',
         address: contact?.addressAVM
-      },
-      {
-        title: AddressType.EVM,
-        placeholder: 'Type in or paste in Ethereum address',
-        emptyText: 'Add Ethereum address',
-        address: contact?.addressEVM
       },
       {
         title: AddressType.BTC,

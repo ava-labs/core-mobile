@@ -1,11 +1,13 @@
 import {
   Avatar,
+  Chip,
   FlatList,
   Icons,
   Image,
   NavigationTitleHeader,
   SearchBar,
   Separator,
+  SimpleDropdown,
   SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
@@ -24,11 +26,11 @@ import Animated, {
 import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { Contact, selectContacts } from 'store/addressBook'
-import { useSelector } from 'react-redux'
+import { Contact } from 'store/addressBook'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { uuid } from 'utils/uuid'
+import { useContactSort } from 'features/accountSettings/hooks/useContactSort'
 
 const TITLE = 'Contacts'
 
@@ -36,11 +38,7 @@ const AddressBookScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const contactCollection = useSelector(selectContacts)
-
-  const contacts = useMemo(() => {
-    return Object.values(contactCollection)
-  }, [contactCollection])
+  const { data: contacts, sort } = useContactSort()
 
   const [searchText, setSearchText] = useState('')
   const { navigate } = useRouter()
@@ -248,7 +246,7 @@ const AddressBookScreen = (): JSX.Element => {
         />
       }
       ListHeaderComponent={
-        <View sx={{ gap: 16, marginHorizontal: 16, marginBottom: 16 }}>
+        <View sx={{ gap: 16, marginHorizontal: 16 }}>
           <Animated.View
             style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
             onLayout={handleHeaderLayout}>
@@ -260,6 +258,20 @@ const AddressBookScreen = (): JSX.Element => {
             placeholder="Search addresses"
             useDebounce={true}
           />
+          {contacts.length > 0 && (
+            <View sx={{ marginTop: 8 }}>
+              <SimpleDropdown
+                from={
+                  <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+                    {sort.title}
+                  </Chip>
+                }
+                sections={sort.data}
+                selectedRows={[sort.selected]}
+                onSelectRow={sort.onSelected}
+              />
+            </View>
+          )}
         </View>
       }
       renderItem={item => renderItem(item.item as Contact, item.index)}
