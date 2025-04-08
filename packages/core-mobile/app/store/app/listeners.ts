@@ -1,6 +1,11 @@
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
-import { AppState, AppStateStatus, Platform } from 'react-native'
+import {
+  AppState,
+  AppStateStatus,
+  Platform,
+  Appearance as RnAppearance
+} from 'react-native'
 import { AppListenerEffectAPI } from 'store'
 import {
   onRehydrationComplete,
@@ -22,6 +27,12 @@ import { commonStorage } from 'utils/mmkv'
 import { reduxStorage } from 'store/reduxStorage'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import BootSplash from 'react-native-bootsplash'
+import {
+  Appearance,
+  ColorSchemeName,
+  setSelectedAppearance,
+  setSelectedColorScheme
+} from 'store/settings/appearance'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -145,6 +156,10 @@ const clearData = async (
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
   dispatch(setWalletType(WalletType.UNSET))
+  dispatch(setSelectedAppearance(Appearance.System))
+  dispatch(
+    setSelectedColorScheme(RnAppearance.getColorScheme() as ColorSchemeName)
+  )
   await BiometricsSDK.clearAllWalletKeys().catch(e =>
     Logger.error('failed to clear biometrics', e)
   )
