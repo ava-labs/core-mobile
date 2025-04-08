@@ -182,33 +182,35 @@ export const ContactForm = ({
           </View>
         ))}
       </View>
-      <AlertWithTextInputs
-        visible={alertWithTextInputVisible}
-        title="Name this contact"
-        inputs={[{ key: 'save' }]}
-        buttons={[
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: () => {
-              handleHideAlertWithTextInput()
-            }
-          },
-          {
-            text: 'Save',
-            style: 'default',
-            shouldDisable: (values: Record<string, string>) => {
-              return values.save === ''
-            },
-            onPress: (values: Record<string, string>) => {
-              if (values.save !== '') {
-                onUpdate({ ...contact, name: values.save })
+      <View>
+        <AlertWithTextInputs
+          visible={alertWithTextInputVisible}
+          title="Name this contact"
+          inputs={[{ key: 'save' }]}
+          buttons={[
+            {
+              text: 'Cancel',
+              style: 'cancel',
+              onPress: () => {
                 handleHideAlertWithTextInput()
               }
+            },
+            {
+              text: 'Save',
+              style: 'default',
+              shouldDisable: (values: Record<string, string>) => {
+                return values.save === ''
+              },
+              onPress: (values: Record<string, string>) => {
+                if (values.save !== '') {
+                  onUpdate({ ...contact, name: values.save })
+                  handleHideAlertWithTextInput()
+                }
+              }
             }
-          }
-        ]}
-      />
+          ]}
+        />
+      </View>
     </View>
   )
 }
