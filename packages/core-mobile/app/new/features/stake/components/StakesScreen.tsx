@@ -30,6 +30,8 @@ const StakesScreen = ({
   onAddStake,
   onClaim,
   onPressStake,
+  onRefresh,
+  isRefreshing,
   motion,
   canAddStake
 }: {
@@ -37,6 +39,8 @@ const StakesScreen = ({
   onAddStake: () => void
   onClaim: () => void
   onPressStake: (txHash: string) => void
+  onRefresh: () => void
+  isRefreshing: boolean
   motion?: Motion
   canAddStake: boolean
 }): JSX.Element => {
@@ -159,6 +163,8 @@ const StakesScreen = ({
       keyExtractor={(_, index) => index.toString()}
       removeClippedSubviews={true}
       extraData={theme.isDark} // force re-render when theme changes
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
     />
   )
 }

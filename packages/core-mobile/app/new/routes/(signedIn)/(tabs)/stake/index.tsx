@@ -29,16 +29,14 @@ import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
 import { Banner } from 'features/stake/components/Banner'
 import { LoadingState } from 'common/components/LoadingState'
-import StakesScreen from 'features/stake/components/StakesScreen'
-import { useActiveStakes } from 'hooks/earn/useActiveStakes'
-import { usePastStakes } from 'hooks/earn/usePastStakes'
 import { useAddStake } from 'common/hooks/useAddStake'
+import { AllStakesScreen } from 'features/stake/components/AllStakesScreen'
+import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
+import { CompletedStakesScreen } from 'features/stake/components/CompletedStakesScreen'
 
 const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { data, isLoading } = useStakes()
-  const { stakes: activeStakes } = useActiveStakes()
-  const { stakes: pastStakes } = usePastStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -128,8 +126,7 @@ const StakeHomeScreen = (): JSX.Element => {
     const allTab = {
       tabName: StakeHomeScreenTab.All,
       component: (
-        <StakesScreen
-          stakes={data ?? []}
+        <AllStakesScreen
           onPressStake={handlePressStake}
           onAddStake={addStake}
           onClaim={handleClaim}
@@ -148,8 +145,7 @@ const StakeHomeScreen = (): JSX.Element => {
       {
         tabName: StakeHomeScreenTab.Active,
         component: (
-          <StakesScreen
-            stakes={activeStakes}
+          <ActiveStakesScreen
             onPressStake={handlePressStake}
             onAddStake={addStake}
             onClaim={handleClaim}
@@ -161,8 +157,7 @@ const StakeHomeScreen = (): JSX.Element => {
       {
         tabName: StakeHomeScreenTab.Completed,
         component: (
-          <StakesScreen
-            stakes={pastStakes}
+          <CompletedStakesScreen
             onPressStake={handlePressStake}
             onAddStake={addStake}
             onClaim={handleClaim}
@@ -171,17 +166,7 @@ const StakeHomeScreen = (): JSX.Element => {
         )
       }
     ]
-  }, [
-    activeStakes,
-    data,
-    pastStakes,
-    isEmpty,
-    motion,
-    handlePressStake,
-    addStake,
-    canAddStake,
-    handleClaim
-  ])
+  }, [isEmpty, motion, handlePressStake, addStake, canAddStake, handleClaim])
 
   if (isLoading) {
     return <LoadingState sx={{ flex: 1 }} />

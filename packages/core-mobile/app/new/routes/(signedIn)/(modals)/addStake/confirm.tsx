@@ -32,6 +32,7 @@ import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showSnackbar } from 'common/utils/toast'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectActiveAccount } from 'store/account'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -229,6 +230,8 @@ const StakeConfirmScreen = (): JSX.Element => {
     onDelegationError,
     onFundsStuck
   )
+
+  usePreventScreenRemoval(issueDelegationMutation.isPending)
 
   useEffect(() => {
     if (

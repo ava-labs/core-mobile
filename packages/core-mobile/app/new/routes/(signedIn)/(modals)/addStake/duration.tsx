@@ -97,7 +97,7 @@ const StakeDurationScreen = (): JSX.Element => {
 
   const rewardChartRef = useRef<StakeRewardChartHandle>(null)
 
-  const initialIndex = 2
+  const initialIndex = isDeveloperMode ? 0 : 2
   const selectedChartIndex = useSharedValue<number | undefined>(initialIndex)
   // Mirror the shared value to a state variable so that React re-renders when it changes.
   const [selectedChartIndexState, setSelectedChartIndexState] = useState<
