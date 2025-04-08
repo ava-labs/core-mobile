@@ -88,7 +88,7 @@ const StakeRewardChartStory = (): JSX.Element => {
           height: 270
         }}
         initialIndex={initialIndex}
-        selectedIndex={selectedIndex}
+        animatedSelectedIndex={selectedIndex}
         renderSelectionTitle={renderSelectionTitle}
         renderSelectionSubtitle={renderSelectionSubtitle}
       />
