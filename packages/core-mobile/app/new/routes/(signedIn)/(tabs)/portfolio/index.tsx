@@ -15,7 +15,7 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useAddStake } from 'common/hooks/useAddStake'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import {
