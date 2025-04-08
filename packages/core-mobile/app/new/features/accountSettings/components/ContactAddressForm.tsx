@@ -30,8 +30,11 @@ export const ContactAddressForm = ({
   placeholder,
   onUpdateAddress
 }: ContactAddressFormProps): React.JSX.Element => {
-  const params = useLocalSearchParams<{ address: string }>()
-  const { navigate } = useRouter()
+  const params = useLocalSearchParams<{
+    address: string
+    addressType: AddressType
+  }>()
+  const { navigate, setParams } = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [value, setValue] = useState('')
   const {
@@ -40,15 +43,16 @@ export const ContactAddressForm = ({
 
   useFocusEffect(
     useCallback(() => {
-      if (params.address) {
-        onUpdateAddress(title, params.address)
+      if (params.address && params.addressType === title) {
+        onUpdateAddress(params.addressType, params.address)
+        setParams({ address: undefined, addressType: undefined })
       }
-    }, [onUpdateAddress, title, params.address])
+    }, [params.address, params.addressType, title, onUpdateAddress, setParams])
   )
 
   const handleScanQrCode = useCallback(() => {
-    navigate('./scanQrCode')
-  }, [navigate])
+    navigate({ pathname: './scanQrCode', params: { addressType: title } })
+  }, [navigate, title])
 
   const handleCopyAddress = useCallback(() => {
     if (address) {

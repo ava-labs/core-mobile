@@ -269,7 +269,11 @@ const isValidAddress = (
       return isAddress(address) || isBech32Address(address)
     case AddressType.PVM:
     case AddressType.AVM:
-      return Avalanche.isBech32Address(address, true)
+      return (
+        Avalanche.isBech32Address(address, false) &&
+        ((isDeveloperMode && address.includes('fuji')) ||
+          (!isDeveloperMode && address.includes('avax')))
+      )
     case AddressType.BTC:
       return isBtcAddress(address, !isDeveloperMode)
   }
