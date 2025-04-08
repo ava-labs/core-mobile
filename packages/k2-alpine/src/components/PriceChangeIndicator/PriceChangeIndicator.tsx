@@ -13,7 +13,7 @@ import { AnimatedText } from '../Animated/AnimatedText'
 import { View, Text } from '../Primitives'
 import { K2AlpineTheme } from '../../theme/theme'
 import { MaskedView } from '../MaskedView/MaskedView'
-import { PriceChange, PriceChangeStatus } from './types'
+import { PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
   formattedPrice,
@@ -24,7 +24,11 @@ export const PriceChangeIndicator = ({
   overrideTheme,
   shouldMask = false,
   maskWidth
-}: PriceChange & {
+}: {
+  status: PriceChangeStatus
+  formattedPercent?: string
+  formattedPrice?: string
+  shouldHidePrice?: boolean
   textVariant?: TextVariants
   animated?: boolean
   testID?: string
@@ -52,7 +56,9 @@ export const PriceChangeIndicator = ({
       ? '-'
       : ''
 
-  const formattedPriceText = `${signIndicator}${formattedPrice}`
+  const formattedPriceText = formattedPrice
+    ? `${signIndicator}${formattedPrice}`
+    : undefined
 
   const arrowSx = getArrowMargin(textVariant, status, formattedPercent)
 
@@ -106,17 +112,23 @@ const AnimatedComponent = ({
     status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
   return (
     <Animated.View exiting={FadeOut} entering={FadeIn} style={styles.container}>
-      <AnimatedText
-        variant={textVariant}
-        characters={formattedPrice}
-        sx={{
-          color: tintColor
-        }}
-      />
+      {formattedPrice && (
+        <AnimatedText
+          variant={textVariant}
+          characters={formattedPrice}
+          sx={{
+            color: tintColor
+          }}
+        />
+      )}
       <Animated.View
         layout={LinearTransition.springify().damping(100)}
         style={styles.innerWrapper}>
-        {showArrow && <Arrow sx={arrowSx} status={status} size={arrowSize} />}
+        {showArrow && (
+          <Animated.View style={styles.arrow}>
+            <Arrow sx={arrowSx} status={status} size={arrowSize} />
+          </Animated.View>
+        )}
         {formattedPercent !== undefined && (
           <AnimatedText
             variant={textVariant}
@@ -146,15 +158,21 @@ const PlainComponent = ({
 
   return (
     <View style={styles.container}>
-      <Text
-        variant={textVariant}
-        sx={{
-          color: tintColor
-        }}>
-        {formattedPrice}
-      </Text>
+      {formattedPrice && (
+        <Text
+          variant={textVariant}
+          sx={{
+            color: tintColor
+          }}>
+          {formattedPrice}
+        </Text>
+      )}
       <View style={styles.innerWrapper}>
-        {showArrow && <Arrow sx={arrowSx} status={status} size={arrowSize} />}
+        {showArrow && (
+          <View style={styles.arrow}>
+            <Arrow sx={arrowSx} status={status} size={arrowSize} />
+          </View>
+        )}
         {formattedPercent !== undefined && (
           <Text
             variant={textVariant}
@@ -201,7 +219,7 @@ type ComponentProps = {
   textVariant?: TextVariants
   tintColor: string
   percentChangeColor: string
-  formattedPrice: string
+  formattedPrice: string | undefined
   formattedPercent?: string
   status: PriceChangeStatus
   arrowSx: SxProp
@@ -220,7 +238,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 4
-  }
+  },
+  arrow: { alignSelf: 'center' }
 })
 
 type TextVariants = 'buttonMedium' | 'buttonSmall' | 'priceChangeIndicatorLarge'
