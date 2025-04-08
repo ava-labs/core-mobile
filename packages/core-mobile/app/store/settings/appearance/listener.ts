@@ -2,10 +2,11 @@ import { AppStartListening } from 'store/middleware/listener'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { Appearance as RnAppearance } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
-import { setIsReady } from 'store/app'
+import { onRehydrationComplete } from 'store/app'
 import { selectIsDeveloperMode, toggleDeveloperMode } from '../advanced'
 import {
   selectSelectedAppearance,
+  selectSelectedColorScheme,
   setSelectedAppearance,
   setSelectedColorScheme
 } from './slice'
@@ -19,6 +20,7 @@ const handleAppearanceChange = (
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const appearance = selectSelectedAppearance(state)
+  const currentColorScheme = selectSelectedColorScheme(state)
   const colorScheme =
     isDeveloperMode || appearance === Appearance.Dark
       ? 'dark'
@@ -26,14 +28,19 @@ const handleAppearanceChange = (
       ? 'light'
       : (RnAppearance.getColorScheme() as ColorSchemeName)
 
-  dispatch(setSelectedColorScheme(colorScheme))
+  currentColorScheme !== colorScheme &&
+    dispatch(setSelectedColorScheme(colorScheme))
 }
 
 export const addAppearanceListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    matcher: isAnyOf(setSelectedAppearance, toggleDeveloperMode, setIsReady),
+    matcher: isAnyOf(
+      setSelectedAppearance,
+      toggleDeveloperMode,
+      onRehydrationComplete
+    ),
     effect: handleAppearanceChange
   })
 }

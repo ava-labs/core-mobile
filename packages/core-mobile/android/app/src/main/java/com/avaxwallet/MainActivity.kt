@@ -1,16 +1,15 @@
 package com.avaxwallet
 
-import expo.modules.ReactActivityDelegateWrapper
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
-
+import androidx.appcompat.app.AppCompatDelegate
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.zoontek.rnbootsplash.RNBootSplash
-import androidx.appcompat.app.AppCompatDelegate
+import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
 
@@ -25,7 +24,11 @@ class MainActivity : ReactActivity() {
      * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
      */
     override fun createReactActivityDelegate(): ReactActivityDelegate =
-        ReactActivityDelegateWrapper(this, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED, DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled))
+            ReactActivityDelegateWrapper(
+                    this,
+                    BuildConfig.IS_NEW_ARCHITECTURE_ENABLED,
+                    DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+            )
 
     private var privacyView: View? = null
     private var isPrivacyViewOn = false
@@ -33,6 +36,7 @@ class MainActivity : ReactActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         RNBootSplash.init(this, R.style.BootTheme)
         super.onCreate(null)
+        // this is needed to set the theme correctly in app when night mode is enabled on the device
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         privacyView = View.inflate(this, R.layout.privacy_layout, null)
     }
