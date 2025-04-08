@@ -3,6 +3,7 @@ import { TouchableWithoutFeedback, ViewStyle } from 'react-native'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
+import { SCREEN_WIDTH } from '../../const'
 
 export const Snackbar = ({
   message,
@@ -34,20 +35,27 @@ export const Snackbar = ({
       testID={testID}
       onPress={onPress}>
       <View
-        sx={{
-          backgroundColor,
-          paddingHorizontal: 20,
-          paddingVertical: 10,
-          borderRadius: 1000
+        style={{
+          width: SCREEN_WIDTH,
+          justifyContent: 'center',
+          alignItems: 'center'
         }}>
-        <Text
-          variant="subtitle2"
-          sx={{
-            fontFamily: 'Inter-SemiBold',
-            color: textColor
+        <View
+          style={{
+            backgroundColor,
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            borderRadius: 1000
           }}>
-          {message}
-        </Text>
+          <Text
+            variant="subtitle2"
+            sx={{
+              fontFamily: 'Inter-SemiBold',
+              color: textColor
+            }}>
+            {message}
+          </Text>
+        </View>
       </View>
     </TouchableWithoutFeedback>
   )
