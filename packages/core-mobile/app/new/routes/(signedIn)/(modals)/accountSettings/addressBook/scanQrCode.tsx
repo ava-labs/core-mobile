@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
-import { AddressType } from 'features/accountSettings/components/ContactForm'
+import { AddressType } from 'features/accountSettings/consts'
 
 const ScanQrCodeScreen = (): React.JSX.Element => {
   const { addressType } = useLocalSearchParams<{ addressType: AddressType }>()

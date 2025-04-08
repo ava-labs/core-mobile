@@ -12,7 +12,7 @@ import { Keyboard } from 'react-native'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { copyToClipboard } from 'common/utils/clipboard'
-import { AddressType } from './ContactForm'
+import { AddressType } from '../consts'
 import { ContactAddressMenu } from './ContactAddressMenu'
 
 interface ContactAddressFormProps {

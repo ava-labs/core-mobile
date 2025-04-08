@@ -11,21 +11,12 @@ import {
 import { Contact } from 'store/addressBook'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Space } from 'components/Space'
-import { isBech32Address } from '@avalabs/core-bridge-sdk'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isBtcAddress } from 'utils/isBtcAddress'
-import { isAddress } from 'ethers'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { AddressType } from '../consts'
+import { constructContactByAddressType } from '../utils/constructContactByAddressType'
+import { isValidAddress } from '../utils/isValidAddress'
 import { ContactAddressForm } from './ContactAddressForm'
-
-export enum AddressType {
-  CChain = 'Avalanche C-Chain',
-  PVM = 'Avalanche P-Chain',
-  AVM = 'Avalanche X-Chain',
-  EVM = 'Ethereum',
-  BTC = 'Bitcoin'
-}
 
 export const ContactForm = ({
   contact,
@@ -237,44 +228,4 @@ export const ContactForm = ({
       />
     </View>
   )
-}
-
-const constructContactByAddressType = (
-  contact: Contact,
-  addressType: AddressType,
-  address?: string
-): Contact => {
-  switch (addressType) {
-    case AddressType.CChain:
-      return { ...contact, addressC: address }
-    case AddressType.PVM:
-      return { ...contact, addressPVM: address }
-    case AddressType.AVM:
-      return { ...contact, addressAVM: address }
-    case AddressType.EVM:
-      return { ...contact, addressEVM: address }
-    case AddressType.BTC:
-      return { ...contact, addressBTC: address }
-  }
-}
-
-const isValidAddress = (
-  addressType: AddressType,
-  address: string,
-  isDeveloperMode = false
-): boolean => {
-  switch (addressType) {
-    case AddressType.CChain:
-    case AddressType.EVM:
-      return isAddress(address) || isBech32Address(address)
-    case AddressType.PVM:
-    case AddressType.AVM:
-      return (
-        Avalanche.isBech32Address(address, false) &&
-        ((isDeveloperMode && address.includes('fuji')) ||
-          (!isDeveloperMode && address.includes('avax')))
-      )
-    case AddressType.BTC:
-      return isBtcAddress(address, !isDeveloperMode)
-  }
 }
