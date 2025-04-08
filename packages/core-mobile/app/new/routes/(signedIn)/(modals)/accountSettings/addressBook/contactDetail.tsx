@@ -1,5 +1,10 @@
-import { Button, ScrollView, showAlert, useTheme } from '@avalabs/k2-alpine'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import {
+  Button,
+  ScrollView,
+  showAlert,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback } from 'react'
@@ -69,26 +74,28 @@ const ContactDetailScreen = (): React.JSX.Element => {
   )
 
   return (
-    <KeyboardAvoidingView>
+    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
       <ScrollView
+        automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flex: 1,
-          paddingBottom: 16,
-          paddingHorizontal: 16,
           justifyContent: 'space-between'
         }}>
         {contact && <ContactForm contact={contact} onUpdate={handleUpdate} />}
-        <Button
-          type="secondary"
-          size="large"
-          onPress={handleDelete}
-          style={{ marginBottom: bottom }}
-          textStyle={{ color: colors.$textDanger }}>
-          Delete
-        </Button>
       </ScrollView>
-    </KeyboardAvoidingView>
+      <Button
+        type="secondary"
+        size="large"
+        onPress={handleDelete}
+        style={{
+          marginBottom: bottom,
+          backgroundColor: colors.$surfacePrimary
+        }}
+        textStyle={{ color: colors.$textDanger }}>
+        Delete
+      </Button>
+    </View>
   )
 }
 

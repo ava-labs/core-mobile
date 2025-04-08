@@ -35,18 +35,19 @@ const AddContactScreen = (): React.JSX.Element => {
   }, [back, canGoBack, contact, contactId, dispatch])
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        flex: 1,
-        paddingBottom: 16,
-        paddingHorizontal: 16,
-        justifyContent: 'space-between'
-      }}>
-      {contact && (
-        <ContactForm contact={contact} onUpdate={handleUpdateContact} />
-      )}
-      <View sx={{ gap: 16 }}>
+    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
+      <ScrollView
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flex: 1,
+          justifyContent: 'space-between'
+        }}>
+        {contact && (
+          <ContactForm contact={contact} onUpdate={handleUpdateContact} />
+        )}
+      </ScrollView>
+      <View sx={{ gap: 16, backgroundColor: '$surfacePrimary' }}>
         <Button
           type="primary"
           size="large"
@@ -62,7 +63,7 @@ const AddContactScreen = (): React.JSX.Element => {
           Cancel
         </Button>
       </View>
-    </ScrollView>
+    </View>
   )
 }
 
