@@ -66,6 +66,7 @@ import IconSwitch from '../../assets/icons/switch.svg'
 import IconWaterDrop from '../../assets/icons/water_drop.svg'
 import IconWaterDropFilled from '../../assets/icons/water_drop_filled.svg'
 import IconHistory from '../../assets/icons/history.svg'
+import IconArrowOutward from '../../assets/icons/arrow_outward.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -227,6 +228,7 @@ export const Icons = {
     StarFilled: IconStarFilled
   },
   Custom: {
+    ArrowOutward: IconArrowOutward,
     BackArrowCustom: IconBackArrowCustom,
     FaceID: IconFaceID,
     TouchID: IconTouchID,

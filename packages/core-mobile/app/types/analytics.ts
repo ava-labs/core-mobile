@@ -178,6 +178,7 @@ export type AnalyticsEvents = {
   BrowserSearchSubmitted: undefined
   BrowserDiscoverDAppTapped: { url: string }
   BrowserDiscoverLearnTapped: { url: string }
+  BrowserDiscoverTopProjectTapped: { url: string }
   BrowserFavoritesTapped: undefined
   BrowserSuggestedTapped: { url: string }
   BrowserBackTapped: undefined
