@@ -135,7 +135,7 @@ export const TrendingTokenListView = memo(
                   status={status}
                 />
               </View>
-              <Button type="secondary" size="small" style={{ width: 72 }}>
+              <Button type="secondary" size="small" style={styles.buyButton}>
                 Buy
               </Button>
             </View>
@@ -160,5 +160,6 @@ const styles = StyleSheet.create({
     top: '-28%',
     left: '50%',
     transform: [{ rotate: '28deg' }]
-  }
+  },
+  buyButton: { width: 72 }
 })

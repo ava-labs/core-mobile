@@ -28,7 +28,6 @@ export const PriceChangeIndicator = ({
   status: PriceChangeStatus
   formattedPercent?: string
   formattedPrice?: string
-  shouldHidePrice?: boolean
   textVariant?: TextVariants
   animated?: boolean
   testID?: string
