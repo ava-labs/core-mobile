@@ -37,7 +37,7 @@ const TrendingTokensScreen = ({
   )
 
   const renderSeparator = useCallback((): JSX.Element => {
-    return <Separator sx={{ marginLeft: 62 }} />
+    return <Separator sx={{ marginLeft: 68 }} />
   }, [])
 
   const renderHeader = useCallback((): JSX.Element => {

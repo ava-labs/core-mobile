@@ -38,13 +38,10 @@ export const TrendingTokenListView = memo(
     onPress: () => void
   }) => {
     const {
-      theme: { colors, isDark }
+      theme: { colors }
     } = useTheme()
 
-    const borderColor = useMemo(
-      () => (isDark ? colors.$borderPrimary : alpha('#000000', 0.15)),
-      [colors, isDark]
-    )
+    const borderColor = useMemo(() => alpha(colors.$textPrimary, 0.1), [colors])
 
     const renderLogo = useCallback(() => {
       if (index === 0) {
@@ -81,28 +78,54 @@ export const TrendingTokenListView = memo(
         layout={SPRING_LINEAR_TRANSITION}>
         <TouchableOpacity onPress={onPress}>
           <View
-            sx={{
+            style={{
               paddingHorizontal: 16,
               paddingVertical: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between'
+              flexDirection: 'row'
             }}>
+            {renderLogo()}
             <View
-              sx={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 10,
+              style={{
+                marginLeft: 16,
+                marginRight: 16,
                 flex: 1
               }}>
-              {renderLogo()}
-              <View sx={{ flexShrink: 1 }}>
-                <Text
-                  variant="buttonMedium"
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {index + 1}. {token.name}
-                </Text>
+              <View
+                sx={{
+                  flexDirection: 'row'
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flex: 1
+                  }}>
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{ maxWidth: '45%' }}>
+                    {index + 1}. {token.name}
+                  </Text>
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{
+                      flex: 1,
+                      textAlign: 'right'
+                    }}>
+                    {formattedPrice}
+                  </Text>
+                </View>
+              </View>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  flex: 1
+                }}>
                 <View
                   sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text
@@ -116,25 +139,13 @@ export const TrendingTokenListView = memo(
                     <Icons.Toggle.StarFilled width={12} height={12} />
                   )}
                 </View>
-              </View>
-            </View>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-              <View
-                sx={{
-                  justifyContent: 'flex-end',
-                  alignItems: 'flex-end'
-                }}>
-                <Text
-                  variant="buttonMedium"
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {formattedPrice}
-                </Text>
                 <PriceChangeIndicator
                   formattedPercent={formattedPercentChange}
                   status={status}
                 />
               </View>
+            </View>
+            <View style={{ justifyContent: 'center' }}>
               <Button type="secondary" size="small" style={styles.buyButton}>
                 Buy
               </Button>
