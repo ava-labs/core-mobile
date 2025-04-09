@@ -1,7 +1,7 @@
 import { Button, ScrollView, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
@@ -14,19 +14,17 @@ const AddContactScreen = (): React.JSX.Element => {
   const [contact, setContact] = useState<Contact>({ id: contactId, name: '' })
 
   const handleUpdateContact = (updated: Contact): void => {
-    setContact(prev => {
-      return {
-        ...prev,
-        ...updated
-      }
-    })
+    setContact(updated)
   }
 
-  const isSaveDisabled =
-    contact.address === undefined &&
-    contact.addressXP === undefined &&
-    contact.addressBTC === undefined &&
-    contact.name.length === 0
+  const isSaveDisabled = useMemo(() => {
+    return (
+      (contact.address === undefined &&
+        contact.addressXP === undefined &&
+        contact.addressBTC === undefined) ||
+      contact.name.length === 0
+    )
+  }, [contact])
 
   const handleSave = useCallback(() => {
     dispatch(addContact({ ...contact, id: contactId }))
