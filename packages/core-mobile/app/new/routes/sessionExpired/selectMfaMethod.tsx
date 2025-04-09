@@ -5,10 +5,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { useInitWalletAndUnlock } from 'common/hooks/useInitWalletAndUnlock'
+import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
-  const { initWalletAndUnlock } = useInitWalletAndUnlock()
+  const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
   const { oidcToken, mfaId } = useLocalSearchParams<{
     oidcToken: string
     mfaId: string
@@ -40,12 +40,12 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
 
       if (recoveryMethod.mfa?.type === 'fido' && oidcToken && mfaId) {
         await SeedlessService.session.approveFido(oidcToken, mfaId, true)
-        await initWalletAndUnlock()
+        await initSeedlessWalletAndUnlock()
         canGoBack() && back() // dismiss selectMfaMethod screen
         canGoBack() && back() // dismiss sessionExpired screen
       }
     },
-    [oidcToken, mfaId, navigate, canGoBack, back, initWalletAndUnlock]
+    [oidcToken, mfaId, navigate, canGoBack, back, initSeedlessWalletAndUnlock]
   )
 
   return (

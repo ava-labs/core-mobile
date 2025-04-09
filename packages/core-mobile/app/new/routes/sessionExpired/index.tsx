@@ -16,10 +16,10 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { useDispatch } from 'react-redux'
 import { onLogOut } from 'store/app'
 import Logger from 'utils/Logger'
-import { useInitWalletAndUnlock } from 'common/hooks/useInitWalletAndUnlock'
+import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
 
 const SessionExpiredScreen = (): React.JSX.Element => {
-  const { initWalletAndUnlock } = useInitWalletAndUnlock()
+  const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
   const router = useRouter()
   const dispatch = useDispatch()
   const {
@@ -42,7 +42,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
         if (result.success) {
           const mfaMethods = await SeedlessService.session.userMfa()
           if (mfaMethods.length === 0) {
-            initWalletAndUnlock()
+            initSeedlessWalletAndUnlock()
             router.canGoBack() && router.back()
             return
           }
@@ -63,7 +63,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
                 result.value.mfaId,
                 true
               )
-              initWalletAndUnlock()
+              initSeedlessWalletAndUnlock()
               router.canGoBack() && router.back()
               return
             }
@@ -103,7 +103,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
         router.canDismiss() && router.dismiss()
         dispatch(onLogOut)
       })
-  }, [dispatch, initWalletAndUnlock, router])
+  }, [dispatch, initSeedlessWalletAndUnlock, router])
 
   return (
     <SafeAreaView
