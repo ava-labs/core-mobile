@@ -1,5 +1,5 @@
-import React from 'react'
-import { Icons, View } from '@avalabs/k2-alpine'
+import React, { useMemo } from 'react'
+import { alpha, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { FC } from 'react'
 import { TokenIcon } from 'common/components/TokenIcon'
 import {
@@ -13,41 +13,51 @@ interface TokenAvatarProps {
   logoUri?: string
   size?: number
   testID?: string
-  backgroundColor?: string
-  borderColor?: string
   isMalicious?: boolean
   isNetworkToken?: boolean
 }
 
 const DEFAULT_SIZE = 32
+const BORDER_WIDTH = 1
 
 export const TokenLogo: FC<TokenAvatarProps> = ({
   symbol,
   logoUri,
-  borderColor,
   size = DEFAULT_SIZE,
-  backgroundColor,
   isMalicious,
   isNetworkToken = false
 }) => {
+  const {
+    theme: { colors, isDark }
+  } = useTheme()
+
+  const backgroundColor = colors.$borderPrimary
+
   const useLocalNetworkTokenLogo =
     isNetworkToken && hasLocalNetworkTokenLogo(symbol)
-  const borderWidth = borderColor ? 1 : 0
+
+  // border color is the same no matter where the logo is used
+  const borderColor = useMemo(() => {
+    return isDark ? alpha(colors.$white, 0.1) : alpha(colors.$black, 0.1)
+  }, [colors.$white, colors.$black, isDark])
+
+  const containerStyle = useMemo(() => {
+    return {
+      width: size,
+      height: size,
+      borderRadius: size,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      backgroundColor,
+      borderColor: borderColor,
+      borderWidth: BORDER_WIDTH
+    }
+  }, [backgroundColor, borderColor, size])
 
   if (isMalicious) {
     return (
-      <View
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size,
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          backgroundColor,
-          borderColor,
-          borderWidth
-        }}>
+      <View sx={containerStyle}>
         <Icons.Custom.RedExclamation width={14} height={14} />
       </View>
     )
@@ -55,18 +65,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
 
   if (hasLocalTokenLogo(symbol) || useLocalNetworkTokenLogo) {
     return (
-      <View
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size,
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          backgroundColor,
-          borderColor,
-          borderWidth
-        }}>
+      <View sx={containerStyle}>
         <TokenIcon
           size={size}
           symbol={symbol}
@@ -77,11 +76,8 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   }
 
   return (
-    <Logo
-      logoUri={logoUri}
-      size={size}
-      borderColor={borderColor}
-      backgroundColor={backgroundColor}
-    />
+    <View sx={containerStyle}>
+      <Logo logoUri={logoUri} size={size} backgroundColor={backgroundColor} />
+    </View>
   )
 }

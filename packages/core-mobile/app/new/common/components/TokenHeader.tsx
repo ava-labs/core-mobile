@@ -82,7 +82,12 @@ export const TokenHeader = ({
   }
   return (
     <View onLayout={onLayout}>
-      {token && <LogoWithNetwork token={token} />}
+      {token && (
+        <LogoWithNetwork
+          token={token}
+          outerBorderColor={colors.$surfacePrimary}
+        />
+      )}
       <Text
         variant="heading2"
         sx={{ color: '$textSecondary', lineHeight: 38, marginTop: 10 }}

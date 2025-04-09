@@ -204,7 +204,7 @@ const TrackHomeScreen = (): JSX.Element => {
           showSearchResults && selectedSegmentIndex.get() === 0 ? (
             renderSearchResults()
           ) : (
-            <TrendingScreen />
+            <TrendingScreen goToMarketDetail={handleGotoMarketDetail} />
           )
       },
       {
