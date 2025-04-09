@@ -10,7 +10,10 @@ export default function SessionExpiredLayout(): JSX.Element {
     <Stack
       screenOptions={modalStackNavigatorScreenOptions}
       initialRouteName="index">
-      <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen
+        name="index"
+        options={{ ...modalFirstScreenOptions, gestureEnabled: false }}
+      />
       <Stack.Screen name="selectMfaMethod" />
       <Stack.Screen name="verifyTotpCode" />
     </Stack>
