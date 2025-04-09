@@ -113,7 +113,10 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
                 marginBottom: 12
               }}>
               {token && isAvailableBalanceType ? (
-                <LogoWithNetwork token={token} />
+                <LogoWithNetwork
+                  token={token}
+                  outerBorderColor={colors.$surfaceSecondary}
+                />
               ) : (
                 <View
                   sx={{
@@ -173,7 +176,12 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
         </Animated.View>
       )
     },
-    [colors.$textPrimary, getBalanceAndAssetName, token]
+    [
+      colors.$textPrimary,
+      colors.$surfaceSecondary,
+      getBalanceAndAssetName,
+      token
+    ]
   )
 
   const renderHeader = (): JSX.Element => {

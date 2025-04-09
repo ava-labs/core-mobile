@@ -131,8 +131,8 @@ export const SearchBar: FC<Props> = ({
     <View
       style={[
         {
-          justifyContent: 'center',
-          flexDirection: 'row'
+          flexDirection: 'row',
+          justifyContent: 'flex-start'
         },
         containerStyle
       ]}>

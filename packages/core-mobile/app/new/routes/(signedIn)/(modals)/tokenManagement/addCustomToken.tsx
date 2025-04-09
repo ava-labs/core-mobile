@@ -62,7 +62,10 @@ const AddCustomTokenScreen = (): JSX.Element => {
       <>
         <View
           style={{ justifyContent: 'center', alignItems: 'center', gap: 16 }}>
-          <LogoWithNetwork token={token as LocalTokenWithBalance} />
+          <LogoWithNetwork
+            token={token as LocalTokenWithBalance}
+            outerBorderColor={colors.$surfacePrimary}
+          />
           <Text variant="heading6">{token.name}</Text>
         </View>
         <Button

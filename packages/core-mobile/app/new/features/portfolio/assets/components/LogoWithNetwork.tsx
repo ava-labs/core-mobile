@@ -15,11 +15,16 @@ import { TokenLogo } from 'common/components/TokenLogo'
 interface Props {
   token: LocalTokenWithBalance
   sx?: SxProp
+  outerBorderColor: string // this color should match the background color of the parent view
 }
 
-export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
+export const LogoWithNetwork = ({
+  token,
+  sx,
+  outerBorderColor
+}: Props): React.JSX.Element => {
   const {
-    theme: { colors, isDark }
+    theme: { isDark }
   } = useTheme()
   const network = useSelector(selectNetwork(token.networkChainId))
   const isMalicious = isTokenMalicious(token)
@@ -28,6 +33,7 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
     token.type !== TokenType.NATIVE ||
     isTokenWithBalanceAVM(token) ||
     isTokenWithBalancePVM(token)
+
   const renderNetworkLogo = (
     t: LocalTokenWithBalance,
     n: Network
@@ -68,7 +74,6 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
         size={12}
         symbol={n.networkToken.symbol}
         logoUri={n.logoUri}
-        borderColor={colors.$borderPrimary}
         isNetworkToken
       />
     )
@@ -80,8 +85,6 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
         size={36}
         symbol={token.symbol}
         logoUri={token.logoUri}
-        backgroundColor={colors.$borderPrimary}
-        borderColor={colors.$borderPrimary}
         isMalicious={isMalicious}
       />
       {shouldShowNetworkLogo && network ? (
@@ -90,27 +93,17 @@ export const LogoWithNetwork = ({ token, sx }: Props): React.JSX.Element => {
             width: 16,
             height: 16,
             borderRadius: 16 / 2,
-            position: 'absolute',
-            bottom: -2,
-            right: -2,
-            backgroundColor: colors.$surfacePrimary,
             justifyContent: 'center',
             alignItems: 'center',
-            overflow: 'hidden'
+            borderWidth: 2,
+            borderColor: outerBorderColor,
+            position: 'absolute',
+            bottom: -4,
+            right: -4,
+            backgroundColor: 'transparent'
           }}
           testID="network_logo">
-          <View
-            sx={{
-              borderColor: colors.$borderPrimary,
-              borderWidth: 1,
-              width: 14,
-              height: 14,
-              borderRadius: 14 / 2,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-            {renderNetworkLogo(token, network)}
-          </View>
+          {renderNetworkLogo(token, network)}
         </View>
       ) : undefined}
     </View>
