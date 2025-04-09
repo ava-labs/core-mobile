@@ -34,7 +34,6 @@ const SendTokenScreen: FC = () => {
   const navigation =
     useNavigation<SendTokenScreenNavigationProp['navigation']>()
   const { params } = useRoute<SendTokenScreenNavigationProp['route']>()
-  const contact = params?.contact
 
   const { setToken, setToAddress } = useSendContext()
   const { activeNetwork } = useNetworks()
@@ -46,16 +45,6 @@ const SendTokenScreen: FC = () => {
       setToken(params?.token)
     }
   }, [setToken, params?.token])
-
-  useEffect(() => {
-    if (contact) {
-      setToAddress(contact.address)
-    }
-  }, [contact, setToAddress])
-
-  const handleOpenAddressBook = (): void => {
-    navigation.navigate(AppNavigation.Wallet.AddressBook)
-  }
 
   const handleOpenQRScanner = (): void => {
     navigation.navigate(AppNavigation.Modal.QRScanner, {
@@ -103,7 +92,6 @@ const SendTokenScreen: FC = () => {
       account={activeAccount}
       network={activeNetwork}
       onOpenQRScanner={handleOpenQRScanner}
-      onOpenAddressBook={handleOpenAddressBook}
       onSuccess={handleSuccess}
       onFailure={handleFailure}
     />
@@ -113,7 +101,6 @@ const SendTokenScreen: FC = () => {
       nativeToken={nativeToken as TokenWithBalancePVM}
       network={activeNetwork}
       onOpenQRScanner={handleOpenQRScanner}
-      onOpenAddressBook={handleOpenAddressBook}
       onSuccess={handleSuccess}
       onFailure={handleFailure}
     />
@@ -123,7 +110,6 @@ const SendTokenScreen: FC = () => {
       nativeToken={nativeToken as TokenWithBalanceAVM}
       network={activeNetwork}
       onOpenQRScanner={handleOpenQRScanner}
-      onOpenAddressBook={handleOpenAddressBook}
       onSuccess={handleSuccess}
       onFailure={handleFailure}
     />
@@ -133,7 +119,6 @@ const SendTokenScreen: FC = () => {
       nativeToken={nativeToken as TokenWithBalanceBTC}
       network={activeNetwork}
       onOpenQRScanner={handleOpenQRScanner}
-      onOpenAddressBook={handleOpenAddressBook}
       onSuccess={handleSuccess}
       onFailure={handleFailure}
     />
