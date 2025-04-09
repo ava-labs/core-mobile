@@ -3,10 +3,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import NftSend from 'screens/nft/send/NftSend'
-import {
-  NFTDetailsScreenProps,
-  NFTDetailsSendScreenProps
-} from 'navigation/types'
+import { NFTDetailsScreenProps } from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { useSelector } from 'react-redux'
 import { selectIsSendBlocked } from 'store/posthog'
@@ -57,13 +54,7 @@ export default function NFTSendScreenStack(): JSX.Element | null {
   )
 }
 
-type AddressPickNavigationProp = NFTDetailsSendScreenProps<
-  typeof AppNavigation.NftSend.Send
->['navigation']
-
 const NftSendScreen = (): JSX.Element => {
-  const { navigate } = useNavigation<AddressPickNavigationProp>()
-
   const navigation = useNavigation<NFTSendScreenProp['navigation']>()
   const { setToAddress } = useSendContext()
 
@@ -75,10 +66,5 @@ const NftSendScreen = (): JSX.Element => {
     })
   }
 
-  return (
-    <NftSend
-      onOpenAddressBook={() => navigate(AppNavigation.Wallet.AddressBook)}
-      onOpenQRScanner={() => handleOpenQRScanner()}
-    />
-  )
+  return <NftSend onOpenQRScanner={() => handleOpenQRScanner()} />
 }

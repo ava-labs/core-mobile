@@ -6,7 +6,6 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import StarSVG from 'components/svg/StarSVG'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import AvaText from './AvaText'
-import PersonSVG from './svg/PersonSVG'
 
 interface BaseProps {
   image?: string | ReactNode
@@ -120,34 +119,6 @@ function ZeroStateCollectibles(): JSX.Element {
   return <ZeroStateBase title={title} message={message} />
 }
 
-function ZeroStateNoRecentAccounts(): JSX.Element {
-  const title = 'No recent recipients'
-  const message = 'Enter the address in the field above.'
-
-  return <ZeroStateBase title={title} message={message} />
-}
-
-function ZeroStateEmptyAddressBook({
-  onGoToAddressBook
-}: {
-  onGoToAddressBook: () => void
-}): JSX.Element {
-  const title = 'No addresses'
-  const message = 'You can add addresses in Address Book'
-
-  return (
-    <ZeroStateBase
-      title={title}
-      message={message}
-      button={
-        <AvaButton.PrimaryMedium onPress={onGoToAddressBook}>
-          Go to Address Book
-        </AvaButton.PrimaryMedium>
-      }
-    />
-  )
-}
-
 type NoResultsProps = Pick<BaseProps, 'message'>
 
 function ZeroStateNoResults({ message }: NoResultsProps): JSX.Element {
@@ -193,31 +164,6 @@ function ZeroStateNoWatchlistFavorites({
   )
 }
 
-function ZeroStateNoContacts({
-  addContact
-}: {
-  addContact: () => void
-}): JSX.Element {
-  const title = 'No Addresses Saved'
-  const message = 'Tap the button below to add an address.'
-  const button = (
-    <AvaButton.SecondaryMedium
-      style={{ width: '100%' }}
-      textStyle={{ fontSize: 16 }}
-      onPress={addContact}>
-      Add Address
-    </AvaButton.SecondaryMedium>
-  )
-  return (
-    <ZeroStateBase
-      title={title}
-      message={message}
-      image={<PersonSVG />}
-      button={button}
-    />
-  )
-}
-
 function ZeroStateSites({
   onAddNewConnection
 }: {
@@ -249,12 +195,9 @@ const ZeroState = {
   NetworkTokens: ZeroStateNetworkTokens,
   Collectibles: ZeroStateCollectibles,
   NoResultsTextual: ZeroStateNoResults,
-  NoRecentAccounts: ZeroStateNoRecentAccounts,
   ComingSoon: ZeroStateComingSoon,
   NoTransactions: ZeroStateNoTransactions,
   NoWatchlistFavorites: ZeroStateNoWatchlistFavorites,
-  EmptyAddressBook: ZeroStateEmptyAddressBook, // used in Send screens
-  NoContacts: ZeroStateNoContacts, // used in Contacts screen
   Sites: ZeroStateSites,
   SomethingWentWrong: ZeroStateSomethingWentWrong
 }
