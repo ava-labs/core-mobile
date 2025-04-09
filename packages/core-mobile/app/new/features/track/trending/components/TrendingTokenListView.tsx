@@ -124,7 +124,8 @@ export const TrendingTokenListView = memo(
                 sx={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
-                  flex: 1
+                  flex: 1,
+                  marginTop: 2
                 }}>
                 <View
                   sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

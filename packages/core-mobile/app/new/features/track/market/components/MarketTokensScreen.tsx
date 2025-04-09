@@ -80,7 +80,7 @@ const MarketTokensScreen = ({
   )
 
   const renderSeparator = useCallback((): JSX.Element => {
-    return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />
+    return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 68 }} />
   }, [isGridView])
 
   return (
@@ -104,7 +104,7 @@ const MarketTokensScreen = ({
 const styles = StyleSheet.create({
   container: { paddingBottom: 16 },
   dropdownContainer: { paddingHorizontal: 16 },
-  dropdown: { marginTop: 14, marginBottom: 16 }
+  dropdown: { marginTop: 8, marginBottom: 12 }
 })
 
 export default MarketTokensScreen
