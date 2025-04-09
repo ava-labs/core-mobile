@@ -1,5 +1,6 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
+import queryString from 'query-string'
 import { createApiClient, api as noOpApiClient } from './glacierApi.client'
 import { CORE_HEADERS } from './constants'
 
@@ -27,5 +28,15 @@ export function addGlacierAPIKeyIfNeeded(url: string): string {
 }
 
 export const glacierApi = GLACIER_URL
-  ? createApiClient(GLACIER_URL, { axiosConfig: { headers: CORE_HEADERS } })
+  ? createApiClient(GLACIER_URL, {
+      axiosConfig: {
+        headers: CORE_HEADERS,
+        // Use query-string's stringify with arrayFormat 'comma'
+        // so that array parameters are serialized as comma-separated values,
+        // e.g. txTypes=AddPermissionlessDelegatorTx,AddDelegatorTx,
+        // instead of the default repeated keys (txTypes[]=...).
+        paramsSerializer: params =>
+          queryString.stringify(params, { arrayFormat: 'comma' })
+      }
+    })
   : noOpApiClient
