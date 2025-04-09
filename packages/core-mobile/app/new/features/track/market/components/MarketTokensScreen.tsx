@@ -7,7 +7,7 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'components/Space'
 import { DropdownSelection } from 'common/types'
 import { MarketView } from '../hooks/useTrackSortAndView'
-import MarketListItem from './MarketListItem'
+import { MarketListItem } from './MarketListItem'
 
 const MarketTokensScreen = ({
   data,
