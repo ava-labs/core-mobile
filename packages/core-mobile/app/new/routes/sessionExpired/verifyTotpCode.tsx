@@ -6,35 +6,22 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
 import { useNavigation } from '@react-navigation/native'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { selectWalletState, WalletState } from 'store/app'
-import { useDispatch, useSelector } from 'react-redux'
-import { initWalletServiceAndUnlock } from 'hooks/useWallet'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
-import { WalletType } from 'services/wallet/types'
-import Logger from 'utils/Logger'
+import { useInitWalletAndUnlock } from 'common/hooks/useInitWalletAndUnlock'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
+  const { initWalletAndUnlock } = useInitWalletAndUnlock()
   const { oidcToken, mfaId } = useLocalSearchParams<{
     oidcToken: string
     mfaId: string
   }>()
   const router = useRouter()
   const { getState } = useNavigation()
-  const dispatch = useDispatch()
-  const walletState = useSelector(selectWalletState)
 
   const handleVerifySuccess = useCallback(async (): Promise<void> => {
-    if (walletState === WalletState.INACTIVE) {
-      initWalletServiceAndUnlock({
-        dispatch,
-        mnemonic: SEEDLESS_MNEMONIC_STUB,
-        walletType: WalletType.SEEDLESS,
-        isLoggingIn: true
-      }).catch(Logger.error)
-    }
+    await initWalletAndUnlock()
     dismissTotpStack(router, getState()) // dismiss the mfa screens
     router.canGoBack() && router.back() // dismiss the token expired screen
-  }, [dispatch, getState, router, walletState])
+  }, [getState, initWalletAndUnlock, router])
 
   const handleVerifyCode = useCallback(
     async (code: string): Promise<Result<undefined, TotpErrors>> => {

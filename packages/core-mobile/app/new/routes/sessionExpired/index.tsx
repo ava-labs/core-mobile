@@ -13,16 +13,14 @@ import {
 import { Space } from 'components/Space'
 import { startRefreshSeedlessTokenFlow } from 'common/utils/startRefreshSeedlessTokenFlow'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { useDispatch, useSelector } from 'react-redux'
-import { onLogOut, selectWalletState, WalletState } from 'store/app'
-import { initWalletServiceAndUnlock } from 'hooks/useWallet'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
-import { WalletType } from 'services/wallet/types'
+import { useDispatch } from 'react-redux'
+import { onLogOut } from 'store/app'
 import Logger from 'utils/Logger'
+import { useInitWalletAndUnlock } from 'common/hooks/useInitWalletAndUnlock'
 
 const SessionExpiredScreen = (): React.JSX.Element => {
+  const { initWalletAndUnlock } = useInitWalletAndUnlock()
   const router = useRouter()
-  const walletState = useSelector(selectWalletState)
   const dispatch = useDispatch()
   const {
     theme: { colors }
@@ -37,17 +35,6 @@ const SessionExpiredScreen = (): React.JSX.Element => {
     }, [])
   )
 
-  const handleInitWalletServiceAndUnlock = useCallback(() => {
-    if (walletState === WalletState.INACTIVE) {
-      initWalletServiceAndUnlock({
-        dispatch,
-        mnemonic: SEEDLESS_MNEMONIC_STUB,
-        walletType: WalletType.SEEDLESS,
-        isLoggingIn: true
-      }).catch(Logger.error)
-    }
-  }, [dispatch, walletState])
-
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const onRetry = useCallback(async (): Promise<void> => {
     startRefreshSeedlessTokenFlow(SeedlessService.session)
@@ -55,7 +42,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
         if (result.success) {
           const mfaMethods = await SeedlessService.session.userMfa()
           if (mfaMethods.length === 0) {
-            handleInitWalletServiceAndUnlock()
+            initWalletAndUnlock()
             router.canGoBack() && router.back()
             return
           }
@@ -76,7 +63,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
                 result.value.mfaId,
                 true
               )
-              handleInitWalletServiceAndUnlock()
+              initWalletAndUnlock()
               router.canGoBack() && router.back()
               return
             }
@@ -116,7 +103,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
         router.canDismiss() && router.dismiss()
         dispatch(onLogOut)
       })
-  }, [dispatch, handleInitWalletServiceAndUnlock, router])
+  }, [dispatch, initWalletAndUnlock, router])
 
   return (
     <SafeAreaView

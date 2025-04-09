@@ -5,21 +5,15 @@ import { useState, useEffect, useCallback } from 'react'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { selectWalletState, WalletState } from 'store/app'
-import { useDispatch, useSelector } from 'react-redux'
-import { initWalletServiceAndUnlock } from 'hooks/useWallet'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
-import { WalletType } from 'services/wallet/types'
-import Logger from 'utils/Logger'
+import { useInitWalletAndUnlock } from 'common/hooks/useInitWalletAndUnlock'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
+  const { initWalletAndUnlock } = useInitWalletAndUnlock()
   const { oidcToken, mfaId } = useLocalSearchParams<{
     oidcToken: string
     mfaId: string
   }>()
   const { navigate } = useRouter()
-  const walletState = useSelector(selectWalletState)
-  const dispatch = useDispatch()
   const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
   const { canGoBack, back } = useRouter()
 
@@ -46,19 +40,12 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
 
       if (recoveryMethod.mfa?.type === 'fido' && oidcToken && mfaId) {
         await SeedlessService.session.approveFido(oidcToken, mfaId, true)
-        if (walletState === WalletState.INACTIVE) {
-          initWalletServiceAndUnlock({
-            dispatch,
-            mnemonic: SEEDLESS_MNEMONIC_STUB,
-            walletType: WalletType.SEEDLESS,
-            isLoggingIn: true
-          }).catch(Logger.error)
-        }
+        await initWalletAndUnlock()
         canGoBack() && back() // dismiss selectMfaMethod screen
         canGoBack() && back() // dismiss sessionExpired screen
       }
     },
-    [oidcToken, mfaId, navigate, walletState, canGoBack, back, dispatch]
+    [oidcToken, mfaId, navigate, canGoBack, back, initWalletAndUnlock]
   )
 
   return (
