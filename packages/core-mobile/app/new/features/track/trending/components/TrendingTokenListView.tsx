@@ -1,7 +1,6 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback } from 'react'
 import { StyleSheet } from 'react-native'
 import {
-  alpha,
   Button,
   Icons,
   PriceChangeIndicator,
@@ -9,7 +8,6 @@ import {
   SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import Animated from 'react-native-reanimated'
@@ -37,12 +35,6 @@ export const TrendingTokenListView = memo(
     status: PriceChangeStatus
     onPress: () => void
   }) => {
-    const {
-      theme: { colors }
-    } = useTheme()
-
-    const borderColor = useMemo(() => alpha(colors.$textPrimary, 0.1), [colors])
-
     const renderLogo = useCallback(() => {
       if (index === 0) {
         return (
@@ -51,8 +43,6 @@ export const TrendingTokenListView = memo(
               size={logoSize}
               symbol={token.symbol}
               logoUri={token.logoUri}
-              backgroundColor={colors.$borderPrimary}
-              borderColor={borderColor}
             />
             <View style={styles.crownContainer}>
               <Text variant="heading6">👑</Text>
@@ -66,11 +56,9 @@ export const TrendingTokenListView = memo(
           size={logoSize}
           symbol={token.symbol}
           logoUri={token.logoUri}
-          backgroundColor={colors.$borderPrimary}
-          borderColor={borderColor}
         />
       )
-    }, [index, token.logoUri, token.symbol, colors, borderColor])
+    }, [index, token.logoUri, token.symbol])
 
     return (
       <Animated.View

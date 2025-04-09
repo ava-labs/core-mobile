@@ -1,6 +1,5 @@
 import React, { memo } from 'react'
 import {
-  alpha,
   AnimatedPressable,
   Icons,
   MiniChart,
@@ -8,7 +7,6 @@ import {
   PriceChangeStatus,
   SPRING_LINEAR_TRANSITION,
   Text,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { Dimensions } from 'react-native'
@@ -45,10 +43,6 @@ export const MarketGridView = memo(
     status: PriceChangeStatus
     isFavorite?: boolean
   }): React.JSX.Element => {
-    const {
-      theme: { colors, isDark }
-    } = useTheme()
-    const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
     const { dataPoints, ranges } = chartData
 
     return (
@@ -67,8 +61,6 @@ export const MarketGridView = memo(
               size={36}
               symbol={token.symbol}
               logoUri={token.logoUri}
-              backgroundColor={colors.$borderPrimary}
-              borderColor={borderColor}
             />
             <View sx={{ marginTop: 8 }}>
               <Text variant="buttonMedium" numberOfLines={1}>

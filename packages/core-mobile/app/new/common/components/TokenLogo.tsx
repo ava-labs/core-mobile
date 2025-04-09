@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { Icons, View } from '@avalabs/k2-alpine'
+import { alpha, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { FC } from 'react'
 import { TokenIcon } from 'common/components/TokenIcon'
 import {
@@ -13,8 +13,6 @@ interface TokenAvatarProps {
   logoUri?: string
   size?: number
   testID?: string
-  backgroundColor?: string
-  borderColor?: string
   isMalicious?: boolean
   isNetworkToken?: boolean
 }
@@ -25,16 +23,23 @@ const BORDER_WIDTH = 1
 export const TokenLogo: FC<TokenAvatarProps> = ({
   symbol,
   logoUri,
-  borderColor,
   size = DEFAULT_SIZE,
-  backgroundColor,
   isMalicious,
   isNetworkToken = false
 }) => {
+  const {
+    theme: { colors, isDark }
+  } = useTheme()
+
+  const backgroundColor = colors.$borderPrimary
+
   const useLocalNetworkTokenLogo =
     isNetworkToken && hasLocalNetworkTokenLogo(symbol)
 
-  const borderWidth = borderColor ? BORDER_WIDTH : 0
+  // border color is the same no matter where the logo is used
+  const borderColor = useMemo(() => {
+    return isDark ? alpha(colors.$white, 0.1) : alpha(colors.$black, 0.1)
+  }, [colors.$white, colors.$black, isDark])
 
   const containerStyle = useMemo(() => {
     return {
@@ -45,10 +50,10 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
       alignItems: 'center',
       overflow: 'hidden',
       backgroundColor,
-      borderColor,
-      borderWidth
+      borderColor: borderColor,
+      borderWidth: BORDER_WIDTH
     }
-  }, [backgroundColor, borderColor, borderWidth, size])
+  }, [backgroundColor, borderColor, size])
 
   if (isMalicious) {
     return (

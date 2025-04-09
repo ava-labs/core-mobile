@@ -1,6 +1,5 @@
 import React, { memo } from 'react'
 import {
-  alpha,
   Icons,
   PriceChangeIndicator,
   PriceChangeStatus,
@@ -36,9 +35,8 @@ export const MarketListView = memo(
     onPress: () => void
   }) => {
     const {
-      theme: { colors, isDark }
+      theme: { colors }
     } = useTheme()
-    const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
 
     return (
       <Animated.View
@@ -55,8 +53,6 @@ export const MarketListView = memo(
               size={36}
               symbol={token.symbol}
               logoUri={token.logoUri}
-              backgroundColor={colors.$borderPrimary}
-              borderColor={borderColor}
             />
             <View
               style={{
