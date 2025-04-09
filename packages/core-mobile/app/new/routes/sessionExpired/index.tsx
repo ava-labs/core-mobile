@@ -42,7 +42,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
         if (result.success) {
           const mfaMethods = await SeedlessService.session.userMfa()
           if (mfaMethods.length === 0) {
-            initSeedlessWalletAndUnlock()
+            await initSeedlessWalletAndUnlock()
             router.canGoBack() && router.back()
             return
           }
