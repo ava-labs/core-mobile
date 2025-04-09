@@ -54,7 +54,8 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
             isLoggingIn: true
           }).catch(Logger.error)
         }
-        canGoBack() && back()
+        canGoBack() && back() // dismiss selectMfaMethod screen
+        canGoBack() && back() // dismiss sessionExpired screen
       }
     },
     [oidcToken, mfaId, navigate, walletState, canGoBack, back, dispatch]
