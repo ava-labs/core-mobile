@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Icons, View } from '@avalabs/k2-alpine'
 import { FC } from 'react'
 import { TokenIcon } from 'common/components/TokenIcon'
@@ -20,6 +20,7 @@ interface TokenAvatarProps {
 }
 
 const DEFAULT_SIZE = 32
+const BORDER_WIDTH = 1
 
 export const TokenLogo: FC<TokenAvatarProps> = ({
   symbol,
@@ -32,22 +33,26 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
 }) => {
   const useLocalNetworkTokenLogo =
     isNetworkToken && hasLocalNetworkTokenLogo(symbol)
-  const borderWidth = borderColor ? 1 : 0
+
+  const borderWidth = borderColor ? BORDER_WIDTH : 0
+
+  const containerStyle = useMemo(() => {
+    return {
+      width: size,
+      height: size,
+      borderRadius: size,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      backgroundColor,
+      borderColor,
+      borderWidth
+    }
+  }, [backgroundColor, borderColor, borderWidth, size])
 
   if (isMalicious) {
     return (
-      <View
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size,
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          backgroundColor,
-          borderColor,
-          borderWidth
-        }}>
+      <View sx={containerStyle}>
         <Icons.Custom.RedExclamation width={14} height={14} />
       </View>
     )
@@ -55,18 +60,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
 
   if (hasLocalTokenLogo(symbol) || useLocalNetworkTokenLogo) {
     return (
-      <View
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: size,
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
-          backgroundColor,
-          borderColor,
-          borderWidth
-        }}>
+      <View sx={containerStyle}>
         <TokenIcon
           size={size}
           symbol={symbol}
@@ -77,11 +71,8 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   }
 
   return (
-    <Logo
-      logoUri={logoUri}
-      size={size}
-      borderColor={borderColor}
-      backgroundColor={backgroundColor}
-    />
+    <View sx={containerStyle}>
+      <Logo logoUri={logoUri} size={size} backgroundColor={backgroundColor} />
+    </View>
   )
 }
