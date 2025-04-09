@@ -33,15 +33,12 @@ import {
   selectIsPrivacyModeEnabled,
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
-import {
-  selectIsDeveloperMode,
-  toggleDeveloperMode
-} from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ScrollView } from 'react-native-gesture-handler'
 import { selectContacts } from 'store/addressBook'
 import { Space } from 'components/Space'
-import { showSnackbar } from 'common/utils/toast'
+import { onTokenExpired } from '../../../../../seedless/store/slice'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -136,8 +133,8 @@ const AccountSettingsScreen = (): JSX.Element => {
     AnalyticsService.capture(
       value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled'
     )
-    dispatch(toggleDeveloperMode())
-    showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
+    dispatch(onTokenExpired())
+    // showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
   }
 
   return (
