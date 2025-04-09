@@ -124,11 +124,7 @@ const AnimatedComponent = ({
       <Animated.View
         layout={LinearTransition.springify().damping(100)}
         style={styles.innerWrapper}>
-        {showArrow && (
-          <Animated.View style={styles.arrow}>
-            <Arrow sx={arrowSx} status={status} size={arrowSize} />
-          </Animated.View>
-        )}
+        {showArrow && <Arrow sx={arrowSx} status={status} size={arrowSize} />}
         {formattedPercent !== undefined && (
           <AnimatedText
             variant={textVariant}
