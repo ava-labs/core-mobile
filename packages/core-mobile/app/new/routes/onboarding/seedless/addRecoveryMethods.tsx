@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
@@ -8,19 +8,14 @@ import {
 import { AddRecoveryMethods as Component } from 'features/onboarding/components/AddRecoveryMethods'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { FidoType } from 'services/passkey/types'
+import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
   const { oidcAuth } = useRecoveryMethodContext()
   const availableRecoveryMethods = useAvailableRecoveryMethods()
 
-  const [selectedMethod, setSelectedMethod] = useState(
-    availableRecoveryMethods.length > 0
-      ? availableRecoveryMethods[0]
-      : undefined
-  )
-
-  const handleOnNext = (): void => {
+  const handleOnNext = (selectedMethod: RecoveryMethod): void => {
     if (selectedMethod?.type === RecoveryMethods.Passkey) {
       AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
       navigate({
@@ -64,8 +59,6 @@ const AddRecoveryMethods = (): JSX.Element => {
       allowsUserToAddLater={true}
       oidcAuth={oidcAuth}
       availableRecoveryMethods={availableRecoveryMethods}
-      selectedMethod={selectedMethod}
-      setSelectedMethod={setSelectedMethod}
     />
   )
 }

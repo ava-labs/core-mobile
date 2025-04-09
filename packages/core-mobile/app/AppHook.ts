@@ -48,22 +48,23 @@ export function useApp(): AppHook {
     setAnalyticsConsent(coreAnalyticsConsentSetting)
   }
 
-  function onExit(
-    showExitPrompt: (confirmExit: () => void, cancel: () => void) => void
-  ): void {
-    const confirmExitPromise = new Promise<void>((resolve, reject) => {
-      showExitPrompt(resolve, reject)
-    })
-    confirmExitPromise
-      .then(_ => {
-        setTimeout(() => {
-          BackHandler.exitApp()
-        }, 0)
+  const onExit = useCallback(
+    (showExitPrompt: (confirmExit: () => void, cancel: () => void) => void) => {
+      const confirmExitPromise = new Promise<void>((resolve, reject) => {
+        showExitPrompt(resolve, reject)
       })
-      .catch(_ => {
-        Logger.trace('User canceled app exit')
-      })
-  }
+      confirmExitPromise
+        .then(() => {
+          setTimeout(() => {
+            BackHandler.exitApp()
+          }, 0)
+        })
+        .catch(() => {
+          Logger.trace('User canceled app exit')
+        })
+    },
+    []
+  )
 
   /**
    * Localized currency formatter
@@ -92,12 +93,21 @@ export function useApp(): AppHook {
       })
   }, [selectedCurrency])
 
-  return {
+  return useMemo(() => {
+    return {
+      deleteWallet,
+      signOut,
+      onExit,
+      selectedCurrency,
+      currencyFormatter,
+      tokenInCurrencyFormatter
+    }
+  }, [
     deleteWallet,
     signOut,
     onExit,
     selectedCurrency,
     currencyFormatter,
     tokenInCurrencyFormatter
-  }
+  ])
 }

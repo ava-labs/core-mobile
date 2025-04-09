@@ -16,7 +16,6 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useRouter } from 'expo-router'
 import {
   ActionButton,
@@ -28,6 +27,7 @@ import { CollectiblesScreen } from 'features/portfolio/collectibles/components/C
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
@@ -52,12 +52,14 @@ import {
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const { navigate } = useRouter()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -65,29 +67,28 @@ const PortfolioHomeScreen = (): JSX.Element => {
   >()
 
   const selectedSegmentIndex = useSharedValue(0)
-  const context = useApplicationContext()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isBalanceLoading = useSelector(selectIsLoadingBalances)
-  const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const balanceTotalInCurrency = useSelector(
+  const activeAccount = useFocusedSelector(selectActiveAccount)
+  const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
+  const isRefetchingBalance = useFocusedSelector(selectIsRefetchingBalances)
+  const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)
+  const tokenVisibility = useFocusedSelector(selectTokenVisibility)
+  const balanceTotalInCurrency = useFocusedSelector(
     selectBalanceTotalInCurrencyForAccount(
       activeAccount?.index ?? 0,
       tokenVisibility
     )
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
-  const balanceAccurate = useSelector(
+  const balanceAccurate = useFocusedSelector(
     selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
   )
-  const { selectedCurrency, currencyFormatter } = context.appHook
-
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { formatCurrency } = useFormatCurrency()
   const currencyBalance = useMemo(() => {
     return !balanceAccurate && balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
-      : currencyFormatter(balanceTotalInCurrency)
-  }, [balanceAccurate, balanceTotalInCurrency, currencyFormatter])
+      : formatCurrency(balanceTotalInCurrency)
+  }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
   const formattedBalance = useMemo(
     () => currencyBalance.replace(selectedCurrency, ''),
@@ -95,7 +96,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const { getMarketTokenBySymbol } = useWatchlist()
-  const tokens = useSelector((state: RootState) =>
+  const tokens = useFocusedSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
   )
 

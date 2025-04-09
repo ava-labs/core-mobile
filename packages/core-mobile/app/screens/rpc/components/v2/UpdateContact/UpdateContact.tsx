@@ -1,27 +1,25 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { selectContact } from 'store/addressBook'
 import { showSimpleToast } from 'components/Snackbar'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useRoute } from '@react-navigation/native'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
-import UpdateContactView from '../../shared/UpdateContactView'
 
 type UpdateContactScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.UpdateContactV2
 >
 
-const UpdateContact = () => {
-  const { goBack } = useNavigation<UpdateContactScreenProps['navigation']>()
+const UpdateContact = (): JSX.Element => {
+  // const { goBack } = useNavigation<UpdateContactScreenProps['navigation']>()
 
   const { request, contact } =
     useRoute<UpdateContactScreenProps['route']>().params
 
-  const { onUserApproved: onApprove, onUserRejected: onReject } =
-    useDappConnectionV2()
+  const { onUserRejected: onReject } = useDappConnectionV2()
 
-  const peerMeta = request.peerMeta
+  // const peerMeta = request.peerMeta
 
   const existingContact = useSelector(selectContact(contact.id))
 
@@ -34,25 +32,24 @@ const UpdateContact = () => {
     }
   }, [existingContact, onReject, request])
 
-  const rejectAndClose = useCallback(() => {
-    onReject(request)
-    goBack()
-  }, [goBack, onReject, request])
+  // const rejectAndClose = useCallback(() => {
+  //   onReject(request)
+  //   goBack()
+  // }, [goBack, onReject, request])
 
-  const approveAndClose = useCallback(() => {
-    onApprove(request, { contact })
-    goBack()
-  }, [contact, goBack, onApprove, request])
+  // const approveAndClose = useCallback(() => {
+  //   onApprove(request, { contact })
+  //   goBack()
+  // }, [contact, goBack, onApprove, request])
 
-  return (
-    <UpdateContactView
-      onApprove={approveAndClose}
-      onReject={rejectAndClose}
-      dappUrl={peerMeta.url}
-      existingContact={existingContact}
-      contact={contact}
-    />
-  )
+  return <></>
+  // <UpdateContactView
+  //   onApprove={approveAndClose}
+  //   onReject={rejectAndClose}
+  //   dappUrl={peerMeta.url}
+  //   existingContact={existingContact}
+  //   contact={contact}
+  // />
 }
 
 export default UpdateContact

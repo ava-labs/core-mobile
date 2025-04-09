@@ -1,11 +1,12 @@
 import {
+  alpha,
   AnimatedPressable,
+  AnimatedPressableProps,
   Chip,
   Icons,
   Text,
   useTheme,
-  View,
-  AnimatedPressableProps
+  View
 } from '@avalabs/k2-alpine'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
@@ -90,9 +91,7 @@ export const CollectibleListItem = memo(
     index: number
     onPress?: () => void
   }): ReactNode => {
-    const {
-      theme: { colors }
-    } = useTheme()
+    const { theme } = useTheme()
     const height = getGridCardHeight(CollectibleView.ListView, index)
 
     const collectibleName = getCollectibleName(collectible)
@@ -117,7 +116,12 @@ export const CollectibleListItem = memo(
               width: 48,
               borderRadius: 12
             }}>
-            <CollectibleRenderer collectible={collectible} />
+            <CollectibleRenderer
+              videoProps={{
+                hideControls: true
+              }}
+              collectible={collectible}
+            />
           </CardContainer>
           <View
             sx={{
@@ -156,19 +160,31 @@ export const CollectibleListItem = memo(
               </View>
               <View>
                 {collectible.balance ? (
-                  <Chip
-                    size="small"
-                    variant="dark"
+                  <View
                     style={{
                       maxWidth: 100,
-                      minWidth: 30
+                      minWidth: 30,
+                      backgroundColor: alpha(theme.colors.$textPrimary, 0.3),
+                      borderRadius: 100,
+                      height: 20,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingHorizontal: 10
                     }}>
-                    {collectible.balance.toString()}
-                  </Chip>
+                    <Text
+                      variant="buttonSmall"
+                      style={{
+                        color: theme.colors?.$textSecondary
+                      }}>
+                      {collectible.balance.toString()}
+                    </Text>
+                  </View>
                 ) : null}
               </View>
             </View>
-            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            <Icons.Navigation.ChevronRightV2
+              color={theme.colors.$textPrimary}
+            />
           </View>
         </Pressable>
       </Animated.View>

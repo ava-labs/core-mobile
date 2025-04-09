@@ -338,14 +338,16 @@ export const getSortedValidatorsByEndTime = (
 
 export const getTransformedTransactions = async (
   addresses: string[],
-  isTestnet: boolean
+  isTestnet: boolean,
+  startTimestamp?: number
 ): Promise<
   (PChainTransaction & { index: number; isDeveloperMode: boolean })[]
 > => {
   try {
     const stakes = await EarnService.getAllStakes({
       isTestnet,
-      addresses
+      addresses,
+      startTimestamp
     })
 
     return stakes.map(transaction => {

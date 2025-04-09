@@ -7,11 +7,11 @@ import {
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { Space } from 'components/Space'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
 import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -26,6 +26,7 @@ import {
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const AccountScreen = (): JSX.Element => {
@@ -36,8 +37,6 @@ const AccountScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-
-  const context = useApplicationContext()
   const accountIndexNumber = isNaN(Number(accountIndex))
     ? 0
     : Number(accountIndex)
@@ -53,13 +52,13 @@ const AccountScreen = (): JSX.Element => {
   const balanceAccurate = useSelector(
     selectBalanceForAccountIsAccurate(account?.index ?? 0)
   )
-  const { selectedCurrency, currencyFormatter } = context.appHook
-
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { formatCurrency } = useFormatCurrency()
   const currencyBalance = useMemo(() => {
     return !balanceAccurate && balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
-      : currencyFormatter(balanceTotalInCurrency)
-  }, [balanceAccurate, balanceTotalInCurrency, currencyFormatter])
+      : formatCurrency(balanceTotalInCurrency)
+  }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
   const formattedBalance = useMemo(
     () => currencyBalance.replace(selectedCurrency, ''),
