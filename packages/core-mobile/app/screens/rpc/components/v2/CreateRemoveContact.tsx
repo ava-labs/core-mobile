@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
-import AddressBookSVG from 'components/svg/AddressBookSVG'
-import AddressBookItem from 'components/addressBook/AddressBookItem'
+// import AddressBookSVG from 'components/svg/AddressBookSVG'
+// import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { capitalizeFirstLetter } from 'utils/string/capitalize'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -12,7 +12,7 @@ type ContactPromptScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.CreateRemoveContactV2
 >
 
-const CreateRemoveContact = () => {
+const CreateRemoveContact = (): JSX.Element => {
   const { goBack } = useNavigation<ContactPromptScreenProps['navigation']>()
 
   const { request, contact, action } =
@@ -40,17 +40,17 @@ const CreateRemoveContact = () => {
     goBack()
   }, [contact, goBack, onApprove, request])
 
-  const renderWalletIcon = () => <AddressBookSVG size={48} />
+  // const renderWalletIcon = () => <AddressBookSVG size={48} />
 
-  const renderContact = () => {
-    return (
-      <AddressBookItem
-        title={contact.name}
-        address={contact.address}
-        addressBtc={contact.addressBTC}
-      />
-    )
-  }
+  // const renderContact = () => {
+  //   return (
+  //     <AddressBookItem
+  //       title={contact.name}
+  //       address={contact.address}
+  //       addressBtc={contact.addressBTC}
+  //     />
+  //   )
+  // }
 
   return (
     <SimplePrompt
@@ -58,8 +58,7 @@ const CreateRemoveContact = () => {
       onReject={rejectAndClose}
       header={header}
       description={description}
-      renderIcon={renderWalletIcon}
-      renderContent={renderContact}
+      renderIcon={() => <></>}
     />
   )
 }

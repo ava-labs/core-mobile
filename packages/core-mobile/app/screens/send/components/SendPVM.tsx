@@ -4,8 +4,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { Contact, CorePrimaryAccount } from '@avalabs/types'
-import { getAddressXP } from 'store/utils/account&contactGetters'
+import { CorePrimaryAccount } from '@avalabs/types'
 import { Eip1559Fees } from 'utils/Utils'
 import usePVMSend from '../hooks/usePVMSend'
 import SendTokenForm from './SendTokenForm'
@@ -15,7 +14,6 @@ const SendPVM = ({
   network,
   account,
   onOpenQRScanner,
-  onOpenAddressBook,
   onSuccess,
   onFailure
 }: {
@@ -23,11 +21,10 @@ const SendPVM = ({
   network: Network
   account: CorePrimaryAccount
   onOpenQRScanner: () => void
-  onOpenAddressBook: () => void
   onSuccess: (txHash: string) => void
   onFailure: (txError: unknown) => void
 }): JSX.Element => {
-  const { setToAddress, token, maxAmount, error, isValid, isSending, maxFee } =
+  const { token, maxAmount, error, isValid, isSending, maxFee } =
     useSendContext()
   const activeAccount = useSelector(selectActiveAccount)
   const fromAddress = activeAccount?.addressPVM ?? ''
@@ -54,10 +51,6 @@ const SendPVM = ({
     }
   }
 
-  const handleSelectContact = (item: Contact | CorePrimaryAccount): void => {
-    setToAddress(getAddressXP(item) ?? '')
-  }
-
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees) => {
       setGasPrice?.(fees.maxFeePerGas)
@@ -74,8 +67,6 @@ const SendPVM = ({
       isValid={isValid}
       isSending={isSending}
       onOpenQRScanner={onOpenQRScanner}
-      onOpenAddressBook={onOpenAddressBook}
-      onSelectContact={handleSelectContact}
       onSend={handleSend}
       handleFeesChange={handleFeesChange}
       estimatedFee={estimatedFee}
