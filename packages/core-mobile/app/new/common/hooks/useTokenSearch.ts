@@ -49,12 +49,14 @@ export function useTokenSearch({
       )
         return EMPTY_DATA
 
-      const tokens = items.filter(
-        i =>
-          i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          i.symbol?.toLowerCase().includes(searchText.toLowerCase()) ||
-          i.id.toLowerCase().includes(searchText.toLowerCase())
-      )
+      const tokens = items.filter(i => {
+        const lowerCaseSearchText = searchText.toLowerCase()
+        return (
+          i.name.toLowerCase().includes(lowerCaseSearchText) ||
+          i.symbol.toLowerCase().includes(lowerCaseSearchText) ||
+          i.id.toLowerCase().includes(lowerCaseSearchText)
+        )
+      })
 
       if (tokens.length > 0) {
         // we already have these tokens in the list
