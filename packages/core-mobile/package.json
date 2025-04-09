@@ -6,7 +6,7 @@
     "setup": "yarn allow-scripts",
     "envs": "./scripts/getEnvs.sh && ./scripts/getGoogleServices.sh",
     "android": "ENVFILE=.env.development react-native run-android --mode=internalDebug",
-    "podInstall": "bundle _2.1.4_ install && cd ios && BUILD_FROM_SOURCE=false bundle exec pod update hermes-engine --no-repo-update",
+    "podInstall": "bundle _2.1.4_ install && cd ios && bundle exec pod update hermes-engine --no-repo-update",
     "ios": "ENVFILE=.env.development react-native run-ios",
     "start": "expo start --dev-client",
     "test": "jest",
