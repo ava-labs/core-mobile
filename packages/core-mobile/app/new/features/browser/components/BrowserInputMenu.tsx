@@ -118,7 +118,7 @@ export const BrowserInputMenu = ({
     if (activeHistory) {
       return [newTabAction, favoriteAction, historyAction, shareAction]
     } else {
-      return [newTabAction, historyAction]
+      return [historyAction, newTabAction]
     }
   }, [activeHistory, isFavorited])
 

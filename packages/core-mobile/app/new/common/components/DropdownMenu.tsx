@@ -8,6 +8,7 @@ import {
   Group,
   Item,
   ItemIcon,
+  ItemImage,
   ItemIndicator,
   ItemTitle,
   Root,
@@ -92,6 +93,11 @@ export function DropdownMenu({
             }>
             {title}
           </DropdownMenuItemTitle>
+          {/* <DropdownMenuImage
+            source={require('../../assets/icons/rocket.png')}
+            height={24}
+            width={24}
+          /> */}
         </DropdownMenuItem>
       )
     },
@@ -159,4 +165,9 @@ const DropdownMenuItemIndicator = create(
     <ItemIndicator {...props} />
   ),
   'ItemIndicator'
+)
+
+const DropdownMenuImage = create(
+  (props: React.ComponentProps<typeof ItemImage>) => <ItemImage {...props} />,
+  'ItemImage'
 )
