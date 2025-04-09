@@ -52,7 +52,8 @@ export function useTokenSearch({
       const tokens = items.filter(
         i =>
           i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          i.symbol?.toLowerCase().includes(searchText.toLowerCase())
+          i.symbol?.toLowerCase().includes(searchText.toLowerCase()) ||
+          i.id.toLowerCase().includes(searchText.toLowerCase())
       )
 
       if (tokens.length > 0) {

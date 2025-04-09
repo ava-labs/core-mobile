@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native'
 import { Separator, Text } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { MarketToken } from 'store/watchlist'
-import { TrendingTokenListItem } from '../../components/TrendingTokenListItem'
+import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
 const estimatedItemSize = 120

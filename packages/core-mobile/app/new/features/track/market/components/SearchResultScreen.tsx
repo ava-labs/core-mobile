@@ -71,7 +71,11 @@ const SearchResultScreen = ({
             }}
           />
         }
-        title={isFocused ? 'Find tokens by name or symbol' : 'No results found'}
+        title={
+          isFocused
+            ? 'Find tokens by name, symbol\nor address'
+            : 'No results found'
+        }
         description=""
       />
     )
