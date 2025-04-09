@@ -67,7 +67,7 @@ const AddressBookScreen = (): JSX.Element => {
     }
     return contacts.filter(
       contact =>
-        contact.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+        contact.name.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.address?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.addressXP?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase())
@@ -129,7 +129,6 @@ const AddressBookScreen = (): JSX.Element => {
       const address = getAddressFromContact(item)
       const { name } = item
       const isLastItem = index === searchResults.length - 1
-      const hasName = name !== undefined && name?.length > 0
 
       return (
         <Animated.View
@@ -177,21 +176,19 @@ const AddressBookScreen = (): JSX.Element => {
                     justifyItems: 'center',
                     justifyContent: 'center'
                   }}>
-                  {name && (
-                    <Text
-                      variant="buttonMedium"
-                      numberOfLines={1}
-                      sx={{ flex: 1 }}>
-                      {name}
-                    </Text>
-                  )}
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    sx={{ flex: 1 }}>
+                    {name}
+                  </Text>
                   {address && (
                     <Text
                       variant="body2"
                       sx={{
                         lineHeight: 16,
-                        fontSize: hasName ? 13 : 16,
-                        color: hasName ? '$textSecondary' : '$textPrimary'
+                        fontSize: 13,
+                        color: '$textSecondary'
                       }}
                       ellipsizeMode="tail"
                       numberOfLines={1}>

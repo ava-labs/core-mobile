@@ -11,7 +11,7 @@ const AddContactScreen = (): React.JSX.Element => {
   const { bottom } = useSafeAreaInsets()
   const { canGoBack, back } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
-  const [contact, setContact] = useState<Contact>({ id: contactId })
+  const [contact, setContact] = useState<Contact>({ id: contactId, name: '' })
 
   const handleUpdateContact = (updated: Contact): void => {
     setContact(prev => {
@@ -25,7 +25,8 @@ const AddContactScreen = (): React.JSX.Element => {
   const isSaveDisabled =
     contact.address === undefined &&
     contact.addressXP === undefined &&
-    contact.addressBTC === undefined
+    contact.addressBTC === undefined &&
+    contact.name.length === 0
 
   const handleSave = useCallback(() => {
     dispatch(addContact({ ...contact, id: contactId }))

@@ -1,8 +1,7 @@
 import { Contact as _Contact } from '@avalabs/types'
 
-export type Contact = Omit<_Contact, 'address' | 'name' | 'addressSVM'> & {
+export type Contact = Omit<_Contact, 'address' | 'addressSVM'> & {
   address?: string
-  name?: string
   avatar?: string
 }
 

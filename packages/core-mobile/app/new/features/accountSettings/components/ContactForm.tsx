@@ -69,7 +69,7 @@ export const ContactForm = ({
             'The address your entered is not valid for the selected chain',
           buttons: [
             {
-              text: 'dismiss',
+              text: 'Dismiss',
               style: 'default'
             }
           ]
