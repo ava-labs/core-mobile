@@ -1,12 +1,13 @@
-import React, { memo } from 'react'
+import React, { memo, useCallback } from 'react'
+import { StyleSheet } from 'react-native'
 import {
+  Button,
   Icons,
   PriceChangeIndicator,
   PriceChangeStatus,
   SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import Animated from 'react-native-reanimated'
@@ -14,14 +15,15 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'common/components/TokenLogo'
 
-export const MarketListView = memo(
+const logoSize = 36
+
+export const TrendingTokenListView = memo(
   ({
     token,
     isFavorite,
     index,
     onPress,
     formattedPrice,
-    formattedPriceChange,
     formattedPercentChange,
     status
   }: {
@@ -29,14 +31,34 @@ export const MarketListView = memo(
     isFavorite?: boolean
     index: number
     formattedPrice: string
-    formattedPriceChange: string
     formattedPercentChange?: string
     status: PriceChangeStatus
     onPress: () => void
   }) => {
-    const {
-      theme: { colors }
-    } = useTheme()
+    const renderLogo = useCallback(() => {
+      if (index === 0) {
+        return (
+          <View>
+            <TokenLogo
+              size={logoSize}
+              symbol={token.symbol}
+              logoUri={token.logoUri}
+            />
+            <View style={styles.crownContainer}>
+              <Text variant="heading6">👑</Text>
+            </View>
+          </View>
+        )
+      }
+
+      return (
+        <TokenLogo
+          size={logoSize}
+          symbol={token.symbol}
+          logoUri={token.logoUri}
+        />
+      )
+    }, [index, token.logoUri, token.symbol])
 
     return (
       <Animated.View
@@ -44,16 +66,12 @@ export const MarketListView = memo(
         layout={SPRING_LINEAR_TRANSITION}>
         <TouchableOpacity onPress={onPress}>
           <View
-            sx={{
+            style={{
               paddingHorizontal: 16,
               paddingVertical: 12,
               flexDirection: 'row'
             }}>
-            <TokenLogo
-              size={36}
-              symbol={token.symbol}
-              logoUri={token.logoUri}
-            />
+            {renderLogo()}
             <View
               style={{
                 marginLeft: 16,
@@ -61,34 +79,38 @@ export const MarketListView = memo(
                 flex: 1
               }}>
               <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flex: 1
+                sx={{
+                  flexDirection: 'row'
                 }}>
-                <Text
-                  variant="buttonMedium"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                  style={{ maxWidth: '45%' }}>
-                  {token.name}
-                </Text>
-                <Text
-                  variant="buttonMedium"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
+                <View
                   style={{
-                    flex: 1,
-                    textAlign: 'right'
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flex: 1
                   }}>
-                  {formattedPrice}
-                </Text>
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{ maxWidth: '45%' }}>
+                    {index + 1}. {token.name}
+                  </Text>
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{
+                      flex: 1,
+                      textAlign: 'right'
+                    }}>
+                    {formattedPrice}
+                  </Text>
+                </View>
               </View>
               <View
                 sx={{
                   flexDirection: 'row',
-                  alignItems: 'center',
                   justifyContent: 'space-between',
                   flex: 1,
                   marginTop: 2
@@ -106,16 +128,16 @@ export const MarketListView = memo(
                     <Icons.Toggle.StarFilled width={12} height={12} />
                   )}
                 </View>
-
                 <PriceChangeIndicator
-                  formattedPrice={formattedPriceChange}
                   formattedPercent={formattedPercentChange}
                   status={status}
                 />
               </View>
             </View>
             <View style={{ justifyContent: 'center' }}>
-              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+              <Button type="secondary" size="small" style={styles.buyButton}>
+                Buy
+              </Button>
             </View>
           </View>
         </TouchableOpacity>
@@ -126,9 +148,18 @@ export const MarketListView = memo(
     return (
       prevProps.token.id === nextProps.token.id &&
       (prevProps.formattedPrice === nextProps.formattedPrice ||
-        prevProps.formattedPriceChange === nextProps.formattedPriceChange ||
         prevProps.formattedPercentChange === nextProps.formattedPercentChange ||
         prevProps.isFavorite === nextProps.isFavorite)
     )
   }
 )
+
+const styles = StyleSheet.create({
+  crownContainer: {
+    position: 'absolute',
+    top: '-28%',
+    left: '50%',
+    transform: [{ rotate: '28deg' }]
+  },
+  buyButton: { width: 72 }
+})
