@@ -73,7 +73,7 @@ const SearchResultScreen = ({
         }
         title={
           isFocused
-            ? 'Find tokens by name, symbol\nor address'
+            ? 'Find tokens by name,\nsymbol or address'
             : 'No results found'
         }
         description=""
