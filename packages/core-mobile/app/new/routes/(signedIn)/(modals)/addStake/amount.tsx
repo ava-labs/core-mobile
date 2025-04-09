@@ -19,6 +19,7 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { useRouter } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const StakeAmountScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -88,7 +89,7 @@ const StakeAmountScreen = (): JSX.Element => {
     try {
       await compute(stakeAmount.toSubUnit())
 
-      // AnalyticsService.capture('StakeOpenDurationSelect')
+      AnalyticsService.capture('StakeOpenDurationSelect')
       navigate('/addStake/duration')
     } catch (e) {
       setComputeError(e as Error)

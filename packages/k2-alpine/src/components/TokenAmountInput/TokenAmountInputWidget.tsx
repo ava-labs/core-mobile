@@ -52,7 +52,7 @@ export const TokenAmountInputWidget = ({
     },
     {
       text: 'Max',
-      percent: 1,
+      percent: maxPercentage,
       isSelected: false
     }
   ])
@@ -63,7 +63,7 @@ export const TokenAmountInputWidget = ({
     percent: number,
     index: number
   ): void => {
-    const value = balance.mul(Math.min(percent, maxPercentage))
+    const value = balance.mul(percent)
     textInputRef.current?.setValue(value.toDisplay())
 
     setPercentageButtons(prevButtons =>
@@ -76,7 +76,10 @@ export const TokenAmountInputWidget = ({
   const handleChange = useCallback(
     async (value: TokenUnit): Promise<void> => {
       setPercentageButtons(prevButtons =>
-        prevButtons.map(b => ({ ...b, isSelected: false }))
+        prevButtons.map(b => ({
+          ...b,
+          isSelected: value.toDisplay() === balance.mul(b.percent).toDisplay()
+        }))
       )
 
       onChange?.(value)
@@ -93,7 +96,7 @@ export const TokenAmountInputWidget = ({
         }
       }
     },
-    [onChange, validateAmount]
+    [onChange, validateAmount, balance]
   )
 
   return (
