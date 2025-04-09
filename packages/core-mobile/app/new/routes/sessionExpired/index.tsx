@@ -63,7 +63,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
                 result.value.mfaId,
                 true
               )
-              initSeedlessWalletAndUnlock()
+              await initSeedlessWalletAndUnlock()
               router.canGoBack() && router.back()
               return
             }
