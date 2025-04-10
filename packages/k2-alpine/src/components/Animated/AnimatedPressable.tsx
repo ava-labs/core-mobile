@@ -64,6 +64,7 @@ export const AnimatedPressable = memo(
     }
 
     const onTouchStart = (event: GestureResponderEvent): void => {
+      if (props.disabled) return
       touchStartPosition.current = {
         x: event.nativeEvent.pageX,
         y: event.nativeEvent.pageY
@@ -120,6 +121,7 @@ export const AnimatedPressable = memo(
 
     return (
       <AnimatedPress
+        disabled={props.disabled}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onPressOut={onPressOut}

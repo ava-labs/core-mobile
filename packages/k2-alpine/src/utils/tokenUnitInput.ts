@@ -24,3 +24,7 @@ export const normalizeValue = (value: string): string => {
   }
   return normalized
 }
+
+export const normalizeErrorMessage = (errorMessage: string): string => {
+  return errorMessage.replace(/\r?\n/g, ' ').replace(/ +/g, ' ')
+}

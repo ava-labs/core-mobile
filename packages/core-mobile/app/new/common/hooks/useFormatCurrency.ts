@@ -5,8 +5,8 @@ import { formatCurrency as _formatCurrency } from 'utils/FormatCurrency'
 import { NotationTypes } from 'consts/FormatNumberTypes'
 
 export function useFormatCurrency(): {
-  formatCurrency(num: number, notation?: NotationTypes): string
-  formatTokenInCurrency(num: number): string
+  formatCurrency(props: FormatCurrencyProps): string
+  formatTokenInCurrency(props: FormatCurrencyProps): string
 } {
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -14,13 +14,19 @@ export function useFormatCurrency(): {
    * Localized currency formatter
    */
   const formatCurrency = useCallback(
-    (amount: number, notation?: NotationTypes) => {
-      return _formatCurrency({
+    ({ amount, notation, withCurrencySuffix = false }: FormatCurrencyProps) => {
+      const formattedText = _formatCurrency({
         amount,
         currency: selectedCurrency,
         boostSmallNumberPrecision: false,
         notation
       })
+
+      if (withCurrencySuffix && !formattedText.endsWith(selectedCurrency)) {
+        return [formattedText, selectedCurrency].join(' ')
+      }
+
+      return formattedText
     },
     [selectedCurrency]
   )
@@ -29,13 +35,20 @@ export function useFormatCurrency(): {
    * When displaying token value in currency we keep max 8 fraction digits
    */
   const formatTokenInCurrency = useCallback(
-    (amount: number, notation?: NotationTypes) =>
-      _formatCurrency({
+    ({ amount, notation, withCurrencySuffix = false }: FormatCurrencyProps) => {
+      const formattedText = _formatCurrency({
         amount,
         currency: selectedCurrency,
         boostSmallNumberPrecision: true,
         notation
-      }),
+      })
+
+      if (withCurrencySuffix && !formattedText.endsWith(selectedCurrency)) {
+        return [formattedText, selectedCurrency].join(' ')
+      }
+
+      return formattedText
+    },
     [selectedCurrency]
   )
 
@@ -43,4 +56,10 @@ export function useFormatCurrency(): {
     formatCurrency,
     formatTokenInCurrency
   }
+}
+
+type FormatCurrencyProps = {
+  amount: number
+  notation?: NotationTypes
+  withCurrencySuffix?: boolean
 }
