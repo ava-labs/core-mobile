@@ -33,5 +33,7 @@ export default {
   balanceHeaderAccountName: 'balance_header_account_name',
   pinInputField: 'pin_input',
   copyPhrase: 'Copy phrase',
-  copied: 'Copied'
+  copied: 'Copied',
+  save: 'Save',
+  dialogInput: 'dialog_input'
 }

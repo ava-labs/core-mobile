@@ -263,7 +263,7 @@ class OnboardingPage {
   }
   async tapLetsGo() {
     await Action.waitForElement(this.letsgo)
-    await Action.tap(this.letsgo)
+    await Action.longPress(this.letsgo)
   }
 
   async verifyNewRecoveryPhrasePage() {

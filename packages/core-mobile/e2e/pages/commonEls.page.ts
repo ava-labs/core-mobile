@@ -1,3 +1,4 @@
+import assert from 'assert'
 import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
 import loginRecoverWallet from '../helpers/loginRecoverWallet'
@@ -107,6 +108,10 @@ class CommonElsPage {
     return by.text(commonElsLoc.ethereum)
   }
 
+  get bitcoin() {
+    return by.text(commonElsLoc.bitcoin)
+  }
+
   get bitcoinNetwork() {
     return by.text(commonElsLoc.bitcoinNetwork)
   }
@@ -127,22 +132,33 @@ class CommonElsPage {
     return by.text(commonElsLoc.copyPhrase)
   }
 
+  get save() {
+    return by.text(commonEls.save)
+  }
+
+  get dialogInput() {
+    return by.id(commonEls.dialogInput)
+  }
+
   async enterPin(pin = '000000') {
     await Actions.waitForElement(this.pinInputField)
     await Actions.setInputText(this.pinInputField, pin)
   }
 
-  async getBalanceHeaderAccountName() {
-    return await Actions.getElementText(this.balanceHeaderAccountName)
+  async getBalanceHeaderAccountName(index = 0) {
+    return await Actions.getElementText(this.balanceHeaderAccountName, index)
   }
 
   async tapCarrotSVG(index = 0) {
     await Actions.tapElementAtIndex(this.carrotSVG, index)
   }
 
-  async typeSearchBar(text: string) {
-    await Actions.waitForElement(this.searchBar)
-    await Actions.setInputText(this.searchBar, text)
+  async typeSearchBar(
+    text: string,
+    searchBar: Detox.NativeMatcher = this.searchBar
+  ) {
+    await Actions.waitForElement(searchBar)
+    await Actions.setInputText(searchBar, text)
   }
 
   async tapBackButton(index = 0) {
@@ -285,6 +301,18 @@ class CommonElsPage {
 
   async tapCopyPhrase() {
     await Actions.tap(this.copyPhrase)
+  }
+
+  async tapSave() {
+    await Actions.tap(this.save)
+  }
+
+  async verifyAccountName(expectedName: string, index = 0) {
+    const UIaccountName = await this.getBalanceHeaderAccountName(index)
+    assert(
+      expectedName === UIaccountName,
+      `Account name mismatch: ${expectedName} !== ${UIaccountName}`
+    )
   }
 }
 

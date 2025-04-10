@@ -3,7 +3,12 @@ import { Switch, SwitchProps } from 'react-native'
 import { alpha } from '../../utils'
 import { useTheme } from '../../hooks'
 
-export const Toggle: FC<SwitchProps> = ({ value, disabled, ...rest }) => {
+export const Toggle: FC<SwitchProps> = ({
+  value,
+  disabled,
+  testID,
+  ...rest
+}) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -13,6 +18,7 @@ export const Toggle: FC<SwitchProps> = ({ value, disabled, ...rest }) => {
   return (
     <Switch
       {...rest}
+      testID={testID}
       value={value}
       style={{ opacity }}
       disabled={disabled}

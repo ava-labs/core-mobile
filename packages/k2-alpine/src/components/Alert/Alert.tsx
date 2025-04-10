@@ -34,6 +34,7 @@ export const AlertWithTextInputs = ({
       {inputs &&
         inputs.map(input => (
           <Dialog.Input
+            testID="dialog_input"
             value={values[input.key]}
             key={input.key}
             autoCorrect={false}
