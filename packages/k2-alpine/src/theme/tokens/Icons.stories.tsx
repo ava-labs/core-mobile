@@ -141,7 +141,9 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.Subnet,
       Icons.Custom.Compare,
       Icons.Custom.Unknown,
-      Icons.Custom.Unwrap
+      Icons.Custom.Unwrap,
+      Icons.Custom.AddCircle,
+      Icons.Custom.DoNotDisturbOn
     ],
     itemPadding: 16,
     numColumns: 2,
