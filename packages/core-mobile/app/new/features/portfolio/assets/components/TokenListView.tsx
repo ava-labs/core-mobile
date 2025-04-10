@@ -44,7 +44,10 @@ export const TokenListView = ({
             alignItems: 'center',
             backgroundColor: '$surfaceSecondary'
           }}>
-          <LogoWithNetwork token={token} />
+          <LogoWithNetwork
+            token={token}
+            outerBorderColor={colors.$surfaceSecondary}
+          />
           <View
             sx={{
               flexGrow: 1,
