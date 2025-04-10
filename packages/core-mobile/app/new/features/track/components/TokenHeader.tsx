@@ -5,7 +5,6 @@ import {
   PriceChangeIndicator,
   PriceChangeStatus,
   Text,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
@@ -33,9 +32,6 @@ export const TokenHeader = ({
   rank?: number
   onLayout?: (event: LayoutChangeEvent) => void
 }): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const { formatTokenInCurrency } = useFormatCurrency()
 
   const priceChange: PriceChange | undefined =
@@ -59,12 +55,7 @@ export const TokenHeader = ({
   return (
     <View onLayout={onLayout}>
       {logoUri !== undefined && (
-        <TokenLogo
-          symbol={symbol}
-          logoUri={logoUri}
-          size={42}
-          borderColor={colors.$borderPrimary}
-        />
+        <TokenLogo symbol={symbol} logoUri={logoUri} size={42} />
       )}
       <View
         sx={{

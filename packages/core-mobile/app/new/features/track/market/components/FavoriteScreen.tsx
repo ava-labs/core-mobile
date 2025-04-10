@@ -8,6 +8,8 @@ import { Dimensions } from 'react-native'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
+const errorIcon = require('../../../../assets/icons/star_struck_emoji.png')
+
 const FavoriteScreen = ({
   goToMarketDetail
 }: {
@@ -25,12 +27,7 @@ const FavoriteScreen = ({
     return (
       <ErrorState
         sx={{ height: contentHeight }}
-        icon={
-          <Image
-            source={require('../../../../assets/icons/star_struck_emoji.png')}
-            sx={{ width: 42, height: 42 }}
-          />
-        }
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No favorite tokens"
         description="Star any token to add it to this screen"
       />
