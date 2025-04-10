@@ -13,13 +13,13 @@ import {
 } from '../hooks/useContentful'
 import { CarouselItem } from './CarouselItem'
 
-export const DiscoverDapps = (): ReactNode => {
+export const DiscoverEcosystemProjects = (): ReactNode => {
   const dispatch = useDispatch()
   const { handleUrlSubmit } = useBrowserContext()
   const showEmptyTab = useSelector(selectIsTabEmpty)
 
   const { data, error } = useQuery({
-    queryKey: ['discover-dapps'],
+    queryKey: ['discover-ecosystem-projects'],
     queryFn: fetchEcosystemProjects
   })
 
@@ -34,7 +34,7 @@ export const DiscoverDapps = (): ReactNode => {
   )
 
   const handlePress = (item: ContentfulEcosystemProject): void => {
-    AnalyticsService.capture('BrowserDiscoverDAppTapped', {
+    AnalyticsService.capture('BrowserDiscoverEcosystemProjectTapped', {
       url: item.website ?? ''
     })
 

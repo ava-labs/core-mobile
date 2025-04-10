@@ -6,9 +6,9 @@ import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
 import { DiscoverCollectibles } from './DiscoverCollectibles'
-import { DiscoverDapps } from './DiscoverDapps'
 import { DiscoverLearn } from './DiscoverLearn'
 import { DiscoverProjects } from './DiscoverProjects'
+import { DiscoverEcosystemProjects } from './DiscoverEcosystemProjects'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -63,7 +63,7 @@ export const Discover = (): JSX.Element => {
         </Text>
       </View>
 
-      <DiscoverDapps />
+      <DiscoverEcosystemProjects />
 
       <View
         style={{

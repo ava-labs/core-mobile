@@ -32,7 +32,7 @@ export const DiscoverProjects = (): JSX.Element | null => {
   )
 
   const onPress = (item: ContentfulProject): void => {
-    AnalyticsService.capture('BrowserDiscoverTopProjectTapped', {
+    AnalyticsService.capture('BrowserDiscoverProjectsTapped', {
       url: item.website ?? ''
     })
 

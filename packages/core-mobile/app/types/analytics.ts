@@ -176,9 +176,9 @@ export type AnalyticsEvents = {
   BrowserOpened: { openTabs: number }
   BrowserWelcomeScreenButtonTapped: undefined
   BrowserSearchSubmitted: undefined
-  BrowserDiscoverDAppTapped: { url: string }
+  BrowserDiscoverEcosystemProjectTapped: { url: string }
+  BrowserDiscoverProjectsTapped: { url: string }
   BrowserDiscoverLearnTapped: { url: string }
-  BrowserDiscoverTopProjectTapped: { url: string }
   BrowserFavoritesTapped: undefined
   BrowserSuggestedTapped: { url: string }
   BrowserBackTapped: undefined
