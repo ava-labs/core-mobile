@@ -241,6 +241,7 @@ export const CollectiblesScreen = ({
     filteredAndSorted.length,
     hasFilters,
     isEveryCollectibleHidden,
+    goToDiscoverCollectibles,
     colors.$textPrimary,
     refetch,
     onResetFilter,
