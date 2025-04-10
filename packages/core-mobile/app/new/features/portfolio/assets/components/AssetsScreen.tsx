@@ -20,6 +20,8 @@ import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
 
+const errorIcon = require('../../../../assets/icons/rocket.png')
+
 interface Props {
   goToTokenDetail: (localId: string) => void
   goToTokenManagement: () => void
@@ -111,12 +113,7 @@ const AssetsScreen: FC<Props> = ({
     return (
       <ErrorState
         sx={{ height: portfolioTabContentHeight }}
-        icon={
-          <Image
-            source={require('../../../../assets/icons/rocket.png')}
-            sx={{ width: 42, height: 42 }}
-          />
-        }
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No assets yet"
         description="On-ramp using Core in two minutes"
         button={{

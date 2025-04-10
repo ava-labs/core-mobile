@@ -2,14 +2,11 @@ import React from 'react'
 import { Image, SxProp } from '@avalabs/k2-alpine'
 import { Placeholder } from './Placeholder'
 
+const errorIcon = require('../../assets/icons/weary_emoji.png')
+
 export const ErrorState = ({
   sx,
-  icon = (
-    <Image
-      source={require('../../assets/icons/weary_emoji.png')}
-      sx={{ width: 42, height: 42 }}
-    />
-  ),
+  icon = <Image source={errorIcon} sx={{ width: 42, height: 42 }} />,
   title = 'Oops! Something went wrong',
   description = 'Please try again later',
   button

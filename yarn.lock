@@ -581,13 +581,14 @@ __metadata:
     react-native-popover-view: 6.1.0
     react-native-reanimated: 3.16.7
     react-native-reanimated-carousel: v4.0.2
-    react-native-safe-area-context: 4.12.0
+    react-native-safe-area-context: 5.3.0
     react-native-svg: 15.8.0
     react-native-svg-transformer: 1.5.0
     tinycolor2: 1.6.0
     ts-jest: 29.2.5
     typescript: 5.6.3
   peerDependencies:
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.44
     "@react-native-masked-view/masked-view": 0.3.0
     "@shopify/react-native-skia": 1.5.0
     expo-blur: 14.0.3
@@ -596,7 +597,9 @@ __metadata:
     react: 18.3.1
     react-native: 0.76.9
     react-native-gesture-handler: 2.20.0
+    react-native-modal-datetime-picker: 18.0.0
     react-native-reanimated: 3.16.7
+    react-native-safe-area-context: 5.3.0
   languageName: unknown
   linkType: soft
 
@@ -26784,16 +26787,6 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 6d6af265ecf1b9cb45e042a335f2c5da472ad41eb5d4fda8e31a1607b344726f0f4f9501ef3a3a731cec3784ba93485b44cbdafbf5f13055caa130c703bbd307
-  languageName: node
-  linkType: hard
-
-"react-native-safe-area-context@npm:4.12.0":
-  version: 4.12.0
-  resolution: "react-native-safe-area-context@npm:4.12.0"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 04a751afed448b31dc401f0e8ecf9cf3edc4fe77b5c16cb7bc2a70381c3a2ffa54f42a313a46ad7deec0aff74a3f5650cf49db0264ba4a6c4f6a1d69ecf489fd
   languageName: node
   linkType: hard
 

@@ -1,8 +1,6 @@
 import { AppListenerEffectAPI } from 'store'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { removeContact, selectContacts } from 'store/addressBook'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
@@ -49,17 +47,17 @@ class AvalancheRemoveContactHandler
       }
     }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.CreateRemoveContactV2,
-        params: {
-          request,
-          contact: existingContact,
-          action: 'remove'
-        }
-      }
-    })
+    // Navigation.navigate({
+    //   name: AppNavigation.Root.Wallet,
+    //   params: {
+    //     screen: AppNavigation.Modal.CreateRemoveContactV2,
+    //     params: {
+    //       request,
+    //       contact: existingContact,
+    //       action: 'remove'
+    //     }
+    //   }
+    // })
 
     return { success: true, value: DEFERRED_RESULT }
   }

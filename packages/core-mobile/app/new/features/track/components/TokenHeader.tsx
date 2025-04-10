@@ -5,7 +5,6 @@ import {
   PriceChangeIndicator,
   PriceChangeStatus,
   Text,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
@@ -33,9 +32,6 @@ export const TokenHeader = ({
   rank?: number
   onLayout?: (event: LayoutChangeEvent) => void
 }): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const { formatTokenInCurrency } = useFormatCurrency()
 
   const priceChange: PriceChange | undefined =
@@ -43,7 +39,7 @@ export const TokenHeader = ({
       ? undefined
       : {
           formattedPrice: formatLargeCurrency(
-            formatTokenInCurrency(Math.abs(ranges.diffValue))
+            formatTokenInCurrency({ amount: Math.abs(ranges.diffValue) })
           ),
           status:
             ranges.diffValue < 0
@@ -59,12 +55,7 @@ export const TokenHeader = ({
   return (
     <View onLayout={onLayout}>
       {logoUri !== undefined && (
-        <TokenLogo
-          symbol={symbol}
-          logoUri={logoUri}
-          size={42}
-          borderColor={colors.$borderPrimary}
-        />
+        <TokenLogo symbol={symbol} logoUri={logoUri} size={42} />
       )}
       <View
         sx={{
@@ -87,7 +78,7 @@ export const TokenHeader = ({
             <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
               <Text variant="heading2">
                 {currentPrice !== undefined
-                  ? formatTokenInCurrency(currentPrice)
+                  ? formatTokenInCurrency({ amount: currentPrice })
                   : UNKNOWN_AMOUNT}
               </Text>
             </View>

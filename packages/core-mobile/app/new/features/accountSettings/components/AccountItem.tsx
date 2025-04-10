@@ -95,7 +95,7 @@ export const AccountItem = memo(
             </Text>
             <AnimatedBalance
               variant="body1"
-              balance={formatCurrency(accountBalance)}
+              balance={formatCurrency({ amount: accountBalance })}
               shouldMask={isPrivacyModeEnabled}
               balanceSx={{ color: subtitleColor, lineHeight: 18 }}
               maskBackgroundColor={backgroundColor}

@@ -90,7 +90,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const formatMarketNumbers = useCallback(
     (value: number) => {
-      return value === 0 ? ' -' : formatLargeCurrency(formatCurrency(value))
+      return value === 0
+        ? ' -'
+        : formatLargeCurrency(formatCurrency({ amount: value }))
     },
     [formatCurrency]
   )

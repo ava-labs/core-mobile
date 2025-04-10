@@ -8,7 +8,7 @@ const StakeOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
-    navigate('startStake/amount')
+    navigate('addStake/amount')
   }, [navigate])
 
   return (

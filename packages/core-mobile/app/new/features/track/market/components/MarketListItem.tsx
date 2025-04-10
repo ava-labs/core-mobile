@@ -96,5 +96,3 @@ export const MarketListItem = ({
     />
   )
 }
-
-export default MarketListItem

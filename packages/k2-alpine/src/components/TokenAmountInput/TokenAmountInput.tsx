@@ -35,12 +35,13 @@ type TokenAmountInputProps = {
   onChange?(amount: TokenUnit): void
   formatInCurrency?(amount: TokenUnit): string
   sx?: SxProp
+  editable?: boolean
 }
 
 export const TokenAmountInput = forwardRef<
   TokenAmountInputHandle,
   TokenAmountInputProps
->(({ amount, token, onChange, formatInCurrency, sx }, ref) => {
+>(({ amount, token, onChange, formatInCurrency, sx, editable }, ref) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -144,6 +145,7 @@ export const TokenAmountInput = forwardRef<
           </Text>
           <TextInput
             ref={textInputRef}
+            editable={editable}
             style={[
               styles.textInput,
               {
