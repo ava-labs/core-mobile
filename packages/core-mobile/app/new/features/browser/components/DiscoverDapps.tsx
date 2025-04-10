@@ -8,7 +8,6 @@ import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import {
-  ContentfulAsset,
   ContentfulEcosystemProject,
   fetchEcosystemProjects
 } from '../hooks/useContentful'
@@ -27,7 +26,7 @@ export const DiscoverDapps = (): ReactNode => {
   const randomisedItems = useMemo(
     () =>
       data?.items
-        ?.filter(item => !item.fields.hideOnMobile)
+        ?.filter(item => !item?.hideOnMobile)
         ?.sort(() => Math.random() - 0.5) || [],
     // Needed for randomization to work when the tab is empty
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -36,30 +35,24 @@ export const DiscoverDapps = (): ReactNode => {
 
   const handlePress = (item: ContentfulEcosystemProject): void => {
     AnalyticsService.capture('BrowserDiscoverDAppTapped', {
-      url: item.fields.website ?? ''
+      url: item.website ?? ''
     })
 
     dispatch(
       addHistoryForActiveTab({
-        title: item.fields.name ?? '',
-        url: item.fields.website ?? ''
+        title: item.name ?? '',
+        url: item.website ?? ''
       })
     )
-    handleUrlSubmit?.(item.fields.website ?? '')
+    handleUrlSubmit?.(item.website ?? '')
   }
 
   const renderItem: ListRenderItem<ContentfulEcosystemProject> = ({ item }) => {
-    const logoUrl = `https:${
-      data?.includes.Asset.find(
-        (asset: ContentfulAsset) => asset.sys.id === item.fields.logo?.sys.id
-      )?.fields.file.url
-    }`
-
     return (
       <CarouselItem
-        title={item.fields.name}
-        image={logoUrl}
-        description={item.fields?.description}
+        title={item.name}
+        image={item.logo?.url}
+        description={item.description}
         onPress={() => handlePress(item)}
       />
     )
@@ -89,7 +82,7 @@ export const DiscoverDapps = (): ReactNode => {
       <FlatList
         data={randomisedItems}
         renderItem={renderItem}
-        keyExtractor={item => item.fields.name}
+        keyExtractor={item => item.name}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: HORIZONTAL_MARGIN,

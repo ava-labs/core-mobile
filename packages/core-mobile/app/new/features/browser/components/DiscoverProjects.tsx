@@ -9,7 +9,6 @@ import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import {
-  ContentfulAsset,
   ContentfulProject,
   fetchFeaturedProjects
 } from '../hooks/useContentful'
@@ -34,32 +33,26 @@ export const DiscoverProjects = (): JSX.Element | null => {
 
   const onPress = (item: ContentfulProject): void => {
     AnalyticsService.capture('BrowserDiscoverTopProjectTapped', {
-      url: item.fields.website ?? ''
+      url: item.website ?? ''
     })
 
     dispatch(
       addHistoryForActiveTab({
-        title: item.fields.name ?? '',
-        url: item.fields.website ?? ''
+        title: item.name ?? '',
+        url: item.website ?? ''
       })
     )
-    handleUrlSubmit?.(item.fields.website)
+    handleUrlSubmit?.(item.website)
   }
 
   const renderItem: ListRenderItem<ContentfulProject> = ({ item, index }) => {
-    const logoUrl = `https:${
-      data?.includes.Asset.find(
-        (asset: ContentfulAsset) => asset.sys.id === item.fields.logo?.sys.id
-      )?.fields.file.url
-    }`
-
     return (
       <BrowserItem
         type={'list'}
-        title={item.fields.name}
-        subtitle={item.fields.description}
+        title={item.name}
+        subtitle={item.description}
         onPress={() => onPress(item)}
-        image={logoUrl}
+        image={item.logo?.url}
         isLast={index === (randomisedItems?.length ?? 0) - 1}
         renderRight={
           <Button size="small" type="secondary" onPress={() => onPress(item)}>

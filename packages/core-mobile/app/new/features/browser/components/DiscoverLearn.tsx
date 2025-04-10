@@ -27,16 +27,16 @@ export const DiscoverLearn = (): ReactNode => {
 
   const handlePress = (item: ContentfulEducationArticle): void => {
     AnalyticsService.capture('BrowserDiscoverLearnTapped', {
-      url: item.fields.url
+      url: item.url
     })
 
     dispatch(
       addHistoryForActiveTab({
-        title: item.fields.headline,
-        url: item.fields.url
+        title: item.headline,
+        url: item.url
       })
     )
-    handleUrlSubmit?.(item.fields.url)
+    handleUrlSubmit?.(item.url)
   }
 
   const renderItem: ListRenderItem<ContentfulEducationArticle> = ({
@@ -47,7 +47,7 @@ export const DiscoverLearn = (): ReactNode => {
 
     return (
       <CarouselItem
-        title={item.fields.headline}
+        title={item.headline}
         onPress={() => handlePress(item)}
         renderImage={
           <View
