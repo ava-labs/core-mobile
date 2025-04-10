@@ -30,13 +30,19 @@ const StakesScreen = ({
   onAddStake,
   onClaim,
   onPressStake,
-  motion
+  onRefresh,
+  isRefreshing,
+  motion,
+  canAddStake
 }: {
   stakes: PChainTransaction[]
   onAddStake: () => void
   onClaim: () => void
   onPressStake: (txHash: string) => void
+  onRefresh: () => void
+  isRefreshing: boolean
   motion?: Motion
+  canAddStake: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const isDevMode = useSelector(selectIsDeveloperMode)
@@ -64,7 +70,13 @@ const StakesScreen = ({
     }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
       let content = null
       if (item === StaticCard.Add) {
-        content = <AddCard width={CARD_WIDTH} onPress={onAddStake} />
+        content = (
+          <AddCard
+            width={CARD_WIDTH}
+            onPress={onAddStake}
+            disabled={!canAddStake}
+          />
+        )
       } else if (item === StaticCard.Claim) {
         content = (
           <ClaimCard
@@ -133,6 +145,7 @@ const StakesScreen = ({
       claimableInAvax,
       completeCardBackground,
       motion,
+      canAddStake,
       onAddStake,
       onClaim,
       onPressStake,
@@ -150,6 +163,8 @@ const StakesScreen = ({
       keyExtractor={(_, index) => index.toString()}
       removeClippedSubviews={true}
       extraData={theme.isDark} // force re-render when theme changes
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
     />
   )
 }

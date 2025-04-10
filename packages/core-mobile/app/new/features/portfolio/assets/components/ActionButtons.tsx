@@ -23,6 +23,7 @@ export const ActionButtons = ({
           title={item.title}
           icon={item.icon}
           onPress={item.onPress}
+          disabled={item.disabled}
         />
       </Animated.View>
     )
@@ -45,5 +46,6 @@ export const ActionButtons = ({
 export type ActionButton = {
   title: ActionButtonTitle
   icon: SquareButtonIconType
+  disabled?: boolean
   onPress: () => void
 }

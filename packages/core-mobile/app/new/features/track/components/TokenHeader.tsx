@@ -39,7 +39,7 @@ export const TokenHeader = ({
       ? undefined
       : {
           formattedPrice: formatLargeCurrency(
-            formatTokenInCurrency(Math.abs(ranges.diffValue))
+            formatTokenInCurrency({ amount: Math.abs(ranges.diffValue) })
           ),
           status:
             ranges.diffValue < 0
@@ -78,7 +78,7 @@ export const TokenHeader = ({
             <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
               <Text variant="heading2">
                 {currentPrice !== undefined
-                  ? formatTokenInCurrency(currentPrice)
+                  ? formatTokenInCurrency({ amount: currentPrice })
                   : UNKNOWN_AMOUNT}
               </Text>
             </View>

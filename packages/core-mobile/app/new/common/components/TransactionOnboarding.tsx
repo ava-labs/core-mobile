@@ -90,7 +90,7 @@ export const TransactionOnboarding = ({
           data={groupListData}
           titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
           textContainerSx={{
-            paddingVertical: 17
+            paddingVertical: 4
           }}
         />
         <Button type="primary" size="large" onPress={onPressNext}>
