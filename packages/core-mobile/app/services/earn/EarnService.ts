@@ -15,7 +15,6 @@ import Logger from 'utils/Logger'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
-  GetAllStakesParams,
   RecoveryEvents
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
@@ -287,8 +286,13 @@ class EarnService {
    */
   getAllStakes = async ({
     isTestnet,
-    addresses
-  }: GetAllStakesParams): Promise<PChainTransaction[]> => {
+    addresses,
+    startTimestamp
+  }: {
+    isTestnet: boolean
+    addresses: string[]
+    startTimestamp?: number
+  }): Promise<PChainTransaction[]> => {
     const addressesStr = addresses.join(',')
     let pageToken: string | undefined
     const transactions: PChainTransaction[] = []
@@ -303,27 +307,29 @@ class EarnService {
           addresses: addressesStr,
           pageSize: 100,
           sortOrder: SortOrder.DESC,
-          pageToken
+          pageToken,
+          txTypes: [
+            PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
+            PChainTransactionType.ADD_DELEGATOR_TX
+          ],
+          startTimestamp
         }
       })
       pageToken = response.nextPageToken
       transactions.push(...(response.transactions as PChainTransaction[]))
     } while (pageToken)
 
-    return transactions.filter(
-      transaction =>
-        transaction.txType ===
-          PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX ||
-        transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
-    )
+    return transactions
   }
 
   getTransformedStakesForAllAccounts = async ({
     accounts,
-    network
+    network,
+    startTimestamp
   }: {
     accounts: AccountCollection
     network: Network
+    startTimestamp?: number
   }): Promise<
     | {
         txHash: string
@@ -343,7 +349,8 @@ class EarnService {
         .filter((address): address is string => address !== undefined)
       const currentNetworkTransactions = await getTransformedTransactions(
         currentNetworkAddresses,
-        isDeveloperMode
+        isDeveloperMode,
+        startTimestamp
       )
 
       const oppositeNetworkAddresses = (
@@ -355,7 +362,8 @@ class EarnService {
       ).map(address => address.PVM)
       const oppositeNetworkTransactions = await getTransformedTransactions(
         oppositeNetworkAddresses,
-        !isDeveloperMode
+        !isDeveloperMode,
+        startTimestamp
       )
 
       const now = new Date()

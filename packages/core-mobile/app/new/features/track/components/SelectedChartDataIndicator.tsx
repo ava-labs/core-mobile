@@ -46,7 +46,7 @@ export const SelectedChartDataIndicator = ({
         {formattedPercentChange}
       </Text>
       <Text variant="heading2">
-        {formatTokenInCurrency(selectedData?.value ?? 0)}
+        {formatTokenInCurrency({ amount: selectedData?.value ?? 0 })}
       </Text>
       {selectedData?.date && (
         <Text

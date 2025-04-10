@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useSendContext } from 'contexts/SendContext'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalanceBTC } from '@avalabs/vm-module-types'
-import { Contact, CorePrimaryAccount } from '@avalabs/types'
+import { CorePrimaryAccount } from '@avalabs/types'
 import useBTCSend from '../hooks/useBTCSend'
 import SendTokenForm from './SendTokenForm'
 
@@ -11,7 +11,6 @@ const SendBTC = ({
   account,
   network,
   onOpenQRScanner,
-  onOpenAddressBook,
   onSuccess,
   onFailure
 }: {
@@ -19,19 +18,11 @@ const SendBTC = ({
   account: CorePrimaryAccount
   network: Network
   onOpenQRScanner: () => void
-  onOpenAddressBook: () => void
   onSuccess: (txHash: string) => void
   onFailure: (txError: unknown) => void
 }): JSX.Element => {
-  const {
-    setToAddress,
-    setToken,
-    maxAmount,
-    error,
-    isValid,
-    isSending,
-    maxFee
-  } = useSendContext()
+  const { setToken, maxAmount, error, isValid, isSending, maxFee } =
+    useSendContext()
 
   const fromAddress = account?.addressBTC ?? ''
 
@@ -57,10 +48,6 @@ const SendBTC = ({
     }
   }
 
-  const handleSelectContact = (item: Contact | CorePrimaryAccount): void => {
-    setToAddress(item.addressBTC ?? '')
-  }
-
   return (
     <SendTokenForm
       network={network}
@@ -70,8 +57,6 @@ const SendBTC = ({
       isValid={isValid}
       isSending={isSending}
       onOpenQRScanner={onOpenQRScanner}
-      onOpenAddressBook={onOpenAddressBook}
-      onSelectContact={handleSelectContact}
       onSend={handleSend}
     />
   )

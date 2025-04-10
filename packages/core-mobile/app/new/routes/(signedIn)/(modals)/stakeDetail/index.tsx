@@ -3,6 +3,7 @@ import {
   GroupList,
   GroupListItem,
   ScrollView,
+  SxProp,
   View
 } from '@avalabs/k2-alpine'
 import React, { useMemo } from 'react'
@@ -56,113 +57,126 @@ const StakeDetailScreen = (): React.JSX.Element => {
   const groupListSections = useMemo(() => {
     if (!stake) return []
 
-    const sections: GroupListItem[][] = []
+    const sections: { items: GroupListItem[]; textContainerSx?: SxProp }[] = []
 
     if (stake.nodeId) {
-      sections.push([
-        {
-          title: 'NodeID',
-          subtitle: truncateNodeId(stake.nodeId, HASH_LENGTH),
-          accessory: (
-            <Button
-              size="small"
-              type="secondary"
-              onPress={() => copyToClipboard(stake.nodeId)}>
-              Copy
-            </Button>
-          ),
-          onPress: () => {
-            copyToClipboard(stake.nodeId)
+      sections.push({
+        items: [
+          {
+            title: 'NodeID',
+            subtitle: truncateNodeId(stake.nodeId, HASH_LENGTH),
+            accessory: (
+              <Button
+                size="small"
+                type="secondary"
+                onPress={() => copyToClipboard(stake.nodeId)}>
+                Copy
+              </Button>
+            ),
+            onPress: () => {
+              copyToClipboard(stake.nodeId)
+            }
           }
-        }
-      ])
+        ]
+      })
     }
 
     if (isActive) {
-      sections.push([
-        {
-          title: 'Vesting progress',
-          value: `${round(
-            getActiveStakeProgress(stake, new Date()) * 100,
-            0
-          ).toString()}%`
-        },
-        {
-          title: 'Time to unlock',
-          value: `${getRemainingReadableTime(stake)} left`
-        },
-        {
-          title: 'Locked until',
-          value: format(
-            fromUnixTime(stake.endTimestamp || 0),
-            'MM/dd/yyyy h:mm aa'
-          )
-        }
-      ])
+      sections.push({
+        items: [
+          {
+            title: 'Vesting progress',
+            value: `${round(
+              getActiveStakeProgress(stake, new Date()) * 100,
+              0
+            ).toString()}%`
+          },
+          {
+            title: 'Time to unlock',
+            value: `${getRemainingReadableTime(stake)} left`
+          },
+          {
+            title: 'Locked until',
+            value: format(
+              fromUnixTime(stake.endTimestamp || 0),
+              'MM/dd/yyyy h:mm aa'
+            )
+          }
+        ]
+      })
     } else {
-      sections.push([
-        {
-          title: 'Vesting progress',
-          value: '100%'
-        },
-        {
-          title: 'End date',
-          value: format(fromUnixTime(stake.endTimestamp || 0), 'MM/dd/yyyy')
-        }
-      ])
+      sections.push({
+        items: [
+          {
+            title: 'Vesting progress',
+            value: '100%'
+          },
+          {
+            title: 'End date',
+            value: format(fromUnixTime(stake.endTimestamp || 0), 'MM/dd/yyyy')
+          }
+        ]
+      })
     }
 
     if (!isActive && stake.txHash) {
-      sections.push([
-        {
-          title: 'Transaction ID',
-          subtitle: truncateAddress(stake.txHash, HASH_LENGTH),
-          accessory: (
-            <Button
-              size="small"
-              type="secondary"
-              onPress={() => {
-                copyToClipboard(stake.txHash)
-              }}>
-              Copy
-            </Button>
-          ),
-          onPress: () => {
-            copyToClipboard(stake.txHash)
+      sections.push({
+        items: [
+          {
+            title: 'Transaction ID',
+            subtitle: truncateAddress(stake.txHash, HASH_LENGTH),
+            accessory: (
+              <Button
+                size="small"
+                type="secondary"
+                onPress={() => {
+                  copyToClipboard(stake.txHash)
+                }}>
+                Copy
+              </Button>
+            ),
+            onPress: () => {
+              copyToClipboard(stake.txHash)
+            }
           }
-        }
-      ])
+        ]
+      })
     }
 
-    sections.push([
-      {
-        title: 'Staked amount',
-        value: (
-          <StakeTokenUnitValue
-            value={getStakedAmount(stake, pChainNetworkToken)}
-          />
-        )
-      },
-      isActive
-        ? {
-            title: 'Estimated reward',
-            value: (
-              <StakeTokenUnitValue
-                value={getEstimatedRewardAmount(stake, pChainNetworkToken)}
-                isReward
-              />
-            )
-          }
-        : {
-            title: 'Earned reward',
-            value: (
-              <StakeTokenUnitValue
-                value={getEarnedRewardAmount(stake, pChainNetworkToken)}
-                isReward
-              />
-            )
-          }
-    ])
+    sections.push({
+      items: [
+        {
+          title: 'Staked amount',
+          value: (
+            <StakeTokenUnitValue
+              value={getStakedAmount(stake, pChainNetworkToken)}
+            />
+          )
+        },
+        isActive
+          ? {
+              title: 'Estimated reward',
+              value: (
+                <StakeTokenUnitValue
+                  value={getEstimatedRewardAmount(stake, pChainNetworkToken)}
+                  isReward
+                />
+              )
+            }
+          : {
+              title: 'Earned reward',
+              value: (
+                <StakeTokenUnitValue
+                  value={getEarnedRewardAmount(stake, pChainNetworkToken)}
+                  isReward
+                />
+              )
+            }
+      ],
+      textContainerSx: {
+        marginTop: 0
+      }
+    })
 
     return sections
   }, [stake, isActive, pChainNetworkToken])
@@ -177,7 +191,11 @@ const StakeDetailScreen = (): React.JSX.Element => {
         <ScreenHeader title={title} />
         <View sx={{ marginTop: 20, gap: 12 }}>
           {groupListSections.map((section, index) => (
-            <GroupList key={index} data={section} />
+            <GroupList
+              key={index}
+              data={section.items}
+              textContainerSx={section.textContainerSx}
+            />
           ))}
         </View>
       </ScrollView>

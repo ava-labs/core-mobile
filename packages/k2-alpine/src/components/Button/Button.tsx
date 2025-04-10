@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ViewStyle,
-  View as RNView
+  View as RNView,
+  TextStyle
 } from 'react-native'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
@@ -34,6 +35,7 @@ interface ButtonProps {
   onPress?: () => void
   disabled?: boolean
   style?: StyleProp<ViewStyle>
+  textStyle?: StyleProp<TextStyle>
   testID?: string
   type: ButtonType
   size: ButtonSize
@@ -52,6 +54,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
       rightIcon,
       disabled,
       style,
+      textStyle,
       children,
       testID,
       shouldInverseTheme = false,
@@ -125,10 +128,13 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
             <Text
               numberOfLines={1}
               variant={textVariant}
-              style={{
-                color: tintColor,
-                flexShrink: 1
-              }}>
+              style={[
+                {
+                  color: tintColor,
+                  flexShrink: 1
+                },
+                textStyle
+              ]}>
               {children}
             </Text>
             {React.isValidElement(rightIcon)

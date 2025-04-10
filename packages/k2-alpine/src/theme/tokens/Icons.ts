@@ -67,6 +67,8 @@ import IconWaterDrop from '../../assets/icons/water_drop.svg'
 import IconWaterDropFilled from '../../assets/icons/water_drop_filled.svg'
 import IconHistory from '../../assets/icons/history.svg'
 import IconArrowOutward from '../../assets/icons/arrow_outward.svg'
+import IconDoNotDisturbOn from '../../assets/icons/do_not_disturb_on.svg'
+import IconAddCircle from '../../assets/icons/add_circle.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -268,7 +270,9 @@ export const Icons = {
     Unknown: IconTxTypeUnknown,
     Switch: IconSwitch,
     WaterDrop: IconWaterDrop,
-    WaterDropFilled: IconWaterDropFilled
+    WaterDropFilled: IconWaterDropFilled,
+    DoNotDisturbOn: IconDoNotDisturbOn,
+    AddCircle: IconAddCircle
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

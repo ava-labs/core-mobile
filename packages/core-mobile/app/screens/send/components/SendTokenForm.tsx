@@ -3,19 +3,11 @@ import { ScrollView, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
 import AvaButton from 'components/AvaButton'
-import AddressBookSVG from 'components/svg/AddressBookSVG'
 import QRScanSVG from 'components/svg/QRScanSVG'
-import AddressBookLists, {
-  AddressBookSource
-} from 'components/addressBook/AddressBookLists'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { useSendContext } from 'contexts/SendContext'
-import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import FlexSpacer from 'components/FlexSpacer'
-import { Contact, CorePrimaryAccount } from '@avalabs/types'
-import { AddrBookItemType } from 'store/addressBook'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { Amount } from 'types'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
@@ -29,8 +21,6 @@ const SendTokenForm = ({
   isValid,
   isSending,
   onOpenQRScanner,
-  onOpenAddressBook,
-  onSelectContact,
   onSend,
   handleFeesChange,
   estimatedFee,
@@ -43,8 +33,6 @@ const SendTokenForm = ({
   isValid: boolean
   isSending: boolean
   onOpenQRScanner: () => void
-  onOpenAddressBook: () => void
-  onSelectContact: (item: Contact | CorePrimaryAccount) => void
   onSend: () => void
   handleFeesChange?(fees: Eip1559Fees, feePreset: FeePreset): void
   estimatedFee?: bigint
@@ -63,26 +51,7 @@ const SendTokenForm = ({
   const [isTokenTouched, setIsTokenTouched] = useState(false)
   const [isAmountTouched, setIsAmountTouched] = useState(false)
 
-  const {
-    showAddressBook,
-    setShowAddressBook,
-    onContactSelected,
-    saveRecentContact,
-    reset: resetAddressBookList
-  } = useAddressBookLists()
-
-  const handleContactSelected = (
-    item: Contact | CorePrimaryAccount,
-    type: AddrBookItemType,
-    source: AddressBookSource
-  ): void => {
-    onSelectContact(item)
-    onContactSelected(item, type)
-    AnalyticsService.capture('SendContactSelected', { contactSource: source })
-  }
-
   const handleSend = (): void => {
-    saveRecentContact()
     onSend()
   }
 
@@ -91,12 +60,6 @@ const SendTokenForm = ({
       setAmount(maxAmount)
     }
   }, [maxAmount, setAmount])
-
-  useEffect(() => {
-    if (toAddress) {
-      setShowAddressBook(false)
-    }
-  }, [setShowAddressBook, toAddress])
 
   useEffect(() => {
     if (!isAddressTouched && toAddress) {
@@ -145,24 +108,9 @@ const SendTokenForm = ({
           multiline={true}
           onChangeText={text => {
             setToAddress(text)
-            resetAddressBookList()
           }}
           text={toAddress ?? ''}
         />
-        {!toAddress && (
-          <View
-            style={{
-              position: 'absolute',
-              right: 24,
-              justifyContent: 'center',
-              height: '100%'
-            }}>
-            <AvaButton.Icon
-              onPress={() => setShowAddressBook(!showAddressBook)}>
-              <AddressBookSVG />
-            </AvaButton.Icon>
-          </View>
-        )}
         {!toAddress && (
           <View
             style={{
@@ -178,52 +126,44 @@ const SendTokenForm = ({
         )}
       </View>
       <Space y={24} />
-      {showAddressBook ? (
-        <AddressBookLists
-          onlyBtc={network.vmName === NetworkVMType.BITCOIN}
-          onContactSelected={handleContactSelected}
-          navigateToAddressBook={onOpenAddressBook}
+      <>
+        <UniversalTokenSelector
+          testID="send_token__token_dropdown"
+          onTokenChange={tkWithBalance =>
+            setToken(tkWithBalance as TokenWithBalance)
+          }
+          onAmountChange={value => {
+            setAmount(value)
+          }}
+          onMax={toAddress && token ? handleMax : undefined}
+          selectedToken={token}
+          inputAmount={amount?.bn}
+          hideErrorMessage
+          error={isAllFieldsTouched && error ? error : undefined}
         />
-      ) : (
-        <>
-          <UniversalTokenSelector
-            testID="send_token__token_dropdown"
-            onTokenChange={tkWithBalance =>
-              setToken(tkWithBalance as TokenWithBalance)
-            }
-            onAmountChange={value => {
-              setAmount(value)
-            }}
-            onMax={toAddress && token ? handleMax : undefined}
-            selectedToken={token}
-            inputAmount={amount?.bn}
-            hideErrorMessage
-            error={isAllFieldsTouched && error ? error : undefined}
-          />
-          {supportsAvalancheDynamicFee && estimatedFee !== undefined && (
-            <>
-              <Space y={20} />
-              <Text
-                variant="subtitle1"
-                sx={{ marginHorizontal: 16, marginBottom: 6 }}>
-                Network Fee
-              </Text>
-              <View sx={{ marginHorizontal: 16 }}>
-                <NetworkFeeSelector
-                  isDark
-                  chainId={network.chainId}
-                  gasLimit={Number(estimatedFee)}
-                  onFeesChange={handleFeesChange}
-                  isGasLimitEditable={false}
-                  supportsAvalancheDynamicFee
-                />
-              </View>
-            </>
-          )}
+        {supportsAvalancheDynamicFee && estimatedFee !== undefined && (
+          <>
+            <Space y={20} />
+            <Text
+              variant="subtitle1"
+              sx={{ marginHorizontal: 16, marginBottom: 6 }}>
+              Network Fee
+            </Text>
+            <View sx={{ marginHorizontal: 16 }}>
+              <NetworkFeeSelector
+                isDark
+                chainId={network.chainId}
+                gasLimit={Number(estimatedFee)}
+                onFeesChange={handleFeesChange}
+                isGasLimitEditable={false}
+                supportsAvalancheDynamicFee
+              />
+            </View>
+          </>
+        )}
 
-          <FlexSpacer />
-        </>
-      )}
+        <FlexSpacer />
+      </>
       <AvaButton.PrimaryLarge
         testID={!canSubmit ? 'disabled_next_btn' : 'next_btn'}
         disabled={!canSubmit}

@@ -9,17 +9,22 @@ export const SquareButton = ({
   title,
   icon,
   onPress,
-  style
+  style,
+  disabled
 }: {
   title: string
   icon: SquareButtonIconType
   onPress?: () => void
   style?: ViewStyle
+  disabled?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
+  const tintColor = disabled
+    ? theme.colors.$textSecondary
+    : theme.colors.$textPrimary
 
   return (
-    <AnimatedPressable style={style} onPress={onPress}>
+    <AnimatedPressable style={style} onPress={onPress} disabled={disabled}>
       <View
         sx={{
           borderRadius: 12,
@@ -31,7 +36,7 @@ export const SquareButton = ({
           {getIcon(icon, {
             width: 24,
             height: 24,
-            color: theme.colors.$textPrimary
+            color: tintColor
           })}
         </View>
         <Text
@@ -41,7 +46,8 @@ export const SquareButton = ({
             left: 13,
             fontSize: 11,
             lineHeight: 21,
-            fontFamily: 'Inter-SemiBold'
+            fontFamily: 'Inter-SemiBold',
+            color: tintColor
           }}>
           {title}
         </Text>

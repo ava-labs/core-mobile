@@ -5,21 +5,13 @@ import { Text, Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
 import AvaButton from 'components/AvaButton'
-import AddressBookSVG from 'components/svg/AddressBookSVG'
-import AddressBookLists, {
-  AddressBookSource
-} from 'components/addressBook/AddressBookLists'
 import FlexSpacer from 'components/FlexSpacer'
-import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
-import { Account, selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account'
 import { SvgXml } from 'react-native-svg'
-import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { Contact } from '@avalabs/types'
-import { getAddressProperty } from 'store/utils/account&contactGetters'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
@@ -36,7 +28,6 @@ import { getNftTitle } from 'services/nft/utils'
 import { NftItem } from 'services/nft/types'
 
 type NftSendScreenProps = {
-  onOpenAddressBook: () => void
   onOpenQRScanner: () => void
 }
 
@@ -45,7 +36,6 @@ type NftSendNavigationProp = NFTDetailsSendScreenProps<
 >
 
 export default function NftSend({
-  onOpenAddressBook,
   onOpenQRScanner
 }: NftSendScreenProps): JSX.Element {
   const navigation = useNavigation<NftSendNavigationProp['navigation']>()
@@ -77,17 +67,7 @@ export default function NftSend({
   const canSubmit =
     !isSending && isValid && !!toAddress && error === undefined && touched
 
-  const {
-    saveRecentContact,
-    onContactSelected: selectContact,
-    reset: resetAddressBookList,
-    setShowAddressBook,
-    showAddressBook
-  } = useAddressBookLists()
-
   const onNextPress = async (): Promise<void> => {
-    saveRecentContact()
-
     if (token === undefined || toAddress === undefined) {
       return
     }
@@ -122,12 +102,6 @@ export default function NftSend({
   }
 
   useEffect(() => {
-    if (toAddress) {
-      setShowAddressBook(false)
-    }
-  }, [setShowAddressBook, toAddress])
-
-  useEffect(() => {
     if (touched === false && toAddress) {
       setTouched(true)
     }
@@ -136,18 +110,6 @@ export default function NftSend({
   useEffect(() => {
     setCanValidate(touched)
   }, [touched, setCanValidate])
-
-  const onContactSelected = (
-    item: Contact | Account,
-    type: AddrBookItemType,
-    source: AddressBookSource
-  ): void => {
-    setToAddress(getAddressProperty(item))
-    selectContact(item, type)
-    AnalyticsService.capture('NftSendContactSelected', {
-      contactSource: source
-    })
-  }
 
   return (
     <ScrollView contentContainerStyle={[styles.container]}>
@@ -160,24 +122,9 @@ export default function NftSend({
           multiline={true}
           onChangeText={text => {
             setToAddress(text)
-            resetAddressBookList()
           }}
           text={toAddress ?? ''}
         />
-        {!toAddress && (
-          <View
-            style={{
-              position: 'absolute',
-              right: 24,
-              justifyContent: 'center',
-              height: '100%'
-            }}>
-            <AvaButton.Icon
-              onPress={() => setShowAddressBook(!showAddressBook)}>
-              <AddressBookSVG />
-            </AvaButton.Icon>
-          </View>
-        )}
         {!toAddress && (
           <View
             style={{
@@ -192,23 +139,14 @@ export default function NftSend({
           </View>
         )}
       </View>
-      {showAddressBook ? (
-        <View style={{ marginHorizontal: -16, flex: 1 }}>
-          <AddressBookLists
-            onContactSelected={onContactSelected}
-            navigateToAddressBook={onOpenAddressBook}
-          />
-        </View>
-      ) : (
-        <>
-          <Text variant="heading6">Collectible</Text>
-          <CollectibleItem nft={params.nft} />
-          <Text variant="body1" sx={{ color: '$dangerMain' }}>
-            {touched && error ? error : ''}
-          </Text>
-          <FlexSpacer />
-        </>
-      )}
+      <>
+        <Text variant="heading6">Collectible</Text>
+        <CollectibleItem nft={params.nft} />
+        <Text variant="body1" sx={{ color: '$dangerMain' }}>
+          {touched && error ? error : ''}
+        </Text>
+        <FlexSpacer />
+      </>
       <Button
         testID={canSubmit ? 'next_btn' : 'next_btn_disabled'}
         type="primary"

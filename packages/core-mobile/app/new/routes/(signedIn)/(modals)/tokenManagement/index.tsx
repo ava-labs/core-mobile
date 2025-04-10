@@ -4,6 +4,7 @@ import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   Icons,
   SearchBar,
+  Separator,
   Text,
   TouchableOpacity,
   useTheme,
@@ -47,6 +48,10 @@ const TokenManagementScreen = (): JSX.Element => {
     setSearchText(text)
   }
 
+  const renderSeparator = useCallback((): JSX.Element => {
+    return <Separator sx={{ marginLeft: 52, marginRight: -16 }} />
+  }, [])
+
   const renderContent = useCallback(() => {
     if (isLoading || isRefetching) {
       return <LoadingState sx={{ flex: 1 }} />
@@ -66,8 +71,10 @@ const TokenManagementScreen = (): JSX.Element => {
     return (
       <FlatList
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
         style={{ width: '100%' }}
         data={tokenList}
+        ItemSeparatorComponent={renderSeparator}
         renderItem={item =>
           renderItem(item as ListRenderItemInfo<LocalTokenWithBalance>)
         }
@@ -77,7 +84,7 @@ const TokenManagementScreen = (): JSX.Element => {
         keyboardDismissMode="interactive"
       />
     )
-  }, [isLoading, isRefetching, tokenList, refetch])
+  }, [isLoading, isRefetching, tokenList, refetch, renderSeparator])
 
   const addCustomToken = (): void => {
     push('/tokenManagement/addCustomToken')
@@ -87,21 +94,26 @@ const TokenManagementScreen = (): JSX.Element => {
     <View
       sx={{
         flex: 1,
-        gap: 16,
-        paddingHorizontal: 16
+        gap: 16
       }}>
       <View
         sx={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          paddingHorizontal: 16
         }}>
         <Text variant="heading2">Manage list</Text>
         <TouchableOpacity onPress={addCustomToken} hitSlop={16}>
           <Icons.Content.Add color={colors.$textPrimary} />
         </TouchableOpacity>
       </View>
-      <SearchBar onTextChanged={handleSearch} searchText={searchText} />
+      <View
+        style={{
+          paddingHorizontal: 16
+        }}>
+        <SearchBar onTextChanged={handleSearch} searchText={searchText} />
+      </View>
       {renderContent()}
     </View>
   )

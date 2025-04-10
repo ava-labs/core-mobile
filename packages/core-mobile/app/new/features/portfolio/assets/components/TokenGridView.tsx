@@ -47,7 +47,10 @@ export const TokenGridView = ({
             gap: 8,
             width: (SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2
           }}>
-          <LogoWithNetwork token={token} />
+          <LogoWithNetwork
+            token={token}
+            outerBorderColor={colors.$surfaceSecondary}
+          />
           <View>
             <Text
               testID={`grid_token_name__${index}`}

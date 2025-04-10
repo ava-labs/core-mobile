@@ -57,7 +57,7 @@ const AccountScreen = (): JSX.Element => {
   const currencyBalance = useMemo(() => {
     return !balanceAccurate && balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
-      : formatCurrency(balanceTotalInCurrency)
+      : formatCurrency({ amount: balanceTotalInCurrency })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
   const formattedBalance = useMemo(

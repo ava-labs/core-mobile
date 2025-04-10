@@ -35,9 +35,6 @@ import SendScreenStack, {
 import SwapScreenStack, {
   SwapStackParamList
 } from 'navigation/wallet/SwapScreenStack'
-import AddressBookStack, {
-  AddressBookStackParamList
-} from 'navigation/wallet/AddressBookStack'
 import TokenDetails from 'screens/watchlist/TokenDetails/TokenDetails'
 import OwnedTokenDetail from 'screens/portfolio/ownedTokenDetail/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'
@@ -135,9 +132,6 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.NFTDetails]: NavigatorScreenParams<NFTStackParamList>
   [AppNavigation.Wallet.NFTManage]: undefined
-  [AppNavigation.Wallet.AddressBook]:
-    | NavigatorScreenParams<AddressBookStackParamList>
-    | undefined
   [AppNavigation.Wallet.CurrencySelector]: undefined
   [AppNavigation.Wallet.NetworkSelector]: undefined
   [AppNavigation.Wallet.NetworkDetails]: NetworkDetailsProps
@@ -332,13 +326,6 @@ function WalletScreenStack(props: Props): JSX.Element {
             options={MainHeaderOptions()}
             name={AppNavigation.Wallet.NFTManage}
             component={NftManage}
-          />
-          <WalletScreenS.Screen
-            options={{
-              headerShown: false
-            }}
-            name={AppNavigation.Wallet.AddressBook}
-            component={AddressBookStack}
           />
           <WalletScreenS.Screen
             options={{
