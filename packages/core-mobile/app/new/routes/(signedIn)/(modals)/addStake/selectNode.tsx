@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   Chip,
@@ -34,8 +34,9 @@ const StakeSelectNode = (): JSX.Element => {
     minUptime: string
     maxDelegationFee: string
   }>()
-  const stakingEndTime = new UTCDate(
-    secondsToMilliseconds(Number(stakeEndTime))
+  const stakingEndTime = useMemo(
+    () => new UTCDate(secondsToMilliseconds(Number(stakeEndTime))),
+    [stakeEndTime]
   )
   const sort = useNodeSort()
   const { isFetching, data, error } = useNodes()
@@ -63,6 +64,22 @@ const StakeSelectNode = (): JSX.Element => {
   const renderItem = ({ item }: { item: NodeValidator }): JSX.Element => {
     return <NodeItem node={item} onPress={() => handlePressNode(item)} />
   }
+
+  const sortButton = useMemo(
+    () => (
+      <SimpleDropdown
+        from={
+          <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+            Sort
+          </Chip>
+        }
+        sections={sort.data}
+        selectedRows={[sort.selected]}
+        onSelectRow={sort.onSelected}
+      />
+    ),
+    [sort]
+  )
 
   if (isFetching) {
     return (
@@ -98,18 +115,7 @@ const StakeSelectNode = (): JSX.Element => {
         <SearchBar searchText={searchText} onTextChanged={setSearchText} />
       </View>
       <FlatList
-        ListHeaderComponent={
-          <SimpleDropdown
-            from={
-              <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-                Sort
-              </Chip>
-            }
-            sections={sort.data}
-            selectedRows={[sort.selected]}
-            onSelectRow={sort.onSelected}
-          />
-        }
+        ListHeaderComponent={sortButton}
         data={validators}
         renderItem={renderItem}
         keyExtractor={item => item.nodeID}

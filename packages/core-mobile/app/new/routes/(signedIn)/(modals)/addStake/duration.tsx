@@ -209,20 +209,24 @@ const StakeDurationScreen = (): JSX.Element => {
   )
 
   const renderSelectionTitle = useCallback(() => {
-    const text =
+    const value =
       selectedChartIndex !== undefined
-        ? `${estimatedRewardsChartData[selectedChartIndex]?.value ?? 0} AVAX`
-        : ''
+        ? estimatedRewardsChartData[selectedChartIndex]?.value
+        : undefined
+    const text = value !== undefined ? `${value} AVAX` : ''
     return <Text variant="heading6">{text}</Text>
   }, [selectedChartIndex, estimatedRewardsChartData])
 
   const renderSelectionSubtitle = useCallback(() => {
-    const text =
+    const value =
       selectedChartIndex !== undefined
+        ? estimatedRewardsChartData[selectedChartIndex]?.value
+        : undefined
+
+    const text =
+      value !== undefined
         ? formatCurrency({
-            amount:
-              (estimatedRewardsChartData[selectedChartIndex]?.value ?? 0) *
-              avaxPrice
+            amount: value * avaxPrice
           })
         : ''
 

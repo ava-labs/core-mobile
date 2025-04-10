@@ -121,12 +121,15 @@ const StakeConfirmScreen = (): JSX.Element => {
   }, [estimatedReward?.estimatedTokenReward, validator?.delegationFee])
 
   const amountSection: GroupListItem[] = useMemo(() => {
-    return [
+    const section = [
       {
         title: 'Staked amount',
         value: <StakeTokenUnitValue value={stakeAmount} />
-      },
-      {
+      }
+    ]
+
+    if (estimatedReward) {
+      section.push({
         title: 'Estimated reward',
         value: (
           <StakeTokenUnitValue
@@ -134,8 +137,10 @@ const StakeConfirmScreen = (): JSX.Element => {
             isReward
           />
         )
-      }
-    ]
+      })
+    }
+
+    return section
   }, [stakeAmount, estimatedReward])
 
   const stakeSection: GroupListItem[] = useMemo(() => {
@@ -315,7 +320,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     isFetchingNodes
   ])
 
-  if (isFetchingNodes || !validator) {
+  if (selectedValidator === undefined && (isFetchingNodes || !validator)) {
     return (
       <View
         sx={{
@@ -332,6 +337,8 @@ const StakeConfirmScreen = (): JSX.Element => {
   }
 
   const issueDelegation = (recomputeSteps = false): void => {
+    if (!validator) return
+
     AnalyticsService.capture('StakeIssueDelegation')
 
     issueDelegationMutation.mutate({

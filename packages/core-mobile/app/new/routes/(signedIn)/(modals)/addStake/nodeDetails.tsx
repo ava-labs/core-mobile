@@ -63,15 +63,15 @@ const StakeNodeDetails = (): JSX.Element => {
     })
   }, [validatorWeight, delegatorWeight, isDeveloperMode])
 
-  const handlePressNext = useCallback(async () => {
+  const handlePressNext = useCallback(() => {
     navigate({
       pathname: '/addStake/confirm',
       params: {
         stakeEndTime,
-        nodeId: validator?.nodeID
+        nodeId
       }
     })
-  }, [navigate, stakeEndTime, validator])
+  }, [navigate, stakeEndTime, nodeId])
 
   const details = useMemo(() => {
     if (!validator) return []
