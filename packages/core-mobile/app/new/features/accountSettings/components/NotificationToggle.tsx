@@ -39,7 +39,6 @@ const NotificationToggle = ({
     },
     [dispatch, channel.id]
   )
-
   return (
     <View
       sx={{

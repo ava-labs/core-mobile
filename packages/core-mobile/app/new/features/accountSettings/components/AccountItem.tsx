@@ -110,7 +110,10 @@ export const AccountItem = memo(
             <TouchableOpacity
               onPress={() => gotoAccountDetails(account.index)}
               hitSlop={16}>
-              <Icons.Alert.AlertCircle color={iconColor} />
+              <Icons.Alert.AlertCircle
+                color={iconColor}
+                testID={`account_detail_icon__${testID}`}
+              />
             </TouchableOpacity>
           </View>
         </AnimatedPressable>

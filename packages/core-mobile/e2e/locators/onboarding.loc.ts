@@ -4,10 +4,10 @@ export default {
   continueWithGoogle: 'continueWithGoogle',
   continueWithApple: 'continueWithApple',
   accessExistingWalletBtn: 'Access existing wallet',
-  enterPinFirstScreenTitle: 'Secure your wallet with a PIN',
+  enterPinFirstScreenTitle: 'Secure your wallet\nwith a PIN',
   enterPinFirstScreenDescription:
     'For extra security, avoid choosing a PIN that contains repeating digits in a sequential order',
-  enterPinSecondScreenTitle: 'Confirm your PIN code',
+  enterPinSecondScreenTitle: 'Confirm your\nPIN code',
   walletName: 'testWallet1',
   selectAvatarTitle: 'Select your\npersonal avatar',
   selectAvatarDescription:
@@ -36,7 +36,6 @@ export default {
   enterYourRecoveryPhraseDescription:
     'This phrase should contain 12, 18, or 24 words. Use a space between each word.',
   import: `Import`,
-  pinInputField: 'pin_input',
   nameWalletInput: 'text_input',
   nameWalletTitle: 'How would you like to name your wallet?',
   nameWalletContent:
@@ -49,11 +48,9 @@ export default {
   newRecoveryPhraseDescription:
     'This phrase is your access key to your wallet. Carefully write it down and store it in a safe location',
   newRecoveryPhraseWarning: 'Losing this phrase will result in lost funds',
-  copyPhrase: 'Copy phrase',
   securityWarningTitle: 'Security warning',
   securityWarningContent:
     'For your security, you should not screenshot your recovery phrase. It is best to write it down and store it in a secure location.',
-  copied: 'Copied',
   verifyYourRecoveryPhraseTitle: 'Verify your recovery phrase',
   verifyYourRecoveryPhraseDescription:
     'Select the words below to verify your recover phrase'
