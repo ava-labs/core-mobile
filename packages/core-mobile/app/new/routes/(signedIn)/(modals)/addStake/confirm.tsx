@@ -38,24 +38,40 @@ import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectActiveAccount } from 'store/account'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useNow } from 'hooks/time/useNow'
+import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
+import { truncateNodeId } from 'utils/Utils'
+import { copyToClipboard } from 'common/utils/clipboard'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { back, dismissAll, navigate } = useRouter()
   const dispatch = useDispatch()
   const { stakeAmount, networkFees } = useDelegationContext()
-  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime: string }>()
+  const { stakeEndTime, nodeId } = useLocalSearchParams<{
+    stakeEndTime: string
+    nodeId?: string
+  }>()
   const stakeEndTimeInMilliseconds = useMemo(
     () => new UTCDate(secondsToMilliseconds(Number(stakeEndTime))),
     [stakeEndTime]
   )
   const now = useNow()
-  const { isFetching: isFetchingNodes, error, data } = useNodes()
-  const { validator, error: searchNodeError } = useSearchNode({
-    stakingAmount: stakeAmount,
-    stakingEndTime: stakeEndTimeInMilliseconds,
-    validators: data?.validators
-  })
+  const {
+    isFetching: isFetchingNodes,
+    error,
+    data
+  } = useNodes(nodeId === undefined)
+  const { validator: searchedValidator, error: searchNodeError } =
+    useSearchNode({
+      stakingAmount: stakeAmount,
+      stakingEndTime: stakeEndTimeInMilliseconds,
+      validators: data?.validators
+    })
+  const selectedValidator = useGetValidatorByNodeId(nodeId)
+  const validator = useMemo(
+    () => selectedValidator ?? searchedValidator,
+    [searchedValidator, selectedValidator]
+  )
 
   const activeAccount = useSelector(selectActiveAccount)
 
@@ -122,30 +138,55 @@ const StakeConfirmScreen = (): JSX.Element => {
   }, [stakeAmount, estimatedReward])
 
   const stakeSection: GroupListItem[] = useMemo(() => {
-    return [
-      {
-        title: 'Time to unlock',
-        value: `${differenceInDays(validatedStakingEndTime, now)} days`
-      },
-      {
-        title: 'Locked until',
-        value: format(localValidatedStakingEndTime, 'MM/dd/yyyy h:mm aa')
-      },
-      {
-        title: 'Estimated network fee',
-        value: `${networkFeesInAvax} AVAX`
-      },
-      {
-        title: 'Staking fee',
-        value: `${delegationFee?.toDisplay()} AVAX`
-      }
-    ]
+    const section = []
+
+    if (selectedValidator) {
+      section.push({
+        title: 'NodeID',
+        subtitle: truncateNodeId(selectedValidator.nodeID, 14),
+        accessory: (
+          <Button
+            size="small"
+            type="secondary"
+            onPress={() => copyToClipboard(selectedValidator.nodeID)}>
+            Copy
+          </Button>
+        ),
+        onPress: () => {
+          copyToClipboard(selectedValidator.nodeID)
+        }
+      })
+    }
+
+    section.push(
+      ...[
+        {
+          title: 'Time to unlock',
+          value: `${differenceInDays(validatedStakingEndTime, now)} days`
+        },
+        {
+          title: 'Locked until',
+          value: format(localValidatedStakingEndTime, 'MM/dd/yyyy h:mm aa')
+        },
+        {
+          title: 'Estimated network fee',
+          value: `${networkFeesInAvax} AVAX`
+        },
+        {
+          title: 'Staking fee',
+          value: `${delegationFee?.toDisplay()} AVAX`
+        }
+      ]
+    )
+
+    return section
   }, [
     validatedStakingEndTime,
     localValidatedStakingEndTime,
     delegationFee,
     networkFeesInAvax,
-    now
+    now,
+    selectedValidator
   ])
 
   const handleStartOver = useCallback((): void => {
@@ -295,7 +336,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     issueDelegationMutation.mutate({
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
-      nodeId: validator?.nodeID,
+      nodeId: validator.nodeID,
       recomputeSteps
     })
   }
