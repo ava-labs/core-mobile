@@ -20,14 +20,15 @@ import Logger from 'utils/Logger'
 import { TextInput as RNTextInput } from 'react-native'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
+import { Empty } from '@cubist-labs/cubesigner-sdk'
 
 export const VerifyCode = <T,>({
   onVerifyCode,
   onVerifySuccess,
   sx
 }: {
-  onVerifyCode: (code: string) => Promise<Result<T | undefined, TotpErrors>>
-  onVerifySuccess: (response: T | undefined) => void
+  onVerifyCode: (code: string) => Promise<Result<T, TotpErrors>>
+  onVerifySuccess: (response: T | Empty) => void
   sx?: SxProp
 }): React.JSX.Element => {
   const [isVerifying, setIsVerifying] = useState(false)
