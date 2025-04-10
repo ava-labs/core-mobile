@@ -4,7 +4,7 @@ import { DropdownSelection } from 'new/common/types'
 import { Contact, selectContacts } from 'store/addressBook'
 import { useSelector } from 'react-redux'
 
-export const useContactSort = (): {
+export const useSortedContacts = (): {
   data: Contact[]
   sort: DropdownSelection
 } => {

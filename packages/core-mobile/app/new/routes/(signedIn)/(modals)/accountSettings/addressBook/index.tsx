@@ -30,15 +30,17 @@ import { Contact } from 'store/addressBook'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { uuid } from 'utils/uuid'
-import { useContactSort } from 'features/accountSettings/hooks/useContactSort'
+import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
 
 const TITLE = 'Contacts'
+const HEADER = <NavigationTitleHeader title={TITLE} />
+const EMPTY_ADDRESS_BOOK_ICON = require('../../../../../assets/icons/address_book_empty.png')
 
 const AddressBookScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { data: contacts, sort } = useContactSort()
+  const { data: contacts, sort } = useSortedContacts()
 
   const [searchText, setSearchText] = useState('')
   const { navigate } = useRouter()
@@ -48,7 +50,7 @@ const AddressBookScreen = (): JSX.Element => {
   const { getParent } = useNavigation()
   const headerOpacity = useSharedValue(1)
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={TITLE} />,
+    header: HEADER,
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
@@ -228,7 +230,7 @@ const AddressBookScreen = (): JSX.Element => {
           sx={{ flex: 1 }}
           icon={
             <Image
-              source={require('../../../../../assets/icons/address_book_empty.png')}
+              source={EMPTY_ADDRESS_BOOK_ICON}
               sx={{ width: 42, height: 42 }}
             />
           }

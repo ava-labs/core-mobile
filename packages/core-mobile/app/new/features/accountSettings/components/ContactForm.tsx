@@ -85,9 +85,9 @@ export const ContactForm = ({
   const adressData = useMemo(
     () => [
       {
-        title: AddressType.CChain,
-        placeholder: 'Type in or paste in C-Chain/Ethereum address',
-        emptyText: 'Add Avalanche C-Chain/Ethereum address',
+        title: AddressType.EVM,
+        placeholder: 'Type in or paste in C-Chain/EVM address',
+        emptyText: 'Add Avalanche C-Chain/EVM address',
         address: contact?.address
       },
       {
@@ -199,10 +199,10 @@ export const ContactForm = ({
               text: 'Save',
               style: 'default',
               shouldDisable: (values: Record<string, string>) => {
-                return values.save === ''
+                return values.save === '' || values.save === undefined
               },
               onPress: (values: Record<string, string>) => {
-                if (values.save !== '') {
+                if (values.save !== '' && values.save !== undefined) {
                   onUpdate({ ...contact, name: values.save })
                   handleHideAlertWithTextInput()
                 }

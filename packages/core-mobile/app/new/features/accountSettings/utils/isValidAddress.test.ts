@@ -9,13 +9,11 @@ const BTC_ADDRESS_TESTNET = 'tb1q0hchrw5nnru09292jz67zhzrq56tapgaftw7ps'
 
 describe('isValidAddress', () => {
   it('should return true for valid CChain address', () => {
-    expect(isValidAddress(AddressType.CChain, C_ADDRESS)).toBe(true)
+    expect(isValidAddress(AddressType.EVM, C_ADDRESS)).toBe(true)
   })
 
   it('should return false for invalid CChain address', () => {
-    expect(isValidAddress(AddressType.CChain, 'invalidCChainAddress')).toBe(
-      false
-    )
+    expect(isValidAddress(AddressType.EVM, 'invalidCChainAddress')).toBe(false)
   })
 
   it('should return true for valid X/P address in developer mode', () => {

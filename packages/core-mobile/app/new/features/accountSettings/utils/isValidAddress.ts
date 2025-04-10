@@ -10,7 +10,7 @@ export const isValidAddress = (
   isDeveloperMode = false
 ): boolean => {
   switch (addressType) {
-    case AddressType.CChain:
+    case AddressType.EVM:
       return isAddress(address) || isBech32Address(address)
     case AddressType.XP:
       return (

@@ -15,7 +15,7 @@ describe('constructContactByAddressType', () => {
   it('should construct contact with CChain address', () => {
     const result = constructContactByAddressType(
       contact,
-      AddressType.CChain,
+      AddressType.EVM,
       '0xAddress'
     )
     expect(result).toEqual({

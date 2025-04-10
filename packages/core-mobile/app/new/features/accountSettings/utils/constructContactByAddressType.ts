@@ -7,7 +7,7 @@ export const constructContactByAddressType = (
   address?: string
 ): Contact => {
   switch (addressType) {
-    case AddressType.CChain:
+    case AddressType.EVM:
       return { ...contact, address }
     case AddressType.XP: {
       return {
