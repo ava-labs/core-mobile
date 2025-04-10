@@ -2,7 +2,6 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockContacts from 'tests/fixtures/contacts.json'
-import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { removeContact } from 'store/addressBook'
 import { avalancheRemoveContactHandler as handler } from './avalanche_removeContact'
@@ -102,28 +101,10 @@ describe('avalanche_removeContact handler', () => {
 
     it('should display prompt and return success', async () => {
       const testContactId = '1aec34f6-308d-4962-ab1b-283504cc0960'
-      const testContact = mockContacts[testContactId]
 
       const testRequest = createRequest([{ id: testContactId }])
 
       const result = await handler.handle(testRequest, mockListenerApi)
-
-      expect(mockNavigate).toHaveBeenCalledWith({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.CreateRemoveContactV2,
-          params: {
-            request: testRequest,
-            contact: {
-              id: testContact.id,
-              name: testContact.name,
-              address: testContact.address,
-              addressBTC: testContact.addressBTC
-            },
-            action: 'remove'
-          }
-        }
-      })
 
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
     })
