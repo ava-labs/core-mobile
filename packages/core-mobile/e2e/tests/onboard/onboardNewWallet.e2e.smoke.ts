@@ -44,9 +44,9 @@ describe('Onboard New Wallet', () => {
 
     // Verify Enter PIN pages
     await onboardingPage.verifyEnterPinPage()
-    await onboardingPage.enterPin()
+    await commonElsPage.enterPin()
     await actions.waitForElement(onboardingPage.enterPinSecondScreenTitle)
-    await onboardingPage.enterPin()
+    await commonElsPage.enterPin()
 
     // Verify `Name your wallet` page
     await onboardingPage.verifyNameYourWalletPage()

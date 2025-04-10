@@ -97,6 +97,11 @@ export const CreatePin = ({
                 <Toggle
                   onValueChange={setUseBiometrics}
                   value={useBiometrics}
+                  testID={
+                    useBiometrics
+                      ? 'toggle_biometrics_on'
+                      : 'toggle_biometrics_off'
+                  }
                 />
               )
             }
