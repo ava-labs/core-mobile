@@ -13,16 +13,14 @@ import {
 import { Space } from 'components/Space'
 import { startRefreshSeedlessTokenFlow } from 'common/utils/startRefreshSeedlessTokenFlow'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { useDispatch, useSelector } from 'react-redux'
-import { onLogOut, selectWalletState, WalletState } from 'store/app'
-import { initWalletServiceAndUnlock } from 'hooks/useWallet'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
-import { WalletType } from 'services/wallet/types'
+import { useDispatch } from 'react-redux'
+import { onLogOut } from 'store/app'
 import Logger from 'utils/Logger'
+import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
 
-const SessionTimeoutScreen = (): React.JSX.Element => {
+const SessionExpiredScreen = (): React.JSX.Element => {
+  const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
   const router = useRouter()
-  const walletState = useSelector(selectWalletState)
   const dispatch = useDispatch()
   const {
     theme: { colors }
@@ -37,19 +35,46 @@ const SessionTimeoutScreen = (): React.JSX.Element => {
     }, [])
   )
 
-  const onRetry = useCallback((): void => {
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  const onRetry = useCallback(async (): Promise<void> => {
     startRefreshSeedlessTokenFlow(SeedlessService.session)
-      .then(result => {
+      .then(async result => {
         if (result.success) {
-          router.canDismiss() && router.dismiss()
-          if (walletState === WalletState.INACTIVE) {
-            initWalletServiceAndUnlock({
-              dispatch,
-              mnemonic: SEEDLESS_MNEMONIC_STUB,
-              walletType: WalletType.SEEDLESS,
-              isLoggingIn: true
-            }).catch(Logger.error)
+          const mfaMethods = await SeedlessService.session.userMfa()
+          if (mfaMethods.length === 0) {
+            await initSeedlessWalletAndUnlock()
+            router.canGoBack() && router.back()
+            return
           }
+          if (mfaMethods.length === 1) {
+            const mfa = mfaMethods[0]
+            if (mfa?.type === 'totp') {
+              router.navigate({
+                pathname: '/sessionExpired/verifyTotpCode',
+                params: {
+                  mfaId: result.value.mfaId,
+                  oidcToken: result.value.oidcToken
+                }
+              })
+              return
+            } else {
+              await SeedlessService.session.approveFido(
+                result.value.oidcToken,
+                result.value.mfaId,
+                true
+              )
+              await initSeedlessWalletAndUnlock()
+              router.canGoBack() && router.back()
+              return
+            }
+          }
+          router.navigate({
+            pathname: '/sessionExpired/selectMfaMethod',
+            params: {
+              mfaId: result.value.mfaId,
+              oidcToken: result.value.oidcToken
+            }
+          })
           return
         }
         switch (result.error.name) {
@@ -78,7 +103,7 @@ const SessionTimeoutScreen = (): React.JSX.Element => {
         router.canDismiss() && router.dismiss()
         dispatch(onLogOut)
       })
-  }, [dispatch, router, walletState])
+  }, [dispatch, initSeedlessWalletAndUnlock, router])
 
   return (
     <SafeAreaView
@@ -107,4 +132,4 @@ const SessionTimeoutScreen = (): React.JSX.Element => {
   )
 }
 
-export default SessionTimeoutScreen
+export default SessionExpiredScreen

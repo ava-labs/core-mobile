@@ -19,6 +19,8 @@ import { DeFiViewOption } from '../types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiListItem } from './DeFiListItem'
 
+const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
+
 export const DeFiScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const {
@@ -91,12 +93,7 @@ export const DeFiScreen = (): JSX.Element => {
 
     return (
       <Placeholder
-        icon={
-          <Image
-            source={require('../../../../assets/icons/bar_chart_emoji.png')}
-            sx={{ width: 42, height: 42 }}
-          />
-        }
+        icon={<Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />}
         title="No investments yet"
         description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
         button={{

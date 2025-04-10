@@ -30,6 +30,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 
+const errorIcon = require('../../../../assets/icons/melting_face.png')
+
 const SelectCurrencyScreen = (): JSX.Element => {
   const {
     theme: { colors }
@@ -164,12 +166,7 @@ const SelectCurrencyScreen = (): JSX.Element => {
       ListEmptyComponent={
         <ErrorState
           sx={{ flex: 1 }}
-          icon={
-            <Image
-              source={require('../../../../assets/icons/melting_face.png')}
-              sx={{ width: 42, height: 42 }}
-            />
-          }
+          icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
           title="No currency found"
           description=""
         />

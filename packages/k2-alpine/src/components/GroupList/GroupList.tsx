@@ -114,7 +114,7 @@ export const GroupList = ({
                   onLayout={handleLayout}>
                   <View
                     sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <View sx={{ paddingVertical: 14, ...textContainerSx }}>
+                    <View sx={{ marginVertical: 14, ...textContainerSx }}>
                       <Text
                         variant="buttonMedium"
                         sx={{
@@ -220,7 +220,7 @@ const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {
   })
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={[{ marginRight: -6 }, animatedStyle]}>
       <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
     </Animated.View>
   )

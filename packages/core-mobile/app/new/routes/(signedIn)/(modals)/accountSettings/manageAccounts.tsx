@@ -193,7 +193,7 @@ const AccountBalance = ({
   return (
     <AnimatedBalance
       variant="body1"
-      balance={formatCurrency(accountBalance)}
+      balance={formatCurrency({ amount: accountBalance })}
       shouldMask={isPrivacyModeEnabled}
       balanceSx={{ color: colors.$textSecondary, lineHeight: 18 }}
     />
