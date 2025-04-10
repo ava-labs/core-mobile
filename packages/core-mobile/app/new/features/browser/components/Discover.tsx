@@ -5,9 +5,10 @@ import React from 'react'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
-import { DiscoverSuggested } from './DiscoverDapps'
+import { DiscoverCollectibles } from './DiscoverCollectibles'
+import { DiscoverDapps } from './DiscoverDapps'
 import { DiscoverLearn } from './DiscoverLearn'
-import { DiscoverTopProjects } from './DiscoverTopProjects'
+import { DiscoverProjects } from './DiscoverProjects'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -54,28 +55,27 @@ export const Discover = (): JSX.Element => {
           }}
         />
       </Animated.View>
+
       <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
         <Text variant="heading2">Discover</Text>
         <Text variant="body1">
-          Discover a wide variety of apps built on the Avalanche ecosystem
+          {`Discover a wide variety of apps built on\nthe Avalanche ecosystem`}
         </Text>
       </View>
 
-      <DiscoverSuggested />
+      <DiscoverDapps />
 
-      <View>
+      <View
+        style={{
+          gap: HORIZONTAL_MARGIN / 2
+        }}>
         <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-          <Text variant="heading3">Top projects</Text>
-          <Text
-            variant="heading3"
-            sx={{
-              color: '$textSecondary'
-            }}>
-            over the last 7 days
-          </Text>
+          <Text variant="heading3">Trending projects</Text>
         </View>
-        <DiscoverTopProjects />
+        <DiscoverProjects />
       </View>
+
+      <DiscoverCollectibles />
 
       <View
         style={{

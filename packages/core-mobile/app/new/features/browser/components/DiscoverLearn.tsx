@@ -1,112 +1,53 @@
 import { Image, View } from '@avalabs/k2-alpine'
-import React, { ReactNode } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { LoadingState } from 'common/components/LoadingState'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { addHistoryForActiveTab, AddHistoryPayload } from 'store/browser'
+import { addHistoryForActiveTab } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
+import {
+  ContentfulEducationArticle,
+  fetchEducationArticles
+} from '../hooks/useContentful'
 import { CarouselItem } from './CarouselItem'
-
-const LEARN_CARDS: AddHistoryPayload[] = [
-  {
-    title: "Browse some of Core user's frequently asked questions",
-    url: 'https://www.enclave.market'
-  },
-  {
-    title: 'Find all the tutorials you need about Core mobile',
-    url: 'https://onbeam.com'
-  },
-  {
-    title: 'Learn what Core web has to offer for a variety of users',
-    url: 'https://onbeam.com'
-  },
-  {
-    title:
-      'Get familiar with the Core  extension wallet and all of its features',
-    url: 'https://onbeam.com'
-  },
-  {
-    title:
-      'Get familiar with the Core  extension wallet and all of its features',
-    url: 'https://onbeam.com'
-  },
-  {
-    title:
-      'Get familiar with the Core  extension wallet and all of its features',
-    url: 'https://onbeam.com'
-  }
-]
-
-function getBackgroundStyle(index: number): {
-  width: number
-  height: number
-  rotate: number
-  left: number
-  top: number
-} {
-  const INITIAL_ROTATION = -90
-  if (index % 4 === 0) {
-    return {
-      width: 344,
-      height: 358,
-      rotate: INITIAL_ROTATION - 120,
-      left: 69,
-      top: -186
-    }
-  }
-
-  if (index % 4 === 1)
-    return {
-      width: 344,
-      height: 358,
-      rotate: INITIAL_ROTATION + 106,
-      left: 99,
-      top: -36
-    }
-
-  if (index % 4 === 2)
-    return {
-      width: 440,
-      height: 358,
-      rotate: INITIAL_ROTATION + 50,
-      left: -78,
-      top: 158
-    }
-
-  return {
-    width: 344,
-    height: 358,
-    rotate: INITIAL_ROTATION - 86,
-    left: -147,
-    top: 163
-  }
-}
 
 export const DiscoverLearn = (): ReactNode => {
   const dispatch = useDispatch()
   const { handleUrlSubmit } = useBrowserContext()
 
-  const handlePress = (item: AddHistoryPayload): void => {
+  const { data, error } = useQuery({
+    queryKey: ['discover-learn'],
+    queryFn: fetchEducationArticles
+  })
+
+  const items = useMemo(() => data?.items || [], [data?.items])
+
+  const handlePress = (item: ContentfulEducationArticle): void => {
     AnalyticsService.capture('BrowserDiscoverLearnTapped', {
-      url: item.url
+      url: item.fields.url
     })
 
     dispatch(
       addHistoryForActiveTab({
-        title: item.title,
-        url: item.url
+        title: item.fields.headline,
+        url: item.fields.url
       })
     )
-    handleUrlSubmit?.(item.url)
+    handleUrlSubmit?.(item.fields.url)
   }
 
-  const renderItem: ListRenderItem<AddHistoryPayload> = ({ item, index }) => {
-    const backgroundStyle = getBackgroundStyle(index)
+  const renderItem: ListRenderItem<ContentfulEducationArticle> = ({
+    item,
+    index
+  }) => {
+    const backgroundUrl = getBackgroundUrl(index)
 
     return (
       <CarouselItem
-        title={item.title}
+        title={item.fields.headline}
         onPress={() => handlePress(item)}
         renderImage={
           <View
@@ -118,13 +59,10 @@ export const DiscoverLearn = (): ReactNode => {
               bottom: 0
             }}>
             <Image
-              source={require('../../../../assets/glow.png')}
+              source={backgroundUrl}
               style={{
-                ...backgroundStyle,
-                transform: [
-                  { rotate: `${backgroundStyle.rotate}deg` },
-                  { scale: 1.6 }
-                ]
+                width: '100%',
+                height: '100%'
               }}
             />
           </View>
@@ -132,10 +70,30 @@ export const DiscoverLearn = (): ReactNode => {
       />
     )
   }
+
+  const renderEmpty = useCallback((): ReactNode => {
+    if (error) return <LoadingState />
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: 12
+        }}>
+        <CarouselItem loading />
+        <CarouselItem loading />
+        <CarouselItem loading />
+        <CarouselItem loading />
+      </View>
+    )
+  }, [error])
+
   return (
     <View>
       <FlatList
-        data={LEARN_CARDS}
+        data={items}
         renderItem={renderItem}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
@@ -144,7 +102,21 @@ export const DiscoverLearn = (): ReactNode => {
           gap: 12
         }}
         horizontal
+        ListEmptyComponent={renderEmpty}
       />
     </View>
   )
+}
+
+function getBackgroundUrl(index: number): {
+  width: number
+  height: number
+  rotate: number
+  left: number
+  top: number
+} {
+  if (index % 4 === 0) return require('../../../assets/glow-background-1.png')
+  if (index % 4 === 1) return require('../../../assets/glow-background-2.png')
+  if (index % 4 === 2) return require('../../../assets/glow-background-3.png')
+  return require('../../../assets/glow-background-4.png')
 }

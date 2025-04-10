@@ -1,39 +1,57 @@
-import React, { ReactNode, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { LoadingState } from 'common/components/LoadingState'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { addHistoryForActiveTab } from 'store/browser'
+import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import {
-  ContentfulProject,
-  useFeaturedProjects
-} from '../hooks/useFeaturedProjects'
+  ContentfulAsset,
+  ContentfulEcosystemProject,
+  fetchEcosystemProjects
+} from '../hooks/useContentful'
 import { CarouselItem } from './CarouselItem'
 
-export const DiscoverSuggested = (): ReactNode => {
+export const DiscoverDapps = (): ReactNode => {
   const dispatch = useDispatch()
   const { handleUrlSubmit } = useBrowserContext()
-  const { data } = useFeaturedProjects()
+  const showEmptyTab = useSelector(selectIsTabEmpty)
 
-  const handlePress = (item: ContentfulProject): void => {
+  const { data, error } = useQuery({
+    queryKey: ['discover-dapps'],
+    queryFn: fetchEcosystemProjects
+  })
+
+  const randomisedItems = useMemo(
+    () =>
+      data?.items
+        ?.filter(item => !item.fields.hideOnMobile)
+        ?.sort(() => Math.random() - 0.5) || [],
+    // Needed for randomization to work when the tab is empty
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data?.items, showEmptyTab]
+  )
+
+  const handlePress = (item: ContentfulEcosystemProject): void => {
     AnalyticsService.capture('BrowserDiscoverDAppTapped', {
-      url: item.fields.website
+      url: item.fields.website ?? ''
     })
 
     dispatch(
       addHistoryForActiveTab({
-        title: item.fields.name,
-        url: item.fields.website
+        title: item.fields.name ?? '',
+        url: item.fields.website ?? ''
       })
     )
-    handleUrlSubmit?.(item.fields.website)
+    handleUrlSubmit?.(item.fields.website ?? '')
   }
 
-  const renderItem: ListRenderItem<ContentfulProject> = ({ item }) => {
+  const renderItem: ListRenderItem<ContentfulEcosystemProject> = ({ item }) => {
     const logoUrl = `https:${
       data?.includes.Asset.find(
-        (asset: any) => asset.sys.id === item.fields.logo.sys.id
+        (asset: ContentfulAsset) => asset.sys.id === item.fields.logo?.sys.id
       )?.fields.file.url
     }`
 
@@ -41,22 +59,37 @@ export const DiscoverSuggested = (): ReactNode => {
       <CarouselItem
         title={item.fields.name}
         image={logoUrl}
-        description={item.fields.description}
+        description={item.fields?.description}
         onPress={() => handlePress(item)}
       />
     )
   }
 
-  const randomisedItems = useMemo(
-    () => data?.items.sort(() => Math.random() - 0.5),
-    [data?.items]
-  )
+  const renderEmpty = useCallback((): ReactNode => {
+    if (error) return <LoadingState />
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: 12
+        }}>
+        <CarouselItem loading />
+        <CarouselItem loading />
+        <CarouselItem loading />
+        <CarouselItem loading />
+      </View>
+    )
+  }, [error])
 
   return (
     <View>
       <FlatList
         data={randomisedItems}
         renderItem={renderItem}
+        keyExtractor={item => item.fields.name}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: HORIZONTAL_MARGIN,
@@ -64,6 +97,7 @@ export const DiscoverSuggested = (): ReactNode => {
           gap: HORIZONTAL_MARGIN
         }}
         horizontal
+        ListEmptyComponent={renderEmpty}
       />
     </View>
   )

@@ -38,13 +38,15 @@ import { CollectibleItem } from './CollectibleItem'
 
 export const CollectiblesScreen = ({
   goToCollectibleDetail,
-  goToCollectibleManagement
+  goToCollectibleManagement,
+  goToDiscoverCollectibles
 }: {
   goToCollectibleDetail: (
     localId: string,
     initial: CollectibleFilterAndSortInitialState
   ) => void
   goToCollectibleManagement: () => void
+  goToDiscoverCollectibles: () => void
 }): ReactNode => {
   const {
     theme: { colors }
@@ -186,7 +188,9 @@ export const CollectiblesScreen = ({
             flex: 1,
             gap: VERTICAL_ITEM_GAP
           }}>
-          <AnimatedPressable entering={getListItemEnteringAnimation(0)}>
+          <AnimatedPressable
+            onPress={goToDiscoverCollectibles}
+            entering={getListItemEnteringAnimation(0)}>
             <CardContainer
               style={{
                 height: 220
