@@ -69,6 +69,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     })
   const selectedValidator = useGetValidatorByNodeId(nodeId)
   const validator = useMemo(
+    // Use the validator selected by the user from the advanced flow, if available.
     () => selectedValidator ?? searchedValidator,
     [searchedValidator, selectedValidator]
   )
