@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { LayoutChangeEvent, ViewStyle } from 'react-native'
+import { InteractionManager, LayoutChangeEvent, ViewStyle } from 'react-native'
 import {
   Canvas,
   PaintStyle,
@@ -96,10 +96,10 @@ export const StakeRewardChart = forwardRef<
     const selectionX = useSharedValue<number | undefined>(undefined)
 
     const selectIndex = useCallback(
-      (index: number | undefined): void => {
+      (index: number | undefined, duration = 300): void => {
         selectionX.value =
           index !== undefined
-            ? withTiming(gridWidth * index, { duration: 300 })
+            ? withTiming(gridWidth * index, { duration: duration })
             : undefined
       },
       [gridWidth, selectionX]
@@ -116,8 +116,12 @@ export const StakeRewardChart = forwardRef<
     )
 
     useEffect(() => {
-      selectIndex(initialIndex)
-    }, [initialIndex, selectIndex])
+      InteractionManager.runAfterInteractions(() => {
+        if (graphSize.width > 0 && graphSize.height > 0) {
+          selectIndex(initialIndex, 0)
+        }
+      })
+    }, [initialIndex, selectIndex, graphSize])
 
     const {
       onLayout: onSelectionTitleLayout,
