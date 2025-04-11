@@ -44,7 +44,7 @@ export const ContactAddressMenu = ({
         }
       }}
       actions={menuActions}
-      themeVariant={isDark ? 'dark' : 'light'}
+      themeVariant={isDark ? 'dark' : 'default'}
       shouldOpenOnLongPress={false}>
       {children}
     </MenuView>

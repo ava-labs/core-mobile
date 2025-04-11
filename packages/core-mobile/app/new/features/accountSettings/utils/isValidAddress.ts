@@ -12,12 +12,14 @@ export const isValidAddress = (
   switch (addressType) {
     case AddressType.EVM:
       return isAddress(address) || isBech32Address(address)
-    case AddressType.XP:
+    case AddressType.XP: {
+      const addressWithoutPrefix = address.replace(/^[PX]-/, '')
       return (
-        Avalanche.isBech32Address(address, false) &&
-        ((isDeveloperMode && address.includes('fuji')) ||
-          (!isDeveloperMode && address.includes('avax')))
+        Avalanche.isBech32Address(addressWithoutPrefix, false) &&
+        ((isDeveloperMode && addressWithoutPrefix.includes('fuji')) ||
+          (!isDeveloperMode && addressWithoutPrefix.includes('avax')))
       )
+    }
     case AddressType.BTC:
       return isBtcAddress(address, !isDeveloperMode)
   }

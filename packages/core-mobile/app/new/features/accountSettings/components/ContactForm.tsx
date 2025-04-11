@@ -13,6 +13,7 @@ import { noop } from '@avalabs/core-utils-sdk'
 import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isValidContactName } from 'common/utils/isValidContactName'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
 import { isValidAddress } from '../utils/isValidAddress'
@@ -199,11 +200,11 @@ export const ContactForm = ({
               text: 'Save',
               style: 'default',
               shouldDisable: (values: Record<string, string>) => {
-                return values.save === '' || values.save === undefined
+                return !isValidContactName(values.save)
               },
               onPress: (values: Record<string, string>) => {
                 if (values.save !== '' && values.save !== undefined) {
-                  onUpdate({ ...contact, name: values.save })
+                  onUpdate({ ...contact, name: values.save?.trim() })
                   handleHideAlertWithTextInput()
                 }
               }
