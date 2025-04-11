@@ -3,6 +3,7 @@ import { Loader } from 'common/components/Loader'
 import { useUserMfa } from 'common/hooks/useUserMfa'
 import { Space } from 'components/Space'
 import { useRouter } from 'expo-router'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import {
   RecoveryMethod,
@@ -18,12 +19,13 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const { data: mfaMethods, isLoading } = useUserMfa()
   const available = useAvailableRecoveryMethods(mfaMethods)
+  const { totpResetInit } = useRecoveryMethodsContext()
 
   const handleAddRecoveryMethod = useCallback(
-    (recoveryMethod: RecoveryMethod): void => {
+    async (recoveryMethod: RecoveryMethod): Promise<void> => {
       if (recoveryMethod.type === RecoveryMethods.Authenticator) {
         AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
-        navigate('/accountSettings/addRecoveryMethods/authenticatorSetup')
+        await totpResetInit()
       } else if (recoveryMethod.type === RecoveryMethods.Passkey) {
         AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
         navigate({
@@ -48,7 +50,7 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
         })
       }
     },
-    [navigate]
+    [navigate, totpResetInit]
   )
 
   return isLoading ? (
