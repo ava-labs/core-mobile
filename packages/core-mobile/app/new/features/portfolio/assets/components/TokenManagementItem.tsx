@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenVisibility, toggleTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
 import { LocalTokenWithBalance } from 'store/balance'
-import { Text, Toggle, View } from '@avalabs/k2-alpine'
+import { Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
 import { Space } from 'components/Space'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -12,6 +12,9 @@ type Props = {
 }
 
 const TokenManagementItem: FC<Props> = ({ token }) => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const dispatch = useDispatch()
   const tokenVisibility = useSelector(selectTokenVisibility)
   const isToggledOn = isTokenVisible(tokenVisibility, token)
@@ -33,13 +36,15 @@ const TokenManagementItem: FC<Props> = ({ token }) => {
         sx={{
           flexDirection: 'row',
           alignItems: 'center',
-          flex: 1,
-          overflow: 'hidden'
+          flex: 1
         }}>
-        <LogoWithNetwork token={token} />
+        <LogoWithNetwork
+          token={token}
+          outerBorderColor={colors.$surfacePrimary}
+        />
         <View
           sx={{
-            marginLeft: 8,
+            marginLeft: 16,
             marginRight: 16
           }}>
           <Text
@@ -49,12 +54,19 @@ const TokenManagementItem: FC<Props> = ({ token }) => {
             sx={{ lineHeight: 16 }}>
             {token.name}
           </Text>
-          <View sx={{ flexDirection: 'row' }}>
-            <Text variant="body2" sx={{ lineHeight: 16 }} ellipsizeMode="tail">
+          <View sx={{ flexDirection: 'row', marginTop: 2 }}>
+            <Text
+              variant="subtitle2"
+              ellipsizeMode="tail"
+              sx={{ color: '$textSecondary' }}>
               {token.balanceDisplayValue}
             </Text>
             <Space x={4} />
-            <Text variant="body2" numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              variant="subtitle2"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              sx={{ color: '$textSecondary' }}>
               {token.symbol}
             </Text>
           </View>

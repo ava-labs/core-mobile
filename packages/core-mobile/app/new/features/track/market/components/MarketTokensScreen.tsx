@@ -7,7 +7,7 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'components/Space'
 import { DropdownSelection } from 'common/types'
 import { MarketView } from '../hooks/useTrackSortAndView'
-import MarketListItem from './MarketListItem'
+import { MarketListItem } from './MarketListItem'
 
 const MarketTokensScreen = ({
   data,
@@ -80,7 +80,7 @@ const MarketTokensScreen = ({
   )
 
   const renderSeparator = useCallback((): JSX.Element => {
-    return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />
+    return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 68 }} />
   }, [isGridView])
 
   return (
@@ -104,7 +104,7 @@ const MarketTokensScreen = ({
 const styles = StyleSheet.create({
   container: { paddingBottom: 16 },
   dropdownContainer: { paddingHorizontal: 16 },
-  dropdown: { marginTop: 14, marginBottom: 16 }
+  dropdown: { marginTop: 8, marginBottom: 12 }
 })
 
 export default MarketTokensScreen

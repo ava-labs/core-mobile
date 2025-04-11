@@ -95,7 +95,7 @@ export const AccountItem = memo(
             </Text>
             <AnimatedBalance
               variant="body1"
-              balance={formatCurrency(accountBalance)}
+              balance={formatCurrency({ amount: accountBalance })}
               shouldMask={isPrivacyModeEnabled}
               balanceSx={{ color: subtitleColor, lineHeight: 18 }}
               maskBackgroundColor={backgroundColor}
@@ -110,7 +110,10 @@ export const AccountItem = memo(
             <TouchableOpacity
               onPress={() => gotoAccountDetails(account.index)}
               hitSlop={16}>
-              <Icons.Alert.AlertCircle color={iconColor} />
+              <Icons.Alert.AlertCircle
+                color={iconColor}
+                testID={`account_detail_icon__${testID}`}
+              />
             </TouchableOpacity>
           </View>
         </AnimatedPressable>

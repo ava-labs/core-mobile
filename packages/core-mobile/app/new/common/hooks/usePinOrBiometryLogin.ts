@@ -10,11 +10,11 @@ import {
   InvalidVersionError,
   NoSaltError
 } from 'utils/EncryptionHelper'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import { useDeleteWallet } from './useDeleteWallet'
 
 export function usePinOrBiometryLogin({
   onStartLoading,
@@ -37,7 +37,7 @@ export function usePinOrBiometryLogin({
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
-  const { signOut } = useApplicationContext().appHook
+  const { deleteWallet } = useDeleteWallet()
   const [timeRemaining, setTimeRemaining] = useState('00:00')
   const {
     increaseAttempt,
@@ -67,12 +67,12 @@ export function usePinOrBiometryLogin({
         [
           {
             text: 'Okay',
-            onPress: signOut
+            onPress: deleteWallet
           }
         ],
         { cancelable: false }
       ),
-    [signOut]
+    [deleteWallet]
   )
 
   const checkPinEntered = useCallback(

@@ -1,6 +1,5 @@
 import React, { memo } from 'react'
 import {
-  alpha,
   Icons,
   PriceChangeIndicator,
   PriceChangeStatus,
@@ -36,9 +35,8 @@ export const MarketListView = memo(
     onPress: () => void
   }) => {
     const {
-      theme: { colors, isDark }
+      theme: { colors }
     } = useTheme()
-    const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
 
     return (
       <Animated.View
@@ -49,31 +47,52 @@ export const MarketListView = memo(
             sx={{
               paddingHorizontal: 16,
               paddingVertical: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between'
+              flexDirection: 'row'
             }}>
+            <TokenLogo
+              size={36}
+              symbol={token.symbol}
+              logoUri={token.logoUri}
+            />
             <View
-              sx={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 10,
+              style={{
+                marginLeft: 16,
+                marginRight: 16,
                 flex: 1
               }}>
-              <TokenLogo
-                size={36}
-                symbol={token.symbol}
-                logoUri={token.logoUri}
-                backgroundColor={colors.$borderPrimary}
-                borderColor={borderColor}
-              />
-              <View sx={{ flexShrink: 1 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flex: 1
+                }}>
                 <Text
                   variant="buttonMedium"
                   numberOfLines={1}
-                  ellipsizeMode="tail">
+                  ellipsizeMode="tail"
+                  style={{ maxWidth: '45%' }}>
                   {token.name}
                 </Text>
+                <Text
+                  variant="buttonMedium"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={{
+                    flex: 1,
+                    textAlign: 'right'
+                  }}>
+                  {formattedPrice}
+                </Text>
+              </View>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flex: 1,
+                  marginTop: 2
+                }}>
                 <View
                   sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text
@@ -87,26 +106,15 @@ export const MarketListView = memo(
                     <Icons.Toggle.StarFilled width={12} height={12} />
                   )}
                 </View>
-              </View>
-            </View>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-              <View
-                sx={{
-                  justifyContent: 'flex-end',
-                  alignItems: 'flex-end'
-                }}>
-                <Text
-                  variant="buttonMedium"
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {formattedPrice}
-                </Text>
+
                 <PriceChangeIndicator
                   formattedPrice={formattedPriceChange}
                   formattedPercent={formattedPercentChange}
                   status={status}
                 />
               </View>
+            </View>
+            <View style={{ justifyContent: 'center' }}>
               <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
             </View>
           </View>

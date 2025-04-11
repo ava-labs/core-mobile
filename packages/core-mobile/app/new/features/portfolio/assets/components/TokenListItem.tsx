@@ -1,8 +1,8 @@
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { TokenGridView } from './TokenGridView'
 import { TokenListView } from './TokenListView'
 
@@ -19,14 +19,11 @@ export const TokenListItem = ({
   isGridView,
   onPress
 }: TokenListItemProps): React.JSX.Element => {
-  const {
-    appHook: { currencyFormatter }
-  } = useApplicationContext()
   const { getMarketTokenBySymbol } = useWatchlist()
-
+  const { formatCurrency } = useFormatCurrency()
   const { balanceDisplayValue, balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
-    ? currencyFormatter(balanceInCurrency)
+    ? formatCurrency(balanceInCurrency)
     : `${balanceDisplayValue} ${symbol}`
 
   const marketToken = getMarketTokenBySymbol(symbol)

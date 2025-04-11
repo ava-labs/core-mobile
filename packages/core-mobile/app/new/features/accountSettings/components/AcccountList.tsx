@@ -133,6 +133,7 @@ export const AccountList = (): React.JSX.Element => {
                 borderRadius: 18
               }}>
               <Text
+                testID="manage_accounts"
                 variant="body2"
                 sx={{
                   paddingHorizontal: 30

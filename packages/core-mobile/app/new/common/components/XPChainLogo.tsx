@@ -45,12 +45,7 @@ export const XPChainLogo = ({
 
   return (
     <View sx={{ width: LOGO_SIZE }}>
-      <TokenLogo
-        size={LOGO_SIZE}
-        symbol={TokenSymbol.AVAX}
-        backgroundColor={colors.$borderPrimary}
-        borderColor={colors.$borderPrimary}
-      />
+      <TokenLogo size={LOGO_SIZE} symbol={TokenSymbol.AVAX} />
       <View
         sx={{
           width: NETWORK_LOGO_SIZE,

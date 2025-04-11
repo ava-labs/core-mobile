@@ -35,9 +35,12 @@ export * from './Staking/StakingCards/AddCard'
 export * from './Staking/StakingCards/ClaimCard'
 export * from './Staking/StakingCards/ProgressCard'
 export * from './Staking/StakingCards/CompleteCard'
+export * from './Staking/StakingRewardChart'
 export * from './Slider/Slider'
 export * from './ProgressBar/ProgressBar'
 export * from './ProgressBar/MaskedProgressBar'
+export * from './TokenAmountInput/TokenAmountInputWidget'
+export * from './DateTimePicker/DateTimePicker'
 
 export * from './PriceChangeIndicator/types'
 

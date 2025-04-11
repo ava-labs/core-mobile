@@ -2,6 +2,7 @@ import {
   AnimatedPressable,
   Icons,
   IndexPath,
+  SCREEN_WIDTH,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -10,7 +11,7 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
-import { Platform, useWindowDimensions } from 'react-native'
+import { Platform } from 'react-native'
 
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
@@ -48,7 +49,6 @@ export const CollectiblesScreen = ({
   const {
     theme: { colors }
   } = useTheme()
-  const dimensions = useWindowDimensions()
   const {
     isLoading,
     isEnabled,
@@ -129,7 +129,7 @@ export const CollectiblesScreen = ({
     if (error || !isSuccess) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
+          sx={{ height: portfolioTabContentHeight - 100 }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -139,7 +139,7 @@ export const CollectiblesScreen = ({
       )
     }
 
-    if (hasFilters && filteredAndSorted.length === 0) {
+    if (filteredAndSorted.length === 0 && hasFilters) {
       return (
         <ErrorState
           sx={{
@@ -147,7 +147,7 @@ export const CollectiblesScreen = ({
           }}
           title="No Collectibles found"
           description="
-            Try changing the filter settings or reset the filter to see all assets."
+              Try changing the filter settings or reset the filter to see all assets."
           button={{
             title: 'Reset filter',
             onPress: onResetFilter
@@ -156,7 +156,7 @@ export const CollectiblesScreen = ({
       )
     }
 
-    if (isEveryCollectibleHidden && filteredAndSorted.length === 0) {
+    if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
         <ErrorState
           sx={{
@@ -179,7 +179,7 @@ export const CollectiblesScreen = ({
           flexDirection: 'row',
           gap: HORIZONTAL_MARGIN,
           marginHorizontal: HORIZONTAL_MARGIN,
-          paddingTop: HORIZONTAL_MARGIN + 10
+          paddingTop: HORIZONTAL_MARGIN / 2
         }}>
         <View
           style={{
@@ -234,8 +234,8 @@ export const CollectiblesScreen = ({
     isEnabled,
     error,
     isSuccess,
-    hasFilters,
     filteredAndSorted.length,
+    hasFilters,
     isEveryCollectibleHidden,
     colors.$textPrimary,
     refetch,
@@ -243,18 +243,19 @@ export const CollectiblesScreen = ({
     onShowHidden
   ])
 
-  const renderHeader = useMemo((): JSX.Element | undefined => {
-    if (collectibles.length === 0 && (!isEnabled || isLoading)) return
+  const renderHeader = useMemo((): JSX.Element | null => {
+    if (collectibles.length === 0 && (!isEnabled || isLoading)) return null
+    if (collectibles.length === 0) return null
 
     return (
       <View
         style={[
           {
             alignSelf: 'center',
-            width: dimensions.width - HORIZONTAL_MARGIN * 2,
+            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
             zIndex: 10,
             marginTop: 4,
-            marginBottom: CollectibleView.ListView === listType ? 8 : 16
+            marginBottom: CollectibleView.ListView === listType ? 8 : 10
           }
         ]}>
         <DropdownSelections
@@ -268,7 +269,6 @@ export const CollectiblesScreen = ({
     collectibles.length,
     isEnabled,
     isLoading,
-    dimensions.width,
     listType,
     filter,
     sort,

@@ -107,7 +107,7 @@ const TokenHeader = ({
       ? undefined
       : {
           formattedPrice: formatLargeCurrency(
-            formatTokenInCurrency(Math.abs(ranges.diffValue))
+            formatTokenInCurrency({ amount: Math.abs(ranges.diffValue) })
           ),
           status:
             ranges.diffValue < 0
@@ -157,7 +157,7 @@ const TokenHeader = ({
                   color: inversedTheme.colors.$textPrimary
                 }}>
                 {currentPrice !== undefined
-                  ? formatTokenInCurrency(currentPrice)
+                  ? formatTokenInCurrency({ amount: currentPrice })
                   : UNKNOWN_AMOUNT}
               </Text>
             </View>

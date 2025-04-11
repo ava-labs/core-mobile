@@ -14,9 +14,9 @@ class LoginRecoverWallet {
     await onboardingPage.enterRecoveryPhrase(recoveryPhrase)
     await onboardingPage.tapImport()
     await Actions.waitForElement(onboardingPage.enterPinFirstScreenTitle)
-    await onboardingPage.enterPin()
+    await commonElsPage.enterPin()
     await Actions.waitForElement(onboardingPage.enterPinSecondScreenTitle)
-    await onboardingPage.enterPin()
+    await commonElsPage.enterPin()
     await onboardingPage.enterWalletName(onboardingLoc.walletName)
     await commonElsPage.tapNext()
     await Actions.waitForElement(onboardingPage.selectAvatarTitle)
@@ -34,7 +34,7 @@ class LoginRecoverWallet {
     const isLoggedIn = await Actions.expectToBeVisible(onboardingPage.forgotPin)
 
     if (isLoggedIn) {
-      await onboardingPage.enterPin()
+      await commonElsPage.enterPin()
       await bottomTabsPage.verifyBottomTabs()
     } else {
       await this.recoverMnemonicWallet(recoverPhrase)

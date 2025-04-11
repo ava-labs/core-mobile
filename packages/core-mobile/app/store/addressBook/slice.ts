@@ -2,11 +2,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import {
   AddressBookState,
+  Contact,
   ContactCollection,
   RecentContact,
   UID
 } from 'store/addressBook/types'
-import { Contact } from '@avalabs/types'
 
 const reducerName = 'addressBook'
 
@@ -42,6 +42,10 @@ const addressBookSlice = createSlice({
       if (state.editingContact) {
         state.contacts[state.editingContact.id] = state.editingContact
       }
+    },
+    editContact: (state, action: PayloadAction<Contact>) => {
+      const editedContact = action.payload
+      state.contacts[editedContact.id] = editedContact
     }
   }
 })
@@ -63,7 +67,8 @@ export const {
   addContact,
   removeContact,
   setEditingContact,
-  saveEditingContact
+  saveEditingContact,
+  editContact
 } = addressBookSlice.actions
 
 export const addressBookReducer = addressBookSlice.reducer

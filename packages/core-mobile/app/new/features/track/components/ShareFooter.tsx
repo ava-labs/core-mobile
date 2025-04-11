@@ -15,6 +15,9 @@ import Logger from 'utils/Logger'
 import { Social } from 'react-native-share'
 import { Platform, ImageRequireSource, Linking } from 'react-native'
 
+const smsIcon = require('../../../assets/icons/messages.png')
+const xIcon = require('../../../assets/icons/x.png')
+
 export const ShareFooter = ({
   url,
   onCopyLink,
@@ -56,7 +59,7 @@ export const ShareFooter = ({
           title="Messages"
           key="send-message">
           <Image
-            source={require('../../../assets/icons/messages.png')}
+            source={smsIcon}
             sx={{ width: CIRCULAR_BUTTON_WIDTH, height: CIRCULAR_BUTTON_WIDTH }}
           />
         </ActionButton>
@@ -71,7 +74,7 @@ export const ShareFooter = ({
     }[] = canShareTwitter
       ? [
           {
-            icon: require('../../../assets/icons/x.png'),
+            icon: xIcon,
             type: Social.Twitter,
             title: 'X',
             key: 'x'

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import useInAppBrowser from 'hooks/useInAppBrowser'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -15,6 +14,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useGetTrendingToken } from 'hooks/watchlist/useGetTrendingTokens'
 import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
 import { Ranges } from 'services/token/types'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
@@ -69,7 +69,7 @@ export const useTokenDetails = (
   const dispatch = useDispatch()
   const isFavorite = useSelector(selectIsWatchlistFavorite(tokenId))
   const { openUrl } = useInAppBrowser()
-  const { selectedCurrency } = useApplicationContext().appHook
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 

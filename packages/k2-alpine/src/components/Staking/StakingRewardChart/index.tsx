@@ -41,7 +41,7 @@ export const StakeRewardChart = forwardRef<
     data: { value: number; duration: string; index: number }[]
     renderSelectionTitle?: () => JSX.Element | undefined
     renderSelectionSubtitle?: () => JSX.Element | undefined
-    selectedIndex: SharedValue<number | undefined>
+    animatedSelectedIndex: SharedValue<number | undefined>
     initialIndex?: number
   }
 >(
@@ -51,7 +51,7 @@ export const StakeRewardChart = forwardRef<
       data,
       renderSelectionTitle,
       renderSelectionSubtitle,
-      selectedIndex,
+      animatedSelectedIndex,
       initialIndex
     },
     ref
@@ -91,12 +91,16 @@ export const StakeRewardChart = forwardRef<
       return newPaint
     }, [graphSize])
 
-    const gridWidth = graphSize.width / (data.length - 1)
+    const gridWidth =
+      (graphSize.width - GRAPH_STROKE_WIDTH * 2) / (data.length - 1)
     const selectionX = useSharedValue<number | undefined>(undefined)
 
     const selectIndex = useCallback(
       (index: number | undefined): void => {
-        selectionX.value = index !== undefined ? gridWidth * index : undefined
+        selectionX.value =
+          index !== undefined
+            ? withTiming(gridWidth * index, { duration: 300 })
+            : undefined
       },
       [gridWidth, selectionX]
     )
@@ -106,7 +110,7 @@ export const StakeRewardChart = forwardRef<
       x => {
         if (gridWidth === 0) return
 
-        selectedIndex.value =
+        animatedSelectedIndex.value =
           x === undefined ? undefined : Math.round(x / gridWidth)
       }
     )
@@ -204,7 +208,11 @@ export const StakeRewardChart = forwardRef<
           </View>
           <View style={{ flex: 1 }}>
             <View
-              style={{ flex: 1, marginBottom: 36, marginHorizontal: 36 }}
+              style={{
+                flex: 1,
+                marginBottom: 36,
+                marginHorizontal: 36
+              }}
               onLayout={({ nativeEvent: { layout } }) =>
                 setGraphSize({ width: layout.width, height: layout.height })
               }>

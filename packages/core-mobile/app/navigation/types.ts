@@ -47,7 +47,6 @@ import { ReceiveStackParamList } from './wallet/ReceiveScreenStack'
 import { SwapStackParamList } from './wallet/SwapScreenStack'
 import { NFTStackParamList } from './wallet/NFTScreenStack'
 import { NFTSendStackParamList } from './wallet/NFTSendStack'
-import { AddressBookStackParamList } from './wallet/AddressBookStack'
 import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
@@ -304,13 +303,6 @@ export type NFTDetailsSendScreenProps<T extends keyof NFTSendStackParamList> =
   CompositeScreenProps<
     StackScreenProps<NFTSendStackParamList, T>,
     NFTDetailsScreenProps<keyof NFTStackParamList>
-  >
-
-/** ROOT -> WALLET -> ADDRESS BOOK **/
-export type AddressBookScreenProps<T extends keyof AddressBookStackParamList> =
-  CompositeScreenProps<
-    StackScreenProps<AddressBookStackParamList, T>,
-    WalletScreenProps<keyof WalletScreenStackParams>
   >
 
 /** ROOT -> WALLET -> SECURITY PRIVACY **/

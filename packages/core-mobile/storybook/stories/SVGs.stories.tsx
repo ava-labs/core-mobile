@@ -4,7 +4,6 @@ import StakeLogoSmallSVG from 'components/svg/StakeLogoSmallSVG'
 import ClockSVG from 'components/svg/ClockSVG'
 import { ScrollView, View } from '@avalabs/k2-mobile'
 import AccountSVG from 'components/svg/AccountSVG'
-import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AddSVG from 'components/svg/AddSVG'
@@ -113,7 +112,6 @@ export const SVGList = (): JSX.Element => {
       <IconContainer children={<StakeLogoBigSVG />} name="Stake Logo" />
       <IconContainer children={<StakeLogoSmallSVG />} name="Stake Logo" />
       <IconContainer children={<AccountSVG />} name="Account" />
-      <IconContainer children={<AddressBookSVG />} name="Address Book" />
       <IconContainer children={<AddSVG />} name="Add" />
       <IconContainer children={<AnalyticsSVG />} name="Analytics" />
       <IconContainer children={<ArrowSVG />} name="Arrow" />
