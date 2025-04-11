@@ -1,4 +1,3 @@
-// write test for me
 import { xpAddressWithoutPrefix } from './xpAddressWIthoutPrefix'
 
 describe('xpAddressWithoutPrefix', () => {

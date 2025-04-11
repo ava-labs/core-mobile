@@ -1,4 +1,3 @@
-// write test for me
 import { isValidContactName } from './isValidContactName'
 
 describe('isValidContactName', () => {
