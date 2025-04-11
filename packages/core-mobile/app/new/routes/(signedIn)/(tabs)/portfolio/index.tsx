@@ -281,6 +281,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/collectibleManagement')
   }, [navigate])
 
+  const handleGoToDiscoverCollectibles = useCallback((): void => {
+    navigate({
+      pathname: '/discoverCollectibles'
+    })
+  }, [navigate])
+
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -302,6 +308,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <CollectiblesScreen
             goToCollectibleDetail={handleGoToCollectibleDetail}
             goToCollectibleManagement={handleGoToCollectibleManagement}
+            goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
           />
         )
       },
@@ -311,10 +318,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
       }
     ]
   }, [
-    handleGoToCollectibleDetail,
     handleGoToTokenDetail,
     handleGoToTokenManagement,
-    handleGoToCollectibleManagement
+    handleGoToCollectibleDetail,
+    handleGoToCollectibleManagement,
+    handleGoToDiscoverCollectibles
   ])
 
   return (
