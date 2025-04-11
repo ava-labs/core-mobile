@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useLayoutEffect,
-  useRef
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import {
   View,
   Text,
@@ -21,6 +14,7 @@ import { TextInput as RNTextInput } from 'react-native'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
 import { Empty } from '@cubist-labs/cubesigner-sdk'
+import { useFocusEffect } from '@react-navigation/native'
 
 export const VerifyCode = <T,>({
   onVerifyCode,
@@ -31,7 +25,6 @@ export const VerifyCode = <T,>({
   onVerifySuccess: (response: T | Empty) => void
   sx?: SxProp
 }): React.JSX.Element => {
-  const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState('')
   const [showError, setShowError] = useState(false)
   const inputRef = useRef<RNTextInput>(null)
@@ -60,19 +53,15 @@ export const VerifyCode = <T,>({
         return
       }
 
-      setIsVerifying(true)
-
       try {
         const result = await onVerifyCode(cleanChangedText)
         if (result.success === false) {
           throw new Error(result.error.message)
         }
-        setIsVerifying(false)
         onVerifySuccess(result.value)
         AnalyticsService.capture('TotpValidationSuccess')
       } catch (error) {
         setShowError(true)
-        setIsVerifying(false)
         AnalyticsService.capture('TotpValidationFailed', {
           error: error as string
         })
@@ -90,13 +79,15 @@ export const VerifyCode = <T,>({
     setShowError(false)
   }
 
-  useLayoutEffect(() => {
-    const timeout = setTimeout(() => {
-      inputRef.current?.focus()
-    }, 100) // Delay for navigation animations
+  useFocusEffect(
+    useCallback(() => {
+      const timeout = setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100) // Delay for navigation animations
 
-    return () => clearTimeout(timeout)
-  }, [])
+      return () => clearTimeout(timeout)
+    }, [])
+  )
 
   useEffect(() => {
     if (showError) {
@@ -155,7 +146,6 @@ export const VerifyCode = <T,>({
             textAlign="center"
             onBlur={() => inputRef.current?.focus()}
             maxLength={7}
-            editable={!isVerifying}
             value={formattedCode}
             keyboardType="number-pad"
             onChangeText={changedText => {
