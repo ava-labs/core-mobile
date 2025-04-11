@@ -14,5 +14,8 @@ export enum ReactQueryKeys {
   WATCHLIST_TOKENS_AND_CHARTS = 'watchlistTokensAndCharts',
   WATCHLIST_TRENDING_TOKENS_AND_CHARTS = 'watchlistTrendingTokensAndCharts',
   WATCHLIST_PRICES = 'watchlistPrices',
-  WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch'
+  WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch',
+
+  // seedless
+  USER_MFA = 'userMfa'
 }

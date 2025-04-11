@@ -19,7 +19,6 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="verifyChangePin" />
       <Stack.Screen name="manageAccounts" />
       <Stack.Screen name="addressBook" />
-      <Stack.Screen name="showRecoveryMethods" />
       <Stack.Screen name="recoveryPhraseVerifyPin" />
       <Stack.Screen name="seedlessExportPhrase" />
       <Stack.Screen name="biometricVerifyPin" />

@@ -158,7 +158,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: 'Recovery methods',
         onPress: () => {
-          navigate('./showRecoveryMethods')
+          navigate('./addRecoveryMethods')
         }
       })
     }

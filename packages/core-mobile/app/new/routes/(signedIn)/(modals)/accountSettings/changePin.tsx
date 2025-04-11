@@ -3,7 +3,7 @@ import { CreatePin } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import React, { useState, useEffect, useCallback } from 'react'
 import Logger from 'utils/Logger'
-import { Keyboard, KeyboardEvent } from 'react-native'
+import { Keyboard, KeyboardEvent, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { StorageKey } from 'resources/Constants'
@@ -39,6 +39,7 @@ const ChangePinScreen = (): React.JSX.Element => {
 
   // Configure keyboard listeners
   useEffect(() => {
+    if (Platform.OS !== 'ios') return
     const keyboardDidShow = (e: KeyboardEvent): void => {
       setKeyboardHeight(e.endCoordinates.height - bottom)
     }

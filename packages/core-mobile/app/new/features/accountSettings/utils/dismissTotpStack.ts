@@ -7,7 +7,7 @@ export const dismissTotpStack = (
 ): void => {
   // dismiss verifyTotpCode
   router.canGoBack() && router.back()
-  // get previous previous screen
+  // get previous screen
   const currentIndex = navigationState?.index
   const previousScreen = currentIndex
     ? navigationState.routes[currentIndex - 1]
@@ -15,6 +15,24 @@ export const dismissTotpStack = (
 
   if (previousScreen?.name === 'selectMfaMethod') {
     // dismiss selectMfaMethod
+    router.canGoBack() && router.back()
+  }
+}
+
+export const dismissToManageRecoveryMethods = (
+  router: Router,
+  navigationState?: NavigationState
+): void => {
+  const currentIndex = navigationState?.index
+  const currenScreen = currentIndex
+    ? navigationState.routes[currentIndex]
+    : undefined
+
+  const currentRoute =
+    currenScreen?.state?.index &&
+    currenScreen?.state?.routes[currenScreen.state.index]
+
+  if (currentRoute && currentRoute?.name !== 'index') {
     router.canGoBack() && router.back()
   }
 }
