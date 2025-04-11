@@ -70,7 +70,7 @@ const HistoryScreen = (): JSX.Element => {
     }
   }
 
-  const renderItem: ListRenderItem<History> = ({ item }) => {
+  const renderItem: ListRenderItem<History> = ({ item, index }) => {
     return (
       <BrowserItem
         type="list"
@@ -79,6 +79,7 @@ const HistoryScreen = (): JSX.Element => {
         title={item.title}
         subtitle={item.url}
         image={prepareFaviconToLoad(item.url, item.favicon)}
+        isLast={index === filterHistories.length - 1}
       />
     )
   }

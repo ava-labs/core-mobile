@@ -3,6 +3,7 @@ import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import React, { ReactNode, useEffect } from 'react'
 import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
 import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, addTab, History } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
@@ -23,6 +24,9 @@ export const HistoryList = (
   }, [setSearchText, urlEntry])
 
   const handlePress = (item: History): void => {
+    AnalyticsService.capture('BrowserHistoryTapped', {
+      url: item.url
+    })
     dispatch(addTab())
     dispatch(addHistoryForActiveTab(item))
     handleUrlSubmit(item.url)
