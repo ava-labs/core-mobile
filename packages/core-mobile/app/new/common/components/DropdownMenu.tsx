@@ -1,6 +1,6 @@
-import { Icons, Text, useTheme } from '@avalabs/k2-alpine'
+import { Text, useTheme } from '@avalabs/k2-alpine'
 import React, { CSSProperties, useCallback } from 'react'
-import { Pressable } from 'react-native'
+import { ImageURISource, Platform, Pressable } from 'react-native'
 import {
   CheckboxItem,
   Content,
@@ -20,11 +20,12 @@ export interface DropdownItem {
   title: string
   selected?: boolean
   icon?: {
-    ios: string
-    android: string
+    ios?: string
+    android?: string
   }
   disabled?: boolean
   destructive?: boolean
+  image?: number | ImageURISource
 }
 
 export interface DropdownGroup
@@ -48,7 +49,7 @@ export function DropdownMenu({
 }: DropdownMenuProps): React.ReactNode {
   const { theme } = useTheme()
   const renderItem = useCallback(
-    ({ title, id, icon, selected, ...rest }: DropdownItem) => {
+    ({ title, id, icon, selected, image, disabled, ...rest }: DropdownItem) => {
       if (selected) {
         return (
           <DropdownMenuCheckboxItem
@@ -65,26 +66,9 @@ export function DropdownMenu({
       return (
         <DropdownMenuItem
           {...rest}
+          disabled={disabled}
           key={id}
           onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
-          {icon && (
-            <DropdownMenuItemIcon
-              androidIconName={icon?.android}
-              ios={{
-                name: icon?.ios as any,
-                paletteColors: [
-                  {
-                    dark: rest.destructive
-                      ? theme.colors?.$textDanger
-                      : theme.colors?.$textPrimary,
-                    light: rest.destructive
-                      ? theme.colors?.$textDanger
-                      : theme.colors?.$textPrimary
-                  }
-                ]
-              }}
-            />
-          )}
           <DropdownMenuItemTitle
             color={
               rest.destructive
@@ -93,15 +77,37 @@ export function DropdownMenu({
             }>
             {title}
           </DropdownMenuItemTitle>
-          {/* <DropdownMenuImage
-            source={require('../../assets/icons/rocket.png')}
-            height={24}
-            width={24}
-          /> */}
+
+          {Platform.OS === 'android' ? (
+            <DropdownMenuItemIcon androidIconName={icon?.android} />
+          ) : image ? (
+            <DropdownMenuImage source={image} />
+          ) : icon?.ios || icon?.android ? (
+            <DropdownMenuItemIcon
+              androidIconName={icon?.android}
+              ios={
+                icon?.ios
+                  ? {
+                      name: icon?.ios as any,
+                      paletteColors: [
+                        {
+                          dark: rest.destructive
+                            ? theme.colors?.$textDanger
+                            : theme.colors?.$textPrimary,
+                          light: rest.destructive
+                            ? theme.colors?.$textDanger
+                            : theme.colors?.$textPrimary
+                        }
+                      ]
+                    }
+                  : undefined
+              }
+            />
+          ) : null}
         </DropdownMenuItem>
       )
     },
-    [onPressAction, theme.colors?.$textDanger, theme.colors.$textPrimary]
+    [onPressAction, theme.colors?.$textDanger, theme.colors?.$textPrimary]
   )
 
   const renderContent = useCallback(() => {
