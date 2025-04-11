@@ -1,28 +1,21 @@
 import { Text, View } from '@avalabs/k2-alpine'
+import { Loader } from 'common/components/Loader'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 import { useRouter } from 'expo-router'
-import { useSeedlessManageRecoveryMethodsContext } from 'features/accountSettings/context/SeedlessManageRecoveryMethodsProvider'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { MFA } from 'seedless/types'
 
 const TITLE = 'Verify recovery method'
 
 const SelectRecoveryMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
-  const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
+  const { onVerifyFido } = useRecoveryMethodsContext()
+  const { data: mfaMethods, isLoading } = useUserMfa()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
-  const { onVerifyFido } = useSeedlessManageRecoveryMethodsContext()
-  useEffect(() => {
-    const getMfaMethods = async (): Promise<void> => {
-      const mfas = await SeedlessService.session.userMfa()
-      setMfaMethods(mfas)
-    }
-    getMfaMethods()
-  }, [])
 
   const handleSelectMfa = useCallback(
     async (recoveryMethod: RecoveryMethod): Promise<void> => {
@@ -38,7 +31,9 @@ const SelectRecoveryMethodScreen = (): React.JSX.Element => {
     [navigate, onVerifyFido]
   )
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{

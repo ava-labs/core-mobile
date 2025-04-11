@@ -24,11 +24,15 @@ import { useNavigation } from '@react-navigation/native'
 import { FidoType } from 'services/passkey/types'
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import PasskeyService from 'services/passkey/PasskeyService'
-import { dismissTotpStack } from '../utils/dismissTotpStack'
+import { useUserMfa } from 'common/hooks/useUserMfa'
+import {
+  dismissToManageRecoveryMethods,
+  dismissTotpStack
+} from '../utils/dismissTotpStack'
 
 type MfaType = FidoType.PASS_KEY | FidoType.YUBI_KEY | 'Authenticator'
 
-export interface SeedlessManageRecoveryMethodsState {
+export interface RecoveryMethodsState {
   verifiedTotpChallenge?: TotpChallenge
   setVerifiedTotpChallenge: (challenge: TotpChallenge) => void
   totpResetInit: () => Promise<void>
@@ -41,16 +45,16 @@ export interface SeedlessManageRecoveryMethodsState {
   onVerifyFido: () => Promise<void>
 }
 
-export const SeedlessManageRecoveryMethodsContext =
-  createContext<SeedlessManageRecoveryMethodsState>(
-    {} as SeedlessManageRecoveryMethodsState
-  )
+export const RecoveryMethodsContext = createContext<RecoveryMethodsState>(
+  {} as RecoveryMethodsState
+)
 
-export const SeedlessManageRecoveryMethodsProvider = ({
+export const RecoverMethodsProvider = ({
   children
 }: {
   children: React.ReactNode
 }): JSX.Element => {
+  const { refetch } = useUserMfa()
   const { showLogoModal, hideLogoModal } = useLogoModal()
   const { verifyFido, verifyMFA } = useVerifyRecoveryMethods(
     SeedlessService.session
@@ -106,53 +110,29 @@ export const SeedlessManageRecoveryMethodsProvider = ({
     [mfaChallengeResponse]
   )
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   const totpResetInit = useCallback(async (): Promise<void> => {
     const totpResetInitResponse = await SeedlessService.session.totpResetInit()
     setMfaChallengeResponse(totpResetInitResponse)
     setVerifyMfaType('Authenticator')
-    if (totpResetInitResponse.requiresMfa() === false) {
+
+    if (totpResetInitResponse.requiresMfa()) {
+      verifyMFA({
+        response: totpResetInitResponse,
+        onVerifySuccess: () => {
+          AnalyticsService.capture('SeedlessMfaVerified', {
+            type: 'Fido'
+          })
+          router.navigate(
+            '/accountSettings/addRecoveryMethods/authenticatorSetup'
+          )
+        },
+        verifyMfaPath: '/accountSettings/addRecoveryMethods/verifyMfa'
+      })
+    } else {
       setVerifiedTotpChallenge(totpResetInitResponse.data())
       router.navigate('/accountSettings/addRecoveryMethods/authenticatorSetup')
-      return
     }
-
-    const mfaMethods = await SeedlessService.session.userMfa()
-    if (mfaMethods.length === 0) {
-      Logger.error(`verifyMFA: No MFA methods available`)
-      showSnackbar(`No MFA methods available`)
-    } else if (mfaMethods.length === 1) {
-      if (mfaMethods[0]) {
-        if (mfaMethods[0].type === 'totp') {
-          router.navigate(
-            '/accountSettings/addRecoveryMethods/verifyMfa/verifyTotpCode'
-          )
-          return
-        }
-        if (mfaMethods[0].type === 'fido') {
-          const mfaId = totpResetInitResponse.mfaId()
-
-          if (!mfaId) {
-            throw new Error('MFA ID is missing')
-          }
-          await verifyFido({
-            mfaId,
-            response: totpResetInitResponse,
-            onVerifySuccess: () => {
-              router.navigate(
-                '/accountSettings/addRecoveryMethods/authenticatorSetup'
-              )
-            }
-          })
-          return
-        }
-      }
-    } else {
-      router.navigate(
-        `/accountSettings/addRecoveryMethods/verifyMfa/selectMfaMethod`
-      )
-    }
-  }, [router, verifyFido, setMfaChallengeResponse, setVerifiedTotpChallenge])
+  }, [verifyMFA, router])
 
   const fidoDelete = useCallback(
     async (fidoId: string): Promise<void> => {
@@ -162,8 +142,9 @@ export const SeedlessManageRecoveryMethodsProvider = ({
       setMfaChallengeResponse(fidoDeleteResponse)
       setVerifyMfaType(FidoType.PASS_KEY)
       if (fidoDeleteResponse.requiresMfa()) {
-        const handleVerifySuccess = (): void => {
-          router.canGoBack() && router.back()
+        const handleVerifySuccess = async (): Promise<void> => {
+          await refetch()
+          dismissToManageRecoveryMethods(router, getState())
           showSnackbar('Passkey removed')
         }
 
@@ -177,12 +158,12 @@ export const SeedlessManageRecoveryMethodsProvider = ({
         throw new Error('fidoDelete requires MFA')
       }
     },
-    [verifyMFA, router]
+    [verifyMFA, refetch, router, getState]
   )
 
   const handleInitializeFido = useCallback(
-    async (challenge: AddFidoChallenge, fidoType: FidoType): Promise<void> => {
-      router.canGoBack() && router.back()
+    async (challenge: AddFidoChallenge, fidoType?: FidoType): Promise<void> => {
+      dismissToManageRecoveryMethods(router, getState())
 
       showLogoModal()
 
@@ -193,6 +174,7 @@ export const SeedlessManageRecoveryMethodsProvider = ({
           withSecurityKey
         )
         await challenge.answer(credential)
+        await refetch()
         AnalyticsService.capture('SeedlessMfaAdded')
         showSnackbar('Passkey added')
       } catch (e) {
@@ -202,7 +184,7 @@ export const SeedlessManageRecoveryMethodsProvider = ({
         hideLogoModal()
       }
     },
-    [hideLogoModal, router, showLogoModal]
+    [getState, hideLogoModal, refetch, router, showLogoModal]
   )
 
   const fidoRegisterInit = useCallback(
@@ -256,16 +238,19 @@ export const SeedlessManageRecoveryMethodsProvider = ({
           verifyMfaType === FidoType.YUBI_KEY) &&
         (mfaChallenge as AddFidoChallenge).challengeId
       ) {
+        dismissToManageRecoveryMethods(router, getState())
         handleInitializeFido(mfaChallenge as AddFidoChallenge, verifyMfaType)
         return
       }
-      showSnackbar('Passkey Changed')
+      dismissToManageRecoveryMethods(router, getState())
+      showSnackbar('Passkey removed')
     },
     [getState, handleInitializeFido, router, verifyMfaType]
   )
 
   const onVerifyFido = useCallback(async (): Promise<void> => {
     const mfaId = mfaChallengeResponse?.mfaId()
+
     if (mfaChallengeResponse === undefined || mfaId === undefined) {
       throw new Error('MFA ID is missing')
     }
@@ -277,7 +262,7 @@ export const SeedlessManageRecoveryMethodsProvider = ({
   }, [mfaChallengeResponse, onVerifySuccess, verifyFido])
 
   return (
-    <SeedlessManageRecoveryMethodsContext.Provider
+    <RecoveryMethodsContext.Provider
       value={{
         verifiedTotpChallenge,
         setVerifiedTotpChallenge,
@@ -291,10 +276,10 @@ export const SeedlessManageRecoveryMethodsProvider = ({
         onVerifyFido
       }}>
       {children}
-    </SeedlessManageRecoveryMethodsContext.Provider>
+    </RecoveryMethodsContext.Provider>
   )
 }
 
-export function useSeedlessManageRecoveryMethodsContext(): SeedlessManageRecoveryMethodsState {
-  return useContext(SeedlessManageRecoveryMethodsContext)
+export function useRecoveryMethodsContext(): RecoveryMethodsState {
+  return useContext(RecoveryMethodsContext)
 }

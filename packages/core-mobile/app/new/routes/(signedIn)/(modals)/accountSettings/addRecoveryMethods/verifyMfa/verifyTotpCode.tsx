@@ -1,10 +1,9 @@
 import React from 'react'
 import { VerifyCode as VerifyCodeComponent } from 'features/onboarding/components/VerifyCode'
-import { useSeedlessManageRecoveryMethodsContext } from 'features/accountSettings/context/SeedlessManageRecoveryMethodsProvider'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 
 export default function VerifyTotpCodeScreen(): JSX.Element {
-  const { onVerifyCode, onVerifySuccess } =
-    useSeedlessManageRecoveryMethodsContext()
+  const { onVerifyCode, onVerifySuccess } = useRecoveryMethodsContext()
 
   return (
     <VerifyCodeComponent

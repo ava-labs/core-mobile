@@ -1,10 +1,10 @@
 import React from 'react'
 import { Stack } from 'common/components/Stack'
-import { SeedlessManageRecoveryMethodsProvider } from 'features/accountSettings/context/SeedlessManageRecoveryMethodsProvider'
+import { RecoverMethodsProvider } from 'features/accountSettings/context/RecoverMethodsProvider'
 
 export default function AddRecoveryMethodsLayout(): JSX.Element {
   return (
-    <SeedlessManageRecoveryMethodsProvider>
+    <RecoverMethodsProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="available" />
@@ -12,6 +12,6 @@ export default function AddRecoveryMethodsLayout(): JSX.Element {
         <Stack.Screen name="(totp)" />
         <Stack.Screen name="verifyMfa" />
       </Stack>
-    </SeedlessManageRecoveryMethodsProvider>
+    </RecoverMethodsProvider>
   )
 }

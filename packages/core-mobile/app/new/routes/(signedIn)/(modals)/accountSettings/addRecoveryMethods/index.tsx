@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { useFocusEffect, useRouter } from 'expo-router'
 import {
   Icons,
@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   useTheme
 } from '@avalabs/k2-alpine'
-import { MFA } from 'seedless/types'
-import SeedlessService from 'seedless/services/SeedlessService'
 import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
 import {
   RecoveryMethod,
@@ -17,7 +15,9 @@ import {
 import { ManageRecoveryMethods } from 'features/onboarding/components/ManageRecoveryMethods'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { useNavigation } from '@react-navigation/native'
-import { useSeedlessManageRecoveryMethodsContext } from 'features/accountSettings/context/SeedlessManageRecoveryMethodsProvider'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
+import { useUserMfa } from 'common/hooks/useUserMfa'
+import { Loader } from '../../../../../common/components/Loader'
 
 const ManageRecoveryMethodsScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -25,28 +25,15 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { getParent } = useNavigation()
-  const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
+  const { data: mfaMethods, isLoading, refetch } = useUserMfa()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
-  const { totpResetInit, fidoDelete } =
-    useSeedlessManageRecoveryMethodsContext()
+  const { totpResetInit, fidoDelete } = useRecoveryMethodsContext()
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     const getMfaMethods = async (): Promise<void> => {
-  //       const mfas = await SeedlessService.session.userMfa()
-  //       setMfaMethods(mfas)
-  //     }
-  //     getMfaMethods()
-  //   }, [])
-  // )
-
-  useEffect(() => {
-    const getMfaMethods = async (): Promise<void> => {
-      const mfas = await SeedlessService.session.userMfa()
-      setMfaMethods(mfas)
-    }
-    getMfaMethods()
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+    }, [refetch])
+  )
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -150,7 +137,9 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
     [handleChangeAuthenticator, handleRemoveFido]
   )
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <ScrollView
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}

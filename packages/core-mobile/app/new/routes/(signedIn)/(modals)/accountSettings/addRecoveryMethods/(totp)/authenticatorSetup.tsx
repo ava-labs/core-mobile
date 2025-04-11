@@ -2,10 +2,10 @@ import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import { Loader } from 'common/components/Loader'
 import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
-import { useSeedlessManageRecoveryMethodsContext } from 'features/accountSettings/context/SeedlessManageRecoveryMethodsProvider'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 
 export default function AuthenticatorSetup(): JSX.Element {
-  const { totpKey, handleCopyCode } = useSeedlessManageRecoveryMethodsContext()
+  const { totpKey, handleCopyCode } = useRecoveryMethodsContext()
   const router = useRouter()
 
   const goToVerifyCode = useCallback((): void => {

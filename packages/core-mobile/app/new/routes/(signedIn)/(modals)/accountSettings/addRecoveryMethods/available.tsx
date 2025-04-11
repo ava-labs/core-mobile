@@ -1,4 +1,6 @@
 import { Text, View } from '@avalabs/k2-alpine'
+import { Loader } from 'common/components/Loader'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 import { Space } from 'components/Space'
 import { useRouter } from 'expo-router'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
@@ -7,25 +9,15 @@ import {
   RecoveryMethods,
   useAvailableRecoveryMethods
 } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { MFA } from 'seedless/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FidoType } from 'services/passkey/types'
 
 const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
-  const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
+  const { data: mfaMethods, isLoading } = useUserMfa()
   const available = useAvailableRecoveryMethods(mfaMethods)
-
-  useEffect(() => {
-    const getMfaMethods = async (): Promise<void> => {
-      const mfas = await SeedlessService.session.userMfa()
-      setMfaMethods(mfas)
-    }
-    getMfaMethods()
-  }, [])
 
   const handleAddRecoveryMethod = useCallback(
     (recoveryMethod: RecoveryMethod): void => {
@@ -59,7 +51,9 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
     [navigate]
   )
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}>

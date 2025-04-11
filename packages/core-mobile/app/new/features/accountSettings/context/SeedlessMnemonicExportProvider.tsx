@@ -21,6 +21,7 @@ import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 import { getExportInitProgress } from '../utils/getExportInitProgress'
 
 const HOURS_48 = 60 * 60 * 48
@@ -61,6 +62,7 @@ export const SeedlessMnemonicExportProvider = ({
 }: {
   children: React.ReactNode
 }): JSX.Element => {
+  const { data: mfaMethods } = useUserMfa()
   const seedlessExportService = useMemo(() => new SeedlessExportService(), [])
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
@@ -164,12 +166,11 @@ export const SeedlessMnemonicExportProvider = ({
     )
     if (result.success) {
       setSessionData(result.value)
-      const mfaMethods = await seedlessExportService.session.userMfa()
-      if (mfaMethods.length === 0) {
+      if (mfaMethods?.length === 0) {
         handleNoMfaMethods()
         return
       }
-      if (mfaMethods.length === 1) {
+      if (mfaMethods?.length === 1) {
         const mfa = mfaMethods[0]
         if (mfa?.type === 'totp') {
           navigate(
@@ -198,6 +199,7 @@ export const SeedlessMnemonicExportProvider = ({
     checkPendingExports,
     handleNoMfaMethods,
     navigate,
+    mfaMethods,
     seedlessExportService.session
   ])
 

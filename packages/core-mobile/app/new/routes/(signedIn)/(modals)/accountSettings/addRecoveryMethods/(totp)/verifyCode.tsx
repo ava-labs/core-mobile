@@ -1,14 +1,17 @@
 import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import { VerifyCode as VerifyCodeComponent } from 'features/onboarding/components/VerifyCode'
-import { useSeedlessManageRecoveryMethodsContext } from 'features/accountSettings/context/SeedlessManageRecoveryMethodsProvider'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { showSnackbar } from 'common/utils/toast'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
+import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
+import { useNavigation } from '@react-navigation/native'
 
 export default function VerifyCode(): JSX.Element {
-  const { verifiedTotpChallenge } = useSeedlessManageRecoveryMethodsContext()
+  const { verifiedTotpChallenge } = useRecoveryMethodsContext()
   const router = useRouter()
+  const { getState } = useNavigation()
 
   const onVerifyCode = useCallback(
     async (code: string): Promise<Result<undefined, TotpErrors>> => {
@@ -28,10 +31,14 @@ export default function VerifyCode(): JSX.Element {
   )
 
   const onVerifySuccess = useCallback((): void => {
+    // dismiss totp setup stack
     router.dismissAll()
     router.back()
+    // dismiss totp verify stack
+    dismissTotpStack(router, getState())
+
     showSnackbar('Authenticator Changed')
-  }, [router])
+  }, [getState, router])
 
   return (
     <VerifyCodeComponent
