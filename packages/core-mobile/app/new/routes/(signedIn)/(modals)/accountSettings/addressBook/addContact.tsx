@@ -1,7 +1,8 @@
-import { Button, ScrollView, View } from '@avalabs/k2-alpine'
+import { Button, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback, useState, useMemo } from 'react'
+import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
@@ -38,7 +39,6 @@ const AddContactScreen = (): React.JSX.Element => {
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          flex: 1,
           justifyContent: 'space-between'
         }}>
         {contact && (
