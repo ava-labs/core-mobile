@@ -583,6 +583,7 @@ __metadata:
     react-native: 0.76.9
     react-native-awesome-slider: 2.9.0
     react-native-dialog: 9.3.0
+    react-native-fast-confetti: 0.8.2
     react-native-gesture-handler: 2.20.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-popover-view: 6.1.0
@@ -26874,6 +26875,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-fast-confetti@npm:0.8.2":
+  version: 0.8.2
+  resolution: "react-native-fast-confetti@npm:0.8.2"
+  peerDependencies:
+    "@shopify/react-native-skia": "*"
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: "*"
+  checksum: bfd8b3ba3c0e84a7577a42e7687ef8c2acb2c01d61e9b7b11eb1440aa712fc2925f36ef0c51e681420af5d6dca10ca44323281ad49890bffe4b95e563b977fc9
+  languageName: node
+  linkType: hard
+
 "react-native-flipper@npm:^0.164.0":
   version: 0.164.0
   resolution: "react-native-flipper@npm:0.164.0"
@@ -27491,7 +27504,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 

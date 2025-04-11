@@ -117,7 +117,7 @@ const StakeHomeScreen = (): JSX.Element => {
   )
 
   const handleClaim = useCallback(() => {
-    navigate('/stake/claim')
+    navigate('/claimStakeReward')
   }, [navigate])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
