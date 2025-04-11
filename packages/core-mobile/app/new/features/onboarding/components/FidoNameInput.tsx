@@ -22,6 +22,9 @@ const FidoNameInput = ({
   const { bottom } = useSafeAreaInsets()
 
   // Configure keyboard listeners
+  // keyboardAvoidingView is not working on iOS
+  // so we need to manually adjust the bottom margin
+  // when the keyboard is shown
   useEffect(() => {
     if (Platform.OS !== 'ios') return
     const keyboardDidShow = (e: KeyboardEvent): void => {
