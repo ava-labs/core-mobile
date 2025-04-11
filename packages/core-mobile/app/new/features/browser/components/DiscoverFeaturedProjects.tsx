@@ -1,31 +1,29 @@
 import { FlatList, ListRenderItem } from 'react-native'
 
 import { Button, View } from '@avalabs/k2-alpine'
-import { useQuery } from '@tanstack/react-query'
+import { LoadingState } from 'common/components/LoadingState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import {
-  ContentfulProject,
-  fetchFeaturedProjects
-} from '../hooks/useContentful'
+import { ContentfulProject } from '../hooks/useContentful'
+import { useFeaturedProjects } from '../hooks/useProjects'
 import { BrowserItem } from './BrowserItem'
 
-export const DiscoverProjects = (): JSX.Element | null => {
+export const DiscoverFeaturedProjects = (): JSX.Element | null => {
   const dispatch = useDispatch()
   const { handleUrlSubmit } = useBrowserContext()
   const showEmptyTab = useSelector(selectIsTabEmpty)
 
-  const { data } = useQuery({
-    queryKey: ['discover-featured-projects'],
-    queryFn: fetchFeaturedProjects
-  })
+  const { data, error } = useFeaturedProjects()
 
   const randomisedItems = useMemo(
-    () => data?.items?.sort(() => Math.random() - 0.5).slice(0, 5) || [],
+    () => {
+      const newItems = [...(data?.items || [])]
+      return newItems.sort(() => Math.random() - 0.5).slice(0, 5)
+    },
     // Needed for randomization to work when the tab is empty
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data?.items, showEmptyTab]
@@ -64,6 +62,7 @@ export const DiscoverProjects = (): JSX.Element | null => {
   }
 
   const renderEmpty = useCallback((): ReactNode => {
+    if (error) return <LoadingState />
     return (
       <View>
         <BrowserItem type="list" loading />
@@ -73,7 +72,7 @@ export const DiscoverProjects = (): JSX.Element | null => {
         <BrowserItem type="list" loading isLast />
       </View>
     )
-  }, [])
+  }, [error])
 
   return (
     <FlatList

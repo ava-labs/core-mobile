@@ -1,0 +1,62 @@
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import {
+  ContentfulEducationArticle,
+  getContentfulGraphQL,
+  GraphQLResponse,
+  ParsedGraphQLResponse
+} from './useContentful'
+
+const LIMIT = 40
+
+const INITIAL_DATA: ParsedGraphQLResponse<ContentfulEducationArticle> = {
+  items: []
+}
+
+export function useFeaturedEducationArticles(): UseQueryResult<
+  ParsedGraphQLResponse<ContentfulEducationArticle>,
+  Error
+> {
+  return useQuery({
+    queryKey: [ReactQueryKeys.FEATURED_EDUCATION_ARTICLES],
+    queryFn: fetchEducationArticles,
+    initialData: INITIAL_DATA
+  })
+}
+
+async function fetchEducationArticles(): Promise<
+  ParsedGraphQLResponse<ContentfulEducationArticle>
+> {
+  const request = await getContentfulGraphQL(
+    EDUCATION_ARTICLES_QUERY,
+    'featuredEducationArticles',
+    { limit: LIMIT }
+  )
+  const response = await fetch(request)
+  const graphqlData =
+    (await response.json()) as GraphQLResponse<ContentfulEducationArticle>
+
+  if (graphqlData.data?.educationArticleCollection) {
+    return {
+      items: graphqlData.data.educationArticleCollection.items
+    }
+  }
+
+  return {
+    items: []
+  }
+}
+
+const EDUCATION_ARTICLES_QUERY = `
+  query featuredEducationArticles($limit: Int!) {
+    educationArticleCollection(
+      limit: $limit,
+      where: {OR: [{isFeatured: true}]}
+    ) {
+      items {
+        headline
+        url
+      }
+    }
+  }
+`

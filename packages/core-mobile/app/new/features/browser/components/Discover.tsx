@@ -7,8 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
 import { DiscoverCollectibles } from './DiscoverCollectibles'
 import { DiscoverLearn } from './DiscoverLearn'
-import { DiscoverProjects } from './DiscoverProjects'
 import { DiscoverEcosystemProjects } from './DiscoverEcosystemProjects'
+import { DiscoverFeaturedProjects } from './DiscoverFeaturedProjects'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -72,7 +72,7 @@ export const Discover = (): JSX.Element => {
         <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
           <Text variant="heading3">Trending projects</Text>
         </View>
-        <DiscoverProjects />
+        <DiscoverFeaturedProjects />
       </View>
 
       <DiscoverCollectibles />

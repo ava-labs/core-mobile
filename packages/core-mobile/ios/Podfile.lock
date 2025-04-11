@@ -1775,7 +1775,7 @@ PODS:
     - React-Core
   - react-native-get-random-values (1.11.0):
     - React-Core
-  - react-native-menu (1.2.2):
+  - react-native-menu (1.2.0):
     - DoubleConversion
     - glog
     - hermes-engine

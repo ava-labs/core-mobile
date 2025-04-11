@@ -1,5 +1,4 @@
 import { Image, View } from '@avalabs/k2-alpine'
-import { useQuery } from '@tanstack/react-query'
 import { LoadingState } from 'common/components/LoadingState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
@@ -8,20 +7,20 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import {
-  ContentfulEducationArticle,
-  fetchEducationArticles
-} from '../hooks/useContentful'
+import { ContentfulEducationArticle } from '../hooks/useContentful'
+import { useFeaturedEducationArticles } from '../hooks/useEducationArticles'
+
+import GlowBackground1 from '../../../assets/glow-background-1.png'
+import GlowBackground2 from '../../../assets/glow-background-2.png'
+import GlowBackground3 from '../../../assets/glow-background-3.png'
+import GlowBackground4 from '../../../assets/glow-background-4.png'
 import { CarouselItem } from './CarouselItem'
 
 export const DiscoverLearn = (): ReactNode => {
   const dispatch = useDispatch()
   const { handleUrlSubmit } = useBrowserContext()
 
-  const { data, error } = useQuery({
-    queryKey: ['discover-learn'],
-    queryFn: fetchEducationArticles
-  })
+  const { data, error } = useFeaturedEducationArticles()
 
   const items = useMemo(() => data?.items || [], [data?.items])
 
@@ -115,8 +114,8 @@ function getBackgroundUrl(index: number): {
   left: number
   top: number
 } {
-  if (index % 4 === 0) return require('../../../assets/glow-background-1.png')
-  if (index % 4 === 1) return require('../../../assets/glow-background-2.png')
-  if (index % 4 === 2) return require('../../../assets/glow-background-3.png')
-  return require('../../../assets/glow-background-4.png')
+  if (index % 4 === 0) return GlowBackground1
+  if (index % 4 === 1) return GlowBackground2
+  if (index % 4 === 2) return GlowBackground3
+  return GlowBackground4
 }

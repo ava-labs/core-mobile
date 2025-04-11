@@ -5,6 +5,7 @@ import { CardContainer } from 'features/portfolio/collectibles/components/CardCo
 import React from 'react'
 import { View } from 'react-native'
 import { HORIZONTAL_MARGIN } from '../consts'
+import NftCollectionImage from '../../../assets/nft-collection.png'
 
 export const DiscoverCollectibles = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -58,7 +59,7 @@ export const DiscoverCollectibles = (): JSX.Element => {
             height: 188
           }}
           contentFit="contain"
-          source={require('../../../assets/nft-collection.png')}
+          source={NftCollectionImage}
         />
       </CardContainer>
     </AnimatedPressable>

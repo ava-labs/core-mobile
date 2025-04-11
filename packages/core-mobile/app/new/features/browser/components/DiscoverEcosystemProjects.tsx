@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { LoadingState } from 'common/components/LoadingState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem, View } from 'react-native'
@@ -7,27 +6,26 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import {
-  ContentfulEcosystemProject,
-  fetchEcosystemProjects
-} from '../hooks/useContentful'
+import { ContentfulEcosystemProject } from '../hooks/useContentful'
+import { useEcosystemProjects } from '../hooks/useEcosystemProjects'
 import { CarouselItem } from './CarouselItem'
 
 export const DiscoverEcosystemProjects = (): ReactNode => {
   const dispatch = useDispatch()
   const { handleUrlSubmit } = useBrowserContext()
+
+  const { data, error } = useEcosystemProjects()
+
   const showEmptyTab = useSelector(selectIsTabEmpty)
 
-  const { data, error } = useQuery({
-    queryKey: ['discover-ecosystem-projects'],
-    queryFn: fetchEcosystemProjects
-  })
-
   const randomisedItems = useMemo(
-    () =>
-      data?.items
+    () => {
+      const newItems = [...(data?.items || [])]
+      return newItems
         ?.filter(item => !item?.hideOnMobile)
-        ?.sort(() => Math.random() - 0.5) || [],
+        ?.sort(() => Math.random() - 0.5)
+    },
+
     // Needed for randomization to work when the tab is empty
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data?.items, showEmptyTab]
