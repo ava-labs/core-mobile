@@ -6,8 +6,6 @@ import PasskeyService from 'services/passkey/PasskeyService'
 import Logger from 'utils/Logger'
 import { useCallback } from 'react'
 
-type VerifyMfaPath = 'verifyExportInitMfa' | 'verifyExportCompleteMfa'
-
 export const useVerifyRecoveryMethods = (
   session: SeedlessSession
 ): {
@@ -55,7 +53,7 @@ export const useVerifyRecoveryMethods = (
       excludeFidoMfaId
     }: {
       response: CubeSignerResponse<T>
-      verifyMfaPath: VerifyMfaPath
+      verifyMfaPath: string
       onVerifySuccess: (response: T) => void
       excludeFidoMfaId?: string
       // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -74,7 +72,7 @@ export const useVerifyRecoveryMethods = (
       } else if (mfaMethods.length === 1) {
         if (mfaMethods[0]) {
           if (mfaMethods[0].type === 'totp') {
-            navigate(`./${verifyMfaPath}/verifyTotpCode`)
+            navigate(`${verifyMfaPath}/verifyTotpCode`)
             return
           }
           if (mfaMethods[0].type === 'fido') {
@@ -92,7 +90,7 @@ export const useVerifyRecoveryMethods = (
           }
         }
       } else {
-        navigate(`./${verifyMfaPath}/selectMfaMethod`)
+        navigate(`${verifyMfaPath}/selectMfaMethod`)
       }
     },
     [session, navigate, verifyFido]
@@ -111,7 +109,7 @@ type VerifyMFAFunction = <T>({
   excludeFidoMfaId
 }: {
   response: CubeSignerResponse<T>
-  verifyMfaPath: VerifyMfaPath
+  verifyMfaPath: string
   onVerifySuccess: (response: T) => void
   excludeFidoMfaId?: string
 }) => Promise<void>

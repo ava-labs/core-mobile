@@ -2,6 +2,7 @@ import React from 'react'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { useRouter } from 'expo-router'
 import { ScanQrCode as ScanQrCodeComponent } from 'features/onboarding/components/ScanQrCode'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export default function ScanQrCode(): JSX.Element {
   const { totpChallenge } = useRecoveryMethodContext()
@@ -16,10 +17,12 @@ export default function ScanQrCode(): JSX.Element {
   }
 
   return (
-    <ScanQrCodeComponent
-      totpChallenge={totpChallenge}
-      onEnterCodeManually={goToEnterCodeManually}
-      onVerifyCode={goToVerifyCode}
-    />
+    <BlurredBarsContentLayout>
+      <ScanQrCodeComponent
+        totpChallenge={totpChallenge}
+        onEnterCodeManually={goToEnterCodeManually}
+        onVerifyCode={goToVerifyCode}
+      />
+    </BlurredBarsContentLayout>
   )
 }

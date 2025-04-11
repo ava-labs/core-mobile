@@ -280,6 +280,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           }}
           onLoadProgress={onProgress}
           onError={onError}
+          allowsBackForwardNavigationGestures
         />
       </View>
     )

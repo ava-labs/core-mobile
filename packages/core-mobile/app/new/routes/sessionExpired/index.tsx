@@ -17,8 +17,10 @@ import { useDispatch } from 'react-redux'
 import { onLogOut } from 'store/app'
 import Logger from 'utils/Logger'
 import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 
 const SessionExpiredScreen = (): React.JSX.Element => {
+  const { data: mfaMethods } = useUserMfa()
   const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
   const router = useRouter()
   const dispatch = useDispatch()
@@ -40,13 +42,12 @@ const SessionExpiredScreen = (): React.JSX.Element => {
     startRefreshSeedlessTokenFlow(SeedlessService.session)
       .then(async result => {
         if (result.success) {
-          const mfaMethods = await SeedlessService.session.userMfa()
-          if (mfaMethods.length === 0) {
+          if (mfaMethods?.length === 0) {
             await initSeedlessWalletAndUnlock()
             router.canGoBack() && router.back()
             return
           }
-          if (mfaMethods.length === 1) {
+          if (mfaMethods?.length === 1) {
             const mfa = mfaMethods[0]
             if (mfa?.type === 'totp') {
               router.navigate({
@@ -103,7 +104,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
         router.canDismiss() && router.dismiss()
         dispatch(onLogOut)
       })
-  }, [dispatch, initSeedlessWalletAndUnlock, router])
+  }, [dispatch, initSeedlessWalletAndUnlock, mfaMethods, router])
 
   return (
     <SafeAreaView

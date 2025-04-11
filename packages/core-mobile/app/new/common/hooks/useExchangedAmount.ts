@@ -19,7 +19,7 @@ export const useExchangedAmount = (): ((
     (amount: number, notation?: NotationTypes) => {
       // if the exchange rate is not available, we show the value in USD
       return exchangeRate
-        ? formatCurrency(amount * exchangeRate, notation)
+        ? formatCurrency({ amount: amount * exchangeRate, notation })
         : rawFormatCurrency({
             amount,
             currency: 'USD',
