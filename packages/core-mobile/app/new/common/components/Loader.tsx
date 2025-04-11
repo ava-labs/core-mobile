@@ -10,7 +10,7 @@ export const Loader = (): React.JSX.Element => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <ActivityIndicator size="large" />
+      <ActivityIndicator size="small" />
     </View>
   )
 }

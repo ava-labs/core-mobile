@@ -97,7 +97,7 @@ export const Avatar = ({
                 right: 0,
                 bottom: 0
               }}
-              tint={theme.isDark ? 'dark' : undefined}
+              tint={theme.isDark ? 'dark' : 'light'}
               intensity={75}
               experimentalBlurMethod="dimezisBlurView"
             />

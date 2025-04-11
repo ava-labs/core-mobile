@@ -18,5 +18,8 @@ export enum ReactQueryKeys {
 
   FEATURED_PROJECTS = 'featuredProjects',
   FEATURED_EDUCATION_ARTICLES = 'featuredEducationArticles',
-  ECOSYSTEM_PROJECTS = 'ecosystemProjects'
+  ECOSYSTEM_PROJECTS = 'ecosystemProjects',
+
+  // seedless
+  USER_MFA = 'userMfa'
 }
