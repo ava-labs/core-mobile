@@ -72,12 +72,7 @@ export const VerifyCode = <T,>({
 
   const handleRetry = useCallback((): void => {
     setShowError(false)
-    handleVerifyCode(code).catch(Logger.error)
-  }, [code, handleVerifyCode])
-
-  const handleCancel = (): void => {
-    setShowError(false)
-  }
+  }, [])
 
   useFocusEffect(
     useCallback(() => {
@@ -99,11 +94,6 @@ export const VerifyCode = <T,>({
             text: 'Retry',
             style: 'default',
             onPress: handleRetry
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: handleCancel
           }
         ]
       })

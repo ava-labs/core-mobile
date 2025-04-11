@@ -43,6 +43,7 @@ import { ShareBarButton } from 'common/components/ShareBarButton'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { ScrollView } from 'react-native-gesture-handler'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -245,7 +246,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             }}
             numberOfLines={1}
             testID="account_address">
-            {tokenInfo.contractAddress}
+            {truncateAddress(tokenInfo.contractAddress, 8)}
           </Text>
         ),
         onPress: () =>
