@@ -431,7 +431,7 @@ __metadata:
     vm-browserify: 1.1.2
     web3: 4.16.0
     xss: 1.0.15
-    zeego: ^3.0.6
+    zeego: 3.0.6
     zod: 3.23.8
   languageName: unknown
   linkType: soft
@@ -32544,7 +32544,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"zeego@npm:^3.0.6":
+"zeego@npm:3.0.6":
   version: 3.0.6
   resolution: "zeego@npm:3.0.6"
   dependencies:
