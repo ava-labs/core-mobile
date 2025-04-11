@@ -12,11 +12,13 @@ export const useRegisterAndAuthenticateFido = (): {
   registerAndAuthenticateFido: ({
     name,
     fidoType,
-    onAccountVerified
+    onAccountVerified,
+    verifyMfaPath
   }: {
     name?: string
     fidoType: FidoType
     onAccountVerified: () => void
+    verifyMfaPath: string
   }) => Promise<void>
 } => {
   const { showLogoModal, hideLogoModal } = useLogoModal()
@@ -26,11 +28,13 @@ export const useRegisterAndAuthenticateFido = (): {
   const registerAndAuthenticateFido = async ({
     name,
     fidoType,
-    onAccountVerified
+    onAccountVerified,
+    verifyMfaPath
   }: {
     name?: string
     fidoType: FidoType
     onAccountVerified: () => void
+    verifyMfaPath: string
   }): Promise<void> => {
     const passkeyName = name && name.length > 0 ? name : fidoType.toString()
 
@@ -39,27 +43,31 @@ export const useRegisterAndAuthenticateFido = (): {
     try {
       const withSecurityKey = fidoType === FidoType.YUBI_KEY
 
-      fidoRegisterInit(passkeyName, async challenge => {
-        const credential = await PasskeyService.createCredential(
-          challenge.options,
-          withSecurityKey
-        )
-
-        await challenge.answer(credential)
-
-        AnalyticsService.capture('SeedlessMfaAdded')
-
-        if (oidcAuth) {
-          await SeedlessService.session.approveFido(
-            oidcAuth.oidcToken,
-            oidcAuth.mfaId,
+      fidoRegisterInit(
+        passkeyName,
+        async challenge => {
+          const credential = await PasskeyService.createCredential(
+            challenge.options,
             withSecurityKey
           )
 
-          AnalyticsService.capture('SeedlessMfaVerified', { type: fidoType })
-        }
-        onAccountVerified()
-      })
+          await challenge.answer(credential)
+
+          AnalyticsService.capture('SeedlessMfaAdded')
+
+          if (oidcAuth) {
+            await SeedlessService.session.approveFido(
+              oidcAuth.oidcToken,
+              oidcAuth.mfaId,
+              withSecurityKey
+            )
+
+            AnalyticsService.capture('SeedlessMfaVerified', { type: fidoType })
+          }
+          onAccountVerified()
+        },
+        verifyMfaPath
+      )
     } catch (e) {
       Logger.error(`${fidoType} registration failed`, e)
       showSnackbar(`Unable to register ${fidoType}`)

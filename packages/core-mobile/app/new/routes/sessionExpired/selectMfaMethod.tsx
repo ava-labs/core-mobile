@@ -1,11 +1,12 @@
 import { SelectRecoveryMethods } from 'features/accountSettings/components/SelectRecoveryMethods'
 import React from 'react'
-import { MFA } from 'seedless/types'
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
+import { useUserMfa } from 'common/hooks/useUserMfa'
+import { Loader } from 'common/components/Loader'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
@@ -14,16 +15,8 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     mfaId: string
   }>()
   const { navigate } = useRouter()
-  const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
   const { canGoBack, back } = useRouter()
-
-  useEffect(() => {
-    const getMfaMethods = async (): Promise<void> => {
-      const mfas = await SeedlessService.session.userMfa()
-      setMfaMethods(mfas)
-    }
-    getMfaMethods()
-  }, [])
+  const { data: mfaMethods, isLoading } = useUserMfa()
 
   const handleSelectMfa = useCallback(
     async (recoveryMethod: RecoveryMethod): Promise<void> => {
@@ -48,9 +41,11 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     [oidcToken, mfaId, navigate, canGoBack, back, initSeedlessWalletAndUnlock]
   )
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <SelectRecoveryMethods
-      mfaMethods={mfaMethods}
+      mfaMethods={mfaMethods ?? []}
       onSelectMfa={type => handleSelectMfa(type)}
       sx={{ marginHorizontal: 16 }}
     />

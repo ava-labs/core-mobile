@@ -14,7 +14,7 @@ export const DropdownBackground = ({
 
   return Platform.OS === 'ios' ? (
     <BlurView
-      tint={'default'}
+      tint={theme.isDark ? 'dark' : 'light'}
       style={{
         minWidth: 240
       }}

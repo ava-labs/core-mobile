@@ -45,7 +45,7 @@ const DeFiDetailScreen = (): JSX.Element => {
   }, [data?.siteUrl])
 
   const calculatedTotalValueOfProtocolItems = useMemo(() => {
-    if (!data?.portfolioItemList) return formatCurrency(0)
+    if (!data?.portfolioItemList) return formatCurrency({ amount: 0 })
     const totalValue = data?.portfolioItemList.reduce(
       (total, { stats }) => total + stats.netUsdValue,
       0
