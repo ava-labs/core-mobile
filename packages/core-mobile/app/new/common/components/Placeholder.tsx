@@ -26,11 +26,13 @@ export const Placeholder = ({
       }}>
       <View sx={{ width: '100%', alignItems: 'center' }}>
         {icon}
-        <Text
-          variant="heading6"
-          sx={{ color: '$textPrimary', marginTop: 32, textAlign: 'center' }}>
-          {title}
-        </Text>
+        {title && (
+          <Text
+            variant="heading6"
+            sx={{ color: '$textPrimary', marginTop: 32, textAlign: 'center' }}>
+            {title}
+          </Text>
+        )}
         {description && (
           <Text
             variant="body2"
