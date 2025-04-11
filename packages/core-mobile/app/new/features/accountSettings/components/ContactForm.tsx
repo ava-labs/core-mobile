@@ -209,7 +209,7 @@ export const ContactForm = ({
               },
               onPress: (values: Record<string, string>) => {
                 if (values.save !== '' && values.save !== undefined) {
-                  onUpdate({ ...contact, name: values.save })
+                  onUpdate({ ...contact, name: values.save?.trim() })
                   handleHideAlertWithTextInput()
                 }
               }
