@@ -376,14 +376,16 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             </Animated.View>
           )}
         </View>
-        <SegmentedControl
-          type="thin"
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          style={styles.segmentedControl}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-        />
+        {tokenInfo?.has24hChartDataOnly === false && (
+          <SegmentedControl
+            type="thin"
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            style={styles.segmentedControl}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+          />
+        )}
         <View sx={styles.aboutContainer}>
           {tokenInfo?.description && (
             <TouchableOpacity onPress={handlePressAbout}>
