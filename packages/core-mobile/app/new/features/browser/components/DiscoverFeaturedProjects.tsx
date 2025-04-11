@@ -1,15 +1,17 @@
 import { FlatList, ListRenderItem } from 'react-native'
 
 import { Button, View } from '@avalabs/k2-alpine'
-import { LoadingState } from 'common/components/LoadingState'
+import { ErrorState } from 'common/components/ErrorState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { ContentfulProject } from '../hooks/useContentful'
-import { useFeaturedProjects } from '../hooks/useProjects'
+import {
+  useFeaturedProjects,
+  ContentfulFeaturedProject
+} from '../hooks/useFeaturedProjects'
 import { BrowserItem } from './BrowserItem'
 
 export const DiscoverFeaturedProjects = (): JSX.Element | null => {
@@ -29,8 +31,8 @@ export const DiscoverFeaturedProjects = (): JSX.Element | null => {
     [data?.items, showEmptyTab]
   )
 
-  const onPress = (item: ContentfulProject): void => {
-    AnalyticsService.capture('BrowserDiscoverProjectsTapped', {
+  const onPress = (item: ContentfulFeaturedProject): void => {
+    AnalyticsService.capture('BrowserDiscoverFeaturedProjectTapped', {
       url: item.website ?? ''
     })
 
@@ -43,7 +45,10 @@ export const DiscoverFeaturedProjects = (): JSX.Element | null => {
     handleUrlSubmit?.(item.website)
   }
 
-  const renderItem: ListRenderItem<ContentfulProject> = ({ item, index }) => {
+  const renderItem: ListRenderItem<ContentfulFeaturedProject> = ({
+    item,
+    index
+  }) => {
     return (
       <BrowserItem
         type={'list'}
@@ -62,7 +67,16 @@ export const DiscoverFeaturedProjects = (): JSX.Element | null => {
   }
 
   const renderEmpty = useCallback((): ReactNode => {
-    if (error) return <LoadingState />
+    if (error)
+      return (
+        <ErrorState
+          title="Couldn't load projects"
+          description="Please try again later"
+          sx={{
+            height: 290
+          }}
+        />
+      )
     return (
       <View>
         <BrowserItem type="list" loading />

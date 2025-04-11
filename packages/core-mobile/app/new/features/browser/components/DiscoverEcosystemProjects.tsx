@@ -1,4 +1,5 @@
-import { LoadingState } from 'common/components/LoadingState'
+import { SCREEN_WIDTH } from '@avalabs/k2-alpine'
+import { ErrorState } from 'common/components/ErrorState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -6,8 +7,10 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { ContentfulEcosystemProject } from '../hooks/useContentful'
-import { useEcosystemProjects } from '../hooks/useEcosystemProjects'
+import {
+  useEcosystemProjects,
+  ContentfulEcosystemProject
+} from '../hooks/useEcosystemProjects'
 import { CarouselItem } from './CarouselItem'
 
 export const DiscoverEcosystemProjects = (): ReactNode => {
@@ -25,7 +28,6 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
         ?.filter(item => !item?.hideOnMobile)
         ?.sort(() => Math.random() - 0.5)
     },
-
     // Needed for randomization to work when the tab is empty
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data?.items, showEmptyTab]
@@ -57,7 +59,17 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
   }
 
   const renderEmpty = useCallback((): ReactNode => {
-    if (error) return <LoadingState />
+    if (error)
+      return (
+        <ErrorState
+          title="Couldn't load projects"
+          description="Please try again later"
+          sx={{
+            height: 240,
+            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2
+          }}
+        />
+      )
     return (
       <View
         style={{

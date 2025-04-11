@@ -1,13 +1,22 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import {
-  ContentfulEcosystemProject,
   getContentfulGraphQL,
   GraphQLResponse,
   ParsedGraphQLResponse
 } from './useContentful'
 
 const LIMIT = 40
+
+export type ContentfulEcosystemProject = {
+  name: string
+  description?: string
+  website?: string
+  hideOnMobile?: boolean
+  logo?: {
+    url: string
+  }
+}
 
 export function useEcosystemProjects(): UseQueryResult<
   ParsedGraphQLResponse<ContentfulEcosystemProject>,

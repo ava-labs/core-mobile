@@ -3,30 +3,6 @@ import Logger from 'utils/Logger'
 
 const PROXY_ENDPOINT = `${Config.PROXY_URL}/proxy/contentful?`
 
-export type ContentfulProject = {
-  name: string
-  description?: string
-  website?: string
-  logo?: {
-    url: string
-  }
-}
-
-export type ContentfulEcosystemProject = {
-  name: string
-  description?: string
-  website?: string
-  hideOnMobile?: boolean
-  logo?: {
-    url: string
-  }
-}
-
-export type ContentfulEducationArticle = {
-  headline: string
-  url: string
-}
-
 export type GraphQLResponse<T> = {
   data: {
     [key: string]: {

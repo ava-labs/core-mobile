@@ -425,9 +425,9 @@ PODS:
     - AppAuth/Core (~> 1.7)
     - GTMSessionFetcher/Core (< 4.0, >= 3.3)
   - GTMSessionFetcher/Core (3.5.0)
-  - hermes-engine (0.76.6):
-    - hermes-engine/Pre-built (= 0.76.6)
-  - hermes-engine/Pre-built (0.76.6)
+  - hermes-engine (0.76.9):
+    - hermes-engine/Pre-built (= 0.76.9)
+  - hermes-engine/Pre-built (0.76.9)
   - jail-monkey (2.8.0):
     - React-Core
   - libavif/core (0.11.1)
@@ -3434,7 +3434,7 @@ SPEC CHECKSUMS:
   react-native-compat: 6fa26299617632696dc1b75dd19aeb2b0bd08026
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
-  react-native-menu: 3faeb5ad1b88be595a4a7110f66a2c389b3b90a5
+  react-native-menu: dc599e826e4ad3d17443ef4b2c6d3ef565beebae
   react-native-mmkv: 4b3326800276b532f3c69d88ed341fc806ed1868
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-pager-view: 07519171b73f1d0f5f5be3f13296c57e58159dfe

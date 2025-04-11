@@ -1,7 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import {
-  ContentfulEducationArticle,
   getContentfulGraphQL,
   GraphQLResponse,
   ParsedGraphQLResponse
@@ -11,6 +10,11 @@ const LIMIT = 40
 
 const INITIAL_DATA: ParsedGraphQLResponse<ContentfulEducationArticle> = {
   items: []
+}
+
+export type ContentfulEducationArticle = {
+  headline: string
+  url: string
 }
 
 export function useFeaturedEducationArticles(): UseQueryResult<

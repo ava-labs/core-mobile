@@ -1,14 +1,16 @@
-import { Image, View } from '@avalabs/k2-alpine'
-import { LoadingState } from 'common/components/LoadingState'
+import { Image, SCREEN_WIDTH, View } from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab } from 'store/browser'
+import { ErrorState } from 'common/components/ErrorState'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { ContentfulEducationArticle } from '../hooks/useContentful'
-import { useFeaturedEducationArticles } from '../hooks/useEducationArticles'
+import {
+  useFeaturedEducationArticles,
+  ContentfulEducationArticle
+} from '../hooks/useEducationArticles'
 
 import GlowBackground1 from '../../../assets/glow-background-1.png'
 import GlowBackground2 from '../../../assets/glow-background-2.png'
@@ -71,7 +73,17 @@ export const DiscoverLearn = (): ReactNode => {
   }
 
   const renderEmpty = useCallback((): ReactNode => {
-    if (error) return <LoadingState />
+    if (error)
+      return (
+        <ErrorState
+          title="Couldn't load articles"
+          description="Please try again later"
+          sx={{
+            height: 240,
+            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2
+          }}
+        />
+      )
     return (
       <View
         style={{
