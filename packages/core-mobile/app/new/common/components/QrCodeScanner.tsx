@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import { Icons, SxProp, useTheme, View, Text } from '@avalabs/k2-alpine'
+import { Icons, SxProp, useTheme, View, Text, Button } from '@avalabs/k2-alpine'
 import {
   BarcodeScanningResult,
   CameraView,
   useCameraPermissions
 } from 'expo-camera'
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics'
-import { Platform } from 'react-native'
+import { Platform, Linking } from 'react-native'
 import { check, PERMISSIONS, request } from 'react-native-permissions'
 import Logger from 'utils/Logger'
 import { useFocusEffect } from '@react-navigation/native'
@@ -77,8 +77,8 @@ export const QrCodeScanner = ({
     }, [])
   )
 
-  return !shouldShowCamera ? (
-    <>
+  return shouldShowCamera === false ? (
+    <View sx={{ gap: 12, marginBottom: 8 }}>
       <View
         sx={{
           flexDirection: 'row',
@@ -97,8 +97,15 @@ export const QrCodeScanner = ({
           in your device settings
         </Text>
       </View>
+      <Button
+        size="small"
+        type="secondary"
+        onPress={() => Linking.openSettings()}
+        style={{ width: 165, marginLeft: 30 }}>
+        Open device settings
+      </Button>
       <Loader />
-    </>
+    </View>
   ) : (
     <View
       sx={{

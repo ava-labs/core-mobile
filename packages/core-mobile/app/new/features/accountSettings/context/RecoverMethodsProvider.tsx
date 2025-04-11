@@ -119,6 +119,7 @@ export const RecoverMethodsProvider = ({
       verifyMFA({
         response: totpResetInitResponse,
         onVerifySuccess: () => {
+          setVerifiedTotpChallenge(totpResetInitResponse.data())
           AnalyticsService.capture('SeedlessMfaVerified', {
             type: 'Fido'
           })
