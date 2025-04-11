@@ -76,6 +76,7 @@ const ContactDetailScreen = (): React.JSX.Element => {
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
