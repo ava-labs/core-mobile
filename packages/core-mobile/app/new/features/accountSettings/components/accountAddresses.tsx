@@ -23,6 +23,7 @@ export const AccountAddresses = ({
       leftIcon: <TokenLogo symbol={TokenSymbol.AVAX} size={24} />,
       value: (
         <CopyButton
+          testID="copy_c_chain_address"
           onPress={() =>
             onCopyAddress(account.addressC, 'C-Chain address copied')
           }
@@ -35,6 +36,7 @@ export const AccountAddresses = ({
       leftIcon: <XPChainLogo networkType="PVM" />,
       value: (
         <CopyButton
+          testID="copy_p_chain_address"
           onPress={() =>
             onCopyAddress(account.addressPVM, 'P-Chain address copied')
           }
@@ -47,6 +49,7 @@ export const AccountAddresses = ({
       leftIcon: <XPChainLogo networkType="AVM" />,
       value: (
         <CopyButton
+          testID="copy_x_chain_address"
           onPress={() =>
             onCopyAddress(account.addressAVM, 'X-Chain address copied')
           }
@@ -59,6 +62,7 @@ export const AccountAddresses = ({
       leftIcon: <TokenLogo symbol={TokenSymbol.ETH} size={24} />,
       value: (
         <CopyButton
+          testID="copy_ethereum_address"
           onPress={() =>
             onCopyAddress(account.addressC, 'Ethereum address copied')
           }
@@ -71,6 +75,7 @@ export const AccountAddresses = ({
       leftIcon: <TokenLogo symbol={TokenSymbol.BTC} size={24} />,
       value: (
         <CopyButton
+          testID="copy_bitcoin_address"
           onPress={() =>
             onCopyAddress(account.addressBTC, 'Bitcoin address copied')
           }
@@ -91,9 +96,11 @@ export const AccountAddresses = ({
 }
 
 const CopyButton = ({
-  onPress
+  onPress,
+  testID
 }: {
   onPress: () => void
+  testID?: string
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -107,7 +114,7 @@ const CopyButton = ({
         paddingVertical: 5,
         borderRadius: 17
       }}>
-      <Text variant="buttonMedium" sx={{ fontSize: 14 }}>
+      <Text testID={testID} variant="buttonMedium" sx={{ fontSize: 14 }}>
         Copy
       </Text>
     </TouchableOpacity>

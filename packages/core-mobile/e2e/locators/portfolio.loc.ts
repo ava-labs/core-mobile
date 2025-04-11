@@ -1,4 +1,7 @@
 export default {
+  // NEW BELOW:
+  testnetModeIsOn: 'Testnet mode is on',
+  // OLD BELOW:
   activityTab: 'Activity',
   addToWatchlist: 'add_svg',
   addAssetsButton: 'Add Assets',

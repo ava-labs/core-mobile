@@ -307,7 +307,7 @@ __metadata:
     coinselect: 3.1.13
     date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
-    detox: 20.34.5
+    detox: 20.36.3
     es6-promise: 4.2.8
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
@@ -4095,6 +4095,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@colors/colors@npm:1.6.0, @colors/colors@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "@colors/colors@npm:1.6.0"
+  checksum: aa209963e0c3218e80a4a20553ba8c0fbb6fa13140540b4e5f97923790be06801fc90172c1114fc8b7e888b3d012b67298cde6b9e81521361becfaee400c662f
+  languageName: node
+  linkType: hard
+
 "@config-plugins/detox@npm:9.0.0":
   version: 9.0.0
   resolution: "@config-plugins/detox@npm:9.0.0"
@@ -4145,6 +4152,17 @@ __metadata:
     "@hpke/core":
       optional: true
   checksum: 6e64d54679482e015fbe6aa58ff859c56d058aaccc02a9a4454bf1ceb96588791ea31dac338a9aafcb6efeadbeeb98272562120b03b4011165d68df034f29c37
+  languageName: node
+  linkType: hard
+
+"@dabh/diagnostics@npm:^2.0.2":
+  version: 2.0.3
+  resolution: "@dabh/diagnostics@npm:2.0.3"
+  dependencies:
+    colorspace: 1.1.x
+    enabled: 2.0.x
+    kuler: ^2.0.0
+  checksum: 4879600c55c8315a0fb85fbb19057bad1adc08f0a080a8cb4e2b63f723c379bfc4283b68123a2b078d367b327dd8df12fcb27464efe791addc0a48b9df6d79a1
   languageName: node
   linkType: hard
 
@@ -12317,6 +12335,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/triple-beam@npm:^1.3.2":
+  version: 1.3.5
+  resolution: "@types/triple-beam@npm:1.3.5"
+  checksum: 519b6a1b30d4571965c9706ad5400a200b94e4050feca3e7856e3ea7ac00ec9903e32e9a10e2762d0f7e472d5d03e5f4b29c16c0bd8c1f77c8876c683b2231f1
+  languageName: node
+  linkType: hard
+
 "@types/use-sync-external-store@npm:^0.0.3":
   version: 0.0.3
   resolution: "@types/use-sync-external-store@npm:0.0.3"
@@ -12911,6 +12936,32 @@ __metadata:
   peerDependencies:
     react: ^18
   checksum: 89840392f56877f3f5bf98b04037486b9d76467edb59110085076e4409c46a51485ca3c83d81c5b620fc4a535b4c5abe6568279a86872098bb2ae4f2b427123b
+  languageName: node
+  linkType: hard
+
+"@wix-pilot/core@npm:^3.1.6":
+  version: 3.2.4
+  resolution: "@wix-pilot/core@npm:3.2.4"
+  dependencies:
+    pngjs: ^7.0.0
+    winston: ^3.17.0
+  peerDependencies:
+    expect: "*"
+  peerDependenciesMeta:
+    expect:
+      optional: true
+  checksum: 5a4b4167a2c75d3209597ebc19f977edf1521e70bf31745f5014e3689bf293858a98e6311c01368044cac535cd5d263ccb3027081ac59dd07cbc050a55010efb
+  languageName: node
+  linkType: hard
+
+"@wix-pilot/detox@npm:^1.0.11":
+  version: 1.0.11
+  resolution: "@wix-pilot/detox@npm:1.0.11"
+  peerDependencies:
+    "@wix-pilot/core": ^3.1.6
+    detox: ">=20.33.0"
+    expect: 29.x.x || 28.x.x || ^27.2.5
+  checksum: d48d78f98569ebbcfee918a894b7e0dfb9c352b2bcca729a09c60a007192ca1c60db4d14a24ffd190186294f6c8b3333f42dfd1385786a42a40dccc42edd65a5
   languageName: node
   linkType: hard
 
@@ -15235,7 +15286,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-convert@npm:^1.9.0":
+"color-convert@npm:^1.9.0, color-convert@npm:^1.9.3":
   version: 1.9.3
   resolution: "color-convert@npm:1.9.3"
   dependencies:
@@ -15267,7 +15318,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-string@npm:^1.9.0":
+"color-string@npm:^1.6.0, color-string@npm:^1.9.0":
   version: 1.9.1
   resolution: "color-string@npm:1.9.1"
   dependencies:
@@ -15283,6 +15334,16 @@ __metadata:
   bin:
     color-support: bin.js
   checksum: 9b7356817670b9a13a26ca5af1c21615463b500783b739b7634a0c2047c16cef4b2865d7576875c31c3cddf9dd621fa19285e628f20198b233a5cfdda6d0793b
+  languageName: node
+  linkType: hard
+
+"color@npm:^3.1.3":
+  version: 3.2.1
+  resolution: "color@npm:3.2.1"
+  dependencies:
+    color-convert: ^1.9.3
+    color-string: ^1.6.0
+  checksum: f81220e8b774d35865c2561be921f5652117638dcda7ca4029262046e37fc2444ac7bbfdd110cf1fd9c074a4ee5eda8f85944ffbdda26186b602dd9bb05f6400
   languageName: node
   linkType: hard
 
@@ -15307,6 +15368,16 @@ __metadata:
   version: 2.0.20
   resolution: "colorette@npm:2.0.20"
   checksum: 0c016fea2b91b733eb9f4bcdb580018f52c0bc0979443dad930e5037a968237ac53d9beb98e218d2e9235834f8eebce7f8e080422d6194e957454255bde71d3d
+  languageName: node
+  linkType: hard
+
+"colorspace@npm:1.1.x":
+  version: 1.1.4
+  resolution: "colorspace@npm:1.1.4"
+  dependencies:
+    color: ^3.1.3
+    text-hex: 1.0.x
+  checksum: bb3934ef3c417e961e6d03d7ca60ea6e175947029bfadfcdb65109b01881a1c0ecf9c2b0b59abcd0ee4a0d7c1eae93beed01b0e65848936472270a0b341ebce8
   languageName: node
   linkType: hard
 
@@ -16556,23 +16627,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detox-copilot@npm:^0.0.27":
-  version: 0.0.27
-  resolution: "detox-copilot@npm:0.0.27"
-  checksum: 4f01ed1f21fe3128ee50037b63085fe95ccdc9e723c6b034d53720fa325123e39d4f83d18b1ab88a11a679258b0ff734e74f0738118e260f10945fadbe205443
-  languageName: node
-  linkType: hard
-
-"detox@npm:20.34.5":
-  version: 20.34.5
-  resolution: "detox@npm:20.34.5"
+"detox@npm:20.36.3":
+  version: 20.36.3
+  resolution: "detox@npm:20.36.3"
   dependencies:
+    "@wix-pilot/core": ^3.1.6
+    "@wix-pilot/detox": ^1.0.11
     ajv: ^8.6.3
     bunyan: ^1.8.12
     bunyan-debug-stream: ^3.1.0
     caf: ^15.0.1
     chalk: ^4.0.0
-    detox-copilot: ^0.0.27
     execa: ^5.1.1
     find-up: ^5.0.0
     fs-extra: ^11.0.0
@@ -16610,7 +16675,7 @@ __metadata:
       optional: true
   bin:
     detox: local-cli/cli.js
-  checksum: f2e6b42fbd22467cefbd63a0674b515674a83100d201f56ee416a9d5b0acb32f19c02d2db7ad545b395b8f0c3f05f0788b91101a2d6af5c227c107ff75b1a234
+  checksum: bcddcb05064f4796e063d08486e0a1fd540dc82270e88397cbd9e4337126451fb13f3c3c37a4f2974fc185393f05856b518a546e24bf61e2f08ef12b2146deaf
   languageName: node
   linkType: hard
 
@@ -16954,6 +17019,13 @@ __metadata:
   version: 9.2.2
   resolution: "emoji-regex@npm:9.2.2"
   checksum: 8487182da74aabd810ac6d6f1994111dfc0e331b01271ae01ec1eb0ad7b5ecc2bbbbd2f053c05cb55a1ac30449527d819bbfbf0e3de1023db308cbcb47f86601
+  languageName: node
+  linkType: hard
+
+"enabled@npm:2.0.x":
+  version: 2.0.0
+  resolution: "enabled@npm:2.0.0"
+  checksum: 9d256d89f4e8a46ff988c6a79b22fa814b4ffd82826c4fdacd9b42e9b9465709d3b748866d0ab4d442dfc6002d81de7f7b384146ccd1681f6a7f868d2acca063
   languageName: node
   linkType: hard
 
@@ -18813,6 +18885,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fecha@npm:^4.2.0":
+  version: 4.2.3
+  resolution: "fecha@npm:4.2.3"
+  checksum: f94e2fb3acf5a7754165d04549460d3ae6c34830394d20c552197e3e000035d69732d74af04b9bed3283bf29fe2a9ebdcc0085e640b0be3cc3658b9726265e31
+  languageName: node
+  linkType: hard
+
 "fetch-blob@npm:^3.1.2, fetch-blob@npm:^3.1.4":
   version: 3.2.0
   resolution: "fetch-blob@npm:3.2.0"
@@ -19104,6 +19183,13 @@ __metadata:
   version: 0.219.0
   resolution: "flow-parser@npm:0.219.0"
   checksum: 12509604ab77e36533c7b605bee5fdfef8cafafc357c0d7ea2330d10a7ad7a66acc742f30d27363c15d3aad27b5915109d3525b03da41a2276c06524eeefbb5a
+  languageName: node
+  linkType: hard
+
+"fn.name@npm:1.x.x":
+  version: 1.1.0
+  resolution: "fn.name@npm:1.1.0"
+  checksum: e357144f48cfc9a7f52a82bbc6c23df7c8de639fce049cac41d41d62cabb740cdb9f14eddc6485e29c933104455bdd7a69bb14a9012cef9cd4fa252a4d0cf293
   languageName: node
   linkType: hard
 
@@ -22198,6 +22284,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"kuler@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "kuler@npm:2.0.0"
+  checksum: 9e10b5a1659f9ed8761d38df3c35effabffbd19fc6107324095238e4ef0ff044392cae9ac64a1c2dda26e532426485342226b93806bd97504b174b0dcf04ed81
+  languageName: node
+  linkType: hard
+
 "launch-editor@npm:^2.8.0":
   version: 2.8.2
   resolution: "launch-editor@npm:2.8.2"
@@ -22705,6 +22798,20 @@ __metadata:
     strip-ansi: ^7.1.0
     wrap-ansi: ^9.0.0
   checksum: 817a9ba6c5cbc19e94d6359418df8cfe8b3244a2903f6d53354e175e243a85b782dc6a98db8b5e457ee2f09542ca8916c39641b9cd3b0e6ef45e9481d50c918a
+  languageName: node
+  linkType: hard
+
+"logform@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "logform@npm:2.7.0"
+  dependencies:
+    "@colors/colors": 1.6.0
+    "@types/triple-beam": ^1.3.2
+    fecha: ^4.2.0
+    ms: ^2.1.1
+    safe-stable-stringify: ^2.3.1
+    triple-beam: ^1.3.0
+  checksum: a202d10897254735ead75a640f889998f9b91a0c36be9cac3f5471fa740d36bc2fbbcf9d113dcdadec4ddf09e257393ff800e6aab80019bdc7456363d6ea21f6
   languageName: node
   linkType: hard
 
@@ -24593,6 +24700,15 @@ __metadata:
   dependencies:
     wrappy: 1
   checksum: cd0a88501333edd640d95f0d2700fbde6bff20b3d4d9bdc521bdd31af0656b5706570d6c6afe532045a20bb8dc0849f8332d6f2a416e0ba6d3d3b98806c7db68
+  languageName: node
+  linkType: hard
+
+"one-time@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "one-time@npm:1.0.0"
+  dependencies:
+    fn.name: 1.x.x
+  checksum: fd008d7e992bdec1c67f53a2f9b46381ee12a9b8c309f88b21f0223546003fb47e8ad7c1fd5843751920a8d276c63bd4b45670ef80c61fb3e07dbccc962b5c7d
   languageName: node
   linkType: hard
 
@@ -26831,7 +26947,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 6b1e90e46bde42b0720a29c9d963c68bc8b2750768f2fef4641f5b5d019e13b4d0cffecfec80e6a785029e1d2f83eab6f1919f75c45ca648f5213c38696ecbbd
   languageName: node
   linkType: hard
 
@@ -27937,6 +28053,13 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"safe-stable-stringify@npm:^2.3.1":
+  version: 2.5.0
+  resolution: "safe-stable-stringify@npm:2.5.0"
+  checksum: d3ce103ed43c6c2f523e39607208bfb1c73aa48179fc5be53c3aa97c118390bffd4d55e012f5393b982b65eb3e0ee954dd57b547930d3f242b0053dcdb923d17
+  languageName: node
+  linkType: hard
+
 "safer-buffer@npm:>= 2.1.2 < 3, safer-buffer@npm:>= 2.1.2 < 3.0.0":
   version: 2.1.2
   resolution: "safer-buffer@npm:2.1.2"
@@ -28729,6 +28852,13 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"stack-trace@npm:0.0.x":
+  version: 0.0.10
+  resolution: "stack-trace@npm:0.0.10"
+  checksum: 473036ad32f8c00e889613153d6454f9be0536d430eb2358ca51cad6b95cea08a3cc33cc0e34de66b0dad221582b08ed2e61ef8e13f4087ab690f388362d6610
+  languageName: node
+  linkType: hard
+
 "stack-utils@npm:^2.0.3":
   version: 2.0.6
   resolution: "stack-utils@npm:2.0.6"
@@ -29465,6 +29595,13 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"text-hex@npm:1.0.x":
+  version: 1.0.0
+  resolution: "text-hex@npm:1.0.0"
+  checksum: 1138f68adc97bf4381a302a24e2352f04992b7b1316c5003767e9b0d3367ffd0dc73d65001ea02b07cd0ecc2a9d186de0cf02f3c2d880b8a522d4ccb9342244a
+  languageName: node
+  linkType: hard
+
 "text-segmentation@npm:^1.0.3":
   version: 1.0.3
   resolution: "text-segmentation@npm:1.0.3"
@@ -29636,6 +29773,13 @@ react-native-webview@ava-labs/react-native-webview:
   dependencies:
     browser-process-hrtime: ^1.0.0
   checksum: f10dbfeccee9ec80a8cf69ecadd49fa609fc2593fb50a83cc4b664524c0531f91009134bf54302f9c4911afed119b0eebb8d2724723fc44516e24a40aaae9219
+  languageName: node
+  linkType: hard
+
+"triple-beam@npm:^1.3.0":
+  version: 1.4.1
+  resolution: "triple-beam@npm:1.4.1"
+  checksum: 2e881a3e8e076b6f2b85b9ec9dd4a900d3f5016e6d21183ed98e78f9abcc0149e7d54d79a3f432b23afde46b0885bdcdcbff789f39bc75de796316961ec07f61
   languageName: node
   linkType: hard
 
@@ -31289,6 +31433,36 @@ react-native-webview@ava-labs/react-native-webview:
   dependencies:
     bs58check: <3.0.0
   checksum: 8c3147ef98d56f394d66f0477f699fba7fc18dd0d1c2c5d0f8408be41acffed589fa82447d80eae5afc9a3cbd943bc3eebb337b9f114955adeaad02a244f4f9a
+  languageName: node
+  linkType: hard
+
+"winston-transport@npm:^4.9.0":
+  version: 4.9.0
+  resolution: "winston-transport@npm:4.9.0"
+  dependencies:
+    logform: ^2.7.0
+    readable-stream: ^3.6.2
+    triple-beam: ^1.3.0
+  checksum: f5fd06a27def7597229925ba2b8b9ffa61b5b8748f994c8325064744e4e36dfea19868a16c16b3806f9b98bb7da67c25f08ae6fba3bdc6db4a9555673474a972
+  languageName: node
+  linkType: hard
+
+"winston@npm:^3.17.0":
+  version: 3.17.0
+  resolution: "winston@npm:3.17.0"
+  dependencies:
+    "@colors/colors": ^1.6.0
+    "@dabh/diagnostics": ^2.0.2
+    async: ^3.2.3
+    is-stream: ^2.0.0
+    logform: ^2.7.0
+    one-time: ^1.0.0
+    readable-stream: ^3.4.0
+    safe-stable-stringify: ^2.3.1
+    stack-trace: 0.0.x
+    triple-beam: ^1.3.0
+    winston-transport: ^4.9.0
+  checksum: ba772c25937007cea6cdeddc931de18a1ea336ae7b3aff2c15de762de5c559b2d310ca2e7a911c209711d325e47d653485e33271ddfb27cd73179e35c7d52267
   languageName: node
   linkType: hard
 
