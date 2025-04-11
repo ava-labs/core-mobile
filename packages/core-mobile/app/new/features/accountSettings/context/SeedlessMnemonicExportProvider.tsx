@@ -21,6 +21,7 @@ import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 import { getExportInitProgress } from '../utils/getExportInitProgress'
 
 const HOURS_48 = 60 * 60 * 48
@@ -61,6 +62,7 @@ export const SeedlessMnemonicExportProvider = ({
 }: {
   children: React.ReactNode
 }): JSX.Element => {
+  const { data: mfaMethods } = useUserMfa()
   const seedlessExportService = useMemo(() => new SeedlessExportService(), [])
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
@@ -82,7 +84,7 @@ export const SeedlessMnemonicExportProvider = ({
     (response: UserExportInitResponse) => {
       setPendingRequest(response)
       setTimeout(() => {
-        replace('./pending')
+        replace('/accountSettings/seedlessExportPhrase/pending')
       }, 100)
     },
     [replace]
@@ -127,20 +129,20 @@ export const SeedlessMnemonicExportProvider = ({
         pendingExport.exp_epoch
       )
       if (progress.isInProgress) {
-        replace('./seedlessExportPhrase/pending')
+        replace('/accountSettings/seedlessExportPhrase/pending')
         return
       }
       if (progress.isReadyToDecrypt) {
-        replace('./seedlessExportPhrase/readyToExport')
+        replace('/accountSettings/seedlessExportPhrase/readyToExport')
         return
       }
       if (progress.isExpired) {
         deleteExport()
         setPendingRequest(undefined)
-        replace('./seedlessExportPhrase/notInitiated')
+        replace('/accountSettings/seedlessExportPhrase/notInitiated')
       }
     } else {
-      replace('./seedlessExportPhrase/notInitiated')
+      replace('/accountSettings/seedlessExportPhrase/notInitiated')
     }
   }, [deleteExport, replace, seedlessExportService])
 
@@ -164,15 +166,16 @@ export const SeedlessMnemonicExportProvider = ({
     )
     if (result.success) {
       setSessionData(result.value)
-      const mfaMethods = await seedlessExportService.session.userMfa()
-      if (mfaMethods.length === 0) {
+      if (mfaMethods?.length === 0) {
         handleNoMfaMethods()
         return
       }
-      if (mfaMethods.length === 1) {
+      if (mfaMethods?.length === 1) {
         const mfa = mfaMethods[0]
         if (mfa?.type === 'totp') {
-          navigate('./seedlessExportPhrase/refreshSeedlessToken/verifyTotpCode')
+          navigate(
+            '/accountSettings/seedlessExportPhrase/refreshSeedlessToken/verifyTotpCode'
+          )
           return
         } else {
           await seedlessExportService.session.approveFido(
@@ -184,7 +187,9 @@ export const SeedlessMnemonicExportProvider = ({
           return
         }
       }
-      navigate('./seedlessExportPhrase/refreshSeedlessToken/selectMfaMethod')
+      navigate(
+        '/accountSettings/seedlessExportPhrase/refreshSeedlessToken/selectMfaMethod'
+      )
       return
     }
     canGoBack() && back()
@@ -194,6 +199,7 @@ export const SeedlessMnemonicExportProvider = ({
     checkPendingExports,
     handleNoMfaMethods,
     navigate,
+    mfaMethods,
     seedlessExportService.session
   ])
 
@@ -231,7 +237,8 @@ export const SeedlessMnemonicExportProvider = ({
       setUserExportInitResponse(exportInitResponse)
       verifyMFA({
         response: exportInitResponse,
-        verifyMfaPath: 'verifyExportInitMfa',
+        verifyMfaPath:
+          '/accountSettings/seedlessExportPhrase/verifyExportInitMfa',
         onVerifySuccess: onVerifyExportInitSuccess
       })
     } catch (e) {
@@ -248,14 +255,14 @@ export const SeedlessMnemonicExportProvider = ({
         keyId,
         keyPair.publicKey
       )
-
       if (!exportReponse.requiresMfa()) {
         throw new Error('completeExport:must require mfa')
       }
       setUserExportCompleteResponse(exportReponse)
       verifyMFA({
         response: exportReponse,
-        verifyMfaPath: 'verifyExportCompleteMfa',
+        verifyMfaPath:
+          '/accountSettings/seedlessExportPhrase/verifyExportCompleteMfa',
         onVerifySuccess: onVerifyExportCompleteSuccess
       })
     } catch (e) {

@@ -4,6 +4,7 @@ import { FidoType } from 'services/passkey/types'
 import { useRegisterAndAuthenticateFido } from 'features/onboarding/hooks/useRegisterAndAuthenticateFido'
 import Component from 'features/onboarding/components/FidoNameInput'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export type FIDONameInputProps = {
   fidoType: FidoType
@@ -36,19 +37,22 @@ const FidoNameInput = (): JSX.Element => {
       registerAndAuthenticateFido({
         name,
         fidoType,
-        onAccountVerified
+        onAccountVerified,
+        verifyMfaPath: ''
       })
   }
 
   return (
-    <Component
-      title={title ?? ''}
-      description={description ?? ''}
-      textInputPlaceholder={textInputPlaceholder ?? ''}
-      name={name}
-      setName={setName}
-      handleSave={handleSave}
-    />
+    <BlurredBarsContentLayout>
+      <Component
+        title={title ?? ''}
+        description={description ?? ''}
+        textInputPlaceholder={textInputPlaceholder ?? ''}
+        name={name}
+        setName={setName}
+        handleSave={handleSave}
+      />
+    </BlurredBarsContentLayout>
   )
 }
 

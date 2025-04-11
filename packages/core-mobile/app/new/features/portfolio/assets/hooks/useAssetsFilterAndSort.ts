@@ -24,8 +24,11 @@ export const useAssetsFilterAndSort = (): {
   sort: DropdownSelection
   view: DropdownSelection
   refetch: () => void
+  isRefetching: boolean
 } => {
-  const { filteredTokenList, refetch } = useSearchableTokenList({})
+  const { filteredTokenList, refetch, isRefetching } = useSearchableTokenList(
+    {}
+  )
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
@@ -143,8 +146,9 @@ export const useAssetsFilterAndSort = (): {
       sort,
       view,
       data: filteredAndSorted,
-      refetch
+      refetch,
+      isRefetching
     }),
-    [filter, sort, view, filteredAndSorted, refetch]
+    [filter, sort, view, filteredAndSorted, refetch, isRefetching]
   )
 }

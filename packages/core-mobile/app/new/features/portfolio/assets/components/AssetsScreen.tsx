@@ -18,9 +18,8 @@ import {
 } from 'store/balance'
 import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
+import errorIcon from '../../../../assets/icons/rocket.png'
 import { TokenListItem } from './TokenListItem'
-
-const errorIcon = require('../../../../assets/icons/rocket.png')
 
 interface Props {
   goToTokenDetail: (localId: string) => void
@@ -31,7 +30,8 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement
 }): JSX.Element => {
-  const { data, filter, sort, view, refetch } = useAssetsFilterAndSort()
+  const { data, filter, sort, view, refetch, isRefetching } =
+    useAssetsFilterAndSort()
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
@@ -154,6 +154,8 @@ const AssetsScreen: FC<Props> = ({
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
+      refreshing={isRefetching}
+      onRefresh={refetch}
       key={isGridView ? 'grid' : 'list'}
       keyExtractor={item => item.localId}
     />

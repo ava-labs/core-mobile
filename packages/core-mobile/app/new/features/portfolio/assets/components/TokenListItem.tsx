@@ -23,7 +23,7 @@ export const TokenListItem = ({
   const { formatCurrency } = useFormatCurrency()
   const { balanceDisplayValue, balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
-    ? formatCurrency(balanceInCurrency)
+    ? formatCurrency({ amount: balanceInCurrency })
     : `${balanceDisplayValue} ${symbol}`
 
   const marketToken = getMarketTokenBySymbol(symbol)

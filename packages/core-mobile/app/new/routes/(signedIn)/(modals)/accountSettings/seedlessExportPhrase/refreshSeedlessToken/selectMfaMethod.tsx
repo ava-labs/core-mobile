@@ -1,25 +1,18 @@
 import { SelectRecoveryMethods } from 'features/accountSettings/components/SelectRecoveryMethods'
 import React from 'react'
-import { MFA } from 'seedless/types'
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { useRouter } from 'expo-router'
 import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
+import { useUserMfa } from 'common/hooks/useUserMfa'
+import { Loader } from 'common/components/Loader'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const { seedlessExportService, sessionData, checkPendingExports } =
     useSeedlessMnemonicExportContext()
-  const [mfaMethods, setMfaMethods] = useState<MFA[]>([])
   const { canGoBack, back } = useRouter()
-
-  useEffect(() => {
-    const getMfaMethods = async (): Promise<void> => {
-      const mfas = await seedlessExportService.session.userMfa()
-      setMfaMethods(mfas)
-    }
-    getMfaMethods()
-  }, [seedlessExportService.session])
+  const { data: mfaMethods, isLoading } = useUserMfa()
 
   const handleSelectMfa = useCallback(
     async (recoveryMethod: RecoveryMethod): Promise<void> => {
@@ -48,9 +41,11 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     ]
   )
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <SelectRecoveryMethods
-      mfaMethods={mfaMethods}
+      mfaMethods={mfaMethods ?? []}
       onSelectMfa={type => handleSelectMfa(type)}
       sx={{ marginHorizontal: 16 }}
     />

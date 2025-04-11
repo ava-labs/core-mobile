@@ -1,22 +1,34 @@
-import { AddFidoChallenge, TotpChallenge } from '@cubist-labs/cubesigner-sdk'
+import {
+  AddFidoChallenge,
+  Empty,
+  TotpChallenge
+} from '@cubist-labs/cubesigner-sdk'
+import { useVerifyRecoveryMethods } from 'common/hooks/useVerifyRecoveryMethods'
 import { showSnackbar } from 'common/utils/toast'
-import useVerifyMFA from 'seedless/hooks/useVerifyMFA'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 
 function useSeedlessManageMFA(): {
   totpResetInit: (
-    onInitialized: (challenge: TotpChallenge) => void
+    onInitialized: (challenge: TotpChallenge) => void,
+    verifyMfaPath: string
   ) => Promise<void>
   fidoRegisterInit: (
     name: string,
-    onInitialized: (challenge: AddFidoChallenge) => Promise<void>
+    onInitialized: (challenge: AddFidoChallenge) => Promise<void>,
+    verifyMfaPath: string
+  ) => Promise<void>
+  fidoDelete: (
+    fidoId: string,
+    onDelete: () => void,
+    verifyMfaPath: string
   ) => Promise<void>
 } {
-  const { verifyMFA } = useVerifyMFA(SeedlessService.session)
+  const { verifyMFA } = useVerifyRecoveryMethods(SeedlessService.session)
 
   async function totpResetInit(
-    onInitialized: (challenge: TotpChallenge) => void
+    onInitialized: (challenge: TotpChallenge) => void,
+    verifyMfaPath: string
   ): Promise<void> {
     try {
       const totpResetInitResponse =
@@ -31,6 +43,7 @@ function useSeedlessManageMFA(): {
 
         verifyMFA({
           response: totpResetInitResponse,
+          verifyMfaPath,
           onVerifySuccess: handleVerifySuccess
         })
       } else {
@@ -46,7 +59,8 @@ function useSeedlessManageMFA(): {
 
   async function fidoRegisterInit(
     name: string,
-    onInitialized: (challenge: AddFidoChallenge) => Promise<void>
+    onInitialized: (challenge: AddFidoChallenge) => Promise<void>,
+    verifyMfaPath: string
   ): Promise<void> {
     try {
       const fidoRegisterInitResponse =
@@ -61,7 +75,8 @@ function useSeedlessManageMFA(): {
 
         verifyMFA({
           response: fidoRegisterInitResponse,
-          onVerifySuccess: handleVerifySuccess
+          onVerifySuccess: handleVerifySuccess,
+          verifyMfaPath
         })
       } else {
         const addFidoChallenge = fidoRegisterInitResponse.data()
@@ -74,7 +89,31 @@ function useSeedlessManageMFA(): {
     }
   }
 
+  async function fidoDelete(
+    fidoId: string,
+    onDelete: () => void,
+    verifyMfaPath: string
+  ): Promise<void> {
+    const fidoDeleteResponse = await SeedlessService.session.deleteFido(fidoId)
+
+    if (fidoDeleteResponse.requiresMfa()) {
+      const handleVerifySuccess: HandleVerifyMfaSuccess<Empty> = async () => {
+        onDelete()
+      }
+
+      verifyMFA({
+        response: fidoDeleteResponse,
+        onVerifySuccess: handleVerifySuccess,
+        excludeFidoMfaId: fidoId,
+        verifyMfaPath
+      })
+    } else {
+      throw new Error('fidoDelete requires MFA')
+    }
+  }
+
   return {
+    fidoDelete,
     totpResetInit,
     fidoRegisterInit
   }
