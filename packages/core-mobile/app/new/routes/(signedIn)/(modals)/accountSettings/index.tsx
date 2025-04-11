@@ -165,6 +165,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               onPress={goToSelectAvatar}
               sx={{ marginTop: 5, height: 150 }}>
               <Avatar
+                testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
                 backgroundColor="transparent"
                 size={150}
                 // todo: replace with actual avatar
@@ -214,6 +215,9 @@ const AccountSettingsScreen = (): JSX.Element => {
                   title: 'Testnet mode',
                   value: (
                     <Toggle
+                      testID={
+                        isDeveloperMode ? 'testnet_enabled' : 'testnet_disabled'
+                      }
                       onValueChange={onTestnetChange}
                       value={isDeveloperMode}
                     />

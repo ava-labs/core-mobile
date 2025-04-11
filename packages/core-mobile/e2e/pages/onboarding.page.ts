@@ -109,10 +109,6 @@ class OnboardingPage {
     return by.text(onboardingLoc.forgotPin)
   }
 
-  get pinInputField() {
-    return by.id(onboardingLoc.pinInputField)
-  }
-
   get nameWalletInput() {
     return by.id(onboardingLoc.nameWalletInput)
   }
@@ -149,20 +145,12 @@ class OnboardingPage {
     return by.text(onboardingLoc.newRecoveryPhraseWarning)
   }
 
-  get copyPhrase() {
-    return by.text(onboardingLoc.copyPhrase)
-  }
-
   get securityWarningTitle() {
     return by.text(onboardingLoc.securityWarningTitle)
   }
 
   get securityWarningContent() {
     return by.text(onboardingLoc.securityWarningContent)
-  }
-
-  get copied() {
-    return by.text(onboardingLoc.copied)
   }
 
   get verifyYourRecoveryPhraseTitle() {
@@ -249,10 +237,6 @@ class OnboardingPage {
     await Assert.isVisible(this.enterPinFirstScreenDescription)
   }
 
-  async enterPin(pin = '000000') {
-    await Action.setInputText(this.pinInputField, pin)
-  }
-
   async enterWalletName(walletName: string) {
     await Action.waitForElement(this.nameWalletInput)
     await element(this.nameWalletInput).replaceText(walletName)
@@ -279,20 +263,16 @@ class OnboardingPage {
   }
   async tapLetsGo() {
     await Action.waitForElement(this.letsgo)
-    await Action.tap(this.letsgo)
-  }
-
-  async tapCopyPhrase() {
-    await Action.tap(this.copyPhrase)
+    await Action.longPress(this.letsgo)
   }
 
   async verifyNewRecoveryPhrasePage() {
     await Action.waitForElement(this.newRecoveryPhraseTitle)
     await Assert.isVisible(this.newRecoveryPhraseDescription)
     await Assert.isVisible(this.newRecoveryPhraseAlert)
-    await Assert.isVisible(this.copyPhrase)
-    await this.tapCopyPhrase()
-    await Action.waitForElement(this.copied)
+    await Assert.isVisible(commonElsPage.copyPhrase)
+    await commonElsPage.tapCopyPhrase()
+    await Action.waitForElement(commonElsPage.copied)
   }
 
   async getMnemonicWords() {

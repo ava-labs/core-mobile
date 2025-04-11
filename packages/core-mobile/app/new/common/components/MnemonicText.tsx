@@ -31,7 +31,7 @@ export const MnemonicText = (
       <Text
         variant="body2"
         sx={{ color: colors.$textPrimary }}
-        testID={`mnemonic_ava__word`}>
+        testID={`mnemonic__${orderNum}`}>
         {props.text}
       </Text>
     </View>

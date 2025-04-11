@@ -58,8 +58,8 @@ const tapElementAtIndexNoSync = async (
   }
 }
 
-const longPress = async (item: Detox.NativeMatcher) => {
-  await element(item).longPress()
+const longPress = async (item: Detox.NativeMatcher, duration = 100) => {
+  await element(item).longPress(duration)
 }
 
 const setColumnToValue = async (
@@ -96,7 +96,7 @@ const dismissKeyboard = async (searchBarId = 'search_bar__search') => {
 
 const waitForElement = async (
   item: Detox.NativeMatcher,
-  timeout = 2000,
+  timeout = 5000,
   index = 0
 ) => {
   await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)

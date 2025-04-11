@@ -7,7 +7,7 @@ import settingsPage from '../../pages/settings.page'
 import portfolioPage from '../../pages/portfolio.page'
 import commonElsPage from '../../pages/commonEls.page'
 
-describe('Change Currency', () => {
+describe('Settings - Change Currency', () => {
   beforeAll(async () => {
     await warmup()
   })

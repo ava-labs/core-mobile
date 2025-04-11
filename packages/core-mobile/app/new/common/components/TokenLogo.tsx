@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, FC } from 'react'
 import { alpha, Icons, useTheme, View } from '@avalabs/k2-alpine'
-import { FC } from 'react'
+import { Platform } from 'react-native'
 import { TokenIcon } from 'common/components/TokenIcon'
 import {
   hasLocalNetworkTokenLogo,
@@ -41,24 +41,53 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
     return isDark ? alpha(colors.$white, 0.1) : alpha(colors.$black, 0.1)
   }, [colors.$white, colors.$black, isDark])
 
+  // the logo has an inner border style.
+  // on iOS, this is achieved by wrapping the logo in a view with `overflow: 'hidden'`.
+  // on Android, the above approach doesn't work, so we overlay a border on top of the logo instead.
   const containerStyle = useMemo(() => {
-    return {
+    const baseStyle = {
       width: size,
       height: size,
       borderRadius: size,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
-      backgroundColor,
-      borderColor: borderColor,
-      borderWidth: BORDER_WIDTH
+      backgroundColor
     }
+
+    return Platform.OS === 'ios'
+      ? {
+          ...baseStyle,
+          borderColor: borderColor,
+          borderWidth: BORDER_WIDTH
+        }
+      : baseStyle
   }, [backgroundColor, borderColor, size])
+
+  // Android-specific border overlay (not needed for iOS)
+  const androidBorderOverlay = useMemo(() => {
+    if (Platform.OS === 'ios') return null
+
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          width: size,
+          height: size,
+          borderRadius: size,
+          backgroundColor: 'transparent',
+          borderColor: borderColor,
+          borderWidth: BORDER_WIDTH
+        }}
+      />
+    )
+  }, [size, borderColor])
 
   if (isMalicious) {
     return (
       <View sx={containerStyle}>
         <Icons.Custom.RedExclamation width={14} height={14} />
+        {androidBorderOverlay}
       </View>
     )
   }
@@ -71,6 +100,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
           symbol={symbol}
           isNetworkTokenSymbol={useLocalNetworkTokenLogo}
         />
+        {androidBorderOverlay}
       </View>
     )
   }
@@ -78,6 +108,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   return (
     <View sx={containerStyle}>
       <Logo logoUri={logoUri} size={size} backgroundColor={backgroundColor} />
+      {androidBorderOverlay}
     </View>
   )
 }
