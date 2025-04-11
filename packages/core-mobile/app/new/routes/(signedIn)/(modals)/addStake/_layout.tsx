@@ -26,6 +26,9 @@ export default function StakeLayout(): JSX.Element {
           options={shouldHideOnboarding ? modalFirstScreenOptions : undefined}
         />
         <Stack.Screen name="duration" />
+        <Stack.Screen name="nodeParameters" />
+        <Stack.Screen name="selectNode" />
+        <Stack.Screen name="nodeDetails" />
         <Stack.Screen name="confirm" />
       </Stack>
     </DelegationContextProvider>
