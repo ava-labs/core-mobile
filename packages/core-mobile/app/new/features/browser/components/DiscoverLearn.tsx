@@ -1,4 +1,11 @@
-import { Image, SCREEN_WIDTH, View } from '@avalabs/k2-alpine'
+import {
+  Icons,
+  Image,
+  Pressable,
+  SCREEN_WIDTH,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -21,8 +28,9 @@ import { CarouselItem } from './CarouselItem'
 export const DiscoverLearn = (): ReactNode => {
   const dispatch = useDispatch()
   const { handleUrlSubmit } = useBrowserContext()
+  const { theme } = useTheme()
 
-  const { data, error } = useFeaturedEducationArticles()
+  const { data, error, refetch } = useFeaturedEducationArticles()
 
   const items = useMemo(() => data?.items || [], [data?.items])
 
@@ -75,14 +83,22 @@ export const DiscoverLearn = (): ReactNode => {
   const renderEmpty = useCallback((): ReactNode => {
     if (error)
       return (
-        <ErrorState
-          title="Couldn't load articles"
-          description="Please try again later"
-          sx={{
+        <Pressable
+          onPress={() => refetch()}
+          style={{
             height: 240,
-            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2
-          }}
-        />
+            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <ErrorState
+            icon={
+              <Icons.Navigation.Refresh color={theme.colors.$textPrimary} />
+            }
+            title={``}
+            description={`Content failed to load.\nTap to refresh`}
+          />
+        </Pressable>
       )
     return (
       <View
@@ -99,7 +115,7 @@ export const DiscoverLearn = (): ReactNode => {
         <CarouselItem loading />
       </View>
     )
-  }, [error])
+  }, [error, refetch, theme.colors.$textPrimary])
 
   return (
     <View>

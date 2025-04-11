@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import Logger from 'utils/Logger'
 import {
   getContentfulGraphQL,
   GraphQLResponse,
@@ -31,23 +32,28 @@ export function useEcosystemProjects(): UseQueryResult<
 async function fetchEcosystemProjects(): Promise<
   ParsedGraphQLResponse<ContentfulEcosystemProject>
 > {
-  const request = await getContentfulGraphQL(
-    ECOSYSTEM_PROJECTS_QUERY,
-    'ecosystemCarouselItem',
-    { limit: LIMIT }
-  )
-  const response = await fetch(request)
-  const graphqlData =
-    (await response.json()) as GraphQLResponse<ContentfulEcosystemProject>
+  try {
+    const request = getContentfulGraphQL(
+      ECOSYSTEM_PROJECTS_QUERY,
+      'ecosystemCarouselItem',
+      { limit: LIMIT }
+    )
+    const response = await fetch(request)
+    const graphqlData =
+      (await response.json()) as GraphQLResponse<ContentfulEcosystemProject>
 
-  if (graphqlData.data?.ecosystemCarouselItemCollection) {
-    return {
-      items: graphqlData.data.ecosystemCarouselItemCollection.items
+    if (graphqlData.data?.ecosystemCarouselItemCollection) {
+      return {
+        items: graphqlData.data.ecosystemCarouselItemCollection.items
+      }
     }
-  }
 
-  return {
-    items: []
+    return {
+      items: []
+    }
+  } catch (error) {
+    Logger.error('Error fetching ecosystem projects', error)
+    throw new Error('Error fetching ecosystem projects')
   }
 }
 

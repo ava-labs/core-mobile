@@ -1,6 +1,6 @@
 import { FlatList, ListRenderItem } from 'react-native'
 
-import { Button, View } from '@avalabs/k2-alpine'
+import { Button, Icons, Pressable, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -9,17 +9,18 @@ import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import {
-  useFeaturedProjects,
-  ContentfulFeaturedProject
+  ContentfulFeaturedProject,
+  useFeaturedProjects
 } from '../hooks/useFeaturedProjects'
 import { BrowserItem } from './BrowserItem'
 
 export const DiscoverFeaturedProjects = (): JSX.Element | null => {
   const dispatch = useDispatch()
+  const { theme } = useTheme()
   const { handleUrlSubmit } = useBrowserContext()
   const showEmptyTab = useSelector(selectIsTabEmpty)
 
-  const { data, error } = useFeaturedProjects()
+  const { data, error, refetch } = useFeaturedProjects()
 
   const randomisedItems = useMemo(
     () => {
@@ -69,13 +70,21 @@ export const DiscoverFeaturedProjects = (): JSX.Element | null => {
   const renderEmpty = useCallback((): ReactNode => {
     if (error)
       return (
-        <ErrorState
-          title="Couldn't load projects"
-          description="Please try again later"
-          sx={{
-            height: 290
-          }}
-        />
+        <Pressable
+          onPress={() => refetch()}
+          style={{
+            height: 290,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <ErrorState
+            icon={
+              <Icons.Navigation.Refresh color={theme.colors.$textPrimary} />
+            }
+            title={``}
+            description={`Content failed to load.\nTap to refresh`}
+          />
+        </Pressable>
       )
     return (
       <View>
@@ -86,7 +95,7 @@ export const DiscoverFeaturedProjects = (): JSX.Element | null => {
         <BrowserItem type="list" loading isLast />
       </View>
     )
-  }, [error])
+  }, [error, refetch, theme.colors.$textPrimary])
 
   return (
     <FlatList

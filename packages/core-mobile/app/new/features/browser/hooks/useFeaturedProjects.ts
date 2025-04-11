@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import Logger from 'utils/Logger'
 import {
   getContentfulGraphQL,
   GraphQLResponse,
@@ -35,23 +36,28 @@ export function useFeaturedProjects(): UseQueryResult<
 async function fetchFeaturedProjects(): Promise<
   ParsedGraphQLResponse<ContentfulFeaturedProject>
 > {
-  const request = await getContentfulGraphQL(
-    FEATURED_PROJECTS_QUERY,
-    'featuredProjects',
-    { limit: LIMIT }
-  )
-  const response = await fetch(request)
-  const graphqlData =
-    (await response.json()) as GraphQLResponse<ContentfulFeaturedProject>
+  try {
+    const request = getContentfulGraphQL(
+      FEATURED_PROJECTS_QUERY,
+      'featuredProjects',
+      { limit: LIMIT }
+    )
+    const response = await fetch(request)
+    const graphqlData =
+      (await response.json()) as GraphQLResponse<ContentfulFeaturedProject>
 
-  if (graphqlData.data?.projectCollection) {
-    return {
-      items: graphqlData.data.projectCollection.items
+    if (graphqlData.data?.projectCollection) {
+      return {
+        items: graphqlData.data.projectCollection.items
+      }
     }
-  }
 
-  return {
-    items: []
+    return {
+      items: []
+    }
+  } catch (error) {
+    Logger.error('Error fetching featured projects', error)
+    throw new Error('Error fetching featured projects')
   }
 }
 

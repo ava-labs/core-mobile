@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import Logger from 'utils/Logger'
 import {
   getContentfulGraphQL,
   GraphQLResponse,
@@ -31,23 +32,28 @@ export function useFeaturedEducationArticles(): UseQueryResult<
 async function fetchEducationArticles(): Promise<
   ParsedGraphQLResponse<ContentfulEducationArticle>
 > {
-  const request = await getContentfulGraphQL(
-    EDUCATION_ARTICLES_QUERY,
-    'featuredEducationArticles',
-    { limit: LIMIT }
-  )
-  const response = await fetch(request)
-  const graphqlData =
-    (await response.json()) as GraphQLResponse<ContentfulEducationArticle>
+  try {
+    const request = getContentfulGraphQL(
+      EDUCATION_ARTICLES_QUERY,
+      'featuredEducationArticles',
+      { limit: LIMIT }
+    )
+    const response = await fetch(request)
+    const graphqlData =
+      (await response.json()) as GraphQLResponse<ContentfulEducationArticle>
 
-  if (graphqlData.data?.educationArticleCollection) {
-    return {
-      items: graphqlData.data.educationArticleCollection.items
+    if (graphqlData.data?.educationArticleCollection) {
+      return {
+        items: graphqlData.data.educationArticleCollection.items
+      }
     }
-  }
 
-  return {
-    items: []
+    return {
+      items: []
+    }
+  } catch (error) {
+    Logger.error('Error fetching featured education articles', error)
+    throw new Error('Error fetching featured education articles')
   }
 }
 

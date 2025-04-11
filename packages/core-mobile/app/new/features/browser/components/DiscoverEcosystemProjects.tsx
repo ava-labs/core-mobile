@@ -1,4 +1,4 @@
-import { SCREEN_WIDTH } from '@avalabs/k2-alpine'
+import { Icons, Pressable, SCREEN_WIDTH, useTheme } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { FlatList, ListRenderItem, View } from 'react-native'
@@ -8,16 +8,17 @@ import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import {
-  useEcosystemProjects,
-  ContentfulEcosystemProject
+  ContentfulEcosystemProject,
+  useEcosystemProjects
 } from '../hooks/useEcosystemProjects'
 import { CarouselItem } from './CarouselItem'
 
 export const DiscoverEcosystemProjects = (): ReactNode => {
   const dispatch = useDispatch()
+  const { theme } = useTheme()
   const { handleUrlSubmit } = useBrowserContext()
 
-  const { data, error } = useEcosystemProjects()
+  const { data, error, refetch } = useEcosystemProjects()
 
   const showEmptyTab = useSelector(selectIsTabEmpty)
 
@@ -61,14 +62,22 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
   const renderEmpty = useCallback((): ReactNode => {
     if (error)
       return (
-        <ErrorState
-          title="Couldn't load projects"
-          description="Please try again later"
-          sx={{
+        <Pressable
+          onPress={() => refetch()}
+          style={{
             height: 240,
+            justifyContent: 'center',
+            alignItems: 'center',
             width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2
-          }}
-        />
+          }}>
+          <ErrorState
+            icon={
+              <Icons.Navigation.Refresh color={theme.colors.$textPrimary} />
+            }
+            title={``}
+            description={`Content failed to load.\nTap to refresh`}
+          />
+        </Pressable>
       )
     return (
       <View
@@ -85,7 +94,7 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
         <CarouselItem loading />
       </View>
     )
-  }, [error])
+  }, [error, refetch, theme.colors.$textPrimary])
 
   return (
     <View>

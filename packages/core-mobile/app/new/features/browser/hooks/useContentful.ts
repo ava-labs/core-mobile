@@ -15,11 +15,11 @@ export type ParsedGraphQLResponse<T> = {
   items: T[]
 }
 
-export async function getContentfulGraphQL(
+export function getContentfulGraphQL(
   query: string,
   operationName: string,
   variables: Record<string, any>
-): Promise<Request> {
+): Request {
   try {
     return new Request(PROXY_ENDPOINT, {
       method: 'POST',
