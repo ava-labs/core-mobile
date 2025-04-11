@@ -199,7 +199,13 @@ export const ContactForm = ({
               text: 'Save',
               style: 'default',
               shouldDisable: (values: Record<string, string>) => {
-                return values.save === '' || values.save === undefined
+                const trimmedValue = values.save?.trim()
+                const regex = /^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/
+                return (
+                  trimmedValue === '' ||
+                  trimmedValue === undefined ||
+                  !regex.test(trimmedValue)
+                )
               },
               onPress: (values: Record<string, string>) => {
                 if (values.save !== '' && values.save !== undefined) {

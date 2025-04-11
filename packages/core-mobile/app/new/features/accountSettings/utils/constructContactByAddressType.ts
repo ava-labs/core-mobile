@@ -12,7 +12,7 @@ export const constructContactByAddressType = (
     case AddressType.XP: {
       return {
         ...contact,
-        addressXP: address
+        addressXP: address?.replace(/^[PX]-/, '') // remove P- or X- prefix
       }
     }
     case AddressType.BTC:
