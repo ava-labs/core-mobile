@@ -9,9 +9,6 @@ import {
 
 const LIMIT = 40
 
-const INITIAL_DATA: ParsedGraphQLResponse<ContentfulEducationArticle> = {
-  items: []
-}
 
 export type ContentfulEducationArticle = {
   headline: string
@@ -24,8 +21,7 @@ export function useFeaturedEducationArticles(): UseQueryResult<
 > {
   return useQuery({
     queryKey: [ReactQueryKeys.FEATURED_EDUCATION_ARTICLES],
-    queryFn: fetchEducationArticles,
-    initialData: INITIAL_DATA
+    queryFn: fetchEducationArticles
   })
 }
 
