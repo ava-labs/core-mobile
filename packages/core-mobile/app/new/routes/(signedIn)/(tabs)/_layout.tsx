@@ -1,11 +1,12 @@
 import React from 'react'
 import { BottomTabs } from 'common/components/BottomTabs'
+import { Platform } from 'react-native'
 
 export default function TabLayout(): JSX.Element {
   return (
     <BottomTabs
       tabBarStyle={{
-        backgroundColor: 'white'
+        backgroundColor: Platform.OS === 'android' ? 'white' : 'transparent'
       }}>
       <BottomTabs.Screen
         name="portfolio"
