@@ -8,7 +8,7 @@ import {
   showAlert,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { useNavigation } from '@react-navigation/native'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'

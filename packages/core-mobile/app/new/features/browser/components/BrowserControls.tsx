@@ -7,7 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useState } from 'react'

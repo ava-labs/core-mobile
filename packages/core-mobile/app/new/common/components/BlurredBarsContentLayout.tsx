@@ -1,24 +1,20 @@
-import React, {
-  PropsWithChildren,
-  ReactElement,
-  useContext,
-  useMemo
-} from 'react'
+import React, { PropsWithChildren, ReactElement, useMemo } from 'react'
+import { Platform } from 'react-native'
 import { SxProp, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 
 const BlurredBarsContentLayout: React.FC<
   PropsWithChildren & { sx?: SxProp }
 > = ({ children, sx }): JSX.Element => {
   const headerHeight = useHeaderHeight()
-  const bottomTabBarHeight = useContext(BottomTabBarHeightContext)
+  const bottomTabBarHeight = useBottomTabBarHeight()
 
   const style = useMemo(
     () => ({
       flex: 1,
       paddingTop: headerHeight,
-      paddingBottom: bottomTabBarHeight,
+      paddingBottom: Platform.OS === 'ios' ? bottomTabBarHeight : 0,
       ...sx
     }),
     [headerHeight, bottomTabBarHeight, sx]
