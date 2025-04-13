@@ -24,9 +24,6 @@ export default function TabLayout(): JSX.Element {
       tabLabelStyle={{
         fontFamily: 'Inter-Bold',
         fontSize: 10
-      }}
-      screenOptions={{
-        freezeOnBlur: true
       }}>
       <BottomTabs.Screen
         name="portfolio"
