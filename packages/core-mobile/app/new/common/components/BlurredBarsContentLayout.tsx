@@ -1,14 +1,22 @@
-import React, { PropsWithChildren, ReactElement, useMemo } from 'react'
+import React, {
+  PropsWithChildren,
+  ReactElement,
+  useContext,
+  useMemo
+} from 'react'
 import { Platform } from 'react-native'
 import { SxProp, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
+import { BottomTabBarHeightContext } from 'react-native-bottom-tabs'
 
 const BlurredBarsContentLayout: React.FC<
   PropsWithChildren & { sx?: SxProp }
 > = ({ children, sx }): JSX.Element => {
   const headerHeight = useHeaderHeight()
-  const bottomTabBarHeight = useBottomTabBarHeight()
+
+  // safe access to tab bar height using context directly
+  // as we currently have screens that are not using the bottom tab navigator
+  const bottomTabBarHeight = useContext(BottomTabBarHeightContext) ?? 0
 
   const style = useMemo(
     () => ({
