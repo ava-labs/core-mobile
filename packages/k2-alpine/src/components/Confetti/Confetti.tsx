@@ -16,12 +16,15 @@ export const Confetti = forwardRef<ConfettiMethods>((_, ref) => {
 
   return (
     <PIConfetti
+      height={100}
       count={150}
       blastRadius={250}
       blastPosition={{ x: width / 2, y: 50 }}
       ref={confettiRef}
       autoplay={false}
-      fallDuration={2000}
+      fadeOutOnEnd={true}
+      blastDuration={150}
+      fallDuration={3000}
       flakeSize={{ width: 6, height: 12 }}
       colors={['#098F69', '#1FC626', '#42C49F']}
     />

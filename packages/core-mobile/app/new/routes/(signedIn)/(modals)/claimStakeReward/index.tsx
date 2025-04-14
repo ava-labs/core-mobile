@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   ActivityIndicator,
   Button,
+  GroupList,
+  GroupListItem,
   SafeAreaView,
   ScrollView,
+  showAlert,
+  Tooltip,
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
@@ -25,11 +29,11 @@ import {
   TokenAmountInputHandle
 } from '@avalabs/k2-alpine/src/components/TokenAmountInput/TokenAmountInput'
 import { useConfetti } from 'common/contexts/ConfettiContext'
+import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 
 const ClaimStakeRewardScreen = (): JSX.Element => {
-  const { back } = useRouter()
+  const { navigate, back } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
-  //   const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const { data } = usePChainBalance()
   const ref = useRef<TokenAmountInputHandle>(null)
   const [claimableAmountInAvax, setClaimableAmountInAvax] =
@@ -37,6 +41,42 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const onClaimSuccess = (): void => {
+    AnalyticsService.capture('StakeClaimSuccess')
+
+    confetti.restart()
+    showSnackbar('Stake reward claimed')
+
+    // this is a workaround for the issue where back navigation is not working,
+    // when it's called within the onSuccess callback of the mutation
+    setTimeout(() => {
+      back()
+    }, 300)
+  }
+
+  const onClaimError = (error: Error): void => {
+    AnalyticsService.capture('StakeClaimFail')
+    showSnackbar(error.message)
+  }
+
+  const onFundsStuck = (): void => {
+    showAlert({
+      title: 'Claim Failed',
+      description:
+        'Your transaction failed due to network issues. Would you like to try again?',
+      buttons: [
+        {
+          text: 'Try again',
+          onPress: issueClaimRewards
+        },
+        {
+          text: 'Cancel',
+          onPress: back
+        }
+      ]
+    })
+  }
+
   const {
     mutation: claimRewardsMutation,
     totalFees,
@@ -75,71 +115,16 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
     claimRewardsMutation.isPending
   ])
 
-  // const [feesInAvax, formattedFeesInCurrency] = useMemo(() => {
-  //   if (totalFees === undefined) {
-  //     return [UNKNOWN_AMOUNT, UNKNOWN_AMOUNT]
-  //   }
-
-  //   return [
-  //     totalFees.toDisplay({ fixedDp: 10 }),
-  //     formatTokenInCurrency({
-  //       amount: totalFees.mul(avaxPrice).toDisplay({ asNumber: true })
-  //     })
-  //   ]
-  // }, [avaxPrice, totalFees, formatTokenInCurrency])
-
   const handleCancel = (): void => {
     AnalyticsService.capture('StakeCancelClaim')
     back()
-  }
 
-  // const renderFees = (): JSX.Element => {
-  //   if (unableToGetFees) {
-  //     return <Spinner size={22} />
-  //   }
-
-  //   return (
-  //     <View
-  //       style={{
-  //         alignItems: 'flex-end',
-  //         marginTop: -4
-  //       }}>
-  //       <AvaText.Heading6 testID="network_fee">
-  //         {feesInAvax} AVAX
-  //       </AvaText.Heading6>
-  //       <Space y={4} />
-  //       <AvaText.Body3 testID="network_fee_currency" color={theme.colorText2}>
-  //         {formattedFeesInCurrency}
-  //       </AvaText.Body3>
-  //     </View>
-  //   )
-  // }
-
-  function onFundsStuck(): void {
-    // navigate(AppNavigation.Earn.ClaimFundsStuck, {
-    //   onTryAgain: () => issueClaimRewards()
-    // })
+    navigate('/stake')
   }
 
   const issueClaimRewards = (): void => {
-    // AnalyticsService.capture('StakeIssueClaim')
-    // claimRewardsMutation.mutate()
-    setTimeout(() => {
-      confetti.restart()
-      showSnackbar('Stake reward claimed')
-
-      back()
-    }, 1000)
-  }
-
-  function onClaimSuccess(): void {
-    AnalyticsService.capture('StakeClaimSuccess')
-    back()
-  }
-
-  function onClaimError(error: Error): void {
-    AnalyticsService.capture('StakeClaimFail')
-    showSnackbar(error.message)
+    AnalyticsService.capture('StakeIssueClaim')
+    claimRewardsMutation.mutate()
   }
 
   const formatInCurrency = (amount: TokenUnit): string => {
@@ -147,6 +132,27 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
       amount: amount.mul(avaxPrice).toDisplay({ asNumber: true })
     })
   }
+
+  const feeData: GroupListItem[] = useMemo(
+    () => [
+      {
+        title: 'Network fee',
+        rightIcon: (
+          <Tooltip
+            title="Network fee"
+            description="Fees paid to execute the transaction"
+          />
+        ),
+        value:
+          totalFees === undefined ? (
+            <ActivityIndicator />
+          ) : (
+            <StakeTokenUnitValue value={totalFees} />
+          )
+      }
+    ],
+    [totalFees]
+  )
 
   usePreventScreenRemoval(claimRewardsMutation.isPending)
 
@@ -156,13 +162,15 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
     }
   }, [claimableAmountInAvax])
 
-  // if (!data) {
-  //   return null
-  // }
-
-  // if (data.balancePerType.unlockedUnstaked === undefined) {
-  //   return <EmptyClaimRewards />
-  // }
+  useEffect(() => {
+    if (data && data.balancePerType.unlockedUnstaked === undefined) {
+      showAlert({
+        title: 'No claimable balance',
+        description: 'You have no balance available for claiming.',
+        buttons: [{ text: 'Go back', style: 'cancel', onPress: back }]
+      })
+    }
+  }, [data, back])
 
   return (
     <SafeAreaView sx={{ flex: 1 }}>
@@ -189,6 +197,13 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
               formatInCurrency={formatInCurrency}
             />
           </View>
+          <GroupList
+            itemHeight={60}
+            data={feeData}
+            textContainerSx={{
+              marginTop: 0
+            }}
+          />
         </View>
       </ScrollView>
       <View

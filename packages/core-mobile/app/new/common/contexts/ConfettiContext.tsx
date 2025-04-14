@@ -1,4 +1,3 @@
-// ConfettiContext.tsx
 import { ConfettiMethods } from '@avalabs/k2-alpine'
 import { createContext, useContext } from 'react'
 
