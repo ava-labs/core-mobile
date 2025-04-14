@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router'
 import React, { useCallback } from 'react'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { alpha, Icons, useTheme } from '@avalabs/k2-alpine'
+import { Platform } from 'react-native'
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
@@ -15,6 +16,7 @@ export default function TabLayout(): JSX.Element {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: Platform.OS === 'android',
         tabBarBackground,
         tabBarLabelStyle: {
           fontFamily: 'Inter-SemiBold'
