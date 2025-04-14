@@ -25,10 +25,9 @@ const ChangePinScreen = (): React.JSX.Element => {
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
       onPinCreated({ mnemonic, pin, isResetting: false, walletType })
-        .then(() => {
+        .then(walletId => {
           if (useBiometrics) {
-            //NEVEN - fix this
-            BiometricsSDK.storeWalletWithBiometry(mnemonic)
+            BiometricsSDK.storeWalletWithBiometry(walletId, mnemonic)
               .then(() => canGoBack() && back())
               .catch(Logger.error)
           } else {
@@ -38,7 +37,7 @@ const ChangePinScreen = (): React.JSX.Element => {
         })
         .catch(Logger.error)
     },
-    [mnemonic, onPinCreated, back, canGoBack, useBiometrics]
+    [mnemonic, onPinCreated, back, canGoBack, useBiometrics, walletType]
   )
 
   // Configure keyboard listeners
