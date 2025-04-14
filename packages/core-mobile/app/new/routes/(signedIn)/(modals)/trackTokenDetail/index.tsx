@@ -43,6 +43,7 @@ import { ShareBarButton } from 'common/components/ShareBarButton'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { ScrollView } from 'react-native-gesture-handler'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -245,7 +246,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             }}
             numberOfLines={1}
             testID="account_address">
-            {tokenInfo.contractAddress}
+            {truncateAddress(tokenInfo.contractAddress, 8)}
           </Text>
         ),
         onPress: () =>
@@ -376,14 +377,16 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             </Animated.View>
           )}
         </View>
-        <SegmentedControl
-          type="thin"
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          style={styles.segmentedControl}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-        />
+        {tokenInfo?.has24hChartDataOnly === false && (
+          <SegmentedControl
+            type="thin"
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            style={styles.segmentedControl}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+          />
+        )}
         <View sx={styles.aboutContainer}>
           {tokenInfo?.description && (
             <TouchableOpacity onPress={handlePressAbout}>

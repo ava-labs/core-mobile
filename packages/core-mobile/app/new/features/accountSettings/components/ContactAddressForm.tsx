@@ -74,7 +74,6 @@ export const ContactAddressForm = ({
             Keyboard.dismiss()
           }}
           onBlur={() => {
-            setValue('')
             setIsEditing(false)
           }}
           submitBehavior="blurAndSubmit"

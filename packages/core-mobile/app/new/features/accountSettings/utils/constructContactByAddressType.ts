@@ -1,4 +1,5 @@
 import { Contact } from 'store/addressBook'
+import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
 import { AddressType } from '../consts'
 
 export const constructContactByAddressType = (
@@ -12,7 +13,7 @@ export const constructContactByAddressType = (
     case AddressType.XP: {
       return {
         ...contact,
-        addressXP: address
+        addressXP: xpAddressWithoutPrefix(address ?? '')
       }
     }
     case AddressType.BTC:

@@ -174,6 +174,15 @@ const StakeDurationScreen = (): JSX.Element => {
     }
   }, [navigate, stakeEndTime])
 
+  const handleAdvancedSetup = useCallback(() => {
+    navigate({
+      pathname: '/addStake/nodeParameters',
+      params: {
+        stakeEndTime
+      }
+    })
+  }, [navigate, stakeEndTime])
+
   const handleDateSelected = (date: Date): void => {
     setCustomEndDate(new UTCDate(date.getTime()))
   }
@@ -200,20 +209,24 @@ const StakeDurationScreen = (): JSX.Element => {
   )
 
   const renderSelectionTitle = useCallback(() => {
-    const text =
+    const value =
       selectedChartIndex !== undefined
-        ? `${estimatedRewardsChartData[selectedChartIndex]?.value ?? 0} AVAX`
-        : ''
+        ? estimatedRewardsChartData[selectedChartIndex]?.value
+        : undefined
+    const text = value !== undefined ? `${value} AVAX` : ''
     return <Text variant="heading6">{text}</Text>
   }, [selectedChartIndex, estimatedRewardsChartData])
 
   const renderSelectionSubtitle = useCallback(() => {
-    const text =
+    const value =
       selectedChartIndex !== undefined
+        ? estimatedRewardsChartData[selectedChartIndex]?.value
+        : undefined
+
+    const text =
+      value !== undefined
         ? formatCurrency({
-            amount:
-              (estimatedRewardsChartData[selectedChartIndex]?.value ?? 0) *
-              avaxPrice
+            amount: value * avaxPrice
           })
         : ''
 
@@ -331,7 +344,7 @@ const StakeDurationScreen = (): JSX.Element => {
         <Button type="primary" size="large" onPress={handlePressNext}>
           Next
         </Button>
-        <Button type="tertiary" size="large" onPress={handlePressNext}>
+        <Button type="tertiary" size="large" onPress={handleAdvancedSetup}>
           Advanced setup
         </Button>
       </View>

@@ -1,17 +1,18 @@
-import { SxProp } from 'dripsy'
 import React, { useRef, forwardRef, useImperativeHandle } from 'react'
 import {
   TextInputProps as _TextInputProps,
-  TextInput as _TextInput
+  TextInput as _TextInput,
+  TextStyle
 } from 'react-native'
-import { View, RNTextInput } from '../../components/Primitives'
+import { SxProp } from 'dripsy'
+import { View } from '../../components/Primitives'
 import { useTheme } from '../../hooks'
 
 interface TextInputProps extends _TextInputProps {
   rightIcon?: React.ReactNode
   leftIcon?: React.ReactNode
   containerSx?: SxProp
-  textInputSx?: SxProp
+  textInputSx?: TextStyle
 }
 
 export type TextInputRef = {
@@ -75,7 +76,7 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
           }}>
           {leftIcon}
           <View sx={{ flex: 1 }}>
-            <RNTextInput
+            <_TextInput
               textAlign={textAlign}
               ref={inputRef}
               onBlur={onBlur}
@@ -85,7 +86,7 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
               submitBehavior={submitBehavior}
               autoCorrect={autoCorrect}
               testID={testID}
-              sx={{
+              style={{
                 fontFamily: 'Inter-Regular',
                 height: 44,
                 fontSize: 16,
