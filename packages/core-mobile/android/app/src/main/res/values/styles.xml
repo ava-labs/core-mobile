@@ -10,6 +10,12 @@
         <item name="android:statusBarColor">#000000</item>
          <!--style for react-native-coummunity/datetimepicker -->
         <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
+        <item name="android:elevation">10dp</item>
+        <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
+    </style>
+
+    <style name="CustomBottomNavigationStyle" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:elevation">10dp</item>
     </style>
 
     <style name="MyDatePickerDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
