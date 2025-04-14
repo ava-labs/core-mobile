@@ -22,7 +22,8 @@ export const QrCodeScanner = ({
   onSuccess,
   vibrate = false,
   sx
-}: Props): React.JSX.Element | undefined => {
+}: // eslint-disable-next-line sonarjs/cognitive-complexity
+Props): React.JSX.Element | undefined => {
   const {
     theme: { colors }
   } = useTheme()
@@ -48,14 +49,16 @@ export const QrCodeScanner = ({
   }, [data, onSuccess, vibrate])
 
   const checkIosPermission = useCallback(async () => {
-    if (
-      Platform.OS === 'ios' &&
-      permission &&
-      !permission.granted &&
-      permission.canAskAgain
-    ) {
-      const permissionStatus = await requestPermission()
-      setIsPermissionGranted(permissionStatus.granted === true)
+    if (Platform.OS === 'ios' && permission) {
+      if (permission.canAskAgain === false) {
+        // if user disables permission from settings, can ask again will be false
+        // we need to ask user to open settings to enable permission
+        setIsPermissionGranted(false)
+      }
+      if (permission.granted === false && permission.canAskAgain) {
+        const permissionStatus = await requestPermission()
+        setIsPermissionGranted(permissionStatus.granted)
+      }
     }
   }, [permission, requestPermission])
 
