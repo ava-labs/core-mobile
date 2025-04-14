@@ -27,10 +27,11 @@ export default function CreatePin(): JSX.Element {
         isResetting: false,
         walletType: WalletType.MNEMONIC
       })
-        .then(() => {
+        .then(walletId => {
           if (useBiometrics) {
-            //NEVEN - fix this
-            BiometricsSDK.storeWalletWithBiometry(mnemonic)
+            BiometricsSDK.storeWalletWithBiometry(walletId, mnemonic).catch(
+              Logger.error
+            )
           }
           navigate({
             // @ts-ignore TODO: make routes typesafe
