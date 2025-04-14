@@ -45,7 +45,12 @@ const AddContactScreen = (): React.JSX.Element => {
           <ContactForm contact={contact} onUpdate={handleUpdateContact} />
         )}
       </ScrollView>
-      <View sx={{ gap: 16, backgroundColor: '$surfacePrimary' }}>
+      <View
+        sx={{
+          gap: 16,
+          backgroundColor: '$surfacePrimary',
+          marginBottom: bottom
+        }}>
         <Button
           type="primary"
           size="large"
@@ -56,8 +61,7 @@ const AddContactScreen = (): React.JSX.Element => {
         <Button
           type="tertiary"
           size="large"
-          onPress={() => canGoBack() && back()}
-          style={{ marginBottom: bottom }}>
+          onPress={() => canGoBack() && back()}>
           Cancel
         </Button>
       </View>

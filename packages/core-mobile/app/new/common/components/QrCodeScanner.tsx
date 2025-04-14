@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Icons, SxProp, useTheme, View, Text, Button } from '@avalabs/k2-alpine'
 import {
   BarcodeScanningResult,
   CameraView,
+  PermissionStatus,
   useCameraPermissions
 } from 'expo-camera'
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics'
 import { Platform, Linking } from 'react-native'
 import { check, PERMISSIONS, request } from 'react-native-permissions'
 import Logger from 'utils/Logger'
-import { useFocusEffect } from '@react-navigation/native'
 import { Loader } from './Loader'
 
 type Props = {
@@ -27,11 +27,8 @@ export const QrCodeScanner = ({
     theme: { colors }
   } = useTheme()
   const [permission, requestPermission] = useCameraPermissions()
+  const [isPermissionGranted, setIsPermissionGranted] = useState(false)
   const [data, setData] = useState<string>()
-
-  const shouldShowCamera = useMemo(() => {
-    return permission?.granted === true
-  }, [permission])
 
   const handleSuccess = (scanningResult: BarcodeScanningResult): void => {
     // expo-camera's onBarcodeScanned callback is not debounced, so we need to debounce it ourselves
@@ -48,36 +45,41 @@ export const QrCodeScanner = ({
     }
   }, [data, onSuccess, vibrate])
 
-  useFocusEffect(
-    useCallback(() => {
-      if (
-        Platform.OS === 'ios' &&
-        permission &&
-        !permission.granted &&
-        permission.canAskAgain
-      ) {
-        requestPermission()
-      }
-    }, [permission, requestPermission])
-  )
+  const checkIosPermission = useCallback(async () => {
+    if (
+      Platform.OS === 'ios' &&
+      permission &&
+      !permission.granted &&
+      permission.canAskAgain
+    ) {
+      const permissionStatus = await requestPermission()
+      setIsPermissionGranted(permissionStatus.granted === true)
+    }
+  }, [permission, requestPermission])
 
-  useFocusEffect(
-    useCallback(() => {
-      // on android, permission.canAskAgain returns false when user select "ask every time",
-      // so we separate the logic for android
-      if (Platform.OS === 'android') {
-        check(PERMISSIONS.ANDROID.CAMERA)
-          .then(result => {
-            if (result !== 'granted') {
-              request(PERMISSIONS.ANDROID.CAMERA)
-            }
-          })
-          .catch(Logger.error)
-      }
-    }, [])
-  )
+  useEffect(() => {
+    checkIosPermission()
+  }, [checkIosPermission])
 
-  return shouldShowCamera === false ? (
+  const checkAndroidPermission = useCallback(async () => {
+    // on android, permission.canAskAgain returns false when user select "ask every time",
+    // so we separate the logic for android
+    if (Platform.OS === 'android') {
+      const status = await check(PERMISSIONS.ANDROID.CAMERA).catch(Logger.error)
+      if (status !== PermissionStatus.GRANTED) {
+        const permissionStatus = await request(
+          PERMISSIONS.ANDROID.CAMERA
+        ).catch(Logger.error)
+        setIsPermissionGranted(permissionStatus === PermissionStatus.GRANTED)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    checkAndroidPermission()
+  }, [checkAndroidPermission])
+
+  return isPermissionGranted === false ? (
     <>
       <View sx={{ gap: 12, marginBottom: 8 }}>
         <View
@@ -136,6 +138,7 @@ export const QrCodeScanner = ({
       <CameraView
         style={{
           width: '100%',
+          height: '100%',
           aspectRatio: 1,
           justifyContent: 'center',
           alignItems: 'center'
