@@ -183,6 +183,7 @@ export type AnalyticsEvents = {
   BrowserSuggestedTapped: { url: string }
   BrowserBackTapped: undefined
   BrowserForwardTapped: undefined
+  BrowserRefreshTapped: undefined
   BrowserAddToFavoriteTapped: undefined
   BrowserTabsOpened: undefined
   BrowserNewTabTapped: undefined

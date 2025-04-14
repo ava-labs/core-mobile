@@ -66,7 +66,7 @@
     "@react-native-firebase/messaging": "21.6.2",
     "@react-native-google-signin/google-signin": "13.1.0",
     "@react-native-masked-view/masked-view": "0.3.2",
-    "@react-native-menu/menu": "1.2.0",
+    "@react-native-menu/menu": "1.2.2",
     "@react-navigation/bottom-tabs": "7.2.1",
     "@react-navigation/drawer": "7.1.2",
     "@react-navigation/elements": "2.2.6",
@@ -154,6 +154,8 @@
     "react-native-get-random-values": "1.11.0",
     "react-native-graph": "1.1.0",
     "react-native-inappbrowser-reborn": "3.7.0",
+    "react-native-ios-context-menu": "3.1.0",
+    "react-native-ios-utilities": "5.1.2",
     "react-native-keychain": "8.1.1",
     "react-native-level-fs": "3.0.1",
     "react-native-localize": "3.2.1",
@@ -202,6 +204,7 @@
     "vm-browserify": "1.1.2",
     "web3": "4.16.0",
     "xss": "1.0.15",
+    "zeego": "3.0.6",
     "zod": "3.23.8"
   },
   "devDependencies": {

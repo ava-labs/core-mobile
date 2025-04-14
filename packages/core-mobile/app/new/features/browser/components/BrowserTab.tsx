@@ -1,5 +1,4 @@
 import { useTheme, View } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import {
@@ -37,7 +36,6 @@ import {
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
-import { BROWSER_CONTROLS_HEIGHT } from '../consts'
 import { isSugguestedSiteName } from '../utils'
 import { WebView } from './Webview'
 
@@ -53,7 +51,6 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const dispatch = useDispatch()
     const { theme } = useTheme()
     const insets = useSafeAreaInsets()
-    const tabBarHeight = useBottomTabBarHeight()
 
     const { onProgress, progress, setUrlEntry } = useBrowserContext()
     const { setPendingDeepLink } = useDeeplink()
@@ -276,7 +273,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             backgroundColor
           }}
           contentInset={{
-            bottom: BROWSER_CONTROLS_HEIGHT + tabBarHeight
+            bottom: 0
           }}
           onLoadProgress={onProgress}
           onError={onError}

@@ -9,10 +9,6 @@ import {
 
 const LIMIT = 40
 
-const INITIAL_DATA: ParsedGraphQLResponse<ContentfulFeaturedProject> = {
-  items: []
-}
-
 export type ContentfulFeaturedProject = {
   name: string
   description?: string
@@ -28,8 +24,7 @@ export function useFeaturedProjects(): UseQueryResult<
 > {
   return useQuery({
     queryKey: [ReactQueryKeys.FEATURED_PROJECTS],
-    queryFn: fetchFeaturedProjects,
-    initialData: INITIAL_DATA
+    queryFn: fetchFeaturedProjects
   })
 }
 
