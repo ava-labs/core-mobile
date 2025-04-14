@@ -27,7 +27,9 @@ export const QrCodeScanner = ({
     theme: { colors }
   } = useTheme()
   const [permission, requestPermission] = useCameraPermissions()
-  const [isPermissionGranted, setIsPermissionGranted] = useState(false)
+  const [isPermissionGranted, setIsPermissionGranted] = useState(
+    permission?.granted
+  )
   const [data, setData] = useState<string>()
 
   const handleSuccess = (scanningResult: BarcodeScanningResult): void => {
