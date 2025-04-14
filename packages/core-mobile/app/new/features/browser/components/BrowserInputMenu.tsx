@@ -1,6 +1,7 @@
 import { Icons, useTheme } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
+import { DropdownMenuIcon } from 'common/components/DropdownMenuIcons'
 import { showSnackbar } from 'common/utils/toast'
 import React, { useCallback, useMemo } from 'react'
 import { Platform, Share as ShareApi, View } from 'react-native'
@@ -15,30 +16,6 @@ import {
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
 import { isValidUrl } from '../utils'
-
-import BackImage from '../../../assets/icons/menu/arrow_back_ios.png'
-import ForwardImage from '../../../assets/icons/menu/arrow_forward_ios.png'
-import RefreshImage from '../../../assets/icons/menu/refresh.png'
-import ShareImage from '../../../assets/icons/menu/ios_share.png'
-import FavoriteOnImage from '../../../assets/icons/menu/favorite_off.png'
-import FavoriteOffImage from '../../../assets/icons/menu/favorite_on.png'
-import HistoryImage from '../../../assets/icons/menu/history.png'
-import AddImage from '../../../assets/icons/menu/add.png'
-import BackImageDisabled from '../../../assets/icons/menu/arrow_back_ios_disabled.png'
-import ForwardImageDisabled from '../../../assets/icons/menu/arrow_forward_ios_disabled.png'
-import RefreshImageDisabled from '../../../assets/icons/menu/refresh_disabled.png'
-
-import BackImageLight from '../../../assets/icons/menu/arrow_back_ios_light.png'
-import ForwardImageLight from '../../../assets/icons/menu/arrow_forward_ios_light.png'
-import RefreshImageLight from '../../../assets/icons/menu/refresh_light.png'
-import ShareImageLight from '../../../assets/icons/menu/ios_share_light.png'
-import FavoriteOnImageLight from '../../../assets/icons/menu/favorite_on_light.png'
-import FavoriteOffImageLight from '../../../assets/icons/menu/favorite_off_light.png'
-import HistoryImageLight from '../../../assets/icons/menu/history_light.png'
-import AddImageLight from '../../../assets/icons/menu/add_light.png'
-import BackImageDisabledLight from '../../../assets/icons/menu/arrow_back_ios_light_disabled.png'
-import ForwardImageDisabledLight from '../../../assets/icons/menu/arrow_forward_ios_light_disabled.png'
-import RefreshImageDisabledLight from '../../../assets/icons/menu/refresh_light_disabled.png'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -75,96 +52,49 @@ export const BrowserInputMenu = ({
       {
         id: NavigationId.Back,
         title: 'Back',
-        icon: {
-          android: 'arrow_back_24px'
-        },
-        image: theme.isDark
-          ? isBackDisabled
-            ? BackImageDisabledLight
-            : BackImageLight
-          : isBackDisabled
-          ? BackImageDisabled
-          : BackImage,
-        disabled: isBackDisabled
+        disabled: isBackDisabled,
+        icon: DropdownMenuIcon.ArrowBack
       },
       {
         id: NavigationId.Forward,
         title: 'Forward',
-        icon: {
-          android: 'arrow_forward_24px'
-        },
-        image: theme.isDark
-          ? isForwardDisabled
-            ? ForwardImageDisabledLight
-            : ForwardImageLight
-          : isForwardDisabled
-          ? ForwardImageDisabled
-          : ForwardImage,
-        disabled: isForwardDisabled
+        disabled: isForwardDisabled,
+        icon: DropdownMenuIcon.ArrowForward
       },
       {
         id: NavigationId.Refresh,
         title: 'Refresh',
-        icon: {
-          android: 'refresh_24px'
-        },
-        image: theme.isDark
-          ? isRefreshDisabled
-            ? RefreshImageDisabledLight
-            : RefreshImageLight
-          : isRefreshDisabled
-          ? RefreshImageDisabled
-          : RefreshImage,
-        disabled: isRefreshDisabled
+        disabled: isRefreshDisabled,
+        icon: DropdownMenuIcon.Refresh
       }
     ]
-  }, [
-    activeTab?.activeHistoryIndex,
-    activeTab?.historyIds?.length,
-    theme.isDark
-  ])
+  }, [activeTab?.activeHistoryIndex, activeTab?.historyIds?.length])
 
   const menuActions: DropdownItem[] = useMemo(() => {
     const historyAction = {
       id: MenuId.History,
       title: 'Browsing history',
-      icon: {
-        android: 'history_24px'
-      },
-      image: theme.isDark ? HistoryImageLight : HistoryImage
+      icon: DropdownMenuIcon.History
     }
 
     const favoriteAction = {
       id: MenuId.Favorite,
       title: isFavorited ? 'Remove from favorites' : 'Mark as favorite',
-      icon: {
-        android: isFavorited ? 'star_fill_24px' : 'star_24px'
-      },
-      image: isFavorited
-        ? theme.isDark
-          ? FavoriteOnImageLight
-          : FavoriteOnImage
-        : theme.isDark
-        ? FavoriteOffImageLight
-        : FavoriteOffImage
+      icon: isFavorited
+        ? DropdownMenuIcon.FavoriteOn
+        : DropdownMenuIcon.FavoriteOff
     }
 
     const shareAction = {
       id: MenuId.Share,
       title: 'Share',
-      icon: {
-        android: 'share_24px'
-      },
-      image: theme.isDark ? ShareImageLight : ShareImage
+      icon: DropdownMenuIcon.Share
     }
 
     const newTabAction = {
       id: MenuId.NewTab,
       title: 'Open new tab',
-      icon: {
-        android: 'plus_24px'
-      },
-      image: theme.isDark ? AddImageLight : AddImage
+      icon: DropdownMenuIcon.Add
     }
 
     if (activeHistory) {
@@ -172,7 +102,7 @@ export const BrowserInputMenu = ({
     } else {
       return [historyAction, newTabAction]
     }
-  }, [activeHistory, isFavorited, theme.isDark])
+  }, [activeHistory, isFavorited])
 
   const onShare = useCallback(async (): Promise<void> => {
     const linkToShare = activeHistory?.url

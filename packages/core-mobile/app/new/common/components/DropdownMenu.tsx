@@ -1,6 +1,6 @@
-import { Text, useTheme } from '@avalabs/k2-alpine'
+import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import React, { CSSProperties, useCallback } from 'react'
-import { ImageURISource, Platform, Pressable } from 'react-native'
+import { Platform, Pressable } from 'react-native'
 import {
   CheckboxItem,
   Content,
@@ -12,20 +12,18 @@ import {
   ItemIndicator,
   ItemTitle,
   Root,
+  Separator,
   Trigger
 } from 'zeego/dropdown-menu'
+import { DropdownMenuIcon, getPlatformIcons } from './DropdownMenuIcons'
 
 export interface DropdownItem {
   id: string
   title: string
   selected?: boolean
-  icon?: {
-    ios?: string
-    android?: string
-  }
+  icon?: DropdownMenuIcon
   disabled?: boolean
   destructive?: boolean
-  image?: number | ImageURISource
 }
 
 export interface DropdownGroup
@@ -48,8 +46,14 @@ export function DropdownMenu({
   ...props
 }: DropdownMenuProps): React.ReactNode {
   const { theme } = useTheme()
+
   const renderItem = useCallback(
-    ({ title, id, icon, selected, image, disabled, ...rest }: DropdownItem) => {
+    ({ title, id, icon, selected, ...rest }: DropdownItem) => {
+      const platformIcon = getPlatformIcons(icon, theme?.isDark, {
+        disabled: rest.disabled,
+        destructive: rest.destructive
+      })
+
       if (selected) {
         return (
           <DropdownMenuCheckboxItem
@@ -66,7 +70,6 @@ export function DropdownMenu({
       return (
         <DropdownMenuItem
           {...rest}
-          disabled={disabled}
           key={id}
           onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
           <DropdownMenuItemTitle
@@ -78,59 +81,50 @@ export function DropdownMenu({
             {title}
           </DropdownMenuItemTitle>
 
-          {Platform.OS === 'android' ? (
-            <DropdownMenuItemIcon androidIconName={icon?.android} />
-          ) : image ? (
-            <DropdownMenuImage source={image} />
-          ) : icon?.ios || icon?.android ? (
-            <DropdownMenuItemIcon
-              androidIconName={icon?.android}
-              ios={
-                icon?.ios
-                  ? {
-                      name: icon?.ios as any,
-                      paletteColors: [
-                        {
-                          dark: rest.destructive
-                            ? theme.colors?.$textDanger
-                            : theme.colors?.$textPrimary,
-                          light: rest.destructive
-                            ? theme.colors?.$textDanger
-                            : theme.colors?.$textPrimary
-                        }
-                      ]
-                    }
-                  : undefined
-              }
-            />
-          ) : null}
+          {/* 
+            Android uses drawable resources for icons (SVGs saved as .xml files)
+            iOS uses PNGs for disabled/light/dark on each icon (saved in assets/icons/menu/)
+          */}
+          {Platform.select({
+            ios: platformIcon?.ios ? (
+              <DropdownMenuImage source={platformIcon.ios} />
+            ) : null,
+            android: platformIcon?.android ? (
+              <DropdownMenuItemIcon androidIconName={platformIcon.android} />
+            ) : null
+          })}
         </DropdownMenuItem>
       )
     },
-    [onPressAction, theme.colors?.$textDanger, theme.colors?.$textPrimary]
+    [
+      onPressAction,
+      theme.colors?.$textDanger,
+      theme.colors?.$textPrimary,
+      theme?.isDark
+    ]
   )
-
-  const renderContent = useCallback(() => {
-    return groups?.map(group => (
-      <DropdownMenuGroup {...group} key={group.id}>
-        {group.items.map(renderItem)}
-      </DropdownMenuGroup>
-    ))
-  }, [renderItem, groups])
 
   return (
     <Root {...props}>
-      <Content>{renderContent()}</Content>
       <DropdownMenuTrigger style={style}>
         {children ?? <Text>Dropdown</Text>}
       </DropdownMenuTrigger>
+
+      <Content key="dropdown-content">
+        {groups?.map(group => (
+          <DropdownMenuGroup {...group} key={group.id}>
+            {group.items.map(renderItem)}
+            <DropdownMenuSeparator />
+          </DropdownMenuGroup>
+        ))}
+      </Content>
     </Root>
   )
 }
 
 const DropdownMenuTrigger = create(
   (props: React.ComponentProps<typeof Trigger>) => (
-    <Trigger {...props} asChild>
+    <Trigger {...props}>
       <Pressable>{props.children}</Pressable>
     </Trigger>
   ),
@@ -153,6 +147,19 @@ const DropdownMenuItemIcon = create(
 const DropdownMenuGroup = create(
   (props: React.ComponentProps<typeof Group>) => <Group {...props} />,
   'Group'
+)
+
+const DropdownMenuSeparator = create(
+  (props: React.ComponentProps<typeof Separator>) => (
+    <Separator
+      style={{
+        backgroundColor: 'red',
+        height: 10
+      }}
+      {...props}
+    />
+  ),
+  'Separator'
 )
 
 const DropdownMenuCheckboxItem = create(

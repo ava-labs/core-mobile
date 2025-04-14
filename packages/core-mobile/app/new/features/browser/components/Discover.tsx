@@ -12,7 +12,6 @@ import { DiscoverFeaturedProjects } from './DiscoverFeaturedProjects'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
 
   return (
@@ -23,8 +22,7 @@ export const Discover = (): JSX.Element => {
       }}
       stickyHeaderIndices={[0]}
       contentContainerStyle={{
-        paddingTop: insets.top + 62,
-        paddingBottom: BROWSER_CONTROLS_HEIGHT + tabBarHeight
+        paddingTop: insets.top + 62
       }}>
       <Animated.View
         pointerEvents="none"

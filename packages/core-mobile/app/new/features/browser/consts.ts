@@ -1,2 +1,2 @@
 export const HORIZONTAL_MARGIN = 16
-export const BROWSER_CONTROLS_HEIGHT = 72
+export const BROWSER_CONTROLS_HEIGHT = 64

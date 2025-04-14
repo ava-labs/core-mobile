@@ -276,7 +276,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             backgroundColor
           }}
           contentInset={{
-            bottom: BROWSER_CONTROLS_HEIGHT + tabBarHeight
+            bottom: 0
           }}
           onLoadProgress={onProgress}
           onError={onError}

@@ -1,4 +1,5 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
@@ -7,6 +8,7 @@ import {
   BrowserTabRef
 } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
+import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -17,6 +19,8 @@ const Browser = (): React.ReactNode => {
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
+
+  const tabBarHeight = useBottomTabBarHeight()
 
   const tabs = useMemo(() => {
     if (!activeTab) return allTabs.slice(0, 5)
@@ -56,8 +60,7 @@ const Browser = (): React.ReactNode => {
 
   const discoverStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(showEmptyTab ? 1 : 0, ANIMATED.TIMING_CONFIG),
-      pointerEvents: showEmptyTab ? 'auto' : 'none'
+      opacity: withTiming(showEmptyTab ? 1 : 0, ANIMATED.TIMING_CONFIG)
     }
   })
 
@@ -69,36 +72,43 @@ const Browser = (): React.ReactNode => {
 
   return (
     <BrowserSnapshot>
-      <Animated.View
-        style={[
-          discoverStyle,
-          {
-            height: '100%',
-            zIndex: showEmptyTab ? 1 : -1,
-            pointerEvents: showEmptyTab ? 'auto' : 'none'
-          }
-        ]}>
-        <Discover />
-      </Animated.View>
+      <View
+        style={{
+          marginBottom: tabBarHeight,
+          flex: 1
+        }}>
+        <Animated.View
+          style={[
+            discoverStyle,
+            {
+              flex: 1,
+              zIndex: showEmptyTab ? 1 : -1,
+              pointerEvents: showEmptyTab ? 'auto' : 'none',
+              overflow: 'hidden'
+            }
+          ]}>
+          <Discover />
+        </Animated.View>
 
-      <Animated.View
-        style={[
-          tabsStyle,
-          {
-            flex: 1,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: showEmptyTab ? -1 : 1,
-            pointerEvents: showEmptyTab ? 'none' : 'auto'
-          }
-        ]}>
-        {renderTabs()}
-      </Animated.View>
+        <Animated.View
+          style={[
+            tabsStyle,
+            {
+              flex: 1,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: BROWSER_CONTROLS_HEIGHT,
+              zIndex: showEmptyTab ? -1 : 1,
+              pointerEvents: showEmptyTab ? 'none' : 'auto'
+            }
+          ]}>
+          {renderTabs()}
+        </Animated.View>
 
-      <BrowserControls />
+        <BrowserControls />
+      </View>
     </BrowserSnapshot>
   )
 }

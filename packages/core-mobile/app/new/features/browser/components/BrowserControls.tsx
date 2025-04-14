@@ -103,23 +103,20 @@ export const BrowserControls = (): ReactNode => {
     }
   })
 
-  const inputContentStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(isFocused ? 0 : 1, ANIMATED.TIMING_CONFIG)
-    }
-  })
-
   const inputKeyboardPositioning = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: withTiming(keyboardHeight > 0 ? 0 : -tabBarHeight + 1, {
-            ...ANIMATED.TIMING_CONFIG,
-            duration: 10
-          })
-        }
-      ]
+    if (Platform.OS === 'android') {
+      return {
+        transform: [
+          {
+            translateY: withTiming(keyboardHeight > 0 ? tabBarHeight : 0, {
+              ...ANIMATED.TIMING_CONFIG,
+              duration: 10
+            })
+          }
+        ]
+      }
     }
+    return {}
   })
 
   const gestureControlStyle = useAnimatedStyle(() => {
@@ -140,10 +137,6 @@ export const BrowserControls = (): ReactNode => {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
           zIndex: 11
         }}>
         <Animated.View
@@ -159,27 +152,10 @@ export const BrowserControls = (): ReactNode => {
               }
             ]
           ]}>
-          <Animated.View
-            style={[
-              inputContentStyle,
-              {
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0
-              }
-            ]}>
-            <BlurViewWithFallback
-              style={{
-                flex: 1
-              }}
-            />
-          </Animated.View>
-
           <View
             style={{
-              padding: HORIZONTAL_MARGIN
+              padding: HORIZONTAL_MARGIN,
+              paddingVertical: 12
             }}>
             <BrowserInput isFocused={isFocused} setIsFocused={setIsFocused} />
           </View>
@@ -226,7 +202,8 @@ export const BrowserControls = (): ReactNode => {
               gestureControlStyle,
               {
                 flex: 1,
-                marginBottom: 30
+                marginBottom:
+                  keyboardHeight > 0 ? (Platform.OS === 'ios' ? 24 : 48) : 0
               }
             ]}>
             {urlEntry.length ? (

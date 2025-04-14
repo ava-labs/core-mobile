@@ -13,10 +13,11 @@ import { useNavigation } from '@react-navigation/native'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
+import { DropdownMenuIcon } from 'common/components/DropdownMenuIcons'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { TabItem } from 'features/browser/components/TabItem'
 import { HORIZONTAL_MARGIN } from 'features/browser/consts'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
@@ -42,6 +43,20 @@ enum MenuId {
   ViewHistory = 'View History'
 }
 
+const MENU_ACTIONS: DropdownItem[] = [
+  {
+    id: MenuId.CloseAll,
+    title: 'Close all tabs',
+    icon: DropdownMenuIcon.Close,
+    destructive: true
+  },
+  {
+    id: MenuId.ViewHistory,
+    title: 'Browsing history',
+    icon: DropdownMenuIcon.History
+  }
+]
+
 const DEFAULT_HEADER_HEIGHT = Platform.select({
   ios: 44,
   android: 56,
@@ -49,25 +64,6 @@ const DEFAULT_HEADER_HEIGHT = Platform.select({
 })
 const NUMBER_OF_COLUMNS = 2
 const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
-const MENU_ACTIONS: DropdownItem[] = [
-  {
-    id: MenuId.CloseAll,
-    title: 'Close all tabs',
-    icon: {
-      ios: 'xmark',
-      android: 'xmark_24px'
-    },
-    destructive: true
-  },
-  {
-    id: MenuId.ViewHistory,
-    title: 'Browsing history',
-    icon: {
-      ios: 'clock.arrow.circlepath',
-      android: 'history_24px'
-    }
-  }
-]
 
 const TabsScreen = (): JSX.Element => {
   const navigation = useNavigation()
@@ -193,9 +189,7 @@ const TabsScreen = (): JSX.Element => {
           }}
           onPressAction={onPressAction}
           groups={[{ id: 'menu-actions', items: MENU_ACTIONS }]}>
-          <View>
-            <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
-          </View>
+          <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
         </DropdownMenu>
       </View>
     )
