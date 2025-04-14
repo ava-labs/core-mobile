@@ -44,17 +44,20 @@ export default function CreatePin(): JSX.Element {
        * this allows our pin/biometric logic to work normally
        */
 
-      // TODO: use a random string instead of a constant
+      const dummyMnemonic = uuid()
+
       onPinCreated({
-        mnemonic: uuid(),
+        mnemonic: dummyMnemonic,
         pin,
         isResetting: false,
-        walletType: WalletType.SEEDLESS
+        walletType
       })
-        .then(() => {
+        .then(walletId => {
           if (useBiometrics) {
-            //NEVEN - fix this
-            BiometricsSDK.storeWalletWithBiometry(SEEDLESS_MNEMONIC_STUB)
+            BiometricsSDK.storeWalletWithBiometry(
+              walletId,
+              dummyMnemonic
+            ).catch(Logger.error)
           }
           if (hasWalletName) {
             navigate('./selectAvatar')
@@ -64,7 +67,7 @@ export default function CreatePin(): JSX.Element {
         })
         .catch(Logger.error)
     },
-    [hasWalletName, navigate, onPinCreated, useBiometrics]
+    [hasWalletName, navigate, onPinCreated, useBiometrics, walletType]
   )
 
   return (

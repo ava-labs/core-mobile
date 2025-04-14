@@ -246,7 +246,7 @@ const CreatePinScreen = memo(() => {
           isResetting: true,
           walletType: WalletType.MNEMONIC
         })
-          .then(() => {
+          .then(_walletId => {
             AnalyticsService.capture('ChangePasswordSucceeded')
             nav.goBack()
           })
