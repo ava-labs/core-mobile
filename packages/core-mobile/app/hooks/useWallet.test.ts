@@ -75,11 +75,10 @@ describe('useWallet', () => {
   })
 
   describe('onPinCreated', () => {
-    it('should create wallet with PIN and return useBiometry when biometry is available', async () => {
+    it('should create wallet with PIN and return the walletId', async () => {
       jest
         .spyOn(BiometricsSDK, 'storeWalletWithPin')
         .mockResolvedValue(keychainResult)
-      jest.spyOn(BiometricsSDK, 'canUseBiometry').mockResolvedValue(true)
 
       const { result } = renderHook(() => useWallet(), { wrapper })
 
@@ -98,33 +97,7 @@ describe('useWallet', () => {
         expect.any(String),
         false
       )
-      expect(response).toBe('useBiometry')
-    })
-
-    it('should create wallet with PIN and return enterWallet when biometry is not available', async () => {
-      jest
-        .spyOn(BiometricsSDK, 'storeWalletWithPin')
-        .mockResolvedValue(keychainResult)
-      jest.spyOn(BiometricsSDK, 'canUseBiometry').mockResolvedValue(false)
-
-      const { result } = renderHook(() => useWallet(), { wrapper })
-
-      let response
-      await act(async () => {
-        response = await result.current.onPinCreated({
-          mnemonic: mockMnemonic,
-          pin: mockPin,
-          isResetting: false,
-          walletType: WalletType.MNEMONIC
-        })
-      })
-
-      expect(BiometricsSDK.storeWalletWithPin).toHaveBeenCalledWith(
-        mockWalletId,
-        expect.any(String),
-        false
-      )
-      expect(response).toBe('enterWallet')
+      expect(response).toBe(mockWalletId)
     })
 
     it('should throw error when storing wallet fails', async () => {

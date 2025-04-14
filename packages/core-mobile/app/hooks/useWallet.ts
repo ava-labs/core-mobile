@@ -1,5 +1,4 @@
 import { encrypt } from 'utils/EncryptionHelper'
-import BiometricsSDK from 'utils/BiometricsSDK'
 import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -32,9 +31,7 @@ interface OnPinCreatedParams {
 }
 
 export interface UseWallet {
-  onPinCreated: (
-    params: OnPinCreatedParams
-  ) => Promise<'useBiometry' | 'enterWallet'>
+  onPinCreated: (params: OnPinCreatedParams) => Promise<string>
   unlock: ({ mnemonic }: { mnemonic: string }) => Promise<void>
   login: (mnemonic: string, walletType: WalletType) => Promise<void>
   destroyWallet: () => void
@@ -120,7 +117,7 @@ export function useWallet(): UseWallet {
    * @param pin - The PIN to encrypt the mnemonic with
    * @param isResetting - Whether this is resetting an existing wallet
    * @param walletType - The type of wallet being created (defaults to MNEMONIC)
-   * @returns Promise resolving to 'useBiometry' if biometry available, 'enterWallet' otherwise
+   * @returns Promise resolving to the created walletId
    * @throws Error if storing the wallet fails
    */
   async function onPinCreated({
@@ -128,7 +125,7 @@ export function useWallet(): UseWallet {
     pin,
     isResetting = false,
     walletType = WalletType.MNEMONIC
-  }: OnPinCreatedParams): Promise<'useBiometry' | 'enterWallet'> {
+  }: OnPinCreatedParams): Promise<string> {
     const walletId = uuid()
     const walletSecret = await encrypt(mnemonic, pin)
 
@@ -144,15 +141,7 @@ export function useWallet(): UseWallet {
       // @ts-ignore
       await dispatchStoreWalletWithPin.unwrap()
 
-      const canUseBiometry = isResetting
-        ? false
-        : await BiometricsSDK.canUseBiometry()
-
-      if (canUseBiometry) {
-        return Promise.resolve('useBiometry')
-      } else {
-        return Promise.resolve('enterWallet')
-      }
+      return Promise.resolve(walletId)
     } catch (error) {
       throw Error('Failed to store wallet with PIN')
     }
