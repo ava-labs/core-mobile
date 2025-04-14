@@ -1,6 +1,8 @@
 import { useTheme, View } from '@avalabs/k2-alpine'
+import { ErrorState } from 'common/components/ErrorState'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import { Image } from 'expo-image'
 import {
   GetDescriptionAndFavicon,
   GetPageStyles,
@@ -21,6 +23,10 @@ import RNWebView, {
   WebViewMessageEvent,
   WebViewNavigationEvent
 } from 'react-native-webview'
+import {
+  WebViewError,
+  WebViewErrorEvent
+} from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
@@ -29,14 +35,15 @@ import {
   addHistoryForActiveTab,
   goBackward,
   goForward as goForwardInPage,
+  selectActiveTab,
   selectCanGoBack,
   selectCanGoForward,
-  selectTab,
   updateActiveHistoryForTab
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
+import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
-import { isSugguestedSiteName } from '../utils'
+import { isSuggestedSiteName } from '../utils'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {
@@ -44,6 +51,10 @@ export interface BrowserTabRef {
   reload: () => void
   goBack: () => void
   goForward: () => void
+  getPageData: () => {
+    favicon: string | undefined
+    description: string
+  }
 }
 
 export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
@@ -64,7 +75,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       injectGetPageStyles
     } = useInjectedJavascript()
 
-    const activeTab = useSelector(selectTab(tabId))
+    const activeTab = useSelector(selectActiveTab)
     const activeHistory = activeTab?.activeHistory
     const activeHistoryUrl = activeHistory?.url ?? ''
     const disabled = activeTab?.id !== tabId
@@ -75,6 +86,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const [pageStyles, setPageStyles] = useState<GetPageStyles | undefined>(
       undefined
     )
+    const [error, setError] = useState<WebViewError | undefined>(undefined)
 
     const webViewRef = useRef<RNWebView>(null)
     const backgroundColor =
@@ -121,18 +133,32 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       },
       reload,
       goBack,
-      goForward
+      goForward,
+      getPageData
     }))
+
+    const getPageData = (): {
+      favicon: string | undefined
+      description: string
+    } => {
+      return {
+        favicon,
+        description
+      }
+    }
 
     const parseDescriptionAndFavicon = useCallback(
       (wrapper: InjectedJsMessageWrapper, _: WebViewMessageEvent) => {
         const { favicon: favi, description: desc } = JSON.parse(
           wrapper.payload
         ) as GetDescriptionAndFavicon
+
         if (favi || desc) {
           // if the favicon is already set to static favicon from suggested list, don't update it
-          const icon = isSugguestedSiteName(activeHistory?.favicon)
+          const icon = isSuggestedSiteName(activeHistory?.favicon)
             ? activeHistory?.favicon
+            : favi === 'null'
+            ? undefined
             : favi
           setFavicon(icon)
           setDescription(desc)
@@ -226,6 +252,11 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         event.nativeEvent.loading
       )
         return
+
+      if (error) {
+        setError(undefined)
+      }
+
       const includeDescriptionAndFavicon =
         description !== '' && favicon !== undefined
       const history: AddHistoryPayload = includeDescriptionAndFavicon
@@ -240,8 +271,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       setUrlEntry(event.nativeEvent.url)
     }
 
-    const onError = (): void => {
+    const onError = (event: WebViewErrorEvent): void => {
       progress.value = 0
+      setError(event.nativeEvent)
     }
 
     return (
@@ -252,33 +284,51 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             backgroundColor
           }
         ]}>
-        <WebView
-          key={tabId}
-          testID="myWebview"
-          webViewRef={webViewRef}
-          injectedJavaScript={
-            injectGetDescriptionAndFavicon +
-            injectGetPageStyles +
-            injectCoreAsRecent +
-            coreConnectInterceptor +
-            injectCustomWindowOpen +
-            injectCustomPrompt
-          }
-          url={urlToLoad}
-          onLoad={onLoad}
-          onMessage={onMessageHandler}
-          onShouldStartLoadWithRequest={() => !disabled}
-          style={{
-            paddingTop: insets.top,
-            backgroundColor
-          }}
-          contentInset={{
-            bottom: 0
-          }}
-          onLoadProgress={onProgress}
-          onError={onError}
-          allowsBackForwardNavigationGestures
-        />
+        {error ? (
+          <ErrorState
+            sx={{ flex: 1, paddingTop: insets.top }}
+            icon={
+              <Image source={ErrorIcon} style={{ width: 42, height: 42 }} />
+            }
+            title={'Failed to load'}
+            description={'Please hit refresh or try again later'}
+            button={{
+              title: 'Refresh',
+              onPress: () => {
+                setError(undefined)
+                reload()
+              }
+            }}
+          />
+        ) : (
+          <WebView
+            key={tabId}
+            testID="myWebview"
+            webViewRef={webViewRef}
+            injectedJavaScript={
+              injectGetDescriptionAndFavicon +
+              injectGetPageStyles +
+              injectCoreAsRecent +
+              coreConnectInterceptor +
+              injectCustomWindowOpen +
+              injectCustomPrompt
+            }
+            url={urlToLoad}
+            onLoad={onLoad}
+            onMessage={onMessageHandler}
+            onShouldStartLoadWithRequest={() => !disabled}
+            style={{
+              paddingTop: insets.top,
+              backgroundColor
+            }}
+            contentInset={{
+              bottom: 0
+            }}
+            onLoadProgress={onProgress}
+            onError={onError}
+            allowsBackForwardNavigationGestures
+          />
+        )}
       </View>
     )
   }
