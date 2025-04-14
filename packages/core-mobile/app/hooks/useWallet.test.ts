@@ -79,7 +79,6 @@ describe('useWallet', () => {
       jest
         .spyOn(BiometricsSDK, 'storeWalletWithPin')
         .mockResolvedValue(keychainResult)
-      jest.spyOn(BiometricsSDK, 'canUseBiometry').mockResolvedValue(true)
 
       const { result } = renderHook(() => useWallet(), { wrapper })
 
