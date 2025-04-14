@@ -3,7 +3,7 @@ import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
-import { SUGGESTED_ITEMS, SuggestedSiteName } from 'store/browser/const'
+import { SUGGESTED_ITEMS } from 'store/browser/const'
 import { selectAllFavorites } from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
 import {

@@ -58,6 +58,7 @@ export interface BrowserTabRef {
 }
 
 export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   ({ tabId }, ref): JSX.Element => {
     const dispatch = useDispatch()
     const { theme } = useTheme()
@@ -75,25 +76,33 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       injectGetPageStyles
     } = useInjectedJavascript()
 
+    const injectedJavascript =
+      injectGetDescriptionAndFavicon +
+      injectGetPageStyles +
+      injectCoreAsRecent +
+      coreConnectInterceptor +
+      injectCustomWindowOpen +
+      injectCustomPrompt
+
+    const canGoBack = useSelector(selectCanGoBack)
+    const canGoForward = useSelector(selectCanGoForward)
     const activeTab = useSelector(selectActiveTab)
     const activeHistory = activeTab?.activeHistory
     const activeHistoryUrl = activeHistory?.url ?? ''
     const disabled = activeTab?.id !== tabId
 
     const [urlToLoad, setUrlToLoad] = useState(activeHistoryUrl)
+    const [error, setError] = useState<WebViewError | undefined>(undefined)
+
     const [favicon, setFavicon] = useState<string | undefined>(undefined)
     const [description, setDescription] = useState('')
     const [pageStyles, setPageStyles] = useState<GetPageStyles | undefined>(
       undefined
     )
-    const [error, setError] = useState<WebViewError | undefined>(undefined)
 
     const webViewRef = useRef<RNWebView>(null)
     const backgroundColor =
       pageStyles?.backgroundColor || theme.colors.$surfacePrimary
-
-    const canGoBack = useSelector(selectCanGoBack)
-    const canGoForward = useSelector(selectCanGoForward)
 
     useEffect(() => {
       if (activeHistory?.url && activeHistory.url !== urlToLoad) {
@@ -305,14 +314,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             key={tabId}
             testID="myWebview"
             webViewRef={webViewRef}
-            injectedJavaScript={
-              injectGetDescriptionAndFavicon +
-              injectGetPageStyles +
-              injectCoreAsRecent +
-              coreConnectInterceptor +
-              injectCustomWindowOpen +
-              injectCustomPrompt
-            }
+            injectedJavaScript={injectedJavascript}
             url={urlToLoad}
             onLoad={onLoad}
             onMessage={onMessageHandler}
