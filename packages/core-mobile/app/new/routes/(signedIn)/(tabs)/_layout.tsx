@@ -12,7 +12,7 @@ export default function TabLayout(): JSX.Element {
       labeled
       translucent
       disablePageAnimations
-      activeIndicatorColor={'transparent'} // disable material's active indicator on Android
+      //activeIndicatorColor={'transparent'} // disable material's active indicator on Android
       tabBarActiveTintColor={isDark ? colors.$white : colors.$black}
       tabBarInactiveTintColor={
         isDark ? alpha(colors.$white, 0.6) : alpha('#1E1E24', 0.6)
