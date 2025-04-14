@@ -51,51 +51,10 @@ export default function TabLayout(): JSX.Element {
       <BottomTabs.Screen
         name="browser"
         options={{
+          title: 'Browser',
           tabBarIcon: () => require('../../../assets/icons/tabs/compass.png')
         }}
       />
     </BottomTabs>
   )
-  // return (
-  //   <BottomTabs
-  //     screenOptions={{
-  //       headerShown: false,
-  //       tabBarBackground,
-  //       tabBarLabelStyle: {
-  //         fontFamily: 'Inter-SemiBold'
-  //       },
-  //       tabBarStyle: {
-  //         position: 'absolute'
-  //       }
-  //     }}>
-  //     <BottomTabs.Screen
-  //       name="portfolio"
-  //       options={{
-  //         title: 'Portfolio',
-  //         tabBarIcon: PortfolioTabBarIcon
-  //       }}
-  //     />
-  //     <BottomTabs.Screen
-  //       name="track"
-  //       options={{
-  //         title: 'Track',
-  //         tabBarIcon: TrackTabBarIcon
-  //       }}
-  //     />
-  //     <BottomTabs.Screen
-  //       name="stake"
-  //       options={{
-  //         title: 'Stake',
-  //         tabBarIcon: StakeTabBarIcon
-  //       }}
-  //     />
-  //     <BottomTabs.Screen
-  //       name="browser"
-  //       options={{
-  //         title: 'Browser',
-  //         tabBarIcon: BrowserTabBarIcon
-  //       }}
-  //     />
-  //   </BottomTabs>
-  // )
 }
