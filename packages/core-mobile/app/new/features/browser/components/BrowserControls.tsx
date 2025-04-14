@@ -142,15 +142,13 @@ export const BrowserControls = (): ReactNode => {
         <Animated.View
           style={[
             inputKeyboardPositioning,
-            [
-              {
-                zIndex: 11,
-                height: BROWSER_CONTROLS_HEIGHT,
-                backgroundColor: isFocused
-                  ? 'transparent'
-                  : alpha(theme.colors.$surfacePrimary, 0.6)
-              }
-            ]
+            {
+              zIndex: 11,
+              height: BROWSER_CONTROLS_HEIGHT,
+              backgroundColor: isFocused
+                ? 'transparent'
+                : alpha(theme.colors.$surfacePrimary, 0.6)
+            }
           ]}>
           <View
             style={{
