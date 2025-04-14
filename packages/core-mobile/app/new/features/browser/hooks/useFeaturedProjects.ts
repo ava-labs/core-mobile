@@ -9,7 +9,6 @@ import {
 
 const LIMIT = 40
 
-
 export type ContentfulFeaturedProject = {
   name: string
   description?: string

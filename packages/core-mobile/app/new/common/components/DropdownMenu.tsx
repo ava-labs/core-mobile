@@ -1,4 +1,4 @@
-import { Text, useTheme, View } from '@avalabs/k2-alpine'
+import { Text, useTheme } from '@avalabs/k2-alpine'
 import React, { CSSProperties, useCallback } from 'react'
 import { Platform, Pressable } from 'react-native'
 import {

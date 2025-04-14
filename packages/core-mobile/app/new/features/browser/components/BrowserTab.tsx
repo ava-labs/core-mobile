@@ -37,7 +37,6 @@ import {
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
 import { useBrowserContext } from '../BrowserContext'
-import { BROWSER_CONTROLS_HEIGHT } from '../consts'
 import { isSugguestedSiteName } from '../utils'
 import { WebView } from './Webview'
 

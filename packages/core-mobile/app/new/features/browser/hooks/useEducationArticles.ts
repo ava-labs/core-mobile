@@ -9,7 +9,6 @@ import {
 
 const LIMIT = 40
 
-
 export type ContentfulEducationArticle = {
   headline: string
   url: string
