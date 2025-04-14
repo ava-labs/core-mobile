@@ -1,0 +1,60 @@
+diff --git a/node_modules/@react-navigation/stack/lib/commonjs/TransitionConfigs/CardStyleInterpolators.js b/node_modules/@react-navigation/stack/lib/commonjs/TransitionConfigs/CardStyleInterpolators.js
+index 54a6395..a439074 100644
+--- a/node_modules/@react-navigation/stack/lib/commonjs/TransitionConfigs/CardStyleInterpolators.js
++++ b/node_modules/@react-navigation/stack/lib/commonjs/TransitionConfigs/CardStyleInterpolators.js
+@@ -127,7 +127,7 @@ function forModalPresentationIOS({
+   const isLandscape = screen.width > screen.height;
+   const topOffset = isLandscape ? 0 : 10;
+   const statusBarHeight = insets.top;
+-  const aspectRatio = screen.height / screen.width;
++
+   const progress = add(current.progress.interpolate({
+     inputRange: [0, 1],
+     outputRange: [0, 1],
+@@ -138,13 +138,24 @@ function forModalPresentationIOS({
+     extrapolate: 'clamp'
+   }) : 0);
+   const isFirst = index === 0;
+-  const translateY = multiply(progress.interpolate({
++
++  const translateY = (_reactNative.Platform.OS === 'ios') ? multiply(progress.interpolate({
+     inputRange: [0, 1, 2],
+-    outputRange: [screen.height, isFirst ? 0 : topOffset, (isFirst ? statusBarHeight : 0) - topOffset * aspectRatio]
++    outputRange: [
++      screen.height,
++      isFirst ? 0 : -1.5 * topOffset,
++      isFirst ? (statusBarHeight - topOffset * 5.7) : topOffset
++    ]
++  }), inverted) : multiply(progress.interpolate({
++    inputRange: [0, 1, 2],
++    outputRange: [
++      screen.height, isFirst ? 0 : 4.2 * topOffset, (isFirst ? topOffset * -0.1 : 2 * topOffset) 
++    ]
+   }), inverted);
++
+   const overlayOpacity = progress.interpolate({
+-    inputRange: [0, 1, 1.0001, 2],
+-    outputRange: [0, 0.3, 1, 1]
++    inputRange: [0, 1, 2],
++    outputRange: [0, 0.5, 0.5]
+   });
+   const scale = isLandscape ? 1 : progress.interpolate({
+     inputRange: [0, 1, 2],
+@@ -164,7 +175,7 @@ function forModalPresentationIOS({
+       borderBottomLeftRadius: hasNotchIos ? borderRadius : 0,
+       borderBottomRightRadius: hasNotchIos ? borderRadius : 0,
+       marginTop: isFirst ? 0 : statusBarHeight,
+-      marginBottom: isFirst ? 0 : topOffset,
++      marginBottom: isFirst ? 0 : topOffset - 75,
+       transform: [{
+         translateY
+       }, {
+@@ -173,7 +184,7 @@ function forModalPresentationIOS({
+     },
+     overlayStyle: {
+       opacity: overlayOpacity
+-    }
++    },
+   };
+ }
+ 
