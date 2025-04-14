@@ -14,7 +14,7 @@
     </style>
 
     <style name="CustomBottomNavigationStyle" parent="Widget.Material3.BottomNavigationView">
-        <item name="android:elevation">1dp</item>
+        <item name="elevation">1dp</item>
         <item name="itemActiveIndicatorStyle">@null</item> <!--disable active indicator -->
         <item name="itemBackground">@null</item> <!--disable ripple effect -->
     </style>
