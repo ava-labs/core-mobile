@@ -141,6 +141,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
     []
   )
 
+  const handleSend = useCallback((): void => {
+    navigate({ pathname: '/send' })
+  }, [navigate])
+
+  const handleSwap = useCallback((): void => {
+    navigate({ pathname: '/swap' })
+  }, [navigate])
+
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -154,7 +162,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    targetLayout: balanceHeaderLayout
+    targetLayout: balanceHeaderLayout,
+    /*
+     * there's a bug on the Portfolio screen where the BlurView
+     * in the navigation header doesn't render correctly on initial load.
+     * To work around it, we delay the BlurView's rendering slightly
+     * so it captures the correct content behind it.
+     *
+     * note: we are also applying the same solution to the linear gradient bottom wrapper below
+     */
+    shouldDelayBlurOniOS: true
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
@@ -163,8 +180,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const ACTION_BUTTONS: ActionButton[] = useMemo(
     () => [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
+      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: handleSwap },
       { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
       {
         title: ActionButtonTitle.Stake,
@@ -175,7 +192,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
       { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
     ],
-    [addStake, canAddStake]
+    [addStake, canAddStake, handleSend, handleSwap]
   )
 
   const renderHeader = useCallback((): JSX.Element => {
@@ -335,7 +352,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onScrollY={onScroll}
         tabs={tabs}
       />
-      <LinearGradientBottomWrapper>
+
+      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
         <SegmentedControl
           dynamicItemWidth={false}
           items={SEGMENT_ITEMS}

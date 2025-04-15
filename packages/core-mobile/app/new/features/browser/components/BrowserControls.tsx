@@ -7,10 +7,10 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import { KeyboardAvoidingView, Platform } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
@@ -132,6 +132,21 @@ export const BrowserControls = (): ReactNode => {
     }
   })
 
+  // mostly copied from routes/(signedIn)/(tabs)/_layout.tsx
+  // as the background color of the browser controls
+  // needs to match the background color of the bottom tab bar
+  const backgroundColor = useMemo(() => {
+    const isIOS = Platform.OS === 'ios'
+
+    return theme.isDark
+      ? isIOS
+        ? '#181818'
+        : '#1E1E24'
+      : isIOS
+      ? alpha(theme.colors.$white, 0.5)
+      : theme.colors.$white
+  }, [theme.isDark, theme.colors.$white])
+
   return (
     <>
       <KeyboardAvoidingView
@@ -142,15 +157,11 @@ export const BrowserControls = (): ReactNode => {
         <Animated.View
           style={[
             inputKeyboardPositioning,
-            [
-              {
-                zIndex: 11,
-                height: BROWSER_CONTROLS_HEIGHT,
-                backgroundColor: isFocused
-                  ? 'transparent'
-                  : alpha(theme.colors.$surfacePrimary, 0.6)
-              }
-            ]
+            {
+              zIndex: 11,
+              height: BROWSER_CONTROLS_HEIGHT,
+              backgroundColor: isFocused ? 'transparent' : backgroundColor
+            }
           ]}>
           <View
             style={{
