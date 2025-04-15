@@ -26,12 +26,14 @@ export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
   shouldHeaderHaveGrabber = false,
-  hasSeparator = true
+  hasSeparator = true,
+  shouldDelayBlurOniOS = false
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
   shouldHeaderHaveGrabber?: boolean
   hasSeparator?: boolean
+  shouldDelayBlurOniOS?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -105,6 +107,7 @@ export const useFadingHeaderNavigation = ({
     navigation.setOptions({
       headerBackground: () => (
         <BlurredBackgroundView
+          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
           hasGrabber={shouldHeaderHaveGrabber}
           separator={
             hasSeparator
@@ -141,7 +144,8 @@ export const useFadingHeaderNavigation = ({
     targetHiddenProgress,
     animatedHeaderStyle,
     shouldHeaderHaveGrabber,
-    hasSeparator
+    hasSeparator,
+    shouldDelayBlurOniOS
   ])
 
   return {

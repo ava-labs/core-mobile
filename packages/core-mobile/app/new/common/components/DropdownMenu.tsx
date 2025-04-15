@@ -112,7 +112,7 @@ export function DropdownMenu({
 
       <Content key="dropdown-content">
         {groups?.map(group => (
-          <DropdownMenuGroup {...group} key={group.id}>
+          <DropdownMenuGroup {...group} key={group.key}>
             {group.items.map(renderItem)}
             <DropdownMenuSeparator />
           </DropdownMenuGroup>

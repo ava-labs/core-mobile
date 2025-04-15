@@ -25,8 +25,7 @@ const commonNavigatorScreenOptions: StackNavigationOptions = {
 
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  headerTransparent: true,
-  headerBackground: () => <BlurredBackgroundView />
+  headerTransparent: true
 }
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {

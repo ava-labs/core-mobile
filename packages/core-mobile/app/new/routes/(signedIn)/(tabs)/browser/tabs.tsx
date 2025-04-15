@@ -4,11 +4,10 @@ import {
   SCREEN_WIDTH,
   Text,
   View,
-  alpha,
   showAlert,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { useNavigation } from '@react-navigation/native'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
@@ -281,9 +280,7 @@ const TabsScreen = (): JSX.Element => {
             right: 0,
             bottom: 0
           }}>
-          <BlurredBackgroundView
-            backgroundColor={alpha(theme.colors.$surfacePrimary, 0.6)}
-          />
+          <BlurredBackgroundView />
         </View>
       </View>
     </View>
