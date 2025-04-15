@@ -1,7 +1,12 @@
-import { Pressable } from '@avalabs/k2-alpine'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
-import { FlatList, FlatListProps, ListRenderItem, View } from 'react-native'
+import {
+  FlatList,
+  FlatListProps,
+  ListRenderItem,
+  TouchableOpacity,
+  View
+} from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
@@ -146,7 +151,7 @@ const FavoriteItem = ({
   }, [])
 
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={handlePress}
       onLongPress={handleLongPress}
       onPressOut={handlePressOut}
@@ -172,7 +177,7 @@ const FavoriteItem = ({
           }
         />
       </DropdownMenu>
-    </Pressable>
+    </TouchableOpacity>
   )
 }
 
