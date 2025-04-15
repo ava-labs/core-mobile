@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  CardStyleInterpolators,
   StackCardInterpolatedStyle,
   StackCardInterpolationProps,
   StackNavigationOptions,
@@ -13,6 +14,12 @@ import { Link } from 'expo-router'
 import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
 import { NotificationBarButton } from 'common/components/NotificationBarButton'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
+
+const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
+
+const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 75 : 35
+const MODAL_BORDER_RADIUS = 40
+const MODAL_HEADER_HEIGHT = 72
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -32,71 +39,42 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
   headerStyle: {
-    height: 72
-  }
+    height: MODAL_HEADER_HEIGHT
+  },
+  // on iOS,we need to set headerStatusBarHeight to 0 to
+  // prevent the header from jumping when navigating
+  ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })
 }
 
 export const modalScreensOptions: StackNavigationOptions = {
   presentation: 'modal',
   cardStyle: {
-    marginTop: 75,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40
+    marginTop: MODAL_TOP_MARGIN,
+    borderTopLeftRadius: MODAL_BORDER_RADIUS,
+    borderTopRightRadius: MODAL_BORDER_RADIUS
   },
   gestureEnabled: true,
   gestureDirection: 'vertical',
+  headerShown: false,
+
+  // we are using a custom modal transition interpolator
+  // to match design
   cardStyleInterpolator: forModalPresentationIOS
 }
 
-/**
- * Custom card transition interpolator for modal presentations.
- *
- * This function defines the animations for modal screens, making them slide in
- * from the bottom and adding an overlay fade effect. It calculates the progress
- * of the transition between screens and applies vertical translation and opacity
- * to achieve smooth animations.
- */
-function forModalPresentationIOS({
-  current,
-  next,
-  inverted,
-  layouts: { screen }
-}: StackCardInterpolationProps): StackCardInterpolatedStyle {
-  const progress = Animated.add(
-    current.progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-      extrapolate: 'clamp'
-    }),
-    next
-      ? next.progress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 1],
-          extrapolate: 'clamp'
-        })
-      : 0
-  )
+export const formSheetScreensOptions: StackNavigationOptions = {
+  presentation: 'modal',
+  cardStyle: {
+    marginTop: MODAL_TOP_MARGIN,
+    borderTopLeftRadius: MODAL_BORDER_RADIUS,
+    borderTopRightRadius: MODAL_BORDER_RADIUS
+  },
+  gestureEnabled: true,
+  gestureDirection: 'vertical',
 
-  const translateY = Animated.multiply(
-    progress.interpolate({
-      inputRange: [0, 1, 2],
-      outputRange: [screen.height, 0, 0]
-    }),
-    inverted
-  )
-
-  const overlayOpacity = progress.interpolate({
-    inputRange: [0, 1, 1.0001, 2],
-    outputRange: [0, 0.5, 0.5, 0.5]
-  })
-
-  return {
-    cardStyle: {
-      overflow: 'hidden',
-      transform: [{ translateY }]
-    },
-    overlayStyle: { opacity: overlayOpacity }
-  }
+  // we patched @react-navigation/stack to support a custom "formSheet" effect
+  // for modals on both iOS and Android
+  cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
 }
 
 // Options for the first screen of a modal stack navigator.
@@ -154,4 +132,55 @@ export function forNoAnimation(): StackCardInterpolatedStyle {
   return {}
 }
 
-const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
+/**
+ * Custom card transition interpolator for modal presentations.
+ *
+ * This function defines the animations for modal screens, making them slide in
+ * from the bottom and adding an overlay fade effect. It calculates the progress
+ * of the transition between screens and applies vertical translation and opacity
+ * to achieve smooth animations.
+ *
+ * This is different from CardStyleInterpolators.forModalPresentationIOS
+ */
+function forModalPresentationIOS({
+  current,
+  next,
+  inverted,
+  layouts: { screen }
+}: StackCardInterpolationProps): StackCardInterpolatedStyle {
+  const progress = Animated.add(
+    current.progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1],
+      extrapolate: 'clamp'
+    }),
+    next
+      ? next.progress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 1],
+          extrapolate: 'clamp'
+        })
+      : 0
+  )
+
+  const translateY = Animated.multiply(
+    progress.interpolate({
+      inputRange: [0, 1, 2],
+      outputRange: [screen.height, 0, 0]
+    }),
+    inverted
+  )
+
+  const overlayOpacity = progress.interpolate({
+    inputRange: [0, 1, 1.0001, 2],
+    outputRange: [0, 0.5, 0.5, 0.5]
+  })
+
+  return {
+    cardStyle: {
+      overflow: 'hidden',
+      transform: [{ translateY }]
+    },
+    overlayStyle: { opacity: overlayOpacity }
+  }
+}
