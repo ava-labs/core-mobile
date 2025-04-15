@@ -68,12 +68,14 @@ Props): React.JSX.Element | undefined => {
     // so we separate the logic for android
     if (Platform.OS === 'android') {
       const status = await check(PERMISSIONS.ANDROID.CAMERA).catch(Logger.error)
-      if (status !== PermissionStatus.GRANTED) {
-        const permissionStatus = await request(PERMISSIONS.ANDROID.CAMERA)
-        setIsAndroidPermissionGranted(
-          permissionStatus === PermissionStatus.GRANTED
-        )
+      if (status === PermissionStatus.GRANTED) {
+        setIsAndroidPermissionGranted(true)
+        return
       }
+      const permissionStatus = await request(PERMISSIONS.ANDROID.CAMERA)
+      setIsAndroidPermissionGranted(
+        permissionStatus === PermissionStatus.GRANTED
+      )
     }
   }, [])
 
