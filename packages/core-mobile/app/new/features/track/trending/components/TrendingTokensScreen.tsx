@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { StyleSheet } from 'react-native'
-import { Separator, Text } from '@avalabs/k2-alpine'
+import { Separator } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { MarketToken } from 'store/watchlist'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
@@ -40,17 +40,8 @@ const TrendingTokensScreen = ({
     return <Separator sx={{ marginLeft: 68 }} />
   }, [])
 
-  const renderHeader = useCallback((): JSX.Element => {
-    return (
-      <Text variant="heading3" style={styles.headerContainer}>
-        Trending tokens
-      </Text>
-    )
-  }, [])
-
   return (
     <CollapsibleTabs.FlashList
-      ListHeaderComponent={renderHeader}
       contentContainerStyle={styles.container}
       data={data}
       numColumns={numColumns}
