@@ -35,6 +35,7 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ScrollView as RnScrollView } from 'react-native'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 const ITEM_HEIGHT = 50
 
@@ -214,10 +215,17 @@ const AccountBalance = ({
   )
   const { formatCurrency } = useFormatCurrency()
 
+  const balance = useMemo(() => {
+    if (accountBalance === 0) {
+      return '$' + UNKNOWN_AMOUNT
+    }
+    return formatCurrency({ amount: accountBalance })
+  }, [accountBalance, formatCurrency])
+
   return (
     <AnimatedBalance
       variant="body1"
-      balance={formatCurrency({ amount: accountBalance })}
+      balance={balance}
       shouldMask={isPrivacyModeEnabled}
       balanceSx={{ color: colors.$textSecondary, lineHeight: 18 }}
     />

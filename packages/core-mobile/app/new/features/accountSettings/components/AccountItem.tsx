@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import { Account } from 'store/account'
 import {
   View,
@@ -18,6 +18,7 @@ import Animated, { LinearTransition } from 'react-native-reanimated'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -46,6 +47,13 @@ export const AccountItem = memo(
       selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
     )
     const { formatCurrency } = useFormatCurrency()
+
+    const balance = useMemo(() => {
+      if (accountBalance === 0) {
+        return '$' + UNKNOWN_AMOUNT
+      }
+      return formatCurrency({ amount: accountBalance })
+    }, [accountBalance, formatCurrency])
 
     const containerBackgroundColor = isActive
       ? colors.$textPrimary
@@ -95,7 +103,7 @@ export const AccountItem = memo(
             </Text>
             <AnimatedBalance
               variant="body1"
-              balance={formatCurrency({ amount: accountBalance })}
+              balance={balance}
               shouldMask={isPrivacyModeEnabled}
               balanceSx={{ color: subtitleColor, lineHeight: 18 }}
               maskBackgroundColor={backgroundColor}

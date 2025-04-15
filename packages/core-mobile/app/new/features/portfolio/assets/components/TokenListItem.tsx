@@ -3,6 +3,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenGridView } from './TokenGridView'
 import { TokenListView } from './TokenListView'
 
@@ -31,8 +32,12 @@ export const TokenListItem = ({
   const priceChange =
     percentChange && balanceInCurrency
       ? (balanceInCurrency * percentChange) / 100
-      : 0
-  const formattedPrice = '$' + Math.abs(priceChange)?.toFixed(2).toString()
+      : undefined
+  const formattedPrice =
+    '$' +
+    (priceChange
+      ? Math.abs(priceChange)?.toFixed(2).toString()
+      : UNKNOWN_AMOUNT)
 
   const status = priceChange
     ? priceChange > 0
