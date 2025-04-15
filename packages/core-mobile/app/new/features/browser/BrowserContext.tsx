@@ -11,7 +11,7 @@ import {
 } from 'store/browser'
 import { removeFavorite } from 'store/browser/slices/favorites'
 import { BrowserTabRef } from './components/BrowserTab'
-import { isValidHttpUrl } from './utils'
+import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 
 export type BrowserContextType = {
   urlEntry: string
@@ -65,10 +65,12 @@ function useBrowserContextValue(): BrowserContextType {
       inputRef?.current?.blur()
     }
 
-    if (isValidHttpUrl(url)) {
-      setUrlEntry(url)
+    const normalized = normalizeUrlWithHttps(url)
+
+    if (isValidHttpUrl(normalized)) {
+      setUrlEntry(normalized)
       if (activeTab?.id && browserRefs.current[activeTab.id]?.current) {
-        browserRefs.current[activeTab.id]?.current?.loadUrl(url)
+        browserRefs.current[activeTab.id]?.current?.loadUrl(normalized)
       }
     } else {
       openGoogleSearch(url)

@@ -212,6 +212,7 @@ __metadata:
     "@babel/preset-typescript": 7.25.7
     "@babel/runtime": 7.25.7
     "@blockaid/client": 0.27.4
+    "@bottom-tabs/react-navigation": 0.9.0
     "@coinbase/cbpay-js": 2.2.1
     "@config-plugins/detox": 9.0.0
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
@@ -317,6 +318,7 @@ __metadata:
     expo: 52.0.38
     expo-application: 6.0.2
     expo-blur: 14.0.3
+    expo-build-properties: 0.13.2
     expo-camera: 16.0.18
     expo-constants: 17.0.8
     expo-dev-client: 5.0.18
@@ -361,6 +363,7 @@ __metadata:
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.1.4
+    react-native-bottom-tabs: 0.9.0
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -4083,6 +4086,20 @@ __metadata:
     formdata-node: ^4.3.2
     node-fetch: ^2.6.7
   checksum: 7d3468822bc7248fdddf1d98e1b30f478b031589896fd9dade0d4e00a54d664a5314c25355687d0cdbae47be01ec2746e55300f7b4db8fcbfc69cb04d2d424c3
+  languageName: node
+  linkType: hard
+
+"@bottom-tabs/react-navigation@npm:0.9.0":
+  version: 0.9.0
+  resolution: "@bottom-tabs/react-navigation@npm:0.9.0"
+  dependencies:
+    color: ^4.2.3
+  peerDependencies:
+    "@react-navigation/native": ">=7"
+    react: "*"
+    react-native: "*"
+    react-native-bottom-tabs: "*"
+  checksum: f8d316c39ae7a5c644252e201b9b7d7af6282f17f7813f9db1fbf547d8db826b879af0c01d4a148dfbd1584161983c19edbca78d8b785f6abaf4d650dafa809b
   languageName: node
   linkType: hard
 
@@ -18675,7 +18692,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-build-properties@npm:^0.13.1":
+"expo-build-properties@npm:0.13.2, expo-build-properties@npm:^0.13.1":
   version: 0.13.2
   resolution: "expo-build-properties@npm:0.13.2"
   dependencies:
@@ -26739,6 +26756,20 @@ __metadata:
     react: ">=18.1.0"
     react-native: ">=0.70.0"
   checksum: af1e3c206e411fa2013351cae0576fa543c5498407cb324a3275b6c43d652ecfabb1a8b6268609598698cb465d861e4813f14426ba00d03b4e949e5d7456976f
+  languageName: node
+  linkType: hard
+
+"react-native-bottom-tabs@npm:0.9.0":
+  version: 0.9.0
+  resolution: "react-native-bottom-tabs@npm:0.9.0"
+  dependencies:
+    react-freeze: ^1.0.0
+    sf-symbols-typescript: ^2.0.0
+    use-latest-callback: ^0.2.1
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 5c11da8d62b9377d0fa8b128721f53c8896a3e8eccfc970827b60cde9533ab73dd8cdb872b8ebe0d6d003bc5ba1b6ffae916026096f4540a4124024fda9a0c8a
   languageName: node
   linkType: hard
 

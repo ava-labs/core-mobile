@@ -10,10 +10,14 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
-import { SUGGESTED_ITEMS, SuggestedSiteName } from 'store/browser/const'
+import { SUGGESTED_ITEMS } from 'store/browser/const'
 import { selectAllFavorites } from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
-import { prepareFaviconToLoad } from '../utils'
+import {
+  getSuggestedImage,
+  isSuggestedSiteName,
+  prepareFaviconToLoad
+} from '../utils'
 import { BrowserItem } from './BrowserItem'
 
 interface FavoriteOrSuggested extends Favorite {
@@ -27,14 +31,21 @@ export const FavoritesList = (
   const favorites = useSelector(selectAllFavorites)
   const { handleUrlSubmit } = useBrowserContext()
 
-  const onPress = (item: Favorite): void => {
-    AnalyticsService.capture('BrowserFavoritesTapped')
-    dispatch(addHistoryForActiveTab({ title: item.title, url: item.url }))
+  const onPress = (item: FavoriteOrSuggested): void => {
+    if (item.isSuggested) {
+      AnalyticsService.capture('BrowserSuggestedTapped')
+    } else {
+      AnalyticsService.capture('BrowserFavoritesTapped')
+    }
+
+    dispatch(addHistoryForActiveTab(item))
     handleUrlSubmit?.(item.url)
   }
 
   const renderItem: ListRenderItem<FavoriteOrSuggested> = ({ item }) => {
     if (item.isSuggested) {
+      const image = getSuggestedImage(item.title)
+
       return (
         <View
           style={{
@@ -44,11 +55,7 @@ export const FavoritesList = (
             <BrowserItem
               type="grid"
               title={item.title.length ? item.title : item.url}
-              image={
-                item.isSuggested
-                  ? getSuggestedImage(item.title)
-                  : prepareFaviconToLoad(item.url, item.favicon)
-              }
+              image={image}
             />
           </TouchableOpacity>
         </View>
@@ -66,12 +73,13 @@ export const FavoritesList = (
   }
 
   const data = useMemo(() => {
+    const newFavorites = [...favorites].reverse()
+
     return [
-      ...favorites,
+      ...newFavorites,
       ...SUGGESTED_ITEMS.map(item => ({
         title: item.name,
         url: item.siteUrl,
-        favicon: '/favicon.ico',
         isSuggested: true
       }))
     ] as FavoriteOrSuggested[]
@@ -114,6 +122,9 @@ const FavoriteItem = ({
 }): ReactNode => {
   const { handleRenameFavorite, handleRemoveFavorite } = useBrowserContext()
   const [isLongPressActive, setIsLongPressActive] = useState(false)
+  const image = isSuggestedSiteName(item.title)
+    ? getSuggestedImage(item.title)
+    : prepareFaviconToLoad(item.url, item.favicon)
 
   const onPressAction = useCallback(
     ({ nativeEvent }: { nativeEvent: { event: string } }) => {
@@ -170,42 +181,9 @@ const FavoriteItem = ({
           type="grid"
           title={item.title.length ? item.title : item.url}
           isFavorite
-          image={
-            item.isSuggested
-              ? getSuggestedImage(item.title)
-              : prepareFaviconToLoad(item.url, item.favicon)
-          }
+          image={image}
         />
       </DropdownMenu>
     </TouchableOpacity>
   )
-}
-
-function getSuggestedImage(name: string): SuggestedSiteName | undefined {
-  switch (name) {
-    case SuggestedSiteName.LFJ:
-      return require('assets/icons/browser_suggested_icons/traderjoe.png')
-    case SuggestedSiteName.YIELD_YAK:
-      return require('assets/icons/browser_suggested_icons/yieldyak.png')
-    case SuggestedSiteName.GMX:
-      return require('assets/icons/browser_suggested_icons/gmx.png')
-    case SuggestedSiteName.AAVE:
-      return require('assets/icons/browser_suggested_icons/aave.png')
-    case SuggestedSiteName.GOGOPOOL:
-      return require('assets/icons/browser_suggested_icons/ggp.png')
-    case SuggestedSiteName.SALVOR:
-      return require('assets/icons/browser_suggested_icons/salvor.png')
-    case SuggestedSiteName.DELTA_PRIME:
-      return require('assets/icons/browser_suggested_icons/deltaprime.png')
-    case SuggestedSiteName.THE_ARENA:
-      return require('assets/icons/browser_suggested_icons/arena.png')
-    case SuggestedSiteName.STEAKHUT:
-      return require('assets/icons/browser_suggested_icons/steakhut.png')
-    case SuggestedSiteName.PHARAOH:
-      return require('assets/icons/browser_suggested_icons/pharaoh.png')
-    case SuggestedSiteName.PANGOLIN:
-      return require('assets/icons/browser_suggested_icons/pango.png')
-    case SuggestedSiteName.BENQI:
-      return require('assets/icons/browser_suggested_icons/benqi.png')
-  }
 }

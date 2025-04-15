@@ -7,6 +7,18 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "plugins": [
+      "react-native-bottom-tabs",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              { "name": "SDWebImage", "modular_headers": true },
+              { "name": "SDWebImageSVGCoder", "modular_headers": true }
+            ]
+          }
+        }
+      ],
       [
         "expo-dev-client",
         {
@@ -23,21 +35,15 @@
       [
         "expo-asset",
         {
-          "assets": [
-            "./app/assets", "./app/new/assets"
-          ]
+          "assets": ["./app/assets", "./app/new/assets"]
         }
       ],
       "@config-plugins/detox",
       [
         "react-native-share",
         {
-          "ios": [
-            "twitter"
-          ],
-          "android": [
-            "com.twitter.android"
-          ],
+          "ios": ["twitter"],
+          "android": ["com.twitter.android"],
           "enableBase64ShareAndroid": true
         }
       ]

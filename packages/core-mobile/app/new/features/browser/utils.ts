@@ -86,9 +86,11 @@ export const removeTrailingSlash = (url: string): string => {
   return url.replace(/\/$/, '')
 }
 
-export const isSugguestedSiteName = (name?: string): boolean => {
+export const isSuggestedSiteName = (name?: string): boolean => {
   if (name === undefined) return false
-  return Object.values(SuggestedSiteName).includes(name as SuggestedSiteName)
+  return Object.values(SuggestedSiteName)
+    .map(item => item.toLowerCase())
+    .includes(name.toLowerCase() as SuggestedSiteName)
 }
 
 export const isBase64Png = (imageData: string): boolean => {
@@ -106,7 +108,7 @@ export const prepareFaviconToLoad = (
 
     if (favicon) {
       if (
-        isSugguestedSiteName(favicon as SuggestedSiteName) ||
+        isSuggestedSiteName(favicon as SuggestedSiteName) ||
         isValidUrl(favicon) ||
         isBase64Png(favicon)
       ) {
@@ -120,5 +122,34 @@ export const prepareFaviconToLoad = (
     }
   } catch {
     return ''
+  }
+}
+
+export function getSuggestedImage(name: string): SuggestedSiteName | undefined {
+  switch (name) {
+    case SuggestedSiteName.LFJ:
+      return require('assets/icons/browser_suggested_icons/traderjoe.png')
+    case SuggestedSiteName.YIELD_YAK:
+      return require('assets/icons/browser_suggested_icons/yieldyak.png')
+    case SuggestedSiteName.GMX:
+      return require('assets/icons/browser_suggested_icons/gmx.png')
+    case SuggestedSiteName.AAVE:
+      return require('assets/icons/browser_suggested_icons/aave.png')
+    case SuggestedSiteName.GOGOPOOL:
+      return require('assets/icons/browser_suggested_icons/ggp.png')
+    case SuggestedSiteName.SALVOR:
+      return require('assets/icons/browser_suggested_icons/salvor.png')
+    case SuggestedSiteName.DELTA_PRIME:
+      return require('assets/icons/browser_suggested_icons/deltaprime.png')
+    case SuggestedSiteName.THE_ARENA:
+      return require('assets/icons/browser_suggested_icons/arena.png')
+    case SuggestedSiteName.STEAKHUT:
+      return require('assets/icons/browser_suggested_icons/steakhut.png')
+    case SuggestedSiteName.PHARAOH:
+      return require('assets/icons/browser_suggested_icons/pharaoh.png')
+    case SuggestedSiteName.PANGOLIN:
+      return require('assets/icons/browser_suggested_icons/pango.png')
+    case SuggestedSiteName.BENQI:
+      return require('assets/icons/browser_suggested_icons/benqi.png')
   }
 }

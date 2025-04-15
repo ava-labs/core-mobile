@@ -1,5 +1,5 @@
 import { BlurView } from 'expo-blur'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ViewStyle, Platform } from 'react-native'
 import { alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
@@ -7,11 +7,35 @@ import { selectSelectedColorScheme } from 'store/settings/appearance'
 
 export const BlurViewWithFallback = ({
   children,
+  shouldDelayBlurOniOS = false,
   style
 }: {
   children?: React.ReactNode
+  /*
+   * use this prop to add a short delay to ensure BlurView renders
+   * after dynamic content (like FlatList) has mounted.
+   *
+   * without this, the blur effect may not apply correctly,
+   * especially when used as a background in React Navigation headers.
+   *
+   * reference: https://docs.expo.dev/versions/latest/sdk/blur-view/#known-issues
+   */
+  shouldDelayBlurOniOS?: boolean
   style?: ViewStyle
-}): JSX.Element => {
+}): JSX.Element | null => {
+  const [ready, setReady] = useState(
+    Platform.OS === 'android' ? true : !shouldDelayBlurOniOS
+  )
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+
+    if (shouldDelayBlurOniOS && Platform.OS === 'ios') {
+      timer = setTimeout(() => setReady(true), 0)
+    }
+    return () => timer && clearTimeout(timer)
+  }, [shouldDelayBlurOniOS])
+
   const { theme } = useTheme()
   const colorScheme = useSelector(selectSelectedColorScheme)
 
@@ -33,11 +57,17 @@ export const BlurViewWithFallback = ({
     [style, theme.colors.$surfacePrimary]
   )
 
-  return Platform.OS === 'ios' ? (
+  if (Platform.OS === 'android') {
+    return <View style={androidContainerStyle}>{children}</View>
+  }
+
+  if (!ready) {
+    return null
+  }
+
+  return (
     <BlurView style={iosContainerStyle} intensity={75} tint={colorScheme}>
       {children}
     </BlurView>
-  ) : (
-    <View style={androidContainerStyle}>{children}</View>
   )
 }

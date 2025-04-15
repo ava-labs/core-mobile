@@ -7,7 +7,11 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, addTab, History } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { prepareFaviconToLoad } from '../utils'
+import {
+  getSuggestedImage,
+  isSuggestedSiteName,
+  prepareFaviconToLoad
+} from '../utils'
 import { BrowserItem } from './BrowserItem'
 
 export const HistoryList = (
@@ -54,12 +58,16 @@ export const HistoryList = (
 
   const renderItem: ListRenderItem<History> = ({ item }) => {
     const date = formatDate(new Date(item.lastVisited * 1000))
+    const image = isSuggestedSiteName(item.title)
+      ? getSuggestedImage(item.title)
+      : prepareFaviconToLoad(item.url, item.favicon)
+
     return (
       <BrowserItem
         type="list"
         title={item.title}
         subtitle={item.url}
-        image={prepareFaviconToLoad(item.url, item.favicon)}
+        image={image}
         onPress={() => handlePress(item)}
         renderRight={
           <View
@@ -68,7 +76,6 @@ export const HistoryList = (
               borderRadius: 100,
               backgroundColor: '$backgroundSecondary'
             }}>
-            {/* TODO: format today/yesterday/last week/short date */}
             <Text
               variant="body2"
               style={{

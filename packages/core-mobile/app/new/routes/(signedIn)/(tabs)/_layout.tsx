@@ -1,74 +1,86 @@
-import { Tabs } from 'expo-router'
-import React, { useCallback } from 'react'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { alpha, Icons, useTheme } from '@avalabs/k2-alpine'
+import React, { useMemo } from 'react'
+import { alpha, useTheme } from '@avalabs/k2-alpine'
 import { Platform } from 'react-native'
+import { BottomTabs } from 'common/components/BottomTabs'
+
+const portfolioIcon = require('../../../assets/icons/tabs/layers.png')
+const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
+const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
+const browserIcon = require('../../../assets/icons/tabs/compass.png')
+
+const tabLabelStyle = {
+  fontFamily: 'Inter-Bold',
+  fontSize: 10
+}
+
+const tabBarInactiveTintOpacity = 0.4
+
+const isIOS = Platform.OS === 'ios'
 
 export default function TabLayout(): JSX.Element {
-  const { theme } = useTheme()
-  const backgroundColor = alpha(theme.colors.$surfacePrimary, 0.6)
-  const tabBarBackground = useCallback(
-    () => <BlurredBackgroundView backgroundColor={backgroundColor} />,
-    [backgroundColor]
-  )
+  const {
+    theme: { colors, isDark }
+  } = useTheme()
+
+  const tabBarInactiveTintColor = useMemo(() => {
+    return isDark
+      ? alpha(colors.$white, tabBarInactiveTintOpacity)
+      : alpha('#1E1E24', tabBarInactiveTintOpacity)
+  }, [colors.$white, isDark])
+
+  const tabBarStyle = useMemo(() => {
+    return {
+      backgroundColor: isDark
+        ? isIOS
+          ? alpha(colors.$black, 0.88)
+          : '#1E1E24'
+        : isIOS
+        ? alpha(colors.$white, 0.5)
+        : colors.$white
+    }
+  }, [colors.$white, colors.$black, isDark])
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarHideOnKeyboard: Platform.OS === 'android',
-        tabBarBackground,
-        tabBarLabelStyle: {
-          fontFamily: 'Inter-SemiBold'
-        },
-        tabBarStyle: {
-          position: 'absolute'
-        }
-      }}>
-      <Tabs.Screen
+    <BottomTabs
+      labeled
+      translucent
+      // on Android, page animations are disabled to improve performance.
+      // on iOS, animations remain enabled as they are needed to fix the
+      // BlurView rendering issue in the navigation header.
+      disablePageAnimations={isIOS ? false : true}
+      tabBarActiveTintColor={isDark ? colors.$white : colors.$black}
+      scrollEdgeAppearance={'default'}
+      tabBarInactiveTintColor={tabBarInactiveTintColor}
+      tabBarStyle={tabBarStyle}
+      tabLabelStyle={tabLabelStyle}>
+      <BottomTabs.Screen
         name="portfolio"
         options={{
           title: 'Portfolio',
-          tabBarIcon: PortfolioTabBarIcon
+          tabBarIcon: () => portfolioIcon
         }}
       />
-      <Tabs.Screen
+      <BottomTabs.Screen
         name="track"
         options={{
           title: 'Track',
-          tabBarIcon: TrackTabBarIcon
+          tabBarIcon: () => trackIcon
         }}
       />
-      <Tabs.Screen
+      <BottomTabs.Screen
         name="stake"
         options={{
           title: 'Stake',
-          tabBarIcon: StakeTabBarIcon
+          tabBarIcon: () => stakeIcon
         }}
       />
-      <Tabs.Screen
+      <BottomTabs.Screen
         name="browser"
         options={{
           title: 'Browser',
-          tabBarIcon: BrowserTabBarIcon
+          tabBarIcon: () => browserIcon
         }}
       />
-    </Tabs>
+    </BottomTabs>
   )
 }
-
-const PortfolioTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Maps.Layer testID="portfolio_tab" color={color} />
-)
-
-const TrackTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.SearchCustom testID="track_tab" color={color} />
-)
-
-const StakeTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.Psychiatry testID="stake_tab" color={color} />
-)
-
-const BrowserTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.Compass testID="browser_tab" color={color} />
-)
