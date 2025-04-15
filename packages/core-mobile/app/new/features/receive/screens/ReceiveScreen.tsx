@@ -1,5 +1,6 @@
 import { ChainId, NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
+  Button,
   GroupList,
   Icons,
   Text,
@@ -10,58 +11,42 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { router } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
-import { NetworkWithCaip2ChainId } from 'store/network'
 import { QRCode } from '../components/QRCode'
 import { HORIZONTAL_MARGIN } from '../consts'
-
-const RECEIVING_NETWORKS = [
-  ChainId.AVALANCHE_MAINNET_ID,
-  ChainId.AVALANCHE_P,
-  ChainId.AVALANCHE_X,
-  ChainId.ETHEREUM_HOMESTEAD,
-  ChainId.BITCOIN
-]
+import { useReceiveStore } from '../store'
 
 export const ReceiveScreen = memo((): React.JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
 
+  const selectedNetwork = useReceiveStore(state => state.selectedNetwork)
+  const setSelectedNetwork = useReceiveStore(state => state.setSelectedNetwork)
+
   const { allNetworks } = useNetworks()
 
-  const activeAccount = useSelector(selectActiveAccount)
-
-  const availableNetworks = useMemo(
-    () =>
-      RECEIVING_NETWORKS.map(chainId => allNetworks[chainId]).filter(
-        item => item
-      ),
-    [allNetworks]
-  )
-
-  const defaultNetwork: NetworkWithCaip2ChainId = useMemo(() => {
-    if (availableNetworks.length === 0) {
-      throw new Error('No available networks found')
+  useEffect(() => {
+    const network = Object.values(allNetworks).find(
+      item => item.chainId === ChainId.AVALANCHE_MAINNET_ID
+    )
+    if (network) {
+      setSelectedNetwork(network)
     }
-    return availableNetworks[0] as NetworkWithCaip2ChainId
-  }, [availableNetworks])
+  }, [allNetworks, setSelectedNetwork])
 
-  const [selectedNetwork, setSelectedNetwork] =
-    useState<NetworkWithCaip2ChainId>(defaultNetwork)
-
-  const { networkToken, chainName, vmName } = selectedNetwork
+  const activeAccount = useSelector(selectActiveAccount)
 
   useEffect(() => {
     AnalyticsService.capture('ReceivePageVisited')
   }, [])
 
   const address = useMemo((): string => {
-    switch (vmName) {
+    switch (selectedNetwork?.vmName) {
       case NetworkVMType.BITCOIN:
         return activeAccount?.addressBTC ?? ''
       case NetworkVMType.AVM:
@@ -72,53 +57,46 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
       default:
         return activeAccount?.addressC ?? ''
     }
-  }, [vmName, activeAccount])
+  }, [selectedNetwork?.vmName, activeAccount])
+
+  const data = useMemo(
+    () => [
+      {
+        title: selectedNetwork?.chainName ?? 'Avalanche (C-Chain)',
+        subtitle: address,
+        leftIcon: (
+          <TokenLogo
+            symbol={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
+            size={24}
+          />
+        ),
+        value: (
+          <Button
+            type="secondary"
+            size="small"
+            onPress={() =>
+              onCopyAddress(
+                address,
+                `${selectedNetwork?.chainName} address copied`
+              )
+            }>
+            Copy
+          </Button>
+        )
+      }
+    ],
+    [selectedNetwork, address]
+  )
 
   const onCopyAddress = (value: string, message: string): void => {
     copyToClipboard(value, message)
   }
 
-  const data = [
-    {
-      title: selectedNetwork.chainName,
-      subtitle: address,
-      leftIcon: <TokenLogo symbol={networkToken?.symbol} size={24} />,
-      value: (
-        <CopyButton
-          testID="copy_address"
-          onPress={() =>
-            onCopyAddress(
-              address,
-              `${selectedNetwork.chainName} address copied`
-            )
-          }
-        />
-      )
-    }
-  ]
-
-  const onChange = useCallback(
-    (networkId: string) => {
-      const foundNetwork = availableNetworks.find(
-        network => network.chainId.toString() === networkId
-      )
-      if (foundNetwork) {
-        setSelectedNetwork(foundNetwork)
-      }
-    },
-    [availableNetworks]
-  )
-
   const openSelectTokenScreen = useCallback(() => {
     router.push({
-      pathname: '/selectNetwork',
-      params: {
-        selectedNetworkId: selectedNetwork.chainId,
-        networks: JSON.stringify(availableNetworks),
-        onChange
-      }
-    } as any)
-  }, [selectedNetwork.chainId, availableNetworks, onChange])
+      pathname: '/selectNetwork'
+    })
+  }, [])
 
   return (
     <View
@@ -152,8 +130,11 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
               borderRadius: 16,
               height: 31
             }}>
-            <TokenLogo symbol={networkToken?.symbol} size={20} />
-            <Text variant="buttonMedium">{selectedNetwork.chainName}</Text>
+            <TokenLogo
+              symbol={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
+              size={20}
+            />
+            <Text variant="buttonMedium">{selectedNetwork?.chainName}</Text>
             <Icons.Navigation.ChevronRight
               color={theme.colors.$textSecondary}
               style={{
@@ -165,8 +146,8 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
         <QRCode
           testID="receive_token_qr_code"
           address={address}
-          token={networkToken?.symbol}
-          label={chainName}
+          token={selectedNetwork?.networkToken?.symbol}
+          label={selectedNetwork?.chainName}
         />
         <View style={{ flex: 1 }} />
       </View>
@@ -175,29 +156,3 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
     </View>
   )
 })
-
-const CopyButton = ({
-  onPress,
-  testID
-}: {
-  onPress: () => void
-  testID?: string
-}): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        backgroundColor: colors.$borderPrimary,
-        paddingHorizontal: 17,
-        paddingVertical: 5,
-        borderRadius: 17
-      }}>
-      <Text testID={testID} variant="buttonMedium" style={{ fontSize: 14 }}>
-        Copy
-      </Text>
-    </TouchableOpacity>
-  )
-}

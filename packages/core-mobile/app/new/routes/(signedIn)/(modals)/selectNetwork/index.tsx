@@ -1,3 +1,3 @@
-import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
+import { SelectNetworkScreen } from 'features/receive/screens/SelectNetworkScreen'
 
-export { SelectTokenScreen as default }
+export { SelectNetworkScreen as default }

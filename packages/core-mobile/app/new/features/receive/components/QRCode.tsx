@@ -13,11 +13,7 @@ interface Props {
   testID?: string
 }
 
-export const QRCode: FC<Props> = ({
-  address,
-  token = TokenSymbol.AVAX,
-  label = ''
-}: Props) => {
+export const QRCode: FC<Props> = ({ address, token, label }: Props) => {
   const { theme } = useTheme()
 
   const containerSize = SCREEN_WIDTH * 0.6
@@ -72,7 +68,7 @@ export const QRCode: FC<Props> = ({
           }}>
           {qrToken()}
         </View>
-        <CircularText text={label} size={circularTextSize} />
+        <CircularText text={label ?? ''} size={circularTextSize} />
       </View>
     </View>
   )
