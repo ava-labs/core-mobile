@@ -4,7 +4,6 @@ import {
   SCREEN_WIDTH,
   Text,
   View,
-  alpha,
   showAlert,
   useTheme
 } from '@avalabs/k2-alpine'
@@ -281,9 +280,7 @@ const TabsScreen = (): JSX.Element => {
             right: 0,
             bottom: 0
           }}>
-          <BlurredBackgroundView
-            backgroundColor={alpha(theme.colors.$surfacePrimary, 0.6)}
-          />
+          <BlurredBackgroundView />
         </View>
       </View>
     </View>
