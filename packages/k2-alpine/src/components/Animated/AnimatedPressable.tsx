@@ -90,7 +90,7 @@ export const AnimatedPressable = memo(
       }
     }
 
-    const onTouchCancel = (event: GestureResponderEvent): void => {
+    const onTouchCancel = (): void => {
       resetAnimation()
     }
 
