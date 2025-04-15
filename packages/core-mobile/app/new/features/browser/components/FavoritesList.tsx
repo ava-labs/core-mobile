@@ -40,7 +40,7 @@ export const FavoritesList = (
           style={{
             width: '25%'
           }}>
-          <Pressable onPress={() => onPress(item)}>
+          <TouchableOpacity onPress={() => onPress(item)}>
             <BrowserItem
               type="grid"
               title={item.title.length ? item.title : item.url}
@@ -50,7 +50,7 @@ export const FavoritesList = (
                   : prepareFaviconToLoad(item.url, item.favicon)
               }
             />
-          </Pressable>
+          </TouchableOpacity>
         </View>
       )
     }
