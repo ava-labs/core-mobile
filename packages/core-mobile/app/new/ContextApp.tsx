@@ -8,7 +8,6 @@ import JailMonkey from 'jail-monkey'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
-import { StatusBar } from 'react-native'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
@@ -35,7 +34,6 @@ const ContextApp = (): JSX.Element => {
   // TODO: convert TopLevelErrorFallback to new design
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-      <StatusBar barStyle={'light-content'} backgroundColor="black" />
       <ContextProviders>
         <JailBrokenCheck>
           <RootSiblingParent>
