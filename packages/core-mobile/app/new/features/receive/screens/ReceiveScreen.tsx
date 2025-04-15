@@ -31,9 +31,7 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
   const { allNetworks } = useNetworks()
 
   useEffect(() => {
-    const network = Object.values(allNetworks).find(
-      item => item.chainId === ChainId.AVALANCHE_MAINNET_ID
-    )
+    const network = allNetworks[ChainId.AVALANCHE_MAINNET_ID]
     if (network) {
       setSelectedNetwork(network)
     }
