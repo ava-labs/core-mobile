@@ -18,7 +18,6 @@ import Animated, { LinearTransition } from 'react-native-reanimated'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -50,7 +49,7 @@ export const AccountItem = memo(
 
     const balance = useMemo(() => {
       if (accountBalance === 0) {
-        return '$' + UNKNOWN_AMOUNT
+        return ''
       }
       return formatCurrency({ amount: accountBalance })
     }, [accountBalance, formatCurrency])
