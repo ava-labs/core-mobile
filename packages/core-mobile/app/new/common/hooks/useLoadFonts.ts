@@ -6,6 +6,7 @@ export const useLoadFonts = (): { loaded: boolean; error: Error | null } => {
     'Aeonik-Medium': require('assets/fonts/Aeonik-Medium.otf'),
     DejaVuSansMono: require('assets/fonts/DejaVuSansMono.ttf'),
     'Inter-Regular': require('assets/fonts/Inter-Regular.ttf'),
+    'Inter-Medium': require('assets/fonts/Inter-Medium.ttf'),
     'Inter-SemiBold': require('assets/fonts/Inter-SemiBold.ttf')
   })
 
