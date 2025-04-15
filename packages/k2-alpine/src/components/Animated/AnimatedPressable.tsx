@@ -90,6 +90,10 @@ export const AnimatedPressable = memo(
       }
     }
 
+    const onTouchCancel = (event: GestureResponderEvent): void => {
+      resetAnimation()
+    }
+
     const startAnimation = (): void => {
       'worklet'
       opacity.value = withTiming(0.5, ANIMATED.TIMING_CONFIG)
@@ -125,6 +129,7 @@ export const AnimatedPressable = memo(
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onPressOut={onPressOut}
+        onTouchCancel={onTouchCancel}
         {...props}
         style={[props.style, animatedStyle]}>
         {children}

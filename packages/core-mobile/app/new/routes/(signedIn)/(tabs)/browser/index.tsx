@@ -8,6 +8,7 @@ import {
   BrowserTabRef
 } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
+import { FavoriteAlert } from 'features/browser/components/FavoriteAlert'
 import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
@@ -109,6 +110,8 @@ const Browser = (): React.ReactNode => {
 
         <BrowserControls />
       </View>
+
+      <FavoriteAlert />
     </BrowserSnapshot>
   )
 }

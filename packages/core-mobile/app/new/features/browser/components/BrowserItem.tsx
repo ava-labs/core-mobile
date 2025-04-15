@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
 import React, { memo, ReactNode } from 'react'
 import ContentLoader, { Circle, Rect } from 'react-content-loader/native'
@@ -18,6 +19,7 @@ interface BrowserItemProps {
   subtitle?: string
   image?: string
   style?: ViewStyle
+  isFavorite?: boolean
   renderRight?: ReactNode
   isLast?: boolean
   loading?: boolean
@@ -38,10 +40,10 @@ export const BrowserItem = memo(
 )
 
 export const GridItem = memo(
-  ({ title, image, style, onPress }: BrowserItemProps): ReactNode => {
+  ({ title, image, isFavorite, style }: BrowserItemProps): ReactNode => {
+    const { theme } = useTheme()
     return (
-      <Pressable
-        onPress={onPress}
+      <View
         style={[
           {
             alignItems: 'center',
@@ -51,7 +53,34 @@ export const GridItem = memo(
           },
           style
         ]}>
-        <Avatar image={image} size={48} />
+        <View>
+          {isFavorite ? (
+            <BlurView
+              intensity={20}
+              tint={theme.isDark ? 'dark' : 'light'}
+              experimentalBlurMethod="dimezisBlurView"
+              style={{
+                position: 'absolute',
+                top: -7,
+                right: -7,
+                zIndex: 1000,
+                backgroundColor: theme.colors.$borderPrimary,
+                borderRadius: 100,
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: 24,
+                height: 24,
+                overflow: 'hidden'
+              }}>
+              <Icons.Toggle.StarFilled
+                width={12}
+                height={12}
+                color={theme.colors.$textSecondary}
+              />
+            </BlurView>
+          ) : null}
+          <Avatar image={image} size={48} />
+        </View>
 
         <Text
           style={{
@@ -61,7 +90,7 @@ export const GridItem = memo(
           numberOfLines={1}>
           {title}
         </Text>
-      </Pressable>
+      </View>
     )
   }
 )

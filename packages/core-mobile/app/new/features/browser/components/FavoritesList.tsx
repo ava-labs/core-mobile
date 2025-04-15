@@ -1,5 +1,7 @@
-import React, { ReactNode, useMemo } from 'react'
-import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
+import { Pressable } from '@avalabs/k2-alpine'
+import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
+import { FlatList, FlatListProps, ListRenderItem, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
@@ -27,20 +29,34 @@ export const FavoritesList = (
   }
 
   const renderItem: ListRenderItem<FavoriteOrSuggested> = ({ item }) => {
+    if (item.isSuggested) {
+      return (
+        <View
+          style={{
+            width: '25%'
+          }}>
+          <Pressable onPress={() => onPress(item)}>
+            <BrowserItem
+              type="grid"
+              title={item.title.length ? item.title : item.url}
+              image={
+                item.isSuggested
+                  ? getSuggestedImage(item.title)
+                  : prepareFaviconToLoad(item.url, item.favicon)
+              }
+            />
+          </Pressable>
+        </View>
+      )
+    }
+
     return (
-      <BrowserItem
-        type="grid"
-        title={item.title.length ? item.title : item.url}
-        image={
-          item.isSuggested
-            ? getSuggestedImage(item.title)
-            : prepareFaviconToLoad(item.url, item.favicon)
-        }
-        onPress={() => onPress(item)}
+      <View
         style={{
           width: '25%'
-        }}
-      />
+        }}>
+        <FavoriteItem item={item} onPress={onPress} />
+      </View>
     )
   }
 
@@ -65,6 +81,98 @@ export const FavoritesList = (
       keyboardShouldPersistTaps="handled"
       numColumns={4}
     />
+  )
+}
+
+enum MenuId {
+  Rename = 'rename',
+  Remove = 'remove'
+}
+
+const MENU_ITEMS: DropdownItem[] = [
+  {
+    id: MenuId.Rename,
+    title: 'Rename shortcut...'
+  },
+  {
+    id: MenuId.Remove,
+    title: 'Remove'
+  }
+]
+
+const FavoriteItem = ({
+  item,
+  onPress
+}: {
+  item: FavoriteOrSuggested
+  onPress: (item: Favorite) => void
+}): ReactNode => {
+  const { handleRenameFavorite, handleRemoveFavorite } = useBrowserContext()
+  const [isLongPressActive, setIsLongPressActive] = useState(false)
+
+  const onPressAction = useCallback(
+    ({ nativeEvent }: { nativeEvent: { event: string } }) => {
+      switch (nativeEvent.event) {
+        case MenuId.Rename:
+          handleRenameFavorite(item)
+          break
+        case MenuId.Remove: {
+          handleRemoveFavorite(item)
+          break
+        }
+      }
+      setIsLongPressActive(false)
+    },
+    [handleRenameFavorite, handleRemoveFavorite, item]
+  )
+
+  const handlePress = useCallback(() => {
+    if (!isLongPressActive) {
+      onPress(item)
+    }
+    setTimeout(() => {
+      setIsLongPressActive(false)
+    }, 100)
+  }, [isLongPressActive, onPress, item])
+
+  const handleLongPress = useCallback(() => {
+    setIsLongPressActive(true)
+  }, [])
+
+  const handlePressOut = useCallback(() => {
+    setTimeout(() => {
+      setIsLongPressActive(false)
+    }, 100)
+  }, [])
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      onLongPress={handleLongPress}
+      onPressOut={handlePressOut}
+      delayLongPress={200}>
+      <DropdownMenu
+        groups={[
+          {
+            id: `favorite-item-${item.id}`,
+            items: MENU_ITEMS
+          }
+        ]}
+        disabled={!isLongPressActive}
+        onPressAction={onPressAction}
+        triggerAction="longPress">
+        <BrowserItem
+          type="grid"
+          title={item.title.length ? item.title : item.url}
+          isFavorite
+          image={
+            item.isSuggested
+              ? getSuggestedImage(item.title)
+              : prepareFaviconToLoad(item.url, item.favicon)
+          }
+        />
+      </DropdownMenu>
+    </Pressable>
   )
 }
 
