@@ -1,5 +1,6 @@
 import { Stack } from 'common/components/Stack'
 import {
+  formSheetScreensOptions,
   modalScreensOptions,
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
@@ -21,6 +22,12 @@ export default function WalletLayout(): JSX.Element {
         <Stack.Screen
           name="(modals)/notifications"
           options={modalScreensOptions}
+        />
+        <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
+        <Stack.Screen name="(modals)/swap" options={modalScreensOptions} />
+        <Stack.Screen
+          name="(modals)/selectToken"
+          options={formSheetScreensOptions}
         />
         <Stack.Screen
           name="(modals)/tokenManagement"
