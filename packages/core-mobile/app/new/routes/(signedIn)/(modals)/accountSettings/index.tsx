@@ -52,6 +52,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   const totalBalanceInCurrency = useTotalBalanceInCurrencyForAccount(
     activeAccount?.index ?? 0
   )
+
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
     theme: { colors }

@@ -41,6 +41,7 @@ export * from './ProgressBar/ProgressBar'
 export * from './ProgressBar/MaskedProgressBar'
 export * from './TokenAmountInput/TokenAmountInputWidget'
 export * from './DateTimePicker/DateTimePicker'
+export * from './Confetti/Confetti'
 
 export * from './PriceChangeIndicator/types'
 

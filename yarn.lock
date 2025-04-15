@@ -377,6 +377,7 @@ __metadata:
     react-native-inappbrowser-reborn: 3.7.0
     react-native-ios-context-menu: 3.1.0
     react-native-ios-utilities: 5.1.2
+    react-native-keyboard-controller: 1.17.0
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
@@ -582,6 +583,7 @@ __metadata:
     react-native: 0.76.9
     react-native-awesome-slider: 2.9.0
     react-native-dialog: 9.3.0
+    react-native-fast-confetti: 0.8.2
     react-native-gesture-handler: 2.20.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-popover-view: 6.1.0
@@ -26873,6 +26875,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-fast-confetti@npm:0.8.2":
+  version: 0.8.2
+  resolution: "react-native-fast-confetti@npm:0.8.2"
+  peerDependencies:
+    "@shopify/react-native-skia": "*"
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: "*"
+  checksum: bfd8b3ba3c0e84a7577a42e7687ef8c2acb2c01d61e9b7b11eb1440aa712fc2925f36ef0c51e681420af5d6dca10ca44323281ad49890bffe4b95e563b977fc9
+  languageName: node
+  linkType: hard
+
 "react-native-flipper@npm:^0.164.0":
   version: 0.164.0
   resolution: "react-native-flipper@npm:0.164.0"
@@ -27007,6 +27021,19 @@ __metadata:
     react: ">=18.2.0"
     react-native: ">=0.73.0"
   checksum: 4e07c1e34c01c8d50fd7c1d0460db06f6f0515197405230386a8ffb950cb724b10743af032310d1384df0a90059bfb8992ba2d93344ce86315315f0493feccc2
+  languageName: node
+  linkType: hard
+
+"react-native-keyboard-controller@npm:1.17.0":
+  version: 1.17.0
+  resolution: "react-native-keyboard-controller@npm:1.17.0"
+  dependencies:
+    react-native-is-edge-to-edge: ^1.1.6
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: ">=3.0.0"
+  checksum: ff9a43ad1d86412195a05126b4e23df43cafd794e3a6b3041cea785a7ce017629fd93e70550dde9705eace844b9680fc1ab347a562db125ab65ab40a066d2c85
   languageName: node
   linkType: hard
 
