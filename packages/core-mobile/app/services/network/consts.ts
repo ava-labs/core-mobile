@@ -3,7 +3,7 @@ import {
   AVALANCHE_XP_TEST_NETWORK,
   ChainId,
   Network,
-  NetworkVMType,
+  NetworkVMType
 } from '@avalabs/core-chains-sdk'
 
 export const NETWORK_P = {
