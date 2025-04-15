@@ -1,27 +1,60 @@
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { GroupList, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
+import { ChainId, NetworkVMType } from '@avalabs/core-chains-sdk'
+import {
+  GroupList,
+  Icons,
+  Text,
+  TouchableOpacity,
+  useTheme
+} from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { router } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import React, { memo, useEffect, useMemo } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
+import { NetworkWithCaip2ChainId } from 'store/network'
 import { QRCode } from '../components/QRCode'
 import { HORIZONTAL_MARGIN } from '../consts'
 
-export const ReceiveScreen = memo(() => {
+const RECEIVING_NETWORKS = [
+  ChainId.AVALANCHE_MAINNET_ID,
+  ChainId.AVALANCHE_P,
+  ChainId.AVALANCHE_X,
+  ChainId.ETHEREUM_HOMESTEAD,
+  ChainId.BITCOIN
+]
+
+export const ReceiveScreen = memo((): React.JSX.Element => {
   const insets = useSafeAreaInsets()
-  const { activeNetwork } = useNetworks()
+  const { theme } = useTheme()
+
+  const { allNetworks } = useNetworks()
+
   const activeAccount = useSelector(selectActiveAccount)
-  const { networkToken, chainName, vmName } = activeNetwork
-  const addressC = activeAccount?.addressC ?? ''
-  const addressBTC = activeAccount?.addressBTC ?? ''
-  const addressAVM = activeAccount?.addressAVM ?? ''
-  const addressPVM = activeAccount?.addressPVM ?? ''
+
+  const availableNetworks = useMemo(
+    () =>
+      RECEIVING_NETWORKS.map(chainId => allNetworks[chainId]).filter(
+        item => item
+      ),
+    [allNetworks]
+  )
+
+  const defaultNetwork: NetworkWithCaip2ChainId = useMemo(() => {
+    if (availableNetworks.length === 0) {
+      throw new Error('No available networks found')
+    }
+    return availableNetworks[0] as NetworkWithCaip2ChainId
+  }, [availableNetworks])
+
+  const [selectedNetwork, setSelectedNetwork] =
+    useState<NetworkWithCaip2ChainId>(defaultNetwork)
+
+  const { networkToken, chainName, vmName } = selectedNetwork
 
   useEffect(() => {
     AnalyticsService.capture('ReceivePageVisited')
@@ -30,16 +63,16 @@ export const ReceiveScreen = memo(() => {
   const address = useMemo((): string => {
     switch (vmName) {
       case NetworkVMType.BITCOIN:
-        return addressBTC
+        return activeAccount?.addressBTC ?? ''
       case NetworkVMType.AVM:
-        return addressAVM
+        return activeAccount?.addressAVM ?? ''
       case NetworkVMType.PVM:
-        return addressPVM
+        return activeAccount?.addressPVM ?? ''
       case NetworkVMType.EVM:
       default:
-        return addressC
+        return activeAccount?.addressC ?? ''
     }
-  }, [vmName, addressBTC, addressAVM, addressPVM, addressC])
+  }, [vmName, activeAccount])
 
   const onCopyAddress = (value: string, message: string): void => {
     copyToClipboard(value, message)
@@ -47,19 +80,45 @@ export const ReceiveScreen = memo(() => {
 
   const data = [
     {
-      title: activeNetwork.chainName,
+      title: selectedNetwork.chainName,
       subtitle: address,
-      leftIcon: <TokenLogo symbol={networkToken.symbol} size={24} />,
+      leftIcon: <TokenLogo symbol={networkToken?.symbol} size={24} />,
       value: (
         <CopyButton
           testID="copy_address"
           onPress={() =>
-            onCopyAddress(address, `${activeNetwork.chainName} address copied`)
+            onCopyAddress(
+              address,
+              `${selectedNetwork.chainName} address copied`
+            )
           }
         />
       )
     }
   ]
+
+  const onChange = useCallback(
+    (networkId: string) => {
+      const foundNetwork = availableNetworks.find(
+        network => network.chainId.toString() === networkId
+      )
+      if (foundNetwork) {
+        setSelectedNetwork(foundNetwork)
+      }
+    },
+    [availableNetworks]
+  )
+
+  const openSelectTokenScreen = useCallback(() => {
+    router.push({
+      pathname: '/selectNetwork',
+      params: {
+        selectedNetworkId: selectedNetwork.chainId,
+        networks: JSON.stringify(availableNetworks),
+        onChange
+      }
+    } as any)
+  }, [selectedNetwork.chainId, availableNetworks, onChange])
 
   return (
     <View
@@ -80,13 +139,36 @@ export const ReceiveScreen = memo(() => {
       </View>
 
       <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity
+            onPress={openSelectTokenScreen}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              backgroundColor: theme.colors.$surfaceSecondary,
+              paddingHorizontal: 8,
+              borderRadius: 16,
+              height: 31
+            }}>
+            <TokenLogo symbol={networkToken?.symbol} size={20} />
+            <Text variant="buttonMedium">{selectedNetwork.chainName}</Text>
+            <Icons.Navigation.ChevronRight
+              color={theme.colors.$textSecondary}
+              style={{
+                transform: [{ rotate: '90deg' }]
+              }}
+            />
+          </TouchableOpacity>
+        </View>
         <QRCode
           testID="receive_token_qr_code"
-          sizePercentage={0.7}
           address={address}
-          token={networkToken.symbol}
+          token={networkToken?.symbol}
           label={chainName}
         />
+        <View style={{ flex: 1 }} />
       </View>
 
       <GroupList data={data} />
@@ -113,7 +195,7 @@ const CopyButton = ({
         paddingVertical: 5,
         borderRadius: 17
       }}>
-      <Text testID={testID} variant="buttonMedium" sx={{ fontSize: 14 }}>
+      <Text testID={testID} variant="buttonMedium" style={{ fontSize: 14 }}>
         Copy
       </Text>
     </TouchableOpacity>

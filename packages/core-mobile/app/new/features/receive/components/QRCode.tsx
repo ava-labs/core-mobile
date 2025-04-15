@@ -1,4 +1,4 @@
-import { useTheme } from '@avalabs/k2-alpine'
+import { SCREEN_WIDTH, useTheme } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
 import React, { FC } from 'react'
 import { View } from 'react-native'
@@ -8,7 +8,6 @@ import { CircularText } from './CircularText'
 
 interface Props {
   address?: string
-  sizePercentage?: number
   token?: string
   label?: string
   testID?: string
@@ -21,7 +20,7 @@ export const QRCode: FC<Props> = ({
 }: Props) => {
   const { theme } = useTheme()
 
-  const containerSize = 224
+  const containerSize = SCREEN_WIDTH * 0.6
   const qrCodeSize = containerSize
   const qrTokenSize = qrCodeSize * 0.3
   const circularTextSize = (qrTokenSize * 100) / 40
