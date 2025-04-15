@@ -114,14 +114,13 @@ export const GroupList = ({
                     gap: 28
                   }}
                   onLayout={handleLayout}>
-                  <View
-                    sx={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 8,
-                      flex: 1
-                    }}>
-                    <View sx={{ marginVertical: 14, ...textContainerSx }}>
+                  <View sx={{ marginVertical: 14, ...textContainerSx }}>
+                    <View
+                      sx={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8
+                      }}>
                       <Text
                         variant="buttonMedium"
                         sx={{
@@ -132,21 +131,20 @@ export const GroupList = ({
                         }}>
                         {title}
                       </Text>
-                      {subtitle && (
-                        <Text
-                          variant="mono"
-                          sx={{
-                            color: '$textSecondary',
-                            fontSize: 13,
-                            lineHeight: 18,
-                            ...subtitleSx
-                          }}>
-                          {subtitle}
-                        </Text>
-                      )}
+                      {rightIcon !== undefined && rightIcon}
                     </View>
-
-                    {rightIcon !== undefined && rightIcon}
+                    {subtitle && (
+                      <Text
+                        variant="mono"
+                        sx={{
+                          color: '$textSecondary',
+                          fontSize: 13,
+                          lineHeight: 18,
+                          ...subtitleSx
+                        }}>
+                        {subtitle}
+                      </Text>
+                    )}
                   </View>
 
                   <View

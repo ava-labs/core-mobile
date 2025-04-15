@@ -152,7 +152,7 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
         <View style={{ flex: 1 }} />
       </View>
 
-      <GroupList data={data} />
+      <GroupList data={data} textContainerSx={{ flex: 1 }} />
     </View>
   )
 })

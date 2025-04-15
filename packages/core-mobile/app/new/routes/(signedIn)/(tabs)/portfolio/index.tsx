@@ -87,7 +87,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const currencyBalance = useMemo(() => {
-    return !balanceAccurate && balanceTotalInCurrency === 0
+    return !balanceAccurate || balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
       : formatCurrency({ amount: balanceTotalInCurrency })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
@@ -217,11 +217,17 @@ const PortfolioHomeScreen = (): JSX.Element => {
               accountName={activeAccount?.name ?? ''}
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
-              priceChange={{
-                formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(2)}`,
-                status: indicatorStatus,
-                formattedPercent
-              }}
+              priceChange={
+                totalPriceChanged > 0
+                  ? {
+                      formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(
+                        2
+                      )}`,
+                      status: indicatorStatus,
+                      formattedPercent
+                    }
+                  : undefined
+              }
               errorMessage={
                 balanceAccurate ? undefined : 'Unable to load all balances'
               }
