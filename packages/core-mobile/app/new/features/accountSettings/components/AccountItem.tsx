@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import { Account } from 'store/account'
 import {
   View,
@@ -46,6 +46,13 @@ export const AccountItem = memo(
       selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
     )
     const { formatCurrency } = useFormatCurrency()
+
+    const balance = useMemo(() => {
+      if (accountBalance === 0) {
+        return ''
+      }
+      return formatCurrency({ amount: accountBalance })
+    }, [accountBalance, formatCurrency])
 
     const containerBackgroundColor = isActive
       ? colors.$textPrimary
@@ -95,7 +102,7 @@ export const AccountItem = memo(
             </Text>
             <AnimatedBalance
               variant="body1"
-              balance={formatCurrency({ amount: accountBalance })}
+              balance={balance}
               shouldMask={isPrivacyModeEnabled}
               balanceSx={{ color: subtitleColor, lineHeight: 18 }}
               maskBackgroundColor={backgroundColor}
