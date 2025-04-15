@@ -8,14 +8,14 @@ const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
 const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 
+const isIOS = Platform.OS === 'ios'
+
 const tabLabelStyle = {
-  fontFamily: 'Inter-Bold',
+  fontFamily: isIOS ? 'Inter-Medium' : 'Inter-Bold',
   fontSize: 10
 }
 
 const tabBarInactiveTintOpacity = 0.4
-
-const isIOS = Platform.OS === 'ios'
 
 export default function TabLayout(): JSX.Element {
   const {
