@@ -28,9 +28,9 @@ Props): React.JSX.Element | undefined => {
     theme: { colors }
   } = useTheme()
   const [permission, requestPermission] = useCameraPermissions()
-  const [isPermissionGranted, setIsPermissionGranted] = useState(
-    permission?.granted
-  )
+  // const [isPermissionGranted, setIsPermissionGranted] = useState(
+  //   permission?.granted
+  // )
   const [data, setData] = useState<string>()
 
   const handleSuccess = (scanningResult: BarcodeScanningResult): void => {
@@ -50,14 +50,19 @@ Props): React.JSX.Element | undefined => {
 
   const checkIosPermission = useCallback(async () => {
     if (Platform.OS === 'ios' && permission) {
-      if (permission.canAskAgain === false) {
+      if (
+        permission.canAskAgain === false ||
+        permission.status === PermissionStatus.DENIED
+      ) {
         // if user disables permission from settings, can ask again will be false
         // we need to ask user to open settings to enable permission
-        setIsPermissionGranted(false)
+        // setIsPermissionGranted(false)
       }
-      if (permission.granted === false && permission.canAskAgain) {
-        const permissionStatus = await requestPermission()
-        setIsPermissionGranted(permissionStatus.granted)
+      if (
+        permission.granted === false ||
+        permission.status === PermissionStatus.UNDETERMINED
+      ) {
+        requestPermission()
       }
     }
   }, [permission, requestPermission])
@@ -72,10 +77,8 @@ Props): React.JSX.Element | undefined => {
     if (Platform.OS === 'android') {
       const status = await check(PERMISSIONS.ANDROID.CAMERA).catch(Logger.error)
       if (status !== PermissionStatus.GRANTED) {
-        const permissionStatus = await request(
-          PERMISSIONS.ANDROID.CAMERA
-        ).catch(Logger.error)
-        setIsPermissionGranted(permissionStatus === PermissionStatus.GRANTED)
+        request(PERMISSIONS.ANDROID.CAMERA)
+        // setIsPermissionGranted(permissionStatus === PermissionStatus.GRANTED)
       }
     }
   }, [])
@@ -84,7 +87,7 @@ Props): React.JSX.Element | undefined => {
     checkAndroidPermission()
   }, [checkAndroidPermission])
 
-  return isPermissionGranted === false ? (
+  return permission?.granted === false ? (
     <>
       <View sx={{ gap: 12, marginBottom: 8 }}>
         <View
