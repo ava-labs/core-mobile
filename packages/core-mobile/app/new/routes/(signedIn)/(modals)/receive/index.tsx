@@ -1,18 +1,6 @@
-import React from 'react'
-import { Text, View } from '@avalabs/k2-alpine'
+import React, { ReactNode } from 'react'
+import { ReceiveScreen } from 'features/receive/screens/ReceiveScreen'
 
-const ReceiveScreen = (): JSX.Element => {
-  return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 16
-      }}>
-      <Text variant="heading3">Receive</Text>
-    </View>
-  )
+export default function (): ReactNode {
+  return <ReceiveScreen />
 }
-
-export default ReceiveScreen

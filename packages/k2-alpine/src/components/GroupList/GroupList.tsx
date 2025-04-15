@@ -100,20 +100,27 @@ export const GroupList = ({
                 sx={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  minHeight: itemHeight
+                  minHeight: itemHeight,
+                  gap: 16,
+                  paddingHorizontal: 16
                 }}>
-                {leftIcon && <View sx={{ marginLeft: 16 }}>{leftIcon}</View>}
+                {leftIcon}
                 <View
                   sx={{
-                    flexGrow: 1,
+                    flex: 1,
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    marginLeft: 15
+                    gap: 28
                   }}
                   onLayout={handleLayout}>
                   <View
-                    sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    sx={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 8,
+                      flex: 1
+                    }}>
                     <View sx={{ marginVertical: 14, ...textContainerSx }}>
                       <Text
                         variant="buttonMedium"
@@ -141,13 +148,12 @@ export const GroupList = ({
 
                     {rightIcon !== undefined && rightIcon}
                   </View>
+
                   <View
                     sx={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      marginRight: 15,
-                      gap: 4,
-                      flexShrink: 1
+                      gap: 4
                     }}>
                     {value !== undefined &&
                       (typeof value === 'string' ? (
@@ -166,6 +172,7 @@ export const GroupList = ({
                 </View>
               </View>
             </TouchableOpacity>
+
             {accordion !== undefined && expandedStates[index] && (
               <Animated.View entering={FadeIn} exiting={FadeOut}>
                 <Separator
