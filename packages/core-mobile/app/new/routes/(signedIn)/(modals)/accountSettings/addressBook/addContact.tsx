@@ -2,10 +2,10 @@ import { Button, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback, useState, useMemo } from 'react'
-import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
@@ -34,7 +34,7 @@ const AddContactScreen = (): React.JSX.Element => {
 
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
-      <ScrollView
+      <KeyboardAwareScrollView
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
@@ -44,7 +44,7 @@ const AddContactScreen = (): React.JSX.Element => {
         {contact && (
           <ContactForm contact={contact} onUpdate={handleUpdateContact} />
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <View
         sx={{
           gap: 16,
