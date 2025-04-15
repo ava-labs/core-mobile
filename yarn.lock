@@ -377,6 +377,7 @@ __metadata:
     react-native-inappbrowser-reborn: 3.7.0
     react-native-ios-context-menu: 3.1.0
     react-native-ios-utilities: 5.1.2
+    react-native-keyboard-controller: 1.17.0
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
@@ -27010,6 +27011,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-keyboard-controller@npm:1.17.0":
+  version: 1.17.0
+  resolution: "react-native-keyboard-controller@npm:1.17.0"
+  dependencies:
+    react-native-is-edge-to-edge: ^1.1.6
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: ">=3.0.0"
+  checksum: ff9a43ad1d86412195a05126b4e23df43cafd794e3a6b3041cea785a7ce017629fd93e70550dde9705eace844b9680fc1ab347a562db125ab65ab40a066d2c85
+  languageName: node
+  linkType: hard
+
 "react-native-keychain@npm:8.1.1":
   version: 8.1.1
   resolution: "react-native-keychain@npm:8.1.1"
@@ -27477,7 +27491,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
   languageName: node
   linkType: hard
 

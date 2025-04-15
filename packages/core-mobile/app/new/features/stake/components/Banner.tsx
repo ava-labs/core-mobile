@@ -92,7 +92,12 @@ export const Banner = (): JSX.Element | undefined => {
   )
 
   const percentage = useMemo(() => {
-    if (totalStakedInAvax === undefined || availableInAvax === undefined) {
+    if (
+      totalStakedInAvax === undefined ||
+      availableInAvax === undefined ||
+      totalStakedInAvax.isZero() ||
+      availableInAvax.isZero()
+    ) {
       return 0
     }
 
