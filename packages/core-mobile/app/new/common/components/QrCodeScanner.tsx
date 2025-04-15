@@ -81,41 +81,11 @@ Props): React.JSX.Element | undefined => {
     checkAndroidPermission()
   }, [checkAndroidPermission])
 
-  return permission?.granted === false ||
-    isAndroidPermissionGranted === false ? (
-    <>
-      <View sx={{ gap: 12, marginBottom: 8 }}>
-        <View
-          sx={{
-            flexDirection: 'row',
-            gap: 10,
-            alignItems: 'center',
-            marginRight: 64,
-            marginTop: 16
-          }}>
-          <Icons.Alert.ErrorOutline
-            color={colors.$textDanger}
-            width={20}
-            height={20}
-          />
-          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
-            To scan QR code from Core, your first need to allow camera
-            permission in your device settings
-          </Text>
-        </View>
-        <Button
-          size="small"
-          type="secondary"
-          onPress={() => Linking.openSettings()}
-          style={{ width: 165, marginLeft: 30 }}>
-          Open device settings
-        </Button>
-      </View>
-      <Loader
-        sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-      />
-    </>
-  ) : (
+  const shouldShowCamera =
+    (permission?.granted === true && Platform.OS === 'ios') ||
+    (isAndroidPermissionGranted === true && Platform.OS === 'android')
+
+  return shouldShowCamera ? (
     <View
       sx={{
         justifyContent: 'center',
@@ -154,5 +124,38 @@ Props): React.JSX.Element | undefined => {
       />
       )
     </View>
+  ) : (
+    <>
+      <View sx={{ gap: 12, marginBottom: 8 }}>
+        <View
+          sx={{
+            flexDirection: 'row',
+            gap: 10,
+            alignItems: 'center',
+            marginRight: 64,
+            marginTop: 16
+          }}>
+          <Icons.Alert.ErrorOutline
+            color={colors.$textDanger}
+            width={20}
+            height={20}
+          />
+          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
+            To scan QR code from Core, your first need to allow camera
+            permission in your device settings
+          </Text>
+        </View>
+        <Button
+          size="small"
+          type="secondary"
+          onPress={() => Linking.openSettings()}
+          style={{ width: 165, marginLeft: 30 }}>
+          Open device settings
+        </Button>
+      </View>
+      <Loader
+        sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+    </>
   )
 }
