@@ -1,5 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import { create } from 'zustand'
 
