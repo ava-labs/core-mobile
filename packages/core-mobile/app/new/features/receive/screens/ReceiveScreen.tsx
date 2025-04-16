@@ -141,7 +141,7 @@ export const ReceiveScreen = (): ReactNode => {
         <QRCode
           testID="receive_token_qr_code"
           address={qrCodeAddress}
-          token={selectedNetwork?.networkToken?.symbol}
+          token={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
           label={selectedNetwork?.chainName}
         />
         <View style={{ flex: isXPChain(selectedNetwork?.chainId) ? 0.5 : 1 }} />

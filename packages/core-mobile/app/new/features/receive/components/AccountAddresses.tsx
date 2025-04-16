@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux'
 
 import { Button, GroupList, useTheme } from '@avalabs/k2-alpine'
+import { copyToClipboard } from 'common/utils/clipboard'
 import React, { memo, useMemo } from 'react'
 import {
   NETWORK_P,
@@ -9,7 +10,6 @@ import {
   NETWORK_X_TEST
 } from 'services/network/consts'
 import { selectActiveAccount } from 'store/account'
-import { copyToClipboard } from 'utils/DeviceTools'
 import { isXPChain } from '../consts'
 import { useReceiveSelectedNetwork } from '../store'
 import { LogoWithNetwork } from './LogoWithNetwork'

@@ -92,7 +92,7 @@ export const SelectReceiveNetworkScreen = (): JSX.Element => {
       <FlatList
         data={availableNetworks}
         renderItem={renderItem}
-        keyExtractor={item => item.chainId.toString()}
+        keyExtractor={item => item?.chainId?.toString()}
       />
     </View>
   )
