@@ -16,17 +16,19 @@ export const ContactAddressMenu = ({
   onScanQrCode: () => void
 } & PropsWithChildren): React.JSX.Element => {
   const {
-    theme: { isDark }
+    theme: { colors, isDark }
   } = useTheme()
 
   const menuActions = [
     {
       id: MenuId.TypeOrPaste,
-      title: 'Type in or paste address'
+      title: 'Type in or paste address',
+      titleColor: colors.$textPrimary
     },
     {
       id: MenuId.ScanQrCode,
-      title: 'Scan QR code'
+      title: 'Scan QR code',
+      titleColor: colors.$textPrimary
     }
   ]
 
