@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useRef } from 'react'
 import { ScrollView, View } from '../Primitives'
 import { Button, AlertWithTextInputs, useTheme, showAlert } from '../..'
+import { AlertWithTextInputsHandle } from './types'
 
 export default {
   title: 'Alert'
@@ -8,8 +9,7 @@ export default {
 
 export const All = (): JSX.Element => {
   const { theme } = useTheme()
-  const [alertWithTextInputVisible, setAlertWithTextInputVisible] =
-    useState(false)
+  const alert = useRef<AlertWithTextInputsHandle>(null)
 
   const DELETE_TEXT = 'DELETE'
 
@@ -31,11 +31,32 @@ export const All = (): JSX.Element => {
   }
 
   const handleShowAlertWithTextInput = (): void => {
-    setAlertWithTextInputVisible(true)
-  }
-
-  const handleHideAlertWithTextInput = (): void => {
-    setAlertWithTextInputVisible(false)
+    alert.current?.show({
+      title: 'Delete Wallet',
+      description: `If you want to delete your wallet, please enter ${DELETE_TEXT}.`,
+      inputs: [{ key: 'delete' }],
+      buttons: [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            alert.current?.hide()
+          }
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          shouldDisable: (values: Record<string, string>) => {
+            return values.delete !== DELETE_TEXT
+          },
+          onPress: (values: Record<string, string>) => {
+            if (values.delete === DELETE_TEXT) {
+              alert.current?.hide()
+            }
+          }
+        }
+      ]
+    })
   }
 
   return (
@@ -58,33 +79,7 @@ export const All = (): JSX.Element => {
           Alert with text input
         </Button>
       </ScrollView>
-      <AlertWithTextInputs
-        visible={alertWithTextInputVisible}
-        title="Delete Wallet"
-        description={`If you want to delete your wallet, please enter ${DELETE_TEXT}.`}
-        inputs={[{ key: 'delete' }]}
-        buttons={[
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: () => {
-              handleHideAlertWithTextInput()
-            }
-          },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            shouldDisable: (values: Record<string, string>) => {
-              return values.delete !== DELETE_TEXT
-            },
-            onPress: (values: Record<string, string>) => {
-              if (values.delete === DELETE_TEXT) {
-                handleHideAlertWithTextInput()
-              }
-            }
-          }
-        ]}
-      />
+      <AlertWithTextInputs ref={alert} />
     </View>
   )
 }
