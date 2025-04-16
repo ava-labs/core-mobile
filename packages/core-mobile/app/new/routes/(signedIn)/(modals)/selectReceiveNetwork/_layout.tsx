@@ -5,7 +5,7 @@ import {
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 
-export default function SelectNetworkLayout(): JSX.Element {
+export default function SelectReceiveNetworkLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />

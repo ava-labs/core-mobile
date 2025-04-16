@@ -133,6 +133,8 @@ import IconAvaxP from '../../assets/tokenLogos/AVAX_P_LIGHT.svg'
 import IconAvaxX from '../../assets/tokenLogos/AVAX_X_LIGHT.svg'
 import IconAvaxPDark from '../../assets/tokenLogos/AVAX_P_DARK.svg'
 import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
+import IconAvaxXPDark from '../../assets/tokenLogos/AVAX_XP_DARK.svg'
+import IconAvaxXPLight from '../../assets/tokenLogos/AVAX_XP_LIGHT.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -336,7 +338,9 @@ export const Icons = {
     AVAX_P_LIGHT: IconAvaxP,
     AVAX_X_LIGHT: IconAvaxX,
     AVAX_P_DARK: IconAvaxPDark,
-    AVAX_X_DARK: IconAvaxXDark
+    AVAX_X_DARK: IconAvaxXDark,
+    AVAX_XP_DARK: IconAvaxXPDark,
+    AVAX_XP_LIGHT: IconAvaxXPLight
   },
   Currencies: {
     AED: AED,

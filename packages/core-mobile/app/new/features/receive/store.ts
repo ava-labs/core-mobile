@@ -1,13 +1,25 @@
+import { useQuery } from '@tanstack/react-query'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import { create } from 'zustand'
 
 interface ReceiveStore {
   selectedNetwork: NetworkWithCaip2ChainId | null
-  setSelectedNetwork: (network: NetworkWithCaip2ChainId) => void
+  actions: {
+    setSelectedNetwork: (network: NetworkWithCaip2ChainId) => void
+  }
 }
 
-export const useReceiveStore = create<ReceiveStore>(set => ({
+const useReceiveStore = create<ReceiveStore>(set => ({
   selectedNetwork: null,
-  setSelectedNetwork: (network: NetworkWithCaip2ChainId) =>
-    set({ selectedNetwork: network })
+  actions: {
+    setSelectedNetwork: (network: NetworkWithCaip2ChainId) =>
+      set({ selectedNetwork: network })
+  }
 }))
+
+export const useReceiveSelectedNetwork = (): ReceiveStore['selectedNetwork'] =>
+  useReceiveStore(state => state.selectedNetwork)
+
+export const useReceiveActions = (): ReceiveStore['actions'] =>
+  useReceiveStore(state => state.actions)

@@ -1,39 +1,40 @@
-import {
-  FlatList,
-  Icons,
-  Pressable,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
-import { TokenLogo } from 'common/components/TokenLogo'
+import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { useRouter } from 'expo-router'
-import { useReceiveStore } from 'features/receive/store'
-import React, { ReactNode } from 'react'
+import {
+  useReceiveActions,
+  useReceiveSelectedNetwork
+} from 'features/receive/store'
+import React from 'react'
+import { FlatList, ListRenderItem } from 'react-native'
 import { NetworkWithCaip2ChainId } from 'store/network'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import { LogoWithNetwork } from '../components/LogoWithNetwork'
+import { HORIZONTAL_MARGIN, isXPChain } from '../consts'
 
-export const SelectNetworkScreen = (): JSX.Element => {
+export const SelectReceiveNetworkScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { back } = useRouter()
   const { availableNetworks } = usePrimaryNetworks()
 
-  const setSelectedNetwork = useReceiveStore(state => state.setSelectedNetwork)
-  const selectedNetwork = useReceiveStore(state => state.selectedNetwork)
+  const { setSelectedNetwork } = useReceiveActions()
+  const selectedNetwork = useReceiveSelectedNetwork()
 
   const handleNetworkSelect = (network: NetworkWithCaip2ChainId): void => {
     setSelectedNetwork(network)
     back()
   }
 
-  const renderItem = ({
+  const renderItem: ListRenderItem<NetworkWithCaip2ChainId> = ({
     item,
     index
-  }: {
-    item: NetworkWithCaip2ChainId
-    index: number
-  }): ReactNode => {
+  }) => {
     const isLastItem = index === availableNetworks.length - 1
+
+    const showChainLogo =
+      isXPChain(item.chainId) ||
+      isPChain(item.chainId) ||
+      isXChain(item.chainId)
 
     return (
       <Pressable
@@ -42,11 +43,16 @@ export const SelectNetworkScreen = (): JSX.Element => {
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingLeft: 16,
+          paddingLeft: HORIZONTAL_MARGIN,
           height: 50,
-          gap: 16
+          gap: HORIZONTAL_MARGIN
         }}>
-        <TokenLogo symbol={item?.networkToken?.symbol} size={36} />
+        <LogoWithNetwork
+          network={item}
+          networkSize={36}
+          outerBorderColor={theme.colors.$surfaceSecondary}
+          showChainLogo={showChainLogo}
+        />
         <View
           style={{
             flex: 1,
@@ -55,7 +61,7 @@ export const SelectNetworkScreen = (): JSX.Element => {
             alignItems: 'center',
             borderBottomWidth: isLastItem ? 0 : 1,
             borderBottomColor: theme.colors.$borderPrimary,
-            paddingRight: 16
+            paddingRight: HORIZONTAL_MARGIN
           }}>
           <View style={{ flex: 1 }}>
             <Text variant="buttonMedium">{item.chainName}</Text>
@@ -76,15 +82,17 @@ export const SelectNetworkScreen = (): JSX.Element => {
       }}>
       <Text
         variant="heading2"
-        style={{ marginBottom: 12, paddingLeft: 16, paddingRight: 64 }}>
+        style={{
+          marginBottom: 12,
+          paddingLeft: HORIZONTAL_MARGIN
+        }}>
         Select a network
       </Text>
+
       <FlatList
         data={availableNetworks}
         renderItem={renderItem}
-        keyExtractor={(item: NetworkWithCaip2ChainId) =>
-          item.chainId.toString()
-        }
+        keyExtractor={item => item.chainId.toString()}
       />
     </View>
   )

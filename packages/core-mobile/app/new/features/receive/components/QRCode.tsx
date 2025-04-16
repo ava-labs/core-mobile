@@ -17,52 +17,51 @@ interface Props {
   testID?: string
 }
 
+const CONTAINER_SIZE = SCREEN_WIDTH * 0.6
+const QR_CODE_SIZE = CONTAINER_SIZE
+const QR_TOKEN_SIZE = QR_CODE_SIZE * 0.372
+const CIRCULAR_TEXT_SIZE = QR_TOKEN_SIZE * 2
+const ICON_SIZE = QR_TOKEN_SIZE * 0.8
+const LOGO_SIZE = QR_CODE_SIZE / 2.1
+
 export const QRCode: FC<Props> = ({ address, token, label }: Props) => {
   const { theme } = useTheme()
-
-  const containerSize = SCREEN_WIDTH * 0.6
-  const qrCodeSize = containerSize
-  const qrTokenSize = qrCodeSize * 0.372
-  const circularTextSize = qrTokenSize * 2
-  const iconSize = qrTokenSize * 0.8
-
-  const logoSize = qrCodeSize / 2.1
 
   const qrToken = (): JSX.Element => {
     switch (token) {
       case TokenSymbol.BTC:
         return (
           <BTCSymbol
-            width={iconSize}
-            height={iconSize}
+            width={ICON_SIZE}
+            height={ICON_SIZE}
             color={theme.colors.$surfacePrimary}
           />
         )
       case TokenSymbol.AVAX:
         return (
           <AVAXSymbol
-            width={iconSize}
-            height={iconSize}
+            width={ICON_SIZE}
+            height={ICON_SIZE}
             color={theme.colors.$surfacePrimary}
           />
         )
       default:
-        return <AVAXSymbol width={iconSize} height={iconSize} />
+        return <AVAXSymbol width={ICON_SIZE} height={ICON_SIZE} />
     }
   }
 
   return (
     <View
       style={{
-        height: containerSize,
-        width: containerSize
+        height: CONTAINER_SIZE,
+        width: CONTAINER_SIZE
       }}>
       <RNQRCode
         ecl={'H'}
-        size={qrCodeSize}
-        logoSize={logoSize}
+        size={QR_CODE_SIZE}
+        logoSize={LOGO_SIZE}
         logoBackgroundColor={theme.colors.$surfacePrimary}
-        logoBorderRadius={qrCodeSize}
+        logoBorderRadius={QR_CODE_SIZE}
         logo={QRPlaceholder}
         value={address}
         color={theme.colors.$textPrimary}
@@ -84,10 +83,10 @@ export const QRCode: FC<Props> = ({ address, token, label }: Props) => {
           }}>
           <View
             style={{
-              width: qrTokenSize,
-              height: qrTokenSize,
+              width: QR_TOKEN_SIZE,
+              height: QR_TOKEN_SIZE,
               backgroundColor: theme.colors.$textPrimary,
-              borderRadius: qrTokenSize / 2,
+              borderRadius: QR_TOKEN_SIZE / 2,
               justifyContent: 'center',
               alignItems: 'center'
             }}>
@@ -96,7 +95,7 @@ export const QRCode: FC<Props> = ({ address, token, label }: Props) => {
         </View>
         <CircularText
           text={label ?? ''}
-          size={circularTextSize}
+          size={CIRCULAR_TEXT_SIZE}
           textColor={theme.colors.$textPrimary}
           circleBackgroundColor={theme.colors.$surfacePrimary}
         />

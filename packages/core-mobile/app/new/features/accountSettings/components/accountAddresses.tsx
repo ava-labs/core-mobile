@@ -10,7 +10,7 @@ import { XPChainLogo } from '../../../common/components/XPChainLogo'
 export const AccountAddresses = ({
   account
 }: {
-  account: Account
+  account?: Account
 }): React.JSX.Element => {
   const onCopyAddress = (value: string, message: string): void => {
     copyToClipboard(value, message)
