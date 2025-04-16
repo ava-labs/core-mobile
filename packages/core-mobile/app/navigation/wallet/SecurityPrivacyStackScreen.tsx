@@ -20,6 +20,8 @@ import { useWallet } from 'hooks/useWallet'
 import { WalletType } from 'services/wallet/types'
 import walletService from 'services/wallet/WalletService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import SeedlessExportStack, {
   SeedlessExportStackParamList
 } from './SeedlessExportStack'
@@ -202,11 +204,16 @@ type TurnOnBiometricsNavigationProp = SecurityPrivacyScreenProps<
 
 const PinForBiometryEnable = memo(() => {
   const nav = useNavigation<TurnOnBiometricsNavigationProp>()
+  const activeWalletId = useSelector(selectActiveWalletId)
 
   return (
     <PinOrBiometryLogin
       onLoginSuccess={mnemonic => {
-        BiometricsSDK.storeWalletWithBiometry(mnemonic)
+        if (!activeWalletId) {
+          Logger.error('No active wallet ID found')
+          return
+        }
+        BiometricsSDK.storeWalletWithBiometry(activeWalletId, mnemonic)
           .then(() =>
             nav.navigate(AppNavigation.SecurityPrivacy.SecurityPrivacy)
           )
@@ -233,8 +240,13 @@ const CreatePinScreen = memo(() => {
   return (
     <CreatePIN
       onPinSet={pin => {
-        onPinCreated(mnemonic, pin, true)
-          .then(() => {
+        onPinCreated({
+          mnemonic,
+          pin,
+          isResetting: true,
+          walletType: WalletType.MNEMONIC
+        })
+          .then(_walletId => {
             AnalyticsService.capture('ChangePasswordSucceeded')
             nav.goBack()
           })

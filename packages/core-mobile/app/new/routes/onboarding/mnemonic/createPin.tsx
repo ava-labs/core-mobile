@@ -8,6 +8,7 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { WalletType } from 'services/wallet/types'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
@@ -22,10 +23,17 @@ export default function CreatePin(): JSX.Element {
         return
       }
       AnalyticsService.capture('OnboardingPasswordSet')
-      onPinCreated(mnemonic, pin, false)
-        .then(() => {
+      onPinCreated({
+        mnemonic,
+        pin,
+        isResetting: false,
+        walletType: WalletType.MNEMONIC
+      })
+        .then(walletId => {
           if (useBiometrics) {
-            BiometricsSDK.storeWalletWithBiometry(mnemonic)
+            BiometricsSDK.storeWalletWithBiometry(walletId, mnemonic).catch(
+              Logger.error
+            )
           }
           navigate({ pathname: './setWalletName', params: { mnemonic } })
         })

@@ -9,10 +9,13 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { StorageKey } from 'resources/Constants'
 import { commonStorage } from 'utils/mmkv'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { selectWalletType } from 'store/app'
+import { useSelector } from 'react-redux'
 
 const ChangePinScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
+  const walletType = useSelector(selectWalletType)
   const { onPinCreated } = useWallet()
   const { bottom } = useSafeAreaInsets()
   const [keyboardHeight, setKeyboardHeight] = useState(0)
@@ -21,10 +24,10 @@ const ChangePinScreen = (): React.JSX.Element => {
 
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
-      onPinCreated(mnemonic, pin, false)
-        .then(() => {
+      onPinCreated({ mnemonic, pin, isResetting: false, walletType })
+        .then(walletId => {
           if (useBiometrics) {
-            BiometricsSDK.storeWalletWithBiometry(mnemonic)
+            BiometricsSDK.storeWalletWithBiometry(walletId, mnemonic)
               .then(() => canGoBack() && back())
               .catch(Logger.error)
           } else {
@@ -34,7 +37,7 @@ const ChangePinScreen = (): React.JSX.Element => {
         })
         .catch(Logger.error)
     },
-    [mnemonic, onPinCreated, back, canGoBack, useBiometrics]
+    [mnemonic, onPinCreated, back, canGoBack, useBiometrics, walletType]
   )
 
   // Configure keyboard listeners

@@ -29,6 +29,7 @@ import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setWalletName } from 'store/account'
 import LogoLoader from 'components/LogoLoader'
+import { useStoredBiometrics } from 'new/common/hooks/useStoredBiometrics'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -198,18 +199,21 @@ const CreatePinScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
+  const { isBiometricAvailable } = useStoredBiometrics()
 
   const onPinSet = (pin: string): void => {
     AnalyticsService.capture('OnboardingPasswordSet')
-    onPinCreated(createWalletContext.mnemonic, pin, false)
-      .then(value => {
-        switch (value) {
-          case 'useBiometry':
-            navigate(AppNavigation.CreateWallet.BiometricLogin)
-            break
-          case 'enterWallet':
-            navigate(AppNavigation.CreateWallet.TermsNConditions)
-            break
+    onPinCreated({
+      mnemonic: createWalletContext.mnemonic,
+      pin,
+      isResetting: false,
+      walletType: WalletType.MNEMONIC
+    })
+      .then(_walletId => {
+        if (isBiometricAvailable) {
+          navigate(AppNavigation.CreateWallet.BiometricLogin)
+        } else {
+          navigate(AppNavigation.CreateWallet.TermsNConditions)
         }
       })
       .catch(Logger.error)
