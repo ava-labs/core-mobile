@@ -1,4 +1,3 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import { AlertWithTextInputs, Button, View } from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import React, { useRef, useCallback } from 'react'
@@ -65,14 +64,14 @@ export const AccountButtons = ({
         onPress={handleShowAlertWithTextInput}>
         Rename account
       </Button>
-      <Button
+      {/* <Button
         style={{ borderRadius: 12 }}
         size="large"
         type="secondary"
         // todo: CP-10070
         onPress={noop}>
         Export private key
-      </Button>
+      </Button> */}
       {/* TODO: waiting product decision on whether we show this  */}
       {/* <Button
         style={{ borderRadius: 12 }}
