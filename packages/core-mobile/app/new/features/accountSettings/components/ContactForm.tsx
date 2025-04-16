@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { Contact } from 'store/addressBook'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
+import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { AddressType } from '../consts'
@@ -27,15 +28,36 @@ export const ContactForm = ({
   onUpdate: (contact: Contact) => void
 }): React.JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const [alertWithTextInputVisible, setAlertWithTextInputVisible] =
-    useState(false)
-  const handleShowAlertWithTextInput = useCallback((): void => {
-    setAlertWithTextInputVisible(true)
-  }, [])
+  const alert = useRef<AlertWithTextInputsHandle>(null)
 
-  const handleHideAlertWithTextInput = useCallback((): void => {
-    setAlertWithTextInputVisible(false)
-  }, [])
+  const handleShowAlertWithTextInput = useCallback((): void => {
+    alert.current?.show({
+      title: 'Name this contact',
+      inputs: [{ key: 'save' }],
+      buttons: [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            alert.current?.hide()
+          }
+        },
+        {
+          text: 'Save',
+          style: 'default',
+          shouldDisable: (values: Record<string, string>) => {
+            return !isValidContactName(values.save)
+          },
+          onPress: (values: Record<string, string>) => {
+            if (values.save !== '' && values.save !== undefined) {
+              onUpdate({ ...contact, name: values.save?.trim() })
+              alert.current?.hide()
+            }
+          }
+        }
+      ]
+    })
+  }, [contact, onUpdate])
 
   const handleUpdateAddress = useCallback(
     (addressType: AddressType, value?: string) => {
@@ -184,33 +206,7 @@ export const ContactForm = ({
         ))}
       </View>
       <View>
-        <AlertWithTextInputs
-          visible={alertWithTextInputVisible}
-          title="Name this contact"
-          inputs={[{ key: 'save' }]}
-          buttons={[
-            {
-              text: 'Cancel',
-              style: 'cancel',
-              onPress: () => {
-                handleHideAlertWithTextInput()
-              }
-            },
-            {
-              text: 'Save',
-              style: 'default',
-              shouldDisable: (values: Record<string, string>) => {
-                return !isValidContactName(values.save)
-              },
-              onPress: (values: Record<string, string>) => {
-                if (values.save !== '' && values.save !== undefined) {
-                  onUpdate({ ...contact, name: values.save?.trim() })
-                  handleHideAlertWithTextInput()
-                }
-              }
-            }
-          ]}
-        />
+        <AlertWithTextInputs ref={alert} />
       </View>
     </View>
   )
