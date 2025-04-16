@@ -276,31 +276,29 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                 </Button>
               </Reanimated.View>
             </View>
-            <Reanimated.View
-              style={[
-                {
+            <Reanimated.View style={buttonContainerStyle}>
+              <View
+                sx={{
+                  height: CIRCULAR_BUTTON_WIDTH,
                   flexDirection: 'row',
                   justifyContent: 'center',
                   gap: 30
-                },
-                buttonContainerStyle
-              ]}>
-              {bioType !== BiometricType.NONE && (
-                <CircularButton onPress={handlePromptBioLogin}>
-                  {bioType === BiometricType.FACE_ID ? (
-                    <Icons.Custom.FaceID width={26} height={26} />
-                  ) : (
-                    <Icons.Custom.TouchID width={26} height={26} />
-                  )}
-                </CircularButton>
-              )}
-              {isEnteringPin === false && !disableKeypad ? (
-                <CircularButton onPress={handleTogglePinInput}>
-                  <Icons.Custom.Pin width={26} height={26} />
-                </CircularButton>
-              ) : (
-                <View sx={{ height: CIRCULAR_BUTTON_WIDTH }} />
-              )}
+                }}>
+                {bioType !== BiometricType.NONE && (
+                  <CircularButton onPress={handlePromptBioLogin}>
+                    {bioType === BiometricType.FACE_ID ? (
+                      <Icons.Custom.FaceID width={26} height={26} />
+                    ) : (
+                      <Icons.Custom.TouchID width={26} height={26} />
+                    )}
+                  </CircularButton>
+                )}
+                {isEnteringPin === false && !disableKeypad && (
+                  <CircularButton onPress={handleTogglePinInput}>
+                    <Icons.Custom.Pin width={26} height={26} />
+                  </CircularButton>
+                )}
+              </View>
             </Reanimated.View>
           </View>
         </TouchableWithoutFeedback>
