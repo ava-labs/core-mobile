@@ -7,28 +7,19 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
+import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { useRouter } from 'expo-router'
 import { useReceiveStore } from 'features/receive/store'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import React, { ReactNode, useMemo } from 'react'
+import React, { ReactNode } from 'react'
 import { NetworkWithCaip2ChainId } from 'store/network'
-import { RECEIVING_NETWORKS } from '../consts'
 
 export const SelectNetworkScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { back } = useRouter()
-  const { allNetworks } = useNetworks()
+  const { availableNetworks } = usePrimaryNetworks()
 
   const setSelectedNetwork = useReceiveStore(state => state.setSelectedNetwork)
   const selectedNetwork = useReceiveStore(state => state.selectedNetwork)
-
-  const availableNetworks = useMemo(
-    () =>
-      RECEIVING_NETWORKS.map(chainId => allNetworks[chainId]).filter(
-        item => item
-      ),
-    [allNetworks]
-  )
 
   const handleNetworkSelect = (network: NetworkWithCaip2ChainId): void => {
     setSelectedNetwork(network)
@@ -43,6 +34,7 @@ export const SelectNetworkScreen = (): JSX.Element => {
     index: number
   }): ReactNode => {
     const isLastItem = index === availableNetworks.length - 1
+
     return (
       <Pressable
         onPress={() => handleNetworkSelect(item)}

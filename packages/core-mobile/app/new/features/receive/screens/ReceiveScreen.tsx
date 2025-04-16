@@ -8,15 +8,22 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
+import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { router } from 'expo-router'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import {
+  NETWORK_P,
+  NETWORK_P_TEST,
+  NETWORK_X,
+  NETWORK_X_TEST
+} from 'services/network/consts'
 import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { QRCode } from '../components/QRCode'
 import { HORIZONTAL_MARGIN } from '../consts'
 import { useReceiveStore } from '../store'
@@ -24,24 +31,16 @@ import { useReceiveStore } from '../store'
 export const ReceiveScreen = memo((): React.JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
+  const { availableNetworks, networks } = usePrimaryNetworks()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const selectedNetwork = useReceiveStore(state => state.selectedNetwork)
   const setSelectedNetwork = useReceiveStore(state => state.setSelectedNetwork)
-
-  const { allNetworks } = useNetworks()
-
-  useEffect(() => {
-    const network = allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-    if (network) {
-      setSelectedNetwork(network)
-    }
-  }, [allNetworks, setSelectedNetwork])
-
   const activeAccount = useSelector(selectActiveAccount)
 
-  useEffect(() => {
-    AnalyticsService.capture('ReceivePageVisited')
-  }, [])
+  const isXPChain =
+    selectedNetwork?.chainId === ChainId.AVALANCHE_XP ||
+    selectedNetwork?.chainId === ChainId.AVALANCHE_TEST_XP
 
   const address = useMemo((): string => {
     switch (selectedNetwork?.vmName) {
@@ -57,14 +56,111 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
     }
   }, [selectedNetwork?.vmName, activeAccount])
 
-  const data = useMemo(
-    () => [
+  useEffect(() => {
+    // Set default network if no network is selected
+    if (!selectedNetwork && availableNetworks[0]) {
+      setSelectedNetwork(availableNetworks[0])
+    }
+  }, [availableNetworks, selectedNetwork, setSelectedNetwork])
+
+  useEffect(() => {
+    // Update the selected network if the user toggles developer mode
+    if (selectedNetwork?.isTestnet && !isDeveloperMode) {
+      const foundNetwork = networks.find(
+        network =>
+          network.vmName === selectedNetwork?.vmName && !network.isTestnet
+      )
+
+      if (foundNetwork) {
+        setSelectedNetwork(foundNetwork)
+      }
+    } else if (!selectedNetwork?.isTestnet && isDeveloperMode) {
+      const foundNetwork = networks.find(
+        network =>
+          network.vmName === selectedNetwork?.vmName && network.isTestnet
+      )
+
+      if (foundNetwork) {
+        setSelectedNetwork(foundNetwork)
+      }
+    }
+  }, [
+    isDeveloperMode,
+    networks,
+    selectedNetwork?.isTestnet,
+    selectedNetwork?.vmName,
+    setSelectedNetwork
+  ])
+
+  useEffect(() => {
+    AnalyticsService.capture('ReceivePageVisited')
+  }, [])
+
+  const walletAddreses = useMemo(() => {
+    if (isXPChain) {
+      const addressP = activeAccount?.addressPVM ?? ''
+      const addressX = activeAccount?.addressAVM ?? ''
+      const networkX = selectedNetwork?.isTestnet ? NETWORK_X_TEST : NETWORK_X
+      const networkP = selectedNetwork?.isTestnet ? NETWORK_P_TEST : NETWORK_P
+
+      return [
+        {
+          title: networkX.isTestnet
+            ? 'Avalanche X-Chain Testnet'
+            : 'Avalanche X-Chain',
+          subtitle: addressX?.replace('-', '\u2011'), // to prevent word wrap because of the dash
+          leftIcon: (
+            <TokenLogo
+              symbol={networkX.networkToken?.symbol ?? 'AVAX'}
+              isNetworkToken
+              size={24}
+            />
+          ),
+          value: (
+            <Button
+              type="secondary"
+              size="small"
+              onPress={() =>
+                onCopyAddress(addressX, `${networkX.chainName} address copied`)
+              }>
+              Copy
+            </Button>
+          )
+        },
+        {
+          title: networkP.isTestnet
+            ? 'Avalanche P-Chain Testnet'
+            : 'Avalanche P-Chain',
+          subtitle: addressP?.replace('-', '\u2011'), // to prevent word wrap because of the dash
+          leftIcon: (
+            <TokenLogo
+              symbol={networkP.networkToken?.symbol ?? 'AVAX'}
+              isNetworkToken
+              size={24}
+            />
+          ),
+          value: (
+            <Button
+              type="secondary"
+              size="small"
+              onPress={() =>
+                onCopyAddress(addressP, `${networkP.chainName} address copied`)
+              }>
+              Copy
+            </Button>
+          )
+        }
+      ]
+    }
+
+    return [
       {
-        title: selectedNetwork?.chainName ?? 'Avalanche (C-Chain)',
-        subtitle: address,
+        title: selectedNetwork?.chainName ?? 'Avalanche C-Chain',
+        subtitle: address.replace('-', '\u2011'), // to prevent word wrap because of the dash
         leftIcon: (
           <TokenLogo
             symbol={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
+            isNetworkToken
             size={24}
           />
         ),
@@ -82,9 +178,16 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
           </Button>
         )
       }
-    ],
-    [selectedNetwork, address]
-  )
+    ]
+  }, [
+    isXPChain,
+    selectedNetwork?.chainName,
+    selectedNetwork?.networkToken?.symbol,
+    selectedNetwork?.isTestnet,
+    address,
+    activeAccount?.addressPVM,
+    activeAccount?.addressAVM
+  ])
 
   const onCopyAddress = (value: string, message: string): void => {
     copyToClipboard(value, message)
@@ -108,13 +211,18 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
           gap: 4
         }}>
         <Text variant="heading2">Receive crypto</Text>
-        <Text variant="body1">
+        <Text variant="subtitle1">
           To receive funds you can choose to share your unique QR code or
           address below with the sender
         </Text>
       </View>
 
-      <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+      <View
+        style={{
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          flex: 1
+        }}>
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <TouchableOpacity
@@ -147,10 +255,10 @@ export const ReceiveScreen = memo((): React.JSX.Element => {
           token={selectedNetwork?.networkToken?.symbol}
           label={selectedNetwork?.chainName}
         />
-        <View style={{ flex: 1 }} />
+        <View style={{ flex: isXPChain ? 0.5 : 1 }} />
       </View>
 
-      <GroupList data={data} textContainerSx={{ flex: 1 }} />
+      <GroupList data={walletAddreses} textContainerSx={{ flex: 1 }} />
     </View>
   )
 })
