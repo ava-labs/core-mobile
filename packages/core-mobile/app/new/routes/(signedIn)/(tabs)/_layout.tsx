@@ -13,7 +13,8 @@ const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 
 const tabLabelStyle = {
-  fontSize: 10
+  fontSize: 10,
+  fontFamily: 'Inter-Medium'
 }
 
 const tabBarInactiveTintOpacity = 0.6
