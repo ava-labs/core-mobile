@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo, useState } from 'react'
@@ -25,7 +26,6 @@ import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
 import { BrowserInput } from './BrowserInput'
 import { FavoritesList } from './FavoritesList'
 import { HistoryList } from './HistoryList'
-import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 
 export const BrowserControls = (): ReactNode => {
   const { theme } = useTheme()
