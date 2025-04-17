@@ -1,9 +1,7 @@
-import { BottomTabs } from 'common/components/BottomTabs'
-import { useMemo } from 'react'
 import { alpha, useTheme } from '@avalabs/k2-alpine'
-import React from 'react'
+import { BottomTabs } from 'common/components/BottomTabs'
+import React, { useMemo } from 'react'
 import { Platform } from 'react-native'
-import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 
 const isIOS = Platform.OS === 'ios'
 

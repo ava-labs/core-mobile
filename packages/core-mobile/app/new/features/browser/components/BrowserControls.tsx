@@ -7,7 +7,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo, useState } from 'react'
