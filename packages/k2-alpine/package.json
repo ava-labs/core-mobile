@@ -74,6 +74,7 @@
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
+    "@types/big.js": "6.2.2",
     "@types/d3": "7.4.3",
     "@types/jest": "29.5.13",
     "@types/lodash.debounce": "4.0.9",
