@@ -7,7 +7,7 @@ import { TokenUnitInputWidget } from './TokenUnitInputWidget'
 import { TokenUnitInput } from './TokenUnitInput'
 
 export default {
-  title: 'Token Amount Input'
+  title: 'Token Unit Input'
 }
 
 export const All = (): JSX.Element => {

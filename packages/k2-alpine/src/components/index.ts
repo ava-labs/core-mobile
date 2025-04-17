@@ -41,6 +41,7 @@ export * from './ProgressBar/ProgressBar'
 export * from './ProgressBar/MaskedProgressBar'
 export * from './TokenUnitInput/TokenUnitInput'
 export * from './TokenUnitInput/TokenUnitInputWidget'
+export * from './TokenAmountInput/TokenAmountInput'
 export * from './DateTimePicker/DateTimePicker'
 export * from './Confetti/Confetti'
 
