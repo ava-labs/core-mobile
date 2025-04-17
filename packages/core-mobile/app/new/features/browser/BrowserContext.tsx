@@ -1,4 +1,5 @@
-import React, { useRef } from 'react'
+import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
+import React, { RefObject, useEffect, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { SharedValue, useSharedValue } from 'react-native-reanimated'
 import { WebViewProgressEvent } from 'react-native-webview/lib/WebViewTypes'
@@ -10,10 +11,13 @@ import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 export type BrowserContextType = {
   urlEntry: string
   progress: SharedValue<number>
+  alertRef: React.RefObject<AlertWithTextInputsHandle>
   inputRef?: React.RefObject<TextInput>
   browserRefs: React.MutableRefObject<
     Record<string, React.RefObject<BrowserTabRef> | null>
   >
+  showRecentSearches: SharedValue<boolean>
+  isRenameFavoriteVisible: SharedValue<boolean>
   handleClearAndFocus: () => void
   handleUrlSubmit: (url?: string) => void
   onProgress: (event: WebViewProgressEvent) => void
@@ -23,18 +27,32 @@ export type BrowserContextType = {
 const BrowserContext = React.createContext<BrowserContextType | null>(null)
 
 function useBrowserContextValue(): BrowserContextType {
-  const activeTab = useSelector(selectActiveTab)
-  const progress = useSharedValue(0)
   const dispatch = useDispatch()
 
-  const inputRef = useRef<TextInput>(null)
-  const browserRefs = useRef<
-    Record<string, React.RefObject<BrowserTabRef> | null>
-  >({})
-
-  const [urlEntry, setUrlEntry] = React.useState<string>(
+  const activeTab = useSelector(selectActiveTab)
+  const [urlEntry, setUrlEntry] = useState<string>(
     activeTab?.activeHistory?.url ?? ''
   )
+
+  const alertRef = useRef<AlertWithTextInputsHandle>(null)
+  const inputRef = useRef<TextInput>(null)
+  const browserRefs = useRef<Record<string, RefObject<BrowserTabRef> | null>>(
+    {}
+  )
+
+  const progress = useSharedValue(0)
+  const isRenameFavoriteVisible = useSharedValue(false)
+  const showRecentSearches = useSharedValue(urlEntry?.length > 0)
+
+  useEffect(() => {
+    if (urlEntry.length > 0) {
+      if (!showRecentSearches.value) {
+        showRecentSearches.value = true
+      }
+    } else {
+      showRecentSearches.value = false
+    }
+  }, [urlEntry, showRecentSearches])
 
   function handleUrlSubmit(url?: string): void {
     if (!url) return
@@ -84,10 +102,13 @@ function useBrowserContextValue(): BrowserContextType {
   }
 
   return {
+    alertRef,
     inputRef,
     browserRefs,
     progress,
     urlEntry,
+    isRenameFavoriteVisible,
+    showRecentSearches,
     handleClearAndFocus,
     handleUrlSubmit,
     onProgress,
