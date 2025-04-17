@@ -4,7 +4,7 @@ import {
   Button,
   SafeAreaView,
   ScrollView,
-  TokenAmountInputWidget,
+  TokenUnitInputWidget,
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
@@ -119,7 +119,7 @@ const StakeAmountScreen = (): JSX.Element => {
           style={{ flex: 1 }}
           contentContainerSx={{ padding: 16, paddingTop: 0 }}>
           <ScreenHeader title="How much would you like to stake?" />
-          <TokenAmountInputWidget
+          <TokenUnitInputWidget
             sx={{
               marginTop: 16
             }}

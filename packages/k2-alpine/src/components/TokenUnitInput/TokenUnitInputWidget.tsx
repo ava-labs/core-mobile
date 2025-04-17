@@ -6,9 +6,9 @@ import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
 import { Button } from '../Button/Button'
-import { TokenAmountInput, TokenAmountInputHandle } from './TokenAmountInput'
+import { TokenUnitInput, TokenUnitInputHandle } from './TokenUnitInput'
 
-export const TokenAmountInputWidget = ({
+export const TokenUnitInputWidget = ({
   balance,
   token,
   maxPercentage = 1,
@@ -57,7 +57,7 @@ export const TokenAmountInputWidget = ({
     }
   ])
   const [errorMessage, setErrorMessage] = useState<string>()
-  const textInputRef = useRef<TokenAmountInputHandle>(null)
+  const textInputRef = useRef<TokenUnitInputHandle>(null)
 
   const handlePressPercentageButton = (
     percent: number,
@@ -110,7 +110,7 @@ export const TokenAmountInputWidget = ({
           paddingHorizontal: 16,
           paddingBottom: 22
         }}>
-        <TokenAmountInput
+        <TokenUnitInput
           editable={!disabled}
           ref={textInputRef}
           token={token}
