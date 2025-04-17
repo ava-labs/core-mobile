@@ -7,8 +7,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
+import { TAB_BAR_HEIGHT } from 'common/consts'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { KeyboardAvoidingView, Platform } from 'react-native'
@@ -30,10 +30,8 @@ export const BrowserControls = (): ReactNode => {
   const { theme } = useTheme()
   const { inputRef, isRenameFavoriteVisible, showRecentSearches } =
     useBrowserContext()
-
   const insets = useSafeAreaInsets()
   const keyboardHeight = useKeyboardHeight()
-  const tabBarHeight = useBottomTabBarHeight()
 
   const [isFocused, setIsFocused] = useState(false)
 
@@ -120,10 +118,13 @@ export const BrowserControls = (): ReactNode => {
       return {
         transform: [
           {
-            translateY: withTiming(keyboardHeight > 0 ? tabBarHeight : 0, {
-              ...ANIMATED.TIMING_CONFIG,
-              duration: 10
-            })
+            translateY: withTiming(
+              keyboardHeight > 0 ? -keyboardHeight + TAB_BAR_HEIGHT : 0,
+              {
+                ...ANIMATED.TIMING_CONFIG,
+                duration: 10
+              }
+            )
           }
         ]
       }
@@ -225,8 +226,7 @@ export const BrowserControls = (): ReactNode => {
               gestureControlStyle,
               {
                 flex: 1,
-                marginBottom:
-                  keyboardHeight > 0 ? (Platform.OS === 'ios' ? 24 : 48) : 0
+                marginBottom: keyboardHeight > 0 ? 24 : 0
               }
             ]}>
             <Animated.View

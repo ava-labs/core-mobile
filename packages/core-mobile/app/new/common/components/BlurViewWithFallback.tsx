@@ -7,10 +7,12 @@ import { selectSelectedColorScheme } from 'store/settings/appearance'
 
 export const BlurViewWithFallback = ({
   children,
+  intensity = 75,
   shouldDelayBlurOniOS = false,
   style
 }: {
   children?: React.ReactNode
+  intensity?: number
   /*
    * use this prop to add a short delay to ensure BlurView renders
    * after dynamic content (like FlatList) has mounted.
@@ -66,7 +68,10 @@ export const BlurViewWithFallback = ({
   }
 
   return (
-    <BlurView style={iosContainerStyle} intensity={75} tint={colorScheme}>
+    <BlurView
+      style={iosContainerStyle}
+      intensity={intensity}
+      tint={colorScheme}>
       {children}
     </BlurView>
   )

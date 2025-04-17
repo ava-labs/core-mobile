@@ -73,7 +73,6 @@ export const BrowserInput = ({
   }, [activeTab?.activeHistory?.url])
 
   const onChangeText = (text: string): void => {
-    showRecentSearches.value = text.length !== 0
     setUrlEntry(text)
   }
 

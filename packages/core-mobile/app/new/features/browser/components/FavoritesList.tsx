@@ -1,4 +1,5 @@
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
+import { showSnackbar } from 'common/utils/toast'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import {
   FlatList,
@@ -11,7 +12,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
 import { SUGGESTED_ITEMS } from 'store/browser/const'
-import { selectAllFavorites } from 'store/browser/slices/favorites'
+import {
+  removeFavorite,
+  selectAllFavorites,
+  updateFavorite
+} from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
 import {
   getSuggestedImage,
@@ -120,26 +125,89 @@ const FavoriteItem = ({
   item: FavoriteOrSuggested
   onPress: (item: Favorite) => void
 }): ReactNode => {
-  const { handleRenameFavorite, handleRemoveFavorite } = useBrowserContext()
+  const dispatch = useDispatch()
+  const { alertRef, inputRef, isRenameFavoriteVisible } = useBrowserContext()
+
   const [isLongPressActive, setIsLongPressActive] = useState(false)
+
   const image = isSuggestedSiteName(item.title)
     ? getSuggestedImage(item.title)
     : prepareFaviconToLoad(item.url, item.favicon)
+
+  const handleRemoveFavorite = useCallback(() => {
+    dispatch(removeFavorite({ url: item.url }))
+    showSnackbar('Removed from Favorites')
+  }, [dispatch, item.url])
+
+  const handleHideFavoriteAlert = useCallback((): void => {
+    inputRef?.current?.focus()
+    isRenameFavoriteVisible.value = false
+    alertRef.current?.hide()
+  }, [alertRef, inputRef, isRenameFavoriteVisible])
+
+  const handleSaveFavoriteTitle = useCallback(
+    (values: Record<string, string>): void => {
+      if (!item) {
+        return
+      }
+
+      dispatch(updateFavorite({ ...item, title: values.favoriteTitle }))
+
+      handleHideFavoriteAlert()
+    },
+    [dispatch, handleHideFavoriteAlert, item]
+  )
+
+  const handleRenameFavorite = useCallback(() => {
+    inputRef?.current?.blur()
+    isRenameFavoriteVisible.value = true
+    alertRef.current?.show({
+      title: 'Rename favorite',
+      description: 'Enter a new name for this favorite',
+      inputs: [{ key: 'favoriteTitle', defaultValue: item?.title }],
+      buttons: [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            handleHideFavoriteAlert()
+            alertRef.current?.hide()
+          }
+        },
+        {
+          style: 'default',
+          text: 'Save',
+          shouldDisable: (values: Record<string, string>) => {
+            return values.favoriteTitle?.length === 0
+          },
+          onPress: (values: Record<string, string>) =>
+            handleSaveFavoriteTitle(values)
+        }
+      ]
+    })
+  }, [
+    alertRef,
+    handleHideFavoriteAlert,
+    handleSaveFavoriteTitle,
+    inputRef,
+    isRenameFavoriteVisible,
+    item?.title
+  ])
 
   const onPressAction = useCallback(
     ({ nativeEvent }: { nativeEvent: { event: string } }) => {
       switch (nativeEvent.event) {
         case MenuId.Rename:
-          handleRenameFavorite(item)
+          handleRenameFavorite()
           break
         case MenuId.Remove: {
-          handleRemoveFavorite(item)
+          handleRemoveFavorite()
           break
         }
       }
       setIsLongPressActive(false)
     },
-    [handleRenameFavorite, handleRemoveFavorite, item]
+    [handleRenameFavorite, handleRemoveFavorite]
   )
 
   const handlePress = useCallback(() => {

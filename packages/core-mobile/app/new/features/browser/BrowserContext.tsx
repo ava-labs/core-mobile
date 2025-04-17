@@ -1,62 +1,56 @@
-import { showSnackbar } from 'common/utils/toast'
-import React, { RefObject, useCallback, useRef, useState } from 'react'
+import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
+import React, { RefObject, useEffect, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { SharedValue, useSharedValue } from 'react-native-reanimated'
 import { WebViewProgressEvent } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  addHistoryForActiveTab,
-  Favorite,
-  selectActiveTab
-} from 'store/browser'
-import { removeFavorite } from 'store/browser/slices/favorites'
+import { addHistoryForActiveTab, selectActiveTab } from 'store/browser'
 import { BrowserTabRef } from './components/BrowserTab'
 import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 
 export type BrowserContextType = {
   urlEntry: string
   progress: SharedValue<number>
+  alertRef: React.RefObject<AlertWithTextInputsHandle>
   inputRef?: React.RefObject<TextInput>
   browserRefs: React.MutableRefObject<
     Record<string, React.RefObject<BrowserTabRef> | null>
   >
   showRecentSearches: SharedValue<boolean>
   isRenameFavoriteVisible: SharedValue<boolean>
-  favoriteAlertVisible: boolean
-  favoriteToRename: Favorite | null
-  setFavoriteToRename: (favorite: Favorite | null) => void
-  setFavoriteAlertVisible: (visible: boolean) => void
   handleClearAndFocus: () => void
   handleUrlSubmit: (url?: string) => void
   onProgress: (event: WebViewProgressEvent) => void
   setUrlEntry: (url: string) => void
-  handleRenameFavorite: (item: Favorite) => void
-  handleRemoveFavorite: (item: Favorite) => void
-  handleHideFavoriteAlert: () => void
 }
 
 const BrowserContext = React.createContext<BrowserContextType | null>(null)
 
 function useBrowserContextValue(): BrowserContextType {
-  const activeTab = useSelector(selectActiveTab)
-  const progress = useSharedValue(0)
   const dispatch = useDispatch()
 
+  const activeTab = useSelector(selectActiveTab)
+  const [urlEntry, setUrlEntry] = useState<string>(
+    activeTab?.activeHistory?.url ?? ''
+  )
+
+  const alertRef = useRef<AlertWithTextInputsHandle>(null)
   const inputRef = useRef<TextInput>(null)
   const browserRefs = useRef<Record<string, RefObject<BrowserTabRef> | null>>(
     {}
   )
 
-  const [urlEntry, setUrlEntry] = useState<string>(
-    activeTab?.activeHistory?.url ?? ''
-  )
-  const [favoriteToRename, setFavoriteToRename] = useState<Favorite | null>(
-    null
-  )
-  const [favoriteAlertVisible, setFavoriteAlertVisible] = useState(false)
-
+  const progress = useSharedValue(0)
   const isRenameFavoriteVisible = useSharedValue(false)
   const showRecentSearches = useSharedValue(urlEntry?.length > 0)
+
+  useEffect(() => {
+    if (urlEntry.length > 0 && !showRecentSearches.value) {
+      showRecentSearches.value = true
+    } else {
+      showRecentSearches.value = false
+    }
+  }, [urlEntry, showRecentSearches])
 
   function handleUrlSubmit(url?: string): void {
     if (!url) return
@@ -105,54 +99,18 @@ function useBrowserContextValue(): BrowserContextType {
     progress.value = event.nativeEvent.progress
   }
 
-  const handleRenameFavorite = useCallback(
-    (item: Favorite) => {
-      inputRef?.current?.blur()
-      isRenameFavoriteVisible.value = true
-      setFavoriteAlertVisible(true)
-      setFavoriteToRename(item)
-    },
-    [
-      inputRef,
-      isRenameFavoriteVisible,
-      setFavoriteAlertVisible,
-      setFavoriteToRename
-    ]
-  )
-
-  const handleRemoveFavorite = useCallback(
-    (item: Favorite) => {
-      dispatch(removeFavorite({ url: item.url }))
-      showSnackbar('Removed from Favorites')
-    },
-    [dispatch]
-  )
-
-  const handleHideFavoriteAlert = (): void => {
-    inputRef?.current?.focus()
-    isRenameFavoriteVisible.value = false
-    setFavoriteAlertVisible(false)
-    setFavoriteToRename(null)
-  }
-
   return {
+    alertRef,
     inputRef,
     browserRefs,
     progress,
     urlEntry,
     isRenameFavoriteVisible,
+    showRecentSearches,
     handleClearAndFocus,
     handleUrlSubmit,
     onProgress,
-    setUrlEntry,
-    favoriteToRename,
-    setFavoriteToRename,
-    favoriteAlertVisible,
-    setFavoriteAlertVisible,
-    showRecentSearches,
-    handleRenameFavorite,
-    handleRemoveFavorite,
-    handleHideFavoriteAlert
+    setUrlEntry
   }
 }
 

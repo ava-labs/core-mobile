@@ -1,5 +1,4 @@
-import { ANIMATED, View } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
+import { AlertWithTextInputs, ANIMATED, View } from '@avalabs/k2-alpine'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
@@ -8,16 +7,16 @@ import {
   BrowserTabRef
 } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
-import { FavoriteAlert } from 'features/browser/components/FavoriteAlert'
 import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
+import { Platform } from 'react-native'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveTab, selectAllTabs, selectIsTabEmpty } from 'store/browser'
-import { Platform } from 'react-native'
 
 const Browser = (): React.ReactNode => {
-  const { browserRefs } = useBrowserContext()
+  const { browserRefs, alertRef } = useBrowserContext()
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
@@ -112,7 +111,9 @@ const Browser = (): React.ReactNode => {
         <BrowserControls />
       </View>
 
-      <FavoriteAlert />
+      <View>
+        <AlertWithTextInputs ref={alertRef} />
+      </View>
     </BrowserSnapshot>
   )
 }

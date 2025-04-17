@@ -7,11 +7,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { BlurView } from 'expo-blur'
+import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { Image } from 'expo-image'
 import React, { memo, ReactNode } from 'react'
 import ContentLoader, { Circle, Rect } from 'react-content-loader/native'
-import { ViewStyle } from 'react-native'
+import { ViewStyle, Platform } from 'react-native'
 import { HORIZONTAL_MARGIN } from '../consts'
 
 interface BrowserItemProps {
@@ -55,29 +55,36 @@ export const GridItem = memo(
         ]}>
         <View>
           {isFavorite ? (
-            <BlurView
-              intensity={20}
-              tint={theme.isDark ? 'dark' : 'light'}
-              experimentalBlurMethod="dimezisBlurView"
+            <View
               style={{
                 position: 'absolute',
                 top: -7,
                 right: -7,
                 zIndex: 1000,
-                backgroundColor: theme.colors.$borderPrimary,
-                borderRadius: 100,
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: 24,
-                height: 24,
-                overflow: 'hidden'
+                backgroundColor:
+                  Platform.OS === 'android'
+                    ? theme.colors.$surfacePrimary
+                    : 'transparent',
+                borderRadius: 100
               }}>
-              <Icons.Toggle.StarFilled
-                width={12}
-                height={12}
-                color={theme.colors.$textSecondary}
-              />
-            </BlurView>
+              <BlurViewWithFallback
+                intensity={20}
+                style={{
+                  width: 24,
+                  height: 24,
+                  backgroundColor: theme.colors.$borderPrimary,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden',
+                  borderRadius: 100
+                }}>
+                <Icons.Toggle.StarFilled
+                  width={12}
+                  height={12}
+                  color={theme.colors.$textSecondary}
+                />
+              </BlurViewWithFallback>
+            </View>
           ) : null}
           <Avatar image={image} size={48} />
         </View>
