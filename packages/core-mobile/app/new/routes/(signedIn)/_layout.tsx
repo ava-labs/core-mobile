@@ -35,6 +35,10 @@ export default function WalletLayout(): JSX.Element {
             options={formSheetScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/selectReceiveNetwork"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/tokenManagement"
             options={modalScreensOptions}
           />

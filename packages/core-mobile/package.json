@@ -209,7 +209,8 @@
     "web3": "4.16.0",
     "xss": "1.0.15",
     "zeego": "3.0.6",
-    "zod": "3.23.8"
+    "zod": "3.23.8",
+    "zustand": "5.0.3"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
