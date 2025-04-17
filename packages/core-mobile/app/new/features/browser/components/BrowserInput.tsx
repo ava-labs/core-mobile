@@ -39,8 +39,14 @@ export const BrowserInput = ({
   const { theme } = useTheme()
   const { navigate } = useNavigation()
   const activeTab = useSelector(selectActiveTab)
-  const { urlEntry, progress, inputRef, handleUrlSubmit, setUrlEntry } =
-    useBrowserContext()
+  const {
+    urlEntry,
+    progress,
+    inputRef,
+    handleUrlSubmit,
+    setUrlEntry,
+    showRecentSearches
+  } = useBrowserContext()
 
   const isFavorited = useSelector(
     selectIsFavorited(activeTab?.activeHistory?.id)
@@ -75,10 +81,12 @@ export const BrowserInput = ({
   ): void => {
     AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
 
+    setUrlEntry(event.nativeEvent.text)
     handleUrlSubmit?.(event.nativeEvent.text)
   }
 
   const onClear = (): void => {
+    showRecentSearches.value = false
     setUrlEntry('')
   }
 

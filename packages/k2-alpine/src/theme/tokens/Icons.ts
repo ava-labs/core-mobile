@@ -70,6 +70,10 @@ import IconArrowOutward from '../../assets/icons/arrow_outward.svg'
 import IconDoNotDisturbOn from '../../assets/icons/do_not_disturb_on.svg'
 import IconAddCircle from '../../assets/icons/add_circle.svg'
 import IconRefresh from '../../assets/icons/refresh.svg'
+import IconLayers from '../../assets/icons/layers.svg'
+import IconStake from '../../assets/icons/stake.svg'
+import IconBrowser from '../../assets/icons/browser.svg'
+import IconTrack from '../../assets/icons/track.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -210,7 +214,11 @@ export const Icons = {
     MoreHoriz: IconMoreHoriz,
     Tabs: IconTabs,
     History: IconHistory,
-    Refresh: IconRefresh
+    Refresh: IconRefresh,
+    Layers: IconLayers,
+    Stake: IconStake,
+    Browser: IconBrowser,
+    Track: IconTrack
   },
   Notification: {
     Sync: IconSync

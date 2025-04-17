@@ -1,6 +1,7 @@
 import { Text, useTheme } from '@avalabs/k2-alpine'
 import React, { CSSProperties, useCallback } from 'react'
-import { Platform, Pressable } from 'react-native'
+import { Platform } from 'react-native'
+import { Pressable } from 'react-native-gesture-handler'
 import {
   CheckboxItem,
   Content,
@@ -35,14 +36,18 @@ interface DropdownMenuProps extends React.ComponentProps<typeof Root> {
   children: React.ReactNode
   groups: DropdownGroup[]
   style?: CSSProperties
+  disabled?: boolean
   onPressAction: (event: { nativeEvent: { event: string } }) => void
+  triggerAction?: 'press' | 'longPress'
 }
 
 export function DropdownMenu({
   groups,
   style,
   children,
+  disabled,
   onPressAction,
+  triggerAction = 'press',
   ...props
 }: DropdownMenuProps): React.ReactNode {
   const { theme } = useTheme()
@@ -106,7 +111,10 @@ export function DropdownMenu({
 
   return (
     <Root {...props}>
-      <DropdownMenuTrigger style={style}>
+      <DropdownMenuTrigger
+        disabled={disabled}
+        style={style}
+        action={triggerAction}>
         {children ?? <Text>Dropdown</Text>}
       </DropdownMenuTrigger>
 
@@ -123,16 +131,18 @@ export function DropdownMenu({
 }
 
 const DropdownMenuTrigger = create(
-  (props: React.ComponentProps<typeof Trigger>) => (
-    <Trigger {...props}>
-      <Pressable>{props.children}</Pressable>
-    </Trigger>
-  ),
+  (
+    props: React.ComponentProps<typeof Trigger> & {
+      action?: 'press' | 'longPress'
+    }
+  ) => <Trigger {...props}>{props.children}</Trigger>,
   'Trigger'
 )
 const DropdownMenuItem = create(
   (props: React.ComponentProps<typeof Item>) => (
-    <Item {...props} style={{ height: 34 }} />
+    <Item {...props}>
+      <Pressable>{props.children}</Pressable>
+    </Item>
   ),
   'Item'
 )
@@ -167,7 +177,10 @@ const DropdownMenuCheckboxItem = create(
     <CheckboxItem
       {...props}
       style={{ ...props.style, display: 'flex', alignItems: 'center', gap: 8 }}>
-      <ItemIndicator />
+      <Pressable>
+        <ItemIndicator />
+        {props.children}
+      </Pressable>
     </CheckboxItem>
   ),
   'CheckboxItem'
