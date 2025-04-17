@@ -25,6 +25,7 @@ import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
 import { BrowserInput } from './BrowserInput'
 import { FavoritesList } from './FavoritesList'
 import { HistoryList } from './HistoryList'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 
 export const BrowserControls = (): ReactNode => {
   const { theme } = useTheme()
@@ -156,10 +157,10 @@ export const BrowserControls = (): ReactNode => {
 
     return theme.isDark
       ? isIOS
-        ? '#181818'
-        : '#1E1E24'
+        ? alpha(colors.$neutral950, 0.8)
+        : colors.$neutral950
       : isIOS
-      ? alpha(theme.colors.$white, 0.5)
+      ? alpha(theme.colors.$white, 0.8)
       : theme.colors.$white
   }, [theme.isDark, theme.colors.$white])
 

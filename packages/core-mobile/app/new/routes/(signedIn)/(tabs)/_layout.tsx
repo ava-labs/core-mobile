@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { alpha, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
 import { Platform } from 'react-native'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 
 const isIOS = Platform.OS === 'ios'
 
@@ -12,11 +13,11 @@ const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 
 const tabLabelStyle = {
-  fontFamily: isIOS ? 'Inter-SemiBold' : 'Inter-Bold',
+  // fontFamily: isIOS ? 'Inter-SemiBold' : 'Inter-Bold',
   fontSize: 10
 }
 
-const tabBarInactiveTintOpacity = 0.4
+const tabBarInactiveTintOpacity = 0.6
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
@@ -24,17 +25,17 @@ export default function TabLayout(): JSX.Element {
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
       ? alpha(theme.colors.$white, tabBarInactiveTintOpacity)
-      : alpha('#1E1E24', tabBarInactiveTintOpacity)
+      : alpha(colors.$neutral950, tabBarInactiveTintOpacity)
   }, [theme.colors.$white, theme.isDark])
 
   const tabBarStyle = useMemo(() => {
     return {
       backgroundColor: theme.isDark
         ? isIOS
-          ? '#181818'
-          : '#1E1E24'
+          ? alpha(colors.$neutral950, 0.8)
+          : colors.$neutral950
         : isIOS
-        ? alpha(theme.colors.$white, 0.5)
+        ? alpha(theme.colors.$white, 0.8)
         : theme.colors.$white
     }
   }, [theme.colors.$white, theme.isDark])
