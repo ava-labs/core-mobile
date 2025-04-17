@@ -5,7 +5,7 @@ import { TextInput, TextInputProps } from 'react-native'
 import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
-} from 'src/utils/tokenUnitInput'
+} from '../../utils/tokenUnitInput'
 import { useTheme } from '../../hooks'
 
 /**
