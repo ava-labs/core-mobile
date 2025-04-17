@@ -8,10 +8,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
-import { TAB_BAR_HEIGHT } from 'common/consts'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { KeyboardAvoidingView, Platform } from 'react-native'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   runOnJS,
@@ -32,6 +32,7 @@ export const BrowserControls = (): ReactNode => {
     useBrowserContext()
   const insets = useSafeAreaInsets()
   const keyboardHeight = useKeyboardHeight()
+  const tabBarHeight = useBottomTabBarHeight()
 
   const [isFocused, setIsFocused] = useState(false)
 
@@ -119,7 +120,9 @@ export const BrowserControls = (): ReactNode => {
         transform: [
           {
             translateY: withTiming(
-              keyboardHeight > 0 ? -keyboardHeight + TAB_BAR_HEIGHT : 0,
+              keyboardHeight > 0
+                ? -keyboardHeight + tabBarHeight - insets.bottom
+                : 0,
               {
                 ...ANIMATED.TIMING_CONFIG,
                 duration: 10
