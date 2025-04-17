@@ -1,5 +1,5 @@
-import React from 'react'
 import { Text, View } from '@avalabs/k2-alpine'
+import React from 'react'
 
 export const SelectTokenScreen = (): JSX.Element => {
   return (
