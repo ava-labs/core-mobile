@@ -1,7 +1,5 @@
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useSelector } from 'react-redux'
 import { NetworkWithCaip2ChainId } from 'store/network'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 import {
   AVALANCHE_XP_NETWORK,
@@ -14,12 +12,10 @@ import { useMemo } from 'react'
 
 export function usePrimaryNetworks(): {
   networks: NetworkWithCaip2ChainId[]
-  availableNetworks: NetworkWithCaip2ChainId[]
   testNetworks: NetworkWithCaip2ChainId[]
   mainNetworks: NetworkWithCaip2ChainId[]
 } {
   const { allNetworks } = useNetworks()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const mainNetworks = useMemo(() => {
     return [
@@ -50,10 +46,6 @@ export function usePrimaryNetworks(): {
     () => [...mainNetworks, ...testNetworks],
     [testNetworks, mainNetworks]
   )
-  const availableNetworks = useMemo(() => {
-    if (isDeveloperMode) return testNetworks
-    return mainNetworks
-  }, [isDeveloperMode, testNetworks, mainNetworks])
 
-  return { networks, testNetworks, mainNetworks, availableNetworks }
+  return { networks, testNetworks, mainNetworks }
 }

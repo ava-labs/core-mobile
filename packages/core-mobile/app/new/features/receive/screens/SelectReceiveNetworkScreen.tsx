@@ -5,17 +5,27 @@ import {
   useReceiveActions,
   useReceiveSelectedNetwork
 } from 'features/receive/store'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
+import { useSelector } from 'react-redux'
 import { NetworkWithCaip2ChainId } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { LogoWithNetwork } from '../components/LogoWithNetwork'
-import { HORIZONTAL_MARGIN, isXPChain } from '../consts'
+import { HORIZONTAL_MARGIN } from '../consts'
+import { isXPChain } from '../utils'
 
 export const SelectReceiveNetworkScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { back } = useRouter()
-  const { availableNetworks } = usePrimaryNetworks()
+  const { mainNetworks, testNetworks } = usePrimaryNetworks()
+
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
+  const availableNetworks = useMemo(() => {
+    if (isDeveloperMode) return testNetworks
+    return mainNetworks
+  }, [isDeveloperMode, testNetworks, mainNetworks])
 
   const { setSelectedNetwork } = useReceiveActions()
   const selectedNetwork = useReceiveSelectedNetwork()

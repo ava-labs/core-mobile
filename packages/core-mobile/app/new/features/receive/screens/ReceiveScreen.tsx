@@ -12,19 +12,25 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
-import { HORIZONTAL_MARGIN, isXPChain } from '../consts'
+import { HORIZONTAL_MARGIN } from '../consts'
 import { useReceiveActions, useReceiveSelectedNetwork } from '../store'
+import { isXPChain } from '../utils'
 
 export const ReceiveScreen = (): ReactNode => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-  const { availableNetworks, networks } = usePrimaryNetworks()
+  const { networks, testNetworks, mainNetworks } = usePrimaryNetworks()
 
   const { setSelectedNetwork } = useReceiveActions()
   const selectedNetwork = useReceiveSelectedNetwork()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
+
+  const availableNetworks = useMemo(() => {
+    if (isDeveloperMode) return testNetworks
+    return mainNetworks
+  }, [isDeveloperMode, testNetworks, mainNetworks])
 
   const address = useMemo(() => {
     switch (selectedNetwork?.vmName) {
