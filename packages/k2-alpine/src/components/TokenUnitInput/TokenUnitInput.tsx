@@ -20,13 +20,13 @@ import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
 import { getMaxDecimals, normalizeValue } from '../../utils/tokenUnitInput'
 
-export type TokenAmountInputHandle = {
+export type TokenUnitInputHandle = {
   setValue: (value: string) => void
   focus: () => void
   blur: () => void
 }
 
-type TokenAmountInputProps = {
+type TokenUnitInputProps = {
   amount?: TokenUnit
   token: {
     maxDecimals: number
@@ -38,9 +38,9 @@ type TokenAmountInputProps = {
   editable?: boolean
 }
 
-export const TokenAmountInput = forwardRef<
-  TokenAmountInputHandle,
-  TokenAmountInputProps
+export const TokenUnitInput = forwardRef<
+  TokenUnitInputHandle,
+  TokenUnitInputProps
 >(({ amount, token, onChange, formatInCurrency, sx, editable }, ref) => {
   const {
     theme: { colors }

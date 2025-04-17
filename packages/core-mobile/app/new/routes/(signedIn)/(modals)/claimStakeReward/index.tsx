@@ -24,10 +24,7 @@ import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { showSnackbar } from 'common/utils/toast'
-import {
-  TokenAmountInput,
-  TokenAmountInputHandle
-} from '@avalabs/k2-alpine/src/components/TokenAmountInput/TokenAmountInput'
+import { TokenUnitInput, TokenUnitInputHandle } from '@avalabs/k2-alpine'
 import { useConfetti } from 'common/contexts/ConfettiContext'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 
@@ -35,7 +32,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
   const { data } = usePChainBalance()
-  const ref = useRef<TokenAmountInputHandle>(null)
+  const ref = useRef<TokenUnitInputHandle>(null)
   const [claimableAmountInAvax, setClaimableAmountInAvax] =
     useState<TokenUnit>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -188,7 +185,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
               paddingHorizontal: 16,
               borderRadius: 12
             }}>
-            <TokenAmountInput
+            <TokenUnitInput
               ref={ref}
               amount={claimableAmountInAvax}
               editable={false}

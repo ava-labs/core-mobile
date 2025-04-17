@@ -3,8 +3,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { ScrollView, Text, View } from '../Primitives'
 import { Icons, useTheme } from '../..'
-import { TokenAmountInputWidget } from './TokenAmountInputWidget'
-import { TokenAmountInput } from './TokenAmountInput'
+import { TokenUnitInputWidget } from './TokenUnitInputWidget'
+import { TokenUnitInput } from './TokenUnitInput'
 
 export default {
   title: 'Token Amount Input'
@@ -27,15 +27,15 @@ export const All = (): JSX.Element => {
         }}
         contentContainerStyle={{ padding: 16, gap: 40 }}
         keyboardShouldPersistTaps="always">
-        <TokenAmountInputStory />
-        <StakingTokenAmountInputWidgetStory />
-        <SwapTokenAmountInputWidgetStory />
+        <TokenUnitInputStory />
+        <StakingTokenUnitInputWidgetStory />
+        <SwapTokenUnitInputWidgetStory />
       </ScrollView>
     </GestureHandlerRootView>
   )
 }
 
-const TokenAmountInputStory = (): JSX.Element => {
+const TokenUnitInputStory = (): JSX.Element => {
   const [amount, setAmount] = useState<TokenUnit | undefined>(
     new TokenUnit(1000000000, xpChainToken.maxDecimals, xpChainToken.symbol)
   )
@@ -47,7 +47,7 @@ const TokenAmountInputStory = (): JSX.Element => {
   return (
     <View sx={{ gap: 12 }}>
       <Text variant="heading6">Amount Input: {amount?.toString()} AVAX</Text>
-      <TokenAmountInput
+      <TokenUnitInput
         amount={amount}
         token={xpChainToken}
         onChange={handleChange}
@@ -57,7 +57,7 @@ const TokenAmountInputStory = (): JSX.Element => {
   )
 }
 
-const StakingTokenAmountInputWidgetStory = (): JSX.Element => {
+const StakingTokenUnitInputWidgetStory = (): JSX.Element => {
   const [stakeAmount, setStakeAmount] = useState<TokenUnit | undefined>(
     new TokenUnit(25000000000, xpChainToken.maxDecimals, xpChainToken.symbol)
   )
@@ -89,7 +89,7 @@ const StakingTokenAmountInputWidgetStory = (): JSX.Element => {
       <Text variant="heading6">
         Staking Amount Input Widget: {stakeAmount?.toString()} AVAX
       </Text>
-      <TokenAmountInputWidget
+      <TokenUnitInputWidget
         amount={stakeAmount}
         token={xpChainToken}
         balance={balanceInAvax}
@@ -102,7 +102,7 @@ const StakingTokenAmountInputWidgetStory = (): JSX.Element => {
   )
 }
 
-const SwapTokenAmountInputWidgetStory = (): JSX.Element => {
+const SwapTokenUnitInputWidgetStory = (): JSX.Element => {
   const { theme } = useTheme()
   const [swapAmount, setSwapAmount] = useState<TokenUnit | undefined>(undefined)
 
@@ -125,7 +125,7 @@ const SwapTokenAmountInputWidgetStory = (): JSX.Element => {
       <Text variant="heading6">
         Swap Amount Input Widget: {swapAmount?.toString()} AVAX
       </Text>
-      <TokenAmountInputWidget
+      <TokenUnitInputWidget
         amount={swapAmount}
         token={ethereumToken}
         balance={balanceInAvax}
