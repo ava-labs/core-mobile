@@ -25,18 +25,14 @@ export default function TabLayout(): JSX.Element {
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
       ? alpha(theme.colors.$white, tabBarInactiveTintOpacity)
-      : alpha(colors.$neutral950, tabBarInactiveTintOpacity)
+      : alpha('#121213', tabBarInactiveTintOpacity)
   }, [theme.colors.$white, theme.isDark])
 
   const tabBarStyle = useMemo(() => {
     return {
       backgroundColor: theme.isDark
-        ? isIOS
-          ? alpha(colors.$neutral950, 0.8)
-          : colors.$neutral950
-        : isIOS
-        ? alpha(theme.colors.$white, 0.8)
-        : theme.colors.$white
+        ? alpha('#121213', isIOS ? 0.8 : 1)
+        : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
     }
   }, [theme.colors.$white, theme.isDark])
 

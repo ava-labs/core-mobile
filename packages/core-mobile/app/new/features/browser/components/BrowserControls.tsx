@@ -156,12 +156,8 @@ export const BrowserControls = (): ReactNode => {
     const isIOS = Platform.OS === 'ios'
 
     return theme.isDark
-      ? isIOS
-        ? alpha(colors.$neutral950, 0.8)
-        : colors.$neutral950
-      : isIOS
-      ? alpha(theme.colors.$white, 0.8)
-      : theme.colors.$white
+      ? alpha('#121213', isIOS ? 0.8 : 1)
+      : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
   }, [theme.isDark, theme.colors.$white])
 
   return (
