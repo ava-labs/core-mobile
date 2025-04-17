@@ -1,7 +1,7 @@
+import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
 import React from 'react'
-import { NetworkWithCaip2ChainId } from 'store/network'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { isXPChain } from '../utils'
 
@@ -11,7 +11,7 @@ export const LogoWithNetwork = ({
   outerBorderColor,
   showChainLogo = true
 }: {
-  network: NetworkWithCaip2ChainId
+  network: Network
   networkSize?: number
   outerBorderColor: string
   showChainLogo?: boolean

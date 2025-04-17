@@ -1,3 +1,4 @@
+import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { useRouter } from 'expo-router'
@@ -7,7 +8,6 @@ import {
 } from 'features/receive/store'
 import React from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
-import { NetworkWithCaip2ChainId } from 'store/network'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { LogoWithNetwork } from '../components/LogoWithNetwork'
 import { HORIZONTAL_MARGIN } from '../consts'
@@ -21,15 +21,12 @@ export const SelectReceiveNetworkScreen = (): JSX.Element => {
   const { setSelectedNetwork } = useReceiveActions()
   const selectedNetwork = useReceiveSelectedNetwork()
 
-  const handleNetworkSelect = (network: NetworkWithCaip2ChainId): void => {
+  const handleNetworkSelect = (network: Network): void => {
     setSelectedNetwork(network)
     back()
   }
 
-  const renderItem: ListRenderItem<NetworkWithCaip2ChainId> = ({
-    item,
-    index
-  }) => {
+  const renderItem: ListRenderItem<Network> = ({ item, index }) => {
     const isLastItem = index === networks.length - 1
 
     const showChainLogo =

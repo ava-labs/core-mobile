@@ -121,10 +121,10 @@ export const ReceiveScreen = (): ReactNode => {
               height: 31
             }}>
             <TokenLogo
-              symbol={selectedNetwork.networkToken.symbol ?? 'AVAX'}
+              symbol={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
               size={20}
             />
-            <Text variant="buttonMedium">{selectedNetwork.chainName}</Text>
+            <Text variant="buttonMedium">{selectedNetwork?.chainName}</Text>
             <Icons.Navigation.ChevronRight
               color={theme.colors.$textSecondary}
               style={{
@@ -136,10 +136,10 @@ export const ReceiveScreen = (): ReactNode => {
         <QRCode
           testID="receive_token_qr_code"
           address={qrCodeAddress}
-          token={selectedNetwork.networkToken.symbol ?? 'AVAX'}
-          label={selectedNetwork.chainName}
+          token={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
+          label={selectedNetwork?.chainName}
         />
-        <View style={{ flex: isXPChain(selectedNetwork.chainId) ? 0.5 : 1 }} />
+        <View style={{ flex: isXPChain(selectedNetwork?.chainId) ? 0.5 : 1 }} />
       </View>
 
       <AccountAddresses address={address} />

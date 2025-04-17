@@ -1,18 +1,17 @@
-import { NetworkWithCaip2ChainId } from 'store/network'
-
+import { Network } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MAIN_NETWORKS, TEST_NETWORKS } from 'services/network/consts'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export function usePrimaryNetworks(): {
-  networks: NetworkWithCaip2ChainId[]
+  networks: Network[]
 } {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const networks = useMemo(() => {
-    if (isDeveloperMode) return TEST_NETWORKS
-    return MAIN_NETWORKS
+    if (isDeveloperMode) return TEST_NETWORKS as Network[]
+    return MAIN_NETWORKS as Network[]
   }, [isDeveloperMode])
 
   return { networks }

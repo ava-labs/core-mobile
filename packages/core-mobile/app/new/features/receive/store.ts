@@ -1,19 +1,18 @@
-import { NetworkWithCaip2ChainId } from 'store/network'
-import { create } from 'zustand'
+import { Network } from '@avalabs/core-chains-sdk'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
+import { create } from 'zustand'
 
 interface ReceiveStore {
-  selectedNetwork: NetworkWithCaip2ChainId
+  selectedNetwork: Network
   actions: {
-    setSelectedNetwork: (network: NetworkWithCaip2ChainId) => void
+    setSelectedNetwork: (network: Network) => void
   }
 }
 
 const useReceiveStore = create<ReceiveStore>(set => ({
-  selectedNetwork: AVALANCHE_MAINNET_NETWORK,
+  selectedNetwork: AVALANCHE_MAINNET_NETWORK as Network,
   actions: {
-    setSelectedNetwork: (network: NetworkWithCaip2ChainId) =>
-      set({ selectedNetwork: network })
+    setSelectedNetwork: (network: Network) => set({ selectedNetwork: network })
   }
 }))
 
