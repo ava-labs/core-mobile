@@ -1,15 +1,16 @@
 import { NetworkWithCaip2ChainId } from 'store/network'
 import { create } from 'zustand'
+import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 
 interface ReceiveStore {
-  selectedNetwork: NetworkWithCaip2ChainId | null
+  selectedNetwork: NetworkWithCaip2ChainId
   actions: {
     setSelectedNetwork: (network: NetworkWithCaip2ChainId) => void
   }
 }
 
 const useReceiveStore = create<ReceiveStore>(set => ({
-  selectedNetwork: null,
+  selectedNetwork: AVALANCHE_MAINNET_NETWORK,
   actions: {
     setSelectedNetwork: (network: NetworkWithCaip2ChainId) =>
       set({ selectedNetwork: network })

@@ -3,7 +3,7 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import React from 'react'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
-import { isXPChain } from '../consts'
+import { isXPChain } from '../utils'
 
 export const LogoWithNetwork = ({
   network,
@@ -20,7 +20,7 @@ export const LogoWithNetwork = ({
   const { theme } = useTheme()
 
   const renderChainLogo = (): React.JSX.Element | undefined => {
-    if (isXPChain(network?.chainId)) {
+    if (isXPChain(network.chainId)) {
       return theme.isDark ? (
         <Icons.TokenLogos.AVAX_XP_DARK
           testID="network_logo__xp_chain"
@@ -36,7 +36,7 @@ export const LogoWithNetwork = ({
       )
     }
 
-    if (isPChain(network?.chainId)) {
+    if (isPChain(network.chainId)) {
       return theme.isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK
           testID="network_logo__p_chain"
@@ -52,7 +52,7 @@ export const LogoWithNetwork = ({
       )
     }
 
-    if (isXChain(network?.chainId)) {
+    if (isXChain(network.chainId)) {
       return theme.isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK
           testID="network_logo__x_chain"
@@ -71,8 +71,8 @@ export const LogoWithNetwork = ({
     return (
       <TokenLogo
         size={12}
-        symbol={network?.networkToken?.symbol ?? 'AVAX'}
-        logoUri={network?.logoUri}
+        symbol={network.networkToken.symbol ?? 'AVAX'}
+        logoUri={network.logoUri}
         isNetworkToken
       />
     )
@@ -82,8 +82,8 @@ export const LogoWithNetwork = ({
     <View>
       <TokenLogo
         size={networkSize}
-        symbol={network?.networkToken?.symbol ?? 'AVAX'}
-        logoUri={network?.logoUri}
+        symbol={network.networkToken.symbol ?? 'AVAX'}
+        logoUri={network.logoUri}
       />
       {showChainLogo && (
         <View

@@ -19,7 +19,7 @@ import { isXPChain } from '../utils'
 export const ReceiveScreen = (): ReactNode => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-  const { networks, testNetworks, mainNetworks } = usePrimaryNetworks()
+  const { networks } = usePrimaryNetworks()
 
   const { setSelectedNetwork } = useReceiveActions()
   const selectedNetwork = useReceiveSelectedNetwork()
@@ -27,13 +27,8 @@ export const ReceiveScreen = (): ReactNode => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
 
-  const availableNetworks = useMemo(() => {
-    if (isDeveloperMode) return testNetworks
-    return mainNetworks
-  }, [isDeveloperMode, testNetworks, mainNetworks])
-
   const address = useMemo(() => {
-    switch (selectedNetwork?.vmName) {
+    switch (selectedNetwork.vmName) {
       case NetworkVMType.BITCOIN:
         return activeAccount?.addressBTC ?? ''
       case NetworkVMType.AVM:
@@ -47,24 +42,24 @@ export const ReceiveScreen = (): ReactNode => {
   }, [activeAccount, selectedNetwork])
 
   const qrCodeAddress = useMemo(() => {
-    if (isXPChain(selectedNetwork?.chainId)) return address.split('-')[1]
+    if (isXPChain(selectedNetwork.chainId)) return address.split('-')[1]
     return address
   }, [address, selectedNetwork])
 
   const refreshSelectedNetwork = useCallback(() => {
-    if (selectedNetwork?.isTestnet && !isDeveloperMode) {
+    if (selectedNetwork.isTestnet && !isDeveloperMode) {
       const foundNetwork = networks.find(
         network =>
-          network.vmName === selectedNetwork?.vmName && !network.isTestnet
+          network.vmName === selectedNetwork.vmName && !network.isTestnet
       )
 
       if (foundNetwork) {
         setSelectedNetwork(foundNetwork)
       }
-    } else if (!selectedNetwork?.isTestnet && isDeveloperMode) {
+    } else if (!selectedNetwork.isTestnet && isDeveloperMode) {
       const foundNetwork = networks.find(
         network =>
-          network.vmName === selectedNetwork?.vmName && network.isTestnet
+          network.vmName === selectedNetwork.vmName && network.isTestnet
       )
 
       if (foundNetwork) {
@@ -77,12 +72,6 @@ export const ReceiveScreen = (): ReactNode => {
   useEffect(() => {
     refreshSelectedNetwork()
   }, [refreshSelectedNetwork])
-
-  // Set default network if no network is selected
-  useEffect(() => {
-    if (!selectedNetwork && availableNetworks[0])
-      setSelectedNetwork(availableNetworks[0])
-  }, [availableNetworks, selectedNetwork, setSelectedNetwork])
 
   useEffect(() => {
     AnalyticsService.capture('ReceivePageVisited')
@@ -132,10 +121,10 @@ export const ReceiveScreen = (): ReactNode => {
               height: 31
             }}>
             <TokenLogo
-              symbol={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
+              symbol={selectedNetwork.networkToken.symbol ?? 'AVAX'}
               size={20}
             />
-            <Text variant="buttonMedium">{selectedNetwork?.chainName}</Text>
+            <Text variant="buttonMedium">{selectedNetwork.chainName}</Text>
             <Icons.Navigation.ChevronRight
               color={theme.colors.$textSecondary}
               style={{
@@ -147,10 +136,10 @@ export const ReceiveScreen = (): ReactNode => {
         <QRCode
           testID="receive_token_qr_code"
           address={qrCodeAddress}
-          token={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
-          label={selectedNetwork?.chainName}
+          token={selectedNetwork.networkToken.symbol ?? 'AVAX'}
+          label={selectedNetwork.chainName}
         />
-        <View style={{ flex: isXPChain(selectedNetwork?.chainId) ? 0.5 : 1 }} />
+        <View style={{ flex: isXPChain(selectedNetwork.chainId) ? 0.5 : 1 }} />
       </View>
 
       <AccountAddresses address={address} />

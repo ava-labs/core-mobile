@@ -10,8 +10,8 @@ import {
   NETWORK_X_TEST
 } from 'services/network/consts'
 import { selectActiveAccount } from 'store/account'
-import { isXPChain } from '../consts'
 import { useReceiveSelectedNetwork } from '../store'
+import { isXPChain } from '../utils'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const AccountAddresses = memo(
@@ -29,13 +29,8 @@ export const AccountAddresses = memo(
       if (!selectedNetwork) return []
 
       if (isXPChain(selectedNetwork.chainId)) {
-        const networkX = selectedNetwork?.isTestnet
-          ? { ...NETWORK_X_TEST, chainName: 'Avalanche X-Chain Testnet' }
-          : { ...NETWORK_X, chainName: 'Avalanche X-Chain' }
-        const networkP = selectedNetwork?.isTestnet
-          ? { ...NETWORK_P_TEST, chainName: 'Avalanche P-Chain Testnet' }
-          : { ...NETWORK_P, chainName: 'Avalanche P-Chain' }
-
+        const networkX = selectedNetwork?.isTestnet ? NETWORK_X_TEST : NETWORK_X
+        const networkP = selectedNetwork?.isTestnet ? NETWORK_P_TEST : NETWORK_P
         const addressP = activeAccount?.addressPVM ?? ''
         const addressX = activeAccount?.addressAVM ?? ''
 
@@ -93,7 +88,7 @@ export const AccountAddresses = memo(
 
       return [
         {
-          title: selectedNetwork?.chainName ?? 'Avalanche (C-Chain)',
+          title: selectedNetwork.chainName,
           subtitle: address.replace('-', '\u2011'), // to prevent word wrap because of the dash
           leftIcon: (
             <LogoWithNetwork
@@ -109,7 +104,7 @@ export const AccountAddresses = memo(
               onPress={() =>
                 onCopyAddress(
                   address,
-                  `${selectedNetwork?.chainName} address copied`
+                  `${selectedNetwork.chainName} address copied`
                 )
               }>
               Copy

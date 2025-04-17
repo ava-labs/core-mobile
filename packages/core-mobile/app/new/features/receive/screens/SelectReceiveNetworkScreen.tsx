@@ -5,11 +5,9 @@ import {
   useReceiveActions,
   useReceiveSelectedNetwork
 } from 'features/receive/store'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
-import { useSelector } from 'react-redux'
 import { NetworkWithCaip2ChainId } from 'store/network'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { LogoWithNetwork } from '../components/LogoWithNetwork'
 import { HORIZONTAL_MARGIN } from '../consts'
@@ -18,14 +16,7 @@ import { isXPChain } from '../utils'
 export const SelectReceiveNetworkScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { back } = useRouter()
-  const { mainNetworks, testNetworks } = usePrimaryNetworks()
-
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-
-  const availableNetworks = useMemo(() => {
-    if (isDeveloperMode) return testNetworks
-    return mainNetworks
-  }, [isDeveloperMode, testNetworks, mainNetworks])
+  const { networks } = usePrimaryNetworks()
 
   const { setSelectedNetwork } = useReceiveActions()
   const selectedNetwork = useReceiveSelectedNetwork()
@@ -39,7 +30,7 @@ export const SelectReceiveNetworkScreen = (): JSX.Element => {
     item,
     index
   }) => {
-    const isLastItem = index === availableNetworks.length - 1
+    const isLastItem = index === networks.length - 1
 
     const showChainLogo =
       isXPChain(item.chainId) ||
@@ -76,7 +67,7 @@ export const SelectReceiveNetworkScreen = (): JSX.Element => {
           <View style={{ flex: 1 }}>
             <Text variant="buttonMedium">{item.chainName}</Text>
           </View>
-          {selectedNetwork?.chainId === item.chainId && (
+          {selectedNetwork.chainId === item.chainId && (
             <Icons.Navigation.Check color={theme.colors.$textPrimary} />
           )}
         </View>
@@ -100,7 +91,7 @@ export const SelectReceiveNetworkScreen = (): JSX.Element => {
       </Text>
 
       <FlatList
-        data={availableNetworks}
+        data={networks}
         renderItem={renderItem}
         keyExtractor={item => item?.chainId?.toString()}
       />
