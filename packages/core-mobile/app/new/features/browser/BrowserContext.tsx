@@ -45,8 +45,10 @@ function useBrowserContextValue(): BrowserContextType {
   const showRecentSearches = useSharedValue(urlEntry?.length > 0)
 
   useEffect(() => {
-    if (urlEntry.length > 0 && !showRecentSearches.value) {
-      showRecentSearches.value = true
+    if (urlEntry.length > 0) {
+      if (!showRecentSearches.value) {
+        showRecentSearches.value = true
+      }
     } else {
       showRecentSearches.value = false
     }
