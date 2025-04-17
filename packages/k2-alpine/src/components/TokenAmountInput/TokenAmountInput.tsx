@@ -1,195 +1,88 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
-import { SxProp } from 'dripsy'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
+import React, { useEffect, useState } from 'react'
+import Big from 'big.js'
+import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
+import { TextInput, TextInputProps } from 'react-native'
 import {
-  LayoutChangeEvent,
-  StyleSheet,
-  TextInput,
-  TouchableWithoutFeedback
-} from 'react-native'
+  normalizeNumericTextInput,
+  splitIntegerAndFraction
+} from '../../utils/tokenUnitInput'
 import { useTheme } from '../../hooks'
-import { Text, View } from '../Primitives'
-import { alpha } from '../../utils'
-import { getMaxDecimals, normalizeValue } from '../../utils/tokenUnitInput'
 
-export type TokenAmountInputHandle = {
-  setValue: (value: string) => void
-  focus: () => void
-  blur: () => void
-}
-
-type TokenAmountInputProps = {
-  amount?: TokenUnit
-  token: {
-    maxDecimals: number
-    symbol: string
-  }
-  onChange?(amount: TokenUnit): void
-  formatInCurrency?(amount: TokenUnit): string
-  sx?: SxProp
-  editable?: boolean
-}
-
-export const TokenAmountInput = forwardRef<
-  TokenAmountInputHandle,
-  TokenAmountInputProps
->(({ amount, token, onChange, formatInCurrency, sx, editable }, ref) => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  const [value, setValue] = useState(amount?.toDisplay())
-  const [maxLength, setMaxLength] = useState<number>()
-  const textInputRef = useRef<TextInput>(null)
-  const [textInputMinimumLayout, setTextInputMinimumLayout] = useState<{
-    width: number
-    height: number
-  }>()
-
-  const inputAmount = useMemo(() => {
-    return new TokenUnit(
-      !value ? 0 : Number(value) * 10 ** token.maxDecimals,
-      token.maxDecimals,
-      token.symbol
-    )
-  }, [value, token])
-  const maxDecimalDigits = useMemo(() => {
-    return getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals()
-  }, [inputAmount])
-
-  const handleValueChanged = useCallback(
-    (rawValue: string): void => {
-      if (!rawValue) {
-        setValue('')
-        return
-      }
-      const changedValue = rawValue.startsWith('.') ? '0.' : rawValue
-
-      /**
-       * Split the input and make sure the right side never exceeds
-       * the maxDecimals length
-       */
-      const [frontValue, endValue] = changedValue.split('.')
-
-      // Checks if the input is a valid numeric string and that its decimal part
-      // does not exceed the allowed maximum number of decimal digits.
-      const isInputValid =
-        frontValue !== undefined &&
-        !isNaN(Number(changedValue)) &&
-        (!endValue ||
-          endValue.length <= Math.min(maxDecimalDigits, token.maxDecimals))
-
-      if (isInputValid) {
-        const sanitizedFrontValue = frontValue.replace(/^0+(?!$)/, '')
-
-        //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
-        setMaxLength(
-          sanitizedFrontValue.length +
-            '.'.length +
-            Math.min(maxDecimalDigits, token.maxDecimals)
-        )
-
-        setValue(normalizeValue(changedValue))
-      } else {
-        setMaxLength(undefined)
-      }
-    },
-    [maxDecimalDigits, token]
-  )
-
-  const handlePress = (): void => {
-    textInputRef.current?.focus()
-  }
-
-  const handleTextInputLayout = (event: LayoutChangeEvent): void => {
-    setTextInputMinimumLayout(event.nativeEvent.layout)
-  }
+/**
+ * TokenAmountInput takes user's input via InputText component and calls "onChange" callback with { value: bigint; valueString: string } object.
+ * If there's no input, callback value is set to { value: new BigInt(0), valueString: '0' }.
+ * Because of that, if "value" passed to TokenAmountInput is zero it is sanitized to "undefined" so that user can delete all zeroes from input.
+ */
+export function TokenAmountInput({
+  value,
+  denomination,
+  onChange,
+  isLoading,
+  hideErrorMessage,
+  ...props
+}: TokenAmountInputProps): JSX.Element {
+  const { theme } = useTheme()
+  const [valueAsString, setValueAsString] = useState('')
+  const valueBig = value ? bigintToBig(value, denomination) : undefined
 
   useEffect(() => {
-    onChange?.(inputAmount)
-  }, [inputAmount, onChange])
+    // When deleting zeros after decimal, all zeros delete without this check.
+    // This also preserves zeros in the input ui.
+    if (valueBig && (!valueAsString || !new Big(valueAsString).eq(valueBig))) {
+      setValueAsString(valueBig.toString())
+    } else if (value === undefined) {
+      setValueAsString('')
+    }
+  }, [valueBig, valueAsString, value])
 
-  useImperativeHandle(ref, () => ({
-    setValue: (newValue: string) => setValue(newValue),
-    focus: () => textInputRef.current?.focus(),
-    blur: () => textInputRef.current?.blur()
-  }))
+  const handleChangeText = (rawValue: string): void => {
+    const valueText = normalizeNumericTextInput(rawValue)
+    if (!valueText) {
+      onChange?.({ value: 0n, valueString: '0' })
+      setValueAsString('')
+      return
+    }
+    const changedValue = valueText.startsWith('.') ? '0.' : valueText
+
+    /**
+     * Split the input and make sure the right side never exceeds
+     * the denomination length
+     */
+    const [, endValue] = splitIntegerAndFraction(changedValue)
+    if (!endValue || endValue.length <= denomination) {
+      const valueToBigInt = bigToBigInt(new Big(changedValue), denomination)
+
+      setValueAsString(changedValue)
+      onChange?.({
+        valueString: changedValue ? new Big(changedValue).toString() : '0', // used to removing leading & trailing zeros
+        value: valueToBigInt
+      })
+    }
+  }
 
   return (
-    <View
-      sx={{
-        alignItems: 'center',
-        ...sx
-      }}>
-      <TouchableWithoutFeedback onPress={handlePress}>
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: 5
-          }}>
-          <Text
-            onLayout={handleTextInputLayout}
-            style={[
-              styles.textInput,
-              { position: 'absolute', top: 0, opacity: 0 }
-            ]}>
-            {PLACEHOLDER}
-          </Text>
-          <TextInput
-            ref={textInputRef}
-            editable={editable}
-            style={[
-              styles.textInput,
-              {
-                flexShrink: 1,
-                color: colors.$textPrimary,
-                textAlign: 'right',
-                minWidth: textInputMinimumLayout?.width
-              }
-            ]}
-            keyboardType="numeric"
-            placeholder={PLACEHOLDER}
-            autoFocus={true}
-            value={value}
-            onChangeText={handleValueChanged}
-            maxLength={maxLength}
-            selectionColor={colors.$textPrimary}
-          />
-          <Text
-            sx={{
-              fontFamily: 'Aeonik-Medium',
-              fontSize: 24,
-              lineHeight: 24,
-              marginTop: 14
-            }}>
-            {token.symbol}
-          </Text>
-        </View>
-      </TouchableWithoutFeedback>
-      {formatInCurrency && (
-        <Text
-          variant="subtitle2"
-          sx={{ marginTop: 0, color: alpha(colors.$textPrimary, 0.9) }}>
-          {formatInCurrency(inputAmount)}
-        </Text>
-      )}
-    </View>
+    <TextInput
+      {...props}
+      keyboardType="numeric"
+      onChangeText={handleChangeText}
+      value={valueAsString}
+      selectionColor={theme.colors.$textPrimary}
+      style={[{ color: theme.colors.$textPrimary }, props.style]}
+    />
   )
-})
+}
 
-const styles = StyleSheet.create({
-  textInput: {
-    fontFamily: 'Aeonik-Medium',
-    fontSize: 60
-  }
-})
+interface TokenAmountInputProps
+  extends Omit<TextInputProps, 'onChange' | 'value'> {
+  value?: bigint
+  denomination: number
 
-const PLACEHOLDER = '0.0'
+  onChange?(val: TokenAmount): void
+
+  isLoading?: boolean
+  hideErrorMessage?: boolean
+
+  testID?: string
+}
+
+export type TokenAmount = { value: bigint; valueString: string }
