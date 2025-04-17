@@ -7,10 +7,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { Image } from 'expo-image'
 import React, { memo, ReactNode } from 'react'
 import ContentLoader, { Circle, Rect } from 'react-content-loader/native'
-import { ViewStyle } from 'react-native'
+import { ViewStyle, Platform } from 'react-native'
 import { HORIZONTAL_MARGIN } from '../consts'
 
 interface BrowserItemProps {
@@ -18,6 +19,7 @@ interface BrowserItemProps {
   subtitle?: string
   image?: string
   style?: ViewStyle
+  isFavorite?: boolean
   renderRight?: ReactNode
   isLast?: boolean
   loading?: boolean
@@ -38,10 +40,10 @@ export const BrowserItem = memo(
 )
 
 export const GridItem = memo(
-  ({ title, image, style, onPress }: BrowserItemProps): ReactNode => {
+  ({ title, image, isFavorite, style }: BrowserItemProps): ReactNode => {
+    const { theme } = useTheme()
     return (
-      <Pressable
-        onPress={onPress}
+      <View
         style={[
           {
             alignItems: 'center',
@@ -51,7 +53,41 @@ export const GridItem = memo(
           },
           style
         ]}>
-        <Avatar image={image} size={48} />
+        <View>
+          {isFavorite ? (
+            <View
+              style={{
+                position: 'absolute',
+                top: -7,
+                right: -7,
+                zIndex: 1000,
+                backgroundColor:
+                  Platform.OS === 'android'
+                    ? theme.colors.$surfacePrimary
+                    : 'transparent',
+                borderRadius: 100
+              }}>
+              <BlurViewWithFallback
+                intensity={20}
+                style={{
+                  width: 24,
+                  height: 24,
+                  backgroundColor: theme.colors.$borderPrimary,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden',
+                  borderRadius: 100
+                }}>
+                <Icons.Toggle.StarFilled
+                  width={12}
+                  height={12}
+                  color={theme.colors.$textSecondary}
+                />
+              </BlurViewWithFallback>
+            </View>
+          ) : null}
+          <Avatar image={image} size={48} />
+        </View>
 
         <Text
           style={{
@@ -61,7 +97,7 @@ export const GridItem = memo(
           numberOfLines={1}>
           {title}
         </Text>
-      </Pressable>
+      </View>
     )
   }
 )

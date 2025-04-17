@@ -320,8 +320,10 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onMessage={onMessageHandler}
             onShouldStartLoadWithRequest={() => !disabled}
             style={{
-              paddingTop: insets.top,
               backgroundColor
+            }}
+            containerStyle={{
+              paddingTop: insets.top
             }}
             contentInset={{
               bottom: 0
