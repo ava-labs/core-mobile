@@ -7,9 +7,11 @@ import {
   ApprovalParams,
   ApprovalResponse,
   RpcMethod,
-  RpcRequest
+  RpcMethod,
+  RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
+import walletService from 'services/wallet/WalletService'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
@@ -23,8 +25,10 @@ import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
-  requestPublicKey(): Promise<Hex> {
-    return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
+  async requestPublicKey(params: RequestPublicKeyParams): Promise<string> {
+    const accountIndex = parseInt(params.secretId)
+    const pubKey = await walletService.getPublicKey(accountIndex)
+    return pubKey.evm
   }
 
   onTransactionPending({ request }: { request: RpcRequest }): void {

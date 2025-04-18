@@ -31,7 +31,6 @@ import {
   TypedDataV1,
   TypedData,
   MessageTypes,
-  WalletType,
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
@@ -367,11 +366,10 @@ export class MnemonicWallet implements Wallet {
     network: Network
   }): Promise<Record<NetworkVMType, string>> {
     const addresses = await ModuleManager.getAddresses({
-      walletType: WalletType.Mnemonic,
+      secretId: accountIndex.toString(),
       accountIndex,
-      xpub: this.xpub,
-      xpubXP: this.xpubXP,
-      network: mapToVmNetwork(network)
+      network: mapToVmNetwork(network),
+      derivationPathType: DerivationPath.BIP44
     })
 
     // C-avax... this address uses the same public key as EVM
