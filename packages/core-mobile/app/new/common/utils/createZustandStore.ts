@@ -11,7 +11,6 @@ export function createZustandStore<T>(
   return () => {
     const value = useInner(s => s.value)
     const setValue = useInner(s => s.setValue)
-
-    return [value, setValue] as const
+    return [value, setValue]
   }
 }
