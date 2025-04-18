@@ -2,7 +2,6 @@ import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import {
   Environment,
-  GetAddressParams,
   Module,
   ConstructorParams
 } from '@avalabs/vm-module-types'
@@ -17,6 +16,7 @@ import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
+import { DetailedDeriveAddressParams } from '@avalabs/vm-module-types/dist/account'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -88,28 +88,28 @@ class ModuleManager {
   }
 
   /**
-   * @param param0 walletType
-   * @param param1 accountIndex
-   * @param param2 xpub
-   * @param param3 xpubXP
-   * @param param4 isTestnet
-   * @returns EVM, AVM, PVM and Bitcoin addresses
+   * Derives addresses for all supported modules (EVM, Bitcoin, Avalanche) for a given account
+   * @param secretId - this param is more suited for core-extension but for us it's a means to send crucial data to ApprovalController's requestPublicKey
+   * @param network - The network to derive addresses for
+   * @param accountIndex - The account index to derive addresses for
+   * @returns A record mapping blockchain namespaces to derived addresses
+   * @throws Error if network is not provided
    */
   getAddresses = async ({
-    walletType,
-    accountIndex,
-    xpub,
-    xpubXP,
-    network
-  }: GetAddressParams): Promise<Record<string, string>> => {
+    secretId,
+    network,
+    accountIndex
+  }: DetailedDeriveAddressParams): Promise<Record<string, string>> => {
+    if (!network) {
+      throw new Error('Network is required')
+    }
+
     return Promise.allSettled(
       this.modules.map(async module =>
-        module.getAddress({
-          walletType,
+        module.deriveAddress({
+          secretId,
           accountIndex,
-          xpub,
-          xpubXP,
-          network
+          network: network
         })
       )
     ).then(results => {
