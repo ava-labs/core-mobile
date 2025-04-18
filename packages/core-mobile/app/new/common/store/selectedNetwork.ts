@@ -15,7 +15,7 @@ interface SelectedNetworkStore {
 
 const useSelectedNetworkStore = create<SelectedNetworkStore>(set => ({
   selected: {
-    receive: AVALANCHE_MAINNET_NETWORK
+    [SelectedNetworkKey.RECEIVE]: AVALANCHE_MAINNET_NETWORK
   },
   setSelected: (key, net) =>
     set(state => ({
