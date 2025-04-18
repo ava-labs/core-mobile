@@ -149,6 +149,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate({ pathname: '/swap' })
   }, [navigate])
 
+  const handleBuy = useCallback((): void => {
+    navigate({ pathname: '/buy' })
+  }, [navigate])
+
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -182,7 +186,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     () => [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
       { title: ActionButtonTitle.Swap, icon: 'swap', onPress: handleSwap },
-      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
+      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
       {
         title: ActionButtonTitle.Stake,
         icon: 'stake',

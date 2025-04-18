@@ -1,6 +1,6 @@
+import { SxProp } from 'dripsy'
 import React, { useEffect, useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import { SxProp } from 'dripsy'
 import Animated, {
   Easing,
   FadeIn,
@@ -10,10 +10,11 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { View, Text, TouchableOpacity } from '../Primitives'
-import { Separator } from '../Separator/Separator'
-import { Icons } from '../../theme/tokens/Icons'
+import { TextVariant } from 'src/theme/tokens/text'
 import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
+import { Text, TouchableOpacity, View } from '../Primitives'
+import { Separator } from '../Separator/Separator'
 
 export const GroupList = ({
   data,
@@ -22,12 +23,14 @@ export const GroupList = ({
   subtitleSx,
   valueSx,
   textContainerSx,
-  separatorMarginRight
+  separatorMarginRight,
+  subtitleVariant = 'mono'
 }: {
   data: GroupListItem[]
   itemHeight?: number
   titleSx?: SxProp
   subtitleSx?: SxProp
+  subtitleVariant?: TextVariant
   textContainerSx?: SxProp
   valueSx?: SxProp
   separatorMarginRight?: number
@@ -133,7 +136,7 @@ export const GroupList = ({
                     </View>
                     {subtitle && (
                       <Text
-                        variant="mono"
+                        variant={subtitleVariant}
                         sx={{
                           color: '$textSecondary',
                           fontSize: 13,
