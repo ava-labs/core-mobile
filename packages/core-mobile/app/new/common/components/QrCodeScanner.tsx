@@ -109,7 +109,6 @@ Props): React.JSX.Element | undefined => {
         }}>
         <Icons.Custom.CameraFrame />
       </View>
-      (
       <CameraView
         style={{
           width: '100%',
@@ -124,7 +123,6 @@ Props): React.JSX.Element | undefined => {
         }}
         onBarcodeScanned={handleSuccess}
       />
-      )
     </View>
   ) : (
     <>

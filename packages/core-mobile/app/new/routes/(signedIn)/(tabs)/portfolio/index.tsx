@@ -56,6 +56,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { useResetTokens } from 'common/hooks/useSendStore'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -67,7 +68,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-
+  const resetToken = useResetTokens()
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -142,8 +143,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleSend = useCallback((): void => {
-    navigate({ pathname: '/send' })
-  }, [navigate])
+    resetToken()
+    navigate('/send')
+  }, [navigate, resetToken])
 
   const handleSwap = useCallback((): void => {
     navigate({ pathname: '/swap' })
