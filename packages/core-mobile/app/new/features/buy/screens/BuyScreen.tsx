@@ -35,7 +35,7 @@ export const BuyScreen: FC = () => {
   const { navigate, back } = useRouter()
   const dispatch = useDispatch()
   const { theme } = useTheme()
-  const { params } = useRoute() as { params: { showAvaxWarning: boolean } }
+  const { params } = useRoute() as { params: { showAvaxWarning: string } }
   const isCoinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
   const isHallidayBannerBlocked = useSelector(
     selectIsHallidayBridgeBannerBlocked
@@ -152,22 +152,22 @@ export const BuyScreen: FC = () => {
   )
 
   const renderAvaxWarning = (): React.JSX.Element | undefined => {
-    if (params?.showAvaxWarning)
+    if (params?.showAvaxWarning === 'true')
       return (
         <View
           sx={{
             borderRadius: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 8,
-            backgroundColor: alpha(theme.colors.$textDanger, 0.1)
+            gap: 8
           }}>
           <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
           <View sx={{ flex: 1 }}>
             <Text
               style={{
                 color: theme.colors.$textDanger,
-                fontFamily: 'Inter-Medium'
+                fontFamily: 'Inter-Medium',
+                fontSize: 15
               }}>
               Be sure to buy native AVAX tokens for transactions on Avalanche
             </Text>
@@ -248,12 +248,11 @@ export const BuyScreen: FC = () => {
   ])
 
   return (
-    <View style={{ paddingHorizontal: 16, gap: 40 }}>
+    <View style={{ paddingHorizontal: 16, gap: 24 }}>
       <View style={{ gap: 4 }}>
         <Text variant="heading2">Buy crypto</Text>
         <Text variant="body1">
-          Buy tokens with fiat currency using your debit card or bank account
-          leveraging one of our many partners
+          {`Buy tokens with fiat currency using your debit card or bank account leveraging one of our many partners`}
         </Text>
       </View>
 
