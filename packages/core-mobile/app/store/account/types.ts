@@ -1,10 +1,19 @@
-import { CorePrimaryAccount } from '@avalabs/types'
+import { CorePrimaryAccount, CoreImportedAccount } from '@avalabs/types'
 
-export type AccountCollection = { [accountIndex: number]: CorePrimaryAccount }
+export type PrimaryAccount = CorePrimaryAccount & {
+  walletId: string
+  index: number
+}
+
+export type ImportedAccount = CoreImportedAccount & {
+  walletId: string
+}
+
+export type Account = PrimaryAccount | ImportedAccount
+
+export type AccountCollection = { [id: string]: Account }
 
 export type AccountsState = {
   accounts: AccountCollection
-  activeAccountIndex: number
-  walletName?: string
+  activeAccountId: string | null
 }
-export type Account = CorePrimaryAccount

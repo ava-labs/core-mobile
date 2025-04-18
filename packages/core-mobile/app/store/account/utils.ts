@@ -1,6 +1,18 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
-import { Account, AccountCollection } from 'store/account/types'
+import { Account, AccountCollection, PrimaryAccount } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { CoreAccountType } from '@avalabs/types'
+
+export function isPrimaryAccount(account: Account): account is PrimaryAccount {
+  return account.type === CoreAccountType.PRIMARY
+}
+
+export function getAccountIndex(account: Account | undefined): number {
+  if (!account) {
+    return 0
+  }
+  return isPrimaryAccount(account) ? account.index : 0
+}
 
 export function getAddressByVM(
   vm: VM,

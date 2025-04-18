@@ -1,14 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Account, AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
-import { mergeAccounts } from './utils'
+import {
+  Account,
+  AccountsState,
+  AccountCollection,
+  PrimaryAccount
+} from './types'
 
 export const reducerName = 'account'
 
 const initialState = {
   accounts: {},
-  activeAccountIndex: 0
+  activeAccountId: ''
 } as AccountsState
 
 const accountsSlice = createSlice({
@@ -18,39 +22,35 @@ const accountsSlice = createSlice({
     setAccounts: (state, action: PayloadAction<AccountCollection>) => {
       // setAccounts does the same thing as setNonActiveAccounts
       // but there are listeners that should only listen and react to setAccounts
-      state.accounts = mergeAccounts(state.accounts, action.payload)
+      state.accounts = { ...state.accounts, ...action.payload }
     },
     setAccount: (state, action: PayloadAction<Account>) => {
       const newAccount = action.payload
-      state.accounts[newAccount.index] = newAccount
+      state.accounts[newAccount.id] = newAccount
     },
     setAccountTitle: (
       state,
       action: PayloadAction<{
-        accountIndex: number
+        accountId: string
         title: string
         walletType: WalletType
       }>
     ) => {
-      const { accountIndex, title } = action.payload
-      const acc = state.accounts[accountIndex]
-      if (acc) {
-        acc.name = title
+      const { accountId, title } = action.payload
+      const account = state.accounts[accountId]
+      if (account) {
+        account.name = title
       }
     },
-    setActiveAccountIndex: (state, action: PayloadAction<number>) => {
-      state.activeAccountIndex = action.payload
-
-      // loop through each account and adjust active flag
+    setActiveAccountId: (state, action: PayloadAction<string | null>) => {
+      state.activeAccountId = action.payload
+      // Update active flag for all accounts
       Object.values(state.accounts).forEach(acc => {
-        acc.active = acc.index === action.payload
+        acc.active = acc.id === action.payload
       })
     },
-    setWalletName: (state, action: PayloadAction<string>) => {
-      state.walletName = action.payload
-    },
     setNonActiveAccounts: (state, action: PayloadAction<AccountCollection>) => {
-      state.accounts = mergeAccounts(state.accounts, action.payload)
+      state.accounts = { ...state.accounts, ...action.payload }
     }
   }
 })
@@ -75,24 +75,45 @@ export const selectAccountByAddress =
     })
   }
 
+//NEVEN: check if this is used anywhere
+export const selectAccountByUuid =
+  (uuid: string) =>
+  (state: RootState): Account | undefined =>
+    state.account.accounts[uuid]
+
+export const selectActiveAccount = (state: RootState): Account | undefined => {
+  const activeAccountId = state.account.activeAccountId
+  if (!activeAccountId) return undefined
+
+  return state.account.accounts[activeAccountId]
+}
+
+//TODO: order accounts by index
+export const selectAccountsByWalletId =
+  (walletId: string) =>
+  (state: RootState): Account[] => {
+    return Object.values(state.account.accounts).filter(
+      account => account.walletId === walletId
+    )
+  }
+
 export const selectAccountByIndex =
   (index: number) =>
-  (state: RootState): Account | undefined =>
-    state.account.accounts[index]
-
-export const selectActiveAccount = (state: RootState): Account | undefined =>
-  state.account.accounts[state.account.activeAccountIndex]
-
-export const selectWalletName = (state: RootState): string | undefined =>
-  state.account.walletName
+  (state: RootState): Account | undefined => {
+    const accounts = Object.values(state.account.accounts)
+    const primaryAccount = accounts.find(
+      (account): account is PrimaryAccount =>
+        'index' in account && account.index === index
+    )
+    return primaryAccount || accounts[0]
+  }
 
 // actions
 export const {
   setAccountTitle,
-  setActiveAccountIndex,
+  setActiveAccountId,
   setAccount,
   setAccounts,
-  setWalletName,
   setNonActiveAccounts
 } = accountsSlice.actions
 

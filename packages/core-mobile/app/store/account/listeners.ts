@@ -15,11 +15,10 @@ import { Network } from '@avalabs/core-chains-sdk'
 import {
   selectAccounts,
   selectActiveAccount,
-  selectWalletName,
   setAccounts,
   setNonActiveAccounts
 } from './slice'
-import { AccountCollection } from './types'
+import { Account, AccountCollection } from './types'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -29,21 +28,20 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
-  const walletName = selectWalletName(state)
-  const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
+  const activeAccount = selectActiveAccount(state)
   const accounts: AccountCollection = {}
 
   if (walletType === WalletType.SEEDLESS) {
     const acc = await accountService.createNextAccount({
       index: 0,
-      activeAccountIndex,
+      activeAccountId: activeAccount?.id ?? null,
       walletType,
       network: activeNetwork
     })
 
     const title = await SeedlessService.getAccountName(0)
     const accountTitle = title ?? acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
+    accounts[acc.id] = { ...acc, name: accountTitle }
     listenerApi.dispatch(setAccounts(accounts))
 
     // to avoid initial account fetching taking too long,
@@ -51,27 +49,28 @@ const initAccounts = async (
     fetchingRemainingAccounts({
       isDeveloperMode,
       walletType,
-      activeAccountIndex,
+      activeAccountId: activeAccount?.id ?? null,
       listenerApi,
       initialAccounts: accounts // pass the initial account for analytic reporting purposes
     })
-  } else if (walletType === WalletType.MNEMONIC) {
+  } else if (
+    walletType === WalletType.MNEMONIC ||
+    walletType === WalletType.PRIVATE_KEY
+  ) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount({
       index: 0,
-      activeAccountIndex,
+      activeAccountId: activeAccount?.id ?? null,
       walletType,
       network: activeNetwork
     })
 
-    const accountTitle =
-      walletName && walletName.length > 0 ? walletName : acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
-
+    accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
+
     if (isDeveloperMode === false) {
       AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-        addresses: Object.values(accounts).map(account => ({
+        addresses: Object.values(accounts).map((account: Account) => ({
           address: account.addressC,
           addressBtc: account.addressBTC,
           addressAVM: account.addressAVM ?? '',
@@ -86,13 +85,13 @@ const initAccounts = async (
 const fetchingRemainingAccounts = async ({
   isDeveloperMode,
   walletType,
-  activeAccountIndex,
+  activeAccountId,
   listenerApi,
   initialAccounts
 }: {
   isDeveloperMode: boolean
   walletType: WalletType
-  activeAccountIndex: number
+  activeAccountId: string | null
   listenerApi: AppListenerEffectAPI
   initialAccounts: AccountCollection
 }): Promise<void> => {
@@ -106,17 +105,18 @@ const fetchingRemainingAccounts = async ({
   const pubKeysStorage = new SeedlessPubKeysStorage()
   const pubKeys = await pubKeysStorage.retrieve()
   const accounts: AccountCollection = {}
+
   // fetch the remaining accounts in the background
   for (let i = 1; i < pubKeys.length; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
-      activeAccountIndex,
+      activeAccountId,
       walletType,
       network: activeNetwork
     })
     const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
+    accounts[acc.id] = { ...acc, name: accountTitle }
   }
   listenerApi.dispatch(setNonActiveAccounts(accounts))
 
