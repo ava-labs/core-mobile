@@ -180,6 +180,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     opacity: 1 - targetHiddenProgress.value
   }))
 
+  const handleBridge = useCallback(() => {
+    navigate({
+      pathname: '/bridge'
+    })
+  }, [navigate])
+
   const ACTION_BUTTONS: ActionButton[] = useMemo(
     () => [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
@@ -191,10 +197,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onPress: addStake,
         disabled: !canAddStake
       },
-      { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
+      {
+        title: ActionButtonTitle.Bridge,
+        icon: 'bridge',
+        onPress: handleBridge
+      },
       { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
     ],
-    [addStake, canAddStake, handleSend, handleSwap]
+    [addStake, canAddStake, handleSend, handleSwap, handleBridge]
   )
 
   const renderHeader = useCallback((): JSX.Element => {

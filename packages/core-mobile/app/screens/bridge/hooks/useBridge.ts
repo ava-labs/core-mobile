@@ -60,7 +60,7 @@ export default function useBridge(): Bridge {
   const [sourceNetwork, setSourceNetwork] = useState<Network>()
   const [targetNetwork, setTargetNetwork] = useState<Network>()
   const [selectedBridgeAsset, setSelectedBridgeAsset] = useState<BridgeAsset>()
-  const { bridgeAssets } = useBridgeAssets()
+  const { bridgeAssets } = useBridgeAssets(sourceNetwork?.chainId)
   const [bridgeError, setBridgeError] = useState<Error>()
   const [minimum, setMinimum] = useState<bigint>()
   const [bridgeFee, setBridgeFee] = useState<bigint>(0n)
