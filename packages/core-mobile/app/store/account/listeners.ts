@@ -11,6 +11,7 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectActiveNetwork, setActive } from 'store/network'
+import { getAccountIndex } from 'store/account/utils'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -33,7 +34,7 @@ const initAccounts = async (
   if (walletType === WalletType.SEEDLESS) {
     const acc = await accountService.createNextAccount({
       index: 0,
-      activeAccountId: activeAccount?.id ?? null,
+      activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
       walletType,
       network: activeNetwork
     })
@@ -48,7 +49,7 @@ const initAccounts = async (
     fetchingRemainingAccounts({
       isDeveloperMode,
       walletType,
-      activeAccountId: activeAccount?.id ?? null,
+      activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
       listenerApi,
       initialAccounts: accounts // pass the initial account for analytic reporting purposes
     })
@@ -59,7 +60,7 @@ const initAccounts = async (
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount({
       index: 0,
-      activeAccountId: activeAccount?.id ?? null,
+      activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
       walletType,
       network: activeNetwork
     })
@@ -84,13 +85,13 @@ const initAccounts = async (
 const fetchingRemainingAccounts = async ({
   isDeveloperMode,
   walletType,
-  activeAccountId,
+  activeAccountIndex,
   listenerApi,
   initialAccounts
 }: {
   isDeveloperMode: boolean
   walletType: WalletType
-  activeAccountId: string | null
+  activeAccountIndex: number
   listenerApi: AppListenerEffectAPI
   initialAccounts: AccountCollection
 }): Promise<void> => {
@@ -109,7 +110,7 @@ const fetchingRemainingAccounts = async ({
   for (let i = 1; i < pubKeys.length; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
-      activeAccountId,
+      activeAccountIndex,
       walletType,
       network: activeNetwork
     })

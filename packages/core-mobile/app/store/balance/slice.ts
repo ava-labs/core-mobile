@@ -11,6 +11,7 @@ import {
   selectAllNetworks,
   selectNetworks
 } from 'store/network'
+import { getAccountIndex } from 'store/account/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
@@ -95,7 +96,7 @@ export const selectTokensWithBalance = createSelector(
   (activeNetwork, activeAccount, allBalances): LocalTokenWithBalance[] => {
     if (!activeAccount) return []
 
-    const key = getKey(activeNetwork.chainId, activeAccount.index)
+    const key = getKey(activeNetwork.chainId, getAccountIndex(activeAccount))
     return allBalances[key]?.tokens ?? []
   }
 )
@@ -109,7 +110,7 @@ export const selectTokensWithBalanceByNetwork = (
       if (!chainId) return []
       if (!activeAccount) return []
 
-      const balanceKey = getKey(chainId, activeAccount.index)
+      const balanceKey = getKey(chainId, getAccountIndex(activeAccount))
       return balances[balanceKey]?.tokens ?? []
     }
   )
@@ -273,7 +274,7 @@ export const selectIsBalancesAccurateByNetwork =
     if (!chainId) return false
     if (!activeAccount) return false
 
-    const key = getKey(chainId, activeAccount.index)
+    const key = getKey(chainId, getAccountIndex(activeAccount))
     return state.balance.balances[key]?.dataAccurate ?? false
   }
 
