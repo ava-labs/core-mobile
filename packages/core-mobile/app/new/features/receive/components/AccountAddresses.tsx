@@ -26,11 +26,10 @@ export const AccountAddresses = memo(
 
     const walletAddreses = useMemo(() => {
       if (!activeAccount) return []
-      if (!selectedNetwork) return []
 
       if (isXPChain(selectedNetwork.chainId)) {
-        const networkX = selectedNetwork?.isTestnet ? NETWORK_X_TEST : NETWORK_X
-        const networkP = selectedNetwork?.isTestnet ? NETWORK_P_TEST : NETWORK_P
+        const networkX = selectedNetwork.isTestnet ? NETWORK_X_TEST : NETWORK_X
+        const networkP = selectedNetwork.isTestnet ? NETWORK_P_TEST : NETWORK_P
         const addressP = activeAccount?.addressPVM ?? ''
         const addressX = activeAccount?.addressAVM ?? ''
 
