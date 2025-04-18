@@ -2,10 +2,9 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
 import React from 'react'
-import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
-import { isXPChain } from '../utils'
+import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
-export const LogoWithNetwork = ({
+export const NetworkLogoWithChain = ({
   network,
   networkSize = 24,
   outerBorderColor,
