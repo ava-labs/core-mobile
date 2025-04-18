@@ -1,3 +1,3 @@
-import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
+import { SelectTokenScreen } from 'common/screens/SelectSendTokenScreen'
 
 export { SelectTokenScreen as default }
