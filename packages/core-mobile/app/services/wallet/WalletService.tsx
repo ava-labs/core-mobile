@@ -17,7 +17,6 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Account } from 'store/account/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
@@ -232,14 +231,14 @@ class WalletService {
 
   /**
    * Get the public key of an account
-   * @param account Account to get public key of.
+   * @param accountIndex Account index to get public key of
    */
-  public async getPublicKey(account: Account): Promise<PubKeyType> {
+  public async getPublicKey(accountIndex: number): Promise<PubKeyType> {
     const wallet = await WalletFactory.createWallet(
-      account.index,
+      accountIndex,
       this.walletType
     )
-    return await wallet.getPublicKey(account.index)
+    return await wallet.getPublicKey(accountIndex)
   }
 
   // TODO: use getAddresses instead for staking notification setup logic
