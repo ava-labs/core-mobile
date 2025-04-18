@@ -6,6 +6,7 @@ import {
 } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
+import { getAccountIndex } from 'store/account/utils'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -75,7 +76,7 @@ export const selectIsBalanceLoadedForActiveNetwork = (
   if (!activeAccount) return false
 
   return !!state.balance.balances[
-    getKey(activeNetwork.chainId, activeAccount.index)
+    getKey(activeNetwork.chainId, getAccountIndex(activeAccount))
   ]
 }
 
@@ -87,7 +88,9 @@ export const selectIsBalanceLoadedForNetworks =
     if (!activeAccount) return false
 
     return chainIds.every(chainId => {
-      return !!state.balance.balances[getKey(chainId, activeAccount.index)]
+      return !!state.balance.balances[
+        getKey(chainId, getAccountIndex(activeAccount))
+      ]
     })
   }
 
@@ -108,7 +111,7 @@ export const selectTokensWithBalance = createSelector(
   (activeNetwork, activeAccount, allBalances): LocalTokenWithBalance[] => {
     if (!activeAccount) return []
 
-    const key = getKey(activeNetwork.chainId, activeAccount.index)
+    const key = getKey(activeNetwork.chainId, getAccountIndex(activeAccount))
     return allBalances[key]?.tokens ?? []
   }
 )
@@ -121,7 +124,7 @@ export const selectTokensWithBalanceByNetwork =
     if (!network) return []
     if (!activeAccount) return []
 
-    const key = getKey(network.chainId, activeAccount.index)
+    const key = getKey(network.chainId, getAccountIndex(activeAccount))
     return state.balance.balances[key]?.tokens ?? []
   }
 
@@ -299,7 +302,7 @@ export const selectIsBalancesAccurateByNetwork =
     if (!chainId) return false
     if (!activeAccount) return false
 
-    const key = getKey(chainId, activeAccount.index)
+    const key = getKey(chainId, getAccountIndex(activeAccount))
     return state.balance.balances[key]?.dataAccurate ?? false
   }
 

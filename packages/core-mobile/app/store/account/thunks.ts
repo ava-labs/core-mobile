@@ -10,8 +10,9 @@ import {
   selectAccounts,
   selectActiveAccount,
   setAccount,
-  setActiveAccountIndex
+  setActiveAccountId
 } from './slice'
+import { getAccountIndex } from './utils'
 
 export const addAccount = createAsyncThunk<void, void, ThunkApi>(
   `${reducerName}/addAccount`,
@@ -19,11 +20,14 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeNetwork = selectActiveNetwork(state)
-    const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
+    const activeAccount = selectActiveAccount(state)
     const walletType = selectWalletType(state)
 
     const accounts = selectAccounts(state)
     const accIndex = Object.keys(accounts).length
+    const activeAccountIndex = activeAccount
+      ? getAccountIndex(activeAccount)
+      : 0
     const acc = await AccountsService.createNextAccount({
       index: accIndex,
       activeAccountIndex,
@@ -32,9 +36,7 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     })
 
     thunkApi.dispatch(setAccount(acc))
-
-    // update active account index
-    thunkApi.dispatch(setActiveAccountIndex(acc.index))
+    thunkApi.dispatch(setActiveAccountId(acc.id))
 
     if (isDeveloperMode === false) {
       const allAccounts = [...Object.values(accounts), acc]

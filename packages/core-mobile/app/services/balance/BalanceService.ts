@@ -1,6 +1,6 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
-import { getAddressByNetwork } from 'store/account/utils'
+import { getAddressByNetwork, getAccountIndex } from 'store/account/utils'
 import {
   type NetworkContractToken,
   type TokenWithBalance,
@@ -45,7 +45,7 @@ export class BalanceService {
     const balances = balancesResponse[accountAddress] ?? {}
     if ('error' in balances) {
       return {
-        accountIndex: account.index,
+        accountIndex: getAccountIndex(account),
         chainId: network.chainId,
         tokens: [],
         accountAddress
@@ -53,7 +53,7 @@ export class BalanceService {
     }
 
     return {
-      accountIndex: account.index,
+      accountIndex: getAccountIndex(account),
       chainId: network.chainId,
       tokens: Object.values(balances),
       accountAddress

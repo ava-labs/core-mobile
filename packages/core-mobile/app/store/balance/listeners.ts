@@ -9,8 +9,9 @@ import {
   selectAccounts,
   selectActiveAccount,
   setAccounts,
-  setActiveAccountIndex
+  setActiveAccountId
 } from 'store/account'
+import { getAccountIndex } from 'store/account/utils'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
@@ -143,7 +144,7 @@ const onBalanceUpdateCore = async ({
     async span => {
       const balanceKeyedPromises = accounts.map(account => {
         return {
-          key: getKey(firstNetwork.chainId, account.index),
+          key: getKey(firstNetwork.chainId, getAccountIndex(account)),
           promise: BalanceService.getBalancesForAccount({
             network: firstNetwork,
             account,
@@ -169,7 +170,7 @@ const onBalanceUpdateCore = async ({
           inactiveNetworkPromises.push(
             ...accounts.map(account => {
               return {
-                key: getKey(n.chainId, account.index),
+                key: getKey(n.chainId, getAccountIndex(account)),
                 promise: BalanceService.getBalancesForAccount({
                   network: n,
                   account,
@@ -456,7 +457,7 @@ export const addBalanceListeners = (
     matcher: isAnyOf(
       setSelectedCurrency,
       setAccounts,
-      setActiveAccountIndex,
+      setActiveAccountId,
       addCustomToken,
       onNetworksFetched,
       toggleFavorite
