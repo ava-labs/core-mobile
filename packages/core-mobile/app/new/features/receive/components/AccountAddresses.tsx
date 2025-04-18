@@ -11,17 +11,14 @@ import {
 } from 'services/network/consts'
 import { selectActiveAccount } from 'store/account'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import {
-  SelectedNetworkKey,
-  useSelectedNetwork
-} from 'common/store/selectedNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import { useReceiveSelectedNetwork } from '../store'
 
 export const AccountAddresses = memo(
   ({ address }: { address: string }): React.JSX.Element => {
     const { theme } = useTheme()
     const activeAccount = useSelector(selectActiveAccount)
-    const [selectedNetwork] = useSelectedNetwork(SelectedNetworkKey.RECEIVE)
+    const [selectedNetwork] = useReceiveSelectedNetwork()
 
     const onCopyAddress = (value: string, message: string): void => {
       copyToClipboard(value, message)

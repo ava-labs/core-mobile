@@ -10,23 +10,18 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import {
-  SelectedNetworkKey,
-  useSelectedNetwork
-} from 'common/store/selectedNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { HORIZONTAL_MARGIN } from '../consts'
+import { useReceiveSelectedNetwork } from '../store'
 
 export const ReceiveScreen = (): ReactNode => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const { networks } = usePrimaryNetworks()
 
-  const [selectedNetwork, setSelectedNetwork] = useSelectedNetwork(
-    SelectedNetworkKey.RECEIVE
-  )
+  const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
