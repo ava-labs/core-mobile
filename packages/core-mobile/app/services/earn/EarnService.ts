@@ -1,4 +1,5 @@
 import { Account, AccountCollection } from 'store/account/types'
+import { getAccountIndex } from 'store/account/utils'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -86,7 +87,7 @@ class EarnService {
           progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
         }
         return WalletService.getAtomicUTXOs({
-          accountIndex: activeAccount.index,
+          accountIndex: getAccountIndex(activeAccount),
           avaxXPNetwork
         })
       },
@@ -223,7 +224,7 @@ class EarnService {
     const rewardAddress = activeAccount.addressPVM
 
     const unsignedTx = await WalletService.createAddDelegatorTx({
-      accountIndex: activeAccount.index,
+      accountIndex: getAccountIndex(activeAccount),
       avaxXPNetwork,
       rewardAddress,
       nodeId,
@@ -237,7 +238,7 @@ class EarnService {
 
     const signedTxJson = await WalletService.sign({
       transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
-      accountIndex: activeAccount.index,
+      accountIndex: getAccountIndex(activeAccount),
       network: avaxXPNetwork
     })
     const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
@@ -356,7 +357,7 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(account.index, network)
+            WalletService.getAddresses(getAccountIndex(account), network)
           )
         )
       ).map(address => address.PVM)

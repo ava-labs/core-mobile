@@ -6,36 +6,50 @@ import { CoreAccountType, WalletType as CoreWalletType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
+import { getAccountIndex } from 'store/account/utils'
 
 class AccountsService {
+  /**
+   * Reloads the accounts for the given network.
+   * @param accounts The accounts to reload.
+   * @param network The network to reload the accounts for.
+   * @returns The reloaded accounts.
+   */
   async reloadAccounts(
     accounts: AccountCollection,
     network: Network
   ): Promise<AccountCollection> {
     const reloadedAccounts: AccountCollection = {}
 
-    for (const index of Object.keys(accounts)) {
-      const key = parseInt(index)
-      const addresses = await WalletService.getAddresses(key, network)
-      const title = await SeedlessService.getAccountName(key)
+    for (const id of Object.keys(accounts)) {
+      const account = accounts[id]
+      if (!account) continue
 
-      const account = accounts[key]
-      if (account) {
-        reloadedAccounts[key] = {
-          id: account.id,
-          name: title ?? account.name,
-          type: account.type,
-          active: account.active,
-          walletId: account.walletId,
-          index: account.index,
-          walletType: account.walletType,
-          addressBTC: addresses[NetworkVMType.BITCOIN],
-          addressC: addresses[NetworkVMType.EVM],
-          addressAVM: addresses[NetworkVMType.AVM],
-          addressPVM: addresses[NetworkVMType.PVM],
-          addressCoreEth: addresses[NetworkVMType.CoreEth],
-          walletName: account.walletName
+      let addresses
+      let title = account.name
+
+      if (account.type === CoreAccountType.PRIMARY) {
+        addresses = await WalletService.getAddresses(
+          getAccountIndex(account),
+          network
+        )
+        if (account.walletType === CoreWalletType.Seedless) {
+          title =
+            (await SeedlessService.getAccountName(getAccountIndex(account))) ??
+            account.name
         }
+      } else {
+        addresses = await WalletService.getAddresses(0, network)
+      }
+
+      reloadedAccounts[id] = {
+        ...account,
+        name: title ?? account.name,
+        addressBTC: addresses[NetworkVMType.BITCOIN],
+        addressC: addresses[NetworkVMType.EVM],
+        addressAVM: addresses[NetworkVMType.AVM],
+        addressPVM: addresses[NetworkVMType.PVM],
+        addressCoreEth: addresses[NetworkVMType.CoreEth]
       }
     }
 
