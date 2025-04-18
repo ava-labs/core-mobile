@@ -1,10 +1,15 @@
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
-import { Avalanche, getXpubFromMnemonic } from '@avalabs/core-wallets-sdk'
+import {
+  Avalanche,
+  getPublicKeyFromPrivateKey,
+  getXpubFromMnemonic
+} from '@avalabs/core-wallets-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
+import PrivateKeyWalletInstance from './PrivateKeyWallet'
 
 class WalletInitializer {
   async initialize({
@@ -58,6 +63,16 @@ class WalletInitializer {
         MnemonicWalletInstance.mnemonic = mnemonic
         break
       }
+      case WalletType.PRIVATE_KEY: {
+        if (!mnemonic) throw new Error('Private key not provided')
+
+        PrivateKeyWalletInstance.privateKey = mnemonic
+        const pubKey = getPublicKeyFromPrivateKey(Buffer.from(mnemonic, 'hex'))
+        PrivateKeyWalletInstance.xpub = pubKey.toString('hex')
+        PrivateKeyWalletInstance.xpubXP = pubKey.toString('hex')
+
+        break
+      }
       default:
         throw new Error(`Wallet type ${walletType} not supported`)
     }
@@ -74,6 +89,11 @@ class WalletInitializer {
         MnemonicWalletInstance.mnemonic = undefined
         MnemonicWalletInstance.xpub = undefined
         MnemonicWalletInstance.xpubXP = undefined
+        break
+      case WalletType.PRIVATE_KEY:
+        PrivateKeyWalletInstance.privateKey = undefined
+        PrivateKeyWalletInstance.xpub = undefined
+        PrivateKeyWalletInstance.xpubXP = undefined
         break
       default:
         throw new Error(

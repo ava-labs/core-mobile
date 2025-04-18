@@ -112,7 +112,8 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
 export enum WalletType {
   UNSET = 'UNSET',
   SEEDLESS = 'SEEDLESS',
-  MNEMONIC = 'MNEMONIC'
+  MNEMONIC = 'MNEMONIC',
+  PRIVATE_KEY = 'PRIVATE_KEY'
 }
 
 /**
