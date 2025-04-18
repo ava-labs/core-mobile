@@ -63,7 +63,7 @@ class WalletService {
     Logger.info(`initializing wallet with type ${walletType}`)
 
     await WalletInitializer.initialize({
-      mnemonic,
+      walletSecret: mnemonic,
       walletType,
       isLoggingIn
     })
