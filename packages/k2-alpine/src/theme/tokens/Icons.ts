@@ -70,6 +70,10 @@ import IconArrowOutward from '../../assets/icons/arrow_outward.svg'
 import IconDoNotDisturbOn from '../../assets/icons/do_not_disturb_on.svg'
 import IconAddCircle from '../../assets/icons/add_circle.svg'
 import IconRefresh from '../../assets/icons/refresh.svg'
+import IconLayers from '../../assets/icons/layers.svg'
+import IconStake from '../../assets/icons/stake.svg'
+import IconBrowser from '../../assets/icons/browser.svg'
+import IconTrack from '../../assets/icons/track.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -133,6 +137,8 @@ import IconAvaxP from '../../assets/tokenLogos/AVAX_P_LIGHT.svg'
 import IconAvaxX from '../../assets/tokenLogos/AVAX_X_LIGHT.svg'
 import IconAvaxPDark from '../../assets/tokenLogos/AVAX_P_DARK.svg'
 import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
+import IconAvaxXPDark from '../../assets/tokenLogos/AVAX_XP_DARK.svg'
+import IconAvaxXPLight from '../../assets/tokenLogos/AVAX_XP_LIGHT.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -208,7 +214,11 @@ export const Icons = {
     MoreHoriz: IconMoreHoriz,
     Tabs: IconTabs,
     History: IconHistory,
-    Refresh: IconRefresh
+    Refresh: IconRefresh,
+    Layers: IconLayers,
+    Stake: IconStake,
+    Browser: IconBrowser,
+    Track: IconTrack
   },
   Notification: {
     Sync: IconSync
@@ -336,7 +346,9 @@ export const Icons = {
     AVAX_P_LIGHT: IconAvaxP,
     AVAX_X_LIGHT: IconAvaxX,
     AVAX_P_DARK: IconAvaxPDark,
-    AVAX_X_DARK: IconAvaxXDark
+    AVAX_X_DARK: IconAvaxXDark,
+    AVAX_XP_DARK: IconAvaxXPDark,
+    AVAX_XP_LIGHT: IconAvaxXPLight
   },
   Currencies: {
     AED: AED,

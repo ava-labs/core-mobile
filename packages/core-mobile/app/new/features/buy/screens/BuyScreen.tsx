@@ -184,6 +184,7 @@ export const BuyScreen: FC = () => {
         title: 'Coinbase Pay',
         subtitle: 'Continue using Coinbase Pay',
         onPress: () => onPaySelection(Provider.COINBASE),
+        rightIcon: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
         leftIcon: (
           <Logos.PartnerLogos.CoinbasePay
             accessibilityRole="image"
@@ -203,6 +204,7 @@ export const BuyScreen: FC = () => {
       title: 'Moonpay',
       subtitle: 'Continue using Moonpay',
       onPress: () => onPaySelection(Provider.MOONPAY),
+      rightIcon: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
       leftIcon: (
         <Logos.PartnerLogos.Moonpay
           accessibilityRole="image"
@@ -222,6 +224,7 @@ export const BuyScreen: FC = () => {
         title: 'Halliday',
         subtitle: 'Continue using Halliday',
         onPress: () => onPaySelection(Provider.HALLIDAY),
+        rightIcon: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
         leftIcon: (
           <Logos.PartnerLogos.Halliday
             testID="halliday_logo"
@@ -237,7 +240,12 @@ export const BuyScreen: FC = () => {
       })
     }
     return providers
-  }, [isCoinbasePayBlocked, isHallidayBannerBlocked, onPaySelection])
+  }, [
+    isCoinbasePayBlocked,
+    isHallidayBannerBlocked,
+    onPaySelection,
+    theme.colors.$textPrimary
+  ])
 
   return (
     <View style={{ paddingHorizontal: 16, gap: 40 }}>

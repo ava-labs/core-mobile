@@ -7,11 +7,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { KeyboardAvoidingView, Platform } from 'react-native'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   runOnJS,
@@ -28,12 +28,14 @@ import { HistoryList } from './HistoryList'
 
 export const BrowserControls = (): ReactNode => {
   const { theme } = useTheme()
-  const { urlEntry, inputRef } = useBrowserContext()
+  const { inputRef, isRenameFavoriteVisible, showRecentSearches } =
+    useBrowserContext()
   const insets = useSafeAreaInsets()
   const keyboardHeight = useKeyboardHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const [isFocused, setIsFocused] = useState(false)
+
   const gestureProgress = useSharedValue(0)
 
   const onCollapse = (): void => {
@@ -66,7 +68,9 @@ export const BrowserControls = (): ReactNode => {
   const historyStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        urlEntry?.length && isFocused ? 1 - gestureProgress.value : 0,
+        showRecentSearches.value && (isFocused || isRenameFavoriteVisible.value)
+          ? 1 - gestureProgress.value
+          : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -75,7 +79,10 @@ export const BrowserControls = (): ReactNode => {
   const favoritesStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        !urlEntry?.length && isFocused ? 1 - gestureProgress.value : 0,
+        !showRecentSearches.value &&
+          (isFocused || isRenameFavoriteVisible.value)
+          ? 1 - gestureProgress.value
+          : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -86,7 +93,9 @@ export const BrowserControls = (): ReactNode => {
       transform: [
         {
           scale: withTiming(
-            isFocused ? 1 - gestureProgress.value * 0.1 : 0.9,
+            isFocused || isRenameFavoriteVisible.value
+              ? 1 - gestureProgress.value * 0.1
+              : 0.9,
             ANIMATED.TIMING_CONFIG
           )
         }
@@ -97,7 +106,9 @@ export const BrowserControls = (): ReactNode => {
   const focusStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        isFocused ? 1 - gestureProgress.value : 0,
+        isFocused || isRenameFavoriteVisible.value
+          ? 1 - gestureProgress.value
+          : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -108,10 +119,15 @@ export const BrowserControls = (): ReactNode => {
       return {
         transform: [
           {
-            translateY: withTiming(keyboardHeight > 0 ? tabBarHeight : 0, {
-              ...ANIMATED.TIMING_CONFIG,
-              duration: 10
-            })
+            translateY: withTiming(
+              keyboardHeight > 0
+                ? -keyboardHeight + tabBarHeight - insets.bottom
+                : 0,
+              {
+                ...ANIMATED.TIMING_CONFIG,
+                duration: 10
+              }
+            )
           }
         ]
       }
@@ -139,12 +155,8 @@ export const BrowserControls = (): ReactNode => {
     const isIOS = Platform.OS === 'ios'
 
     return theme.isDark
-      ? isIOS
-        ? '#181818'
-        : '#1E1E24'
-      : isIOS
-      ? alpha(theme.colors.$white, 0.5)
-      : theme.colors.$white
+      ? alpha('#121213', isIOS ? 0.8 : 1)
+      : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
   }, [theme.isDark, theme.colors.$white])
 
   return (
@@ -213,49 +225,44 @@ export const BrowserControls = (): ReactNode => {
               gestureControlStyle,
               {
                 flex: 1,
-                marginBottom:
-                  keyboardHeight > 0 ? (Platform.OS === 'ios' ? 24 : 48) : 0
+                marginBottom: keyboardHeight > 0 ? 24 : 0
               }
             ]}>
-            {urlEntry.length ? (
-              <Animated.View
-                pointerEvents={urlEntry.length ? 'auto' : 'none'}
-                style={[
-                  historyStyle,
-                  scaleStyle,
-                  {
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0
-                  }
-                ]}>
-                <HistoryList
-                  contentContainerStyle={{
-                    paddingTop: 30,
-                    paddingBottom: BROWSER_CONTROLS_HEIGHT
-                  }}
-                />
-              </Animated.View>
-            ) : (
-              <Animated.View
-                pointerEvents={urlEntry.length ? 'none' : 'auto'}
-                style={[
-                  favoritesStyle,
-                  scaleStyle,
-                  {
-                    flex: 1
-                  }
-                ]}>
-                <FavoritesList
-                  contentContainerStyle={{
-                    paddingTop: insets.top + 50,
-                    paddingBottom: insets.top
-                  }}
-                />
-              </Animated.View>
-            )}
+            <Animated.View
+              pointerEvents={showRecentSearches.value ? 'auto' : 'none'}
+              style={[
+                historyStyle,
+                scaleStyle,
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0
+                }
+              ]}>
+              <HistoryList
+                contentContainerStyle={{
+                  paddingTop: 30,
+                  paddingBottom: BROWSER_CONTROLS_HEIGHT
+                }}
+              />
+            </Animated.View>
+            <Animated.View
+              style={[
+                favoritesStyle,
+                scaleStyle,
+                {
+                  flex: 1
+                }
+              ]}>
+              <FavoritesList
+                contentContainerStyle={{
+                  paddingTop: insets.top + 50,
+                  paddingBottom: insets.top
+                }}
+              />
+            </Animated.View>
           </Animated.View>
         </KeyboardAvoidingView>
 

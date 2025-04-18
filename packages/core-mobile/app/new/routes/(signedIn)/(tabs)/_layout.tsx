@@ -1,44 +1,38 @@
-import React, { useMemo } from 'react'
 import { alpha, useTheme } from '@avalabs/k2-alpine'
-import { Platform } from 'react-native'
 import { BottomTabs } from 'common/components/BottomTabs'
+import React, { useMemo } from 'react'
+import { Platform } from 'react-native'
+
+const isIOS = Platform.OS === 'ios'
 
 const portfolioIcon = require('../../../assets/icons/tabs/layers.png')
 const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
 const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 
-const isIOS = Platform.OS === 'ios'
-
 const tabLabelStyle = {
-  fontFamily: isIOS ? 'Inter-Medium' : 'Inter-Bold',
-  fontSize: 10
+  fontSize: 10,
+  fontFamily: isIOS ? undefined : 'Inter-Medium'
 }
 
-const tabBarInactiveTintOpacity = 0.4
+const tabBarInactiveTintOpacity = 0.6
 
 export default function TabLayout(): JSX.Element {
-  const {
-    theme: { colors, isDark }
-  } = useTheme()
+  const { theme } = useTheme()
 
   const tabBarInactiveTintColor = useMemo(() => {
-    return isDark
-      ? alpha(colors.$white, tabBarInactiveTintOpacity)
-      : alpha('#1E1E24', tabBarInactiveTintOpacity)
-  }, [colors.$white, isDark])
+    return theme.isDark
+      ? alpha(theme.colors.$white, tabBarInactiveTintOpacity)
+      : alpha('#121213', tabBarInactiveTintOpacity)
+  }, [theme.colors.$white, theme.isDark])
 
   const tabBarStyle = useMemo(() => {
     return {
-      backgroundColor: isDark
-        ? isIOS
-          ? alpha(colors.$black, 0.88)
-          : '#1E1E24'
-        : isIOS
-        ? alpha(colors.$white, 0.5)
-        : colors.$white
+      backgroundColor: theme.isDark
+        ? alpha('#121213', isIOS ? 0.8 : 1)
+        : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
     }
-  }, [colors.$white, colors.$black, isDark])
+  }, [theme.colors.$white, theme.isDark])
 
   return (
     <BottomTabs
@@ -48,7 +42,7 @@ export default function TabLayout(): JSX.Element {
       // on iOS, animations remain enabled as they are needed to fix the
       // BlurView rendering issue in the navigation header.
       disablePageAnimations={isIOS ? false : true}
-      tabBarActiveTintColor={isDark ? colors.$white : colors.$black}
+      tabBarActiveTintColor={theme.colors.$textPrimary}
       scrollEdgeAppearance={'default'}
       tabBarInactiveTintColor={tabBarInactiveTintColor}
       tabBarStyle={tabBarStyle}

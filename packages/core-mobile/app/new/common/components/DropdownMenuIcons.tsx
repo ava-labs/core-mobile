@@ -51,16 +51,16 @@ export function getPlatformIcons(
     destructive?: boolean
   }
 ): {
-  ios: ImageURISource
-  android: string
+  ios: ImageURISource | null
+  android: string | null
 } {
   const theme = isDark ? 'Dark' : 'Light'
-  const defaultIcon = {
-    ios: DropdownMenuIcons[theme].arrow_back,
-    android: 'arrow_back'
-  }
 
-  if (!name) return defaultIcon
+  if (!name)
+    return {
+      ios: null,
+      android: null
+    }
 
   try {
     if (options?.destructive) {
@@ -84,7 +84,10 @@ export function getPlatformIcons(
     }
   } catch (error) {
     Logger.error(`${name} is not a valid icon name`)
-    return defaultIcon
+    return {
+      ios: null,
+      android: null
+    }
   }
 }
 

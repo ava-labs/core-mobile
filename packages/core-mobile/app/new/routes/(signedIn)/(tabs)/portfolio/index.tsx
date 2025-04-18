@@ -2,9 +2,9 @@ import { noop } from '@avalabs/core-utils-sdk'
 import {
   BalanceHeader,
   NavigationTitleHeader,
+  PriceChangeStatus,
   SegmentedControl,
   useTheme,
-  PriceChangeStatus,
   View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -15,7 +15,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import {
@@ -27,15 +26,16 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
+  InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
   Platform,
-  StyleSheet,
-  InteractionManager
+  StyleSheet
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
