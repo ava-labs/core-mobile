@@ -6,7 +6,7 @@ export const SendScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handleSelectToken = useCallback((): void => {
-    navigate({ pathname: '/selectToken' })
+    navigate({ pathname: '/selectSendToken' })
   }, [navigate])
 
   return (
