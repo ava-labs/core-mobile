@@ -15,7 +15,7 @@ import {
   SelectedNetworkKey,
   useSelectedNetwork
 } from 'common/store/selectedNetwork'
-import { isXPChain } from '../utils'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
 
 export const AccountAddresses = memo(
   ({ address }: { address: string }): React.JSX.Element => {
