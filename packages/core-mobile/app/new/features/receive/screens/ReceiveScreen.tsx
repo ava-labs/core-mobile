@@ -10,10 +10,13 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  SelectedNetworkKey,
+  useSelectedNetwork
+} from 'common/store/selectedNetwork'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { useReceiveActions, useReceiveSelectedNetwork } from '../store'
 import { isXPChain } from '../utils'
 
 export const ReceiveScreen = (): ReactNode => {
@@ -21,14 +24,15 @@ export const ReceiveScreen = (): ReactNode => {
   const { theme } = useTheme()
   const { networks } = usePrimaryNetworks()
 
-  const { setSelectedNetwork } = useReceiveActions()
-  const selectedNetwork = useReceiveSelectedNetwork()
+  const [selectedNetwork, setSelectedNetwork] = useSelectedNetwork(
+    SelectedNetworkKey.RECEIVE
+  )
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
 
   const address = useMemo(() => {
-    switch (selectedNetwork.vmName) {
+    switch (selectedNetwork?.vmName) {
       case NetworkVMType.BITCOIN:
         return activeAccount?.addressBTC ?? ''
       case NetworkVMType.AVM:
@@ -42,12 +46,12 @@ export const ReceiveScreen = (): ReactNode => {
   }, [activeAccount, selectedNetwork])
 
   const qrCodeAddress = useMemo(() => {
-    if (isXPChain(selectedNetwork.chainId)) return address.split('-')[1]
+    if (isXPChain(selectedNetwork?.chainId)) return address.split('-')[1]
     return address
   }, [address, selectedNetwork])
 
   const refreshSelectedNetwork = useCallback(() => {
-    if (selectedNetwork.isTestnet && !isDeveloperMode) {
+    if (selectedNetwork?.isTestnet && !isDeveloperMode) {
       const foundNetwork = networks.find(
         network =>
           network.vmName === selectedNetwork.vmName && !network.isTestnet
@@ -56,10 +60,10 @@ export const ReceiveScreen = (): ReactNode => {
       if (foundNetwork) {
         setSelectedNetwork(foundNetwork)
       }
-    } else if (!selectedNetwork.isTestnet && isDeveloperMode) {
+    } else if (!selectedNetwork?.isTestnet && isDeveloperMode) {
       const foundNetwork = networks.find(
         network =>
-          network.vmName === selectedNetwork.vmName && network.isTestnet
+          network.vmName === selectedNetwork?.vmName && network.isTestnet
       )
 
       if (foundNetwork) {
