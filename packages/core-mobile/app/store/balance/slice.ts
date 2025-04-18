@@ -250,10 +250,10 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
 const _selectBalanceKeyForNetworkAndAccount = (
   _state: RootState,
-  chainId: number,
+  chainId: number | undefined,
   accountIndex: number | undefined
 ): string | undefined => {
-  if (accountIndex === undefined) return undefined
+  if (accountIndex === undefined || chainId === undefined) return undefined
 
   return getKey(chainId, accountIndex)
 }
