@@ -10,19 +10,18 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { useReceiveActions, useReceiveSelectedNetwork } from '../store'
-import { isXPChain } from '../utils'
+import { useReceiveSelectedNetwork } from '../store'
 
 export const ReceiveScreen = (): ReactNode => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const { networks } = usePrimaryNetworks()
 
-  const { setSelectedNetwork } = useReceiveActions()
-  const selectedNetwork = useReceiveSelectedNetwork()
+  const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
@@ -42,7 +41,8 @@ export const ReceiveScreen = (): ReactNode => {
   }, [activeAccount, selectedNetwork])
 
   const qrCodeAddress = useMemo(() => {
-    if (isXPChain(selectedNetwork.chainId)) return address.split('-')[1]
+    if (selectedNetwork.chainId && isXPChain(selectedNetwork.chainId))
+      return address.split('-')[1]
     return address
   }, [address, selectedNetwork])
 
@@ -121,10 +121,10 @@ export const ReceiveScreen = (): ReactNode => {
               height: 31
             }}>
             <TokenLogo
-              symbol={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
+              symbol={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
               size={20}
             />
-            <Text variant="buttonMedium">{selectedNetwork?.chainName}</Text>
+            <Text variant="buttonMedium">{selectedNetwork.chainName}</Text>
             <Icons.Navigation.ChevronRight
               color={theme.colors.$textSecondary}
               style={{
@@ -136,10 +136,17 @@ export const ReceiveScreen = (): ReactNode => {
         <QRCode
           testID="receive_token_qr_code"
           address={qrCodeAddress}
-          token={selectedNetwork?.networkToken?.symbol ?? 'AVAX'}
-          label={selectedNetwork?.chainName}
+          token={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
+          label={selectedNetwork.chainName}
         />
-        <View style={{ flex: isXPChain(selectedNetwork?.chainId) ? 0.5 : 1 }} />
+        <View
+          style={{
+            flex:
+              selectedNetwork.chainId && isXPChain(selectedNetwork.chainId)
+                ? 0.5
+                : 1
+          }}
+        />
       </View>
 
       <AccountAddresses address={address} />

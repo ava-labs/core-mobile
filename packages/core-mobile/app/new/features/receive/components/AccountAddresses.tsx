@@ -10,15 +10,15 @@ import {
   NETWORK_X_TEST
 } from 'services/network/consts'
 import { selectActiveAccount } from 'store/account'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { useReceiveSelectedNetwork } from '../store'
-import { isXPChain } from '../utils'
-import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const AccountAddresses = memo(
   ({ address }: { address: string }): React.JSX.Element => {
     const { theme } = useTheme()
     const activeAccount = useSelector(selectActiveAccount)
-    const selectedNetwork = useReceiveSelectedNetwork()
+    const [selectedNetwork] = useReceiveSelectedNetwork()
 
     const onCopyAddress = (value: string, message: string): void => {
       copyToClipboard(value, message)
@@ -26,11 +26,10 @@ export const AccountAddresses = memo(
 
     const walletAddreses = useMemo(() => {
       if (!activeAccount) return []
-      if (!selectedNetwork) return []
 
       if (isXPChain(selectedNetwork.chainId)) {
-        const networkX = selectedNetwork?.isTestnet ? NETWORK_X_TEST : NETWORK_X
-        const networkP = selectedNetwork?.isTestnet ? NETWORK_P_TEST : NETWORK_P
+        const networkX = selectedNetwork.isTestnet ? NETWORK_X_TEST : NETWORK_X
+        const networkP = selectedNetwork.isTestnet ? NETWORK_P_TEST : NETWORK_P
         const addressP = activeAccount?.addressPVM ?? ''
         const addressX = activeAccount?.addressAVM ?? ''
 
@@ -39,7 +38,7 @@ export const AccountAddresses = memo(
             title: networkX.chainName,
             subtitle: addressX?.replace('-', '\u2011'), // to prevent word wrap because of the dash
             leftIcon: (
-              <LogoWithNetwork
+              <NetworkLogoWithChain
                 network={networkX}
                 outerBorderColor={theme.colors.$surfaceSecondary}
                 showChainLogo
@@ -63,7 +62,7 @@ export const AccountAddresses = memo(
             title: networkP.chainName,
             subtitle: addressP?.replace('-', '\u2011'), // to prevent word wrap because of the dash
             leftIcon: (
-              <LogoWithNetwork
+              <NetworkLogoWithChain
                 network={networkP}
                 outerBorderColor={theme.colors.$surfaceSecondary}
                 showChainLogo
@@ -91,7 +90,7 @@ export const AccountAddresses = memo(
           title: selectedNetwork.chainName,
           subtitle: address.replace('-', '\u2011'), // to prevent word wrap because of the dash
           leftIcon: (
-            <LogoWithNetwork
+            <NetworkLogoWithChain
               network={selectedNetwork}
               outerBorderColor={theme.colors.$surfaceSecondary}
               showChainLogo={false}
