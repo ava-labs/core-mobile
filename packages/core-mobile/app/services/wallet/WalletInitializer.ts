@@ -13,11 +13,11 @@ import PrivateKeyWalletInstance from './PrivateKeyWallet'
 
 class WalletInitializer {
   async initialize({
-    mnemonic,
+    walletSecret,
     walletType,
     isLoggingIn
   }: {
-    mnemonic?: string
+    walletSecret?: string
     walletType: WalletType
     isLoggingIn: boolean
   }): Promise<void> {
@@ -38,13 +38,13 @@ class WalletInitializer {
         break
       }
       case WalletType.MNEMONIC: {
-        if (!mnemonic) throw new Error('Mnemonic not provided')
+        if (!walletSecret) throw new Error('Mnemonic not provided')
 
         Logger.info('getting xpub from mnemonic')
 
-        const xpubPromise = getXpubFromMnemonic(mnemonic)
+        const xpubPromise = getXpubFromMnemonic(walletSecret)
         const xpubXPPromise = new Promise<string>(resolve => {
-          resolve(Avalanche.getXpubFromMnemonic(mnemonic))
+          resolve(Avalanche.getXpubFromMnemonic(walletSecret))
         })
         const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
         if (pubKeys[0].status === 'fulfilled') {
@@ -60,14 +60,16 @@ class WalletInitializer {
           )
         }
 
-        MnemonicWalletInstance.mnemonic = mnemonic
+        MnemonicWalletInstance.mnemonic = walletSecret
         break
       }
       case WalletType.PRIVATE_KEY: {
-        if (!mnemonic) throw new Error('Private key not provided')
+        if (!walletSecret) throw new Error('Private key not provided')
 
-        PrivateKeyWalletInstance.privateKey = mnemonic
-        const pubKey = getPublicKeyFromPrivateKey(Buffer.from(mnemonic, 'hex'))
+        PrivateKeyWalletInstance.privateKey = walletSecret
+        const pubKey = getPublicKeyFromPrivateKey(
+          Buffer.from(walletSecret, 'hex')
+        )
         PrivateKeyWalletInstance.xpub = pubKey.toString('hex')
         PrivateKeyWalletInstance.xpubXP = pubKey.toString('hex')
 
