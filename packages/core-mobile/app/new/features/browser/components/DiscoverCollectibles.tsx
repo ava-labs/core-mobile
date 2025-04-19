@@ -58,6 +58,7 @@ export const DiscoverCollectibles = (): JSX.Element => {
             width: 180,
             height: 188
           }}
+          renderToHardwareTextureAndroid={false}
           contentFit="contain"
           source={NftCollectionImage}
         />
