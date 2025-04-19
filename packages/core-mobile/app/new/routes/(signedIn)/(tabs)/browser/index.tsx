@@ -75,13 +75,17 @@ const Browser = (): React.ReactNode => {
   })
 
   useFocusEffect(() => {
-    KeyboardController.setInputMode(
-      AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
-    )
-    return () => {
+    if (!KeyboardController.isVisible()) {
       KeyboardController.setInputMode(
-        AndroidSoftInputModes.SOFT_INPUT_ADJUST_RESIZE
+        AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
       )
+    }
+    return () => {
+      if (!KeyboardController.isVisible()) {
+        KeyboardController.setInputMode(
+          AndroidSoftInputModes.SOFT_INPUT_ADJUST_RESIZE
+        )
+      }
     }
   })
 
