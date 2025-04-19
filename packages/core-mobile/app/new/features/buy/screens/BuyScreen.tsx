@@ -1,6 +1,5 @@
 import { noop } from '@avalabs/core-utils-sdk'
 import {
-  alpha,
   GroupList,
   Icons,
   Logos,
@@ -10,8 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
-import { useRoute } from '@react-navigation/native'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { FC, useCallback, useMemo } from 'react'
 import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,7 +33,7 @@ export const BuyScreen: FC = () => {
   const { navigate, back } = useRouter()
   const dispatch = useDispatch()
   const { theme } = useTheme()
-  const { params } = useRoute() as { params: { showAvaxWarning: string } }
+  const { showAvaxWarning } = useLocalSearchParams()
   const isCoinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
   const isHallidayBannerBlocked = useSelector(
     selectIsHallidayBridgeBannerBlocked
@@ -152,7 +150,7 @@ export const BuyScreen: FC = () => {
   )
 
   const renderAvaxWarning = (): React.JSX.Element | undefined => {
-    if (params?.showAvaxWarning === 'true')
+    if (showAvaxWarning === 'true')
       return (
         <View
           sx={{
@@ -169,7 +167,7 @@ export const BuyScreen: FC = () => {
                 fontFamily: 'Inter-Medium',
                 fontSize: 15
               }}>
-              Be sure to buy native AVAX tokens for transactions on Avalanche
+              Make sure to buy AVAX native token for transactions
             </Text>
           </View>
         </View>

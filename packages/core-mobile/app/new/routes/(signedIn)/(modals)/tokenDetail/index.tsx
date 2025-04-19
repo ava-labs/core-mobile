@@ -143,8 +143,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleBuy = useCallback(() => {
     navigate({
-      pathname: '/buy',
-      params: { showAvaxWarning: 'true' }
+      pathname: '/buy'
     })
   }, [navigate])
 
