@@ -131,6 +131,7 @@ export const TabItem = ({
             }}>
             <Image
               source={{ uri: verifiedImageSource }}
+              renderToHardwareTextureAndroid={false}
               style={{ height: '100%' }}
             />
 
@@ -138,6 +139,7 @@ export const TabItem = ({
               intensity={50}
               tint={theme.isDark ? 'dark' : 'light'}
               experimentalBlurMethod="dimezisBlurView"
+              renderToHardwareTextureAndroid={false}
               style={{
                 position: 'absolute',
                 top: 0,

@@ -162,11 +162,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [openUrl, tokenInfo?.urlHostname])
 
   const handleBuy = useCallback((): void => {
-    // navigate(AppNavigation.Wallet.Buy, {
-    //   screen: AppNavigation.Buy.Buy,
-    //   params: { showAvaxWarning: true }
-    // })
-  }, [])
+    navigate({
+      pathname: '/buy',
+      params: { showAvaxWarning: 'true' }
+    })
+  }, [navigate])
 
   const handleStake = useCallback((): void => {
     // @ts-ignore
