@@ -7,8 +7,8 @@ export function isAvmNetwork(network?: Network): boolean {
   return network?.vmName === NetworkVMType.AVM
 }
 
-export function isXPChain(chainId: number): boolean {
-  return isPChain(chainId) || isXChain(chainId)
+export function isXPChain(chainId: ChainId): boolean {
+  return [ChainId.AVALANCHE_XP, ChainId.AVALANCHE_TEST_XP].includes(chainId)
 }
 
 export function isPChain(chainId: number): boolean {
