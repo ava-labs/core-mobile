@@ -69,6 +69,25 @@ export const GroupList = ({
     }
   }
 
+  const renderTitle = (title: React.ReactNode): React.ReactNode => {
+    if (typeof title === 'string') {
+      return (
+        <Text
+          variant="buttonMedium"
+          sx={{
+            fontFamily: 'Inter-Medium',
+            fontSize: 16,
+            color: '$textPrimary',
+            ...titleSx
+          }}>
+          {title}
+        </Text>
+      )
+    }
+
+    return title
+  }
+
   return (
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
@@ -121,16 +140,7 @@ export const GroupList = ({
                         alignItems: 'center',
                         gap: 8
                       }}>
-                      <Text
-                        variant="buttonMedium"
-                        sx={{
-                          fontFamily: 'Inter-Medium',
-                          fontSize: 16,
-                          color: '$textPrimary',
-                          ...titleSx
-                        }}>
-                        {title}
-                      </Text>
+                      {renderTitle(title)}
                       {rightIcon !== undefined && rightIcon}
                     </View>
                     {subtitle && (
@@ -198,7 +208,7 @@ export const GroupList = ({
 }
 
 export type GroupListItem = {
-  title: string
+  title: React.ReactNode
   subtitle?: string
   value?: React.ReactNode
   onPress?: () => void

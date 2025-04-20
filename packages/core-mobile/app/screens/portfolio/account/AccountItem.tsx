@@ -12,15 +12,13 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchBalanceForAccount,
   selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsBalanceLoadedForAddress
+  selectBalanceTotalInCurrencyForAccount
 } from 'store/balance/slice'
 import { QueryStatus } from 'store/balance/types'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectTokenVisibility } from 'store/portfolio/slice'
 
 type Props = {
@@ -40,16 +38,13 @@ function AccountItem({
   blurred,
   testID
 }: Props): JSX.Element {
-  const { activeNetwork } = useNetworks()
   const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
   )
-  const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAddress(account.index, activeNetwork.chainId)
-  )
+  const isBalanceLoaded = false
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
 
