@@ -72,6 +72,7 @@ const BridgeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const {
     assetBalance,
+    assetBalanceOnTargetNetwork,
     inputAmount,
     setInputAmount,
     assetsWithBalances,
@@ -436,6 +437,7 @@ const BridgeScreen = (): JSX.Element => {
         <Separator sx={{ marginHorizontal: 16 }} />
         <TokenInputWidget
           amount={receiveAmount}
+          balance={assetBalanceOnTargetNetwork?.balance}
           title="You receive"
           token={selectedToken}
           network={targetNetwork}

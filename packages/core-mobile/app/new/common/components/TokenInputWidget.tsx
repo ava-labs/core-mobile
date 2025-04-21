@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import {
+  ActivityIndicator,
   Button,
   Icons,
   SxProp,
@@ -103,7 +104,9 @@ export const TokenInputWidget = ({
       setPercentageButtons(prevButtons =>
         prevButtons.map(b => ({
           ...b,
-          isSelected: value.value === BigInt(Number(balance ?? 0n) * b.percent)
+          isSelected:
+            balance !== undefined &&
+            value.value === BigInt(Number(balance) * b.percent)
         }))
       )
 
@@ -173,16 +176,21 @@ export const TokenInputWidget = ({
                     />
                   )}
                 </View>
-                {balance !== undefined && token && (
-                  <Text
-                    variant="subtitle2"
-                    sx={{
-                      color: '$textSecondary'
-                    }}>{`${formatTokenAmount(
-                    bigintToBig(balance, token.decimals),
-                    6
-                  )} ${token.symbol}`}</Text>
-                )}
+                {token &&
+                  (balance !== undefined ? (
+                    <Text
+                      variant="subtitle2"
+                      sx={{
+                        color: '$textSecondary'
+                      }}>{`${formatTokenAmount(
+                      bigintToBig(balance, token.decimals),
+                      6
+                    )} ${token.symbol}`}</Text>
+                  ) : (
+                    <View sx={{ alignSelf: 'flex-start' }}>
+                      <ActivityIndicator size={'small'} />
+                    </View>
+                  ))}
               </View>
             </View>
           </TouchableOpacity>
@@ -242,7 +250,7 @@ export const TokenInputWidget = ({
                   style={{
                     minWidth: 72
                   }}
-                  disabled={disabled}
+                  disabled={disabled || balance === undefined}
                   onPress={() => {
                     handlePressPercentageButton(button, index)
                   }}>
@@ -253,20 +261,6 @@ export const TokenInputWidget = ({
           )}
         </View>
       </Animated.View>
-      {/* <Text
-        variant="caption"
-        sx={{
-          paddingHorizontal: 36,
-          color: errorMessage
-            ? '$textDanger'
-            : alpha(colors.$textPrimary, 0.85),
-          alignSelf: 'center',
-          textAlign: 'center'
-        }}>
-        {errorMessage
-          ? normalizeErrorMessage(errorMessage)
-          : `Balance: ${balance.toDisplay()} ${token.symbol}`}
-      </Text> */}
     </View>
   )
 }

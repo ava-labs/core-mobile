@@ -25,6 +25,7 @@ import { useEstimatedReceiveAmount } from './useEstimatedReceiveAmount'
 interface Bridge {
   assetBalance?: AssetBalance
   assetsWithBalances?: AssetBalance[]
+  assetBalanceOnTargetNetwork?: AssetBalance
   networkFee?: bigint
   bridgeFee: bigint
   /** Maximum transfer amount */
@@ -67,11 +68,22 @@ export default function useBridge(): Bridge {
   const [inputAmount, setInputAmount] = useState<bigint>()
   const amount = useMemo(() => inputAmount ?? 0n, [inputAmount])
   const { assetsWithBalances } = useAssetBalances(sourceNetwork?.chainId)
+  const { assetsWithBalances: assetsWithBalancesOnTargetNetwork } =
+    useAssetBalances(targetNetwork?.chainId)
   const { data: networkFeeRate } = useNetworkFee()
 
   const assetBalance = useMemo(
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
     [selectedBridgeAsset, assetsWithBalances]
+  )
+
+  const assetBalanceOnTargetNetwork = useMemo(
+    () =>
+      getAssetBalance(
+        selectedBridgeAsset?.symbol,
+        assetsWithBalancesOnTargetNetwork
+      ),
+    [selectedBridgeAsset, assetsWithBalancesOnTargetNetwork]
   )
 
   const sourceNetworks = useBridgeSourceNetworks()
@@ -203,6 +215,7 @@ export default function useBridge(): Bridge {
   return {
     assetBalance,
     assetsWithBalances,
+    assetBalanceOnTargetNetwork,
     bridgeFee,
     maximum,
     minimum,
