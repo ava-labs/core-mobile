@@ -3,6 +3,7 @@ import debounce from 'lodash.debounce'
 import { useRef } from 'react'
 
 const DEBOUNCE_DELAY = 500 // milliseconds
+const DEBOUNCE_OPTIONS = { leading: true, trailing: false }
 
 type NavigationOptions = {
   relativeToDirectory?: boolean
@@ -25,7 +26,7 @@ export const useDebouncedRouter = (): Router => {
         router.navigate(href, options)
       },
       DEBOUNCE_DELAY,
-      { leading: true, trailing: false }
+      DEBOUNCE_OPTIONS
     )
   ).current
 
@@ -35,7 +36,7 @@ export const useDebouncedRouter = (): Router => {
         router.push(href, options)
       },
       DEBOUNCE_DELAY,
-      { leading: true, trailing: false }
+      DEBOUNCE_OPTIONS
     )
   ).current
 
@@ -45,7 +46,7 @@ export const useDebouncedRouter = (): Router => {
         router.replace(href, options)
       },
       DEBOUNCE_DELAY,
-      { leading: true, trailing: false }
+      DEBOUNCE_OPTIONS
     )
   ).current
 
@@ -55,7 +56,7 @@ export const useDebouncedRouter = (): Router => {
         router.back()
       },
       DEBOUNCE_DELAY,
-      { leading: true, trailing: false }
+      DEBOUNCE_OPTIONS
     )
   ).current
 
@@ -65,7 +66,7 @@ export const useDebouncedRouter = (): Router => {
         router.dismiss()
       },
       DEBOUNCE_DELAY,
-      { leading: true, trailing: false }
+      DEBOUNCE_OPTIONS
     )
   ).current
 
@@ -75,7 +76,7 @@ export const useDebouncedRouter = (): Router => {
         router.dismissAll()
       },
       DEBOUNCE_DELAY,
-      { leading: true, trailing: false }
+      DEBOUNCE_OPTIONS
     )
   ).current
 
@@ -85,7 +86,7 @@ export const useDebouncedRouter = (): Router => {
         router.dismissTo(href, options)
       },
       DEBOUNCE_DELAY,
-      { leading: true, trailing: false }
+      DEBOUNCE_OPTIONS
     )
   ).current
 
