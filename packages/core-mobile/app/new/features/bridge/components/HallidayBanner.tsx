@@ -6,31 +6,26 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
-import AppNavigation from 'navigation/AppNavigation'
 import React from 'react'
 import { useDispatch } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 
-export const HallidayBanner = (): React.JSX.Element => {
+export const HallidayBanner = ({
+  onPress
+}: {
+  onPress: () => void
+}): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
-
-  const openHalliday = async (): Promise<void> => {
-    AnalyticsService.capture('HallidayBuyClicked')
-    navigate(AppNavigation.Wallet.Halliday)
-  }
 
   const dismissHallidayBanner = (): void => {
     dispatch(setViewOnce(ViewOnceKey.HALLIDAY_BANNER))
   }
 
   return (
-    <Pressable onPress={openHalliday}>
+    <Pressable onPress={onPress}>
       <View
         sx={{
           padding: 16,

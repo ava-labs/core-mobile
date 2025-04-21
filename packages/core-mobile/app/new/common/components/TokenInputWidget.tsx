@@ -26,6 +26,7 @@ export const TokenInputWidget = ({
   title,
   token,
   balance,
+  shouldShowBalance,
   network,
   maximum,
   amount,
@@ -44,6 +45,7 @@ export const TokenInputWidget = ({
   maximum?: bigint
   token?: { symbol: string; logoUri?: string; decimals: number }
   balance?: bigint
+  shouldShowBalance?: boolean
   network?: Network
   onAmountChange: (amount: bigint) => void
   formatInCurrency: (amount: bigint | undefined) => string
@@ -190,11 +192,11 @@ export const TokenInputWidget = ({
                       bigintToBig(balance, token.decimals),
                       6
                     )} ${token.symbol}`}</Text>
-                  ) : (
+                  ) : shouldShowBalance ? (
                     <View sx={{ alignSelf: 'flex-start' }}>
                       <ActivityIndicator size={'small'} />
                     </View>
-                  ))}
+                  ) : undefined)}
               </View>
             </View>
           </TouchableOpacity>

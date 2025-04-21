@@ -107,9 +107,14 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const handleBridge = useCallback(() => {
     navigate({
       pathname: '/bridge',
-      params: token?.symbol ? { initialTokenSymbol: token.symbol } : undefined
+      params: token
+        ? {
+            initialSourceNetworkChainId: token.networkChainId,
+            initialTokenSymbol: token.symbol
+          }
+        : undefined
     })
-  }, [navigate, token?.symbol])
+  }, [navigate, token])
 
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [

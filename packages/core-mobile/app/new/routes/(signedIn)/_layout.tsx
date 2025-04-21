@@ -96,6 +96,10 @@ export default function WalletLayout(): JSX.Element {
               name="(modals)/claimStakeReward"
               options={modalScreensOptions}
             />
+            <Stack.Screen
+              name="(modals)/webView"
+              options={stackNavigatorScreenOptions}
+            />
           </Stack>
           <PolyfillCrypto />
           <Confetti ref={confettiRef} />

@@ -5,7 +5,12 @@ import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import { getAssetBalance, unwrapAssetSymbol } from '../utils/bridgeUtils'
+import { NetworkVMType } from '@avalabs/vm-module-types'
+import {
+  getAssetBalance,
+  unwrapAssetSymbol,
+  wrapAssetSymbol
+} from '../utils/bridgeUtils'
 import { useAssetBalances } from './useAssetBalances'
 import { useBridgeAssets } from './useBridgeAssets'
 import {
@@ -24,8 +29,7 @@ import { useEstimatedReceiveAmount } from './useEstimatedReceiveAmount'
 
 interface Bridge {
   assetBalance?: AssetBalance
-  assetsWithBalances?: AssetBalance[]
-  assetBalanceOnTargetNetwork?: AssetBalance
+  assetsWithBalances: AssetBalance[]
   networkFee?: bigint
   bridgeFee: bigint
   /** Maximum transfer amount */
@@ -55,6 +59,8 @@ interface Bridge {
   amount: bigint
   price: Big | undefined
   estimatedReceiveAmount: bigint | undefined
+  selectedAssetInSourceNetwork?: TokenWithBalanceInNetwork
+  selectedAssetInTargetNetwork?: TokenWithBalanceInNetwork
 }
 
 export default function useBridge(): Bridge {
@@ -75,15 +81,6 @@ export default function useBridge(): Bridge {
   const assetBalance = useMemo(
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
     [selectedBridgeAsset, assetsWithBalances]
-  )
-
-  const assetBalanceOnTargetNetwork = useMemo(
-    () =>
-      getAssetBalance(
-        selectedBridgeAsset?.symbol,
-        assetsWithBalancesOnTargetNetwork
-      ),
-    [selectedBridgeAsset, assetsWithBalancesOnTargetNetwork]
   )
 
   const sourceNetworks = useBridgeSourceNetworks()
@@ -132,6 +129,55 @@ export default function useBridge(): Bridge {
     sourceNetwork,
     targetNetwork
   })
+
+  const selectedAssetInSourceNetwork = useMemo(() => {
+    return selectedBridgeAsset
+      ? {
+          balance: assetBalance?.balance,
+          symbol: selectedBridgeAsset.symbol,
+          logoUri: assetBalance?.logoUri,
+          decimals: selectedBridgeAsset.decimals
+        }
+      : undefined
+  }, [selectedBridgeAsset, assetBalance])
+
+  const selectedAssetInTargetNetwork = useMemo(() => {
+    if (!selectedBridgeAsset || !sourceNetwork) return undefined
+
+    const bridgeAssetSymbol = unwrapAssetSymbol(selectedBridgeAsset.symbol)
+
+    const postfix = sourceNetwork.vmName === NetworkVMType.BITCOIN ? '.b' : '.e'
+
+    const bridgeAsset =
+      assetsWithBalancesOnTargetNetwork.find(
+        asset => asset.symbol === bridgeAssetSymbol
+      ) ??
+      assetsWithBalancesOnTargetNetwork.find(
+        asset => asset.symbol === wrapAssetSymbol(bridgeAssetSymbol, postfix)
+      )
+
+    if (bridgeAsset) {
+      return {
+        symbol: bridgeAsset.symbolOnNetwork ?? bridgeAsset.symbol,
+        logoUri: bridgeAsset?.logoUri,
+        decimals: bridgeAsset.asset.decimals,
+        balance: bridgeAsset.balance
+      }
+    }
+
+    return selectedBridgeAsset
+      ? {
+          symbol: selectedBridgeAsset.symbol,
+          logoUri: assetBalance?.logoUri,
+          decimals: selectedBridgeAsset.decimals
+        }
+      : undefined
+  }, [
+    selectedBridgeAsset,
+    assetBalance,
+    sourceNetwork,
+    assetsWithBalancesOnTargetNetwork
+  ])
 
   useEffect(() => {
     getEstimatedGas(amount)
@@ -205,6 +251,7 @@ export default function useBridge(): Bridge {
       setSelectedBridgeAsset(bridgeAsset)
     } else {
       setSelectedBridgeAsset(undefined)
+      setTargetNetwork(undefined)
     }
   }, [sourceNetwork, bridgeAssets, selectedBridgeAsset])
 
@@ -215,7 +262,6 @@ export default function useBridge(): Bridge {
   return {
     assetBalance,
     assetsWithBalances,
-    assetBalanceOnTargetNetwork,
     bridgeFee,
     maximum,
     minimum,
@@ -236,6 +282,15 @@ export default function useBridge(): Bridge {
     amount,
     networkFee,
     price,
-    estimatedReceiveAmount
+    estimatedReceiveAmount,
+    selectedAssetInSourceNetwork,
+    selectedAssetInTargetNetwork
   }
+}
+
+type TokenWithBalanceInNetwork = {
+  symbol: string
+  logoUri?: string
+  decimals: number
+  balance?: bigint
 }

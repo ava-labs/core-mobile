@@ -8,7 +8,6 @@ import {
   ScrollView,
   Separator,
   showAlert,
-  // showAlert,
   Text,
   useTheme,
   View
@@ -61,18 +60,22 @@ import {
 } from 'features/bridge/store/store'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
 
 const BridgeScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { initialTokenSymbol } = useGlobalSearchParams<{
-    initialTokenSymbol: string
-  }>()
+  const { initialSourceNetworkChainId, initialTokenSymbol } =
+    useGlobalSearchParams<{
+      initialSourceNetworkChainId?: string
+      initialTokenSymbol?: string
+    }>()
   const { navigate } = useRouter()
   const {
+    sourceNetworks,
     assetBalance,
-    assetBalanceOnTargetNetwork,
     inputAmount,
     setInputAmount,
     assetsWithBalances,
@@ -93,7 +96,9 @@ const BridgeScreen = (): JSX.Element => {
     selectedBridgeAsset,
     setSelectedBridgeAsset,
     error,
-    estimatedReceiveAmount
+    estimatedReceiveAmount,
+    selectedAssetInSourceNetwork,
+    selectedAssetInTargetNetwork
   } = useBridge()
   const [bridgeError, setBridgeError] = useState('')
 
@@ -125,15 +130,17 @@ const BridgeScreen = (): JSX.Element => {
     bridgeAsset: BridgeAsset | undefined
   }>()
 
-  const hasValidAmount = !isAmountTooLow && amount > 0n
-
-  const hasInvalidReceiveAmount =
-    hasValidAmount &&
-    estimatedReceiveAmount !== undefined &&
-    estimatedReceiveAmount === 0n
-
-  const shouldCheckNativeBalance = isGaslessBlocked || !isGaslessEligible
-
+  const hasValidAmount = useMemo(
+    () => !isAmountTooLow && amount > 0n,
+    [isAmountTooLow, amount]
+  )
+  const hasInvalidReceiveAmount = useMemo(
+    () =>
+      hasValidAmount &&
+      estimatedReceiveAmount !== undefined &&
+      estimatedReceiveAmount === 0n,
+    [hasValidAmount, estimatedReceiveAmount]
+  )
   const nativeTokenBalance = useSelector((state: RootState) =>
     selectAvailableNativeTokenBalanceForNetworkAndAccount(
       state,
@@ -142,14 +149,25 @@ const BridgeScreen = (): JSX.Element => {
     )
   )
 
-  const isNativeBalanceNotEnoughForNetworkFee = Boolean(
-    shouldCheckNativeBalance &&
-      amount !== 0n &&
-      networkFee &&
-      nativeTokenBalance <
-        networkFee +
-          (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
-  )
+  const isNativeBalanceNotEnoughForNetworkFee = useMemo(() => {
+    const shouldCheckNativeBalance = isGaslessBlocked || !isGaslessEligible
+
+    return Boolean(
+      shouldCheckNativeBalance &&
+        amount !== 0n &&
+        networkFee &&
+        nativeTokenBalance <
+          networkFee +
+            (assetBalance?.asset.type === TokenType.NATIVE ? amount : 0n)
+    )
+  }, [
+    amount,
+    networkFee,
+    nativeTokenBalance,
+    assetBalance,
+    isGaslessBlocked,
+    isGaslessEligible
+  ])
 
   const transferDisabled =
     isPending ||
@@ -286,65 +304,12 @@ const BridgeScreen = (): JSX.Element => {
     [formatCurrency, price, selectedBridgeAsset]
   )
 
-  useEffect(() => {
-    if (initialTokenSymbol && !selectedBridgeAsset) {
-      const token = assetsWithBalances?.find(
-        tk => (tk.symbolOnNetwork ?? tk.symbol) === initialTokenSymbol
-      )
-      if (token) {
-        handleSelectBridgeAsset(token)
-      }
-    }
-  }, [
-    initialTokenSymbol,
-    assetsWithBalances,
-    handleSelectBridgeAsset,
-    selectedBridgeAsset
-  ])
-
-  useEffect(() => {
-    if (error) {
-      setBridgeError(error.message)
-    }
-  }, [error])
-
-  useEffect(() => {
-    const checkGaslessEligibility = async (): Promise<void> => {
-      if (!sourceNetwork?.chainId || !selectedBridgeAsset) {
-        setIsGaslessEligible(false)
-        return
-      }
-
-      try {
-        const isEligible = await GaslessService.isEligibleForChain(
-          sourceNetwork.chainId.toString()
-        )
-        setIsGaslessEligible(isEligible)
-      } catch (err) {
-        Logger.error(`[Bridge.tsx][checkGaslessEligibility]${err}`)
-        setIsGaslessEligible(false)
-      }
-    }
-
-    checkGaslessEligibility()
-  }, [sourceNetwork?.chainId, selectedBridgeAsset])
-
-  const bridgeTokenList = useMemo(
-    () =>
-      (assetsWithBalances ?? []).filter(asset =>
-        bridgeAssets
-          .map(bridgeAsset => bridgeAsset.symbol)
-          .includes(asset.symbolOnNetwork ?? asset.asset.symbol)
-      ),
-    [assetsWithBalances, bridgeAssets]
-  )
-
-  const handleSelectSourceNetwork = (): void => {
+  const handleSelectSourceNetwork = useCallback((): void => {
     setSelectedSourceNetwork(sourceNetwork)
     navigate({ pathname: '/selectBridgeSourceNetwork' })
-  }
+  }, [setSelectedSourceNetwork, sourceNetwork, navigate])
 
-  const handleSelectTargetNetwork = (): void => {
+  const handleSelectTargetNetwork = useCallback((): void => {
     if (selectedBridgeAsset === undefined) {
       return
     }
@@ -358,7 +323,7 @@ const BridgeScreen = (): JSX.Element => {
         )
       }
     })
-  }
+  }, [selectedBridgeAsset, setSelectedTargetNetwork, targetNetwork, navigate])
 
   const handleToggleNetwork = (): void => {
     if (targetNetwork && sourceNetwork) {
@@ -370,83 +335,12 @@ const BridgeScreen = (): JSX.Element => {
     }
   }
 
-  const selectedToken = useMemo(() => {
-    return selectedBridgeAsset
-      ? {
-          symbol: selectedBridgeAsset.symbol,
-          logoUri: assetBalance?.logoUri,
-          decimals: selectedBridgeAsset.decimals
-        }
-      : undefined
-  }, [selectedBridgeAsset, assetBalance])
-
-  const renderFromSection = (): JSX.Element => {
-    return (
-      <Animated.View
-        style={{
-          borderRadius: 12,
-          overflow: 'hidden',
-          backgroundColor: colors.$surfaceSecondary
-        }}
-        layout={LinearTransition}>
-        <SelectNetworkRow
-          title="From"
-          network={sourceNetwork}
-          onPress={handleSelectSourceNetwork}
-        />
-        <Separator sx={{ marginHorizontal: 16 }} />
-        <TokenInputWidget
-          amount={inputAmount}
-          balance={assetBalance?.balance}
-          title="You pay"
-          token={selectedToken}
-          network={sourceNetwork}
-          formatInCurrency={formatInCurrency}
-          onAmountChange={handleAmountChange}
-          onFocus={() => setIsInputFocused(true)}
-          onBlur={() => setIsInputFocused(false)}
-          onSelectToken={handleSelectToken}
-          maximum={maximum}
-          inputTextColor={errorMessage ? colors.$textDanger : undefined}
-        />
-      </Animated.View>
-    )
-  }
-
-  const renderToSection = (): JSX.Element => {
-    const receiveAmount =
-      hasValidAmount && estimatedReceiveAmount && selectedBridgeAsset
-        ? estimatedReceiveAmount
-        : undefined
-
-    return (
-      <Animated.View
-        style={{
-          borderRadius: 12,
-          overflow: 'hidden',
-          backgroundColor: colors.$surfaceSecondary
-        }}
-        layout={LinearTransition}>
-        <SelectNetworkRow
-          title="To"
-          network={targetNetwork}
-          onPress={
-            targetNetworks.length > 1 ? handleSelectTargetNetwork : undefined
-          }
-        />
-        <Separator sx={{ marginHorizontal: 16 }} />
-        <TokenInputWidget
-          amount={receiveAmount}
-          balance={assetBalanceOnTargetNetwork?.balance}
-          title="You receive"
-          token={selectedToken}
-          network={targetNetwork}
-          formatInCurrency={formatInCurrency}
-          onAmountChange={handleAmountChange}
-          editable={false}
-        />
-      </Animated.View>
-    )
+  const handlePressHallidayBanner = async (): Promise<void> => {
+    AnalyticsService.capture('HallidayBuyClicked')
+    navigate({
+      pathname: 'webView',
+      params: { url: HALLIDAY_BRIDGE_URL, testID: 'halliday-bridge-webview' }
+    })
   }
 
   const errorMessage = useMemo(() => {
@@ -480,6 +374,154 @@ const BridgeScreen = (): JSX.Element => {
     selectedBridgeAsset,
     sourceNetwork
   ])
+
+  const renderFromSection = useCallback(() => {
+    return (
+      <Animated.View
+        style={{
+          borderRadius: 12,
+          overflow: 'hidden',
+          backgroundColor: colors.$surfaceSecondary
+        }}
+        layout={LinearTransition}>
+        <SelectNetworkRow
+          title="From"
+          network={sourceNetwork}
+          onPress={handleSelectSourceNetwork}
+        />
+        <Separator sx={{ marginHorizontal: 16 }} />
+        <TokenInputWidget
+          amount={inputAmount}
+          balance={selectedAssetInSourceNetwork?.balance}
+          shouldShowBalance={true}
+          title="You pay"
+          token={selectedAssetInSourceNetwork}
+          network={sourceNetwork}
+          formatInCurrency={formatInCurrency}
+          onAmountChange={handleAmountChange}
+          onFocus={() => setIsInputFocused(true)}
+          onBlur={() => setIsInputFocused(false)}
+          onSelectToken={handleSelectToken}
+          maximum={maximum}
+          inputTextColor={errorMessage ? colors.$textDanger : undefined}
+        />
+      </Animated.View>
+    )
+  }, [
+    colors,
+    errorMessage,
+    formatInCurrency,
+    handleAmountChange,
+    handleSelectToken,
+    handleSelectSourceNetwork,
+    inputAmount,
+    selectedAssetInSourceNetwork,
+    sourceNetwork,
+    maximum
+  ])
+
+  const renderToSection = useCallback((): JSX.Element => {
+    const receiveAmount =
+      hasValidAmount && estimatedReceiveAmount && selectedBridgeAsset
+        ? estimatedReceiveAmount
+        : undefined
+
+    return (
+      <Animated.View
+        style={{
+          borderRadius: 12,
+          overflow: 'hidden',
+          backgroundColor: colors.$surfaceSecondary
+        }}
+        layout={LinearTransition}>
+        <SelectNetworkRow
+          title="To"
+          network={targetNetwork}
+          onPress={
+            targetNetworks.length > 1 ? handleSelectTargetNetwork : undefined
+          }
+        />
+        <Separator sx={{ marginHorizontal: 16 }} />
+        <TokenInputWidget
+          amount={receiveAmount}
+          balance={selectedAssetInTargetNetwork?.balance}
+          title="You receive"
+          token={selectedAssetInTargetNetwork}
+          network={targetNetwork}
+          formatInCurrency={formatInCurrency}
+          onAmountChange={handleAmountChange}
+          editable={false}
+        />
+      </Animated.View>
+    )
+  }, [
+    colors,
+    formatInCurrency,
+    handleAmountChange,
+    handleSelectTargetNetwork,
+    selectedAssetInTargetNetwork,
+    targetNetwork,
+    targetNetworks,
+    hasValidAmount,
+    estimatedReceiveAmount,
+    selectedBridgeAsset
+  ])
+
+  useEffect(() => {
+    if (
+      initialSourceNetworkChainId &&
+      initialTokenSymbol &&
+      !selectedBridgeAsset
+    ) {
+      const initialSourceNetwork = sourceNetworks.find(
+        network => network.chainId === Number(initialSourceNetworkChainId)
+      )
+      if (initialSourceNetwork) {
+        setSourceNetwork(initialSourceNetwork)
+        const token = assetsWithBalances?.find(
+          tk => (tk.symbolOnNetwork ?? tk.symbol) === initialTokenSymbol
+        )
+        if (token) {
+          handleSelectBridgeAsset(token)
+        }
+      }
+    }
+  }, [
+    initialSourceNetworkChainId,
+    initialTokenSymbol,
+    assetsWithBalances,
+    handleSelectBridgeAsset,
+    selectedBridgeAsset,
+    setSourceNetwork,
+    sourceNetworks
+  ])
+
+  useEffect(() => {
+    if (error) {
+      setBridgeError(error.message)
+    }
+  }, [error])
+
+  useEffect(() => {
+    const checkGaslessEligibility = async (): Promise<void> => {
+      if (!sourceNetwork?.chainId || !selectedBridgeAsset) {
+        setIsGaslessEligible(false)
+        return
+      }
+
+      try {
+        const isEligible = await GaslessService.isEligibleForChain(
+          sourceNetwork.chainId.toString()
+        )
+        setIsGaslessEligible(isEligible)
+      } catch (err) {
+        Logger.error(`[Bridge.tsx][checkGaslessEligibility]${err}`)
+        setIsGaslessEligible(false)
+      }
+    }
+
+    checkGaslessEligibility()
+  }, [sourceNetwork?.chainId, selectedBridgeAsset])
 
   useEffect(() => {
     if (!sourceNetwork) return
@@ -558,12 +600,18 @@ const BridgeScreen = (): JSX.Element => {
   ])
 
   useEffect(() => {
-    if (cChainNetwork) {
+    if (!initialSourceNetworkChainId && cChainNetwork) {
       setSourceNetwork(cChainNetwork)
     }
-  }, [setSourceNetwork, cChainNetwork])
+  }, [setSourceNetwork, cChainNetwork, initialSourceNetworkChainId])
 
   useEffect(() => {
+    const bridgeTokenList = (assetsWithBalances ?? []).filter(asset =>
+      bridgeAssets
+        .map(bridgeAsset => bridgeAsset.symbol)
+        .includes(asset.symbolOnNetwork ?? asset.asset.symbol)
+    )
+
     if (
       bridgeTokenList.length === 1 &&
       bridgeTokenList[0]?.asset &&
@@ -572,7 +620,8 @@ const BridgeScreen = (): JSX.Element => {
       setSelectedBridgeAsset(bridgeTokenList[0].asset)
     }
   }, [
-    bridgeTokenList,
+    bridgeAssets,
+    assetsWithBalances,
     setSelectedBridgeAsset,
     selectedBridgeAsset,
     cChainNetwork,
@@ -590,7 +639,7 @@ const BridgeScreen = (): JSX.Element => {
           <ScreenHeader title="Bridge" />
           {shouldShowHallidayBanner && (
             <View sx={{ marginTop: 16, marginBottom: 8 }}>
-              <HallidayBanner />
+              <HallidayBanner onPress={handlePressHallidayBanner} />
             </View>
           )}
           <Animated.View style={{ marginTop: 16 }} layout={LinearTransition}>
