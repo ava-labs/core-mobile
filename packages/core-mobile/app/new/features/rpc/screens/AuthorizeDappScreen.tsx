@@ -78,7 +78,8 @@ const AuthorizeDappScreen = ({
 
   // reject the request
   // when the screen is closed due to
-  // user pressing back button or using swipe down gesture,
+  // user pressing back button or using swipe down gesture
+  // note: this is a workaround as we can't detect the swipe down gesture
   useEffect(() => {
     return () => {
       shouldRejectOnClose.current && onReject(request)
