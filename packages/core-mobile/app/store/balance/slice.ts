@@ -61,9 +61,13 @@ export const balanceSlice = createSlice({
 export const selectBalanceStatus = (state: RootState): QueryStatus =>
   state.balance.status
 
-export const selectIsBalanceLoadedForAddress =
-  (accountIndex: number, chainId: number) => (state: RootState) => {
-    return !!state.balance.balances[getKey(chainId, accountIndex)]
+export const selectIsBalanceLoadedForAccount =
+  (accountIndex: number) => (state: RootState) => {
+    const foundBalance = Object.values(state.balance.balances).find(balance => {
+      return balance.accountIndex === accountIndex
+    })
+
+    return !!foundBalance
   }
 
 export const selectIsBalanceLoadedForActiveNetwork = (

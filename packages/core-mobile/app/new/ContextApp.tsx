@@ -11,6 +11,7 @@ import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
+import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import SentryService from 'services/sentry/SentryService'
 import { App } from './App'
 
@@ -21,11 +22,12 @@ function setToast(toast: Toast): void {
 /**
  * Aggregate all the top-level context providers for better readability.
  */
-// TODO: add DeeplinkContextProvider
 const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
-      <PosthogContextProvider>{children}</PosthogContextProvider>
+      <PosthogContextProvider>
+        <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
+      </PosthogContextProvider>
     </ReactQueryProvider>
   </EncryptedStoreProvider>
 )
