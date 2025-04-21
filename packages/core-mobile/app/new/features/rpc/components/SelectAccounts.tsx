@@ -51,7 +51,7 @@ export const SelectAccounts = ({
               flexDirection: 'row',
               alignItems: 'center'
             }}>
-            <Icons.Custom.Wallet />
+            <Icons.Custom.Wallet color={colors.$textPrimary} />
             <Text
               variant="body1"
               sx={{
