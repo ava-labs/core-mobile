@@ -1,1 +1,1 @@
-export const GAS_LIMIT_FOR_XP_CHAIN = 1
+export const GAS_LIMIT_FOR_X_CHAIN = 1
