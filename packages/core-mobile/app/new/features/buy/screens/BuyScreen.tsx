@@ -20,7 +20,7 @@ import {
   selectIsCoinbasePayBlocked,
   selectIsHallidayBridgeBannerBlocked
 } from 'store/posthog/slice'
-
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 enum Provider {
   MOONPAY = 'Moonpay',
   COINBASE = 'Coinbase',
@@ -31,6 +31,7 @@ const LOGO_SIZE = 36
 
 export const BuyScreen: FC = () => {
   const { navigate, back } = useRouter()
+  const { openUrl } = useCoreBrowser()
   const dispatch = useDispatch()
   const { theme } = useTheme()
   const { showAvaxWarning } = useLocalSearchParams()
@@ -50,21 +51,11 @@ export const BuyScreen: FC = () => {
     const result = await request.json()
 
     back()
-    navigate({
-      pathname: 'browser',
-      params: {
-        url: result.url
-      }
+    openUrl({
+      url: result.url,
+      title: 'Moonpay'
     })
-
-    dispatch(addTab())
-    dispatch(
-      addHistoryForActiveTab({
-        url: result.url,
-        title: 'Moonpay'
-      })
-    )
-  }, [address, dispatch, back, navigate])
+  }, [address, back, openUrl])
 
   const openCoinbase = useCallback((): void => {
     if (!address) return
@@ -79,21 +70,11 @@ export const BuyScreen: FC = () => {
     })
 
     back()
-    navigate({
-      pathname: 'browser',
-      params: {
-        url
-      }
+    openUrl({
+      url,
+      title: 'Coinbase Pay'
     })
-
-    dispatch(addTab())
-    dispatch(
-      addHistoryForActiveTab({
-        url,
-        title: 'Coinbase Pay'
-      })
-    )
-  }, [address, dispatch, back, navigate])
+  }, [address, back, openUrl])
 
   const openHalliday = useCallback((): void => {
     AnalyticsService.capture('HallidayBuyClicked')
@@ -101,21 +82,11 @@ export const BuyScreen: FC = () => {
     const url = 'https://core.app/bridge/?useHalliday=1&useEmbed=1'
 
     back()
-    navigate({
-      pathname: 'browser',
-      params: {
-        url
-      }
+    openUrl({
+      url,
+      title: 'Halliday'
     })
-
-    dispatch(addTab())
-    dispatch(
-      addHistoryForActiveTab({
-        url,
-        title: 'Halliday'
-      })
-    )
-  }, [navigate, back, dispatch])
+  }, [back, openUrl])
 
   const onPaySelection = useCallback(
     (provider: Provider): void => {
