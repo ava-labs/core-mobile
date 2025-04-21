@@ -15,9 +15,11 @@ import { useSelector } from 'react-redux'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isValidContactName } from 'common/utils/isValidContactName'
+import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
+import { NetworkVMType } from '@avalabs/vm-module-types'
+import { isValidAddress } from '../utils/isValidAddress'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
-import { isValidAddress } from '../utils/isValidAddress'
 import { ContactAddressForm } from './ContactAddressForm'
 
 export const ContactForm = ({
@@ -29,6 +31,7 @@ export const ContactForm = ({
 }): React.JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const alert = useRef<AlertWithTextInputsHandle>(null)
+  const { networks } = usePrimaryNetworks()
 
   const handleShowAlertWithTextInput = useCallback((): void => {
     alert.current?.show({
@@ -105,29 +108,26 @@ export const ContactForm = ({
     [contact, onUpdate, isDeveloperMode]
   )
 
-  const adressData = useMemo(
-    () => [
-      {
-        title: AddressType.EVM,
-        placeholder: 'Type in or paste in C-Chain/EVM address',
-        emptyText: 'Add Avalanche C-Chain/EVM address',
-        address: contact?.address
-      },
-      {
-        title: AddressType.XP,
-        placeholder: 'Type in or paste in X/P-Chain address',
-        emptyText: 'Add Avalanche X/P-Chain address',
-        address: contact?.addressXP
-      },
-      {
-        title: AddressType.BTC,
-        placeholder: 'Type in or paste in Bitcoin address',
-        emptyText: 'Add Bitcoin address',
-        address: contact?.addressBTC
+  const addressData = useMemo(() => {
+    return networks.map(network => {
+      const address =
+        network.vmName === NetworkVMType.AVM ||
+        network.vmName === NetworkVMType.PVM
+          ? contact.addressXP?.replace(/^[XP]-/, '')
+          : network.vmName === NetworkVMType.BITCOIN
+          ? contact.addressBTC
+          : network.vmName === NetworkVMType.EVM
+          ? contact.address
+          : undefined
+
+      return {
+        title: network.chainName as AddressType,
+        placeholder: `Type in or paste in ${network.chainName} address`,
+        emptyText: `Add ${network.chainName} address`,
+        address
       }
-    ],
-    [contact]
-  )
+    })
+  }, [contact.address, contact.addressBTC, contact.addressXP, networks])
 
   const renderName = useCallback(() => {
     if (contact?.name) {
@@ -183,7 +183,7 @@ export const ContactForm = ({
           paddingVertical: 14,
           borderRadius: 12
         }}>
-        {adressData.map((item, index) => (
+        {addressData.map((item, index) => (
           <View key={index} sx={{ width: '100%' }}>
             <ContactAddressForm
               key={index}
@@ -193,7 +193,7 @@ export const ContactForm = ({
               address={item.address}
               onUpdateAddress={handleUpdateAddress}
             />
-            {index !== adressData.length - 1 && (
+            {index !== addressData.length - 1 && (
               <View
                 sx={{
                   marginVertical: 15,

@@ -11,8 +11,10 @@ export const isValidAddress = (
 ): boolean => {
   switch (addressType) {
     case AddressType.EVM:
+    case AddressType.EVM_TESTNET:
       return isAddress(address) || isBech32Address(address)
-    case AddressType.XP: {
+    case AddressType.XP:
+    case AddressType.XP_TESTNET: {
       const addressWithoutPrefix = address.replace(/^[PX]-/, '')
       return (
         Avalanche.isBech32Address(addressWithoutPrefix, false) &&
@@ -21,6 +23,7 @@ export const isValidAddress = (
       )
     }
     case AddressType.BTC:
+    case AddressType.BTC_TESTNET:
       return isBtcAddress(address, !isDeveloperMode)
   }
 }

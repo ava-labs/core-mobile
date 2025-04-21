@@ -9,14 +9,17 @@ export const constructContactByAddressType = (
 ): Contact => {
   switch (addressType) {
     case AddressType.EVM:
+    case AddressType.EVM_TESTNET:
       return { ...contact, address }
-    case AddressType.XP: {
+    case AddressType.XP:
+    case AddressType.XP_TESTNET: {
       return {
         ...contact,
         addressXP: xpAddressWithoutPrefix(address ?? '')
       }
     }
     case AddressType.BTC:
+    case AddressType.BTC_TESTNET:
       return { ...contact, addressBTC: address }
   }
 }

@@ -4,7 +4,8 @@ import React, {
   useCallback,
   useState,
   useMemo,
-  useRef
+  useRef,
+  useEffect
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -12,9 +13,11 @@ import {
   AnimatedBalance,
   GroupList,
   Icons,
+  Pressable,
   ScrollView,
   SearchBar,
   Separator,
+  Text,
   TouchableOpacity,
   useTheme,
   View
@@ -31,7 +34,13 @@ import { showSnackbar } from 'common/utils/toast'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectTokenVisibility } from 'store/portfolio'
-import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
+import {
+  fetchBalanceForAccount,
+  QueryStatus,
+  selectBalanceStatus,
+  selectBalanceTotalInCurrencyForAccount,
+  selectIsBalanceLoadedForAccount
+} from 'store/balance'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ScrollView as RnScrollView } from 'react-native'
 import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
@@ -203,11 +212,17 @@ const AccountBalance = ({
 }: {
   accountIndex: number
 }): React.JSX.Element => {
+  const balanceStatus = useSelector(selectBalanceStatus)
+  const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors }
   } = useTheme()
-
+  const dispatch = useDispatch()
+  const isBalanceLoaded = useSelector(
+    selectIsBalanceLoadedForAccount(accountIndex)
+  )
+  const [showLoader, setShowLoader] = useState(false)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
@@ -215,18 +230,44 @@ const AccountBalance = ({
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {
-    if (accountBalance === 0) {
-      return ''
-    }
     return formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
 
-  return (
+  const handleLoadingBalance = useCallback(
+    (index: number): void => {
+      dispatch(fetchBalanceForAccount({ accountIndex: index }))
+      setShowLoader(true)
+    },
+    [dispatch]
+  )
+
+  useEffect(() => {
+    if (!isBalanceLoading && showLoader) {
+      setShowLoader(false)
+    }
+  }, [isBalanceLoading, showLoader])
+
+  return showLoader && isBalanceLoading && isBalanceLoaded === false ? (
+    <ActivityIndicator size="small" />
+  ) : isBalanceLoaded === false ? (
+    <Pressable onPress={() => handleLoadingBalance(accountIndex)}>
+      <Text
+        variant="caption"
+        numberOfLines={1}
+        sx={{
+          color: '$textPrimary',
+          fontFamily: 'Inter-SemiBold'
+        }}>
+        View Balance
+      </Text>
+    </Pressable>
+  ) : (
     <AnimatedBalance
       variant="body1"
       balance={balance}
       shouldMask={isPrivacyModeEnabled}
       balanceSx={{ color: colors.$textSecondary, lineHeight: 18 }}
+      shouldAnimate={false}
     />
   )
 }
