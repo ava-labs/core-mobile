@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Button,
@@ -61,24 +61,7 @@ export const TokenInputWidget = ({
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false)
   const [percentageButtons, setPercentageButtons] = useState<
     PercentageButton[]
-  >([
-    {
-      text: '25%',
-      percent: 0.25,
-      isSelected: false
-    },
-    {
-      text: '50%',
-      percent: 0.5,
-      isSelected: false
-    },
-    {
-      text: 'Max',
-      percent: 1,
-      value: maximum,
-      isSelected: false
-    }
-  ])
+  >([])
 
   const handlePressPercentageButton = (
     button: PercentageButton,
@@ -126,6 +109,27 @@ export const TokenInputWidget = ({
   }
 
   const isTokenSelectable = onSelectToken !== undefined
+
+  useEffect(() => {
+    setPercentageButtons([
+      {
+        text: '25%',
+        percent: 0.25,
+        isSelected: false
+      },
+      {
+        text: '50%',
+        percent: 0.5,
+        isSelected: false
+      },
+      {
+        text: 'Max',
+        percent: 1,
+        value: maximum,
+        isSelected: false
+      }
+    ])
+  }, [maximum])
 
   return (
     <View sx={sx}>
