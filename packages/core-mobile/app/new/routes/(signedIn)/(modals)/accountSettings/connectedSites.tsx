@@ -35,7 +35,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
   >()
 
   const navigationTitle = `${allApprovedDapps.length} connected ${
-    allApprovedDapps.length === 0 ? 'site' : 'sites'
+    allApprovedDapps.length < 2 ? 'site' : 'sites'
   }`
 
   const navigationHeader = useMemo(
