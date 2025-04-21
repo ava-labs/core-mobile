@@ -116,17 +116,19 @@ export const selectTokensWithBalance = createSelector(
   }
 )
 
-export const selectTokensWithBalanceByNetwork =
-  (chainId?: number) =>
-  (state: RootState): LocalTokenWithBalance[] => {
-    const activeAccount = selectActiveAccount(state)
+export const selectTokensWithBalanceByNetwork = (
+  chainId?: number
+): ((state: RootState) => LocalTokenWithBalance[]) =>
+  createSelector(
+    [selectActiveAccount, _selectAllBalances],
+    (activeAccount, balances): LocalTokenWithBalance[] => {
+      if (!chainId) return []
+      if (!activeAccount) return []
 
-    if (!chainId) return []
-    if (!activeAccount) return []
-
-    const key = getKey(chainId, activeAccount.index)
-    return state.balance.balances[key]?.tokens ?? []
-  }
+      const balanceKey = getKey(chainId, activeAccount.index)
+      return balances[balanceKey]?.tokens ?? []
+    }
+  )
 
 export const selectTokensWithZeroBalance = createSelector(
   selectTokensWithBalance,
