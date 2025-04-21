@@ -9,18 +9,17 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { FC, useCallback, useMemo } from 'react'
 import Config from 'react-native-config'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
-import { addHistoryForActiveTab, addTab } from 'store/browser'
 import {
   selectIsCoinbasePayBlocked,
   selectIsHallidayBridgeBannerBlocked
 } from 'store/posthog/slice'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 enum Provider {
   MOONPAY = 'Moonpay',
   COINBASE = 'Coinbase',
@@ -30,9 +29,8 @@ enum Provider {
 const LOGO_SIZE = 36
 
 export const BuyScreen: FC = () => {
-  const { navigate, back } = useRouter()
+  const { back } = useRouter()
   const { openUrl } = useCoreBrowser()
-  const dispatch = useDispatch()
   const { theme } = useTheme()
   const { showAvaxWarning } = useLocalSearchParams()
   const isCoinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
