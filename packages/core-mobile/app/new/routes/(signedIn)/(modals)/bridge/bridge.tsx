@@ -660,7 +660,7 @@ const BridgeScreen = (): JSX.Element => {
             {isInputFocused ? (
               <Animated.View style={{ height: 12 }} layout={LinearTransition} />
             ) : (
-              <Animated.View entering={LinearTransition} exiting={FadeOut}>
+              <Animated.View layout={LinearTransition}>
                 <CircularButton
                   style={{
                     width: 40,
