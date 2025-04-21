@@ -297,7 +297,11 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           <ErrorState
             sx={{ flex: 1, paddingTop: insets.top }}
             icon={
-              <Image source={ErrorIcon} style={{ width: 42, height: 42 }} />
+              <Image
+                source={ErrorIcon}
+                style={{ width: 42, height: 42 }}
+                renderToHardwareTextureAndroid={false}
+              />
             }
             title={'Failed to load'}
             description={'Please hit refresh or try again later'}

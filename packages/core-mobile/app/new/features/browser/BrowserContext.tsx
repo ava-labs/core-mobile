@@ -42,7 +42,7 @@ function useBrowserContextValue(): BrowserContextType {
 
   const progress = useSharedValue(0)
   const isRenameFavoriteVisible = useSharedValue(false)
-  const showRecentSearches = useSharedValue(urlEntry?.length > 0)
+  const showRecentSearches = useSharedValue(false)
 
   useEffect(() => {
     if (urlEntry.length > 0) {

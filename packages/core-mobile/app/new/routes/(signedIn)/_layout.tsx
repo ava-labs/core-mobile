@@ -38,6 +38,7 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
           <Stack.Screen name="(modals)/swap" options={modalScreensOptions} />
+          <Stack.Screen name="(modals)/buy" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/selectSendToken"
             options={formSheetScreensOptions}
